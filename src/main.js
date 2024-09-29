@@ -7,34 +7,35 @@ k.loadSprite("spritesheet", "./spritesheet.png", {
   anims: {
     "idle-down": 936,
     "walk-down": { from: 936, to: 939, loop: true, speed: 8 },
+    "idle-side": 975,
+    "walk-side": { from: 975, to: 978, loop: true, speed: 8 },
+    "idle-up": 1014,
+    "walk-up": { from: 1014, to: 1017, loop: true, speed: 8 },
   },
-});
-
-k.onUpdate(() => {
-  k.debug.log(k.debug.fps());
 });
 
 k.add([k.rect(100, 100), k.pos(k.center().x, k.center().y)]);
 
 const player = k.add([
   k.sprite("spritesheet", { anim: "idle-down" }),
-  k.area(),
+  k.area({ collisionIgnore: ["controlZone"] }),
   k.anchor("center"),
   k.pos(k.center()),
   k.scale(scaleFactor),
   { speed: 400, direction: "down" },
+  "player",
 ]);
 
 const leftZone = player.add([
   k.pos(-k.width() / 2, -8),
   k.area({
     shape: new k.Rect(k.vec2(0), k.width() / 2, 16),
-    collisionIgnore: ["controlZone"],
+    collisionIgnore: ["controlZone", "player"],
   }),
   "controlZone",
 ]);
 
-leftZone.onClick(() => {
+leftZone.onHover(() => {
   player.direction = "left";
 });
 
@@ -42,12 +43,12 @@ const rightZone = player.add([
   k.pos(0, -8),
   k.area({
     shape: new k.Rect(k.vec2(0), k.width() / 2, 16),
-    collisionIgnore: ["controlZone"],
+    collisionIgnore: ["controlZone", "player"],
   }),
   "controlZone",
 ]);
 
-rightZone.onClick(() => {
+rightZone.onHover(() => {
   player.direction = "right";
 });
 
@@ -55,78 +56,83 @@ const topZone = player.add([
   k.pos(0, -158),
   k.area({
     shape: new k.Rect(k.vec2(0), 16, 300),
-    collisionIgnore: ["controlZone"],
+    collisionIgnore: ["controlZone", "player"],
   }),
   k.anchor("center"),
   "controlZone",
 ]);
 
-topZone.onClick(() => {
+topZone.onHover(() => {
   player.direction = "up";
 });
 
 const topDiagonalRight = player.add([
-  k.rect(k.width() / 2, 300),
   k.pos(10, -10),
   k.rotate(270),
-  k.area(),
-  k.opacity(0),
+  k.area({
+    shape: new k.Rect(k.vec2(0), k.width() / 2, 300),
+    collisionIgnore: ["controlZone", "player"],
+  }),
   "controlZone",
 ]);
 
-topDiagonalRight.onClick(() => {
+topDiagonalRight.onHover(() => {
   player.direction = "diagonal-top-right";
 });
 
 const topDiagonalLeft = player.add([
-  k.rect(k.width() / 2, 300),
   k.pos(-10, -10),
   k.rotate(180),
-  k.area(),
-  k.opacity(0),
+  k.area({
+    shape: new k.Rect(k.vec2(0), k.width() / 2, 300),
+    collisionIgnore: ["controlZone", "player"],
+  }),
   "controlZone",
 ]);
 
-topDiagonalLeft.onClick(() => {
+topDiagonalLeft.onHover(() => {
   player.direction = "diagonal-top-left";
 });
 
 const bottomDiagonalLeft = player.add([
-  k.rect(k.width() / 2, 300),
   k.pos(-10, 10),
   k.rotate(90),
-  k.area(),
-  k.opacity(0),
+  k.area({
+    shape: new k.Rect(k.vec2(0), k.width() / 2, 300),
+    collisionIgnore: ["controlZone", "player"],
+  }),
   "controlZone",
 ]);
 
-bottomDiagonalLeft.onClick(() => {
+bottomDiagonalLeft.onHover(() => {
   player.direction = "diagonal-bottom-left";
 });
 
 const bottomDiagonalRight = player.add([
-  k.rect(k.width() / 2, 300),
   k.pos(10, 10),
   k.rotate(0),
-  k.area(),
-  k.opacity(0),
+  k.area({
+    shape: new k.Rect(k.vec2(0), k.width() / 2, 300),
+    collisionIgnore: ["controlZone", "player"],
+  }),
   "controlZone",
 ]);
 
-bottomDiagonalRight.onClick(() => {
+bottomDiagonalRight.onHover(() => {
   player.direction = "diagonal-bottom-right";
 });
 
 const bottomZone = player.add([
-  k.rect(16, 300),
   k.pos(0, 158),
-  k.area(),
+  k.area({
+    shape: new k.Rect(k.vec2(0), 16, 300),
+    collisionIgnore: ["controlZone", "player"],
+  }),
   k.anchor("center"),
-  k.opacity(0),
   "controlZone",
 ]);
 
-bottomZone.onClick(() => {
+bottomZone.onHover(() => {
   player.direction = "down";
 });
 
@@ -153,47 +159,83 @@ k.onUpdate(() => {
 });
 
 k.onMouseDown(() => {
-  if (player.curAnim() !== "walk-down") {
-    player.play("walk-down");
-  }
   if (player.direction === "left") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = true;
+      player.play("walk-side");
+    }
     player.move(-player.speed, 0);
     return;
   }
   if (player.direction === "right") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = false;
+      player.play("walk-side");
+    }
     player.move(player.speed, 0);
     return;
   }
   if (player.direction === "up") {
+    if (player.curAnim() !== "walk-up") {
+      player.play("walk-up");
+    }
     player.move(0, -player.speed);
     return;
   }
   if (player.direction === "down") {
+    if (player.curAnim() !== "walk-down") {
+      player.play("walk-down");
+    }
     player.move(0, player.speed);
     return;
   }
 
   if (player.direction === "diagonal-top-right") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = false;
+      player.play("walk-side");
+    }
     player.move(player.speed / 2, -player.speed / 2);
     return;
   }
 
   if (player.direction === "diagonal-top-left") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = true;
+      player.play("walk-side");
+    }
     player.move(-player.speed / 2, -player.speed / 2);
     return;
   }
 
   if (player.direction === "diagonal-bottom-left") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = true;
+      player.play("walk-side");
+    }
     player.move(-player.speed / 2, player.speed / 2);
     return;
   }
 
   if (player.direction === "diagonal-bottom-right") {
+    if (player.curAnim() !== "walk-side") {
+      player.flipX = false;
+      player.play("walk-side");
+    }
     player.move(player.speed / 2, player.speed / 2);
     return;
   }
 });
 
 k.onMouseRelease(() => {
-  player.play("idle-down");
+  if (player.direction === "down") {
+    player.play("idle-down");
+    return;
+  }
+  if (player.direction === "up") {
+    player.play("idle-up");
+    return;
+  }
+
+  player.play("idle-side");
 });
