@@ -30,18 +30,20 @@ const player = k.add([
   k.anchor("center"),
   k.pos(k.center()),
   k.scale(scaleFactor),
-  { speed: 400, direction: "down" },
+  { speed: 400, direction: "down", isInDialogue: false },
   "player",
 ]);
 
 const dialogueManager = {};
 
 player.onCollide("npc", () => {
-  const dialogueBox = document.getElementById("textbox");
+  player.isInDialogue = true;
+  const dialogueUI = document.getElementById("textbox-ui");
   const dialogue = document.getElementById("dialogue");
 
-  dialogueBox.style.display = "block";
-  const text = "This is a test!\nIt's really cool!";
+  dialogueUI.style.display = "block";
+  const text =
+    "The text box you're currently reading is not rendered withing canvas!\nIt's made with html and css!";
   let index = 0;
   dialogueManager.intervalRef = setInterval(() => {
     if (index < text.length) {
@@ -54,13 +56,21 @@ player.onCollide("npc", () => {
   }, 10);
 });
 
-player.onCollideEnd("npc", () => {
-  const dialogueBox = document.getElementById("textbox");
+document.getElementById("close").addEventListener("click", () => {
+  player.isInDialogue = false;
+  const dialogueUI = document.getElementById("textbox-ui");
   const dialogue = document.getElementById("dialogue");
-  dialogueBox.style.display = "none";
+  dialogueUI.style.display = "none";
   dialogue.innerText = "";
-  clearInterval(dialogueManager.intervalRef);
 });
+// player.onCollideEnd("npc", () => {
+//   k.debug.log("dialog over");
+//   const dialogueBox = document.getElementById("textbox");
+//   const dialogue = document.getElementById("dialogue");
+//   dialogueBox.style.display = "none";
+//   dialogue.innerText = "";
+//   clearInterval(dialogueManager.intervalRef);
+// });
 
 const leftZone = player.add([
   k.pos(-k.width() / 2, -8),
@@ -181,6 +191,19 @@ function setCamScale(k) {
   }
 }
 
+function setAnimToIdle() {
+  if (player.direction === "down") {
+    player.play("idle-down");
+    return;
+  }
+  if (player.direction === "up") {
+    player.play("idle-up");
+    return;
+  }
+
+  player.play("idle-side");
+}
+
 setCamScale(k);
 
 k.onResize(() => {
@@ -195,6 +218,8 @@ k.onUpdate(() => {
 });
 
 k.onMouseDown(() => {
+  if (player.isInDialogue) return;
+
   if (player.direction === "left") {
     player.flipX = true;
     if (player.curAnim() !== "walk-side") {
@@ -264,14 +289,5 @@ k.onMouseDown(() => {
 });
 
 k.onMouseRelease(() => {
-  if (player.direction === "down") {
-    player.play("idle-down");
-    return;
-  }
-  if (player.direction === "up") {
-    player.play("idle-up");
-    return;
-  }
-
-  player.play("idle-side");
+  setAnimToIdle();
 });
