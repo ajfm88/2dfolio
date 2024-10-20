@@ -1,5 +1,6 @@
-import { scaleFactor } from "./constants";
+import { dialogueData, scaleFactor } from "./constants";
 import { k } from "./kaboomCtx";
+import { displayDialogue } from "./utils";
 
 k.loadSprite("spritesheet", "./spritesheet.png", {
   sliceX: 39,
@@ -28,13 +29,17 @@ k.scene("main", async () => {
     k.sprite("spritesheet", { anim: "idle-down" }),
     k.area({
       collisionIgnore: ["controlZone"],
-      shape: new k.Rect(k.vec2(0), 12, 16),
+      shape: new k.Rect(k.vec2(0, 3), 10, 14),
     }),
     k.body(),
     k.anchor("center"),
     k.pos(),
     k.scale(scaleFactor),
-    { speed: 250, direction: "down", isInDialogue: false },
+    {
+      speed: 250,
+      direction: "down",
+      isInDialogue: false,
+    },
     "player",
   ]);
 
@@ -56,7 +61,18 @@ k.scene("main", async () => {
           }),
           k.body({ isStatic: true }),
           k.pos(boundary.x, boundary.y),
+          boundary.name,
         ]);
+
+        if (boundary.name) {
+          player.onCollide(boundary.name, () => {
+            player.isInDialogue = true;
+            displayDialogue(
+              dialogueData[boundary.name],
+              () => (player.isInDialogue = false)
+            );
+          });
+        }
       }
 
       continue;
@@ -72,44 +88,9 @@ k.scene("main", async () => {
           k.add(player);
           continue;
         }
-
-        if (entity.name === "npc-test") {
-          npcTest.pos = k.vec2(
-            (map.pos.x + entity.x) * scaleFactor,
-            (map.pos.y + entity.y) * scaleFactor
-          );
-          k.add(npcTest);
-        }
       }
     }
   }
-
-  player.onCollide("npc", () => {
-    player.isInDialogue = true;
-    const dialogueUI = document.getElementById("textbox-ui");
-    const dialogue = document.getElementById("dialogue");
-
-    dialogueUI.style.display = "block";
-    const text =
-      "The text box you're currently reading is not rendered within canvas!\nIt's made with html and css!";
-    let index = 0;
-    const intervalRef = setInterval(() => {
-      if (index < text.length) {
-        dialogue.innerHTML += text[index];
-        index++;
-        return;
-      }
-
-      clearInterval(intervalRef);
-    }, 5);
-
-    document.getElementById("close").addEventListener("click", () => {
-      player.isInDialogue = false;
-      dialogueUI.style.display = "none";
-      dialogue.innerHTML = "";
-      clearInterval(intervalRef);
-    });
-  });
 
   function setCamScale(k) {
     const resizeFactor = k.width() / k.height();
@@ -151,15 +132,22 @@ k.scene("main", async () => {
 
     const mouseAngle = player.pos.angle(worldMousePos);
 
-    if (mouseAngle > 80 && mouseAngle < 95 && player.curAnim() !== "walk-up") {
+    const lowerBound = 70;
+    const upperBound = 105;
+
+    if (
+      mouseAngle > lowerBound &&
+      mouseAngle < upperBound &&
+      player.curAnim() !== "walk-up"
+    ) {
       player.play("walk-up");
       player.direction = "up";
       return;
     }
 
     if (
-      mouseAngle < -80 &&
-      mouseAngle > -95 &&
+      mouseAngle < -lowerBound &&
+      mouseAngle > -upperBound &&
       player.curAnim() !== "walk-down"
     ) {
       player.play("walk-down");
@@ -167,14 +155,14 @@ k.scene("main", async () => {
       return;
     }
 
-    if (Math.abs(mouseAngle) > 95) {
+    if (Math.abs(mouseAngle) > upperBound) {
       player.flipX = false;
       if (player.curAnim() !== "walk-side") player.play("walk-side");
       player.direction = "right";
       return;
     }
 
-    if (Math.abs(mouseAngle) < 80) {
+    if (Math.abs(mouseAngle) < lowerBound) {
       player.flipX = true;
       if (player.curAnim() !== "walk-side") player.play("walk-side");
       player.direction = "left";
