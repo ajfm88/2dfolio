@@ -1,6 +1,6 @@
 import { dialogueData, scaleFactor } from "./constants";
 import { k } from "./kaboomCtx";
-import { displayDialogue } from "./utils";
+import { displayDialogue, setCamScale } from "./utils";
 
 k.loadSprite("spritesheet", "./spritesheet.png", {
   sliceX: 39,
@@ -28,7 +28,6 @@ k.scene("main", async () => {
   const player = k.make([
     k.sprite("spritesheet", { anim: "idle-down" }),
     k.area({
-      collisionIgnore: ["controlZone"],
       shape: new k.Rect(k.vec2(0, 3), 10, 10),
     }),
     k.body(),
@@ -83,28 +82,6 @@ k.scene("main", async () => {
     }
   }
 
-  function setCamScale(k) {
-    const resizeFactor = k.width() / k.height();
-    if (resizeFactor < 1) {
-      k.camScale(k.vec2(1));
-    } else {
-      k.camScale(k.vec2(1.5));
-    }
-  }
-
-  function setAnimToIdle() {
-    if (player.direction === "down") {
-      player.play("idle-down");
-      return;
-    }
-    if (player.direction === "up") {
-      player.play("idle-up");
-      return;
-    }
-
-    player.play("idle-side");
-  }
-
   setCamScale(k);
 
   k.onResize(() => {
@@ -115,8 +92,8 @@ k.scene("main", async () => {
     k.camPos(player.worldPos().x, player.worldPos().y - 100);
   });
 
-  k.onMouseDown(() => {
-    if (player.isInDialogue) return;
+  k.onMouseDown((mouseBtn) => {
+    if (mouseBtn !== "left" || player.isInDialogue) return;
 
     const worldMousePos = k.toWorld(k.mousePos());
     player.moveTo(worldMousePos, player.speed);
@@ -162,7 +139,16 @@ k.scene("main", async () => {
   });
 
   k.onMouseRelease(() => {
-    setAnimToIdle();
+    if (player.direction === "down") {
+      player.play("idle-down");
+      return;
+    }
+    if (player.direction === "up") {
+      player.play("idle-up");
+      return;
+    }
+
+    player.play("idle-side");
   });
 });
 
