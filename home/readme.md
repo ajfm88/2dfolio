@@ -1,6 +1,6 @@
-# Developer portfolio that’s a 2D game
+# ajfm88’s Home
 
-Neat, walkable, 2D sprite developer portfolio.
+One third of a neat, walkable, 2D sprite developer portfolio.
 
 ![picture](./readme.png)
 
