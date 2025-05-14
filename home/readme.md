@@ -1,6 +1,6 @@
 # ajfm88’s Home
 
-One third of a neat, walkable, 2D sprite developer portfolio.
+A neat, walkable, 2D sprite developer portfolio.
 
 ![picture](./readme.png)
 
