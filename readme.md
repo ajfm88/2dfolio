@@ -1,8 +1,6 @@
 <div align="center">
   <h3 align="center">ajfm88’s Pixel Portfolio Website</h3>
-  <br />
-    <a href="https://react-portfolio-v3-ajfm88.vercel.app">
-      <img src="https://64.media.tumblr.com/7706f4423a331335ebcaf1b5a194ce4b/tumblr_o0ndweAeE01tb8cbpo1_1280.jpg" alt="ajfm88’s Home">
-    </a>
-  <br />
+  <a href="https://pixel-portfolio.netlify.app">
+    <img src="https://opengameart.org/sites/default/files/styles/medium/public/house1_4.png" alt="ajfm88’s Home">
+  </a>
 </div>

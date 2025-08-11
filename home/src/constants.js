@@ -9,7 +9,10 @@ export const dialogueData = {
   "sofa-table": `That's my sofa and my table. I like to relax here and sometimes watch YouTube, or read a good manga in Japanese.
     In my <a href="https://ankiweb.net/shared/by-author/215281557" target="_blank">AnkiWeb page</a> you'll find some of the Anki decks I have assembled to study Japanese with.`,
   tv: `There is a video game console here, which game will I play?: 
-  <a href="https://zelda-ajfm88.netlify.app" target="_blank">Adventure Game</a>.`,
+  <a href="https://metroidvania-ajfm88.netlify.app" target="_blank">Action</a>.
+  <a href="https://zelda-ajfm88.netlify.app" target="_blank">Adventure</a>.
+  <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>.
+  <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Platformer</a>.`,
   bed: `This where I sleep. Great ideas comes when I'm lying on my bed. When an idea strikes, I often have to write it down or else I won't be able to sleep because my mental energy is consumed by it.`,
   resume: `This is my desk and on it is my resume. <a href="https://tr.ee/Xj8r3OZd11" target="_blank">Check it out?</a>
     Contact me at ale@ajfm88.com if you have any interesting job opportunities!`,
