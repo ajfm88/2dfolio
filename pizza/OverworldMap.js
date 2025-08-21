@@ -185,7 +185,7 @@ window.OverworldMaps = {
         talking: [
           {
             events: [
-              { type: "textMessage", text: "You made it!", faceHero:"npcB" },
+              { type: "textMessage", text: "You made it! This video is going to be such a good time!", faceHero:"npcB" },
             ]
           }
         ]
