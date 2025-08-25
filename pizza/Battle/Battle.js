@@ -10,6 +10,7 @@ class Battle {
         maxXp: 100,
         level: 1,
         status: null,
+        isPlayerControlled: true
       }, this),
       "enemy1": new Combatant({
         ...Pizzas.v001,
