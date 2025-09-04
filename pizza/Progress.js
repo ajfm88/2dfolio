@@ -1,6 +1,6 @@
 class Progress {
   constructor() {
-    this.mapId = "Street";
+    this.mapId = "Kitchen";
     this.startingHeroX = 0;
     this.startingHeroY = 0;
     this.startingHeroDirection = "down";
@@ -23,6 +23,11 @@ class Progress {
   }
 
   getSaveFile() {
+
+    if (!window.localStorage) {
+      return null;
+    }
+
     const file = window.localStorage.getItem(this.saveFileKey);
     return file ? JSON.parse(file) : null
   }

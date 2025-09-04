@@ -1,8 +1,9 @@
 class Battle {
-  constructor({ enemy, onComplete }) {
+  constructor({ enemy, onComplete, arena }) {
 
     this.enemy = enemy;
     this.onComplete = onComplete;
+    this.arena = arena;
 
     this.combatants = {
       // "player1": new Combatant({
@@ -86,14 +87,18 @@ class Battle {
       }, this)
 
       //Populate first active pizza
-
-      console.log(this)
       this.activeCombatants[team] = this.activeCombatants[team] || id
   }
 
   createElement() {
     this.element = document.createElement("div");
     this.element.classList.add("Battle");
+
+    // If provided, add a CSS class for setting the arena background
+    if (this.arena) {
+      this.element.classList.add(this.arena);
+    }
+
     this.element.innerHTML = (`
     <div class="Battle_hero">
       <img src="${'/images/characters/people/hero.png'}" alt="Hero" />
