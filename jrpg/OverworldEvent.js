@@ -60,7 +60,6 @@ class OverworldEvent {
   }
 
   changeMap(resolve) {
-
     const sceneTransition = new SceneTransition();
     sceneTransition.init(document.querySelector(".game-container"), () => {
       this.map.overworld.startMap( window.OverworldMaps[this.event.map], {
@@ -69,15 +68,14 @@ class OverworldEvent {
         direction: this.event.direction,
       });
       resolve();
-
       sceneTransition.fadeOut();
-
     })
   }
 
   battle(resolve) {
     const battle = new Battle({
       enemy: Enemies[this.event.enemyId],
+      arena: this.event.arena || null,
       onComplete: (didWin) => {
         resolve(didWin ? "WON_BATTLE" : "LOST_BATTLE");
       }

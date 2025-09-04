@@ -2,11 +2,19 @@
 <html>
   <head>
     <title>Pizza Legends</title>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ribeye&display=swap" rel="stylesheet">
+    <!-- Overworld styles -->
     <link href="/styles/global.css" type="text/css" rel="stylesheet">
     <link href="/styles/TextMessage.css" type="text/css" rel="stylesheet">
     <link href="/styles/SceneTransition.css" type="text/css" rel="stylesheet">
     <link href="/styles/KeyboardMenu.css" type="text/css" rel="stylesheet">
     <link href="/styles/Hud.css" type="text/css" rel="stylesheet">
+    <link href="/styles/TitleScreen.css" type="text/css" rel="stylesheet">
     <!-- Battle css -->
     <link href="/styles/Battle.css" type="text/css" rel="stylesheet">
     <link href="/styles/Combatant.css" type="text/css" rel="stylesheet">
@@ -18,6 +26,7 @@
     <div class="game-container">
       <canvas class="game-canvas" width="352" height="198"></canvas>
     </div>
+    <p class="how-to-play">Use Arrow Keys to move. Enter to prompt/talk.</p>
 
     <!-- Content -->
     <script src="/Content/pizzas.js"></script>
@@ -46,6 +55,7 @@
     <script src="/PauseMenu.js"></script>
     <script src="/CraftingMenu.js"></script>
     <script src="/Progress.js"></script>
+    <script src="/TitleScreen.js"></script>
 
     <!-- Battle -->
     <script src="/Battle/Battle.js"></script>

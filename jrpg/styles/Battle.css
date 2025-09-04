@@ -8,6 +8,13 @@
   background-size: cover;
   image-rendering: pixelated;
 }
+.Battle.green-kitchen {
+  background-image: url(/images/maps/GreenKitchenBattle.png);
+}
+.Battle.dining-room {
+  background-image: url(/images/maps/DiningRoomBattle.png);
+}
+
 
 .Battle_hero, .Battle_enemy {
   position: absolute;

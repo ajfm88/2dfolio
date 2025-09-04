@@ -10,15 +10,14 @@ class GameObject {
       src: config.src || "/images/characters/people/hero.png",
     });
 
+    //These happen once on map startup.
+    //Characters will pause after a cutscene is triggered, but will resume activity when reentering the map
     this.behaviorLoop = config.behaviorLoop || [];
     this.behaviorLoopIndex = 0;
-
     this.talking = config.talking || [];
-
   }
 
   mount(map) {
-    console.log("mounting!")
     this.isMounted = true;
     map.addWall(this.x, this.y);
 
