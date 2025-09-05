@@ -11,15 +11,14 @@ class GameObject {
     });
 
     //These happen once on map startup.
-    //Characters will pause after a cutscene is triggered, but will resume activity when reentering the map
     this.behaviorLoop = config.behaviorLoop || [];
     this.behaviorLoopIndex = 0;
     this.talking = config.talking || [];
+    this.retryTimeout = null;
   }
 
   mount(map) {
     this.isMounted = true;
-    map.addWall(this.x, this.y);
 
     //If we have a behavior, kick off after a short delay
     setTimeout(() => {
@@ -32,11 +31,23 @@ class GameObject {
 
   async doBehaviorEvent(map) { 
 
-    //Don't do anything if there is a more important cutscene or I don't have config to do anything
-    //anyway.
-    if (map.isCutscenePlaying || this.behaviorLoop.length === 0 || this.isStanding) {
+    //Don't do anything if I don't have config to do anything
+    if (this.behaviorLoop.length === 0) {
+      return;  
+    }
+
+    if (map.isCutscenePlaying) {
+
+      console.log("will retry", this.id)
+      if (this.retryTimeout) {
+        clearTimeout(this.retryTimeout);
+      }
+      this.retryTimeout = setTimeout(() => {
+        this.doBehaviorEvent(map);
+      }, 1000)
       return;
     }
+
 
     //Setting up our event with relevant info
     let eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
