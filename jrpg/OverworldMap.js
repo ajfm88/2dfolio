@@ -1,10 +1,8 @@
 class OverworldMap {
   constructor(config) {
     this.overworld = null;
-    this.gameObjects = {}; // Live objects are in here
     this.configObjects = config.configObjects; // Configuration content
-
-    
+    this.gameObjects = {}; // Starts empty, live object instances in the map get added here
     this.cutsceneSpaces = config.cutsceneSpaces || {};
     this.walls = config.walls || {};
 
@@ -39,33 +37,32 @@ class OverworldMap {
     if (this.walls[`${x},${y}`]) {
       return true;
     }
-    //Check for game objects at this position
+    // Check for objects that match
     return Object.values(this.gameObjects).find(obj => {
       if (obj.x === x && obj.y === y) { return true; }
-      if (obj.intentPosition && obj.intentPosition[0] === x && obj.intentPosition[1] === y ) {
+      if (obj.intentPosition && obj.intentPosition[0] === x && obj.intentPosition[1] === y) {
         return true;
       }
       return false;
     })
-
   }
 
   mountObjects() {
     Object.keys(this.configObjects).forEach(key => {
 
-      let object = this.configObjects[key];
-      object.id = key;
+      let config = this.configObjects[key];
+      config.id = key;
 
-      let instance;
-      if (object.type === "Person") {
-        instance = new Person(object);
+      let obj;
+      if (config.type === "Person") {
+        obj = new Person(config);
       }
-      if (object.type === "PizzaStone") {
-        instance = new PizzaStone(object);
+      if (config.type === "PizzaStone") {
+        obj = new PizzaStone(config);
       }
-      this.gameObjects[key] = instance;
+      this.gameObjects[key] = obj;
       this.gameObjects[key].id = key;
-      instance.mount(this);
+      obj.mount(this);
     })
   }
 
@@ -109,6 +106,8 @@ class OverworldMap {
       this.startCutscene( match[0].events )
     }
   }
+
+
 }
 
 window.OverworldMaps = {
@@ -242,8 +241,8 @@ window.OverworldMaps = {
       hero: {
         type: "Person",
         isPlayerControlled: true,
-        x: utils.withGrid(10),
-        y: utils.withGrid(5),
+        x: utils.withGrid(3),
+        y: utils.withGrid(9),
       },
       kitchenNpcA: {
         type: "Person",
@@ -1039,7 +1038,6 @@ window.OverworldMaps = {
       ],
     },
     walls: {
-      [utils.asGridCoord(6,3)]: true,
       [utils.asGridCoord(7,2)]: true,
       [utils.asGridCoord(6,13)]: true,
       [utils.asGridCoord(1,5)]: true,

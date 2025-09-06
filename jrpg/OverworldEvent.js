@@ -6,6 +6,7 @@ class OverworldEvent {
 
   stand(resolve) {
     const who = this.map.gameObjects[ this.event.who ];
+
     who.startBehavior({
       map: this.map
     }, {
@@ -26,6 +27,7 @@ class OverworldEvent {
 
   walk(resolve) {
     const who = this.map.gameObjects[ this.event.who ];
+
     who.startBehavior({
       map: this.map
     }, {
@@ -61,7 +63,7 @@ class OverworldEvent {
 
   changeMap(resolve) {
 
-    //Deactivate old objects
+    //Stop all Person things
     Object.values(this.map.gameObjects).forEach(obj => {
       obj.isMounted = false;
     })
