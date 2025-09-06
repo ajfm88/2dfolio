@@ -31,23 +31,21 @@ class GameObject {
 
   async doBehaviorEvent(map) { 
 
-    //Don't do anything if I don't have config to do anything
-    if (this.behaviorLoop.length === 0) {
-      return;  
+    //I don't have config to do anything
+    if (this.behaviorLoop.length === 0 ) {
+      return;
     }
 
+    //Retry later if a cutscene is playing
     if (map.isCutscenePlaying) {
-
-      console.log("will retry", this.id)
       if (this.retryTimeout) {
         clearTimeout(this.retryTimeout);
       }
       this.retryTimeout = setTimeout(() => {
-        this.doBehaviorEvent(map);
+        this.doBehaviorEvent(map)
       }, 1000)
       return;
     }
-
 
     //Setting up our event with relevant info
     let eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
