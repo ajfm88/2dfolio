@@ -241,8 +241,8 @@ window.OverworldMaps = {
       hero: {
         type: "Person",
         isPlayerControlled: true,
-        x: utils.withGrid(3),
-        y: utils.withGrid(9),
+        x: utils.withGrid(10),
+        y: utils.withGrid(5),
       },
       kitchenNpcA: {
         type: "Person",
