@@ -13,7 +13,8 @@ export const dialogueData = {
   <a href="https://zelda-ajfm88.netlify.app" target="_blank">Adventure</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>,
   <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Platformer</a>,
-  <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Sonic Runner</a>.`,
+  <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Runner</a>,
+  <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Shooter</a>.`,
   bed: `This where I sleep. Great ideas comes when I'm lying on my bed. I occasionally like writing restaurant reviews, please check out my 
     <a href="https://www.yelp.com/user_details?userid=JBqCl4WE7g9SPR-0y0tJzQ" target="_blank">Yelp profile</a> if you'd like to.`,
   resume: `This is my desk and on it is my resume. <a href="https://tr.ee/Xj8r3OZd11" target="_blank">Check it out?</a>
