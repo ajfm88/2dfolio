@@ -86,7 +86,7 @@ export class LevelState {
       },
       () => {
         console.error("Failed to copy");
-      }
+      },
     );
   }
 
@@ -112,7 +112,7 @@ export class LevelState {
     this.camera.tick();
 
     // Update the clock
-    //this.clock.tick(); // TODO - put me back!
+    this.clock.tick();
 
     //Emit any changes to React
     this.onEmit(this.getState());
