@@ -15,7 +15,7 @@ export const dialogueData = {
   <a href="https://html-classic.itch.zone/html/7730457/build/index.html" target="_blank">Puzzle</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Runner</a>,
   <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Shooter</a>,
-  <a href="https://zelda-ajfm88.netlify.app" target="_blank">Zelda Adventure</a>,`,
+  <a href="https://zelda-ajfm88.netlify.app" target="_blank">Zelda Adventure</a>.`,
   bed: `This where I sleep. Great ideas comes when I'm lying on my bed. I occasionally like writing restaurant reviews, please check out my 
     <a href="https://www.yelp.com/user_details?userid=JBqCl4WE7g9SPR-0y0tJzQ" target="_blank">Yelp profile</a> if you'd like to.`,
   resume: `This is my desk and on it is my resume. <a href="https://tr.ee/Xj8r3OZd11" target="_blank">Check it out?</a>
