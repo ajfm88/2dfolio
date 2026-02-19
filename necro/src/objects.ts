@@ -4,7 +4,7 @@ import * as sfx from "./sounds";
 import { Behaviour, GameObject } from "./game";
 import { BARRIER, CORPSE, LIVING, SPELL, MOBILE, PLAYER, UNDEAD } from "./tags";
 import { DEG_90, randomElement } from "./helpers";
-import { March, Attack, Damaging, Bleeding, Enraged, Summon, Invulnerable } from "./behaviours";
+import { March, Attack, Damaging, Bleeding, Enraged, Summon, Invulnerable, DespawnTimer } from "./behaviours";
 import { Damage, Die } from "./actions";
 import { tween } from "./engine";
 
@@ -155,8 +155,8 @@ export function TheKing() {
 export function Champion() {
   let unit = Villager();
   unit.sprite = sprites.champion;
-  unit.updateSpeed = 2000;
-  unit.hp = unit.maxHp = 20;
+  unit.updateSpeed = 1000;
+  unit.hp = unit.maxHp = 10;
   unit.souls = 25;
   return unit;
 }

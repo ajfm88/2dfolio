@@ -141,9 +141,9 @@ export let Splitshot: Ritual = {
   exclusiveTags: SPLITTING,
   rarity: RARE,
   name: "Splitshot",
-  description: "Shot 3 projectiles",
+  description: "Shoot 2 projectiles",
   onActive() {
-    game.spell.shotsPerRound = 3;
+    game.spell.shotsPerRound = 2;
   },
 }
 
@@ -188,15 +188,15 @@ class KnockbackSpell extends Behaviour {
     //target.addBehaviour(new Stunned(target));
 
     // Knock objects backwards
-    for (let object of game.objects) {
-      if (this.object.collisionMask & object.tags) {
-        let dist = distance(this.object, object);
-        let scale = 1 - clamp(dist / 50, 0, 1);
-        let [vx] = vectorFromAngle(angleBetweenPoints(this.object, object));
-        object.vx = vx * 50 * scale;
-        object.vy = 100 * scale;
-      }
-    }
+    //for (let object of game.objects) {
+    //  if (this.object.collisionMask & object.tags) {
+    //    let dist = distance(this.object, object);
+    //    let scale = 1 - clamp(dist / 50, 0, 1);
+    //    let [vx] = vectorFromAngle(angleBetweenPoints(this.object, object));
+    //    object.vx = vx * 50 * scale;
+    //    object.vy = 100 * scale;
+    //  }
+    //}
   }
 }
 
