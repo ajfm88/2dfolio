@@ -1,12 +1,12 @@
 import * as sprites from "./sprites.json";
 import { init, updateParticles, updateTweens } from "./engine";
-import { Game, INTRO, PLAYING, SHOPPING } from "./game";
+import { Game, INTRO, PLAYING } from "./game";
 import { render, screenToSceneCoords } from "./renderer";
 import { Cast, Resurrect } from "./actions";
 import { angleBetweenPoints } from "./helpers";
 import { Player } from "./objects";
 import { isComplete, isLevelFinished, newGamePlus, updateLevel } from "./levels";
-import { Benefactor, Bleed, Bouncing, Broken, Ceiling, Drunkard, Explosive, Extraction, Freeze, Homing, Knockback, Pact, Rain, Seance, SplitOnBounce, Splitshot, Streak, Triggerfinger, Weightless, Zap } from "./rituals";
+import { Benefactor, Bleed, Bouncing, Broken, Ceiling, Drunkard, Explosive, Extraction, Freeze, Homing, Knockback, Rain, Seance, Splitshot, Streak, Triggerfinger, Weightless, Zap } from "./rituals";
 import { buy, enterShop, selectShopIndex, shop } from "./shop";
 import { dust } from "./fx";
 import { BPM, play } from "./sounds";
@@ -110,7 +110,6 @@ function updateDialogue(dt: number) {
   }
 }
 
-dust().burst(200);
 game.addRitual(Streak);
 
 shop.rituals = [
@@ -118,13 +117,11 @@ shop.rituals = [
   Explosive,
   Rain,
   Bouncing,
-  SplitOnBounce,
   Splitshot,
   Homing,
   Weightless,
   Knockback,
   Drunkard,
-  Pact,
   Seance,
   Broken,
   Triggerfinger,
@@ -138,3 +135,4 @@ shop.rituals = [
 game.dialogue = INTRO_DIALOGUE;
 
 init(game.stage.width, game.stage.height, update);
+dust().burst(200);
