@@ -59,7 +59,6 @@ export let Hunter: Ritual = {
 
 export let Weightless: Ritual = {
   tags: NONE,
-  rarity: RARE,
   name: "Weightless",
   description: "Spells are not affected by gravity",
   onCast(spell) {
@@ -165,11 +164,10 @@ export let Seer: Ritual = {
 
 export let Tearstone: Ritual = {
   tags: NONE,
-  rarity: RARE,
   name: "Tearstone",
-  description: "3x damage when on 1 HP",
+  description: "2x damage when < half HP",
   onCast(spell) {
-    if (game.player.hp === 1) {
+    if (game.player.hp < game.player.maxHp / 2) {
       spell.getBehaviour(Damaging)!.amount *= 3;
     }
   }
@@ -209,7 +207,6 @@ export let Bleed: Ritual = {
 
 export let Allegiance: Ritual = {
   tags: NONE,
-  rarity: RARE,
   name: "Allegiance",
   description: "Summon your honour guard after resurrections",
   onResurrect() {
@@ -223,8 +220,7 @@ export let Allegiance: Ritual = {
 
 export let Salvage: Ritual = {
   tags: NONE,
-  rarity: RARE,
-  name: "Extraction",
+  name: "Salvage",
   description: "Corpses become souls at the end of levels",
   onLevelEnd() {
     let corpses = game.objects.filter(object => object.is(CORPSE));
@@ -267,7 +263,6 @@ export let Electrodynamics: Ritual = {
 
 export let Chilly: Ritual = {
   tags: NONE,
-  rarity: RARE,
   name: "Chilly",
   description: "10% chance to freeze enemies",
   onCast(spell) {
@@ -287,10 +282,10 @@ export let Chilly: Ritual = {
   },
 };
 
-export let Vengeful: Ritual = {
+export let Giants: Ritual = {
   tags: NONE,
-  name: "Vengeful",
-  description: "20% chance to resurrect larger skeletons",
+  name: "Giants",
+  description: "20% chance to resurrect giant skeletons",
   onResurrection(object) {
     if (randomFloat() < 0.2) {
       game.despawn(object);
