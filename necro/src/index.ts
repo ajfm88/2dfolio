@@ -6,7 +6,7 @@ import { Cast, Resurrect } from "./actions";
 import { angleBetweenPoints } from "./helpers";
 import { Player } from "./objects";
 import { isComplete, isLevelFinished, updateLevel } from "./levels";
-import { Studious, Bleed, Bouncing, Tearstone, Ceiling, Drunkard, Salvage, Chilly, Hunter, Knockback, Rain, Seer, Doubleshot, Streak, Weightless, Electrodynamics, Impatience, Giants, Avarice, Hardened, Allegiance } from "./rituals";
+import { Benefactor, Bleed, Bouncing, Broken, Ceiling, Drunkard, Explosive, Extraction, Freeze, Giants, Avarice, Hardened, BigFred, Homing, Knockback, Pact, Piercing, Rain, Seance, Splitshot, SplitOnBounce, Streak, Tearstone, Triggerfinger, Weightless, Zap } from "./rituals";
 import { buy, enterShop, selectShopIndex, shop } from "./shop";
 import { dust } from "./fx";
 import { BPM, play } from "./sounds";
@@ -22,6 +22,9 @@ const ARROW_DOWN = 40;
 const SPACE = 32;
 const ENTER = 13;
 const KEY_P = 80;
+
+const CHEAT_CODE = "necro";
+let cheatBuffer = "";
 
 const INTRO_DIALOGUE = [
   "Norman wasn't a particularly popular necromancer...",
@@ -63,6 +66,8 @@ onkeydown = ({ which: key }) => {
     if (key === ARROW_UP) selectShopIndex(-1);
     if (key === ARROW_DOWN) selectShopIndex(+1);
     if (key === ENTER) buy();
+    cheatBuffer = (cheatBuffer + String.fromCharCode(key).toLowerCase()).slice(-CHEAT_CODE.length);
+    if (cheatBuffer === CHEAT_CODE) game.souls = 9999;
   }
 }
 
@@ -125,25 +130,30 @@ game.addRitual(Streak);
 
 shop.rituals = [
   Bouncing,
+  SplitOnBounce,
+  Explosive,
   Ceiling,
   Rain,
-  Doubleshot,
-  Hunter,
+  Splitshot,
+  Homing,
   Weightless,
+  Piercing,
   Knockback,
   Drunkard,
-  Seer,
+  Pact,
+  Seance,
+  Broken,
   Tearstone,
-  Impatience,
+  Triggerfinger,
   Bleed,
-  Salvage,
-  Studious,
-  Electrodynamics,
-  Chilly,
+  Extraction,
+  Benefactor,
+  Zap,
+  Freeze,
   Giants,
   Avarice,
   Hardened,
-  Allegiance,
+  BigFred,
 ];
 
 game.dialogue = INTRO_DIALOGUE;

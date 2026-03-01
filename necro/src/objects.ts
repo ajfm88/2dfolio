@@ -4,7 +4,7 @@ import * as sfx from "./sounds";
 import { Behaviour, GameObject } from "./game";
 import { CORPSE, LIVING, SPELL, MOBILE, PLAYER, UNDEAD } from "./tags";
 import { DEG_180, DEG_90, randomElement, randomFloat, randomInt } from "./helpers";
-import { March, Attack, Damaging, Bleeding, Enraged, Summon, Invulnerable, DespawnTimer } from "./behaviours";
+import { March, Attack, Damaging, Bleeding, Enraged, Summon, Invulnerable, DespawnTimer, Seeking, Frozen } from "./behaviours";
 import { Damage, Die } from "./actions";
 
 export function Corpse() {
@@ -27,10 +27,8 @@ export function Player() {
   player.onCollision = unit => {
     Damage(player, unit.hp);
     Die(unit);
-    if (player.hp <= 0) {
-      window.location = window.location;
-    }
   };
+  player.onDeath = () => window.location = window.location;
   return player;
 }
 
@@ -63,6 +61,26 @@ export function BleedSpell() {
   });
   spell.addBehaviour().onCollision = target =>
     target.addBehaviour(new Bleeding(target));
+  return spell;
+}
+
+export function IceSpell() {
+  let spell = Spell();
+  spell.sprite = sprites.p_skull;
+  spell.emitter!.extend({
+    variants: [
+      [sprites.p_ice_1, sprites.p_ice_2, sprites.p_ice_3],
+      [sprites.p_purple_3, sprites.p_purple_2, sprites.p_purple_1],
+      [sprites.p_purple_3, sprites.p_purple_2, sprites.p_purple_1],
+    ],
+    frequency: 5,
+    angle: [DEG_180, 0],
+    mass: [0, 25],
+  });
+  spell.removeBehaviour(spell.getBehaviour(Damaging)!);
+  spell.addBehaviour().onCollision = target => {
+    target.addBehaviour(new Frozen(target), 0);
+  }
   return spell;
 }
 

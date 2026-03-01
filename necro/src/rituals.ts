@@ -1,11 +1,13 @@
 import * as fx from "./fx";
 import * as sprites from "./sprites.json";
+import { Damage } from "./actions";
 import { Bleeding, Damaging, DespawnTimer, Frozen, HitStreak, LightningStrike, Seeking } from "./behaviours";
 import { tween } from "./engine";
 import { Behaviour, GameObject, RARE, Ritual } from "./game";
-import { DEG_180, randomFloat, randomInt } from "./helpers";
+import { DEG_180, DEG_360, distance, randomFloat, randomInt } from "./helpers";
 import { SkeletonLord, Spell } from "./objects";
-import { CORPSE, LIVING } from "./tags";
+import { screenshake } from "./renderer";
+import { CORPSE, LIVING, UNDEAD } from "./tags";
 import { shop } from "./shop";
 
 // Ritual tags
@@ -36,22 +38,83 @@ export let Bouncing: Ritual = {
   },
 };
 
-export let Doubleshot: Ritual = {
+class ProjectileSplitOnBounce extends Behaviour {
+  onBounce(): void {
+    let p1 = this.object;
+    let p2 = Spell();
+    p2.vx = p1.vy;
+    p2.vy = p1.vx * 2;
+    game.spawn(p2, p1.x, p1.y);
+  }
+}
+
+export let SplitOnBounce: Ritual = {
+  tags: BOUNCING,
+  requiredTags: BOUNCING,
+  exclusiveTags: SPLITTING,
+  name: "Split on Bounce",
+  description: "Spells split after bouncing",
+  onCast(projectile) {
+    projectile.addBehaviour(new ProjectileSplitOnBounce(projectile));
+  },
+};
+
+class ProjectileExplode extends Behaviour {
+  onBounce = this.explode;
+  onCollision = this.explode;
+
+  explode() {
+    let spell = this.object;
+    game.despawn(spell);
+
+    for (let object of game.objects) {
+      if (object.is(this.object.collisionMask)) {
+        if (distance(spell, object) < 50) {
+          Damage(object, 1, spell);
+        }
+      }
+    }
+
+    screenshake(50);
+    fx.trail()
+      .extend({
+        ...spell.center(),
+        velocity: [50, 100],
+        angle: [0, DEG_360],
+        duration: [200, 500],
+      })
+      .burst(200)
+      .remove();
+  }
+}
+
+export let Explosive: Ritual = {
+  tags: EXPLOSIVE,
+  exclusiveTags: BOUNCING,
+  rarity: RARE,
+  name: "Explosive",
+  description: "Spells explode on impact",
+  onCast(projectile) {
+    projectile.addBehaviour(new ProjectileExplode(projectile));
+  },
+}
+
+export let Splitshot: Ritual = {
   tags: SPLITTING,
   exclusiveTags: SPLITTING,
   rarity: RARE,
-  name: "Doubleshot",
-  description: "Cast 2 spells",
+  name: "Splitshot",
+  description: "Shoot 2 projectiles",
   onActive() {
     game.spell.shotsPerRound = 2;
   },
 }
 
-export let Hunter: Ritual = {
+export let Homing: Ritual = {
   tags: HOMING,
   rarity: RARE,
-  name: "Hunter",
-  description: "Spells seek targets",
+  name: "Homing",
+  description: "Spells seek living enemies",
   onCast(projectile) {
     projectile.addBehaviour(new Seeking(projectile));
   },
@@ -59,12 +122,23 @@ export let Hunter: Ritual = {
 
 export let Weightless: Ritual = {
   tags: NONE,
+  rarity: RARE,
   name: "Weightless",
   description: "Spells are not affected by gravity",
   onCast(spell) {
     spell.mass = 0;
     spell.friction = 0;
     spell.bounce = 1;
+  },
+}
+
+export let Piercing: Ritual = {
+  tags: NONE,
+  rarity: RARE,
+  name: "Piercing",
+  description: "Spells pass through enemies",
+  onCast(spell) {
+    spell.despawnOnCollision = false;
   },
 }
 
@@ -91,7 +165,7 @@ class KnockbackSpell extends Behaviour {
 export let Knockback: Ritual = {
   tags: NONE,
   name: "Knockback",
-  description: "Spells knock backwards",
+  description: "Spells knock enemies backwards",
   onCast(spell) {
     spell.addBehaviour(new KnockbackSpell(spell));
   },
@@ -135,7 +209,7 @@ export let Rain: Ritual = {
   exclusiveTags: SPLITTING,
   rarity: RARE,
   name: "Rain",
-  description: "Spells split when they drop",
+  description: "Spells split when they start to drop",
   recursive: false,
   onCast(spell) {
     spell.addBehaviour(new RainSpell(spell));
@@ -145,7 +219,7 @@ export let Rain: Ritual = {
 export let Drunkard: Ritual = {
   tags: NONE,
   name: "Drunkard",
-  description: "2x damage, wobbly aim",
+  description: "Do 2x damage, but your aim is wobbly",
   onCast(spell) {
     spell.vx += randomInt(100) - 50;
     spell.vy += randomInt(100) - 50;
@@ -153,12 +227,38 @@ export let Drunkard: Ritual = {
   },
 };
 
-export let Seer: Ritual = {
+export let Pact: Ritual = {
   tags: NONE,
-  name: "Seer",
-  description: "Spells pass through the dead",
+  name: "Pact",
+  description: "Resurrections heal undead allies",
+  onResurrect() {
+    for (let object of game.objects) {
+      if (object.is(UNDEAD)) {
+        Damage(object, object.hp - object.maxHp);
+      }
+    }
+  }
+};
+
+export let Seance: Ritual = {
+  tags: NONE,
+  name: "Seance",
+  description: "Your spells pass through the undead",
   onCast(spell) {
     spell.collisionMask = LIVING;
+  }
+};
+
+export let Broken: Ritual = {
+  tags: NONE,
+  rarity: RARE,
+  name: "Broken",
+  description: "Deal 3x damage, but max hp is reduced to 1",
+  onActive() {
+    game.player.hp = game.player.maxHp = 1;
+  },
+  onCast(spell) {
+    spell.getBehaviour(Damaging)!.amount *= 3;
   }
 };
 
@@ -173,19 +273,19 @@ export let Tearstone: Ritual = {
   }
 };
 
-export let Impatience: Ritual = {
-  tags: NONE,
-  name: "Impatience",
-  description: "Resurrection recharges 2x faster",
+export let Triggerfinger: Ritual = {
+  tags: CASTING_RATE,
+  name: "Triggerfinger",
+  description: "Casts recharge 2x faster",
   onActive() {
-    game.ability.cooldown /= 2;
+    game.spell.castRechargeRate /= 2;
   }
 };
 
 export let Bleed: Ritual = {
   tags: CURSE,
   name: "Bleed",
-  description: "Inflicts bleed on hits",
+  description: "Inflicts bleed on targets",
   onCast(spell: GameObject) {
     spell.sprite = sprites.p_red_skull;
     spell.emitter!.extend({
@@ -205,23 +305,20 @@ export let Bleed: Ritual = {
   }
 };
 
-export let Allegiance: Ritual = {
+export let BigFred: Ritual = {
   tags: NONE,
-  name: "Allegiance",
-  description: "Summon your honour guard after resurrections",
+  name: "Big Fred",
+  description: "Summon Norman's Neighbour each resurrection",
   onResurrect() {
-    for (let i = 0; i < 3; i++) {
-      let unit = SkeletonLord();
-      unit.updateSpeed = 200;
-      game.spawn(unit, i * -15, 0);
-    }
+    game.spawn(SkeletonLord(), game.player.x, game.player.y);
   },
 };
 
-export let Salvage: Ritual = {
+export let Extraction: Ritual = {
   tags: NONE,
-  name: "Salvage",
-  description: "Corpses become souls at the end of levels",
+  rarity: RARE,
+  name: "Extraction",
+  description: "Corpses become souls at the end of each level",
   onLevelEnd() {
     let corpses = game.objects.filter(object => object.is(CORPSE));
 
@@ -239,11 +336,11 @@ export let Salvage: Ritual = {
   },
 };
 
-export let Studious: Ritual = {
+export let Benefactor: Ritual = {
   tags: NONE,
   rarity: RARE,
-  name: "Studious",
-  description: "Rituals are 50% cheaper",
+  name: "Benefactor",
+  description: "Necronomicon upgrades are 50% cheaper",
   onShopEnter() {
     for (let item of shop.items) {
       item.cost = item.cost / 2 | 0;
@@ -251,25 +348,26 @@ export let Studious: Ritual = {
   },
 };
 
-export let Electrodynamics: Ritual = {
+export let Zap: Ritual = {
   tags: NONE,
   rarity: RARE,
-  name: "Electrodynamics",
+  name: "Zap",
   description: "Lightning strikes after hits",
   onCast(spell) {
     spell.addBehaviour(new LightningStrike(spell));
   },
 };
 
-export let Chilly: Ritual = {
+export let Freeze: Ritual = {
   tags: NONE,
-  name: "Chilly",
-  description: "10% chance to freeze enemies",
+  rarity: RARE,
+  name: "Freeze",
+  description: "Small chance to freeze enemies",
   onCast(spell) {
     if (randomFloat() <= 0.1) {
       spell.emitter!.variants = [[sprites.p_ice_1, sprites.p_ice_2, sprites.p_ice_3]];
       spell.sprite = sprites.p_skull;
-      spell.getBehaviour(Damaging)!.amount = 0;
+      spell.removeBehaviour(spell.getBehaviour(Damaging)!);
       // Frozen has to be added before other behaviours, so that it can prevent
       // them from updating
       spell.addBehaviour().onCollision = target => {
@@ -306,7 +404,7 @@ export let Avarice: Ritual = {
 export let Hardened: Ritual = {
   tags: NONE,
   name: "Hardened",
-  description: "Unead have +1 HP*",
+  description: "Undead have +1 HP*",
   onResurrection(object) {
     object.hp = object.maxHp += 1;
   }
