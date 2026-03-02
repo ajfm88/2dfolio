@@ -2,7 +2,7 @@ export const scaleFactor = 4;
 
 export const dialogueData = {
   pc: `This is my PC. I work mostly in JavaScript/TypeScript these days.
-    I've made a couple of games in that language. I like Python as well, and I am currenly learning C# and Unity. Anyways, regardless of the language, I just like programming.
+    I've made a few games in that language. I like Python as well. Anyways, regardless of the language, I just like programming.
     Here is my <a href="https://github.com/ajfm88" target="_blank">Github</a>!`,
   "cs-degree": `This is my CS degree. I hung it on the wall because I'm proud to have it. It was a very theoretical degree but I think it gave me a good foundation.
     I am also currently enrolled in a Master's degree in CS at a different university to keep expanding my skillset.`,
@@ -13,6 +13,7 @@ export const dialogueData = {
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>,
   <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Platformer</a>,
   <a href="https://html-classic.itch.zone/html/7730457/build/index.html" target="_blank">Puzzle</a>,
+  <a href="https://necro-ajfm88.netlify.app" target="_blank">Roguelite</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Runner</a>,
   <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Shooter</a>,
   <a href="https://zelda-ajfm88.netlify.app" target="_blank">Zelda Adventure</a>.`,
