@@ -8,6 +8,10 @@ class Player {
     this.width = size
     this.height = size
     this.velocity = velocity
+    this.center = {
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2,
+    }
   }
 
   draw(c) {
@@ -26,6 +30,11 @@ class Player {
     // Update vertical position and check collisions
     this.updateVerticalPosition(deltaTime)
     this.checkForVerticalCollisions(collisionBlocks)
+
+    this.center = {
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2,
+    }
   }
 
   updateHorizontalPosition(deltaTime) {
