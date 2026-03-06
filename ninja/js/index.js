@@ -24,7 +24,6 @@ const MAX_SCROLL_Y = MAP_HEIGHT - VIEWPORT_HEIGHT
 
 const layersData = {
   l_Terrain: l_Terrain,
-  l_Front_Renders: l_Front_Renders,
   l_Trees_1: l_Trees_1,
   l_Trees_2: l_Trees_2,
   l_Trees_3: l_Trees_3,
@@ -37,9 +36,17 @@ const layersData = {
   l_Collisions: l_Collisions,
 }
 
+const frontRendersLayersData = {
+  l_Front_Renders: l_Front_Renders,
+  l_Front_Renders_2: l_Front_Renders_2,
+  l_Front_Renders_3: l_Front_Renders_3,
+}
+
 const tilesets = {
   l_Terrain: { imageUrl: './images/terrain.png', tileSize: 16 },
   l_Front_Renders: { imageUrl: './images/decorations.png', tileSize: 16 },
+  l_Front_Renders_2: { imageUrl: './images/characters.png', tileSize: 16 },
+  l_Front_Renders_3: { imageUrl: './images/decorations.png', tileSize: 16 },
   l_Trees_1: { imageUrl: './images/decorations.png', tileSize: 16 },
   l_Trees_2: { imageUrl: './images/decorations.png', tileSize: 16 },
   l_Trees_3: { imageUrl: './images/decorations.png', tileSize: 16 },
@@ -100,7 +107,7 @@ const renderLayer = (tilesData, tilesetImage, tileSize, context) => {
   })
 }
 
-const renderStaticLayers = async () => {
+const renderStaticLayers = async (layersData) => {
   const offscreenCanvas = document.createElement('canvas')
   offscreenCanvas.width = canvas.width
   offscreenCanvas.height = canvas.height
@@ -153,6 +160,7 @@ const keys = {
 }
 
 let lastTime = performance.now()
+let frontRendersCanvas
 function animate(backgroundCanvas) {
   // Calculate delta time
   const currentTime = performance.now()
@@ -180,6 +188,8 @@ function animate(backgroundCanvas) {
   c.clearRect(0, 0, canvas.width, canvas.height)
   c.drawImage(backgroundCanvas, 0, 0)
   player.draw(c)
+  c.drawImage(frontRendersCanvas, 0, 0)
+
   c.restore()
 
   requestAnimationFrame(() => animate(backgroundCanvas))
@@ -187,7 +197,8 @@ function animate(backgroundCanvas) {
 
 const startRendering = async () => {
   try {
-    const backgroundCanvas = await renderStaticLayers()
+    const backgroundCanvas = await renderStaticLayers(layersData)
+    frontRendersCanvas = await renderStaticLayers(frontRendersLayersData)
     if (!backgroundCanvas) {
       console.error('Failed to create the background canvas')
       return
