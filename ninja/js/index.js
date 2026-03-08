@@ -144,6 +144,82 @@ const player = new Player({
   size: 15,
 })
 
+const monsterSprites = {
+  walkDown: {
+    x: 0,
+    y: 0,
+    width: 16,
+    height: 16,
+    frameCount: 4,
+  },
+  walkUp: {
+    x: 16,
+    y: 0,
+    width: 16,
+    height: 16,
+    frameCount: 4,
+  },
+  walkLeft: {
+    x: 32,
+    y: 0,
+    width: 16,
+    height: 16,
+    frameCount: 4,
+  },
+  walkRight: {
+    x: 48,
+    y: 0,
+    width: 16,
+    height: 16,
+    frameCount: 4,
+  },
+}
+
+const monsters = [
+  new Monster({
+    x: 200,
+    y: 150,
+    size: 15,
+    imageSrc: './images/bamboo.png',
+    sprites: monsterSprites,
+  }),
+  new Monster({
+    x: 300,
+    y: 150,
+    size: 15,
+    imageSrc: './images/dragon.png',
+    sprites: monsterSprites,
+  }),
+  new Monster({
+    x: 48,
+    y: 400,
+    size: 15,
+    imageSrc: './images/bamboo.png',
+    sprites: monsterSprites,
+  }),
+  new Monster({
+    x: 288,
+    y: 416,
+    size: 15,
+    imageSrc: './images/bamboo.png',
+    sprites: monsterSprites,
+  }),
+  new Monster({
+    x: 112,
+    y: 416,
+    size: 15,
+    imageSrc: './images/dragon.png',
+    sprites: monsterSprites,
+  }),
+  new Monster({
+    x: 400,
+    y: 400,
+    size: 15,
+    imageSrc: './images/dragon.png',
+    sprites: monsterSprites,
+  }),
+]
+
 const keys = {
   w: {
     pressed: false,
@@ -188,6 +264,14 @@ function animate(backgroundCanvas) {
   c.clearRect(0, 0, canvas.width, canvas.height)
   c.drawImage(backgroundCanvas, 0, 0)
   player.draw(c)
+
+  // render out our monsters
+  for (let i = monsters.length - 1; i >= 0; i--) {
+    const monster = monsters[i]
+    monster.update(deltaTime, collisionBlocks)
+    monster.draw(c)
+  }
+
   c.drawImage(frontRendersCanvas, 0, 0)
 
   c.restore()
