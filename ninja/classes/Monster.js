@@ -1,5 +1,13 @@
 class Monster {
-  constructor({ x, y, size, velocity = { x: 0, y: 0 }, imageSrc, sprites }) {
+  constructor({
+    x,
+    y,
+    size,
+    velocity = { x: 0, y: 0 },
+    imageSrc,
+    sprites,
+    health = 3,
+  }) {
     this.x = x
     this.y = y
     this.originalPosition = {
@@ -26,6 +34,17 @@ class Monster {
     this.sprites = sprites
 
     this.currentSprite = Object.values(this.sprites)[0]
+    this.health = health
+    this.isInvincible = false
+    this.elapsedInvincibilityTime = 0
+    this.invincibilityInterval = 0.3
+  }
+
+  receiveHit() {
+    if (this.isInvincible) return
+
+    this.health--
+    this.isInvincible = true
   }
 
   draw(c) {
@@ -35,6 +54,10 @@ class Monster {
     // c.fillStyle = 'rgba(0, 0, 255, 0.5)'
     // c.fillRect(this.x, this.y, this.width, this.height)
 
+    let alpha = 1
+    if (this.isInvincible) alpha = 0.5
+    c.save()
+    c.globalAlpha = alpha
     c.drawImage(
       this.image,
       this.currentSprite.x,
@@ -46,12 +69,22 @@ class Monster {
       this.width,
       this.height
     )
+    c.restore()
   }
 
   update(deltaTime, collisionBlocks) {
     if (!deltaTime) return
 
     this.elapsedTime += deltaTime
+
+    if (this.isInvincible) {
+      this.elapsedInvincibilityTime += deltaTime
+
+      if (this.elapsedInvincibilityTime >= this.invincibilityInterval) {
+        this.isInvincible = false
+        this.elapsedInvincibilityTime = 0
+      }
+    }
 
     // 0 - 3
     const intervalToGoToNextFrame = 0.15
