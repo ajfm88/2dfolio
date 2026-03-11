@@ -237,6 +237,21 @@ const keys = {
 
 let lastTime = performance.now()
 let frontRendersCanvas
+const hearts = [
+  new Heart({
+    x: 10,
+    y: 10,
+  }),
+  new Heart({
+    x: 32,
+    y: 10,
+  }),
+  new Heart({
+    x: 54,
+    y: 10,
+  }),
+]
+
 function animate(backgroundCanvas) {
   // Calculate delta time
   const currentTime = performance.now()
@@ -287,10 +302,37 @@ function animate(backgroundCanvas) {
         monsters.splice(i, 1)
       }
     }
+
+    if (
+      player.x + player.width >= monster.x &&
+      player.x <= monster.x + monster.width &&
+      player.y + player.height >= monster.y &&
+      player.y <= monster.y + monster.height &&
+      !player.isInvincible
+    ) {
+      player.receiveHit()
+
+      const filledHearts = hearts.filter((heart) => heart.currentFrame === 4)
+
+      if (filledHearts.length > 0) {
+        filledHearts[filledHearts.length - 1].currentFrame = 0
+      }
+
+      if (filledHearts.length <= 1) {
+        console.log('game over')
+      }
+    }
   }
 
   c.drawImage(frontRendersCanvas, 0, 0)
 
+  c.restore()
+
+  c.save()
+  c.scale(MAP_SCALE, MAP_SCALE)
+  hearts.forEach((heart) => {
+    heart.draw(c)
+  })
   c.restore()
 
   requestAnimationFrame(() => animate(backgroundCanvas))

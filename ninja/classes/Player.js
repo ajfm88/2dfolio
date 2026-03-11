@@ -129,6 +129,15 @@ class Player {
     }
 
     this.hasHitEnemy = false
+    this.isInvincible = false
+    this.elapsedInvincibilityTime = 0
+    this.invincibilityInterval = 0.8
+  }
+
+  receiveHit() {
+    if (this.isInvincible) return
+
+    this.isInvincible = true
   }
 
   switchBackToIdleState() {
@@ -184,6 +193,11 @@ class Player {
     //   this.attackBox.height
     // )
 
+    let alpha = 1
+    if (this.isInvincible) alpha = 0.5
+
+    c.save()
+    c.globalAlpha = alpha
     c.drawImage(
       this.image,
       this.currentSprite.x,
@@ -197,6 +211,7 @@ class Player {
       this.width,
       this.height
     )
+    c.restore()
 
     // Draw out our weapon
     if (this.isAttacking) {
@@ -229,6 +244,7 @@ class Player {
           break
       }
       c.save()
+      c.globalAlpha = alpha
       c.translate(this.x + xOffset, this.y + yOffset)
       c.rotate(angle)
       c.drawImage(this.weaponSprite, -3, -8, 6, 16)
@@ -252,6 +268,15 @@ class Player {
     }
 
     this.elapsedTime += deltaTime
+
+    if (this.isInvincible) {
+      this.elapsedInvincibilityTime += deltaTime
+
+      if (this.elapsedInvincibilityTime >= this.invincibilityInterval) {
+        this.isInvincible = false
+        this.elapsedInvincibilityTime = 0
+      }
+    }
 
     // 0 - 3
     const intervalToGoToNextFrame = 0.15
