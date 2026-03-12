@@ -252,11 +252,39 @@ const hearts = [
   }),
 ]
 
+const leafs = [
+  new Sprite({
+    x: 20,
+    y: 20,
+    velocity: {
+      x: 0.08,
+      y: 0.08,
+    },
+  }),
+]
+
+let elapsedTime = 0
+
 function animate(backgroundCanvas) {
   // Calculate delta time
   const currentTime = performance.now()
   const deltaTime = (currentTime - lastTime) / 1000
   lastTime = currentTime
+  elapsedTime += deltaTime
+
+  if (elapsedTime > 1.5) {
+    leafs.push(
+      new Sprite({
+        x: Math.random() * 150,
+        y: Math.random() * 50,
+        velocity: {
+          x: 0.08,
+          y: 0.08,
+        },
+      })
+    )
+    elapsedTime = 0
+  }
 
   // Update player position
   player.handleInput(keys)
@@ -325,6 +353,17 @@ function animate(backgroundCanvas) {
   }
 
   c.drawImage(frontRendersCanvas, 0, 0)
+
+  for (let i = leafs.length - 1; i >= 0; i--) {
+    const leaf = leafs[i]
+    leaf.update(deltaTime)
+    leaf.draw(c)
+
+    if (leaf.alpha <= 0) {
+      leafs.splice(i, 1)
+    }
+    console.log('leafs')
+  }
 
   c.restore()
 
