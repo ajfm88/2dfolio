@@ -1,44 +1,60 @@
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font: inherit;
-    vertical-align: baseline;
-  }
-  body {
-    background: black;
-    margin: 0;
-  }
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ninja adventure web browser game created using HTML5, CSS3 & JavaScript ES6 and deployed by ajfm88"
+    />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <title>𖣘 Ninja Adventure 🥷</title>
+  </head>
+  <body>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font: inherit;
+        vertical-align: baseline;
+      }
+      body {
+        background: black;
+        margin: 0;
+      }
 
-  canvas {
-    width: 1024px;
-    height: 576px;
-  }
-</style>
-<canvas style="image-rendering: pixelated"></canvas>
-<script src="./data/l_Terrain.js"></script>
-<script src="./data/l_Front_Renders.js"></script>
-<script src="./data/l_Front_Renders_2.js"></script>
-<script src="./data/l_Front_Renders_3.js"></script>
-<script src="./data/l_Trees_1.js"></script>
-<script src="./data/l_Trees_2.js"></script>
-<script src="./data/l_Trees_3.js"></script>
-<script src="./data/l_Trees_4.js"></script>
-<script src="./data/l_Landscape_Decorations.js"></script>
-<script src="./data/l_Landscape_Decorations_2.js"></script>
-<script src="./data/l_Houses.js"></script>
-<script src="./data/l_House_Decorations.js"></script>
-<script src="./data/l_Characters.js"></script>
-<script src="./data/l_Collisions.js"></script>
-<script src="./data/collisions.js"></script>
-<script src="./js/utils.js"></script>
-<script src="./classes/CollisionBlock.js"></script>
-<script src="./classes/Player.js"></script>
-<script src="./classes/Monster.js"></script>
-<script src="./classes/Heart.js"></script>
-<script src="./classes/Sprite.js"></script>
+      canvas {
+        width: 1024px;
+        height: 576px;
+      }
+    </style>
+    <canvas style="image-rendering: pixelated"></canvas>
+    <script src="./data/l_Terrain.js"></script>
+    <script src="./data/l_Front_Renders.js"></script>
+    <script src="./data/l_Front_Renders_2.js"></script>
+    <script src="./data/l_Front_Renders_3.js"></script>
+    <script src="./data/l_Trees_1.js"></script>
+    <script src="./data/l_Trees_2.js"></script>
+    <script src="./data/l_Trees_3.js"></script>
+    <script src="./data/l_Trees_4.js"></script>
+    <script src="./data/l_Landscape_Decorations.js"></script>
+    <script src="./data/l_Landscape_Decorations_2.js"></script>
+    <script src="./data/l_Houses.js"></script>
+    <script src="./data/l_House_Decorations.js"></script>
+    <script src="./data/l_Characters.js"></script>
+    <script src="./data/l_Collisions.js"></script>
+    <script src="./data/collisions.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./classes/CollisionBlock.js"></script>
+    <script src="./classes/Player.js"></script>
+    <script src="./classes/Monster.js"></script>
+    <script src="./classes/Heart.js"></script>
+    <script src="./classes/Sprite.js"></script>
 
-<script src="./js/index.js"></script>
-<script src="./js/eventListeners.js"></script>
+    <script src="./js/index.js"></script>
+    <script src="./js/eventListeners.js"></script>
+    <script src="./js/touchControls.js"></script>
+  </body>
+</html>

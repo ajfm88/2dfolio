@@ -263,6 +263,12 @@ const leafs = [
   }),
 ]
 
+let gameOver = false
+let controlsVisible = true
+setTimeout(() => {
+  controlsVisible = false
+}, 3000)
+
 let elapsedTime = 0
 
 function animate(backgroundCanvas) {
@@ -340,14 +346,16 @@ function animate(backgroundCanvas) {
     ) {
       player.receiveHit()
 
-      const filledHearts = hearts.filter((heart) => heart.currentFrame === 4)
+      const heartsWithHealth = hearts.filter((heart) => heart.currentFrame > 0)
 
-      if (filledHearts.length > 0) {
-        filledHearts[filledHearts.length - 1].currentFrame = 0
+      if (heartsWithHealth.length > 0) {
+        heartsWithHealth[heartsWithHealth.length - 1].currentFrame -= 1
       }
 
-      if (filledHearts.length <= 1) {
-        console.log('game over')
+      const totalHealth = hearts.reduce((sum, heart) => sum + heart.currentFrame, 0)
+      if (totalHealth <= 0) {
+        gameOver = true
+        setTimeout(() => location.reload(), 2000)
       }
     }
   }
@@ -362,7 +370,6 @@ function animate(backgroundCanvas) {
     if (leaf.alpha <= 0) {
       leafs.splice(i, 1)
     }
-    console.log('leafs')
   }
 
   c.restore()
@@ -373,6 +380,40 @@ function animate(backgroundCanvas) {
     heart.draw(c)
   })
   c.restore()
+
+  if (gameOver) {
+    c.save()
+    c.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    c.fillStyle = 'white'
+    c.textAlign = 'center'
+    c.font = `${32 * dpr}px monospace`
+    c.fillText('GAME OVER', canvas.width / 2, canvas.height / 2)
+    c.restore()
+    return
+  }
+
+  if (controlsVisible) {
+    const pad = 12 * dpr
+    const fontSize = 14 * dpr
+    c.save()
+    c.font = `${fontSize}px monospace`
+    c.textAlign = 'center'
+    const isTouchDevice = navigator.maxTouchPoints > 0
+    const text = isTouchDevice
+      ? 'Touch & drag to move     Double tap to attack'
+      : 'WASD — Move     SPACE — Attack'
+    const metrics = c.measureText(text)
+    const boxW = metrics.width + pad * 2
+    const boxH = fontSize + pad * 2
+    const boxX = canvas.width / 2 - boxW / 2
+    const boxY = canvas.height - boxH - pad
+    c.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    c.fillRect(boxX, boxY, boxW, boxH)
+    c.fillStyle = 'white'
+    c.fillText(text, canvas.width / 2, boxY + pad + fontSize * 0.8)
+    c.restore()
+  }
 
   requestAnimationFrame(() => animate(backgroundCanvas))
 }

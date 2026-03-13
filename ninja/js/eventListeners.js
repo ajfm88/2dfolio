@@ -1,4 +1,5 @@
 window.addEventListener('keydown', (event) => {
+  controlsVisible = false
   switch (event.key) {
     case 'w':
       keys.w.pressed = true
