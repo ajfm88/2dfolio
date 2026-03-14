@@ -1,5 +1,5 @@
 {
-  "name": "2d-portfolio-kaboom",
+  "name": "2dfolio",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,6 +13,6 @@
     "vite": "^5.1.0"
   },
   "dependencies": {
-    "kaboom": "^3000.1.17"
+    "kaplay": "^3001.0.0"
   }
 }
