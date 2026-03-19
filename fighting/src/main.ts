@@ -32,7 +32,7 @@ k.loadSprite("idle-samurai", "./assets/entities/idle-player1.png", {
 });
 
 async function arena(k: KaboomCtx) {
-  k.setGravity(800);
+  k.setGravity(2000);
 
   k.add([k.sprite("background-layer-1"), k.pos(0, 0), k.scale(4), k.fixed()]);
   k.add([k.sprite("background-layer-2"), k.pos(0, 0), k.scale(4), k.fixed()]);
@@ -86,10 +86,10 @@ async function arena(k: KaboomCtx) {
     drawTiles(k, map, layer, tilewidth, tileheight);
   }
 
-  map.use(k.scale(1));
-
   k.camPos(k.vec2(k.center().x - 480, k.center().y - 170));
   k.camScale(k.vec2(4));
+
+  entities.player1?.setControls();
 }
 
 k.scene("arena", () => arena(k));

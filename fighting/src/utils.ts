@@ -1,5 +1,5 @@
 import { KaboomCtx, GameObj } from "kaboom";
-import { TiledLayer } from "./types";
+import { TiledTileLayer } from "./types";
 
 export async function fetchMapData(mapFilePath: string) {
   const response = await fetch(mapFilePath);
@@ -13,7 +13,7 @@ export async function fetchMapData(mapFilePath: string) {
 export function drawTiles(
   k: KaboomCtx,
   map: GameObj,
-  layer: TiledLayer,
+  layer: TiledTileLayer,
   tilewidth: number,
   tileheight: number
 ) {
