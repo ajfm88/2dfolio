@@ -2,8 +2,9 @@ import { KaboomCtx } from "kaboom";
 import k from "./kaboomCtx";
 import { drawTiles, fetchMapData } from "./utils";
 import { makeSamurai } from "./entities/samurai";
-import { TiledLayer, Entity } from "./types";
+import { TiledLayer, Entity, Directions } from "./types";
 import { makeNinja } from "./entities/ninja";
+import { makeHealthbar } from "./ui/healthbar";
 
 k.loadSprite(
   "background-layer-1",
@@ -39,6 +40,14 @@ k.loadSprite("samurai", "./assets/entities/samurai.png", {
       to: 5,
       speed: 16,
     },
+    death: {
+      from: 16,
+      to: 21,
+    },
+    hit: {
+      from: 56,
+      to: 59,
+    },
   },
 });
 
@@ -60,6 +69,14 @@ k.loadSprite("ninja", "./assets/entities/ninja.png", {
       from: 0,
       to: 3,
     },
+    death: {
+      from: 16,
+      to: 22,
+    },
+    hit: {
+      from: 56,
+      to: 58,
+    },
   },
 });
 
@@ -74,6 +91,9 @@ k.loadSprite("shop", "./assets/shop_anim.png", {
     },
   },
 });
+
+k.loadSprite("fence-1", "./assets/fence_1.png");
+k.loadSprite("fence-2", "./assets/fence_2.png");
 
 async function arena(k: KaboomCtx) {
   k.setGravity(2000);
@@ -120,6 +140,14 @@ async function arena(k: KaboomCtx) {
               k.anchor("center"),
             ]);
             break;
+          case "fence-1":
+            map.add([
+              k.sprite("fence-1"),
+              k.pos(object.x, object.y + 6),
+              k.area(),
+              k.anchor("center"),
+            ]);
+            break;
           default:
         }
       }
@@ -153,6 +181,12 @@ async function arena(k: KaboomCtx) {
 
   entities.player1?.setControls();
   entities.player2?.setControls();
+
+  if (entities.player1)
+    makeHealthbar(k, Directions.LEFT, entities.player1.gameObj);
+
+  if (entities.player2)
+    makeHealthbar(k, Directions.RIGHT, entities.player2.gameObj);
 }
 
 k.scene("arena", () => arena(k));
