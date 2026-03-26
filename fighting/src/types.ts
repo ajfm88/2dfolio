@@ -40,7 +40,7 @@ export type TiledObject = {
 
 export type Entity = {
   gameObj: GameObj;
-  setControls: Function;
+  setControls: () => void;
 };
 
 export enum Directions {
