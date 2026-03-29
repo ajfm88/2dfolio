@@ -61,10 +61,12 @@ k.scene("main-menu", () => {
     k.opacity(0.5),
   ]);
 
-  let bestScore: number = k.getData("best-score") || 0;
+  const bestScoreData: { value: number } | null = k.getData("best-score");
+  let bestScore: number = bestScoreData?.value || 0;
+  console.log(bestScore);
   if (!bestScore) {
     bestScore = 0;
-    k.setData("best-score", 0);
+    k.setData("best-score", { value: 0 });
   }
   k.add([
     k.text(`TOP SCORE = ${formatScore(bestScore, 6)}`, {
@@ -105,45 +107,33 @@ k.scene("game", () => {
     duckIconPosX += 8;
   }
 
-  const bulletUIMask = k.add([
-    k.rect(0, 8),
-    k.pos(25, 198),
-    k.z(2),
-    k.color(0, 0, 0),
-  ]);
+  const bulletUIMask = k.add([k.rect(0, 8), k.pos(25, 198), k.z(2), k.color(0, 0, 0)]);
 
   const dog = makeDog(k.vec2(0, k.center().y));
   dog.searchForDucks();
 
-  const roundStartController = gameManager.onStateEnter(
-    "round-start",
-    async (isFirstRound) => {
-      if (!isFirstRound) gameManager.preySpeed += 50;
-      k.play("ui-appear");
-      gameManager.currentRoundNb++;
-      roundCount.text = String(gameManager.currentRoundNb);
-      const textBox = k.add([
-        k.sprite("text-box"),
-        k.anchor("center"),
-        k.pos(k.center().x, k.center().y - 50),
-        k.z(2),
-      ]);
-      textBox.add([
-        k.text("ROUND", { font: "nes", size: 8 }),
-        k.anchor("center"),
-        k.pos(0, -10),
-      ]);
-      textBox.add([
-        k.text(String(gameManager.currentRoundNb), { font: "nes", size: 8 }),
-        k.anchor("center"),
-        k.pos(0, 4),
-      ]);
+  const roundStartController = gameManager.onStateEnter("round-start", async (isFirstRound: boolean) => {
+    if (!isFirstRound) gameManager.preySpeed += 50;
+    k.play("ui-appear");
+    gameManager.currentRoundNb++;
+    roundCount.text = String(gameManager.currentRoundNb);
+    const textBox = k.add([
+      k.sprite("text-box"),
+      k.anchor("center"),
+      k.pos(k.center().x, k.center().y - 50),
+      k.z(2),
+    ]);
+    textBox.add([k.text("ROUND", { font: "nes", size: 8 }), k.anchor("center"), k.pos(0, -10)]);
+    textBox.add([
+      k.text(String(gameManager.currentRoundNb), { font: "nes", size: 8 }),
+      k.anchor("center"),
+      k.pos(0, 4),
+    ]);
 
-      await k.wait(1);
-      k.destroy(textBox);
-      gameManager.enterState("hunt-start");
-    }
-  );
+    await k.wait(1);
+    k.destroy(textBox);
+    gameManager.enterState("hunt-start");
+  });
 
   const roundEndController = gameManager.onStateEnter("round-end", () => {
     if (gameManager.nbDucksShotInRound < 6) {
@@ -153,6 +143,7 @@ k.scene("game", () => {
 
     if (gameManager.nbDucksShotInRound === 10) {
       gameManager.currentScore += 500;
+      k.setData("best-score", { value: gameManager.currentScore });
     }
 
     gameManager.nbDucksShotInRound = 0;
@@ -164,18 +155,16 @@ k.scene("game", () => {
 
   const huntStartController = gameManager.onStateEnter("hunt-start", () => {
     gameManager.currentHuntNb++;
-    const duck = makeDuck(
-      String(gameManager.currentHuntNb - 1),
-      gameManager.preySpeed
-    );
+    const duck = makeDuck(String(gameManager.currentHuntNb - 1), gameManager.preySpeed);
     duck.setBehavior();
   });
 
   const huntEndController = gameManager.onStateEnter("hunt-end", () => {
-    const bestScore = Number(k.getData("best-score"));
+    const bestScoreData: { value: number } | null = k.getData("best-score");
+    const bestScore = bestScoreData?.value;
 
-    if (bestScore < gameManager.currentScore) {
-      k.setData("best-score", gameManager.currentScore);
+    if (bestScore && bestScore < gameManager.currentScore) {
+      k.setData("best-score", { value: gameManager.currentScore });
     }
 
     if (gameManager.currentHuntNb <= 9) {
@@ -192,19 +181,11 @@ k.scene("game", () => {
     dog.catchFallenDuck();
   });
 
-  const duckEscapedController = gameManager.onStateEnter(
-    "duck-escaped",
-    async () => {
-      dog.mockPlayer();
-    }
-  );
+  const duckEscapedController = gameManager.onStateEnter("duck-escaped", async () => {
+    dog.mockPlayer();
+  });
 
-  const cursor = k.add([
-    k.sprite("cursor"),
-    k.anchor("center"),
-    k.pos(),
-    k.z(3),
-  ]);
+  const cursor = k.add([k.sprite("cursor"), k.anchor("center"), k.pos(), k.z(3)]);
   k.onClick(() => {
     if (gameManager.state === "hunt-start" && !gameManager.isGamePaused) {
       // Note : we need to allow nbBulletsLeft to go below zero
@@ -250,19 +231,14 @@ k.scene("game", () => {
     gameManager.resetGameState();
   });
 
-  k.onKeyPress((key) => {
+  k.onKeyPress((key: string) => {
     if (key === "p") {
       k.getTreeRoot().paused = !k.getTreeRoot().paused;
       if (k.getTreeRoot().paused) {
         gameManager.isGamePaused = true;
         //@ts-ignore
         audioCtx.suspend();
-        k.add([
-          k.text("PAUSED", { font: "nes", size: 8 }),
-          k.pos(5, 5),
-          k.z(3),
-          "paused-text",
-        ]);
+        k.add([k.text("PAUSED", { font: "nes", size: 8 }), k.pos(5, 5), k.z(3), "paused-text"]);
       } else {
         gameManager.isGamePaused = false;
         //@ts-ignore
@@ -277,11 +253,7 @@ k.scene("game", () => {
 
 k.scene("game-over", () => {
   k.add([k.rect(k.width(), k.height()), k.color(0, 0, 0)]);
-  k.add([
-    k.text("GAME OVER!", { font: "nes", size: 8 }),
-    k.anchor("center"),
-    k.pos(k.center()),
-  ]);
+  k.add([k.text("GAME OVER!", { font: "nes", size: 8 }), k.anchor("center"), k.pos(k.center())]);
 
   k.wait(2, () => {
     k.go("main-menu");
