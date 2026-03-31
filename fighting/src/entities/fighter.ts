@@ -5,16 +5,16 @@ export const fighterProps: {
   speed: number;
   direction: null | string;
   isDead: boolean;
+  isCooldownActive: boolean;
   maxHp: number;
   previousHp: number;
-  previousHeight: number;
 } = {
   speed: 200,
   direction: null,
   isDead: false,
+  isCooldownActive: false,
   maxHp: 10,
   previousHp: 10,
-  previousHeight: 0,
 };
 
 export async function makeFighterBlink(k: KaboomCtx, fighter: GameObj) {
@@ -39,7 +39,7 @@ export function setFighterControls(
   fighter: GameObj,
   keys: { LEFT: string; RIGHT: string; UP: string; DOWN: string }
 ) {
-  const onKeyDownListener = k.onKeyDown((key) => {
+  const onKeyDownController = k.onKeyDown((key) => {
     if (fighter.curAnim() === "attack") return;
 
     if (key === keys.LEFT) {
@@ -63,7 +63,7 @@ export function setFighterControls(
     }
   });
 
-  const onKeyReleaseListener = k.onKeyRelease((key) => {
+  const onKeyReleaseController = k.onKeyRelease((key) => {
     if (
       (key === keys.LEFT || key === keys.RIGHT) &&
       fighter.curAnim() !== "idle" &&
@@ -73,7 +73,7 @@ export function setFighterControls(
     }
   });
 
-  const onKeyPressListener = k.onKeyPress((key) => {
+  const onKeyPressController = k.onKeyPress((key) => {
     if (
       key === keys.UP &&
       fighter.isGrounded() &&
@@ -83,12 +83,14 @@ export function setFighterControls(
       fighter.play("jump");
     }
 
-    if (key === keys.DOWN) {
+    if (key === keys.DOWN && !fighter.isCooldownActive) {
+      fighter.isCooldownActive = true;
+      k.wait(0.7, () => (fighter.isCooldownActive = false));
+
       function updateHitboxPos() {
-        const fighterPos = fighter.worldPos();
         const hitboxPos: { [key: string]: Vec2 } = {
-          LEFT: k.vec2(fighterPos.x - 50, fighterPos.y),
-          RIGHT: k.vec2(fighterPos.x + 50, fighterPos.y),
+          LEFT: k.vec2(fighter.pos.x - 50, fighter.pos.y),
+          RIGHT: k.vec2(fighter.pos.x + 50, fighter.pos.y),
         };
         return hitboxPos[fighter.direction];
       }
@@ -109,7 +111,7 @@ export function setFighterControls(
         }
       });
 
-      const attackUpdateRef = k.onUpdate(() => {
+      const attackUpdateController = k.onUpdate(() => {
         attackHitbox.pos = updateHitboxPos();
       });
 
@@ -119,7 +121,7 @@ export function setFighterControls(
 
       k.wait(0.3, () => {
         k.destroy(attackHitbox);
-        attackUpdateRef.cancel();
+        attackUpdateController.cancel();
       });
     }
   });
@@ -131,12 +133,47 @@ export function setFighterControls(
       return;
     }
 
-    if (fighter.curAnim !== "death") {
+    if (fighter.curAnim() !== "death") {
       fighter.isDead = true;
-      onKeyDownListener.cancel();
-      onKeyReleaseListener.cancel();
-      onKeyPressListener.cancel();
+      onKeyDownController.cancel();
+      onKeyReleaseController.cancel();
+      onKeyPressController.cancel();
       fighter.play("death");
+
+      const enemyTag = fighter.is("samurai") ? "ninja" : "samurai";
+      const enemy = k.get(enemyTag, { recursive: true })[0];
+
+      const enemyStatus = k.add([
+        k.text("WINNER", {
+          size: 16,
+        }),
+        k.area(),
+        k.anchor("center"),
+        k.pos(),
+      ]);
+
+      const fighterStatus = k.add([
+        k.text("LOSER", {
+          size: 16,
+        }),
+        k.area(),
+        k.anchor("center"),
+        k.pos(),
+      ]);
+
+      k.onUpdate(() => {
+        enemyStatus.pos = k.vec2(enemy.pos.x, enemy.pos.y - 40);
+        // so that text align with dead ninja body more closely
+        if (fighter.is("ninja") && fighter.isDead) {
+          fighterStatus.pos = k.vec2(fighter.pos.x - 25, fighter.pos.y - 5);
+          return;
+        }
+        fighterStatus.pos = k.vec2(fighter.pos.x, fighter.pos.y - 40);
+      });
+
+      k.wait(5, () => {
+        k.go("arena");
+      });
     }
   });
 
