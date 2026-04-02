@@ -1,5 +1,4 @@
-import { KaboomCtx } from "kaboom";
-import k from "./kaboomCtx";
+import k from "./kaplayCtx";
 import { drawTiles, fetchMapData } from "./utils";
 import { makeSamurai } from "./entities/samurai";
 import { TiledLayer, Directions, Entity } from "./types";
@@ -114,7 +113,7 @@ k.loadSprite("shop", "./assets/shop_anim.png", {
 
 k.loadSprite("fence-1", "./assets/fence_1.png");
 
-async function arena(k: KaboomCtx) {
+async function arena(k: typeof import("./kaplayCtx").default) {
   k.setGravity(2000);
 
   k.add([k.sprite("background-layer-1"), k.pos(0, 0), k.scale(4), k.fixed()]);
@@ -198,14 +197,39 @@ async function arena(k: KaboomCtx) {
   k.camPos(k.vec2(k.center().x - 450, k.center().y - 160));
   k.camScale(k.vec2(4));
 
-  entities.player1?.setControls();
-  entities.player2?.setControls();
-
   if (entities.player1?.gameObj)
     makeHealthbar(k, Directions.LEFT, entities.player1.gameObj);
 
   if (entities.player2?.gameObj)
     makeHealthbar(k, Directions.RIGHT, entities.player2.gameObj);
+
+  // Controls overlay — dismissed on any key press
+  const overlayItems: ReturnType<typeof k.add>[] = [];
+  const addOverlay = (comps: Parameters<typeof k.add>[0]) => {
+    const obj = k.add(comps);
+    overlayItems.push(obj);
+    return obj;
+  };
+
+  // Left panel — Player 1 (Samurai)
+  addOverlay([k.rect(280, 210), k.pos(20, 255), k.color(0, 0, 0), k.opacity(0.72), k.fixed(), k.z(100)]);
+  addOverlay([k.text("⚔️  PLAYER 1", { size: 18 }), k.pos(160, 273), k.anchor("center"), k.color(255, 200, 50), k.fixed(), k.z(101)]);
+  addOverlay([k.text("W  —  Jump\nA  —  Move Left\nD  —  Move Right\nS  —  Attack", { size: 13 }), k.pos(40, 305), k.color(255, 255, 255), k.fixed(), k.z(101)]);
+
+  // Right panel — Player 2 (Ninja)
+  addOverlay([k.rect(280, 210), k.pos(980, 255), k.color(0, 0, 0), k.opacity(0.72), k.fixed(), k.z(100)]);
+  addOverlay([k.text("🥷  PLAYER 2", { size: 18 }), k.pos(1120, 273), k.anchor("center"), k.color(100, 180, 255), k.fixed(), k.z(101)]);
+  addOverlay([k.text("↑  —  Jump\n←  —  Move Left\n→  —  Move Right\n↓  —  Attack", { size: 13 }), k.pos(1000, 305), k.color(255, 255, 255), k.fixed(), k.z(101)]);
+
+  // Centre prompt
+  addOverlay([k.text("Press any key to start", { size: 15 }), k.pos(640, 690), k.anchor("center"), k.color(255, 255, 255), k.opacity(0.85), k.fixed(), k.z(101)]);
+
+  const startHandler = k.onKeyPress(() => {
+    for (const item of overlayItems) k.destroy(item);
+    startHandler.cancel();
+    entities.player1?.setControls();
+    entities.player2?.setControls();
+  });
 }
 
 k.scene("arena", () => arena(k));

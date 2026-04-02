@@ -1,8 +1,8 @@
-import { GameObj, KaboomCtx, Vec2 } from "kaboom";
+import { GameObj, KAPLAYCtx, Vec2 } from "kaplay";
 import { Directions } from "../types";
 
 export function makeHealthbar(
-  k: KaboomCtx,
+  k: KAPLAYCtx,
   direction: Directions,
   owner: GameObj
 ) {
@@ -43,7 +43,7 @@ export function makeHealthbar(
         healthDisplay.width,
         healthDisplay.width - reduceWidthBy,
         0.1,
-        (newWidth) => (healthDisplay.width = newWidth),
+        (newWidth: number) => (healthDisplay.width = newWidth),
         k.easings.linear
       );
 
@@ -54,7 +54,7 @@ export function makeHealthbar(
       healthDisplay.width,
       0,
       0.1,
-      (newWidth) => (healthDisplay.width = newWidth),
+      (newWidth: number) => (healthDisplay.width = newWidth),
       k.easings.linear
     );
   });

@@ -1,4 +1,4 @@
-import { GameObj } from "kaboom";
+import { GameObj } from "kaplay";
 
 type TiledBaseLayer = {
   id: number;

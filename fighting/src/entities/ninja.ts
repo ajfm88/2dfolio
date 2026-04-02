@@ -1,8 +1,8 @@
-import { KaboomCtx, Vec2, GameObj } from "kaboom";
+import { KAPLAYCtx, Vec2, GameObj } from "kaplay";
 import { fighterProps, setFighterControls } from "./fighter";
 import { Directions } from "../types";
 
-export function makeNinja(k: KaboomCtx, parent: GameObj, pos: Vec2) {
+export function makeNinja(k: KAPLAYCtx, parent: GameObj, pos: Vec2) {
   let gameObj = parent.add([
     k.sprite("ninja", { anim: "idle" }),
     k.pos(pos),

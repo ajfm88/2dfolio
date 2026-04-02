@@ -1,4 +1,4 @@
-import { GameObj, KaboomCtx, Vec2 } from "kaboom";
+import { GameObj, KAPLAYCtx, Vec2 } from "kaplay";
 import { Directions } from "../types";
 
 export const fighterProps: {
@@ -17,29 +17,29 @@ export const fighterProps: {
   previousHp: 10,
 };
 
-export async function makeFighterBlink(k: KaboomCtx, fighter: GameObj) {
+export async function makeFighterBlink(k: KAPLAYCtx, fighter: GameObj) {
   await k.tween(
     fighter.opacity,
     0,
     0.05,
-    (newOpacity) => (fighter.opacity = newOpacity),
+    (newOpacity: number) => (fighter.opacity = newOpacity),
     k.easings.linear
   );
   await k.tween(
     fighter.opacity,
     1,
     0.05,
-    (newOpacity) => (fighter.opacity = newOpacity),
+    (newOpacity: number) => (fighter.opacity = newOpacity),
     k.easings.linear
   );
 }
 
 export function setFighterControls(
-  k: KaboomCtx,
+  k: KAPLAYCtx,
   fighter: GameObj,
   keys: { LEFT: string; RIGHT: string; UP: string; DOWN: string }
 ) {
-  const onKeyDownController = k.onKeyDown((key) => {
+  const onKeyDownController = k.onKeyDown((key: string) => {
     if (fighter.curAnim() === "attack") return;
 
     if (key === keys.LEFT) {
@@ -63,7 +63,7 @@ export function setFighterControls(
     }
   });
 
-  const onKeyReleaseController = k.onKeyRelease((key) => {
+  const onKeyReleaseController = k.onKeyRelease((key: string) => {
     if (
       (key === keys.LEFT || key === keys.RIGHT) &&
       fighter.curAnim() !== "idle" &&
@@ -73,7 +73,7 @@ export function setFighterControls(
     }
   });
 
-  const onKeyPressController = k.onKeyPress((key) => {
+  const onKeyPressController = k.onKeyPress((key: string) => {
     if (
       key === keys.UP &&
       fighter.isGrounded() &&
@@ -103,7 +103,7 @@ export function setFighterControls(
 
       const enemyTag = fighter.is("samurai") ? "ninja" : "samurai";
 
-      attackHitbox.onCollide(enemyTag, (enemy) => {
+      attackHitbox.onCollide(enemyTag, (enemy: GameObj) => {
         k.wait(0.1, () => (enemy.previousHp = enemy.hp()));
         if (enemy.hp() !== 0) {
           enemy.hurt(1);
