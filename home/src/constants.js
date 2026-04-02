@@ -11,6 +11,7 @@ export const dialogueData = {
     have assembled to study Japanese with.`,
   tv: `There is a video game console here, which game will I play?: 
   <a href="https://metroidvania-ajfm88.netlify.app" target="_blank">Action</a>,
+  <a href="https://samurai-shodown-ajfm88.netlify.app" target="_blank">Fighting</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>,
   <a href="https://ninja-ajfm88.netlify.app" target="_blank">Ninja Adventure</a>,
   <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Platformer</a>,
@@ -24,7 +25,7 @@ export const dialogueData = {
   bed: `This is where I sleep. I try to get a solid 7 to 8 hours of sleep, as it helps me stay anabolic.`,
   resume: `This is my desk and on it is my resume. <a href="https://tr.ee/Xj8r3OZd11" target="_blank">Check it out?</a>
     Contact me at ale@ajfm88.com if you have any interesting job opportunities!`,
-  projects: `Info about this portfolio : It's made with the <a href="https://kaplayjs.com/" target="_blank">Kaplay</a> 
+  projects: `Info about this portfolio : It's made with the <a href="https://kaplayjs.com" target="_blank">Kaplay</a> 
     library which is a library for making games in JavaScript. Text is rendered with HTML/CSS. So the textbox you're currently reading is 
     not rendered within canvas..`,
   library: `There are a some programming books on my shelves. There are also the ESV Study Bible, the HCSB Study Bible (I read them both regularly), 
