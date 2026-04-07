@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WebDevSimplified/js-2048-test.git"
+    "url": "git+https://github.com/ajfm88/2dfolio.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/WebDevSimplified/js-2048-test/issues"
+    "url": "https://github.com/ajfm88/2dfolio/issues"
   },
-  "homepage": "https://github.com/WebDevSimplified/js-2048-test#readme",
+  "homepage": "https://github.com/ajfm88/2dfolio#readme",
   "dependencies": {
     "date-fns": "^2.28.0",
     "lodash": "^4.17.21",
