@@ -9,7 +9,8 @@ export const dialogueData = {
   "sofa-table": `That's my sofa and my table. I like to relax here and sometimes watch YouTube, or read a good manga in Japanese.
     In my <a href="https://ankiweb.net/shared/by-author/215281557" target="_blank">AnkiWeb page</a> you'll find some of the Anki decks I 
     have assembled to study Japanese with.`,
-  tv: `There is a video game console here, which game will I play?: 
+  tv: `There is a video game console here, which game will I play?:
+  <a href="https://2048-ajfm88.netlify.app" target="_blank">2048</a>,
   <a href="https://metroidvania-ajfm88.netlify.app" target="_blank">Action</a>,
   <a href="https://samurai-shodown-ajfm88.netlify.app" target="_blank">Fighting</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>,
@@ -27,7 +28,7 @@ export const dialogueData = {
     Contact me at ale@ajfm88.com if you have any interesting job opportunities!`,
   projects: `Info about this portfolio : It's made with the <a href="https://kaplayjs.com" target="_blank">Kaplay</a> 
     library which is a library for making games in JavaScript. Text is rendered with HTML/CSS. So the textbox you're currently reading is 
-    not rendered within canvas..`,
+    not rendered within canvas.`,
   library: `There are a some programming books on my shelves. There are also the ESV Study Bible, the HCSB Study Bible (I read them both regularly), 
     books on the Christian faith, some novels, short story collections and even some intermediate-level Japanese language textbooks.
     Here is my <a href="https://goodreads.com/ajfm88" target="_blank">Goodreads profile</a> to see what I've been reading lately.`,
