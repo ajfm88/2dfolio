@@ -1,118 +1,142 @@
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Changa+One&family=Press+Start+2P&display=swap"
-  rel="stylesheet"
-/>
-
-<style>
-  body {
-    margin: 0;
-    background-color: black;
-    padding: 10px 20px;
-    font-family: 'Press Start 2P', sans-serif;
-  }
-</style>
-<p
-  class="flex items-center justify-between"
-  style="color: white; font-size: 14px; margin-bottom: 6px"
->
-  <span><span>Score:</span><span id="scoreEl">0</span></span>
-
-  <!-- pause icon -->
-  <svg
-    id="pauseButton"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    class="w-5 h-5 cursor-pointer hidden"
-  >
-    <path
-      fill-rule="evenodd"
-      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z"
-      clip-rule="evenodd"
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pac-Man web browser game created using JavaScript ES6 & the Canvas API and deployed by ajfm88."
     />
-  </svg>
-  <!-- /pause icon -->
-</p>
-
-<div class="relative">
-  <div class="absolute inset-0 flex flex-col items-center justify-center">
-    <div
-      id="startScreen"
-      class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full"
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>👾 Pac-Man 🟡</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Changa+One&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        background-color: black;
+        padding: 10px 20px;
+        font-family: 'Press Start 2P', sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <p
+      class="flex items-center justify-between"
+      style="color: white; font-size: 14px; margin-bottom: 6px"
     >
-      <!-- max-width: 300px; width: 100% -->
-      <!-- xs sm base lg xl 2xl -->
-      <h1 class="text-white text-3xl mb-2">PacMan</h1>
-      <button
-        id="startButton"
-        class="text-black text-sm bg-yellow-400 px-4 py-2 rounded-full hover:bg-yellow-300"
+      <span><span>Score:</span><span id="scoreEl">0</span></span>
+
+      <!-- pause icon -->
+      <svg
+        id="pauseButton"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        class="w-5 h-5 cursor-pointer hidden"
       >
-        Start Game
-      </button>
+        <path
+          fill-rule="evenodd"
+          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <!-- /pause icon -->
+    </p>
+
+    <div class="relative">
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <div
+          id="startScreen"
+          class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full"
+        >
+          <!-- max-width: 300px; width: 100% -->
+          <!-- xs sm base lg xl 2xl -->
+          <h1 class="text-white text-3xl mb-4">PacMan</h1>
+          <div class="flex justify-center gap-3 mb-4">
+            <div class="flex flex-col items-center gap-1">
+              <div class="bg-yellow-400 text-black text-xs font-bold w-8 h-8 flex items-center justify-center rounded">W</div>
+              <div class="flex gap-1">
+                <div class="bg-yellow-400 text-black text-xs font-bold w-8 h-8 flex items-center justify-center rounded">A</div>
+                <div class="bg-yellow-400 text-black text-xs font-bold w-8 h-8 flex items-center justify-center rounded">S</div>
+                <div class="bg-yellow-400 text-black text-xs font-bold w-8 h-8 flex items-center justify-center rounded">D</div>
+              </div>
+            </div>
+          </div>
+          <button
+            id="startButton"
+            class="text-black text-sm bg-yellow-400 px-4 py-2 rounded-full hover:bg-yellow-300"
+          >
+            Start Game
+          </button>
+        </div>
+
+        <!-- game over screen -->
+        <div
+          id="gameOverScreen"
+          class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
+        >
+          <!-- max-width: 300px; width: 100% -->
+          <!-- xs sm base lg xl 2xl -->
+          <p class="text-white text-xs mb-2">Game Over</p>
+          <h1 id="gameOverScoreLabel" class="text-white text-3xl">Score</h1>
+          <p class="text-white text-[10px] mb-2">Score</p>
+          <button
+            id="restartGameButton"
+            class="text-black text-xs bg-yellow-400 px-4 py-2 rounded-full hover:bg-yellow-300"
+          >
+            Restart Game
+          </button>
+        </div>
+        <!-- /game over screen -->
+
+        <!-- ready tag -->
+        <div
+          id="readyTag"
+          class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
+        >
+          <h1 class="text-white text-xl">Ready?</h1>
+        </div>
+        <!-- /ready tag -->
+        <!-- go tag -->
+        <div
+          id="goTag"
+          class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
+        >
+          <h1 class="text-white text-xl">Go!</h1>
+        </div>
+        <!-- /go tag -->
+      </div>
+      <canvas style="display: block; margin: 0 auto"></canvas>
     </div>
 
-    <!-- game over screen -->
-    <div
-      id="gameOverScreen"
-      class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
-    >
-      <!-- max-width: 300px; width: 100% -->
-      <!-- xs sm base lg xl 2xl -->
-      <p class="text-white text-xs mb-2">Game Over</p>
-      <h1 id="gameOverScoreLabel" class="text-white text-3xl">Score</h1>
-      <p class="text-white text-[10px] mb-2">Score</p>
-      <button
-        id="restartGameButton"
-        class="text-black text-xs bg-yellow-400 px-4 py-2 rounded-full hover:bg-yellow-300"
-      >
-        Restart Game
-      </button>
-    </div>
-    <!-- /game over screen -->
-
-    <!-- ready tag -->
-    <div
-      id="readyTag"
-      class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
-    >
-      <h1 class="text-white text-xl">Ready?</h1>
-    </div>
-    <!-- /ready tag -->
-    <!-- go tag -->
-    <div
-      id="goTag"
-      class="bg-black/75 p-4 border-4 border-yellow-400 rounded text-center max-w-xs w-full hidden"
-    >
-      <h1 class="text-white text-xl">Go!</h1>
-    </div>
-    <!-- /go tag -->
-  </div>
-  <canvas style="display: block; margin: 0 auto"></canvas>
-</div>
-
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"
-  integrity="sha512-xi/RZRIF/S0hJ+yJJYuZ5yk6/8pCiRlEXZzoguSMl+vk2i3m6UjUO/WcZ11blRL/O+rnj94JRGwt/CHbc9+6EA=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
-  integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-<script src="./js/audio.js"></script>
-<script src="./js/utils.js"></script>
-<script src="./js/classes/Boundary.js"></script>
-<script src="./js/classes/Ghost.js"></script>
-<script src="./js/classes/Pellet.js"></script>
-<script src="./js/classes/Player.js"></script>
-<script src="./js/classes/PowerUp.js"></script>
-<script src="./js/classes/Item.js"></script>
-<script src="./js/eventListeners.js"></script>
-<script src="./js/setup.js"></script>
-<script src="index.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"
+      integrity="sha512-xi/RZRIF/S0hJ+yJJYuZ5yk6/8pCiRlEXZzoguSMl+vk2i3m6UjUO/WcZ11blRL/O+rnj94JRGwt/CHbc9+6EA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+      integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="./js/audio.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/classes/Boundary.js"></script>
+    <script src="./js/classes/Ghost.js"></script>
+    <script src="./js/classes/Pellet.js"></script>
+    <script src="./js/classes/Player.js"></script>
+    <script src="./js/classes/PowerUp.js"></script>
+    <script src="./js/classes/Item.js"></script>
+    <script src="./js/eventListeners.js"></script>
+    <script src="./js/setup.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

@@ -255,33 +255,8 @@ function animate() {
   else if (keys.s.pressed && lastKey === 's') player.move('down')
   else if (keys.d.pressed && lastKey === 'd') player.move('right')
 
-  // detect collision between ghosts and player
-  for (let i = ghosts.length - 1; 0 <= i; i--) {
-    const ghost = ghosts[i]
-    // ghost touches player
-    if (
-      Math.hypot(
-        ghost.position.x - player.position.x,
-        ghost.position.y - player.position.y,
-      ) <
-        ghost.radius + player.radius &&
-      player.state === 'active'
-    ) {
-      if (ghost.state === 'scared') {
-        ghosts.splice(i, 1)
-      } else {
-        lives--
-        player.die(lives, game)
-        ghosts.forEach((ghost) => {
-          ghost.state = 'paused'
-        })
-        console.log('you lose')
-      }
-    }
-  }
-
   // win condition goes here
-  if (pellets.length === 40 && player.state === 'active') {
+  if (pellets.length === 0 && player.state === 'active') {
     game.nextRound()
   }
 
@@ -373,6 +348,29 @@ function animate() {
     if (accumulatedTime > ghostReleaseIntervals[index] && !ghost.outOfCage)
       ghost.enterGame(ghostPositions[currentLevelIndex][1])
   })
+
+  // detect collision between ghosts and player (after ghost.update so states are resolved)
+  for (let i = ghosts.length - 1; 0 <= i; i--) {
+    const ghost = ghosts[i]
+    if (
+      Math.hypot(
+        ghost.position.x - player.position.x,
+        ghost.position.y - player.position.y,
+      ) <
+        ghost.radius + player.radius &&
+      player.state === 'active'
+    ) {
+      if (ghost.state === 'scared') {
+        ghosts.splice(i, 1)
+      } else {
+        lives--
+        player.die(lives, game)
+        ghosts.forEach((ghost) => {
+          ghost.state = 'paused'
+        })
+      }
+    }
+  }
 
   if (player.velocity.x > 0) player.rotation = 0
   else if (player.velocity.x < 0) player.rotation = Math.PI
