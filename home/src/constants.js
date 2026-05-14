@@ -15,12 +15,12 @@ export const dialogueData = {
   <a href="https://samurai-shodown-ajfm88.netlify.app" target="_blank">Fighting</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">JRPG</a>,
   <a href="https://ninja-ajfm88.netlify.app" target="_blank">Ninja Adventure</a>,
-  <a href="https://pac-man-ajfm88.netlify.app" target="_blank">Pac-Man</a>,
   <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Platformer</a>,
   <a href="https://html-classic.itch.zone/html/7730457/build/index.html" target="_blank">Puzzle</a>,
   <a href="https://necro-ajfm88.netlify.app" target="_blank">Roguelite</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Runner</a>,
   <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Shooter</a>,
+  <a href="https://space-invaders-ajfm88.netlify.app" target="_blank">Space Invaders</a>,
   <a href="https://zelda-ajfm88.netlify.app" target="_blank">Zelda Adventure</a>.`,
   nightstand: `This is my nightstand, where I keep my cellphone. I occasionally like writing restaurant reviews, please check out 
     my <a href="https://www.yelp.com/user_details?userid=JBqCl4WE7g9SPR-0y0tJzQ" target="_blank">Yelp profile</a> if you'd like to.`,
