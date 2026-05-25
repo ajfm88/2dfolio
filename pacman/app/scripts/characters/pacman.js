@@ -6,42 +6,12 @@ class Pacman {
         this.pacmanArrow = document.getElementById('pacman-arrow');
 
         this.setMovementStats(scaledTileSize);
-        this.setStyleMeasurements(scaledTileSize);
         this.setSpriteAnimationStats();
+        this.setStyleMeasurements(scaledTileSize, this.spriteFrames);
         this.setDefaultPosition(scaledTileSize);
         this.setKeyListeners();
 
         this.setSpriteSheet(this.direction);
-    }
-
-    setStyleMeasurements(scaledTileSize) {
-        // Pacman is the size of 2x2 tiles.
-        this.measurement = scaledTileSize * 2;
-
-        this.animationTarget.style.height = `${this.measurement}px`;
-        this.animationTarget.style.width = `${this.measurement}px`;
-        this.animationTarget.style.backgroundSize = `${this.measurement * 4}px`;
-
-        this.pacmanArrow.style.height = `${this.measurement * 2}px`;
-        this.pacmanArrow.style.width = `${this.measurement * 2}px`;
-        this.pacmanArrow.style.backgroundSize = `${this.measurement * 2}px`;
-    }
-
-    setSpriteAnimationStats() {
-        this.msBetweenSprites = 100;
-        this.msSinceLastSprite = 0;
-        this.spriteFrames = 4;
-        this.backgroundOffsetPixels = 0;
-    }
-
-    setDefaultPosition(scaledTileSize) {
-        this.position = {
-            top: scaledTileSize * 22.5,
-            left: scaledTileSize * 13
-        };
-        this.oldPosition = Object.assign({}, this.position);
-        this.animationTarget.style.top = `${this.position.top}px`;
-        this.animationTarget.style.left = `${this.position.left}px`;
     }
 
     setMovementStats(scaledTileSize) {
@@ -55,6 +25,36 @@ class Pacman {
         this.desiredDirection = this.directions.left;
         this.direction = this.directions.left;
         this.moving = false;
+    }
+
+    setSpriteAnimationStats() {
+        this.msBetweenSprites = 50;
+        this.msSinceLastSprite = 0;
+        this.spriteFrames = 4;
+        this.backgroundOffsetPixels = 0;
+    }
+
+    setStyleMeasurements(scaledTileSize, spriteFrames) {
+        // Pacman is the size of 2x2 game tiles.
+        this.measurement = scaledTileSize * 2;
+
+        this.animationTarget.style.height = `${this.measurement}px`;
+        this.animationTarget.style.width = `${this.measurement}px`;
+        this.animationTarget.style.backgroundSize = `${this.measurement * spriteFrames}px`;
+
+        this.pacmanArrow.style.height = `${this.measurement * 2}px`;
+        this.pacmanArrow.style.width = `${this.measurement * 2}px`;
+        this.pacmanArrow.style.backgroundSize = `${this.measurement * 2}px`;
+    }
+
+    setDefaultPosition(scaledTileSize) {
+        this.position = {
+            top: scaledTileSize * 22.5,
+            left: scaledTileSize * 13
+        };
+        this.oldPosition = Object.assign({}, this.position);
+        this.animationTarget.style.top = `${this.position.top}px`;
+        this.animationTarget.style.left = `${this.position.left}px`;
     }
 
     setKeyListeners() {
