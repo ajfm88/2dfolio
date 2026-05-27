@@ -141,11 +141,60 @@ class Ghost {
         };
     }
 
+    getOppositeDirection(direction, directions) {
+        switch(direction) {
+            case directions.up:
+                return directions.down;
+            case directions.down:
+                return directions.up;
+            case directions.left:
+                return directions.right;
+            default:
+                return directions.left;
+        }
+    }
+
+    getTile(mazeArray, y, x) {
+        let tile = false;
+
+        if (mazeArray[y] && mazeArray[y][x]) {
+            tile = mazeArray[y][x];
+        }
+
+        return tile;
+    }
+
+    determinePossibleMoves(gridPosition, direction, mazeArray) {
+        const x = gridPosition.x;
+        const y = gridPosition.y;
+
+        const possibleMoves = {
+            up: this.getTile(mazeArray, y - 1, x),
+            down: this.getTile(mazeArray, y + 1, x),
+            left: this.getTile(mazeArray, y, x - 1),
+            right: this.getTile(mazeArray, y, x + 1),
+        };
+
+        possibleMoves[this.getOppositeDirection(direction, this.directions)] = false;
+
+        for (let tile in possibleMoves) {
+            if (possibleMoves[tile] === 'X' || possibleMoves[tile] === false) {
+                delete possibleMoves[tile];
+            }
+        }
+        
+        return possibleMoves;
+    }
+
+    determineDirection(gridPosition, pacmanGridPosition, direction, mazeArray) {
+        const possibleMoves = this.determinePossibleMoves(gridPosition, direction, mazeArray);
+    }
+
     draw(interp) {
         this.animationTarget.style['top'] = `${this.calculateNewDrawValue(interp, 'top')}px`;
         this.animationTarget.style['left'] = `${this.calculateNewDrawValue(interp, 'left')}px`;
 
-        if (this.msSinceLastSprite > this.msBetweenSprites) {
+        if (this.msSinceLastSprite > this.msBetweenSprites && this.moving) {
             this.msSinceLastSprite = 0;
 
             this.animationTarget.style.backgroundPosition = `-${this.backgroundOffsetPixels}px 0px`;
@@ -167,24 +216,23 @@ class Ghost {
 
         if (this.moving) {
             const gridPosition = this.determineGridPosition(this.position);
-            
-            const newPosition = Object.assign({}, this.position);
-            newPosition[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, this.velocityPerMs) * elapsedMs;
-            const newGridPosition = this.determineGridPosition(newPosition, this.mazeArray);
 
             if (JSON.stringify(this.position) === JSON.stringify(this.snapToGrid(gridPosition, this.direction, this.scaledTileSize))) {
-                this.position = newPosition;
+                const pacmanGridPosition = this.determineGridPosition(this.pacman.position);
+                this.determineDirection(gridPosition, pacmanGridPosition, this.direction, this.mazeArray);
+
+                this.position[this.getPropertyToChange(this.desiredDirection)] += this.getVelocity(this.desiredDirection, this.velocityPerMs) * elapsedMs;
             } else {
+                const newPosition = Object.assign({}, this.position);
+                newPosition[this.getPropertyToChange(this.desiredDirection)] += this.getVelocity(this.desiredDirection, this.velocityPerMs) * elapsedMs;
+                const newGridPosition = this.determineGridPosition(newPosition, this.mazeArray);
+    
                 if (this.changingGridPosition(gridPosition, newGridPosition)) {
-                    console.log('Snap!');
                     this.position = this.snapToGrid(gridPosition, this.direction, this.scaledTileSize);
                 } else {
                     this.position = newPosition;
                 }
             }
-            
-            
-            
         }
 
         this.msSinceLastSprite += elapsedMs;
