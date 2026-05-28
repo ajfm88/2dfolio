@@ -32,7 +32,6 @@ class Ghost {
         this.eyeSpeed = pacmanSpeed * 3;
 
         this.velocityPerMs = this.slowSpeed;
-        this.desiredDirection = this.directions.left;
         this.direction = this.directions.left;
         this.moving = false;
     }
@@ -157,8 +156,11 @@ class Ghost {
     getTile(mazeArray, y, x) {
         let tile = false;
 
-        if (mazeArray[y] && mazeArray[y][x]) {
-            tile = mazeArray[y][x];
+        if (mazeArray[y] && mazeArray[y][x] && mazeArray[y][x] !== 'X') {
+            tile = {
+                x: x,
+                y: y
+            };
         }
 
         return tile;
@@ -178,7 +180,7 @@ class Ghost {
         possibleMoves[this.getOppositeDirection(direction, this.directions)] = false;
 
         for (let tile in possibleMoves) {
-            if (possibleMoves[tile] === 'X' || possibleMoves[tile] === false) {
+            if (possibleMoves[tile] === false) {
                 delete possibleMoves[tile];
             }
         }
@@ -186,8 +188,46 @@ class Ghost {
         return possibleMoves;
     }
 
-    determineDirection(gridPosition, pacmanGridPosition, direction, mazeArray) {
+    calculateDistance(position, pacman) {
+        return Math.sqrt(Math.pow(position['x'] - pacman['x'], 2) + Math.pow(position['y'] - pacman['y'], 2));
+    }
+
+    blinkyBestMove(possibleMoves, pacmanGridPosition) {
+        let shortestDistance = Infinity;
+        let bestMove;
+
+        for (let move in possibleMoves) {
+            let distance = this.calculateDistance(possibleMoves[move], pacmanGridPosition);
+            if (distance < shortestDistance) {
+                shortestDistance = distance;
+                bestMove = move;
+            }
+        }
+
+        return bestMove;
+    }
+
+    determineBestMove(name, possibleMoves, pacmanGridPosition) {
+        switch(name) {
+            case 'blinky':
+                return this.blinkyBestMove(possibleMoves, pacmanGridPosition);
+            default:
+                // TODO: Other ghosts
+                return 'left';
+        }
+    }
+
+    determineDirection(name, gridPosition, pacmanGridPosition, direction, mazeArray) {
+        let newDirection = direction;
         const possibleMoves = this.determinePossibleMoves(gridPosition, direction, mazeArray);
+
+        if (Object.keys(possibleMoves).length === 1) {
+            newDirection = Object.keys(possibleMoves)[0];
+        } else if (Object.keys(possibleMoves).length > 1) {
+            newDirection = this.determineBestMove(name, possibleMoves, pacmanGridPosition);
+        }
+
+        return newDirection;
     }
 
     draw(interp) {
@@ -219,12 +259,13 @@ class Ghost {
 
             if (JSON.stringify(this.position) === JSON.stringify(this.snapToGrid(gridPosition, this.direction, this.scaledTileSize))) {
                 const pacmanGridPosition = this.determineGridPosition(this.pacman.position);
-                this.determineDirection(gridPosition, pacmanGridPosition, this.direction, this.mazeArray);
+                this.direction = this.determineDirection(this.name, gridPosition, pacmanGridPosition, this.direction, this.mazeArray);
+                this.setSpriteSheet(this.name, this.direction);
 
-                this.position[this.getPropertyToChange(this.desiredDirection)] += this.getVelocity(this.desiredDirection, this.velocityPerMs) * elapsedMs;
+                this.position[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, this.velocityPerMs) * elapsedMs;
             } else {
                 const newPosition = Object.assign({}, this.position);
-                newPosition[this.getPropertyToChange(this.desiredDirection)] += this.getVelocity(this.desiredDirection, this.velocityPerMs) * elapsedMs;
+                newPosition[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, this.velocityPerMs) * elapsedMs;
                 const newGridPosition = this.determineGridPosition(newPosition, this.mazeArray);
     
                 if (this.changingGridPosition(gridPosition, newGridPosition)) {
