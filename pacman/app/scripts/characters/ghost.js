@@ -96,11 +96,26 @@ class Ghost {
         return this.oldPosition[prop] + (this.position[prop] - this.oldPosition[prop]) * interp;
     }
 
+    checkForStutter(position, oldPosition) {
+        let stutter = false;
+        const threshold = 5;
+
+        if (Math.abs(position['top'] - oldPosition['top']) > threshold || Math.abs(position['left'] - oldPosition['left']) > threshold) {
+            stutter = true;
+        }
+
+        return stutter ? 'hidden' : 'visible';
+    }
+
     determineGridPosition(currentPosition) {
         return {
             x : (currentPosition.left / this.scaledTileSize) + 0.5,
             y : (currentPosition.top / this.scaledTileSize) + 0.5
         };
+    }
+
+    isInTunnel(gridPosition) {
+        return (gridPosition.y === 14 && (gridPosition.x < 6 || gridPosition.x > 21));
     }
 
     determineRoundingFunction(direction) {
@@ -231,25 +246,22 @@ class Ghost {
     }
 
     checkForWarp(position, gridPosition, scaledTileSize) {
-        let results = {
-            newPosition: Object.assign({}, position),
-            visibility: 'visible'
-        };
+        let newPosition = Object.assign({}, position);
 
         if (gridPosition.x < -0.75) {
-            results.newPosition.left = (scaledTileSize * 27.25);
-            results.visibility = 'hidden';
+            newPosition.left = (scaledTileSize * 27.25);
         } else if (gridPosition.x > 27.75) {
-            results.newPosition.left = (scaledTileSize * -1.25);
-            results.visibility = 'hidden';
+            newPosition.left = (scaledTileSize * -1.25);
         }
 
-        return results;
+        return newPosition;
     }
 
     draw(interp) {
         this.animationTarget.style['top'] = `${this.calculateNewDrawValue(interp, 'top')}px`;
         this.animationTarget.style['left'] = `${this.calculateNewDrawValue(interp, 'left')}px`;
+
+        this.animationTarget.style['visibility'] = this.checkForStutter(this.position, this.oldPosition);
 
         if (this.msSinceLastSprite > this.msBetweenSprites && this.moving) {
             this.msSinceLastSprite = 0;
@@ -273,16 +285,17 @@ class Ghost {
 
         if (this.moving) {
             const gridPosition = this.determineGridPosition(this.position);
+            const velocity = this.isInTunnel(gridPosition) ? this.tunnelSpeed : this.velocityPerMs;
 
             if (JSON.stringify(this.position) === JSON.stringify(this.snapToGrid(gridPosition, this.direction, this.scaledTileSize))) {
                 const pacmanGridPosition = this.determineGridPosition(this.pacman.position);
                 this.direction = this.determineDirection(this.name, gridPosition, pacmanGridPosition, this.direction, this.mazeArray);
                 this.setSpriteSheet(this.name, this.direction);
 
-                this.position[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, this.velocityPerMs) * elapsedMs;
+                this.position[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, velocity) * elapsedMs;
             } else {
                 const newPosition = Object.assign({}, this.position);
-                newPosition[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, this.velocityPerMs) * elapsedMs;
+                newPosition[this.getPropertyToChange(this.direction)] += this.getVelocity(this.direction, velocity) * elapsedMs;
                 const newGridPosition = this.determineGridPosition(newPosition, this.mazeArray);
     
                 if (this.changingGridPosition(gridPosition, newGridPosition)) {
@@ -292,12 +305,10 @@ class Ghost {
                 }
             }
 
-            const checkForWarpResults = this.checkForWarp(this.position, this.determineGridPosition(this.position), this.scaledTileSize);
-            this.position = checkForWarpResults.newPosition;
-            this.animationTarget.style['visibility'] = checkForWarpResults.visibility;
-        }
+            this.position = this.checkForWarp(this.position, this.determineGridPosition(this.position), this.scaledTileSize);
 
-        this.msSinceLastSprite += elapsedMs;
+            this.msSinceLastSprite += elapsedMs;
+        }
     }
 }
 
