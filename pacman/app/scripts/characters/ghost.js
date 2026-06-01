@@ -73,65 +73,8 @@ class Ghost {
         this.animationTarget.style.backgroundImage = `url(app/style/graphics/spriteSheets/characters/ghosts/${name}/${name}_${direction}.svg)`;
     }
 
-    determineGridPosition(currentPosition) {
-        return {
-            x : (currentPosition.left / this.scaledTileSize) + 0.5,
-            y : (currentPosition.top / this.scaledTileSize) + 0.5
-        };
-    }
-
     isInTunnel(gridPosition) {
         return (gridPosition.y === 14 && (gridPosition.x < 6 || gridPosition.x > 21));
-    }
-
-    determineRoundingFunction(direction) {
-        switch(direction) {
-            case this.directions.up:
-            case this.directions.left:
-                return Math.floor;
-            default:
-                return Math.ceil;
-        } 
-    }
-
-    changingGridPosition(oldPosition, newPosition) {
-        return (
-            Math.floor(oldPosition.x) !== Math.floor(newPosition.x) ||
-            Math.floor(oldPosition.y) !== Math.floor(newPosition.y)
-        );
-    }
-
-    snapToGrid(position, direction, scaledTileSize) {
-        let newPosition = Object.assign({}, position);
-        let roundingFunction = this.determineRoundingFunction(direction);
-
-        switch(direction) {
-            case this.directions.up:
-            case this.directions.down:
-                newPosition.y = roundingFunction(newPosition.y);
-                break;
-            default:
-                newPosition.x = roundingFunction(newPosition.x);
-                break;
-        }
-
-        return {
-            top: (newPosition.y - 0.5) * scaledTileSize,
-            left: (newPosition.x - 0.5) * scaledTileSize
-        };
-    }
-
-    getOppositeDirection(direction, directions) {
-        switch(direction) {
-            case directions.up:
-                return directions.down;
-            case directions.down:
-                return directions.up;
-            case directions.left:
-                return directions.right;
-            default:
-                return directions.left;
-        }
     }
 
     getTile(mazeArray, y, x) {
@@ -158,7 +101,7 @@ class Ghost {
             right: this.getTile(mazeArray, y, x + 1),
         };
 
-        possibleMoves[this.getOppositeDirection(direction, this.directions)] = false;
+        possibleMoves[this.characterUtil.getOppositeDirection(direction, this.directions)] = false;
 
         for (let tile in possibleMoves) {
             if (possibleMoves[tile] === false) {
@@ -211,18 +154,6 @@ class Ghost {
         return newDirection;
     }
 
-    checkForWarp(position, gridPosition, scaledTileSize) {
-        let newPosition = Object.assign({}, position);
-
-        if (gridPosition.x < -0.75) {
-            newPosition.left = (scaledTileSize * 27.25);
-        } else if (gridPosition.x > 27.75) {
-            newPosition.left = (scaledTileSize * -1.25);
-        }
-
-        return newPosition;
-    }
-
     draw(interp) {
         this.animationTarget.style['top'] = `${this.characterUtil.calculateNewDrawValue(interp, 'top', this.oldPosition, this.position)}px`;
         this.animationTarget.style['left'] = `${this.characterUtil.calculateNewDrawValue(interp, 'left', this.oldPosition, this.position)}px`;
@@ -250,11 +181,11 @@ class Ghost {
         }
 
         if (this.moving) {
-            const gridPosition = this.determineGridPosition(this.position);
+            const gridPosition = this.characterUtil.determineGridPosition(this.position, this.scaledTileSize);
             const velocity = this.isInTunnel(gridPosition) ? this.tunnelSpeed : this.velocityPerMs;
 
-            if (JSON.stringify(this.position) === JSON.stringify(this.snapToGrid(gridPosition, this.direction, this.scaledTileSize))) {
-                const pacmanGridPosition = this.determineGridPosition(this.pacman.position);
+            if (JSON.stringify(this.position) === JSON.stringify(this.characterUtil.snapToGrid(gridPosition, this.direction, this.directions, this.scaledTileSize))) {
+                const pacmanGridPosition = this.characterUtil.determineGridPosition(this.pacman.position, this.scaledTileSize);
                 this.direction = this.determineDirection(this.name, gridPosition, pacmanGridPosition, this.direction, this.mazeArray);
                 this.setSpriteSheet(this.name, this.direction);
 
@@ -262,16 +193,16 @@ class Ghost {
             } else {
                 const newPosition = Object.assign({}, this.position);
                 newPosition[this.characterUtil.getPropertyToChange(this.direction, this.directions)] += this.characterUtil.getVelocity(this.direction, this.directions, velocity) * elapsedMs;
-                const newGridPosition = this.determineGridPosition(newPosition, this.mazeArray);
+                const newGridPosition = this.characterUtil.determineGridPosition(newPosition, this.scaledTileSize);
     
-                if (this.changingGridPosition(gridPosition, newGridPosition)) {
-                    this.position = this.snapToGrid(gridPosition, this.direction, this.scaledTileSize);
+                if (this.characterUtil.changingGridPosition(gridPosition, newGridPosition)) {
+                    this.position = this.characterUtil.snapToGrid(gridPosition, this.direction, this.directions, this.scaledTileSize);
                 } else {
                     this.position = newPosition;
                 }
             }
 
-            this.position = this.checkForWarp(this.position, this.determineGridPosition(this.position), this.scaledTileSize);
+            this.position = this.characterUtil.checkForWarp(this.position, this.characterUtil.determineGridPosition(this.position, this.scaledTileSize), this.scaledTileSize);
 
             this.msSinceLastSprite += elapsedMs;
         }
