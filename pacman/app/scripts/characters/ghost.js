@@ -14,6 +14,10 @@ class Ghost {
         this.setSpriteSheet(this.name, this.direction);
     }
 
+    /**
+     * Sets various properties related to the ghost's movement
+     * @param {Object} pacman - The character whose velocity will be used to set the ghost's various speeds
+     */
     setMovementStats(pacman) {
         const pacmanSpeed = pacman.velocityPerMs;
 
@@ -30,6 +34,9 @@ class Ghost {
         this.moving = false;
     }
 
+    /**
+     * Sets values pertaining to the ghost's spritesheet animation
+     */
     setSpriteAnimationStats() {
         this.msBetweenSprites = 250;
         this.msSinceLastSprite = 0;
@@ -37,6 +44,11 @@ class Ghost {
         this.backgroundOffsetPixels = 0;
     }
 
+    /**
+     * Sets css property values for the ghost
+     * @param {number} scaledTileSize - The dimensions of a single tile
+     * @param {number} spriteFrames - The number of frames in the ghost's spritesheet
+     */
     setStyleMeasurements(scaledTileSize, spriteFrames) {
         // The ghosts are the size of 2x2 game tiles.
         this.measurement = scaledTileSize * 2;
@@ -46,6 +58,11 @@ class Ghost {
         this.animationTarget.style.backgroundSize = `${this.measurement * spriteFrames}px`;
     }
 
+    /**
+     * Sets the default position and direction for the ghosts at the game's start
+     * @param {number} scaledTileSize - The dimensions of a single tile 
+     * @param {('inky'|'blinky'|'pinky'|'clyde')} name - The name of the current ghost
+     */
     setDefaultPosition(scaledTileSize, name) {
         switch(name) {
             case 'blinky':
@@ -55,6 +72,10 @@ class Ghost {
                 };
                 break;
             default:
+                this.position = {
+                    top: 0,
+                    left: 0
+                };
                 break;
         }
         this.oldPosition = Object.assign({}, this.position);
@@ -62,10 +83,19 @@ class Ghost {
         this.animationTarget.style.left = `${this.position.left}px`;
     }
 
+    /**
+     * Chooses a movement Spritesheet depending upon direction
+     * @param {('inky'|'blinky'|'pinky'|'clyde')} name - The name of the current ghost
+     * @param {('up'|'down'|'left'|'right')} direction - The direction the character is currently traveling in
+     */
     setSpriteSheet(name, direction) {
         this.animationTarget.style.backgroundImage = `url(app/style/graphics/spriteSheets/characters/ghosts/${name}/${name}_${direction}.svg)`;
     }
 
+    /**
+     * Checks to see if the ghost is currently in the 'tunnels' on the outer edges of the maze
+     * @param {({x: number, y: number})} gridPosition - The current x-y position of the ghost on the 2D Maze Array
+     */
     isInTunnel(gridPosition) {
         return (gridPosition.y === 14 && (gridPosition.x < 6 || gridPosition.x > 21));
     }
@@ -192,6 +222,6 @@ class Ghost {
     }
 }
 
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = Ghost;
-}
+//removeIf(production)
+module.exports = Ghost;
+//endRemoveIf(production)
