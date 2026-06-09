@@ -296,6 +296,22 @@ describe('ghost', () => {
     });
   });
 
+  describe('checkCollision', () => {
+    it('emits the deathSequence event when <1 tile away from Pacman', ()=> {
+      const dispatchSpy = sinon.fake();
+      global.window = {
+        dispatchEvent: dispatchSpy
+      };
+      global.Event = sinon.fake();
+
+      ghost.checkCollision({ x: 0, y: 0 }, { x: 1, y: 0});
+      assert(!dispatchSpy.called);
+
+      ghost.checkCollision({ x: 0, y: 0 }, { x: 0.9, y: 0});
+      assert(dispatchSpy.called);
+    });
+  });
+
   describe('draw', () => {
     it('updates various css properties and animates the spritesheet', () => {
       const drawValueSpy = sinon.fake.returns(100);
@@ -323,6 +339,7 @@ describe('ghost', () => {
       ghost.isInTunnel = sinon.fake();
       ghost.characterUtil.handleWarp = sinon.fake();
       ghost.characterUtil.snapToGrid = sinon.fake.returns(ghost.position);
+      ghost.checkCollision = sinon.fake();
       pacman.moving = true;
 
       ghost.update();
@@ -335,6 +352,7 @@ describe('ghost', () => {
       ghost.isInTunnel = sinon.fake();
       ghost.characterUtil.handleWarp = sinon.fake();
       ghost.characterUtil.snapToGrid = sinon.fake();
+      ghost.checkCollision = sinon.fake();
       pacman.moving = true;
 
       ghost.update();
@@ -363,6 +381,7 @@ describe('ghost', () => {
       ghost.isInTunnel = sinon.fake.returns(true);
       ghost.handleUnsnappedMovement = sinon.fake();
       ghost.characterUtil.handleWarp = sinon.fake();
+      ghost.checkCollision = sinon.fake();
 
       ghost.update();
     });
