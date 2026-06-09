@@ -55,7 +55,8 @@ class Ghost {
 
     this.animationTarget.style.height = `${this.measurement}px`;
     this.animationTarget.style.width = `${this.measurement}px`;
-    this.animationTarget.style.backgroundSize = `${this.measurement * spriteFrames}px`;
+    const bgSize = this.measurement * spriteFrames;
+    this.animationTarget.style.backgroundSize = `${bgSize}px`;
   }
 
   /**
@@ -89,7 +90,8 @@ class Ghost {
    * @param {('up'|'down'|'left'|'right')} direction - The character's current travel orientation
    */
   setSpriteSheet(name, direction) {
-    this.animationTarget.style.backgroundImage = `url(app/style/graphics/spriteSheets/characters/ghosts/${name}/${name}_${direction}.svg)`;
+    this.animationTarget.style.backgroundImage = 'url(app/style/graphics/'
+    + `spriteSheets/characters/ghosts/${name}/${name}_${direction}.svg)`;
   }
 
   /**
@@ -97,7 +99,9 @@ class Ghost {
    * @param {({x: number, y: number})} gridPosition - The current x-y position on the 2D Maze Array
    */
   isInTunnel(gridPosition) {
-    return (gridPosition.y === 14 && (gridPosition.x < 6 || gridPosition.x > 21));
+    return (gridPosition.y === 14
+      && (gridPosition.x < 6 || gridPosition.x > 21)
+    );
   }
 
   /**
@@ -172,7 +176,9 @@ class Ghost {
     let bestMove;
 
     Object.keys(possibleMoves).forEach((move) => {
-      const distance = this.calculateDistance(possibleMoves[move], pacmanGridPosition);
+      const distance = this.calculateDistance(
+        possibleMoves[move], pacmanGridPosition,
+      );
       if (distance < shortestDistance) {
         shortestDistance = distance;
         bestMove = move;
@@ -208,14 +214,20 @@ class Ghost {
    * @param {Array} mazeArray - 2D array representing the game board
    * @returns {('up'|'down'|'left'|'right')}
    */
-  determineDirection(name, gridPosition, pacmanGridPosition, direction, mazeArray) {
+  determineDirection(
+    name, gridPosition, pacmanGridPosition, direction, mazeArray,
+  ) {
     let newDirection = direction;
-    const possibleMoves = this.determinePossibleMoves(gridPosition, direction, mazeArray);
+    const possibleMoves = this.determinePossibleMoves(
+      gridPosition, direction, mazeArray,
+    );
 
     if (Object.keys(possibleMoves).length === 1) {
       [newDirection] = Object.keys(possibleMoves);
     } else if (Object.keys(possibleMoves).length > 1) {
-      newDirection = this.determineBestMove(name, possibleMoves, pacmanGridPosition);
+      newDirection = this.determineBestMove(
+        name, possibleMoves, pacmanGridPosition,
+      );
     }
 
     return newDirection;
@@ -226,16 +238,15 @@ class Ghost {
    * @param {number} elapsedMs - The amount of MS that have passed since the last update
    * @param {({x: number, y: number})} gridPosition - x-y position during the current frame
    * @param {number} velocity - The distance the character should travel in a single millisecond
+   * @param {({x: number, y: number})} pacmanGridPosition - x-y position on the 2D Maze Array
    * @returns {({ top: number, left: number})}
    */
-  handleSnappedMovement(elapsedMs, gridPosition, velocity) {
+  handleSnappedMovement(elapsedMs, gridPosition, velocity, pacmanGridPosition) {
     const newPosition = Object.assign({}, this.position);
 
-    const pacmanGridPosition = this.characterUtil.determineGridPosition(
-      this.pacman.position, this.scaledTileSize,
-    );
     this.direction = this.determineDirection(
-      this.name, gridPosition, pacmanGridPosition, this.direction, this.mazeArray,
+      this.name, gridPosition, pacmanGridPosition, this.direction,
+      this.mazeArray,
     );
     this.setSpriteSheet(this.name, this.direction);
     newPosition[this.characterUtil.getPropertyToChange(this.direction)]
@@ -256,7 +267,9 @@ class Ghost {
       this.position, this.direction, velocity, elapsedMs, this.scaledTileSize,
     );
 
-    if (this.characterUtil.changingGridPosition(gridPosition, desired.newGridPosition)) {
+    if (this.characterUtil.changingGridPosition(
+      gridPosition, desired.newGridPosition,
+    )) {
       return this.characterUtil.snapToGrid(
         gridPosition, this.direction, this.scaledTileSize,
       );
@@ -266,12 +279,29 @@ class Ghost {
   }
 
   /**
+   * Checks if the ghost contacts Pacman - starts the death sequence if so
+   * @param {({x: number, y: number})} position - An x-y position on the 2D Maze Array
+   * @param {({x: number, y: number})} pacman - Pacman's current x-y position on the 2D Maze Array
+   */
+  checkCollision(position, pacman) {
+    if (this.calculateDistance(position, pacman) < 1) {
+      window.dispatchEvent(new Event('deathSequence'));
+    }
+  }
+
+  /**
    * Updates the css position, hides if there is a stutter, and animates the spritesheet
    * @param {number} interp - The animation accuracy as a percentage
    */
   draw(interp) {
-    this.animationTarget.style.top = `${this.characterUtil.calculateNewDrawValue(interp, 'top', this.oldPosition, this.position)}px`;
-    this.animationTarget.style.left = `${this.characterUtil.calculateNewDrawValue(interp, 'left', this.oldPosition, this.position)}px`;
+    const newTop = this.characterUtil.calculateNewDrawValue(
+      interp, 'top', this.oldPosition, this.position,
+    );
+    const newLeft = this.characterUtil.calculateNewDrawValue(
+      interp, 'left', this.oldPosition, this.position,
+    );
+    this.animationTarget.style.top = `${newTop}px`;
+    this.animationTarget.style.left = `${newLeft}px`;
 
     this.animationTarget.style.visibility = this.characterUtil.checkForStutter(
       this.position, this.oldPosition,
@@ -298,19 +328,31 @@ class Ghost {
       const gridPosition = this.characterUtil.determineGridPosition(
         this.position, this.scaledTileSize,
       );
-      const velocity = this.isInTunnel(gridPosition) ? this.tunnelSpeed : this.velocityPerMs;
+      const pacmanGridPosition = this.characterUtil.determineGridPosition(
+        this.pacman.position, this.scaledTileSize,
+      );
+      const velocity = this.isInTunnel(gridPosition)
+        ? this.tunnelSpeed : this.velocityPerMs;
 
-      if (JSON.stringify(this.position) === JSON.stringify(this.characterUtil.snapToGrid(
-        gridPosition, this.direction, this.scaledTileSize,
-      ))) {
-        this.position = this.handleSnappedMovement(elapsedMs, gridPosition, velocity);
+      if (JSON.stringify(this.position) === JSON.stringify(
+        this.characterUtil.snapToGrid(
+          gridPosition, this.direction, this.scaledTileSize,
+        ),
+      )) {
+        this.position = this.handleSnappedMovement(
+          elapsedMs, gridPosition, velocity, pacmanGridPosition,
+        );
       } else {
-        this.position = this.handleUnsnappedMovement(elapsedMs, gridPosition, velocity);
+        this.position = this.handleUnsnappedMovement(
+          elapsedMs, gridPosition, velocity,
+        );
       }
 
       this.position = this.characterUtil.handleWarp(
         this.position, this.scaledTileSize, this.mazeArray,
       );
+
+      this.checkCollision(gridPosition, pacmanGridPosition);
 
       this.msSinceLastSprite += elapsedMs;
     }
