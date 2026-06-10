@@ -71,13 +71,14 @@ describe('pacman', () => {
   });
 
   describe('setDefaultPosition', () => {
-    it('sets the position and oldPositions', () => {
+    it('sets the defaultPosition, position, and oldPositions', () => {
       pacman.setDefaultPosition(scaledTileSize);
 
-      assert.deepEqual(pacman.position, {
+      assert.deepEqual(pacman.defaultPosition, {
         left: 104,
         top: 180,
       });
+      assert.deepEqual(pacman.position, pacman.defaultPosition);
       assert.deepEqual(pacman.position, pacman.oldPosition);
     });
   });
@@ -117,91 +118,41 @@ describe('pacman', () => {
     });
   });
 
-  xdescribe('changeDirection', () => {
-    it('changes Pacman\'s movement if a valid key is pressed', () => {
-      const baseUrl = 'url(app/style/graphics/spriteSheets/characters/pacman/';
+  describe('reset', () => {
+    it('resets the character to its default state', () => {
+      pacman.position = '';
+      pacman.desiredDirection = '';
+      pacman.direction = '';
+      pacman.animationTarget.style.backgroundImage = '';
+      pacman.pacmanArrow.style.backgroundImage = 'blah';
+      pacman.backgroundOffsetPixels = '';
+      pacman.animationTarget.style.backgroundPosition = '';
 
-      assert.strictEqual(pacman.desiredDirection, 'left');
-      assert.strictEqual(pacman.pacmanArrow.style.backgroundImage, undefined);
-      assert(!pacman.moving);
-
-      // Up Arrow
-      pacman.changeDirection({ keyCode: 38 });
-      assert.strictEqual(pacman.desiredDirection, 'up');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_up.svg)`,
-      );
-      assert(pacman.moving);
-
-      // Down Arrow
-      pacman.changeDirection({ keyCode: 40 });
-      assert.strictEqual(pacman.desiredDirection, 'down');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_down.svg)`,
-      );
-
-      // Left Arrow
-      pacman.changeDirection({ keyCode: 37 });
-      assert.strictEqual(pacman.desiredDirection, 'left');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_left.svg)`,
-      );
-
-      // Left Arrow
-      pacman.changeDirection({ keyCode: 39 });
-      assert.strictEqual(pacman.desiredDirection, 'right');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_right.svg)`,
-      );
-
-      // W Key
-      pacman.changeDirection({ keyCode: 38 });
-      assert.strictEqual(pacman.desiredDirection, 'up');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_up.svg)`,
-      );
-      assert(pacman.moving);
-
-      // S Key
-      pacman.changeDirection({ keyCode: 40 });
-      assert.strictEqual(pacman.desiredDirection, 'down');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_down.svg)`,
-      );
-
-      // A Key
-      pacman.changeDirection({ keyCode: 37 });
-      assert.strictEqual(pacman.desiredDirection, 'left');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_left.svg)`,
-      );
-
-      // D Key
-      pacman.changeDirection({ keyCode: 39 });
-      assert.strictEqual(pacman.desiredDirection, 'right');
-      assert.strictEqual(
-        pacman.pacmanArrow.style.backgroundImage,
-        `${baseUrl}arrow_right.svg)`,
-      );
+      pacman.reset();
+      assert.deepEqual(pacman.position, pacman.defaultPosition);
+      assert.strictEqual(pacman.desiredDirection, pacman.defaultDirection);
+      assert.strictEqual(pacman.direction, pacman.defaultDirection);
+      assert.strictEqual(pacman.animationTarget.style.backgroundImage,
+        'url(app/style/graphics/spriteSheets/characters/pacman/'
+        + 'pacman_left.svg)');
+      assert.strictEqual(pacman.pacmanArrow.style.backgroundImage, '');
+      assert.strictEqual(pacman.backgroundOffsetPixels, 0);
+      assert.strictEqual(pacman.animationTarget.style.backgroundPosition,
+        '0px 0px');
     });
+  });
 
-    it('should not change anything if an unrecognized key is pressed', () => {
-      assert.strictEqual(pacman.desiredDirection, 'left');
-      assert.strictEqual(pacman.pacmanArrow.style.backgroundImage, undefined);
-      assert(!pacman.moving);
+  describe('changeDirection', () => {
+    it('sets direction, sets the arrow, and sets moving to TRUE', () => {
+      pacman.desiredDirection = 'up';
+      pacman.pacmanArrow.style.backgroundImage = '';
+      pacman.moving = false;
 
-      // P Key
-      pacman.changeDirection({ keyCode: 80 });
-      assert.strictEqual(pacman.desiredDirection, 'left');
-      assert.strictEqual(pacman.pacmanArrow.style.backgroundImage, undefined);
-      assert(!pacman.moving);
+      pacman.changeDirection('down');
+      assert.strictEqual(pacman.desiredDirection, 'down');
+      assert.strictEqual(pacman.pacmanArrow.style.backgroundImage, 'url(app/'
+      + 'style/graphics/spriteSheets/characters/pacman/arrow_down.svg)');
+      assert(pacman.moving);
     });
   });
 
