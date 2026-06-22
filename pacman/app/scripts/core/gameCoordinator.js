@@ -117,7 +117,14 @@ class GameCoordinator {
       this.fruit,
     ];
 
-    this.preloadImages();
+    const head = document.getElementsByTagName('head')[0];
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'build/app.css';
+
+    link.onload = this.preloadImages.bind(this);
+
+    head.appendChild(link);
   }
 
   /**
@@ -221,6 +228,9 @@ class GameCoordinator {
 
     let remainingSources = sources.length;
 
+    loadingPacman.style.left = '0';
+    loadingDotMask.style.width = '0';
+
     sources.forEach((source) => {
       const image = new Image();
       preloadDiv.appendChild(image);
@@ -244,6 +254,7 @@ class GameCoordinator {
     });
   }
 
+  // Calls necessary setup functions to start the game
   init() {
     this.registerEventListeners();
     this.drawMaze(this.mazeArray, this.entityList);
