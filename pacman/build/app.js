@@ -571,6 +571,7 @@ class Ghost {
         gridPositionCopy, this.direction, this.scaledTileSize,
       );
       this.mode = this.defaultMode;
+      window.dispatchEvent(new Event('restoreGhost'));
     }
 
     if (this.leavingGhostHouse(this.mode, gridPosition)) {
@@ -1140,7 +1141,8 @@ class GameCoordinator {
 
     this.allowKeyPresses = true;
     this.allowPacmanMovement = false;
-    this.allowPause = true;
+    this.allowPause = false;
+    this.cutscene = true;
 
     this.mazeArray = [
       ['XXXXXXXXXXXXXXXXXXXXXXXXXXXX'],
@@ -1212,6 +1214,9 @@ class GameCoordinator {
       this.inky,
       this.clyde,
     ];
+
+    this.scaredGhosts = [];
+    this.eyeGhosts = 0;
 
     this.pickups = [
       this.fruit,
@@ -1344,7 +1349,17 @@ class GameCoordinator {
       const audioBase = 'app/style/audio/';
       const audioSources = [
         `${audioBase}game_start.mp3`,
+        `${audioBase}pause.mp3`,
         `${audioBase}siren_1.mp3`,
+        `${audioBase}siren_2.mp3`,
+        `${audioBase}siren_3.mp3`,
+        `${audioBase}power_up.mp3`,
+        `${audioBase}eyes.mp3`,
+        `${audioBase}eat_ghost.mp3`,
+        `${audioBase}death.mp3`,
+        `${audioBase}fruit.mp3`,
+        `${audioBase}dot_1.mp3`,
+        `${audioBase}dot_2.mp3`,
       ];
 
       const totalSources = imgSources.length + audioSources.length;
@@ -1505,6 +1520,8 @@ class GameCoordinator {
       this.soundManager.play('game_start');
     }
 
+    this.scaredGhosts = [];
+    this.eyeGhosts = 0;
     this.allowPacmanMovement = false;
 
     const left = this.scaledTileSize * 11;
@@ -1516,7 +1533,9 @@ class GameCoordinator {
     this.displayText({ left, top }, 'ready', duration, width, height);
 
     new Timer(() => {
-      this.soundManager.setAmbience('siren_1');
+      this.allowPause = true;
+      this.cutscene = false;
+      this.soundManager.setAmbience(this.determineSiren(this.remainingDots));
 
       this.allowPacmanMovement = true;
       this.pacman.moving = true;
@@ -1578,6 +1597,7 @@ class GameCoordinator {
     window.addEventListener('dotEaten', this.dotEaten.bind(this));
     window.addEventListener('powerUp', this.powerUp.bind(this));
     window.addEventListener('eatGhost', this.eatGhost.bind(this));
+    window.addEventListener('restoreGhost', this.restoreGhost.bind(this));
     window.addEventListener('addTimer', this.addTimer.bind(this));
     window.addEventListener('removeTimer', this.removeTimer.bind(this));
     window.addEventListener('releaseGhost', this.releaseGhost.bind(this));
@@ -1608,16 +1628,21 @@ class GameCoordinator {
       this.allowPause = false;
 
       setTimeout(() => {
-        this.allowPause = true;
+        if (!this.cutscene) {
+          this.allowPause = true;
+        }
       }, 500);
 
       this.gameEngine.changePausedState(this.gameEngine.running);
+      this.soundManager.play('pause');
 
       if (this.gameEngine.started) {
+        this.soundManager.resumeAmbience();
         this.activeTimers.forEach((timer) => {
           timer.resume();
         });
       } else {
+        this.soundManager.stopAmbience();
         this.activeTimers.forEach((timer) => {
           timer.pause();
         });
@@ -1643,6 +1668,7 @@ class GameCoordinator {
       const height = this.scaledTileSize * 2;
 
       this.displayText({ left, top }, e.detail.points, 2000, width, height);
+      this.soundManager.play('fruit');
     }
   }
 
@@ -1651,6 +1677,9 @@ class GameCoordinator {
    * the player has remaining lives.
    */
   deathSequence() {
+    this.allowPause = false;
+    this.cutscene = true;
+    this.soundManager.stopAmbience();
     this.removeTimer({ detail: { timer: this.fruitTimer } });
     this.removeTimer({ detail: { timer: this.ghostCycleTimer } });
     this.removeTimer({ detail: { timer: this.endIdleTimer } });
@@ -1669,6 +1698,7 @@ class GameCoordinator {
         ghostRef.display = false;
       });
       this.pacman.prepDeathAnimation();
+      this.soundManager.play('death');
       new Timer(() => {
         this.mazeCover.style.visibility = 'visible';
         new Timer(() => {
@@ -1691,6 +1721,8 @@ class GameCoordinator {
    */
   dotEaten() {
     this.remainingDots -= 1;
+
+    this.soundManager.playDotSound();
 
     if (this.remainingDots === 174 || this.remainingDots === 74) {
       this.createFruit();
@@ -1721,10 +1753,40 @@ class GameCoordinator {
    */
   speedUpBlinky() {
     this.blinky.speedUp();
+
+    if (this.scaredGhosts.length === 0 && this.eyeGhosts === 0) {
+      this.soundManager.setAmbience(this.determineSiren(this.remainingDots));
+    }
   }
 
+
+  /**
+   * Determines the correct siren ambience
+   * @param {Number} remainingDots
+   * @returns {String}
+   */
+  determineSiren(remainingDots) {
+    let sirenNum;
+
+    if (remainingDots > 40) {
+      sirenNum = 1;
+    } else if (remainingDots > 20) {
+      sirenNum = 2;
+    } else {
+      sirenNum = 3;
+    }
+
+    return `siren_${sirenNum}`;
+  }
+
+  /**
+   * Resets the gameboard and prepares the next level
+   */
   advanceLevel() {
+    this.allowPause = false;
+    this.cutscene = true;
     this.allowKeyPresses = false;
+    this.soundManager.stopAmbience();
 
     this.entityList.forEach((entity) => {
       const entityRef = entity;
@@ -1775,6 +1837,9 @@ class GameCoordinator {
         ghost.endScared();
       });
       this.scaredGhosts = [];
+      if (this.eyeGhosts === 0) {
+        this.soundManager.setAmbience(this.determineSiren(this.remainingDots));
+      }
     } else if (this.scaredGhosts.length > 0) {
       this.scaredGhosts.forEach((ghost) => {
         ghost.toggleScaredColor();
@@ -1790,6 +1855,7 @@ class GameCoordinator {
    * Upon eating a power pellet, sets the ghosts to 'scared' mode
    */
   powerUp() {
+    this.soundManager.setAmbience('power_up');
     this.removeTimer({ detail: { timer: this.ghostFlashTimer } });
 
     this.ghostCombo = 0;
@@ -1826,10 +1892,12 @@ class GameCoordinator {
     const { position, measurement } = e.detail.ghost;
 
     this.pauseTimer({ detail: { timer: this.ghostFlashTimer } });
+    this.soundManager.play('eat_ghost');
 
     this.scaredGhosts = this.scaredGhosts.filter(
       ghost => ghost.name !== e.detail.ghost.name,
     );
+    this.eyeGhosts += 1;
 
     this.ghostCombo += 1;
     const comboPoints = this.determineComboPoints();
@@ -1852,6 +1920,8 @@ class GameCoordinator {
     });
 
     new Timer(() => {
+      this.soundManager.setAmbience('eyes');
+
       this.resumeTimer({ detail: { timer: this.ghostFlashTimer } });
       this.allowPacmanMovement = true;
       this.pacman.display = true;
@@ -1864,6 +1934,19 @@ class GameCoordinator {
         ghostRef.pause(false);
       });
     }, pauseDuration);
+  }
+
+  /**
+   * Decrements the count of "eye" ghosts and updates the ambience
+   */
+  restoreGhost() {
+    this.eyeGhosts -= 1;
+
+    if (this.eyeGhosts === 0) {
+      const sound = this.scaredGhosts.length > 0
+        ? 'power_up' : this.determineSiren(this.remainingDots);
+      this.soundManager.setAmbience(sound);
+    }
   }
 
   /**
@@ -2596,23 +2679,75 @@ class SoundManager {
   }
 
   /**
+   * Special method for eating dots. The dots should alternate between two
+   * sound effects, but not too quickly.
+   */
+  playDotSound() {
+    this.queuedDotSound = true;
+
+    if (!this.dotPlayer) {
+      this.queuedDotSound = false;
+      this.dotSound = (this.dotSound === 1) ? 2 : 1;
+
+      this.dotPlayer = new Audio(
+        `${this.baseUrl}dot_${this.dotSound}.${this.fileFormat}`,
+      );
+      this.dotPlayer.onended = this.dotSoundEnded.bind(this);
+      this.dotPlayer.play();
+    }
+  }
+
+  /**
+   * Deletes the dotSound player and plays another dot sound if needed
+   */
+  dotSoundEnded() {
+    this.dotPlayer = undefined;
+
+    if (this.queuedDotSound) {
+      this.playDotSound();
+    }
+  }
+
+  /**
    * Loops an ambient sound
    * @param {String} sound
    */
   async setAmbience(sound) {
-    if (this.source) {
-      this.source.stop();
+    this.currentAmbience = sound;
+
+    if (this.ambienceSource) {
+      this.ambienceSource.stop();
     }
 
     const response = await fetch(`${this.baseUrl}${sound}.${this.fileFormat}`);
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await this.ambience.decodeAudioData(arrayBuffer);
 
-    this.source = this.ambience.createBufferSource();
-    this.source.buffer = audioBuffer;
-    this.source.connect(this.ambience.destination);
-    this.source.loop = true;
-    this.source.start();
+    this.ambienceSource = this.ambience.createBufferSource();
+    this.ambienceSource.buffer = audioBuffer;
+    this.ambienceSource.connect(this.ambience.destination);
+    this.ambienceSource.loop = true;
+    this.ambienceSource.start();
+  }
+
+  /**
+   * Resumes the ambience
+   */
+  resumeAmbience() {
+    if (this.ambienceSource) {
+      // Resetting the ambience since an AudioBufferSourceNode can only
+      // have 'start()' called once
+      this.setAmbience(this.currentAmbience);
+    }
+  }
+
+  /**
+   * Stops the ambience
+   */
+  stopAmbience() {
+    if (this.ambienceSource) {
+      this.ambienceSource.stop();
+    }
   }
 }
 
