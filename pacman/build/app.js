@@ -1104,6 +1104,7 @@ class GameCoordinator {
     this.mazeDiv = document.getElementById('maze');
     this.mazeImg = document.getElementById('maze-img');
     this.mazeCover = document.getElementById('maze-cover');
+    this.mazeContainer = document.getElementById('maze-container');
 
     this.animate = true;
     this.maxFps = 120;
@@ -1248,6 +1249,10 @@ class GameCoordinator {
     rightCover.style.right = '-50%';
     gameStartButton.style.opacity = 0;
     gameStartButton.disabled = true;
+
+    setTimeout(() => {
+      gameStartButton.style.visibility = 'hidden';
+    }, 1000);
 
     this.init();
   }
@@ -1598,6 +1603,26 @@ class GameCoordinator {
     window.addEventListener('addTimer', this.addTimer.bind(this));
     window.addEventListener('removeTimer', this.removeTimer.bind(this));
     window.addEventListener('releaseGhost', this.releaseGhost.bind(this));
+
+    const directions = [
+      'up', 'down', 'left', 'right',
+    ];
+
+    directions.forEach((direction) => {
+      document.getElementById(`button-${direction}`).addEventListener(
+        'touchstart', () => {
+          this.changeDirection(direction);
+        },
+      );
+    });
+  }
+
+  changeDirection(direction) {
+    if (this.allowKeyPresses && this.gameEngine.running) {
+      this.pacman.changeDirection(
+        direction, this.allowPacmanMovement,
+      );
+    }
   }
 
   /**
@@ -1608,12 +1633,8 @@ class GameCoordinator {
     // ESC key
     if (e.keyCode === 27) {
       this.handlePauseKey();
-    } else if (this.movementKeys[e.keyCode] && this.allowKeyPresses) {
-      if (this.gameEngine.running) {
-        this.pacman.changeDirection(
-          this.movementKeys[e.keyCode], this.allowPacmanMovement,
-        );
-      }
+    } else if (this.movementKeys[e.keyCode]) {
+      this.changeDirection(this.movementKeys[e.keyCode]);
     }
   }
 
