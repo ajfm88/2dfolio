@@ -140,17 +140,18 @@ class GameCoordinator {
    * Reveals the game underneath the loading covers and starts gameplay
    */
   startButtonClick() {
+    const mainMenu = document.getElementById('main-menu-container');
     const gameStartButton = document.getElementById('game-start');
     const leftCover = document.getElementById('left-cover');
     const rightCover = document.getElementById('right-cover');
 
     leftCover.style.left = '-50%';
     rightCover.style.right = '-50%';
-    gameStartButton.style.opacity = 0;
+    mainMenu.style.opacity = 0;
     gameStartButton.disabled = true;
 
     setTimeout(() => {
-      gameStartButton.style.visibility = 'hidden';
+      mainMenu.style.visibility = 'hidden';
     }, 1000);
 
     this.init();
@@ -289,9 +290,9 @@ class GameCoordinator {
 
         setTimeout(() => {
           loadingContainer.remove();
-          const gameStartButton = document.getElementById('game-start');
-          gameStartButton.style.opacity = 1;
-          gameStartButton.style.visibility = 'visible';
+          const mainMenu = document.getElementById('main-menu-container');
+          mainMenu.style.opacity = 1;
+          mainMenu.style.visibility = 'visible';
         }, 1500);
       });
     });
@@ -516,6 +517,10 @@ class GameCoordinator {
     });
   }
 
+  /**
+   * Calls Pacman's changeDirection event if certain conditions are met
+   * @param {({'up'|'down'|'left'|'right'})} direction
+   */
   changeDirection(direction) {
     if (this.allowKeyPresses && this.gameEngine.running) {
       this.pacman.changeDirection(
@@ -772,7 +777,10 @@ class GameCoordinator {
    * Upon eating a power pellet, sets the ghosts to 'scared' mode
    */
   powerUp() {
-    this.soundManager.setAmbience('power_up');
+    if (this.remainingDots !== 0) {
+      this.soundManager.setAmbience('power_up');
+    }
+
     this.removeTimer({ detail: { timer: this.ghostFlashTimer } });
 
     this.ghostCombo = 0;
@@ -834,6 +842,7 @@ class GameCoordinator {
       const ghostRef = ghost;
       ghostRef.animate = false;
       ghostRef.pause(true);
+      ghostRef.allowCollision = false;
     });
 
     new Timer(() => {
@@ -849,6 +858,7 @@ class GameCoordinator {
         const ghostRef = ghost;
         ghostRef.animate = true;
         ghostRef.pause(false);
+        ghostRef.allowCollision = true;
       });
     }, pauseDuration);
   }
@@ -885,6 +895,7 @@ class GameCoordinator {
     pointsDiv.style.height = `${height || width}px`;
     pointsDiv.style.top = `${position.top}px`;
     pointsDiv.style.left = `${position.left}px`;
+    pointsDiv.style.zIndex = 2;
 
     this.mazeDiv.appendChild(pointsDiv);
 
