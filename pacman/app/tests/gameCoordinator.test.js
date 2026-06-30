@@ -42,6 +42,10 @@ describe('gameCoordinator', () => {
     };
 
     global.SoundManager = class {
+      setCutscene() {}
+
+      setMasterVolume() {}
+
       play() {}
 
       setAmbience() {}
@@ -87,7 +91,6 @@ describe('gameCoordinator', () => {
     comp.mazeDiv.style = {};
     comp.gameUi.style = {};
     comp.reset();
-    comp.soundManager = new SoundManager();
   });
 
   afterEach(() => {
@@ -114,6 +117,36 @@ describe('gameCoordinator', () => {
       comp.startButtonClick();
       assert(comp.init.called);
       assert(!comp.firstGame);
+    });
+  });
+
+  describe('soundButtonClick', () => {
+    it('calls setMasterVolume and toggles the soundButton icon', () => {
+      comp.soundManager.setMasterVolume = sinon.fake();
+
+      comp.soundManager.masterVolume = 1;
+      comp.soundButtonClick();
+      assert(comp.soundManager.setMasterVolume.calledWith(0));
+      assert.strictEqual(comp.soundButton.innerHTML, 'volume_off');
+
+      comp.soundManager.masterVolume = 0;
+      comp.soundButtonClick();
+      assert(comp.soundManager.setMasterVolume.calledWith(1));
+      assert.strictEqual(comp.soundButton.innerHTML, 'volume_up');
+    });
+  });
+
+  describe('displayErrorMessage', () => {
+    it('removes the loading container and reveals the error message', () => {
+      const spy = sinon.fake();
+      global.document.getElementById = sinon.fake.returns({
+        style: {},
+        remove: spy,
+      });
+
+      comp.displayErrorMessage();
+      clock.tick(1500);
+      assert(spy.called);
     });
   });
 
@@ -263,6 +296,7 @@ describe('gameCoordinator', () => {
       const ambientSpy = sinon.fake();
       comp.soundManager = {
         setAmbience: ambientSpy,
+        setCutscene: sinon.fake(),
       };
 
       comp.startGameplay();
@@ -294,6 +328,7 @@ describe('gameCoordinator', () => {
       comp.soundManager = {
         play: playSpy,
         setAmbience: ambientSpy,
+        setCutscene: sinon.fake(),
       };
 
       comp.startGameplay(true);
@@ -438,6 +473,13 @@ describe('gameCoordinator', () => {
 
       comp.handleKeyDown({ keyCode: 27 });
       assert(comp.handlePauseKey.called);
+    });
+
+    it('calls soundButtonClick when Q is pressed', () => {
+      comp.soundButtonClick = sinon.fake();
+
+      comp.handleKeyDown({ keyCode: 81 });
+      assert(comp.soundButtonClick.called);
     });
 
     it('calls Pacman\'s changeDirection when a move key is pressed', () => {
