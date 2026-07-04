@@ -432,7 +432,7 @@ describe('gameCoordinator', () => {
       comp.level = 1;
 
       comp.releaseGhost();
-      clock.tick(7000);
+      clock.tick(8000);
     });
 
     it('does nothing unless there is an idle ghost to release', () => {
@@ -939,6 +939,7 @@ describe('gameCoordinator', () => {
       comp.remainingDots = 0;
       comp.removeTimer = sinon.fake();
       comp.updateExtraLivesDisplay = sinon.fake();
+      const imgBase = 'app/style//graphics/spriteSheets/maze/';
 
       comp.advanceLevel();
       assert(!comp.allowKeyPresses);
@@ -947,6 +948,24 @@ describe('gameCoordinator', () => {
       ));
 
       clock.tick(2000);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_white.svg`);
+
+      clock.tick(250);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_blue.svg`);
+
+      clock.tick(250);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_white.svg`);
+
+      clock.tick(250);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_blue.svg`);
+
+      clock.tick(250);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_white.svg`);
+
+      clock.tick(250);
+      assert.strictEqual(comp.mazeImg.src, `${imgBase}maze_blue.svg`);
+
+      clock.tick(250);
       assert.strictEqual(comp.mazeCover.style.visibility, 'visible');
 
       clock.tick(500);

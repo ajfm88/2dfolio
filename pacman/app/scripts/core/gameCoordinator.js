@@ -647,7 +647,7 @@ class GameCoordinator {
    */
   releaseGhost() {
     if (this.idleGhosts.length > 0) {
-      const delay = Math.max((8 - this.level) * 1000, 0);
+      const delay = Math.max((8 - ((this.level - 1) * 4)) * 1000, 0);
 
       this.endIdleTimer = new Timer(() => {
         this.idleGhosts[0].endIdleMode();
@@ -953,31 +953,53 @@ class GameCoordinator {
     this.removeTimer({ detail: { timer: this.endIdleTimer } });
     this.removeTimer({ detail: { timer: this.ghostFlashTimer } });
 
+    const imgBase = 'app/style//graphics/spriteSheets/maze/';
+
     new Timer(() => {
-      this.mazeCover.style.visibility = 'visible';
+      this.ghosts.forEach((ghost) => {
+        const ghostRef = ghost;
+        ghostRef.display = false;
+      });
 
+      this.mazeImg.src = `${imgBase}maze_white.svg`;
       new Timer(() => {
-        this.mazeCover.style.visibility = 'hidden';
-        this.level += 1;
-        this.allowKeyPresses = true;
-
-        this.entityList.forEach((entity) => {
-          const entityRef = entity;
-
-          if (entityRef.level) {
-            entityRef.level = this.level;
-          }
-          entityRef.reset();
-          if (entityRef instanceof Ghost) {
-            entityRef.resetDefaultSpeed();
-          }
-          if (entityRef instanceof Pickup && entityRef.type !== 'fruit') {
-            this.remainingDots += 1;
-          }
-        });
-
-        this.startGameplay();
-      }, 500);
+        this.mazeImg.src = `${imgBase}maze_blue.svg`;
+        new Timer(() => {
+          this.mazeImg.src = `${imgBase}maze_white.svg`;
+          new Timer(() => {
+            this.mazeImg.src = `${imgBase}maze_blue.svg`;
+            new Timer(() => {
+              this.mazeImg.src = `${imgBase}maze_white.svg`;
+              new Timer(() => {
+                this.mazeImg.src = `${imgBase}maze_blue.svg`;
+                new Timer(() => {
+                  this.mazeCover.style.visibility = 'visible';
+                  new Timer(() => {
+                    this.mazeCover.style.visibility = 'hidden';
+                    this.level += 1;
+                    this.allowKeyPresses = true;
+                    this.entityList.forEach((entity) => {
+                      const entityRef = entity;
+                      if (entityRef.level) {
+                        entityRef.level = this.level;
+                      }
+                      entityRef.reset();
+                      if (entityRef instanceof Ghost) {
+                        entityRef.resetDefaultSpeed();
+                      }
+                      if (entityRef instanceof Pickup
+                        && entityRef.type !== 'fruit') {
+                        this.remainingDots += 1;
+                      }
+                    });
+                    this.startGameplay();
+                  }, 500);
+                }, 250);
+              }, 250);
+            }, 250);
+          }, 250);
+        }, 250);
+      }, 250);
     }, 2000);
   }
 
@@ -1029,9 +1051,10 @@ class GameCoordinator {
       ghost.becomeScared();
     });
 
+    const powerDuration = Math.max((7 - this.level) * 1000, 0);
     this.ghostFlashTimer = new Timer(() => {
       this.flashGhosts(0, 9);
-    }, 6000);
+    }, powerDuration);
   }
 
   /**
@@ -1050,6 +1073,8 @@ class GameCoordinator {
     const { position, measurement } = e.detail.ghost;
 
     this.pauseTimer({ detail: { timer: this.ghostFlashTimer } });
+    this.pauseTimer({ detail: { timer: this.ghostCycleTimer } });
+    this.pauseTimer({ detail: { timer: this.fruitTimer } });
     this.soundManager.play('eat_ghost');
 
     this.scaredGhosts = this.scaredGhosts.filter(
@@ -1085,6 +1110,8 @@ class GameCoordinator {
       this.soundManager.setAmbience('eyes');
 
       this.resumeTimer({ detail: { timer: this.ghostFlashTimer } });
+      this.resumeTimer({ detail: { timer: this.ghostCycleTimer } });
+      this.resumeTimer({ detail: { timer: this.fruitTimer } });
       this.allowPacmanMovement = true;
       this.pacman.display = true;
       this.pacman.moving = true;
