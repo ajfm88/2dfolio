@@ -1,5 +1,7 @@
 class CharacterUtil {
-  constructor() {
+  constructor(scaledTileSize) {
+    this.scaledTileSize = scaledTileSize;
+    this.threshold = 5 * this.scaledTileSize;
     this.directions = {
       up: 'up',
       down: 'down',
@@ -17,11 +19,10 @@ class CharacterUtil {
    */
   checkForStutter(position, oldPosition) {
     let stutter = false;
-    const threshold = 5;
 
     if (position && oldPosition) {
-      if (Math.abs(position.top - oldPosition.top) > threshold
-        || Math.abs(position.left - oldPosition.left) > threshold) {
+      if (Math.abs(position.top - oldPosition.top) > this.threshold
+        || Math.abs(position.left - oldPosition.left) > this.threshold) {
         stutter = true;
       }
     }
@@ -86,7 +87,7 @@ class CharacterUtil {
   }
 
   /**
-   * Check to see if a character's disired direction results in turning around
+   * Check to see if a character's desired direction results in turning around
    * @param {('up'|'down'|'left'|'right')} direction - The character's current travel orientation
    * @param {('up'|'down'|'left'|'right')} desiredDirection - Character's desired orientation
    * @returns {boolean}
@@ -149,9 +150,7 @@ class CharacterUtil {
    * @returns {boolean}
    */
   checkForWallCollision(desiredNewGridPosition, mazeArray, direction) {
-    const roundingFunction = this.determineRoundingFunction(
-      direction, this.directions,
-    );
+    const roundingFunction = this.determineRoundingFunction(direction, this.directions);
 
     const desiredX = roundingFunction(desiredNewGridPosition.x);
     const desiredY = roundingFunction(desiredNewGridPosition.y);
@@ -173,15 +172,11 @@ class CharacterUtil {
    * @param {number} scaledTileSize - The dimensions of a single tile
    * @returns {object}
    */
-  determineNewPositions(
-    position, direction, velocityPerMs, elapsedMs, scaledTileSize,
-  ) {
-    const newPosition = Object.assign({}, position);
+  determineNewPositions(position, direction, velocityPerMs, elapsedMs, scaledTileSize) {
+    const newPosition = { ...position };
     newPosition[this.getPropertyToChange(direction)]
       += this.getVelocity(direction, velocityPerMs) * elapsedMs;
-    const newGridPosition = this.determineGridPosition(
-      newPosition, scaledTileSize,
-    );
+    const newGridPosition = this.determineGridPosition(newPosition, scaledTileSize);
 
     return {
       newPosition,
@@ -197,10 +192,8 @@ class CharacterUtil {
    * @returns {({top: number, left: number})}
    */
   snapToGrid(position, direction, scaledTileSize) {
-    const newPosition = Object.assign({}, position);
-    const roundingFunction = this.determineRoundingFunction(
-      direction, this.directions,
-    );
+    const newPosition = { ...position };
+    const roundingFunction = this.determineRoundingFunction(direction, this.directions);
 
     switch (direction) {
       case this.directions.up:
@@ -226,7 +219,7 @@ class CharacterUtil {
    * @returns {({top: number, left: number})}
    */
   handleWarp(position, scaledTileSize, mazeArray) {
-    const newPosition = Object.assign({}, position);
+    const newPosition = { ...position };
     const gridPosition = this.determineGridPosition(position, scaledTileSize);
 
     if (gridPosition.x < -0.75) {
