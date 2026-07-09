@@ -418,7 +418,7 @@ class GameCoordinator {
       this.pacman = new Pacman(
         this.scaledTileSize,
         this.mazeArray,
-        new CharacterUtil(),
+        new CharacterUtil(this.scaledTileSize),
       );
       this.blinky = new Ghost(
         this.scaledTileSize,
@@ -426,7 +426,7 @@ class GameCoordinator {
         this.pacman,
         'blinky',
         this.level,
-        new CharacterUtil(),
+        new CharacterUtil(this.scaledTileSize),
       );
       this.pinky = new Ghost(
         this.scaledTileSize,
@@ -434,7 +434,7 @@ class GameCoordinator {
         this.pacman,
         'pinky',
         this.level,
-        new CharacterUtil(),
+        new CharacterUtil(this.scaledTileSize),
       );
       this.inky = new Ghost(
         this.scaledTileSize,
@@ -442,7 +442,7 @@ class GameCoordinator {
         this.pacman,
         'inky',
         this.level,
-        new CharacterUtil(),
+        new CharacterUtil(this.scaledTileSize),
         this.blinky,
       );
       this.clyde = new Ghost(
@@ -451,7 +451,7 @@ class GameCoordinator {
         this.pacman,
         'clyde',
         this.level,
-        new CharacterUtil(),
+        new CharacterUtil(this.scaledTileSize),
       );
       this.fruit = new Pickup(
         'fruit',
@@ -1161,7 +1161,7 @@ class GameCoordinator {
     this.soundManager.play('eat_ghost');
 
     this.scaredGhosts = this.scaredGhosts.filter(
-      ghost => ghost.name !== e.detail.ghost.name,
+      (ghost) => ghost.name !== e.detail.ghost.name,
     );
     this.eyeGhosts += 1;
 
@@ -1296,7 +1296,7 @@ class GameCoordinator {
     if (this.timerExists(e)) {
       window.clearTimeout(e.detail.timer.timerId);
       this.activeTimers = this.activeTimers.filter(
-        timer => timer.timerId !== e.detail.timer.timerId,
+        (timer) => timer.timerId !== e.detail.timer.timerId,
       );
     }
   }
