@@ -1,4 +1,5 @@
 {
+  "name": "pacman-js",
   "nyc": {
     "include": [
       "app/scripts/**/*.js"
@@ -6,12 +7,12 @@
     "all": true
   },
   "scripts": {
-    "test": "nyc --check-coverage --lines 100 --functions 100 --branches 100 mocha app/tests",
+    "build": "gulp",
+    "test": "nyc --reporter=html --reporter=text --reporter=json --check-coverage --lines 100 --functions 100 --branches 100 mocha app/tests",
     "lint": "eslint .",
     "update": "ncu -i --format group",
     "serve": "node ./node_modules/http-server/bin/http-server",
-    "watch": "gulp watch",
-    "prepare": "husky"
+    "watch": "gulp watch"
   },
   "engines": {
     "node": ">=12.18.3",
@@ -26,7 +27,6 @@
     "gulp-remove-code": "^3.0.4",
     "gulp-sass": "^6.0.1",
     "http-server": "^14.1.1",
-    "husky": "^9.1.7",
     "mocha": "^11.3.0",
     "npm-check-updates": "^19.3.1",
     "nyc": "^17.1.0",
