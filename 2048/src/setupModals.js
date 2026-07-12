@@ -12,6 +12,7 @@ import {
   differenceInSeconds,
 } from "date-fns"
 import { animateElement } from "./animation"
+import { applyTranslations, cycleLanguage, LANGUAGES } from "./i18n"
 
 const RELEASE_DATE = new Date(2022, 1, 11)
 
@@ -24,7 +25,10 @@ export default function setupModals(inputHandler) {
     {
       onOpen: modal => {
         inputHandler.stopInput()
+        // Build the instruction grid first so the board is fully sized, then
+        // lock the modal height so toggling languages never resizes it.
         setupInstructionGrid(modal)
+        reserveModalHeight(modal)
       },
       onClose: () => {
         gameManager.userSettings.showIntro = false
@@ -32,6 +36,8 @@ export default function setupModals(inputHandler) {
       },
     }
   )
+
+  setupLanguageButton(helpModal)
 
   const statsModal = new Modal(
     document.querySelector("[data-stats-modal-template]"),
@@ -53,6 +59,31 @@ export default function setupModals(inputHandler) {
   })
 
   return { helpModal, statsModal }
+}
+
+function setupLanguageButton(helpModal) {
+  const langBtn = helpModal.modalContainer.querySelector("[data-lang-btn]")
+  applyTranslations(helpModal.modalContainer)
+  langBtn.addEventListener("click", () => {
+    cycleLanguage()
+    applyTranslations(helpModal.modalContainer)
+  })
+}
+
+// Measure the modal at every language and pin its min-height to the tallest, so
+// switching languages (which reflows the text) never changes the box size.
+function reserveModalHeight(overlay) {
+  const modalElem = overlay.querySelector("[data-modal]")
+  if (modalElem == null) return
+
+  modalElem.style.minHeight = ""
+  let tallest = 0
+  LANGUAGES.forEach(({ code }) => {
+    applyTranslations(overlay, code)
+    tallest = Math.max(tallest, modalElem.offsetHeight)
+  })
+  applyTranslations(overlay)
+  modalElem.style.minHeight = `${tallest}px`
 }
 
 async function setupInstructionGrid(modal) {
