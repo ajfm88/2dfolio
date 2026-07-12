@@ -7,6 +7,7 @@ const defaultCurrentGame = { score: 0, tiles: [], date: new Date() }
 const defaultGameState = {
   userSettings: {
     showIntro: true,
+    language: "en",
   },
   stats: {
     highScore: 0,
