@@ -328,6 +328,31 @@ body {
   color: var(--text-color-light);
 }
 
+.modal-lang-btn {
+  width: max(4vmin, 30px);
+  height: max(4vmin, 30px);
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  fill: var(--text-color);
+  transition: fill 150ms ease-in-out;
+  outline-color: var(--text-color-light);
+  position: absolute;
+  left: .5em;
+  top: .5em;
+}
+
+.modal-lang-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+.modal-lang-btn:hover,
+.modal-lang-btn:focus {
+  fill: var(--text-color-light);
+}
+
 .modal-overlay.show .modal {
   transform: translateY(0);
 }
