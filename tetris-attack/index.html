@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="src/stats.min.js"></script>
+  </head>
+  <body>
+
+    <div id="game-container">
+    </div>
+
+    <script type="module">
+      import {Game}     from './src/game.js';
+      import {Renderer} from './src/renderer.js';
+      import {Keyboard} from './src/keyboard.js';
+
+      var stats = new Stats();
+			//stats.showPanel( 0 );
+			//document.body.appendChild( stats.dom );
+
+      const game = new Game();
+      const renderer = new Renderer('game-container', game.board);
+
+      function animate() {
+        stats.begin();
+
+        game.tick();
+        renderer.draw(game);
+
+        stats.end();
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+
+  </body>
+</html>
