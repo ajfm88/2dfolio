@@ -3,7 +3,7 @@ const SWAP_KEY = " ";
 
 class Cursor {
   constructor() {
-    this.position = [0, 0];
+    this.position = [3, 10];
     this.state = 'idle';
     this.moveCounter = 0;
     this.requestingSwap = false;
@@ -13,6 +13,12 @@ class Cursor {
       "ArrowUp": [0, -1],
       "ArrowDown": [0, 1],
     }));
+  }
+
+  requestPushUp() {
+    if (this.position[1] > 0) {
+      this.position[1]--;
+    }
   }
 
   tick(keyboard, board) {
