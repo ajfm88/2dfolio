@@ -3,10 +3,10 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "src/comboSprites.png";
+image.src = "src/chainSprites.png";
 
-export class ComboNumberBoxObject extends GameObject {
-  constructor({boardX = 0, boardY = 0, lifetime = 50, number = 4} = {}) {
+export class ChainNumberBoxObject extends GameObject {
+  constructor({boardX = 0, boardY = 0, lifetime = 50, number = 1} = {}) {
     super();
     this.boardX = boardX;
     this.boardY = boardY;
@@ -32,7 +32,7 @@ export class ComboNumberBoxObject extends GameObject {
 
     const TS = renderer.tileSize();
 
-    const spriteIndex = this.number - 4;
+    const spriteIndex = this.number - 2;
 
     const x = TS * this.boardX;
     const y = TS * this.boardY + (easeIn - 1) * TS;
