@@ -17,6 +17,10 @@ class Renderer {
     this.spriteRenderer = new SpriteRenderer();
   }
 
+  tileSize() { 
+    return TS;
+  }
+
   _createCanvasElement() {
     const canvasEl = document.createElement('canvas');
     canvasEl.width = this.tileColumns * Constants.TILE_SIZE;
@@ -25,20 +29,26 @@ class Renderer {
   }
 
   draw(game) {
-    this.canvasCtx.setTransform(1,0,0,1,0,0);
+    this.canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasCtx.fillStyle = '#222';
     this.canvasCtx.fillRect(0, 0, this.tileColumns * Constants.TILE_SIZE, this.tileRows * Constants.TILE_SIZE);
 
-    //TODO sync this with the trash rate
-    this.yscroll = (this.yscroll || 0) + TS/(60*7);
-    if(this.yscroll > TS) {
-      this.yscroll = 0;
-    }
-    this.canvasCtx.setTransform(1,0,0,1,0,Math.floor(-this.yscroll));
+    const scroll = game.board.scroll;
+    this.yscroll = scroll * TS;
+    this.canvasCtx.setTransform(1, 0, 0, 1, 0, Math.floor(-this.yscroll));
     this.frameNumber = (this.frameNumber || 0) + 1;
-    this._drawTileGrid(game.board);
+    //this._drawTileGrid(game.board);
     this._drawBlocks(game.board);
-    this._drawCursor(game.cursor);
+    
+    game.cursors.forEach((c) => this._drawCursor(c));
+
+    this._drawObjects(game.board);
+  }
+
+  _drawObjects(board) {
+    for(const gameObject of board.gameObjects) {
+      gameObject.draw(this);
+    }
   }
 
   _drawBlocks(board) {
@@ -46,19 +56,26 @@ class Renderer {
       for (let col = 0; col < this.tileColumns; ++col) {
         const block = board.grid.get(col, row);
         if (block != null) {
-          this.spriteRenderer.render(this.canvasCtx, block.spriteIndex, TS * col, TS * row, TS, TS, this.frameNumber, block.falling());
+          this.spriteRenderer.render(this.canvasCtx, block.spriteIndex, TS * col, TS * row, TS, TS, this.frameNumber, block);
         }
       }
+    }
+    for (let col = 0; col < this.tileColumns; col++) {
+      const block = board.nextRow[col];
+      this.spriteRenderer.render(this.canvasCtx, block.spriteIndex, TS * col, TS * this.tileRows, TS, TS, this.frameNumber, block, true);
     }
   }
 
   _drawCursor(cursor) {
-    this.canvasCtx.strokeStyle = 'white';
-    const sideDash = [TS / 4, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2, TS / 2]
+    const cursorPulse = this.frameNumber % 50 > 25 ? -1 : -4;
+    const w = TS + cursorPulse * 2;
+
+    this.canvasCtx.strokeStyle = cursor.color;
+    const sideDash = [w / 4, w / 2, w / 2, w / 2, w / 2, w / 2, w / 2, w / 2, w / 2];
     this.canvasCtx.setLineDash(sideDash)
     this.canvasCtx.lineWidth = 5;
-    this.canvasCtx.strokeRect(TS * cursor.position[0], TS * cursor.position[1], TS, TS);
-    this.canvasCtx.strokeRect(TS * (cursor.position[0] + 1), TS * cursor.position[1], TS, TS);
+    this.canvasCtx.strokeRect(TS * cursor.position[0] - cursorPulse, TS * cursor.position[1] - cursorPulse, w, w);
+    this.canvasCtx.strokeRect(TS * (cursor.position[0] + 1) - cursorPulse, TS * cursor.position[1] - cursorPulse, w, w);
   }
 
   _drawTileGrid(board) {

@@ -2,28 +2,27 @@ import { Board } from './board.js';
 import { Cursor } from './cursor.js';
 import { Keyboard } from './keyboard.js';
 
-const TRASH_FREQUENCY = 60 * 7;
+const SCROLL_PER_FRAME = 1 / (60 * 7);
 
 class Game {
   constructor() {
-    this.keyboard = new Keyboard();
     this.board = new Board();
-    this.cursor = new Cursor();
+
+    this.keyboard = new Keyboard({});
+    const cursor = new Cursor(this.keyboard, this.board);
+
+    this.keyboardTwo = new Keyboard({ up: "Numpad8", down: "Numpad5", right: "Numpad6", left: "Numpad4", swap: "NumpadEnter" });
+    const cursorTwo = new Cursor(this.keyboardTwo, this.board, "#B8B");
+
+    this.board.addCursor(cursor);
+
+    this.cursors = [cursor] //, cursorTwo];
+    this.scroll = 0;
+    this.freezeCounter = 0;
   }
 
   tick() {
-    this.cursor.tick(this.keyboard, this.board);
     this.board.tick();
-    this._trashPusher();
-  }
-
-  _trashPusher() {
-    this.trashCounter = (this.trashCounter || TRASH_FREQUENCY) - 1;
-    if (this.trashCounter <= 0) {
-      this.board.pushTrashUp();
-      this.trashCounter = null;
-      this.cursor.requestPushUp();
-    }
   }
 }
 
