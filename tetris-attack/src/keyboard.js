@@ -1,17 +1,38 @@
+const UP = Symbol.for("UP");
+const DOWN = Symbol.for("DOWN");
+const RIGHT = Symbol.for("RIGHT");
+const LEFT = Symbol.for("LEFT");
+const SWAP = Symbol.for("SWAP");
+const SCROLL = Symbol.for("SCROLL");
+
 class Keyboard {
-  constructor() {
+  constructor({ up = "ArrowUp", down = "ArrowDown", right = "ArrowRight", left = "ArrowLeft", swap = "Space", scroll = "ShiftRight" } = {}) {
     this.downKeys = new Set();
 
-    document.addEventListener("keydown", (e) => { this.keydown(e) }, false);
-    document.addEventListener("keyup", (e) => { this.keyup(e) }, false);
+    this.keyMapping = new Map();
+    this.keyMapping.set(up, UP);
+    this.keyMapping.set(down, DOWN);
+    this.keyMapping.set(left, LEFT);
+    this.keyMapping.set(right, RIGHT);
+    this.keyMapping.set(swap, SWAP);
+    this.keyMapping.set(scroll, SCROLL);
+
+    document.addEventListener("keydown", (e) => { this.keydown(e) }, true);
+    document.addEventListener("keyup", (e) => { this.keyup(e) }, true);
   }
 
   keydown(e) {
-    this.downKeys.add(e.key);
+    const action = this.keyMapping.get(e.code);
+    if (action) {
+      this.downKeys.add(action);
+    }
   }
 
   keyup(e) {
-    this.downKeys.delete(e.key);
+    const action = this.keyMapping.get(e.code);
+    if (action) {
+      this.downKeys.delete(action);
+    }
   }
 
   isDown(keyName) {
@@ -21,4 +42,4 @@ class Keyboard {
   // TODO : Callbacks for special keys down/up
 }
 
-export { Keyboard };
+export { Keyboard, UP, DOWN, RIGHT, LEFT, SWAP, SCROLL };
