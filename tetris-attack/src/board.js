@@ -1,15 +1,22 @@
-import {ComboNumberBoxObject} from './objects/ComboNumberBoxObject.js';
+import { ComboNumberBoxObject } from './objects/ComboNumberBoxObject.js';
+import { ChainNumberBoxObject } from './objects/ChainNumberBoxObject.js';
+import { ComboPopParticles } from './objects/ComboPopParticles.js';
+import { PositionSet } from './utils.js';
 
 export const BLOCK_STATE_NORMAL = Symbol("BLOCK_STATE_NORMAL");
 export const BLOCK_STATE_POPPING = Symbol("BLOCK_STATE_POPPING");
 export const BLOCK_STATE_FALLING = Symbol("BLOCK_STATE_FALLING");
+export const BLOCK_STATE_MOVING = Symbol("BLOCK_STATE_MOVING");
 
 const DROP_SPEED = 3;
-const BLOCK_POP_TIME = 80;
+const BASE_BLOCK_POP_TIME = 80;
+const BLOCK_POP_TIME_PER_BLOCK = 5;
 const SCROLL_PER_FRAME = 1 / (60 * 7);
 const FREEZE_TIME_PER_POP = 40;
 
-const BLOCK_COLORS = ["green", "purple", "red", "yellow", "cyan", "blue", "grey"];
+const BLOOP_MODE = false;
+
+const BLOCK_COLORS = ["green", "purple", "red", "yellow", "cyan"] //, "blue", "grey"];
 const randomChoice = arr => arr[Math.floor(Math.random() * arr.length)];
 
 class Block {
@@ -33,11 +40,52 @@ class Block {
     return this._popTime;
   }
 
+  popAge(newAgeValue) {
+    if (newAgeValue !== undefined) {
+      this._popAge = newAgeValue;
+    }
+    return this._popAge;
+  }
+
+  disapearAge(newAgeValue) {
+    if (newAgeValue !== undefined) {
+      this._disapearAge = newAgeValue;
+    }
+    return this._disapearAge;
+  }
+
   falling() {
     return this._state == BLOCK_STATE_FALLING;
   }
 
+  previousPosition(opts) {
+    if (opts) {
+      this.lastPosition = opts;
+      if (!BLOOP_MODE) {
+        this.state(BLOCK_STATE_MOVING);
+      }
+    }
+    return this.lastPosition;
+  }
 
+  movePosition(opts) {
+    if (opts) {
+      this._movePosition = opts;
+    }
+    return this._movePosition;
+  }
+
+  tick() {
+    if (this._movePosition > 0) {
+      this._movePosition -= 1 / 4;
+      if (this._movePosition <= 0) {
+        this.state(BLOCK_STATE_NORMAL);
+      }
+    }
+    if (this._popAge != undefined) {
+      this._popAge++;
+    }
+  }
 }
 
 class BoardGrid {
@@ -54,6 +102,17 @@ class BoardGrid {
 
   get(x, y) { return this.grid[x][y]; }
   put(x, y, new_state) { this.grid[x][y] = new_state; }
+
+  * blocks() {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        const block = this.get(x, y);
+        if (block) {
+          yield [block, x, y];
+        }
+      }
+    }
+  }
 };
 
 class Board {
@@ -62,9 +121,12 @@ class Board {
     this.height = height;
     this.grid = new BoardGrid(width, height);
     this.cursors = [];
+    this.scroll = 0;
     this.freezeCounter = 0;
     this.pendingScrolls = 0;
     this.gameObjects = [];
+    this.isChaining = false;
+    this.chainCounter = 0;
     this._initBoard();
   }
 
@@ -86,11 +148,22 @@ class Board {
   }
 
   _generateRow() {
-    const blocks = Array(this.width);
-    for (let col = 0; col < this.width; col++) {
-      blocks[col] = new Block({ color: randomChoice(BLOCK_COLORS) });
-    }
+    let blocks;
+    do {
+      blocks = Array(this.width);
+      for (let col = 0; col < this.width; col++) {
+        blocks[col] = new Block({ color: randomChoice(BLOCK_COLORS) });
+      }
+    } while (!this._isRowValid(blocks))
     return blocks;
+  }
+  _isRowValid(row) {
+    for (let i = 2; i < row.length; i++) {
+      if (row[i - 2].color == row[i - 1].color && row[i - 1].color == row[i].color) {
+        return false;
+      }
+    }
+    return true;
   }
 
   requestSwap(positionOne, positionTwo) {
@@ -102,6 +175,14 @@ class Board {
     }
     this.grid.put(...positionTwo, blockOne);
     this.grid.put(...positionOne, blockTwo);
+    if (blockOne) {
+      blockOne.previousPosition(positionOne);
+      blockOne.movePosition(1);
+    }
+    if (blockTwo) {
+      blockTwo.previousPosition(positionTwo);
+      blockTwo.movePosition(1);
+    }
   }
 
   requestScroll() {
@@ -117,7 +198,7 @@ class Board {
   }
 
   _handleBlockPopping() {
-    let newClears = [];
+    let clearedPositions = new PositionSet();
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
         const block = this.grid.get(x, y);
@@ -125,31 +206,66 @@ class Board {
         if (block && block.state() == BLOCK_STATE_NORMAL) {
           let rowClears = this._getLineClears(x, y, block.color, true);
           let colClears = this._getLineClears(x, y, block.color, false);
-          let allClears = rowClears.concat(colClears);
-          // Initiate popping!
-          for (const xy of allClears) {
-            this.grid.get(...xy).state(BLOCK_STATE_POPPING);
-            this.grid.get(...xy).popTime(BLOCK_POP_TIME);
-            this.freezeCounter += FREEZE_TIME_PER_POP;
-          }
-
-
-          if(allClears.length !== 0) {
-            // TODO number
-            this.gameObjects.push( new ComboNumberBoxObject({boardX: x, boardY: y, number: 4}));
-          }
+          rowClears.forEach(p => clearedPositions.add(...p));
+          colClears.forEach(p => clearedPositions.add(...p));
         }
       }
     }
+    const clearCount = clearedPositions.size();
 
-    // decrement popping block timers
+    // Initiate popping!
+    var count = 0;
+    for (const xy of clearedPositions.bookOrder()) {
+      const block = this.grid.get(...xy)
+      block.state(BLOCK_STATE_POPPING);
+      block.popTime(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * clearCount);
+      block.popAge(0);
+      block.disapearAge(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * count);
+      count++;
+      this.freezeCounter += FREEZE_TIME_PER_POP;
+    }
+
+
+    // We popped something this frame so start chaining
+    if (clearCount > 0) {
+      if (!this.isChaining) {
+        this.chainCounter = 0;
+      }
+      this.isChaining = true;
+      this.chainCounter++;
+    }
+    let [topLeft] = clearedPositions;
+    for (const [x, y] of clearedPositions) {
+      if (y < topLeft[1] || (y == topLeft[1] && x < topLeft[0])) {
+        topLeft = [x, y];
+      }
+    }
+
+    if (clearCount > 3) {
+      this.gameObjects.push(new ComboNumberBoxObject({ boardX: topLeft[0], boardY: topLeft[1], number: clearCount }));
+    }
+
+    if (clearCount > 0 && this.chainCounter > 1) {
+      const position = topLeft;
+      if (clearCount > 3) {
+        position[1]--;
+      }
+      this.gameObjects.push(new ChainNumberBoxObject({ boardX: position[0], boardY: position[1], number: this.chainCounter }));
+    }
+
+
+    let initialDelay = 15;
+    for (let [x, y] of clearedPositions.bookOrder()) {
+      this.gameObjects.push(new ComboPopParticles({ boardX: x, boardY: y, initialDelay: initialDelay }));
+      initialDelay += BLOCK_POP_TIME_PER_BLOCK * 1.5;
+    }
+
+    //Pop blocks that have aged fully
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
         const block = this.grid.get(x, y);
         if (block != null && block.state() == BLOCK_STATE_POPPING) {
-          block.popTime(block.popTime() - 1);
-
-          if (block.popTime() <= 0) {
+          if (block.popAge() >= block.popTime()) {
             this.grid.put(x, y, null);
           }
         }
@@ -176,20 +292,44 @@ class Board {
   }
 
   tick() {
+    for (let col = 0; col < this.width; col++) {
+      for (let row = 0; row < this.height; row++) {
+        let block = this.grid.get(col, row);
+        if (block) {
+          block.tick();
+        }
+      }
+    }
     this.cursors.forEach((c) => c.tick());
     this._doGravity();
     this._handleBlockPopping();
+    this._checkForEndOfChain();
     this._tickScroll();
     this._tickAndKillGameObjects();
   }
 
-  _tickAndKillGameObjects() {
+  _checkForEndOfChain() {
+    for (let [block] of this.grid.blocks()) {
+      if (block.state() == BLOCK_STATE_POPPING || block.state() == BLOCK_STATE_FALLING) {
+        this.chainBufferFrame = 2;
+        return;
+      }
+    }
+    //Need to wait for two frames of nothing popping or falling as there is a frame
+    //where things have popped, but things above it have not started to fall yet.
+    this.chainBufferFrame = (this.chainBufferFrame || 2) - 1;
+    if (this.isChaining && this.chainBufferFrame <= 0) {
+      this.isChaining = false;
+      this.chainBufferFrame = 2;
+    }
+  }
 
-    for(const gameObject of this.gameObjects) {
+  _tickAndKillGameObjects() {
+    for (const gameObject of this.gameObjects) {
       gameObject.tick();
     }
 
-    this.gameObjects = this.gameObjects.filter( obj => !obj.shouldDie() );
+    this.gameObjects = this.gameObjects.filter(obj => !obj.shouldDie());
   }
 
   _tickScroll() {
@@ -324,13 +464,17 @@ class Board {
       while (y >= 0) {
         const whatsHere = this.grid.get(x, y);
 
-        if (whatsHere != null) {
+        if (whatsHere != null && whatsHere.state() !== BLOCK_STATE_MOVING) {
           currentSegment.push([x, y]);
         } else {
           // There's nothing at this cell. But if there is still an ongoing segment, then we just finished a segment
           if (currentSegment.length > 0) {
             results.push(currentSegment);
             currentSegment = [];
+          }
+
+          while (y >= 0 && this.grid.get(x, y) != null) {
+            y--;
           }
         }
 

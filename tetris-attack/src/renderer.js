@@ -17,7 +17,7 @@ class Renderer {
     this.spriteRenderer = new SpriteRenderer();
   }
 
-  tileSize() { 
+  tileSize() {
     return TS;
   }
 
@@ -39,14 +39,14 @@ class Renderer {
     this.frameNumber = (this.frameNumber || 0) + 1;
     //this._drawTileGrid(game.board);
     this._drawBlocks(game.board);
-    
+
     game.cursors.forEach((c) => this._drawCursor(c));
 
     this._drawObjects(game.board);
   }
 
   _drawObjects(board) {
-    for(const gameObject of board.gameObjects) {
+    for (const gameObject of board.gameObjects) {
       gameObject.draw(this);
     }
   }
@@ -56,7 +56,16 @@ class Renderer {
       for (let col = 0; col < this.tileColumns; ++col) {
         const block = board.grid.get(col, row);
         if (block != null) {
+          let tx = 0;
+          let ty = 0;
+          let moved = block.movePosition();
+          if (moved && moved > 0) {
+            tx = (block.previousPosition()[0] - col) * TS * moved;
+            ty = (block.previousPosition()[1] - row) * TS * moved;
+          }
+          this.canvasCtx.transform(1, 0, 0, 1, tx, ty);
           this.spriteRenderer.render(this.canvasCtx, block.spriteIndex, TS * col, TS * row, TS, TS, this.frameNumber, block);
+          this.canvasCtx.transform(1, 0, 0, 1, -tx, -ty);
         }
       }
     }

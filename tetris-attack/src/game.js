@@ -17,8 +17,6 @@ class Game {
     this.board.addCursor(cursor);
 
     this.cursors = [cursor] //, cursorTwo];
-    this.scroll = 0;
-    this.freezeCounter = 0;
   }
 
   tick() {
