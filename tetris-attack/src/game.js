@@ -7,16 +7,12 @@ const SCROLL_PER_FRAME = 1 / (60 * 7);
 class Game {
   constructor() {
     this.board = new Board();
+    this.cursors = []; 
+  }
 
-    this.keyboard = new Keyboard({});
-    const cursor = new Cursor(this.keyboard, this.board);
-
-    this.keyboardTwo = new Keyboard({ up: "Numpad8", down: "Numpad5", right: "Numpad6", left: "Numpad4", swap: "NumpadEnter" });
-    const cursorTwo = new Cursor(this.keyboardTwo, this.board, "#B8B");
-
+  addCursor(cursor) {
     this.board.addCursor(cursor);
-
-    this.cursors = [cursor] //, cursorTwo];
+    this.cursors.push(cursor);
   }
 
   tick() {
