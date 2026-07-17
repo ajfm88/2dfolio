@@ -13,12 +13,8 @@ export class PositionSet {
 	}
 
 	has(x,y) {
-		let ys = this.positions.get(x);
-		if(ys) {
-			return ys.has(y);
-		} else {
-			return false;
-		}
+		const ys = this.positions.get(x);
+		return ys && ys.has(y);
 	}
 
 	size() {

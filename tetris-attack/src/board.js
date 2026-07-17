@@ -2,6 +2,7 @@ import { ComboNumberBoxObject } from './objects/ComboNumberBoxObject.js';
 import { ChainNumberBoxObject } from './objects/ChainNumberBoxObject.js';
 import { ComboPopParticles } from './objects/ComboPopParticles.js';
 import { PositionSet } from './utils.js';
+import { Grid } from './grid.js';
 
 export const BLOCK_STATE_NORMAL = Symbol("BLOCK_STATE_NORMAL");
 export const BLOCK_STATE_POPPING = Symbol("BLOCK_STATE_POPPING");
@@ -26,33 +27,19 @@ class Block {
     this.spriteIndex = BLOCK_COLORS.indexOf(color);
   }
 
-  state(newState) {
-    if (newState !== undefined) {
-      this._state = newState;
+  // Convenience for basic getter/setter methods
+  _accessor(propertyName, newValue) {
+    if (newValue !== undefined) {
+      this[propertyName] = newValue;
     }
-    return this._state;
+    return this[propertyName];
   }
 
-  popTime(newTimeValue) {
-    if (newTimeValue !== undefined) {
-      this._popTime = newTimeValue;
-    }
-    return this._popTime;
-  }
-
-  popAge(newAgeValue) {
-    if (newAgeValue !== undefined) {
-      this._popAge = newAgeValue;
-    }
-    return this._popAge;
-  }
-
-  disapearAge(newAgeValue) {
-    if (newAgeValue !== undefined) {
-      this._disapearAge = newAgeValue;
-    }
-    return this._disapearAge;
-  }
+  state(newState) { return this._accessor('_state', newState); }
+  popTime(newTimeValue) { return this._accessor('_popTime', newTimeValue); }
+  popAge(newAgeValue) { return this._accessor('_popAge', newAgeValue); }
+  disapearAge(newAgeValue) { return this._accessor('_disapearAge', newAgeValue); }
+  movePosition(opts) { return this._accessor('_movePosition', opts); }
 
   falling() {
     return this._state == BLOCK_STATE_FALLING;
@@ -68,13 +55,6 @@ class Block {
     return this.lastPosition;
   }
 
-  movePosition(opts) {
-    if (opts) {
-      this._movePosition = opts;
-    }
-    return this._movePosition;
-  }
-
   tick() {
     if (this._movePosition > 0) {
       this._movePosition -= 1 / 4;
@@ -82,44 +62,18 @@ class Block {
         this.state(BLOCK_STATE_NORMAL);
       }
     }
+
     if (this._popAge != undefined) {
       this._popAge++;
     }
   }
 }
 
-class BoardGrid {
-
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-
-    this.grid = Array(width);
-    for (let col = 0; col < width; ++col) {
-      this.grid[col] = Array(height);
-    }
-  }
-
-  get(x, y) { return this.grid[x][y]; }
-  put(x, y, new_state) { this.grid[x][y] = new_state; }
-
-  * blocks() {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const block = this.get(x, y);
-        if (block) {
-          yield [block, x, y];
-        }
-      }
-    }
-  }
-};
-
 class Board {
-  constructor({ width = 6, height = 12 } = {}) {
+  constructor({ width = 6 * 4, height = 12 * 2} = {}) {
     this.width = width;
     this.height = height;
-    this.grid = new BoardGrid(width, height);
+    this.grid = new Grid(width, height);
     this.cursors = [];
     this.scroll = 0;
     this.freezeCounter = 0;
@@ -136,11 +90,18 @@ class Board {
 
   _initBoard() {
     for (let col = 0; col < this.width; col++) {
+      // Typical to have a hole down the 4th column.
       if (col == 3) {
         continue;
       }
+
       for (let row = this.height - 1; row > this.height - 8; row--) {
-        const color = randomChoice(BLOCK_COLORS);
+        let color, left, below;
+        do {
+          color = randomChoice(BLOCK_COLORS);
+          left = this.grid.get(Math.max(0,col - 1), row);
+          below = this.grid.get(col, Math.min(row + 1, this.height-1));
+        } while ((left && left.color == color) || (below && below.color == color));
         this.grid.put(col, row, new Block({ color: color }));
       }
     }
@@ -157,6 +118,7 @@ class Board {
     } while (!this._isRowValid(blocks))
     return blocks;
   }
+
   _isRowValid(row) {
     for (let i = 2; i < row.length; i++) {
       if (row[i - 2].color == row[i - 1].color && row[i - 1].color == row[i].color) {
@@ -199,24 +161,23 @@ class Board {
 
   _handleBlockPopping() {
     let clearedPositions = new PositionSet();
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const block = this.grid.get(x, y);
-        // Can only start popping a block if it is in the normal state.
-        if (block && block.state() == BLOCK_STATE_NORMAL) {
-          let rowClears = this._getLineClears(x, y, block.color, true);
-          let colClears = this._getLineClears(x, y, block.color, false);
-          rowClears.forEach(p => clearedPositions.add(...p));
-          colClears.forEach(p => clearedPositions.add(...p));
-        }
+
+    for (const [block, x, y] of this.grid.entries()) {
+      if (block.state() == BLOCK_STATE_NORMAL) {
+        const rowClears = this._getLineClears(x, y, block.color, true);
+        rowClears.forEach(p => clearedPositions.add(...p));
+
+        const colClears = this._getLineClears(x, y, block.color, false);
+        colClears.forEach(p => clearedPositions.add(...p));
       }
     }
+
     const clearCount = clearedPositions.size();
 
     // Initiate popping!
-    var count = 0;
+    let count = 0;
     for (const xy of clearedPositions.bookOrder()) {
-      const block = this.grid.get(...xy)
+      const block = this.grid.get(...xy);
       block.state(BLOCK_STATE_POPPING);
       block.popTime(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * clearCount);
       block.popAge(0);
@@ -224,7 +185,6 @@ class Board {
       count++;
       this.freezeCounter += FREEZE_TIME_PER_POP;
     }
-
 
     // We popped something this frame so start chaining
     if (clearCount > 0) {
@@ -234,6 +194,7 @@ class Board {
       this.isChaining = true;
       this.chainCounter++;
     }
+
     let [topLeft] = clearedPositions;
     for (const [x, y] of clearedPositions) {
       if (y < topLeft[1] || (y == topLeft[1] && x < topLeft[0])) {
@@ -253,7 +214,6 @@ class Board {
       this.gameObjects.push(new ChainNumberBoxObject({ boardX: position[0], boardY: position[1], number: this.chainCounter }));
     }
 
-
     let initialDelay = 15;
     for (let [x, y] of clearedPositions.bookOrder()) {
       this.gameObjects.push(new ComboPopParticles({ boardX: x, boardY: y, initialDelay: initialDelay }));
@@ -261,13 +221,10 @@ class Board {
     }
 
     //Pop blocks that have aged fully
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const block = this.grid.get(x, y);
-        if (block != null && block.state() == BLOCK_STATE_POPPING) {
-          if (block.popAge() >= block.popTime()) {
-            this.grid.put(x, y, null);
-          }
+    for (const [block, x, y] of this.grid.entries()) {
+      if (block.state() == BLOCK_STATE_POPPING) {
+        if (block.popAge() >= block.popTime()) {
+          this.grid.put(x, y, null);
         }
       }
     }
@@ -292,14 +249,10 @@ class Board {
   }
 
   tick() {
-    for (let col = 0; col < this.width; col++) {
-      for (let row = 0; row < this.height; row++) {
-        let block = this.grid.get(col, row);
-        if (block) {
-          block.tick();
-        }
-      }
+    for (const [block] of this.grid.entries()) {
+      block.tick();
     }
+
     this.cursors.forEach((c) => c.tick());
     this._doGravity();
     this._handleBlockPopping();
@@ -309,12 +262,13 @@ class Board {
   }
 
   _checkForEndOfChain() {
-    for (let [block] of this.grid.blocks()) {
+    for (let [block] of this.grid.entries()) {
       if (block.state() == BLOCK_STATE_POPPING || block.state() == BLOCK_STATE_FALLING) {
         this.chainBufferFrame = 2;
         return;
       }
     }
+
     //Need to wait for two frames of nothing popping or falling as there is a frame
     //where things have popped, but things above it have not started to fall yet.
     this.chainBufferFrame = (this.chainBufferFrame || 2) - 1;
@@ -325,10 +279,7 @@ class Board {
   }
 
   _tickAndKillGameObjects() {
-    for (const gameObject of this.gameObjects) {
-      gameObject.tick();
-    }
-
+    this.gameObjects.forEach(object => object.tick());
     this.gameObjects = this.gameObjects.filter(obj => !obj.shouldDie());
   }
 
@@ -347,16 +298,16 @@ class Board {
         this.pendingScrolls--;
         this.freezeCounter += 30;
       }
-      this._pushTrash();
+      this._pushNewRow();
     }
   }
 
-  _pushTrash() {
-    this._pushTrashUp();
+  _pushNewRow() {
+    this._pushNewRowUp();
     this.cursors.forEach((c) => c.requestPushUp());
   }
 
-  _pushTrashUp() {
+  _pushNewRowUp() {
     // Move everything on the playfield up.
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
@@ -370,7 +321,6 @@ class Board {
     }
     this.nextRow = this._generateRow();
   }
-
 
   _doGravity() {
     // Does anything need to fall?
