@@ -1,21 +1,18 @@
-const UP = Symbol.for("UP");
-const DOWN = Symbol.for("DOWN");
-const RIGHT = Symbol.for("RIGHT");
-const LEFT = Symbol.for("LEFT");
-const SWAP = Symbol.for("SWAP");
-const SCROLL = Symbol.for("SCROLL");
+import { Buttons, Input } from "./input.js";
 
-class Keyboard {
+export class Keyboard extends Input {
   constructor({ up = "ArrowUp", down = "ArrowDown", right = "ArrowRight", left = "ArrowLeft", swap = "Space", scroll = "ShiftRight" } = {}) {
+    super();
+
     this.downKeys = new Set();
 
     this.keyMapping = new Map();
-    this.keyMapping.set(up, UP);
-    this.keyMapping.set(down, DOWN);
-    this.keyMapping.set(left, LEFT);
-    this.keyMapping.set(right, RIGHT);
-    this.keyMapping.set(swap, SWAP);
-    this.keyMapping.set(scroll, SCROLL);
+    this.keyMapping.set(up, Buttons.UP);
+    this.keyMapping.set(down, Buttons.DOWN);
+    this.keyMapping.set(left, Buttons.LEFT);
+    this.keyMapping.set(right, Buttons.RIGHT);
+    this.keyMapping.set(swap, Buttons.SWAP);
+    this.keyMapping.set(scroll, Buttons.SCROLL);
 
     document.addEventListener("keydown", (e) => { this.keydown(e) }, true);
     document.addEventListener("keyup", (e) => { this.keyup(e) }, true);
@@ -35,11 +32,9 @@ class Keyboard {
     }
   }
 
-  isDown(keyName) {
-    return this.downKeys.has(keyName);
+  isDown(button) {
+    return this.downKeys.has(button);
   }
 
   // TODO : Callbacks for special keys down/up
 }
-
-export { Keyboard, UP, DOWN, RIGHT, LEFT, SWAP, SCROLL };
