@@ -23,4 +23,13 @@ export class Grid {
       }
     }
   }
+
+  * allPositions() {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        const block = this.get(x, y);
+        yield [block, x, y];
+      }
+    }
+  }
 };

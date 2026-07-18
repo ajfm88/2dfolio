@@ -18,6 +18,7 @@
       import {Cursor} from './src/cursor.js';
       import {AISimpleton} from './src/ai/aiSimpleton.js';
       import {AIInput} from './src/ai/aiInput.js';
+      import {Buttons} from './src/input.js';
 
       var stats = new Stats();
 			//stats.showPanel( 0 );
@@ -31,7 +32,7 @@
       const gameTwo = new Game();
 
       let ais = [];
-      for(let i =0; i<1; i++) {
+      for(let i = 0; i < 1; i++) {
         const aiTwoInput = new AIInput();
         const cursorTwo = new Cursor(aiTwoInput, gameTwo.board);
         cursorTwo.position[0]+=i*3;
@@ -44,15 +45,40 @@
       const renderer = new Renderer('game-container-left', game.board);
       const rendererTwo = new Renderer('game-container-right', gameTwo.board);
 
+      let is_game_paused = false;
+      let keys_pressed_last_frame = new Set();
+
       function animate() {
         stats.begin();
 
-        game.tick();
-        renderer.draw(game);
+        const pause_pressed = keyboard.isDown( Buttons.GAME_TOGGLE_PAUSE );
+        const frame_advance_pressed = keyboard.isDown( Buttons.GAME_FRAME_ADVANCE );
 
-        ais.forEach(x => x.tick());
-        gameTwo.tick();
-        rendererTwo.draw(gameTwo);
+        if( pause_pressed && !keys_pressed_last_frame.has(Buttons.GAME_TOGGLE_PAUSE) ) {
+          is_game_paused = !is_game_paused;
+        }
+
+        let run_game_logic = !is_game_paused;
+        if( frame_advance_pressed && !keys_pressed_last_frame.has(Buttons.GAME_FRAME_ADVANCE) ) {
+          is_game_paused = true;
+          run_game_logic = true;
+        }
+
+        if(run_game_logic){
+          game.tick();
+          ais.forEach(x => x.tick());
+          gameTwo.tick();
+
+          renderer.draw(game);
+          rendererTwo.draw(gameTwo);
+        }
+
+        keys_pressed_last_frame.clear();
+        if(pause_pressed) keys_pressed_last_frame.add( Buttons.GAME_TOGGLE_PAUSE );
+        if(frame_advance_pressed) keys_pressed_last_frame.add( Buttons.GAME_FRAME_ADVANCE );
+        
+
+        
 
         stats.end();
 
