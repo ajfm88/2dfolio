@@ -96,10 +96,11 @@ class Renderer {
 
   _drawTrash(board) {
     //TODO get real trash from board
-    let trash = new TrashBlock({x:0, y:1, height:1, width:4});
-    let x = trash.x * TS;
-    let y = trash.y * TS;
-    this.trashRenderer.render(this.canvasCtx, trash, x, y, TS); 
+    for (let trash of board.trash) {
+      const x = trash.x * TS;
+      const y = trash.y * TS;
+      this.trashRenderer.render(this.canvasCtx, trash, x, y, TS); 
+    }
   }
 
   _drawCursor(cursor) {

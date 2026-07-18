@@ -5,7 +5,10 @@ const Buttons = {
   'RIGHT': Symbol.for('RIGHT'),
   'LEFT': Symbol.for('LEFT'),
   'SWAP': Symbol.for('SWAP'),
-  'SCROLL': Symbol.for('SCROLL')
+  'SCROLL': Symbol.for('SCROLL'),
+
+  'GAME_TOGGLE_PAUSE': Symbol.for('GAME_TOGGLE_PAUSE'),
+  'GAME_FRAME_ADVANCE': Symbol.for('GAME_FRAME_ADVANCE')
 };
 
 class Input {
