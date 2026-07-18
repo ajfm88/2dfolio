@@ -9,9 +9,9 @@ export class TrashBlock {
   }
 
   *positions() {
-  	for(let i=0; i<width; i++) {
-  		for(let j=0; j<height; j++) {
-  			yield [x+i, y+j];
+  	for(let i=0; i<this.width; i++) {
+  		for(let j=0; j<this.height; j++) {
+  			yield [this.x+i, this.y+j];
   		}
   	}
   }
