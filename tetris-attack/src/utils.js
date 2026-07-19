@@ -34,4 +34,8 @@ export class PositionSet {
 		positions.sort(([x,y],[a,b]) => (y<b || (y == b && x < a)) ? -1 : 1);
 		return positions; 
 	}
+
+    reversedBookOrder() {
+    	return this.bookOrder().reverse();
+	}
 }

@@ -1,5 +1,4 @@
 export class Grid {
-
   constructor(width, height) {
     this.width = width;
     this.height = height;
@@ -10,15 +9,27 @@ export class Grid {
     }
   }
 
-  get(x, y) { return this.grid[x][y]; }
-  put(x, y, new_state) { this.grid[x][y] = new_state; }
+  // Though the rest of the code treats the top left corner of the board as 0,0
+  // We represent the grid here inverted with position height - 1 as 0 index.
+  // This ensures when we grow the board into negative y positions, we are actually 
+  // storing positions at positive indexs. 
+
+  // No code should get the raw width, height or grid from this class and instead rely
+  // on the accessors and iterators for positions/blocks
+  get(x, y) { return this.grid[x][this.height - y - 1]; }
+  put(x, y, new_state) { this.grid[x][this.height - y - 1] = new_state; }
+
+  pushUp() {
+    this.grid.forEach(col => col.unshift(null));
+  }
 
   * entries() {
     for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const block = this.get(x, y);
+      for (let y = 0; y < this.grid[x].length; y++) {
+        let realY = this.height - y - 1; 
+        const block = this.get(x, realY); 
         if (block) {
-          yield [block, x, y];
+          yield [block, x, realY];
         }
       }
     }
@@ -26,10 +37,12 @@ export class Grid {
 
   * allPositions() {
     for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const block = this.get(x, y);
-        yield [block, x, y];
+      for (let y = 0; y < this.grid[x].length; y++) {
+        let realY = this.height - y - 1;
+        const block = this.get(x, realY); 
+        yield [block, x, realY];
       }
     }
   }
 };
+

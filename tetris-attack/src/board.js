@@ -3,13 +3,17 @@ import { ChainNumberBoxObject } from './objects/ChainNumberBoxObject.js';
 import { ComboPopParticles } from './objects/ComboPopParticles.js';
 import { PositionSet } from './utils.js';
 import { Grid } from './grid.js';
-import { TrashBlock } from './trashBlock.js';
-
-export const BLOCK_STATE_NORMAL = Symbol("BLOCK_STATE_NORMAL");
-export const BLOCK_STATE_POPPING = Symbol("BLOCK_STATE_POPPING");
-export const BLOCK_STATE_FALLING = Symbol("BLOCK_STATE_FALLING");
-export const BLOCK_STATE_MOVING = Symbol("BLOCK_STATE_MOVING");
-export const BLOCK_STATE_HOVERING = Symbol("BLOCK_STATE_HOVERING");
+import { TrashBlock, TRASH_STATE_NORMAL, TRASH_STATE_POPPING } from './trashBlock.js';
+import { TrashQueue } from './trashQueue.js';
+import {
+  BLOCK_STATE_NORMAL,
+  BLOCK_STATE_POPPING,
+  BLOCK_STATE_FALLING,
+  BLOCK_STATE_MOVING,
+  BLOCK_STATE_HOVERING,
+  BLOCK_COLORS,
+  Block
+} from './block.js';
 
 const VALID_SWAP_STATES = new Set([BLOCK_STATE_FALLING, BLOCK_STATE_NORMAL]);
 
@@ -20,60 +24,7 @@ const SCROLL_PER_FRAME = 1 / (60 * 7);
 const FREEZE_TIME_PER_POP = 40;
 const HOVER_TIME = 12;
 
-const BLOOP_MODE = false;
-
-const BLOCK_COLORS = ["green", "purple", "red", "yellow", "cyan"] //, "blue", "grey"];
 const randomChoice = arr => arr[Math.floor(Math.random() * arr.length)];
-
-class Block {
-  constructor({ state = BLOCK_STATE_NORMAL, color = 'red' } = {}) {
-    this._state = state;
-    this.color = color;
-    this.spriteIndex = BLOCK_COLORS.indexOf(color);
-  }
-
-  // Convenience for basic getter/setter methods
-  _accessor(propertyName, newValue) {
-    if (newValue !== undefined) {
-      this[propertyName] = newValue;
-    }
-    return this[propertyName];
-  }
-
-  state(newState) { return this._accessor('_state', newState); }
-  popTime(newTimeValue) { return this._accessor('_popTime', newTimeValue); }
-  popAge(newAgeValue) { return this._accessor('_popAge', newAgeValue); }
-  disapearAge(newAgeValue) { return this._accessor('_disapearAge', newAgeValue); }
-  movePosition(opts) { return this._accessor('_movePosition', opts); }
-  hoverTime(newValue) { return this._accessor('_hoverTime', newValue); }
-
-  falling() {
-    return this._state == BLOCK_STATE_FALLING;
-  }
-
-  previousPosition(opts) {
-    if (opts) {
-      this.lastPosition = opts;
-      if (!BLOOP_MODE) {
-        this.state(BLOCK_STATE_MOVING);
-      }
-    }
-    return this.lastPosition;
-  }
-
-  tick() {
-    if (this._movePosition > 0) {
-      this._movePosition -= 1 / 4;
-      if (this._movePosition <= 0) {
-        this.state(BLOCK_STATE_NORMAL);
-      }
-    }
-
-    if (this._popAge != undefined) {
-      this._popAge++;
-    }
-  }
-}
 
 class Board {
   constructor({ width = 6, height = 12 } = {}) {
@@ -87,8 +38,13 @@ class Board {
     this.gameObjects = [];
     this.isChaining = false;
     this.chainCounter = 0;
-    this.trash = [new TrashBlock({ x: 0, y: 1 })];
+    this.trash = [];
+    this.trashQueue = new TrashQueue();
     this._initBoard();
+  }
+
+  setTrashQueue(trashQueue) {
+    this.trashQueue = trashQueue;
   }
 
   addCursor(cursor) {
@@ -126,6 +82,20 @@ class Board {
     return blocks;
   }
 
+  addTrashBlock(trashBlock) {
+    let topMostRow = 0;
+    for (let [block, x, y] of this.grid.entries()) {
+      topMostRow = Math.min(topMostRow, y)
+    }
+    for (let trash of this.trash) {
+      topMostRow = Math.min(topMostRow, trash.y);
+    }
+    let freeRow = topMostRow - 1;
+    trashBlock.y = freeRow - trashBlock.height;
+    trashBlock.x = Math.random() < .5 ? 0 : this.width - trashBlock.width;
+    this.trash.push(trashBlock);
+  }
+
   _isRowValid(row) {
     for (let i = 2; i < row.length; i++) {
       if (row[i - 2].color == row[i - 1].color && row[i - 1].color == row[i].color) {
@@ -137,7 +107,7 @@ class Board {
 
   requestSwap(positionOne, positionTwo) {
     // Can't swap with trashblocks
-    if(this.trashGrid.get(...positionOne) || this.trashGrid.get(...positionTwo)) {
+    if (this.trashGrid.get(...positionOne) || this.trashGrid.get(...positionTwo)) {
       return;
     }
 
@@ -212,6 +182,9 @@ class Board {
       block.disapearAge(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * count);
       count++;
       this.freezeCounter += FREEZE_TIME_PER_POP;
+
+      // Set any adjacent trash blocks that are in a normal state to popping
+      this._initiateTrashPopping(...xy);
     }
 
     // We popped something this frame so start chaining
@@ -231,6 +204,7 @@ class Board {
     }
 
     if (clearCount > 3) {
+      this._addComboTrash(clearCount);
       this.gameObjects.push(new ComboNumberBoxObject({ boardX: topLeft[0], boardY: topLeft[1], number: clearCount }));
     }
 
@@ -258,6 +232,35 @@ class Board {
     }
   }
 
+  _initiateTrashPopping(x, y) {
+    // Look through each trash block. See if (x,y) falls within one square of the block
+    for (const trash of this.trash) {
+
+      if (trash.state() != TRASH_STATE_NORMAL) {
+        continue;
+      }
+
+      const left = trash.x - 1;
+      const right = trash.x + trash.width;
+      const up = trash.y - 1;
+      const down = trash.y + trash.height;
+      const matchy = y == up || y == down;
+      const matchx = x == left || x == right;
+
+      // Need to make sure we don't pop trash that is diagonally adjacent to this popped position
+      if (matchx && (up < y && y < down) || matchy && (left < x && x < right)) {
+        trash.state(TRASH_STATE_POPPING);
+        trash.popAge(60);
+
+        // This trash popping could chain into popping other trash
+        for(let trashPositions of trash.positions()) {
+          this._initiateTrashPopping(...trashPositions);
+        }
+      }
+      // TODO : Delays / animation triggering
+    }
+  }
+
   _getLineClears(x, y, color, isRow) {
     let clears = [];
     let next;
@@ -276,6 +279,22 @@ class Board {
     return clears.length >= 3 ? clears : [];
   }
 
+  _addComboTrash(comboSize) {
+    //TODO this is so wrong
+    let trashLength = comboSize - 1;
+    if (trashLength <= this.width) {
+      this.trashQueue.addTrash(new TrashBlock({ width: trashLength }));
+    } else if (trashLength <= this.width * 2) {
+      let half = Math.floor(trashLength / 2);
+      this.trashQueue.addTrash(new TrashBlock({ width: half }));
+      this.trashQueue.addTrash(new TrashBlock({ width: trashLength - half }));
+    } else {
+      for (let i = 0; i < 6.5 * Math.log(trashLength) - 13; i++) {
+        this.trashQueue.addTrash(new TrashBlock({ width: this.width }));
+      }
+    }
+  }
+
   tick() {
     this._indexTrashBlocks();
     for (const [block] of this.grid.entries()) {
@@ -285,9 +304,33 @@ class Board {
     this.cursors.forEach((c) => c.tick());
     this._doGravity();
     this._handleBlockPopping();
+    this._tickTrash();
     this._checkForEndOfChain();
     this._tickScroll();
     this._tickAndKillGameObjects();
+  }
+
+  _tickTrash() {
+    for (const trash of this.trash) {
+      if (trash.state() == TRASH_STATE_POPPING) {
+        trash.popAge(trash.popAge() - 1);
+      }
+    }
+
+    for (let trash of this.trash) {
+      if (trash.state() == TRASH_STATE_POPPING && trash.popAge() == 0) {
+        for (let i = 0; i < trash.width; i++) {
+          let x = trash.x + i;
+          let y = trash.y + trash.height - 1;
+          this.grid.put(x, y, trash.interiorBlocks.get(i, trash.height - 1));
+        }
+        trash.shrink();
+      }
+    }
+
+    this.trash = this.trash.filter(trash => {
+      return trash.height > 0;
+    });
   }
 
   _indexTrashBlocks() {
@@ -301,9 +344,9 @@ class Board {
 
   _checkForEndOfChain() {
     for (let [block] of this.grid.entries()) {
-      if (block.state() == BLOCK_STATE_POPPING 
-        || block.state() == BLOCK_STATE_FALLING 
-        || block.state() == BLOCK_STATE_HOVERING) {
+      if (block.state() == BLOCK_STATE_POPPING ||
+        block.state() == BLOCK_STATE_FALLING ||
+        block.state() == BLOCK_STATE_HOVERING) {
         this.chainBufferFrame = 2;
         return;
       }
@@ -315,6 +358,10 @@ class Board {
     if (this.isChaining && this.chainBufferFrame <= 0) {
       this.isChaining = false;
       this.chainBufferFrame = 2;
+      if (this.chainCounter > 1) {
+        this.trashQueue.addTrash(new TrashBlock({ width: this.width, height: this.chainCounter - 1 }));
+      }
+      this.trashQueue.flush();
     }
   }
 
@@ -349,12 +396,7 @@ class Board {
 
   _pushNewRowUp() {
     // Move everything on the playfield up.
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        this.grid.put(x, y, this.grid.get(x, y + 1));
-        this.grid.put(x, y + 1, null);
-      }
-    }
+    this.grid.pushUp();
     this.trash.forEach(t => t.y--);
 
     for (let x = 0; x < this.width; x++) {
@@ -367,66 +409,75 @@ class Board {
     // Does anything need to fall?
     let frameStartHoles = new PositionSet();
     for (let [block, x, y] of this.grid.allPositions()) {
-      if (block == undefined && this.trashGrid.get(x,y) == undefined) {
+      if (block == undefined && this.trashGrid.get(x, y) == undefined) {
         frameStartHoles.add(x, y);
       }
     }
 
-    for (let y = this.height - 2; y >= 0; y--) {
-      for (let x = 0; x < this.width; x++) {
-        let block = this.grid.get(x, y);
-        if (block) {
-          let belowBlock = this.grid.get(x, y + 1);
-          let belowTrash = this.trashGrid.get(x, y + 1);
-          //Block should fall or start hovering
-          if (belowBlock == undefined && belowTrash == undefined) {
-            if (block.state() == BLOCK_STATE_NORMAL) {
-              if (frameStartHoles.has(x, y + 1)) {
-                block.state(BLOCK_STATE_HOVERING);
-                block.hoverTime(HOVER_TIME);
-              } else {
-                block.state(BLOCK_STATE_FALLING);
-              }
+    let positionsForGravity = new PositionSet();
+    for (let [block, x, y] of this.grid.entries()) {
+      positionsForGravity.add(x, y);
+    }
+    for (let trash of this.trash) {
+      positionsForGravity.add(trash.x, trash.y);
+    }
+
+    for (let [x, y] of positionsForGravity.reversedBookOrder()) {
+      if (y == this.height - 1) {
+        continue;
+      }
+      let block = this.grid.get(x, y);
+      if (block) {
+        let belowBlock = this.grid.get(x, y + 1);
+        let belowTrash = this.trashGrid.get(x, y + 1);
+        //Block should fall or start hovering
+        if (belowBlock == undefined && belowTrash == undefined) {
+          if (block.state() == BLOCK_STATE_NORMAL) {
+            if (frameStartHoles.has(x, y + 1)) {
+              block.state(BLOCK_STATE_HOVERING);
+              block.hoverTime(HOVER_TIME);
+            } else {
+              block.state(BLOCK_STATE_FALLING);
             }
-            if (block.state() == BLOCK_STATE_HOVERING) {
-              block.hoverTime(block.hoverTime() - 1);
-              if (block.hoverTime() < 1) {
-                block.state(BLOCK_STATE_FALLING);
-              }
-            } else if (block.state() == BLOCK_STATE_FALLING) {
-              this.grid.put(x, y, null);
-              this.grid.put(x, y + 1, block);
-              let newBelow = this.grid.get(x, y + 2);
-              let newTrashBelow = this.trashGrid.get(x, y + 2);
-              if (y + 1 == this.height - 1 ||
-                (newBelow && newBelow.state() != BLOCK_STATE_FALLING) ||
-                newTrashBelow) {
-                block.state(BLOCK_STATE_NORMAL);
-              }
+          }
+          if (block.state() == BLOCK_STATE_HOVERING) {
+            block.hoverTime(block.hoverTime() - 1);
+            if (block.hoverTime() < 1) {
+              block.state(BLOCK_STATE_FALLING);
+            }
+          } else if (block.state() == BLOCK_STATE_FALLING) {
+            this.grid.put(x, y, null);
+            this.grid.put(x, y + 1, block);
+            let newBelow = this.grid.get(x, y + 2);
+            let newTrashBelow = this.trashGrid.get(x, y + 2);
+            if (y + 1 == this.height - 1 ||
+              (newBelow && newBelow.state() != BLOCK_STATE_FALLING) ||
+              newTrashBelow) {
+              block.state(BLOCK_STATE_NORMAL);
             }
           }
         }
+      }
 
-        // Handle gravity for trash blocks with top left corner at this [x,y] position 
-        let trashBlock = this.trashGrid.get(x,y);
-        if(trashBlock && trashBlock.x == x && trashBlock.y == y) {
-          let positionsBelow = Array.from({length: trashBlock.width}, (_,i) => [i+x, y+trashBlock.height] );
-          let allSpaceBelow = true;
-          let wasAllSpaceToStart = true;
-          for(let [belowX,belowY] of positionsBelow) {
-            if(this.grid.get(belowX,belowY) || this.trashGrid.get(belowX,belowY)) {
-              allSpaceBelow = false;
-            }
-            if(!frameStartHoles.has(belowX,belowY)) {
-              wasAllSpaceToStart = false;
-            }
+      // Handle gravity for trash blocks with top left corner at this [x,y] position 
+      let trashBlock = this.trashGrid.get(x, y);
+      if (trashBlock && trashBlock.x == x && trashBlock.y == y) {
+        let positionsBelow = Array.from({ length: trashBlock.width }, (_, i) => [i + x, y + trashBlock.height]);
+        let allSpaceBelow = true;
+        let wasAllSpaceToStart = true;
+        for (let [belowX, belowY] of positionsBelow) {
+          if (this.grid.get(belowX, belowY) || this.trashGrid.get(belowX, belowY)) {
+            allSpaceBelow = false;
           }
-          if(allSpaceBelow) {
-            trashBlock.y++;
-            for(let [tx,ty] of trashBlock.positions()) {
-              this.trashGrid.put(tx,ty,null);
-              this.trashGrid.put(tx,ty+1,trashBlock);
-            }
+          if (!frameStartHoles.has(belowX, belowY)) {
+            wasAllSpaceToStart = false;
+          }
+        }
+        if (allSpaceBelow) {
+          trashBlock.y++;
+          for (let [tx, ty] of trashBlock.positions()) {
+            this.trashGrid.put(tx, ty, null);
+            this.trashGrid.put(tx, ty + 1, trashBlock);
           }
         }
       }
