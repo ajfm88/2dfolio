@@ -1,4 +1,4 @@
-import { BLOCK_STATE_FALLING, BLOCK_STATE_POPPING, BLOCK_STATE_NORMAL } from './board.js';
+import { BLOCK_STATE_FALLING, BLOCK_STATE_POPPING, BLOCK_STATE_NORMAL } from './block.js';
 
 const image = new Image();
 image.src = "src/sprites.png";
@@ -25,7 +25,7 @@ class SpriteRenderer {
         break;
 
       case BLOCK_STATE_POPPING:
-        spriteFrame = Math.floor(frameNumber / 6) % 2 == 0 ? 0 : 6;
+        spriteFrame = Math.floor(frameNumber / 2) % 2 == 0 ? 0 : 6;
         if (block.popTime() - block.popAge() < 40) {
           spriteFrame = 5;
         }
