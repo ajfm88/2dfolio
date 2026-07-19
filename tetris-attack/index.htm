@@ -42,6 +42,9 @@
         gameTwo.addCursor(cursorTwo);
       }
 
+      game.linkTrashQueue(gameTwo);
+      gameTwo.linkTrashQueue(game);
+
       const renderer = new Renderer('game-container-left', game.board);
       const rendererTwo = new Renderer('game-container-right', gameTwo.board);
 
