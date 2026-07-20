@@ -1,5 +1,11 @@
+import { TRASH_STATE_NORMAL, TRASH_STATE_POPPING } from "./trashBlock.js";
+import { SpriteRenderer } from "./spriteRenderer.js";
+
 const image = new Image();
-image.src = "src/trashSprites.png";
+image.src = "trashSprites.png";
+
+const spritesImage = new Image();
+spritesImage.src = "sprites.png";
 
 const TILE_SIZE = 16;
 
@@ -25,10 +31,56 @@ const spriteMap = [
 ];
 
 class TrashRenderer {
-  render(context, trashBlock, x, y, destTileSize) {
+  constructor() {
+    this.spriteRenderer = new SpriteRenderer();
+  }
 
-    let trashWidth = trashBlock.width;
-    let trashHeight = trashBlock.height;
+  render(context, trashBlock, destTileSize) {
+
+    if(trashBlock.state() == TRASH_STATE_NORMAL) {
+      this._drawNormalTrashBlock(context, {x: trashBlock.x, y: trashBlock.y, width: trashBlock.width, height: trashBlock.height}, destTileSize);
+    } else if(trashBlock.state() == TRASH_STATE_POPPING) {
+      this._drawPoppingTrashBlock(context, trashBlock, destTileSize);
+    }
+  }
+
+  //context, spriteIndex, x, y, width, height, frameNumber, block, bottomRow
+
+  _drawPoppingTrashBlock(context, trashBlock, destTileSize) {
+    const trashWidth = trashBlock.width;
+    const trashHeight = trashBlock.height;
+    const popAge = trashBlock.popAge();
+
+    // Draw underlying trash and blocks
+    this._drawNormalTrashBlock(context, {x: trashBlock.x, y: trashBlock.y, width: trashBlock.width, height: trashBlock.height-1}, destTileSize);
+
+    // Draw interior blocks
+    for (let i = 0; i < trashWidth; i++) {
+      const block = trashBlock.interiorBlocks.get(i, trashBlock.height-1);
+      context.drawImage(spritesImage, block.spriteIndex * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE,
+                        (trashBlock.x + i) * destTileSize,
+                        (trashBlock.y + trashBlock.height - 1) * destTileSize,
+                        destTileSize,
+                        destTileSize);
+    }
+
+    // Draw the popping animation
+    let accumulatedPopAge = 0;
+    for (let j = 0; j < trashHeight; j++) {
+      for (let i = 0; i < trashWidth; i++) {
+        if(accumulatedPopAge < popAge) {
+          context.drawImage(spritesImage, 6 * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE,
+            (trashBlock.x + i) * destTileSize, (trashBlock.y + j) * destTileSize, destTileSize, destTileSize);
+        }
+
+        accumulatedPopAge += trashBlock.popTimePerBlock;
+      }
+    }
+  }
+
+  _drawNormalTrashBlock(context, rect, destTileSize) {
+    let trashWidth = rect.width;
+    let trashHeight = rect.height;
 
     for (let i = 0; i < trashWidth; i++) {
       for (let j = 0; j < trashHeight; j++) {
@@ -59,7 +111,7 @@ class TrashRenderer {
         context.drawImage(image,
           spriteIndex[0] * TILE_SIZE, spriteIndex[1] * TILE_SIZE,
           TILE_SIZE, TILE_SIZE,
-          x + (destTileSize * i), y + (destTileSize * j),
+          (rect.x + i) * destTileSize, (rect.y +  j) * destTileSize,
           destTileSize, destTileSize);
       }
     }
