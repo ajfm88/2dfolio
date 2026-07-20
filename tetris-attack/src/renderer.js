@@ -18,6 +18,9 @@ class Renderer {
     const canvasEl = this._createCanvasElement();
     this.receiver.appendChild(canvasEl);
     this.canvasCtx = canvasEl.getContext('2d');
+    // Keep the 16x16 sprites crisp when scaled up to 48px tiles.
+    // Without this the canvas bilinear-interpolates the upscale and the pixel art looks blurry.
+    this.canvasCtx.imageSmoothingEnabled = false;
     this.spriteRenderer = new SpriteRenderer();
     this.trashRenderer = new TrashRenderer();
   }
@@ -30,6 +33,8 @@ class Renderer {
     const canvasEl = document.createElement('canvas');
     canvasEl.width = this.tileColumns * Constants.TILE_SIZE;
     canvasEl.height = this.tileRows * Constants.TILE_SIZE;
+    // Keep pixels sharp if the canvas is ever scaled by CSS.
+    canvasEl.style.imageRendering = 'pixelated';
     return canvasEl;
   }
 
@@ -40,22 +45,33 @@ class Renderer {
     this.yscroll = scroll * TS;
     this.canvasCtx.setTransform(1, 0, 0, 1, 0, Math.floor(-this.yscroll));
     this.frameNumber = (this.frameNumber || 0) + 1;
-
+    
     //this._drawTileGrid(game.board);
     this._drawBlocks(game.board);
     this._drawTrash(game.board);
     game.cursors.forEach((c) => this._drawCursor(c));
     this._drawObjects(game.board);
 
-    this._drawFrameNumber();
+    // this._drawFrameNumber();
   }
 
   _drawFrameNumber() {
+    if (this.frameNumber == 1) {
+      this.fps_time = Date.now();
+      this.fps_frame_count = this.frameNumber
+    }
+
+    if (this.frameNumber % 100 == 0) {
+      this.fps = (this.frameNumber - this.fps_frame_count) / (Date.now() - this.fps_time) * 1000
+      this.fps_time = Date.now();
+      this.fps_frame_count = this.frameNumber
+    }
+
     // TODO : Generalize this to a debug text display
     this.canvasCtx.setTransform(1, 0, 0, 1, 0, 15);
     this.canvasCtx.font = '15px monospace';
     this.canvasCtx.fillStyle = 'white';
-    this.canvasCtx.fillText(`Frame ${this.frameNumber}`, 0, 0);
+    this.canvasCtx.fillText(`Frame ${this.frameNumber}, fps ${Math.round(this.fps)}`, 0, 0);
   }
 
   _drawBackground() {
@@ -95,11 +111,8 @@ class Renderer {
   }
 
   _drawTrash(board) {
-    //TODO get real trash from board
     for (let trash of board.trash) {
-      const x = trash.x * TS;
-      const y = trash.y * TS;
-      this.trashRenderer.render(this.canvasCtx, trash, x, y, TS); 
+      this.trashRenderer.render(this.canvasCtx, trash, TS);
     }
   }
 

@@ -3,15 +3,13 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "chainSprites.png";
+image.src = "comboSprites.png";
 
-export class ChainNumberBoxObject extends GameObject {
-  constructor({boardX = 0, boardY = 0, lifetime = 50, number = 1} = {}) {
+export class TashPopObject extends GameObject {
+  constructor({x = 0, y = 0, popTime = 50} = {}) {
     super();
-    this.boardX = boardX;
-    this.boardY = boardY;
-    this.number = Math.min(number, 13);
-    this.lifetime = lifetime;
+    this.x = x;
+    this.y = y;
     this.age = 0;
   }
 
@@ -32,7 +30,7 @@ export class ChainNumberBoxObject extends GameObject {
 
     const TS = renderer.tileSize();
 
-    const spriteIndex = this.number - 2;
+    const spriteIndex = this.number - 4;
 
     const x = TS * this.boardX;
     const y = TS * this.boardY + (easeIn - 1) * TS;

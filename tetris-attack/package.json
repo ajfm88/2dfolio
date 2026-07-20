@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --env=mode=development",
+    "serve": "http-server dist -p 8000"
+  },
+  "dependencies": {
+    "copy-webpack-plugin": "^9.0.1"
+  }
+}
