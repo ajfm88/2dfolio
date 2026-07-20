@@ -29,6 +29,13 @@ export class PositionSet {
 		}
 	}
 
+	byRows() {
+	  let inverted = new PositionSet();
+	  [...this].forEach(([x,y]) => 
+	  	inverted.add(y,x));
+	  return inverted.positions; 
+	}
+
 	bookOrder() {
 		let positions = [...this];
 		positions.sort(([x,y],[a,b]) => (y<b || (y == b && x < a)) ? -1 : 1);

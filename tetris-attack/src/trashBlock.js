@@ -4,6 +4,8 @@ import { Grid } from "./grid.js";
 const TRASH_STATE_NORMAL = Symbol.for('TRASH_STATE_NORMAL');
 const TRASH_STATE_POPPING = Symbol.for('TRASH_STATE_POPPING');
 
+const TRASH_POP_TIME_PER_BLOCK = 8;
+
 class TrashBlock {
 
   // x and y represent the top left hand corner of the trash block
@@ -14,6 +16,7 @@ class TrashBlock {
     this.height = height;
     this._state = TRASH_STATE_NORMAL;
     this._popAge = 0;
+    this.popTimePerBlock = TRASH_POP_TIME_PER_BLOCK;
     this._initGrid();
   }
 
