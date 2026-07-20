@@ -3,7 +3,7 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "src/chainSprites.png";
+image.src = "chainSprites.png";
 
 export class ChainNumberBoxObject extends GameObject {
   constructor({boardX = 0, boardY = 0, lifetime = 50, number = 1} = {}) {

@@ -3,7 +3,7 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "src/popParticle.png";
+image.src = "popParticle.png";
 
 export class ComboPopParticles extends GameObject {
   constructor({boardX = 0, boardY = 0, lifetime = 45} = {}) {
