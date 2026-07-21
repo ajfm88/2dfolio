@@ -16,8 +16,18 @@ export class Keyboard extends Input {
     this.keyMapping.set(pause, Buttons.GAME_TOGGLE_PAUSE);
     this.keyMapping.set(frame_advance, Buttons.GAME_FRAME_ADVANCE);
 
-    document.addEventListener("keydown", (e) => { this.keydown(e) }, true);
-    document.addEventListener("keyup", (e) => { this.keyup(e) }, true);
+    // Keep bound references so the listeners can be removed on detach().
+    this._onKeydown = (e) => { this.keydown(e) };
+    this._onKeyup = (e) => { this.keyup(e) };
+    document.addEventListener("keydown", this._onKeydown, true);
+    document.addEventListener("keyup", this._onKeyup, true);
+  }
+
+  // Remove this keyboard's global listeners (used when tearing down a match).
+  detach() {
+    document.removeEventListener("keydown", this._onKeydown, true);
+    document.removeEventListener("keyup", this._onKeyup, true);
+    this.downKeys.clear();
   }
 
   keydown(e) {
