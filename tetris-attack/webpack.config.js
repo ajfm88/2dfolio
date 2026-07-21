@@ -21,7 +21,7 @@ module.exports = (env) => {
       new CopyPlugin({
         patterns: [
           { from: "./src/*.png", to: "dist/[name][ext]", toType: "template"},
-          { from: "./tetrisattack.htm", to: "dist/tetrisattack.html", toType: "file"},
+          { from: "./tetrisattack.html", to: "dist/tetrisattack.html", toType: "file"},
         ]
       })
     ],
