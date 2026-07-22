@@ -1,11 +1,14 @@
 // Main menu / mode-select, rebuilt as an ES6 module.
+// Concept ported from tetris-attack-ai's UI.js + MenuListener.js (Luciano Rubio, 2014),
+// reimplemented here as a self-contained DOM overlay instead of global-script code.
+
 // Playable modes call back into the app; info items open an in-menu panel.
 const MENU_ITEMS = [
-  { id: "vsai", label: "VS AI", play: true },
-  { id: "1p", label: "1P Endless", play: true },
-  { id: "2p", label: "2P Local", play: true },
-  { id: "howto", label: "How to Play", play: false },
-  { id: "credits", label: "Credits", play: false },
+  { id: 'vsai', label: 'VS AI', play: true },
+  { id: '1p', label: '1P Endless', play: true },
+  { id: '2p', label: '2P Local', play: true },
+  { id: 'howto', label: 'How to Play', play: false },
+  { id: 'credits', label: 'Credits', play: false },
 ];
 
 const HOWTO_HTML = `
@@ -35,7 +38,7 @@ const CREDITS_HTML = `
   <p class="back">&laquo; Esc / Enter to go back</p>
 `;
 
-const STYLE_ID = "ta-menu-style";
+const STYLE_ID = 'ta-menu-style';
 const STYLE = `
   #ta-menu-overlay {
     position: fixed; inset: 0; z-index: 1000;
@@ -90,23 +93,23 @@ export class Menu {
     this._onKeydown = (e) => this._handleKey(e);
     this._injectStyle();
     this._build();
-    document.addEventListener("keydown", this._onKeydown, true);
+    document.addEventListener('keydown', this._onKeydown, true);
   }
 
   _injectStyle() {
     if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement("style");
+    const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = STYLE;
     document.head.appendChild(style);
   }
 
   _build() {
-    this.overlay = document.createElement("div");
-    this.overlay.id = "ta-menu-overlay";
+    this.overlay = document.createElement('div');
+    this.overlay.id = 'ta-menu-overlay';
 
-    this.card = document.createElement("div");
-    this.card.id = "ta-menu-card";
+    this.card = document.createElement('div');
+    this.card.id = 'ta-menu-card';
     this.overlay.appendChild(this.card);
 
     document.body.appendChild(this.overlay);
@@ -115,50 +118,50 @@ export class Menu {
 
   _renderList() {
     this.panel = null;
-    this.card.innerHTML = "";
+    this.card.innerHTML = '';
 
-    const logo = document.createElement("img");
-    logo.id = "ta-menu-logo";
-    logo.src = "logo.png";
-    logo.alt = "TETRIS ATTACK";
+    const logo = document.createElement('img');
+    logo.id = 'ta-menu-logo';
+    logo.src = 'logo.png';
+    logo.alt = 'TETRIS ATTACK';
     this.card.appendChild(logo);
 
-    const list = document.createElement("ul");
-    list.id = "ta-menu-list";
+    const list = document.createElement('ul');
+    list.id = 'ta-menu-list';
     this.itemEls = MENU_ITEMS.map((item, i) => {
-      const li = document.createElement("li");
+      const li = document.createElement('li');
       li.textContent = item.label;
-      if (i === this.index) li.className = "active";
+      if (i === this.index) li.className = 'active';
       // Mouse support: hover highlights, click selects.
-      li.addEventListener("mouseenter", () => this._setIndex(i));
-      li.addEventListener("click", () => this._select());
+      li.addEventListener('mouseenter', () => this._setIndex(i));
+      li.addEventListener('click', () => this._select());
       list.appendChild(li);
       return li;
     });
     this.card.appendChild(list);
 
-    const hint = document.createElement("p");
-    hint.id = "ta-menu-hint";
-    hint.innerHTML = "&uarr;&darr; select &middot; Enter start";
+    const hint = document.createElement('p');
+    hint.id = 'ta-menu-hint';
+    hint.innerHTML = '&uarr;&darr; select &middot; Enter start';
     this.card.appendChild(hint);
   }
 
   _renderPanel(which) {
     this.panel = which;
-    this.card.innerHTML = "";
-    const panel = document.createElement("div");
-    panel.id = "ta-menu-panel";
-    panel.innerHTML = which === "howto" ? HOWTO_HTML : CREDITS_HTML;
+    this.card.innerHTML = '';
+    const panel = document.createElement('div');
+    panel.id = 'ta-menu-panel';
+    panel.innerHTML = which === 'howto' ? HOWTO_HTML : CREDITS_HTML;
     // Clicking a panel closes it, matching the Esc/Enter hint.
-    panel.addEventListener("click", () => this._renderList());
+    panel.addEventListener('click', () => this._renderList());
     this.card.appendChild(panel);
   }
 
   _setIndex(i) {
     if (this.panel) return;
-    this.itemEls[this.index].className = "";
+    this.itemEls[this.index].className = '';
     this.index = i;
-    this.itemEls[this.index].className = "active";
+    this.itemEls[this.index].className = 'active';
   }
 
   _move(delta) {
@@ -178,7 +181,7 @@ export class Menu {
   _handleKey(e) {
     // If an info panel is open, only Esc/Enter/Space close it.
     if (this.panel) {
-      if (["Escape", "Enter", "Space"].includes(e.code)) {
+      if (['Escape', 'Enter', 'Space'].includes(e.code)) {
         e.preventDefault();
         this._renderList();
       }
@@ -186,28 +189,18 @@ export class Menu {
     }
 
     switch (e.code) {
-      case "ArrowUp":
-      case "KeyW":
-        e.preventDefault();
-        this._move(-1);
-        break;
-      case "ArrowDown":
-      case "KeyS":
-        e.preventDefault();
-        this._move(1);
-        break;
-      case "Enter":
-      case "Space":
-        e.preventDefault();
-        this._select();
-        break;
-      default:
-        break;
+      case 'ArrowUp': case 'KeyW':
+        e.preventDefault(); this._move(-1); break;
+      case 'ArrowDown': case 'KeyS':
+        e.preventDefault(); this._move(1); break;
+      case 'Enter': case 'Space':
+        e.preventDefault(); this._select(); break;
+      default: break;
     }
   }
 
   destroy() {
-    document.removeEventListener("keydown", this._onKeydown, true);
+    document.removeEventListener('keydown', this._onKeydown, true);
     if (this.overlay && this.overlay.parentNode) {
       this.overlay.parentNode.removeChild(this.overlay);
     }
