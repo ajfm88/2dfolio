@@ -51,8 +51,35 @@ class Renderer {
     this._drawTrash(game.board);
     game.cursors.forEach((c) => this._drawCursor(c));
     this._drawObjects(game.board);
+    this._drawStackState(game.board);
 
     // this._drawFrameNumber();
+  }
+
+  // Feedback for the top-out grace window, and for a board that has died.
+  _drawStackState(board) {
+    this.canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+    this.canvasCtx.setLineDash([]);
+    const w = this.tileColumns * Constants.TILE_SIZE;
+    const h = this.tileRows * Constants.TILE_SIZE;
+
+    if (board.toppedOut) {
+      this.canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      this.canvasCtx.fillRect(0, 0, w, h);
+      return;
+    }
+
+    if (board.inDanger) {
+      // Pulse a red frame and a wash over the whole board. The frame alone reads as
+      // almost nothing against bright panels, and the grace window is short enough
+      // that the warning has to be unmissable.
+      const pulse = 0.5 + 0.5 * Math.sin(this.frameNumber / 5);
+      this.canvasCtx.fillStyle = `rgba(255, 0, 0, ${0.10 + 0.16 * pulse})`;
+      this.canvasCtx.fillRect(0, 0, w, h);
+      this.canvasCtx.strokeStyle = `rgba(255, 64, 64, ${0.45 + 0.45 * pulse})`;
+      this.canvasCtx.lineWidth = 10;
+      this.canvasCtx.strokeRect(5, 5, w - 10, h - 10);
+    }
   }
 
   _drawFrameNumber() {

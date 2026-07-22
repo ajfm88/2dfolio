@@ -20,6 +20,10 @@ class Game {
     this.board.setTrashQueue(new TrashQueue(otherGame));
   }
 
+  isToppedOut() {
+    return this.board.toppedOut;
+  }
+
   tick() {
     this.board.tick();
   }
