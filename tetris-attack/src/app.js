@@ -8,9 +8,11 @@ import {Buttons} from './input.js';
 import {InputOr} from './InputOr.js';
 import {GamePadInput, GamePadManager} from './GamePad.js';
 import {Menu} from './menu.js';
+import {GameOverOverlay} from './gameOver.js';
 
 const STATE_MENU = 'MENU';
 const STATE_PLAYING = 'PLAYING';
+const STATE_GAME_OVER = 'GAME_OVER';
 
 // Player 2's keyboard layout for 2P local play. Kept clear of Player 1's keys
 // (arrows / Space / Right-Shift) and of the P/F debug keys.
@@ -24,7 +26,8 @@ const PLAYER_TWO_KEYS = {
 // A running match: one or two boards plus everything that drives them.
 // Knows how to tick, draw, and fully tear itself down.
 class Match {
-  constructor({ games, ais, renderers, keyboards, pauseKeyboard }) {
+  constructor({ mode, games, ais, renderers, keyboards, pauseKeyboard }) {
+    this.mode = mode;
     this.games = games;
     this.ais = ais;
     this.renderers = renderers;       // [{ renderer, game }]
@@ -44,6 +47,32 @@ class Match {
 
   draw() {
     this.renderers.forEach(({ renderer, game }) => renderer.draw(game));
+  }
+
+  // The outcome once a board has topped out, or null while the match is still live.
+  // games[0] is always Player 1; games[1] is the AI or Player 2 in two-board modes.
+  result() {
+    const out = this.games.map((game) => game.isToppedOut());
+    if (!out.some(Boolean)) {
+      return null;
+    }
+
+    if (this.games.length === 1) {
+      return { title: 'GAME OVER', subtitle: 'Your stack reached the top.' };
+    }
+    if (out[0] && out[1]) {
+      return { title: 'DRAW', subtitle: 'Both stacks topped out.' };
+    }
+
+    const playerOneWon = out[1];
+    if (this.mode === 'vsai') {
+      return playerOneWon
+        ? { title: 'YOU WIN', subtitle: 'The AI topped out.' }
+        : { title: 'AI WINS', subtitle: 'Your stack reached the top.' };
+    }
+    return playerOneWon
+      ? { title: 'PLAYER 1 WINS', subtitle: 'Player 2 topped out.' }
+      : { title: 'PLAYER 2 WINS', subtitle: 'Player 1 topped out.' };
   }
 
   destroy() {
@@ -110,7 +139,7 @@ function buildMatch(mode, gamePadManager, leftContainer, rightContainer) {
     rightContainer.style.display = 'none';
   }
 
-  return new Match({ games, ais, renderers, keyboards, pauseKeyboard: p1Keyboard });
+  return new Match({ mode, games, ais, renderers, keyboards, pauseKeyboard: p1Keyboard });
 }
 
 // Top-level application state machine: MENU <-> PLAYING.
@@ -119,6 +148,8 @@ class App {
     this.state = STATE_MENU;
     this.match = null;
     this.menu = null;
+    this.gameOver = null;
+    this.mode = null;
     this.isPaused = false;
     this.pressedLastFrame = new Set();
 
@@ -147,19 +178,42 @@ class App {
   }
 
   startMatch(mode) {
-    if (this.menu) { this.menu.destroy(); this.menu = null; }
+    this._clearOverlays();
+    if (this.match) { this.match.destroy(); this.match = null; }
+    this.mode = mode;
     this.match = buildMatch(mode, this.gamePadManager, this.leftContainer, this.rightContainer);
     this.isPaused = false;
     this.pressedLastFrame.clear();
     this.state = STATE_PLAYING;
   }
 
+  // A board topped out: freeze the match, drop its inputs, and offer a rematch.
+  // The match itself is kept around so its final frame stays on screen behind
+  // the (translucent) results overlay.
+  endMatch(result) {
+    this.state = STATE_GAME_OVER;
+    this.match.destroy();
+    this.gameOver = new GameOverOverlay(result, (choice) => {
+      if (choice === 'replay') {
+        this.startMatch(this.mode);
+      } else {
+        this.quitToMenu();
+      }
+    });
+  }
+
   quitToMenu() {
+    this._clearOverlays();
     if (this.match) { this.match.destroy(); this.match = null; }
     this.leftContainer.innerHTML = '';
     this.rightContainer.innerHTML = '';
     this.rightContainer.style.display = '';
     this.showMenu();
+  }
+
+  _clearOverlays() {
+    if (this.menu) { this.menu.destroy(); this.menu = null; }
+    if (this.gameOver) { this.gameOver.destroy(); this.gameOver = null; }
   }
 
   _tickPlaying() {
@@ -180,6 +234,12 @@ class App {
     if (runGameLogic) {
       this.match.tickGameplay();
       this.match.draw();
+
+      const result = this.match.result();
+      if (result) {
+        this.endMatch(result);
+        return;
+      }
     }
 
     this.pressedLastFrame.clear();

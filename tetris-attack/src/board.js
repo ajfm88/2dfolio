@@ -23,6 +23,8 @@ const BLOCK_POP_TIME_PER_BLOCK = 9;
 const SCROLL_PER_FRAME = 1 / (60 * 7);
 const FREEZE_TIME_PER_POP = 40;
 const HOVER_TIME = 8;
+// How long panels may sit against the ceiling before the board tops out.
+const TOP_OUT_GRACE_FRAMES = 180;
 
 const randomChoice = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -38,7 +40,10 @@ class Board {
     this.gameObjects = [];
     this.isChaining = false;
     this.chainCounter = 0;
-    this.trash = []; 
+    this.inDanger = false;
+    this.dangerCounter = 0;
+    this.toppedOut = false;
+    this.trash = [];
     this.trashQueue = new TrashQueue();
     this._initBoard();
   }
@@ -301,6 +306,11 @@ class Board {
   }
 
   tick() {
+    // A topped-out board is finished: freeze it exactly as it died.
+    if (this.toppedOut) {
+      return;
+    }
+
     this._indexTrashBlocks();
     for (const [block] of this.grid.entries()) {
       block.tick();
@@ -311,8 +321,67 @@ class Board {
     this._handleBlockPopping();
     this._tickTrash();
     this._checkForEndOfChain();
+    this._tickTopOut();
     this._tickScroll();
     this._tickAndKillGameObjects();
+  }
+
+  // Panels reaching the ceiling don't kill you outright. As in the original, the
+  // stack stops rising and you get a grace window to clear the top row; only if
+  // the window runs out does the board top out.
+  _tickTopOut() {
+    if (!this._isCeilingOccupied()) {
+      this.inDanger = false;
+      this.dangerCounter = 0;
+      return;
+    }
+
+    this.inDanger = true;
+
+    // Never top out mid-chain - let anything still popping or falling resolve first.
+    if (this._hasBlocksInMotion()) {
+      return;
+    }
+
+    this.dangerCounter++;
+    if (this.dangerCounter >= TOP_OUT_GRACE_FRAMES) {
+      this.toppedOut = true;
+    }
+  }
+
+  // Row 0 is the top of the playfield, so anything at or above it is at the ceiling.
+  // (The grid grows into negative y as rows are pushed up, hence <= rather than ==.)
+  _isCeilingOccupied() {
+    for (const [, , y] of this.grid.entries()) {
+      if (y <= 0) {
+        return true;
+      }
+    }
+    // Incoming trash spawns above the playfield and falls in, so only trash that
+    // has actually landed counts against the ceiling.
+    for (const trash of this.trash) {
+      if (trash.landed && trash.y <= 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  _hasBlocksInMotion() {
+    for (const [block] of this.grid.entries()) {
+      const state = block.state();
+      if (state == BLOCK_STATE_POPPING ||
+        state == BLOCK_STATE_FALLING ||
+        state == BLOCK_STATE_HOVERING) {
+        return true;
+      }
+    }
+    for (const trash of this.trash) {
+      if (!trash.landed || trash.state() == TRASH_STATE_POPPING) {
+        return true;
+      }
+    }
+    return false;
   }
 
   _tickTrash() {
@@ -383,6 +452,11 @@ class Board {
       if(trash.state() == TRASH_STATE_POPPING) {
         return;
       }
+    }
+
+    // The stack holds still while the player is inside the top-out grace window.
+    if (this.inDanger) {
+      return;
     }
 
     if (this.freezeCounter > 0) {
@@ -494,6 +568,9 @@ class Board {
             this.trashGrid.put(tx, ty + 1, trashBlock);
           }
         }
+        // Remember whether this trash came to rest - the top-out check ignores
+        // trash that is still falling in from above the playfield.
+        trashBlock.landed = !allSpaceBelow;
       }
     }
   }
