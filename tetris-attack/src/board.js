@@ -2,6 +2,7 @@ import { ComboNumberBoxObject } from './objects/ComboNumberBoxObject.js';
 import { ChainNumberBoxObject } from './objects/ChainNumberBoxObject.js';
 import { ComboPopParticles } from './objects/ComboPopParticles.js';
 import { PositionSet } from './utils.js';
+import { clearScore } from './score.js';
 import { Grid } from './grid.js';
 import { TrashBlock, TRASH_STATE_NORMAL, TRASH_STATE_POPPING } from './trashBlock.js';
 import { TrashQueue } from './trashQueue.js';
@@ -40,6 +41,7 @@ class Board {
     this.gameObjects = [];
     this.isChaining = false;
     this.chainCounter = 0;
+    this.score = 0;
     this.inDanger = false;
     this.dangerCounter = 0;
     this.toppedOut = false;
@@ -204,6 +206,7 @@ class Board {
       }
       this.isChaining = true;
       this.chainCounter++;
+      this.score += clearScore(clearCount, this.chainCounter);
     }
 
     let [topLeft] = clearedPositions;

@@ -26,7 +26,12 @@ const STYLE = `
     margin: 0 0 12px; font-size: 24px; line-height: 1.4; color: #ffe14d;
     text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
   }
-  #ta-gameover-subtitle { margin: 0 0 26px; font-size: 10px; line-height: 1.8; color: #9a9ac4; }
+  #ta-gameover-subtitle { margin: 0 0 14px; font-size: 10px; line-height: 1.8; color: #9a9ac4; }
+  #ta-gameover-scores {
+    margin: 0 0 22px; padding: 10px 0; font-size: 12px; line-height: 2;
+    color: #c9c9e6; border-top: 1px solid #333; border-bottom: 1px solid #333;
+  }
+  #ta-gameover-scores .score-value { color: #ffe14d; }
   #ta-gameover-list { list-style: none; margin: 0; padding: 0; }
   #ta-gameover-list li {
     font-size: 15px; padding: 11px 18px; margin: 6px auto; max-width: 260px;
@@ -41,10 +46,12 @@ const STYLE = `
 `;
 
 export class GameOverOverlay {
-  // result is { title, subtitle }; onSelect(choiceId) receives 'replay' or 'menu'.
-  constructor({ title, subtitle }, onSelect) {
+  // result is { title, subtitle, scores }; onSelect(choiceId) receives 'replay' or 'menu'.
+  // scores is an array of { label, value } objects.
+  constructor({ title, subtitle, scores }, onSelect) {
     this.title = title;
     this.subtitle = subtitle;
+    this.scores = scores || [];
     this.onSelect = onSelect;
     this.index = 0;
     this._onKeydown = (e) => this._handleKey(e);
@@ -77,6 +84,17 @@ export class GameOverOverlay {
     subtitle.id = 'ta-gameover-subtitle';
     subtitle.textContent = this.subtitle;
     card.appendChild(subtitle);
+
+    if (this.scores.length > 0) {
+      const scoresDiv = document.createElement('div');
+      scoresDiv.id = 'ta-gameover-scores';
+      for (const s of this.scores) {
+        const line = document.createElement('div');
+        line.innerHTML = `${s.label}: <span class="score-value">${s.value.toLocaleString()}</span>`;
+        scoresDiv.appendChild(line);
+      }
+      card.appendChild(scoresDiv);
+    }
 
     const list = document.createElement('ul');
     list.id = 'ta-gameover-list';
