@@ -15,6 +15,9 @@ class Renderer {
     this.tileColumns = board.width;
     this.tileRows = board.height;
 
+    this.scoreEl = this._createScoreElement();
+    this.receiver.appendChild(this.scoreEl);
+
     const canvasEl = this._createCanvasElement();
     this.receiver.appendChild(canvasEl);
     this.canvasCtx = canvasEl.getContext('2d');
@@ -29,6 +32,21 @@ class Renderer {
     return TS;
   }
 
+  _createScoreElement() {
+    const el = document.createElement('div');
+    const w = this.tileColumns * Constants.TILE_SIZE;
+    el.style.cssText = `
+      width: ${w}px; height: 28px; line-height: 28px;
+      font-family: 'Press Start 2P', 'Courier New', monospace;
+      font-size: 14px; text-align: right; padding: 0 6px;
+      color: #ffe14d; background: #111; box-sizing: border-box;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.7);
+      border-bottom: 2px solid #333;
+    `;
+    el.textContent = '0';
+    return el;
+  }
+
   _createCanvasElement() {
     const canvasEl = document.createElement('canvas');
     canvasEl.width = this.tileColumns * Constants.TILE_SIZE;
@@ -39,13 +57,13 @@ class Renderer {
   }
 
   draw(game) {
-    this._drawBackground();    
+    this._drawBackground();
 
     const scroll = game.board.scroll;
     this.yscroll = scroll * TS;
     this.canvasCtx.setTransform(1, 0, 0, 1, 0, Math.floor(-this.yscroll));
     this.frameNumber = (this.frameNumber || 0) + 1;
-    
+
     //this._drawTileGrid(game.board);
     this._drawBlocks(game.board);
     this._drawTrash(game.board);
@@ -53,7 +71,7 @@ class Renderer {
     this._drawObjects(game.board);
     this._drawStackState(game.board);
 
-    // this._drawFrameNumber();
+    this.scoreEl.textContent = String(game.board.score);
   }
 
   // Feedback for the top-out grace window, and for a board that has died.
