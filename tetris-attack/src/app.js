@@ -57,22 +57,36 @@ class Match {
       return null;
     }
 
+    const scores = this._buildScores();
+
     if (this.games.length === 1) {
-      return { title: 'GAME OVER', subtitle: 'Your stack reached the top.' };
+      return { title: 'GAME OVER', subtitle: 'Your stack reached the top.', scores };
     }
     if (out[0] && out[1]) {
-      return { title: 'DRAW', subtitle: 'Both stacks topped out.' };
+      return { title: 'DRAW', subtitle: 'Both stacks topped out.', scores };
     }
 
     const playerOneWon = out[1];
     if (this.mode === 'vsai') {
       return playerOneWon
-        ? { title: 'YOU WIN', subtitle: 'The AI topped out.' }
-        : { title: 'AI WINS', subtitle: 'Your stack reached the top.' };
+        ? { title: 'YOU WIN', subtitle: 'The AI topped out.', scores }
+        : { title: 'AI WINS', subtitle: 'Your stack reached the top.', scores };
     }
     return playerOneWon
-      ? { title: 'PLAYER 1 WINS', subtitle: 'Player 2 topped out.' }
-      : { title: 'PLAYER 2 WINS', subtitle: 'Player 1 topped out.' };
+      ? { title: 'PLAYER 1 WINS', subtitle: 'Player 2 topped out.', scores }
+      : { title: 'PLAYER 2 WINS', subtitle: 'Player 1 topped out.', scores };
+  }
+
+  _buildScores() {
+    if (this.games.length === 1) {
+      return [{ label: 'Score', value: this.games[0].board.score }];
+    }
+    const p1Label = this.mode === 'vsai' ? 'You' : 'P1';
+    const p2Label = this.mode === 'vsai' ? 'AI' : 'P2';
+    return [
+      { label: p1Label, value: this.games[0].board.score },
+      { label: p2Label, value: this.games[1].board.score },
+    ];
   }
 
   destroy() {
