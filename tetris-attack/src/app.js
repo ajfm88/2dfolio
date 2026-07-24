@@ -9,6 +9,7 @@ import {InputOr} from './InputOr.js';
 import {GamePadInput, GamePadManager} from './GamePad.js';
 import {Menu} from './menu.js';
 import {GameOverOverlay} from './gameOver.js';
+import {randomStages} from './stages.js';
 
 const STATE_MENU = 'MENU';
 const STATE_PLAYING = 'PLAYING';
@@ -94,6 +95,15 @@ class Match {
   }
 }
 
+// The stage frame writes inline sizing/position onto a board container. Strip it
+// so the container returns to a plain box (for the menu, or the next match).
+function resetContainer(el) {
+  el.innerHTML = '';
+  el.style.position = '';
+  el.style.width = '';
+  el.style.height = '';
+}
+
 // Build a match for the chosen mode. The gamepad manager is shared across matches.
 function buildMatch(mode, gamePadManager, leftContainer, rightContainer) {
   const games = [];
@@ -141,14 +151,18 @@ function buildMatch(mode, gamePadManager, leftContainer, rightContainer) {
   }
 
   // --- Renderers / containers ---
+  // Give each board a distinct stage-clear background for the match.
+  const stages = randomStages(2);
+  resetContainer(leftContainer);
+  resetContainer(rightContainer);
   leftContainer.style.display = '';
   leftContainer.innerHTML = '';
-  renderers.push({ renderer: new Renderer('game-container-left', leftGame.board), game: leftGame });
+  renderers.push({ renderer: new Renderer('game-container-left', leftGame.board, stages[0]), game: leftGame });
 
   rightContainer.innerHTML = '';
   if (rightGame) {
     rightContainer.style.display = '';
-    renderers.push({ renderer: new Renderer('game-container-right', rightGame.board), game: rightGame });
+    renderers.push({ renderer: new Renderer('game-container-right', rightGame.board, stages[1]), game: rightGame });
   } else {
     rightContainer.style.display = 'none';
   }
@@ -219,8 +233,8 @@ class App {
   quitToMenu() {
     this._clearOverlays();
     if (this.match) { this.match.destroy(); this.match = null; }
-    this.leftContainer.innerHTML = '';
-    this.rightContainer.innerHTML = '';
+    resetContainer(this.leftContainer);
+    resetContainer(this.rightContainer);
     this.rightContainer.style.display = '';
     this.showMenu();
   }
