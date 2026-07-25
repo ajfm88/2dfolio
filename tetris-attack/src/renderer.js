@@ -6,23 +6,34 @@ const TS = Constants.TILE_SIZE;
 import { SpriteRenderer } from "./spriteRenderer.js"
 import { TrashRenderer } from "./trashRenderer.js"
 import { stageLayout } from "./stages.js"
+import { PixelFont, CHAR_H } from "./font.js"
 
 //TODO remove
 import { TrashBlock } from "./trashBlock.js"
 
-// Authentic SNES "SCORE" box + digit font, ripped by thewolfbunny (art (c) Nintendo).
-// Pre-baked from src/score.png into two transparent sprites:
-//   scoreBox.png    - the rounded "SCORE" frame (111x11)
-//   scoreDigits.png - the 0-9 pink glyphs; digit d is at source x = 9*d (8x8)
-const scoreBoxImg = new Image();
-scoreBoxImg.src = "scoreBox.png";
-const scoreDigitsImg = new Image();
-scoreDigitsImg.src = "scoreDigits.png";
-const SCORE_BOX_W = 111;
-const SCORE_BOX_H = 11;
-const SCORE_DIGIT_W = 8;         // glyph width in scoreDigits.png
-const SCORE_DIGIT_SRC_STRIDE = 9; // source spacing between glyphs
-const SCORE_WELL_RIGHT = 101;    // native-x where the rightmost digit ends (inside the well)
+// The HUD readouts, drawn in the SNES HUD font into the stage art's own two
+// empty boxes: TIME upper-left, SCORE down the right, as the original lays them
+// out. Coordinates are native (unscaled) panel pixels; the overlays are
+// stretched up by CSS.
+//
+// Each readout is a caption with its value right-aligned underneath. At 8px per
+// character the right box holds 5 ("SCORE" exactly); the left box is 64 wide,
+// so "TIME" and a MM:SS value sit comfortably.
+const HUD_PAD = 4;
+const HUD_LABEL_Y = 4;
+const HUD_VALUE_Y = 14;
+const HUD_ROW_HEIGHT = 24;
+
+// Frames per second the board ticks at, for turning elapsed frames into a clock.
+const TICKS_PER_SECOND = 60;
+
+// Elapsed board ticks as MM:SS. Minutes are not padded (so it reads 0:07, like
+// the original's 0'07) but are allowed past 99 rather than wrapping.
+function formatClock(frames) {
+  const total = Math.floor(frames / TICKS_PER_SECOND);
+  const seconds = total % 60;
+  return `${Math.floor(total / 60)}:${String(seconds).padStart(2, '0')}`;
+}
 
 class Renderer {
   constructor(receiverId, board, stage = null) {
@@ -40,10 +51,17 @@ class Renderer {
       this._setupStageFrame();
     }
 
-    // Framed boards get the sprite "SCORE" box (a dedicated canvas); the plain
-    // (unframed) fallback keeps the simple HTML score bar.
+    // Framed boards get the pixel-font HUD drawn into the stage's own boxes
+    // (one canvas each); the plain (unframed) fallback keeps the simple HTML
+    // score bar.
     if (this.stageLayout) {
-      this.receiver.appendChild(this._createScoreCanvas());
+      // The SNES HUD captions its readouts in cyan over a white value.
+      this.labelFont = new PixelFont('cyan');
+      this.valueFont = new PixelFont('white');
+      this.timePanel = this._createPanel(this.stageLayout.timePanel);
+      this.scorePanel = this._createPanel(this.stageLayout.hudPanel);
+      this.receiver.appendChild(this.timePanel.canvas);
+      this.receiver.appendChild(this.scorePanel.canvas);
     } else {
       this.scoreEl = this._createScoreElement();
       this.receiver.appendChild(this.scoreEl);
@@ -103,45 +121,70 @@ class Renderer {
     return el;
   }
 
-  // A dedicated canvas for the sprite "SCORE" box, sized to the stage's score-box
-  // width and overlaid on the art's baked-in panel (vertically centred in it).
-  _createScoreCanvas() {
-    const L = this.stageLayout;
-    const boxH = Math.round(L.scoreWidth * SCORE_BOX_H / SCORE_BOX_W);
+  // A transparent overlay sitting exactly on one of the stage art's HUD boxes.
+  // Its backing store is the box's *native* size and CSS stretches it to the
+  // frame's scale, so the pixel font always lands on whole pixels no matter
+  // what fractional scale the frame works out to.
+  _createPanel(placement) {
     const el = document.createElement('canvas');
-    el.width = Math.round(L.scoreWidth);
-    el.height = boxH;
+    el.width = placement.nativeW;
+    el.height = placement.nativeH;
     el.style.cssText = `
       position: absolute; z-index: 2;
-      left: ${L.scoreLeft}px;
-      top: ${L.scoreTop + (L.scoreHeight - boxH) / 2}px;
+      left: ${placement.left}px; top: ${placement.top}px;
+      width: ${placement.width}px; height: ${placement.height}px;
       image-rendering: pixelated; pointer-events: none;
     `;
-    this.scoreCanvas = el;
-    this.scoreCtx = el.getContext('2d');
-    this.scoreCtx.imageSmoothingEnabled = false;
-    return el;
+    const ctx = el.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    return { canvas: el, ctx };
   }
 
-  // Draw the "SCORE" box and the right-aligned score into the score canvas.
-  _drawScore(score) {
-    const ctx = this.scoreCtx;
-    const cw = this.scoreCanvas.width;
-    const ch = this.scoreCanvas.height;
-    ctx.clearRect(0, 0, cw, ch);
-    const scale = ch / SCORE_BOX_H;
-    ctx.drawImage(scoreBoxImg, 0, 0, SCORE_BOX_W, SCORE_BOX_H, 0, 0, SCORE_BOX_W * scale, SCORE_BOX_H * scale);
+  // A caption with its value right-aligned underneath, cleared and redrawn each
+  // frame. The box art itself lives in the stage background behind the canvas.
+  _drawReadout(panel, label, value) {
+    const ctx = panel.ctx;
+    const w = panel.canvas.width;
+    ctx.clearRect(0, 0, w, panel.canvas.height);
 
-    const digits = String(score);
-    const startX = SCORE_WELL_RIGHT - digits.length * SCORE_DIGIT_W; // native-x of first digit
-    const dy = Math.round((SCORE_BOX_H - SCORE_DIGIT_W) / 2 * scale);
-    const dSize = SCORE_DIGIT_W * scale;
-    for (let i = 0; i < digits.length; i++) {
-      const d = digits.charCodeAt(i) - 48;
-      const dx = (startX + i * SCORE_DIGIT_W) * scale;
-      ctx.drawImage(scoreDigitsImg, SCORE_DIGIT_SRC_STRIDE * d, 0, SCORE_DIGIT_W, SCORE_DIGIT_W,
-                    dx, dy, dSize, dSize);
+    if (!this.labelFont.ready() || !this.valueFont.ready()) {
+      this._drawReadoutFallback(panel, value, w);
+      return;
     }
+    this.labelFont.draw(ctx, label, HUD_PAD, HUD_LABEL_Y);
+    // An overlong value runs off to the right rather than out of the box's left edge.
+    const valueX = Math.max(HUD_PAD, w - HUD_PAD - this.valueFont.width(value));
+    this.valueFont.draw(ctx, value, valueX, HUD_VALUE_Y);
+  }
+
+  _drawHudColumn(panel, entries) {
+    const ctx = panel.ctx;
+    const w = panel.canvas.width;
+    ctx.clearRect(0, 0, w, panel.canvas.height);
+
+    if (!this.labelFont.ready() || !this.valueFont.ready()) {
+      this._drawReadoutFallback(panel, entries[0].value, w);
+      return;
+    }
+
+    let y = HUD_LABEL_Y;
+    for (const { label, value } of entries) {
+      this.labelFont.draw(ctx, label, HUD_PAD, y);
+      const valueX = Math.max(HUD_PAD, w - HUD_PAD - this.valueFont.width(value));
+      this.valueFont.draw(ctx, value, valueX, y + HUD_VALUE_Y - HUD_LABEL_Y);
+      y += HUD_ROW_HEIGHT;
+    }
+  }
+
+  // Used for the frames before font.png has decoded, and if the sheet can never
+  // be read back (a tainted canvas, e.g. when served from file://).
+  _drawReadoutFallback(panel, value, w) {
+    const ctx = panel.ctx;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.font = `${CHAR_H + 2}px monospace`;
+    ctx.fillText(value, w - HUD_PAD, HUD_VALUE_Y);
   }
 
   _createCanvasElement() {
@@ -176,8 +219,12 @@ class Renderer {
     this._drawObjects(game.board);
     this._drawStackState(game.board);
 
-    if (this.scoreCanvas) {
-      this._drawScore(game.board.score);
+    if (this.scorePanel) {
+      this._drawReadout(this.timePanel, 'TIME', formatClock(game.board.elapsedFrames));
+      this._drawHudColumn(this.scorePanel, [
+        { label: 'SCORE', value: String(game.board.score) },
+        { label: 'SPEED', value: String(game.board.speedLevel) },
+      ]);
     } else {
       this.scoreEl.textContent = String(game.board.score);
     }

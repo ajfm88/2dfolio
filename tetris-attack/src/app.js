@@ -10,10 +10,14 @@ import {GamePadInput, GamePadManager} from './GamePad.js';
 import {Menu} from './menu.js';
 import {GameOverOverlay} from './gameOver.js';
 import {randomStages} from './stages.js';
+import {MAX_SPEED_LEVEL} from './board.js';
 
 const STATE_MENU = 'MENU';
 const STATE_PLAYING = 'PLAYING';
 const STATE_GAME_OVER = 'GAME_OVER';
+
+// In 1P Endless, the speed level increases by 1 every this many frames.
+const SPEED_RAMP_FRAMES = 60 * 45; // 45 seconds per level
 
 // Player 2's keyboard layout for 2P local play. Kept clear of Player 1's keys
 // (arrows / Space / Right-Shift) and of the P/F debug keys.
@@ -43,6 +47,16 @@ class Match {
     this.ais.forEach((ai) => ai.tick());
     for (let i = 1; i < this.games.length; i++) {
       this.games[i].tick();
+    }
+    this._tickSpeedRamp();
+  }
+
+  _tickSpeedRamp() {
+    if (this.mode !== '1p') return;
+    const board = this.games[0].board;
+    const nextLevel = 1 + Math.floor(board.elapsedFrames / SPEED_RAMP_FRAMES);
+    if (nextLevel > board.speedLevel && nextLevel <= MAX_SPEED_LEVEL) {
+      board.setSpeedLevel(nextLevel);
     }
   }
 
@@ -279,8 +293,16 @@ class App {
     const frame = () => {
       const startFrameTime = Date.now();
 
-      if (this.state === STATE_PLAYING && this.match) {
-        this._tickPlaying();
+      // A throw here used to kill the loop outright: the re-arming setTimeout
+      // below never ran, so the game froze with the stage art (plain CSS) still
+      // on screen and every canvas dead. Keep scheduling no matter what, and
+      // surface the error instead of swallowing the whole game with it.
+      try {
+        if (this.state === STATE_PLAYING && this.match) {
+          this._tickPlaying();
+        }
+      } catch (e) {
+        console.error('[TA] frame failed:', e);
       }
 
       let timeToNextFrame = (1000 / 60) - (Date.now() - startFrameTime);

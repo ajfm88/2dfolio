@@ -3,7 +3,7 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "comboSprites.png";
+image.src = "assets/comboSprites.png";
 
 export class ComboNumberBoxObject extends GameObject {
   constructor({boardX = 0, boardY = 0, lifetime = 50, number = 4} = {}) {

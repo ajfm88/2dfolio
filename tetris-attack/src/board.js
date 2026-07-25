@@ -21,7 +21,8 @@ const VALID_SWAP_STATES = new Set([BLOCK_STATE_FALLING, BLOCK_STATE_NORMAL]);
 const FRAMES_PER_GRAVITY_FALL = 1;
 const BASE_BLOCK_POP_TIME = 80;
 const BLOCK_POP_TIME_PER_BLOCK = 9;
-const SCROLL_PER_FRAME = 1 / (60 * 7);
+const BASE_SCROLL_PER_FRAME = 1 / (60 * 7);
+const MAX_SPEED_LEVEL = 50;
 const FREEZE_TIME_PER_POP = 40;
 const HOVER_TIME = 8;
 // How long panels may sit against the ceiling before the board tops out.
@@ -42,12 +43,20 @@ class Board {
     this.isChaining = false;
     this.chainCounter = 0;
     this.score = 0;
+    this.elapsedFrames = 0;
+    this.speedLevel = 1;
+    this.scrollPerFrame = BASE_SCROLL_PER_FRAME;
     this.inDanger = false;
     this.dangerCounter = 0;
     this.toppedOut = false;
     this.trash = [];
     this.trashQueue = new TrashQueue();
     this._initBoard();
+  }
+
+  setSpeedLevel(level) {
+    this.speedLevel = Math.min(Math.max(1, level), MAX_SPEED_LEVEL);
+    this.scrollPerFrame = BASE_SCROLL_PER_FRAME * Math.pow(1.04, this.speedLevel - 1);
   }
 
   setTrashQueue(trashQueue) {
@@ -314,6 +323,9 @@ class Board {
       return;
     }
 
+    // Past the guard above, so the clock stops at the moment the board died.
+    this.elapsedFrames++;
+
     this._indexTrashBlocks();
     for (const [block] of this.grid.entries()) {
       block.tick();
@@ -465,10 +477,10 @@ class Board {
     if (this.freezeCounter > 0) {
       this.freezeCounter--;
     } else {
-      this.scroll = (this.scroll || 0) + SCROLL_PER_FRAME;
+      this.scroll = (this.scroll || 0) + this.scrollPerFrame;
     }
     if (this.pendingScrolls > 0) {
-      this.scroll += SCROLL_PER_FRAME * 20;
+      this.scroll += this.scrollPerFrame * 20;
     }
     if (this.scroll > 1) {
       this.scroll--;
@@ -580,4 +592,4 @@ class Board {
 
 }
 
-export { Board };
+export { Board, MAX_SPEED_LEVEL };
