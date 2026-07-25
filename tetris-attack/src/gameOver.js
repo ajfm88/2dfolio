@@ -1,9 +1,55 @@
-// Match results screen, shown once a board tops out.
-// Deliberately translucent so the frozen playfields stay visible behind it.
+// Match results screen, rebuilt on the SNES VS-mode GAME OVER screen.
+//
+// `src/assets/gameover.png` was ripped by JigglypuffGirl ("Credit?: Yes, Free
+// Use?: Yes"); the original art is (c) Nintendo / Intelligent Systems. The sheet
+// carries the whole screen as one 256x224 background (GAME OVER logo baked in)
+// plus loose sprites to composite on top, all on a (21,0,43) key colour.
+//
+// The original offers TRY AGAIN? / YES / NO, which map onto the two choices this
+// game already had: YES replays the match, NO returns to the menu. YES and NO
+// each ship in an orange and a blue copy -- that is the selected/unselected
+// pair, and the reference screenshot confirms it (orange YES beside blue NO).
+//
+// Everything is drawn at native SNES resolution and scaled up by CSS, so the
+// pixel art stays on whole pixels.
 
-const RESULT_ITEMS = [
-  { id: 'replay', label: 'Play Again' },
-  { id: 'menu', label: 'Back to Menu' },
+import { PixelFont } from './font.js';
+
+const SHEET_URL = 'assets/gameover.png';
+const KEY = [21, 0, 43]; // sheet background, keyed to transparent
+
+const SCREEN_W = 256;
+const SCREEN_H = 224;
+
+// Source rects on the sheet, measured by decoding it (see CLAUDE.md).
+const SPRITES = {
+  background: { x: 5, y: 5, w: SCREEN_W, h: SCREEN_H },
+  yoshi: { x: 271, y: 6, w: 192, h: 86 },
+  // 19 tall, not 25: the red selection blob sits directly below from y=130 and
+  // overlaps this sprite's x-range, so an over-tall rect drags its edge in.
+  tryAgain: { x: 296, y: 106, w: 127, h: 19 },
+  yesOn: { x: 298, y: 142, w: 40, h: 19 },
+  noOn: { x: 342, y: 142, w: 35, h: 19 },
+  yesOff: { x: 300, y: 166, w: 40, h: 19 },
+  noOff: { x: 344, y: 166, w: 35, h: 19 },
+};
+
+// Placement on the 256x224 screen. The art has three bands: the logo down to
+// y=69, a bright "floor" band y=82..142, then a dark band from y=148. Yoshi is
+// bottom-aligned to the floor band; the prompt and choices sit in the dark one.
+const LAYOUT = {
+  yoshi: { x: 32, y: 62 },
+  outcomeY: 61, // under the logo, in the top band
+  scoresY: 152,
+  tryAgain: { x: 64, y: 164 },
+  choicesY: 196,
+  yesX: 88,
+  noX: 132, // the sheet spaces NO 44px after YES
+};
+
+const CHOICES = [
+  { id: 'replay', key: 'yes' },
+  { id: 'menu', key: 'no' },
 ];
 
 const STYLE_ID = 'ta-gameover-style';
@@ -11,53 +57,45 @@ const STYLE = `
   #ta-gameover-overlay {
     position: fixed; inset: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(7, 5, 15, 0.72);
-    font-family: 'Press Start 2P', 'Courier New', monospace;
-    color: #f4f4ff; user-select: none;
+    background: rgba(7, 5, 15, 0.82);
+    user-select: none;
   }
-  #ta-gameover-card {
-    text-align: center; padding: 30px 46px; min-width: 340px;
-    background: rgba(10, 8, 24, 0.92);
-    border: 3px solid #ffe14d;
-    border-radius: 10px;
-    box-shadow: 0 0 28px rgba(255, 225, 77, 0.35), inset 0 0 24px rgba(255, 225, 77, 0.07);
+  #ta-gameover-screen {
+    width: min(92vw, 82vh * 256 / 224, 768px);
+    aspect-ratio: 256 / 224;
+    image-rendering: pixelated;
+    cursor: pointer;
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.8);
   }
-  #ta-gameover-title {
-    margin: 0 0 12px; font-size: 24px; line-height: 1.4; color: #ffe14d;
-    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
-  }
-  #ta-gameover-subtitle { margin: 0 0 14px; font-size: 10px; line-height: 1.8; color: #9a9ac4; }
-  #ta-gameover-scores {
-    margin: 0 0 22px; padding: 10px 0; font-size: 12px; line-height: 2;
-    color: #c9c9e6; border-top: 1px solid #333; border-bottom: 1px solid #333;
-  }
-  #ta-gameover-scores .score-value { color: #ffe14d; }
-  #ta-gameover-list { list-style: none; margin: 0; padding: 0; }
-  #ta-gameover-list li {
-    font-size: 15px; padding: 11px 18px; margin: 6px auto; max-width: 260px;
-    border: 2px solid transparent; border-radius: 6px; color: #c9c9e6;
-    transition: color 0.08s, background 0.08s;
-  }
-  #ta-gameover-list li.active {
-    color: #07050f; background: #ffe14d; border-color: #ffffff;
-    box-shadow: 0 0 14px rgba(255, 225, 77, 0.7);
-  }
-  #ta-gameover-hint { margin: 24px 0 0; font-size: 10px; line-height: 1.7; color: #7b7ba6; }
 `;
 
+const sheet = new Image();
+sheet.src = SHEET_URL;
+
 export class GameOverOverlay {
-  // result is { title, subtitle, scores }; onSelect(choiceId) receives 'replay' or 'menu'.
-  // scores is an array of { label, value } objects.
+  // result is { title, subtitle, scores }; onSelect(choiceId) gets 'replay' or 'menu'.
+  // scores is an array of { label, value }.
   constructor({ title, subtitle, scores }, onSelect) {
     this.title = title;
     this.subtitle = subtitle;
     this.scores = scores || [];
     this.onSelect = onSelect;
     this.index = 0;
+    this.sprites = null;
+
+    this.labelFont = new PixelFont('cyan');
+    this.valueFont = new PixelFont('white');
+
     this._onKeydown = (e) => this._handleKey(e);
     this._injectStyle();
     this._build();
     document.addEventListener('keydown', this._onKeydown, true);
+
+    this._draw();
+    // The sheet may still be decoding on the first frame.
+    if (!sheet.complete) {
+      sheet.addEventListener('load', () => this._draw(), { once: true });
+    }
   }
 
   _injectStyle() {
@@ -72,72 +110,149 @@ export class GameOverOverlay {
     this.overlay = document.createElement('div');
     this.overlay.id = 'ta-gameover-overlay';
 
-    const card = document.createElement('div');
-    card.id = 'ta-gameover-card';
+    const canvas = document.createElement('canvas');
+    canvas.id = 'ta-gameover-screen';
+    canvas.width = SCREEN_W;
+    canvas.height = SCREEN_H;
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
 
-    const title = document.createElement('h1');
-    title.id = 'ta-gameover-title';
-    title.textContent = this.title;
-    card.appendChild(title);
-
-    const subtitle = document.createElement('p');
-    subtitle.id = 'ta-gameover-subtitle';
-    subtitle.textContent = this.subtitle;
-    card.appendChild(subtitle);
-
-    if (this.scores.length > 0) {
-      const scoresDiv = document.createElement('div');
-      scoresDiv.id = 'ta-gameover-scores';
-      for (const s of this.scores) {
-        const line = document.createElement('div');
-        line.innerHTML = `${s.label}: <span class="score-value">${s.value.toLocaleString()}</span>`;
-        scoresDiv.appendChild(line);
+    canvas.addEventListener('mousemove', (e) => this._handleHover(e));
+    canvas.addEventListener('click', (e) => {
+      const hit = this._hitTest(e);
+      if (hit >= 0) {
+        this.index = hit;
+        this._select();
       }
-      card.appendChild(scoresDiv);
-    }
-
-    const list = document.createElement('ul');
-    list.id = 'ta-gameover-list';
-    this.itemEls = RESULT_ITEMS.map((item, i) => {
-      const li = document.createElement('li');
-      li.textContent = item.label;
-      if (i === this.index) li.className = 'active';
-      li.addEventListener('mouseenter', () => this._setIndex(i));
-      li.addEventListener('click', () => this._select());
-      list.appendChild(li);
-      return li;
     });
-    card.appendChild(list);
 
-    const hint = document.createElement('p');
-    hint.id = 'ta-gameover-hint';
-    hint.innerHTML = '&uarr;&darr; select &middot; Enter confirm &middot; Esc menu';
-    card.appendChild(hint);
-
-    this.overlay.appendChild(card);
+    this.overlay.appendChild(canvas);
     document.body.appendChild(this.overlay);
   }
 
+  // Cut each sprite out of the sheet once, keying the flat background colour to
+  // transparent so the pieces composite onto the screen art.
+  _buildSprites() {
+    if (this.sprites || this.spritesFailed) return this.sprites;
+    if (!sheet.complete || sheet.naturalWidth === 0) return null;
+
+    try {
+      const out = {};
+      for (const [name, r] of Object.entries(SPRITES)) {
+        const c = document.createElement('canvas');
+        c.width = r.w;
+        c.height = r.h;
+        const cx = c.getContext('2d');
+        cx.imageSmoothingEnabled = false;
+        cx.drawImage(sheet, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+        // The full-screen background is opaque art, not a keyed sprite.
+        if (name !== 'background') {
+          const img = cx.getImageData(0, 0, r.w, r.h);
+          const d = img.data;
+          for (let i = 0; i < d.length; i += 4) {
+            if (d[i] === KEY[0] && d[i + 1] === KEY[1] && d[i + 2] === KEY[2]) {
+              d[i + 3] = 0;
+            }
+          }
+          cx.putImageData(img, 0, 0);
+        }
+        out[name] = c;
+      }
+      this.sprites = out;
+    } catch (e) {
+      // Sheet could not be read back (tainted canvas, e.g. served from file://).
+      this.spritesFailed = true;
+    }
+    return this.sprites;
+  }
+
+  _draw() {
+    const ctx = this.ctx;
+    const sprites = this._buildSprites();
+    if (!sprites) {
+      this._drawFallback();
+      return;
+    }
+
+    ctx.drawImage(sprites.background, 0, 0);
+    ctx.drawImage(sprites.yoshi, LAYOUT.yoshi.x, LAYOUT.yoshi.y);
+    ctx.drawImage(sprites.tryAgain, LAYOUT.tryAgain.x, LAYOUT.tryAgain.y);
+
+    const yesSelected = this.index === 0;
+    ctx.drawImage(yesSelected ? sprites.yesOn : sprites.yesOff, LAYOUT.yesX, LAYOUT.choicesY);
+    ctx.drawImage(yesSelected ? sprites.noOff : sprites.noOn, LAYOUT.noX, LAYOUT.choicesY);
+
+    // The logo already says GAME OVER, so only a result that adds something --
+    // who won a two-board match -- is worth printing under it.
+    if (this.title && this.title !== 'GAME OVER') {
+      this._drawCentred(this.labelFont, this.title, LAYOUT.outcomeY);
+    }
+    this._drawCentred(this.valueFont, this._scoreLine(), LAYOUT.scoresY);
+  }
+
+  // "YOU 4550   AI 3200" -- the outcome detail the SNES screen has no room for.
+  _scoreLine() {
+    return this.scores.map((s) => `${s.label} ${s.value}`).join('   ');
+  }
+
+  _drawCentred(font, text, y) {
+    if (!text || !font.ready()) return;
+    const x = Math.max(2, Math.round((SCREEN_W - font.width(text)) / 2));
+    font.draw(this.ctx, text, x, y);
+  }
+
+  // Shown only until gameover.png decodes, or if it can never be read back.
+  _drawFallback() {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#1818d0';
+    ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.font = '16px monospace';
+    ctx.fillText(this.title || 'GAME OVER', SCREEN_W / 2, 100);
+    ctx.font = '10px monospace';
+    ctx.fillText('TRY AGAIN?', SCREEN_W / 2, 140);
+    ctx.fillText(this.index === 0 ? '[YES]  NO' : 'YES  [NO]', SCREEN_W / 2, 165);
+  }
+
+  // Which choice, if any, is under the pointer. Returns -1 for neither.
+  _hitTest(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * SCREEN_W;
+    const y = ((e.clientY - rect.top) / rect.height) * SCREEN_H;
+    if (y < LAYOUT.choicesY || y > LAYOUT.choicesY + SPRITES.yesOn.h) return -1;
+    if (x >= LAYOUT.yesX && x <= LAYOUT.yesX + SPRITES.yesOn.w) return 0;
+    if (x >= LAYOUT.noX && x <= LAYOUT.noX + SPRITES.noOn.w) return 1;
+    return -1;
+  }
+
+  _handleHover(e) {
+    const hit = this._hitTest(e);
+    if (hit >= 0) this._setIndex(hit);
+  }
+
   _setIndex(i) {
-    this.itemEls[this.index].className = '';
+    if (i === this.index) return;
     this.index = i;
-    this.itemEls[this.index].className = 'active';
+    this._draw();
   }
 
   _move(delta) {
-    const n = RESULT_ITEMS.length;
-    this._setIndex((this.index + delta + n) % n);
+    this._setIndex((this.index + delta + CHOICES.length) % CHOICES.length);
   }
 
   _select() {
-    this.onSelect(RESULT_ITEMS[this.index].id);
+    this.onSelect(CHOICES[this.index].id);
   }
 
   _handleKey(e) {
     switch (e.code) {
-      case 'ArrowUp': case 'KeyW':
+      // YES and NO sit side by side, so left/right is the natural pairing --
+      // up/down still works for anyone who learned the old vertical list.
+      case 'ArrowLeft': case 'KeyA': case 'ArrowUp': case 'KeyW':
         e.preventDefault(); this._move(-1); break;
-      case 'ArrowDown': case 'KeyS':
+      case 'ArrowRight': case 'KeyD': case 'ArrowDown': case 'KeyS':
         e.preventDefault(); this._move(1); break;
       case 'Enter': case 'Space':
         e.preventDefault(); this._select(); break;

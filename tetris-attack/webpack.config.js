@@ -20,7 +20,7 @@ module.exports = (env) => {
     plugins: [
       new CopyPlugin({
         patterns: [
-          { from: "./src/*.png", to: "dist/[name][ext]", toType: "template"},
+          { from: "./src/assets/*.png", to: "dist/assets/[name][ext]", toType: "template"},
           { from: "./tetrisattack.html", to: "dist/tetrisattack.html", toType: "file"},
         ]
       })
