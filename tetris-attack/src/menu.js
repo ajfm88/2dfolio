@@ -122,7 +122,7 @@ export class Menu {
 
     const logo = document.createElement('img');
     logo.id = 'ta-menu-logo';
-    logo.src = 'logo.png';
+    logo.src = 'assets/logo.png';
     logo.alt = 'TETRIS ATTACK';
     this.card.appendChild(logo);
 

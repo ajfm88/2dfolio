@@ -3,7 +3,7 @@ import { GameObject } from "./gameObject.js";
 const TILE_SIZE = 16;
 
 const image = new Image();
-image.src = "comboSprites.png";
+image.src = "assets/comboSprites.png";
 
 export class TashPopObject extends GameObject {
   constructor({x = 0, y = 0, popTime = 50} = {}) {
