@@ -2,10 +2,10 @@ import { TRASH_STATE_NORMAL, TRASH_STATE_POPPING } from "./trashBlock.js";
 import { SpriteRenderer } from "./spriteRenderer.js";
 
 const image = new Image();
-image.src = "trashSprites.png";
+image.src = "assets/trashSprites.png";
 
 const spritesImage = new Image();
-spritesImage.src = "sprites.png";
+spritesImage.src = "assets/sprites.png";
 
 const TILE_SIZE = 16;
 

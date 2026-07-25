@@ -3,12 +3,11 @@ import { Cursor } from './cursor.js';
 import { Keyboard } from './keyboard.js';
 import { TrashQueue } from './trashQueue.js'
 
-const SCROLL_PER_FRAME = 1 / (60 * 7);
-
 class Game {
-  constructor() {
+  constructor({ speedLevel = 1 } = {}) {
     this.board = new Board();
-    this.cursors = []; 
+    this.cursors = [];
+    if (speedLevel > 1) this.board.setSpeedLevel(speedLevel);
   }
 
   addCursor(cursor) {

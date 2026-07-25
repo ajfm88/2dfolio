@@ -2,12 +2,12 @@
 // See the workspace README "Credits & Attribution": credit BOTH spriterlicious
 // and Nintendo wherever these backgrounds are shown.
 //
-// The source sheet (`stageBackgrounds.png`, 529x782) is a 2-col x 3-row grid of
+// The source sheet (`assets/stageBackgrounds.png`, 529x782) is a 2-col x 3-row grid of
 // 256x224 SNES screens separated by 8px white gutters. Each screen frames a
 // playfield "well" at the SAME fixed rectangle (measured from the art), so a
 // board canvas can be positioned to sit exactly inside the well of any stage.
 
-const SHEET_URL = 'stageBackgrounds.png';
+const SHEET_URL = 'assets/stageBackgrounds.png';
 const SHEET_W = 529;
 const SHEET_H = 782;
 
@@ -18,9 +18,17 @@ const GUTTER = 8; // white space between cells
 // The playfield opening, in cell-local pixels (same for every cell).
 const WELL = { x: 86, y: 20, w: 100, h: 197 };
 
-// Where the live score is drawn, over the art's baked-in score panel
-// (cell-local pixels). Overridable per stage via `scoreBox`.
-const DEFAULT_SCORE_BOX = { x: 8, y: 19, w: 70, h: 24 };
+// The art keeps both of the HUD boxes the original game draws into, sitting
+// empty either side of the well: a short one upper-left and a tall one down the
+// right. The SNES puts TIME in the left one and the SCORE / SPEED LV. / LEVEL
+// column in the right one, and these fill them the same way.
+//
+// Both rects are the box interiors in cell-local pixels, measured off all six
+// cells -- every stage frames its boxes identically, just with different art
+// behind them -- so neither needs per-stage tuning. A stage can still override
+// them via `timeBox` / `hudBox` if one ever disagrees.
+const DEFAULT_TIME_BOX = { x: 16, y: 23, w: 64, h: 24 };
+const DEFAULT_HUD_BOX = { x: 192, y: 31, w: 48, h: 104 };
 
 // Left-to-right, top-to-bottom order on the sheet.
 const STAGES = [
@@ -46,7 +54,17 @@ function stageLayout(stage, wellPxW, wellPxH) {
   const sx = wellPxW / WELL.w;
   const sy = wellPxH / WELL.h;
   const { ox, oy } = cellOrigin(stage);
-  const box = stage.scoreBox || DEFAULT_SCORE_BOX;
+  // A HUD overlay is drawn at native SNES resolution and stretched up, rather
+  // than drawing a pixel font at a fractional scale, so each box reports its
+  // native size alongside its scaled placement.
+  const panel = (box) => ({
+    left: box.x * sx,
+    top: box.y * sy,
+    width: box.w * sx,
+    height: box.h * sy,
+    nativeW: box.w,
+    nativeH: box.h,
+  });
   return {
     frameW: CELL_W * sx,
     frameH: CELL_H * sy,
@@ -59,11 +77,9 @@ function stageLayout(stage, wellPxW, wellPxH) {
     bgSizeH: SHEET_H * sy,
     bgPosX: -(ox * sx),
     bgPosY: -(oy * sy),
-    // Live-score overlay placement, inside the frame:
-    scoreLeft: box.x * sx,
-    scoreTop: box.y * sy,
-    scoreWidth: box.w * sx,
-    scoreHeight: box.h * sy,
+    // The two HUD overlays, placed inside the frame.
+    timePanel: panel(stage.timeBox || DEFAULT_TIME_BOX),
+    hudPanel: panel(stage.hudBox || DEFAULT_HUD_BOX),
   };
 }
 
