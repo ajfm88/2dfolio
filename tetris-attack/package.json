@@ -1,5 +1,5 @@
 {
-  "name": "tetris-attack",
+  "name": "player-vs-ai-tetris-attack",
   "version": "1.0.0",
   "private": true,
   "scripts": {
