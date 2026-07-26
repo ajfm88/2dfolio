@@ -8,16 +8,21 @@ import {Buttons} from './input.js';
 import {InputOr} from './InputOr.js';
 import {GamePadInput, GamePadManager} from './GamePad.js';
 import {Menu} from './menu.js';
+import {CharSelect} from './charSelect.js';
 import {GameOverOverlay} from './gameOver.js';
-import {randomStages} from './stages.js';
+import {charStage, randomCharacter} from './characters.js';
 import {MAX_SPEED_LEVEL} from './board.js';
 
 const STATE_MENU = 'MENU';
+const STATE_CHAR_SELECT = 'CHAR_SELECT';
 const STATE_PLAYING = 'PLAYING';
 const STATE_GAME_OVER = 'GAME_OVER';
 
-// In 1P Endless, the speed level increases by 1 every this many frames.
-const SPEED_RAMP_FRAMES = 60 * 45; // 45 seconds per level
+// The speed level increases by 1 every this many frames. 1P ramps faster
+// (45s) to give the mode real progression; VS/2P ramp slower (90s) so
+// matches aren't decided purely by the clock.
+const SPEED_RAMP_FRAMES_1P = 60 * 45;  // 45 seconds per level
+const SPEED_RAMP_FRAMES_VS = 60 * 90;  // 90 seconds per level
 
 // Player 2's keyboard layout for 2P local play. Kept clear of Player 1's keys
 // (arrows / Space / Right-Shift) and of the P/F debug keys.
@@ -52,11 +57,15 @@ class Match {
   }
 
   _tickSpeedRamp() {
-    if (this.mode !== '1p') return;
-    const board = this.games[0].board;
-    const nextLevel = 1 + Math.floor(board.elapsedFrames / SPEED_RAMP_FRAMES);
-    if (nextLevel > board.speedLevel && nextLevel <= MAX_SPEED_LEVEL) {
-      board.setSpeedLevel(nextLevel);
+    const interval = this.mode === '1p' ? SPEED_RAMP_FRAMES_1P : SPEED_RAMP_FRAMES_VS;
+    const elapsed = this.games[0].board.elapsedFrames;
+    const nextLevel = 1 + Math.floor(elapsed / interval);
+    if (nextLevel <= MAX_SPEED_LEVEL) {
+      for (const game of this.games) {
+        if (nextLevel > game.board.speedLevel) {
+          game.board.setSpeedLevel(nextLevel);
+        }
+      }
     }
   }
 
@@ -119,7 +128,9 @@ function resetContainer(el) {
 }
 
 // Build a match for the chosen mode. The gamepad manager is shared across matches.
-function buildMatch(mode, gamePadManager, leftContainer, rightContainer) {
+// p1Char / p2Char come from the character select screen; each board's stage
+// background is derived from its character (or randomised for stageless ones).
+function buildMatch(mode, gamePadManager, leftContainer, rightContainer, p1Char, p2Char) {
   const games = [];
   const ais = [];
   const keyboards = [];
@@ -165,18 +176,19 @@ function buildMatch(mode, gamePadManager, leftContainer, rightContainer) {
   }
 
   // --- Renderers / containers ---
-  // Give each board a distinct stage-clear background for the match.
-  const stages = randomStages(2);
+  // Each board's stage comes from the chosen character (or random if stageless).
+  const p1Stage = charStage(p1Char);
+  const p2Stage = rightGame ? charStage(p2Char) : null;
   resetContainer(leftContainer);
   resetContainer(rightContainer);
   leftContainer.style.display = '';
   leftContainer.innerHTML = '';
-  renderers.push({ renderer: new Renderer('game-container-left', leftGame.board, stages[0]), game: leftGame });
+  renderers.push({ renderer: new Renderer('game-container-left', leftGame.board, p1Stage), game: leftGame });
 
   rightContainer.innerHTML = '';
   if (rightGame) {
     rightContainer.style.display = '';
-    renderers.push({ renderer: new Renderer('game-container-right', rightGame.board, stages[1]), game: rightGame });
+    renderers.push({ renderer: new Renderer('game-container-right', rightGame.board, p2Stage), game: rightGame });
   } else {
     rightContainer.style.display = 'none';
   }
@@ -190,8 +202,11 @@ class App {
     this.state = STATE_MENU;
     this.match = null;
     this.menu = null;
+    this.charSelect = null;
     this.gameOver = null;
     this.mode = null;
+    this.p1Char = null;
+    this.p2Char = null;
     this.isPaused = false;
     this.pressedLastFrame = new Set();
 
@@ -201,7 +216,8 @@ class App {
     this.leftContainer = document.getElementById('game-container-left');
     this.rightContainer = document.getElementById('game-container-right');
 
-    // Esc during a match quits back to the menu.
+    // Esc during a match quits back to the menu. (Char select handles its
+    // own Esc via onCancel, so only STATE_PLAYING needs it here.)
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape' && this.state === STATE_PLAYING) {
         this.quitToMenu();
@@ -216,14 +232,43 @@ class App {
 
   showMenu() {
     this.state = STATE_MENU;
-    this.menu = new Menu((mode) => this.startMatch(mode));
+    this.menu = new Menu((mode) => this.showCharSelect(mode));
   }
 
-  startMatch(mode) {
+  showCharSelect(mode) {
+    this._clearOverlays();
+    this.mode = mode;
+    this.state = STATE_CHAR_SELECT;
+
+    const title = mode === '2p' ? 'P1 - CHOOSE CHARACTER' : 'CHOOSE YOUR CHARACTER';
+    this.charSelect = new CharSelect(title, (p1Char) => {
+      this.p1Char = p1Char;
+
+      if (mode === '2p') {
+        this._clearOverlays();
+        this.charSelect = new CharSelect('P2 - CHOOSE CHARACTER', (p2Char) => {
+          this.p2Char = p2Char;
+          this._launchMatch();
+        }, () => {
+          this.showCharSelect(mode);
+        });
+      } else {
+        this.p2Char = mode === 'vsai' ? randomCharacter(p1Char.id) : null;
+        this._launchMatch();
+      }
+    }, () => {
+      this.quitToMenu();
+    });
+  }
+
+  _launchMatch() {
     this._clearOverlays();
     if (this.match) { this.match.destroy(); this.match = null; }
-    this.mode = mode;
-    this.match = buildMatch(mode, this.gamePadManager, this.leftContainer, this.rightContainer);
+    this.match = buildMatch(
+      this.mode, this.gamePadManager,
+      this.leftContainer, this.rightContainer,
+      this.p1Char, this.p2Char,
+    );
     this.isPaused = false;
     this.pressedLastFrame.clear();
     this.state = STATE_PLAYING;
@@ -237,7 +282,7 @@ class App {
     this.match.destroy();
     this.gameOver = new GameOverOverlay(result, (choice) => {
       if (choice === 'replay') {
-        this.startMatch(this.mode);
+        this._launchMatch();
       } else {
         this.quitToMenu();
       }
@@ -255,6 +300,7 @@ class App {
 
   _clearOverlays() {
     if (this.menu) { this.menu.destroy(); this.menu = null; }
+    if (this.charSelect) { this.charSelect.destroy(); this.charSelect = null; }
     if (this.gameOver) { this.gameOver.destroy(); this.gameOver = null; }
   }
 
