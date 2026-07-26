@@ -19,14 +19,16 @@ import {
 const VALID_SWAP_STATES = new Set([BLOCK_STATE_FALLING, BLOCK_STATE_NORMAL]);
 
 const FRAMES_PER_GRAVITY_FALL = 1;
-const BASE_BLOCK_POP_TIME = 80;
-const BLOCK_POP_TIME_PER_BLOCK = 9;
+// Tuned to match the SNES timings from normal-tetris-attack/objects.js:
+// CLEARBLINKTIME(38) + CLEARPAUSETIME(20) = 58; CLEAREXPLODETIME = 8.
+const BASE_BLOCK_POP_TIME = 58;
+const BLOCK_POP_TIME_PER_BLOCK = 8;
 const BASE_SCROLL_PER_FRAME = 1 / (60 * 7);
 const MAX_SPEED_LEVEL = 50;
-const FREEZE_TIME_PER_POP = 40;
-const HOVER_TIME = 8;
-// How long panels may sit against the ceiling before the board tops out.
-const TOP_OUT_GRACE_FRAMES = 180;
+const FREEZE_TIME_PER_POP = 30;
+// SNES HANGTIME = 11 frames before an unsupported block starts falling.
+const HOVER_TIME = 11;
+const TOP_OUT_GRACE_FRAMES = 300;
 
 const randomChoice = arr => arr[Math.floor(Math.random() * arr.length)];
 
