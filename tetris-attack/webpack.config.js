@@ -21,6 +21,12 @@ module.exports = (env) => {
       new CopyPlugin({
         patterns: [
           { from: "./src/assets/*.png", to: "dist/assets/[name][ext]", toType: "template"},
+          // Sound. Kept in their own folders so the character voices stay
+          // separable from the general one-shots.
+          { from: "./src/assets/char_sfx/*.wav", to: "dist/assets/char_sfx/[name][ext]", toType: "template"},
+          { from: "./src/assets/sfx/*.wav", to: "dist/assets/sfx/[name][ext]", toType: "template"},
+          // VS pose sprites -- mixed png/webp/gif, all browser-native.
+          { from: "./src/assets/char_ind_sprites/*", to: "dist/assets/char_ind_sprites/[name][ext]", toType: "template"},
           { from: "./tetrisattack.html", to: "dist/tetrisattack.html", toType: "file"},
         ]
       })

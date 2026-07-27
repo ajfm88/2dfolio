@@ -3,6 +3,7 @@
 
 import { CHARACTERS, PORTRAIT_SIZE, sheet, buildPortraits } from './characters.js';
 import { stageById } from './stages.js';
+import { audio } from './audio.js';
 
 const COLS = 4;
 const CELL_PX = 80;
@@ -212,23 +213,29 @@ export class CharSelect {
   }
 
   _select() {
+    // The character's own SNES voice clip. The overlay is torn down right
+    // after this, but the sound is Web Audio and outlives the DOM node.
+    audio.playCharacter(CHARACTERS[this.index].id);
     this.onSelect(CHARACTERS[this.index]);
   }
 
   _handleKey(e) {
     switch (e.code) {
+      // The move blip is keyboard-only on purpose: _setIndex also fires on
+      // mouse hover, and running it there machine-guns as the pointer crosses
+      // the grid.
       case 'ArrowUp':    case 'KeyW':
-        e.preventDefault(); this._navigate(0, -1); break;
+        e.preventDefault(); audio.play('move'); this._navigate(0, -1); break;
       case 'ArrowDown':  case 'KeyS':
-        e.preventDefault(); this._navigate(0, 1); break;
+        e.preventDefault(); audio.play('move'); this._navigate(0, 1); break;
       case 'ArrowLeft':  case 'KeyA':
-        e.preventDefault(); this._navigate(-1, 0); break;
+        e.preventDefault(); audio.play('move'); this._navigate(-1, 0); break;
       case 'ArrowRight': case 'KeyD':
-        e.preventDefault(); this._navigate(1, 0); break;
+        e.preventDefault(); audio.play('move'); this._navigate(1, 0); break;
       case 'Enter': case 'Space':
         e.preventDefault(); this._select(); break;
       case 'Escape':
-        e.preventDefault(); this.onCancel(); break;
+        e.preventDefault(); audio.play('cancel'); this.onCancel(); break;
       default: break;
     }
   }

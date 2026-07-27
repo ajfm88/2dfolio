@@ -3,6 +3,9 @@
 // reimplemented here as a self-contained DOM overlay instead of global-script code.
 
 // Playable modes call back into the app; info items open an in-menu panel.
+
+import { audio } from './audio.js';
+
 const MENU_ITEMS = [
   { id: 'vsai', label: 'VS AI', play: true },
   { id: '1p', label: '1P Endless', play: true },
@@ -22,7 +25,7 @@ const HOWTO_HTML = `
     <tr><td>Swap</td><td>Space</td><td>G</td></tr>
     <tr><td>Raise stack</td><td>Right Shift</td><td>H</td></tr>
   </table>
-  <p class="dim">Pause: <b>P</b> &middot; Frame-step: <b>F</b> &middot; Quit to menu: <b>Esc</b></p>
+  <p class="dim">Pause: <b>Esc</b> or <b>P</b> &middot; Mute: <b>M</b> &middot; Frame-step: <b>F</b></p>
   <p class="back">&laquo; Esc / Enter to go back</p>
 `;
 
@@ -190,11 +193,11 @@ export class Menu {
 
     switch (e.code) {
       case 'ArrowUp': case 'KeyW':
-        e.preventDefault(); this._move(-1); break;
+        e.preventDefault(); audio.play('move'); this._move(-1); break;
       case 'ArrowDown': case 'KeyS':
-        e.preventDefault(); this._move(1); break;
+        e.preventDefault(); audio.play('move'); this._move(1); break;
       case 'Enter': case 'Space':
-        e.preventDefault(); this._select(); break;
+        e.preventDefault(); audio.play('confirm'); this._select(); break;
       default: break;
     }
   }
