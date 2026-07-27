@@ -3,6 +3,7 @@ import { ChainNumberBoxObject } from './objects/ChainNumberBoxObject.js';
 import { ComboPopParticles } from './objects/ComboPopParticles.js';
 import { PositionSet } from './utils.js';
 import { clearScore } from './score.js';
+import { audio } from './audio.js';
 import { Grid } from './grid.js';
 import { TrashBlock, TRASH_STATE_NORMAL, TRASH_STATE_POPPING } from './trashBlock.js';
 import { TrashQueue } from './trashQueue.js';
@@ -45,6 +46,7 @@ class Board {
     this.isChaining = false;
     this.chainCounter = 0;
     this.score = 0;
+    this.totalClears = 0;
     this.elapsedFrames = 0;
     this.speedLevel = 1;
     this.scrollPerFrame = BASE_SCROLL_PER_FRAME;
@@ -54,6 +56,10 @@ class Board {
     this.trash = [];
     this.trashQueue = new TrashQueue();
     this._initBoard();
+  }
+
+  get level() {
+    return Math.floor(this.totalClears / 10) + 1;
   }
 
   setSpeedLevel(level) {
@@ -101,6 +107,8 @@ class Board {
   }
 
   addTrashBlock(trashBlock) {
+    // Garbage arriving is what makes this board's character flinch.
+    this.hitId = (this.hitId || 0) + 1;
     let topMostRow = 0;
     for (let [block, x, y] of this.grid.entries()) {
       topMostRow = Math.min(topMostRow, y)
@@ -150,6 +158,9 @@ class Board {
         return;
       }
     }
+
+    // Past every rejection above, so this only fires on a swap that happened.
+    audio.play('swap');
 
     this.grid.put(...positionTwo, blockOne);
     this.grid.put(...positionOne, blockTwo);
@@ -203,6 +214,9 @@ class Board {
       block.popTime(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * clearCount);
       block.popAge(0);
       block.disapearAge(BASE_BLOCK_POP_TIME + BLOCK_POP_TIME_PER_BLOCK * count);
+      // Position within this clear group, so each panel's pop can be pitched a
+      // step above the one before as they vanish in turn.
+      block.popIndex = count;
       count++;
       this.freezeCounter += FREEZE_TIME_PER_POP;
 
@@ -218,6 +232,14 @@ class Board {
       this.isChaining = true;
       this.chainCounter++;
       this.score += clearScore(clearCount, this.chainCounter);
+      this.totalClears += clearCount;
+
+      // Stamp the chain onto the panels now that it is final. They pop roughly
+      // a second later, by which time this.chainCounter may have moved on.
+      for (const xy of clearedPositions) {
+        const block = this.grid.get(...xy);
+        if (block) block.popChain = this.chainCounter;
+      }
     }
 
     let [topLeft] = clearedPositions;
@@ -227,12 +249,20 @@ class Board {
       }
     }
 
+    // A combo or a chain is "something good happened": the stage decor watches
+    // this counter and plays its one-shot reaction when it changes.
+    if (clearCount > 3 || (clearCount > 0 && this.chainCounter > 1)) {
+      this.reactionId = (this.reactionId || 0) + 1;
+    }
+
     if (clearCount > 3) {
+      audio.play('combo');
       this._addComboTrash(clearCount);
       this.gameObjects.push(new ComboNumberBoxObject({ boardX: topLeft[0], boardY: topLeft[1], number: clearCount }));
     }
 
     if (clearCount > 0 && this.chainCounter > 1) {
+      audio.play(this.chainCounter >= 4 ? 'chainBig' : 'chain');
       const position = topLeft;
       if (clearCount > 3) {
         position[1]--;
@@ -246,6 +276,15 @@ class Board {
         // If this is the frame we disappear the block, spawn some poof
         if (block.popAge() == block.disapearAge()) {
           this.gameObjects.push(new ComboPopParticles({ boardX: x, boardY: y }));
+
+          // One pop per panel, as it goes, each a step higher than the last --
+          // the panels vanish in sequence (disapearAge is staggered), so this
+          // is what produces the original's ascending "pip pip pip". The chain
+          // lifts the whole run, and both steps are capped so a long combo in a
+          // deep chain doesn't end up inaudible.
+          const chainStep = Math.min((block.popChain || 1) - 1, 8);
+          const panelStep = Math.min(block.popIndex || 0, 7);
+          audio.play('pop', { rate: (1 + 0.07 * chainStep) * (1 + 0.06 * panelStep) });
         }
 
         //Pop blocks that have aged fully
@@ -353,6 +392,10 @@ class Board {
       return;
     }
 
+    // Sound only on the transition into danger, not every frame you stay there.
+    if (!this.inDanger) {
+      audio.play('danger');
+    }
     this.inDanger = true;
 
     // Never top out mid-chain - let anything still popping or falling resolve first.
