@@ -6,6 +6,8 @@ const TS = Constants.TILE_SIZE;
 import { SpriteRenderer } from "./spriteRenderer.js"
 import { TrashRenderer } from "./trashRenderer.js"
 import { stageLayout } from "./stages.js"
+import { keyedSheet } from "./spriteSheet.js"
+import { vsSpriteUrl, preloadVsSprites } from "./characters.js"
 import { PixelFont, CHAR_H } from "./font.js"
 
 //TODO remove
@@ -35,12 +37,19 @@ function formatClock(frames) {
   return `${Math.floor(total / 60)}:${String(seconds).padStart(2, '0')}`;
 }
 
+// How long a one-shot pose holds before falling back to idle, in ticks. The
+// attack is generous because two of the sprites (Yoshi's) are animated files
+// that need room to play through.
+const ATTACK_TICKS = 90;
+const HIT_TICKS = 45;
+
 class Renderer {
-  constructor(receiverId, board, stage = null) {
+  constructor(receiverId, board, stage = null, character = null) {
     this.receiver = document.getElementById(receiverId);
     this.tileColumns = board.width;
     this.tileRows = board.height;
     this.stage = stage;
+    this.character = character;
 
     // When a stage is set, the board is framed inside its stage-clear artwork:
     // the canvas is positioned to sit exactly in the art's playfield well, and
@@ -75,6 +84,16 @@ class Renderer {
     this.canvasCtx.imageSmoothingEnabled = false;
     this.spriteRenderer = new SpriteRenderer();
     this.trashRenderer = new TrashRenderer();
+
+    if (this.stage) {
+      this.washOverlay = document.createElement('div');
+      this.washOverlay.style.cssText = `
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 100%;
+        z-index: 10; pointer-events: none;
+      `;
+      this.receiver.appendChild(this.washOverlay);
+    }
   }
 
   // Turn the receiver into a stage frame: a full-cell background image with the
@@ -100,6 +119,120 @@ class Renderer {
       image-rendering: pixelated;
     `;
     this.receiver.appendChild(frame);
+
+    // Foreground character the stage-clear art omits (bottom right, on the
+    // ground). Sits above the background but below the danger/dead wash.
+    if (L.decor) {
+      // The sprite is cut from a sheet whose white background has to be keyed
+      // out, so this is a canvas at the sprite's native size stretched by CSS
+      // -- the same trick the HUD panels use to stay on whole pixels.
+      const canvas = document.createElement('canvas');
+      // The decor box is ground-anchored at its native size (see stages.js), so
+      // frames of different sizes can share one canvas without sliding.
+      canvas.width = L.decor.nativeW;
+      canvas.height = L.decor.nativeH;
+      canvas.style.cssText = `
+        position: absolute;
+        left: ${L.decor.left}px; top: ${L.decor.top}px;
+        width: ${L.decor.width}px; height: ${L.decor.height}px;
+        image-rendering: pixelated;
+        z-index: 1; pointer-events: none;
+      `;
+      this.receiver.appendChild(canvas);
+      const cycleOf = (frames) => frames.reduce((n, f) => n + (f.hold || 1), 0);
+      this.decor = {
+        canvas,
+        sheet: keyedSheet(L.decor.sheet),
+        idle: L.decor.idle,
+        react: L.decor.react || null,
+        idleCycle: cycleOf(L.decor.idle),
+        reactCycle: L.decor.react ? cycleOf(L.decor.react) : 0,
+        reactStart: null,     // frameNumber the current hop began on
+        lastReaction: null,   // board.reactionId we last saw
+        shownKey: null,
+      };
+    }
+
+    this._setupCharSprite(L);
+  }
+
+  // The board's own character, posed by what is happening to that board. These
+  // are whole image files with their own alpha, so this is a plain <img> whose
+  // src is swapped -- which also lets the animated poses animate by themselves.
+  _setupCharSprite(L) {
+    if (!this.character) return;
+    preloadVsSprites(this.character.id);
+    const img = document.createElement('img');
+    // Every one of these rips is drawn facing RIGHT, and the slot sits to the
+    // right of the well -- so unflipped they all stare off the edge of the
+    // screen. Mirroring turns them in towards the playfield, which is how the
+    // SNES gameplay screens have it (and how the baby Yoshi already faces).
+    // scaleX mirrors about the element's centre, so the bottom-centred
+    // placement below is unaffected.
+    img.style.cssText = `
+      position: absolute;
+      image-rendering: pixelated;
+      transform: scaleX(-1);
+      z-index: 1; pointer-events: none;
+    `;
+    // Each pose is a different size, so placement waits for the decode.
+    img.addEventListener('load', () => this._placeCharSprite());
+    this.receiver.appendChild(img);
+    this.charSprite = {
+      img,
+      slot: L.charSlot,
+      sx: L.scaleX,
+      sy: L.scaleY,
+      state: null,
+      lastReaction: null,
+      lastHit: null,
+      attackStart: null,
+      hitStart: null,
+    };
+  }
+
+  // Bottom-centred on the slot: feet on the ground line, so poses of different
+  // heights plant in the same place instead of floating.
+  _placeCharSprite() {
+    const c = this.charSprite;
+    if (!c) return;
+    const w = c.img.naturalWidth;
+    const h = c.img.naturalHeight;
+    if (!w || !h) return;
+    c.img.style.width = `${w * c.sx}px`;
+    c.img.style.height = `${h * c.sy}px`;
+    c.img.style.left = `${(c.slot.cx - w / 2) * c.sx}px`;
+    c.img.style.top = `${(c.slot.ground - h) * c.sy}px`;
+  }
+
+  _drawCharSprite(board) {
+    const c = this.charSprite;
+    if (!c) return;
+    const now = this.frameNumber || 0;
+
+    if (board.hitId !== c.lastHit) {
+      c.lastHit = board.hitId;
+      if (c.lastHit != null) c.hitStart = now;
+    }
+    if (board.reactionId !== c.lastReaction) {
+      c.lastReaction = board.reactionId;
+      if (c.lastReaction != null) c.attackStart = now;
+    }
+
+    // Taking a hit reads over landing one, and the end of the match beats both.
+    let state = 'idle';
+    if (board.toppedOut) state = 'defeated';
+    else if (board.victorious) state = 'victorious';
+    else if (c.hitStart != null && now - c.hitStart < HIT_TICKS) state = 'hit';
+    else if (c.attackStart != null && now - c.attackStart < ATTACK_TICKS) state = 'attacking';
+
+    if (state === c.state) return;
+    const url = vsSpriteUrl(this.character.id, state);
+    if (!url) return;
+    c.state = state;
+    c.img.src = url;
+    // Already-cached poses fire no load event, so place immediately too.
+    this._placeCharSprite();
   }
 
   tileSize() {
@@ -204,8 +337,58 @@ class Renderer {
     return canvasEl;
   }
 
+  // Advance the decor's idle animation. The sheet decodes asynchronously, so
+  // this keeps retrying until the frame lands, and only repaints when the
+  // frame actually changes -- most ticks are the long "eyes open" hold.
+  _drawDecor(board) {
+    const d = this.decor;
+    if (!d) return;
+    const now = this.frameNumber || 0;
+
+    // A combo or chain bumps board.reactionId; that starts the hop, which plays
+    // once and hands back to the idle loop. Re-triggering restarts it, so a run
+    // of combos keeps him hopping rather than queueing up.
+    if (board && d.react && board.reactionId !== d.lastReaction) {
+      d.lastReaction = board.reactionId;
+      if (d.lastReaction != null) d.reactStart = now;
+    }
+
+    const reacting = d.reactStart != null && now - d.reactStart < d.reactCycle;
+    if (!reacting) d.reactStart = null;
+    const frames = reacting ? d.react : d.idle;
+    let t = reacting ? now - d.reactStart : now % d.idleCycle;
+
+    let index = 0;
+    for (let i = 0; i < frames.length; i++) {
+      t -= frames[i].hold || 1;
+      if (t < 0) { index = i; break; }
+    }
+
+    // Repaint only when the visible frame actually changes; most ticks are the
+    // long "eyes open" hold.
+    const key = `${reacting ? 'r' : 'i'}${index}`;
+    if (key === d.shownKey) return;
+
+    const spec = frames[index];
+    const frame = d.sheet.frame(spec);
+    if (!frame) return; // still decoding; try again next tick
+
+    const ctx = d.canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, d.canvas.width, d.canvas.height);
+    // Ground-anchored and horizontally centred: the canvas bottom is the ground
+    // line, and `lift` raises a frame off it. Centring is what stops the wider
+    // jump frames from shifting him sideways mid-hop.
+    const x = Math.round((d.canvas.width - spec.w) / 2);
+    const y = d.canvas.height - (spec.lift || 0) - spec.h;
+    ctx.drawImage(frame, x, y);
+    d.shownKey = key;
+  }
+
   draw(game) {
     this._drawBackground();
+    this._drawDecor(game.board);
+    this._drawCharSprite(game.board);
 
     const scroll = game.board.scroll;
     this.yscroll = scroll * TS;
@@ -224,14 +407,43 @@ class Renderer {
       this._drawHudColumn(this.scorePanel, [
         { label: 'SCORE', value: String(game.board.score) },
         { label: 'SPEED', value: String(game.board.speedLevel) },
+        { label: 'LEVEL', value: String(game.board.level) },
       ]);
     } else {
       this.scoreEl.textContent = String(game.board.score);
     }
   }
 
-  // Feedback for the top-out grace window, and for a board that has died.
   _drawStackState(board) {
+    if (this.washOverlay) {
+      this._updateFrameWash(board);
+      return;
+    }
+    this._drawCanvasWash(board);
+  }
+
+  // Full-frame wash for staged boards: dims or tints the entire stage art,
+  // character, HUD, and well together.
+  _updateFrameWash(board) {
+    if (board.toppedOut) {
+      this.washOverlay.style.background = 'rgba(0, 0, 0, 0.55)';
+      this.washOverlay.style.boxShadow = 'none';
+      return;
+    }
+    if (board.inDanger) {
+      const pulse = 0.5 + 0.5 * Math.sin(this.frameNumber / 5);
+      const fillAlpha = (0.10 + 0.16 * pulse).toFixed(3);
+      const edgeAlpha = (0.45 + 0.45 * pulse).toFixed(3);
+      this.washOverlay.style.background = `rgba(255, 0, 0, ${fillAlpha})`;
+      this.washOverlay.style.boxShadow = `inset 0 0 30px rgba(255, 64, 64, ${edgeAlpha})`;
+      return;
+    }
+    this.washOverlay.style.background = 'none';
+    this.washOverlay.style.boxShadow = 'none';
+  }
+
+  // Canvas-only wash fallback for unframed boards.
+  _drawCanvasWash(board) {
     this.canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasCtx.setLineDash([]);
     const w = this.tileColumns * Constants.TILE_SIZE;
@@ -244,9 +456,6 @@ class Renderer {
     }
 
     if (board.inDanger) {
-      // Pulse a red frame and a wash over the whole board. The frame alone reads as
-      // almost nothing against bright panels, and the grace window is short enough
-      // that the warning has to be unmissable.
       const pulse = 0.5 + 0.5 * Math.sin(this.frameNumber / 5);
       this.canvasCtx.fillStyle = `rgba(255, 0, 0, ${0.10 + 0.16 * pulse})`;
       this.canvasCtx.fillRect(0, 0, w, h);
