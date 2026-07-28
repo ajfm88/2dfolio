@@ -48,6 +48,7 @@ class Board {
     this.score = 0;
     this.totalClears = 0;
     this.elapsedFrames = 0;
+    this.baseSpeedLevel = 1;
     this.speedLevel = 1;
     this.scrollPerFrame = BASE_SCROLL_PER_FRAME;
     this.inDanger = false;
@@ -62,7 +63,16 @@ class Board {
     return Math.floor(this.totalClears / 10) + 1;
   }
 
+  // Sets the starting speed (chosen at match setup). Every level gained by
+  // clearing panels (see `level` above) adds 1 on top of this base, so speed
+  // progression is driven by play rather than a clock — matches the SNES,
+  // where SPEED LV. rises as LEVEL does.
   setSpeedLevel(level) {
+    this.baseSpeedLevel = Math.min(Math.max(1, level), MAX_SPEED_LEVEL);
+    this._applySpeedLevel(this.baseSpeedLevel);
+  }
+
+  _applySpeedLevel(level) {
     this.speedLevel = Math.min(Math.max(1, level), MAX_SPEED_LEVEL);
     this.scrollPerFrame = BASE_SCROLL_PER_FRAME * Math.pow(1.04, this.speedLevel - 1);
   }
@@ -167,10 +177,12 @@ class Board {
     if (blockOne) {
       blockOne.previousPosition(positionOne);
       blockOne.movePosition(1);
+      blockOne.chainEligible = false;
     }
     if (blockTwo) {
       blockTwo.previousPosition(positionTwo);
       blockTwo.movePosition(1);
+      blockTwo.chainEligible = false;
     }
   }
 
@@ -218,21 +230,39 @@ class Board {
       // step above the one before as they vanish in turn.
       block.popIndex = count;
       count++;
-      this.freezeCounter += FREEZE_TIME_PER_POP;
 
       // Set any adjacent trash blocks that are in a normal state to popping
       this._initiateTrashPopping(...xy);
     }
 
-    // We popped something this frame so start chaining
-    if (clearCount > 0) {
-      if (!this.isChaining) {
-        this.chainCounter = 0;
+    // Did this clear include a panel that fell out of an earlier clear and has
+    // not rested since? Only such a clear continues the chain -- the SNES rule,
+    // ported from normal-tetris-attack's per-block chain flag. An unrelated
+    // match made while the board happens to be busy is just a combo.
+    let chained = false;
+    for (const xy of clearedPositions) {
+      const block = this.grid.get(...xy);
+      if (block && block.chainEligible) {
+        chained = true;
+        break;
       }
-      this.isChaining = true;
-      this.chainCounter++;
+    }
+
+    if (clearCount > 0) {
+      // SNES stop time does not stack: a new clear SETS the scroll freeze
+      // (scaled by its size) if that is longer than what remains, rather than
+      // piling on top -- a long chain can't bank minutes of stopped scroll.
+      this.freezeCounter = Math.max(this.freezeCounter, clearCount * FREEZE_TIME_PER_POP);
+
+      if (!this.isChaining) {
+        this.isChaining = true;
+        this.chainCounter = 1;
+      } else if (chained) {
+        this.chainCounter++;
+      }
       this.score += clearScore(clearCount, this.chainCounter);
       this.totalClears += clearCount;
+      this._applySpeedLevel(this.baseSpeedLevel + (this.level - 1));
 
       // Stamp the chain onto the panels now that it is final. They pop roughly
       // a second later, by which time this.chainCounter may have moved on.
@@ -249,10 +279,18 @@ class Board {
       }
     }
 
-    // A combo or a chain is "something good happened": the stage decor watches
-    // this counter and plays its one-shot reaction when it changes.
-    if (clearCount > 3 || (clearCount > 0 && this.chainCounter > 1)) {
+    // A combo or a chain is "something good happened": the board's own character
+    // watches this counter and strikes its attacking pose when it changes.
+    if (clearCount > 3 || (chained && this.chainCounter > 1)) {
       this.reactionId = (this.reactionId || 0) + 1;
+    }
+
+    // A chain is the bigger event of the two -- it is what really sends garbage
+    // across -- so it gets its own counter, letting the stage decor tell the two
+    // apart: a plain combo makes the Little Yoshi hop, a chain has him lash his
+    // tongue at the well.
+    if (chained && this.chainCounter > 1) {
+      this.attackId = (this.attackId || 0) + 1;
     }
 
     if (clearCount > 3) {
@@ -261,7 +299,7 @@ class Board {
       this.gameObjects.push(new ComboNumberBoxObject({ boardX: topLeft[0], boardY: topLeft[1], number: clearCount }));
     }
 
-    if (clearCount > 0 && this.chainCounter > 1) {
+    if (chained && this.chainCounter > 1) {
       audio.play(this.chainCounter >= 4 ? 'chainBig' : 'chain');
       const position = topLeft;
       if (clearCount > 3) {
@@ -270,6 +308,9 @@ class Board {
       this.gameObjects.push(new ChainNumberBoxObject({ boardX: position[0], boardY: position[1], number: this.chainCounter }));
     }
 
+    // Columns where popped panels left the grid this frame, keyed to the
+    // topmost cell that opened up.
+    const openedGaps = new Map();
     for (const [block, x, y] of this.grid.entries()) {
       if (block.state() == BLOCK_STATE_POPPING) {
 
@@ -290,8 +331,57 @@ class Board {
         //Pop blocks that have aged fully
         if (block.popAge() >= block.popTime()) {
           this.grid.put(x, y, null);
+          const top = openedGaps.get(x);
+          if (top === undefined || y < top) {
+            openedGaps.set(x, y);
+          }
         }
       }
+    }
+
+    // The panels sitting directly above a gap a clear just opened are about to
+    // fall, and a match they land in continues the chain. Flag the contiguous
+    // run above each gap (the reference flags the block above the erased cell
+    // and lets the hang propagate it up the column; ours flags the run in one
+    // go, same result). The flag comes off again in _expireChainFlags once the
+    // panel has rested un-matched.
+    for (const [x, topY] of openedGaps) {
+      for (let y = topY - 1; ; y--) {
+        const block = this.grid.get(x, y);
+        if (!block || block.state() == BLOCK_STATE_POPPING || this.trashGrid.get(x, y)) {
+          break;
+        }
+        block.chainEligible = true;
+      }
+    }
+  }
+
+  // A panel keeps its chain eligibility only while it is airborne or riding a
+  // column that is about to fall; once it is grounded, at rest, and survived
+  // this frame's match scan un-cleared, its part in the chain is over. Runs
+  // right after _handleBlockPopping so a panel's flag lives exactly through
+  // the frame it lands (the frame its landing match is detected on).
+  _expireChainFlags() {
+    let col = -1;
+    let grounded = true;
+    for (const [block, x, y] of this.grid.allPositions()) {
+      if (x !== col) {
+        col = x;
+        grounded = true;
+      }
+      if (!block) {
+        // Landed trash supports the column; an empty cell (or trash still
+        // falling in) means everything above it is airborne.
+        const trash = this.trashGrid.get(x, y);
+        grounded = grounded && !!(trash && trash.landed);
+        continue;
+      }
+      if (grounded && block.state() == BLOCK_STATE_NORMAL) {
+        block.chainEligible = false;
+      }
+      grounded = grounded &&
+        block.state() != BLOCK_STATE_FALLING &&
+        block.state() != BLOCK_STATE_HOVERING;
     }
   }
 
@@ -375,6 +465,7 @@ class Board {
     this.cursors.forEach((c) => c.tick());
     this._doGravity();
     this._handleBlockPopping();
+    this._expireChainFlags();
     this._tickTrash();
     this._checkForEndOfChain();
     this._tickTopOut();
