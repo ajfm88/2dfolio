@@ -1,13 +1,28 @@
 import { AIPlayer } from "./aiplayer.js";
 import { Buttons } from "../input.js";
-import { BLOCK_STATE_NORMAL } from "../block.js";
+import { BLOCK_STATE_NORMAL, BLOCK_STATE_POPPING } from "../block.js";
 import { PositionSet } from "../utils.js";
 
 const DIRECTIONS = [Buttons.LEFT, Buttons.RIGHT, Buttons.UP, Buttons.DOWN, Buttons.SWAP];
 
+// Difficulty tiers, named as on the SNES's own VS setup screen.
+// - delayMin/delayMax: frames between actions -- the AI's hand speed. normal's
+//   5-15 is the original AISimpleton pacing, unchanged.
+// - raiseWhenIdle: hold the raise button when there is nothing better to do.
+//   easy leaves its stack to rise on its own instead.
+// - chainBuilding: during a pop, look for a swap that makes a match form out
+//   of the panels that are about to fall (see _chainBuildingLogic).
+export const AI_DIFFICULTIES = {
+  easy:   { delayMin: 25, delayMax: 45, raiseWhenIdle: false, chainBuilding: false },
+  normal: { delayMin: 5,  delayMax: 15, raiseWhenIdle: true,  chainBuilding: false },
+  hard:   { delayMin: 3,  delayMax: 8,  raiseWhenIdle: true,  chainBuilding: true },
+};
+
 export class AISimpleton extends AIPlayer {
-  constructor({ board, input, cursor }) {
+  constructor({ board, input, cursor, difficulty = 'normal' }) {
     super({ board: board, input: input, cursor: cursor });
+    this.difficulty = AI_DIFFICULTIES[difficulty] ? difficulty : 'normal';
+    this.settings = AI_DIFFICULTIES[this.difficulty];
   }
 
   tick() {
@@ -17,20 +32,180 @@ export class AISimpleton extends AIPlayer {
     if (this.inputDelay != 0) {
       return;
     } else {
-      this.inputDelay = parseInt(5 + Math.random() * 10);
+      const { delayMin, delayMax } = this.settings;
+      this.inputDelay = Math.floor(delayMin + Math.random() * (delayMax - delayMin));
     }
 
-    let done
-    done = this._vericalMatchingLogic();
+    let done = false;
+    if (this.settings.chainBuilding) {
+      done = this._chainBuildingLogic();
+    }
+    if (!done) {
+      done = this._vericalMatchingLogic();
+    }
     if (!done) {
       done = this._horizontalMatchingLogic();
     }
     if (!done) {
       done = this._downstackLogic();
     }
-    if(!done) {
+    if (!done && this.settings.raiseWhenIdle) {
       this.input.hold(Buttons.SCROLL);
     }
+  }
+
+  // While the board is popping, look for a swap that creates a match once the
+  // popped panels vanish and everything above them settles -- the classic way a
+  // chain is built. The panels that fall out of a clear carry chain
+  // eligibility until they rest, so a match they land in pays out as chain
+  // x2+. (A projected run usually contains such a faller; the rare setup that
+  // matches only resting panels still clears, it just scores as a combo.)
+  _chainBuildingLogic() {
+    const board = this.board;
+    const grid = board.grid;
+
+    let anythingPopping = false;
+    for (const [block] of grid.entries()) {
+      if (block.state() == BLOCK_STATE_POPPING) {
+        anythingPopping = true;
+        break;
+      }
+    }
+    if (!anythingPopping) {
+      return false;
+    }
+
+    // If the fall is already going to make a match by itself, a chain is
+    // coming with no help needed -- hold still rather than risk a swap that
+    // dismantles it.
+    if (this._findRuns(this._projectSettled()).length > 0) {
+      return true;
+    }
+
+    // Try every legal swap and keep the one closest to the cursor that makes a
+    // match appear in the settled board.
+    const [cursorX, cursorY] = this.cursor.position;
+    let best = null;
+    let bestDist = Infinity;
+    for (let y = 0; y < board.height; y++) {
+      for (let x = 0; x < board.width - 1; x++) {
+        if (!this._isSwappable(x, y) || !this._isSwappable(x + 1, y)) continue;
+        const a = grid.get(x, y);
+        const b = grid.get(x + 1, y);
+        if (!a && !b) continue;
+        if (a && b && a.color == b.color) continue; // swapping does nothing
+        const runs = this._findRuns(this._projectSettled([x, y]), true);
+        if (runs.length == 0) continue;
+        const dist = Math.abs(cursorX - x) + Math.abs(cursorY - y);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = [x, y];
+        }
+      }
+    }
+    if (!best) {
+      return false;
+    }
+
+    // Same movement idiom as the other logics: row first, then column, then swap.
+    const [targetX, targetY] = best;
+    if (cursorY > targetY) {
+      this.input.hold(Buttons.UP);
+    } else if (cursorY < targetY) {
+      this.input.hold(Buttons.DOWN);
+    } else if (cursorX > targetX) {
+      this.input.hold(Buttons.LEFT);
+    } else if (cursorX < targetX) {
+      this.input.hold(Buttons.RIGHT);
+    } else {
+      this.input.hold(Buttons.SWAP);
+    }
+    return true;
+  }
+
+  // A cell the cursor could swap right now: empty, or a resting panel. Trash
+  // cells are never swappable.
+  _isSwappable(x, y) {
+    if (this.board.trashGrid && this.board.trashGrid.get(x, y)) {
+      return false;
+    }
+    const block = this.board.grid.get(x, y);
+    return !block || block.state() == BLOCK_STATE_NORMAL;
+  }
+
+  // Project where every panel comes to rest once the current pops resolve:
+  // popping panels vanish, everything else falls straight down its column.
+  // Returns a [x][y] array of { color, swapped } cells (null = empty), with
+  // the optional candidate swap at (swap[0], swap[1])<->(swap[0]+1, swap[1])
+  // applied first; `swapped` marks the panels that swap moved, so a run can be
+  // traced back to the swap that caused it. Trash is approximated as a static
+  // floor: panels above it rest on top, and it never moves.
+  _projectSettled(swap) {
+    const board = this.board;
+    const grid = board.grid;
+    const trashGrid = board.trashGrid;
+
+    const cellAt = (x, y) => {
+      let sx = x;
+      if (swap && y == swap[1]) {
+        if (x == swap[0]) sx = swap[0] + 1;
+        else if (x == swap[0] + 1) sx = swap[0];
+      }
+      const block = grid.get(sx, y);
+      if (!block || block.state() == BLOCK_STATE_POPPING) return null;
+      return { color: block.color, swapped: sx != x };
+    };
+
+    const cols = [];
+    for (let x = 0; x < board.width; x++) {
+      const col = new Array(board.height).fill(null);
+      let writeY = board.height - 1;
+      for (let y = board.height - 1; y >= 0; y--) {
+        if (trashGrid && trashGrid.get(x, y)) {
+          // Panels above the trash come to rest on top of it.
+          writeY = y - 1;
+          continue;
+        }
+        const cell = cellAt(x, y);
+        if (cell) {
+          col[writeY] = cell;
+          writeY--;
+        }
+      }
+      cols.push(col);
+    }
+    return cols;
+  }
+
+  // All horizontal and vertical runs of 3+ same-colored cells in a projected
+  // grid. With `requireSwapped`, only runs containing a panel the candidate
+  // swap moved -- i.e. matches that swap is responsible for.
+  _findRuns(cols, requireSwapped = false) {
+    const runs = [];
+    const scan = (cells) => {
+      let run = [];
+      const flush = () => {
+        if (run.length >= 3 && (!requireSwapped || run.some(c => c.swapped))) {
+          runs.push(run);
+        }
+      };
+      for (const cell of cells) {
+        if (cell && run.length > 0 && run[0].color == cell.color) {
+          run.push(cell);
+        } else {
+          flush();
+          run = cell ? [cell] : [];
+        }
+      }
+      flush();
+    };
+    for (let y = 0; y < this.board.height; y++) {
+      scan(cols.map(col => col[y]));
+    }
+    for (const col of cols) {
+      scan(col);
+    }
+    return runs;
   }
 
   _downstackLogic() {

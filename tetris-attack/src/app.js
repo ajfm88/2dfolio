@@ -12,22 +12,22 @@ import {CharSelect} from './charSelect.js';
 import {GameOverOverlay} from './gameOver.js';
 import {PauseMenu} from './pauseMenu.js';
 import {SpeedSelect} from './speedSelect.js';
+import {DifficultySelect} from './difficultySelect.js';
 import {charStage, randomCharacter} from './characters.js';
-import {MAX_SPEED_LEVEL} from './board.js';
 import {audio} from './audio.js';
 
 const STATE_MENU = 'MENU';
 const STATE_CHAR_SELECT = 'CHAR_SELECT';
+const STATE_DIFFICULTY_SELECT = 'DIFFICULTY_SELECT';
 const STATE_SPEED_SELECT = 'SPEED_SELECT';
 const STATE_PLAYING = 'PLAYING';
 const STATE_PAUSED = 'PAUSED';
 const STATE_GAME_OVER = 'GAME_OVER';
 
-// The speed level increases by 1 every this many frames. 1P ramps faster
-// (45s) to give the mode real progression; VS/2P ramp slower (90s) so
-// matches aren't decided purely by the clock.
-const SPEED_RAMP_FRAMES_1P = 60 * 45;  // 45 seconds per level
-const SPEED_RAMP_FRAMES_VS = 60 * 90;  // 90 seconds per level
+// How long the boards sit visible -- with their per-board WIN!/LOSE signs and
+// the winner's victory pose -- before the (nearly full-viewport) results
+// modal covers them. See endMatch().
+const RESULT_SIGN_DELAY_MS = 1400;
 
 // Player 2's keyboard layout for 2P local play. Kept clear of Player 1's keys
 // (arrows / Space / Right-Shift) and of the P/F debug keys.
@@ -59,20 +59,6 @@ class Match {
     for (let i = 1; i < this.games.length; i++) {
       this.games[i].tick();
     }
-    this._tickSpeedRamp();
-  }
-
-  _tickSpeedRamp() {
-    const interval = this.mode === '1p' ? SPEED_RAMP_FRAMES_1P : SPEED_RAMP_FRAMES_VS;
-    const elapsed = this.games[0].board.elapsedFrames;
-    const nextLevel = this.startSpeed + Math.floor(elapsed / interval);
-    if (nextLevel <= MAX_SPEED_LEVEL) {
-      for (const game of this.games) {
-        if (nextLevel > game.board.speedLevel) {
-          game.board.setSpeedLevel(nextLevel);
-        }
-      }
-    }
   }
 
   draw() {
@@ -90,7 +76,9 @@ class Match {
     const scores = this._buildScores();
 
     // `won` is from Player 1's point of view, and picks the results stinger.
-    // In 2P someone always won, so it stays celebratory either way.
+    // In 2P someone always won, so it stays celebratory either way. The big
+    // WIN!/LOSE sign is drawn per board by the renderer (from board.victorious
+    // / board.toppedOut), not here.
     if (this.games.length === 1) {
       return { title: 'GAME OVER', subtitle: 'Your stack reached the top.', scores, won: false };
     }
@@ -138,7 +126,7 @@ function resetContainer(el) {
 // Build a match for the chosen mode. The gamepad manager is shared across matches.
 // p1Char / p2Char come from the character select screen; each board's stage
 // background is derived from its character (or randomised for stageless ones).
-function buildMatch(mode, gamePadManager, leftContainer, rightContainer, p1Char, p2Char, startSpeed = 1) {
+function buildMatch(mode, gamePadManager, leftContainer, rightContainer, p1Char, p2Char, startSpeed = 1, aiDifficulty = 'normal') {
   const games = [];
   const ais = [];
   const keyboards = [];
@@ -163,7 +151,7 @@ function buildMatch(mode, gamePadManager, leftContainer, rightContainer, p1Char,
     const aiInput = new AIInput();
     const aiCursor = new Cursor(aiInput, rightGame.board);
     rightGame.addCursor(aiCursor);
-    ais.push(new AISimpleton({ board: rightGame.board, input: aiInput, cursor: aiCursor }));
+    ais.push(new AISimpleton({ board: rightGame.board, input: aiInput, cursor: aiCursor, difficulty: aiDifficulty }));
   } else if (mode === '2p') {
     rightGame = new Game({ speedLevel: startSpeed });
     const p2Keyboard = new Keyboard(PLAYER_TWO_KEYS);
@@ -211,6 +199,7 @@ class App {
     this.match = null;
     this.menu = null;
     this.charSelect = null;
+    this.difficultySelect = null;
     this.speedSelect = null;
     this.pauseMenu = null;
     this.gameOver = null;
@@ -218,6 +207,8 @@ class App {
     this.p1Char = null;
     this.p2Char = null;
     this.startSpeed = 1;
+    this.aiDifficulty = 'normal';
+    this.pendingGameOver = null;
     this.isPaused = false;
     this.pressedLastFrame = new Set();
 
@@ -277,13 +268,32 @@ class App {
         }, () => {
           this.showCharSelect(mode);
         });
+      } else if (mode === 'vsai') {
+        this.p2Char = randomCharacter(p1Char.id);
+        this._showDifficultySelect();
       } else {
-        this.p2Char = mode === 'vsai' ? randomCharacter(p1Char.id) : null;
+        this.p2Char = null;
         this._showSpeedSelect();
       }
     }, () => {
       this.quitToMenu();
     });
+  }
+
+  // VS AI only: pick the AI's difficulty between character select and the
+  // speed picker. The choice persists, so Play Again and the next VS match
+  // re-open on the last one.
+  _showDifficultySelect() {
+    this._clearOverlays();
+    this.state = STATE_DIFFICULTY_SELECT;
+    this.difficultySelect = new DifficultySelect(
+      (difficulty) => {
+        this.aiDifficulty = difficulty;
+        this._showSpeedSelect();
+      },
+      () => this.showCharSelect(this.mode),
+      this.aiDifficulty,
+    );
   }
 
   _showSpeedSelect() {
@@ -294,7 +304,15 @@ class App {
         this.startSpeed = speed;
         this._launchMatch();
       },
-      () => this.showCharSelect(this.mode),
+      () => {
+        // Esc retraces the setup flow: back to the difficulty picker in
+        // VS AI, straight back to character select everywhere else.
+        if (this.mode === 'vsai') {
+          this._showDifficultySelect();
+        } else {
+          this.showCharSelect(this.mode);
+        }
+      },
       this.startSpeed,
     );
   }
@@ -305,7 +323,7 @@ class App {
     this.match = buildMatch(
       this.mode, this.gamePadManager,
       this.leftContainer, this.rightContainer,
-      this.p1Char, this.p2Char, this.startSpeed,
+      this.p1Char, this.p2Char, this.startSpeed, this.aiDifficulty,
     );
     this.isPaused = false;
     this.pressedLastFrame.clear();
@@ -347,20 +365,34 @@ class App {
     this.state = STATE_GAME_OVER;
     audio.play(result.won ? 'win' : 'lose');
     // Let the surviving board's character strike its victory pose, and draw one
-    // last frame: the match stops ticking after this, so the boards freeze on
-    // the final poses behind the (translucent) results overlay.
+    // last frame: the match stops ticking after this (state is no longer
+    // STATE_PLAYING), so the boards freeze on the final poses -- and on the
+    // per-board WIN!/LOSE signs the renderer just started drawing (see
+    // renderer.js) -- for the whole delay below.
     for (const game of this.match.games) {
       if (!game.isToppedOut()) game.board.victorious = true;
     }
     this.match.draw();
-    this.match.destroy();
-    this.gameOver = new GameOverOverlay(result, (choice) => {
-      if (choice === 'replay') {
-        this._launchMatch();
-      } else {
-        this.quitToMenu();
-      }
-    });
+
+    // Hold on this frame before the results modal appears. It's nearly
+    // full-viewport (see gameover.png's STYLE) and would otherwise eclipse
+    // both boards' signs on the very frame they first show up -- the player
+    // would never see who won on the boards themselves, only the modal's
+    // text. `clearTimeout` guards a defensive double-call; nothing else can
+    // reach this state while STATE_GAME_OVER holds the input handlers off.
+    const match = this.match;
+    clearTimeout(this.pendingGameOver);
+    this.pendingGameOver = setTimeout(() => {
+      this.pendingGameOver = null;
+      match.destroy();
+      this.gameOver = new GameOverOverlay(result, (choice) => {
+        if (choice === 'replay') {
+          this._launchMatch();
+        } else {
+          this.quitToMenu();
+        }
+      });
+    }, RESULT_SIGN_DELAY_MS);
   }
 
   quitToMenu() {
@@ -375,6 +407,7 @@ class App {
   _clearOverlays() {
     if (this.menu) { this.menu.destroy(); this.menu = null; }
     if (this.charSelect) { this.charSelect.destroy(); this.charSelect = null; }
+    if (this.difficultySelect) { this.difficultySelect.destroy(); this.difficultySelect = null; }
     if (this.speedSelect) { this.speedSelect.destroy(); this.speedSelect = null; }
     if (this.pauseMenu) { this.pauseMenu.destroy(); this.pauseMenu = null; }
     if (this.gameOver) { this.gameOver.destroy(); this.gameOver = null; }
