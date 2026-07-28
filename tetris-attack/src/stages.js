@@ -59,13 +59,27 @@ const DEFAULT_HUD_BOX = { x: 192, y: 31, w: 48, h: 104 };
 // between a frame's feet and its shadow encodes the height. Measured gaps were
 // 22 / 14 / 12 px, i.e. 10 / 2 / 0 above the lowest.
 //
+// `shift` nudges a frame horizontally off the centred position, and is the x
+// counterpart of `lift`. The tongue frames need it: they grow leftwards as the
+// tongue extends (37 -> 51 px wide) while his body stays put, so centring them
+// would slide him to the right as he lashes. The anchor is each frame's RIGHT
+// edge -- his back, the part that does not move -- so the shifts are simply what
+// right-aligns them all on cell x=242, where the idle frame ends. (Anchoring on
+// his feet instead is 1px out on one frame: the second frame's left foot juts
+// further out than the rest as he leans into the lash.)
+//
 // ⚠️ Two of the jump frames were previously recorded as (802,575,35,38) and
 // (849,575,40,45). Both were CLIPPED -- 575 was the edge of the crop box used to
 // measure them, not the sprite. The real frames are 62px tall. If a sprite rect
 // starts exactly on a measuring region's boundary, suspect it.
+//
+// ⚠️ The box below is deliberately symmetric about cell x=224, which is where it
+// has always been centred. Frames are placed by centring, so keeping the CENTRE
+// fixed while widening the box leaves every existing frame exactly where it was
+// -- the idle still lands at (206,166). Widen it that way, never by moving one edge.
 const BABY_YOSHI = {
   sheet: 'assets/yoshi_little_yoshi.png',
-  x: 202, y: 145, w: 44, h: 72,
+  x: 191, y: 145, w: 66, h: 72,
 
   // Blink: eyes open / half-lidded / shut, all sharing a bottom edge.
   idle: [
@@ -75,14 +89,35 @@ const BABY_YOSHI = {
     { x: 701, y: 588, w: 36, h: 51, hold: 5 },   // half-lidded, opening
   ],
 
-  // A hop, played once when a combo or chain lands: crouch, up, hang at the
-  // apex, down, squash on landing.
+  // A hop, played once when a combo lands: crouch, up, hang at the apex, down,
+  // squash on landing.
   react: [
     { x: 908, y: 586, w: 43, h: 36, hold: 4,  lift: 0 },  // crouch
     { x: 849, y: 558, w: 40, h: 62, hold: 4,  lift: 2 },  // springing up
     { x: 802, y: 551, w: 35, h: 62, hold: 10, lift: 10 }, // apex
     { x: 849, y: 558, w: 40, h: 62, hold: 4,  lift: 2 },  // coming down
     { x: 908, y: 586, w: 43, h: 36, hold: 6,  lift: 0 },  // landing squash
+  ],
+
+  // A tongue lash, played once when a CHAIN lands -- the bigger event, and the
+  // one that actually sends garbage across. Out fast, held at full stretch, then
+  // reeled back in by replaying the frames in reverse. At full extension the tip
+  // reaches cell x=191, just short of the well, so he lashes at the playfield.
+  attack: [
+    { x: 654, y: 647, w: 37, h: 52, hold: 3,  shift: -1 },
+    { x: 698, y: 648, w: 41, h: 52, hold: 3,  shift: -3 },
+    { x: 741, y: 648, w: 47, h: 53, hold: 3,  shift: -6 },
+    { x: 798, y: 648, w: 51, h: 53, hold: 14, shift: -8 }, // full stretch
+    { x: 741, y: 648, w: 47, h: 53, hold: 3,  shift: -6 },
+    { x: 698, y: 648, w: 41, h: 52, hold: 3,  shift: -3 },
+    { x: 654, y: 647, w: 37, h: 52, hold: 3,  shift: -1 },
+  ],
+
+  // Flat on his back with a star spinning over him, held for as long as the
+  // board stays dead. The star is part of the frame, which is why this is 58x32
+  // rather than the body's own 55x26 -- the rect was widened to take it in.
+  defeat: [
+    { x: 863, y: 669, w: 58, h: 32, hold: 1 },
   ],
 };
 
@@ -94,14 +129,29 @@ const BABY_YOSHI = {
 // Every stage leaves the corner below the right-hand HUD box empty, and for four
 // of them the ground there is the same line the well sits on, so one default
 // suits them all. Two need their own:
-//   forest -- the baby Yoshi already owns that corner, so its character stands
-//             in the bushes just above him instead;
+//   forest -- the Little Yoshi owns that corner and stays there, so its character
+//             stands on TOP of the HUD box instead: the box is a framed picture
+//             with a wooden rail across its top (cell y=25..30) and the tree's
+//             leaf canopy above that, so he perches on the rail among the leaves,
+//             centred on the box (x=216) rather than on the stage.
+//             ⚠️ `ground` is the rail's LOWER edge (30), not its top surface (26).
+//             There are only 26px of headroom between the rail and the top of the
+//             cell, and Yoshi's tallest pose is 30px -- planting him on the top
+//             surface pushes every one of his poses off the top of the frame. At
+//             30 all five of his poses fit exactly (the tallest lands at y=0) and
+//             he still reads as standing on the rail, which is only ~6px thick.
+//             ⚠️ A stageless character can be dealt this stage at random, and the
+//             sprites run up to 56px tall -- those cannot fit above the rail at
+//             all, so `_placeCharSprite` clamps them to the top of the frame and
+//             they hang down over the box's upper rows. The HUD panel is drawn at
+//             z-index 2 against the character's 1, so the readouts stay legible:
+//             the text wins, the sprite is just scenery behind it.
 //   sky    -- there is no ground at all, just a cloud floating in the corner.
 //             Its top edge was measured off the art at y=188 (the cell is open
 //             sky above that), so the character rides the cloud rather than
 //             sinking through it.
 const DEFAULT_CHAR_SLOT = { cx: 224, ground: 217 };
-const FOREST_CHAR_SLOT = { cx: 218, ground: 163 };
+const FOREST_CHAR_SLOT = { cx: 216, ground: 30 };
 const SKY_CHAR_SLOT = { cx: 224, ground: 188 };
 
 // Left-to-right, top-to-bottom order on the sheet.
@@ -166,6 +216,8 @@ function stageLayout(stage, wellPxW, wellPxH) {
         sheet: stage.decor.sheet,
         idle: stage.decor.idle,
         react: stage.decor.react,
+        attack: stage.decor.attack,
+        defeat: stage.decor.defeat,
         nativeW: stage.decor.w,
         nativeH: stage.decor.h,
         left: stage.decor.x * sx,
