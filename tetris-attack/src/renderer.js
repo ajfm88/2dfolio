@@ -8,7 +8,7 @@ import { TrashRenderer } from "./trashRenderer.js"
 import { stageLayout } from "./stages.js"
 import { keyedSheet } from "./spriteSheet.js"
 import { vsSpriteUrl, preloadVsSprites } from "./characters.js"
-import { PixelFont, CHAR_H } from "./font.js"
+import { PixelFont, ProportionalFont, CHAR_H, THIN_CAP_H } from "./font.js"
 import { recordScore } from "./highScore.js"
 
 //TODO remove
@@ -19,23 +19,33 @@ import { TrashBlock } from "./trashBlock.js"
 // out. Coordinates are native (unscaled) panel pixels; the overlays are
 // stretched up by CSS.
 //
-// Each readout is a caption with its value right-aligned underneath. At 8px per
-// character the right box holds 5 ("SCORE" exactly); the left box is 64 wide,
-// so "TIME" and a MM:SS value sit comfortably.
+// Each readout is a caption with its value right-aligned underneath, in the
+// SNES's own pairing of two faces: the narrow font for the caption, the chunky
+// one for the value (see font.js). The narrow face is what lets the captions
+// read in full -- "HI-SCORE" is 38px and "SPEED LV." 41px, against the 44px the
+// 48px-wide box leaves past its left pad, where the chunky font fits 5
+// characters (64px and 72px respectively, so both had to be abbreviated).
+//
+// Vertically a row is the caption's 11 cap-rows, a 2px gap, then the value's 6,
+// which is 19 of the 24px row. Four rows start at y=2 and the last value ends at
+// 92, inside the right box's 104; the left box holds its single row in 24.
 const HUD_PAD = 4;
-const HUD_LABEL_Y = 4;
-const HUD_VALUE_Y = 14;
+const HUD_LABEL_Y = 2;
+const HUD_VALUE_Y = HUD_LABEL_Y + THIN_CAP_H + 2;
 const HUD_ROW_HEIGHT = 24;
 
 // Frames per second the board ticks at, for turning elapsed frames into a clock.
 const TICKS_PER_SECOND = 60;
 
-// Elapsed board ticks as MM:SS. Minutes are not padded (so it reads 0:07, like
-// the original's 0'07) but are allowed past 99 rather than wrapping.
+// Elapsed board ticks as the original's M'SS. Minutes are not padded but are
+// allowed past 99 rather than wrapping. The separator is the apostrophe the SNES
+// itself uses -- long stood in for by a colon, because the chunky font's own
+// apostrophe was thought to be missing from the sheet; it is there, packed
+// against the comma off the glyph grid (see font.js).
 function formatClock(frames) {
   const total = Math.floor(frames / TICKS_PER_SECOND);
   const seconds = total % 60;
-  return `${Math.floor(total / 60)}:${String(seconds).padStart(2, '0')}`;
+  return `${Math.floor(total / 60)}'${String(seconds).padStart(2, '0')}`;
 }
 
 // The SCORE box is 5 characters wide (see the HUD_PAD note above). Five
@@ -96,8 +106,10 @@ class Renderer {
     // (one canvas each); the plain (unframed) fallback keeps the simple HTML
     // score bar.
     if (this.stageLayout) {
-      // The SNES HUD captions its readouts in cyan over a white value.
-      this.labelFont = new PixelFont('cyan');
+      // The SNES HUD captions its readouts in cyan over a white value, and the
+      // two are different faces: the narrow font names the readout, the chunky
+      // one carries the number.
+      this.labelFont = new ProportionalFont('cyan');
       this.valueFont = new PixelFont('white');
       this.timePanel = this._createPanel(this.stageLayout.timePanel);
       this.scorePanel = this._createPanel(this.stageLayout.hudPanel);
@@ -542,9 +554,9 @@ class Renderer {
     if (this.scorePanel) {
       this._drawReadout(this.timePanel, 'TIME', formatClock(game.board.elapsedFrames));
       this._drawHudColumn(this.scorePanel, [
-        { label: 'BEST', value: formatScore(recordScore(game.board.score)) },
+        { label: 'HI-SCORE', value: formatScore(recordScore(game.board.score)) },
         { label: 'SCORE', value: formatScore(game.board.score) },
-        { label: 'SPEED', value: String(game.board.speedLevel) },
+        { label: 'SPEED LV.', value: String(game.board.speedLevel) },
         { label: 'LEVEL', value: String(game.board.level) },
       ]);
     } else {
