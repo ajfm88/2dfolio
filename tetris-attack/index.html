@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>🥚 Tetris Attack 🧩</title>
+    <meta
+      name="description"
+      content="A browser re-implementation of the SNES puzzle game Tetris Attack (Panel de Pon), created using HTML5, CSS3 & JavaScript ES6 and deployed by ajfm88."
+    />
+    <!-- The overlays draw their own art, so there is nothing in-page to preview --
+         the logo stands in for it on link previews and search results instead. -->
+    <link rel="canonical" href="https://tetris-attack-ajfm88.netlify.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tetris Attack" />
+    <meta
+      property="og:description"
+      content="A browser re-implementation of the SNES puzzle game Tetris Attack (Panel de Pon), created using HTML5, CSS3 & JavaScript ES6 and deployed by ajfm88."
+    />
+    <meta property="og:url" content="https://tetris-attack-ajfm88.netlify.app/" />
+    <meta property="og:image" content="https://tetris-attack-ajfm88.netlify.app/assets/logo.png" />
+    <meta property="og:image:width" content="163" />
+    <meta property="og:image:height" content="107" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tetris Attack" />
+    <meta
+      name="twitter:description"
+      content="A browser re-implementation of the SNES puzzle game Tetris Attack (Panel de Pon), created using HTML5, CSS3 & JavaScript ES6 and deployed by ajfm88."
+    />
+    <meta name="twitter:image" content="https://tetris-attack-ajfm88.netlify.app/assets/logo.png" />
+    <style>
+      /* The page is only ever a backdrop for the canvases and the DOM overlays.
+         Without this the deployed site is a white surround around a dark game. */
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #07050f;
+        color: #f4f4ff;
+        font-family: "Press Start 2P", "Courier New", monospace;
+      }
+      /* Two framed boards come to roughly 1500px. Rather than clip them on a
+         small window, let the page scroll -- the boards are sized in JS from
+         the stage art and do not reflow. The overlays are position:fixed, so
+         they stay put regardless. */
+      #ta-stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        min-height: 100vh;
+        padding: 12px;
+        box-sizing: border-box;
+        /* A stray drag-select across the boards looks broken. */
+        user-select: none;
+      }
+    </style>
+    <script src="/js/ta.js"></script>
+  </head>
+  <body>
+    <div id="ta-stage">
+      <div class="game" id="game-container-left"></div>
+      <div class="game" id="game-container-right"></div>
+    </div>
+
+    <script>
+      TA.InitiateGame();
+    </script>
+  </body>
+</html>

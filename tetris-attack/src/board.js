@@ -54,6 +54,11 @@ class Board {
     this.inDanger = false;
     this.dangerCounter = 0;
     this.toppedOut = false;
+    // Set from outside, by App.endMatch, once the round is decided: they pick
+    // the character's end pose and the board's WIN!/LOSE/DRAW sign. Declared
+    // here so the board's full shape is visible in one place.
+    this.victorious = false;
+    this.drew = false;
     this.trash = [];
     this.trashQueue = new TrashQueue();
     this._initBoard();

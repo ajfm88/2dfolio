@@ -13,15 +13,24 @@ import {GameOverOverlay} from './gameOver.js';
 import {PauseMenu} from './pauseMenu.js';
 import {SpeedSelect} from './speedSelect.js';
 import {DifficultySelect} from './difficultySelect.js';
+import {SettingsMenu} from './settingsMenu.js';
+import {TitleScreen} from './titleScreen.js';
+import {RoundOver} from './roundOver.js';
+import {preloadWinPoints} from './winPoints.js';
 import {charStage, randomCharacter} from './characters.js';
 import {audio} from './audio.js';
+import {showToast} from './toast.js';
+import {get as getSetting} from './settings.js';
 
+const STATE_TITLE = 'TITLE';
 const STATE_MENU = 'MENU';
+const STATE_SETTINGS = 'SETTINGS';
 const STATE_CHAR_SELECT = 'CHAR_SELECT';
 const STATE_DIFFICULTY_SELECT = 'DIFFICULTY_SELECT';
 const STATE_SPEED_SELECT = 'SPEED_SELECT';
 const STATE_PLAYING = 'PLAYING';
 const STATE_PAUSED = 'PAUSED';
+const STATE_ROUND_OVER = 'ROUND_OVER';
 const STATE_GAME_OVER = 'GAME_OVER';
 
 // How long the boards sit visible -- with their per-board WIN!/LOSE signs and
@@ -49,6 +58,17 @@ class Match {
     this.keyboards = keyboards;
     this.pauseKeyboard = pauseKeyboard; // Player 1's keyboard owns pause/frame-step
     this.startSpeed = startSpeed || 1;
+    // Which boards the computer is playing. Used to decide whose danger the
+    // music should react to -- the AI being in trouble is good news, and
+    // scoring it with the panic track would say the opposite.
+    this.aiBoards = new Set(ais.map((ai) => ai.board));
+  }
+
+  // True while a human board is in the red. Drives the danger music.
+  playerInDanger() {
+    return this.games.some((game) => (
+      !this.aiBoards.has(game.board) && game.board.inDanger && !game.board.toppedOut
+    ));
   }
 
   tickGameplay() {
@@ -67,6 +87,10 @@ class Match {
 
   // The outcome once a board has topped out, or null while the match is still live.
   // games[0] is always Player 1; games[1] is the AI or Player 2 in two-board modes.
+  //
+  // `winnerIndex` is which board took the round -- 0, 1, or null for a draw (and
+  // for 1P, which has nobody to beat). It is what set play counts; the title and
+  // subtitle are only for the results screen.
   result() {
     const out = this.games.map((game) => game.isToppedOut());
     if (!out.some(Boolean)) {
@@ -77,24 +101,30 @@ class Match {
 
     // `won` is from Player 1's point of view, and picks the results stinger.
     // In 2P someone always won, so it stays celebratory either way. The big
-    // WIN!/LOSE sign is drawn per board by the renderer (from board.victorious
-    // / board.toppedOut), not here.
+    // WIN!/LOSE/DRAW sign is drawn per board by the renderer (from
+    // board.victorious / board.toppedOut / board.drew), not here.
     if (this.games.length === 1) {
-      return { title: 'GAME OVER', subtitle: 'Your stack reached the top.', scores, won: false };
+      return { title: 'GAME OVER', subtitle: 'Your stack reached the top.', scores, won: false, winnerIndex: null };
     }
     if (out[0] && out[1]) {
-      return { title: 'DRAW', subtitle: 'Both stacks topped out.', scores, won: false };
+      return { title: 'DRAW', subtitle: 'Both stacks topped out.', scores, won: false, winnerIndex: null };
     }
 
-    const playerOneWon = out[1];
+    const winnerIndex = out[1] ? 0 : 1;
+    const playerOneWon = winnerIndex === 0;
     if (this.mode === 'vsai') {
       return playerOneWon
-        ? { title: 'YOU WIN', subtitle: 'The AI topped out.', scores, won: true }
-        : { title: 'AI WINS', subtitle: 'Your stack reached the top.', scores, won: false };
+        ? { title: 'YOU WIN', subtitle: 'The AI topped out.', scores, won: true, winnerIndex }
+        : { title: 'AI WINS', subtitle: 'Your stack reached the top.', scores, won: false, winnerIndex };
     }
     return playerOneWon
-      ? { title: 'PLAYER 1 WINS', subtitle: 'Player 2 topped out.', scores, won: true }
-      : { title: 'PLAYER 2 WINS', subtitle: 'Player 1 topped out.', scores, won: true };
+      ? { title: 'PLAYER 1 WINS', subtitle: 'Player 2 topped out.', scores, won: true, winnerIndex }
+      : { title: 'PLAYER 2 WINS', subtitle: 'Player 1 topped out.', scores, won: true, winnerIndex };
+  }
+
+  // Short per-side captions for the win-point lamps.
+  sideLabels() {
+    return this.mode === 'vsai' ? ['YOU', 'AI'] : ['P1', 'P2'];
   }
 
   _buildScores() {
@@ -198,12 +228,22 @@ class App {
     this.state = STATE_MENU;
     this.match = null;
     this.menu = null;
+    this.titleScreen = null;
+    this.settingsMenu = null;
     this.charSelect = null;
     this.difficultySelect = null;
     this.speedSelect = null;
     this.pauseMenu = null;
+    this.roundOver = null;
     this.gameOver = null;
     this.mode = null;
+    // Set play (VS AI and 2P): a round is one board death, a set is first to
+    // `winsNeeded`. Both are seeded by _launchSet(); 1P and a match length of 1
+    // leave _isSetPlay() false, and then a round *is* the set, exactly as before.
+    this.setWins = [0, 0];
+    this.roundNumber = 1;
+    this.matchLength = 1;
+    this.winsNeeded = 1;
     this.p1Char = null;
     this.p2Char = null;
     this.startSpeed = 1;
@@ -236,19 +276,54 @@ class App {
     const unlock = () => audio.unlock();
     document.addEventListener('keydown', unlock, true);
     document.addEventListener('pointerdown', unlock, true);
+    // Mute persists across sessions, so it needs to say so -- otherwise a game
+    // muted once is indistinguishable from a game with no sound.
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'KeyM') audio.toggleMute();
+      if (e.code !== 'KeyM') return;
+      showToast(audio.toggleMute() ? 'SOUND OFF' : 'SOUND ON');
     }, true);
   }
 
   start() {
-    this.showMenu();
+    this.showTitle();
     this._loop();
   }
 
-  showMenu() {
+  // The intro. Only on launch -- quitting a match goes straight back to the
+  // menu, since sitting through the poster again would be a punishment.
+  //
+  // The menu is built the moment the title starts fading, not after it: the two
+  // paint the same poster (see backdrop.js), so the menu appearing *underneath*
+  // is what lets the art dim in place instead of cutting. The title screen
+  // removes itself once its fade is done.
+  showTitle() {
+    this.state = STATE_TITLE;
+    this.titleScreen = new TitleScreen(() => {
+      this.showMenu();
+    });
+  }
+
+  showMenu(cursorId = null) {
     this.state = STATE_MENU;
-    this.menu = new Menu((mode) => this.showCharSelect(mode));
+    this.menu = new Menu((id) => {
+      if (id === 'settings') {
+        this.showSettings();
+      } else {
+        this.showCharSelect(id);
+      }
+    }, cursorId);
+  }
+
+  showSettings() {
+    this._clearOverlays();
+    this.state = STATE_SETTINGS;
+    // Settings write through immediately, so there is nothing to collect here
+    // on the way out -- everything that reads one (audio, and the match length
+    // below) reads it fresh when it needs it.
+    this.settingsMenu = new SettingsMenu(() => {
+      this._clearOverlays();
+      this.showMenu('settings');
+    });
   }
 
   showCharSelect(mode) {
@@ -302,7 +377,7 @@ class App {
     this.speedSelect = new SpeedSelect(
       (speed) => {
         this.startSpeed = speed;
-        this._launchMatch();
+        this._launchSet();
       },
       () => {
         // Esc retraces the setup flow: back to the difficulty picker in
@@ -317,7 +392,26 @@ class App {
     );
   }
 
-  _launchMatch() {
+  // Start a fresh set: clear the tally and play round 1. Everything that means
+  // "begin again" comes through here -- the speed picker, Play Again, and the
+  // pause menu's Restart (restarting mid-set restarts the whole set, since
+  // replaying one round of it would be a strange thing to offer).
+  _launchSet() {
+    this.matchLength = getSetting('matchLength');
+    this.winsNeeded = Math.max(1, Math.ceil(this.matchLength / 2));
+    this.setWins = [0, 0];
+    this.roundNumber = 1;
+    if (this._isSetPlay()) preloadWinPoints();
+    this._launchRound();
+  }
+
+  // Only two-board modes play sets, and only when the player asked for more
+  // than a single game.
+  _isSetPlay() {
+    return this.mode !== '1p' && this.matchLength > 1;
+  }
+
+  _launchRound() {
     this._clearOverlays();
     if (this.match) { this.match.destroy(); this.match = null; }
     this.match = buildMatch(
@@ -342,7 +436,7 @@ class App {
         this.resumeMatch();
       } else if (choice === 'restart') {
         this._clearOverlays();
-        this._launchMatch();
+        this._launchSet();
       } else {
         this.quitToMenu();
       }
@@ -358,19 +452,35 @@ class App {
     this.state = STATE_PLAYING;
   }
 
-  // A board topped out: freeze the match, drop its inputs, and offer a rematch.
-  // The match itself is kept around so its final frame stays on screen behind
-  // the (translucent) results overlay.
+  // A board topped out, ending the round. Freeze the match, award the win point,
+  // and then either move on to the next round or finish the set. The match is
+  // kept around either way, so its final frame stays on screen behind the
+  // (translucent) overlay that follows.
   endMatch(result) {
     this.state = STATE_GAME_OVER;
+    // The round is decided, so the stage/danger loop stops here and the win or
+    // lose sting has the moment to itself. The game-over track comes in with
+    // the results screen, a beat later.
+    audio.stopMusic();
     audio.play(result.won ? 'win' : 'lose');
+
+    // Award the point before drawing, so nothing downstream has to re-derive it.
+    // A draw scores for neither side and the round is simply replayed -- which
+    // is also why a set cannot end on one.
+    const setPlay = this._isSetPlay();
+    const awarded = setPlay && result.winnerIndex !== null ? result.winnerIndex : null;
+    if (awarded !== null) this.setWins[awarded] += 1;
+    const setOver = !setPlay || Math.max(this.setWins[0], this.setWins[1]) >= this.winsNeeded;
+
     // Let the surviving board's character strike its victory pose, and draw one
     // last frame: the match stops ticking after this (state is no longer
     // STATE_PLAYING), so the boards freeze on the final poses -- and on the
-    // per-board WIN!/LOSE signs the renderer just started drawing (see
+    // per-board WIN!/LOSE/DRAW signs the renderer just started drawing (see
     // renderer.js) -- for the whole delay below.
+    const drew = this.match.games.length > 1 && result.winnerIndex === null;
     for (const game of this.match.games) {
       if (!game.isToppedOut()) game.board.victorious = true;
+      if (drew) game.board.drew = true;
     }
     this.match.draw();
 
@@ -381,35 +491,102 @@ class App {
     // text. `clearTimeout` guards a defensive double-call; nothing else can
     // reach this state while STATE_GAME_OVER holds the input handlers off.
     const match = this.match;
+    const labels = match.sideLabels();
+    const round = this.roundNumber;
     clearTimeout(this.pendingGameOver);
     this.pendingGameOver = setTimeout(() => {
       this.pendingGameOver = null;
-      match.destroy();
-      this.gameOver = new GameOverOverlay(result, (choice) => {
-        if (choice === 'replay') {
-          this._launchMatch();
-        } else {
-          this.quitToMenu();
-        }
-      });
+      if (setOver) {
+        // The last round of a set keeps the full GAME OVER screen; the match is
+        // over, so its inputs go too.
+        match.destroy();
+        audio.playMusic('gameOver');
+        this.gameOver = new GameOverOverlay(this._setResult(result, setPlay), (choice) => {
+          if (choice === 'replay') {
+            this._launchSet();
+          } else {
+            this.quitToTitle();
+          }
+        });
+      } else {
+        // Mid-set: a lighter screen that keeps the frozen boards visible, and
+        // where the newly won lamp lights up. The match is destroyed on the way
+        // out rather than here, so those boards stay on screen behind it.
+        this.state = STATE_ROUND_OVER;
+        this.roundOver = new RoundOver({
+          round,
+          title: result.title,
+          labels,
+          wins: [...this.setWins],
+          winsNeeded: this.winsNeeded,
+          awarded,
+        }, (choice) => {
+          if (choice === 'next') {
+            this.roundNumber += 1;
+            this._launchRound();
+          } else {
+            this.quitToMenu();
+          }
+        });
+      }
     }, RESULT_SIGN_DELAY_MS);
   }
 
+  // Re-title the results screen for a set, so it reports the set rather than
+  // just its final round, and hand the overlay the tally to draw lamps from.
+  _setResult(result, setPlay) {
+    if (!setPlay) return result;
+    const [a, b] = this.setWins;
+    const p1TookIt = a > b;
+    const title = this.mode === 'vsai'
+      ? (p1TookIt ? 'YOU WIN THE SET' : 'AI WINS THE SET')
+      : (p1TookIt ? 'PLAYER 1 WINS THE SET' : 'PLAYER 2 WINS THE SET');
+    return {
+      ...result,
+      title,
+      subtitle: `${a} - ${b} after ${this.roundNumber} rounds.`,
+      won: p1TookIt,
+      setWins: [...this.setWins],
+      winsNeeded: this.winsNeeded,
+    };
+  }
+
   quitToMenu() {
+    this._teardownMatch();
+    this.showMenu();
+  }
+
+  // Where a finished game goes: back to the title, the way an arcade cabinet
+  // returns to its attract screen, rather than dropping the player straight
+  // back onto the mode list. Quitting *mid*-match still goes to the menu --
+  // there the player asked to leave, and making them sit through the intro
+  // again would be a punishment.
+  quitToTitle() {
+    this._teardownMatch();
+    this.showTitle();
+  }
+
+  _teardownMatch() {
     this._clearOverlays();
+    audio.stopMusic();
     if (this.match) { this.match.destroy(); this.match = null; }
     resetContainer(this.leftContainer);
     resetContainer(this.rightContainer);
     this.rightContainer.style.display = '';
-    this.showMenu();
   }
 
   _clearOverlays() {
+    // The title screen normally removes itself once its fade finishes; this
+    // catches the case where something else moves the app on first (a fast
+    // Enter on the menu that appears underneath it).
+    if (this.titleScreen) { this.titleScreen.destroy(); this.titleScreen = null; }
     if (this.menu) { this.menu.destroy(); this.menu = null; }
+    if (this.settingsMenu) { this.settingsMenu.destroy(); this.settingsMenu = null; }
     if (this.charSelect) { this.charSelect.destroy(); this.charSelect = null; }
     if (this.difficultySelect) { this.difficultySelect.destroy(); this.difficultySelect = null; }
     if (this.speedSelect) { this.speedSelect.destroy(); this.speedSelect = null; }
     if (this.pauseMenu) { this.pauseMenu.destroy(); this.pauseMenu = null; }
+    if (this.roundOver) { this.roundOver.destroy(); this.roundOver = null; }
     if (this.gameOver) { this.gameOver.destroy(); this.gameOver = null; }
   }
 
@@ -429,6 +606,10 @@ class App {
     if (runGameLogic) {
       this.match.tickGameplay();
       this.match.draw();
+
+      // Swap the panic track in and out with the red wash. playMusic() ignores
+      // a request for what is already playing, so calling it per frame is free.
+      audio.playMusic(this.match.playerInDanger() ? 'danger' : 'stage');
 
       const result = this.match.result();
       if (result) {
