@@ -14,6 +14,7 @@
 // pixel art stays on whole pixels.
 
 import { PixelFont } from './font.js';
+import { drawWinPoints, rowWidth } from './winPoints.js';
 
 const SHEET_URL = 'assets/gameover.png';
 const KEY = [21, 0, 43]; // sheet background, keyed to transparent
@@ -45,6 +46,16 @@ const LAYOUT = {
   choicesY: 196,
   yesX: 88,
   noX: 132, // the sheet spaces NO 44px after YES
+  // Ending a *set* shows the win-point lamps instead of the score line: the
+  // tally is the headline result, and the dark band has room for one or the
+  // other, not both. The 15px lamps need six more pixels than the 6px score
+  // line, so TRY AGAIN drops out of their way -- the choices below it do not
+  // move, which keeps their hit-testing untouched.
+  starsY: 150,
+  tryAgainStarsY: 170,
+  // Space between Player 1's lamps and Player 2's, so the two rows read as
+  // two tallies rather than one long one.
+  starGap: 40,
 };
 
 const CHOICES = [
@@ -73,12 +84,16 @@ const sheet = new Image();
 sheet.src = SHEET_URL;
 
 export class GameOverOverlay {
-  // result is { title, subtitle, scores }; onSelect(choiceId) gets 'replay' or 'menu'.
-  // scores is an array of { label, value }.
-  constructor({ title, subtitle, scores }, onSelect) {
+  // result is { title, subtitle, scores, setWins?, winsNeeded? };
+  // onSelect(choiceId) gets 'replay' or 'menu'. scores is an array of
+  // { label, value }. setWins/winsNeeded are present only when a set just
+  // finished, and swap the score line for the win-point lamps.
+  constructor({ title, subtitle, scores, setWins, winsNeeded }, onSelect) {
     this.title = title;
     this.subtitle = subtitle;
     this.scores = scores || [];
+    this.setWins = setWins || null;
+    this.winsNeeded = winsNeeded || 0;
     this.onSelect = onSelect;
     this.index = 0;
     this.sprites = null;
@@ -177,7 +192,10 @@ export class GameOverOverlay {
 
     ctx.drawImage(sprites.background, 0, 0);
     ctx.drawImage(sprites.yoshi, LAYOUT.yoshi.x, LAYOUT.yoshi.y);
-    ctx.drawImage(sprites.tryAgain, LAYOUT.tryAgain.x, LAYOUT.tryAgain.y);
+
+    const stars = this._drawWinPoints();
+    ctx.drawImage(sprites.tryAgain, LAYOUT.tryAgain.x,
+                  stars ? LAYOUT.tryAgainStarsY : LAYOUT.tryAgain.y);
 
     const yesSelected = this.index === 0;
     ctx.drawImage(yesSelected ? sprites.yesOn : sprites.yesOff, LAYOUT.yesX, LAYOUT.choicesY);
@@ -188,7 +206,26 @@ export class GameOverOverlay {
     if (this.title && this.title !== 'GAME OVER') {
       this._drawCentred(this.labelFont, this.title, LAYOUT.outcomeY);
     }
-    this._drawCentred(this.valueFont, this._scoreLine(), LAYOUT.scoresY);
+    if (!stars) {
+      this._drawCentred(this.valueFont, this._scoreLine(), LAYOUT.scoresY);
+    }
+  }
+
+  // The two tallies, side by side and centred as a pair. Returns false when
+  // there is no set to show, or the lamps are not decoded yet -- in which case
+  // the caller falls back to the score line and the normal TRY AGAIN position,
+  // so a slow decode never leaves a hole in the screen.
+  _drawWinPoints() {
+    if (!this.setWins) return false;
+    const total = this.winsNeeded;
+    const each = rowWidth(total);
+    const left = Math.round((SCREEN_W - (each * 2 + LAYOUT.starGap)) / 2);
+    const drawn = drawWinPoints(this.ctx, left, LAYOUT.starsY,
+                                { side: 'p1', won: this.setWins[0], total });
+    if (!drawn) return false;
+    drawWinPoints(this.ctx, left + each + LAYOUT.starGap, LAYOUT.starsY,
+                  { side: 'p2', won: this.setWins[1], total });
+    return true;
   }
 
   // "YOU 4550   AI 3200" -- the outcome detail the SNES screen has no room for.

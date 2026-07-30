@@ -4,6 +4,7 @@
 import { CHARACTERS, PORTRAIT_SIZE, sheet, buildPortraits } from './characters.js';
 import { stageById } from './stages.js';
 import { audio } from './audio.js';
+import { MENU_BACKDROP_CSS, createLogo } from './backdrop.js';
 
 const COLS = 4;
 const CELL_PX = 80;
@@ -12,20 +13,26 @@ const STYLE_ID = 'ta-charselect-style';
 const STYLE = `
   #ta-charselect-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 35%, #2a2350 0%, #100c22 70%, #07050f 100%);
+    /* flex-start plus auto margins on the card, rather than align-items:center:
+       centred content in a scrolling flex container has its top edge clipped
+       and unreachable. This card is the tallest screen in the game -- logo,
+       13 portraits and three lines of caption -- so it is the one that will
+       actually overflow a short window. */
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-charselect-card {
-    text-align: center; padding: 24px 32px;
+    text-align: center; padding: 22px 32px; margin: auto;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
   }
   #ta-charselect-title {
-    color: #ffe14d; font-size: 15px; margin: 0 0 18px;
+    color: #ffe14d; font-size: 15px; margin: 0 0 16px;
   }
   .ta-charselect-grid {
     display: grid;
@@ -102,6 +109,8 @@ export class CharSelect {
 
     const card = document.createElement('div');
     card.id = 'ta-charselect-card';
+
+    card.appendChild(createLogo());
 
     const heading = document.createElement('h2');
     heading.id = 'ta-charselect-title';

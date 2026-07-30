@@ -16,6 +16,10 @@
 //
 // This module is import-safe in Node (board.js imports it, and board.js is
 // tested headlessly): nothing touches AudioContext until the first play/unlock.
+// settings.js is import-safe for the same reason and guards localStorage
+// itself, so importing it here does not change that.
+
+import { get as getSetting, update as updateSettings } from './settings.js';
 
 const BASE = 'assets/';
 
@@ -62,6 +66,29 @@ const CHARACTER_SOUNDS = {
 
 const CHARACTER_VOLUME = 0.85;
 
+// ---------------------------------------------------------------------------
+// Music (Step 10 part 2). SNES rips supplied by the user, in src/assets/ost/.
+//
+// Unlike the one-shots these are *streamed* through <audio> elements rather
+// than decoded into buffers: the stage loop is 2.6MB, and decoding it to PCM
+// would cost tens of MB of memory for no benefit. Each element is routed into
+// the Web Audio graph so the master gain -- and therefore the volume setting --
+// applies to music exactly as it does to effects.
+//
+// `volume` here is per-track and sits under the effects, so a chain still cuts
+// through the loop.
+// ---------------------------------------------------------------------------
+const MUSIC = {
+  stage:    { file: 'ost/08_-_Tetris_Attack_-_SNES_-_Yoshi_Stage.ogg',  volume: 0.42 },
+  danger:   { file: 'ost/06_-_Tetris_Attack_-_SNES_-_Demo_Danger.ogg',  volume: 0.50 },
+  gameOver: { file: 'ost/37_-_Tetris_Attack_-_SNES_-_Game_Over.ogg',    volume: 0.45 },
+};
+
+// All three loop. The game-over track is the one that might not want to, but
+// its screen waits on the player indefinitely and silence under a menu that is
+// still up reads as a bug.
+const MUSIC_FADE_MS = 400;
+
 // Encode each path segment, leaving the separators alone.
 function encodePath(file) {
   return BASE + file.split('/').map(encodeURIComponent).join('/');
@@ -72,9 +99,19 @@ class AudioEngine {
     this.ctx = null;
     this.master = null;
     this.buffers = new Map();  // path -> AudioBuffer
-    this.muted = false;
     this.failed = false;
     this._preloaded = false;
+    // name -> { el, source, gain }. Built on first play and kept, because a
+    // MediaElementSource can only be created once per element.
+    this.musicTracks = new Map();
+    // What *should* be playing. Kept even while muted, so unmuting resumes the
+    // right track instead of silence until the next state change.
+    this.currentMusic = null;
+    // Volume and mute are player settings, so they survive a reload. Read
+    // lazily rather than here: the constructor runs at import time, which in
+    // Node is before any test can seed storage.
+    this._volume = null;
+    this._muted = null;
   }
 
   _context() {
@@ -85,12 +122,115 @@ class AudioEngine {
     try {
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.7;
+      this.master.gain.value = this.volume;
       this.master.connect(this.ctx.destination);
     } catch (e) {
       this.failed = true;
     }
     return this.ctx;
+  }
+
+  get volume() {
+    if (this._volume === null) this._volume = getSetting('volume');
+    return this._volume;
+  }
+
+  get muted() {
+    if (this._muted === null) this._muted = getSetting('muted');
+    return this._muted;
+  }
+
+  // 0..1. Applied to the live master gain if the context is already up, so a
+  // change on the settings screen is audible on the next menu blip.
+  setVolume(value) {
+    this._volume = Math.min(1, Math.max(0, value));
+    if (this.master) this.master.gain.value = this._volume;
+    updateSettings({ volume: this._volume });
+    return this._volume;
+  }
+
+  setMuted(value) {
+    this._muted = !!value;
+    updateSettings({ muted: this._muted });
+    // Effects just stop being triggered, but music is already running -- it has
+    // to be stopped and restarted explicitly.
+    this._applyMusicState();
+    return this._muted;
+  }
+
+  // ----------------------------------------------------------------- music
+
+  // Switch to `name` (a key of MUSIC), or pass null for silence. Repeating the
+  // current track is a no-op, so this is safe to call every frame -- which is
+  // how the danger track gets swapped in and out.
+  playMusic(name) {
+    if (this.currentMusic === name) return;
+    this.currentMusic = name;
+    this._applyMusicState();
+  }
+
+  stopMusic() {
+    this.playMusic(null);
+  }
+
+  // Bring what is actually playing into line with `currentMusic` and `muted`.
+  _applyMusicState() {
+    if (this.failed) return;
+    const wanted = this.muted ? null : this.currentMusic;
+    for (const [name, track] of this.musicTracks) {
+      if (name !== wanted) this._fadeOutTrack(track);
+    }
+    if (!wanted) return;
+    const track = this._musicTrack(wanted);
+    if (!track) return;
+    // A suspended context (no user gesture yet) rejects play(); the next call
+    // after unlock() will pick it up.
+    const started = track.el.play();
+    if (started && started.catch) started.catch(() => {});
+    this._rampTo(track, MUSIC[wanted].volume);
+  }
+
+  _musicTrack(name) {
+    const existing = this.musicTracks.get(name);
+    if (existing) return existing;
+    const spec = MUSIC[name];
+    const ctx = this._context();
+    if (!spec || !ctx) return null;
+    try {
+      const el = new Audio(encodePath(spec.file));
+      el.loop = true;
+      el.preload = 'auto';
+      const source = ctx.createMediaElementSource(el);
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      source.connect(gain);
+      gain.connect(this.master);
+      const track = { el, source, gain };
+      this.musicTracks.set(name, track);
+      return track;
+    } catch (e) {
+      console.warn('[TA] music failed:', spec.file, e.message);
+      return null;
+    }
+  }
+
+  _rampTo(track, value) {
+    const ctx = this._context();
+    if (!ctx) return;
+    const g = track.gain.gain;
+    const now = ctx.currentTime;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(value, now + MUSIC_FADE_MS / 1000);
+  }
+
+  // Fade out, then pause once silent. Paused rather than stopped so resuming
+  // the stage track after a danger spell picks up where it left off.
+  _fadeOutTrack(track) {
+    if (track.el.paused) return;
+    this._rampTo(track, 0);
+    clearTimeout(track.stopTimer);
+    track.stopTimer = setTimeout(() => track.el.pause(), MUSIC_FADE_MS);
   }
 
   // Browsers start the context suspended until a user gesture, so this is
@@ -100,6 +240,8 @@ class AudioEngine {
     if (!ctx) return;
     if (ctx.state === 'suspended') ctx.resume();
     this.preload();
+    // A track asked for before the first gesture could not start; now it can.
+    this._applyMusicState();
   }
 
   // Everything is small (~800KB total), so load it all up front rather than
@@ -157,9 +299,10 @@ class AudioEngine {
     this._playFile(file, { volume: CHARACTER_VOLUME });
   }
 
+  // The M key and the settings screen's Muted row are the same state, so both
+  // go through setMuted and both persist.
   toggleMute() {
-    this.muted = !this.muted;
-    return this.muted;
+    return this.setMuted(!this.muted);
   }
 }
 
