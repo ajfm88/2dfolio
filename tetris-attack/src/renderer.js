@@ -65,17 +65,19 @@ function formatScore(value) {
 const BOARD_W = 6 * TS;
 const BOARD_H = 12 * TS;
 
-// The big WIN! / LOSE result signs, cut from thewolfbunny's VS-mode sheet
-// ("credit not necessary, but if you want, you can"; original art (c)
+// The big WIN! / LOSE / DRAW result signs, cut from thewolfbunny's VS-mode
+// sheet ("credit not necessary, but if you want, you can"; original art (c)
 // Nintendo / Intelligent Systems). Drawn over each board's own well at match
 // end -- one side reads WIN!, the other LOSE, as on the SNES VS screens --
 // rather than a single sign on the shared results screen (which covered the
 // Yoshi art there and couldn't show both outcomes at once). Rects measured
-// by pure-python decode (see CLAUDE.md).
+// by pure-python decode from the block the sheet captions RESULT SIGNS; DRAW
+// is 45 tall rather than 40, since its banner shape hangs lower.
 const SIGN_SHEET_URL = 'assets/vs-mode.png';
 const SIGNS = {
   win: { x: 792, y: 233, w: 96, h: 40 },
   lose: { x: 792, y: 276, w: 96, h: 40 },
+  draw: { x: 792, y: 318, w: 96, h: 45 },
 };
 const SIGN_DISPLAY_W = 240;
 
@@ -235,7 +237,11 @@ class Renderer {
   _updateResultSign(board) {
     const sign = this.resultSign;
     if (!sign) return;
-    const wanted = board.toppedOut ? 'lose' : board.victorious ? 'win' : null;
+    // A simultaneous top-out is a draw, and the sheet has a sign for it -- so
+    // `drew` is checked before `toppedOut`, which is true on both boards then.
+    const wanted = board.drew ? 'draw'
+      : board.toppedOut ? 'lose'
+      : board.victorious ? 'win' : null;
     if (wanted === sign.state) return;
 
     if (!wanted) {

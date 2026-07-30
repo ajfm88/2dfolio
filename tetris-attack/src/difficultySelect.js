@@ -3,6 +3,7 @@
 // same three tiers the SNES offers on its own VS setup screen.
 
 import { audio } from './audio.js';
+import { MENU_BACKDROP_CSS, createLogo } from './backdrop.js';
 
 const LEVELS = [
   { id: 'easy',   label: 'EASY',   color: '#7dff8a', desc: 'Slow hands, never presses the attack' },
@@ -15,7 +16,7 @@ const STYLE = `
   #ta-diffselect-overlay {
     position: fixed; inset: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 35%, #2a2350 0%, #100c22 70%, #07050f 100%);
+    ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
@@ -81,6 +82,8 @@ export class DifficultySelect {
 
     const card = document.createElement('div');
     card.id = 'ta-diffselect-card';
+
+    card.appendChild(createLogo());
 
     const title = document.createElement('h2');
     title.id = 'ta-diffselect-title';

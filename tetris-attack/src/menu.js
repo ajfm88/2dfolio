@@ -5,11 +5,15 @@
 // Playable modes call back into the app; info items open an in-menu panel.
 
 import { audio } from './audio.js';
+import { MENU_BACKDROP_CSS } from './backdrop.js';
 
+// `play` starts a match; `app` hands the item to the App (which owns the
+// screen); anything else opens an in-menu info panel.
 const MENU_ITEMS = [
   { id: 'vsai', label: 'VS AI', play: true },
   { id: '1p', label: '1P Endless', play: true },
   { id: '2p', label: '2P Local', play: true },
+  { id: 'settings', label: 'Settings', app: true },
   { id: 'howto', label: 'How to Play', play: false },
   { id: 'credits', label: 'Credits', play: false },
 ];
@@ -41,14 +45,35 @@ const CREDITS_HTML = `
   <p class="back">&laquo; Esc / Enter to go back</p>
 `;
 
+// The mode list stands straight on the poster, with no card behind it -- tried
+// against the framed card on 2026-07-29 and kept. Flip this to false for the
+// card back; everything it changes hangs off the `ta-bare` class.
+//
+// It works because the list sits over the poster's lower half, which is dark:
+// sampled through the 38% dim, the art behind the rows runs 54-107 mean
+// luminance and peaks at 158, so light text with a hard black halo has room.
+// Moving the list up over the logo, or lightening the dim much further, would
+// take that away.
+//
+// The info panels (How to Play / Credits) keep the card regardless: they are
+// dense paragraphs and a table, and those are not readable over artwork.
+const BARE_MENU = true;
+
 const STYLE_ID = 'ta-menu-style';
 const STYLE = `
   #ta-menu-overlay {
     position: fixed; inset: 0; z-index: 1000;
     display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 35%, #2a2350 0%, #100c22 70%, #07050f 100%);
+    ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
+  }
+  /* With no card in the way the art carries the screen, so it is dimmed much
+     less than the other overlays dim it. This wins over MENU_BACKDROP_CSS's
+     own shadow by coming later. */
+  #ta-menu-overlay.ta-bare-bg {
+    box-shadow: inset 0 0 0 100vmax rgba(7, 5, 15, 0.38);
+    align-items: flex-end;
   }
   #ta-menu-card {
     text-align: center; padding: 32px 44px; min-width: 340px;
@@ -56,6 +81,54 @@ const STYLE = `
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
+    /* The card arrives as the title poster dims behind it, which is what makes
+       the intro read as one movement rather than a screen swap. Timed to land
+       inside the title screen's own fade. */
+    animation: ta-menu-rise 700ms ease-out both;
+  }
+  @keyframes ta-menu-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #ta-menu-card { animation-duration: 1ms; }
+  }
+  /* --- the bare treatment ------------------------------------------------ */
+  /* The poster carries its own logo, so the pixel one is redundant here, and
+     the list moves down off the artwork's title into the panels below it. */
+  #ta-menu-card.ta-bare {
+    background: none; border: none; box-shadow: none;
+    padding: 0 24px; margin-bottom: 7vh; min-width: 0;
+  }
+  #ta-menu-card.ta-bare #ta-menu-logo { display: none; }
+  /* Nothing behind the text now, so it gets its own weight: a hard dark halo
+     rather than a panel. */
+  #ta-menu-card.ta-bare #ta-menu-list li {
+    text-shadow:
+      0 0 6px rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.9),
+      2px 0 0 rgba(0, 0, 0, 0.9), -2px 0 0 rgba(0, 0, 0, 0.9),
+      0 -2px 0 rgba(0, 0, 0, 0.9);
+    color: #eaeaff;
+    margin: 3px auto;
+  }
+  #ta-menu-card.ta-bare #ta-menu-list li.active {
+    color: #ffe14d;
+    background: none; border-color: transparent; box-shadow: none;
+    text-shadow:
+      0 0 10px rgba(0, 0, 0, 1), 0 2px 0 rgba(0, 0, 0, 0.95),
+      2px 0 0 rgba(0, 0, 0, 0.95), -2px 0 0 rgba(0, 0, 0, 0.95),
+      0 -2px 0 rgba(0, 0, 0, 0.95);
+  }
+  /* The cursor replaces the highlight bar the card version used. */
+  #ta-menu-card.ta-bare #ta-menu-list li.active::before {
+    content: '\\25B6'; margin-right: 12px; color: #4de0ff;
+  }
+  #ta-menu-card.ta-bare #ta-menu-list li:not(.active)::before {
+    content: '\\25B6'; margin-right: 12px; color: transparent;
+  }
+  #ta-menu-card.ta-bare #ta-menu-hint {
+    margin-top: 16px;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(0, 0, 0, 0.9);
   }
   #ta-menu-logo {
     display: block; margin: 4px auto 26px;
@@ -88,10 +161,13 @@ const STYLE = `
 `;
 
 export class Menu {
-  // onSelect(modeId) is called when a playable mode is chosen.
-  constructor(onSelect) {
+  // onSelect(id) is called for a playable mode and for the app-owned screens
+  // (Settings); the info panels are handled in here.
+  // `initialId` is how coming back from Settings lands on Settings again rather
+  // than jumping the cursor to the top of the list. Unknown ids start at the top.
+  constructor(onSelect, initialId = null) {
     this.onSelect = onSelect;
-    this.index = 0;
+    this.index = Math.max(0, MENU_ITEMS.findIndex((item) => item.id === initialId));
     this.panel = null; // 'howto' | 'credits' | null
     this._onKeydown = (e) => this._handleKey(e);
     this._injectStyle();
@@ -119,8 +195,16 @@ export class Menu {
     this._renderList();
   }
 
+  // The list is the only screen that goes bare; the panels below keep the card.
+  _setBare(bare) {
+    const on = bare && BARE_MENU;
+    this.card.classList.toggle('ta-bare', on);
+    this.overlay.classList.toggle('ta-bare-bg', on);
+  }
+
   _renderList() {
     this.panel = null;
+    this._setBare(true);
     this.card.innerHTML = '';
 
     const logo = document.createElement('img');
@@ -151,6 +235,7 @@ export class Menu {
 
   _renderPanel(which) {
     this.panel = which;
+    this._setBare(false);
     this.card.innerHTML = '';
     const panel = document.createElement('div');
     panel.id = 'ta-menu-panel';
@@ -174,7 +259,7 @@ export class Menu {
 
   _select() {
     const item = MENU_ITEMS[this.index];
-    if (item.play) {
+    if (item.play || item.app) {
       this.onSelect(item.id);
     } else {
       this._renderPanel(item.id);
