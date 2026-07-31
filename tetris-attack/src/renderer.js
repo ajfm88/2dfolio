@@ -10,6 +10,8 @@ import { keyedSheet } from "./spriteSheet.js"
 import { vsSpriteUrl, preloadVsSprites } from "./characters.js"
 import { PixelFont, ProportionalFont, CHAR_H, THIN_CAP_H } from "./font.js"
 import { recordScore } from "./highScore.js"
+import { VS_STRIP_SLOTS, VS_LAMP_SLOTS } from "./vsFrames.js"
+import { drawWinPoints } from "./winPoints.js"
 
 //TODO remove
 import { TrashBlock } from "./trashBlock.js"
@@ -88,36 +90,53 @@ const ATTACK_TICKS = 90;
 const HIT_TICKS = 45;
 
 class Renderer {
-  constructor(receiverId, board, stage = null, character = null) {
+  /**
+   * @param {string} receiverId DOM id of the mount (stage container or compact well)
+   * @param {object} board
+   * @param {{ stage?: object|null, character?: object|null, scale?: number,
+   *           chrome?: 'stage'|'vsCompact', side?: 'left'|'right' }} [options]
+   */
+  constructor(receiverId, board, options = {}) {
+    const {
+      stage = null,
+      character = null,
+      scale = 1,
+      chrome = 'stage',
+      side = 'left',
+    } = options;
+
     this.receiver = document.getElementById(receiverId);
     this.tileColumns = board.width;
     this.tileRows = board.height;
+    this.board = board;
     this.stage = stage;
     this.character = character;
+    this.scale = scale;
+    this.chrome = chrome;
+    this.side = side;
+    // Partner board + set tally for compact strip HUD (left renderer only).
+    this.partnerBoard = null;
+    this.sideLabels = null;
+    this.setWins = null;
+    this.winsNeeded = 1;
 
-    // When a stage is set, the board is framed inside its stage-clear artwork:
-    // the canvas is positioned to sit exactly in the art's playfield well, and
-    // the surrounding frame + character are drawn behind it via the DOM. The
-    // canvas coordinate system is unchanged, so all draw logic below is agnostic
-    // to whether a frame is present.
-    if (this.stage) {
+    if (this.chrome === 'vsCompact') {
+      this._setupCompactWell();
+    } else if (this.stage) {
       this._setupStageFrame();
     }
 
-    // Framed boards get the pixel-font HUD drawn into the stage's own boxes
-    // (one canvas each); the plain (unframed) fallback keeps the simple HTML
-    // score bar.
+    // Stage framed: pixel-font HUD in the art's boxes.
+    // Compact: shared strip panel on the left renderer (set via setCompactHud).
+    // Else: plain score bar.
     if (this.stageLayout) {
-      // The SNES HUD captions its readouts in cyan over a white value, and the
-      // two are different faces: the narrow font names the readout, the chunky
-      // one carries the number.
       this.labelFont = new ProportionalFont('cyan');
       this.valueFont = new PixelFont('white');
       this.timePanel = this._createPanel(this.stageLayout.timePanel);
       this.scorePanel = this._createPanel(this.stageLayout.hudPanel);
       this.receiver.appendChild(this.timePanel.canvas);
       this.receiver.appendChild(this.scorePanel.canvas);
-    } else {
+    } else if (this.chrome !== 'vsCompact') {
       this.scoreEl = this._createScoreElement();
       this.receiver.appendChild(this.scoreEl);
     }
@@ -126,12 +145,13 @@ class Renderer {
     this.receiver.appendChild(canvasEl);
     this.canvasCtx = canvasEl.getContext('2d');
     // Keep the 16x16 sprites crisp when scaled up to 48px tiles.
-    // Without this the canvas bilinear-interpolates the upscale and the pixel art looks blurry.
     this.canvasCtx.imageSmoothingEnabled = false;
     this.spriteRenderer = new SpriteRenderer();
     this.trashRenderer = new TrashRenderer();
 
-    if (this.stage) {
+    // Stage: full-frame wash. Compact: per-well wash (shared frame must not
+    // tint the opponent). Unframed: canvas wash only.
+    if (this.stage || this.chrome === 'vsCompact') {
       this.washOverlay = document.createElement('div');
       this.washOverlay.style.cssText = `
         position: absolute; left: 0; top: 0;
@@ -142,12 +162,86 @@ class Renderer {
     }
   }
 
+  // Multiply a layout CSS number by the display scale (one place for all * scale).
+  _s(n) {
+    return n * this.scale;
+  }
+
+  // Compact strip HUD is owned by the left renderer and reads both boards.
+  setCompactHud({ partnerBoard, sideLabels, setWins, winsNeeded, stripPlacement, variant }) {
+    this.partnerBoard = partnerBoard;
+    this.sideLabels = sideLabels;
+    this.setWins = setWins;
+    this.winsNeeded = winsNeeded;
+    this.compactVariant = variant;
+    if (!this.labelFont) {
+      this.labelFont = new ProportionalFont('cyan');
+      this.valueFont = new PixelFont('white');
+    }
+    if (stripPlacement && !this.stripPanel) {
+      // Mount strip on the shared shell (parent of both wells), not the well.
+      const shell = this.receiver.parentElement;
+      this.stripPanel = this._createPanel(stripPlacement);
+      if (shell) shell.appendChild(this.stripPanel.canvas);
+      else this.receiver.appendChild(this.stripPanel.canvas);
+    }
+  }
+
+  // Compact path: receiver is already a well div sized by App._buildVsShell.
+  // No stage frame, character, or decor — canvas fills the well at CSS scale.
+  _setupCompactWell() {
+    this.receiver.style.position = 'absolute';
+    this.receiver.style.overflow = 'hidden';
+    // Result sign origin is the well top-left (canvas at 0,0).
+    this._setupResultSign({ canvasLeft: 0, canvasTop: 0 });
+  }
+
   // Turn the receiver into a stage frame: a full-cell background image with the
   // board canvas + score overlaid at the well/score-box positions.
+  // All CSS placements are multiplied by this.scale (ladder step); stageLayout
+  // itself always returns unscaled numbers.
   _setupStageFrame() {
     const w = this.tileColumns * Constants.TILE_SIZE;
     const h = this.tileRows * Constants.TILE_SIZE;
-    const L = stageLayout(this.stage, w, h);
+    const raw = stageLayout(this.stage, w, h);
+    const s = this.scale;
+    // Scaled CSS copy; nativeW/H stay unscaled for panel backing stores.
+    const L = {
+      ...raw,
+      frameW: raw.frameW * s,
+      frameH: raw.frameH * s,
+      scaleX: raw.scaleX * s,
+      scaleY: raw.scaleY * s,
+      canvasLeft: raw.canvasLeft * s,
+      canvasTop: raw.canvasTop * s,
+      bgSizeW: raw.bgSizeW * s,
+      bgSizeH: raw.bgSizeH * s,
+      bgPosX: raw.bgPosX * s,
+      bgPosY: raw.bgPosY * s,
+      timePanel: {
+        ...raw.timePanel,
+        left: raw.timePanel.left * s,
+        top: raw.timePanel.top * s,
+        width: raw.timePanel.width * s,
+        height: raw.timePanel.height * s,
+      },
+      hudPanel: {
+        ...raw.hudPanel,
+        left: raw.hudPanel.left * s,
+        top: raw.hudPanel.top * s,
+        width: raw.hudPanel.width * s,
+        height: raw.hudPanel.height * s,
+      },
+      decor: raw.decor
+        ? {
+          ...raw.decor,
+          left: raw.decor.left * s,
+          top: raw.decor.top * s,
+          width: raw.decor.width * s,
+          height: raw.decor.height * s,
+        }
+        : null,
+    };
     this.stageLayout = L;
 
     this.receiver.style.position = 'relative';
@@ -169,12 +263,7 @@ class Renderer {
     // Foreground character the stage-clear art omits (bottom right, on the
     // ground). Sits above the background but below the danger/dead wash.
     if (L.decor) {
-      // The sprite is cut from a sheet whose white background has to be keyed
-      // out, so this is a canvas at the sprite's native size stretched by CSS
-      // -- the same trick the HUD panels use to stay on whole pixels.
       const canvas = document.createElement('canvas');
-      // The decor box is ground-anchored at its native size (see stages.js), so
-      // frames of different sizes can share one canvas without sliding.
       canvas.width = L.decor.nativeW;
       canvas.height = L.decor.nativeH;
       canvas.style.cssText = `
@@ -196,10 +285,10 @@ class Renderer {
         idleCycle: cycleOf(L.decor.idle),
         reactCycle: L.decor.react ? cycleOf(L.decor.react) : 0,
         attackCycle: L.decor.attack ? cycleOf(L.decor.attack) : 0,
-        reactStart: null,     // frameNumber the current hop began on
-        attackStart: null,    // frameNumber the current tongue lash began on
-        lastReaction: null,   // board.reactionId we last saw
-        lastAttack: null,     // board.attackId we last saw
+        reactStart: null,
+        attackStart: null,
+        lastReaction: null,
+        lastAttack: null,
         shownKey: null,
       };
     }
@@ -269,9 +358,13 @@ class Renderer {
     }
 
     sign.state = wanted;
-    const scale = SIGN_DISPLAY_W / rect.w;
-    const dispW = Math.round(rect.w * scale);
-    const dispH = Math.round(rect.h * scale);
+    // Display size tracks the board CSS scale; backing store stays sheet-native.
+    const dispW = Math.round(SIGN_DISPLAY_W * this.scale);
+    const dispH = Math.round(rect.h * dispW / rect.w);
+    const wellLeft = sign.well.canvasLeft || 0;
+    const wellTop = sign.well.canvasTop || 0;
+    const boardCssW = BOARD_W * this.scale;
+    const boardCssH = BOARD_H * this.scale;
 
     sign.canvas.width = rect.w;
     sign.canvas.height = rect.h;
@@ -280,8 +373,8 @@ class Renderer {
 
     sign.canvas.style.width = `${dispW}px`;
     sign.canvas.style.height = `${dispH}px`;
-    sign.canvas.style.left = `${sign.well.canvasLeft + (BOARD_W - dispW) / 2}px`;
-    sign.canvas.style.top = `${sign.well.canvasTop + Math.round(BOARD_H * 0.32 - dispH / 2)}px`;
+    sign.canvas.style.left = `${wellLeft + (boardCssW - dispW) / 2}px`;
+    sign.canvas.style.top = `${wellTop + Math.round(boardCssH * 0.32 - dispH / 2)}px`;
     sign.canvas.style.display = '';
   }
 
@@ -375,11 +468,11 @@ class Renderer {
 
   _createScoreElement() {
     const el = document.createElement('div');
-    const w = this.tileColumns * Constants.TILE_SIZE;
+    const w = this.tileColumns * Constants.TILE_SIZE * this.scale;
     el.style.cssText = `
-      width: ${w}px; height: 28px; line-height: 28px;
+      width: ${w}px; height: ${28 * this.scale}px; line-height: ${28 * this.scale}px;
       font-family: 'Press Start 2P', 'Courier New', monospace;
-      font-size: 14px; text-align: right; padding: 0 6px;
+      font-size: ${Math.max(10, 14 * this.scale)}px; text-align: right; padding: 0 6px;
       color: #ffe14d; background: #111; box-sizing: border-box;
       text-shadow: 0 1px 0 rgba(0,0,0,0.7);
       border-bottom: 2px solid #333;
@@ -460,6 +553,11 @@ class Renderer {
     canvasEl.height = this.tileRows * Constants.TILE_SIZE;
     // Keep pixels sharp if the canvas is ever scaled by CSS.
     canvasEl.style.imageRendering = 'pixelated';
+    // Explicit CSS size so the ladder scale takes effect (backing store stays 288×576).
+    const cssW = BOARD_W * this.scale;
+    const cssH = BOARD_H * this.scale;
+    canvasEl.style.width = `${cssW}px`;
+    canvasEl.style.height = `${cssH}px`;
     if (this.stageLayout) {
       // Drop the canvas into the stage's playfield well.
       const L = this.stageLayout;
@@ -467,6 +565,11 @@ class Renderer {
       canvasEl.style.zIndex = '1';
       canvasEl.style.left = `${L.canvasLeft}px`;
       canvasEl.style.top = `${L.canvasTop}px`;
+    } else if (this.chrome === 'vsCompact') {
+      canvasEl.style.position = 'absolute';
+      canvasEl.style.zIndex = '1';
+      canvasEl.style.left = '0';
+      canvasEl.style.top = '0';
     }
     return canvasEl;
   }
@@ -557,6 +660,10 @@ class Renderer {
     this._drawStackState(game.board);
     this._updateResultSign(game.board);
 
+    // Always update the hi-score record, even when HI-SCORE is not drawn
+    // (compact chrome drops that row).
+    recordScore(game.board.score);
+
     if (this.scorePanel) {
       this._drawReadout(this.timePanel, 'TIME', formatClock(game.board.elapsedFrames));
       this._drawHudColumn(this.scorePanel, [
@@ -565,8 +672,80 @@ class Renderer {
         { label: 'SPEED LV.', value: String(game.board.speedLevel) },
         { label: 'LEVEL', value: String(game.board.level) },
       ]);
-    } else {
+    } else if (this.stripPanel && this.side === 'left') {
+      this._drawCompactHud(game.board);
+    } else if (this.scoreEl) {
       this.scoreEl.textContent = String(game.board.score);
+    }
+  }
+
+  // Centre-strip HUD for vsCompact (left renderer only). Native 40×204 backing store.
+  _drawCompactHud(leftBoard) {
+    const panel = this.stripPanel;
+    if (!panel) return;
+    const rightBoard = this.partnerBoard;
+    const labels = this.sideLabels || ['P1', 'P2'];
+    const ctx = panel.ctx;
+    const w = panel.canvas.width;
+    const h = panel.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Cover baked STAGE 1 / *POINT* block (does not apply to this game).
+    const cover = VS_STRIP_SLOTS.stageCover;
+    ctx.fillStyle = '#102040';
+    ctx.fillRect(cover.x, cover.y, cover.w, cover.h);
+
+    if (!this.labelFont.ready() || !this.valueFont.ready()) {
+      return;
+    }
+
+    // Two per-player SCORE rows in the blank top region (24 px pitch).
+    const boards = [leftBoard, rightBoard].filter(Boolean);
+    let y = 2;
+    for (let i = 0; i < boards.length; i++) {
+      const label = labels[i] || `P${i + 1}`;
+      const value = formatScore(boards[i].score);
+      this.labelFont.draw(ctx, label, HUD_PAD, y);
+      const valueX = Math.max(HUD_PAD, w - HUD_PAD - this.valueFont.width(value));
+      this.valueFont.draw(ctx, value, valueX, y + HUD_VALUE_Y - HUD_LABEL_Y);
+      y += HUD_ROW_HEIGHT;
+    }
+
+    // Shared clock into the baked TIME value slot (M'SS = 4×8 = 32 px).
+    // Past 10 minutes the string is 5 chars; still fits the strip, may overrun the baked box.
+    const clock = formatClock(leftBoard.elapsedFrames);
+    const tv = VS_STRIP_SLOTS.timeValue;
+    const clockX = tv.x + Math.max(0, tv.w - this.valueFont.width(clock));
+    this.valueFont.draw(ctx, clock, clockX, tv.y);
+
+    // Per-player level digits in the baked LEVEL sub-slots (cover vsCpu HARD).
+    const lv1 = String(Math.min(99, leftBoard.level));
+    const lp1 = VS_STRIP_SLOTS.levelP1;
+    const lx1 = lp1.x + Math.max(0, lp1.w - this.valueFont.width(lv1));
+    this.valueFont.draw(ctx, lv1, lx1, lp1.y + 2);
+    if (rightBoard) {
+      const lv2 = String(Math.min(99, rightBoard.level));
+      const lp2 = VS_STRIP_SLOTS.levelP2;
+      const lx2 = lp2.x + Math.max(0, lp2.w - this.valueFont.width(lv2));
+      this.valueFont.draw(ctx, lv2, lx2, lp2.y + 2);
+    }
+
+    // In-frame win lamps only when winsNeeded ≤ 2 (art has two rows).
+    const needed = this.winsNeeded || 1;
+    if (needed <= VS_LAMP_SLOTS.maxRows && this.setWins) {
+      const variant = this.compactVariant || 'vsCpu';
+      const bottomY = VS_LAMP_SLOTS.bottomY[variant] != null
+        ? VS_LAMP_SLOTS.bottomY[variant]
+        : VS_LAMP_SLOTS.bottomY.vsCpu;
+      for (let row = 0; row < needed; row++) {
+        // Rows stack upward from bottomY.
+        const ly = bottomY - (needed - 1 - row) * VS_LAMP_SLOTS.pitch;
+        const p1Lit = this.setWins[0] > row ? 1 : 0;
+        const p2Lit = this.setWins[1] > row ? 1 : 0;
+        // One lamp per player: draw a single-cell "row" at the measured x.
+        drawWinPoints(ctx, VS_LAMP_SLOTS.p1x, ly, { side: 'p1', won: p1Lit, total: 1 });
+        drawWinPoints(ctx, VS_LAMP_SLOTS.p2x, ly, { side: 'p2', won: p2Lit, total: 1 });
+      }
     }
   }
 
@@ -644,11 +823,12 @@ class Renderer {
     this.canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     const w = this.tileColumns * Constants.TILE_SIZE;
     const h = this.tileRows * Constants.TILE_SIZE;
-    if (this.stage) {
+    if (this.stage && this.chrome !== 'vsCompact') {
       // The stage's own well art shows through empty cells behind the canvas.
       this.canvasCtx.clearRect(0, 0, w, h);
       return;
     }
+    // Compact wells are opaque white in the sheet art — must paint a fill.
     this.canvasCtx.fillStyle = '#222';
     this.canvasCtx.fillRect(0, 0, w, h);
   }
@@ -714,4 +894,5 @@ class Renderer {
   }
 }
 
-export { Renderer };
+export { Renderer, Constants, formatClock, formatScore };
+export const TILE_SIZE = TS;

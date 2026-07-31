@@ -1,5 +1,5 @@
-// The intro screen: the box art, held for a beat, then dimming away into the
-// backdrop the menu sits on.
+// The intro screen: the box art, held until the player presses a key, clicks,
+// or taps. Then it dims in place into the backdrop the menu sits on.
 //
 // The handoff is what makes it read as one movement rather than two screens.
 // This overlay and the menu behind it paint the poster with identical CSS (see
@@ -9,21 +9,6 @@
 import { audio } from './audio.js';
 import { TITLE_ART_CSS } from './backdrop.js';
 
-// How long the poster holds before it moves on by itself. Long enough to read,
-// short enough that it is not in the way on the tenth launch -- and any key or
-// click skips the rest of it.
-//
-// This is 4.2 seconds of *visible* time, counted off requestAnimationFrame
-// rather than a setTimeout. Two reasons. A background tab has its timers
-// throttled hard, so a plain timeout can leave the intro apparently stuck until
-// the player comes back and presses something -- which is exactly what it looks
-// like when it happens. And holding while nobody is looking is the behaviour
-// you want anyway: rAF simply does not run while the tab is hidden, so the
-// countdown pauses and resumes on its own.
-const AUTO_ADVANCE_MS = 4200;
-// A frame gap longer than this means the tab was hidden or the machine stalled,
-// so it is not credited to the hold.
-const MAX_FRAME_GAP_MS = 100;
 // Keys pressed in the first moments are almost always left over from whatever
 // the player was doing before the page loaded, so ignore them rather than blow
 // straight past the screen.
@@ -85,23 +70,6 @@ export class TitleScreen {
 
     document.addEventListener('keydown', this._onKeydown, true);
     this._armTimer = setTimeout(() => { this.armed = true; }, SKIP_ARMS_AFTER_MS);
-    this._startHold();
-  }
-
-  _startHold() {
-    this.held = 0;
-    let last = null;
-    const step = (now) => {
-      if (this.done) return;
-      if (last !== null) this.held += Math.min(now - last, MAX_FRAME_GAP_MS);
-      last = now;
-      if (this.held >= AUTO_ADVANCE_MS) {
-        this.advance();
-        return;
-      }
-      this._raf = requestAnimationFrame(step);
-    };
-    this._raf = requestAnimationFrame(step);
   }
 
   _injectStyle() {
@@ -119,7 +87,8 @@ export class TitleScreen {
 
     this.overlay = document.createElement('div');
     this.overlay.id = 'ta-title-overlay';
-    this.overlay.addEventListener('pointerdown', () => this.advance(true));
+    // pointerdown covers mouse click, pen, and touch tap in one handler.
+    this.overlay.addEventListener('pointerdown', () => this._skipFromInput());
 
     this.prompt = document.createElement('p');
     this.prompt.id = 'ta-title-prompt';
@@ -147,13 +116,9 @@ export class TitleScreen {
     // two can come apart: a screen torn down from outside never advanced.
     if (this.done || !this.overlay) return;
     this.done = true;
-    // The hold loop stops on `done`; only the arm timer needs cancelling.
-    if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     clearTimeout(this._armTimer);
     document.removeEventListener('keydown', this._onKeydown, true);
 
-    // Only acknowledge a real press. On the timed exit there was no input to
-    // confirm, and a blip out of nowhere would read as something going wrong.
     if (fromInput) audio.play('confirm');
     this.onDone();
 
@@ -165,6 +130,13 @@ export class TitleScreen {
     this.backdrop.remove();
     this.backdrop = null;
     this._removeTimer = setTimeout(() => this.destroy(), FADE_MS);
+  }
+
+  // Click / tap: same arm window as keys so a leftover pointer from page load
+  // does not skip the title instantly.
+  _skipFromInput() {
+    if (!this.armed) return;
+    this.advance(true);
   }
 
   _handleKey(e) {
@@ -180,13 +152,8 @@ export class TitleScreen {
   }
 
   destroy() {
-    // Stop the hold loop. Without this a screen destroyed from outside (via
-    // App._clearOverlays, which does not go through advance()) leaves its rAF
-    // running, and 4.2s later it calls advance() on a torn-down overlay --
-    // which both throws and yanks the app back to the menu from wherever it
-    // had got to.
+    // Mark done so a late key/pointer after teardown cannot re-enter advance().
     this.done = true;
-    if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     clearTimeout(this._armTimer);
     clearTimeout(this._removeTimer);
     document.removeEventListener('keydown', this._onKeydown, true);
@@ -194,4 +161,3 @@ export class TitleScreen {
     if (this.overlay) { this.overlay.remove(); this.overlay = null; }
   }
 }
-

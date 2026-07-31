@@ -17,25 +17,37 @@ const STYLE_ID = 'ta-pause-style';
 const STYLE = `
   #ta-pause-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     background: rgba(7, 5, 15, 0.62);
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-pause-card {
-    text-align: center; padding: 26px 40px; min-width: 300px;
+    margin: auto;
+    text-align: center;
+    padding: clamp(16px, 4vw, 26px) clamp(16px, 5vw, 40px);
+    width: min(100%, 300px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.92);
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
   }
   #ta-pause-title {
-    color: #ffe14d; font-size: 20px; margin: 0 0 22px;
+    color: #ffe14d; font-size: clamp(16px, 4vw, 20px); margin: 0 0 22px;
     letter-spacing: 2px;
   }
   #ta-pause-list { list-style: none; margin: 0; padding: 0; }
   #ta-pause-list li {
-    font-size: 15px; padding: 10px 18px; margin: 6px auto; max-width: 240px;
+    font-size: clamp(13px, 3.6vw, 15px); padding: 12px 18px; margin: 6px auto; max-width: 240px;
+    min-height: 44px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
     border: 2px solid transparent; border-radius: 6px; color: #c9c9e6;
     transition: color 0.08s, background 0.08s;
     cursor: pointer;

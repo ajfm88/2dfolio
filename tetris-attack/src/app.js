@@ -21,6 +21,10 @@ import {charStage, randomCharacter} from './characters.js';
 import {audio} from './audio.js';
 import {showToast} from './toast.js';
 import {get as getSetting} from './settings.js';
+import { measure, wantsVirtualPad, STAGE_GAP } from './viewport.js';
+import { vsCompactLayout, vsVariantFor } from './vsFrames.js';
+import { TouchInput } from './touchInput.js';
+import { VirtualPad } from './virtualPad.js';
 
 const STATE_TITLE = 'TITLE';
 const STATE_MENU = 'MENU';
@@ -50,7 +54,7 @@ const PLAYER_TWO_KEYS = {
 // A running match: one or two boards plus everything that drives them.
 // Knows how to tick, draw, and fully tear itself down.
 class Match {
-  constructor({ mode, games, ais, renderers, keyboards, pauseKeyboard, startSpeed }) {
+  constructor({ mode, games, ais, renderers, keyboards, pauseKeyboard, startSpeed, touchInput, virtualPad, viewport }) {
     this.mode = mode;
     this.games = games;
     this.ais = ais;
@@ -58,6 +62,9 @@ class Match {
     this.keyboards = keyboards;
     this.pauseKeyboard = pauseKeyboard; // Player 1's keyboard owns pause/frame-step
     this.startSpeed = startSpeed || 1;
+    this.touchInput = touchInput || null;
+    this.virtualPad = virtualPad || null;
+    this.viewport = viewport || null;
     // Which boards the computer is playing. Used to decide whose danger the
     // music should react to -- the AI being in trouble is good news, and
     // scoring it with the panic track would say the opposite.
@@ -141,85 +148,223 @@ class Match {
 
   destroy() {
     this.keyboards.forEach((k) => k.detach());
+    if (this.virtualPad) {
+      this.virtualPad.destroy();
+      this.virtualPad = null;
+    }
+    if (this.touchInput) {
+      this.touchInput.releaseAll();
+      this.touchInput = null;
+    }
   }
 }
 
 // The stage frame writes inline sizing/position onto a board container. Strip it
 // so the container returns to a plain box (for the menu, or the next match).
 function resetContainer(el) {
+  if (!el) return;
   el.innerHTML = '';
   el.style.position = '';
   el.style.width = '';
   el.style.height = '';
+  el.style.left = '';
+  el.style.top = '';
+  el.style.overflow = '';
+  el.style.display = '';
+  el.style.backgroundImage = '';
+  el.style.backgroundSize = '';
+  el.style.backgroundPosition = '';
+  el.style.backgroundRepeat = '';
+  el.style.imageRendering = '';
+}
+
+function resetShell(shell) {
+  if (!shell) return;
+  shell.innerHTML = '';
+  shell.hidden = true;
+  shell.style.cssText = '';
 }
 
 // Build a match for the chosen mode. The gamepad manager is shared across matches.
 // p1Char / p2Char come from the character select screen; each board's stage
 // background is derived from its character (or randomised for stageless ones).
-function buildMatch(mode, gamePadManager, leftContainer, rightContainer, p1Char, p2Char, startSpeed = 1, aiDifficulty = 'normal') {
-  const games = [];
-  const ais = [];
-  const keyboards = [];
+//
+// `app` is the App instance (for pause callback + set tally on compact HUD).
+// When `existingGames` is provided, rebuild only the renderers (resize) and keep
+// the same Board objects so score/clock survive a rotate.
+function buildMatch(mode, gamePadManager, containers, p1Char, p2Char, startSpeed = 1, aiDifficulty = 'normal', app = null, existing = null) {
+  const { leftContainer, rightContainer, vsShell, stageEl } = containers;
+  const games = existing ? existing.games : [];
+  const ais = existing ? existing.ais : [];
+  const keyboards = existing ? existing.keyboards : [];
   const renderers = [];
 
-  // --- Player 1 (left board) is a human in every mode ---
-  const p1Keyboard = new Keyboard({});
-  keyboards.push(p1Keyboard);
-  const p1Input = new InputOr([
-    new GamePadInput({ gamePadManager, gamePadIndex: 0 }),
-    p1Keyboard,
-  ]);
-  const leftGame = new Game({ speedLevel: startSpeed });
-  leftGame.addCursor(new Cursor(p1Input, leftGame.board));
-  games.push(leftGame);
-
-  // --- Right board depends on mode ---
+  let leftGame;
   let rightGame = null;
+  let p1Keyboard;
+  let touchInput = existing ? existing.touchInput : null;
+  let virtualPad = null;
 
-  if (mode === 'vsai') {
-    rightGame = new Game({ speedLevel: startSpeed });
-    const aiInput = new AIInput();
-    const aiCursor = new Cursor(aiInput, rightGame.board);
-    rightGame.addCursor(aiCursor);
-    ais.push(new AISimpleton({ board: rightGame.board, input: aiInput, cursor: aiCursor, difficulty: aiDifficulty }));
-  } else if (mode === '2p') {
-    rightGame = new Game({ speedLevel: startSpeed });
-    const p2Keyboard = new Keyboard(PLAYER_TWO_KEYS);
-    keyboards.push(p2Keyboard);
-    const p2Input = new InputOr([
-      new GamePadInput({ gamePadManager, gamePadIndex: 1 }),
-      p2Keyboard,
+  if (existing) {
+    leftGame = existing.games[0];
+    rightGame = existing.games[1] || null;
+    p1Keyboard = existing.pauseKeyboard;
+    // Drop old pad DOM; recreate below if still wanted.
+    if (existing.virtualPad) {
+      existing.virtualPad.destroy();
+      existing.virtualPad = null;
+    }
+    if (touchInput) touchInput.releaseAll();
+  } else {
+    // --- Player 1 (left board) is a human in every mode ---
+    p1Keyboard = new Keyboard({});
+    keyboards.push(p1Keyboard);
+    touchInput = new TouchInput();
+    const p1Input = new InputOr([
+      new GamePadInput({ gamePadManager, gamePadIndex: 0 }),
+      p1Keyboard,
+      touchInput,
     ]);
-    rightGame.addCursor(new Cursor(p2Input, rightGame.board));
-  }
-  // mode === '1p' -> no right board.
+    leftGame = new Game({ speedLevel: startSpeed });
+    leftGame.addCursor(new Cursor(p1Input, leftGame.board));
+    games.push(leftGame);
 
-  // Two-board modes trade garbage both ways.
-  if (rightGame) {
-    leftGame.linkTrashQueue(rightGame);
-    rightGame.linkTrashQueue(leftGame);
-    games.push(rightGame);
+    // --- Right board depends on mode ---
+    if (mode === 'vsai') {
+      rightGame = new Game({ speedLevel: startSpeed });
+      const aiInput = new AIInput();
+      const aiCursor = new Cursor(aiInput, rightGame.board);
+      rightGame.addCursor(aiCursor);
+      ais.push(new AISimpleton({ board: rightGame.board, input: aiInput, cursor: aiCursor, difficulty: aiDifficulty }));
+    } else if (mode === '2p') {
+      rightGame = new Game({ speedLevel: startSpeed });
+      const p2Keyboard = new Keyboard(PLAYER_TWO_KEYS);
+      keyboards.push(p2Keyboard);
+      const p2Input = new InputOr([
+        new GamePadInput({ gamePadManager, gamePadIndex: 1 }),
+        p2Keyboard,
+      ]);
+      rightGame.addCursor(new Cursor(p2Input, rightGame.board));
+    }
+
+    if (rightGame) {
+      leftGame.linkTrashQueue(rightGame);
+      rightGame.linkTrashQueue(leftGame);
+      games.push(rightGame);
+    }
   }
 
-  // --- Renderers / containers ---
-  // Each board's stage comes from the chosen character (or random if stageless).
-  const p1Stage = charStage(p1Char);
-  const p2Stage = rightGame ? charStage(p2Char) : null;
+  const boardCount = games.length;
+  const vp = measure({ boardCount, mode });
+  _applyStageFlex(stageEl, vp);
+
+  // Tear down previous chrome.
   resetContainer(leftContainer);
   resetContainer(rightContainer);
-  leftContainer.style.display = '';
-  leftContainer.innerHTML = '';
-  renderers.push({ renderer: new Renderer('game-container-left', leftGame.board, p1Stage, p1Char), game: leftGame });
+  resetShell(vsShell);
 
-  rightContainer.innerHTML = '';
-  if (rightGame) {
-    rightContainer.style.display = '';
-    renderers.push({ renderer: new Renderer('game-container-right', rightGame.board, p2Stage, p2Char), game: rightGame });
-  } else {
+  const p1Stage = charStage(p1Char);
+  const p2Stage = rightGame ? charStage(p2Char) : null;
+
+  if (vp.chrome === 'vsCompact' && rightGame) {
+    leftContainer.style.display = 'none';
     rightContainer.style.display = 'none';
+    const variant = vp.vsVariant || vsVariantFor(mode) || 'vsCpu';
+    const layout = vsCompactLayout(variant, vp.scale);
+    _buildVsShell(vsShell, layout);
+
+    const leftR = new Renderer('ta-vs-well-left', leftGame.board, {
+      chrome: 'vsCompact', scale: vp.scale, side: 'left',
+    });
+    const rightR = new Renderer('ta-vs-well-right', rightGame.board, {
+      chrome: 'vsCompact', scale: vp.scale, side: 'right',
+    });
+    leftR.setCompactHud({
+      partnerBoard: rightGame.board,
+      sideLabels: mode === 'vsai' ? ['YOU', 'AI'] : ['P1', 'P2'],
+      setWins: app ? app.setWins : [0, 0],
+      winsNeeded: app ? app.winsNeeded : 1,
+      stripPlacement: layout.strip,
+      variant,
+    });
+    renderers.push({ renderer: leftR, game: leftGame });
+    renderers.push({ renderer: rightR, game: rightGame });
+  } else {
+    vsShell.hidden = true;
+    leftContainer.style.display = '';
+    renderers.push({
+      renderer: new Renderer('game-container-left', leftGame.board, {
+        stage: p1Stage, character: p1Char, scale: vp.scale, chrome: 'stage', side: 'left',
+      }),
+      game: leftGame,
+    });
+    if (rightGame) {
+      rightContainer.style.display = '';
+      renderers.push({
+        renderer: new Renderer('game-container-right', rightGame.board, {
+          stage: p2Stage, character: p2Char, scale: vp.scale, chrome: 'stage', side: 'right',
+        }),
+        game: rightGame,
+      });
+    } else {
+      rightContainer.style.display = 'none';
+    }
   }
 
-  return new Match({ mode, games, ais, renderers, keyboards, pauseKeyboard: p1Keyboard, startSpeed });
+  // Virtual pad: coarse pointer / touch devices only. Input is always in the
+  // stack; the pad is the only DOM that shows controls.
+  if (wantsVirtualPad() && app) {
+    virtualPad = new VirtualPad({
+      input: touchInput,
+      onPause: () => app.pauseMatch(),
+    });
+  }
+
+  // Playing: stop browser scroll/pinch over the stage.
+  if (stageEl) {
+    stageEl.style.touchAction = 'none';
+  }
+
+  return new Match({
+    mode, games, ais, renderers, keyboards,
+    pauseKeyboard: p1Keyboard, startSpeed,
+    touchInput, virtualPad, viewport: vp,
+  });
+}
+
+function _applyStageFlex(stageEl, vp) {
+  if (!stageEl) return;
+  stageEl.style.flexDirection = vp.stageFlex || 'row';
+  stageEl.style.gap = `${STAGE_GAP}px`;
+}
+
+function _buildVsShell(shell, layout) {
+  shell.hidden = false;
+  shell.innerHTML = '';
+  shell.style.cssText = `
+    position: relative;
+    width: ${layout.frameW}px;
+    height: ${layout.frameH}px;
+    flex-shrink: 0;
+    background-image: url('${layout.sheetUrl}');
+    background-repeat: no-repeat;
+    background-size: ${layout.bgSizeW}px ${layout.bgSizeH}px;
+    background-position: ${layout.bgPosX}px ${layout.bgPosY}px;
+    image-rendering: pixelated;
+  `;
+
+  for (const side of ['left', 'right']) {
+    const well = document.createElement('div');
+    well.id = `ta-vs-well-${side}`;
+    const w = layout.wells[side];
+    well.style.cssText = `
+      position: absolute;
+      left: ${w.left}px; top: ${w.top}px;
+      width: ${w.width}px; height: ${w.height}px;
+      overflow: hidden;
+    `;
+    shell.appendChild(well);
+  }
 }
 
 // Top-level application state machine: MENU <-> PLAYING.
@@ -255,8 +400,27 @@ class App {
     this.gamePadManager = new GamePadManager();
     this.gamePadManager.installEventHandlers();
 
+    this.stageEl = document.getElementById('ta-stage');
     this.leftContainer = document.getElementById('game-container-left');
     this.rightContainer = document.getElementById('game-container-right');
+    this.vsShell = document.getElementById('ta-vs-shell');
+    // Ensure the compact shell exists even if the HTML is an older copy.
+    if (!this.vsShell && this.stageEl) {
+      this.vsShell = document.createElement('div');
+      this.vsShell.id = 'ta-vs-shell';
+      this.vsShell.hidden = true;
+      this.stageEl.appendChild(this.vsShell);
+    }
+
+    // Debounced resize: rebuild renderers when scale/layout/chrome change.
+    // Frame counter on renderers restarts; boards keep playing.
+    this._resizeTimer = null;
+    this._onResize = () => {
+      if (this._resizeTimer) clearTimeout(this._resizeTimer);
+      this._resizeTimer = setTimeout(() => this._handleResize(), 120);
+    };
+    window.addEventListener('resize', this._onResize);
+    window.addEventListener('orientationchange', this._onResize);
 
     // Esc or P during a match opens the pause menu, which owns quitting from
     // here on. (Char select and the speed picker handle their own Esc via
@@ -411,17 +575,82 @@ class App {
     return this.mode !== '1p' && this.matchLength > 1;
   }
 
+  _containers() {
+    return {
+      leftContainer: this.leftContainer,
+      rightContainer: this.rightContainer,
+      vsShell: this.vsShell,
+      stageEl: this.stageEl,
+    };
+  }
+
   _launchRound() {
     this._clearOverlays();
     if (this.match) { this.match.destroy(); this.match = null; }
     this.match = buildMatch(
       this.mode, this.gamePadManager,
-      this.leftContainer, this.rightContainer,
+      this._containers(),
       this.p1Char, this.p2Char, this.startSpeed, this.aiDifficulty,
+      this,
     );
     this.isPaused = false;
     this.pressedLastFrame.clear();
     this.state = STATE_PLAYING;
+    this._syncPadVisibility();
+  }
+
+  // Rebuild renderers against the same boards when the viewport ladder step
+  // or chrome changes (rotate / resize mid-match). Does not restart the match.
+  _handleResize() {
+    if (!this.match || (this.state !== STATE_PLAYING && this.state !== STATE_PAUSED && this.state !== STATE_ROUND_OVER && this.state !== STATE_GAME_OVER)) {
+      return;
+    }
+    const boardCount = this.match.games.length;
+    const next = measure({ boardCount, mode: this.match.mode });
+    const cur = this.match.viewport;
+    if (cur && cur.scale === next.scale && cur.layout === next.layout && cur.chrome === next.chrome) {
+      return;
+    }
+    // Preserve games/ais/keyboards/touchInput; rebuild chrome only.
+    const preserved = {
+      games: this.match.games,
+      ais: this.match.ais,
+      keyboards: this.match.keyboards,
+      pauseKeyboard: this.match.pauseKeyboard,
+      touchInput: this.match.touchInput,
+      virtualPad: this.match.virtualPad,
+    };
+    // Don't detach keyboards — we're reusing them.
+    if (this.match.virtualPad) {
+      this.match.virtualPad.destroy();
+      this.match.virtualPad = null;
+    }
+    this.match = buildMatch(
+      this.match.mode, this.gamePadManager,
+      this._containers(),
+      this.p1Char, this.p2Char, this.match.startSpeed, this.aiDifficulty,
+      this,
+      preserved,
+    );
+    // Push current set tally into compact HUD after rebuild.
+    this._pushSetTallyToRenderers();
+    this.match.draw();
+    this._syncPadVisibility();
+  }
+
+  _pushSetTallyToRenderers() {
+    if (!this.match) return;
+    for (const { renderer } of this.match.renderers) {
+      if (renderer.stripPanel || renderer.side === 'left') {
+        renderer.setWins = this.setWins;
+        renderer.winsNeeded = this.winsNeeded;
+      }
+    }
+  }
+
+  _syncPadVisibility() {
+    if (!this.match || !this.match.virtualPad) return;
+    this.match.virtualPad.setVisible(this.state === STATE_PLAYING);
   }
 
   // Freeze the match and put the pause menu over it. The match is left intact
@@ -430,6 +659,8 @@ class App {
   pauseMatch() {
     if (this.state !== STATE_PLAYING || !this.match) return;
     this.state = STATE_PAUSED;
+    if (this.match.touchInput) this.match.touchInput.releaseAll();
+    this._syncPadVisibility();
     audio.play('pause');
     this.pauseMenu = new PauseMenu((choice) => {
       if (choice === 'resume') {
@@ -449,7 +680,9 @@ class App {
     // key that resumed can't be read as a fresh press on the next frame.
     this.isPaused = false;
     this.pressedLastFrame.clear();
+    if (this.match && this.match.touchInput) this.match.touchInput.releaseAll();
     this.state = STATE_PLAYING;
+    this._syncPadVisibility();
   }
 
   // A board topped out, ending the round. Freeze the match, award the win point,
@@ -458,6 +691,8 @@ class App {
   // (translucent) overlay that follows.
   endMatch(result) {
     this.state = STATE_GAME_OVER;
+    if (this.match && this.match.touchInput) this.match.touchInput.releaseAll();
+    this._syncPadVisibility();
     // The round is decided, so the stage/danger loop stops here and the win or
     // lose sting has the moment to itself. The game-over track comes in with
     // the results screen, a beat later.
@@ -572,7 +807,12 @@ class App {
     if (this.match) { this.match.destroy(); this.match = null; }
     resetContainer(this.leftContainer);
     resetContainer(this.rightContainer);
+    resetShell(this.vsShell);
     this.rightContainer.style.display = '';
+    if (this.stageEl) {
+      this.stageEl.style.touchAction = '';
+      this.stageEl.style.flexDirection = '';
+    }
   }
 
   _clearOverlays() {
