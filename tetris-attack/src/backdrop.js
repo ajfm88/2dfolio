@@ -53,18 +53,70 @@ const MENU_BACKDROP_CSS = `
 
 const LOGO_URL = 'assets/logo.png';
 const LOGO_STYLE_ID = 'ta-logo-style';
+// Integer multiples only (163 native, 326 = 2×). max-width:100% is forbidden —
+// it yields fractional scales that break pixel art on narrow phones.
 const LOGO_STYLE = `
   .ta-logo {
     display: block; margin: 2px auto 14px;
-    width: 326px; max-width: 100%; height: auto;
+    width: 326px; height: auto;
     image-rendering: pixelated;
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
   }
+  @media (max-width: 420px) {
+    .ta-logo { width: 163px; }
+  }
 `;
+
+const OVERLAY_STYLE_ID = 'ta-overlay-style';
+// Shared overlay tokens (Unit 06). Screens set --ta-card-w for their preferred
+// max width. align-items: flex-start + margin: auto on the card — never
+// align-items: center on a scrolling flex container (clips the top).
+const OVERLAY_STYLE = `
+  .ta-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    color: #f4f4ff;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .ta-card {
+    margin: auto;
+    width: min(100%, var(--ta-card-w, 420px));
+    box-sizing: border-box;
+    text-align: center;
+    padding: clamp(16px, 4vw, 32px) clamp(16px, 5vw, 44px);
+    background: rgba(10, 8, 24, 0.72);
+    border: 3px solid #4de0ff;
+    border-radius: 10px;
+    box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
+  }
+  .ta-row {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+function injectOverlayStyle() {
+  if (document.getElementById(OVERLAY_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = OVERLAY_STYLE_ID;
+  style.textContent = OVERLAY_STYLE;
+  document.head.appendChild(style);
+}
 
 // Returns the logo element, injecting its (shared, one-off) stylesheet the
 // first time. Each screen appends the result to its own card.
 function createLogo() {
+  injectOverlayStyle();
   if (!document.getElementById(LOGO_STYLE_ID)) {
     const style = document.createElement('style');
     style.id = LOGO_STYLE_ID;
@@ -78,4 +130,7 @@ function createLogo() {
   return logo;
 }
 
-export { TITLE_ART_URL, TITLE_ART_CSS, MENU_BACKDROP_CSS, LOGO_URL, createLogo };
+export {
+  TITLE_ART_URL, TITLE_ART_CSS, MENU_BACKDROP_CSS, LOGO_URL,
+  createLogo, injectOverlayStyle,
+};

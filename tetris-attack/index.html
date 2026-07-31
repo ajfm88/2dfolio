@@ -36,24 +36,34 @@
       body {
         margin: 0;
         min-height: 100%;
+        min-height: 100dvh;
         background: #07050f;
         color: #f4f4ff;
         font-family: "Press Start 2P", "Courier New", monospace;
+        /* Avoid iOS rubber-band revealing white behind the game. */
+        overscroll-behavior: none;
       }
-      /* Two framed boards come to roughly 1500px. Rather than clip them on a
-         small window, let the page scroll -- the boards are sized in JS from
-         the stage art and do not reflow. The overlays are position:fixed, so
-         they stay put regardless. */
+      /* Boards are JS-sized from the viewport ladder (scale + chrome).
+         flex-direction is set inline by App for side-by-side vs stacked. */
       #ta-stage {
         display: flex;
+        flex-wrap: nowrap;
         align-items: center;
         justify-content: center;
         gap: 20px;
         min-height: 100vh;
-        padding: 12px;
+        min-height: 100dvh;
+        /* 8px matches viewport.STAGE_PAD so scale 1/2 fits a 390px phone. */
+        padding: max(8px, env(safe-area-inset-top))
+                 max(8px, env(safe-area-inset-right))
+                 max(8px, env(safe-area-inset-bottom))
+                 max(8px, env(safe-area-inset-left));
         box-sizing: border-box;
-        /* A stray drag-select across the boards looks broken. */
         user-select: none;
+        -webkit-user-select: none;
+      }
+      #ta-vs-shell {
+        flex-shrink: 0;
       }
     </style>
     <script src="/js/ta.js"></script>
@@ -62,6 +72,7 @@
     <div id="ta-stage">
       <div class="game" id="game-container-left"></div>
       <div class="game" id="game-container-right"></div>
+      <div id="ta-vs-shell" hidden></div>
     </div>
 
     <script>

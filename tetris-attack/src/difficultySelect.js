@@ -15,35 +15,47 @@ const STYLE_ID = 'ta-diffselect-style';
 const STYLE = `
   #ta-diffselect-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-diffselect-card {
-    text-align: center; padding: 28px 44px;
+    margin: auto;
+    text-align: center;
+    padding: clamp(16px, 4vw, 28px) clamp(16px, 5vw, 44px);
+    width: min(100%, 420px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
   }
   #ta-diffselect-title {
-    color: #ffe14d; font-size: 15px; margin: 0 0 24px;
+    color: #ffe14d; font-size: clamp(12px, 3.5vw, 15px); margin: 0 0 24px;
   }
   #ta-diffselect-picker {
     display: flex; align-items: center; justify-content: center;
-    gap: 20px; margin: 0 0 20px;
+    gap: 12px; margin: 0 0 20px;
   }
   .ta-diffselect-arrow {
     font-size: 28px; color: #4de0ff; cursor: pointer;
     transition: color 0.08s;
-    width: 36px; text-align: center;
+    width: 44px; min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
   }
   .ta-diffselect-arrow:hover { color: #ffffff; }
   .ta-diffselect-arrow.disabled { color: #3a3a5a; cursor: default; }
   #ta-diffselect-value {
-    font-size: 30px; color: #ffffff;
-    min-width: 220px;
+    font-size: clamp(18px, 6vw, 30px); color: #ffffff;
+    min-width: min(220px, 40vw);
     text-shadow: 0 0 12px rgba(77, 224, 255, 0.5);
   }
   #ta-diffselect-desc {
@@ -51,8 +63,20 @@ const STYLE = `
     min-height: 16px;
   }
   #ta-diffselect-hint {
-    font-size: 10px; color: #7b7ba6; margin: 0;
+    font-size: clamp(9px, 2.4vw, 10px); color: #7b7ba6; margin: 0 0 16px;
     line-height: 1.7;
+  }
+  #ta-diffselect-actions {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .ta-diffselect-action {
+    min-height: 44px; min-width: 100px; padding: 10px 16px;
+    font-family: inherit; font-size: clamp(10px, 2.8vw, 12px);
+    color: #4de0ff; background: rgba(10, 8, 24, 0.6);
+    border: 2px solid #4de0ff; border-radius: 6px; cursor: pointer;
+  }
+  .ta-diffselect-action.primary {
+    color: #07050f; background: #4de0ff; border-color: #ffffff;
   }
 `;
 
@@ -119,6 +143,25 @@ export class DifficultySelect {
     hint.id = 'ta-diffselect-hint';
     hint.innerHTML = '&larr;&rarr; adjust &middot; Enter next &middot; Esc back';
     card.appendChild(hint);
+
+    const actions = document.createElement('div');
+    actions.id = 'ta-diffselect-actions';
+    const backBtn = document.createElement('button');
+    backBtn.type = 'button';
+    backBtn.className = 'ta-diffselect-action';
+    backBtn.textContent = 'BACK';
+    backBtn.addEventListener('click', () => { audio.play('cancel'); this.onCancel(); });
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'ta-diffselect-action primary';
+    nextBtn.textContent = 'NEXT';
+    nextBtn.addEventListener('click', () => {
+      audio.play('confirm');
+      this.onSelect(LEVELS[this.index].id);
+    });
+    actions.appendChild(backBtn);
+    actions.appendChild(nextBtn);
+    card.appendChild(actions);
 
     this.overlay.appendChild(card);
     document.body.appendChild(this.overlay);

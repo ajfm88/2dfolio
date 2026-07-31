@@ -31,29 +31,41 @@ const CONTROLS_HTML = `
     <tr><td>Raise stack</td><td>Right Shift</td><td>H</td></tr>
   </table>
   <p class="dim">Pause: <b>Esc</b> or <b>P</b> &middot; Mute: <b>M</b> &middot; Frame-step: <b>F</b></p>
+  <p class="dim">Touch: on-screen D-pad, Swap, Raise, Pause, Mute</p>
 `;
 
 const STYLE_ID = 'ta-settings-style';
 const STYLE = `
   #ta-settings-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-settings-card {
-    text-align: center; padding: 28px 40px; min-width: 420px;
+    margin: auto;
+    text-align: center;
+    padding: clamp(16px, 4vw, 28px) clamp(16px, 5vw, 40px);
+    width: min(100%, 420px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
   }
-  #ta-settings-title { color: #ffe14d; font-size: 15px; margin: 0 0 24px; letter-spacing: 2px; }
+  #ta-settings-title { color: #ffe14d; font-size: clamp(12px, 3.5vw, 15px); margin: 0 0 24px; letter-spacing: 2px; }
   #ta-settings-list { list-style: none; margin: 0; padding: 0; }
   #ta-settings-list li {
-    display: flex; align-items: center; justify-content: space-between; gap: 18px;
-    font-size: 12px; padding: 10px 14px; margin: 4px 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: clamp(10px, 2.8vw, 12px); padding: 12px 14px; margin: 4px 0;
+    min-height: 44px; box-sizing: border-box;
     border: 2px solid transparent; border-radius: 6px; color: #c9c9e6;
     transition: color 0.08s, background 0.08s;
     cursor: pointer;

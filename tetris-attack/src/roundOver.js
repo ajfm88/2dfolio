@@ -29,13 +29,23 @@ const STYLE_ID = 'ta-roundover-style';
 const STYLE = `
   #ta-roundover-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     background: rgba(7, 5, 15, 0.62);
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-roundover-card {
-    text-align: center; padding: 24px 36px; min-width: 320px;
+    margin: auto;
+    text-align: center;
+    padding: clamp(16px, 4vw, 24px) clamp(16px, 5vw, 36px);
+    width: min(100%, 320px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.92);
     border: 3px solid #4de0ff;
     border-radius: 10px;
