@@ -20,29 +20,43 @@ const STYLE = `
        actually overflow a short window. */
     display: flex; align-items: flex-start; justify-content: center;
     overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
   }
   #ta-charselect-card {
-    text-align: center; padding: 22px 32px; margin: auto;
+    text-align: center;
+    padding: clamp(14px, 3vw, 22px) clamp(12px, 4vw, 32px);
+    margin: auto;
+    width: min(100%, 420px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
     border-radius: 10px;
     box-shadow: 0 0 24px rgba(77, 224, 255, 0.35), inset 0 0 24px rgba(77, 224, 255, 0.08);
   }
   #ta-charselect-title {
-    color: #ffe14d; font-size: 15px; margin: 0 0 16px;
+    color: #ffe14d; font-size: clamp(11px, 3.2vw, 15px); margin: 0 0 16px;
   }
   .ta-charselect-grid {
     display: grid;
-    grid-template-columns: repeat(${COLS}, ${CELL_PX}px);
-    gap: 10px;
+    /* Always 4 columns so keyboard nav (_navigate) stays correct; shrink cells
+       on narrow phones instead of dropping a column. */
+    grid-template-columns: repeat(${COLS}, minmax(0, ${CELL_PX}px));
+    gap: 8px;
     justify-content: center;
     margin: 0 auto 14px;
+    width: 100%;
+    max-width: ${COLS * CELL_PX + (COLS - 1) * 10}px;
   }
   .ta-charselect-cell {
-    width: ${CELL_PX}px; height: ${CELL_PX}px;
+    width: 100%; aspect-ratio: 1;
+    min-height: 44px;
     border: 3px solid rgba(200, 200, 230, 0.15); border-radius: 6px;
     background: rgba(20, 16, 40, 0.6);
     display: flex; align-items: center; justify-content: center;
@@ -60,7 +74,8 @@ const STYLE = `
     justify-self: center;
   }
   .ta-charselect-cell canvas {
-    width: ${CELL_PX - 10}px; height: ${CELL_PX - 10}px;
+    width: 85%; height: 85%;
+    max-width: ${CELL_PX - 10}px; max-height: ${CELL_PX - 10}px;
     image-rendering: pixelated;
   }
   #ta-charselect-name {

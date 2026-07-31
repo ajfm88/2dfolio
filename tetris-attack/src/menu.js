@@ -30,6 +30,7 @@ const HOWTO_HTML = `
     <tr><td>Raise stack</td><td>Right Shift</td><td>H</td></tr>
   </table>
   <p class="dim">Pause: <b>Esc</b> or <b>P</b> &middot; Mute: <b>M</b> &middot; Frame-step: <b>F</b></p>
+  <p class="dim">On phones: on-screen D-pad, Swap, Raise, Pause, Mute</p>
   <p class="back">&laquo; Esc / Enter to go back</p>
 `;
 
@@ -63,7 +64,13 @@ const STYLE_ID = 'ta-menu-style';
 const STYLE = `
   #ta-menu-overlay {
     position: fixed; inset: 0; z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-start; justify-content: center;
+    overflow: auto;
+    padding: max(12px, env(safe-area-inset-top))
+             max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom))
+             max(12px, env(safe-area-inset-left));
+    box-sizing: border-box;
     ${MENU_BACKDROP_CSS}
     font-family: 'Press Start 2P', 'Courier New', monospace;
     color: #f4f4ff; user-select: none;
@@ -76,7 +83,11 @@ const STYLE = `
     align-items: flex-end;
   }
   #ta-menu-card {
-    text-align: center; padding: 32px 44px; min-width: 340px;
+    margin: auto;
+    text-align: center;
+    padding: clamp(16px, 4vw, 32px) clamp(16px, 5vw, 44px);
+    width: min(100%, 340px);
+    box-sizing: border-box;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
     border-radius: 10px;
@@ -139,9 +150,12 @@ const STYLE = `
   }
   #ta-menu-list { list-style: none; margin: 0; padding: 0; }
   #ta-menu-list li {
-    font-size: 17px; padding: 11px 18px; margin: 6px auto; max-width: 260px;
+    font-size: clamp(13px, 3.6vw, 17px); padding: 12px 18px; margin: 6px auto;
+    max-width: 260px; min-height: 44px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
     border: 2px solid transparent; border-radius: 6px; color: #c9c9e6;
     transition: color 0.08s, background 0.08s;
+    cursor: pointer;
   }
   #ta-menu-list li.active {
     color: #07050f; background: #4de0ff; border-color: #ffffff;
