@@ -10,8 +10,8 @@ import { MENU_BACKDROP_CSS } from './backdrop.js';
 // `play` starts a match; `app` hands the item to the App (which owns the
 // screen); anything else opens an in-menu info panel.
 const MENU_ITEMS = [
-  { id: 'vsai', label: 'VS AI', play: true },
   { id: '1p', label: '1P Endless', play: true },
+  { id: 'vsai', label: '1P VS AI', play: true },
   { id: '2p', label: '2P Local', play: true },
   { id: 'settings', label: 'Settings', app: true },
   { id: 'howto', label: 'How to Play', play: false },
