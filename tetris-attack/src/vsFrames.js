@@ -40,7 +40,10 @@ export const VS_STRIP_SLOTS = {
   blankTop: { y: 0, h: 76 },
   stageCover: { y: 82, h: 20, x: 0, w: 40 },
   levelCaption: { y: 110, h: 5 },
-  // Per-player level digits: vs2p sub-slots (also used for vsCpu).
+  // Cover the baked value before drawing digits — vsCpu has the pink
+  // difficulty word HARD here; vs2p has leftover level digits.
+  levelCover: { x: 0, y: 119, w: 40, h: 12 },
+  // Per-player level digits: vs2p sub-slots (also used for vsCpu once covered).
   levelP1: { x: 5, y: 119, w: 14, h: 12 },
   levelP2: { x: 21, y: 119, w: 14, h: 12 },
   timeCaption: { y: 141, h: 12 },
@@ -48,16 +51,23 @@ export const VS_STRIP_SLOTS = {
 };
 
 // Lamp rows: one lamp per player per row (P1 blue left x=2, P2 red x=22).
-// Art holds winsNeeded ≤ 2 (best-of-3). Best-of-5/7 omits in-frame lamps.
+// Placed BELOW the TIME value (ends y=162). vs2p art already has two rows
+// here (164 + 180); vsCpu art only has one socket at 172, so we cover the
+// lamp zone before drawing and free-place both rows the same way on both
+// variants. A row at y=156 would collide with TIME — never stack above 164.
+// Best-of-5/7 (winsNeeded > 2) omits in-frame lamps.
 export const VS_LAMP_SLOTS = {
   // Bottom row y (unit-relative). Rows stack upward at 16 px pitch.
-  bottomY: { vsCpu: 172, vs2p: 180 },
+  bottomY: 180,
   pitch: 16,
   p1x: 2,
   p2x: 22,
   cellW: 16,
   cellH: 15,
   maxRows: 2,
+  // Cover baked sockets (vsCpu's single row at 172 sits between free-placed
+  // rows 164 and 180) so ghost panels never show through.
+  cover: { x: 0, y: 164, w: 40, h: 36 },
 };
 
 export function vsVariantFor(mode) {
