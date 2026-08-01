@@ -9,6 +9,12 @@ same color while the stack steadily rises.
 > property of Nintendo and Intelligent Systems. This is a non-commercial
 > educational/hobby re-implementation. See **Credits & Attribution** below.
 
+### Live Demo
+
+Play the game in your browser:
+
+<a href="https://tetris-attack-ajfm88.netlify.app"><img src="https://img.shields.io/badge/Live_Demo-Open-blue?style=for-the-badge&logo=rocket&logoColor=white" alt="Play the live version"/></a>
+
 ---
 
 ## Build & run

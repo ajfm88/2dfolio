@@ -690,10 +690,15 @@ class Renderer {
     const h = panel.canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    // Cover baked STAGE 1 / *POINT* block (does not apply to this game).
-    const cover = VS_STRIP_SLOTS.stageCover;
-    ctx.fillStyle = '#102040';
-    ctx.fillRect(cover.x, cover.y, cover.w, cover.h);
+    // Paint over baked chrome that does not apply (STAGE 1 / *POINT*, and the
+    // difficulty word HARD on vsCpu / leftover digits on vs2p). Same navy as
+    // the strip's panel fill so the cover reads as empty chrome, not a hole.
+    const panelFill = '#102040';
+    ctx.fillStyle = panelFill;
+    const stageCover = VS_STRIP_SLOTS.stageCover;
+    ctx.fillRect(stageCover.x, stageCover.y, stageCover.w, stageCover.h);
+    const levelCover = VS_STRIP_SLOTS.levelCover;
+    ctx.fillRect(levelCover.x, levelCover.y, levelCover.w, levelCover.h);
 
     if (!this.labelFont.ready() || !this.valueFont.ready()) {
       return;
@@ -715,10 +720,13 @@ class Renderer {
     // Past 10 minutes the string is 5 chars; still fits the strip, may overrun the baked box.
     const clock = formatClock(leftBoard.elapsedFrames);
     const tv = VS_STRIP_SLOTS.timeValue;
+    // Clear the baked 0'00 so a short/failed draw never leaves a ghost digit.
+    ctx.fillStyle = panelFill;
+    ctx.fillRect(tv.x, tv.y, tv.w, tv.h);
     const clockX = tv.x + Math.max(0, tv.w - this.valueFont.width(clock));
     this.valueFont.draw(ctx, clock, clockX, tv.y);
 
-    // Per-player level digits in the baked LEVEL sub-slots (cover vsCpu HARD).
+    // Per-player level digits into the (now covered) LEVEL value slots.
     const lv1 = String(Math.min(99, leftBoard.level));
     const lp1 = VS_STRIP_SLOTS.levelP1;
     const lx1 = lp1.x + Math.max(0, lp1.w - this.valueFont.width(lv1));
@@ -730,15 +738,17 @@ class Renderer {
       this.valueFont.draw(ctx, lv2, lx2, lp2.y + 2);
     }
 
-    // In-frame win lamps only when winsNeeded ≤ 2 (art has two rows).
+    // In-frame win lamps: up to 2 rows below TIME (y 164 / 180). Best-of-5/7
+    // needs more rows than fit, so those omit in-frame lamps (round-over still
+    // shows the full tally).
     const needed = this.winsNeeded || 1;
     if (needed <= VS_LAMP_SLOTS.maxRows && this.setWins) {
-      const variant = this.compactVariant || 'vsCpu';
-      const bottomY = VS_LAMP_SLOTS.bottomY[variant] != null
-        ? VS_LAMP_SLOTS.bottomY[variant]
-        : VS_LAMP_SLOTS.bottomY.vsCpu;
+      const lampCover = VS_LAMP_SLOTS.cover;
+      ctx.fillStyle = panelFill;
+      ctx.fillRect(lampCover.x, lampCover.y, lampCover.w, lampCover.h);
+      const bottomY = VS_LAMP_SLOTS.bottomY;
       for (let row = 0; row < needed; row++) {
-        // Rows stack upward from bottomY.
+        // Rows stack upward from bottomY (needed=1 → just y=180; needed=2 → 164+180).
         const ly = bottomY - (needed - 1 - row) * VS_LAMP_SLOTS.pitch;
         const p1Lit = this.setWins[0] > row ? 1 : 0;
         const p2Lit = this.setWins[1] > row ? 1 : 0;

@@ -42,9 +42,12 @@ const STYLE = `
   .ta-pad-dpad .ta-pad-btn[data-dir="left"]  { grid-column: 1; grid-row: 2; }
   .ta-pad-dpad .ta-pad-btn[data-dir="right"] { grid-column: 3; grid-row: 2; }
   .ta-pad-dpad .ta-pad-btn[data-dir="down"]  { grid-column: 2; grid-row: 3; }
+  /* Two columns of two buttons — half the height of a single stack, so SWAP
+     clears the board art instead of sitting on top of the well. */
   .ta-pad-actions {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
     gap: 8px;
     align-items: stretch;
   }
@@ -53,10 +56,10 @@ const STYLE = `
     min-height: 44px;
     height: 56px;
     margin: 0;
-    padding: 0 12px;
+    padding: 0 10px;
     box-sizing: border-box;
     font-family: 'Press Start 2P', 'Courier New', monospace;
-    font-size: 11px;
+    font-size: 10px;
     color: #4de0ff;
     background: rgba(10, 8, 24, 0.72);
     border: 3px solid #4de0ff;
@@ -73,13 +76,12 @@ const STYLE = `
     background: #4de0ff;
     border-color: #ffffff;
   }
-  .ta-pad-btn.ta-pad-wide { min-width: 88px; }
   @media (max-width: 360px) {
     .ta-pad-dpad {
       grid-template-columns: 48px 48px 48px;
       grid-template-rows: 48px 48px 48px;
     }
-    .ta-pad-btn { min-width: 48px; height: 48px; font-size: 10px; }
+    .ta-pad-btn { min-width: 48px; height: 48px; font-size: 9px; padding: 0 6px; }
   }
 `;
 
@@ -128,26 +130,28 @@ export class VirtualPad {
     }
     this.root.appendChild(dpad);
 
+    // 2×2 grid (DOM order = row-major):  SWAP | RAISE
+    //                                   PAUSE | MUTE
     const actions = document.createElement('div');
     actions.className = 'ta-pad-side ta-pad-actions';
 
     const swap = document.createElement('button');
     swap.type = 'button';
-    swap.className = 'ta-pad-btn ta-pad-wide';
+    swap.className = 'ta-pad-btn';
     swap.textContent = 'SWAP';
     this._bindHold(swap, Buttons.SWAP);
     actions.appendChild(swap);
 
     const raise = document.createElement('button');
     raise.type = 'button';
-    raise.className = 'ta-pad-btn ta-pad-wide';
+    raise.className = 'ta-pad-btn';
     raise.textContent = 'RAISE';
     this._bindHold(raise, Buttons.SCROLL);
     actions.appendChild(raise);
 
     const pause = document.createElement('button');
     pause.type = 'button';
-    pause.className = 'ta-pad-btn ta-pad-wide';
+    pause.className = 'ta-pad-btn';
     pause.textContent = 'PAUSE';
     this._bindTap(pause, () => {
       if (typeof this.onPause === 'function') this.onPause();
@@ -156,7 +160,7 @@ export class VirtualPad {
 
     const mute = document.createElement('button');
     mute.type = 'button';
-    mute.className = 'ta-pad-btn ta-pad-wide';
+    mute.className = 'ta-pad-btn';
     mute.textContent = 'MUTE';
     this._bindTap(mute, () => {
       showToast(audio.toggleMute() ? 'SOUND OFF' : 'SOUND ON');
