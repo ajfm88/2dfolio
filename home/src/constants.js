@@ -4,8 +4,8 @@ export const dialogueData = {
   pc: `This is my PC. I work mostly in JavaScript/TypeScript these days.
     I've made a few games in that language. I like Python as well. Anyways, regardless of the language, I just like programming.
     Here is my <a href="https://github.com/ajfm88" target="_blank">Github</a>!`,
-  "cs-degree": `This is my CS degree. I hung it on the wall because I'm proud to have it. It was a very theoretical degree but I think it gave 
-    me a good foundation. I am also currently enrolled in a Master's degree in CS at a different university to keep expanding my skillset.`,
+  "cs-degree": `This is my Bachelor's degree. I graduated magna cum laude (3.77 GPA). 
+  I am also currently enrolled in a Master's degree in CS at a different university to keep expanding my skillset.`,
   "sofa-table": `That's my sofa and my table. I like to relax here and sometimes watch YouTube, or read a good manga in Japanese.
     In my <a href="https://ankiweb.net/shared/by-author/215281557" target="_blank">AnkiWeb page</a> you'll find some of the Anki decks I 
     have assembled to study Japanese with.`,
@@ -16,9 +16,10 @@ export const dialogueData = {
   <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Duck Hunt (Shooter)</a>,
   <a href="https://samurai-shodown-ajfm88.netlify.app" target="_blank">Fighting</a>,
   <a href="https://ninja-ajfm88.netlify.app" target="_blank">Ninja Adventure</a>,
+  <a href="https://necro-ajfm88.netlify.app" target="_blank">Norman The Necromancer</a>,
   <a href="https://pac-man-ajfm88.netlify.app" target="_blank">Pac-Man</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">Pizza Legends (JRPG)</a>,
-  <a href="https://necro-ajfm88.netlify.app" target="_blank">Roguelite</a>,
+  <a href="https://rpg-card-game-ajfm88.netlify.app" target="_blank">RPG Card Game</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Sonic Runner</a>,
   <a href="https://space-invaders-ajfm88.netlify.app" target="_blank">Space Invaders</a>,
   <a href="https://super-mango-ajfm88.netlify.app" target="_blank">Super Mango (Platformer)</a>,
