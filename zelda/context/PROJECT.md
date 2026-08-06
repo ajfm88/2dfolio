@@ -1,62 +1,64 @@
 # PROJECT — what and why
 
-Reimplement **The Legend of Zelda: Link's Awakening DX HD** as a **native
-TypeScript browser game**, running on localhost, with **no C#, no .NET, no WASM
-runtime, and no MonoGame** at runtime. The new engine lives in
-`zelda-links-awakening-ts/`.
+Reimplement **The Legend of Zelda (NES, 1986)** as a **native TypeScript browser
+game**, running on localhost, with **no emulation, no ROM loading, no WASM**. The
+game engine lives in `zelda-nes-ts/`.
 
-This is a **rewrite**, not a port. The C# source is the specification; the
-TypeScript is written from scratch against it.
+This is a **reimplementation from reference**, not a port. The NES disassembly is
+the behavioral specification; a companion Mesen label file serves as a RAM
+variable dictionary; the TypeScript is written from scratch against them. Six
+other open-source repos serve as implementation references.
 
-**As of 2026-08-01 the asset pipeline is solved and the code is unwritten.**
-Migrated v2.0.2 assets exist and verify clean (225 Content + 852 Data files, zero
-corrupt). `zelda-links-awakening-ts/` is empty. Slice **A1** is the next action.
-
-**Scope agreed with the user (2026-08-01):** ~3 months, **90 atomic slices**.
-Slices are deliberately small — one per session, each independently verifiable.
+**Scope agreed with the user (2026-08-02):** ~45 atomic slices. Slices are
+deliberately small — one per session, each independently verifiable.
 
 Live status: `context/agent/01-progress-tracker.md`. Roadmap: `PLAN.md`.
 
 ## Goals
 
-- `npm run dev` → play in a browser at `http://127.0.0.1:5173/`. Nothing else installed.
-- Feature parity with **v2.0.2**, the final upstream release.
-- Behavioral fidelity to the C# original — it is the reference implementation, and
-  where the two disagree, the C# is right unless `DECISIONS.md` says otherwise.
+- `npm run dev` → play in a browser at `http://127.0.0.1:5173/`. Nothing else
+  installed.
+- Feature parity with the original NES game: full overworld (128 screens), all 9
+  dungeons, all bosses, all items, Second Quest.
+- Behavioral fidelity to the original — the disassembly is the spec, and the
+  reference repos inform implementation patterns.
 - Any agent can pick up one slice and finish it in a single sitting.
 
 ## Non-goals
 
-- **Publishing or hosting.** Localhost only, permanently. The assets are
-  Nintendo's; a public URL would distribute them. Explicit user decision — see
-  `DECISIONS.md` #1.
-- Compiling the C# to WASM (Blazor/KNI). Evaluated and rejected — `DECISIONS.md` #2.
-- Shipping compiled `.xnb` content. Unusable in a browser — `DECISIONS.md` #3.
-- Mobile/touch controls in v1. The upstream Android head is a useful reference for
-  later, not a v1 target.
-- The level editor (`Editor/` in the C# tree). Play the game first.
-- Mod support (`.lahdmod` / `.lahdpak`). Out of scope until the base game runs.
+- **Publishing or hosting.** Localhost only, permanently. The sprites and music
+  are Nintendo's; a public URL would distribute them.
+- **ROM loading or NES emulation.** This is a ground-up reimplementation, not an
+  emulator.
+- **Mobile/touch controls in v1.** Desktop keyboard + gamepad only.
+- **Level editor or mod support.** Play the game first.
 
 ## What exists today
 
 | Thing | Where | State |
 |---|---|---|
-| v2.0.2 game assets | `_fixtest/ladxhd_game_source_code/ProjectZ.Core/{Content,Data}` | ✅ verified clean |
-| C# reference source | `ladxhd_updated-main/ladxhd_game_source_code/ProjectZ.Core/` | ✅ 631 files, 110,243 lines |
-| Migration inputs (corrected) | `_fixtest/assets_original/` | ✅ only copy — do not delete |
-| Re-run capability | `ladxhd_updated-main/{assets_patches,LADXHD-Migrater.exe}` | ✅ |
-| Behavior history | `ladxhd_updated-main/CHANGELOG.md` | ✅ 169 KB, v1.0.0 → v2.0.2 |
-| TypeScript engine | `zelda-links-awakening-ts/` | ⬜ empty |
+| NES disassembly (the spec) | `zelda1-disassembly-master/` | ✅ 39,600 lines, 100% of the game |
+| Disasm labels (RAM dictionary) | `zelda1-disasm-labels-master/` | ✅ 8,073-line Mesen .mlb |
+| TypeScript reference | `ZeldaJS-master/` | ✅ best browser architecture |
+| C# reference | `zelda-clone-master/` | ✅ best combat/boss/item patterns |
+| JS references (3) | `game-zelda-js-master/`, `zelda-js-master/`, `Legend-Of-Zelda-Javascript-main/` | ✅ sprite sheets, maps, patterns |
+| TypeScript engine | `zelda-nes-ts/` | ✅ scaffolded + renderer (A1–A2) |
 
-## Background (historical)
+## Reference material, ranked
 
-An anonymous developer released a MonoGame PC port on itch.io; it was taken down,
-but the release included source. `bighead.0` forked and maintained it on GitLab
-through **v2.0.2**, the final release. This project is a third-generation
-descendant: C# → TypeScript, desktop → browser.
-
-Assets ship stripped upstream. Recovering them required applying 457 `.vcdiff`
-patches to pristine v1.0.0 files. That migration initially failed on every text
-asset; the cause was **git CRLF→LF normalization** in a mirrored copy, not
-version drift. Diagnosis and fix are recorded in `DECISIONS.md` #5. Reproducing
-it is a solved, scripted problem — see `PLAN.md` slice A3.
+1. **`zelda1-disassembly-master/`** — byte-accurate NES disassembly. Authoritative
+   for all game data: map layouts, enemy spawns, item tables, damage values, boss
+   AI, Second Quest differences. 8 banks of 6502 assembly, ~39,600 lines.
+   Companion: **`zelda1-disasm-labels-master/`** — Mesen `.mlb` label file
+   (8,073 lines) with rich multi-line descriptions of every RAM variable. Use it
+   as a data dictionary when deciphering the assembly.
+2. **`ZeldaJS-master/`** (bobbylight) — TypeScript + Vite. Best architecture
+   reference: class hierarchy, overworld data (JSON), sprite sheets, sound effects.
+3. **`zelda-clone-master/`** (hfiggs) — C# / MonoGame. Best combat/boss reference:
+   11 enemy types, 2 bosses, 19 items, collision pipeline, state machines.
+4. **`game-zelda-js-master/`** (humbertodias) — vanilla JS. Most weapon variety:
+   sword, boomerang, bombs, arrows, candle. Full HUD. Overworld map image.
+5. **`zelda-js-master/`** (Matthew-SA) — vanilla JS. Full 128-screen overworld map
+   + collision map as PNGs.
+6. **`Legend-Of-Zelda-Javascript-main/`** (jdr81394) — vanilla JS. Clean ECS
+   pattern, Dijkstra pathfinding for enemy AI.
