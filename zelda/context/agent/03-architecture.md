@@ -1,86 +1,73 @@
 # Architecture Context
 
-Short version for orientation. The full subsystem table, asset inventory and
-known hard parts live in `../ARCHITECTURE.md`.
+Short version for orientation. The full details live in `../ARCHITECTURE.md`.
 
 ## Stack
 
 | Layer | Technology | Role |
 |---|---|---|
-| Game engine | TypeScript (strict) + **WebGL2** | Full reimplementation, not emulation |
+| Game engine | TypeScript (strict) + **Canvas 2D** | Full reimplementation, not emulation |
 | Build/dev | Vite | Dev server, bundling, `public/` static serving |
-| Asset pipeline | Node + `tsx` | Build-time source assets → browser-ready (`npm run assets`) |
-| Tests | vitest | Format parsers vs golden fixtures; gameplay units |
-| Audio | Web Audio API + `AudioWorklet` | SFX, music streaming, later GB emulation |
-| Storage | IndexedDB | Save slots (the C# writes files) |
-| Reference | `ProjectZ.Core` C# (110,243 lines) | Authoritative for all behavior |
+| Tests | vitest | Data validation, gameplay unit tests |
+| Audio | Web Audio API | SFX and music playback |
+| Storage | IndexedDB | 3 save slots |
+| Reference | NES disassembly (39,600 lines 6502 asm) + Mesen labels (8K-line RAM dictionary) | Authoritative for all behavior |
 
-Canvas 2D is **not** the target — the original leans on 20 shader effects, and
-WebGL2 is what makes those tractable (`../DECISIONS.md` #6).
+Canvas 2D, not WebGL2 — the NES game has no shader effects (`../DECISIONS.md` #3).
 
 ## Data flow
 
 ```
-ProjectZ.Core/*.cs          ──read by a human──►  src/**/*.ts
-  (spec, never compiled)                          (hand-written)
+zelda1-disassembly-master/     ──extraction scripts──►  src/data/*.json
+zelda1-disasm-labels-master/      (read-only)           (committed)
+  (6502 asm + Mesen labels)
 
-Content/ + Data/            ──npm run assets──►   public/assets/
-  (source assets, read-only)                      (generated, gitignored)
+Reference repos (6)           ──manual curation──►      public/assets/
+  (sprites, audio, read-only)                           (committed)
+
+                                                    src/**/*.ts
+                                                    (hand-written game logic)
                                                         │
-                                                   fetch() at runtime
+                                                   npm run dev
                                                         ▼
                                               browser @ 127.0.0.1:5173
 ```
 
-One direction only. Nothing writes back into the reference trees.
+One direction only. Nothing writes back into the reference repos.
 
 ## Layer boundaries
 
 ```
-src/core/     loop, time, input, math, BinaryReader     ← depends on nothing
-src/formats/  .map .ani .atlas .lng .data .zScript      ← depends on core only
-src/render/   batcher, textures, camera, shaders        ← depends on core
-src/world/    map loading, transitions, collision       ← depends on formats+render
-src/objects/  player, things, enemies, NPCs, bosses     ← depends on world
-src/ui/       HUD, menus, pages, dialogue               ← depends on render+formats
-src/audio/    Web Audio graph, GB emulation             ← depends on core
-src/save/     SaveData, IndexedDB                       ← depends on objects
+src/core/      game loop, input, math, constants        ← depends on nothing
+src/data/      JSON: maps, enemies, items, dungeons     ← depends on nothing
+src/render/    Canvas 2D renderer, camera, animation    ← depends on core
+src/world/     screen management, transitions, collision ← depends on data+render
+src/objects/   Link, enemies, items, NPCs, bosses       ← depends on world
+src/ui/        HUD, inventory, title, menus             ← depends on render+data
+src/audio/     Web Audio, SFX, music                    ← depends on core
+src/save/      SaveData, IndexedDB                      ← depends on objects
 ```
 
-Dependencies point **downward only**. A parser importing from `render/` is a bug.
+Dependencies point **downward only**. An enemy importing from `ui/` is a bug.
 
 ## Invariants
 
-1. **`src/formats/` is pure.** `(bytes: Uint8Array) => ParsedThing`. No DOM, no
-   fetch, no globals. This is what lets parsers be tested in Node against fixtures,
-   and it is the single most important structural rule in the project.
-2. **The C# tree and `_fixtest/` are read-only.** Spec and assets. Never edit.
-3. **`public/assets/` is generated.** Never hand-edit; `npm run assets` must
-   reproduce it from scratch, idempotently.
-4. **Binary I/O only for the bespoke formats.** CRLF is load-bearing in `.map`,
-   `.atlas`, `.mgcb`, `.fx`, `.spritefont` and `.txt` — see `../DECISIONS.md` #5.
-5. **No `SharedArrayBuffer`.** Threading is replaced by async and an
-   `AudioWorklet`, not by emulating OS threads (`../DECISIONS.md` #7).
+1. **Reference repos are read-only.** Never edit. Never delete.
+2. **The disassembly is the behavioral authority.** When implementation disagrees
+   with the assembly, the implementation is wrong.
+3. **Data is JSON, not hardcoded.** Maps, enemies, items, shops — all loaded from
+   JSON files in `src/data/`. This is what makes Second Quest a data swap.
+4. **Canvas 2D only.** No WebGL2, no shaders. 256×240 internal resolution, scaled
+   with nearest-neighbor.
+5. **No emulation.** No CPU emulation, no PPU emulation, no ROM loading.
 
-## What replaces what
+## NES game specs
 
-The C# makes desktop assumptions that have no browser equivalent. Do not port
-these literally:
-
-| C# | Where | Browser replacement |
-|---|---|---|
-| `System.Windows.Forms` windowing | `Game1.cs:57,263,828–914` | canvas + Fullscreen API |
-| `DllImport("SDL2")` | `Game1.cs:168–171` | — (drop entirely) |
-| Map-loading `Thread` | `MapTransitionSystem.cs:396`, `MapShowSystem.cs:137` | async / coroutine (slice E2) |
-| Audio `Thread` | `MusicPlayer.cs:46`, `GbsPlayer.cs:205` | `AudioWorklet` (slice L5) |
-| `NativeFileDialogSharp` | `SaveLoadMap.cs:8`, `DataMapSerializer.cs:5` | — (editor only, out of scope) |
-| Filesystem save games | `SaveGameSaveLoad.cs`, `SaveManager.cs` | IndexedDB (slice M1) |
-| `.xnb` compiled content | MonoGame pipeline | our own `npm run assets` |
-
-## Useful cross-reference
-
-The upstream **Android** head (`ProjectZ.Android`, plus `ANDROID.md`) is the
-closest existing port to a browser target: OpenGL ES instead of DirectX, no
-WinForms, touch input, no filesystem assumptions. When a desktop assumption in
-`Core` blocks you, check how the Android build handles it before inventing an
-answer.
+| Spec | Value |
+|---|---|
+| Resolution | 256×240 (HUD: top 64px, play area: bottom 176px) |
+| Tile size | 16×16 pixels (metatiles) |
+| Play area | 16 tiles wide × 11 tiles tall |
+| Overworld | 16×8 grid = 128 screens |
+| Dungeons | 9 (varying room counts per dungeon) |
+| Frame rate | 60 fps (NTSC) |
