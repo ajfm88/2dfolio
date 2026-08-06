@@ -1,123 +1,115 @@
 # ARCHITECTURE — how the pieces fit
 
-Two trees, one direction of flow. **Nothing ever writes back into the C# tree.**
+Seven reference repos, one direction of flow. **Nothing ever writes into the
+reference repos.**
 
 ```
-ladxhd_updated-main/ladxhd_game_source_code/ProjectZ.Core/   ← SPEC (read-only)
-_fixtest/.../ProjectZ.Core/{Content,Data}                    ← ASSETS (read-only)
-                    │
-                    │  npm run assets   (build-time, one direction)
-                    ▼
-zelda-links-awakening-ts/
-├── public/assets/          generated — gitignored, never hand-edited
+zelda1-disassembly-master/     ← SPEC: all game data & behavior (read-only)
+zelda1-disasm-labels-master/   ← SPEC: Mesen label file — RAM variable dictionary (read-only)
+ZeldaJS-master/                ← REFERENCE: TypeScript patterns (read-only)
+zelda-clone-master/            ← REFERENCE: C# patterns (read-only)
+game-zelda-js-master/          ← REFERENCE: sprites, HUD (read-only)
+zelda-js-master/               ← REFERENCE: overworld map (read-only)
+Legend-Of-Zelda-Javascript-main/ ← REFERENCE: ECS patterns (read-only)
+              │
+              │  read by a human + data extraction scripts
+              ▼
+zelda-nes-ts/
+├── public/assets/         sprites, tiles, audio (committed)
 ├── src/
-│   ├── core/               loop, time, input, math, binary readers
-│   ├── formats/            .map .ani .atlas .lng .data .zScript parsers
-│   ├── render/             WebGL2 batcher, camera, shaders
-│   ├── world/              map loading, transitions, collision
-│   ├── objects/            entities: player, things, enemies, NPCs, bosses
-│   ├── ui/                 HUD, menus, pages, dialogue
-│   ├── audio/              Web Audio graph, GB sound emulation
-│   └── save/               SaveData model, IndexedDB
-└── tests/                  vitest + golden fixtures
+│   ├── core/              game loop, input, math, constants
+│   ├── data/              map data, enemy tables, item tables (JSON)
+│   ├── render/            Canvas 2D renderer, camera, animation
+│   ├── world/             screen management, transitions, collision
+│   ├── objects/           Link, enemies, items, NPCs, bosses, projectiles
+│   ├── ui/                HUD, inventory, title screen, menus
+│   ├── audio/             Web Audio, SFX, music
+│   └── save/              save/load, IndexedDB
+└── tests/                 vitest
 ```
 
-## The reference tree (what you are reimplementing)
+## The NES game's vital stats
 
-`ProjectZ.Core` — **110,243 lines across 631 files**. Measured 2026-08-01:
+| Stat | Value |
+|---|---|
+| Resolution | 256×240 (NTSC); HUD 256×64 top, play area 256×176 bottom |
+| Tile size | 16×16 pixels (metatiles; NES hardware uses 8×8) |
+| Play area | 16 tiles wide × 11 tiles tall |
+| Overworld | 16×8 grid = 128 screens |
+| Dungeons | 9, each a grid of rooms (varies per dungeon) |
+| Enemy types | ~30 (overworld + dungeon) |
+| Boss types | 9 unique (some repeated across dungeons) |
+| Items | ~25 collectible + consumable types |
+| Music tracks | ~10 (overworld, dungeon, boss, title, ending, etc.) |
+| SFX | ~30 distinct sounds |
+| Save slots | 3 |
 
-| Subsystem | Files | Lines | Notes |
-|---|---|---|---|
-| `InGame/GameObjects` | 454 | 72,013 | **65% of the engine.** The roster. |
-| ↳ `Enemies` | 109 | 18,272 | |
-| ↳ `Things` | 139 | 13,639 | interactables: grass, pots, chests, doors |
-| ↳ `NPCs` | 47 | 9,830 | |
-| ↳ `Bosses` | 30 | 7,254 | |
-| ↳ `MidBoss` | 26 | 6,912 | |
-| ↳ `Base` | 55 | 4,129 | component model — **read this first** |
-| ↳ `Dungeon` | 26 | 2,919 | |
-| ↳ `Effects` / `Identifiers` | 16 | 749 | |
-| `InGame/Overlay` | 24 | 6,363 | HUD, dialogue boxes |
-| `InGame/Things` | 19 | 5,986 | shared systems |
-| `InGame/Pages` | 28 | 5,123 | menus |
-| `InGame/SaveLoad` | 14 | 2,734 | **the format spec** |
-| `InGame/Map` | 6 | 2,286 | |
-| `GbsPlayer` | 9 | 2,218 | Game Boy sound emulator |
-| `InGame/Interface` | 13 | 1,928 | |
-| `Base` | 20 | 1,775 | |
-| `InGame/Controls` | 6 | 1,281 | |
-| `InGame/Screens` | 6 | 1,289 | |
-| `InGame/GameSystems` | 6 | 935 | map transition, map show |
-| `InGame/Audio` | 2 | 669 | |
+## The disassembly (the spec)
 
-**The shape of the work:** two thirds is the object roster — hundreds of small,
-independent behaviors. That is why the plan has 90 slices and why they parallelize
-cleanly. The genuinely hard parts are small and known: the format parsers, the
-shader translation, the threading model, and the GB audio emulator.
+`zelda1-disassembly-master/` — **39,600 lines** of ca65 6502 assembly.
+Reassembles into a byte-identical NES ROM.
 
-## Asset inventory (verified 2026-08-01)
+`zelda1-disasm-labels-master/` — The Mesen `.mlb` label file (8,073 lines)
+used to generate the disassembly. Acts as a **RAM data dictionary**: every
+memory address has a name and often a multi-line description of its purpose.
+Useful when the assembly uses a variable name and you need to understand what
+it does.
 
-`Content/` — 225 files, 25.7 MB. `Data/` — 852 files, 9.8 MB. Zero corrupt.
+| Bank | File | Contents |
+|---|---|---|
+| 0 | `Z_00.asm` | Audio engine, song scripts |
+| 1 | `Z_01.asm` | Shared RAM routines |
+| 2 | `Z_02.asm` | Mode handling, menus, patterns |
+| 3 | `Z_03.asm` | Pattern data, overworld column tables |
+| 4 | `Z_04.asm` | **All enemy/boss AI** (~12K lines) |
+| 5 | `Z_05.asm` | Player logic, world systems |
+| 6 | `Z_06.asm` | Save data, tile maps, dungeon layouts |
+| 7 | `Z_07.asm` | Fixed bank: core engine, object dispatch, room loading |
 
-| Ext | Count | Browser-ready? | Spec lives in |
-|---|---|---|---|
-| `.png` | 228 + 31 | ✅ direct | — |
-| `.wav` | 164 | ✅ direct (convert to `.ogg`) | — |
-| `.ani` | 285 | ❌ parser | `Animator.cs`, `AnimatorSaveLoad.cs` |
-| `.data` | 133 | ❌ parser | `MusicPlayer.cs`, map sidecars |
-| `.map` | 131 | ❌ parser | `SaveLoadMap.cs` (16,987 b) |
-| `.lng` | 33 | ❌ parser | `Language.cs` (8,525 b) |
-| `.atlas` | 20 + 1 | ❌ parser | `DictAtlasEntry.cs` |
-| `.txt` | 17 | ❌ parser | — |
-| `.fx` | 20 | ❌ **translate to GLSL** | `Content/Shader/` |
-| `.zScript` | 1 | ❌ lexer + parser | `DialogPathLoader.cs` |
-| `.gbs` | 1 | ❌ GB sound emu | `GbsPlayer/` |
-| `.spritefont`/`.fnt`/`.ttf` | 7 | ⚠ bitmap font extraction | — |
+**Key data tables to extract:**
 
-**Only the PNGs and WAVs are free.** Everything else needs a parser written from
-the C# loader. There is no library for any of these formats — they are bespoke to
-this engine.
+- Overworld map columns (bank 3/6) — compressed column-based encoding
+- Dungeon room layouts (bank 6) — room tiles and object placement
+- Enemy spawn tables — per-screen enemy type/count assignments
+- Item drop tables — what enemies drop and cave contents
+- Damage tables — attack/defense values for all entities
+- Shop inventories — prices and items per shop
+
+## Asset sources
+
+Unlike the Link's Awakening project, there are no bespoke binary formats to parse.
+Assets come from the reference repos or are created during data extraction:
+
+| Asset type | Source | Format |
+|---|---|---|
+| Sprite sheets | Reference repos (bobbylight, humbertodias, Matthew-SA) | PNG |
+| Tile sheets | Reference repos | PNG |
+| Overworld map data | Extracted from disassembly → JSON | JSON |
+| Dungeon data | Extracted from disassembly → JSON | JSON |
+| Enemy/item tables | Extracted from disassembly → JSON | JSON |
+| Sound effects | Reference repos (bobbylight) | WAV/OGG |
+| Music | Reference repos | OGG |
+
+**Sprites are committed, not generated.** No build-time asset pipeline needed
+(unlike the LA project). Curate once in phase A3, use directly.
+
+## Rendering: Canvas 2D
+
+Canvas 2D, not WebGL2. The NES game has no shader effects — just palette swaps
+and screen flashes, which Canvas 2D handles natively. The rendering model:
+
+- Internal canvas: 256×240 pixels
+- Scaled up to fill viewport with `image-rendering: pixelated` (nearest-neighbor)
+- Fixed timestep for game logic (60 fps), decoupled from render
+- Draw order: background tiles → sprites (depth-sorted) → HUD overlay
 
 ## Boundaries and invariants
 
-1. **The C# tree is read-only.** It is the spec. Never edit, never delete.
-2. **`_fixtest/assets_original/` is the only copy** of the corrected migration
-   inputs. Losing it means re-downloading v1.0.0 and redoing the CRLF repair.
-3. **`public/assets/` is generated.** `npm run assets` must be idempotent and
-   re-runnable from scratch. Never hand-edit its output.
-4. **Parsers are pure.** Bytes in, plain objects out. No rendering, no globals, no
-   DOM. This is what makes them testable against golden fixtures in Node.
-5. **Formats are verified against the C# writer, not guessed.** Every parser slice
-   cites the C# file it was derived from.
-6. **`.xnb` is never used.** Compiled MonoGame content is platform-locked; DirectX
-   `.xnb` embed HLSL bytecode a browser cannot execute. Source assets only.
-
-## Known hard parts (do not discover these late)
-
-**Threading.** The C# engine uses four real OS threads — `MusicPlayer.cs:46`,
-`GbsPlayer.cs:205`, `MapTransitionSystem.cs:396`, `MapShowSystem.cs:137`. The
-browser has none of that. The two map-loading threads become async/coroutines
-(slice E2); the audio threads become an `AudioWorklet` (slice L5).
-
-**Shaders.** 20 `.fx` files are HLSL. WebGL2 needs GLSL ES 3.00. These are simple
-2D post-effects — blurs, tints, wobble, a pixel grid — so translation is
-mechanical, but it is 20 separate translations (slices C7–C9).
-
-**GB sound emulation.** `GbsPlayer/` is a real Game Boy CPU + APU:
-`GameBoyCPUInstructions.cs` alone is 51,085 bytes, `Sound.cs` 29,643 bytes. This
-powers the *classic* music mode. It is self-contained and **deferrable** — ship
-streamed audio first (L1–L2), emulate later (L3–L5).
-
-**Platform-locked C# to ignore.** `Game1.cs` uses `System.Windows.Forms` (lines
-57, 263, 828–914) and `DllImport("SDL2")` (168–171) for windowing. Browser
-equivalents are the canvas and the Fullscreen API. Do not port these literally.
-
-## Reference material, ranked
-
-1. **`ProjectZ.Core/`** — the implementation. Authoritative for all behavior.
-2. **`CHANGELOG.md`** (169 KB) — *why* behavior is the way it is. Hundreds of
-   entries of the form "fix X to match the original game." When a behavior looks
-   arbitrary, search here before assuming it is a bug.
-3. **`MANUAL.md`** — player-facing feature list; good for scoping menus.
-4. **`ANDROID.md`** — the closest existing port to a browser target (OpenGL ES, no
-   WinForms, touch input). Useful when a desktop assumption blocks you.
+1. **Reference repos are read-only.** Never edit, never delete.
+2. **The disassembly is the behavioral authority.** When the implementation
+   disagrees with the disassembly, the implementation is wrong.
+3. **Data is JSON, not hardcoded.** Map data, enemy tables, item tables — all
+   loaded from JSON. This is what makes Second Quest a data swap, not a code fork.
+4. **Canvas 2D only.** No WebGL2, no shader effects. The NES didn't have them.
+5. **No emulation.** This is a reimplementation. No CPU emulation, no PPU
+   emulation, no ROM loading.

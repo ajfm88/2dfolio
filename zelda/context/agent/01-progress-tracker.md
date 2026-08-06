@@ -8,57 +8,59 @@
 > `../CONVENTIONS.md`, `../PLAN.md`. This file is state, not knowledge —
 > put facts there, put status here.
 
-**Project:** zelda — *Link's Awakening DX HD* as native TypeScript in the browser.
-**Working dir for all commands:** `zelda-links-awakening-ts/`
+**Project:** zelda-nes — *The Legend of Zelda (NES)* as native TypeScript in the
+browser.
+**Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-02 · **Phase:** A (Foundation) · **Slices done:** 1 / 90
+**Last updated:** 2026-08-04 · **Phase:** A (Foundation) · **Slices done:** 3 / 45
 
 ---
 
 ## ⚠ Read this before planning anything
 
-This is a **rewrite, not a port**. You read C# and write TypeScript by hand.
-Nothing is transpiled; nothing is compiled to WASM (`../DECISIONS.md` #2).
+This is a **reimplementation from reference**, not a port or emulator. You read
+6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
+write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-The project is **pre-code**. The asset pipeline is solved and verified; no
-TypeScript exists yet. `zelda-links-awakening-ts/` is an empty folder.
-
-**Next action: slice A1** — scaffold the Vite + TypeScript project.
+**Next action: slice A4** — Input system: keyboard + Gamepad API, action-name
+abstraction, remappable.
 
 ---
 
-## What is ready and verified (2026-08-01)
+## What is ready and verified (2026-08-02)
 
 | Thing | Path | State |
 |---|---|---|
-| v2.0.2 assets | `_fixtest/ladxhd_game_source_code/ProjectZ.Core/{Content,Data}` | ✅ 225 + 852 files, 0 corrupt |
-| C# spec | `ladxhd_updated-main/ladxhd_game_source_code/ProjectZ.Core/` | ✅ 631 files / 110,243 lines |
-| Migration inputs | `_fixtest/assets_original/` | ✅ **only copy** — irreplaceable |
-| Re-run capability | `ladxhd_updated-main/{assets_patches,LADXHD-Migrater.exe}` | ✅ 457 patches |
-| Behavior history | `ladxhd_updated-main/CHANGELOG.md` | ✅ 169 KB |
-| Toolchain | node v24.12.0, npm 11.6.2 | ✅ confirmed |
-| TS project | `zelda-links-awakening-ts/` | ✅ scaffolded (A1) |
+| NES disassembly | `zelda1-disassembly-master/` | ✅ 39,600 lines, 100% coverage |
+| Disasm labels | `zelda1-disasm-labels-master/` | ✅ Mesen .mlb, 8K-line RAM dictionary |
+| TypeScript reference | `ZeldaJS-master/` | ✅ best browser architecture |
+| C# reference | `zelda-clone-master/` | ✅ best combat/boss patterns |
+| JS references (3) | `game-zelda-js-master/`, `zelda-js-master/`, `Legend-Of-Zelda-Javascript-main/` | ✅ sprites, maps, patterns |
+| Context system | `context/` | ✅ 15 files written |
+| TS project | `zelda-nes-ts/` | ✅ scaffolded (A1) |
+| Renderer | `src/render/renderer.ts` | ✅ Canvas 2D, integer-scaled, HUD/play area split (A2) |
+| Assets | `public/assets/` | ✅ 62 files: 19 sprites, 7 tiles, 3 UI, 3 maps, 30 SFX, 2 music (A3) |
+| Asset manifest | `src/data/asset-manifest.ts` | ✅ typed manifest + loader (A3) |
 
 ---
 
 ## Queue — next 8 slices
 
-Claim the top one, finish it, log it, stop. Full list of 90 in `../PLAN.md`.
+Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 
 | # | Slice | Notes |
 |---|---|---|
-| 1 | **~~A1~~** ✅ Scaffold project | done 2026-08-02 |
-| 2 | **A2** Canvas + WebGL2 + fixed-timestep loop | pause on blur |
-| 3 | **A3** `npm run assets` pipeline | idempotent; verify 225 + 852 counts |
-| 4 | **A4** `BinaryReader` | LE ints/floats, strings, **CRLF-aware** |
-| 5 | **A5** Input abstraction | keyboard + Gamepad API, action names |
-| 6 | **A6** Debug overlay | backtick toggle, fps/entities/camera |
-| 7 | **A7** Golden-fixture test harness | unblocks all of phase B |
-| 8 | **B1** `.atlas` parser | 21 files · spec: `DictAtlasEntry.cs` |
-| 9 | **B2** `.ani` structure | 285 files · spec: `AnimatorSaveLoad.cs` |
+| ~~1~~ | ~~**A1** Scaffold project~~ | ✅ done 2026-08-03 |
+| ~~2~~ | ~~**A2** Canvas + game loop~~ | ✅ done 2026-08-04 |
+| ~~3~~ | ~~**A3** Asset curation~~ | ✅ done 2026-08-04 |
+| 4 | **A4** Input system | keyboard + Gamepad API, action names |
+| 5 | **A5** Debug overlay + test harness | backtick toggle, vitest setup |
+| 6 | **B1** Overworld map data | extract 128 screens from disassembly → JSON |
+| 7 | **B2** Dungeon room data | extract 9 dungeons from disassembly → JSON |
+| 8 | **B3** Enemy spawn tables | extract from disassembly → JSON |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
-`npm test` clean, asset pipeline reproducible from scratch.
+`npm test` clean, sprites load from `public/assets/`.
 
 ---
 
@@ -66,33 +68,24 @@ Claim the top one, finish it, log it, stop. Full list of 90 in `../PLAN.md`.
 
 Answer cheaply, unblock later work. **None of these block A1.**
 
-1. **Rename `_fixtest/` → `assets-v2.0.2/`?** Leftover debugging name. Cheap now,
-   annoying once slice A3 hard-codes the path.
-2. **Delete `context/README.md`?** 33 KB third-party article from the previous
-   project. Nothing in this system references it.
-3. **WebGL2 confirmed?** Assumed throughout. Flag before C1 if you want WebGPU.
-
-*Resolved 2026-08-01:* language scope → **English + Spanish only** for v1
-(`../DECISIONS.md` #11). Affects A3, B1, B7, B12.
+1. **Asset gaps.** If a reference repo lacks a sprite we need, should we extract
+   from another repo, create manually, or defer?
+2. **Second Quest priority.** Currently the last slice (L2). Move it earlier?
+3. **Music source.** Reference repos have some OGG/MP3 tracks. Sufficient?
 
 ---
 
 ## Notes worth carrying
 
-- **The assets have no backups.** Both source folders and both Desktop zips are
-  gone. `_fixtest/assets_original/` is the only copy of the corrected inputs. The
-  originals are re-downloadable, but the CRLF repair would need redoing.
-- **CRLF is load-bearing.** Read and write `.map`, `.atlas`, `.mgcb`, `.fx`,
-  `.spritefont`, `.txt` as **bytes**. Any text-normalizing round-trip corrupts them
-  silently. This broke the asset migration for two sessions — `../DECISIONS.md` #5.
-- **The roster is the bulk.** `GameObjects/` is 454 files / 72,013 lines — 65% of
-  the engine. Phases F–J are wide but shallow. The hard, narrow work is B
-  (parsers), C7–C9 (shaders), E2 (threading), L3–L5 (GB audio).
-- **`CHANGELOG.md` explains the weird stuff.** Search it before "fixing" behavior
-  that looks wrong — years of deliberate accuracy fixes live there.
-- **Two wrong diagnoses were made and corrected** during asset recovery (see
-  `../PROGRESS.md`). Both were plausible narratives disproven by byte-level
-  evidence. Expect the same during phase B: check the bytes, not the story.
+- **The disassembly is the behavioral authority.** The reference repos are all
+  incomplete (5–35%) and may have bugs. Use them for patterns, not behavior.
+- **Data-driven design.** All map data, enemy tables, item tables in JSON. This is
+  what makes Second Quest a data swap, not a code fork.
+- **Canvas 2D, not WebGL2.** The NES game has no shader effects. Canvas 2D with
+  `image-rendering: pixelated` gives pixel-perfect nearest-neighbor scaling.
+- **Reference repos surveyed** (2026-08-02): aldonunez (100%), bobbylight
+  (15–20%), hfiggs (30–35%), humbertodias (15%), Matthew-SA (10–15%),
+  jdr81394 (5–10%).
 
 ---
 
@@ -101,22 +94,41 @@ Answer cheaply, unblock later work. **None of these block A1.**
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
 
-### 2026-08-02 — A1 complete: project scaffolded (Claude Opus 4.6)
+### 2026-08-04 — A3 Asset curation (Claude Opus 4.6)
 
-Scaffolded `zelda-links-awakening-ts/`: Vite 8.2 + TypeScript 6 strict
-(`noUnusedLocals`, `noUnusedParameters`, `noUncheckedIndexedAccess`) + vitest 4.1
-+ ESLint 10 with typescript-eslint. Folder skeleton matches ARCHITECTURE.md:
-`src/{core,formats,render,world,objects,ui,audio,save}`, `public/assets/`,
-`tests/fixtures/`. All three gates pass: `npm run typecheck` clean, `npm run test`
-1/1, `npm run lint` clean. Dev server serves at localhost:5173. **Next: A2.**
+Curated 62 assets from reference repos into `public/assets/`: 19 sprite sheets
+(Link, enemies, bosses, items, NPCs, etc.), 7 tilesets (overworld + dungeon),
+3 UI images (HUD, title, crest), 3 reference maps, 30 SFX (kebab-case WAV),
+2 music tracks (OGG). Primary source: ZeldaJS-master (native 16x16, web-ready).
+Supplemented from zelda-clone-master (items, projectiles, particles) and
+game-zelda-js-master (full maps). Created `src/data/asset-manifest.ts` with
+typed maps + `loadAllAssets()` preloader. 77 tests pass (64 new manifest file
+checks). Zero 404s, zero console errors. **Next: A4.**
 
-### 2026-08-01 — Context system rewritten for Zelda (Claude)
+### 2026-08-04 — A2 Canvas renderer + game loop (Claude Opus 4.6)
 
-The 6-file context system plus 7-file agent pack was written for a Pokemon Yellow
-port; the user repurposed it for this project and asked for a full rewrite. All 13
-files rewritten from scratch. Scope agreed with the user: **90 atomic slices,
-~3 months, localhost only, never published.** Target folder
-`zelda-links-awakening-ts/` confirmed empty; node/npm confirmed present. Earlier
-sessions the same day covered version triage, ~1.1 GB of cleanup, and the asset
-migration — that history is in `../PROGRESS.md`. **No production code written.
-Next: A1.**
+Created `src/render/renderer.ts` — Renderer class that owns the canvas and 2D
+context, handles integer scaling on resize, disables image smoothing, and
+provides `clear()`, `fillRect()`, `drawImage()`, `beginPlayArea()`/
+`endPlayArea()` (translate to HUD offset). Updated `main.ts` to use Renderer
+with a hue-cycling play area demo. 7 new renderer tests (13 total). Typecheck
+clean, all tests pass. Game loop from A1 needed no changes. **Next: A3.**
+
+### 2026-08-03 — A1 Scaffold project (Claude Opus 4.6)
+
+Scaffolded `zelda-nes-ts/`: Vite 8 + TypeScript 6 (strict, noUnusedLocals,
+noUnusedParameters, noUncheckedIndexedAccess), vitest 4, ESLint with
+typescript-eslint. Folder skeleton per ARCHITECTURE (`src/core`, `src/data`,
+`src/render`, `src/world`, `src/objects/{enemies,bosses,items,npcs,projectiles}`,
+`src/ui`, `src/audio`, `src/save`, `public/assets/{sprites,tiles,audio}`).
+Created `game-loop.ts` (fixed-timestep, pause on blur), `constants.ts` (NES
+specs), `types.ts` (Vec2, Rect, Direction), `main.ts` (canvas setup + test
+render). 6 tests pass, typecheck clean, dev server runs on 5173. **Next: A2.**
+
+### 2026-08-02 — Context system created (Claude Opus 4.6)
+
+Surveyed all 6 reference repos. Established 45-slice plan across 12 phases.
+Rewrote all 15 context files from Link's Awakening DX HD to NES Legend of Zelda.
+Key decisions: Canvas 2D (not WebGL2), data-driven JSON (not hardcoded),
+disassembly as behavioral authority, sprites from reference repos. Credits file
+created with all 6 source URLs. **No production code written. Next: A1.**

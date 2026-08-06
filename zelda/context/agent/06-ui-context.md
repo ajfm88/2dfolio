@@ -1,110 +1,107 @@
-# UI Context — rendering, assets, shaders, audio
+# UI Context — rendering, sprites, audio
 
 This is not a web app. There is no design system, no CSS framework, no component
-library. The entire UI is drawn to one `<canvas>` through WebGL2, and its "design
-tokens" come from the original game. Nothing here is a style preference — it is
-fidelity to the C# reference.
+library. The entire UI is drawn to one `<canvas>` through Canvas 2D, and its
+visual language comes from the original 1986 NES game.
 
-Deep detail: `../ARCHITECTURE.md`. Slice-level tasks: `../PLAN.md` phases C, K, L.
+Deep detail: `../ARCHITECTURE.md`. Slice-level tasks: `../PLAN.md` phases C, J, K.
 
 ## Theme
 
-Pixel-faithful *Link's Awakening DX HD* at v2.0.2. No modern chrome, no added
-labels, no helper text, no invented screens. If it is not in `ProjectZ.Core`, it
-does not go on screen. Original quirks are reproduced deliberately — the upstream
-project spent years restoring them, and `CHANGELOG.md` documents why.
+Pixel-faithful NES *Legend of Zelda*. No modern chrome, no added labels, no helper
+text, no invented screens. If it's not in the original NES game, it doesn't go on
+screen. The disassembly is the visual authority.
 
 ## Rendering model
 
-- **WebGL2**, not Canvas 2D. The game leans on 20 shader effects; Canvas 2D cannot
-  do them (`../DECISIONS.md` #6).
-- **Instanced sprite batching**, one draw call per texture. Target: 10k sprites at
-  60 fps (slice C1).
-- **Nearest-neighbour filtering everywhere.** No smoothing, ever. Add padding in
-  atlases to prevent bleed at non-integer scales (slice C2).
-- **Fixed timestep** for gameplay, decoupled from render. Logic assumes a fixed
-  update rate — do not scale movement by a variable delta (slice A2).
-- **Depth sorting is explicit** (slice C4). The C# assigns depth deliberately; a
-  naive draw order looks subtly wrong everywhere and obviously wrong nowhere.
-  Known example from the v2.0.0 notes: the sword draws in front of Link for some
-  facings and behind for others.
+- **Canvas 2D**, not WebGL2. The NES game has no shader effects — just sprites,
+  tiles, and palette swaps (`../DECISIONS.md` #3).
+- **Internal resolution: 256×240 pixels.** Scaled to fill the viewport with
+  `image-rendering: pixelated` for crisp nearest-neighbor upscaling.
+- **Layout:** HUD occupies the top 64 pixels (256×64). Play area is the bottom
+  176 pixels (256×176) = 16×11 tiles at 16×16 each.
+- **Fixed timestep** for gameplay (60 fps NTSC). Logic assumes a fixed update
+  rate — do not scale movement by a variable delta.
+- **Draw order:** background tiles → object sprites (depth-sorted by Y position)
+  → HUD overlay. Enemies behind Link when above him, in front when below.
 
-## The two cameras — both are required
+## Screen transitions
 
-| Mode | Behavior |
-|---|---|
-| **Modern** | smooth follow, faster scroll (default) |
-| **Classic** | screen-based scrolling, as on the Game Boy |
+The original NES scrolls the entire play area when Link walks off-screen:
 
-Classic Camera arrived in v1.4.3 and is heavily used — v2.0.2's headline change
-was per-map-type camera configuration plus a boss-fight-specific swap. It is not
-an optional extra; slice C6 implements it and E-phase transitions must respect it.
-Transition speed is user-configurable.
+- **Horizontal:** ~32 frames, play area slides left/right
+- **Vertical:** ~32 frames, play area slides up/down
+- **During scroll:** Link continues walking in the transition direction
+- **No diagonal transitions.** One axis at a time only.
 
-## Asset formats and their rules
+Reference: humbertodias and Matthew-SA repos both implement this.
 
-Full table in `../ARCHITECTURE.md`. What matters when you touch them:
+## Sprites
 
-- **`.png` (259 files)** — usable directly. Tileset width is load-bearing:
-  tiles-per-row is derived from image width, so repacking or resizing a tileset
-  silently scrambles every map that uses it. Verify against the C# first.
-- **`.wav` (164)** — usable directly; convert to `.ogg` in the pipeline for size.
-- **`.ani` (285)** — animation descriptors. Parser: slices B2–B3.
-- **`.map` (131) + `.map.data`** — rooms and object placement. Slices B4–B6.
-- **`.atlas` (21)** — sprite atlas indices. Slice B1.
-- **`.lng` (33 in the tree, **6 shipped**)** — v1 is **English + Spanish only**
-  (`../DECISIONS.md` #11); the loader stays generic and the filter lives in the
-  asset pipeline. Slice B7. Dialogue must render with the variable-width font path
-  (`smallFont_vwf`), not fixed-width — and that path must handle Spanish accented
-  glyphs.
-- **`.zScript` (1)** — the game's own scripting language. Lexer + parser: B10–B11;
-  runtime: I3.
-- **Fonts** — `.spritefont`/`.fnt`/`.ttf`. Bitmap glyph extraction in slice B12.
-  **No CJK path in v1** — the Chinese fonts (`smallFont_chn*.fnt`) are dropped with
-  the `chn` language, so B12 is Latin + variable-width only. Note the editor TTFs
-  and the Chinese `.fnt` files are injected by the *Migrater*, not present in the
-  original content tree.
+Sprite sheets from reference repos, organized in `public/assets/sprites/`:
 
-**CRLF is load-bearing** in every text-based format above. Read and write bytes.
-This broke the asset migration once already (`../DECISIONS.md` #5).
+- **Link:** 4-direction walk cycle (2 frames each), sword swing (4 directions),
+  sword beam, shield, pickup pose, damage flash, death spin
+- **Enemies:** each type has directional variants + attack frames + death poof
+- **Bosses:** multi-frame attack patterns, damage states
+- **Items:** pickup sprites, inventory icons, in-world representations
+- **Effects:** explosions, sword slash, projectile impacts, sparkles
 
-## Shaders — 20 files, HLSL → GLSL ES 3.00
+**Colour:** NES palette. Link is green (default), white (blue ring), red
+(red ring). Enemies have red/blue variants (different stats, same sprite
+recoloured).
 
-Hand-translated across slices C7–C9, grouped by kind:
+## HUD (top 64 pixels)
 
-| Slice | Group | Files |
-|---|---|---|
-| C7 | colour | `ColorShader`, `DamageShader`, `SaturationFilter`, `LightFadeShader`, `ColorCloud` |
-| C8 | blur | `BlurH/V`, `BBlurH/V`, `EffectBlur`, `RoundedCorner`, `RoundedCornerEffectBlur` |
-| C9 | effects | `WobbleShader`, `ShockEffect`, `WaleShader`, `CircleShader`, `LightShader`, `FullShadowEffect`, `PixelGrid`, `Thanos` |
+```
+┌────────────────────────────────────────────────────┐
+│  INVENTORY       -LIFE-                            │
+│  B [item]  A     ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥               │
+│            □     (half-heart granularity)           │
+│  ×XX RUPEES       [minimap]                        │
+│  ×XX KEYS                                          │
+│  ×XX BOMBS                                         │
+└────────────────────────────────────────────────────┘
+```
 
-All are simple 2D post-effects, so translation is mechanical — but it is 20 of
-them, and each needs a visual check against the C# original. `PixelGrid` is newer
-(added around v1.9.0) and is a user-facing option, not decoration.
+- **Hearts:** 3 starting → 16 max (half-heart granularity)
+- **Rupees:** 0–255
+- **Keys:** per-dungeon count (or Magic Key = infinite)
+- **Bombs:** 0→8 (upgradeable to 12, then 16)
+- **Minimap:** overworld = dot on 16×8 grid; dungeon = explored rooms
+- **Item slots:** B button = equipped item; A button = always sword
+
+## Inventory subscreen
+
+Opens on Start. Shows all collected items in a grid. D-pad to select, Start to
+equip to B button. Items greyed out until acquired. Sword upgrades show current
+tier. Map and Compass show dungeon layout when in a dungeon.
 
 ## Audio
 
-- **Ship streamed audio first** (L1–L2): Web Audio graph, 164 SFX, music with
-  crossfade. This is enough to play the whole game.
-- **GB sound emulation is parked** (L3–L5). `GbsPlayer/` is a real Game Boy CPU +
-  APU — `GameBoyCPUInstructions.cs` is 51 KB, `Sound.cs` 29.6 KB — and it exists
-  only to drive *classic* music mode. It is self-contained; do not let it block
-  the critical path.
-- **`AudioWorklet`, not threads.** The C# runs audio on OS threads; the browser
-  equivalent is a worklet (`../DECISIONS.md` #7). Never `SharedArrayBuffer`.
+- **Web Audio API** for both SFX and music.
+- **SFX** (~30): sword swing, sword beam, bomb place/explode, item pickup,
+  rupee collect, damage taken, enemy hit, enemy death, secret reveal, door unlock,
+  low health warning beep, text crawl, stairs, shield block, boomerang throw,
+  arrow fire, candle fire, recorder play, fairy heal.
+- **Music** (~10 tracks): title, overworld, dungeon, final dungeon, boss fight,
+  game over, ending/credits, item fanfare, fairy fountain, triforce.
+- Music transitions: immediate cut on screen type change (overworld → dungeon),
+  brief fanfare interrupts then resumes (item pickup).
 
-## Menus and HUD (phase K)
-
-Sources: `InGame/Overlay` (24 files), `InGame/Pages` (28), `InGame/Interface` (13).
-Scope for v1: HUD (hearts, items, rupees, keys), inventory with 4–6 assignable
-buttons, map/minimap pages, file select with save slots including the **Purist**
-preset, settings and presets, achievements and the photo album.
-
-`MANUAL.md` is the player-facing feature list and is the fastest way to scope a
-menu before opening the C#.
+Source: reference repos (bobbylight has the most complete audio set with ~30 WAV
+SFX + OGG music).
 
 ## Input
 
-Keyboard + Gamepad API, abstracted to **action names** rather than key codes
-(slice A5) so remapping and gamepads cost nothing later. Touch controls are out of
-scope for v1; the upstream Android head is the reference if that opens up.
+Keyboard + Gamepad API, abstracted to **action names** (slice A4):
+
+| Action | Default key | NES equivalent |
+|---|---|---|
+| `up/down/left/right` | Arrow keys / WASD | D-pad |
+| `attack` | X / Space | A button (sword) |
+| `item` | Z | B button (equipped item) |
+| `start` | Enter | Start (pause / inventory) |
+| `select` | Shift | Select (not used in-game on NES) |
+
+Gamepad mapping follows Xbox layout: A=attack, B/X=item, Start=start.
