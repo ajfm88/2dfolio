@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-04 · **Phase:** A (Foundation) · **Slices done:** 3 / 45
+**Last updated:** 2026-08-05 · **Phase:** B (Data Extraction) · **Slices done:** 6 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice A4** — Input system: keyboard + Gamepad API, action-name
-abstraction, remappable.
+**Next action: slice B2** — Dungeon room data: extract 9 dungeons from
+disassembly → JSON.
 
 ---
 
@@ -41,6 +41,9 @@ abstraction, remappable.
 | Renderer | `src/render/renderer.ts` | ✅ Canvas 2D, integer-scaled, HUD/play area split (A2) |
 | Assets | `public/assets/` | ✅ 62 files: 19 sprites, 7 tiles, 3 UI, 3 maps, 30 SFX, 2 music (A3) |
 | Asset manifest | `src/data/asset-manifest.ts` | ✅ typed manifest + loader (A3) |
+| Input system | `src/core/input.ts` | ✅ InputManager: keyboard + Gamepad API, action-name abstraction, remappable, edge detection (A4) |
+| Debug overlay | `src/core/debug-overlay.ts` | ✅ DebugOverlay: backtick toggle, FPS counter, input states, placeholder coords/entities (A5) |
+| Overworld data | `src/data/overworld.json` | ✅ 128 screens × 11×16 tile grids + square table, extracted from ROM + disassembly (B1) |
 
 ---
 
@@ -53,9 +56,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~1~~ | ~~**A1** Scaffold project~~ | ✅ done 2026-08-03 |
 | ~~2~~ | ~~**A2** Canvas + game loop~~ | ✅ done 2026-08-04 |
 | ~~3~~ | ~~**A3** Asset curation~~ | ✅ done 2026-08-04 |
-| 4 | **A4** Input system | keyboard + Gamepad API, action names |
-| 5 | **A5** Debug overlay + test harness | backtick toggle, vitest setup |
-| 6 | **B1** Overworld map data | extract 128 screens from disassembly → JSON |
+| ~~4~~ | ~~**A4** Input system~~ | ✅ done 2026-08-05 |
+| ~~5~~ | ~~**A5** Debug overlay + test harness~~ | ✅ done 2026-08-05 |
+| ~~6~~ | ~~**B1** Overworld map data~~ | ✅ done 2026-08-05 |
 | 7 | **B2** Dungeon room data | extract 9 dungeons from disassembly → JSON |
 | 8 | **B3** Enemy spawn tables | extract from disassembly → JSON |
 
@@ -93,6 +96,45 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-05 — B1 Overworld map data (Claude Opus 4.6)
+
+Created `scripts/extract-overworld.ts` — Node extraction script that reads
+Original.nes ROM at known offsets (RoomLayoutsOW, LevelBlockOW/AttrsD) and
+parses inline `.BYTE` directives from Z_05.asm (column heaps, square tables).
+Decodes all 128 overworld screens through 4-level compression: AttrsD → room
+layout → column descriptors → column heaps → square indices. Key fix: AttrsD
+masked with `& 0x7F` for layout index (7 bits) vs `& 0x3F` for gameplay room
+ID (6 bits). Column heaps concatenated into contiguous buffer since column data
+spans heap boundaries. Output: `src/data/overworld.json` with 128 screens of
+11×16 tile grids + square table (56 primary + 16 secondary metatile defs).
+Created `src/data/overworld-types.ts` with OverworldScreen, SquareTable,
+OverworldData interfaces. 13 new validation tests (132 total). **Next: B2.**
+
+### 2026-08-05 — A5 Debug overlay + test harness (Claude Opus 4.6)
+
+Created `src/core/fps-counter.ts` — FpsCounter class with configurable sample
+interval, takes `now` parameter for testability. Created `src/core/debug-overlay.ts`
+— DebugOverlay class with backtick key toggle (separate from InputManager since
+it's a meta key, not a game action). Updated `main.ts`: replaced always-visible
+`renderInputDebug()` with `renderDebugOverlay()` gated on `debug.enabled`. Overlay
+shows status bar (FPS, frame count, screen coord placeholder, entity count
+placeholder) + input action states. Hidden by default, backtick toggles on/off.
+19 new tests (119 total). Typecheck clean. Visually verified toggle in browser.
+**Phase A complete. Next: B1.**
+
+### 2026-08-05 — A4 Input system (Claude Opus 4.6)
+
+Created `src/core/input.ts` — InputManager class with keyboard + Gamepad API
+support. Action enum with 8 game actions (Up/Down/Left/Right/Attack/Item/Start/
+Select). Per-frame edge detection (held/justPressed/justReleased). Default
+bindings: Arrows + WASD for directions, X/Space for attack, Z for item, Enter
+for start, Shift for select. Gamepad: standard mapping (A=attack, B/X=item,
+D-pad + left stick for directions). Remappable via setKeyBinding/clearKeyBinding.
+Integrated into main.ts with color-coded debug overlay (green=held, yellow=
+justPressed, red=justReleased, gray=idle). 23 new tests (100 total). Typecheck
+clean (only pre-existing errors in asset-manifest test). Visually verified:
+overlay reacts to key presses in real time. **Next: A5.**
 
 ### 2026-08-04 — A3 Asset curation (Claude Opus 4.6)
 
