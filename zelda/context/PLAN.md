@@ -47,8 +47,8 @@ Goal: an empty but *correct* project. No game logic.
 | A1 ✅ | Scaffold `zelda-nes-ts/`: Vite + TS strict (`noUnusedLocals`, `noUnusedParameters`, `noUncheckedIndexedAccess`), vitest, ESLint, folder skeleton per ARCHITECTURE | `npm run dev` serves; `npm run typecheck` clean |
 | A2 ✅ | Canvas renderer (256×240, integer-scaled, pixelated) + fixed-timestep game loop (60 fps, accumulator, pause on blur) | clear colour animates at stable 60 fps |
 | A3 ✅ | Asset curation: collect sprites, tiles, audio from reference repos into `public/assets/`. Organize by category. Create manifest | all assets load; no 404s |
-| A4 ⬜ | Input system: keyboard + Gamepad API, action-name abstraction (not key codes), remappable | on-screen debug shows live action states |
-| A5 ⬜ | Debug overlay (backtick toggle: fps, screen coords, entity count) + vitest test harness | overlay toggles; one passing test |
+| A4 ✅ | Input system: keyboard + Gamepad API, action-name abstraction (not key codes), remappable | on-screen debug shows live action states |
+| A5 ✅ | Debug overlay (backtick toggle: fps, screen coords, entity count) + vitest test harness | overlay toggles; one passing test |
 
 ## Phase B — Data Extraction (5 slices)
 
@@ -57,7 +57,7 @@ Node scripts that parse the assembly source — run once, commit output.
 
 | ID | Slice | Disassembly source | Verify |
 |---|---|---|---|
-| B1 ⬜ | Overworld map data: 128 screens of tile layouts | `Z_03.asm`, `Z_06.asm` (column tables) | all 128 screens produce valid tile grids |
+| B1 ✅ | Overworld map data: 128 screens of tile layouts | `Z_03.asm`, `Z_06.asm` (column tables) | all 128 screens produce valid tile grids |
 | B2 ⬜ | Dungeon room data: all 9 dungeon layouts, room tiles, door/wall types | `Z_06.asm` | all dungeon rooms parse; room counts match |
 | B3 ⬜ | Enemy spawn tables: per-screen enemy types, counts, positions | `Z_04.asm`, `Z_07.asm` | every screen has a spawn entry |
 | B4 ⬜ | Item tables: drop tables, shop inventories, cave contents, heart container locations | `Z_05.asm`, `Z_06.asm` | every item placement accounted for |
