@@ -1,0 +1,1172 @@
+{
+  "objectTypes": {
+    "0": "None",
+    "1": "BlueLynel",
+    "2": "RedLynel",
+    "3": "BlueMoblin",
+    "4": "RedMoblin",
+    "5": "BlueGoriya",
+    "6": "RedGoriya",
+    "7": "RedSlowOctorok",
+    "8": "RedFastOctorok",
+    "9": "BlueSlowOctorok",
+    "10": "BlueFastOctorok",
+    "11": "RedDarknut",
+    "12": "BlueDarknut",
+    "13": "BlueTektite",
+    "14": "RedTektite",
+    "15": "BlueLeever",
+    "16": "RedLeever",
+    "17": "Zora",
+    "18": "Vire",
+    "19": "Zol",
+    "20": "ChildGel",
+    "21": "Gel",
+    "22": "PolsVoice",
+    "23": "LikeLike",
+    "24": "LittleDigdogger",
+    "25": "Unused19",
+    "26": "Peahat",
+    "27": "BlueKeese",
+    "28": "RedKeese",
+    "29": "BlackKeese",
+    "30": "Armos",
+    "31": "BoulderSet",
+    "32": "Boulder",
+    "33": "Ghini",
+    "34": "FlyingGhini",
+    "35": "BlueWizzrobe",
+    "36": "RedWizzrobe",
+    "37": "PatraChild1",
+    "38": "PatraChild2",
+    "39": "Wallmaster",
+    "40": "Rope",
+    "41": "Unused29",
+    "42": "Stalfos",
+    "43": "Bubble",
+    "44": "BlueBubble",
+    "45": "RedBubble",
+    "46": "Whirlwind",
+    "47": "PondFairy",
+    "48": "Gibdo",
+    "49": "Dodongo",
+    "50": "Dodongo2",
+    "51": "BlueGohma",
+    "52": "RedGohma",
+    "53": "RupeeStash",
+    "54": "GrumbleGoriya",
+    "55": "Zelda",
+    "56": "Digdogger1",
+    "57": "Digdogger2",
+    "58": "RedLanmola",
+    "59": "BlueLanmola",
+    "60": "Manhandla",
+    "61": "Aquamentus",
+    "62": "Ganon",
+    "63": "GuardFire",
+    "64": "StandingFire",
+    "65": "Moldorm",
+    "66": "Gleeok2",
+    "67": "Gleeok3",
+    "68": "Gleeok4",
+    "69": "Gleeok4B",
+    "70": "GleeokHead",
+    "71": "Patra1",
+    "72": "Patra2",
+    "73": "Trap4Way",
+    "74": "Trap2Way",
+    "75": "UnderworldPerson1",
+    "76": "UnderworldPerson2",
+    "77": "UnderworldPerson3",
+    "78": "UnderworldPerson4",
+    "79": "UnderworldPerson5",
+    "80": "UnderworldPerson6",
+    "81": "UnderworldPersonLifeOrMoney",
+    "82": "UnderworldPerson8"
+  },
+  "objectLists": [
+    [
+      3,
+      3,
+      4,
+      3,
+      4
+    ],
+    [
+      3,
+      4,
+      3,
+      4
+    ],
+    [
+      26,
+      26,
+      2,
+      1,
+      2,
+      1
+    ],
+    [
+      1,
+      2,
+      1,
+      2
+    ],
+    [
+      1,
+      15,
+      2,
+      1,
+      16,
+      2
+    ],
+    [
+      15,
+      26,
+      16,
+      26,
+      15,
+      26
+    ],
+    [
+      9,
+      8,
+      8,
+      8,
+      8
+    ],
+    [
+      8,
+      7,
+      8,
+      7
+    ],
+    [
+      8,
+      9,
+      8,
+      9,
+      8
+    ],
+    [
+      10,
+      7,
+      10,
+      7,
+      7
+    ],
+    [
+      3,
+      10,
+      4,
+      10,
+      4,
+      4
+    ],
+    [
+      74,
+      0,
+      0,
+      0,
+      19,
+      19,
+      0,
+      19
+    ],
+    [
+      74,
+      0,
+      0,
+      0,
+      27,
+      27,
+      27,
+      27
+    ],
+    [
+      43,
+      43,
+      43,
+      19,
+      19,
+      27,
+      27,
+      27
+    ],
+    [
+      22,
+      48,
+      48,
+      27,
+      27,
+      22,
+      0,
+      0
+    ],
+    [
+      43,
+      43,
+      43,
+      35,
+      35,
+      36,
+      35,
+      36
+    ],
+    [
+      43,
+      43,
+      18,
+      18,
+      18,
+      0,
+      0,
+      0
+    ],
+    [
+      43,
+      43,
+      19,
+      19,
+      23,
+      23
+    ],
+    [
+      43,
+      43,
+      12,
+      11,
+      11,
+      48,
+      48,
+      48
+    ],
+    [
+      43,
+      43,
+      5,
+      5,
+      5,
+      27,
+      27,
+      27
+    ],
+    [
+      74,
+      0,
+      0,
+      0,
+      23,
+      23,
+      23,
+      23
+    ],
+    [
+      74,
+      0,
+      0,
+      0,
+      35,
+      36,
+      35,
+      36
+    ],
+    [
+      22,
+      12,
+      11,
+      12,
+      11,
+      22
+    ],
+    [
+      43,
+      43,
+      43,
+      39,
+      39,
+      39,
+      39,
+      39
+    ],
+    [
+      5,
+      6,
+      6,
+      5,
+      6,
+      5,
+      0,
+      0
+    ],
+    [
+      35,
+      35,
+      36,
+      35,
+      36
+    ],
+    [
+      43,
+      23,
+      35,
+      35,
+      23,
+      36,
+      23,
+      36
+    ],
+    [
+      45,
+      45,
+      45,
+      44,
+      35,
+      36,
+      35,
+      36
+    ],
+    [
+      45,
+      45,
+      45,
+      44,
+      12,
+      11,
+      12,
+      11
+    ],
+    [
+      45,
+      45,
+      45,
+      44,
+      39,
+      39,
+      39,
+      39
+    ]
+  ],
+  "spawnPositions": [
+    [
+      85,
+      181,
+      120,
+      152,
+      122,
+      154,
+      108,
+      172,
+      141
+    ],
+    [
+      130,
+      99,
+      163,
+      117,
+      149,
+      119,
+      151,
+      90,
+      186
+    ],
+    [
+      163,
+      117,
+      181,
+      150,
+      135,
+      153,
+      122,
+      186,
+      172
+    ],
+    [
+      99,
+      85,
+      149,
+      118,
+      136,
+      121,
+      90,
+      154,
+      108
+    ]
+  ],
+  "overworldSpawns": [
+    {
+      "screenId": 0,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 1,
+      "monsterListId": 2,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 2,
+      "monsterListId": 2,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 3,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 4,
+      "monsterListId": 1,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 5,
+      "monsterListId": 102,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 6,
+      "monsterListId": 100,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 7,
+      "monsterListId": 2,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 8,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 9,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 10,
+      "monsterListId": 1,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 11,
+      "monsterListId": 16,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 12,
+      "monsterListId": 14,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 13,
+      "monsterListId": 14,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 14,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 15,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 16,
+      "monsterListId": 1,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 17,
+      "monsterListId": 100,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 18,
+      "monsterListId": 1,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 19,
+      "monsterListId": 101,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 20,
+      "monsterListId": 2,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 21,
+      "monsterListId": 100,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 22,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 23,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 24,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 25,
+      "monsterListId": 31,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 26,
+      "monsterListId": 14,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 27,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 28,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 29,
+      "monsterListId": 26,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 30,
+      "monsterListId": 14,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 31,
+      "monsterListId": 26,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 32,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 33,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 34,
+      "monsterListId": 2,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 35,
+      "monsterListId": 2,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 36,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 37,
+      "monsterListId": 26,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 38,
+      "monsterListId": 26,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 39,
+      "monsterListId": 26,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 40,
+      "monsterListId": 26,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 41,
+      "monsterListId": 16,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 42,
+      "monsterListId": 15,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 43,
+      "monsterListId": 103,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 44,
+      "monsterListId": 14,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 45,
+      "monsterListId": 106,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 46,
+      "monsterListId": 9,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 47,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 48,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 49,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 50,
+      "monsterListId": 100,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 51,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 52,
+      "monsterListId": 15,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 53,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 54,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 55,
+      "monsterListId": 8,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 56,
+      "monsterListId": 104,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 57,
+      "monsterListId": 47,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 58,
+      "monsterListId": 103,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 59,
+      "monsterListId": 15,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 60,
+      "monsterListId": 10,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 61,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 62,
+      "monsterListId": 106,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 63,
+      "monsterListId": 9,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 64,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 65,
+      "monsterListId": 33,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 66,
+      "monsterListId": 4,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 67,
+      "monsterListId": 47,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 68,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 69,
+      "monsterListId": 26,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 70,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 71,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 72,
+      "monsterListId": 16,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 73,
+      "monsterListId": 104,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 74,
+      "monsterListId": 13,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 75,
+      "monsterListId": 4,
+      "monsterCountIndex": 3,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 76,
+      "monsterListId": 106,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 77,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 78,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 79,
+      "monsterListId": 107,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 80,
+      "monsterListId": 2,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 81,
+      "monsterListId": 3,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 82,
+      "monsterListId": 99,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 83,
+      "monsterListId": 98,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 84,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 85,
+      "monsterListId": 7,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 86,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 87,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 88,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 89,
+      "monsterListId": 26,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 90,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 91,
+      "monsterListId": 99,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 92,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 93,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 94,
+      "monsterListId": 3,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 95,
+      "monsterListId": 106,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 96,
+      "monsterListId": 100,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 97,
+      "monsterListId": 3,
+      "monsterCountIndex": 2,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 98,
+      "monsterListId": 3,
+      "monsterCountIndex": 2,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 99,
+      "monsterListId": 108,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 100,
+      "monsterListId": 106,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 101,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 102,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 103,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 104,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 105,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 106,
+      "monsterListId": 105,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 107,
+      "monsterListId": 108,
+      "monsterCountIndex": 3,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 108,
+      "monsterListId": 4,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 109,
+      "monsterListId": 4,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 110,
+      "monsterListId": 108,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 111,
+      "monsterListId": 104,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 112,
+      "monsterListId": 26,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 113,
+      "monsterListId": 3,
+      "monsterCountIndex": 2,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 114,
+      "monsterListId": 98,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 115,
+      "monsterListId": 3,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 116,
+      "monsterListId": 14,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 117,
+      "monsterListId": 103,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 118,
+      "monsterListId": 14,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 119,
+      "monsterListId": 0,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 120,
+      "monsterListId": 7,
+      "monsterCountIndex": 1,
+      "edgeSpawn": true
+    },
+    {
+      "screenId": 121,
+      "monsterListId": 13,
+      "monsterCountIndex": 2,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 122,
+      "monsterListId": 13,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 123,
+      "monsterListId": 16,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 124,
+      "monsterListId": 16,
+      "monsterCountIndex": 3,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 125,
+      "monsterListId": 9,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 126,
+      "monsterListId": 8,
+      "monsterCountIndex": 1,
+      "edgeSpawn": false
+    },
+    {
+      "screenId": 127,
+      "monsterListId": 9,
+      "monsterCountIndex": 0,
+      "edgeSpawn": false
+    }
+  ],
+  "overworldFoeCounts": [
+    1,
+    4,
+    5,
+    6
+  ]
+}

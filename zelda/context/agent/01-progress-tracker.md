@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-05 · **Phase:** B (Data Extraction) · **Slices done:** 6 / 45
+**Last updated:** 2026-08-06 · **Phase:** B (Data Extraction) · **Slices done:** 8 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice B2** — Dungeon room data: extract 9 dungeons from
-disassembly → JSON.
+**Next action: slice B4** — Item tables: drop tables, shop inventories, cave
+contents, heart container locations.
 
 ---
 
@@ -44,6 +44,8 @@ disassembly → JSON.
 | Input system | `src/core/input.ts` | ✅ InputManager: keyboard + Gamepad API, action-name abstraction, remappable, edge detection (A4) |
 | Debug overlay | `src/core/debug-overlay.ts` | ✅ DebugOverlay: backtick toggle, FPS counter, input states, placeholder coords/entities (A5) |
 | Overworld data | `src/data/overworld.json` | ✅ 128 screens × 11×16 tile grids + square table, extracted from ROM + disassembly (B1) |
+| Dungeon data | `src/data/dungeons.json` | ✅ 4 level blocks × 128 rooms, 42 unique room tile grids, 2 cellars, 9 dungeon metadata entries (B2) |
+| Enemy spawns | `src/data/enemy-spawns.json` | ✅ 83 object types, 30 heterogeneous lists, 4 spawn position lists, 128 OW spawn entries, OW foeCounts (B3) |
 
 ---
 
@@ -59,8 +61,10 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~4~~ | ~~**A4** Input system~~ | ✅ done 2026-08-05 |
 | ~~5~~ | ~~**A5** Debug overlay + test harness~~ | ✅ done 2026-08-05 |
 | ~~6~~ | ~~**B1** Overworld map data~~ | ✅ done 2026-08-05 |
-| 7 | **B2** Dungeon room data | extract 9 dungeons from disassembly → JSON |
-| 8 | **B3** Enemy spawn tables | extract from disassembly → JSON |
+| ~~7~~ | ~~**B2** Dungeon room data~~ | ✅ done 2026-08-06 |
+| ~~8~~ | ~~**B3** Enemy spawn tables~~ | ✅ done 2026-08-06 |
+| 9 | **B4** Item tables | drop tables, shop inventories, cave contents |
+| 10 | **B5** Sprite animation data | frame counts, timing, directional sprites |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -96,6 +100,38 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-06 — B3 Enemy spawn tables (Claude Opus 4.6)
+
+Created `scripts/extract-enemy-spawns.ts` — extracts the NES Zelda spawn system.
+The 7-bit monster list ID encodes 3 modes: 0x00=none, 0x01-0x61=single type
+repeated, 0x62-0x7F=heterogeneous list lookup. Positions are NOT stored per-room;
+they're computed at runtime from 4 hardcoded position lists (by Link's facing
+direction). Extracted from ROM: ObjLists.dat (201 bytes → 30 lists of 4-8 enemy
+type IDs), LevelBlockOW (AttrsC/D/F → 128 OW screen spawn entries with
+monsterListId, monsterCountIndex, edgeSpawn flag), LevelInfoOW (foeCounts
+[1,4,5,6]). Parsed from Z_05.asm: SpawnPosList0-3 (4×9 positions). From
+UpdateObject_JumpTable in Z_07.asm: 83-entry object type name map (0x00-0x52).
+Dungeon spawn data was already in dungeons.json from B2 (monsterListId,
+monsterCountIndex, foeCounts per dungeon). Created `src/data/enemy-spawn-types.ts`
+and `tests/data/enemy-spawns.test.ts`. 23 new tests (188 total). **Next: B4.**
+
+### 2026-08-06 — B2 Dungeon room data (Claude Opus 4.6)
+
+Created `scripts/extract-dungeons.ts` — Node extraction script that reads the
+NES ROM at known offsets for 4 LevelBlock binaries (768 bytes each: AttrsA–F for
+128 rooms), 9 LevelInfo binaries (252 bytes each: startRoomId, triforceRoomId,
+bossRoomId, cellarRoomIds, foeCounts), and RoomLayoutsUW (504 bytes: 42 unique
+rooms × 12 column descriptors). Parses inline .BYTE directives from Z_05.asm for
+10 ColumnHeapUW tables, ColumnHeapUWCellar, 2 cellar layouts, and
+PrimarySquaresUW (8 entries). Decodes 42 unique room tile grids (7×12 squares)
+using column-based compression (same algorithm as overworld but with UW
+parameters: 12 cols, 7 rows, 10 heap tables, 3-bit square indices). Outputs
+`src/data/dungeons.json` with 4 level blocks (Q1+Q2 × blocks 1-6/7-9), 9
+dungeon metadata entries, 42 unique rooms, 2 cellar rooms, and square table.
+Created `src/data/dungeon-types.ts` with DungeonRoom, DungeonLevelBlock,
+DungeonInfo, UniqueRoom, DungeonData interfaces. 33 new validation tests
+(165 total). **Next: B3.**
 
 ### 2026-08-05 — B1 Overworld map data (Claude Opus 4.6)
 
