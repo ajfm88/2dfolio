@@ -41,6 +41,8 @@ const DUNGEON_LEVEL_BLOCK_Q1: Record<number, string> = {
 // LevelInfo field offsets (base $6B7E)
 const LI_FOE_COUNTS = 36;
 const LI_START_Y = 40;
+const LI_SHORTCUT_OR_ITEM_POS = 41;
+const LI_SHORTCUT_OR_ITEM_POS_LEN = 4;
 const LI_START_ROOM_ID = 47;
 const LI_TRIFORCE_ROOM_ID = 48;
 const LI_LEVEL_NUMBER = 51;
@@ -75,6 +77,7 @@ interface RoomData {
   isDark: boolean;
   soundEffect: number;
   secretTrigger: number;
+  itemPositionIndex: number;
 }
 
 function extractLevelBlock(rom: Buffer, offset: number): RoomData[] {
@@ -109,6 +112,7 @@ function extractLevelBlock(rom: Buffer, offset: number): RoomData[] {
       isDark: (attrsE & 0x80) !== 0,
       soundEffect: (attrsE >> 5) & 0x03,
       secretTrigger: attrsF & 0x07,
+      itemPositionIndex: (attrsF >> 4) & 0x03,
     });
   }
 
@@ -124,6 +128,7 @@ interface DungeonInfoData {
   bossRoomId: number;
   cellarRoomIds: number[];
   foeCounts: number[];
+  shortcutOrItemPositions: number[];
   startY: number;
   levelBlock: string;
 }
@@ -135,6 +140,11 @@ function extractLevelInfo(rom: Buffer, dungeonIndex: number): DungeonInfoData {
   const foeCounts: number[] = [];
   for (let i = 0; i < 4; i++) {
     foeCounts.push(info[LI_FOE_COUNTS + i]!);
+  }
+
+  const shortcutOrItemPositions: number[] = [];
+  for (let i = 0; i < LI_SHORTCUT_OR_ITEM_POS_LEN; i++) {
+    shortcutOrItemPositions.push(info[LI_SHORTCUT_OR_ITEM_POS + i]!);
   }
 
   const cellarRoomIds: number[] = [];
@@ -155,6 +165,7 @@ function extractLevelInfo(rom: Buffer, dungeonIndex: number): DungeonInfoData {
     bossRoomId: info[LI_BOSS_ROOM_ID]!,
     cellarRoomIds,
     foeCounts,
+    shortcutOrItemPositions,
     startY: info[LI_START_Y]!,
     levelBlock,
   };
@@ -397,6 +408,9 @@ function validateRooms(rooms: RoomData[], blockName: string): void {
     }
     if (room.secretTrigger < 0 || room.secretTrigger > 7) {
       throw new Error(`${blockName} room ${room.id}: secretTrigger ${room.secretTrigger} out of range 0-7`);
+    }
+    if (room.itemPositionIndex < 0 || room.itemPositionIndex > 3) {
+      throw new Error(`${blockName} room ${room.id}: itemPositionIndex ${room.itemPositionIndex} out of range 0-3`);
     }
   }
 }
