@@ -21,7 +21,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 1,
@@ -42,7 +43,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 2,
@@ -63,7 +65,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 3,
@@ -84,7 +87,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 4,
@@ -105,7 +109,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 5,
@@ -126,7 +131,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 6,
@@ -147,7 +153,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 7,
@@ -168,7 +175,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 8,
@@ -189,7 +197,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 9,
@@ -210,7 +219,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 10,
@@ -231,7 +241,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 11,
@@ -252,7 +263,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 12,
@@ -273,7 +285,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 13,
@@ -294,7 +307,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 14,
@@ -315,7 +329,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 15,
@@ -336,7 +351,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 16,
@@ -357,7 +373,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 17,
@@ -378,7 +395,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 18,
@@ -399,7 +417,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 19,
@@ -420,7 +439,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 20,
@@ -441,7 +461,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 21,
@@ -462,7 +483,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 22,
@@ -483,7 +505,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 23,
@@ -504,7 +527,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 24,
@@ -525,7 +549,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 25,
@@ -546,7 +571,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 26,
@@ -567,7 +593,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 27,
@@ -588,7 +615,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 28,
@@ -609,7 +637,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 29,
@@ -630,7 +659,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 30,
@@ -651,7 +681,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 31,
@@ -672,7 +703,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 32,
@@ -693,7 +725,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 33,
@@ -714,7 +747,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 34,
@@ -735,7 +769,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 35,
@@ -756,7 +791,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 36,
@@ -777,7 +813,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 37,
@@ -798,7 +835,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 38,
@@ -819,7 +857,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 39,
@@ -840,7 +879,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 40,
@@ -861,7 +901,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 41,
@@ -882,7 +923,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 42,
@@ -903,7 +945,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 43,
@@ -924,7 +967,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 44,
@@ -945,7 +989,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 45,
@@ -966,7 +1011,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 46,
@@ -987,7 +1033,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 47,
@@ -1008,7 +1055,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 48,
@@ -1029,7 +1077,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 49,
@@ -1050,7 +1099,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 50,
@@ -1071,7 +1121,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 51,
@@ -1092,7 +1143,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 52,
@@ -1113,7 +1165,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 53,
@@ -1134,7 +1187,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 54,
@@ -1155,7 +1209,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 55,
@@ -1176,7 +1231,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 56,
@@ -1197,7 +1253,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 57,
@@ -1218,7 +1275,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 58,
@@ -1239,7 +1297,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 59,
@@ -1260,7 +1319,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 60,
@@ -1281,7 +1341,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 61,
@@ -1302,7 +1363,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 62,
@@ -1323,7 +1385,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 63,
@@ -1344,7 +1407,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 64,
@@ -1365,7 +1429,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 65,
@@ -1386,7 +1451,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 66,
@@ -1407,7 +1473,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 67,
@@ -1428,7 +1495,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 68,
@@ -1449,7 +1517,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 69,
@@ -1470,7 +1539,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 70,
@@ -1491,7 +1561,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 71,
@@ -1512,7 +1583,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 72,
@@ -1533,7 +1605,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 73,
@@ -1554,7 +1627,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 74,
@@ -1575,7 +1649,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 75,
@@ -1596,7 +1671,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 76,
@@ -1617,7 +1693,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 77,
@@ -1638,7 +1715,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 78,
@@ -1659,7 +1737,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 79,
@@ -1680,7 +1759,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 80,
@@ -1701,7 +1781,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 81,
@@ -1722,7 +1803,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 82,
@@ -1743,7 +1825,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 83,
@@ -1764,7 +1847,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 84,
@@ -1785,7 +1869,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 85,
@@ -1806,7 +1891,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 86,
@@ -1827,7 +1913,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 87,
@@ -1848,7 +1935,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 88,
@@ -1869,7 +1957,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 89,
@@ -1890,7 +1979,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 90,
@@ -1911,7 +2001,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 91,
@@ -1932,7 +2023,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 92,
@@ -1953,7 +2045,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 1
         },
         {
           "id": 93,
@@ -1974,7 +2067,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 94,
@@ -1995,7 +2089,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 95,
@@ -2016,7 +2111,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 96,
@@ -2037,7 +2133,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 97,
@@ -2058,7 +2155,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 98,
@@ -2079,7 +2177,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 99,
@@ -2100,7 +2199,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 100,
@@ -2121,7 +2221,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 101,
@@ -2142,7 +2243,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 102,
@@ -2163,7 +2265,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 1
         },
         {
           "id": 103,
@@ -2184,7 +2287,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 104,
@@ -2205,7 +2309,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 105,
@@ -2226,7 +2331,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 106,
@@ -2247,7 +2353,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 107,
@@ -2268,7 +2375,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 108,
@@ -2289,7 +2397,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 109,
@@ -2310,7 +2419,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 110,
@@ -2331,7 +2441,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 111,
@@ -2352,7 +2463,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 112,
@@ -2373,7 +2485,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 113,
@@ -2394,7 +2507,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 114,
@@ -2415,7 +2529,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 115,
@@ -2436,7 +2551,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 116,
@@ -2457,7 +2573,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 117,
@@ -2478,7 +2595,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 118,
@@ -2499,7 +2617,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 119,
@@ -2520,7 +2639,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 120,
@@ -2541,7 +2661,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 121,
@@ -2562,7 +2683,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 122,
@@ -2583,7 +2705,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 123,
@@ -2604,7 +2727,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 124,
@@ -2625,7 +2749,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 125,
@@ -2646,7 +2771,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 126,
@@ -2667,7 +2793,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 127,
@@ -2688,7 +2815,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         }
       ]
     },
@@ -2713,7 +2841,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 1,
@@ -2734,7 +2863,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 2,
@@ -2755,7 +2885,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 3,
@@ -2776,7 +2907,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 4,
@@ -2797,7 +2929,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 5,
@@ -2818,7 +2951,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 6,
@@ -2839,7 +2973,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 7,
@@ -2860,7 +2995,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 8,
@@ -2881,7 +3017,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 9,
@@ -2902,7 +3039,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 10,
@@ -2923,7 +3061,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 11,
@@ -2944,7 +3083,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 12,
@@ -2965,7 +3105,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 13,
@@ -2986,7 +3127,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 14,
@@ -3007,7 +3149,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 15,
@@ -3028,7 +3171,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 16,
@@ -3049,7 +3193,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 17,
@@ -3070,7 +3215,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 18,
@@ -3091,7 +3237,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 19,
@@ -3112,7 +3259,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 20,
@@ -3133,7 +3281,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 21,
@@ -3154,7 +3303,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 22,
@@ -3175,7 +3325,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 23,
@@ -3196,7 +3347,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 24,
@@ -3217,7 +3369,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 25,
@@ -3238,7 +3391,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 26,
@@ -3259,7 +3413,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 27,
@@ -3280,7 +3435,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 28,
@@ -3301,7 +3457,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 29,
@@ -3322,7 +3479,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 30,
@@ -3343,7 +3501,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 31,
@@ -3364,7 +3523,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 32,
@@ -3385,7 +3545,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 33,
@@ -3406,7 +3567,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 34,
@@ -3427,7 +3589,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 35,
@@ -3448,7 +3611,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 36,
@@ -3469,7 +3633,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 37,
@@ -3490,7 +3655,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 38,
@@ -3511,7 +3677,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 39,
@@ -3532,7 +3699,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 40,
@@ -3553,7 +3721,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 41,
@@ -3574,7 +3743,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 42,
@@ -3595,7 +3765,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 43,
@@ -3616,7 +3787,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 44,
@@ -3637,7 +3809,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 45,
@@ -3658,7 +3831,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 46,
@@ -3679,7 +3853,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 47,
@@ -3700,7 +3875,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 48,
@@ -3721,7 +3897,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 49,
@@ -3742,7 +3919,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 50,
@@ -3763,7 +3941,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 51,
@@ -3784,7 +3963,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 52,
@@ -3805,7 +3985,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 53,
@@ -3826,7 +4007,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 54,
@@ -3847,7 +4029,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 55,
@@ -3868,7 +4051,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 56,
@@ -3889,7 +4073,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 57,
@@ -3910,7 +4095,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 58,
@@ -3931,7 +4117,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 59,
@@ -3952,7 +4139,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 60,
@@ -3973,7 +4161,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 61,
@@ -3994,7 +4183,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 62,
@@ -4015,7 +4205,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 63,
@@ -4036,7 +4227,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 64,
@@ -4057,7 +4249,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 65,
@@ -4078,7 +4271,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 66,
@@ -4099,7 +4293,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 3
+          "secretTrigger": 3,
+          "itemPositionIndex": 0
         },
         {
           "id": 67,
@@ -4120,7 +4315,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 68,
@@ -4141,7 +4337,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 69,
@@ -4162,7 +4359,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 70,
@@ -4183,7 +4381,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 71,
@@ -4204,7 +4403,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 72,
@@ -4225,7 +4425,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 73,
@@ -4246,7 +4447,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 74,
@@ -4267,7 +4469,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 75,
@@ -4288,7 +4491,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 76,
@@ -4309,7 +4513,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 1
         },
         {
           "id": 77,
@@ -4330,7 +4535,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 78,
@@ -4351,7 +4557,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 79,
@@ -4372,7 +4579,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 80,
@@ -4393,7 +4601,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 81,
@@ -4414,7 +4623,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 82,
@@ -4435,7 +4645,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 83,
@@ -4456,7 +4667,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 84,
@@ -4477,7 +4689,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 85,
@@ -4498,7 +4711,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 86,
@@ -4519,7 +4733,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 87,
@@ -4540,7 +4755,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 88,
@@ -4561,7 +4777,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 89,
@@ -4582,7 +4799,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 90,
@@ -4603,7 +4821,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 91,
@@ -4624,7 +4843,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 92,
@@ -4645,7 +4865,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 93,
@@ -4666,7 +4887,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 94,
@@ -4687,7 +4909,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 95,
@@ -4708,7 +4931,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 96,
@@ -4729,7 +4953,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 97,
@@ -4750,7 +4975,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 98,
@@ -4771,7 +4997,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 99,
@@ -4792,7 +5019,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 100,
@@ -4813,7 +5041,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 101,
@@ -4834,7 +5063,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 102,
@@ -4855,7 +5085,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 103,
@@ -4876,7 +5107,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 104,
@@ -4897,7 +5129,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 105,
@@ -4918,7 +5151,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 106,
@@ -4939,7 +5173,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 107,
@@ -4960,7 +5195,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 108,
@@ -4981,7 +5217,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 109,
@@ -5002,7 +5239,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 110,
@@ -5023,7 +5261,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 111,
@@ -5044,7 +5283,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 112,
@@ -5065,7 +5305,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 113,
@@ -5086,7 +5327,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 114,
@@ -5107,7 +5349,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 115,
@@ -5128,7 +5371,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 116,
@@ -5149,7 +5393,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 117,
@@ -5170,7 +5415,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 118,
@@ -5191,7 +5437,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 119,
@@ -5212,7 +5459,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 120,
@@ -5233,7 +5481,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 121,
@@ -5254,7 +5503,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 122,
@@ -5275,7 +5525,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 123,
@@ -5296,7 +5547,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 124,
@@ -5317,7 +5569,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 125,
@@ -5338,7 +5591,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 126,
@@ -5359,7 +5613,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 127,
@@ -5380,7 +5635,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         }
       ]
     },
@@ -5405,7 +5661,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 1,
@@ -5426,7 +5683,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 2,
@@ -5447,7 +5705,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 3,
@@ -5468,7 +5727,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 4,
@@ -5489,7 +5749,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 5,
@@ -5510,7 +5771,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 6,
@@ -5531,7 +5793,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 7,
@@ -5552,7 +5815,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 8,
@@ -5573,7 +5837,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 9,
@@ -5594,7 +5859,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 10,
@@ -5615,7 +5881,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 11,
@@ -5636,7 +5903,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 12,
@@ -5657,7 +5925,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 13,
@@ -5678,7 +5947,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 6
+          "secretTrigger": 6,
+          "itemPositionIndex": 0
         },
         {
           "id": 14,
@@ -5699,7 +5969,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 15,
@@ -5720,7 +5991,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 16,
@@ -5741,7 +6013,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 17,
@@ -5762,7 +6035,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 18,
@@ -5783,7 +6057,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 19,
@@ -5804,7 +6079,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 20,
@@ -5825,7 +6101,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 3
         },
         {
           "id": 21,
@@ -5846,7 +6123,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 22,
@@ -5867,7 +6145,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 23,
@@ -5888,7 +6167,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 24,
@@ -5909,7 +6189,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 25,
@@ -5930,7 +6211,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 26,
@@ -5951,7 +6233,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 27,
@@ -5972,7 +6255,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 28,
@@ -5993,7 +6277,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 29,
@@ -6014,7 +6299,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 30,
@@ -6035,7 +6321,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 31,
@@ -6056,7 +6343,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 32,
@@ -6077,7 +6365,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 33,
@@ -6098,7 +6387,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 34,
@@ -6119,7 +6409,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 2
+          "secretTrigger": 2,
+          "itemPositionIndex": 0
         },
         {
           "id": 35,
@@ -6140,7 +6431,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 36,
@@ -6161,7 +6453,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 37,
@@ -6182,7 +6475,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 38,
@@ -6203,7 +6497,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 39,
@@ -6224,7 +6519,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 40,
@@ -6245,7 +6541,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 41,
@@ -6266,7 +6563,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 42,
@@ -6287,7 +6585,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 43,
@@ -6308,7 +6607,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 44,
@@ -6329,7 +6629,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 45,
@@ -6350,7 +6651,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 46,
@@ -6371,7 +6673,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 47,
@@ -6392,7 +6695,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 48,
@@ -6413,7 +6717,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 49,
@@ -6434,7 +6739,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 3
         },
         {
           "id": 50,
@@ -6455,7 +6761,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 51,
@@ -6476,7 +6783,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 52,
@@ -6497,7 +6805,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 53,
@@ -6518,7 +6827,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 54,
@@ -6539,7 +6849,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 55,
@@ -6560,7 +6871,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 56,
@@ -6581,7 +6893,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 57,
@@ -6602,7 +6915,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 58,
@@ -6623,7 +6937,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 59,
@@ -6644,7 +6959,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 60,
@@ -6665,7 +6981,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 61,
@@ -6686,7 +7003,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 62,
@@ -6707,7 +7025,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 6
+          "secretTrigger": 6,
+          "itemPositionIndex": 0
         },
         {
           "id": 63,
@@ -6728,7 +7047,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 64,
@@ -6749,7 +7069,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 65,
@@ -6770,7 +7091,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 66,
@@ -6791,7 +7113,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 67,
@@ -6812,7 +7135,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 68,
@@ -6833,7 +7157,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 69,
@@ -6854,7 +7179,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 2
         },
         {
           "id": 70,
@@ -6875,7 +7201,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 71,
@@ -6896,7 +7223,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 72,
@@ -6917,7 +7245,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 3
         },
         {
           "id": 73,
@@ -6938,7 +7267,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 74,
@@ -6959,7 +7289,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 75,
@@ -6980,7 +7311,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 76,
@@ -7001,7 +7333,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 77,
@@ -7022,7 +7355,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 78,
@@ -7043,7 +7377,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 79,
@@ -7064,7 +7399,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 80,
@@ -7085,7 +7421,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 81,
@@ -7106,7 +7443,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 3
         },
         {
           "id": 82,
@@ -7127,7 +7465,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 83,
@@ -7148,7 +7487,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 84,
@@ -7169,7 +7509,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 85,
@@ -7190,7 +7531,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 86,
@@ -7211,7 +7553,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 87,
@@ -7232,7 +7575,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 88,
@@ -7253,7 +7597,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 89,
@@ -7274,7 +7619,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 90,
@@ -7295,7 +7641,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 91,
@@ -7316,7 +7663,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 92,
@@ -7337,7 +7685,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 93,
@@ -7358,7 +7707,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 94,
@@ -7379,7 +7729,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 95,
@@ -7400,7 +7751,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 96,
@@ -7421,7 +7773,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 97,
@@ -7442,7 +7795,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 98,
@@ -7463,7 +7817,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 99,
@@ -7484,7 +7839,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 100,
@@ -7505,7 +7861,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 101,
@@ -7526,7 +7883,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 102,
@@ -7547,7 +7905,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 103,
@@ -7568,7 +7927,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 104,
@@ -7589,7 +7949,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 105,
@@ -7610,7 +7971,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 106,
@@ -7631,7 +7993,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 107,
@@ -7652,7 +8015,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 108,
@@ -7673,7 +8037,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 109,
@@ -7694,7 +8059,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 110,
@@ -7715,7 +8081,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 111,
@@ -7736,7 +8103,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 3,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 112,
@@ -7757,7 +8125,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 113,
@@ -7778,7 +8147,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 114,
@@ -7799,7 +8169,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 115,
@@ -7820,7 +8191,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 116,
@@ -7841,7 +8213,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 117,
@@ -7862,7 +8235,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 118,
@@ -7883,7 +8257,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 2
         },
         {
           "id": 119,
@@ -7904,7 +8279,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 120,
@@ -7925,7 +8301,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 121,
@@ -7946,7 +8323,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 122,
@@ -7967,7 +8345,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 123,
@@ -7988,7 +8367,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 124,
@@ -8009,7 +8389,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 125,
@@ -8030,7 +8411,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 126,
@@ -8051,7 +8433,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 127,
@@ -8072,7 +8455,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         }
       ]
     },
@@ -8097,7 +8481,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 1,
@@ -8118,7 +8503,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 2,
@@ -8139,7 +8525,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 3,
@@ -8160,7 +8547,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 4,
@@ -8181,7 +8569,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 5,
@@ -8202,7 +8591,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 6,
@@ -8223,7 +8613,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 7,
@@ -8244,7 +8635,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 8,
@@ -8265,7 +8657,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 9,
@@ -8286,7 +8679,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 10,
@@ -8307,7 +8701,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 1
         },
         {
           "id": 11,
@@ -8328,7 +8723,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 12,
@@ -8349,7 +8745,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 13,
@@ -8370,7 +8767,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 14,
@@ -8391,7 +8789,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 15,
@@ -8412,7 +8811,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 16,
@@ -8433,7 +8833,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 17,
@@ -8454,7 +8855,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 18,
@@ -8475,7 +8877,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 19,
@@ -8496,7 +8899,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 20,
@@ -8517,7 +8921,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 21,
@@ -8538,7 +8943,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 22,
@@ -8559,7 +8965,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 23,
@@ -8580,7 +8987,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 3
+          "secretTrigger": 3,
+          "itemPositionIndex": 0
         },
         {
           "id": 24,
@@ -8601,7 +9009,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 25,
@@ -8622,7 +9031,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 26,
@@ -8643,7 +9053,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 27,
@@ -8664,7 +9075,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 28,
@@ -8685,7 +9097,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 29,
@@ -8706,7 +9119,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 1,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 30,
@@ -8727,7 +9141,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 31,
@@ -8748,7 +9163,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 32,
@@ -8769,7 +9185,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 33,
@@ -8790,7 +9207,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 34,
@@ -8811,7 +9229,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 35,
@@ -8832,7 +9251,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 1
         },
         {
           "id": 36,
@@ -8853,7 +9273,8 @@
           "hasPushBlock": true,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 37,
@@ -8874,7 +9295,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 38,
@@ -8895,7 +9317,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 39,
@@ -8916,7 +9339,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 40,
@@ -8937,7 +9361,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 41,
@@ -8958,7 +9383,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 42,
@@ -8979,7 +9405,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 43,
@@ -9000,7 +9427,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 44,
@@ -9021,7 +9449,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 45,
@@ -9042,7 +9471,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 46,
@@ -9063,7 +9493,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 2
         },
         {
           "id": 47,
@@ -9084,7 +9515,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 48,
@@ -9105,7 +9537,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 49,
@@ -9126,7 +9559,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 50,
@@ -9147,7 +9581,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 51,
@@ -9168,7 +9603,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 52,
@@ -9189,7 +9625,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 53,
@@ -9210,7 +9647,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 54,
@@ -9231,7 +9669,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 55,
@@ -9252,7 +9691,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 56,
@@ -9273,7 +9713,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 57,
@@ -9294,7 +9735,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 58,
@@ -9315,7 +9757,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 59,
@@ -9336,7 +9779,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 6
+          "secretTrigger": 6,
+          "itemPositionIndex": 0
         },
         {
           "id": 60,
@@ -9357,7 +9801,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 61,
@@ -9378,7 +9823,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 0
         },
         {
           "id": 62,
@@ -9399,7 +9845,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 63,
@@ -9420,7 +9867,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 64,
@@ -9441,7 +9889,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 65,
@@ -9462,7 +9911,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 66,
@@ -9483,7 +9933,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 67,
@@ -9504,7 +9955,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 68,
@@ -9525,7 +9977,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 69,
@@ -9546,7 +9999,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 70,
@@ -9567,7 +10021,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 71,
@@ -9588,7 +10043,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 72,
@@ -9609,7 +10065,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 73,
@@ -9630,7 +10087,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 74,
@@ -9651,7 +10109,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 75,
@@ -9672,7 +10131,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 76,
@@ -9693,7 +10153,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 6
+          "secretTrigger": 6,
+          "itemPositionIndex": 0
         },
         {
           "id": 77,
@@ -9714,7 +10175,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 2,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 78,
@@ -9735,7 +10197,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 79,
@@ -9756,7 +10219,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 80,
@@ -9777,7 +10241,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 81,
@@ -9798,7 +10263,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 82,
@@ -9819,7 +10285,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 83,
@@ -9840,7 +10307,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 84,
@@ -9861,7 +10329,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 85,
@@ -9882,7 +10351,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 86,
@@ -9903,7 +10373,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 87,
@@ -9924,7 +10395,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 88,
@@ -9945,7 +10417,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 89,
@@ -9966,7 +10439,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 90,
@@ -9987,7 +10461,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 91,
@@ -10008,7 +10483,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 92,
@@ -10029,7 +10505,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 93,
@@ -10050,7 +10527,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 94,
@@ -10071,7 +10549,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 95,
@@ -10092,7 +10571,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 96,
@@ -10113,7 +10593,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 97,
@@ -10134,7 +10615,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 98,
@@ -10155,7 +10637,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 99,
@@ -10176,7 +10659,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 100,
@@ -10197,7 +10681,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 101,
@@ -10218,7 +10703,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 102,
@@ -10239,7 +10725,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 2
         },
         {
           "id": 103,
@@ -10260,7 +10747,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 104,
@@ -10281,7 +10769,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 105,
@@ -10302,7 +10791,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 106,
@@ -10323,7 +10813,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 1
         },
         {
           "id": 107,
@@ -10344,7 +10835,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 108,
@@ -10365,7 +10857,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 109,
@@ -10386,7 +10879,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 110,
@@ -10407,7 +10901,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 7
+          "secretTrigger": 7,
+          "itemPositionIndex": 3
         },
         {
           "id": 111,
@@ -10428,7 +10923,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 112,
@@ -10449,7 +10945,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 113,
@@ -10470,7 +10967,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 114,
@@ -10491,7 +10989,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 115,
@@ -10512,7 +11011,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 116,
@@ -10533,7 +11033,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 117,
@@ -10554,7 +11055,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 118,
@@ -10575,7 +11077,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 119,
@@ -10596,7 +11099,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 2
         },
         {
           "id": 120,
@@ -10617,7 +11121,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 1
         },
         {
           "id": 121,
@@ -10638,7 +11143,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 122,
@@ -10659,7 +11165,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 123,
@@ -10680,7 +11187,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 1
+          "secretTrigger": 1,
+          "itemPositionIndex": 0
         },
         {
           "id": 124,
@@ -10701,7 +11209,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 5
+          "secretTrigger": 5,
+          "itemPositionIndex": 0
         },
         {
           "id": 125,
@@ -10722,7 +11231,8 @@
           "hasPushBlock": true,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 4
+          "secretTrigger": 4,
+          "itemPositionIndex": 0
         },
         {
           "id": 126,
@@ -10743,7 +11253,8 @@
           "hasPushBlock": false,
           "isDark": true,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         },
         {
           "id": 127,
@@ -10764,7 +11275,8 @@
           "hasPushBlock": false,
           "isDark": false,
           "soundEffect": 0,
-          "secretTrigger": 0
+          "secretTrigger": 0,
+          "itemPositionIndex": 0
         }
       ]
     }
@@ -10793,6 +11305,12 @@
         6,
         8
       ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        135
+      ],
       "startY": 221,
       "levelBlock": "uw1q1"
     },
@@ -10818,6 +11336,12 @@
         5,
         6,
         8
+      ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
       ],
       "startY": 221,
       "levelBlock": "uw1q1"
@@ -10845,6 +11369,12 @@
         6,
         8
       ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
+      ],
       "startY": 221,
       "levelBlock": "uw1q1"
     },
@@ -10870,6 +11400,12 @@
         5,
         6,
         8
+      ],
+      "shortcutOrItemPositions": [
+        220,
+        153,
+        136,
+        137
       ],
       "startY": 221,
       "levelBlock": "uw1q1"
@@ -10897,6 +11433,12 @@
         6,
         8
       ],
+      "shortcutOrItemPositions": [
+        135,
+        200,
+        138,
+        137
+      ],
       "startY": 221,
       "levelBlock": "uw1q1"
     },
@@ -10922,6 +11464,12 @@
         5,
         6,
         8
+      ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
       ],
       "startY": 221,
       "levelBlock": "uw1q1"
@@ -10949,6 +11497,12 @@
         6,
         8
       ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
+      ],
       "startY": 221,
       "levelBlock": "uw2q1"
     },
@@ -10975,6 +11529,12 @@
         6,
         8
       ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
+      ],
       "startY": 221,
       "levelBlock": "uw2q1"
     },
@@ -11000,6 +11560,12 @@
         5,
         6,
         8
+      ],
+      "shortcutOrItemPositions": [
+        137,
+        214,
+        38,
+        44
       ],
       "startY": 221,
       "levelBlock": "uw2q1"
