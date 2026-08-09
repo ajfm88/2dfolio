@@ -20,6 +20,7 @@ export interface DungeonRoom {
   readonly isDark: boolean;
   readonly soundEffect: number;
   readonly secretTrigger: number;
+  readonly itemPositionIndex: number;
 }
 
 export interface DungeonLevelBlock {
@@ -33,6 +34,7 @@ export interface DungeonInfo {
   readonly bossRoomId: number;
   readonly cellarRoomIds: readonly number[];
   readonly foeCounts: readonly number[];
+  readonly shortcutOrItemPositions: readonly number[];
   readonly startY: number;
   readonly levelBlock: string;
 }

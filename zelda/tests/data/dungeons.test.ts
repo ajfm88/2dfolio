@@ -79,6 +79,15 @@ describe('Dungeon data — level blocks', () => {
     }
   });
 
+  it('itemPositionIndex is 0-3', () => {
+    for (const key of blockKeys) {
+      for (const room of data.levelBlocks[key].rooms) {
+        expect(room.itemPositionIndex).toBeGreaterThanOrEqual(0);
+        expect(room.itemPositionIndex).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
   it('palette values are 0-3', () => {
     for (const key of blockKeys) {
       for (const room of data.levelBlocks[key].rooms) {
@@ -159,6 +168,16 @@ describe('Dungeon data — dungeon info', () => {
   it('each dungeon has 10 cellar room IDs', () => {
     for (const dungeon of data.dungeons) {
       expect(dungeon.cellarRoomIds).toHaveLength(10);
+    }
+  });
+
+  it('each dungeon has 4 shortcutOrItemPositions (values 0-255)', () => {
+    for (const dungeon of data.dungeons) {
+      expect(dungeon.shortcutOrItemPositions).toHaveLength(4);
+      for (const pos of dungeon.shortcutOrItemPositions) {
+        expect(pos).toBeGreaterThanOrEqual(0);
+        expect(pos).toBeLessThanOrEqual(255);
+      }
     }
   });
 

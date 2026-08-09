@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-06 · **Phase:** B (Data Extraction) · **Slices done:** 8 / 45
+**Last updated:** 2026-08-07 · **Phase:** B (Data Extraction) · **Slices done:** 9 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice B4** — Item tables: drop tables, shop inventories, cave
-contents, heart container locations.
+**Next action: slice B5** — Sprite animation data: frame counts, timing,
+directional sprites for Link, enemies, items, effects.
 
 ---
 
@@ -46,6 +46,8 @@ contents, heart container locations.
 | Overworld data | `src/data/overworld.json` | ✅ 128 screens × 11×16 tile grids + square table, extracted from ROM + disassembly (B1) |
 | Dungeon data | `src/data/dungeons.json` | ✅ 4 level blocks × 128 rooms, 42 unique room tile grids, 2 cellars, 9 dungeon metadata entries (B2) |
 | Enemy spawns | `src/data/enemy-spawns.json` | ✅ 83 object types, 30 heterogeneous lists, 4 spawn position lists, 128 OW spawn entries, OW foeCounts (B3) |
+| Item tables | `src/data/items.json` | ✅ 36 item names, drop tables (4×10), 20 cave/shop inventories with prices, cave types, OW heart container, 7 secret Armos, 11 flute secrets, 38 HP pairs, money game data (B4) |
+| Dungeon positions | `src/data/dungeons.json` | ✅ updated: added itemPositionIndex per room + shortcutOrItemPositions per dungeon (B4) |
 
 ---
 
@@ -63,7 +65,7 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~6~~ | ~~**B1** Overworld map data~~ | ✅ done 2026-08-05 |
 | ~~7~~ | ~~**B2** Dungeon room data~~ | ✅ done 2026-08-06 |
 | ~~8~~ | ~~**B3** Enemy spawn tables~~ | ✅ done 2026-08-06 |
-| 9 | **B4** Item tables | drop tables, shop inventories, cave contents |
+| ~~9~~ | ~~**B4** Item tables~~ | ✅ done 2026-08-07 |
 | 10 | **B5** Sprite animation data | frame counts, timing, directional sprites |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
@@ -100,6 +102,23 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-07 — B4 Item tables (Claude Opus 4.6)
+
+Created `scripts/extract-items.ts` — extracts all item-related data from the NES
+ROM and disassembly. From Z_04.asm: enemy drop tables (4 monster groups, 4 rates,
+4×10 drop item table, 7 no-drop types). From Z_01.asm: ItemIdToSlot (36 entries),
+ItemIdToDescriptor (36 entries), OverworldPersonTextSelectors (20 cave types
+decoded to textSelector/payFlag/pickUpFlag), MoneyGameLossAmounts + Permutations.
+From ROM binary LevelBlockOW.dat AttrsE: 20 cave/shop inventories (3 items + 3
+prices each, items masked to 6-bit IDs, flags from high 2 bits). From Z_04.asm:
+SecretArmosRoomIds/Xs (7 entries). From Z_07.asm: FluteRoomSecretsOW (11 rooms),
+ObjectTypeToHpPairs (38 packed bytes). Hardcoded OW heart container at screen
+$5F ($C0, $90). Also updated `extract-dungeons.ts` to capture itemPositionIndex
+(AttrsF bits 4-5) per room and shortcutOrItemPositions (4 packed X/Y bytes) per
+dungeon from LevelInfo. Created `src/data/item-types.ts` with ITEM_NAMES (36),
+CAVE_TYPE_NAMES (20), and all interfaces. 45 new tests (233 total). Added
+extract:dungeons, extract:enemy-spawns, extract:items npm scripts. **Next: B5.**
 
 ### 2026-08-06 — B3 Enemy spawn tables (Claude Opus 4.6)
 

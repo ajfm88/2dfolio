@@ -11,7 +11,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
-    "extract:overworld": "tsx scripts/extract-overworld.ts"
+    "extract:overworld": "tsx scripts/extract-overworld.ts",
+    "extract:dungeons": "tsx scripts/extract-dungeons.ts",
+    "extract:enemy-spawns": "tsx scripts/extract-enemy-spawns.ts",
+    "extract:items": "tsx scripts/extract-items.ts"
   },
   "devDependencies": {
     "eslint": "^10.8.0",
