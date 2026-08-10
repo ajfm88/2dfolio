@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-07 · **Phase:** B (Data Extraction) · **Slices done:** 9 / 45
+**Last updated:** 2026-08-08 · **Phase:** B (Data Extraction) complete · **Slices done:** 10 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice B5** — Sprite animation data: frame counts, timing,
-directional sprites for Link, enemies, items, effects.
+**Next action: slice C1** — Tile renderer: draw 16×11 play area from B1 map
+data. Tileset loading, tile ID → pixel mapping.
 
 ---
 
@@ -48,6 +48,7 @@ directional sprites for Link, enemies, items, effects.
 | Enemy spawns | `src/data/enemy-spawns.json` | ✅ 83 object types, 30 heterogeneous lists, 4 spawn position lists, 128 OW spawn entries, OW foeCounts (B3) |
 | Item tables | `src/data/items.json` | ✅ 36 item names, drop tables (4×10), 20 cave/shop inventories with prices, cave types, OW heart container, 7 secret Armos, 11 flute secrets, 38 HP pairs, money game data (B4) |
 | Dungeon positions | `src/data/dungeons.json` | ✅ updated: added itemPositionIndex per room + shortcutOrItemPositions per dungeon (B4) |
+| Sprite animation | `src/data/sprites.json` | ✅ core animation system (127 anim indices, 204-entry frame/attr heaps), 95 object type attrs, Link head tiles, 37 item frame offsets + 48 tiles, weapon directional tables, boomerang 9-frame cycle, bomb cloud offsets, 7 boss sprite layouts (Aquamentus/Dodongo/Digdogger/Gleeok/Ganon/Patra/Manhandla), enemy anim timing (Leever/Wallmaster) (B5) |
 
 ---
 
@@ -66,7 +67,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~7~~ | ~~**B2** Dungeon room data~~ | ✅ done 2026-08-06 |
 | ~~8~~ | ~~**B3** Enemy spawn tables~~ | ✅ done 2026-08-06 |
 | ~~9~~ | ~~**B4** Item tables~~ | ✅ done 2026-08-07 |
-| 10 | **B5** Sprite animation data | frame counts, timing, directional sprites |
+| ~~10~~ | ~~**B5** Sprite animation data~~ | ✅ done 2026-08-08 |
+| 11 | **C1** Tile renderer | draw 16×11 play area from B1 map data |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -102,6 +104,28 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-08 — B5 Sprite animation data (Claude Opus 4.6)
+
+Created `scripts/extract-sprites.ts` — extracts all sprite animation data from
+three ASM source files (no ROM binary needed). From Z_01.asm: core animation
+system — ObjAnimations (127 entries mapping animation index → frame heap offset),
+ObjAnimFrameHeap (204 CHR tile IDs), ObjAnimAttrHeap (204 palette/flip attrs),
+SpriteOffsets (41-entry OAM cycling table), SpriteRelativeExtents (2 bytes),
+Anim_ItemFrameOffsets (37 item slot → tile mappings), Anim_ItemFrameTiles (48
+CHR tile IDs), ItemSlotToPaletteOffsetsOrValues (32 palette values). From
+Z_07.asm: ObjectTypeToAttributes (95 per-type flags), LinkHeadTiles (4
+directional), LinkHeadMagicShieldTiles (4), weapon directional tables (4×4 +
+2×16 offsets), SwordShotSpreadBaseAttr (4), BoomerangFrameCycle (9) +
+BaseSpriteAttrCycle (9), BombCloudOffsets (4×3). From Z_04.asm: 7 boss sprite
+layouts — Aquamentus (tiles/offsets), Dodongo (frame images + bloated variants),
+Digdogger (2×2 grid offsets/attrs), Gleeok (3 body tile sets + base offsets),
+Ganon (24 frame images, burst dirs/tiles/attrs), Patra (start angles + 16-entry
+sine table), Manhandla (frame images/attrs + segment offsets). Enemy timing:
+BlueLeever/RedLeever state anim times, Wallmaster dirs+attrs for 4 walls +
+initial positions. Created `src/data/sprite-types.ts` with 18 interfaces.
+Hardcoded walkingAnimCounterReset=6. 61 new tests (294 total). Added
+extract:sprites npm script. **Phase B complete. Next: C1.**
 
 ### 2026-08-07 — B4 Item tables (Claude Opus 4.6)
 
