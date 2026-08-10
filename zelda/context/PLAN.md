@@ -61,7 +61,7 @@ Node scripts that parse the assembly source — run once, commit output.
 | B2 ✅ | Dungeon room data: all 9 dungeon layouts, room tiles, door/wall types | `Z_06.asm` | all dungeon rooms parse; room counts match |
 | B3 ✅ | Enemy spawn tables: per-screen enemy types, counts, positions | `Z_04.asm`, `Z_07.asm` | every screen has a spawn entry |
 | B4 ✅ | Item tables: drop tables, shop inventories, cave contents, heart container locations | `Z_05.asm`, `Z_06.asm` | every item placement accounted for |
-| B5 ⬜ | Sprite animation data: frame counts, timing, directional sprites for Link, enemies, items, effects | Reference repos + disassembly | animation data loads for all entity types |
+| B5 ✅ | Sprite animation data: frame counts, timing, directional sprites for Link, enemies, items, effects | Reference repos + disassembly | animation data loads for all entity types |
 
 ## Phase C — Rendering (4 slices)
 
