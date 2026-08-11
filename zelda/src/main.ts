@@ -2,9 +2,11 @@ import { SCREEN_WIDTH, HUD_HEIGHT } from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
-import { InputManager } from './core/input.js';
+import { Action, InputManager } from './core/input.js';
 import { Renderer } from './render/renderer.js';
+import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
+import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -13,24 +15,45 @@ input.attach();
 const fpsCounter = new FpsCounter();
 const debug = new DebugOverlay();
 debug.attach();
+const tileRenderer = new TileRenderer();
 
 let frameCount = 0;
 let loadProgress = { loaded: 0, total: 0 };
 let assets: LoadedAssets | null = null;
 let loadError: string | null = null;
+let overworldData: OverworldData | null = null;
+let currentScreen: OverworldScreen | null = null;
+let screenRow = 7;
+let screenCol = 7;
 
-loadAllAssets((loaded, total) => {
-  loadProgress = { loaded, total };
-})
-  .then((result) => {
-    assets = result;
-  })
-  .catch((err: unknown) => {
+async function init(): Promise<void> {
+  try {
+    assets = await loadAllAssets((loaded, total) => {
+      loadProgress = { loaded, total };
+    });
+
+    const resp = await fetch('/src/data/overworld.json');
+    overworldData = (await resp.json()) as OverworldData;
+
+    tileRenderer.init(assets.maps.overworldMap);
+    currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+  } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
-  });
+  }
+}
+
+void init();
+
+function navigateScreen(dRow: number, dCol: number): void {
+  if (!overworldData) return;
+  screenRow = ((screenRow + dRow) % 8 + 8) % 8;
+  screenCol = ((screenCol + dCol) % 16 + 16) % 16;
+  currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+}
 
 function renderDebugOverlay(): void {
   const ctx = renderer.ctx;
+  const screenId = currentScreen ? currentScreen.id : -1;
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.fillRect(0, 0, renderer.playAreaWidth, 12);
@@ -38,7 +61,7 @@ function renderDebugOverlay(): void {
   ctx.font = '8px monospace';
   ctx.fillStyle = '#0f0';
   ctx.fillText(
-    `FPS:${fpsCounter.fps} F:${frameCount} XY:(0,0) E:0`,
+    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${screenRow},${screenCol}) E:0`,
     2,
     9,
   );
@@ -76,6 +99,11 @@ const loop = new GameLoop({
   update(_dt: number) {
     input.update();
     frameCount++;
+
+    if (input.isJustPressed(Action.Up)) navigateScreen(-1, 0);
+    if (input.isJustPressed(Action.Down)) navigateScreen(1, 0);
+    if (input.isJustPressed(Action.Left)) navigateScreen(0, -1);
+    if (input.isJustPressed(Action.Right)) navigateScreen(0, 1);
   },
 
   render() {
@@ -87,20 +115,29 @@ const loop = new GameLoop({
     renderer.ctx.font = '10px monospace';
     renderer.ctx.fillText('THE LEGEND OF ZELDA', 56, 20);
 
+    const screenId = currentScreen ? currentScreen.id : -1;
+    renderer.ctx.fillStyle = '#fcbcb0';
+    renderer.ctx.font = '8px monospace';
+    renderer.ctx.fillText(
+      `Screen ${screenId} (${screenRow},${screenCol})  [Arrows to navigate]`,
+      8,
+      38,
+    );
+
     renderer.beginPlayArea();
 
     if (loadError) {
       renderer.fillRect(0, 0, renderer.playAreaWidth, renderer.playAreaHeight, '#400');
       renderer.ctx.fillStyle = '#f88';
       renderer.ctx.font = '10px monospace';
-      renderer.ctx.fillText('Asset load error:', 8, 40);
+      renderer.ctx.fillText('Load error:', 8, 40);
       renderer.ctx.fillText(loadError, 8, 56);
-    } else if (!assets) {
+    } else if (!assets || !overworldData || !currentScreen) {
       renderer.fillRect(0, 0, renderer.playAreaWidth, renderer.playAreaHeight, '#000');
       renderer.ctx.fillStyle = '#fff';
       renderer.ctx.font = '10px monospace';
       renderer.ctx.fillText(
-        `Loading assets... ${loadProgress.loaded}/${loadProgress.total}`,
+        `Loading... ${loadProgress.loaded}/${loadProgress.total}`,
         8,
         80,
       );
@@ -114,21 +151,7 @@ const loop = new GameLoop({
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
       }
     } else {
-      const hue = (frameCount * 2) % 360;
-      renderer.fillRect(
-        0, 0,
-        renderer.playAreaWidth, renderer.playAreaHeight,
-        `hsl(${hue} 40% 25%)`,
-      );
-
-      renderer.ctx.drawImage(assets.sprites.link, 0, 0, 16, 16, 8, 8, 16, 16);
-      renderer.ctx.drawImage(assets.tiles.overworld, 0, 0, 16, 16, 32, 8, 16, 16);
-
-      renderer.ctx.fillStyle = '#fff';
-      renderer.ctx.font = '10px monospace';
-      renderer.ctx.fillText(`Frame: ${frameCount}`, 8, 48);
-      renderer.ctx.fillText(`Assets loaded: ${loadProgress.total}/${loadProgress.total}`, 8, 64);
-      renderer.ctx.fillText('A3 asset curation OK', 8, 80);
+      tileRenderer.renderScreen(renderer, currentScreen);
     }
 
     if (debug.enabled) {
