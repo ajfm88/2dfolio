@@ -1,9 +1,11 @@
-import { SCREEN_WIDTH, HUD_HEIGHT } from './core/constants.js';
+import { SCREEN_WIDTH, HUD_HEIGHT, LINK_SHEET_COLUMNS, SPRITE_SPACING } from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
 import { Action, InputManager } from './core/input.js';
+import { Direction } from './core/types.js';
 import { Renderer } from './render/renderer.js';
+import { SpriteSheet, WalkAnimationController, directionToSpriteCol } from './render/sprite-renderer.js';
 import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
@@ -25,6 +27,11 @@ let overworldData: OverworldData | null = null;
 let currentScreen: OverworldScreen | null = null;
 let screenRow = 7;
 let screenCol = 7;
+let linkSheet: SpriteSheet | null = null;
+const linkWalkAnim = new WalkAnimationController();
+let linkDirection = Direction.Down;
+const linkX = 120;
+const linkY = 80;
 
 async function init(): Promise<void> {
   try {
@@ -36,6 +43,13 @@ async function init(): Promise<void> {
     overworldData = (await resp.json()) as OverworldData;
 
     tileRenderer.init(assets.maps.overworldMap);
+    linkSheet = new SpriteSheet({
+      image: assets.sprites.link,
+      columns: LINK_SHEET_COLUMNS,
+      spacingX: SPRITE_SPACING,
+      spacingY: SPRITE_SPACING,
+      autoDetectTransparency: true,
+    });
     currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
@@ -104,6 +118,19 @@ const loop = new GameLoop({
     if (input.isJustPressed(Action.Down)) navigateScreen(1, 0);
     if (input.isJustPressed(Action.Left)) navigateScreen(0, -1);
     if (input.isJustPressed(Action.Right)) navigateScreen(0, 1);
+
+    if (input.isHeld(Action.Up)) linkDirection = Direction.Up;
+    else if (input.isHeld(Action.Down)) linkDirection = Direction.Down;
+    else if (input.isHeld(Action.Left)) linkDirection = Direction.Left;
+    else if (input.isHeld(Action.Right)) linkDirection = Direction.Right;
+
+    const isMoving = input.isHeld(Action.Up) || input.isHeld(Action.Down) ||
+      input.isHeld(Action.Left) || input.isHeld(Action.Right);
+    if (isMoving) {
+      linkWalkAnim.tick();
+    } else {
+      linkWalkAnim.reset();
+    }
   },
 
   render() {
@@ -152,6 +179,11 @@ const loop = new GameLoop({
       }
     } else {
       tileRenderer.renderScreen(renderer, currentScreen);
+      if (linkSheet) {
+        const col = directionToSpriteCol(linkDirection);
+        const frameIndex = linkWalkAnim.currentStep * LINK_SHEET_COLUMNS + col;
+        linkSheet.drawFrame(renderer, frameIndex, linkX, linkY);
+      }
     }
 
     if (debug.enabled) {
