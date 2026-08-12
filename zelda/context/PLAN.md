@@ -68,7 +68,7 @@ Node scripts that parse the assembly source — run once, commit output.
 | ID | Slice | Verify |
 |---|---|---|
 | C1 ✅ | Tile renderer: draw 16×11 play area from B1 map data. Tileset loading, tile ID → pixel mapping | a real overworld screen draws |
-| C2 ⬜ | Sprite renderer + animation system: draw animated sprites, flip/mirror, depth sorting | Link sprite animates on screen |
+| C2 ✅ | Sprite renderer + animation system: draw animated sprites, flip/mirror, depth sorting | Link sprite animates on screen |
 | C3 ⬜ | HUD / status bar: hearts, rupees, keys, bombs, minimap dot, equipped item slots (A + B) | HUD renders with placeholder values |
 | C4 ⬜ | Screen transition: 4-directional scrolling between screens (push-scroll, ~32 frames) | scroll matches NES timing |
 

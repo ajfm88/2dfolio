@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-09 · **Phase:** C (Rendering) in progress · **Slices done:** 11 / 45
+**Last updated:** 2026-08-10 · **Phase:** C (Rendering) in progress · **Slices done:** 12 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice C2** — Sprite renderer + animation system: draw animated
-sprites, flip/mirror, depth sorting.
+**Next action: slice C3** — HUD / status bar: hearts, rupees, keys, bombs,
+minimap dot, equipped item slots (A + B).
 
 ---
 
@@ -50,6 +50,7 @@ sprites, flip/mirror, depth sorting.
 | Dungeon positions | `src/data/dungeons.json` | ✅ updated: added itemPositionIndex per room + shortcutOrItemPositions per dungeon (B4) |
 | Sprite animation | `src/data/sprites.json` | ✅ core animation system (127 anim indices, 204-entry frame/attr heaps), 95 object type attrs, Link head tiles, 37 item frame offsets + 48 tiles, weapon directional tables, boomerang 9-frame cycle, bomb cloud offsets, 7 boss sprite layouts (Aquamentus/Dodongo/Digdogger/Gleeok/Ganon/Patra/Manhandla), enemy anim timing (Leever/Wallmaster) (B5) |
 | Tile renderer | `src/render/tile-renderer.ts` | ✅ TileRenderer: renders 16×11 play area from overworld.json + overworld-map.png, per-screen palette-correct tiles, arrow-key navigation across all 128 screens (C1) |
+| Sprite renderer | `src/render/sprite-renderer.ts` | ✅ SpriteSheet: sprite sheet extraction with auto transparency key, flip/mirror support. WalkAnimationController: NES-faithful 2-frame walk cycle (6-frame counter). directionToSpriteCol mapping. Link sprite animates on screen (C2) |
 
 ---
 
@@ -70,7 +71,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~9~~ | ~~**B4** Item tables~~ | ✅ done 2026-08-07 |
 | ~~10~~ | ~~**B5** Sprite animation data~~ | ✅ done 2026-08-08 |
 | ~~11~~ | ~~**C1** Tile renderer~~ | ✅ done 2026-08-09 |
-| 12 | **C2** Sprite renderer + animation | draw animated sprites, flip/mirror, depth sorting |
+| ~~12~~ | ~~**C2** Sprite renderer + animation~~ | ✅ done 2026-08-10 |
+| 13 | **C3** HUD / status bar | hearts, rupees, keys, bombs, minimap, equipped items |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -106,6 +108,24 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-10 — C2 Sprite renderer + animation system (Claude Opus 4.6)
+
+Created `src/render/sprite-renderer.ts` — three exports: SpriteSheet class
+(wraps sprite sheet image with grid config, auto-detects transparency key from
+pixel (0,0), replaces it with alpha via offscreen canvas processing at init),
+WalkAnimationController (NES-faithful 2-frame walk cycle toggling every 6 game
+frames per sprites.json walkingAnimCounterReset), and directionToSpriteCol()
+(maps our Direction enum to ZeldaJS sheet column order: Down=0, Left=1, Up=2,
+Right=3). Added drawImageFlipped() to Renderer for flip/mirror support via
+canvas save/translate/scale/restore. Updated main.ts: Link sprite renders at
+center of play area on top of overworld tiles (establishing draw order: tiles →
+entities → Link), arrow keys change facing direction (isHeld) while still
+navigating screens (isJustPressed), walk animation cycles while key held and
+resets to still frame on release. Uses link.png (15 cols, 1px spacing, 16×16
+cells). 24 new tests (331 total). Typecheck clean. Visually verified all 4
+directions + walk animation + still frame reset across multiple screens.
+**Next: C3.**
 
 ### 2026-08-09 — C1 Tile renderer (Claude Opus 4.6)
 
