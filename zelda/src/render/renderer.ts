@@ -66,6 +66,33 @@ export class Renderer {
     this.ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
   }
 
+  drawImageFlipped(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+    flipH: boolean,
+    flipV: boolean,
+  ): void {
+    if (!flipH && !flipV) {
+      this.ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+      return;
+    }
+    this.ctx.save();
+    this.ctx.translate(
+      flipH ? dx + dw : dx,
+      flipV ? dy + dh : dy,
+    );
+    this.ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    this.ctx.drawImage(image, sx, sy, sw, sh, 0, 0, dw, dh);
+    this.ctx.restore();
+  }
+
   get playAreaWidth(): number {
     return SCREEN_WIDTH;
   }
