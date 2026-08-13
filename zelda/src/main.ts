@@ -1,4 +1,4 @@
-import { SCREEN_WIDTH, HUD_HEIGHT, LINK_SHEET_COLUMNS, SPRITE_SPACING } from './core/constants.js';
+import { LINK_SHEET_COLUMNS, PLAY_AREA_HEIGHT, SCREEN_WIDTH, SPRITE_SPACING } from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
@@ -9,6 +9,8 @@ import { SpriteSheet, WalkAnimationController, directionToSpriteCol } from './re
 import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
+import { HudRenderer } from './ui/hud.js';
+import { ScreenTransition } from './world/screen-transition.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -30,8 +32,10 @@ let screenCol = 7;
 let linkSheet: SpriteSheet | null = null;
 const linkWalkAnim = new WalkAnimationController();
 let linkDirection = Direction.Down;
-const linkX = 120;
-const linkY = 80;
+let linkX = 120;
+let linkY = 80;
+let hudRenderer: HudRenderer | null = null;
+let transition: ScreenTransition | null = null;
 
 async function init(): Promise<void> {
   try {
@@ -50,6 +54,11 @@ async function init(): Promise<void> {
       spacingY: SPRITE_SPACING,
       autoDetectTransparency: true,
     });
+    hudRenderer = new HudRenderer(
+      assets.ui.hud,
+      assets.sprites.font,
+      assets.sprites.treasuresFull,
+    );
     currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
@@ -58,11 +67,18 @@ async function init(): Promise<void> {
 
 void init();
 
-function navigateScreen(dRow: number, dCol: number): void {
-  if (!overworldData) return;
+function startTransition(direction: Direction): void {
+  if (!overworldData || !currentScreen || transition) return;
+  const oldScreen = currentScreen;
+  const dRow = direction === Direction.Up ? -1 : direction === Direction.Down ? 1 : 0;
+  const dCol = direction === Direction.Left ? -1 : direction === Direction.Right ? 1 : 0;
   screenRow = ((screenRow + dRow) % 8 + 8) % 8;
   screenCol = ((screenCol + dCol) % 16 + 16) % 16;
-  currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+  const newScreen = getScreenByCoord(overworldData, screenRow, screenCol);
+  if (!newScreen) return;
+  currentScreen = newScreen;
+  linkDirection = direction;
+  transition = new ScreenTransition(direction, oldScreen, newScreen);
 }
 
 function renderDebugOverlay(): void {
@@ -114,10 +130,21 @@ const loop = new GameLoop({
     input.update();
     frameCount++;
 
-    if (input.isJustPressed(Action.Up)) navigateScreen(-1, 0);
-    if (input.isJustPressed(Action.Down)) navigateScreen(1, 0);
-    if (input.isJustPressed(Action.Left)) navigateScreen(0, -1);
-    if (input.isJustPressed(Action.Right)) navigateScreen(0, 1);
+    if (transition) {
+      transition.update();
+      linkWalkAnim.tick();
+      if (transition.done) {
+        linkX = 120;
+        linkY = 80;
+        transition = null;
+      }
+      return;
+    }
+
+    if (input.isJustPressed(Action.Up)) startTransition(Direction.Up);
+    else if (input.isJustPressed(Action.Down)) startTransition(Direction.Down);
+    else if (input.isJustPressed(Action.Left)) startTransition(Direction.Left);
+    else if (input.isJustPressed(Action.Right)) startTransition(Direction.Right);
 
     if (input.isHeld(Action.Up)) linkDirection = Direction.Up;
     else if (input.isHeld(Action.Down)) linkDirection = Direction.Down;
@@ -137,19 +164,22 @@ const loop = new GameLoop({
     fpsCounter.tick(performance.now());
     renderer.clear();
 
-    renderer.fillRect(0, 0, SCREEN_WIDTH, HUD_HEIGHT, '#c84c0c');
-    renderer.ctx.fillStyle = '#fcbcb0';
-    renderer.ctx.font = '10px monospace';
-    renderer.ctx.fillText('THE LEGEND OF ZELDA', 56, 20);
-
-    const screenId = currentScreen ? currentScreen.id : -1;
-    renderer.ctx.fillStyle = '#fcbcb0';
-    renderer.ctx.font = '8px monospace';
-    renderer.ctx.fillText(
-      `Screen ${screenId} (${screenRow},${screenCol})  [Arrows to navigate]`,
-      8,
-      38,
-    );
+    if (hudRenderer) {
+      hudRenderer.render(renderer, {
+        rupees: 0,
+        keys: 0,
+        bombs: 0,
+        hasMagicKey: false,
+        health: 6,
+        maxHealth: 6,
+        bItem: null,
+        aItem: null,
+        mapRow: screenRow,
+        mapCol: screenCol,
+        isOverworld: true,
+        levelNumber: 0,
+      });
+    }
 
     renderer.beginPlayArea();
 
@@ -176,6 +206,32 @@ const loop = new GameLoop({
       if (loadProgress.total > 0) {
         const fill = (loadProgress.loaded / loadProgress.total) * barW;
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
+      }
+    } else if (transition) {
+      const ctx = renderer.ctx;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT);
+      ctx.clip();
+
+      const oldOff = transition.getOldScreenOffset();
+      ctx.save();
+      ctx.translate(oldOff.x, oldOff.y);
+      tileRenderer.renderScreen(renderer, transition.oldScreen);
+      ctx.restore();
+
+      const newOff = transition.getNewScreenOffset();
+      ctx.save();
+      ctx.translate(newOff.x, newOff.y);
+      tileRenderer.renderScreen(renderer, transition.newScreen);
+      ctx.restore();
+
+      ctx.restore();
+
+      if (linkSheet) {
+        const col = directionToSpriteCol(linkDirection);
+        const frameIndex = linkWalkAnim.currentStep * LINK_SHEET_COLUMNS + col;
+        linkSheet.drawFrame(renderer, frameIndex, linkX + newOff.x, linkY + newOff.y);
       }
     } else {
       tileRenderer.renderScreen(renderer, currentScreen);
