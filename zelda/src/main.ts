@@ -1,16 +1,27 @@
-import { LINK_SHEET_COLUMNS, PLAY_AREA_HEIGHT, SCREEN_WIDTH, SPRITE_SPACING } from './core/constants.js';
+import {
+  LINK_SHEET_COLUMNS,
+  PLAY_AREA_HEIGHT,
+  SCREEN_EDGE_BOTTOM,
+  SCREEN_EDGE_LEFT,
+  SCREEN_EDGE_RIGHT,
+  SCREEN_EDGE_TOP,
+  SCREEN_WIDTH,
+  SPRITE_SPACING,
+} from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
-import { Action, InputManager } from './core/input.js';
+import { InputManager } from './core/input.js';
 import { Direction } from './core/types.js';
 import { Renderer } from './render/renderer.js';
-import { SpriteSheet, WalkAnimationController, directionToSpriteCol } from './render/sprite-renderer.js';
+import { SpriteSheet } from './render/sprite-renderer.js';
 import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
 import { HudRenderer } from './ui/hud.js';
 import { ScreenTransition } from './world/screen-transition.js';
+import { TileCollisionMap, createCollisionMap } from './world/collision.js';
+import { Link } from './objects/player/link.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -30,12 +41,10 @@ let currentScreen: OverworldScreen | null = null;
 let screenRow = 7;
 let screenCol = 7;
 let linkSheet: SpriteSheet | null = null;
-const linkWalkAnim = new WalkAnimationController();
-let linkDirection = Direction.Down;
-let linkX = 120;
-let linkY = 80;
 let hudRenderer: HudRenderer | null = null;
 let transition: ScreenTransition | null = null;
+let link: Link | null = null;
+let collisionMap: TileCollisionMap | null = null;
 
 async function init(): Promise<void> {
   try {
@@ -59,6 +68,8 @@ async function init(): Promise<void> {
       assets.sprites.font,
       assets.sprites.treasuresFull,
     );
+    collisionMap = createCollisionMap(overworldData);
+    link = new Link();
     currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
@@ -68,7 +79,7 @@ async function init(): Promise<void> {
 void init();
 
 function startTransition(direction: Direction): void {
-  if (!overworldData || !currentScreen || transition) return;
+  if (!overworldData || !currentScreen || transition || !link) return;
   const oldScreen = currentScreen;
   const dRow = direction === Direction.Up ? -1 : direction === Direction.Down ? 1 : 0;
   const dCol = direction === Direction.Left ? -1 : direction === Direction.Right ? 1 : 0;
@@ -77,7 +88,24 @@ function startTransition(direction: Direction): void {
   const newScreen = getScreenByCoord(overworldData, screenRow, screenCol);
   if (!newScreen) return;
   currentScreen = newScreen;
-  linkDirection = direction;
+
+  // Place Link at the opposite edge of the new screen (NES-faithful entry)
+  switch (direction) {
+    case Direction.Right:
+      link.setPosition(SCREEN_EDGE_LEFT, link.posY);
+      break;
+    case Direction.Left:
+      link.setPosition(SCREEN_EDGE_RIGHT, link.posY);
+      break;
+    case Direction.Down:
+      link.setPosition(link.posX, SCREEN_EDGE_TOP);
+      break;
+    case Direction.Up:
+      link.setPosition(link.posX, SCREEN_EDGE_BOTTOM);
+      break;
+  }
+  link.setDirection(direction);
+
   transition = new ScreenTransition(direction, oldScreen, newScreen);
 }
 
@@ -90,8 +118,10 @@ function renderDebugOverlay(): void {
 
   ctx.font = '8px monospace';
   ctx.fillStyle = '#0f0';
+  const lx = link ? link.posX : 0;
+  const ly = link ? link.posY : 0;
   ctx.fillText(
-    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${screenRow},${screenCol}) E:0`,
+    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${screenRow},${screenCol}) Link:(${lx},${ly}) E:0`,
     2,
     9,
   );
@@ -132,31 +162,18 @@ const loop = new GameLoop({
 
     if (transition) {
       transition.update();
-      linkWalkAnim.tick();
+      if (link) link.tickAnimation();
       if (transition.done) {
-        linkX = 120;
-        linkY = 80;
         transition = null;
       }
       return;
     }
 
-    if (input.isJustPressed(Action.Up)) startTransition(Direction.Up);
-    else if (input.isJustPressed(Action.Down)) startTransition(Direction.Down);
-    else if (input.isJustPressed(Action.Left)) startTransition(Direction.Left);
-    else if (input.isJustPressed(Action.Right)) startTransition(Direction.Right);
-
-    if (input.isHeld(Action.Up)) linkDirection = Direction.Up;
-    else if (input.isHeld(Action.Down)) linkDirection = Direction.Down;
-    else if (input.isHeld(Action.Left)) linkDirection = Direction.Left;
-    else if (input.isHeld(Action.Right)) linkDirection = Direction.Right;
-
-    const isMoving = input.isHeld(Action.Up) || input.isHeld(Action.Down) ||
-      input.isHeld(Action.Left) || input.isHeld(Action.Right);
-    if (isMoving) {
-      linkWalkAnim.tick();
-    } else {
-      linkWalkAnim.reset();
+    if (link && collisionMap && currentScreen) {
+      const result = link.update(input, collisionMap, currentScreen);
+      if (result.screenEdge !== null) {
+        startTransition(result.screenEdge);
+      }
     }
   },
 
@@ -228,17 +245,14 @@ const loop = new GameLoop({
 
       ctx.restore();
 
-      if (linkSheet) {
-        const col = directionToSpriteCol(linkDirection);
-        const frameIndex = linkWalkAnim.currentStep * LINK_SHEET_COLUMNS + col;
-        linkSheet.drawFrame(renderer, frameIndex, linkX + newOff.x, linkY + newOff.y);
+      if (linkSheet && link) {
+        const newOff2 = transition.getNewScreenOffset();
+        link.render(renderer, linkSheet, newOff2.x, newOff2.y);
       }
     } else {
       tileRenderer.renderScreen(renderer, currentScreen);
-      if (linkSheet) {
-        const col = directionToSpriteCol(linkDirection);
-        const frameIndex = linkWalkAnim.currentStep * LINK_SHEET_COLUMNS + col;
-        linkSheet.drawFrame(renderer, frameIndex, linkX, linkY);
+      if (linkSheet && link) {
+        link.render(renderer, linkSheet);
       }
     }
 
