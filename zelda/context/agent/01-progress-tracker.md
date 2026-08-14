@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-11 · **Phase:** C (Rendering) complete · **Slices done:** 14 / 45
+**Last updated:** 2026-08-12 · **Phase:** D (Player & Combat) in progress · **Slices done:** 16 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice D1** — Link movement: 4-direction, 16×16 hitbox, tile
-collision, screen-edge detection.
+**Next action: slice D3** — Shield: block projectiles when facing them. Push/pull
+mechanics.
 
 ---
 
@@ -53,6 +53,10 @@ collision, screen-edge detection.
 | Sprite renderer | `src/render/sprite-renderer.ts` | ✅ SpriteSheet: sprite sheet extraction with auto transparency key, flip/mirror support. WalkAnimationController: NES-faithful 2-frame walk cycle (6-frame counter). directionToSpriteCol mapping. Link sprite animates on screen (C2) |
 | HUD / status bar | `src/ui/hud.ts`, `src/ui/bitmap-font.ts`, `src/ui/heart-meter.ts` | ✅ HudRenderer: hud.png background, BitmapFont (9×7 cells, 26-col font sheet), HeartMeter (full/half/empty from treasures-full.png), formatCount (NES "X23"/"123" format), overworld minimap dot (green 3×3, NES-accurate position formula), counter text at NES PPU nametable positions (C3) |
 | Screen transition | `src/world/screen-transition.ts` | ✅ ScreenTransition: 4-direction push-scroll, NES-accurate timing (H: 64 frames/4px, V: 44 frames/176px), old+new screen offset math, canvas clip rect prevents HUD overlap, input blocked during scroll, Link walk-animates during transition (C4) |
+| Tile collision | `src/world/collision.ts` | ✅ TileCollisionMap: walkability from overworld.json squareTable.primary using NES $8D threshold, position→tile lookup, 4-corner rect check, off-screen returns true (D1) |
+| Link entity | `src/objects/player/link.ts` | ✅ Link class: NES QSpeed movement (1.5px/frame via sub-pixel accumulator), 4-direction input, 8×8 hitbox at feet, tile collision, screen-edge detection, perpendicular grid snapping, walk animation, transition walkForward support (D1). Sword swing + beam integrated (D2) |
+| Sword swing | `src/objects/player/sword.ts` | ✅ SwordSwing: 16-frame state machine (Windup 5f → Extended 8f → Retracting 3f), directional hitbox during Extended, NES-accurate position offsets from disassembly PlayerToWeaponOffsetsX/Y, shouldFireBeam at Extended→Retracting transition (D2) |
+| Sword beam | `src/objects/player/sword-beam.ts` | ✅ SwordBeam: projectile at QSpeed $C0 (3px/frame), deactivates on blocked tile or screen edge, 8×8 hitbox, 4-frame animation cycling (D2) |
 
 ---
 
@@ -76,7 +80,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~12~~ | ~~**C2** Sprite renderer + animation~~ | ✅ done 2026-08-10 |
 | ~~13~~ | ~~**C3** HUD / status bar~~ | ✅ done 2026-08-11 |
 | ~~14~~ | ~~**C4** Screen transition~~ | ✅ done 2026-08-11 |
-| 15 | **D1** Link movement | 4-direction, tile collision, screen-edge detection |
+| ~~15~~ | ~~**D1** Link movement~~ | ✅ done 2026-08-12 |
+| ~~16~~ | ~~**D2** Sword attack~~ | ✅ done 2026-08-12 |
+| 17 | **D3** Shield | block projectiles, push/pull mechanics |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -112,6 +118,41 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-12 — D2 Sword attack (Claude Opus 4.6)
+
+Created `src/objects/player/sword.ts` — SwordSwing class with 16-frame state
+machine matching Z_07.asm UpdateSwordOrRod: Windup (5f, attack pose, no sword
+drawn) → Extended (8f, sword fully out, hitbox active) → Retracting (3×1f,
+sword pulls back). Position offsets from disassembly PlayerToWeaponOffsetsX/Y.
+Hitbox dimensions from ZeldaJS: 24×32 vertical, 32×24 horizontal. Created
+`src/objects/player/sword-beam.ts` — SwordBeam projectile at QSpeed $C0
+(3px/frame), deactivates on blocked tile or screen edge, 4-frame animation
+cycling for palette flash. Updated Link class: Attack input (X/Space) starts
+sword swing, movement frozen during swing, attack sprite row (row 2) used,
+sword beam fires at Extended→Retracting transition when health is full. Added
+hasSword/health/maxHealth properties (hardcoded to true/6/6 for now; inventory
+F1 and damage D4 will provide real values). 28 new tests (456 total). Typecheck
+clean. **Next: D3.**
+
+### 2026-08-12 — D1 Link movement (Claude Opus 4.6)
+
+Created `src/world/collision.ts` — TileCollisionMap class deriving walkability
+from overworld.json squareTable.primary NES metatile values against threshold
+$8D (141). 16 of 56 tile indices are walkable. Provides isPositionWalkable
+(pixel→tile lookup, off-screen returns true) and isRectWalkable (4-corner
+check). Created `src/objects/player/link.ts` — Link class with NES-faithful
+QSpeed movement system (sub-pixel accumulator, $60 applied 4×/frame → 1.5
+px/frame average alternating 1/2px pattern). 8×8 collision hitbox at lower
+center (x+4, y+8). Per-pixel movement loop: checks screen edge before tile
+collision, returns `screenEdge` direction when Link walks off. Perpendicular
+grid snapping (1px/frame toward nearest 8px line, within 3px threshold,
+collision-checked). Rewired main.ts: replaced stub arrow-key navigation with
+real Link.update() → screen-edge-triggered transitions. Fixed entry position
+bug: Link now enters at the opposite screen edge (SCREEN_EDGE_RIGHT for left
+transition, etc.) instead of `posX + SCREEN_WIDTH` which could land Link on
+blocked tiles. Added 13 new constants to constants.ts. 37 new tests (428
+total). Typecheck clean. **Phase D started. Next: D2.**
 
 ### 2026-08-11 — C4 Screen transition (Claude Opus 4.6)
 
