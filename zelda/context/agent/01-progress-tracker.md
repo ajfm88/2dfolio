@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-12 · **Phase:** D (Player & Combat) in progress · **Slices done:** 16 / 45
+**Last updated:** 2026-08-13 · **Phase:** D (Player & Combat) in progress · **Slices done:** 17 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice D3** — Shield: block projectiles when facing them. Push/pull
-mechanics.
+**Next action: slice D4** — Damage system: knockback, invincibility frames, health
+(half-hearts).
 
 ---
 
@@ -57,6 +57,10 @@ mechanics.
 | Link entity | `src/objects/player/link.ts` | ✅ Link class: NES QSpeed movement (1.5px/frame via sub-pixel accumulator), 4-direction input, 8×8 hitbox at feet, tile collision, screen-edge detection, perpendicular grid snapping, walk animation, transition walkForward support (D1). Sword swing + beam integrated (D2) |
 | Sword swing | `src/objects/player/sword.ts` | ✅ SwordSwing: 16-frame state machine (Windup 5f → Extended 8f → Retracting 3f), directional hitbox during Extended, NES-accurate position offsets from disassembly PlayerToWeaponOffsetsX/Y, shouldFireBeam at Extended→Retracting transition (D2) |
 | Sword beam | `src/objects/player/sword-beam.ts` | ✅ SwordBeam: projectile at QSpeed $C0 (3px/frame), deactivates on blocked tile or screen edge, 8×8 hitbox, 4-frame animation cycling (D2) |
+| Collision utils | `src/core/collision-utils.ts` | ✅ rectsOverlap (AABB), getOppositeDirection (XOR trick) (D3) |
+| Shield system | `src/objects/player/shield.ts` | ✅ canShieldBlock: NES-faithful 2-tier shield (small blocks rocks/arrows/boomerangs, magic also blocks fireballs/magic), unblockable types ($56/$5A), direction+idle checks. ShieldDeflection bounce visual. ProjectileType enum with all 10 NES IDs (D3) |
+| Enemy projectile | `src/objects/projectiles/enemy-projectile.ts` | ✅ EnemyProjectile: Flying/Deflected/Dead states, QSpeed movement (3px/frame), deflect() method for shield bounce, 8×8 hitbox (D3) |
+| Push block | `src/world/push-block.ts` | ✅ PushBlock: 3-state machine (Idle/Moving/Done) from Z_04.asm UpdateBlock. 16-frame push timer, alignment+direction checks, 16px slide at 1px/frame. pushComplete flag for secret triggers (D3) |
 
 ---
 
@@ -82,7 +86,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~14~~ | ~~**C4** Screen transition~~ | ✅ done 2026-08-11 |
 | ~~15~~ | ~~**D1** Link movement~~ | ✅ done 2026-08-12 |
 | ~~16~~ | ~~**D2** Sword attack~~ | ✅ done 2026-08-12 |
-| 17 | **D3** Shield | block projectiles, push/pull mechanics |
+| ~~17~~ | ~~**D3** Shield + push block~~ | ✅ done 2026-08-13 |
+| 18 | **D4** Damage system | knockback, invincibility frames, health |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -118,6 +123,27 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-13 — D3 Shield + push block (Claude Opus 4.6)
+
+Created `src/core/collision-utils.ts` — shared AABB `rectsOverlap()` and
+`getOppositeDirection()` (XOR trick: Direction enum Up=0↔Down=1, Left=2↔Right=3).
+Created `src/objects/player/shield.ts` — NES-faithful shield deflection from
+Z_01.asm CheckLinkCollision: `canShieldBlock()` pure function with 2-tier system
+(small shield blocks Rock/RockVariant/Arrow/EnemyBoomerang, magic shield also
+blocks Fireball/SwordShot/MagicShot/MagicShot2), unblockable types
+(Fireball2Unblockable $56, UnblockableShot $5A), direction-facing check
+(Link must face opposite to projectile), idle check (shield only works when not
+attacking). `ShieldDeflection` bounce visual (spark cross, decelerating). Created
+`src/objects/projectiles/enemy-projectile.ts` — EnemyProjectile class with
+Flying/Deflected/Dead states, QSpeed movement at $C0 (3px/frame), `deflect()`
+method reverses and bounces. Created `src/world/push-block.ts` — PushBlock class
+with 3-state machine from Z_04.asm UpdateBlock: Idle (requires allEnemiesDead,
+Link aligned + adjacent within 17px + facing block + holding direction for 16
+frames), Moving (1px/frame slide for 16px), Done (inert, sets pushComplete flag
+for H1 secret triggers). Added `hasShield`, `hasMagicShield`, `isIdle` to Link.
+Demo in main.ts: test projectile spawns from right edge, push block on starting
+screen. 46 new tests (502 total). Typecheck clean. **Next: D4.**
 
 ### 2026-08-12 — D2 Sword attack (Claude Opus 4.6)
 
