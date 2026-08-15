@@ -78,7 +78,7 @@ Node scripts that parse the assembly source — run once, commit output.
 |---|---|---|---|
 | D1 ✅ | Link movement: 4-direction, 8×8 hitbox, tile collision, screen-edge detection | `Z_05.asm` (player logic) | Link walks, stops at walls, triggers screen change at edges |
 | D2 ✅ | Sword attack: melee swing (4 directions) + sword beam at full health | `Z_05.asm` | hitbox active for correct frames; beam fires |
-| D3 ⬜ | Shield: block projectiles when facing them. Push/pull mechanics | `Z_05.asm` | projectile blocked; push block moves |
+| D3 ✅ | Shield: block projectiles when facing them. Push/pull mechanics | `Z_05.asm` | projectile blocked; push block moves |
 | D4 ⬜ | Damage system: knockback, invincibility frames, health (half-hearts) | `Z_05.asm` | knockback direction + distance match original |
 | D5 ⬜ | Death + respawn: death animation, game over trigger, continue at dungeon entrance or screen start | `Z_05.asm` | death plays; respawn position correct |
 

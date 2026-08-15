@@ -8,6 +8,7 @@ import {
   SCREEN_WIDTH,
   SPRITE_SPACING,
 } from './core/constants.js';
+import { rectsOverlap } from './core/collision-utils.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
@@ -22,6 +23,9 @@ import { HudRenderer } from './ui/hud.js';
 import { ScreenTransition } from './world/screen-transition.js';
 import { TileCollisionMap, createCollisionMap } from './world/collision.js';
 import { Link } from './objects/player/link.js';
+import { canShieldBlock, ProjectileType, ShieldDeflection } from './objects/player/shield.js';
+import { EnemyProjectile } from './objects/projectiles/enemy-projectile.js';
+import { PushBlock } from './world/push-block.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -45,6 +49,13 @@ let hudRenderer: HudRenderer | null = null;
 let transition: ScreenTransition | null = null;
 let link: Link | null = null;
 let collisionMap: TileCollisionMap | null = null;
+
+// D3 demo objects — shield deflection + push block
+const enemyProjectiles: EnemyProjectile[] = [];
+const deflections: ShieldDeflection[] = [];
+let demoPushBlock: PushBlock | null = null;
+let projectileSpawnTimer = 0;
+const DEMO_SPAWN_INTERVAL = 90;
 
 async function init(): Promise<void> {
   try {
@@ -71,6 +82,7 @@ async function init(): Promise<void> {
     collisionMap = createCollisionMap(overworldData);
     link = new Link();
     currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+    demoPushBlock = new PushBlock(128, 64);
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
   }
@@ -174,6 +186,47 @@ const loop = new GameLoop({
       if (result.screenEdge !== null) {
         startTransition(result.screenEdge);
       }
+
+      // Spawn demo projectiles periodically
+      projectileSpawnTimer++;
+      if (projectileSpawnTimer >= DEMO_SPAWN_INTERVAL) {
+        projectileSpawnTimer = 0;
+        const spawnY = link.posY + 4;
+        enemyProjectiles.push(
+          new EnemyProjectile(SCREEN_WIDTH - 16, spawnY, Direction.Left, ProjectileType.Rock),
+        );
+      }
+
+      // Update projectiles and check shield collision
+      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+        const proj = enemyProjectiles[i]!;
+        proj.update();
+        if (!proj.isActive()) {
+          enemyProjectiles.splice(i, 1);
+          continue;
+        }
+        if (proj.isFlying() && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
+          if (link.hasShield && canShieldBlock(link.facing, proj.direction, proj.type, link.hasMagicShield, link.isIdle)) {
+            deflections.push(new ShieldDeflection(proj.x, proj.y, link.facing));
+            proj.deflect(link.facing);
+          } else {
+            proj.deactivate();
+          }
+        }
+      }
+
+      // Update deflection effects
+      for (let i = deflections.length - 1; i >= 0; i--) {
+        deflections[i]!.update();
+        if (!deflections[i]!.isActive()) {
+          deflections.splice(i, 1);
+        }
+      }
+
+      // Update push block
+      if (demoPushBlock) {
+        demoPushBlock.update(link, true);
+      }
     }
   },
 
@@ -251,6 +304,15 @@ const loop = new GameLoop({
       }
     } else {
       tileRenderer.renderScreen(renderer, currentScreen);
+      if (demoPushBlock) {
+        demoPushBlock.render(renderer);
+      }
+      for (const proj of enemyProjectiles) {
+        proj.render(renderer);
+      }
+      for (const defl of deflections) {
+        defl.render(renderer);
+      }
       if (linkSheet && link) {
         link.render(renderer, linkSheet);
       }

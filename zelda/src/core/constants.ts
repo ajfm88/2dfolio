@@ -43,3 +43,12 @@ export const SWORD_BEAM_QFRAC = 0xC0; // 192 — 3px/frame via 4× quarter-speed
 export const LINK_ATTACK_FRAME_ROW = 2;
 export const SWORD_SPRITE_ROW = 3;
 export const SWORD_BEAM_START_ROW = 3;
+
+// Push block — Z_04.asm UpdateBlock
+export const PUSH_BLOCK_TIMER_THRESHOLD = 0x10; // 16 frames of holding direction
+export const PUSH_BLOCK_SLIDE_DISTANCE = 16; // 1 tile = 16px
+export const PUSH_BLOCK_ALIGN_THRESHOLD = 17; // 0x11 max distance for push detection
+
+// Enemy projectile — Z_04.asm UpdateMonsterShot
+export const ENEMY_PROJECTILE_QFRAC = 0xC0; // 3px/frame via QSpeed
+export const DEFLECTION_BOUNCE_FRAMES = 16;

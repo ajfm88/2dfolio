@@ -45,6 +45,8 @@ export class Link {
   private _health = 6;
   private _maxHealth = 6;
   private _hasSword = true;
+  private _hasShield = true;
+  private _hasMagicShield = false;
 
   constructor(x: number = LINK_START_X, y: number = LINK_START_Y) {
     this._x = x;
@@ -75,6 +77,18 @@ export class Link {
     return this.sword.isActive();
   }
 
+  get isIdle(): boolean {
+    return !this.sword.isActive();
+  }
+
+  get hasShield(): boolean {
+    return this._hasShield;
+  }
+
+  get hasMagicShield(): boolean {
+    return this._hasMagicShield;
+  }
+
   get activeSwordBeam(): SwordBeam | null {
     return this._swordBeam;
   }
@@ -94,6 +108,14 @@ export class Link {
 
   setHasSword(has: boolean): void {
     this._hasSword = has;
+  }
+
+  setShield(has: boolean): void {
+    this._hasShield = has;
+  }
+
+  setMagicShield(has: boolean): void {
+    this._hasMagicShield = has;
   }
 
   setPosition(x: number, y: number): void {
