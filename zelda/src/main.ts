@@ -9,6 +9,7 @@ import {
   SPRITE_SPACING,
 } from './core/constants.js';
 import { rectsOverlap } from './core/collision-utils.js';
+import { DAMAGE_TABLE } from './core/damage-tables.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
@@ -205,11 +206,13 @@ const loop = new GameLoop({
           enemyProjectiles.splice(i, 1);
           continue;
         }
-        if (proj.isFlying() && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
+        if (proj.isFlying() && !link.isInvincible && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
           if (link.hasShield && canShieldBlock(link.facing, proj.direction, proj.type, link.hasMagicShield, link.isIdle)) {
             deflections.push(new ShieldDeflection(proj.x, proj.y, link.facing));
             proj.deflect(link.facing);
           } else {
+            const damageRaw = DAMAGE_TABLE[proj.type] ?? 0x80;
+            link.takeDamage(damageRaw, proj.direction);
             proj.deactivate();
           }
         }
@@ -240,8 +243,8 @@ const loop = new GameLoop({
         keys: 0,
         bombs: 0,
         hasMagicKey: false,
-        health: 6,
-        maxHealth: 6,
+        health: link ? link.health : 6,
+        maxHealth: link ? link.maxHealth : 6,
         bItem: null,
         aItem: null,
         mapRow: screenRow,
