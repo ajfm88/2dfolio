@@ -81,6 +81,12 @@ export class SwordSwing {
     return this._state !== SwordState.Inactive;
   }
 
+  cancel(): void {
+    this._state = SwordState.Inactive;
+    this.timer = 0;
+    this.retractStep = 0;
+  }
+
   start(direction: Direction): void {
     this._state = SwordState.Windup;
     this._direction = direction;

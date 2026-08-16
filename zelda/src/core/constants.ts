@@ -52,3 +52,9 @@ export const PUSH_BLOCK_ALIGN_THRESHOLD = 17; // 0x11 max distance for push dete
 // Enemy projectile — Z_04.asm UpdateMonsterShot
 export const ENEMY_PROJECTILE_QFRAC = 0xC0; // 3px/frame via QSpeed
 export const DEFLECTION_BOUNCE_FRAMES = 16;
+
+// Damage system — Z_01.asm BeginShove, Z_07.asm Obj_Shove / DecrementInvincibilityTimer
+export const LINK_KNOCKBACK_DISTANCE = 0x20; // 32 pixels
+export const LINK_KNOCKBACK_SPEED = 4; // pixels per frame (ShoveMoveMin: 4 iterations × 1px)
+export const LINK_INVINCIBILITY_TICKS = 0x18; // 24 ticks, decremented every 2 frames = 48 frames
+export const LINK_INVINCIBILITY_FLASH_MASK = 0x03; // bottom 2 bits cycle palette

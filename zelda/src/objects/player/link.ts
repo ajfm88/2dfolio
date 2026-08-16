@@ -5,6 +5,10 @@ import {
   LINK_HITBOX_OFFSET_Y,
   LINK_HITBOX_WIDTH,
   LINK_GRID_SIZE,
+  LINK_INVINCIBILITY_FLASH_MASK,
+  LINK_INVINCIBILITY_TICKS,
+  LINK_KNOCKBACK_DISTANCE,
+  LINK_KNOCKBACK_SPEED,
   LINK_SHEET_COLUMNS,
   LINK_SPEED_QFRAC,
   LINK_START_X,
@@ -14,6 +18,8 @@ import {
   SCREEN_EDGE_RIGHT,
   SCREEN_EDGE_TOP,
 } from '../../core/constants.js';
+import { getOppositeDirection } from '../../core/collision-utils.js';
+import { calculateDamage } from '../../core/damage-tables.js';
 import { Action, type InputManager } from '../../core/input.js';
 import { Direction, type Rect } from '../../core/types.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
@@ -26,6 +32,12 @@ import {
 import type { TileCollisionMap } from '../../world/collision.js';
 import { SwordSwing } from './sword.js';
 import { SwordBeam } from './sword-beam.js';
+
+export enum LinkState {
+  Normal,
+  Knockback,
+  Invincible,
+}
 
 export interface LinkUpdateResult {
   readonly screenEdge: Direction | null;
@@ -47,6 +59,15 @@ export class Link {
   private _hasSword = true;
   private _hasShield = true;
   private _hasMagicShield = false;
+
+  // D4: damage system state
+  private _state = LinkState.Normal;
+  private _knockbackDir: Direction = Direction.Down;
+  private _knockbackRemaining = 0;
+  private _invincibilityTimer = 0; // ticks (decrements every 2 frames)
+  private _invincibilityFrameCount = 0;
+  private _ringLevel = 0; // 0=none, 1=blue, 2=red
+  private _isDead = false;
 
   constructor(x: number = LINK_START_X, y: number = LINK_START_Y) {
     this._x = x;
@@ -78,7 +99,7 @@ export class Link {
   }
 
   get isIdle(): boolean {
-    return !this.sword.isActive();
+    return this._state === LinkState.Normal && !this.sword.isActive();
   }
 
   get hasShield(): boolean {
@@ -101,6 +122,29 @@ export class Link {
     return this._maxHealth;
   }
 
+  get state(): LinkState {
+    return this._state;
+  }
+
+  get isInvincible(): boolean {
+    return this._invincibilityTimer > 0;
+  }
+
+  // Z_01.asm Anim_WriteSpritePair: palette cycles via bottom 2 bits of timer
+  // We toggle visibility — visible when (timer & 0x03) >= 2
+  get isVisible(): boolean {
+    if (this._invincibilityTimer <= 0) return true;
+    return (this._invincibilityTimer & LINK_INVINCIBILITY_FLASH_MASK) >= 2;
+  }
+
+  get isDead(): boolean {
+    return this._isDead;
+  }
+
+  get ringLevel(): number {
+    return this._ringLevel;
+  }
+
   setHealth(health: number, maxHealth: number): void {
     this._health = health;
     this._maxHealth = maxHealth;
@@ -118,6 +162,10 @@ export class Link {
     this._hasMagicShield = has;
   }
 
+  setRingLevel(level: number): void {
+    this._ringLevel = level;
+  }
+
   setPosition(x: number, y: number): void {
     this._x = x;
     this._y = y;
@@ -125,6 +173,33 @@ export class Link {
 
   setDirection(dir: Direction): void {
     this._direction = dir;
+  }
+
+  // Z_01.asm HarmLink + BeginShove
+  takeDamage(damageRaw: number, sourceDirection: Direction): void {
+    if (this._invincibilityTimer > 0) return;
+    if (this._isDead) return;
+
+    const halfHearts = calculateDamage(damageRaw, this._ringLevel);
+    this._health = Math.max(0, this._health - halfHearts);
+
+    if (this._health <= 0) {
+      this._isDead = true;
+    }
+
+    this._state = LinkState.Knockback;
+    this._knockbackDir = getOppositeDirection(sourceDirection);
+    this._knockbackRemaining = LINK_KNOCKBACK_DISTANCE;
+    this._invincibilityTimer = LINK_INVINCIBILITY_TICKS;
+    this._invincibilityFrameCount = 0;
+
+    if (this.sword.isActive()) {
+      this.sword.cancel();
+    }
+    this._swordBeam = null;
+    this._moving = false;
+    this.walkAnim.reset();
+    this.subPixel = 0;
   }
 
   update(
@@ -139,6 +214,31 @@ export class Link {
         this._swordBeam = null;
       }
     }
+
+    // Z_07.asm DecrementInvincibilityTimer: decrement every 2 frames
+    if (this._invincibilityTimer > 0) {
+      this._invincibilityFrameCount++;
+      if (this._invincibilityFrameCount >= 2) {
+        this._invincibilityFrameCount = 0;
+        this._invincibilityTimer--;
+      }
+    }
+
+    // Knockback state: move in knockback direction, block all input
+    if (this._state === LinkState.Knockback) {
+      this.updateKnockback(collision, screen);
+      return NO_EDGE;
+    }
+
+    // Invincible state: check if timer expired
+    if (this._state === LinkState.Invincible) {
+      if (this._invincibilityTimer <= 0) {
+        this._state = LinkState.Normal;
+      }
+      // Fall through to normal input handling
+    }
+
+    if (this._isDead) return NO_EDGE;
 
     // Handle sword swing
     if (this.sword.isActive()) {
@@ -208,6 +308,43 @@ export class Link {
     return NO_EDGE;
   }
 
+  // Z_07.asm Obj_Shove / ShoveMoveMin: 4 pixels per frame, collision-checked
+  private updateKnockback(collision: TileCollisionMap, screen: OverworldScreen): void {
+    const delta = directionDelta(this._knockbackDir);
+    let moved = 0;
+
+    for (let i = 0; i < LINK_KNOCKBACK_SPEED; i++) {
+      if (this._knockbackRemaining <= 0) break;
+
+      const nx = this._x + delta.dx;
+      const ny = this._y + delta.dy;
+
+      // Stop on screen boundary
+      if (nx < SCREEN_EDGE_LEFT || nx > SCREEN_EDGE_RIGHT ||
+          ny < SCREEN_EDGE_TOP || ny > SCREEN_EDGE_BOTTOM) {
+        this._knockbackRemaining = 0;
+        break;
+      }
+
+      // Stop on blocked tile
+      if (!canMoveToPosition(nx, ny, collision, screen)) {
+        this._knockbackRemaining = 0;
+        break;
+      }
+
+      this._x = nx;
+      this._y = ny;
+      this._knockbackRemaining--;
+      moved++;
+    }
+
+    if (this._knockbackRemaining <= 0) {
+      this._state = this._invincibilityTimer > 0
+        ? LinkState.Invincible
+        : LinkState.Normal;
+    }
+  }
+
   walkForward(): void {
     const pixels = this.computeQSpeedPixels();
     const delta = directionDelta(this._direction);
@@ -226,6 +363,8 @@ export class Link {
     offsetX = 0,
     offsetY = 0,
   ): void {
+    if (!this.isVisible) return;
+
     const col = directionToSpriteCol(this._direction);
     let frameIndex: number;
 
