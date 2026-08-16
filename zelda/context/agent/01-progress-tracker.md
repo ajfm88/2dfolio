@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-13 · **Phase:** D (Player & Combat) in progress · **Slices done:** 17 / 45
+**Last updated:** 2026-08-14 · **Phase:** D (Player & Combat) in progress · **Slices done:** 18 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice D4** — Damage system: knockback, invincibility frames, health
-(half-hearts).
+**Next action: slice D5** — Death + respawn: death animation, game over trigger,
+continue at dungeon entrance or screen start.
 
 ---
 
@@ -61,6 +61,8 @@ write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 | Shield system | `src/objects/player/shield.ts` | ✅ canShieldBlock: NES-faithful 2-tier shield (small blocks rocks/arrows/boomerangs, magic also blocks fireballs/magic), unblockable types ($56/$5A), direction+idle checks. ShieldDeflection bounce visual. ProjectileType enum with all 10 NES IDs (D3) |
 | Enemy projectile | `src/objects/projectiles/enemy-projectile.ts` | ✅ EnemyProjectile: Flying/Deflected/Dead states, QSpeed movement (3px/frame), deflect() method for shield bounce, 8×8 hitbox (D3) |
 | Push block | `src/world/push-block.ts` | ✅ PushBlock: 3-state machine (Idle/Moving/Done) from Z_04.asm UpdateBlock. 16-frame push timer, alignment+direction checks, 16px slide at 1px/frame. pushComplete flag for secret triggers (D3) |
+| Damage tables | `src/core/damage-tables.ts` | ✅ ObjTypeToDamagePoints (93 entries from Z_01.asm), decodeDamage (nibble split), calculateDamage (ring reduction via 16-bit shift). Full enemy+projectile damage table (D4) |
+| Damage system | `src/objects/player/link.ts` | ✅ LinkState enum (Normal/Knockback/Invincible), takeDamage() with NES-faithful knockback (32px at 4px/frame from Z_07.asm Obj_Shove), invincibility timer (24 ticks × 2 frames from Z_01.asm BeginShove), visibility flash (timer & 0x03), ring reduction (blue=÷2, red=÷4), isDead flag, sword cancel on hit, isIdle accounts for state (D4) |
 
 ---
 
@@ -87,7 +89,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~15~~ | ~~**D1** Link movement~~ | ✅ done 2026-08-12 |
 | ~~16~~ | ~~**D2** Sword attack~~ | ✅ done 2026-08-12 |
 | ~~17~~ | ~~**D3** Shield + push block~~ | ✅ done 2026-08-13 |
-| 18 | **D4** Damage system | knockback, invincibility frames, health |
+| ~~18~~ | ~~**D4** Damage system~~ | ✅ done 2026-08-14 |
+| 19 | **D5** Death + respawn | death animation, game over, continue |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -123,6 +126,29 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-14 — D4 Damage system (Claude Opus 4.6)
+
+Created `src/core/damage-tables.ts` — full ObjTypeToDamagePoints table (93 entries
+from Z_01.asm line 5574) with `decodeDamage()` (nibble split: high=partial heart,
+low=full hearts) and `calculateDamage()` (ring reduction via 16-bit right shift
+matching Z_01.asm Link_BeHarmed: blue ring=÷2, red ring=÷4, minimum 1 half-heart
+for non-zero damage). Updated `src/objects/player/link.ts` with `LinkState` enum
+(Normal/Knockback/Invincible), `takeDamage(damageRaw, sourceDirection)` method:
+sets knockback (32px at 4px/frame per Z_07.asm Obj_Shove/ShoveMoveMin), starts
+invincibility timer ($18=24 ticks, decremented every 2 frames per Z_07.asm
+DecrementInvincibilityTimer = 48 frames total), cancels active sword swing,
+clears sword beam. Knockback movement: 4px/frame in opposite direction, stops on
+wall tiles or screen boundary. Invincibility flash: `isVisible` toggles via
+`timer & 0x03` (NES palette cycle from Z_01.asm Anim_WriteSpritePair). Updated
+`isIdle` to account for knockback/invincible states (shield blocking disabled).
+Added `cancel()` to SwordSwing. Wired damage into `main.ts`: invincibility guard
+on projectile collision, damage lookup from DAMAGE_TABLE, HUD reads live
+`link.health`/`link.maxHealth` (was hardcoded to 6). Added constants:
+LINK_KNOCKBACK_DISTANCE, LINK_KNOCKBACK_SPEED, LINK_INVINCIBILITY_TICKS,
+LINK_INVINCIBILITY_FLASH_MASK. 46 new tests (548 total). Typecheck clean.
+Visually verified: projectile hits → knockback right → hearts decrease → Link
+flashes → invincibility prevents double-hit → 0 health sets isDead. **Next: D5.**
 
 ### 2026-08-13 — D3 Shield + push block (Claude Opus 4.6)
 
