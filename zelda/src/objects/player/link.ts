@@ -175,6 +175,26 @@ export class Link {
     this._direction = dir;
   }
 
+  reset(x: number, y: number, direction: Direction, health: number): void {
+    this._x = x;
+    this._y = y;
+    this._direction = direction;
+    this._health = health;
+    this._isDead = false;
+    this._state = LinkState.Normal;
+    this._knockbackDir = Direction.Down;
+    this._knockbackRemaining = 0;
+    this._invincibilityTimer = 0;
+    this._invincibilityFrameCount = 0;
+    this._moving = false;
+    this.walkAnim.reset();
+    this.subPixel = 0;
+    if (this.sword.isActive()) {
+      this.sword.cancel();
+    }
+    this._swordBeam = null;
+  }
+
   // Z_01.asm HarmLink + BeginShove
   takeDamage(damageRaw: number, sourceDirection: Direction): void {
     if (this._invincibilityTimer > 0) return;

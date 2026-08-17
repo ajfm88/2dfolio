@@ -13,13 +13,18 @@ import { DAMAGE_TABLE } from './core/damage-tables.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
+import { GameMode } from './core/game-mode.js';
 import { InputManager } from './core/input.js';
 import { Direction } from './core/types.js';
+import { DeathAnimation } from './death/death-animation.js';
+import { GameOverScreen } from './death/game-over-screen.js';
+import { computeRespawnParams } from './death/respawn.js';
 import { Renderer } from './render/renderer.js';
 import { SpriteSheet } from './render/sprite-renderer.js';
 import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
+import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer } from './ui/hud.js';
 import { ScreenTransition } from './world/screen-transition.js';
 import { TileCollisionMap, createCollisionMap } from './world/collision.js';
@@ -58,6 +63,13 @@ let demoPushBlock: PushBlock | null = null;
 let projectileSpawnTimer = 0;
 const DEMO_SPAWN_INTERVAL = 90;
 
+// D5: death + respawn state
+let gameMode: GameMode = GameMode.Gameplay;
+let deathAnimation: DeathAnimation | null = null;
+let gameOverScreen: GameOverScreen | null = null;
+let font: BitmapFont | null = null;
+let deathCount = 0;
+
 async function init(): Promise<void> {
   try {
     assets = await loadAllAssets((loaded, total) => {
@@ -80,6 +92,7 @@ async function init(): Promise<void> {
       assets.sprites.font,
       assets.sprites.treasuresFull,
     );
+    font = new BitmapFont(assets.sprites.font);
     collisionMap = createCollisionMap(overworldData);
     link = new Link();
     currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
@@ -168,68 +181,134 @@ function renderDebugOverlay(): void {
   }
 }
 
+function updateGameplay(): void {
+  if (transition) {
+    transition.update();
+    if (link) link.tickAnimation();
+    if (transition.done) {
+      transition = null;
+    }
+    return;
+  }
+
+  if (link && collisionMap && currentScreen) {
+    const result = link.update(input, collisionMap, currentScreen);
+    if (result.screenEdge !== null) {
+      startTransition(result.screenEdge);
+    }
+
+    // D5: detect death — Z_01.asm:5807 @HandleDied
+    if (link.isDead && gameMode === GameMode.Gameplay) {
+      gameMode = GameMode.DeathAnimation;
+      deathAnimation = new DeathAnimation(link.posX, link.posY);
+      enemyProjectiles.length = 0;
+      deflections.length = 0;
+      // TODO(K1): silence all sound, play death tune (Tune1Request = $80)
+      return;
+    }
+
+    // Spawn demo projectiles periodically
+    projectileSpawnTimer++;
+    if (projectileSpawnTimer >= DEMO_SPAWN_INTERVAL) {
+      projectileSpawnTimer = 0;
+      const spawnY = link.posY + 4;
+      enemyProjectiles.push(
+        new EnemyProjectile(SCREEN_WIDTH - 16, spawnY, Direction.Left, ProjectileType.Rock),
+      );
+    }
+
+    // Update projectiles and check shield collision
+    for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+      const proj = enemyProjectiles[i]!;
+      proj.update();
+      if (!proj.isActive()) {
+        enemyProjectiles.splice(i, 1);
+        continue;
+      }
+      if (proj.isFlying() && !link.isInvincible && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
+        if (link.hasShield && canShieldBlock(link.facing, proj.direction, proj.type, link.hasMagicShield, link.isIdle)) {
+          deflections.push(new ShieldDeflection(proj.x, proj.y, link.facing));
+          proj.deflect(link.facing);
+        } else {
+          const damageRaw = DAMAGE_TABLE[proj.type] ?? 0x80;
+          link.takeDamage(damageRaw, proj.direction);
+          proj.deactivate();
+        }
+      }
+    }
+
+    // Update deflection effects
+    for (let i = deflections.length - 1; i >= 0; i--) {
+      deflections[i]!.update();
+      if (!deflections[i]!.isActive()) {
+        deflections.splice(i, 1);
+      }
+    }
+
+    // Update push block
+    if (demoPushBlock) {
+      demoPushBlock.update(link, true);
+    }
+  }
+}
+
+function handleRespawn(): void {
+  const params = computeRespawnParams(0);
+
+  screenRow = params.screenRow;
+  screenCol = params.screenCol;
+
+  if (overworldData) {
+    currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+  }
+
+  if (link) {
+    link.reset(params.linkX, params.linkY, params.linkDirection, params.health);
+  }
+
+  // Z_05.asm:2704 — increment death count, capped at $FF
+  deathCount = Math.min(deathCount + 1, 255);
+
+  transition = null;
+  enemyProjectiles.length = 0;
+  deflections.length = 0;
+  projectileSpawnTimer = 0;
+  gameMode = GameMode.Gameplay;
+}
+
 const loop = new GameLoop({
   update(_dt: number) {
     input.update();
     frameCount++;
 
-    if (transition) {
-      transition.update();
-      if (link) link.tickAnimation();
-      if (transition.done) {
-        transition = null;
-      }
-      return;
-    }
+    switch (gameMode) {
+      case GameMode.Gameplay:
+        updateGameplay();
+        break;
 
-    if (link && collisionMap && currentScreen) {
-      const result = link.update(input, collisionMap, currentScreen);
-      if (result.screenEdge !== null) {
-        startTransition(result.screenEdge);
-      }
-
-      // Spawn demo projectiles periodically
-      projectileSpawnTimer++;
-      if (projectileSpawnTimer >= DEMO_SPAWN_INTERVAL) {
-        projectileSpawnTimer = 0;
-        const spawnY = link.posY + 4;
-        enemyProjectiles.push(
-          new EnemyProjectile(SCREEN_WIDTH - 16, spawnY, Direction.Left, ProjectileType.Rock),
-        );
-      }
-
-      // Update projectiles and check shield collision
-      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-        const proj = enemyProjectiles[i]!;
-        proj.update();
-        if (!proj.isActive()) {
-          enemyProjectiles.splice(i, 1);
-          continue;
-        }
-        if (proj.isFlying() && !link.isInvincible && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
-          if (link.hasShield && canShieldBlock(link.facing, proj.direction, proj.type, link.hasMagicShield, link.isIdle)) {
-            deflections.push(new ShieldDeflection(proj.x, proj.y, link.facing));
-            proj.deflect(link.facing);
-          } else {
-            const damageRaw = DAMAGE_TABLE[proj.type] ?? 0x80;
-            link.takeDamage(damageRaw, proj.direction);
-            proj.deactivate();
+      case GameMode.DeathAnimation:
+        if (deathAnimation) {
+          deathAnimation.update();
+          if (deathAnimation.isDone) {
+            gameMode = GameMode.GameOver;
+            gameOverScreen = new GameOverScreen();
+            deathAnimation = null;
+            // TODO(K1): play Game Over music (Tune1Request = $40)
           }
         }
-      }
+        break;
 
-      // Update deflection effects
-      for (let i = deflections.length - 1; i >= 0; i--) {
-        deflections[i]!.update();
-        if (!deflections[i]!.isActive()) {
-          deflections.splice(i, 1);
+      case GameMode.GameOver:
+        if (gameOverScreen) {
+          gameOverScreen.update(input);
+          if (gameOverScreen.done) {
+            // TODO(J1): if option is Retry, transition to title screen
+            // TODO(L1): if option is Save, save to IndexedDB before respawn
+            gameOverScreen = null;
+            handleRespawn();
+          }
         }
-      }
-
-      // Update push block
-      if (demoPushBlock) {
-        demoPushBlock.update(link, true);
-      }
+        break;
     }
   },
 
@@ -237,7 +316,8 @@ const loop = new GameLoop({
     fpsCounter.tick(performance.now());
     renderer.clear();
 
-    if (hudRenderer) {
+    // HUD is hidden during Game Over screen (NES shows full-screen menu)
+    if (hudRenderer && gameMode !== GameMode.GameOver) {
       hudRenderer.render(renderer, {
         rupees: 0,
         keys: 0,
@@ -280,6 +360,10 @@ const loop = new GameLoop({
         const fill = (loadProgress.loaded / loadProgress.total) * barW;
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
       }
+    } else if (gameMode === GameMode.DeathAnimation && deathAnimation && linkSheet) {
+      deathAnimation.render(renderer, linkSheet, tileRenderer, currentScreen, font);
+    } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
+      gameOverScreen.render(renderer, font);
     } else if (transition) {
       const ctx = renderer.ctx;
       ctx.save();

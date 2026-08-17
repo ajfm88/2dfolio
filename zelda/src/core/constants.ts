@@ -58,3 +58,31 @@ export const LINK_KNOCKBACK_DISTANCE = 0x20; // 32 pixels
 export const LINK_KNOCKBACK_SPEED = 4; // pixels per frame (ShoveMoveMin: 4 iterations × 1px)
 export const LINK_INVINCIBILITY_TICKS = 0x18; // 24 ticks, decremented every 2 frames = 48 frames
 export const LINK_INVINCIBILITY_FLASH_MASK = 0x03; // bottom 2 bits cycle palette
+
+// Death animation — Z_05.asm:2039 InitMode11 / Z_05.asm:2523 UpdateMode11Death_Full
+export const DEATH_FLASH_FRAMES = 33; // Sub0-1: ObjTimer[0] = $21 (33 frames flashing)
+export const DEATH_SPIN_FRAMES_PER_DIR = 5; // Sub7: ObjTimer[11] = $05 per direction
+export const DEATH_SPIN_DIRECTIONS = 4; // Down, Right, Up, Left per rotation
+export const DEATH_SPIN_ROTATIONS = 4; // DeathModeCounter = 4
+export const DEATH_SPIN_TOTAL_FRAMES =
+  DEATH_SPIN_FRAMES_PER_DIR * DEATH_SPIN_DIRECTIONS * DEATH_SPIN_ROTATIONS; // 80
+export const DEATH_FADE_STEPS = 4; // Sub8: AnimateWorldFading 4 palette steps
+export const DEATH_FADE_FRAMES_PER_STEP = 10; // 10 frames per fade step
+export const DEATH_GREY_PAUSE_FRAMES = 24; // Sub9: ObjTimer[11] = $18
+export const DEATH_SPARK_SMALL_FRAMES = 9; // SubA: DeathModeCounter >= 6
+export const DEATH_SPARK_BIG_FRAMES = 6; // SubA: DeathModeCounter < 6
+export const DEATH_BLANK_PAUSE_FRAMES = 46; // SubA→SubB: ObjTimer[11] = $2E
+export const DEATH_GAME_OVER_TEXT_FRAMES = 96; // SubB→SubC: ObjTimer[11] = $60
+
+// Game Over screen — Z_05.asm:1369 InitMode8 / Z_05.asm:2199 UpdateMode8ContinueQuestion
+export const GAME_OVER_CONFIRM_FLASH_FRAMES = 64; // $40 frames selection flash
+export const GAME_OVER_FLASH_TOGGLE_INTERVAL = 4; // toggle visibility every 4 frames
+export const GAME_OVER_CURSOR_X = 72;
+export const GAME_OVER_TEXT_X = 88;
+export const GAME_OVER_OPTION_YS = [79, 103, 127] as const; // $4F, $67, $7F
+
+// Respawn — Z_07.asm:1442 InitMode3_Sub1
+export const RESPAWN_SCREEN_ROW = 7;
+export const RESPAWN_SCREEN_COL = 7;
+export const RESPAWN_LINK_X = 0x78; // 120 decimal — horizontal center
+export const RESPAWN_HEALTH = 6; // 3 full hearts = 6 half-hearts
