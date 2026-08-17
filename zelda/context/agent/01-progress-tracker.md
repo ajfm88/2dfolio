@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-14 · **Phase:** D (Player & Combat) in progress · **Slices done:** 18 / 45
+**Last updated:** 2026-08-15 · **Phase:** D (Player & Combat) complete · **Slices done:** 19 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice D5** — Death + respawn: death animation, game over trigger,
-continue at dungeon entrance or screen start.
+**Next action: slice E1** — Overworld map loading + screen-to-screen scrolling
+transitions.
 
 ---
 
@@ -63,6 +63,11 @@ continue at dungeon entrance or screen start.
 | Push block | `src/world/push-block.ts` | ✅ PushBlock: 3-state machine (Idle/Moving/Done) from Z_04.asm UpdateBlock. 16-frame push timer, alignment+direction checks, 16px slide at 1px/frame. pushComplete flag for secret triggers (D3) |
 | Damage tables | `src/core/damage-tables.ts` | ✅ ObjTypeToDamagePoints (93 entries from Z_01.asm), decodeDamage (nibble split), calculateDamage (ring reduction via 16-bit shift). Full enemy+projectile damage table (D4) |
 | Damage system | `src/objects/player/link.ts` | ✅ LinkState enum (Normal/Knockback/Invincible), takeDamage() with NES-faithful knockback (32px at 4px/frame from Z_07.asm Obj_Shove), invincibility timer (24 ticks × 2 frames from Z_01.asm BeginShove), visibility flash (timer & 0x03), ring reduction (blue=÷2, red=÷4), isDead flag, sword cancel on hit, isIdle accounts for state (D4) |
+| Game mode | `src/core/game-mode.ts` | ✅ GameMode enum (Gameplay/DeathAnimation/GameOver), switches game state in main.ts update/render loops (D5) |
+| Death animation | `src/death/death-animation.ts` | ✅ DeathAnimation: 7-phase sequence matching NES Mode $11 — Flash (33f grayscale), Spin (80f: 4 rotations × 4 dirs × 5f per Z_05.asm:2607), PaletteFade (40f: 4 steps red overlay), GreyPause (24f), Spark (15f: small→big arc), BlankPause (46f), GameOverText (96f: "GAME OVER" via BitmapFont). ~334 frames total (D5) |
+| Game over screen | `src/death/game-over-screen.ts` | ✅ GameOverScreen: CONTINUE/SAVE/RETRY menu per Z_05.asm Mode $08, Select cycles cursor, Start triggers 64-frame confirm flash with 4-frame toggle, `>` cursor from BitmapFont charToIndex (D5) |
+| Respawn | `src/death/respawn.ts` | ✅ computeRespawnParams(): overworld respawn at screen (7,7), X=$78, Y=LINK_START_Y, facing Up, 3 hearts per Z_07.asm:1442 InitMode3_Sub1. Dungeon stub for H1 (D5) |
+| Link reset | `src/objects/player/link.ts` | ✅ reset() method: clears isDead/state/knockback/invincibility/sword/beam, sets position/direction/health for respawn (D5) |
 
 ---
 
@@ -90,7 +95,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~16~~ | ~~**D2** Sword attack~~ | ✅ done 2026-08-12 |
 | ~~17~~ | ~~**D3** Shield + push block~~ | ✅ done 2026-08-13 |
 | ~~18~~ | ~~**D4** Damage system~~ | ✅ done 2026-08-14 |
-| 19 | **D5** Death + respawn | death animation, game over, continue |
+| ~~19~~ | ~~**D5** Death + respawn~~ | ✅ done 2026-08-15 |
+| 20 | **E1** Overworld map loading | screen-to-screen scrolling transitions |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -126,6 +132,28 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-15 — D5 Death + respawn (Claude Opus 4.6)
+
+Created `src/core/game-mode.ts` — GameMode enum (Gameplay/DeathAnimation/GameOver)
+for main.ts state switching. Created `src/death/death-animation.ts` — DeathAnimation
+class with 7-phase sequence matching NES Mode $11 (Z_05.asm:2039-2718): Flash (33
+frames, grayscale via ctx.filter), Spin (80 frames: 4 rotations × Down→Right→Up→Left
+at 5 frames each per Z_05.asm:2607), PaletteFade (40 frames: rgba red overlay in 4
+steps), GreyPause (24 frames), Spark (15 frames: small/big arc), BlankPause (46
+frames), GameOverText (96 frames: "GAME OVER" via BitmapFont). Created
+`src/death/game-over-screen.ts` — GameOverScreen with CONTINUE/SAVE/RETRY per
+Z_05.asm Mode $08: Select cycles cursor, Start triggers 64-frame confirm flash
+(4-frame toggle interval). SAVE/RETRY stub to CONTINUE (TODO J1/L1). Created
+`src/death/respawn.ts` — computeRespawnParams() pure function per Z_07.asm:1442:
+overworld respawn at screen (7,7), X=$78, Y=LINK_START_Y, Direction.Up, 3 full
+hearts. Dungeon respawn stubbed (TODO H1). Added reset() to Link class clearing all
+state for respawn. Restructured main.ts: extracted updateGameplay(), added GameMode
+switch in update/render, death detection after link.update(), handleRespawn() with
+deathCount (capped $FF). Added 20 death/respawn constants to constants.ts. 33 new
+tests (581 total). Typecheck clean. Visually verified: death animation plays through
+all phases, "GAME OVER" text appears, continue menu renders with cursor.
+**Phase D complete. Next: E1.**
 
 ### 2026-08-14 — D4 Damage system (Claude Opus 4.6)
 
