@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-15 · **Phase:** D (Player & Combat) complete · **Slices done:** 19 / 45
+**Last updated:** 2026-08-16 · **Phase:** E (Overworld) in progress · **Slices done:** 21 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice E1** — Overworld map loading + screen-to-screen scrolling
-transitions.
+**Next action: slice E3** — Overworld secrets: bombable walls, burnable bushes,
+pushable rocks.
 
 ---
 
@@ -68,6 +68,8 @@ transitions.
 | Game over screen | `src/death/game-over-screen.ts` | ✅ GameOverScreen: CONTINUE/SAVE/RETRY menu per Z_05.asm Mode $08, Select cycles cursor, Start triggers 64-frame confirm flash with 4-frame toggle, `>` cursor from BitmapFont charToIndex (D5) |
 | Respawn | `src/death/respawn.ts` | ✅ computeRespawnParams(): overworld respawn at screen (7,7), X=$78, Y=LINK_START_Y, facing Up, 3 hearts per Z_07.asm:1442 InitMode3_Sub1. Dungeon stub for H1 (D5) |
 | Link reset | `src/objects/player/link.ts` | ✅ reset() method: clears isDead/state/knockback/invincibility/sword/beam, sets position/direction/health for respawn (D5) |
+| Overworld manager | `src/world/overworld-manager.ts` | ✅ OverworldManager: owns screen state (row/col/currentScreen), transition lifecycle, collision map, visited-screen tracking. Boundary clamping (no wrapping). NES-accurate entry positions. Cave entry detection via checkCaveEntry(). main.ts delegated to orchestrator role (E1) |
+| Cave system | `src/world/cave-room.ts`, `src/world/curtain-effect.ts`, `src/data/cave-data.ts` | ✅ CurtainEffect (close/open, 8 steps × 4 frames), CaveRoom (renders cave-map.png, Old Man, fires, item, text), cave entry detection (tile 12 + SCREEN_CAVE_INDEX mapping from ROM AttrsB), walk-into-darkness phase, item pickup (WoodSword sets link.hasSword), exit returns to overworld entry position. 78 cave screens mapped. Link starts without sword (E2) |
 
 ---
 
@@ -96,7 +98,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~17~~ | ~~**D3** Shield + push block~~ | ✅ done 2026-08-13 |
 | ~~18~~ | ~~**D4** Damage system~~ | ✅ done 2026-08-14 |
 | ~~19~~ | ~~**D5** Death + respawn~~ | ✅ done 2026-08-15 |
-| 20 | **E1** Overworld map loading | screen-to-screen scrolling transitions |
+| ~~20~~ | ~~**E1** Overworld map loading~~ | ✅ done 2026-08-16 |
+| ~~21~~ | ~~**E2** Cave/staircase entry and exit~~ | ✅ done 2026-08-16 |
+| 22 | **E3** Overworld secrets | bombable walls, burnable bushes, pushable rocks |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -132,6 +136,47 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-16 — E2 Cave/staircase entry and exit (Claude Opus 4.6)
+
+Created `src/data/cave-data.ts` — SCREEN_CAVE_INDEX mapping (78 cave screens from
+ROM LevelBlockOW.dat AttrsB, formula: ((attrsB & 0xFC) - 0x40) / 4),
+CAVE_ENTRANCE_TILES (tile 12 = dark opening), helper functions. Created
+`src/world/curtain-effect.ts` — CurtainEffect class with close/open directions,
+8 steps × 4 frames per step = 32 frames total, draws two black columns from
+edges (close) or center (open). Created `src/world/cave-room.ts` — CaveRoom class
+rendering cave-map.png background, Old Man from npcs.png, fire placeholders, item
+(WoodSword drawn as colored shape), centered text ("IT'S DANGEROUS TO GO ALONE!
+TAKE THIS." via BitmapFont). Walk-in auto-walk (32 frames). Item pickup detection
+(proximity check), exit detection (bottom of cave). Added CaveTransition and
+CaveInterior to GameMode enum. Added cave entry detection to OverworldManager
+(checkCaveEntry: checks tile above Link when facing up on cave screen). Walk-into-
+darkness phase (8 frames of Link walking into dark tile before curtain). Entry
+position saved for overworld return. Changed Link._hasSword default to false —
+sword acquired by picking up WoodSword in cave. Updated 6 existing tests to
+call setHasSword(true). 13 new cave tests (626 total). Typecheck clean. Visually
+verified: walk into cave → curtain close → cave interior → pick up sword → exit →
+curtain open → back on overworld → sword swing works. Known polish items: Old Man
+sprite has blue background (needs transparency key), HUD shows sword before
+acquisition (F1 fix), fire sprites are placeholders.
+**Next: E3.**
+
+### 2026-08-16 — E1 Overworld map loading (Claude Opus 4.6)
+
+Created `src/world/overworld-manager.ts` — OverworldManager class that owns all
+overworld state: screenRow/Col, currentScreen, transition lifecycle, collisionMap,
+and visitedScreens (Set<number>). Methods: tryTransition() with boundary clamping
+(rejects out-of-bounds instead of wrapping), updateTransition(), setScreen() for
+respawn, renderScreen/renderTransition delegation. Replaced wrapping modulo math
+with bounds checks against OVERWORLD_ROWS=8/OVERWORLD_COLS=16. Entry positions use
+play-area-relative SCREEN_EDGE_* bounds (not NES absolute coords which caused a
+bounce-back bug at y=221 > SCREEN_EDGE_BOTTOM=160). Removed D3 demo artifacts
+(enemy projectiles, push block, spawn timer) from main.ts. main.ts slimmed from
+~416 to ~230 lines — now orchestrator only, delegates world state to
+OverworldManager. Added OVERWORLD_ROWS, OVERWORLD_COLS, LINK_ENTRY_* constants.
+32 new tests (613 total). Typecheck clean. Visually verified: walk right + up
+without bounce, scroll animation correct, no demo clutter.
+**Phase E started. Next: E2.**
 
 ### 2026-08-15 — D5 Death + respawn (Claude Opus 4.6)
 

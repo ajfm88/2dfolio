@@ -81,6 +81,18 @@ export const GAME_OVER_CURSOR_X = 72;
 export const GAME_OVER_TEXT_X = 88;
 export const GAME_OVER_OPTION_YS = [79, 103, 127] as const; // $4F, $67, $7F
 
+// Overworld grid
+export const OVERWORLD_ROWS = 8;
+export const OVERWORLD_COLS = 16;
+
+// Link entry positions after screen transition — placed at the opposite screen edge.
+// Uses play-area-relative coords matching SCREEN_EDGE_* bounds so Link doesn't
+// immediately re-trigger a transition (checkScreenEdge uses strict inequality).
+export const LINK_ENTRY_LEFT = SCREEN_EDGE_LEFT;
+export const LINK_ENTRY_RIGHT = SCREEN_EDGE_RIGHT;
+export const LINK_ENTRY_TOP = SCREEN_EDGE_TOP;
+export const LINK_ENTRY_BOTTOM = SCREEN_EDGE_BOTTOM;
+
 // Respawn — Z_07.asm:1442 InitMode3_Sub1
 export const RESPAWN_SCREEN_ROW = 7;
 export const RESPAWN_SCREEN_COL = 7;
