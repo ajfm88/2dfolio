@@ -233,6 +233,7 @@ describe('Link.takeDamage', () => {
 
   it('cancels active sword swing', () => {
     const link = new Link(80, 80);
+    link.setHasSword(true);
     const { input, target } = createInput();
     const collision = createCollisionMap(ALL_WALKABLE_METATILES);
     const screen = allWalkableScreen();
@@ -532,6 +533,7 @@ describe('isVisible', () => {
 describe('SwordSwing.cancel', () => {
   it('is tested through Link.takeDamage cancelling active sword', () => {
     const link = new Link(80, 80);
+    link.setHasSword(true);
     const { input, target } = createInput();
     const collision = createCollisionMap(ALL_WALKABLE_METATILES);
     const screen = allWalkableScreen();
@@ -551,6 +553,7 @@ describe('SwordSwing.cancel', () => {
 describe('sword beam health interaction', () => {
   it('sword beam does not fire when health is not full', () => {
     const link = new Link(80, 80);
+    link.setHasSword(true);
     const { input, target } = createInput();
     const collision = createCollisionMap(ALL_WALKABLE_METATILES);
     const screen = allWalkableScreen();
