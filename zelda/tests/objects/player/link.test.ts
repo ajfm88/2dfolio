@@ -437,6 +437,7 @@ describe('Link', () => {
       const collision = new TileCollisionMap(ALL_WALKABLE_METATILES);
       const screen = allWalkableScreen();
       const link = new Link(120, 80);
+      link.setHasSword(true);
 
       target.dispatchKeyDown('KeyX');
       input.update();
@@ -449,6 +450,7 @@ describe('Link', () => {
       const collision = new TileCollisionMap(ALL_WALKABLE_METATILES);
       const screen = allWalkableScreen();
       const link = new Link(120, 80);
+      link.setHasSword(true);
 
       target.dispatchKeyDown('KeyX');
       input.update();
@@ -486,6 +488,7 @@ describe('Link', () => {
       const collision = new TileCollisionMap(ALL_WALKABLE_METATILES);
       const screen = allWalkableScreen();
       const link = new Link(120, 80);
+      link.setHasSword(true);
       link.setHealth(6, 6);
 
       target.dispatchKeyDown('KeyX');

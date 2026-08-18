@@ -86,8 +86,8 @@ Node scripts that parse the assembly source — run once, commit output.
 
 | ID | Slice | Verify |
 |---|---|---|
-| E1 ⬜ | Overworld map loading + screen-to-screen scrolling transitions | walk across multiple screens |
-| E2 ⬜ | Cave/staircase entry and exit: fade out → cave interior → fade in. Support for multi-room caves | enter sword cave, get wooden sword |
+| E1 ✅ | Overworld map loading + screen-to-screen scrolling transitions | walk across multiple screens |
+| E2 ✅ | Cave/staircase entry and exit: fade out → cave interior → fade in. Support for multi-room caves | enter sword cave, get wooden sword |
 | E3 ⬜ | Overworld secrets: bombable walls (reveal cave), burnable bushes (blue/red candle), pushable rocks | bomb reveals cave; bush burns |
 | E4 ⬜ | NPCs + shops: Old Man dialogue, merchant shops (buy items for rupees), gambling game, item caves | buy item from shop; receive gift from Old Man |
 

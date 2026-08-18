@@ -56,7 +56,7 @@ export class Link {
   private _swordBeam: SwordBeam | null = null;
   private _health = 6;
   private _maxHealth = 6;
-  private _hasSword = true;
+  private _hasSword = false;
   private _hasShield = true;
   private _hasMagicShield = false;
 

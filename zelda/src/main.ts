@@ -1,37 +1,27 @@
 import {
   LINK_SHEET_COLUMNS,
-  PLAY_AREA_HEIGHT,
-  SCREEN_EDGE_BOTTOM,
-  SCREEN_EDGE_LEFT,
-  SCREEN_EDGE_RIGHT,
-  SCREEN_EDGE_TOP,
-  SCREEN_WIDTH,
   SPRITE_SPACING,
 } from './core/constants.js';
-import { rectsOverlap } from './core/collision-utils.js';
-import { DAMAGE_TABLE } from './core/damage-tables.js';
 import { DebugOverlay } from './core/debug-overlay.js';
 import { FpsCounter } from './core/fps-counter.js';
 import { GameLoop } from './core/game-loop.js';
 import { GameMode } from './core/game-mode.js';
-import { InputManager } from './core/input.js';
+import { Action, InputManager } from './core/input.js';
 import { Direction } from './core/types.js';
 import { DeathAnimation } from './death/death-animation.js';
 import { GameOverScreen } from './death/game-over-screen.js';
 import { computeRespawnParams } from './death/respawn.js';
 import { Renderer } from './render/renderer.js';
 import { SpriteSheet } from './render/sprite-renderer.js';
-import { TileRenderer, getScreenByCoord } from './render/tile-renderer.js';
+import { TileRenderer } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
-import type { OverworldData, OverworldScreen } from './data/overworld-types.js';
+import type { OverworldData } from './data/overworld-types.js';
 import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer } from './ui/hud.js';
-import { ScreenTransition } from './world/screen-transition.js';
-import { TileCollisionMap, createCollisionMap } from './world/collision.js';
+import { OverworldManager } from './world/overworld-manager.js';
+import { CurtainEffect } from './world/curtain-effect.js';
+import { CaveRoom, type CaveContents } from './world/cave-room.js';
 import { Link } from './objects/player/link.js';
-import { canShieldBlock, ProjectileType, ShieldDeflection } from './objects/player/shield.js';
-import { EnemyProjectile } from './objects/projectiles/enemy-projectile.js';
-import { PushBlock } from './world/push-block.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -46,29 +36,30 @@ let frameCount = 0;
 let loadProgress = { loaded: 0, total: 0 };
 let assets: LoadedAssets | null = null;
 let loadError: string | null = null;
-let overworldData: OverworldData | null = null;
-let currentScreen: OverworldScreen | null = null;
-let screenRow = 7;
-let screenCol = 7;
 let linkSheet: SpriteSheet | null = null;
 let hudRenderer: HudRenderer | null = null;
-let transition: ScreenTransition | null = null;
 let link: Link | null = null;
-let collisionMap: TileCollisionMap | null = null;
+let overworld: OverworldManager | null = null;
 
-// D3 demo objects — shield deflection + push block
-const enemyProjectiles: EnemyProjectile[] = [];
-const deflections: ShieldDeflection[] = [];
-let demoPushBlock: PushBlock | null = null;
-let projectileSpawnTimer = 0;
-const DEMO_SPAWN_INTERVAL = 90;
-
-// D5: death + respawn state
+// Death + respawn
 let gameMode: GameMode = GameMode.Gameplay;
 let deathAnimation: DeathAnimation | null = null;
 let gameOverScreen: GameOverScreen | null = null;
 let font: BitmapFont | null = null;
 let deathCount = 0;
+
+// Cave system
+let curtainEffect: CurtainEffect | null = null;
+let caveRoom: CaveRoom | null = null;
+let pendingCaveIndex: number | null = null;
+let caveContentsData: CaveContents[] = [];
+let caveEntryX = 0;
+let caveEntryY = 0;
+let caveWalkIntoFrames = 0; // frames of Link walking into the dark opening before curtain
+
+interface ItemsData {
+  readonly caveContents: readonly CaveContents[];
+}
 
 async function init(): Promise<void> {
   try {
@@ -76,8 +67,13 @@ async function init(): Promise<void> {
       loadProgress = { loaded, total };
     });
 
-    const resp = await fetch('/src/data/overworld.json');
-    overworldData = (await resp.json()) as OverworldData;
+    const [owResp, itemsResp] = await Promise.all([
+      fetch('/src/data/overworld.json'),
+      fetch('/src/data/items.json'),
+    ]);
+    const overworldData = (await owResp.json()) as OverworldData;
+    const itemsData = (await itemsResp.json()) as ItemsData;
+    caveContentsData = [...itemsData.caveContents];
 
     tileRenderer.init(assets.maps.overworldMap);
     linkSheet = new SpriteSheet({
@@ -93,10 +89,8 @@ async function init(): Promise<void> {
       assets.sprites.treasuresFull,
     );
     font = new BitmapFont(assets.sprites.font);
-    collisionMap = createCollisionMap(overworldData);
     link = new Link();
-    currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
-    demoPushBlock = new PushBlock(128, 64);
+    overworld = new OverworldManager(overworldData, tileRenderer, 7, 7);
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
   }
@@ -104,40 +98,68 @@ async function init(): Promise<void> {
 
 void init();
 
-function startTransition(direction: Direction): void {
-  if (!overworldData || !currentScreen || transition || !link) return;
-  const oldScreen = currentScreen;
-  const dRow = direction === Direction.Up ? -1 : direction === Direction.Down ? 1 : 0;
-  const dCol = direction === Direction.Left ? -1 : direction === Direction.Right ? 1 : 0;
-  screenRow = ((screenRow + dRow) % 8 + 8) % 8;
-  screenCol = ((screenCol + dCol) % 16 + 16) % 16;
-  const newScreen = getScreenByCoord(overworldData, screenRow, screenCol);
-  if (!newScreen) return;
-  currentScreen = newScreen;
+function enterCave(caveIndex: number): void {
+  if (!assets || !link || !overworld || !font) return;
 
-  // Place Link at the opposite edge of the new screen (NES-faithful entry)
-  switch (direction) {
-    case Direction.Right:
-      link.setPosition(SCREEN_EDGE_LEFT, link.posY);
-      break;
-    case Direction.Left:
-      link.setPosition(SCREEN_EDGE_RIGHT, link.posY);
-      break;
-    case Direction.Down:
-      link.setPosition(link.posX, SCREEN_EDGE_TOP);
-      break;
-    case Direction.Up:
-      link.setPosition(link.posX, SCREEN_EDGE_BOTTOM);
-      break;
-  }
-  link.setDirection(direction);
+  const contents = caveContentsData[caveIndex];
+  if (!contents) return;
 
-  transition = new ScreenTransition(direction, oldScreen, newScreen);
+  // Remember where Link was on the overworld for return
+  caveEntryX = link.posX;
+  caveEntryY = link.posY;
+
+  pendingCaveIndex = caveIndex;
+  // Link walks into the dark opening for ~8 frames (~12px) before curtain starts
+  caveWalkIntoFrames = 8;
+  link.setDirection(Direction.Up);
+  gameMode = GameMode.CaveTransition;
+}
+
+function startCaveInterior(): void {
+  if (!assets || !link || !font || !overworld || pendingCaveIndex === null) return;
+
+  const contents = caveContentsData[pendingCaveIndex];
+  if (!contents) return;
+
+  caveRoom = new CaveRoom(
+    assets.maps.caveMap,
+    assets.sprites.items,
+    assets.sprites.npcs,
+    font,
+    contents,
+    overworld.currentScreen.id,
+  );
+  caveRoom.initLink(link);
+  curtainEffect = new CurtainEffect('open');
+  gameMode = GameMode.CaveInterior;
+  pendingCaveIndex = null;
+}
+
+function exitCave(): void {
+  if (!link || !overworld) return;
+  curtainEffect = new CurtainEffect('close');
+  gameMode = GameMode.CaveTransition;
+  pendingCaveIndex = -1; // sentinel: returning to overworld
+}
+
+function returnToOverworld(): void {
+  if (!link || !overworld) return;
+
+  // Restore Link to where they were when they entered the cave, facing down
+  link.setPosition(caveEntryX, caveEntryY);
+  link.setDirection(Direction.Down);
+
+  caveRoom = null;
+  curtainEffect = new CurtainEffect('open');
+  gameMode = GameMode.CaveTransition;
+  pendingCaveIndex = -2; // sentinel: opening curtain on overworld
 }
 
 function renderDebugOverlay(): void {
   const ctx = renderer.ctx;
-  const screenId = currentScreen ? currentScreen.id : -1;
+  const screenId = overworld ? overworld.currentScreen.id : -1;
+  const sr = overworld ? overworld.screenRow : 0;
+  const sc = overworld ? overworld.screenCol : 0;
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.fillRect(0, 0, renderer.playAreaWidth, 12);
@@ -146,133 +168,100 @@ function renderDebugOverlay(): void {
   ctx.fillStyle = '#0f0';
   const lx = link ? link.posX : 0;
   const ly = link ? link.posY : 0;
+  const modeStr = GameMode[gameMode] ?? '?';
   ctx.fillText(
-    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${screenRow},${screenCol}) Link:(${lx},${ly}) E:0`,
+    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${sr},${sc}) Link:(${lx},${ly}) ${modeStr}`,
     2,
     9,
   );
-
-  const states = input.getAllActionStates();
-  const x = 150;
-  let y = 24;
-  const lineHeight = 12;
-
-  ctx.fillStyle = '#fff';
-  ctx.fillText('INPUT', x, y);
-  y += lineHeight;
-
-  for (const [action, state] of states) {
-    const h = state.held ? 'H' : '.';
-    const p = state.justPressed ? 'P' : '.';
-    const r = state.justReleased ? 'R' : '.';
-
-    if (state.justPressed) {
-      ctx.fillStyle = '#ff0';
-    } else if (state.held) {
-      ctx.fillStyle = '#0f0';
-    } else if (state.justReleased) {
-      ctx.fillStyle = '#f44';
-    } else {
-      ctx.fillStyle = '#666';
-    }
-
-    ctx.fillText(`${action.padEnd(8)} [${h}${p}${r}]`, x, y);
-    y += lineHeight;
-  }
 }
 
 function updateGameplay(): void {
-  if (transition) {
-    transition.update();
-    if (link) link.tickAnimation();
-    if (transition.done) {
-      transition = null;
-    }
+  if (!link || !overworld) return;
+
+  if (overworld.isTransitioning) {
+    overworld.updateTransition(link);
     return;
   }
 
-  if (link && collisionMap && currentScreen) {
-    const result = link.update(input, collisionMap, currentScreen);
-    if (result.screenEdge !== null) {
-      startTransition(result.screenEdge);
-    }
+  const result = link.update(input, overworld.collisionMap, overworld.currentScreen);
+  if (result.screenEdge !== null) {
+    overworld.tryTransition(result.screenEdge, link);
+  }
 
-    // D5: detect death — Z_01.asm:5807 @HandleDied
-    if (link.isDead && gameMode === GameMode.Gameplay) {
-      gameMode = GameMode.DeathAnimation;
-      deathAnimation = new DeathAnimation(link.posX, link.posY);
-      enemyProjectiles.length = 0;
-      deflections.length = 0;
-      // TODO(K1): silence all sound, play death tune (Tune1Request = $80)
-      return;
-    }
+  // Check cave entry — Link facing up, walking into a cave entrance tile
+  const caveIndex = overworld.checkCaveEntry(link);
+  if (caveIndex !== null) {
+    enterCave(caveIndex);
+    return;
+  }
 
-    // Spawn demo projectiles periodically
-    projectileSpawnTimer++;
-    if (projectileSpawnTimer >= DEMO_SPAWN_INTERVAL) {
-      projectileSpawnTimer = 0;
-      const spawnY = link.posY + 4;
-      enemyProjectiles.push(
-        new EnemyProjectile(SCREEN_WIDTH - 16, spawnY, Direction.Left, ProjectileType.Rock),
-      );
-    }
+  if (link.isDead && gameMode === GameMode.Gameplay) {
+    gameMode = GameMode.DeathAnimation;
+    deathAnimation = new DeathAnimation(link.posX, link.posY);
+    return;
+  }
+}
 
-    // Update projectiles and check shield collision
-    for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-      const proj = enemyProjectiles[i]!;
-      proj.update();
-      if (!proj.isActive()) {
-        enemyProjectiles.splice(i, 1);
-        continue;
+function updateCaveInterior(): void {
+  if (!link || !caveRoom) return;
+
+  // Curtain opening animation at start
+  if (curtainEffect && !curtainEffect.done) {
+    curtainEffect.update();
+    return;
+  }
+  curtainEffect = null;
+
+  // Process Link movement input within cave
+  const dir = readCaveInputDirection();
+  if (dir !== null) {
+    link.setDirection(dir);
+    const speed = 1.5;
+    const dx = dir === Direction.Left ? -speed : dir === Direction.Right ? speed : 0;
+    const dy = dir === Direction.Up ? -speed : dir === Direction.Down ? speed : 0;
+    caveRoom.updateMovement(link, dx, dy);
+    link.tickAnimation();
+  }
+
+  caveRoom.update(link);
+
+  // Handle item pickup — for sword cave, give Link the sword
+  if (caveRoom.itemPickedUp) {
+    const contents = caveContentsData[0]; // TODO: track which cave we're in
+    if (contents) {
+      const mainItem = contents.items[1];
+      if (mainItem === 1) {
+        link.setHasSword(true);
       }
-      if (proj.isFlying() && !link.isInvincible && rectsOverlap(proj.getHitbox(), link.getCollisionRect())) {
-        if (link.hasShield && canShieldBlock(link.facing, proj.direction, proj.type, link.hasMagicShield, link.isIdle)) {
-          deflections.push(new ShieldDeflection(proj.x, proj.y, link.facing));
-          proj.deflect(link.facing);
-        } else {
-          const damageRaw = DAMAGE_TABLE[proj.type] ?? 0x80;
-          link.takeDamage(damageRaw, proj.direction);
-          proj.deactivate();
-        }
-      }
-    }
-
-    // Update deflection effects
-    for (let i = deflections.length - 1; i >= 0; i--) {
-      deflections[i]!.update();
-      if (!deflections[i]!.isActive()) {
-        deflections.splice(i, 1);
-      }
-    }
-
-    // Update push block
-    if (demoPushBlock) {
-      demoPushBlock.update(link, true);
     }
   }
+
+  if (caveRoom.exitRequested) {
+    exitCave();
+  }
+}
+
+function readCaveInputDirection(): Direction | null {
+  if (input.isHeld(Action.Up)) return Direction.Up;
+  if (input.isHeld(Action.Down)) return Direction.Down;
+  if (input.isHeld(Action.Left)) return Direction.Left;
+  if (input.isHeld(Action.Right)) return Direction.Right;
+  return null;
 }
 
 function handleRespawn(): void {
   const params = computeRespawnParams(0);
 
-  screenRow = params.screenRow;
-  screenCol = params.screenCol;
-
-  if (overworldData) {
-    currentScreen = getScreenByCoord(overworldData, screenRow, screenCol) ?? null;
+  if (overworld) {
+    overworld.setScreen(params.screenRow, params.screenCol);
   }
 
   if (link) {
     link.reset(params.linkX, params.linkY, params.linkDirection, params.health);
   }
 
-  // Z_05.asm:2704 — increment death count, capped at $FF
   deathCount = Math.min(deathCount + 1, 255);
-
-  transition = null;
-  enemyProjectiles.length = 0;
-  deflections.length = 0;
-  projectileSpawnTimer = 0;
   gameMode = GameMode.Gameplay;
 }
 
@@ -286,6 +275,38 @@ const loop = new GameLoop({
         updateGameplay();
         break;
 
+      case GameMode.CaveTransition:
+        // Walk-into-darkness phase: Link walks into the cave opening before curtain
+        if (caveWalkIntoFrames > 0 && link) {
+          caveWalkIntoFrames--;
+          link.walkForward();
+          link.tickAnimation();
+          if (caveWalkIntoFrames <= 0) {
+            curtainEffect = new CurtainEffect('close');
+          }
+          break;
+        }
+        if (curtainEffect) {
+          curtainEffect.update();
+          if (curtainEffect.done) {
+            if (pendingCaveIndex !== null && pendingCaveIndex >= 0) {
+              startCaveInterior();
+            } else if (pendingCaveIndex === -1) {
+              returnToOverworld();
+            } else {
+              // Curtain opened on overworld — back to gameplay
+              curtainEffect = null;
+              pendingCaveIndex = null;
+              gameMode = GameMode.Gameplay;
+            }
+          }
+        }
+        break;
+
+      case GameMode.CaveInterior:
+        updateCaveInterior();
+        break;
+
       case GameMode.DeathAnimation:
         if (deathAnimation) {
           deathAnimation.update();
@@ -293,7 +314,6 @@ const loop = new GameLoop({
             gameMode = GameMode.GameOver;
             gameOverScreen = new GameOverScreen();
             deathAnimation = null;
-            // TODO(K1): play Game Over music (Tune1Request = $40)
           }
         }
         break;
@@ -302,8 +322,6 @@ const loop = new GameLoop({
         if (gameOverScreen) {
           gameOverScreen.update(input);
           if (gameOverScreen.done) {
-            // TODO(J1): if option is Retry, transition to title screen
-            // TODO(L1): if option is Save, save to IndexedDB before respawn
             gameOverScreen = null;
             handleRespawn();
           }
@@ -316,7 +334,6 @@ const loop = new GameLoop({
     fpsCounter.tick(performance.now());
     renderer.clear();
 
-    // HUD is hidden during Game Over screen (NES shows full-screen menu)
     if (hudRenderer && gameMode !== GameMode.GameOver) {
       hudRenderer.render(renderer, {
         rupees: 0,
@@ -327,9 +344,9 @@ const loop = new GameLoop({
         maxHealth: link ? link.maxHealth : 6,
         bItem: null,
         aItem: null,
-        mapRow: screenRow,
-        mapCol: screenCol,
-        isOverworld: true,
+        mapRow: overworld ? overworld.screenRow : 7,
+        mapCol: overworld ? overworld.screenCol : 7,
+        isOverworld: gameMode !== GameMode.CaveInterior,
         levelNumber: 0,
       });
     }
@@ -342,7 +359,7 @@ const loop = new GameLoop({
       renderer.ctx.font = '10px monospace';
       renderer.ctx.fillText('Load error:', 8, 40);
       renderer.ctx.fillText(loadError, 8, 56);
-    } else if (!assets || !overworldData || !currentScreen) {
+    } else if (!assets || !overworld) {
       renderer.fillRect(0, 0, renderer.playAreaWidth, renderer.playAreaHeight, '#000');
       renderer.ctx.fillStyle = '#fff';
       renderer.ctx.font = '10px monospace';
@@ -361,45 +378,36 @@ const loop = new GameLoop({
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
       }
     } else if (gameMode === GameMode.DeathAnimation && deathAnimation && linkSheet) {
-      deathAnimation.render(renderer, linkSheet, tileRenderer, currentScreen, font);
+      deathAnimation.render(renderer, linkSheet, tileRenderer, overworld.currentScreen, font);
     } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
       gameOverScreen.render(renderer, font);
-    } else if (transition) {
-      const ctx = renderer.ctx;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT);
-      ctx.clip();
-
-      const oldOff = transition.getOldScreenOffset();
-      ctx.save();
-      ctx.translate(oldOff.x, oldOff.y);
-      tileRenderer.renderScreen(renderer, transition.oldScreen);
-      ctx.restore();
-
-      const newOff = transition.getNewScreenOffset();
-      ctx.save();
-      ctx.translate(newOff.x, newOff.y);
-      tileRenderer.renderScreen(renderer, transition.newScreen);
-      ctx.restore();
-
-      ctx.restore();
+    } else if (gameMode === GameMode.CaveInterior && caveRoom && linkSheet && link) {
+      caveRoom.render(renderer, link, linkSheet);
+      if (curtainEffect && !curtainEffect.done) {
+        curtainEffect.render(renderer);
+      }
+    } else if (gameMode === GameMode.CaveTransition) {
+      // During cave transition, show the appropriate background under the curtain
+      if (caveRoom && linkSheet && link) {
+        caveRoom.render(renderer, link, linkSheet);
+      } else {
+        overworld.renderScreen(renderer);
+        if (linkSheet && link) {
+          link.render(renderer, linkSheet);
+        }
+      }
+      if (curtainEffect) {
+        curtainEffect.render(renderer);
+      }
+    } else if (overworld.isTransitioning) {
+      overworld.renderTransition(renderer);
 
       if (linkSheet && link) {
-        const newOff2 = transition.getNewScreenOffset();
-        link.render(renderer, linkSheet, newOff2.x, newOff2.y);
+        const off = overworld.getNewScreenOffset();
+        link.render(renderer, linkSheet, off.x, off.y);
       }
     } else {
-      tileRenderer.renderScreen(renderer, currentScreen);
-      if (demoPushBlock) {
-        demoPushBlock.render(renderer);
-      }
-      for (const proj of enemyProjectiles) {
-        proj.render(renderer);
-      }
-      for (const defl of deflections) {
-        defl.render(renderer);
-      }
+      overworld.renderScreen(renderer);
       if (linkSheet && link) {
         link.render(renderer, linkSheet);
       }
