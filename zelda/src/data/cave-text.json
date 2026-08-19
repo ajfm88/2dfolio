@@ -1,0 +1,301 @@
+{
+  "_comment": "Cave/NPC text strings extracted from PersonText.dat in NES ROM",
+  "messages": [
+    {
+      "index": 0,
+      "textSelector": 0,
+      "lines": [
+        "IT'S DANGEROUS TO GO",
+        "ALONE  TAKE THIS!"
+      ]
+    },
+    {
+      "index": 1,
+      "textSelector": 2,
+      "lines": [
+        "MASTER USING IT AND",
+        "YOU CAN HAVE THIS!"
+      ]
+    },
+    {
+      "index": 2,
+      "textSelector": 4,
+      "lines": [
+        "TAKE ANY ROAD YOU WANT!"
+      ]
+    },
+    {
+      "index": 3,
+      "textSelector": 6,
+      "lines": [
+        "SECRET IS IN THE TREE",
+        "AT THE DEAD-END!"
+      ]
+    },
+    {
+      "index": 4,
+      "textSelector": 8,
+      "lines": [
+        "LET'S PLAY MONEY",
+        "MAKING GAME!"
+      ]
+    },
+    {
+      "index": 5,
+      "textSelector": 10,
+      "lines": [
+        "PAY ME FOR THE DOOR",
+        "REPAIR CHARGE!"
+      ]
+    },
+    {
+      "index": 6,
+      "textSelector": 12,
+      "lines": [
+        "SHOW THIS TO THE",
+        "OLD WOMAN!"
+      ]
+    },
+    {
+      "index": 7,
+      "textSelector": 14,
+      "lines": [
+        "MEET THE OLD MAN",
+        "AT THE GRAVE!"
+      ]
+    },
+    {
+      "index": 8,
+      "textSelector": 16,
+      "lines": [
+        "BUY MEDICINE BEFORE",
+        "YOU GO!"
+      ]
+    },
+    {
+      "index": 9,
+      "textSelector": 18,
+      "lines": [
+        "PAY ME AND I'LL TALK!"
+      ]
+    },
+    {
+      "index": 10,
+      "textSelector": 20,
+      "lines": [
+        "THIS AIN'T ENOUGH",
+        "TO TALK!"
+      ]
+    },
+    {
+      "index": 11,
+      "textSelector": 22,
+      "lines": [
+        "GO UP,UP,",
+        "THE MOUNTAIN AHEAD!"
+      ]
+    },
+    {
+      "index": 12,
+      "textSelector": 24,
+      "lines": [
+        "GO NORTH,WEST,SOUTH,",
+        "WEST TO THE FOREST",
+        "OF MAZE!"
+      ]
+    },
+    {
+      "index": 13,
+      "textSelector": 26,
+      "lines": [
+        "BOY, YOU'RE RICH"
+      ]
+    },
+    {
+      "index": 14,
+      "textSelector": 28,
+      "lines": [
+        "BUY SOMETHIN' WILL YA"
+      ]
+    },
+    {
+      "index": 15,
+      "textSelector": 30,
+      "lines": [
+        "BOY, THIS IS",
+        "REALLY EXPENSIVE"
+      ]
+    },
+    {
+      "index": 16,
+      "textSelector": 32,
+      "lines": [
+        "TAKE ANY ONE YOU WANT!"
+      ]
+    },
+    {
+      "index": 17,
+      "textSelector": 34,
+      "lines": [
+        "IT'S A SECRET",
+        "TO EVERYBODY!"
+      ]
+    },
+    {
+      "index": 18,
+      "textSelector": 36,
+      "lines": [
+        "GRUMBLE,GRUMBLE!!!"
+      ]
+    },
+    {
+      "index": 19,
+      "textSelector": 38,
+      "lines": [
+        "EASTMOST PENNINSULA",
+        "IS THE SECRET!"
+      ]
+    },
+    {
+      "index": 20,
+      "textSelector": 40,
+      "lines": [
+        "DODONGO DISLIKES SMOKE!"
+      ]
+    },
+    {
+      "index": 21,
+      "textSelector": 42,
+      "lines": [
+        "DID YOU GET THE SWORD",
+        "FROM THE OLD MAN ON",
+        "TOP OF THE WATERFALL?"
+      ]
+    },
+    {
+      "index": 22,
+      "textSelector": 44,
+      "lines": [
+        "WALK INTO THE",
+        "WATERFALL!"
+      ]
+    },
+    {
+      "index": 23,
+      "textSelector": 46,
+      "lines": [
+        "SECRET POWER IS SAID",
+        "TO BE IN THE ARROW!"
+      ]
+    },
+    {
+      "index": 24,
+      "textSelector": 48,
+      "lines": [
+        "DIGDOGGER HATES",
+        "CERTAIN KIND OF SOUND!"
+      ]
+    },
+    {
+      "index": 25,
+      "textSelector": 50,
+      "lines": [
+        "I BET YOU'D LIKE",
+        "TO HAVE MORE BOMBS!"
+      ]
+    },
+    {
+      "index": 26,
+      "textSelector": 52,
+      "lines": [
+        "IF YOU GO IN THE",
+        "DIRECTION OF THE ARROW!"
+      ]
+    },
+    {
+      "index": 27,
+      "textSelector": 54,
+      "lines": [
+        "LEAVE YOUR LIFE",
+        "OR MONEY!"
+      ]
+    },
+    {
+      "index": 28,
+      "textSelector": 56,
+      "lines": [
+        "THERE ARE SECRETS WHERE",
+        "FAIRIES DON'T LIVE!"
+      ]
+    },
+    {
+      "index": 29,
+      "textSelector": 58,
+      "lines": [
+        "AIM AT THE EYES",
+        "OF GOHMA!"
+      ]
+    },
+    {
+      "index": 30,
+      "textSelector": 60,
+      "lines": [
+        "SOUTH OF ARROW MARK",
+        "HIDES A SECRET!"
+      ]
+    },
+    {
+      "index": 31,
+      "textSelector": 62,
+      "lines": [
+        "THERE'S A SECRET IN",
+        "THE TIP OF THE NOSE!"
+      ]
+    },
+    {
+      "index": 32,
+      "textSelector": 64,
+      "lines": [
+        "SPECTACLE ROCK IS",
+        "AN ENTRANCE TO DEATH!"
+      ]
+    },
+    {
+      "index": 33,
+      "textSelector": 66,
+      "lines": [
+        "10TH ENEMY HAS THE BOMB!"
+      ]
+    },
+    {
+      "index": 34,
+      "textSelector": 68,
+      "lines": [
+        "ONES WHO DOES NOT HAVE",
+        "TRIFORCE CAN'T GO IN!"
+      ]
+    },
+    {
+      "index": 35,
+      "textSelector": 70,
+      "lines": [
+        "PATRA HAS THE MAP!"
+      ]
+    },
+    {
+      "index": 36,
+      "textSelector": 72,
+      "lines": [
+        "GO TO THE NEXT ROOM!"
+      ]
+    },
+    {
+      "index": 37,
+      "textSelector": 74,
+      "lines": [
+        "EYES OF SKULL",
+        "HAS A SECRET!"
+      ]
+    }
+  ]
+}
