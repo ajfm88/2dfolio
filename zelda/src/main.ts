@@ -16,12 +16,17 @@ import { SpriteSheet } from './render/sprite-renderer.js';
 import { TileRenderer } from './render/tile-renderer.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData } from './data/overworld-types.js';
+import type { SecretsData } from './data/secret-types.js';
 import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer } from './ui/hud.js';
 import { OverworldManager } from './world/overworld-manager.js';
 import { CurtainEffect } from './world/curtain-effect.js';
 import { CaveRoom, type CaveContents } from './world/cave-room.js';
+import type { CaveTextData, CaveTextMessage } from './data/cave-text-types.js';
+import type { ItemData, CaveTypeInfo } from './data/item-types.js';
 import { Link } from './objects/player/link.js';
+import { Bomb } from './objects/weapons/bomb.js';
+import { CandleFire } from './objects/weapons/candle-fire.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -55,11 +60,17 @@ let pendingCaveIndex: number | null = null;
 let caveContentsData: CaveContents[] = [];
 let caveEntryX = 0;
 let caveEntryY = 0;
-let caveWalkIntoFrames = 0; // frames of Link walking into the dark opening before curtain
+let caveWalkIntoFrames = 0;
+let caveItemHandled = false;
 
-interface ItemsData {
-  readonly caveContents: readonly CaveContents[];
-}
+// Weapon objects for overworld secret interactions (E3 stubs)
+let bombs: Bomb[] = [];
+let fires: CandleFire[] = [];
+let usedCandleThisScreen = false;
+
+// Cave data
+let caveTextData: CaveTextData | null = null;
+let caveTypesData: readonly CaveTypeInfo[] = [];
 
 async function init(): Promise<void> {
   try {
@@ -67,13 +78,18 @@ async function init(): Promise<void> {
       loadProgress = { loaded, total };
     });
 
-    const [owResp, itemsResp] = await Promise.all([
+    const [owResp, itemsResp, secretsResp, caveTextResp] = await Promise.all([
       fetch('/src/data/overworld.json'),
       fetch('/src/data/items.json'),
+      fetch('/src/data/secrets.json'),
+      fetch('/src/data/cave-text.json'),
     ]);
     const overworldData = (await owResp.json()) as OverworldData;
-    const itemsData = (await itemsResp.json()) as ItemsData;
+    const itemsData = (await itemsResp.json()) as ItemData;
+    const secretsData = (await secretsResp.json()) as SecretsData;
+    caveTextData = (await caveTextResp.json()) as CaveTextData;
     caveContentsData = [...itemsData.caveContents];
+    caveTypesData = itemsData.caveTypes;
 
     tileRenderer.init(assets.maps.overworldMap);
     linkSheet = new SpriteSheet({
@@ -90,7 +106,7 @@ async function init(): Promise<void> {
     );
     font = new BitmapFont(assets.sprites.font);
     link = new Link();
-    overworld = new OverworldManager(overworldData, tileRenderer, 7, 7);
+    overworld = new OverworldManager(overworldData, tileRenderer, 7, 7, secretsData);
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
   }
@@ -115,21 +131,48 @@ function enterCave(caveIndex: number): void {
   gameMode = GameMode.CaveTransition;
 }
 
+function lookupCaveText(caveIndex: number): CaveTextMessage | null {
+  if (!caveTextData) return null;
+  const caveType = caveTypesData[caveIndex];
+  if (!caveType) return null;
+  // textSelector is a byte index into the address table (2 bytes per entry)
+  const messageIndex = caveType.textSelector / 2;
+  return caveTextData.messages[messageIndex] ?? null;
+}
+
 function startCaveInterior(): void {
   if (!assets || !link || !font || !overworld || pendingCaveIndex === null) return;
 
   const contents = caveContentsData[pendingCaveIndex];
   if (!contents) return;
 
+  // Check room flags — if item already taken for take-type caves, skip person/items
+  const alreadyTaken = overworld.roomFlags.isSecretFound(overworld.currentScreen.id);
+
+  const textMessage = alreadyTaken ? null : lookupCaveText(pendingCaveIndex);
+
   caveRoom = new CaveRoom(
     assets.maps.caveMap,
-    assets.sprites.items,
     assets.sprites.npcs,
     font,
-    contents,
-    overworld.currentScreen.id,
+    alreadyTaken ? { ...contents, items: [63, 63, 63] } : contents,
+    textMessage,
   );
   caveRoom.initLink(link);
+
+  // Door repair: auto-deduct 20 rupees on entry (Z_01.asm:696)
+  if (!alreadyTaken && caveRoom.behavior === 'doorRepair') {
+    link.spendRupees(20);
+    overworld.roomFlags.setSecretFound(overworld.currentScreen.id);
+  }
+
+  // Moblin giveaway: give rupees on entry
+  if (!alreadyTaken && caveRoom.behavior === 'moblinGive') {
+    link.addRupees(caveRoom.rupeeReward);
+    overworld.roomFlags.setSecretFound(overworld.currentScreen.id);
+  }
+
+  caveItemHandled = false;
   curtainEffect = new CurtainEffect('open');
   gameMode = GameMode.CaveInterior;
   pendingCaveIndex = null;
@@ -181,12 +224,39 @@ function updateGameplay(): void {
 
   if (overworld.isTransitioning) {
     overworld.updateTransition(link);
+    // Clear weapons on screen transition
+    bombs = [];
+    fires = [];
+    usedCandleThisScreen = false;
     return;
   }
 
   const result = link.update(input, overworld.collisionMap, overworld.currentScreen);
   if (result.screenEdge !== null) {
     overworld.tryTransition(result.screenEdge, link);
+  }
+
+  // Item button (Z key) — place bomb or fire for secret interaction
+  if (input.isJustPressed(Action.Item) && !link.isSwordActive) {
+    placeWeapon(link);
+  }
+
+  // Update bombs
+  for (const bomb of bombs) {
+    bomb.update();
+  }
+  bombs = bombs.filter(b => b.isActive);
+
+  // Update fires
+  for (const fire of fires) {
+    fire.update();
+  }
+  fires = fires.filter(f => f.isActive);
+
+  // Update tile objects (secret detection)
+  const revealEvent = overworld.updateTileObjects(link, bombs, fires);
+  if (revealEvent) {
+    // Secret was revealed — could play SFX here (K1)
   }
 
   // Check cave entry — Link facing up, walking into a cave entrance tile
@@ -203,17 +273,70 @@ function updateGameplay(): void {
   }
 }
 
+function placeWeapon(linkRef: Link): void {
+  // Alternate between bomb and fire placement with Item button
+  // In the real game, which weapon fires depends on the equipped B item.
+  // For E3 stub: first press = bomb, second = fire, cycling.
+  // Blue candle: once per screen (Z_07.asm:3567 UsedCandle check)
+  if (!usedCandleThisScreen) {
+    // Place fire in Link's facing direction
+    const fx = linkRef.posX;
+    const fy = linkRef.posY;
+    fires.push(new CandleFire(fx, fy, linkRef.facing));
+    usedCandleThisScreen = true;
+  } else {
+    // Place bomb at Link's position
+    bombs.push(new Bomb(linkRef.posX, linkRef.posY));
+  }
+}
+
+function handleItemPickup(itemId: number): void {
+  if (!link || !overworld) return;
+
+  const masked = itemId & 0x3f;
+  switch (masked) {
+    case 0x01: // WoodSword
+    case 0x02: // WhiteSword
+    case 0x03: // MagicSword
+      link.setHasSword(true);
+      break;
+    case 0x14: // PowerBracelet
+      link.setBracelet(true);
+      break;
+    case 0x1c: // MagicShield
+      link.setMagicShield(true);
+      break;
+    case 0x1a: // HeartContainer
+      link.addHeartContainer();
+      break;
+    case 0x00: // Bomb
+      link.addBombs(4);
+      break;
+    case 0x19: // Key
+      link.addKeys(1);
+      break;
+    case 0x0f: // FiveRupees
+      link.addRupees(5);
+      break;
+    case 0x18: // OneRupee
+      link.addRupees(1);
+      break;
+    // Other items tracked by inventory in F1
+  }
+
+  // Mark cave as taken
+  overworld.roomFlags.setSecretFound(overworld.currentScreen.id);
+}
+
 function updateCaveInterior(): void {
   if (!link || !caveRoom) return;
 
-  // Curtain opening animation at start
   if (curtainEffect && !curtainEffect.done) {
     curtainEffect.update();
     return;
   }
   curtainEffect = null;
 
-  // Process Link movement input within cave
   const dir = readCaveInputDirection();
   if (dir !== null) {
     link.setDirection(dir);
@@ -226,15 +349,35 @@ function updateCaveInterior(): void {
 
   caveRoom.update(link);
 
-  // Handle item pickup — for sword cave, give Link the sword
-  if (caveRoom.itemPickedUp) {
-    const contents = caveContentsData[0]; // TODO: track which cave we're in
-    if (contents) {
-      const mainItem = contents.items[1];
-      if (mainItem === 1) {
-        link.setHasSword(true);
-      }
+  // Gift cave item pickup
+  if (caveRoom.itemPickedUp && !caveItemHandled) {
+    caveItemHandled = true;
+    const pickedId = caveRoom.pickedUpItemId;
+    if (pickedId >= 0) {
+      handleItemPickup(pickedId);
     }
+  }
+
+  // Shop purchase event
+  const purchase = caveRoom.purchaseEvent;
+  if (purchase) {
+    link.spendRupees(purchase.price);
+    handleItemPickup(purchase.itemId);
+    caveRoom.clearPurchaseEvent();
+  }
+
+  // Money game: pay 10 to play, then win/lose the chosen amount
+  const mgResult = caveRoom.moneyGameResult;
+  if (mgResult && !caveItemHandled) {
+    caveItemHandled = true;
+    link.spendRupees(10);
+    // amount is positive for wins (+20/+50), negative for losses (-10/-40)
+    if (mgResult.amount > 0) {
+      link.addRupees(mgResult.amount);
+    } else {
+      link.spendRupees(-mgResult.amount);
+    }
+    caveRoom.clearMoneyGameResult();
   }
 
   if (caveRoom.exitRequested) {
@@ -336,9 +479,9 @@ const loop = new GameLoop({
 
     if (hudRenderer && gameMode !== GameMode.GameOver) {
       hudRenderer.render(renderer, {
-        rupees: 0,
-        keys: 0,
-        bombs: 0,
+        rupees: link ? link.rupees : 0,
+        keys: link ? link.keys : 0,
+        bombs: link ? link.bombs : 0,
         hasMagicKey: false,
         health: link ? link.health : 6,
         maxHealth: link ? link.maxHealth : 6,
@@ -408,6 +551,17 @@ const loop = new GameLoop({
       }
     } else {
       overworld.renderScreen(renderer);
+
+      // Render weapons and tile objects
+      const ctx = renderer.ctx;
+      for (const bomb of bombs) {
+        bomb.render(ctx);
+      }
+      for (const fire of fires) {
+        fire.render(ctx);
+      }
+      overworld.renderTileObject(ctx);
+
       if (linkSheet && link) {
         link.render(renderer, linkSheet);
       }

@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-16 · **Phase:** E (Overworld) in progress · **Slices done:** 21 / 45
+**Last updated:** 2026-08-17 · **Phase:** E (Overworld) complete · **Slices done:** 23 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice E3** — Overworld secrets: bombable walls, burnable bushes,
-pushable rocks.
+**Next action: slice F1** — Item model + pickups + drop tables + inventory
+subscreen (select + equip to A/B buttons).
 
 ---
 
@@ -70,6 +70,18 @@ pushable rocks.
 | Link reset | `src/objects/player/link.ts` | ✅ reset() method: clears isDead/state/knockback/invincibility/sword/beam, sets position/direction/health for respawn (D5) |
 | Overworld manager | `src/world/overworld-manager.ts` | ✅ OverworldManager: owns screen state (row/col/currentScreen), transition lifecycle, collision map, visited-screen tracking. Boundary clamping (no wrapping). NES-accurate entry positions. Cave entry detection via checkCaveEntry(). main.ts delegated to orchestrator role (E1) |
 | Cave system | `src/world/cave-room.ts`, `src/world/curtain-effect.ts`, `src/data/cave-data.ts` | ✅ CurtainEffect (close/open, 8 steps × 4 frames), CaveRoom (renders cave-map.png, Old Man, fires, item, text), cave entry detection (tile 12 + SCREEN_CAVE_INDEX mapping from ROM AttrsB), walk-into-darkness phase, item pickup (WoodSword sets link.hasSword), exit returns to overworld entry position. 78 cave screens mapped. Link starts without sword (E2) |
+| Secrets data | `src/data/secrets.json`, `src/data/secret-types.ts` | ✅ Per-screen quest secret numbers (AttrsF bits 6-7, 128 entries), shortcut position indices (AttrsF bits 4-5), 4 shortcut positions from LevelInfoOW. Tile object type constants and square index mappings (E3) |
+| Room flags | `src/world/room-flags.ts` | ✅ RoomFlags class: 128-byte per-room persistent state, isSecretFound/setSecretFound (bit $80). In-memory only for now (E3) |
+| Tile object manager | `src/world/tile-object.ts` | ✅ TileObjectManager: detects tile objects (square indices 38-43 → types $62-$67) in screen tile grids, quest secret mismatch filtering, pre-reveals on revisit via room flags. Handles 3 secret types: bombable rock wall (bomb detonation within 16px → cave entrance), burnable tree (standing fire within 16px → stairs at shortcut position), pushable rock/gravestone (vertical push only, bracelet check for rock, 16-frame timer + 16px slide → stairs). Tile override map for rendering (E3) |
+| Bomb stub | `src/objects/weapons/bomb.ts` | ✅ Bomb: 4-phase timer matching NES BombTimes ($30/$18/$0C/$06), Idle→Fuse→Detonating→Exploding→Dead. isDetonating flag for secret wall detection. Colored rectangle rendering (E3 stub, F2 full) |
+| Candle fire stub | `src/objects/weapons/candle-fire.ts` | ✅ CandleFire: walks 16px in direction, then stands for $3F (63) frames. isStanding flag for tree detection. Flickering rectangle rendering (E3 stub, F3 full) |
+| Tile replacement | `src/render/tile-renderer.ts` | ✅ renderScreen() accepts optional tile override map. Cave entrance sampled from reference screen (7,7). Stairs drawn as alternating brown/black stripes. Generic overrides re-render from map image (E3) |
+| Cave text | `src/data/cave-text.json`, `src/data/cave-text-types.ts` | ✅ 38 NPC text strings extracted from PersonText.dat in ROM. Decoded from NES PPU tile encoding (6-bit chars + 2-bit line control). All Old Man/Woman/Moblin dialogue. extract:cave-text script (E4a) |
+| Cave type system | `src/world/cave-room.ts` | ✅ Generalized CaveRoom: behavior detection from objectType (gift/hint/doorRepair/moblinGive/shop/moneyGame/potionShop), NPC type selection (Old Man/Old Woman/Moblin), text lookup via textSelector→PersonTextAddrs, room flag integration for already-taken caves, colored item shapes per type (sword/heart container/letter/rupee). CaveBehavior + NpcType enums (E4a) |
+| Link inventory | `src/objects/player/link.ts` | ✅ rupees (0-255), keys, bombs (max 8), addRupees/spendRupees/addKeys/addBombs/addHeartContainer. HUD wired to live values. Generic handleItemPickup for all item types (E4a) |
+| Item sprite mapping | `src/data/item-sprites.ts` | ✅ NES item ID → items.png grid position mapping (10×4 grid, 40×40 cells). 32 items mapped. drawItemSprite helper (E4a, not yet used in caves due to black-on-black visibility — deferred to F1) |
+| Shop system | `src/world/cave-room.ts` | ✅ Shop caves (0x75-0x7A): 3 items at NES CaveWareXs positions, prices displayed below, rupee indicator, purchase on touch (rupee check), CavePurchaseEvent for main.ts processing. Potion shop (0x74) stub. 15 item shapes (swords, bombs, shields, arrows, candles, rings, potions, bait, etc.) (E4b) |
+| Money game | `src/world/cave-room.ts` | ✅ Cave type 0x70: generates 3 randomized amounts (+20/+50 win, -10/-40 loss) via Fisher-Yates shuffle, 10 rupee entry, pick-one mechanic, +/- display after choice, MoneyGameResult event (E4b) |
 
 ---
 
@@ -100,7 +112,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~19~~ | ~~**D5** Death + respawn~~ | ✅ done 2026-08-15 |
 | ~~20~~ | ~~**E1** Overworld map loading~~ | ✅ done 2026-08-16 |
 | ~~21~~ | ~~**E2** Cave/staircase entry and exit~~ | ✅ done 2026-08-16 |
-| 22 | **E3** Overworld secrets | bombable walls, burnable bushes, pushable rocks |
+| ~~22~~ | ~~**E3** Overworld secrets~~ | ✅ done 2026-08-17 |
+| ~~23~~ | ~~**E4** NPCs + shops (split E4a/E4b)~~ | ✅ done 2026-08-17 |
+| 24 | **F1** Item model + inventory | pickups, drops, inventory subscreen |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -136,6 +150,83 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-17 — E4b Shops + money game (Claude Opus 4.6)
+
+Added shop purchase system to CaveRoom: shop caves (objectTypes 0x75-0x7A) display
+up to 3 items at NES CaveWareXs positions ($58/$78/$98), prices rendered below via
+BitmapFont, rupee "X" indicator at ($30, $AB). Shop update checks all 3 slots for
+Link proximity (dx<12, dy<10), verifies rupees >= price, generates CavePurchaseEvent
+with slotIndex/itemId/price. main.ts processes events: spendRupees + handleItemPickup.
+Added money game (objectType 0x70): generateMoneyGameAmounts() creates 3 randomized
+amounts — one win (+20 or +50) and two losses (-10, -10 or -40) shuffled via
+Fisher-Yates. Link touches a position with ≥10 rupees → pays 10 + wins/loses chosen
+amount. Results displayed with +/- signs. MoneyGameResult event processed by main.ts.
+Potion shop (0x74) stubbed as shop behavior (Letter requirement deferred to F4).
+Added 15 colored item shapes for cave rendering: bombs (#303080), magic shield
+(#8080c0), arrows, candles (blue/red), bait, potions (blue/red), rings (blue/red).
+Fixed ITEM_Y from 96 to 88 (NES ObjY $98 - HUD $40 = $58 = 88). 8 new tests
+(713 total). Typecheck clean. **Phase E complete. Next: F1.**
+
+### 2026-08-17 — E4a Cave type system (Claude Opus 4.6)
+
+Created `scripts/extract-cave-text.ts` — extracts all 38 NPC dialogue strings from
+PersonText.dat in the NES ROM. Decoded from NES PPU tile encoding (low 6 bits =
+character tile ID, high 2 bits = line control: $80=line 2, $40=line 3, $C0=end).
+Fixed iNES header offset (+16 bytes). Character map: $00-$09→0-9, $0A-$23→A-Z,
+$24/$25→space, $28→comma, $2A→apostrophe, $2C→!, $2D→-, $2E→?, $2F→hyphen.
+Output: `src/data/cave-text.json` + `src/data/cave-text-types.ts`. Generalized
+`src/world/cave-room.ts` — CaveRoom now supports all 20 cave objectTypes via
+behavior detection: gift (0x6A-0x6D, 0x72), hint (0x6E-0x6F, 0x73), doorRepair
+(0x71), moblinGive (0x7B-0x7D), shop (0x75-0x7A), moneyGame (0x70), potionShop
+(0x74). NPC type selection: Old Man (default), Old Woman (0x70, 0x79, 0x7A),
+Moblin (≥0x7B). Text lookup via caveTypes[].textSelector / 2 → PersonTextAddrs
+message index. Heart requirement check for White Sword (5 containers) and Magic
+Sword (12 containers). Room flag integration: already-taken caves show empty
+(person+items hidden). Colored item shapes per type (sword variants, heart
+container, letter, rupees) — items.png has black backgrounds invisible against
+dark caves, deferred real sprite rendering to F1. Added rupees/keys/bombs/maxBombs
+to Link with addRupees/spendRupees/addKeys/addBombs/addHeartContainer methods.
+HUD wired to live Link.rupees/keys/bombs. Generic handleItemPickup switch for all
+item types (swords, bracelet, magic shield, heart container, bombs, keys, rupees).
+Door repair auto-deducts 20 rupees per Z_01.asm:696. Moblin caves give rupees from
+prices[1]. Created `src/data/item-sprites.ts` — NES item ID → items.png grid
+mapping (32 items, 10×4 grid at 40×40 cells). Added extract:cave-text npm script.
+35 new tests (705 total). Typecheck clean. Visually verified: sword cave shows
+correct text + Old Man + fires + item shape.
+**E4 split into E4a/E4b. Next: E4b.**
+
+### 2026-08-17 — E3 Overworld secrets (Claude Opus 4.6)
+
+Created `scripts/extract-secrets.ts` — extracts per-screen quest secret numbers
+(AttrsF bits 6-7, 32 screens with quest-specific secrets) and shortcut positions
+(4 packed bytes from LevelInfoOW offset 41). Output: `src/data/secrets.json` +
+`src/data/secret-types.ts` with tile object type constants ($62-$67) and square
+index mappings (38-43). Created `src/world/room-flags.ts` — RoomFlags class with
+128-byte per-room state, isSecretFound/setSecretFound (bit $80 per NES WorldFlags).
+Created `src/objects/weapons/bomb.ts` — Bomb stub with 4-phase NES timer (BombTimes
+$30/$18/$0C/$06), isDetonating flag for wall detection. Created
+`src/objects/weapons/candle-fire.ts` — CandleFire stub: walks 16px then stands 63
+frames, isStanding flag for tree detection. Created `src/world/tile-object.ts` —
+TileObjectManager: scans tile grid for special square indices 38-43 mapping to tile
+object types, quest secret mismatch filtering (Q2-only skipped in Q1), pre-reveal
+on revisit via room flags. Three secret handlers: bombable rock wall (bomb within
+16px → cave entrance at tile position), burnable tree (standing fire within 16px →
+stairs at shortcut position from secrets.json), pushable rock/gravestone (vertical
+only, bracelet check for rock, 16-frame push timer + 16px slide → stairs). Fixed
+push direction logic per Z_04.asm RockPushDirections (Link below → push Up, above
+→ push Down). Updated `src/render/tile-renderer.ts` — renderScreen() accepts tile
+override map; cave entrance sampled from reference screen (7,7), stairs rendered as
+brown/black stripes. Updated `src/world/overworld-manager.ts` — added RoomFlags,
+TileObjectManager, SecretsData; constructor takes secretsData param; initForScreen
+on transition/setScreen; updateTileObjects() and renderTileObject() methods;
+checkCaveEntry() expanded to detect revealed cave entrances via tile overrides.
+Added hasBracelet/setBracelet to Link. Updated `src/main.ts` — loads secrets.json,
+bomb/fire arrays, Z key places fire (first press) then bomb (second press per
+screen), weapons update/render each frame, tile object secrets update. Added
+`extract:secrets` npm script. 44 new tests (670 total). Typecheck clean (only
+pre-existing errors). No console errors. Cave entry still works.
+**Next: E4.**
 
 ### 2026-08-16 — E2 Cave/staircase entry and exit (Claude Opus 4.6)
 

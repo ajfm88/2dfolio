@@ -59,6 +59,11 @@ export class Link {
   private _hasSword = false;
   private _hasShield = true;
   private _hasMagicShield = false;
+  private _hasBracelet = false;
+  private _rupees = 0;
+  private _keys = 0;
+  private _bombs = 0;
+  private _maxBombs = 8;
 
   // D4: damage system state
   private _state = LinkState.Normal;
@@ -108,6 +113,10 @@ export class Link {
 
   get hasMagicShield(): boolean {
     return this._hasMagicShield;
+  }
+
+  get hasBracelet(): boolean {
+    return this._hasBracelet;
   }
 
   get activeSwordBeam(): SwordBeam | null {
@@ -160,6 +169,45 @@ export class Link {
 
   setMagicShield(has: boolean): void {
     this._hasMagicShield = has;
+  }
+
+  setBracelet(has: boolean): void {
+    this._hasBracelet = has;
+  }
+
+  get rupees(): number {
+    return this._rupees;
+  }
+
+  get keys(): number {
+    return this._keys;
+  }
+
+  get bombs(): number {
+    return this._bombs;
+  }
+
+  addRupees(amount: number): void {
+    this._rupees = Math.min(255, Math.max(0, this._rupees + amount));
+  }
+
+  spendRupees(amount: number): boolean {
+    if (this._rupees < amount) return false;
+    this._rupees -= amount;
+    return true;
+  }
+
+  addKeys(amount: number): void {
+    this._keys = Math.min(255, Math.max(0, this._keys + amount));
+  }
+
+  addBombs(amount: number): void {
+    this._bombs = Math.min(this._maxBombs, Math.max(0, this._bombs + amount));
+  }
+
+  addHeartContainer(): void {
+    this._maxHealth = Math.min(32, this._maxHealth + 2); // +1 container = +2 half-hearts
+    this._health = this._maxHealth;
   }
 
   setRingLevel(level: number): void {

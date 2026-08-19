@@ -16,6 +16,7 @@ import { OverworldManager } from '../../src/world/overworld-manager.js';
 import { TileRenderer } from '../../src/render/tile-renderer.js';
 import { Link } from '../../src/objects/player/link.js';
 import type { OverworldData, OverworldScreen } from '../../src/data/overworld-types.js';
+import type { SecretsData } from '../../src/data/secret-types.js';
 
 function makeScreen(id: number): OverworldScreen {
   return {
@@ -38,10 +39,23 @@ function makeOverworldData(): OverworldData {
   return { screens, squareTable: { primary, secondary: [] } };
 }
 
+function makeSecretsData(): SecretsData {
+  return {
+    questSecretByScreen: Array.from({ length: 128 }, () => 0),
+    shortcutPositionIndexByScreen: Array.from({ length: 128 }, () => 0),
+    shortcutPositions: [
+      { x: 80, y: 112 },
+      { x: 64, y: 144 },
+      { x: 144, y: 144 },
+      { x: 96, y: 144 },
+    ],
+  };
+}
+
 function createManager(startRow = 7, startCol = 7): OverworldManager {
   const data = makeOverworldData();
   const tileRenderer = new TileRenderer();
-  return new OverworldManager(data, tileRenderer, startRow, startCol);
+  return new OverworldManager(data, tileRenderer, startRow, startCol, makeSecretsData());
 }
 
 describe('OverworldManager', () => {
@@ -66,7 +80,7 @@ describe('OverworldManager', () => {
     it('throws if start coordinates are invalid', () => {
       const data: OverworldData = { screens: [], squareTable: { primary: [], secondary: [] } };
       const tileRenderer = new TileRenderer();
-      expect(() => new OverworldManager(data, tileRenderer, 0, 0)).toThrow();
+      expect(() => new OverworldManager(data, tileRenderer, 0, 0, makeSecretsData())).toThrow();
     });
   });
 

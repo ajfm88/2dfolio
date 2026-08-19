@@ -14,11 +14,17 @@ import {
 import { Direction } from '../core/types.js';
 import { getScreenCaveIndex, isCaveEntranceTile } from '../data/cave-data.js';
 import type { OverworldData, OverworldScreen } from '../data/overworld-types.js';
+import type { SecretsData } from '../data/secret-types.js';
+import { SQUARE_INDEX_CAVE_ENTRANCE } from '../data/secret-types.js';
 import type { Renderer } from '../render/renderer.js';
 import { TileRenderer, getScreenByCoord } from '../render/tile-renderer.js';
 import type { Link } from '../objects/player/link.js';
+import type { Bomb } from '../objects/weapons/bomb.js';
+import type { CandleFire } from '../objects/weapons/candle-fire.js';
 import { ScreenTransition } from './screen-transition.js';
 import { TileCollisionMap, createCollisionMap } from './collision.js';
+import { RoomFlags } from './room-flags.js';
+import { TileObjectManager, type SecretRevealEvent } from './tile-object.js';
 
 export class OverworldManager {
   private _screenRow: number;
@@ -29,18 +35,25 @@ export class OverworldManager {
   private readonly _overworldData: OverworldData;
   private readonly _tileRenderer: TileRenderer;
   private readonly _visitedScreens = new Set<number>();
+  private readonly _roomFlags: RoomFlags;
+  private readonly _tileObjectManager: TileObjectManager;
+  private readonly _secretsData: SecretsData;
 
   constructor(
     overworldData: OverworldData,
     tileRenderer: TileRenderer,
     startRow: number,
     startCol: number,
+    secretsData: SecretsData,
   ) {
     this._overworldData = overworldData;
     this._tileRenderer = tileRenderer;
     this._screenRow = startRow;
     this._screenCol = startCol;
     this._collisionMap = createCollisionMap(overworldData);
+    this._roomFlags = new RoomFlags();
+    this._tileObjectManager = new TileObjectManager();
+    this._secretsData = secretsData;
 
     const screen = getScreenByCoord(overworldData, startRow, startCol);
     if (!screen) {
@@ -48,6 +61,7 @@ export class OverworldManager {
     }
     this._currentScreen = screen;
     this._visitedScreens.add(screen.id);
+    this._tileObjectManager.initForScreen(screen, this._roomFlags, this._secretsData);
   }
 
   get screenRow(): number {
@@ -76,6 +90,14 @@ export class OverworldManager {
 
   get visitedScreens(): ReadonlySet<number> {
     return this._visitedScreens;
+  }
+
+  get tileObjectManager(): TileObjectManager {
+    return this._tileObjectManager;
+  }
+
+  get roomFlags(): RoomFlags {
+    return this._roomFlags;
   }
 
   tryTransition(direction: Direction, link: Link): boolean {
@@ -126,6 +148,9 @@ export class OverworldManager {
     link.tickAnimation();
     if (this._transition.done) {
       this._transition = null;
+      this._tileObjectManager.initForScreen(
+        this._currentScreen, this._roomFlags, this._secretsData,
+      );
     }
   }
 
@@ -136,12 +161,17 @@ export class OverworldManager {
     if (screen) {
       this._currentScreen = screen;
       this._visitedScreens.add(screen.id);
+      this._tileObjectManager.initForScreen(screen, this._roomFlags, this._secretsData);
     }
     this._transition = null;
   }
 
   renderScreen(renderer: Renderer): void {
-    this._tileRenderer.renderScreen(renderer, this._currentScreen);
+    const overrides = this._tileObjectManager.tileOverrides;
+    this._tileRenderer.renderScreen(
+      renderer, this._currentScreen,
+      overrides.size > 0 ? overrides : undefined,
+    );
   }
 
   renderTransition(renderer: Renderer): void {
@@ -173,6 +203,32 @@ export class OverworldManager {
     return this._transition.getNewScreenOffset();
   }
 
+  updateTileObjects(
+    link: Link,
+    bombs: readonly Bomb[],
+    fires: readonly CandleFire[],
+  ): SecretRevealEvent | null {
+    this._tileObjectManager.update(
+      this._currentScreen,
+      {
+        posX: link.posX,
+        posY: link.posY,
+        facing: link.facing,
+        isMoving: link.isMoving,
+        hasBracelet: link.hasBracelet,
+      },
+      bombs,
+      fires,
+      this._roomFlags,
+      this._secretsData,
+    );
+    return this._tileObjectManager.consumePendingReveal();
+  }
+
+  renderTileObject(ctx: CanvasRenderingContext2D): void {
+    this._tileObjectManager.render(ctx);
+  }
+
   checkCaveEntry(link: Link): number | null {
     if (link.facing !== Direction.Up) return null;
     if (!link.isMoving) return null;
@@ -193,6 +249,14 @@ export class OverworldManager {
     if (isCaveEntranceTile(tileIndex)) {
       return caveIndex;
     }
+
+    // Also check tile overrides for revealed cave entrances
+    const gridIdx = row * 16 + col;
+    const override = this._tileObjectManager.tileOverrides.get(gridIdx);
+    if (override === SQUARE_INDEX_CAVE_ENTRANCE) {
+      return caveIndex;
+    }
+
     return null;
   }
 }
