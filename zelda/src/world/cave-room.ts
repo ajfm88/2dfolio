@@ -1,67 +1,157 @@
-import { PLAY_AREA_HEIGHT, SCREEN_WIDTH, TILE_SIZE } from '../core/constants.js';
+import { PLAY_AREA_HEIGHT, SCREEN_WIDTH } from '../core/constants.js';
 import { Direction } from '../core/types.js';
 import type { Renderer } from '../render/renderer.js';
 import type { SpriteSheet } from '../render/sprite-renderer.js';
 import { BitmapFont } from '../ui/bitmap-font.js';
 import type { Link } from '../objects/player/link.js';
+import type { CaveTextMessage } from '../data/cave-text-types.js';
 
-// NES cave layout: Old Man at top center, fires flanking, item on pedestal below.
-// Link enters from bottom center facing up, walks to item.
-// Z_01.asm InitModeB_EnterCave_Bank5: Link placed at ($70, $DD) → play-area ($70, $99)
-
-// Cave interior positions (play-area-relative), matched to NES layout
-const OLD_MAN_X = 120;
-const OLD_MAN_Y = 72;
+// NES cave layout positions (play-area-relative)
+const NPC_X = 120;
+const NPC_Y = 72;
 const FIRE_LEFT_X = 88;
 const FIRE_RIGHT_X = 152;
 const FIRE_Y = 72;
-const ITEM_X = 120;
-const ITEM_Y = 96;
 const TEXT_Y = 48;
 
-const CAVE_ENTRY_X = 112;
-const CAVE_ENTRY_Y = 153; // NES $DD (221) - HUD 64 = 157, adjusted for play area
+// NES item X positions from Z_01.asm CaveWareXs: $58, $78, $98
+const ITEM_XS = [88, 120, 152] as const;
+const ITEM_Y = 88; // NES ObjY $98 - HUD $40 = $58 = 88
+const PRICE_Y = 108; // Below items, above rupee indicator
+const RUPEE_INDICATOR_X = 48; // NES $30
+const RUPEE_INDICATOR_Y = 107; // NES $AB - $40 = $6B = 107
 
-// Link can walk within the cave floor area
+const CAVE_ENTRY_X = 112;
+const CAVE_ENTRY_Y = 153;
+
 const CAVE_FLOOR_LEFT = 48;
 const CAVE_FLOOR_RIGHT = 192;
 const CAVE_FLOOR_TOP = 64;
 const CAVE_FLOOR_BOTTOM = 160;
 
 const CAVE_EXIT_Y = 160;
+const WALK_IN_FRAMES = 32;
+
+// Item proximity check (NES uses exact X match + |dy| < 6)
+const ITEM_TOUCH_DX = 12;
+const ITEM_TOUCH_DY = 10;
 
 export interface CaveContents {
   readonly caveIndex: number;
+  readonly objectType: number;
   readonly items: readonly number[];
   readonly itemFlags: readonly number[];
   readonly prices: readonly number[];
 }
 
+type NpcType = 'oldMan' | 'oldWoman' | 'merchant' | 'moblin';
+
+export type CaveBehavior =
+  | 'gift'
+  | 'hint'
+  | 'doorRepair'
+  | 'moblinGive'
+  | 'shop'
+  | 'moneyGame'
+  | 'potionShop';
+
+export interface CavePurchaseEvent {
+  readonly slotIndex: number;
+  readonly itemId: number;
+  readonly price: number;
+}
+
+export interface MoneyGameResult {
+  readonly amount: number;
+  readonly isWin: boolean;
+}
+
+function getNpcType(objectType: number): NpcType {
+  if (objectType >= 0x7b) return 'moblin';
+  if (objectType === 0x70 || objectType === 0x79 || objectType === 0x7a) return 'oldWoman';
+  return 'oldMan';
+}
+
+function getCaveBehavior(objectType: number): CaveBehavior {
+  if (objectType >= 0x7b) return 'moblinGive';
+  if (objectType === 0x71) return 'doorRepair';
+  if (objectType === 0x72) return 'gift';
+  if (objectType === 0x74) return 'potionShop';
+  if (objectType === 0x70) return 'moneyGame';
+  if (objectType < 0x6e) return 'gift';
+  if (objectType >= 0x75 && objectType <= 0x7a) return 'shop';
+  if (objectType === 0x73) return 'hint';
+  return 'hint';
+}
+
+function getHeartRequirement(objectType: number): number {
+  if (objectType === 0x6c) return 10;
+  if (objectType === 0x6d) return 24;
+  return 0;
+}
+
+// Money game: generate 3 random amounts per NES algorithm (Z_01.asm InitCaveContinue)
+function generateMoneyGameAmounts(): number[] {
+  const winAmount = Math.random() < 0.5 ? 20 : 50;
+  const lossRandom = Math.random() < 0.5 ? 10 : 40;
+  const lossFixed = 10;
+  const pool = [lossRandom, lossFixed, winAmount];
+  // Shuffle using Fisher-Yates
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j]!, pool[i]!];
+  }
+  return pool;
+}
+
 export class CaveRoom {
   private readonly caveMap: HTMLImageElement;
-  private readonly itemsImage: HTMLImageElement;
   private readonly npcsImage: HTMLImageElement;
   private readonly font: BitmapFont;
   private readonly contents: CaveContents;
-  private readonly sourceScreenId: number;
+  private readonly textLines: readonly string[];
+  private readonly npcType: NpcType;
+  readonly behavior: CaveBehavior;
+  private readonly heartReq: number;
+
   private _itemPickedUp = false;
   private _exitRequested = false;
-  private _walkInFrames = 32; // NES: ObjGridOffset=$30 (48px) at ~1.5px/frame ≈ 32 frames
+  private _walkInFrames = WALK_IN_FRAMES;
+  private _rupeeReward = 0;
+
+  // Shop state
+  private _shopSlotTaken: boolean[] = [false, false, false];
+  private _purchaseEvent: CavePurchaseEvent | null = null;
+
+  // Money game state
+  private _moneyGameAmounts: number[] = [];
+  private _moneyGameResult: MoneyGameResult | null = null;
+  private _moneyGamePaid = false;
+  private _moneyGameChosen = false;
 
   constructor(
     caveMap: HTMLImageElement,
-    itemsImage: HTMLImageElement,
     npcsImage: HTMLImageElement,
     font: BitmapFont,
     contents: CaveContents,
-    sourceScreenId: number,
+    textMessage: CaveTextMessage | null,
   ) {
     this.caveMap = caveMap;
-    this.itemsImage = itemsImage;
     this.npcsImage = npcsImage;
     this.font = font;
     this.contents = contents;
-    this.sourceScreenId = sourceScreenId;
+    this.textLines = textMessage?.lines ?? [];
+    this.npcType = getNpcType(contents.objectType);
+    this.behavior = getCaveBehavior(contents.objectType);
+    this.heartReq = getHeartRequirement(contents.objectType);
+
+    if (this.behavior === 'moblinGive') {
+      this._rupeeReward = contents.prices[1] ?? 0;
+    }
+
+    if (this.behavior === 'moneyGame') {
+      this._moneyGameAmounts = generateMoneyGameAmounts();
+    }
   }
 
   get exitRequested(): boolean {
@@ -72,8 +162,29 @@ export class CaveRoom {
     return this._itemPickedUp;
   }
 
-  get returnScreenId(): number {
-    return this.sourceScreenId;
+  get pickedUpItemId(): number {
+    if (!this._itemPickedUp) return -1;
+    return this.getCenterItemId();
+  }
+
+  get rupeeReward(): number {
+    return this._rupeeReward;
+  }
+
+  get purchaseEvent(): CavePurchaseEvent | null {
+    return this._purchaseEvent;
+  }
+
+  get moneyGameResult(): MoneyGameResult | null {
+    return this._moneyGameResult;
+  }
+
+  clearPurchaseEvent(): void {
+    this._purchaseEvent = null;
+  }
+
+  clearMoneyGameResult(): void {
+    this._moneyGameResult = null;
   }
 
   initLink(link: Link): void {
@@ -82,26 +193,34 @@ export class CaveRoom {
   }
 
   update(link: Link): void {
-    // Walk-in phase: Link auto-walks up
     if (this._walkInFrames > 0) {
       this._walkInFrames--;
       link.walkForward();
       return;
     }
 
-    // Check if Link reached exit (bottom of cave)
     if (link.posY >= CAVE_EXIT_Y) {
       this._exitRequested = true;
       return;
     }
 
-    // Check if Link is near the item and hasn't picked it up
-    if (!this._itemPickedUp && this.hasItem()) {
-      const dx = Math.abs(link.posX - ITEM_X);
-      const dy = Math.abs(link.posY - ITEM_Y);
-      if (dx < 12 && dy < 12) {
-        this._itemPickedUp = true;
-      }
+    if (this.behavior === 'hint' || this.behavior === 'doorRepair') {
+      return;
+    }
+
+    if (this.behavior === 'gift' || this.behavior === 'moblinGive') {
+      this.updateGiftPickup(link);
+      return;
+    }
+
+    if (this.behavior === 'shop' || this.behavior === 'potionShop') {
+      this.updateShopPickup(link);
+      return;
+    }
+
+    if (this.behavior === 'moneyGame') {
+      this.updateMoneyGame(link);
+      return;
     }
   }
 
@@ -112,7 +231,7 @@ export class CaveRoom {
     const ny = link.posY + dy;
 
     if (nx >= CAVE_FLOOR_LEFT && nx <= CAVE_FLOOR_RIGHT &&
-        ny >= CAVE_FLOOR_TOP && ny <= CAVE_FLOOR_BOTTOM + TILE_SIZE) {
+        ny >= CAVE_FLOOR_TOP && ny <= CAVE_FLOOR_BOTTOM + 16) {
       link.setPosition(nx, ny);
     }
   }
@@ -120,42 +239,154 @@ export class CaveRoom {
   render(renderer: Renderer, link: Link, linkSheet: SpriteSheet): void {
     const ctx = renderer.ctx;
 
-    // Draw cave background
     ctx.drawImage(this.caveMap, 0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT, 0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT);
 
-    // Draw fires (orange rectangles as placeholder — fire sprites from npcs.png row 1)
     this.drawFire(ctx, FIRE_LEFT_X, FIRE_Y);
     this.drawFire(ctx, FIRE_RIGHT_X, FIRE_Y);
 
-    // Draw Old Man (blue robed figure from npcs.png)
-    this.drawOldMan(ctx, OLD_MAN_X, OLD_MAN_Y);
+    this.drawNpc(ctx, NPC_X, NPC_Y);
 
-    // Draw item on pedestal (if not picked up)
-    if (!this._itemPickedUp && this.hasItem()) {
-      this.drawItem(ctx, ITEM_X, ITEM_Y);
+    if (this.behavior === 'gift' || this.behavior === 'moblinGive') {
+      if (!this._itemPickedUp && this.hasPickableItem()) {
+        this.drawItem(ctx, ITEM_XS[1]!, ITEM_Y, this.getCenterItemId());
+      }
+    } else if (this.behavior === 'shop' || this.behavior === 'potionShop') {
+      this.renderShopItems(ctx, renderer);
+    } else if (this.behavior === 'moneyGame') {
+      this.renderMoneyGame(ctx, renderer);
     }
 
-    // Draw text
-    this.drawCaveText(renderer);
+    this.drawText(renderer);
 
-    // Draw Link
     if (link.isVisible) {
       link.render(renderer, linkSheet);
     }
   }
 
-  private hasItem(): boolean {
-    // Item at index 1 is the main cave item (center pedestal)
-    const item = this.contents.items[1];
-    return item !== undefined && item !== 63; // 63 = None
+  // --- Gift pickup (E4a) ---
+
+  private updateGiftPickup(link: Link): void {
+    if (this._itemPickedUp || !this.hasPickableItem()) return;
+    const dx = Math.abs(link.posX - ITEM_XS[1]!);
+    const dy = Math.abs(link.posY - ITEM_Y);
+    if (dx < ITEM_TOUCH_DX && dy < ITEM_TOUCH_DY) {
+      if (this.heartReq > 0 && link.maxHealth < this.heartReq) return;
+      this._itemPickedUp = true;
+    }
   }
 
-  private getItemId(): number {
-    return this.contents.items[1] ?? 63;
+  // --- Shop (E4b) ---
+
+  private updateShopPickup(link: Link): void {
+    if (this._purchaseEvent) return; // waiting for main.ts to process
+
+    for (let i = 0; i < 3; i++) {
+      if (this._shopSlotTaken[i]) continue;
+      const rawItem = this.contents.items[i];
+      if (rawItem === undefined || (rawItem & 0x3f) === 0x3f) continue;
+
+      const itemX = ITEM_XS[i]!;
+      const dx = Math.abs(link.posX - itemX);
+      const dy = Math.abs(link.posY - ITEM_Y);
+
+      if (dx < ITEM_TOUCH_DX && dy < ITEM_TOUCH_DY) {
+        const price = this.contents.prices[i] ?? 0;
+        if (link.rupees < price) continue; // can't afford
+
+        this._shopSlotTaken[i] = true;
+        this._purchaseEvent = {
+          slotIndex: i,
+          itemId: rawItem & 0x3f,
+          price,
+        };
+        return;
+      }
+    }
+  }
+
+  private renderShopItems(ctx: CanvasRenderingContext2D, renderer: Renderer): void {
+    let hasAnyItem = false;
+
+    for (let i = 0; i < 3; i++) {
+      if (this._shopSlotTaken[i]) continue;
+      const rawItem = this.contents.items[i];
+      if (rawItem === undefined || (rawItem & 0x3f) === 0x3f) continue;
+
+      hasAnyItem = true;
+      this.drawItem(ctx, ITEM_XS[i]!, ITEM_Y, rawItem & 0x3f);
+
+      const price = this.contents.prices[i] ?? 0;
+      if (price > 0) {
+        const priceStr = price.toString();
+        const px = ITEM_XS[i]! + 8 - (priceStr.length * 4);
+        this.font.drawString(renderer, px, PRICE_Y, priceStr);
+      }
+    }
+
+    if (hasAnyItem) {
+      // Rupee indicator: rupee shape + "X"
+      ctx.fillStyle = '#f0c000';
+      ctx.fillRect(RUPEE_INDICATOR_X, RUPEE_INDICATOR_Y, 8, 8);
+      this.font.drawString(renderer, RUPEE_INDICATOR_X + 12, RUPEE_INDICATOR_Y, 'X');
+    }
+  }
+
+  // --- Money Game (E4b) ---
+
+  private updateMoneyGame(link: Link): void {
+    if (this._moneyGameChosen) return;
+
+    // Pay 10 rupees on first touch of any position
+    if (!this._moneyGamePaid) {
+      for (let i = 0; i < 3; i++) {
+        const dx = Math.abs(link.posX - ITEM_XS[i]!);
+        const dy = Math.abs(link.posY - ITEM_Y);
+        if (dx < ITEM_TOUCH_DX && dy < ITEM_TOUCH_DY) {
+          if (link.rupees < 10) return;
+          this._moneyGamePaid = true;
+          this._moneyGameChosen = true;
+          const amount = this._moneyGameAmounts[i] ?? 0;
+          const isWin = amount === 20 || amount === 50;
+          this._moneyGameResult = {
+            amount: isWin ? amount : -amount,
+            isWin,
+          };
+          return;
+        }
+      }
+      return;
+    }
+  }
+
+  private renderMoneyGame(ctx: CanvasRenderingContext2D, renderer: Renderer): void {
+    if (this._moneyGameChosen) {
+      for (let i = 0; i < 3; i++) {
+        const amount = this._moneyGameAmounts[i] ?? 0;
+        const isWin = amount === 20 || amount === 50;
+        const sign = isWin ? '+' : '-';
+        const str = `${sign}${amount}`;
+        const px = ITEM_XS[i]! + 8 - (str.length * 4);
+        this.font.drawString(renderer, px, ITEM_Y, str);
+      }
+    } else {
+      for (let i = 0; i < 3; i++) {
+        this.drawItem(ctx, ITEM_XS[i]!, ITEM_Y, 0x18);
+      }
+    }
+  }
+
+  // --- Common rendering ---
+
+  private hasPickableItem(): boolean {
+    const item = this.contents.items[1];
+    return item !== undefined && item !== 63;
+  }
+
+  private getCenterItemId(): number {
+    return (this.contents.items[1] ?? 63) & 0x3f;
   }
 
   private drawFire(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    // Animated fire placeholder — orange/red flickering rectangles
     const flicker = Math.random() > 0.5;
     ctx.fillStyle = flicker ? '#f80' : '#f40';
     ctx.fillRect(x + 2, y + 2, 12, 12);
@@ -163,39 +394,112 @@ export class CaveRoom {
     ctx.fillRect(x + 4, y + 4, 8, 6);
   }
 
-  private drawOldMan(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    // Draw Old Man from npcs.png — first character, row 0, ~16x16
-    // npcs.png layout: Old Man is at approximately (0,0), 16x16
-    ctx.drawImage(this.npcsImage, 1, 11, 16, 16, x, y, 16, 16);
-  }
-
-  private drawItem(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    const itemId = this.getItemId();
-    if (itemId === 1) {
-      // Wooden Sword — brown blade, orange crossguard
-      ctx.fillStyle = '#B86428';
-      ctx.fillRect(x + 6, y + 2, 4, 10); // blade
-      ctx.fillStyle = '#D89048';
-      ctx.fillRect(x + 4, y + 10, 8, 2); // crossguard
-      ctx.fillStyle = '#804010';
-      ctx.fillRect(x + 6, y + 12, 4, 3); // handle
-    } else {
-      // Generic item placeholder
-      ctx.fillStyle = '#fc0';
-      ctx.fillRect(x + 2, y + 2, 12, 12);
+  private drawNpc(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    switch (this.npcType) {
+      case 'oldMan':
+        ctx.drawImage(this.npcsImage, 1, 11, 16, 16, x, y, 16, 16);
+        break;
+      case 'oldWoman':
+        ctx.drawImage(this.npcsImage, 35, 11, 16, 16, x, y, 16, 16);
+        break;
+      case 'merchant':
+        ctx.drawImage(this.npcsImage, 137, 11, 16, 16, x, y, 16, 16);
+        break;
+      case 'moblin':
+        ctx.fillStyle = '#a04020';
+        ctx.fillRect(x + 2, y, 12, 16);
+        ctx.fillStyle = '#d06030';
+        ctx.fillRect(x + 4, y + 2, 8, 12);
+        break;
     }
   }
 
-  private drawCaveText(renderer: Renderer): void {
-    const itemId = this.getItemId();
-    if (itemId === 1) {
-      // Center each line: 8px per char, screen is 256px wide
-      const line1 = "IT'S DANGEROUS TO";
-      const line2 = 'GO ALONE! TAKE THIS.';
-      const x1 = (SCREEN_WIDTH - line1.length * 8) / 2;
-      const x2 = (SCREEN_WIDTH - line2.length * 8) / 2;
-      this.font.drawString(renderer, x1, TEXT_Y, line1);
-      this.font.drawString(renderer, x2, TEXT_Y + 12, line2);
+  private drawItem(ctx: CanvasRenderingContext2D, x: number, y: number, itemId: number): void {
+    const masked = itemId & 0x3f;
+    switch (masked) {
+      case 0x01: case 0x02: case 0x03: // Swords
+        ctx.fillStyle = masked === 0x03 ? '#e0e0ff' : masked === 0x02 ? '#c0c0ff' : '#B86428';
+        ctx.fillRect(x + 6, y + 2, 4, 10);
+        ctx.fillStyle = '#D89048';
+        ctx.fillRect(x + 4, y + 10, 8, 2);
+        ctx.fillStyle = '#804010';
+        ctx.fillRect(x + 6, y + 12, 4, 3);
+        break;
+      case 0x1a: // HeartContainer
+        ctx.fillStyle = '#e00000';
+        ctx.fillRect(x + 2, y + 4, 5, 8);
+        ctx.fillRect(x + 9, y + 4, 5, 8);
+        ctx.fillRect(x + 4, y + 2, 8, 10);
+        ctx.fillRect(x + 6, y + 12, 4, 2);
+        break;
+      case 0x15: // Letter
+        ctx.fillStyle = '#f0d0a0';
+        ctx.fillRect(x + 3, y + 3, 10, 10);
+        ctx.fillStyle = '#a08060';
+        ctx.fillRect(x + 5, y + 5, 6, 1);
+        ctx.fillRect(x + 5, y + 7, 6, 1);
+        break;
+      case 0x18: // OneRupee
+      case 0x0f: // FiveRupees
+        ctx.fillStyle = masked === 0x0f ? '#4040ff' : '#f0c000';
+        ctx.fillRect(x + 5, y + 2, 6, 12);
+        ctx.fillRect(x + 4, y + 4, 8, 8);
+        break;
+      case 0x00: // Bomb
+        ctx.fillStyle = '#303080';
+        ctx.fillRect(x + 4, y + 4, 8, 10);
+        ctx.fillStyle = '#f0c000';
+        ctx.fillRect(x + 6, y + 2, 4, 3);
+        break;
+      case 0x1c: // MagicShield
+        ctx.fillStyle = '#8080c0';
+        ctx.fillRect(x + 3, y + 2, 10, 12);
+        ctx.fillStyle = '#c0c0ff';
+        ctx.fillRect(x + 5, y + 4, 6, 8);
+        break;
+      case 0x08: case 0x09: // Arrows
+        ctx.fillStyle = masked === 0x09 ? '#c0c0ff' : '#B86428';
+        ctx.fillRect(x + 7, y + 2, 2, 12);
+        ctx.fillRect(x + 5, y + 2, 6, 3);
+        break;
+      case 0x06: case 0x07: // Candles
+        ctx.fillStyle = masked === 0x07 ? '#e04040' : '#4040e0';
+        ctx.fillRect(x + 5, y + 4, 6, 10);
+        ctx.fillStyle = '#f0c000';
+        ctx.fillRect(x + 6, y + 2, 4, 4);
+        break;
+      case 0x04: // Bait
+        ctx.fillStyle = '#e06060';
+        ctx.fillRect(x + 3, y + 2, 10, 12);
+        break;
+      case 0x1f: case 0x20: // Potions
+        ctx.fillStyle = masked === 0x1f ? '#4040e0' : '#e04040';
+        ctx.fillRect(x + 4, y + 4, 8, 10);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(x + 5, y + 2, 6, 4);
+        break;
+      case 0x12: case 0x13: // Rings
+        ctx.fillStyle = masked === 0x12 ? '#4040e0' : '#e04040';
+        ctx.fillRect(x + 4, y + 4, 8, 8);
+        ctx.fillStyle = '#f0c000';
+        ctx.fillRect(x + 6, y + 2, 4, 4);
+        break;
+      default:
+        ctx.fillStyle = '#fc0';
+        ctx.fillRect(x + 2, y + 2, 12, 12);
+        ctx.fillStyle = '#fa0';
+        ctx.fillRect(x + 4, y + 4, 8, 8);
+        break;
+    }
+  }
+
+  private drawText(renderer: Renderer): void {
+    if (this.textLines.length === 0) return;
+
+    for (let i = 0; i < this.textLines.length; i++) {
+      const line = this.textLines[i]!;
+      const x = (SCREEN_WIDTH - line.length * 8) / 2;
+      this.font.drawString(renderer, x, TEXT_Y + i * 12, line);
     }
   }
 }
