@@ -15,7 +15,9 @@
     "extract:dungeons": "tsx scripts/extract-dungeons.ts",
     "extract:enemy-spawns": "tsx scripts/extract-enemy-spawns.ts",
     "extract:items": "tsx scripts/extract-items.ts",
-    "extract:sprites": "tsx scripts/extract-sprites.ts"
+    "extract:sprites": "tsx scripts/extract-sprites.ts",
+    "extract:secrets": "tsx scripts/extract-secrets.ts",
+    "extract:cave-text": "tsx scripts/extract-cave-text.ts"
   },
   "devDependencies": {
     "eslint": "^10.8.0",
