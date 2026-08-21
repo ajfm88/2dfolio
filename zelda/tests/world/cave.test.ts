@@ -104,7 +104,7 @@ describe('CaveRoom', () => {
     it('places Link at cave entrance facing up', () => {
       const contents = makeCaveContents(1);
       const msg = makeTextMessage("IT'S DANGEROUS TO GO ALONE  TAKE THIS!");
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, msg);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, msg);
       const link = new Link(120, 80);
       room.initLink(link);
       expect(link.facing).toBe(Direction.Up);
@@ -115,7 +115,7 @@ describe('CaveRoom', () => {
   describe('exit detection', () => {
     it('requests exit when Link reaches bottom', () => {
       const contents = makeCaveContents(63);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(112, 160);
       for (let i = 0; i < 50; i++) room.update(link);
       room.update(link);
@@ -126,44 +126,44 @@ describe('CaveRoom', () => {
   describe('behavior detection', () => {
     it('gift cave for objectType 0x6A (sword cave)', () => {
       const contents = makeCaveContents(1, 0x6a);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('gift');
     });
 
     it('hint cave for objectType 0x6E', () => {
       const contents = makeCaveContents(63, 0x6e);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('hint');
     });
 
     it('door repair for objectType 0x71', () => {
       const contents = makeCaveContents(63, 0x71);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('doorRepair');
     });
 
     it('moblin giveaway for objectType 0x7B', () => {
       const contents = { caveIndex: 17, objectType: 0x7b, items: [63, 24, 63], itemFlags: [0, 2, 1], prices: [0, 30, 0] };
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('moblinGive');
       expect(room.rupeeReward).toBe(30);
     });
 
     it('shop for objectType 0x77', () => {
       const contents = makeCaveContents(28, 0x77);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('shop');
     });
 
     it('money game for objectType 0x70', () => {
       const contents = makeCaveContents(24, 0x70);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('moneyGame');
     });
 
     it('potion shop for objectType 0x74', () => {
       const contents = makeCaveContents(31, 0x74);
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('potionShop');
     });
   });
@@ -185,7 +185,7 @@ describe('CaveRoom', () => {
 
     it('generates purchase event when Link touches item with enough rupees', () => {
       const contents = makeShopContents();
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(120, 120);
       skipWalkIn(room, link);
       link.addRupees(200);
@@ -199,7 +199,7 @@ describe('CaveRoom', () => {
 
     it('does not generate purchase event when Link cannot afford', () => {
       const contents = makeShopContents();
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(120, 120);
       skipWalkIn(room, link);
       link.addRupees(50);
@@ -210,7 +210,7 @@ describe('CaveRoom', () => {
 
     it('clears purchase event', () => {
       const contents = makeShopContents();
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(120, 120);
       skipWalkIn(room, link);
       link.addRupees(200);
@@ -225,14 +225,14 @@ describe('CaveRoom', () => {
   describe('money game', () => {
     it('generates 3 amounts', () => {
       const contents = { caveIndex: 6, objectType: 0x70, items: [24, 24, 24], itemFlags: [2, 2, 3], prices: [10, 10, 10] };
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       expect(room.behavior).toBe('moneyGame');
       // Money game amounts are generated but internal — test via moneyGameResult
     });
 
     it('generates result when Link touches a position with enough rupees', () => {
       const contents = { caveIndex: 6, objectType: 0x70, items: [24, 24, 24], itemFlags: [2, 2, 3], prices: [10, 10, 10] };
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(120, 120);
       for (let i = 0; i < 35; i++) room.update(link);
       link.addRupees(50);
@@ -246,7 +246,7 @@ describe('CaveRoom', () => {
 
     it('does not generate result when Link has fewer than 10 rupees', () => {
       const contents = { caveIndex: 6, objectType: 0x70, items: [24, 24, 24], itemFlags: [2, 2, 3], prices: [10, 10, 10] };
-      const room = new CaveRoom(stubImage, stubImage, stubFont, contents, null);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
       const link = new Link(120, 120);
       for (let i = 0; i < 35; i++) room.update(link);
       link.addRupees(5);

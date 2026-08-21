@@ -1,4 +1,5 @@
 import { SCREEN_WIDTH, HUD_HEIGHT } from '../core/constants.js';
+import { drawItemSprite } from '../data/item-sprites.js';
 import type { Renderer } from '../render/renderer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { HeartMeter } from './heart-meter.js';
@@ -28,6 +29,12 @@ const KEY_Y = 40;
 const BOMB_X = 96;
 const BOMB_Y = 48;
 
+// HUD item slot positions (NES: B at $7C,$1F = 124,31; A at $94,$1F = 148,31)
+const B_ITEM_X = 124;
+const B_ITEM_Y = 32;
+const A_ITEM_X = 152;
+const A_ITEM_Y = 32;
+
 // Minimap dot (from UpdatePlayerPositionMarker in Z_01.asm)
 const MAP_DOT_BASE_X = 17;
 const MAP_DOT_BASE_Y = 24;
@@ -39,15 +46,18 @@ export class HudRenderer {
   private readonly font: BitmapFont;
   private readonly heartMeter: HeartMeter;
   private readonly hudImage: HTMLImageElement;
+  private readonly itemsImage: HTMLImageElement | HTMLCanvasElement | null;
 
   constructor(
     hudImage: HTMLImageElement,
     fontImage: HTMLImageElement,
     treasuresImage: HTMLImageElement,
+    itemsImage?: HTMLImageElement | HTMLCanvasElement,
   ) {
     this.hudImage = hudImage;
     this.font = new BitmapFont(fontImage);
     this.heartMeter = new HeartMeter(treasuresImage);
+    this.itemsImage = itemsImage ?? null;
   }
 
   render(renderer: Renderer, state: HudState): void {
@@ -70,6 +80,15 @@ export class HudRenderer {
     }
 
     this.font.drawString(renderer, BOMB_X, BOMB_Y, formatCount(state.bombs));
+
+    if (this.itemsImage) {
+      if (state.bItem !== null) {
+        drawItemSprite(renderer.ctx, this.itemsImage, state.bItem, B_ITEM_X, B_ITEM_Y);
+      }
+      if (state.aItem !== null) {
+        drawItemSprite(renderer.ctx, this.itemsImage, state.aItem, A_ITEM_X, A_ITEM_Y);
+      }
+    }
 
     if (state.isOverworld) {
       this.renderOverworldDot(renderer, state.mapRow, state.mapCol);

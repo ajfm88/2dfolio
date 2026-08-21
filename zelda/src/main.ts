@@ -19,12 +19,17 @@ import type { OverworldData } from './data/overworld-types.js';
 import type { SecretsData } from './data/secret-types.js';
 import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer } from './ui/hud.js';
+import { InventoryScreen, getNextOwnedSlot } from './ui/inventory-screen.js';
+import { InventorySlide } from './ui/inventory-slide.js';
+import { createTintedFontImage } from './ui/tint-utils.js';
 import { OverworldManager } from './world/overworld-manager.js';
 import { CurtainEffect } from './world/curtain-effect.js';
 import { CaveRoom, type CaveContents } from './world/cave-room.js';
 import type { CaveTextData, CaveTextMessage } from './data/cave-text-types.js';
 import type { ItemData, CaveTypeInfo } from './data/item-types.js';
+import { processItemsImage } from './data/item-sprites.js';
 import { Link } from './objects/player/link.js';
+import { ItemPickup } from './objects/pickups/item-pickup.js';
 import { Bomb } from './objects/weapons/bomb.js';
 import { CandleFire } from './objects/weapons/candle-fire.js';
 
@@ -68,6 +73,15 @@ let bombs: Bomb[] = [];
 let fires: CandleFire[] = [];
 let usedCandleThisScreen = false;
 
+// Item pickups on the overworld
+let pickups: ItemPickup[] = [];
+
+// Inventory subscreen
+let inventorySlide: InventorySlide | null = null;
+let inventoryScreen: InventoryScreen | null = null;
+let redFont: BitmapFont | null = null;
+let processedItems: HTMLCanvasElement | null = null;
+
 // Cave data
 let caveTextData: CaveTextData | null = null;
 let caveTypesData: readonly CaveTypeInfo[] = [];
@@ -99,12 +113,17 @@ async function init(): Promise<void> {
       spacingY: SPRITE_SPACING,
       autoDetectTransparency: true,
     });
+    processedItems = processItemsImage(assets.sprites.items);
     hudRenderer = new HudRenderer(
       assets.ui.hud,
       assets.sprites.font,
       assets.sprites.treasuresFull,
+      processedItems,
     );
     font = new BitmapFont(assets.sprites.font);
+    redFont = new BitmapFont(createTintedFontImage(assets.sprites.font, '#d82800'));
+    inventorySlide = new InventorySlide();
+    inventoryScreen = new InventoryScreen();
     link = new Link();
     overworld = new OverworldManager(overworldData, tileRenderer, 7, 7, secretsData);
   } catch (err: unknown) {
@@ -154,6 +173,7 @@ function startCaveInterior(): void {
   caveRoom = new CaveRoom(
     assets.maps.caveMap,
     assets.sprites.npcs,
+    processedItems!,
     font,
     alreadyTaken ? { ...contents, items: [63, 63, 63] } : contents,
     textMessage,
@@ -198,6 +218,23 @@ function returnToOverworld(): void {
   pendingCaveIndex = -2; // sentinel: opening curtain on overworld
 }
 
+function getHudState(): import('./ui/hud.js').HudState {
+  return {
+    rupees: link ? link.rupees : 0,
+    keys: link ? link.keys : 0,
+    bombs: link ? link.bombs : 0,
+    hasMagicKey: link ? link.inventory.magicKey : false,
+    health: link ? link.health : 6,
+    maxHealth: link ? link.maxHealth : 6,
+    bItem: link ? link.inventory.getEquippedBItemId() : null,
+    aItem: link ? link.inventory.getSwordItemId() : null,
+    mapRow: overworld ? overworld.screenRow : 7,
+    mapCol: overworld ? overworld.screenCol : 7,
+    isOverworld: gameMode !== GameMode.CaveInterior,
+    levelNumber: 0,
+  };
+}
+
 function renderDebugOverlay(): void {
   const ctx = renderer.ctx;
   const screenId = overworld ? overworld.currentScreen.id : -1;
@@ -219,14 +256,46 @@ function renderDebugOverlay(): void {
   );
 }
 
+function updateInventory(): void {
+  if (!link || !inventorySlide || !inventoryScreen) return;
+
+  inventorySlide.update();
+  inventoryScreen.update();
+
+  if (inventorySlide.isActive) {
+    if (input.isJustPressed(Action.Left)) {
+      link.inventory.selectedBSlot = getNextOwnedSlot(link.inventory, link.inventory.selectedBSlot, -1);
+    }
+    if (input.isJustPressed(Action.Right)) {
+      link.inventory.selectedBSlot = getNextOwnedSlot(link.inventory, link.inventory.selectedBSlot, 1);
+    }
+    if (input.isJustPressed(Action.Start)) {
+      inventorySlide.close();
+    }
+  }
+}
+
 function updateGameplay(): void {
-  if (!link || !overworld) return;
+  if (!link || !overworld || !inventorySlide) return;
+
+  // Inventory subscreen — blocks gameplay while visible
+  if (inventorySlide.isVisible) {
+    updateInventory();
+    return;
+  }
+
+  // Start button opens inventory
+  if (input.isJustPressed(Action.Start)) {
+    inventorySlide.open();
+    return;
+  }
 
   if (overworld.isTransitioning) {
     overworld.updateTransition(link);
-    // Clear weapons on screen transition
+    // Clear weapons and pickups on screen transition
     bombs = [];
     fires = [];
+    pickups = [];
     usedCandleThisScreen = false;
     return;
   }
@@ -236,9 +305,9 @@ function updateGameplay(): void {
     overworld.tryTransition(result.screenEdge, link);
   }
 
-  // Item button (Z key) — place bomb or fire for secret interaction
+  // Item button (Z key) — use equipped B-item
   if (input.isJustPressed(Action.Item) && !link.isSwordActive) {
-    placeWeapon(link);
+    useBItem(link);
   }
 
   // Update bombs
@@ -259,6 +328,16 @@ function updateGameplay(): void {
     // Secret was revealed — could play SFX here (K1)
   }
 
+  // Update pickups — collision with Link
+  for (const pickup of pickups) {
+    pickup.update();
+    if (pickup.isActive && pickup.checkCollision(link.getCollisionRect())) {
+      pickup.collect();
+      handleItemPickup(pickup.itemId);
+    }
+  }
+  pickups = pickups.filter(p => p.isActive);
+
   // Check cave entry — Link facing up, walking into a cave entrance tile
   const caveIndex = overworld.checkCaveEntry(link);
   if (caveIndex !== null) {
@@ -273,20 +352,24 @@ function updateGameplay(): void {
   }
 }
 
-function placeWeapon(linkRef: Link): void {
-  // Alternate between bomb and fire placement with Item button
-  // In the real game, which weapon fires depends on the equipped B item.
-  // For E3 stub: first press = bomb, second = fire, cycling.
-  // Blue candle: once per screen (Z_07.asm:3567 UsedCandle check)
-  if (!usedCandleThisScreen) {
-    // Place fire in Link's facing direction
-    const fx = linkRef.posX;
-    const fy = linkRef.posY;
-    fires.push(new CandleFire(fx, fy, linkRef.facing));
-    usedCandleThisScreen = true;
-  } else {
-    // Place bomb at Link's position
-    bombs.push(new Bomb(linkRef.posX, linkRef.posY));
+function useBItem(linkRef: Link): void {
+  const slot = linkRef.inventory.selectedBSlot;
+  switch (slot) {
+    case 1: // Bomb
+      if (linkRef.bombs > 0) {
+        linkRef.addBombs(-1);
+        bombs.push(new Bomb(linkRef.posX, linkRef.posY));
+      }
+      break;
+    case 4: { // Candle
+      const candleLevel = linkRef.inventory.candle;
+      if (candleLevel <= 0) break;
+      if (candleLevel === 1 && usedCandleThisScreen) break; // blue: once per screen
+      fires.push(new CandleFire(linkRef.posX, linkRef.posY, linkRef.facing));
+      if (candleLevel === 1) usedCandleThisScreen = true;
+      break;
+    }
+    // F2-F4: boomerang(0), arrow(2), flute(5), food(6), potion(7), wand(8)
   }
 }
 
@@ -294,34 +377,70 @@ function handleItemPickup(itemId: number): void {
   if (!link || !overworld) return;
 
   const masked = itemId & 0x3f;
+  const inv = link.inventory;
+
   switch (masked) {
-    case 0x01: // WoodSword
-    case 0x02: // WhiteSword
-    case 0x03: // MagicSword
-      link.setHasSword(true);
-      break;
-    case 0x14: // PowerBracelet
-      link.setBracelet(true);
-      break;
-    case 0x1c: // MagicShield
-      link.setMagicShield(true);
-      break;
-    case 0x1a: // HeartContainer
-      link.addHeartContainer();
-      break;
-    case 0x00: // Bomb
-      link.addBombs(4);
-      break;
-    case 0x19: // Key
-      link.addKeys(1);
-      break;
-    case 0x0f: // FiveRupees
-      link.addRupees(5);
-      break;
-    case 0x18: // OneRupee
-      link.addRupees(1);
-      break;
-    // Other items tracked by inventory in F1
+    // Swords (graded 1/2/3)
+    case 0x01: inv.sword = Math.max(inv.sword, 1); break;
+    case 0x02: inv.sword = Math.max(inv.sword, 2); break;
+    case 0x03: inv.sword = Math.max(inv.sword, 3); break;
+
+    // Boomerangs
+    case 0x1d: inv.woodBoomerang = true; break;
+    case 0x1e: inv.magicBoomerang = true; break;
+
+    // Arrows (graded)
+    case 0x08: inv.arrow = Math.max(inv.arrow, 1); break;
+    case 0x09: inv.arrow = Math.max(inv.arrow, 2); break;
+
+    // Candles (graded)
+    case 0x06: inv.candle = Math.max(inv.candle, 1); break;
+    case 0x07: inv.candle = Math.max(inv.candle, 2); break;
+
+    // Rings (graded)
+    case 0x12: inv.ring = Math.max(inv.ring, 1); break;
+    case 0x13: inv.ring = Math.max(inv.ring, 2); break;
+
+    // Potions (graded)
+    case 0x1f: inv.potion = Math.max(inv.potion, 1); break;
+    case 0x20: inv.potion = Math.max(inv.potion, 2); break;
+
+    // Boolean items
+    case 0x0a: inv.bow = true; break;
+    case 0x04: inv.food = true; break;
+    case 0x05: inv.flute = true; break;
+    case 0x10: inv.wand = true; break;
+    case 0x11: inv.book = true; break;
+    case 0x0c: inv.raft = true; break;
+    case 0x0d: inv.ladder = true; break;
+    case 0x0b: inv.magicKey = true; break;
+    case 0x14: inv.bracelet = true; break;
+    case 0x15: if (inv.letter === 0) inv.letter = 1; break;
+    case 0x1c: inv.magicShield = true; break;
+
+    // Count items
+    case 0x00: link.addBombs(4); break;  // Bomb pickup
+    case 0x19: link.addKeys(1); break;   // Key
+    case 0x0f: link.addRupees(5); break; // FiveRupees
+    case 0x18: link.addRupees(1); break; // OneRupee
+
+    // Health items
+    case 0x1a: link.addHeartContainer(); break; // HeartContainer
+    case 0x22: link.heal(2); break;             // Heart (1 container = 2 half-hearts)
+    case 0x23: link.heal(link.maxHealth); break; // Fairy (full heal)
+
+    // Triforce piece
+    case 0x1b: inv.triforce |= (1 << 0); break; // bit set by dungeon number in H1
+
+    // Dungeon items
+    case 0x16: break; // Compass — dungeon-specific, set in H1
+    case 0x17: break; // Map — dungeon-specific, set in H1
+
+    // Clock — temporary enemy freeze, G1
+    case 0x21: break;
+
+    // TriforceOfPower — end game, I3
+    case 0x0e: break;
   }
 
   // Mark cave as taken
@@ -478,20 +597,7 @@ const loop = new GameLoop({
     renderer.clear();
 
     if (hudRenderer && gameMode !== GameMode.GameOver) {
-      hudRenderer.render(renderer, {
-        rupees: link ? link.rupees : 0,
-        keys: link ? link.keys : 0,
-        bombs: link ? link.bombs : 0,
-        hasMagicKey: false,
-        health: link ? link.health : 6,
-        maxHealth: link ? link.maxHealth : 6,
-        bItem: null,
-        aItem: null,
-        mapRow: overworld ? overworld.screenRow : 7,
-        mapCol: overworld ? overworld.screenCol : 7,
-        isOverworld: gameMode !== GameMode.CaveInterior,
-        levelNumber: 0,
-      });
+      hudRenderer.render(renderer, getHudState());
     }
 
     renderer.beginPlayArea();
@@ -542,6 +648,24 @@ const loop = new GameLoop({
       if (curtainEffect) {
         curtainEffect.render(renderer);
       }
+    } else if (inventorySlide && inventorySlide.isVisible && overworld && assets && inventoryScreen && font && redFont && hudRenderer && link) {
+      // Inventory subscreen with slide transition
+      const offset = inventorySlide.offset;
+
+      // Draw gameplay below (pushed down by offset)
+      renderer.ctx.save();
+      renderer.ctx.translate(0, offset);
+      overworld.renderScreen(renderer);
+      if (linkSheet) {
+        link.render(renderer, linkSheet);
+      }
+      renderer.ctx.restore();
+
+      // Draw inventory screen above (slides in from top)
+      renderer.ctx.save();
+      renderer.ctx.translate(0, offset - renderer.playAreaHeight);
+      inventoryScreen.render(renderer, link.inventory, font, redFont, processedItems!, hudRenderer, getHudState());
+      renderer.ctx.restore();
     } else if (overworld.isTransitioning) {
       overworld.renderTransition(renderer);
 
@@ -552,13 +676,18 @@ const loop = new GameLoop({
     } else {
       overworld.renderScreen(renderer);
 
-      // Render weapons and tile objects
+      // Render weapons, pickups, and tile objects
       const ctx = renderer.ctx;
       for (const bomb of bombs) {
         bomb.render(ctx);
       }
       for (const fire of fires) {
         fire.render(ctx);
+      }
+      if (processedItems) {
+        for (const pickup of pickups) {
+          pickup.render(ctx, processedItems);
+        }
       }
       overworld.renderTileObject(ctx);
 
