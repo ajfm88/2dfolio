@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-17 · **Phase:** E (Overworld) complete · **Slices done:** 23 / 45
+**Last updated:** 2026-08-18 · **Phase:** F (Items & Inventory) started · **Slices done:** 24 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice F1** — Item model + pickups + drop tables + inventory
-subscreen (select + equip to A/B buttons).
+**Next action: slice F2** — Boomerang (normal: stuns; magical: stuns + damages),
+Bombs (place, timer, explosion radius, break walls).
 
 ---
 
@@ -79,7 +79,14 @@ subscreen (select + equip to A/B buttons).
 | Cave text | `src/data/cave-text.json`, `src/data/cave-text-types.ts` | ✅ 38 NPC text strings extracted from PersonText.dat in ROM. Decoded from NES PPU tile encoding (6-bit chars + 2-bit line control). All Old Man/Woman/Moblin dialogue. extract:cave-text script (E4a) |
 | Cave type system | `src/world/cave-room.ts` | ✅ Generalized CaveRoom: behavior detection from objectType (gift/hint/doorRepair/moblinGive/shop/moneyGame/potionShop), NPC type selection (Old Man/Old Woman/Moblin), text lookup via textSelector→PersonTextAddrs, room flag integration for already-taken caves, colored item shapes per type (sword/heart container/letter/rupee). CaveBehavior + NpcType enums (E4a) |
 | Link inventory | `src/objects/player/link.ts` | ✅ rupees (0-255), keys, bombs (max 8), addRupees/spendRupees/addKeys/addBombs/addHeartContainer. HUD wired to live values. Generic handleItemPickup for all item types (E4a) |
-| Item sprite mapping | `src/data/item-sprites.ts` | ✅ NES item ID → items.png grid position mapping (10×4 grid, 40×40 cells). 32 items mapped. drawItemSprite helper (E4a, not yet used in caves due to black-on-black visibility — deferred to F1) |
+| Item sprite mapping | `src/data/item-sprites.ts` | ✅ NES item ID → items.png grid position mapping (10×4 grid, 40×40 cells). 33 items mapped. drawItemSprite with center-crop (30% inset for proper 16×16 scaling). processItemsImage for background transparency. Sword fixed to col 7 row 3 per zelda-clone-master (E4a, fixed F1) |
+| Inventory model | `src/objects/player/inventory.ts` | ✅ Inventory class mirroring NES RAM $0656-$067E. Graded items (sword/arrow/candle/ring/potion/letter), boolean items (bow/flute/food/wand/raft/book/ladder/magicKey/bracelet/magicShield), boomerang (wood+magic separate), dungeon bitmasks (compass/map/triforce). 9 selectable B-slots with NES-accurate hasSelectableItem/getEquippedBItemId/getSwordItemId (F1) |
+| Drop engine | `src/objects/enemies/drop-engine.ts` | ✅ DropEngine: NES-faithful drop algorithm from Z_04.asm. 4-group enemy classification, worldKillCycle mod 10, dropItemRates per group, help drops (16 kills→fairy, 10 non-drops→bomb/rupee). Ready for G1 wiring (F1) |
+| Item pickup entity | `src/objects/pickups/item-pickup.ts` | ✅ ItemPickup: world-space dropped item with sprite, lifetime ($FF ticks / 2 frames = 510 frames), flash near expiry, 16×16 collision with Link (F1) |
+| Inventory subscreen | `src/ui/inventory-screen.ts`, `src/ui/inventory-slide.ts` | ✅ InventoryScreen: NES-accurate layout — "INVENTORY" red title, blue B-item box, "USE B BUTTON FOR THIS", item grid with selectable/passive rows, triforce outline, "TRIFORCE" red title. Cursor flash 8-frame toggle. getNextOwnedSlot mod-9 cycling (skips bow, arrow requires bow, potion/letter fallback). InventorySlide: 3px/frame scroll matching NES MenuState (F1) |
+| Red font | `src/ui/tint-utils.ts` | ✅ createTintedFontImage: transparency-first then color tint via source-atop compositing. NES red #d82800 (F1) |
+| B-item dispatch | `src/main.ts` | ✅ useBItem() replaces placeWeapon stub. Dispatches on inventory.selectedBSlot: bomb (deducts count), candle (blue=once/screen, red=unlimited). Other slots are F2-F4 stubs (F1) |
+| HUD item display | `src/ui/hud.ts` | ✅ B-slot and A-slot item sprites rendered in HUD via drawItemSprite. Positions: B at (124,32), A at (152,32). Magic key display ("XA") wired to inventory (F1) |
 | Shop system | `src/world/cave-room.ts` | ✅ Shop caves (0x75-0x7A): 3 items at NES CaveWareXs positions, prices displayed below, rupee indicator, purchase on touch (rupee check), CavePurchaseEvent for main.ts processing. Potion shop (0x74) stub. 15 item shapes (swords, bombs, shields, arrows, candles, rings, potions, bait, etc.) (E4b) |
 | Money game | `src/world/cave-room.ts` | ✅ Cave type 0x70: generates 3 randomized amounts (+20/+50 win, -10/-40 loss) via Fisher-Yates shuffle, 10 rupee entry, pick-one mechanic, +/- display after choice, MoneyGameResult event (E4b) |
 
@@ -114,7 +121,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~21~~ | ~~**E2** Cave/staircase entry and exit~~ | ✅ done 2026-08-16 |
 | ~~22~~ | ~~**E3** Overworld secrets~~ | ✅ done 2026-08-17 |
 | ~~23~~ | ~~**E4** NPCs + shops (split E4a/E4b)~~ | ✅ done 2026-08-17 |
-| 24 | **F1** Item model + inventory | pickups, drops, inventory subscreen |
+| ~~24~~ | ~~**F1** Item model + inventory~~ | ✅ done 2026-08-18 |
+| 25 | **F2** Boomerang + Bombs | boomerang throw/return, bomb full behavior |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -150,6 +158,36 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-18 — F1 Item model + inventory subscreen (Claude Opus 4.6)
+
+Created `src/objects/player/inventory.ts` — Inventory class mirroring NES RAM
+$0656-$067E with graded items (sword 0-3, arrow 0-2, candle 0-2, ring 0-2,
+boomerang wood/magic, potion 0-2, letter 0-2), boolean items (bow, flute, food,
+wand, raft, book, ladder, magicKey, bracelet, magicShield), dungeon bitmasks
+(compass, map, triforce). 9 selectable B-slots matching NES FindAndSelectOccupied-
+ItemSlot: slot 0=boomerang pseudo-slot, slot 3=bow always skipped, slot 2=arrow
+requires bow, slot 7=potion/letter fallback. Link class refactored: boolean fields
+(_hasSword, _hasBracelet, etc.) replaced with inventory delegation. Created
+`src/objects/enemies/drop-engine.ts` — NES-faithful drop algorithm (4 enemy groups,
+worldKillCycle mod 10, help drops at 16 kills/10 non-drops). Created
+`src/objects/pickups/item-pickup.ts` — world-space dropped item with lifetime/flash/
+collision. Created `src/ui/inventory-screen.ts` — NES-accurate subscreen renderer
+with blue boxes, item grid (selectable + passive rows), cursor flash (8-frame
+toggle), triforce outline. Created `src/ui/inventory-slide.ts` — 3px/frame scroll
+(NES MenuState). Created `src/ui/tint-utils.ts` — transparency-then-tint for red
+font (#d82800). Updated `src/data/item-sprites.ts`: fixed sword mapping (col 7 row
+3 per zelda-clone ItemSpriteFactory.cs), added center-crop (30% inset), added
+processItemsImage for background transparency, added clock sprite. Updated
+`src/ui/hud.ts`: B/A item sprite rendering at (124,32)/(152,32). Updated
+`src/world/cave-room.ts`: replaced 80-line drawItem colored rectangles with
+drawItemSprite, added itemsImage constructor param. Expanded handleItemPickup to
+cover all 36 NES item IDs with upgrade logic. Replaced placeWeapon stub with
+useBItem() dispatching on selectedBSlot. Start button opens inventory (blocks
+gameplay), Left/Right cycles cursor, Start closes. 39 new tests (752 total).
+Typecheck clean. Known polish: HUD has duplicate sword in A-slot (hud.png
+background has baked-in sword graphic), subscreen layout slightly oversized.
+**Phase F started. Next: F2.**
 
 ### 2026-08-17 — E4b Shops + money game (Claude Opus 4.6)
 

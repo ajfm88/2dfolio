@@ -3,7 +3,7 @@ import { Direction } from '../core/types.js';
 import type { Renderer } from './renderer.js';
 
 export interface SpriteSheetConfig {
-  readonly image: HTMLImageElement;
+  readonly image: HTMLImageElement | HTMLCanvasElement;
   readonly cellWidth?: number;
   readonly cellHeight?: number;
   readonly columns: number;
@@ -12,7 +12,7 @@ export interface SpriteSheetConfig {
   readonly autoDetectTransparency?: boolean;
 }
 
-function processTransparencyKey(image: HTMLImageElement): HTMLCanvasElement {
+function processTransparencyKey(image: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
   canvas.height = image.height;
