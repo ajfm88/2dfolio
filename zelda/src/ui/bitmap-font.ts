@@ -10,14 +10,14 @@ const CHAR_ADVANCE = 8;
 export class BitmapFont {
   private readonly sheet: SpriteSheet;
 
-  constructor(fontImage: HTMLImageElement) {
+  constructor(fontImage: HTMLImageElement | HTMLCanvasElement) {
     const columns = Math.floor(fontImage.width / CELL_WIDTH);
     this.sheet = new SpriteSheet({
       image: fontImage,
       cellWidth: CELL_WIDTH,
       cellHeight: CELL_HEIGHT,
       columns,
-      autoDetectTransparency: true,
+      autoDetectTransparency: fontImage instanceof HTMLImageElement,
     });
   }
 

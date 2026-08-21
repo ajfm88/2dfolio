@@ -14,9 +14,46 @@ export function getItemSpritePos(itemId: number): ItemSpritePos | null {
   return ITEM_SPRITE_MAP[itemId] ?? null;
 }
 
+// Process items.png to replace background color with transparency
+let processedItemsCanvas: HTMLCanvasElement | null = null;
+
+export function processItemsImage(image: HTMLImageElement): HTMLCanvasElement {
+  if (processedItemsCanvas) return processedItemsCanvas;
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // Check if image already has transparency (alpha < 255 in top-left pixel)
+  if (data[3]! < 255) {
+    // Already has alpha — just copy as-is
+    processedItemsCanvas = canvas;
+    return canvas;
+  }
+
+  // Use top-left pixel as transparency key
+  const keyR = data[0]!;
+  const keyG = data[1]!;
+  const keyB = data[2]!;
+  const tolerance = 2;
+  for (let i = 0; i < data.length; i += 4) {
+    if (Math.abs(data[i]! - keyR) <= tolerance &&
+        Math.abs(data[i + 1]! - keyG) <= tolerance &&
+        Math.abs(data[i + 2]! - keyB) <= tolerance) {
+      data[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  processedItemsCanvas = canvas;
+  return canvas;
+}
+
 export function drawItemSprite(
   ctx: CanvasRenderingContext2D,
-  itemsImage: HTMLImageElement,
+  itemsImage: HTMLImageElement | HTMLCanvasElement,
   itemId: number,
   x: number,
   y: number,
@@ -27,12 +64,16 @@ export function drawItemSprite(
 
   const cellW = itemsImage.width / ITEMS_COLS;
   const cellH = itemsImage.height / ITEMS_ROWS;
-  const sx = pos.col * cellW;
-  const sy = pos.row * cellH;
 
-  // Center the item sprite — actual item is ~16×16 centered in the 40×40 cell
-  // Draw the full cell scaled to target size
-  ctx.drawImage(itemsImage, sx, sy, cellW, cellH, x, y, size, size);
+  // Crop to center ~60% of each cell where the actual sprite lives
+  // The 40×40 cells have ~12px padding around a ~16×16 sprite
+  const inset = cellW * 0.3;
+  const sx = pos.col * cellW + inset;
+  const sy = pos.row * cellH + inset;
+  const sw = cellW - inset * 2;
+  const sh = cellH - inset * 2;
+
+  ctx.drawImage(itemsImage, sx, sy, sw, sh, x, y, size, size);
   return true;
 }
 
@@ -40,9 +81,9 @@ export function drawItemSprite(
 // IDs from ITEM_NAMES in item-types.ts
 const ITEM_SPRITE_MAP: Record<number, ItemSpritePos> = {
   0x00: { col: 5, row: 0 },  // Bomb
-  0x01: { col: 1, row: 3 },  // WoodSword
-  0x02: { col: 1, row: 3 },  // WhiteSword (same sprite, different palette on NES)
-  0x03: { col: 1, row: 3 },  // MagicSword
+  0x01: { col: 7, row: 3 },  // WoodSword
+  0x02: { col: 7, row: 3 },  // WhiteSword (same sprite, different palette on NES)
+  0x03: { col: 7, row: 3 },  // MagicSword
   0x04: { col: 2, row: 3 },  // Bait
   0x05: { col: 3, row: 3 },  // Flute/Recorder
   0x06: { col: 3, row: 0 },  // BlueCandle
@@ -71,6 +112,7 @@ const ITEM_SPRITE_MAP: Record<number, ItemSpritePos> = {
   0x1e: { col: 7, row: 0 },  // MagicBoomerang (same sprite)
   0x1f: { col: 9, row: 1 },  // BluePotionOrHeart
   0x20: { col: 9, row: 1 },  // RedPotionOrHeart
+  0x21: { col: 9, row: 0 },  // Clock
   0x22: { col: 6, row: 3 },  // Heart
   0x23: { col: 4, row: 1 },  // Fairy
 };

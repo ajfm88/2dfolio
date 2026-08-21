@@ -1,5 +1,6 @@
 import { PLAY_AREA_HEIGHT, SCREEN_WIDTH } from '../core/constants.js';
 import { Direction } from '../core/types.js';
+import { drawItemSprite } from '../data/item-sprites.js';
 import type { Renderer } from '../render/renderer.js';
 import type { SpriteSheet } from '../render/sprite-renderer.js';
 import { BitmapFont } from '../ui/bitmap-font.js';
@@ -107,6 +108,7 @@ function generateMoneyGameAmounts(): number[] {
 export class CaveRoom {
   private readonly caveMap: HTMLImageElement;
   private readonly npcsImage: HTMLImageElement;
+  private readonly itemsImage: HTMLImageElement | HTMLCanvasElement;
   private readonly font: BitmapFont;
   private readonly contents: CaveContents;
   private readonly textLines: readonly string[];
@@ -132,12 +134,14 @@ export class CaveRoom {
   constructor(
     caveMap: HTMLImageElement,
     npcsImage: HTMLImageElement,
+    itemsImage: HTMLImageElement | HTMLCanvasElement,
     font: BitmapFont,
     contents: CaveContents,
     textMessage: CaveTextMessage | null,
   ) {
     this.caveMap = caveMap;
     this.npcsImage = npcsImage;
+    this.itemsImage = itemsImage;
     this.font = font;
     this.contents = contents;
     this.textLines = textMessage?.lines ?? [];
@@ -415,82 +419,7 @@ export class CaveRoom {
   }
 
   private drawItem(ctx: CanvasRenderingContext2D, x: number, y: number, itemId: number): void {
-    const masked = itemId & 0x3f;
-    switch (masked) {
-      case 0x01: case 0x02: case 0x03: // Swords
-        ctx.fillStyle = masked === 0x03 ? '#e0e0ff' : masked === 0x02 ? '#c0c0ff' : '#B86428';
-        ctx.fillRect(x + 6, y + 2, 4, 10);
-        ctx.fillStyle = '#D89048';
-        ctx.fillRect(x + 4, y + 10, 8, 2);
-        ctx.fillStyle = '#804010';
-        ctx.fillRect(x + 6, y + 12, 4, 3);
-        break;
-      case 0x1a: // HeartContainer
-        ctx.fillStyle = '#e00000';
-        ctx.fillRect(x + 2, y + 4, 5, 8);
-        ctx.fillRect(x + 9, y + 4, 5, 8);
-        ctx.fillRect(x + 4, y + 2, 8, 10);
-        ctx.fillRect(x + 6, y + 12, 4, 2);
-        break;
-      case 0x15: // Letter
-        ctx.fillStyle = '#f0d0a0';
-        ctx.fillRect(x + 3, y + 3, 10, 10);
-        ctx.fillStyle = '#a08060';
-        ctx.fillRect(x + 5, y + 5, 6, 1);
-        ctx.fillRect(x + 5, y + 7, 6, 1);
-        break;
-      case 0x18: // OneRupee
-      case 0x0f: // FiveRupees
-        ctx.fillStyle = masked === 0x0f ? '#4040ff' : '#f0c000';
-        ctx.fillRect(x + 5, y + 2, 6, 12);
-        ctx.fillRect(x + 4, y + 4, 8, 8);
-        break;
-      case 0x00: // Bomb
-        ctx.fillStyle = '#303080';
-        ctx.fillRect(x + 4, y + 4, 8, 10);
-        ctx.fillStyle = '#f0c000';
-        ctx.fillRect(x + 6, y + 2, 4, 3);
-        break;
-      case 0x1c: // MagicShield
-        ctx.fillStyle = '#8080c0';
-        ctx.fillRect(x + 3, y + 2, 10, 12);
-        ctx.fillStyle = '#c0c0ff';
-        ctx.fillRect(x + 5, y + 4, 6, 8);
-        break;
-      case 0x08: case 0x09: // Arrows
-        ctx.fillStyle = masked === 0x09 ? '#c0c0ff' : '#B86428';
-        ctx.fillRect(x + 7, y + 2, 2, 12);
-        ctx.fillRect(x + 5, y + 2, 6, 3);
-        break;
-      case 0x06: case 0x07: // Candles
-        ctx.fillStyle = masked === 0x07 ? '#e04040' : '#4040e0';
-        ctx.fillRect(x + 5, y + 4, 6, 10);
-        ctx.fillStyle = '#f0c000';
-        ctx.fillRect(x + 6, y + 2, 4, 4);
-        break;
-      case 0x04: // Bait
-        ctx.fillStyle = '#e06060';
-        ctx.fillRect(x + 3, y + 2, 10, 12);
-        break;
-      case 0x1f: case 0x20: // Potions
-        ctx.fillStyle = masked === 0x1f ? '#4040e0' : '#e04040';
-        ctx.fillRect(x + 4, y + 4, 8, 10);
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(x + 5, y + 2, 6, 4);
-        break;
-      case 0x12: case 0x13: // Rings
-        ctx.fillStyle = masked === 0x12 ? '#4040e0' : '#e04040';
-        ctx.fillRect(x + 4, y + 4, 8, 8);
-        ctx.fillStyle = '#f0c000';
-        ctx.fillRect(x + 6, y + 2, 4, 4);
-        break;
-      default:
-        ctx.fillStyle = '#fc0';
-        ctx.fillRect(x + 2, y + 2, 12, 12);
-        ctx.fillStyle = '#fa0';
-        ctx.fillRect(x + 4, y + 4, 8, 8);
-        break;
-    }
+    drawItemSprite(ctx, this.itemsImage, itemId & 0x3f, x, y);
   }
 
   private drawText(renderer: Renderer): void {

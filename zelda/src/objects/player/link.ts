@@ -30,6 +30,7 @@ import {
   directionToSpriteCol,
 } from '../../render/sprite-renderer.js';
 import type { TileCollisionMap } from '../../world/collision.js';
+import { Inventory } from './inventory.js';
 import { SwordSwing } from './sword.js';
 import { SwordBeam } from './sword-beam.js';
 
@@ -56,14 +57,12 @@ export class Link {
   private _swordBeam: SwordBeam | null = null;
   private _health = 6;
   private _maxHealth = 6;
-  private _hasSword = false;
-  private _hasShield = true;
-  private _hasMagicShield = false;
-  private _hasBracelet = false;
   private _rupees = 0;
   private _keys = 0;
   private _bombs = 0;
   private _maxBombs = 8;
+
+  readonly inventory = new Inventory();
 
   // D4: damage system state
   private _state = LinkState.Normal;
@@ -71,7 +70,6 @@ export class Link {
   private _knockbackRemaining = 0;
   private _invincibilityTimer = 0; // ticks (decrements every 2 frames)
   private _invincibilityFrameCount = 0;
-  private _ringLevel = 0; // 0=none, 1=blue, 2=red
   private _isDead = false;
 
   constructor(x: number = LINK_START_X, y: number = LINK_START_Y) {
@@ -107,16 +105,20 @@ export class Link {
     return this._state === LinkState.Normal && !this.sword.isActive();
   }
 
+  get hasSword(): boolean {
+    return this.inventory.sword > 0;
+  }
+
   get hasShield(): boolean {
-    return this._hasShield;
+    return true; // small shield always available
   }
 
   get hasMagicShield(): boolean {
-    return this._hasMagicShield;
+    return this.inventory.magicShield;
   }
 
   get hasBracelet(): boolean {
-    return this._hasBracelet;
+    return this.inventory.bracelet;
   }
 
   get activeSwordBeam(): SwordBeam | null {
@@ -151,7 +153,7 @@ export class Link {
   }
 
   get ringLevel(): number {
-    return this._ringLevel;
+    return this.inventory.ring;
   }
 
   setHealth(health: number, maxHealth: number): void {
@@ -160,19 +162,29 @@ export class Link {
   }
 
   setHasSword(has: boolean): void {
-    this._hasSword = has;
+    if (has && this.inventory.sword === 0) {
+      this.inventory.sword = 1;
+    }
   }
 
-  setShield(has: boolean): void {
-    this._hasShield = has;
+  setSwordLevel(level: number): void {
+    this.inventory.sword = Math.max(this.inventory.sword, level);
+  }
+
+  setShield(_has: boolean): void {
+    // small shield always available — no-op for backward compat
   }
 
   setMagicShield(has: boolean): void {
-    this._hasMagicShield = has;
+    this.inventory.magicShield = has;
   }
 
   setBracelet(has: boolean): void {
-    this._hasBracelet = has;
+    this.inventory.bracelet = has;
+  }
+
+  setRingLevel(level: number): void {
+    this.inventory.ring = Math.max(this.inventory.ring, level);
   }
 
   get rupees(): number {
@@ -210,8 +222,8 @@ export class Link {
     this._health = this._maxHealth;
   }
 
-  setRingLevel(level: number): void {
-    this._ringLevel = level;
+  heal(halfHearts: number): void {
+    this._health = Math.min(this._maxHealth, this._health + halfHearts);
   }
 
   setPosition(x: number, y: number): void {
@@ -248,7 +260,7 @@ export class Link {
     if (this._invincibilityTimer > 0) return;
     if (this._isDead) return;
 
-    const halfHearts = calculateDamage(damageRaw, this._ringLevel);
+    const halfHearts = calculateDamage(damageRaw, this.inventory.ring);
     this._health = Math.max(0, this._health - halfHearts);
 
     if (this._health <= 0) {
@@ -322,7 +334,7 @@ export class Link {
     }
 
     // Start sword swing on attack input
-    if (this._hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive()) {
+    if (this.hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive()) {
       this.sword.start(this._direction);
       this._moving = false;
       this.walkAnim.reset();
