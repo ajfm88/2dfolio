@@ -93,6 +93,35 @@ export const LINK_ENTRY_RIGHT = SCREEN_EDGE_RIGHT;
 export const LINK_ENTRY_TOP = SCREEN_EDGE_TOP;
 export const LINK_ENTRY_BOTTOM = SCREEN_EDGE_BOTTOM;
 
+// Boomerang — Z_05.asm:2901 WieldBoomerang, Z_07.asm:3857 UpdateArrowOrBoomerang
+export const BOOMERANG_QFRAC = 0xC0;               // 3 px/frame via QSpeed
+export const BOOMERANG_SLOW_QFRAC = 0x40;           // 1 px/frame during SlowDown
+export const BOOMERANG_NORMAL_LIMIT = 0x31;          // 49 px distance (wood)
+export const BOOMERANG_MAGIC_LIMIT = 0xFF;           // 255 px distance (magic)
+export const BOOMERANG_SPARK_FRAMES = 3;
+export const BOOMERANG_SLOWDOWN_FRAMES = 0x10;       // 16 frames
+export const BOOMERANG_RETURN_SLOW_FRAMES = 0x20;    // 32 frames
+export const BOOMERANG_CATCH_THRESHOLD = 9;           // px on both axes
+export const BOOMERANG_ANIM_COUNTER_RESET = 2;        // frames per animation step
+
+// Bomb — Z_07.asm:4803 UpdateBomb, Z_01.asm:6108 CheckMonsterBombOrFireCollision
+export const BOMB_DAMAGE = 0x40;                     // 64 raw damage points
+export const BOMB_BLAST_RADIUS = 0x18;               // 24 px from center per axis
+
+// Arrow — Z_05.asm:2954 WieldArrow, Z_01.asm:6242 CheckMonsterArrowOrRodCollision
+export const ARROW_QFRAC = 0xC0;                     // 3 px/frame (same as sword beam)
+export const ARROW_SPARK_FRAMES = 3;
+export const ARROW_DAMAGE = 0x20;                     // 32 — wooden arrow
+export const SILVER_ARROW_DAMAGE = 0x40;              // 64 — silver arrow
+
+// Candle fire — Z_01.asm:3991 WieldCandle, Z_07.asm:4658 UpdateFire
+export const FIRE_QFRAC = 0x20;                      // 0.5 px/frame via QSpeed
+export const FIRE_DAMAGE = 0x10;                      // 16 — same as wooden sword
+
+// Food — Z_05.asm:3003 WieldFood
+export const FOOD_PHASE_TIMER = 0xFF;                 // 255 frames per phase
+export const FOOD_PHASES = 3;                          // 3 phases × 255 = 765 frames total
+
 // Respawn — Z_07.asm:1442 InitMode3_Sub1
 export const RESPAWN_SCREEN_ROW = 7;
 export const RESPAWN_SCREEN_COL = 7;

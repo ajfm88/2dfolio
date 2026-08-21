@@ -96,8 +96,8 @@ Node scripts that parse the assembly source — run once, commit output.
 | ID | Slice | Verify |
 |---|---|---|
 | F1 ✅ | Item model + pickups + drop tables + inventory subscreen (select + equip to A/B buttons) | open inventory; equip item; close |
-| F2 ⬜ | Boomerang (normal: stuns; magical: stuns + damages), Bombs (place, timer, explosion radius, break walls) | boomerang returns; bomb explodes |
-| F3 ⬜ | Bow + Arrow + Silver Arrow, Candle (blue: once per screen; red: unlimited), Food/Bait | arrow flies; candle burns bush; bait lures |
+| F2 ✅ | Boomerang (normal: stuns; magical: stuns + damages), Bombs (place, timer, explosion radius, break walls) | boomerang returns; bomb explodes |
+| F3 ✅ | Bow + Arrow + Silver Arrow, Candle (blue: once per screen; red: unlimited), Food/Bait | arrow flies; candle burns bush; bait lures |
 | F4 ⬜ | Magic Rod + Book of Magic, Recorder/Flute, Raft, Stepladder, Power Bracelet, Letter → Potion, Blue/Red Ring, Magic Key | all items function; ring changes Link colour |
 
 ## Phase G — Enemies (5 slices)

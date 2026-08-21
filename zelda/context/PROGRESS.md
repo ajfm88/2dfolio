@@ -194,3 +194,60 @@ resets to still frame on release. Uses link.png (15 cols, 1px spacing, 16×16
 cells). 24 new tests (331 total). Typecheck clean. Visually verified all 4
 directions + walk animation + still frame reset across multiple screens.
 **Next: C3.**
+
+## 2026-08-11 — C3 HUD / status bar (Claude Opus 4.6)
+
+Created 3 new files in `src/ui/`: `hud.ts` (HudRenderer class + HudState
+interface + formatCount), `bitmap-font.ts` (BitmapFont class wrapping SpriteSheet
+for the 9×7 cell font.png, charToIndex mapping matching ZeldaJS), `heart-meter.ts`
+(HeartMeter class + computeHearts with NES-faithful half-heart granularity from
+Z_01.asm FormatHeartsInTextBuf). HUD draws hud.png background at (0,0), then
+overlays dynamic values: hearts at (176,40) with 8px step and 2-row support for
+16 max containers, rupee/key/bomb counters at NES PPU nametable positions
+(96,24)/(96,40)/(96,48) using "X23"/"123" format, overworld minimap green dot
+(3×3, #83d313) at x=17+col*4, y=24+row*4 matching NES UpdatePlayerPositionMarker.
+Magic key support ("XA" display). 37 new tests (368 total). **Next: C4.**
+
+## 2026-08-11 — C4 Screen transition (Claude Opus 4.6)
+
+Created `src/world/screen-transition.ts` — ScreenTransition class managing
+push-scroll animation between overworld screens. NES-accurate timing from
+Z_05.asm ScrollWorld: horizontal = 4px/frame × 64 frames (256px), vertical =
+4px/frame × 44 frames (176px). 23 new tests (391 total). **Phase C complete. Next: D1.**
+
+## 2026-08-12 — D1 Link movement (Claude Opus 4.6)
+
+Created `src/world/collision.ts` — TileCollisionMap class deriving walkability
+from overworld.json squareTable.primary NES metatile values against threshold
+$8D (141). Created `src/objects/player/link.ts` — Link class with NES-faithful
+QSpeed movement system (sub-pixel accumulator, $60 applied 4×/frame → 1.5
+px/frame average). 8×8 collision hitbox at lower center. Perpendicular grid
+snapping. 37 new tests (428 total). **Phase D started. Next: D2.**
+
+## 2026-08-12 — D2 Sword attack (Claude Opus 4.6)
+
+Created `src/objects/player/sword.ts` — SwordSwing class with 16-frame state
+machine matching Z_07.asm UpdateSwordOrRod. Created `src/objects/player/sword-beam.ts`
+— SwordBeam projectile at QSpeed $C0 (3px/frame). 28 new tests (456 total). **Next: D3.**
+
+## 2026-08-13 — D3 Shield + push block (Claude Opus 4.6)
+
+Created shield deflection, enemy projectile, and push block systems. 46 new tests
+(502 total). **Next: D4.**
+
+## 2026-08-14 — D4 Damage system (Claude Opus 4.6)
+
+Created damage tables, Link knockback/invincibility system with NES-faithful timing.
+46 new tests (548 total). **Next: D5.**
+
+## 2026-08-15 — D5 Death + respawn (Claude Opus 4.6)
+
+Created GameMode enum, DeathAnimation (7-phase NES Mode $11), GameOverScreen
+(CONTINUE/SAVE/RETRY), computeRespawnParams. 33 new tests (581 total).
+**Phase D complete. Next: E1.**
+
+## 2026-08-16 — E1 Overworld map loading (Claude Opus 4.6)
+
+Created OverworldManager class owning all overworld state: screen navigation,
+transitions, collision map, visited tracking. Boundary clamping. 32 new tests
+(613 total). **Phase E started. Next: E2.**

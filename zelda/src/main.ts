@@ -30,8 +30,11 @@ import type { ItemData, CaveTypeInfo } from './data/item-types.js';
 import { processItemsImage } from './data/item-sprites.js';
 import { Link } from './objects/player/link.js';
 import { ItemPickup } from './objects/pickups/item-pickup.js';
+import { Arrow } from './objects/weapons/arrow.js';
 import { Bomb } from './objects/weapons/bomb.js';
+import { Boomerang } from './objects/weapons/boomerang.js';
 import { CandleFire } from './objects/weapons/candle-fire.js';
+import { Food } from './objects/weapons/food.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -68,10 +71,17 @@ let caveEntryY = 0;
 let caveWalkIntoFrames = 0;
 let caveItemHandled = false;
 
-// Weapon objects for overworld secret interactions (E3 stubs)
+// Weapons
 let bombs: Bomb[] = [];
 let fires: CandleFire[] = [];
+let boomerang: Boomerang | null = null;
+let arrow: Arrow | null = null;
+let food: Food | null = null;
 let usedCandleThisScreen = false;
+
+// Weapon sprite sheets (initialized in init)
+let projectilesSheet: SpriteSheet | null = null;
+let cloudSheet: SpriteSheet | null = null;
 
 // Item pickups on the overworld
 let pickups: ItemPickup[] = [];
@@ -114,6 +124,16 @@ async function init(): Promise<void> {
       autoDetectTransparency: true,
     });
     processedItems = processItemsImage(assets.sprites.items);
+    projectilesSheet = new SpriteSheet({
+      image: assets.sprites.projectiles,
+      columns: 15,
+      autoDetectTransparency: true,
+    });
+    cloudSheet = new SpriteSheet({
+      image: assets.sprites.cloud,
+      columns: 1,
+      autoDetectTransparency: true,
+    });
     hudRenderer = new HudRenderer(
       assets.ui.hud,
       assets.sprites.font,
@@ -295,6 +315,9 @@ function updateGameplay(): void {
     // Clear weapons and pickups on screen transition
     bombs = [];
     fires = [];
+    boomerang = null;
+    arrow = null;
+    food = null;
     pickups = [];
     usedCandleThisScreen = false;
     return;
@@ -321,6 +344,30 @@ function updateGameplay(): void {
     fire.update();
   }
   fires = fires.filter(f => f.isActive);
+
+  // Update boomerang
+  if (boomerang && link) {
+    boomerang.update(link.posX, link.posY);
+    if (!boomerang.isActive) {
+      boomerang = null;
+    }
+  }
+
+  // Update arrow
+  if (arrow) {
+    arrow.update(overworld.collisionMap, overworld.currentScreen);
+    if (!arrow.isActive) {
+      arrow = null;
+    }
+  }
+
+  // Update food
+  if (food) {
+    food.update();
+    if (!food.isActive) {
+      food = null;
+    }
+  }
 
   // Update tile objects (secret detection)
   const revealEvent = overworld.updateTileObjects(link, bombs, fires);
@@ -352,6 +399,14 @@ function updateGameplay(): void {
   }
 }
 
+// Placement offset: 16px from Link in his facing direction (Z_05.asm WieldBoomerang/WieldBomb)
+function facingOffsetX(dir: Direction): number {
+  return dir === Direction.Left ? -16 : dir === Direction.Right ? 16 : 0;
+}
+function facingOffsetY(dir: Direction): number {
+  return dir === Direction.Up ? -16 : dir === Direction.Down ? 16 : 0;
+}
+
 function useBItem(linkRef: Link): void {
   const slot = linkRef.inventory.selectedBSlot;
   switch (slot) {
@@ -369,7 +424,54 @@ function useBItem(linkRef: Link): void {
       if (candleLevel === 1) usedCandleThisScreen = true;
       break;
     }
-    // F2-F4: boomerang(0), arrow(2), flute(5), food(6), potion(7), wand(8)
+    case 0: { // Boomerang — shares NES slot $0F with food
+      if (boomerang || food) break;
+      if (!linkRef.inventory.woodBoomerang && !linkRef.inventory.magicBoomerang) break;
+      const isMagic = linkRef.inventory.magicBoomerang;
+      // NES supports diagonal throw — use held input directions, fallback to facing
+      let dirX = 0;
+      let dirY = 0;
+      if (input.isHeld(Action.Right)) dirX = 1;
+      else if (input.isHeld(Action.Left)) dirX = -1;
+      if (input.isHeld(Action.Down)) dirY = 1;
+      else if (input.isHeld(Action.Up)) dirY = -1;
+      if (dirX === 0 && dirY === 0) {
+        switch (linkRef.facing) {
+          case Direction.Up: dirY = -1; break;
+          case Direction.Down: dirY = 1; break;
+          case Direction.Left: dirX = -1; break;
+          case Direction.Right: dirX = 1; break;
+        }
+      }
+      const ofsX = facingOffsetX(linkRef.facing);
+      const ofsY = facingOffsetY(linkRef.facing);
+      boomerang = new Boomerang(linkRef.posX + ofsX, linkRef.posY + ofsY, dirX, dirY, isMagic);
+      break;
+    }
+    case 2: { // Arrow — requires bow + 1 rupee per shot
+      if (arrow) break;
+      if (!linkRef.inventory.bow || linkRef.inventory.arrow <= 0) break;
+      if (linkRef.rupees <= 0) break;
+      linkRef.addRupees(-1);
+      const isSilver = linkRef.inventory.arrow >= 2;
+      arrow = new Arrow(
+        linkRef.posX + facingOffsetX(linkRef.facing),
+        linkRef.posY + facingOffsetY(linkRef.facing),
+        linkRef.facing,
+        isSilver,
+      );
+      break;
+    }
+    case 6: { // Food/Bait — shares NES slot $0F with boomerang
+      if (food || boomerang) break;
+      if (!linkRef.inventory.food) break;
+      food = new Food(
+        linkRef.posX + facingOffsetX(linkRef.facing),
+        linkRef.posY + facingOffsetY(linkRef.facing),
+      );
+      break;
+    }
+    // F4: flute(5), potion(7), wand(8)
   }
 }
 
@@ -679,10 +781,19 @@ const loop = new GameLoop({
       // Render weapons, pickups, and tile objects
       const ctx = renderer.ctx;
       for (const bomb of bombs) {
-        bomb.render(ctx);
+        bomb.render(ctx, cloudSheet ?? undefined, renderer, projectilesSheet ?? undefined);
       }
       for (const fire of fires) {
-        fire.render(ctx);
+        fire.render(renderer, projectilesSheet ?? undefined);
+      }
+      if (boomerang && projectilesSheet) {
+        boomerang.render(renderer, projectilesSheet);
+      }
+      if (arrow && projectilesSheet) {
+        arrow.render(renderer, projectilesSheet);
+      }
+      if (food) {
+        food.render(ctx, processedItems);
       }
       if (processedItems) {
         for (const pickup of pickups) {
@@ -690,6 +801,15 @@ const loop = new GameLoop({
         }
       }
       overworld.renderTileObject(ctx);
+
+      // Bomb screen flash — Z_01.asm:4086 UpdateBombFlashEffect
+      if (bombs.some(b => b.shouldFlash)) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillRect(0, 0, 256, 176);
+        ctx.restore();
+      }
 
       if (linkSheet && link) {
         link.render(renderer, linkSheet);
