@@ -234,8 +234,9 @@ describe('TileObjectManager', () => {
       mgr.initForScreen(screen, flags, makeSecretsData());
 
       // Start fire 16px above tile object so it walks DOWN to land on it
+      // Fire moves at 0.5px/frame (QSpeed $20), so 32 frames for 16px
       const fire = new CandleFire(8 * 16, 5 * 16 - 16, Direction.Down);
-      for (let i = 0; i < 16; i++) fire.update(); // walk 16px to tile object position
+      for (let i = 0; i < 32; i++) fire.update();
       expect(fire.isStanding).toBe(true);
       expect(fire.y).toBe(5 * 16); // now at tile object Y
 
