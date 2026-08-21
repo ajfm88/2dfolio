@@ -1,12 +1,21 @@
-// Candle fire stub for E3 — Z_07.asm:4658 UpdateFire
-// Minimal implementation: walks 16px in direction, then stands for 63 frames.
-// Full candle implementation (blue/red distinction, inventory) deferred to F3.
+// Candle fire — Z_01.asm:3991 WieldCandle, Z_07.asm:4658 UpdateFire
+// Walks 16px at 0.5px/frame (QSpeed $20), then stands for 63 frames.
+// Fire damages enemies (G1 wires collision) and can also damage Link (G1).
 
-import { TILE_SIZE } from '../../core/constants.js';
+import { TILE_SIZE, FIRE_QFRAC } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
+import type { Renderer } from '../../render/renderer.js';
+import type { SpriteSheet } from '../../render/sprite-renderer.js';
+
+export { FIRE_DAMAGE } from '../../core/constants.js';
 
 const FIRE_WALK_DISTANCE = 0x10; // 16px
 const FIRE_STAND_TIMER = 0x3F; // 63 frames
+
+// Fire sprite indices in projectiles.png (verify at implementation time)
+const FIRE_SPRITE_FRAME_A = 6;
+const FIRE_SPRITE_FRAME_B = 7;
+const FIRE_FLICKER_INTERVAL = 5;
 
 export enum FireState {
   Walking = 0x21,
@@ -21,6 +30,8 @@ export class CandleFire {
   private _state = FireState.Walking;
   private _distanceMoved = 0;
   private _timer = FIRE_STAND_TIMER;
+  private _subPixel = 0;
+  private _frameCount = 0;
 
   constructor(x: number, y: number, direction: Direction) {
     this._x = x;
@@ -37,17 +48,24 @@ export class CandleFire {
   update(): void {
     if (this._state === FireState.Dead) return;
 
+    this._frameCount++;
+
     if (this._state === FireState.Walking) {
-      switch (this._direction) {
-        case Direction.Up: this._y--; break;
-        case Direction.Down: this._y++; break;
-        case Direction.Left: this._x--; break;
-        case Direction.Right: this._x++; break;
-      }
-      this._distanceMoved++;
-      if (this._distanceMoved >= FIRE_WALK_DISTANCE) {
-        this._state = FireState.Standing;
-        this._timer = FIRE_STAND_TIMER;
+      // Z_07.asm:4658 — QSpeed $20 = 0.5px/frame
+      const pixels = this.computePixels();
+      for (let i = 0; i < pixels; i++) {
+        switch (this._direction) {
+          case Direction.Up: this._y--; break;
+          case Direction.Down: this._y++; break;
+          case Direction.Left: this._x--; break;
+          case Direction.Right: this._x++; break;
+        }
+        this._distanceMoved++;
+        if (this._distanceMoved >= FIRE_WALK_DISTANCE) {
+          this._state = FireState.Standing;
+          this._timer = FIRE_STAND_TIMER;
+          return;
+        }
       }
       return;
     }
@@ -63,16 +81,37 @@ export class CandleFire {
     return { x: this._x, y: this._y, width: TILE_SIZE, height: TILE_SIZE };
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
+  render(renderer: Renderer, spriteSheet?: SpriteSheet): void {
     if (this._state === FireState.Dead) return;
 
-    // Flickering fire effect
-    const flicker = (this._timer & 0x02) ? 0 : 2;
-    ctx.fillStyle = '#ff4400';
-    ctx.fillRect(this._x + 2 + flicker, this._y + 2, 12 - flicker, 12);
-    ctx.fillStyle = '#ffaa00';
-    ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
-    ctx.fillStyle = '#ffff44';
-    ctx.fillRect(this._x + 6, this._y + 6, 4, 4);
+    if (spriteSheet) {
+      const frame = Math.floor(this._frameCount / FIRE_FLICKER_INTERVAL) % 2 === 0
+        ? FIRE_SPRITE_FRAME_A
+        : FIRE_SPRITE_FRAME_B;
+      spriteSheet.drawFrame(renderer, frame, this._x, this._y);
+    } else {
+      // Placeholder fallback
+      const ctx = renderer.ctx;
+      const flicker = (this._frameCount & 0x02) ? 0 : 2;
+      ctx.fillStyle = '#ff4400';
+      ctx.fillRect(this._x + 2 + flicker, this._y + 2, 12 - flicker, 12);
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
+      ctx.fillStyle = '#ffff44';
+      ctx.fillRect(this._x + 6, this._y + 6, 4, 4);
+    }
+  }
+
+  // QSpeed sub-pixel accumulator — Z_07.asm:4658 uses $20 = 0.5px/frame
+  private computePixels(): number {
+    let pixels = 0;
+    for (let i = 0; i < 4; i++) {
+      this._subPixel += FIRE_QFRAC;
+      if (this._subPixel >= 256) {
+        this._subPixel -= 256;
+        pixels++;
+      }
+    }
+    return pixels;
   }
 }

@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-18 · **Phase:** F (Items & Inventory) started · **Slices done:** 24 / 45
+**Last updated:** 2026-08-19 · **Phase:** F (Items & Inventory) in progress · **Slices done:** 26 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice F2** — Boomerang (normal: stuns; magical: stuns + damages),
-Bombs (place, timer, explosion radius, break walls).
+**Next action: slice F4** — Magic Rod + Book of Magic, Recorder/Flute, Raft, Stepladder,
+Power Bracelet, Letter → Potion, Blue/Red Ring, Magic Key.
 
 ---
 
@@ -85,7 +85,12 @@ Bombs (place, timer, explosion radius, break walls).
 | Item pickup entity | `src/objects/pickups/item-pickup.ts` | ✅ ItemPickup: world-space dropped item with sprite, lifetime ($FF ticks / 2 frames = 510 frames), flash near expiry, 16×16 collision with Link (F1) |
 | Inventory subscreen | `src/ui/inventory-screen.ts`, `src/ui/inventory-slide.ts` | ✅ InventoryScreen: NES-accurate layout — "INVENTORY" red title, blue B-item box, "USE B BUTTON FOR THIS", item grid with selectable/passive rows, triforce outline, "TRIFORCE" red title. Cursor flash 8-frame toggle. getNextOwnedSlot mod-9 cycling (skips bow, arrow requires bow, potion/letter fallback). InventorySlide: 3px/frame scroll matching NES MenuState (F1) |
 | Red font | `src/ui/tint-utils.ts` | ✅ createTintedFontImage: transparency-first then color tint via source-atop compositing. NES red #d82800 (F1) |
-| B-item dispatch | `src/main.ts` | ✅ useBItem() replaces placeWeapon stub. Dispatches on inventory.selectedBSlot: bomb (deducts count), candle (blue=once/screen, red=unlimited). Other slots are F2-F4 stubs (F1) |
+| B-item dispatch | `src/main.ts` | ✅ useBItem() dispatches on inventory.selectedBSlot: boomerang (slot 0, diagonal throw), bomb (slot 1, deducts count), candle (slot 4, blue=once/screen, red=unlimited). Other slots are F3-F4 stubs (F2) |
+| Boomerang | `src/objects/weapons/boomerang.ts` | ✅ Boomerang class: NES-accurate 5-state machine (FlyAway $10 → SparkTurn $20 → SlowDown $30 → ReturnSlow $40 → ReturnFast $50). QSpeed movement ($C0 = 3px/f outbound, $40 = 1px/f slowdown). Diagonal speed tables for homing return from Z_07.asm:3831. Normal limit 49px, magic 255px. 9-entry animation cycle with flip attrs. 8×8 hitbox at (x+4, y+8). forceReturn() for G1 enemy collision. Diagonal throw via input directions (F2) |
+| Bomb (full) | `src/objects/weapons/bomb.ts` | ✅ Upgraded from E3 stub: getExplosionHitbox() returns 48×48 centered rect during Detonating only ($18 radius per Z_01.asm:6108). shouldFlash getter for screen flash at timer $0B/$06. Cloud sprite rendering with alternating offset sets from sprites.json. BOMB_DAMAGE=$40 exported for G1. Backward-compatible getHitbox() (16×16) for E3 wall-breaking (F2) |
+| Arrow | `src/objects/weapons/arrow.ts` | ✅ Arrow class: Flying→Spark→Dead state machine. QSpeed $C0 = 3px/f straight-line, tile collision + screen boundary deactivation, 3-frame spark on hit. Requires bow + 1 rupee per shot. isSilver flag for damage ($20 wood/$40 silver). Vertical nudge +3px per Z_05.asm:2997. deactivate() API for G1 (F3) |
+| Candle fire (full) | `src/objects/weapons/candle-fire.ts` | ✅ Upgraded from E3 stub: fixed speed from 1px/f to QSpeed $20 = 0.5px/f (32 frames for 16px walk, was 16). Sprite rendering via projectilesSheet with flicker. FIRE_DAMAGE=$10 exported for G1. Walking 32f + standing 63f = 95f total (F3) |
+| Food/Bait | `src/objects/weapons/food.ts` | ✅ Food class: 3-phase stationary bait (Phase1→Phase2→Phase3→Dead), 255 frames per phase = 765 total (~12.75s). getPosition() for G1 enemy attraction. No collision (Z_01.asm:5835). Not consumed on placement (F3) |
 | HUD item display | `src/ui/hud.ts` | ✅ B-slot and A-slot item sprites rendered in HUD via drawItemSprite. Positions: B at (124,32), A at (152,32). Magic key display ("XA") wired to inventory (F1) |
 | Shop system | `src/world/cave-room.ts` | ✅ Shop caves (0x75-0x7A): 3 items at NES CaveWareXs positions, prices displayed below, rupee indicator, purchase on touch (rupee check), CavePurchaseEvent for main.ts processing. Potion shop (0x74) stub. 15 item shapes (swords, bombs, shields, arrows, candles, rings, potions, bait, etc.) (E4b) |
 | Money game | `src/world/cave-room.ts` | ✅ Cave type 0x70: generates 3 randomized amounts (+20/+50 win, -10/-40 loss) via Fisher-Yates shuffle, 10 rupee entry, pick-one mechanic, +/- display after choice, MoneyGameResult event (E4b) |
@@ -122,7 +127,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~22~~ | ~~**E3** Overworld secrets~~ | ✅ done 2026-08-17 |
 | ~~23~~ | ~~**E4** NPCs + shops (split E4a/E4b)~~ | ✅ done 2026-08-17 |
 | ~~24~~ | ~~**F1** Item model + inventory~~ | ✅ done 2026-08-18 |
-| 25 | **F2** Boomerang + Bombs | boomerang throw/return, bomb full behavior |
+| ~~25~~ | ~~**F2** Boomerang + Bombs~~ | ✅ done 2026-08-19 |
+| ~~26~~ | ~~**F3** Bow + Arrow + Candle + Food~~ | ✅ done 2026-08-19 |
+| 27 | **F4** Magic Rod + misc items | rod, flute, raft, ladder, bracelet, ring, etc. |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -158,6 +165,45 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-19 — F3 Arrow + Candle fire upgrade + Food/Bait (Claude Opus 4.6)
+
+Created `src/objects/weapons/arrow.ts` — Arrow class with Flying→Spark→Dead state
+machine. QSpeed $C0 = 3px/f straight-line projectile matching sword beam pattern.
+Tile collision and screen boundary deactivation with 3-frame spark on hit. Requires
+bow + 1 rupee per shot (deducted in main.ts). isSilver flag for damage differentiation
+($20 wood / $40 silver). Vertical arrows nudged +3px right per Z_05.asm:2997.
+deactivate() API for G1 enemy hit. Upgraded `src/objects/weapons/candle-fire.ts` —
+critical speed fix: replaced 1px/f integer movement with NES-accurate QSpeed $20 =
+0.5px/f (walking phase now 32 frames for 16px, was 16). Added sprite rendering via
+projectilesSheet with flicker alternation. Exported FIRE_DAMAGE=$10. Created
+`src/objects/weapons/food.ts` — Food class with 3-phase stationary bait (255 frames
+per phase = 765 total, ~12.75 seconds per Z_07.asm:3763). No collision per
+Z_01.asm:5835. getPosition() API for G1 enemy attraction. Food NOT consumed on
+placement (only by Grumble Goriya in H-phase). Added NES slot $0F sharing guards
+between boomerang and food in main.ts. Added arrow/fire/food constants to
+constants.ts. Updated tile-object test for new fire speed. 27 new tests (812
+total). Typecheck clean. Visually verified: arrow flies and vanishes, candle fire
+moves slowly, food sits on ground, boomerang blocked during food. **Next: F4.**
+
+### 2026-08-19 — F2 Boomerang + Bombs (Claude Opus 4.6)
+
+Created `src/objects/weapons/boomerang.ts` — Boomerang class with NES-accurate
+5-state machine from Z_07.asm:3857 UpdateArrowOrBoomerang: FlyAway ($10, QSpeed
+$C0 = 3px/f) → SparkTurn ($20, 3 frames) → SlowDown ($30, QSpeed $40 = 1px/f,
+16 frames) → ReturnSlow ($40, diagonal homing at half speed via 9-entry speed
+tables from Z_07.asm:3831, 32 frames) → ReturnFast ($50, full speed until caught
+within 9px). Normal limit 49px, magic 255px. Diagonal throw via input directions
+(NES-accurate). 9-entry animation cycle with flip attrs. 8×8 hitbox at (x+4, y+8).
+forceReturn() API for G1 enemy collision. Upgraded `src/objects/weapons/bomb.ts`
+from E3 stub: added getExplosionHitbox() (48×48 centered during Detonating, $18
+radius per Z_01.asm:6108), shouldFlash getter (toggles at timer $0B/$06), cloud
+sprite rendering with alternating offset sets from sprites.json bombCloud data.
+Exported BOMB_DAMAGE=$40 for G1. Added boomerang/bomb constants to constants.ts.
+Wired in main.ts: useBItem() case 0 with diagonal direction detection, boomerang
+update/render, projectilesSheet/cloudSheet SpriteSheets, bomb screen flash overlay,
+transition cleanup. 33 new tests (785 total). Typecheck clean. Visually verified:
+bomb place/detonate, boomerang throw/return, HUD item display. **Next: F3.**
 
 ### 2026-08-18 — F1 Item model + inventory subscreen (Claude Opus 4.6)
 
@@ -290,163 +336,4 @@ sprite has blue background (needs transparency key), HUD shows sword before
 acquisition (F1 fix), fire sprites are placeholders.
 **Next: E3.**
 
-### 2026-08-16 — E1 Overworld map loading (Claude Opus 4.6)
-
-Created `src/world/overworld-manager.ts` — OverworldManager class that owns all
-overworld state: screenRow/Col, currentScreen, transition lifecycle, collisionMap,
-and visitedScreens (Set<number>). Methods: tryTransition() with boundary clamping
-(rejects out-of-bounds instead of wrapping), updateTransition(), setScreen() for
-respawn, renderScreen/renderTransition delegation. Replaced wrapping modulo math
-with bounds checks against OVERWORLD_ROWS=8/OVERWORLD_COLS=16. Entry positions use
-play-area-relative SCREEN_EDGE_* bounds (not NES absolute coords which caused a
-bounce-back bug at y=221 > SCREEN_EDGE_BOTTOM=160). Removed D3 demo artifacts
-(enemy projectiles, push block, spawn timer) from main.ts. main.ts slimmed from
-~416 to ~230 lines — now orchestrator only, delegates world state to
-OverworldManager. Added OVERWORLD_ROWS, OVERWORLD_COLS, LINK_ENTRY_* constants.
-32 new tests (613 total). Typecheck clean. Visually verified: walk right + up
-without bounce, scroll animation correct, no demo clutter.
-**Phase E started. Next: E2.**
-
-### 2026-08-15 — D5 Death + respawn (Claude Opus 4.6)
-
-Created `src/core/game-mode.ts` — GameMode enum (Gameplay/DeathAnimation/GameOver)
-for main.ts state switching. Created `src/death/death-animation.ts` — DeathAnimation
-class with 7-phase sequence matching NES Mode $11 (Z_05.asm:2039-2718): Flash (33
-frames, grayscale via ctx.filter), Spin (80 frames: 4 rotations × Down→Right→Up→Left
-at 5 frames each per Z_05.asm:2607), PaletteFade (40 frames: rgba red overlay in 4
-steps), GreyPause (24 frames), Spark (15 frames: small/big arc), BlankPause (46
-frames), GameOverText (96 frames: "GAME OVER" via BitmapFont). Created
-`src/death/game-over-screen.ts` — GameOverScreen with CONTINUE/SAVE/RETRY per
-Z_05.asm Mode $08: Select cycles cursor, Start triggers 64-frame confirm flash
-(4-frame toggle interval). SAVE/RETRY stub to CONTINUE (TODO J1/L1). Created
-`src/death/respawn.ts` — computeRespawnParams() pure function per Z_07.asm:1442:
-overworld respawn at screen (7,7), X=$78, Y=LINK_START_Y, Direction.Up, 3 full
-hearts. Dungeon respawn stubbed (TODO H1). Added reset() to Link class clearing all
-state for respawn. Restructured main.ts: extracted updateGameplay(), added GameMode
-switch in update/render, death detection after link.update(), handleRespawn() with
-deathCount (capped $FF). Added 20 death/respawn constants to constants.ts. 33 new
-tests (581 total). Typecheck clean. Visually verified: death animation plays through
-all phases, "GAME OVER" text appears, continue menu renders with cursor.
-**Phase D complete. Next: E1.**
-
-### 2026-08-14 — D4 Damage system (Claude Opus 4.6)
-
-Created `src/core/damage-tables.ts` — full ObjTypeToDamagePoints table (93 entries
-from Z_01.asm line 5574) with `decodeDamage()` (nibble split: high=partial heart,
-low=full hearts) and `calculateDamage()` (ring reduction via 16-bit right shift
-matching Z_01.asm Link_BeHarmed: blue ring=÷2, red ring=÷4, minimum 1 half-heart
-for non-zero damage). Updated `src/objects/player/link.ts` with `LinkState` enum
-(Normal/Knockback/Invincible), `takeDamage(damageRaw, sourceDirection)` method:
-sets knockback (32px at 4px/frame per Z_07.asm Obj_Shove/ShoveMoveMin), starts
-invincibility timer ($18=24 ticks, decremented every 2 frames per Z_07.asm
-DecrementInvincibilityTimer = 48 frames total), cancels active sword swing,
-clears sword beam. Knockback movement: 4px/frame in opposite direction, stops on
-wall tiles or screen boundary. Invincibility flash: `isVisible` toggles via
-`timer & 0x03` (NES palette cycle from Z_01.asm Anim_WriteSpritePair). Updated
-`isIdle` to account for knockback/invincible states (shield blocking disabled).
-Added `cancel()` to SwordSwing. Wired damage into `main.ts`: invincibility guard
-on projectile collision, damage lookup from DAMAGE_TABLE, HUD reads live
-`link.health`/`link.maxHealth` (was hardcoded to 6). Added constants:
-LINK_KNOCKBACK_DISTANCE, LINK_KNOCKBACK_SPEED, LINK_INVINCIBILITY_TICKS,
-LINK_INVINCIBILITY_FLASH_MASK. 46 new tests (548 total). Typecheck clean.
-Visually verified: projectile hits → knockback right → hearts decrease → Link
-flashes → invincibility prevents double-hit → 0 health sets isDead. **Next: D5.**
-
-### 2026-08-13 — D3 Shield + push block (Claude Opus 4.6)
-
-Created `src/core/collision-utils.ts` — shared AABB `rectsOverlap()` and
-`getOppositeDirection()` (XOR trick: Direction enum Up=0↔Down=1, Left=2↔Right=3).
-Created `src/objects/player/shield.ts` — NES-faithful shield deflection from
-Z_01.asm CheckLinkCollision: `canShieldBlock()` pure function with 2-tier system
-(small shield blocks Rock/RockVariant/Arrow/EnemyBoomerang, magic shield also
-blocks Fireball/SwordShot/MagicShot/MagicShot2), unblockable types
-(Fireball2Unblockable $56, UnblockableShot $5A), direction-facing check
-(Link must face opposite to projectile), idle check (shield only works when not
-attacking). `ShieldDeflection` bounce visual (spark cross, decelerating). Created
-`src/objects/projectiles/enemy-projectile.ts` — EnemyProjectile class with
-Flying/Deflected/Dead states, QSpeed movement at $C0 (3px/frame), `deflect()`
-method reverses and bounces. Created `src/world/push-block.ts` — PushBlock class
-with 3-state machine from Z_04.asm UpdateBlock: Idle (requires allEnemiesDead,
-Link aligned + adjacent within 17px + facing block + holding direction for 16
-frames), Moving (1px/frame slide for 16px), Done (inert, sets pushComplete flag
-for H1 secret triggers). Added `hasShield`, `hasMagicShield`, `isIdle` to Link.
-Demo in main.ts: test projectile spawns from right edge, push block on starting
-screen. 46 new tests (502 total). Typecheck clean. **Next: D4.**
-
-### 2026-08-12 — D2 Sword attack (Claude Opus 4.6)
-
-Created `src/objects/player/sword.ts` — SwordSwing class with 16-frame state
-machine matching Z_07.asm UpdateSwordOrRod: Windup (5f, attack pose, no sword
-drawn) → Extended (8f, sword fully out, hitbox active) → Retracting (3×1f,
-sword pulls back). Position offsets from disassembly PlayerToWeaponOffsetsX/Y.
-Hitbox dimensions from ZeldaJS: 24×32 vertical, 32×24 horizontal. Created
-`src/objects/player/sword-beam.ts` — SwordBeam projectile at QSpeed $C0
-(3px/frame), deactivates on blocked tile or screen edge, 4-frame animation
-cycling for palette flash. Updated Link class: Attack input (X/Space) starts
-sword swing, movement frozen during swing, attack sprite row (row 2) used,
-sword beam fires at Extended→Retracting transition when health is full. Added
-hasSword/health/maxHealth properties (hardcoded to true/6/6 for now; inventory
-F1 and damage D4 will provide real values). 28 new tests (456 total). Typecheck
-clean. **Next: D3.**
-
-### 2026-08-12 — D1 Link movement (Claude Opus 4.6)
-
-Created `src/world/collision.ts` — TileCollisionMap class deriving walkability
-from overworld.json squareTable.primary NES metatile values against threshold
-$8D (141). 16 of 56 tile indices are walkable. Provides isPositionWalkable
-(pixel→tile lookup, off-screen returns true) and isRectWalkable (4-corner
-check). Created `src/objects/player/link.ts` — Link class with NES-faithful
-QSpeed movement system (sub-pixel accumulator, $60 applied 4×/frame → 1.5
-px/frame average alternating 1/2px pattern). 8×8 collision hitbox at lower
-center (x+4, y+8). Per-pixel movement loop: checks screen edge before tile
-collision, returns `screenEdge` direction when Link walks off. Perpendicular
-grid snapping (1px/frame toward nearest 8px line, within 3px threshold,
-collision-checked). Rewired main.ts: replaced stub arrow-key navigation with
-real Link.update() → screen-edge-triggered transitions. Fixed entry position
-bug: Link now enters at the opposite screen edge (SCREEN_EDGE_RIGHT for left
-transition, etc.) instead of `posX + SCREEN_WIDTH` which could land Link on
-blocked tiles. Added 13 new constants to constants.ts. 37 new tests (428
-total). Typecheck clean. **Phase D started. Next: D2.**
-
-### 2026-08-11 — C4 Screen transition (Claude Opus 4.6)
-
-Created `src/world/screen-transition.ts` — ScreenTransition class managing
-push-scroll animation between overworld screens. NES-accurate timing from
-Z_05.asm ScrollWorld: horizontal = 4px/frame × 64 frames (256px), vertical =
-4px/frame × 44 frames (176px). Stores direction, old/new screen references,
-and offset. getOldScreenOffset/getNewScreenOffset return per-direction translate
-values: Right=(-offset,0)/(256-offset,0), Left=(+offset,0)/(-256+offset,0),
-Down=(0,-offset)/(0,176-offset), Up=(0,+offset)/(0,-176+offset). Updated
-main.ts: replaced instant screen swap with animated transition. Arrow key
-triggers startTransition() which saves old screen, computes new screen coords
-(with wrapping), creates ScreenTransition. During transition: update advances
-offset, input is blocked, Link walk-animates. Render uses ctx.save/clip/
-translate/restore to draw both screens at their offsets within a clip rect
-(prevents tiles from drawing over HUD during vertical scroll). Link is drawn
-on the new screen at its offset. On completion: transition cleared, Link
-position reset to center. Exported isHorizontal() helper. 23 new tests
-(391 total). Typecheck clean. Visually verified: horizontal scroll shows both
-screens sliding with correct offset, HUD stays fixed, transition completes to
-new screen. **Phase C complete. Next: D1.**
-
-### 2026-08-11 — C3 HUD / status bar (Claude Opus 4.6)
-
-Created 3 new files in `src/ui/`: `hud.ts` (HudRenderer class + HudState
-interface + formatCount), `bitmap-font.ts` (BitmapFont class wrapping SpriteSheet
-for the 9×7 cell font.png, charToIndex mapping matching ZeldaJS), `heart-meter.ts`
-(HeartMeter class + computeHearts with NES-faithful half-heart granularity from
-Z_01.asm FormatHeartsInTextBuf). HUD draws hud.png background at (0,0), then
-overlays dynamic values: hearts at (176,40) with 8px step and 2-row support for
-16 max containers, rupee/key/bomb counters at NES PPU nametable positions
-(96,24)/(96,40)/(96,48) using "X23"/"123" format, overworld minimap green dot
-(3×3, #83d313) at x=17+col*4, y=24+row*4 matching NES UpdatePlayerPositionMarker.
-Magic key support ("XA" display). Updated main.ts: replaced placeholder orange
-HUD bar with HudRenderer initialized from assets (hud.png, font.png,
-treasures-full.png), passes static HudState with 3 hearts and minimap tracking
-screenRow/screenCol. Bug fix during session: font cell size was 9×7 not 8×8
-(discovered from ZeldaJS LoadingState: `addSpriteSheet('font', ..., 9, 7, 0, 0)`).
-37 new tests (368 total). Typecheck clean. Visually verified: HUD background,
-hearts, counters, minimap dot movement, Link sprite + tiles unaffected.
-**Next: C4.**
-
-Older sessions archived → `../PROGRESS.md` (A1–C2, 2026-08-02 through 2026-08-10).
+Older sessions archived → `../PROGRESS.md` (A1–E1, 2026-08-02 through 2026-08-16).
