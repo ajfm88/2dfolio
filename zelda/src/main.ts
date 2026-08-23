@@ -1,5 +1,13 @@
 import {
+  HEART_REFILL_INTERVAL,
+  LADDER_ROOMS_OW,
   LINK_SHEET_COLUMNS,
+  RAFT_DOCK_X_A,
+  RAFT_DOCK_X_B,
+  RAFT_ROOM_A,
+  RAFT_ROOM_B,
+  RING_TINT_BLUE,
+  RING_TINT_RED,
   SPRITE_SPACING,
 } from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
@@ -28,6 +36,7 @@ import { CaveRoom, type CaveContents } from './world/cave-room.js';
 import type { CaveTextData, CaveTextMessage } from './data/cave-text-types.js';
 import type { ItemData, CaveTypeInfo } from './data/item-types.js';
 import { processItemsImage } from './data/item-sprites.js';
+import { createTintedLinkImage } from './render/link-tint.js';
 import { Link } from './objects/player/link.js';
 import { ItemPickup } from './objects/pickups/item-pickup.js';
 import { Arrow } from './objects/weapons/arrow.js';
@@ -35,6 +44,11 @@ import { Bomb } from './objects/weapons/bomb.js';
 import { Boomerang } from './objects/weapons/boomerang.js';
 import { CandleFire } from './objects/weapons/candle-fire.js';
 import { Food } from './objects/weapons/food.js';
+import { Raft } from './objects/items/raft.js';
+import { RecorderEffect, RecorderPhase } from './objects/items/recorder.js';
+import { Stepladder } from './objects/items/stepladder.js';
+import { MagicRod } from './objects/weapons/magic-rod.js';
+import { MagicShot } from './objects/weapons/magic-shot.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -77,7 +91,21 @@ let fires: CandleFire[] = [];
 let boomerang: Boomerang | null = null;
 let arrow: Arrow | null = null;
 let food: Food | null = null;
+let magicRod: MagicRod | null = null;
+let magicShot: MagicShot | null = null;
 let usedCandleThisScreen = false;
+
+// Potion heart refill — Z_05.asm:3019 WieldPotion
+let heartRefillActive = false;
+let heartRefillTimer = 0;
+
+// Ring-tinted link sheets
+let linkSheetBlue: SpriteSheet | null = null;
+let linkSheetRed: SpriteSheet | null = null;
+
+// Auto-activation items
+let stepladder: Stepladder | null = null;
+let raft: Raft | null = null;
 
 // Weapon sprite sheets (initialized in init)
 let projectilesSheet: SpriteSheet | null = null;
@@ -95,6 +123,12 @@ let processedItems: HTMLCanvasElement | null = null;
 // Cave data
 let caveTextData: CaveTextData | null = null;
 let caveTypesData: readonly CaveTypeInfo[] = [];
+
+// Recorder/Flute data + state
+let fluteSecretRoomIds: readonly number[] = [];
+let moduleLevelSecretsData: SecretsData | null = null;
+let teleportingLevelIndex = 0;
+let recorderEffect: RecorderEffect | null = null;
 
 async function init(): Promise<void> {
   try {
@@ -114,6 +148,8 @@ async function init(): Promise<void> {
     caveTextData = (await caveTextResp.json()) as CaveTextData;
     caveContentsData = [...itemsData.caveContents];
     caveTypesData = itemsData.caveTypes;
+    fluteSecretRoomIds = itemsData.fluteSecretRoomIds;
+    moduleLevelSecretsData = secretsData;
 
     tileRenderer.init(assets.maps.overworldMap);
     linkSheet = new SpriteSheet({
@@ -124,6 +160,20 @@ async function init(): Promise<void> {
       autoDetectTransparency: true,
     });
     processedItems = processItemsImage(assets.sprites.items);
+    linkSheetBlue = new SpriteSheet({
+      image: createTintedLinkImage(assets.sprites.link, RING_TINT_BLUE),
+      columns: LINK_SHEET_COLUMNS,
+      spacingX: SPRITE_SPACING,
+      spacingY: SPRITE_SPACING,
+      autoDetectTransparency: true,
+    });
+    linkSheetRed = new SpriteSheet({
+      image: createTintedLinkImage(assets.sprites.link, RING_TINT_RED),
+      columns: LINK_SHEET_COLUMNS,
+      spacingX: SPRITE_SPACING,
+      spacingY: SPRITE_SPACING,
+      autoDetectTransparency: true,
+    });
     projectilesSheet = new SpriteSheet({
       image: assets.sprites.projectiles,
       columns: 15,
@@ -152,6 +202,15 @@ async function init(): Promise<void> {
 }
 
 void init();
+
+function getActiveLinkSheet(): SpriteSheet | null {
+  if (!link) return linkSheet;
+  switch (link.ringLevel) {
+    case 1: return linkSheetBlue ?? linkSheet;
+    case 2: return linkSheetRed ?? linkSheet;
+    default: return linkSheet;
+  }
+}
 
 function enterCave(caveIndex: number): void {
   if (!assets || !link || !overworld || !font) return;
@@ -295,8 +354,80 @@ function updateInventory(): void {
   }
 }
 
+function updateRecorderEffect(): void {
+  if (!recorderEffect || !link || !overworld || !moduleLevelSecretsData) return;
+
+  recorderEffect.update(link.posX, link.posY);
+
+  // Pond-drying: apply walkable overrides for water tiles
+  if (recorderEffect.waterWalkable) {
+    const screen = overworld.currentScreen;
+    for (let row = 0; row < 11; row++) {
+      for (let col = 0; col < 16; col++) {
+        const px = col * 16 + 8;
+        const py = row * 16 + 8;
+        if (overworld.collisionMap.isWaterTileAt(screen, px, py)) {
+          overworld.collisionMap.setWalkableOverride(row, col);
+        }
+      }
+    }
+  }
+
+  // Pond-drying: reveal stairs (consumed once)
+  if (recorderEffect.revealStairs) {
+    overworld.tileObjectManager.revealFluteSecret(
+      overworld.currentScreen,
+      overworld.roomFlags,
+      moduleLevelSecretsData,
+    );
+  }
+
+  // Whirlwind: Link tracks whirlwind position
+  if (recorderEffect.linkCaught) {
+    link.setPosition(recorderEffect.whirlwindX, link.posY);
+  }
+
+  // Whirlwind: transition to destination screen
+  if (recorderEffect.phase === RecorderPhase.TransitionPending) {
+    const destId = recorderEffect.destinationScreenId;
+    const destRow = Math.floor(destId / 16);
+    const destCol = destId % 16;
+    const destY = recorderEffect.destinationLinkY;
+    overworld.setScreen(destRow, destCol);
+    link.setPosition(0, destY);
+    link.setDirection(Direction.Right);
+    recorderEffect.startDestinationPhase(destY);
+  }
+
+  // Done: cleanup
+  if (recorderEffect.isDone) {
+    link.halted = false;
+    overworld.collisionMap.clearWalkableOverrides();
+    recorderEffect = null;
+  }
+}
+
 function updateGameplay(): void {
   if (!link || !overworld || !inventorySlide) return;
+
+  // Potion heart refill — blocks gameplay while healing
+  if (heartRefillActive) {
+    heartRefillTimer++;
+    if (heartRefillTimer >= HEART_REFILL_INTERVAL) {
+      heartRefillTimer = 0;
+      link.heal(1);
+      if (link.health >= link.maxHealth) {
+        heartRefillActive = false;
+      }
+    }
+    return;
+  }
+
+  // Recorder/Flute effect — blocks gameplay during tune + animation
+  if (recorderEffect) {
+    updateRecorderEffect();
+    return;
+  }
 
   // Inventory subscreen — blocks gameplay while visible
   if (inventorySlide.isVisible) {
@@ -312,24 +443,82 @@ function updateGameplay(): void {
 
   if (overworld.isTransitioning) {
     overworld.updateTransition(link);
-    // Clear weapons and pickups on screen transition
+    // Clear weapons, pickups, and auto-activation items on screen transition
     bombs = [];
     fires = [];
     boomerang = null;
     arrow = null;
     food = null;
+    magicRod = null;
+    magicShot = null;
+    stepladder = null;
+    raft = null;
+    recorderEffect = null;
+    overworld.collisionMap.clearWalkableOverrides();
     pickups = [];
     usedCandleThisScreen = false;
+
+    // Check for raft room after transition completes
+    if (!overworld.isTransitioning && link.inventory.raft) {
+      const sid = overworld.currentScreen.id;
+      if (sid === RAFT_ROOM_A) {
+        raft = new Raft(RAFT_DOCK_X_A);
+      } else if (sid === RAFT_ROOM_B) {
+        raft = new Raft(RAFT_DOCK_X_B);
+      }
+    }
     return;
   }
 
+  // Update raft — halts Link and moves him during raft travel
+  if (raft) {
+    const raftResult = raft.update(link);
+    if (raftResult.shouldTransitionUp) {
+      overworld.tryTransition(Direction.Up, link);
+    }
+  }
+
+  // Set stepladder walkable override before Link's collision checks
+  if (stepladder && stepladder.isActive) {
+    overworld.collisionMap.setWalkableOverride(stepladder.tileRow, stepladder.tileCol);
+  }
+
+  link.blockSwordAttack = magicRod !== null && magicRod.isActive();
   const result = link.update(input, overworld.collisionMap, overworld.currentScreen);
+
+  // Clear walkable overrides after Link update
+  overworld.collisionMap.clearWalkableOverrides();
+
   if (result.screenEdge !== null) {
     overworld.tryTransition(result.screenEdge, link);
   }
 
-  // Item button (Z key) — use equipped B-item
-  if (input.isJustPressed(Action.Item) && !link.isSwordActive) {
+  // Stepladder spawn check — Z_07.asm:3225
+  if (!stepladder && link.inventory.ladder && !link.halted) {
+    const screenId = overworld.currentScreen.id;
+    if ((LADDER_ROOMS_OW as readonly number[]).includes(screenId)) {
+      const inputDir = readGameplayInputDirection();
+      if (inputDir !== null && inputDir === link.facing && isGridAligned(link.posX, link.posY)) {
+        const checkX = link.posX + facingOffsetX(inputDir);
+        const checkY = link.posY + facingOffsetY(inputDir);
+        if (overworld.collisionMap.isWaterTileAt(overworld.currentScreen, checkX + 8, checkY + 8)) {
+          stepladder = new Stepladder(link.posX, link.posY, inputDir);
+        }
+      }
+    }
+  }
+
+  // Update stepladder
+  if (stepladder) {
+    stepladder.update(link.posX, link.posY);
+    if (!stepladder.isActive) {
+      stepladder = null;
+    }
+  }
+
+  // Item button (Z key) — use equipped B-item (rod and sword share animation slot)
+  const rodActive = magicRod !== null && magicRod.isActive();
+  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive) {
     useBItem(link);
   }
 
@@ -369,6 +558,31 @@ function updateGameplay(): void {
     }
   }
 
+  // Update magic rod
+  if (magicRod) {
+    const rodResult = magicRod.update();
+    if (rodResult.shouldFireShot && !magicShot) {
+      const shotPos = magicRod.getRodPosition(link.posX, link.posY);
+      if (shotPos) {
+        magicShot = new MagicShot(shotPos.x, shotPos.y, link.facing);
+      }
+    }
+    if (rodResult.done) {
+      magicRod = null;
+    }
+  }
+
+  // Update magic shot
+  if (magicShot) {
+    magicShot.update(overworld.collisionMap, overworld.currentScreen);
+    if (!magicShot.isActive) {
+      if (magicShot.wasBlocked && link.inventory.book) {
+        fires.push(CandleFire.createBookFire(magicShot.x, magicShot.y));
+      }
+      magicShot = null;
+    }
+  }
+
   // Update tile objects (secret detection)
   const revealEvent = overworld.updateTileObjects(link, bombs, fires);
   if (revealEvent) {
@@ -405,6 +619,18 @@ function facingOffsetX(dir: Direction): number {
 }
 function facingOffsetY(dir: Direction): number {
   return dir === Direction.Up ? -16 : dir === Direction.Down ? 16 : 0;
+}
+
+function readGameplayInputDirection(): Direction | null {
+  if (input.isHeld(Action.Up)) return Direction.Up;
+  if (input.isHeld(Action.Down)) return Direction.Down;
+  if (input.isHeld(Action.Left)) return Direction.Left;
+  if (input.isHeld(Action.Right)) return Direction.Right;
+  return null;
+}
+
+function isGridAligned(x: number, y: number): boolean {
+  return x % 8 === 0 && y % 8 === 0;
 }
 
 function useBItem(linkRef: Link): void {
@@ -471,7 +697,38 @@ function useBItem(linkRef: Link): void {
       );
       break;
     }
-    // F4: flute(5), potion(7), wand(8)
+    case 5: { // Recorder/Flute
+      if (!linkRef.inventory.flute) break;
+      if (recorderEffect) break;
+      if (!overworld) break;
+      recorderEffect = new RecorderEffect(
+        overworld.currentScreen.id,
+        linkRef.facing,
+        linkRef.inventory.triforce,
+        teleportingLevelIndex,
+        fluteSecretRoomIds,
+        linkRef.posY,
+      );
+      teleportingLevelIndex = recorderEffect.updatedTeleportIndex;
+      linkRef.halted = true;
+      break;
+    }
+    case 7: { // Potion
+      const inv = linkRef.inventory;
+      if (inv.potion <= 0) break;
+      inv.potion--;
+      heartRefillActive = true;
+      heartRefillTimer = 0;
+      break;
+    }
+    case 8: { // Magic Rod (Wand)
+      if (magicRod && magicRod.isActive()) break;
+      if (!linkRef.inventory.wand) break;
+      if (linkRef.isSwordActive) break;
+      magicRod = new MagicRod();
+      magicRod.start(linkRef.facing);
+      break;
+    }
   }
 }
 
@@ -732,19 +989,21 @@ const loop = new GameLoop({
       deathAnimation.render(renderer, linkSheet, tileRenderer, overworld.currentScreen, font);
     } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
       gameOverScreen.render(renderer, font);
-    } else if (gameMode === GameMode.CaveInterior && caveRoom && linkSheet && link) {
-      caveRoom.render(renderer, link, linkSheet);
+    } else if (gameMode === GameMode.CaveInterior && caveRoom && link) {
+      const caveLinkSheet = getActiveLinkSheet();
+      if (caveLinkSheet) caveRoom.render(renderer, link, caveLinkSheet);
       if (curtainEffect && !curtainEffect.done) {
         curtainEffect.render(renderer);
       }
     } else if (gameMode === GameMode.CaveTransition) {
       // During cave transition, show the appropriate background under the curtain
-      if (caveRoom && linkSheet && link) {
-        caveRoom.render(renderer, link, linkSheet);
+      const ctLinkSheet = getActiveLinkSheet();
+      if (caveRoom && ctLinkSheet && link) {
+        caveRoom.render(renderer, link, ctLinkSheet);
       } else {
         overworld.renderScreen(renderer);
-        if (linkSheet && link) {
-          link.render(renderer, linkSheet);
+        if (ctLinkSheet && link) {
+          link.render(renderer, ctLinkSheet);
         }
       }
       if (curtainEffect) {
@@ -755,11 +1014,12 @@ const loop = new GameLoop({
       const offset = inventorySlide.offset;
 
       // Draw gameplay below (pushed down by offset)
+      const invLinkSheet = getActiveLinkSheet();
       renderer.ctx.save();
       renderer.ctx.translate(0, offset);
       overworld.renderScreen(renderer);
-      if (linkSheet) {
-        link.render(renderer, linkSheet);
+      if (invLinkSheet) {
+        link.render(renderer, invLinkSheet);
       }
       renderer.ctx.restore();
 
@@ -771,9 +1031,10 @@ const loop = new GameLoop({
     } else if (overworld.isTransitioning) {
       overworld.renderTransition(renderer);
 
-      if (linkSheet && link) {
+      const transLinkSheet = getActiveLinkSheet();
+      if (transLinkSheet && link) {
         const off = overworld.getNewScreenOffset();
-        link.render(renderer, linkSheet, off.x, off.y);
+        link.render(renderer, transLinkSheet, off.x, off.y);
       }
     } else {
       overworld.renderScreen(renderer);
@@ -795,12 +1056,27 @@ const loop = new GameLoop({
       if (food) {
         food.render(ctx, processedItems);
       }
+      if (magicRod && link) {
+        magicRod.render(renderer, projectilesSheet!, link.posX, link.posY);
+      }
+      if (magicShot) {
+        magicShot.render(renderer);
+      }
       if (processedItems) {
         for (const pickup of pickups) {
           pickup.render(ctx, processedItems);
         }
       }
       overworld.renderTileObject(ctx);
+      if (stepladder) {
+        stepladder.render(renderer);
+      }
+      if (raft && link) {
+        raft.render(renderer, link.posX);
+      }
+      if (recorderEffect) {
+        recorderEffect.render(renderer);
+      }
 
       // Bomb screen flash — Z_01.asm:4086 UpdateBombFlashEffect
       if (bombs.some(b => b.shouldFlash)) {
@@ -811,8 +1087,10 @@ const loop = new GameLoop({
         ctx.restore();
       }
 
-      if (linkSheet && link) {
-        link.render(renderer, linkSheet);
+      const activeLinkSheet = getActiveLinkSheet();
+      const linkHiddenByWhirlwind = recorderEffect !== null && recorderEffect.linkCaught;
+      if (activeLinkSheet && link && !linkHiddenByWhirlwind) {
+        link.render(renderer, activeLinkSheet);
       }
     }
 

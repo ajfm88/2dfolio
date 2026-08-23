@@ -122,6 +122,51 @@ export const FIRE_DAMAGE = 0x10;                      // 16 — same as wooden s
 export const FOOD_PHASE_TIMER = 0xFF;                 // 255 frames per phase
 export const FOOD_PHASES = 3;                          // 3 phases × 255 = 765 frames total
 
+// Magic Rod — Z_07.asm:4390 UpdateSwordOrRod (rod path), Z_05.asm:3036 WieldRod
+export const ROD_WINDUP_FRAMES = 5;                   // same timing as sword
+export const ROD_EXTENDED_FRAMES = 8;                  // same timing as sword
+export const MAGIC_SHOT_QFRAC = 0xA0;                 // 2.5 px/frame via QSpeed
+export const MAGIC_SHOT_DAMAGE = 0x10;                 // 16 — same as wooden sword
+export const BOOK_FIRE_TIMER = 0x4F;                   // 79 frames — fire spawned by Book of Magic
+
+// Ring palette — Z_01.asm:4710 NES palette values for Link's tunic
+export const RING_TINT_BLUE = '#0058f0';               // NES palette $32
+export const RING_TINT_RED = '#d82800';                // NES palette $16
+
+// Potion — Z_05.asm:3019 WieldPotion
+export const HEART_REFILL_INTERVAL = 4;                // frames between each half-heart heal
+
+// Stepladder — Z_07.asm:3225 ladder spawn, Z_05.asm:3217 CheckLadder
+export const LADDER_ROOMS_OW = [0x17, 0x18, 0x19, 0x27, 0x4F, 0x5F] as const;
+export const LADDER_DISTANCE_THRESHOLD = 0x10;         // 16px — destroy if Link exceeds this
+export const WATER_TILE_MIN = 0x8D;                    // 141 — OW water tile range start
+export const WATER_TILE_MAX = 0x98;                    // 152 — OW water tile range end
+
+// Raft — Z_04.asm:3863 UpdateDock
+export const RAFT_ROOM_A = 0x3F;                       // 63 decimal
+export const RAFT_ROOM_B = 0x55;                       // 85 decimal
+export const RAFT_DOCK_X_A = 0x60;                     // dock X for room $3F
+export const RAFT_DOCK_X_B = 0x80;                     // dock X for room $55
+export const RAFT_ARRIVAL_Y = 0x3D;                    // 61 — Link arriving from scroll
+export const RAFT_DEPARTURE_Y = 0x7D;                  // 125 — Link at dock
+export const RAFT_MIDPOINT_Y = 0x7F;                   // 127 — state 1 stop point
+export const RAFT_SPRITE_OFFSET_Y = 6;                 // raft drawn 6px below Link
+
+// Recorder/Flute — Z_07.asm:2500 WieldFlute, Z_01.asm:1893 SummonWhirlwind
+export const FLUTE_TIMER = 0x98;                       // 152 frames — gameplay freeze
+export const FLUTE_POND_CYCLE_INTERVAL = 8;            // frames between color steps
+export const FLUTE_POND_CYCLE_STEPS = 12;              // total color cycle steps
+export const FLUTE_POND_WALKABLE_STEP = 10;            // water becomes walkable
+export const FLUTE_POND_STAIRS_STEP = 11;              // stairs appear
+export const FLUTE_POND_STAIRS_X = 0x60;               // 96 — stairs X position
+export const FLUTE_POND_STAIRS_Y = 0x90;               // 144 — stairs Y position
+export const WHIRLWIND_SPEED = 2;                      // px/frame
+export const WHIRLWIND_CATCH_THRESHOLD = 9;            // px on each axis
+export const WHIRLWIND_EXIT_X = 0xF0;                  // 240 — right edge trigger
+export const WHIRLWIND_DROP_X = 0x80;                  // 128 — Link released here
+export const WHIRLWIND_DEST_ROOMS = [0x36, 0x3B, 0x73, 0x44, 0x0A, 0x21, 0x41, 0x6C] as const;
+export const WHIRLWIND_DEST_YS = [0x8D, 0xAD, 0x8D, 0x8D, 0xAD, 0x8D, 0xAD, 0x5D] as const;
+
 // Respawn — Z_07.asm:1442 InitMode3_Sub1
 export const RESPAWN_SCREEN_ROW = 7;
 export const RESPAWN_SCREEN_COL = 7;

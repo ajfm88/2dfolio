@@ -107,6 +107,64 @@ describe('TileCollisionMap', () => {
       expect(map.isRectWalkable(screen, 0, 0, 8 * TILE_SIZE, 8)).toBe(true);
     });
   });
+
+  describe('water tile detection', () => {
+    const waterValues = [36, 0x8D, 0x90, 0x98, 200];
+    const map = new TileCollisionMap(waterValues);
+
+    it('isWaterTileAt returns true for water tiles', () => {
+      const screen = makeScreen([
+        [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ...Array.from({ length: 10 }, () => Array.from({ length: 16 }, () => 0)),
+      ]);
+      expect(map.isWaterTileAt(screen, 0, 0)).toBe(true);
+      expect(map.isWaterTileAt(screen, 16, 0)).toBe(true);
+      expect(map.isWaterTileAt(screen, 32, 0)).toBe(true);
+    });
+
+    it('isWaterTileAt returns false for non-water tiles', () => {
+      const screen = makeScreen([
+        [0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ...Array.from({ length: 10 }, () => Array.from({ length: 16 }, () => 0)),
+      ]);
+      expect(map.isWaterTileAt(screen, 0, 0)).toBe(false);
+      expect(map.isWaterTileAt(screen, 16, 0)).toBe(false);
+    });
+
+    it('getTileValueAtPosition returns raw primary value', () => {
+      const screen = makeScreen([
+        [1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ...Array.from({ length: 10 }, () => Array.from({ length: 16 }, () => 0)),
+      ]);
+      expect(map.getTileValueAtPosition(screen, 0, 0)).toBe(0x8D);
+      expect(map.getTileValueAtPosition(screen, 16, 0)).toBe(0x98);
+    });
+
+    it('getTileValueAtPosition returns undefined for off-screen', () => {
+      const screen = makeScreen(Array.from({ length: 11 }, () => Array.from({ length: 16 }, () => 0)));
+      expect(map.getTileValueAtPosition(screen, -1, 0)).toBeUndefined();
+      expect(map.getTileValueAtPosition(screen, 0, 200)).toBeUndefined();
+    });
+  });
+
+  describe('walkable overrides', () => {
+    it('setWalkableOverride makes a position walkable', () => {
+      const map = new TileCollisionMap(TEST_METATILES);
+      const screen = make2x2Screen(2, 2, 2, 2);
+      expect(map.isPositionWalkable(screen, 8, 8)).toBe(false);
+      map.setWalkableOverride(0, 0);
+      expect(map.isPositionWalkable(screen, 8, 8)).toBe(true);
+      map.clearWalkableOverrides();
+    });
+
+    it('clearWalkableOverrides removes all overrides', () => {
+      const map = new TileCollisionMap(TEST_METATILES);
+      const screen = make2x2Screen(2, 2, 2, 2);
+      map.setWalkableOverride(0, 0);
+      map.clearWalkableOverrides();
+      expect(map.isPositionWalkable(screen, 8, 8)).toBe(false);
+    });
+  });
 });
 
 describe('createCollisionMap', () => {

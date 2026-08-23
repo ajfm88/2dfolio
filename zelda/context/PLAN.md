@@ -98,7 +98,9 @@ Node scripts that parse the assembly source — run once, commit output.
 | F1 ✅ | Item model + pickups + drop tables + inventory subscreen (select + equip to A/B buttons) | open inventory; equip item; close |
 | F2 ✅ | Boomerang (normal: stuns; magical: stuns + damages), Bombs (place, timer, explosion radius, break walls) | boomerang returns; bomb explodes |
 | F3 ✅ | Bow + Arrow + Silver Arrow, Candle (blue: once per screen; red: unlimited), Food/Bait | arrow flies; candle burns bush; bait lures |
-| F4 ⬜ | Magic Rod + Book of Magic, Recorder/Flute, Raft, Stepladder, Power Bracelet, Letter → Potion, Blue/Red Ring, Magic Key | all items function; ring changes Link colour |
+| F4a ✅ | Magic Rod + Book of Magic fire, Ring palette tinting, Potion + heart refill, Letter delivery at potion shop, Power Bracelet/Magic Key/Ring wiring verified | rod fires magic shot; ring tints Link; potion heals |
+| F4b ✅ | Link halted mechanism, collision water detection, Stepladder (auto-activation + movement override), Raft (dock detection + travel + screen scroll) | ladder bridges water; raft crosses water |
+| F4c ✅ | Recorder/Flute: 152f gameplay freeze, pond-drying animation (12 steps), whirlwind teleport to dungeon entrances via triforce bitmask | flute reveals secret; whirlwind warps |
 
 ## Phase G — Enemies (5 slices)
 
