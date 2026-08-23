@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-19 · **Phase:** F (Items & Inventory) in progress · **Slices done:** 26 / 45
+**Last updated:** 2026-08-21 · **Phase:** F (Items & Inventory) complete · **Slices done:** 29 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice F4** — Magic Rod + Book of Magic, Recorder/Flute, Raft, Stepladder,
-Power Bracelet, Letter → Potion, Blue/Red Ring, Magic Key.
+**Next action: slice G1** — Enemy base system: AI state machine, spawn/despawn lifecycle, item drops, damage reception, death animation.
+Phase F complete (F1-F4c). All items implemented. Phase G (Enemies) begins.
 
 ---
 
@@ -92,7 +92,17 @@ Power Bracelet, Letter → Potion, Blue/Red Ring, Magic Key.
 | Candle fire (full) | `src/objects/weapons/candle-fire.ts` | ✅ Upgraded from E3 stub: fixed speed from 1px/f to QSpeed $20 = 0.5px/f (32 frames for 16px walk, was 16). Sprite rendering via projectilesSheet with flicker. FIRE_DAMAGE=$10 exported for G1. Walking 32f + standing 63f = 95f total (F3) |
 | Food/Bait | `src/objects/weapons/food.ts` | ✅ Food class: 3-phase stationary bait (Phase1→Phase2→Phase3→Dead), 255 frames per phase = 765 total (~12.75s). getPosition() for G1 enemy attraction. No collision (Z_01.asm:5835). Not consumed on placement (F3) |
 | HUD item display | `src/ui/hud.ts` | ✅ B-slot and A-slot item sprites rendered in HUD via drawItemSprite. Positions: B at (124,32), A at (152,32). Magic key display ("XA") wired to inventory (F1) |
-| Shop system | `src/world/cave-room.ts` | ✅ Shop caves (0x75-0x7A): 3 items at NES CaveWareXs positions, prices displayed below, rupee indicator, purchase on touch (rupee check), CavePurchaseEvent for main.ts processing. Potion shop (0x74) stub. 15 item shapes (swords, bombs, shields, arrows, candles, rings, potions, bait, etc.) (E4b) |
+| Shop system | `src/world/cave-room.ts` | ✅ Shop caves (0x75-0x7A): 3 items at NES CaveWareXs positions, prices displayed below, rupee indicator, purchase on touch (rupee check), CavePurchaseEvent for main.ts processing. Potion shop (0x74) with letter delivery gate. 15 item shapes (E4b, updated F4a) |
+| Magic Rod | `src/objects/weapons/magic-rod.ts` | ✅ MagicRod class mirroring SwordSwing: Windup(5f)→Extended(8f)→FireShot(1f)→Retract(2×1f). Same position offset tables as sword. shouldFireShot signal at Extended→FireShot transition. Hitbox active during Extended. Blocks sword while active via blockSwordAttack flag (F4a) |
+| Magic Shot | `src/objects/weapons/magic-shot.ts` | ✅ MagicShot projectile: QSpeed $A0 = 2.5px/f. Flying→Dead states. Horizontal boundary check ($14/$EC). Tile collision. wasBlocked flag for Book of Magic fire. deactivate() API for G1 enemy hit (F4a) |
+| Book of Magic fire | `src/objects/weapons/candle-fire.ts` | ✅ CandleFire.createBookFire() static factory: starts in Standing state with 79-frame timer (BOOK_FIRE_TIMER=$4F), skips walking phase. Spawned by main.ts when magic shot hits wall and inventory.book is true (F4a) |
+| Ring palette tinting | `src/render/link-tint.ts` | ✅ createTintedLinkImage(): replaces green tunic pixels with ring color. Three SpriteSheet instances (green/blue/red) created at init. getActiveLinkSheet() selects based on link.ringLevel. All Link render paths use tinted sheet (F4a) |
+| Potion + heart refill | `src/main.ts` | ✅ useBItem case 7: decrements potion (red→blue→none). Gradual heart refill: 1 half-heart every 4 frames, blocks gameplay during refill. Letter delivery auto-triggers at potion shop (letter 1→2) (F4a) |
+| Link halted mechanism | `src/objects/player/link.ts` | ✅ `_halted` flag (NES ObjState $40). When true, `update()` returns NO_EDGE, blocking all input/movement. Set externally by main.ts during raft/stepladder sequences. Cleared in `reset()` (F4b) |
+| Collision water detection | `src/world/collision.ts` | ✅ Stores raw `primaryValues`, adds `isWaterTileAt()` (checks $8D-$98 range), `getTileValueAtPosition()`, walkable overrides via `setWalkableOverride(row,col)`/`clearWalkableOverrides()` for stepladder bridge (F4b) |
+| Stepladder | `src/objects/items/stepladder.ts` | ✅ Auto-activates when Link faces water tile in rooms [$17,$18,$19,$27,$4F,$5F] with inventory.ladder. LadderState: Approaching→OnLadder→Done. Position offsets from Link per Z_07.asm LinkToLadderOffsets. Distance-based state transitions (threshold $10). Movement override allows parallel/retreat, blocks perpendicular. Walkable override makes ladder tile crossable. Destroyed on screen transition (F4b) |
+| Raft | `src/objects/items/raft.ts` | ✅ Auto-spawns in rooms $3F/$55 when Link has inventory.raft. RaftState: Idle→MovingDown/MovingUp. Dock X: $60 (room $3F), $80 (room $55). Link halted during travel, raft drawn 6px below. MovingDown: Y increments 1px/f, stops at $7F. MovingUp: Y decrements 1px/f, triggers screen scroll Up at $3D (F4b) |
+| Recorder/Flute | `src/objects/items/recorder.ts` | ✅ RecorderEffect multi-phase state machine: Tune (152f gameplay freeze) → PondDrying (12 steps × 8f, water walkable at step 10, stairs at step 11) OR WhirlwindSource (2px/f rightward, 9px catch threshold) → TransitionPending → WhirlwindDest (drops Link at X=$80). Destination selection via TeleportingLevelIndex cycling through InvTriforce bitmask. Q1: only room 66 has flute secret. revealFluteSecret() public method on TileObjectManager for stairs placement. fluteSecretRoomIds stored from items.json (F4c) |
 | Money game | `src/world/cave-room.ts` | ✅ Cave type 0x70: generates 3 randomized amounts (+20/+50 win, -10/-40 loss) via Fisher-Yates shuffle, 10 rupee entry, pick-one mechanic, +/- display after choice, MoneyGameResult event (E4b) |
 
 ---
@@ -129,7 +139,10 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~24~~ | ~~**F1** Item model + inventory~~ | ✅ done 2026-08-18 |
 | ~~25~~ | ~~**F2** Boomerang + Bombs~~ | ✅ done 2026-08-19 |
 | ~~26~~ | ~~**F3** Bow + Arrow + Candle + Food~~ | ✅ done 2026-08-19 |
-| 27 | **F4** Magic Rod + misc items | rod, flute, raft, ladder, bracelet, ring, etc. |
+| ~~27~~ | ~~**F4a** Magic Rod + Ring + Potion/Letter~~ | ✅ done 2026-08-20 |
+| ~~28~~ | ~~**F4b** Raft + Stepladder~~ | ✅ done 2026-08-21 |
+| ~~29~~ | ~~**F4c** Recorder/Flute~~ | ✅ done 2026-08-21 |
+| 30 | **G1** Enemy base system | AI state machine, spawn/despawn, drops, damage, death |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -165,6 +178,62 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-21 — F4c Recorder/Flute (Claude Opus 4.6)
+
+Created `src/objects/items/recorder.ts` — RecorderEffect class with multi-phase state machine
+per Z_07.asm WieldFlute + Z_01.asm SummonWhirlwind. Phases: Tune (152f gameplay freeze via
+Link.halted) → PondDrying (12 steps × 8f, water walkable at step 10, stairs revealed at step
+11 via revealFluteSecret()) OR WhirlwindSource (2px/f rightward from X=0, catches Link at 9px
+threshold on each axis, Link hidden + X tracks whirlwind) → TransitionPending (main.ts calls
+overworld.setScreen to dungeon entrance) → WhirlwindDest (new whirlwind from X=0, drops Link
+at X=$80 with TeleportY). Destination selection: advanceTeleportingLevelIndex cycles through
+InvTriforce bitmask (right/down=increment, left/up=decrement). Q1 rule: only room 66 ($42)
+has flute secret. No triforce pieces → no whirlwind (Done after tune). Added
+revealFluteSecret() public method to TileObjectManager for stairs placement without requiring
+existing tile object. Stored fluteSecretRoomIds and secretsData as module-level vars in
+main.ts. Added updateRecorderEffect() blocking function with water walkable overrides,
+whirlwind Link tracking, screen transition warp, and whirlwind rendering (colored column
+placeholder). Link hidden during whirlwind catch. 18 new tests (885 total). Typecheck clean.
+**Phase F complete. Next: G1.**
+
+### 2026-08-21 — F4b Raft + Stepladder (Claude Opus 4.6)
+
+Added Link halted mechanism (`_halted` flag in link.ts, NES ObjState $40) — blocks all
+input/movement when set externally by main.ts. Extended collision system: stored raw
+`primaryValues` alongside walkable booleans, added `isWaterTileAt()` (checks $8D-$98 range),
+`getTileValueAtPosition()`, and position-based walkable overrides via `setWalkableOverride()/
+clearWalkableOverrides()`. Created `src/objects/items/stepladder.ts` — auto-activates when
+Link faces water tile in rooms [$17,$18,$19,$27,$4F,$5F] with grid alignment and input==facing.
+Position offsets per Z_07.asm LinkToLadderOffsetsX/Y. LadderState machine (Approaching→OnLadder
+→Done) with $10 distance threshold. Movement override: allows parallel/retreat, blocks
+perpendicular per Z_05.asm CheckLadder. Sets walkable override on ladder tile so Link can
+cross. Created `src/objects/items/raft.ts` — auto-spawns in rooms $3F/$55 when Link has raft.
+RaftState (Idle→MovingDown/MovingUp), dock X detection ($60/$80), 1px/frame travel, Link
+halted during movement, raft drawn 6px below. MovingUp triggers screen scroll via
+`overworld.tryTransition(Direction.Up)`. F4 further split: F4c deferred for Recorder/Flute
+(complex whirlwind + pond-drying). 30 new tests (867 total). Typecheck clean. **Next: F4c.**
+
+### 2026-08-20 — F4a Magic Rod + Ring palette + Potion/Letter (Claude Opus 4.6)
+
+Created `src/objects/weapons/magic-rod.ts` — MagicRod class mirroring SwordSwing with
+identical timing (5f Windup → 8f Extended → 1f FireShot → 2×1f Retract) per Z_07.asm
+UpdateSwordOrRod. Fires shouldFireShot signal at Extended→FireShot transition. Same
+PlayerToWeaponOffsetsX/Y tables as sword. Blocks sword via Link.blockSwordAttack flag.
+Created `src/objects/weapons/magic-shot.ts` — MagicShot projectile with QSpeed $A0
+(2.5px/f), horizontal boundary checks ($14/$EC per Z_07.asm:4546), tile collision,
+wasBlocked flag for Book of Magic. Added CandleFire.createBookFire() static factory
+(Standing state, 79f timer per Z_07.asm:3547 HandleShotBlocked). Created
+`src/render/link-tint.ts` — createTintedLinkImage() replaces green tunic pixels with
+ring colors (blue #0058f0 / red #d82800). Three SpriteSheet instances at init;
+getActiveLinkSheet() selects by ringLevel; all 6 Link render paths updated. Added
+useBItem case 7 (potion): decrements potion counter, triggers gradual heart refill
+(1 half-heart every 4 frames per Z_05.asm WieldPotion, blocks gameplay). Added useBItem
+case 8 (wand): creates MagicRod, guards against sword conflict. Potion shop letter
+delivery: auto-delivers letter (1→2) on entry, gates shop purchases on delivery.
+F4 split into F4a/F4b — F4b covers Raft, Stepladder, Recorder/Flute (all need new
+auto-activation systems + Link halting mechanism). 25 new tests (837 total). Typecheck
+clean. **Next: F4b.**
 
 ### 2026-08-19 — F3 Arrow + Candle fire upgrade + Food/Bait (Claude Opus 4.6)
 

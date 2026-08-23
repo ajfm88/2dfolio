@@ -124,6 +124,7 @@ export class CaveRoom {
   // Shop state
   private _shopSlotTaken: boolean[] = [false, false, false];
   private _purchaseEvent: CavePurchaseEvent | null = null;
+  private _letterDelivered = false;
 
   // Money game state
   private _moneyGameAmounts: number[] = [];
@@ -217,8 +218,13 @@ export class CaveRoom {
       return;
     }
 
-    if (this.behavior === 'shop' || this.behavior === 'potionShop') {
+    if (this.behavior === 'shop') {
       this.updateShopPickup(link);
+      return;
+    }
+
+    if (this.behavior === 'potionShop') {
+      this.updatePotionShop(link);
       return;
     }
 
@@ -254,7 +260,9 @@ export class CaveRoom {
       if (!this._itemPickedUp && this.hasPickableItem()) {
         this.drawItem(ctx, ITEM_XS[1]!, ITEM_Y, this.getCenterItemId());
       }
-    } else if (this.behavior === 'shop' || this.behavior === 'potionShop') {
+    } else if (this.behavior === 'shop') {
+      this.renderShopItems(ctx, renderer);
+    } else if (this.behavior === 'potionShop' && this._letterDelivered) {
       this.renderShopItems(ctx, renderer);
     } else if (this.behavior === 'moneyGame') {
       this.renderMoneyGame(ctx, renderer);
@@ -305,6 +313,22 @@ export class CaveRoom {
         };
         return;
       }
+    }
+  }
+
+  // Z_01.asm:319 — potion shop requires letter delivery before selling
+  private updatePotionShop(link: Link): void {
+    if (link.inventory.letter === 0) return;
+
+    // Auto-deliver letter on first visit
+    if (link.inventory.letter === 1 && !this._letterDelivered) {
+      link.inventory.letter = 2;
+      this._letterDelivered = true;
+      // NES plays "secret found" tune — audio is K-phase
+    }
+
+    if (link.inventory.letter >= 2) {
+      this.updateShopPickup(link);
     }
   }
 
