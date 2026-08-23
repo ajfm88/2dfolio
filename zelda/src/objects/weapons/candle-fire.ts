@@ -2,7 +2,7 @@
 // Walks 16px at 0.5px/frame (QSpeed $20), then stands for 63 frames.
 // Fire damages enemies (G1 wires collision) and can also damage Link (G1).
 
-import { TILE_SIZE, FIRE_QFRAC } from '../../core/constants.js';
+import { TILE_SIZE, FIRE_QFRAC, BOOK_FIRE_TIMER } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
@@ -32,6 +32,14 @@ export class CandleFire {
   private _timer = FIRE_STAND_TIMER;
   private _subPixel = 0;
   private _frameCount = 0;
+
+  // Z_07.asm:3547 HandleShotBlocked — Book of Magic spawns fire at shot impact
+  static createBookFire(x: number, y: number): CandleFire {
+    const fire = new CandleFire(x, y, Direction.Down);
+    fire._state = FireState.Standing;
+    fire._timer = BOOK_FIRE_TIMER;
+    return fire;
+  }
 
   constructor(x: number, y: number, direction: Direction) {
     this._x = x;

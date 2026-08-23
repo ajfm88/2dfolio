@@ -341,6 +341,33 @@ export class TileObjectManager {
     }
   }
 
+  // Z_07.asm:5925 RevealPondStairs — flute reveals stairs without a tile object
+  revealFluteSecret(
+    screen: OverworldScreen,
+    roomFlags: RoomFlags,
+    secretsData: SecretsData,
+  ): void {
+    this._secretRevealed = true;
+    roomFlags.setSecretFound(screen.id);
+
+    const posIndex = secretsData.shortcutPositionIndexByScreen[screen.id] ?? 0;
+    const pos = secretsData.shortcutPositions[posIndex];
+    if (pos) {
+      const stairsCol = Math.floor(pos.x / TILE_SIZE);
+      const stairsRow = Math.floor(pos.y / TILE_SIZE);
+      const gridIdx = stairsRow * 16 + stairsCol;
+      this._tileOverrides.set(gridIdx, SQUARE_INDEX_STAIRS);
+      this._pendingReveal = {
+        screenId: screen.id,
+        tileCol: stairsCol,
+        tileRow: stairsRow,
+        revealedSquareIndex: SQUARE_INDEX_STAIRS,
+        stairsX: pos.x,
+        stairsY: pos.y,
+      };
+    }
+  }
+
   // --- Shared reveal logic ---
 
   private revealSecret(
