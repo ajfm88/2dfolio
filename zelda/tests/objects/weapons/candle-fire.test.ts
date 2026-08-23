@@ -89,4 +89,31 @@ describe('CandleFire', () => {
   it('exports FIRE_DAMAGE as 0x10', () => {
     expect(FIRE_DAMAGE).toBe(0x10);
   });
+
+  describe('createBookFire', () => {
+    it('starts directly in Standing state', () => {
+      const fire = CandleFire.createBookFire(120, 90);
+      expect(fire.state).toBe(FireState.Standing);
+      expect(fire.isStanding).toBe(true);
+      expect(fire.x).toBe(120);
+      expect(fire.y).toBe(90);
+    });
+
+    it('stands for 79 frames (BOOK_FIRE_TIMER = $4F) then dies', () => {
+      const fire = CandleFire.createBookFire(100, 80);
+      for (let i = 0; i < 79; i++) {
+        expect(fire.isActive).toBe(true);
+        fire.update();
+      }
+      expect(fire.isActive).toBe(false);
+      expect(fire.state).toBe(FireState.Dead);
+    });
+
+    it('does not walk — stays at spawn position', () => {
+      const fire = CandleFire.createBookFire(100, 80);
+      for (let i = 0; i < 40; i++) fire.update();
+      expect(fire.x).toBe(100);
+      expect(fire.y).toBe(80);
+    });
+  });
 });

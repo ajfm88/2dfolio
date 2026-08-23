@@ -72,6 +72,12 @@ export class Link {
   private _invincibilityFrameCount = 0;
   private _isDead = false;
 
+  // External flag: rod swing blocks sword (they share NES animation slot)
+  blockSwordAttack = false;
+
+  // External halt flag — NES ObjState $40. Blocks all input/movement while visible.
+  private _halted = false;
+
   constructor(x: number = LINK_START_X, y: number = LINK_START_Y) {
     this._x = x;
     this._y = y;
@@ -154,6 +160,14 @@ export class Link {
 
   get ringLevel(): number {
     return this.inventory.ring;
+  }
+
+  get halted(): boolean {
+    return this._halted;
+  }
+
+  set halted(value: boolean) {
+    this._halted = value;
   }
 
   setHealth(health: number, maxHealth: number): void {
@@ -253,6 +267,7 @@ export class Link {
       this.sword.cancel();
     }
     this._swordBeam = null;
+    this._halted = false;
   }
 
   // Z_01.asm HarmLink + BeginShove
@@ -304,6 +319,9 @@ export class Link {
       }
     }
 
+    // NES ObjState $40 — external halt blocks all input/movement
+    if (this._halted) return NO_EDGE;
+
     // Knockback state: move in knockback direction, block all input
     if (this._state === LinkState.Knockback) {
       this.updateKnockback(collision, screen);
@@ -334,7 +352,7 @@ export class Link {
     }
 
     // Start sword swing on attack input
-    if (this.hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive()) {
+    if (this.hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive() && !this.blockSwordAttack) {
       this.sword.start(this._direction);
       this._moving = false;
       this.walkAnim.reset();
