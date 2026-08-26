@@ -372,10 +372,10 @@ describe('computeRespawnParams', () => {
     expect(params.health).toBe(6);
   });
 
-  it('falls through to overworld for dungeon level (stub)', () => {
+  it('returns dungeon respawn params for dungeon level', () => {
     const params = computeRespawnParams(3);
-    expect(params.screenRow).toBe(7);
-    expect(params.screenCol).toBe(7);
+    expect(params.isDungeon).toBe(true);
+    expect(params.health).toBe(RESPAWN_HEALTH);
   });
 });
 

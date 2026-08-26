@@ -17,6 +17,13 @@ export interface HudState {
   readonly mapCol: number;
   readonly isOverworld: boolean;
   readonly levelNumber: number;
+  readonly dungeonRoomCol?: number;
+  readonly dungeonRoomRow?: number;
+  readonly dungeonVisitedRooms?: ReadonlySet<number>;
+  readonly dungeonValidRooms?: readonly number[];
+  readonly hasMap?: boolean;
+  readonly hasCompass?: boolean;
+  readonly triforceRoomId?: number;
 }
 
 // NES-accurate positions (from PPU nametable addresses in Z_01.asm)
@@ -42,11 +49,28 @@ const MAP_DOT_STRIDE = 4;
 const MAP_DOT_SIZE = 3;
 const MAP_DOT_COLOR = '#83d313';
 
+// Dungeon minimap area
+const DMAP_BASE_X = 16;
+const DMAP_BASE_Y = 22;
+const DMAP_CELL_W = 8;
+const DMAP_CELL_H = 4;
+const DMAP_COLS = 8;
+const DMAP_ROWS = 8;
+const DMAP_ROOM_COLOR = '#5c94fc';
+const DMAP_MAP_ROOM_COLOR = '#3c5a9c';
+const DMAP_CURRENT_COLOR = '#83d313';
+const DMAP_TRIFORCE_COLOR = '#ff0000';
+
+// Level text position
+const LEVEL_TEXT_X = 16;
+const LEVEL_TEXT_Y = 16;
+
 export class HudRenderer {
   private readonly font: BitmapFont;
   private readonly heartMeter: HeartMeter;
   private readonly hudImage: HTMLImageElement;
   private readonly itemsImage: HTMLImageElement | HTMLCanvasElement | null;
+  private _blinkTimer = 0;
 
   constructor(
     hudImage: HTMLImageElement,
@@ -92,6 +116,9 @@ export class HudRenderer {
 
     if (state.isOverworld) {
       this.renderOverworldDot(renderer, state.mapRow, state.mapCol);
+    } else if (state.levelNumber > 0) {
+      this._blinkTimer++;
+      this.renderDungeonMinimap(renderer, state);
     }
   }
 
@@ -101,6 +128,66 @@ export class HudRenderer {
     const x = MAP_DOT_BASE_X + col * MAP_DOT_STRIDE;
     const y = MAP_DOT_BASE_Y + row * MAP_DOT_STRIDE;
     renderer.fillRect(x, y, MAP_DOT_SIZE, MAP_DOT_SIZE, MAP_DOT_COLOR);
+  }
+
+  private renderDungeonMinimap(renderer: Renderer, state: HudState): void {
+    const ctx = renderer.ctx;
+
+    // "LEVEL-N" text
+    this.font.drawString(renderer, LEVEL_TEXT_X, LEVEL_TEXT_Y, `LEVEL-${state.levelNumber}`);
+
+    // If player has Map, show all valid rooms as dim squares
+    if (state.hasMap && state.dungeonValidRooms) {
+      for (const roomId of state.dungeonValidRooms) {
+        const col = roomId % 16;
+        const row = Math.floor(roomId / 16);
+        if (col >= DMAP_COLS || row >= DMAP_ROWS) continue;
+        const rx = DMAP_BASE_X + col * DMAP_CELL_W;
+        const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
+        ctx.fillStyle = DMAP_MAP_ROOM_COLOR;
+        ctx.fillRect(rx, ry, DMAP_CELL_W - 1, DMAP_CELL_H - 1);
+      }
+    }
+
+    // Draw visited rooms as bright rectangles (on top of map rooms)
+    const visited = state.dungeonVisitedRooms;
+    if (visited) {
+      for (const roomId of visited) {
+        const col = roomId % 16;
+        const row = Math.floor(roomId / 16);
+        if (col >= DMAP_COLS || row >= DMAP_ROWS) continue;
+        const rx = DMAP_BASE_X + col * DMAP_CELL_W;
+        const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
+        ctx.fillStyle = DMAP_ROOM_COLOR;
+        ctx.fillRect(rx, ry, DMAP_CELL_W - 1, DMAP_CELL_H - 1);
+      }
+    }
+
+    // If player has Compass, blink triforce room in red
+    if (state.hasCompass && state.triforceRoomId !== undefined) {
+      const blink = (this._blinkTimer >> 4) & 1;
+      if (blink) {
+        const col = state.triforceRoomId % 16;
+        const row = Math.floor(state.triforceRoomId / 16);
+        if (col < DMAP_COLS && row < DMAP_ROWS) {
+          const rx = DMAP_BASE_X + col * DMAP_CELL_W;
+          const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
+          ctx.fillStyle = DMAP_TRIFORCE_COLOR;
+          ctx.fillRect(rx, ry, DMAP_CELL_W - 1, DMAP_CELL_H - 1);
+        }
+      }
+    }
+
+    // Blink current room marker (green, on top of everything)
+    if (state.dungeonRoomCol !== undefined && state.dungeonRoomRow !== undefined) {
+      const blink = (this._blinkTimer >> 3) & 1;
+      if (blink) {
+        const cx = DMAP_BASE_X + state.dungeonRoomCol * DMAP_CELL_W;
+        const cy = DMAP_BASE_Y + state.dungeonRoomRow * DMAP_CELL_H;
+        ctx.fillStyle = DMAP_CURRENT_COLOR;
+        ctx.fillRect(cx, cy, DMAP_CELL_W - 1, DMAP_CELL_H - 1);
+      }
+    }
   }
 }
 
