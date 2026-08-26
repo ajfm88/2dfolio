@@ -52,6 +52,7 @@ export class CandleFire {
   get state(): FireState { return this._state; }
   get isActive(): boolean { return this._state !== FireState.Dead; }
   get isStanding(): boolean { return this._state === FireState.Standing; }
+  get direction(): Direction { return this._direction; }
 
   update(): void {
     if (this._state === FireState.Dead) return;

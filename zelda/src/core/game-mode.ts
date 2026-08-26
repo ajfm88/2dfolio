@@ -4,4 +4,6 @@ export enum GameMode {
   GameOver,
   CaveTransition,
   CaveInterior,
+  DungeonGameplay,
+  DungeonTransition,
 }
