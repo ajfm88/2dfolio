@@ -75,4 +75,29 @@ export class Inventory {
     if (this.sword <= 0) return null;
     return this.sword; // 1=wood(0x01), 2=white(0x02), 3=magic(0x03)
   }
+
+  // Z_05.asm HasMap / HasCompass: bitmask per level (1-8), separate for level 9
+  hasMapForLevel(level: number): boolean {
+    if (level === 9) return this.map9;
+    if (level < 1 || level > 8) return false;
+    return (this.map & (1 << (level - 1))) !== 0;
+  }
+
+  hasCompassForLevel(level: number): boolean {
+    if (level === 9) return this.compass9;
+    if (level < 1 || level > 8) return false;
+    return (this.compass & (1 << (level - 1))) !== 0;
+  }
+
+  // Used by handleItemPickup for Map/Compass acquisition
+  giveMap(level: number): void {
+    if (level === 9) { this.map9 = true; return; }
+    if (level >= 1 && level <= 8) this.map |= (1 << (level - 1));
+  }
+
+  giveCompass(level: number): void {
+    if (level === 9) { this.compass9 = true; return; }
+    if (level >= 1 && level <= 8) this.compass |= (1 << (level - 1));
+  }
+
 }
