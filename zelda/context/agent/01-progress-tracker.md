@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-21 · **Phase:** F (Items & Inventory) complete · **Slices done:** 29 / 45
+**Last updated:** 2026-08-23 · **Phase:** H (Dungeons) in progress · **Slices done:** 32 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice G1** — Enemy base system: AI state machine, spawn/despawn lifecycle, item drops, damage reception, death animation.
-Phase F complete (F1-F4c). All items implemented. Phase G (Enemies) begins.
+**Next action: slice H1b** — Dungeon door types (locked/bombed/shutter), spike traps, push blocks, secrets, dark rooms, room items.
+Phase H started (H1a done). Dungeon room loading, rendering, navigation, entry/exit, minimap all working. H1b adds door mechanics and room interactions.
 
 ---
 
@@ -104,6 +104,30 @@ Phase F complete (F1-F4c). All items implemented. Phase G (Enemies) begins.
 | Raft | `src/objects/items/raft.ts` | ✅ Auto-spawns in rooms $3F/$55 when Link has inventory.raft. RaftState: Idle→MovingDown/MovingUp. Dock X: $60 (room $3F), $80 (room $55). Link halted during travel, raft drawn 6px below. MovingDown: Y increments 1px/f, stops at $7F. MovingUp: Y decrements 1px/f, triggers screen scroll Up at $3D (F4b) |
 | Recorder/Flute | `src/objects/items/recorder.ts` | ✅ RecorderEffect multi-phase state machine: Tune (152f gameplay freeze) → PondDrying (12 steps × 8f, water walkable at step 10, stairs at step 11) OR WhirlwindSource (2px/f rightward, 9px catch threshold) → TransitionPending → WhirlwindDest (drops Link at X=$80). Destination selection via TeleportingLevelIndex cycling through InvTriforce bitmask. Q1: only room 66 has flute secret. revealFluteSecret() public method on TileObjectManager for stairs placement. fluteSecretRoomIds stored from items.json (F4c) |
 | Money game | `src/world/cave-room.ts` | ✅ Cave type 0x70: generates 3 randomized amounts (+20/+50 win, -10/-40 loss) via Fisher-Yates shuffle, 10 rupee entry, pick-one mechanic, +/- display after choice, MoneyGameResult event (E4b) |
+| Enemy base class | `src/objects/enemies/enemy.ts` | ✅ Enemy class: EnemyState enum (Spawning/Active/Stunned/Knockback/Dying/Dead), generic random walker AI, takeDamage() with NES HP system (Z_04.asm ExtractHitPointValue: even=high nibble, odd=low nibble<<4), knockback ($40 distance, 4px/f), invincibility ($10 frames), stun ($A0 frames), death timer (12f). getEnemyHp() decoder. Colored rectangle rendering with type-based colors (G1) |
+| Spawn manager | `src/objects/enemies/spawn-manager.ts` | ✅ SpawnManager: reads enemy-spawns.json, resolves monsterListId (0=none, 1-$61=single type, $62-$7F=heterogeneous list), spawns up to foeCounts[index] enemies at NES spawn positions (4 lists by Link entry direction, packed byte: high=row, low=col), staggered spawn cloud timers, freezeAll() for Clock item, clear() on screen exit (G1) |
+| Enemy collision | `src/objects/enemies/enemy-collision.ts` | ✅ checkWeaponEnemyCollisions: checks sword hitbox, sword beam, boomerang (stun or stun+damage), bomb explosion, arrow (wood/silver), candle fire, magic rod, magic shot against all active enemies. Sword beam/arrow/magic shot deactivate on hit. checkEnemyLinkCollisions: contact damage via DAMAGE_TABLE lookup (G1) |
+| Drop engine wiring | `src/main.ts` | ✅ DropEngine.rollDrop() called on enemy kill → ItemPickup spawned at death position. Clock item ($21) freezes all enemies 660 frames. SpawnManager integrated into gameplay loop, transition lifecycle, cave entry/exit, and respawn. Debug console: `__zelda.giveAll()` (G1) |
+| Walker enemy base | `src/objects/enemies/walker-enemy.ts` | ✅ WalkerEnemy: Wanderer_TargetPlayer + Walker_Move pattern. QSpeed sub-pixel movement, grid-aligned turning, turnRate-based direction toward Link, _TryShooting timer ($30 countdown, fire at $10), blue variants shoot more. Sprite rendering from enemies.png (G2) |
+| Octorok | `src/objects/enemies/octorok.ts` | ✅ Red slow (type 7): turnRate $70, QSpeed $20. Red fast (type 8): QSpeed $40. Blue slow/fast (types 9/10): turnRate $A0. Shoots rock ($53). Sprites rows 0-1 (G2) |
+| Moblin | `src/objects/enemies/moblin.ts` | ✅ Blue (type 3) / Red (type 4): turnRate $A0, QSpeed $20. Shoots arrow ($5B). Sprites rows 4-5 (G2) |
+| Lynel | `src/objects/enemies/lynel.ts` | ✅ Blue (type 1): turnRate $A0 / Red (type 2): turnRate $70. QSpeed $20. Shoots sword shot ($57). Sprites rows 12-13 (G2) |
+| Tektite | `src/objects/enemies/tektite.ts` | ✅ Blue (type 13) / Red (type 14). Ground/jumping state machine: pause timer → jump toward Link with diagonal arc → bounce off boundaries → land → repeat. reversalCount escape logic. Sprites rows 8-9 (G2) |
+| Leever | `src/objects/enemies/leever.ts` | ✅ Blue (type 15): burrower cycle + QSpeed $20 walk during surface. Red (type 16): max 2 active at once, spawns near Link. 4-state cycle: underground→emerging→surface→submerging. Invulnerable underground (G2) |
+| Zora | `src/objects/enemies/zora.ts` | ✅ Type 17. Water burrower: surfaces at random positions, shoots fireball ($55) midway through surface time, submerges. Invulnerable while underground/transitioning (G2) |
+| Peahat | `src/objects/enemies/peahat.ts` | ✅ Type 26. 6-state flyer: SpeedUp→Decide→Chase/Wander→SlowDown→Delay. Only vulnerable in Delay state (stopped). Chase/wander use normalized velocity toward Link. Bounce off screen edges (G2) |
+| Ghini | `src/objects/enemies/ghini.ts` | ✅ Main (type 33): walks with turnRate $FF, death kills all flying Ghini. FlyingGhini (type 34): flies freely toward Link with randomness. setSiblings() wires death propagation (G2) |
+| Armos | `src/objects/enemies/armos.ts` | ✅ Type 30. Dormant statue until Link touches (proximity < 16px), then walks with Goriya pattern (turnRate $A0, QSpeed $20). No spawn cloud. Invulnerable while dormant (G2) |
+| Enemy projectiles | `src/objects/enemies/enemy-collision.ts` | ✅ checkEnemyProjectileCollisions: checks enemy projectiles vs Link rect with shield deflection via canShieldBlock(). Blocked projectiles deflect, unblocked deal damage from DAMAGE_TABLE. SpawnManager.projectiles tracks all active enemy projectiles (G2) |
+| Enemy sprite sheet | `src/main.ts` | ✅ enemies.png loaded as SpriteSheet (30 cols, 1px spacing), passed to SpawnManager.render(). Walker enemies render from sprite sheet (Octorok/Moblin/Lynel/Tektite), others use colored rectangle placeholders (G2) |
+| Dungeon entrance data | `src/data/dungeon-entrance-data.ts` | ✅ Maps overworld screenId → dungeon level (1-6 verified, 7-9 deferred). getDungeonLevel() lookup (H1a) |
+| Dungeon renderer | `src/render/dungeon-renderer.ts` | ✅ Renders dungeon rooms from dungeons-map.png. Room at (roomId%16, roomId/16) × (256,176), level block offset for uw2q1. Same tile-sampling approach as overworld (H1a) |
+| Dungeon collision | `src/world/dungeon-collision.ts` | ✅ DungeonCollisionMap: 16×11 walkability grid from 12×7 inner tiles + squareTable + border walls. Door openings punch walkable holes for open doors (types 0,2). TileCollisionMap-compatible API (screen param ignored). openDoor() for runtime changes (H1a) |
+| Dungeon manager | `src/world/dungeon-manager.ts` | ✅ DungeonManager: loads dungeon level from dungeons.json, tracks currentRoomId, room-to-room navigation (N:-16, S:+16, W:-1, E:+1), visited rooms Set, door type checks (canPassDoor), entry position calculation, dungeon exit detection from startRoom. dummyScreen for Link/enemy API compat (H1a) |
+| Dungeon HUD | `src/ui/hud.ts` | ✅ "LEVEL-N" text, dungeon minimap: visited rooms as blue squares (8×4px cells), current room as blinking green marker. Replaces overworld dot when levelNumber > 0 (H1a) |
+| Dungeon entry/exit | `src/main.ts` | ✅ DungeonTransition game mode: walk-into-darkness → curtain close → DungeonManager init → curtain open. Exit: walk south from startRoom → curtain close → restore overworld. Dungeon entrance detection via getDungeonLevel() + tile 12 check before cave check (H1a) |
+| Dungeon gameplay | `src/main.ts` | ✅ DungeonGameplay mode: full gameplay loop with dungeon collision, room transitions through open doors, weapons, enemy spawning (spawnForDungeonRoom), enemy/weapon/pickup collision, death→respawn at dungeon start. Debug: __zelda.dungeonManager, __zelda.currentLevel (H1a) |
+| Dungeon respawn | `src/death/respawn.ts` | ✅ computeRespawnParams returns isDungeon flag for level > 0. Dungeon death respawns at dungeon startRoom with 3 hearts (H1a) |
 
 ---
 
@@ -142,7 +166,10 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~27~~ | ~~**F4a** Magic Rod + Ring + Potion/Letter~~ | ✅ done 2026-08-20 |
 | ~~28~~ | ~~**F4b** Raft + Stepladder~~ | ✅ done 2026-08-21 |
 | ~~29~~ | ~~**F4c** Recorder/Flute~~ | ✅ done 2026-08-21 |
-| 30 | **G1** Enemy base system | AI state machine, spawn/despawn, drops, damage, death |
+| ~~30~~ | ~~**G1** Enemy base system~~ | ✅ done 2026-08-22 |
+| ~~31~~ | ~~**G2** Overworld enemies~~ | ✅ done 2026-08-22 |
+| ~~32~~ | ~~**H1a** Dungeon room loading + navigation~~ | ✅ done 2026-08-23 |
+| 33 | **H1b** Dungeon doors + traps + items | Locked/bombed/shutter doors, spike traps, push blocks, secrets, dark rooms, Map/Compass |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -179,230 +206,81 @@ Answer cheaply, unblock later work. **None of these block A1.**
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
 
-### 2026-08-21 — F4c Recorder/Flute (Claude Opus 4.6)
+### 2026-08-23 — H1a Dungeon room loading + navigation (Claude Opus 4.6)
 
-Created `src/objects/items/recorder.ts` — RecorderEffect class with multi-phase state machine
-per Z_07.asm WieldFlute + Z_01.asm SummonWhirlwind. Phases: Tune (152f gameplay freeze via
-Link.halted) → PondDrying (12 steps × 8f, water walkable at step 10, stairs revealed at step
-11 via revealFluteSecret()) OR WhirlwindSource (2px/f rightward from X=0, catches Link at 9px
-threshold on each axis, Link hidden + X tracks whirlwind) → TransitionPending (main.ts calls
-overworld.setScreen to dungeon entrance) → WhirlwindDest (new whirlwind from X=0, drops Link
-at X=$80 with TeleportY). Destination selection: advanceTeleportingLevelIndex cycles through
-InvTriforce bitmask (right/down=increment, left/up=decrement). Q1 rule: only room 66 ($42)
-has flute secret. No triforce pieces → no whirlwind (Done after tune). Added
-revealFluteSecret() public method to TileObjectManager for stairs placement without requiring
-existing tile object. Stored fluteSecretRoomIds and secretsData as module-level vars in
-main.ts. Added updateRecorderEffect() blocking function with water walkable overrides,
-whirlwind Link tracking, screen transition warp, and whirlwind rendering (colored column
-placeholder). Link hidden during whirlwind catch. 18 new tests (885 total). Typecheck clean.
-**Phase F complete. Next: G1.**
+Split H1 into H1a/H1b. H1a: dungeon room loading, rendering, open-door navigation, entry/exit,
+minimap, respawn. Created `src/data/dungeon-entrance-data.ts` — maps overworld screenId → dungeon
+level (6 verified entrances: screens 55/60/116/69/11/34 for levels 1-6; derived from
+WHIRLWIND_DEST_ROOMS proximity + tile 12 scan; levels 7-9 deferred). Created
+`src/render/dungeon-renderer.ts` — renders rooms from dungeons-map.png (16×16 grid, 256×176px per
+room, uw1q1 top half / uw2q1 bottom half). Created `src/world/dungeon-collision.ts` —
+DungeonCollisionMap builds 16×11 walkability grid: 12×7 inner tiles from uniqueRoom + squareTable
+threshold, border walls always solid, door openings (types 0/2) punch walkable holes at NES
+positions (N: cols 7-8 rows 0-1, S: cols 7-8 rows 9-10, W: cols 0-1 rows 4-6, E: cols 14-15
+rows 4-6). TileCollisionMap-compatible API (screen param accepted but ignored). Created
+`src/world/dungeon-manager.ts` — DungeonManager: loads level 1-9 from dungeons.json, resolves
+levelBlock, tracks currentRoomId + visitedRooms, room navigation (N:-16 S:+16 W:-1 E:+1),
+canPassDoor (types 0/2 only for H1a), entry position by direction, exit detection from startRoom
+south edge. dummyScreen getter for Link/enemy compatibility. Added GameMode.DungeonGameplay +
+DungeonTransition. Updated HUD: "LEVEL-N" text + dungeon minimap (blue visited rooms, blinking
+green current room). Updated respawn: isDungeon flag, dungeon death → startRoom. Updated main.ts:
+dungeons.json loading, dungeon entry (getDungeonLevel + tile 12 check before cave check),
+DungeonTransition mode (walk-in → curtain → startDungeonInterior), DungeonGameplay mode (full
+gameplay loop reusing weapons/enemies/collision), exit (south from startRoom → curtain → overworld
+restore), SpawnManager.spawnForDungeonRoom(). Fixed exit-before-transition ordering bug (exit
+check must precede room transition check, both at SCREEN_EDGE_BOTTOM threshold). Debug:
+__zelda.dungeonManager + currentLevel. 19 new tests (968 total). Typecheck clean. Visually
+verified: enter Level 1 from overworld, rooms render with correct teal palette, walk through open
+doors, minimap tracks visited rooms, exit back to overworld via south. **Next: H1b.**
 
-### 2026-08-21 — F4b Raft + Stepladder (Claude Opus 4.6)
+### 2026-08-22 — G2 Overworld enemies (Claude Opus 4.6)
 
-Added Link halted mechanism (`_halted` flag in link.ts, NES ObjState $40) — blocks all
-input/movement when set externally by main.ts. Extended collision system: stored raw
-`primaryValues` alongside walkable booleans, added `isWaterTileAt()` (checks $8D-$98 range),
-`getTileValueAtPosition()`, and position-based walkable overrides via `setWalkableOverride()/
-clearWalkableOverrides()`. Created `src/objects/items/stepladder.ts` — auto-activates when
-Link faces water tile in rooms [$17,$18,$19,$27,$4F,$5F] with grid alignment and input==facing.
-Position offsets per Z_07.asm LinkToLadderOffsetsX/Y. LadderState machine (Approaching→OnLadder
-→Done) with $10 distance threshold. Movement override: allows parallel/retreat, blocks
-perpendicular per Z_05.asm CheckLadder. Sets walkable override on ladder tile so Link can
-cross. Created `src/objects/items/raft.ts` — auto-spawns in rooms $3F/$55 when Link has raft.
-RaftState (Idle→MovingDown/MovingUp), dock X detection ($60/$80), 1px/frame travel, Link
-halted during movement, raft drawn 6px below. MovingUp triggers screen scroll via
-`overworld.tryTransition(Direction.Up)`. F4 further split: F4c deferred for Recorder/Flute
-(complex whirlwind + pond-drying). 30 new tests (867 total). Typecheck clean. **Next: F4c.**
+Implemented all 9 overworld enemy types with NES-accurate AI patterns. Refactored Enemy base
+class: protected fields/methods, EnemyUpdateContext (collision+screen+linkX+linkY), abstract
+updateAI() hook, moveQSpeed() sub-pixel helper, moveOnePixel() with tile collision,
+tickWalkAnimation(), directionTowardLink(), _vulnerable flag, _pendingProjectile/consumeProjectile()
+for enemy shooting, onDeath() hook. Created `src/objects/enemies/walker-enemy.ts` — WalkerEnemy
+base implementing Z_04.asm Wanderer_TargetPlayer: turnRate vs random for direction toward Link,
+grid-aligned turning, QSpeed sub-pixel movement, _TryShooting timer ($30→$10 fire→0 reset,
+blue=always, red=random<$F8 gate), sprite rendering from enemies.png (30-col sheet). Created
+individual enemy files: `octorok.ts` (factory, 4 variants: slow/fast × red/blue, turnRate
+$70/$A0, QSpeed $20/$40, shoots rock $53), `moblin.ts` (turnRate $A0, QSpeed $20, shoots arrow
+$5B), `lynel.ts` (Goriya pattern, turnRate $70/$A0, shoots sword shot $57), `tektite.ts`
+(Ground/Jumping state machine with diagonal arc, boundary bounce, reversalCount>=2 escape),
+`leever.ts` (4-state burrower cycle, blue walks QSpeed $20, red max-2 + spawns near Link,
+invulnerable underground), `zora.ts` (water burrower, random surface position, shoots fireball
+$55, invulnerable underground), `peahat.ts` (6-state flyer: SpeedUp/Decide/Chase/Wander/
+SlowDown/Delay, only vulnerable in Delay, normalized velocity chase), `ghini.ts` (main turnRate
+$FF + FlyingGhini, setSiblings(), main death kills all type 34), `armos.ts` (dormant→active on
+Link touch <16px, Goriya walker pattern, no spawn cloud, invulnerable while dormant). Updated
+SpawnManager: createEnemyByType factory for all 9 types, _projectiles array for enemy-fired
+projectiles, render() accepts enemySheet, update() passes linkX/linkY. Updated enemy-collision:
+checkEnemyProjectileCollisions() with shield deflection via canShieldBlock(). Updated main.ts:
+enemySheet from enemies.png, projectile collision + damage, shield deflection wiring. 28 new
+tests (949 total). Typecheck clean. **Next: G3.**
 
-### 2026-08-20 — F4a Magic Rod + Ring palette + Potion/Letter (Claude Opus 4.6)
+### 2026-08-22 — G1 Enemy base system (Claude Opus 4.6)
 
-Created `src/objects/weapons/magic-rod.ts` — MagicRod class mirroring SwordSwing with
-identical timing (5f Windup → 8f Extended → 1f FireShot → 2×1f Retract) per Z_07.asm
-UpdateSwordOrRod. Fires shouldFireShot signal at Extended→FireShot transition. Same
-PlayerToWeaponOffsetsX/Y tables as sword. Blocks sword via Link.blockSwordAttack flag.
-Created `src/objects/weapons/magic-shot.ts` — MagicShot projectile with QSpeed $A0
-(2.5px/f), horizontal boundary checks ($14/$EC per Z_07.asm:4546), tile collision,
-wasBlocked flag for Book of Magic. Added CandleFire.createBookFire() static factory
-(Standing state, 79f timer per Z_07.asm:3547 HandleShotBlocked). Created
-`src/render/link-tint.ts` — createTintedLinkImage() replaces green tunic pixels with
-ring colors (blue #0058f0 / red #d82800). Three SpriteSheet instances at init;
-getActiveLinkSheet() selects by ringLevel; all 6 Link render paths updated. Added
-useBItem case 7 (potion): decrements potion counter, triggers gradual heart refill
-(1 half-heart every 4 frames per Z_05.asm WieldPotion, blocks gameplay). Added useBItem
-case 8 (wand): creates MagicRod, guards against sword conflict. Potion shop letter
-delivery: auto-delivers letter (1→2) on entry, gates shop purchases on delivery.
-F4 split into F4a/F4b — F4b covers Raft, Stepladder, Recorder/Flute (all need new
-auto-activation systems + Link halting mechanism). 25 new tests (837 total). Typecheck
-clean. **Next: F4b.**
+Created `src/objects/enemies/enemy.ts` — Enemy class with EnemyState enum (Spawning→Active→
+Stunned/Knockback→Dying→Dead), generic random walker AI, NES-faithful HP system (Z_04.asm
+ExtractHitPointValue: even types=high nibble AND $F0, odd types=low nibble ASL ×4), knockback
+($40 distance at 4px/f per Z_01.asm:6688), invincibility ($10 frames), stun ($A0 frames for
+boomerang), 12-frame death timer. Created `src/objects/enemies/spawn-manager.ts` — SpawnManager
+reads enemy-spawns.json: resolves monsterListId (0=none, 1-$61=single type repeated, $62-$7F=
+heterogeneous list index), spawns up to foeCounts[monsterCountIndex] enemies at NES spawn
+positions (4 direction-based lists of 9 packed X/Y bytes), staggered spawn cloud timers per
+Z_07.asm:5590, freezeAll() for Clock item, clear() on screen exit. Created
+`src/objects/enemies/enemy-collision.ts` — checkWeaponEnemyCollisions checks all 7 weapon types
+(sword hitbox via new Link.getSwordHitbox(), sword beam, boomerang stun/damage, bomb explosion,
+arrow wood/silver, candle fire, magic rod/shot) with correct damage constants (SWORD_DAMAGE by
+level, BOOMERANG_DAMAGE $10, BOMB_DAMAGE $40, ARROW_DAMAGE $20/$40). Sword beam/arrow/magic
+shot deactivate on hit, boomerang forceReturn(). checkEnemyLinkCollisions detects contact via
+DAMAGE_TABLE lookup. Added deactivate() to SwordBeam, direction getter to CandleFire,
+getSwordHitbox()/swordDirection to Link. Wired into main.ts: SpawnManager in gameplay loop,
+screen transitions, cave entry/exit, respawn. DropEngine.rollDrop() on kill spawns ItemPickup.
+Clock item ($21) freezes enemies 660f. Debug console `__zelda.giveAll()` grants all items.
+Colored rectangle placeholder rendering with type-based colors. 36 new tests (921 total).
+Typecheck clean. Visually verified: enemies spawn on screen entry, take sword/boomerang/bomb
+damage, die with flash, drop items, contact damages Link. **Phase G started. Next: G2.**
 
-### 2026-08-19 — F3 Arrow + Candle fire upgrade + Food/Bait (Claude Opus 4.6)
-
-Created `src/objects/weapons/arrow.ts` — Arrow class with Flying→Spark→Dead state
-machine. QSpeed $C0 = 3px/f straight-line projectile matching sword beam pattern.
-Tile collision and screen boundary deactivation with 3-frame spark on hit. Requires
-bow + 1 rupee per shot (deducted in main.ts). isSilver flag for damage differentiation
-($20 wood / $40 silver). Vertical arrows nudged +3px right per Z_05.asm:2997.
-deactivate() API for G1 enemy hit. Upgraded `src/objects/weapons/candle-fire.ts` —
-critical speed fix: replaced 1px/f integer movement with NES-accurate QSpeed $20 =
-0.5px/f (walking phase now 32 frames for 16px, was 16). Added sprite rendering via
-projectilesSheet with flicker alternation. Exported FIRE_DAMAGE=$10. Created
-`src/objects/weapons/food.ts` — Food class with 3-phase stationary bait (255 frames
-per phase = 765 total, ~12.75 seconds per Z_07.asm:3763). No collision per
-Z_01.asm:5835. getPosition() API for G1 enemy attraction. Food NOT consumed on
-placement (only by Grumble Goriya in H-phase). Added NES slot $0F sharing guards
-between boomerang and food in main.ts. Added arrow/fire/food constants to
-constants.ts. Updated tile-object test for new fire speed. 27 new tests (812
-total). Typecheck clean. Visually verified: arrow flies and vanishes, candle fire
-moves slowly, food sits on ground, boomerang blocked during food. **Next: F4.**
-
-### 2026-08-19 — F2 Boomerang + Bombs (Claude Opus 4.6)
-
-Created `src/objects/weapons/boomerang.ts` — Boomerang class with NES-accurate
-5-state machine from Z_07.asm:3857 UpdateArrowOrBoomerang: FlyAway ($10, QSpeed
-$C0 = 3px/f) → SparkTurn ($20, 3 frames) → SlowDown ($30, QSpeed $40 = 1px/f,
-16 frames) → ReturnSlow ($40, diagonal homing at half speed via 9-entry speed
-tables from Z_07.asm:3831, 32 frames) → ReturnFast ($50, full speed until caught
-within 9px). Normal limit 49px, magic 255px. Diagonal throw via input directions
-(NES-accurate). 9-entry animation cycle with flip attrs. 8×8 hitbox at (x+4, y+8).
-forceReturn() API for G1 enemy collision. Upgraded `src/objects/weapons/bomb.ts`
-from E3 stub: added getExplosionHitbox() (48×48 centered during Detonating, $18
-radius per Z_01.asm:6108), shouldFlash getter (toggles at timer $0B/$06), cloud
-sprite rendering with alternating offset sets from sprites.json bombCloud data.
-Exported BOMB_DAMAGE=$40 for G1. Added boomerang/bomb constants to constants.ts.
-Wired in main.ts: useBItem() case 0 with diagonal direction detection, boomerang
-update/render, projectilesSheet/cloudSheet SpriteSheets, bomb screen flash overlay,
-transition cleanup. 33 new tests (785 total). Typecheck clean. Visually verified:
-bomb place/detonate, boomerang throw/return, HUD item display. **Next: F3.**
-
-### 2026-08-18 — F1 Item model + inventory subscreen (Claude Opus 4.6)
-
-Created `src/objects/player/inventory.ts` — Inventory class mirroring NES RAM
-$0656-$067E with graded items (sword 0-3, arrow 0-2, candle 0-2, ring 0-2,
-boomerang wood/magic, potion 0-2, letter 0-2), boolean items (bow, flute, food,
-wand, raft, book, ladder, magicKey, bracelet, magicShield), dungeon bitmasks
-(compass, map, triforce). 9 selectable B-slots matching NES FindAndSelectOccupied-
-ItemSlot: slot 0=boomerang pseudo-slot, slot 3=bow always skipped, slot 2=arrow
-requires bow, slot 7=potion/letter fallback. Link class refactored: boolean fields
-(_hasSword, _hasBracelet, etc.) replaced with inventory delegation. Created
-`src/objects/enemies/drop-engine.ts` — NES-faithful drop algorithm (4 enemy groups,
-worldKillCycle mod 10, help drops at 16 kills/10 non-drops). Created
-`src/objects/pickups/item-pickup.ts` — world-space dropped item with lifetime/flash/
-collision. Created `src/ui/inventory-screen.ts` — NES-accurate subscreen renderer
-with blue boxes, item grid (selectable + passive rows), cursor flash (8-frame
-toggle), triforce outline. Created `src/ui/inventory-slide.ts` — 3px/frame scroll
-(NES MenuState). Created `src/ui/tint-utils.ts` — transparency-then-tint for red
-font (#d82800). Updated `src/data/item-sprites.ts`: fixed sword mapping (col 7 row
-3 per zelda-clone ItemSpriteFactory.cs), added center-crop (30% inset), added
-processItemsImage for background transparency, added clock sprite. Updated
-`src/ui/hud.ts`: B/A item sprite rendering at (124,32)/(152,32). Updated
-`src/world/cave-room.ts`: replaced 80-line drawItem colored rectangles with
-drawItemSprite, added itemsImage constructor param. Expanded handleItemPickup to
-cover all 36 NES item IDs with upgrade logic. Replaced placeWeapon stub with
-useBItem() dispatching on selectedBSlot. Start button opens inventory (blocks
-gameplay), Left/Right cycles cursor, Start closes. 39 new tests (752 total).
-Typecheck clean. Known polish: HUD has duplicate sword in A-slot (hud.png
-background has baked-in sword graphic), subscreen layout slightly oversized.
-**Phase F started. Next: F2.**
-
-### 2026-08-17 — E4b Shops + money game (Claude Opus 4.6)
-
-Added shop purchase system to CaveRoom: shop caves (objectTypes 0x75-0x7A) display
-up to 3 items at NES CaveWareXs positions ($58/$78/$98), prices rendered below via
-BitmapFont, rupee "X" indicator at ($30, $AB). Shop update checks all 3 slots for
-Link proximity (dx<12, dy<10), verifies rupees >= price, generates CavePurchaseEvent
-with slotIndex/itemId/price. main.ts processes events: spendRupees + handleItemPickup.
-Added money game (objectType 0x70): generateMoneyGameAmounts() creates 3 randomized
-amounts — one win (+20 or +50) and two losses (-10, -10 or -40) shuffled via
-Fisher-Yates. Link touches a position with ≥10 rupees → pays 10 + wins/loses chosen
-amount. Results displayed with +/- signs. MoneyGameResult event processed by main.ts.
-Potion shop (0x74) stubbed as shop behavior (Letter requirement deferred to F4).
-Added 15 colored item shapes for cave rendering: bombs (#303080), magic shield
-(#8080c0), arrows, candles (blue/red), bait, potions (blue/red), rings (blue/red).
-Fixed ITEM_Y from 96 to 88 (NES ObjY $98 - HUD $40 = $58 = 88). 8 new tests
-(713 total). Typecheck clean. **Phase E complete. Next: F1.**
-
-### 2026-08-17 — E4a Cave type system (Claude Opus 4.6)
-
-Created `scripts/extract-cave-text.ts` — extracts all 38 NPC dialogue strings from
-PersonText.dat in the NES ROM. Decoded from NES PPU tile encoding (low 6 bits =
-character tile ID, high 2 bits = line control: $80=line 2, $40=line 3, $C0=end).
-Fixed iNES header offset (+16 bytes). Character map: $00-$09→0-9, $0A-$23→A-Z,
-$24/$25→space, $28→comma, $2A→apostrophe, $2C→!, $2D→-, $2E→?, $2F→hyphen.
-Output: `src/data/cave-text.json` + `src/data/cave-text-types.ts`. Generalized
-`src/world/cave-room.ts` — CaveRoom now supports all 20 cave objectTypes via
-behavior detection: gift (0x6A-0x6D, 0x72), hint (0x6E-0x6F, 0x73), doorRepair
-(0x71), moblinGive (0x7B-0x7D), shop (0x75-0x7A), moneyGame (0x70), potionShop
-(0x74). NPC type selection: Old Man (default), Old Woman (0x70, 0x79, 0x7A),
-Moblin (≥0x7B). Text lookup via caveTypes[].textSelector / 2 → PersonTextAddrs
-message index. Heart requirement check for White Sword (5 containers) and Magic
-Sword (12 containers). Room flag integration: already-taken caves show empty
-(person+items hidden). Colored item shapes per type (sword variants, heart
-container, letter, rupees) — items.png has black backgrounds invisible against
-dark caves, deferred real sprite rendering to F1. Added rupees/keys/bombs/maxBombs
-to Link with addRupees/spendRupees/addKeys/addBombs/addHeartContainer methods.
-HUD wired to live Link.rupees/keys/bombs. Generic handleItemPickup switch for all
-item types (swords, bracelet, magic shield, heart container, bombs, keys, rupees).
-Door repair auto-deducts 20 rupees per Z_01.asm:696. Moblin caves give rupees from
-prices[1]. Created `src/data/item-sprites.ts` — NES item ID → items.png grid
-mapping (32 items, 10×4 grid at 40×40 cells). Added extract:cave-text npm script.
-35 new tests (705 total). Typecheck clean. Visually verified: sword cave shows
-correct text + Old Man + fires + item shape.
-**E4 split into E4a/E4b. Next: E4b.**
-
-### 2026-08-17 — E3 Overworld secrets (Claude Opus 4.6)
-
-Created `scripts/extract-secrets.ts` — extracts per-screen quest secret numbers
-(AttrsF bits 6-7, 32 screens with quest-specific secrets) and shortcut positions
-(4 packed bytes from LevelInfoOW offset 41). Output: `src/data/secrets.json` +
-`src/data/secret-types.ts` with tile object type constants ($62-$67) and square
-index mappings (38-43). Created `src/world/room-flags.ts` — RoomFlags class with
-128-byte per-room state, isSecretFound/setSecretFound (bit $80 per NES WorldFlags).
-Created `src/objects/weapons/bomb.ts` — Bomb stub with 4-phase NES timer (BombTimes
-$30/$18/$0C/$06), isDetonating flag for wall detection. Created
-`src/objects/weapons/candle-fire.ts` — CandleFire stub: walks 16px then stands 63
-frames, isStanding flag for tree detection. Created `src/world/tile-object.ts` —
-TileObjectManager: scans tile grid for special square indices 38-43 mapping to tile
-object types, quest secret mismatch filtering (Q2-only skipped in Q1), pre-reveal
-on revisit via room flags. Three secret handlers: bombable rock wall (bomb within
-16px → cave entrance at tile position), burnable tree (standing fire within 16px →
-stairs at shortcut position from secrets.json), pushable rock/gravestone (vertical
-only, bracelet check for rock, 16-frame push timer + 16px slide → stairs). Fixed
-push direction logic per Z_04.asm RockPushDirections (Link below → push Up, above
-→ push Down). Updated `src/render/tile-renderer.ts` — renderScreen() accepts tile
-override map; cave entrance sampled from reference screen (7,7), stairs rendered as
-brown/black stripes. Updated `src/world/overworld-manager.ts` — added RoomFlags,
-TileObjectManager, SecretsData; constructor takes secretsData param; initForScreen
-on transition/setScreen; updateTileObjects() and renderTileObject() methods;
-checkCaveEntry() expanded to detect revealed cave entrances via tile overrides.
-Added hasBracelet/setBracelet to Link. Updated `src/main.ts` — loads secrets.json,
-bomb/fire arrays, Z key places fire (first press) then bomb (second press per
-screen), weapons update/render each frame, tile object secrets update. Added
-`extract:secrets` npm script. 44 new tests (670 total). Typecheck clean (only
-pre-existing errors). No console errors. Cave entry still works.
-**Next: E4.**
-
-### 2026-08-16 — E2 Cave/staircase entry and exit (Claude Opus 4.6)
-
-Created `src/data/cave-data.ts` — SCREEN_CAVE_INDEX mapping (78 cave screens from
-ROM LevelBlockOW.dat AttrsB, formula: ((attrsB & 0xFC) - 0x40) / 4),
-CAVE_ENTRANCE_TILES (tile 12 = dark opening), helper functions. Created
-`src/world/curtain-effect.ts` — CurtainEffect class with close/open directions,
-8 steps × 4 frames per step = 32 frames total, draws two black columns from
-edges (close) or center (open). Created `src/world/cave-room.ts` — CaveRoom class
-rendering cave-map.png background, Old Man from npcs.png, fire placeholders, item
-(WoodSword drawn as colored shape), centered text ("IT'S DANGEROUS TO GO ALONE!
-TAKE THIS." via BitmapFont). Walk-in auto-walk (32 frames). Item pickup detection
-(proximity check), exit detection (bottom of cave). Added CaveTransition and
-CaveInterior to GameMode enum. Added cave entry detection to OverworldManager
-(checkCaveEntry: checks tile above Link when facing up on cave screen). Walk-into-
-darkness phase (8 frames of Link walking into dark tile before curtain). Entry
-position saved for overworld return. Changed Link._hasSword default to false —
-sword acquired by picking up WoodSword in cave. Updated 6 existing tests to
-call setHasSword(true). 13 new cave tests (626 total). Typecheck clean. Visually
-verified: walk into cave → curtain close → cave interior → pick up sword → exit →
-curtain open → back on overworld → sword swing works. Known polish items: Old Man
-sprite has blue background (needs transparency key), HUD shows sword before
-acquisition (F1 fix), fire sprites are placeholders.
-**Next: E3.**
-
-Older sessions archived → `../PROGRESS.md` (A1–E1, 2026-08-02 through 2026-08-16).
+Older sessions archived → `../PROGRESS.md` (A1–F4c, 2026-08-02 through 2026-08-21).

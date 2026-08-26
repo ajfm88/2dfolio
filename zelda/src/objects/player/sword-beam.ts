@@ -41,6 +41,10 @@ export class SwordBeam {
     return this._active;
   }
 
+  deactivate(): void {
+    this._active = false;
+  }
+
   update(collision: TileCollisionMap, screen: OverworldScreen): void {
     if (!this._active) return;
 

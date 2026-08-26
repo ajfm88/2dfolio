@@ -492,6 +492,15 @@ export class Link {
     };
   }
 
+  getSwordHitbox(): Rect | null {
+    if (!this.sword.isActive()) return null;
+    return this.sword.getHitbox(this._x, this._y);
+  }
+
+  get swordDirection(): Direction {
+    return this.sword.direction;
+  }
+
   // NES QSpeed accumulator: apply QSpeedFrac 4 times, count carry-outs
   private computeQSpeedPixels(): number {
     let pixels = 0;

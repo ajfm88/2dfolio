@@ -1,4 +1,5 @@
 import {
+  ENEMY_SHEET_COLUMNS,
   HEART_REFILL_INTERVAL,
   LADDER_ROOMS_OW,
   LINK_SHEET_COLUMNS,
@@ -49,6 +50,21 @@ import { RecorderEffect, RecorderPhase } from './objects/items/recorder.js';
 import { Stepladder } from './objects/items/stepladder.js';
 import { MagicRod } from './objects/weapons/magic-rod.js';
 import { MagicShot } from './objects/weapons/magic-shot.js';
+import { SpawnManager } from './objects/enemies/spawn-manager.js';
+import { checkWeaponEnemyCollisions, checkEnemyLinkCollisions, checkEnemyProjectileCollisions } from './objects/enemies/enemy-collision.js';
+import { DropEngine } from './objects/enemies/drop-engine.js';
+import { DAMAGE_TABLE } from './core/damage-tables.js';
+import type { EnemySpawnData } from './data/enemy-spawn-types.js';
+import type { DungeonData } from './data/dungeon-types.js';
+import { getDungeonLevel } from './data/dungeon-entrance-data.js';
+import { isCaveEntranceTile } from './data/cave-data.js';
+import { DungeonManager } from './world/dungeon-manager.js';
+import { DungeonRenderer } from './render/dungeon-renderer.js';
+import type { TileCollisionMap } from './world/collision.js';
+import { RoomFlags } from './world/room-flags.js';
+import { checkSecretTrigger } from './world/dungeon-secrets.js';
+import { SpikeTrap } from './objects/enemies/spike-trap.js';
+import { PushBlock, PushBlockState } from './world/push-block.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -130,26 +146,53 @@ let moduleLevelSecretsData: SecretsData | null = null;
 let teleportingLevelIndex = 0;
 let recorderEffect: RecorderEffect | null = null;
 
+// Enemy system (G1/G2)
+let spawnManager: SpawnManager | null = null;
+let dropEngine: DropEngine | null = null;
+let enemySpawnData: EnemySpawnData | null = null;
+let itemsDataForDrops: ItemData | null = null;
+let enemySheet: SpriteSheet | null = null;
+
+// Dungeon system (H1a + H1b)
+let currentLevel = 0; // 0 = overworld, 1-9 = dungeon
+let dungeonManager: DungeonManager | null = null;
+let dungeonRenderer: DungeonRenderer | null = null;
+let dungeonData: DungeonData | null = null;
+let dungeonEntryScreenRow = 0;
+let dungeonEntryScreenCol = 0;
+let dungeonEntryX = 0;
+let dungeonEntryY = 0;
+let dungeonRoomFlags: RoomFlags | null = null;
+let dungeonSpikeTraps: SpikeTrap[] = [];
+let dungeonPushBlock: PushBlock | null = null;
+let dungeonRoomItem: ItemPickup | null = null;
+let dungeonRoomItemActive = false;
+
 async function init(): Promise<void> {
   try {
     assets = await loadAllAssets((loaded, total) => {
       loadProgress = { loaded, total };
     });
 
-    const [owResp, itemsResp, secretsResp, caveTextResp] = await Promise.all([
+    const [owResp, itemsResp, secretsResp, caveTextResp, enemySpawnResp, dungeonResp] = await Promise.all([
       fetch('/src/data/overworld.json'),
       fetch('/src/data/items.json'),
       fetch('/src/data/secrets.json'),
       fetch('/src/data/cave-text.json'),
+      fetch('/src/data/enemy-spawns.json'),
+      fetch('/src/data/dungeons.json'),
     ]);
     const overworldData = (await owResp.json()) as OverworldData;
     const itemsData = (await itemsResp.json()) as ItemData;
     const secretsData = (await secretsResp.json()) as SecretsData;
     caveTextData = (await caveTextResp.json()) as CaveTextData;
+    enemySpawnData = (await enemySpawnResp.json()) as EnemySpawnData;
+    dungeonData = (await dungeonResp.json()) as DungeonData;
     caveContentsData = [...itemsData.caveContents];
     caveTypesData = itemsData.caveTypes;
     fluteSecretRoomIds = itemsData.fluteSecretRoomIds;
     moduleLevelSecretsData = secretsData;
+    itemsDataForDrops = itemsData;
 
     tileRenderer.init(assets.maps.overworldMap);
     linkSheet = new SpriteSheet({
@@ -184,6 +227,14 @@ async function init(): Promise<void> {
       columns: 1,
       autoDetectTransparency: true,
     });
+    enemySheet = new SpriteSheet({
+      image: assets.sprites.enemies,
+      columns: ENEMY_SHEET_COLUMNS,
+      spacingX: SPRITE_SPACING,
+      spacingY: SPRITE_SPACING,
+      autoDetectTransparency: true,
+    });
+    dungeonRenderer = new DungeonRenderer(assets.maps.dungeonsMap);
     hudRenderer = new HudRenderer(
       assets.ui.hud,
       assets.sprites.font,
@@ -196,12 +247,50 @@ async function init(): Promise<void> {
     inventoryScreen = new InventoryScreen();
     link = new Link();
     overworld = new OverworldManager(overworldData, tileRenderer, 7, 7, secretsData);
+    spawnManager = new SpawnManager(enemySpawnData, itemsData.objectHpPairs);
+    dropEngine = new DropEngine();
+    // Spawn enemies for the starting screen
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
   }
 }
 
 void init();
+
+// Debug: expose game state for console testing
+(window as unknown as Record<string, unknown>).__zelda = {
+  get link() { return link; },
+  get overworld() { return overworld; },
+  get spawnManager() { return spawnManager; },
+  get dungeonManager() { return dungeonManager; },
+  get currentLevel() { return currentLevel; },
+  giveAll() {
+    if (!link) return;
+    const inv = link.inventory;
+    inv.sword = 3;
+    inv.woodBoomerang = true;
+    inv.magicBoomerang = true;
+    inv.bow = true;
+    inv.arrow = 2;
+    inv.candle = 2;
+    inv.ring = 0;
+    inv.food = true;
+    inv.flute = true;
+    inv.wand = true;
+    inv.book = true;
+    inv.raft = true;
+    inv.ladder = true;
+    inv.magicKey = true;
+    inv.bracelet = true;
+    inv.magicShield = true;
+    inv.potion = 2;
+    link.addRupees(255);
+    link.addBombs(16);
+    link.addKeys(9);
+    link.setHealth(32, 32);
+  },
+};
 
 function getActiveLinkSheet(): SpriteSheet | null {
   if (!link) return linkSheet;
@@ -227,6 +316,114 @@ function enterCave(caveIndex: number): void {
   caveWalkIntoFrames = 8;
   link.setDirection(Direction.Up);
   gameMode = GameMode.CaveTransition;
+  if (spawnManager) spawnManager.clear();
+}
+
+function enterDungeon(level: number): void {
+  if (!link || !overworld || !dungeonData || !dungeonRenderer) return;
+
+  dungeonEntryScreenRow = overworld.screenRow;
+  dungeonEntryScreenCol = overworld.screenCol;
+  dungeonEntryX = link.posX;
+  dungeonEntryY = link.posY;
+
+  currentLevel = level;
+  caveWalkIntoFrames = 8;
+  link.setDirection(Direction.Up);
+  gameMode = GameMode.DungeonTransition;
+  if (spawnManager) spawnManager.clear();
+}
+
+function startDungeonInterior(): void {
+  if (!link || !dungeonData || !dungeonRenderer) return;
+
+  if (!dungeonRoomFlags) dungeonRoomFlags = new RoomFlags();
+  dungeonManager = new DungeonManager(currentLevel, dungeonData, dungeonRenderer, dungeonRoomFlags);
+
+  const info = dungeonManager.dungeonInfo;
+  link.setPosition(120, info.startY - 64);
+  link.setDirection(Direction.Up);
+
+  curtainEffect = new CurtainEffect('open');
+  gameMode = GameMode.DungeonGameplay;
+
+  if (spawnManager) {
+    spawnManager.clear();
+    spawnDungeonRoomEnemies();
+  }
+  initDungeonRoomObjects();
+}
+
+function exitDungeon(): void {
+  if (!link || !overworld) return;
+
+  currentLevel = 0;
+  dungeonManager = null;
+  dungeonSpikeTraps = [];
+  dungeonPushBlock = null;
+  dungeonRoomItem = null;
+  dungeonRoomItemActive = false;
+
+  overworld.setScreen(dungeonEntryScreenRow, dungeonEntryScreenCol);
+  link.setPosition(dungeonEntryX, dungeonEntryY);
+  link.setDirection(Direction.Down);
+
+  curtainEffect = new CurtainEffect('open');
+  gameMode = GameMode.DungeonTransition;
+
+  if (spawnManager && overworld) {
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+  }
+}
+
+function spawnDungeonRoomEnemies(): void {
+  if (!spawnManager || !dungeonManager || !enemySpawnData) return;
+
+  spawnManager.clear();
+  const room = dungeonManager.currentRoom;
+  if (room.monsterListId === 0) return;
+
+  const foeCounts = dungeonManager.dungeonInfo.foeCounts;
+  const maxCount = foeCounts[room.monsterCountIndex] ?? 4;
+
+  spawnManager.spawnForDungeonRoom(
+    room.monsterListId,
+    maxCount,
+    Direction.Down,
+  );
+}
+
+function initDungeonRoomObjects(): void {
+  if (!dungeonManager) return;
+
+  dungeonSpikeTraps = [];
+  dungeonPushBlock = null;
+  dungeonRoomItem = null;
+  dungeonRoomItemActive = false;
+
+  const room = dungeonManager.currentRoom;
+
+  // Spike traps: monsterListId $49 or $4A
+  if (room.monsterListId === 0x49 || room.monsterListId === 0x4A) {
+    dungeonSpikeTraps = SpikeTrap.createTraps(room.monsterListId);
+  }
+
+  // Push block
+  const pbPos = dungeonManager.findPushBlockPosition();
+  if (pbPos) {
+    dungeonPushBlock = new PushBlock(pbPos.x, pbPos.y);
+  }
+
+  // Room item
+  const itemId = room.itemId;
+  if (itemId !== 3 && !dungeonManager.isItemTaken()) {
+    const itemPos = dungeonManager.getRoomItemPosition();
+    if (itemPos) {
+      dungeonRoomItem = new ItemPickup(itemId, itemPos.x, itemPos.y);
+      // Secret-gated items start hidden
+      dungeonRoomItemActive = !dungeonManager.isItemSecretGated();
+    }
+  }
 }
 
 function lookupCaveText(caveIndex: number): CaveTextMessage | null {
@@ -295,9 +492,14 @@ function returnToOverworld(): void {
   curtainEffect = new CurtainEffect('open');
   gameMode = GameMode.CaveTransition;
   pendingCaveIndex = -2; // sentinel: opening curtain on overworld
+  // Respawn enemies when returning to overworld
+  if (spawnManager && overworld) {
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+  }
 }
 
 function getHudState(): import('./ui/hud.js').HudState {
+  const inDungeon = currentLevel > 0 && dungeonManager !== null;
   return {
     rupees: link ? link.rupees : 0,
     keys: link ? link.keys : 0,
@@ -309,16 +511,33 @@ function getHudState(): import('./ui/hud.js').HudState {
     aItem: link ? link.inventory.getSwordItemId() : null,
     mapRow: overworld ? overworld.screenRow : 7,
     mapCol: overworld ? overworld.screenCol : 7,
-    isOverworld: gameMode !== GameMode.CaveInterior,
-    levelNumber: 0,
+    isOverworld: !inDungeon && gameMode !== GameMode.CaveInterior,
+    levelNumber: currentLevel,
+    dungeonRoomCol: inDungeon ? dungeonManager!.currentRoomId % 16 : undefined,
+    dungeonRoomRow: inDungeon ? Math.floor(dungeonManager!.currentRoomId / 16) : undefined,
+    dungeonVisitedRooms: inDungeon ? dungeonManager!.visitedRooms : undefined,
+    dungeonValidRooms: inDungeon ? dungeonManager!.validRoomIds : undefined,
+    hasMap: inDungeon && link ? link.inventory.hasMapForLevel(currentLevel) : undefined,
+    hasCompass: inDungeon && link ? link.inventory.hasCompassForLevel(currentLevel) : undefined,
+    triforceRoomId: inDungeon ? dungeonManager!.triforceRoomId : undefined,
   };
 }
 
 function renderDebugOverlay(): void {
   const ctx = renderer.ctx;
-  const screenId = overworld ? overworld.currentScreen.id : -1;
-  const sr = overworld ? overworld.screenRow : 0;
-  const sc = overworld ? overworld.screenCol : 0;
+  let screenId: number;
+  let sr: number;
+  let sc: number;
+
+  if (currentLevel > 0 && dungeonManager) {
+    screenId = dungeonManager.currentRoomId;
+    sr = Math.floor(screenId / 16);
+    sc = screenId % 16;
+  } else {
+    screenId = overworld ? overworld.currentScreen.id : -1;
+    sr = overworld ? overworld.screenRow : 0;
+    sc = overworld ? overworld.screenCol : 0;
+  }
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.fillRect(0, 0, renderer.playAreaWidth, 12);
@@ -328,8 +547,9 @@ function renderDebugOverlay(): void {
   const lx = link ? link.posX : 0;
   const ly = link ? link.posY : 0;
   const modeStr = GameMode[gameMode] ?? '?';
+  const levelStr = currentLevel > 0 ? ` L${currentLevel}` : '';
   ctx.fillText(
-    `FPS:${fpsCounter.fps} F:${frameCount} Screen:${screenId} (${sr},${sc}) Link:(${lx},${ly}) ${modeStr}`,
+    `FPS:${fpsCounter.fps} F:${frameCount} Room:${screenId} (${sr},${sc}) Link:(${lx},${ly}) ${modeStr}${levelStr}`,
     2,
     9,
   );
@@ -443,7 +663,7 @@ function updateGameplay(): void {
 
   if (overworld.isTransitioning) {
     overworld.updateTransition(link);
-    // Clear weapons, pickups, and auto-activation items on screen transition
+    // Clear weapons, pickups, enemies, and auto-activation items on screen transition
     bombs = [];
     fires = [];
     boomerang = null;
@@ -457,6 +677,12 @@ function updateGameplay(): void {
     overworld.collisionMap.clearWalkableOverrides();
     pickups = [];
     usedCandleThisScreen = false;
+
+    // Spawn enemies for the new screen after transition completes
+    if (!overworld.isTransitioning && spawnManager) {
+      const entryDir = link.facing;
+      spawnManager.spawnForScreen(overworld.currentScreen, entryDir);
+    }
 
     // Check for raft room after transition completes
     if (!overworld.isTransitioning && link.inventory.raft) {
@@ -589,6 +815,69 @@ function updateGameplay(): void {
     // Secret was revealed — could play SFX here (K1)
   }
 
+  // Update enemies
+  if (spawnManager) {
+    spawnManager.update(overworld.collisionMap, overworld.currentScreen, link.posX, link.posY);
+
+    // Check weapon→enemy collisions
+    const hitResults = checkWeaponEnemyCollisions(spawnManager.activeEnemies, {
+      swordHitbox: link.getSwordHitbox(),
+      swordDirection: link.swordDirection,
+      swordBeam: link.activeSwordBeam,
+      boomerang,
+      bombs,
+      arrow,
+      fires,
+      magicShot,
+      magicRod,
+      linkX: link.posX,
+      linkY: link.posY,
+      swordLevel: link.inventory.sword,
+      hasMagicBoomerang: link.inventory.magicBoomerang,
+    });
+
+    // Handle kills — spawn item drops
+    for (const result of hitResults) {
+      if (result.killed && dropEngine && itemsDataForDrops) {
+        const droppedItemId = dropEngine.rollDrop(result.enemy.objectType, itemsDataForDrops.dropTables);
+        if (droppedItemId !== null) {
+          pickups.push(new ItemPickup(droppedItemId, result.enemy.x, result.enemy.y));
+        }
+      }
+    }
+
+    // Check enemy→Link contact damage
+    if (!link.isInvincible && !link.isDead) {
+      const hittingEnemy = checkEnemyLinkCollisions(spawnManager.activeEnemies, link.getCollisionRect());
+      if (hittingEnemy) {
+        const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
+        if (rawDamage > 0) {
+          link.takeDamage(rawDamage, hittingEnemy.direction);
+        }
+      }
+    }
+
+    // Check enemy projectiles against Link (shield deflection + damage)
+    if (!link.isInvincible && !link.isDead && spawnManager.projectiles.length > 0) {
+      const projHit = checkEnemyProjectileCollisions(
+        spawnManager.projectiles,
+        link.getCollisionRect(),
+        link.facing,
+        link.isIdle,
+        link.hasMagicShield,
+      );
+      if (projHit) {
+        if (!projHit.blocked) {
+          const projDamage = DAMAGE_TABLE[projHit.projectile.type] ?? 0x80;
+          if (projDamage > 0) {
+            link.takeDamage(projDamage, projHit.projectile.direction);
+          }
+          projHit.projectile.deactivate();
+        }
+      }
+    }
+  }
+
   // Update pickups — collision with Link
   for (const pickup of pickups) {
     pickup.update();
@@ -599,7 +888,22 @@ function updateGameplay(): void {
   }
   pickups = pickups.filter(p => p.isActive);
 
-  // Check cave entry — Link facing up, walking into a cave entrance tile
+  // Check dungeon entrance first, then cave entry
+  const dungeonLevel = getDungeonLevel(overworld.currentScreen.id);
+  if (dungeonLevel !== null && link.facing === Direction.Up && link.isMoving) {
+    const checkX = link.posX + 8;
+    const checkY = link.posY - 1;
+    if (checkY >= 0) {
+      const col = Math.floor(checkX / 16);
+      const row = Math.floor(checkY / 16);
+      const tileIndex = overworld.currentScreen.tiles[row]?.[col];
+      if (tileIndex !== undefined && isCaveEntranceTile(tileIndex)) {
+        enterDungeon(dungeonLevel);
+        return;
+      }
+    }
+  }
+
   const caveIndex = overworld.checkCaveEntry(link);
   if (caveIndex !== null) {
     enterCave(caveIndex);
@@ -610,6 +914,255 @@ function updateGameplay(): void {
     gameMode = GameMode.DeathAnimation;
     deathAnimation = new DeathAnimation(link.posX, link.posY);
     return;
+  }
+}
+
+function updateDungeonGameplay(): void {
+  if (!link || !dungeonManager || !inventorySlide) return;
+
+  if (heartRefillActive) {
+    heartRefillTimer++;
+    if (heartRefillTimer >= HEART_REFILL_INTERVAL) {
+      heartRefillTimer = 0;
+      link.heal(1);
+      if (link.health >= link.maxHealth) {
+        heartRefillActive = false;
+      }
+    }
+    return;
+  }
+
+  if (inventorySlide.isVisible) {
+    updateInventory();
+    return;
+  }
+
+  if (input.isJustPressed(Action.Start)) {
+    inventorySlide.open();
+    return;
+  }
+
+  const collision = dungeonManager.collision as unknown as TileCollisionMap;
+  const screen = dungeonManager.dummyScreen;
+
+  link.blockSwordAttack = magicRod !== null && magicRod.isActive();
+  const result = link.update(input, collision, screen);
+
+  // Ignore screen edge results in dungeons — door transitions handled differently
+  void result;
+
+  // Check dungeon exit BEFORE room transitions (start room's south door leads out)
+  if (dungeonManager.checkDungeonExit(link)) {
+    curtainEffect = new CurtainEffect('close');
+    gameMode = GameMode.DungeonTransition;
+    caveWalkIntoFrames = 0;
+    pendingCaveIndex = -3; // sentinel: exiting dungeon
+    return;
+  }
+
+  // Check for room transitions through doors
+  const doorDir = dungeonManager.checkRoomTransition(link);
+  if (doorDir !== null) {
+    // Try to pass through the door (key/bomb/shutter checks)
+    if (dungeonManager.touchDoor(doorDir, link)) {
+      dungeonManager.transitionToRoom(doorDir);
+      const entry = dungeonManager.getEntryPosition(doorDir);
+      link.setPosition(entry.x, entry.y);
+      link.setDirection(doorDir);
+
+      bombs = [];
+      fires = [];
+      boomerang = null;
+      arrow = null;
+      food = null;
+      magicRod = null;
+      magicShot = null;
+      pickups = [];
+      usedCandleThisScreen = false;
+
+      spawnDungeonRoomEnemies();
+      initDungeonRoomObjects();
+      return;
+    }
+  }
+
+  // Item button
+  const rodActive = magicRod !== null && magicRod.isActive();
+  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive) {
+    useBItem(link);
+  }
+
+  // Update weapons
+  for (const bomb of bombs) { bomb.update(); }
+  bombs = bombs.filter(b => b.isActive);
+  for (const fire of fires) { fire.update(); }
+  fires = fires.filter(f => f.isActive);
+  if (boomerang && link) {
+    boomerang.update(link.posX, link.posY);
+    if (!boomerang.isActive) boomerang = null;
+  }
+  if (arrow) {
+    arrow.update(collision, screen);
+    if (!arrow.isActive) arrow = null;
+  }
+  if (food) {
+    food.update();
+    if (!food.isActive) food = null;
+  }
+  if (magicRod) {
+    const rodResult = magicRod.update();
+    if (rodResult.shouldFireShot && !magicShot) {
+      const shotPos = magicRod.getRodPosition(link.posX, link.posY);
+      if (shotPos) magicShot = new MagicShot(shotPos.x, shotPos.y, link.facing);
+    }
+    if (rodResult.done) magicRod = null;
+  }
+  if (magicShot) {
+    magicShot.update(collision, screen);
+    if (!magicShot.isActive) {
+      if (magicShot.wasBlocked && link.inventory.book) {
+        fires.push(CandleFire.createBookFire(magicShot.x, magicShot.y));
+      }
+      magicShot = null;
+    }
+  }
+
+  // Update enemies
+  if (spawnManager) {
+    spawnManager.update(collision, screen, link.posX, link.posY);
+
+    const hitResults = checkWeaponEnemyCollisions(spawnManager.activeEnemies, {
+      swordHitbox: link.getSwordHitbox(),
+      swordDirection: link.swordDirection,
+      swordBeam: link.activeSwordBeam,
+      boomerang,
+      bombs,
+      arrow,
+      fires,
+      magicShot,
+      magicRod,
+      linkX: link.posX,
+      linkY: link.posY,
+      swordLevel: link.inventory.sword,
+      hasMagicBoomerang: link.inventory.magicBoomerang,
+    });
+
+    for (const hitResult of hitResults) {
+      if (hitResult.killed && dropEngine && itemsDataForDrops) {
+        const droppedItemId = dropEngine.rollDrop(hitResult.enemy.objectType, itemsDataForDrops.dropTables);
+        if (droppedItemId !== null) {
+          pickups.push(new ItemPickup(droppedItemId, hitResult.enemy.x, hitResult.enemy.y));
+        }
+      }
+    }
+
+    if (!link.isInvincible && !link.isDead) {
+      const hittingEnemy = checkEnemyLinkCollisions(spawnManager.activeEnemies, link.getCollisionRect());
+      if (hittingEnemy) {
+        const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
+        if (rawDamage > 0) link.takeDamage(rawDamage, hittingEnemy.direction);
+      }
+    }
+
+    if (!link.isInvincible && !link.isDead && spawnManager.projectiles.length > 0) {
+      const projHit = checkEnemyProjectileCollisions(
+        spawnManager.projectiles,
+        link.getCollisionRect(),
+        link.facing,
+        link.isIdle,
+        link.hasMagicShield,
+      );
+      if (projHit && !projHit.blocked) {
+        const projDamage = DAMAGE_TABLE[projHit.projectile.type] ?? 0x80;
+        if (projDamage > 0) link.takeDamage(projDamage, projHit.projectile.direction);
+        projHit.projectile.deactivate();
+      }
+    }
+  }
+
+  // Update spike traps
+  for (const trap of dungeonSpikeTraps) {
+    trap.update(link.posX, link.posY);
+    if (!link.isInvincible && !link.isDead) {
+      const trapHb = trap.getHitbox();
+      const linkRect = link.getCollisionRect();
+      if (
+        linkRect.x < trapHb.x + trapHb.width &&
+        linkRect.x + linkRect.width > trapHb.x &&
+        linkRect.y < trapHb.y + trapHb.height &&
+        linkRect.y + linkRect.height > trapHb.y
+      ) {
+        link.takeDamage(trap.damage, link.facing);
+      }
+    }
+  }
+
+  // Update push block
+  if (dungeonPushBlock && dungeonPushBlock.state !== PushBlockState.Done) {
+    const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
+    dungeonPushBlock.update(
+      { posX: link.posX, posY: link.posY, facing: link.facing, isMoving: link.isMoving },
+      allDead,
+    );
+  }
+
+  // Check bomb detonation near bombable doors
+  for (const bomb of bombs) {
+    if (bomb.isDetonating) {
+      const bx = bomb.x;
+      const by = bomb.y;
+      // Check each direction for bombable doors
+      if (by < 32) dungeonManager.bombDoor(Direction.Up);
+      if (by > 128) dungeonManager.bombDoor(Direction.Down);
+      if (bx < 32) dungeonManager.bombDoor(Direction.Left);
+      if (bx > 208) dungeonManager.bombDoor(Direction.Right);
+    }
+  }
+
+  // Check secret triggers
+  if (!dungeonManager.secretTriggered) {
+    const trigger = dungeonManager.currentRoom.secretTrigger;
+    if (trigger !== 0) {
+      const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
+      const pushComplete = dungeonPushBlock ? dungeonPushBlock.pushComplete : false;
+      const result = checkSecretTrigger(trigger, allDead, pushComplete, false);
+      if (result.shuttersOpen || result.stairsRevealed || result.itemActivated) {
+        dungeonManager.markSecretTriggered();
+        if (result.shuttersOpen) dungeonManager.triggerShutters();
+        if (result.itemActivated && dungeonRoomItem) dungeonRoomItemActive = true;
+      }
+    }
+  }
+
+  // Dark room: candle fire brightens
+  if (dungeonManager.isDark && fires.length > 0) {
+    dungeonManager.brightenRoom();
+  }
+
+  // Update pickups (enemy drops)
+  for (const pickup of pickups) {
+    pickup.update();
+    if (pickup.isActive && pickup.checkCollision(link.getCollisionRect())) {
+      pickup.collect();
+      handleItemPickup(pickup.itemId);
+    }
+  }
+  pickups = pickups.filter(p => p.isActive);
+
+  // Update room item
+  if (dungeonRoomItem && dungeonRoomItemActive && dungeonRoomItem.isActive) {
+    dungeonRoomItem.update();
+    if (dungeonRoomItem.checkCollision(link.getCollisionRect())) {
+      dungeonRoomItem.collect();
+      handleDungeonItemPickup(dungeonRoomItem.itemId);
+      dungeonManager.setItemTaken();
+      dungeonRoomItem = null;
+    }
+  }
+
+  if (link.isDead && gameMode === GameMode.DungeonGameplay) {
+    gameMode = GameMode.DeathAnimation;
+    deathAnimation = new DeathAnimation(link.posX, link.posY);
   }
 }
 
@@ -795,8 +1348,10 @@ function handleItemPickup(itemId: number): void {
     case 0x16: break; // Compass — dungeon-specific, set in H1
     case 0x17: break; // Map — dungeon-specific, set in H1
 
-    // Clock — temporary enemy freeze, G1
-    case 0x21: break;
+    // Clock — freeze all enemies for ~660 frames (Z_01.asm:2571)
+    case 0x21:
+      if (spawnManager) spawnManager.freezeAll(660);
+      break;
 
     // TriforceOfPower — end game, I3
     case 0x0e: break;
@@ -804,6 +1359,56 @@ function handleItemPickup(itemId: number): void {
 
   // Mark cave as taken
   overworld.roomFlags.setSecretFound(overworld.currentScreen.id);
+}
+
+function handleDungeonItemPickup(itemId: number): void {
+  if (!link) return;
+  const masked = itemId & 0x3f;
+  const inv = link.inventory;
+
+  switch (masked) {
+    case 0x16: inv.giveCompass(currentLevel); break;
+    case 0x17: inv.giveMap(currentLevel); break;
+    case 0x19: link.addKeys(1); break;
+    case 0x1b: inv.triforce |= (1 << (currentLevel - 1)); break;
+    case 0x00: link.addBombs(4); break;
+    case 0x0f: link.addRupees(5); break;
+    case 0x18: link.addRupees(1); break;
+    case 0x22: link.heal(2); break;
+    case 0x23: link.heal(link.maxHealth); break;
+    case 0x1a: link.addHeartContainer(); break;
+    default:
+      // For other items (weapons, tools), use the common handler logic
+      handleDungeonItemGeneric(masked);
+      break;
+  }
+}
+
+function handleDungeonItemGeneric(masked: number): void {
+  if (!link) return;
+  const inv = link.inventory;
+  switch (masked) {
+    case 0x01: inv.sword = Math.max(inv.sword, 1); break;
+    case 0x02: inv.sword = Math.max(inv.sword, 2); break;
+    case 0x03: inv.sword = Math.max(inv.sword, 3); break;
+    case 0x1d: inv.woodBoomerang = true; break;
+    case 0x1e: inv.magicBoomerang = true; break;
+    case 0x08: inv.arrow = Math.max(inv.arrow, 1); break;
+    case 0x09: inv.arrow = Math.max(inv.arrow, 2); break;
+    case 0x06: inv.candle = Math.max(inv.candle, 1); break;
+    case 0x07: inv.candle = Math.max(inv.candle, 2); break;
+    case 0x0a: inv.bow = true; break;
+    case 0x0b: inv.magicKey = true; break;
+    case 0x0c: inv.raft = true; break;
+    case 0x0d: inv.ladder = true; break;
+    case 0x10: inv.wand = true; break;
+    case 0x11: inv.book = true; break;
+    case 0x14: inv.bracelet = true; break;
+    case 0x1c: inv.magicShield = true; break;
+    case 0x12: inv.ring = Math.max(inv.ring, 1); break;
+    case 0x13: inv.ring = Math.max(inv.ring, 2); break;
+    case 0x21: if (spawnManager) spawnManager.freezeAll(660); break;
+  }
 }
 
 function updateCaveInterior(): void {
@@ -872,18 +1477,92 @@ function readCaveInputDirection(): Direction | null {
 }
 
 function handleRespawn(): void {
-  const params = computeRespawnParams(0);
+  const params = computeRespawnParams(currentLevel);
 
-  if (overworld) {
-    overworld.setScreen(params.screenRow, params.screenCol);
+  if (params.isDungeon && dungeonManager && dungeonData && dungeonRenderer) {
+    // Respawn at dungeon entrance room (preserve room flags)
+    dungeonManager = new DungeonManager(currentLevel, dungeonData, dungeonRenderer, dungeonRoomFlags ?? undefined);
+
+    if (link) {
+      const info = dungeonManager.dungeonInfo;
+      link.reset(120, info.startY - 64, Direction.Up, params.health);
+    }
+
+    deathCount = Math.min(deathCount + 1, 255);
+    gameMode = GameMode.DungeonGameplay;
+
+    if (spawnManager) {
+      spawnDungeonRoomEnemies();
+    }
+    initDungeonRoomObjects();
+  } else {
+    currentLevel = 0;
+    dungeonManager = null;
+
+    if (overworld) {
+      overworld.setScreen(params.screenRow, params.screenCol);
+    }
+
+    if (link) {
+      link.reset(params.linkX, params.linkY, params.linkDirection, params.health);
+    }
+
+    deathCount = Math.min(deathCount + 1, 255);
+    gameMode = GameMode.Gameplay;
+
+    if (spawnManager && overworld) {
+      spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    }
+  }
+}
+
+function renderDungeonEntities(): void {
+  if (!link) return;
+  const ctx = renderer.ctx;
+
+  // Render push block
+  if (dungeonPushBlock) dungeonPushBlock.render(renderer);
+
+  // Render spike traps
+  for (const trap of dungeonSpikeTraps) trap.render(renderer);
+
+  // Render room item
+  if (dungeonRoomItem && dungeonRoomItemActive && dungeonRoomItem.isActive && processedItems) {
+    dungeonRoomItem.render(ctx, processedItems);
   }
 
-  if (link) {
-    link.reset(params.linkX, params.linkY, params.linkDirection, params.health);
+  for (const bomb of bombs) {
+    bomb.render(ctx, cloudSheet ?? undefined, renderer, projectilesSheet ?? undefined);
+  }
+  for (const fire of fires) {
+    fire.render(renderer, projectilesSheet ?? undefined);
+  }
+  if (boomerang && projectilesSheet) boomerang.render(renderer, projectilesSheet);
+  if (arrow && projectilesSheet) arrow.render(renderer, projectilesSheet);
+  if (food) food.render(ctx, processedItems);
+  if (magicRod && link) magicRod.render(renderer, projectilesSheet!, link.posX, link.posY);
+  if (magicShot) magicShot.render(renderer);
+  if (processedItems) {
+    for (const pickup of pickups) pickup.render(ctx, processedItems);
+  }
+  if (spawnManager) spawnManager.render(renderer, enemySheet ?? undefined);
+
+  if (bombs.some(b => b.shouldFlash)) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(0, 0, 256, 176);
+    ctx.restore();
   }
 
-  deathCount = Math.min(deathCount + 1, 255);
-  gameMode = GameMode.Gameplay;
+  const activeLinkSheet = getActiveLinkSheet();
+  if (activeLinkSheet && link) link.render(renderer, activeLinkSheet);
+
+  // Dark room overlay (render after everything — covers the room but not HUD)
+  if (dungeonManager && dungeonManager.isDark) {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 256, 176);
+  }
 }
 
 const loop = new GameLoop({
@@ -894,6 +1573,41 @@ const loop = new GameLoop({
     switch (gameMode) {
       case GameMode.Gameplay:
         updateGameplay();
+        break;
+
+      case GameMode.DungeonGameplay:
+        updateDungeonGameplay();
+        break;
+
+      case GameMode.DungeonTransition:
+        // Walk-into-darkness phase before curtain
+        if (caveWalkIntoFrames > 0 && link) {
+          caveWalkIntoFrames--;
+          link.walkForward();
+          link.tickAnimation();
+          if (caveWalkIntoFrames <= 0) {
+            curtainEffect = new CurtainEffect('close');
+          }
+          break;
+        }
+        if (curtainEffect) {
+          curtainEffect.update();
+          if (curtainEffect.done) {
+            if (currentLevel > 0 && dungeonManager === null) {
+              // Entering dungeon — curtain closed, now start dungeon interior
+              startDungeonInterior();
+            } else if (pendingCaveIndex === -3) {
+              // Exiting dungeon — curtain closed, now return to overworld
+              exitDungeon();
+              pendingCaveIndex = null;
+            } else {
+              // Curtain opened on overworld/dungeon — back to appropriate mode
+              curtainEffect = null;
+              pendingCaveIndex = null;
+              gameMode = currentLevel > 0 ? GameMode.DungeonGameplay : GameMode.Gameplay;
+            }
+          }
+        }
         break;
 
       case GameMode.CaveTransition:
@@ -985,8 +1699,27 @@ const loop = new GameLoop({
         const fill = (loadProgress.loaded / loadProgress.total) * barW;
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
       }
+    } else if (gameMode === GameMode.DungeonGameplay && dungeonManager && link) {
+      dungeonManager.renderRoom(renderer);
+      renderDungeonEntities();
+    } else if (gameMode === GameMode.DungeonTransition && dungeonManager) {
+      dungeonManager.renderRoom(renderer);
+      const dtLinkSheet = getActiveLinkSheet();
+      if (dtLinkSheet && link) link.render(renderer, dtLinkSheet);
+      if (curtainEffect) curtainEffect.render(renderer);
+    } else if (gameMode === GameMode.DungeonTransition && !dungeonManager && overworld) {
+      // Transitioning into dungeon — show overworld with curtain
+      overworld.renderScreen(renderer);
+      const dtLinkSheet = getActiveLinkSheet();
+      if (dtLinkSheet && link) link.render(renderer, dtLinkSheet);
+      if (curtainEffect) curtainEffect.render(renderer);
     } else if (gameMode === GameMode.DeathAnimation && deathAnimation && linkSheet) {
-      deathAnimation.render(renderer, linkSheet, tileRenderer, overworld.currentScreen, font);
+      if (currentLevel > 0 && dungeonManager) {
+        dungeonManager.renderRoom(renderer);
+      } else {
+        // Overworld death uses existing render
+      }
+      deathAnimation.render(renderer, linkSheet, tileRenderer, overworld!.currentScreen, font);
     } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
       gameOverScreen.render(renderer, font);
     } else if (gameMode === GameMode.CaveInterior && caveRoom && link) {
@@ -1068,6 +1801,10 @@ const loop = new GameLoop({
         }
       }
       overworld.renderTileObject(ctx);
+      // Render enemies
+      if (spawnManager) {
+        spawnManager.render(renderer, enemySheet ?? undefined);
+      }
       if (stepladder) {
         stepladder.render(renderer);
       }

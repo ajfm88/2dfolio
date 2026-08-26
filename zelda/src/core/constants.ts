@@ -172,3 +172,15 @@ export const RESPAWN_SCREEN_ROW = 7;
 export const RESPAWN_SCREEN_COL = 7;
 export const RESPAWN_LINK_X = 0x78; // 120 decimal — horizontal center
 export const RESPAWN_HEALTH = 6; // 3 full hearts = 6 half-hearts
+
+// Enemy system — Z_07.asm Obj_Shove / InitObject / UpdateMetaObject
+export const ENEMY_KNOCKBACK_DISTANCE = 0x40; // 64 pixels (Z_01.asm:6688)
+export const ENEMY_KNOCKBACK_SPEED = 4; // pixels per frame
+export const ENEMY_INVINCIBILITY_FRAMES = 0x10; // 16 frames (Z_01.asm:6690)
+export const SPAWN_CLOUD_FRAMES = 7; // ObjTimer set to 7 for cloud (Z_07.asm:5290)
+export const MAX_ENEMY_SLOTS = 10; // NES object slots 1-10 (0x01-0x0A)
+export const ENEMY_STUN_FRAMES = 0xA0; // 160 frames boomerang stun
+
+// Sword damage by level — Z_01.asm:5849 CheckMonsterSwordCollision
+export const SWORD_DAMAGE = [0x00, 0x10, 0x20, 0x40] as const; // none, wood, white, magic
+export const BOOMERANG_DAMAGE = 0x10; // magic boomerang only
