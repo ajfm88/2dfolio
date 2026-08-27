@@ -64,6 +64,9 @@ import type { TileCollisionMap } from './world/collision.js';
 import { RoomFlags } from './world/room-flags.js';
 import { checkSecretTrigger } from './world/dungeon-secrets.js';
 import { SpikeTrap } from './objects/enemies/spike-trap.js';
+import { BUBBLE_FLASH, BUBBLE_BLUE, BUBBLE_RED, BUBBLE_TEMP_JINX_FRAMES } from './objects/enemies/bubble.js';
+import { LikeLike } from './objects/enemies/like-like.js';
+import { Wallmaster } from './objects/enemies/wallmaster.js';
 import { PushBlock, PushBlockState } from './world/push-block.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
@@ -167,6 +170,8 @@ let dungeonSpikeTraps: SpikeTrap[] = [];
 let dungeonPushBlock: PushBlock | null = null;
 let dungeonRoomItem: ItemPickup | null = null;
 let dungeonRoomItemActive = false;
+// True while a Like-Like is holding Link captured (paralyzed).
+let dungeonLinkCaptured = false;
 
 async function init(): Promise<void> {
   try {
@@ -391,6 +396,25 @@ function spawnDungeonRoomEnemies(): void {
     maxCount,
     Direction.Down,
   );
+}
+
+// Bubble contact jinxes Link's sword instead of dealing damage.
+// Returns true if the enemy was a Bubble (so contact damage is skipped).
+function applyBubbleJinx(objectType: number): boolean {
+  if (!link) return false;
+  switch (objectType) {
+    case BUBBLE_RED:
+      link.disableSword();
+      return true;
+    case BUBBLE_FLASH:
+      link.disableSword(BUBBLE_TEMP_JINX_FRAMES);
+      return true;
+    case BUBBLE_BLUE:
+      link.enableSword();
+      return true;
+    default:
+      return false;
+  }
 }
 
 function initDungeonRoomObjects(): void {
@@ -1059,9 +1083,50 @@ function updateDungeonGameplay(): void {
     if (!link.isInvincible && !link.isDead) {
       const hittingEnemy = checkEnemyLinkCollisions(spawnManager.activeEnemies, link.getCollisionRect());
       if (hittingEnemy) {
-        const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
-        if (rawDamage > 0) link.takeDamage(rawDamage, hittingEnemy.direction);
+        if (hittingEnemy instanceof LikeLike) {
+          hittingEnemy.beginCapture(); // paralyze instead of damage
+        } else if (hittingEnemy instanceof Wallmaster) {
+          hittingEnemy.grab(); // warp-to-entrance handled below
+        } else if (!applyBubbleJinx(hittingEnemy.objectType)) {
+          const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
+          if (rawDamage > 0) link.takeDamage(rawDamage, hittingEnemy.direction);
+        }
       }
+    }
+
+    // Like-Like capture: hold Link paralyzed while grabbed; eat the Magic Shield.
+    const capturer = spawnManager.activeEnemies.find(
+      (e): e is LikeLike => e instanceof LikeLike && e.capturing,
+    );
+    if (capturer) {
+      link.halted = true;
+      if (capturer.consumeShieldEat()) link.setMagicShield(false);
+      dungeonLinkCaptured = true;
+    } else if (dungeonLinkCaptured) {
+      link.halted = false;
+      dungeonLinkCaptured = false;
+    }
+
+    // Wallmaster grab: drag Link back to the dungeon entrance room.
+    const grabber = spawnManager.activeEnemies.find(
+      (e): e is Wallmaster => e instanceof Wallmaster && e.grabbed,
+    );
+    if (grabber) {
+      const entry = dungeonManager.returnToEntranceRoom();
+      link.setPosition(entry.x, entry.y);
+      link.setDirection(Direction.Up);
+      bombs = [];
+      fires = [];
+      boomerang = null;
+      arrow = null;
+      food = null;
+      magicRod = null;
+      magicShot = null;
+      pickups = [];
+      usedCandleThisScreen = false;
+      spawnDungeonRoomEnemies();
+      initDungeonRoomObjects();
+      return;
     }
 
     if (!link.isInvincible && !link.isDead && spawnManager.projectiles.length > 0) {
