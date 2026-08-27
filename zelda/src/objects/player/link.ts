@@ -75,6 +75,10 @@ export class Link {
   // External flag: rod swing blocks sword (they share NES animation slot)
   blockSwordAttack = false;
 
+  // Bubble sword-jinx — Z_04.asm UpdateBubble (SwordBlocked / SwordBlockedLongTimer)
+  private _swordJinxTimer = 0;      // temporary block (frames); 0 = none
+  private _swordJinxPermanent = false; // held until a blue Bubble restores it
+
   // External halt flag — NES ObjState $40. Blocks all input/movement while visible.
   private _halted = false;
 
@@ -168,6 +172,24 @@ export class Link {
 
   set halted(value: boolean) {
     this._halted = value;
+  }
+
+  // Bubble jinx: no `frames` = permanent (until a blue Bubble), else temporary.
+  disableSword(frames?: number): void {
+    if (frames === undefined) {
+      this._swordJinxPermanent = true;
+    } else {
+      this._swordJinxTimer = Math.max(this._swordJinxTimer, frames);
+    }
+  }
+
+  enableSword(): void {
+    this._swordJinxTimer = 0;
+    this._swordJinxPermanent = false;
+  }
+
+  get swordDisabled(): boolean {
+    return this._swordJinxPermanent || this._swordJinxTimer > 0;
   }
 
   setHealth(health: number, maxHealth: number): void {
@@ -268,6 +290,8 @@ export class Link {
     }
     this._swordBeam = null;
     this._halted = false;
+    this._swordJinxTimer = 0;
+    this._swordJinxPermanent = false;
   }
 
   // Z_01.asm HarmLink + BeginShove
@@ -319,6 +343,8 @@ export class Link {
       }
     }
 
+    if (this._swordJinxTimer > 0) this._swordJinxTimer--;
+
     // NES ObjState $40 — external halt blocks all input/movement
     if (this._halted) return NO_EDGE;
 
@@ -352,7 +378,7 @@ export class Link {
     }
 
     // Start sword swing on attack input
-    if (this.hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive() && !this.blockSwordAttack) {
+    if (this.hasSword && input.isJustPressed(Action.Attack) && !this.sword.isActive() && !this.blockSwordAttack && !this.swordDisabled) {
       this.sword.start(this._direction);
       this._moving = false;
       this.walkAnim.reset();

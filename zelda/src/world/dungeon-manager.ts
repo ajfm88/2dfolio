@@ -339,6 +339,18 @@ export class DungeonManager {
     this.initRoomState();
   }
 
+  // Wallmaster grab — warp Link back to the level's entrance/start room.
+  // Returns the entry position (bottom-center, as when first entering the dungeon).
+  returnToEntranceRoom(): { x: number; y: number } {
+    this._currentRoomId = this._dungeonInfo.startRoomId;
+    this._currentRoom = this.getRoom(this._currentRoomId);
+    this._collision = this.buildCollision(this._currentRoom);
+    this._visitedRooms.add(this._currentRoomId);
+    this._roomFlags.setVisited(this._currentRoomId);
+    this.initRoomState();
+    return this.getEntryPosition(Direction.Up);
+  }
+
   private initRoomState(): void {
     this._openedDoors = this._roomFlags.getOpenedDoors(this._currentRoomId);
     this._shuttersTriggered = false;

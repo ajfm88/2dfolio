@@ -540,4 +540,58 @@ describe('Link', () => {
       expect(link.isSwordActive).toBe(false);
     });
   });
+
+  describe('sword jinx (Bubble)', () => {
+    it('swordDisabled defaults to false', () => {
+      const link = new Link();
+      expect(link.swordDisabled).toBe(false);
+    });
+
+    it('disableSword() permanently blocks until enableSword()', () => {
+      const link = new Link();
+      link.disableSword();
+      expect(link.swordDisabled).toBe(true);
+      link.enableSword();
+      expect(link.swordDisabled).toBe(false);
+    });
+
+    it('temporary jinx expires after its frame timer', () => {
+      const { input } = createInput();
+      const collision = new TileCollisionMap(ALL_WALKABLE_METATILES);
+      const screen = allWalkableScreen();
+      const link = new Link(120, 80);
+
+      link.disableSword(5);
+      expect(link.swordDisabled).toBe(true);
+      for (let i = 0; i < 6; i++) {
+        input.update();
+        link.update(input, collision, screen);
+      }
+      expect(link.swordDisabled).toBe(false);
+    });
+
+    it('a jinxed sword will not swing', () => {
+      const { input, target } = createInput();
+      const collision = new TileCollisionMap(ALL_WALKABLE_METATILES);
+      const screen = allWalkableScreen();
+      const link = new Link(120, 80);
+      link.setHasSword(true);
+      link.disableSword();
+
+      target.dispatchKeyDown('KeyX');
+      input.update();
+      link.update(input, collision, screen);
+      expect(link.isSwordActive).toBe(false);
+
+      // Restoring re-enables swinging.
+      link.enableSword();
+      target.dispatchKeyUp('KeyX');
+      input.update();
+      link.update(input, collision, screen);
+      target.dispatchKeyDown('KeyX');
+      input.update();
+      link.update(input, collision, screen);
+      expect(link.isSwordActive).toBe(true);
+    });
+  });
 });
