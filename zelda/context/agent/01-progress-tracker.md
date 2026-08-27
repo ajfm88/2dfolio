@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-23 · **Phase:** H (Dungeons) in progress · **Slices done:** 32 / 45
+**Last updated:** 2026-08-25 · **Phase:** G/H (Dungeon enemies + dungeons) in progress · **Slices done:** 36 / 45
 
 ---
 
@@ -22,8 +22,10 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice H1b** — Dungeon door types (locked/bombed/shutter), spike traps, push blocks, secrets, dark rooms, room items.
-Phase H started (H1a done). Dungeon room loading, rendering, navigation, entry/exit, minimap all working. H1b adds door mechanics and room interactions.
+**Next action: slice G5** — Enemy projectiles + roster audit: confirm the full enemy roster is accounted for and every projectile↔Link / weapon↔enemy collision path is correct. Plan: none yet (write one). After G5, H2 (Dungeons 1-3 → Triforce) becomes unblocked once a boss (Phase I, Aquamentus) also exists.
+G4 was split G4a/G4b — **both done.** G4a (Gibdo, Darknut+parry, Vire+split, Pols Voice, Bubble+sword-jinx); **G4b done** (Wizzrobe blue/red, Like-Like capture+shield-eat, Wallmaster grab→entrance, Lanmola head-only).
+
+**Note on phase order:** Phase G (enemies) and Phase H (dungeons) are being interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). Remaining Phase G: G5.
 
 ---
 
@@ -128,6 +130,10 @@ Phase H started (H1a done). Dungeon room loading, rendering, navigation, entry/e
 | Dungeon entry/exit | `src/main.ts` | ✅ DungeonTransition game mode: walk-into-darkness → curtain close → DungeonManager init → curtain open. Exit: walk south from startRoom → curtain close → restore overworld. Dungeon entrance detection via getDungeonLevel() + tile 12 check before cave check (H1a) |
 | Dungeon gameplay | `src/main.ts` | ✅ DungeonGameplay mode: full gameplay loop with dungeon collision, room transitions through open doors, weapons, enemy spawning (spawnForDungeonRoom), enemy/weapon/pickup collision, death→respawn at dungeon start. Debug: __zelda.dungeonManager, __zelda.currentLevel (H1a) |
 | Dungeon respawn | `src/death/respawn.ts` | ✅ computeRespawnParams returns isDungeon flag for level > 0. Dungeon death respawns at dungeon startRoom with 3 hearts (H1a) |
+| Dungeon doors/traps/items | `src/world/dungeon-manager.ts`, `dungeon-secrets.ts`, `room-flags.ts`, `src/objects/enemies/spike-trap.ts`, `src/ui/hud.ts`, `src/objects/player/inventory.ts` | ✅ 8 NES door types (open/wall/false-wall/bombable/key×2/shutter), CurOpenedDoors bitmask persisted in room flags, 7 secret triggers, spike traps (3-state), dungeon push blocks, dark rooms (candle brightens), Map+Compass minimap effects, room item placement/pickup (H1b) |
+| Dungeon enemies tier 1 | `src/objects/enemies/{stalfos,rope,goriya,goriya-boomerang,jelly-enemy,gel,zol,flyer-enemy,keese}.ts` | ✅ Stalfos ($2A walker), Rope ($28 wander+charge), Goriya ($05/$06 walker + returning boomerang, frozen while out), Zol ($13 splits into 2 Gels when hurt), Gel ($14/$15 erratic jelly), Keese ($1B/$1C/$1D flyer). GoriyaBoomerang extends EnemyProjectile (owner-homing) → reuses projectile pipeline. Zol split via new Enemy.collectChildSpawns() drained in SpawnManager.update(). Placeholder colored-rect rendering (G3) |
+| Dungeon enemies tier 2a | `src/objects/enemies/{gibdo,darknut,vire,pols-voice,bubble}.ts` | ✅ Gibdo ($30 walker), Darknut ($0B/$0C walker + directional parry via new Enemy.blocksAttackFrom() honored in enemy-collision, never stunned), Vire ($12 walker + splits into 2 Red Keese on death), Pols Voice ($16 hopper), Bubble ($2B/$2C/$2D invulnerable + sword-jinx). Link sword-jinx: `link.disableSword()/enableSword()/swordDisabled` + gate in swing; wired via `applyBubbleJinx()` in main.ts dungeon contact. Placeholder rendering (G4a) |
+| Dungeon enemies tier 2b | `src/objects/enemies/{wizzrobe,like-like,wallmaster,lanmola}.ts` | ✅ Blue Wizzrobe ($23 walk/teleport-through-walls + MagicShot $58), Red Wizzrobe ($24 stationary phaser, vulnerable only while solid, MagicShot2 $59) — both ride the EnemyProjectile pipeline. Like-Like ($17 walker; on contact paralyzes Link via `link.halted`, eats Magic Shield at $60 frames, frees on death). Wallmaster ($27 wall-emerge crawl; grab → `DungeonManager.returnToEntranceRoom()` warp). Lanmola ($3A/$3B segmented worm, head-only getHitbox = head-only vulnerability + contact). main.ts routes Like-Like/Wallmaster contact specially. Also fixed a pre-existing Pols Voice bounce bug (misread moveQSpeed's no-pixel-this-frame as a wall → ping-ponged in place ~25%). Placeholder rendering (G4b) |
 
 ---
 
@@ -169,7 +175,12 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~30~~ | ~~**G1** Enemy base system~~ | ✅ done 2026-08-22 |
 | ~~31~~ | ~~**G2** Overworld enemies~~ | ✅ done 2026-08-22 |
 | ~~32~~ | ~~**H1a** Dungeon room loading + navigation~~ | ✅ done 2026-08-23 |
-| 33 | **H1b** Dungeon doors + traps + items | Locked/bombed/shutter doors, spike traps, push blocks, secrets, dark rooms, Map/Compass |
+| ~~33~~ | ~~**H1b** Dungeon doors + traps + items~~ | ✅ done 2026-08-24 |
+| ~~34~~ | ~~**G3** Dungeon enemies tier 1~~ | ✅ done 2026-08-25 |
+| ~~35~~ | ~~**G4a** Dungeon enemies tier 2 (part 1)~~ | ✅ done 2026-08-25 — Gibdo, Darknut, Vire, Pols Voice, Bubble |
+| ~~36~~ | ~~**G4b** Dungeon enemies tier 2 (part 2)~~ | ✅ done 2026-08-25 — Wizzrobe, Like-Like, Wallmaster, Lanmola |
+| 37 | **G5** Enemy projectiles + roster audit | Full enemy roster accounted for; projectile collisions verified |
+| 38 | **H2** Dungeons 1-3 completable | Room/enemy/item placement + Triforce — needs a boss (Phase I, Aquamentus) too |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -205,6 +216,85 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-25 — G4b Dungeon enemies tier 2, part 2 (Claude Opus 4.8)
+
+The Link-state + dungeon-integration half. 4 families / 6 object types, AI from Z_04.asm.
+**Blue Wizzrobe** ($23): walks square-aligned toward Link, then **teleports** $20px (translucent,
+through walls, non-collidable mid-hop); lobs `MagicShot` ($58) when Link shares its square row/col.
+**Red Wizzrobe** ($24): **stationary phaser** — a state byte counts down, top bits pick a phase
+(relocate near Link → fade-in → solid → fade-out → hidden); **vulnerable only while solid**
+(toggles `_vulnerable`); shoots `MagicShot2` ($59) at the solid midpoint; `getHitbox()` returns
+off-screen while hidden so it can't be hit/contacted then. Both shots ride the existing
+`_pendingProjectile → SpawnManager._projectiles` pipeline (magic-shield-only blockable) — **zero
+new collision code**. **Like-Like** ($17, WalkerEnemy turnRate $80): on contact **captures Link**
+(`beginCapture()`); main.ts sets `link.halted = true` and, at $60 capture-frames, `consumeShieldEat()`
+→ `link.setMagicShield(false)`; `onDeath()` frees him. **Wallmaster** ($27): emerges from the wall
+nearest Link, crawls toward him at QSpeed $18; on contact `grab()` → main.ts calls new
+`DungeonManager.returnToEntranceRoom()` (jumps to `startRoomId`, rebuilds collision, returns the
+entrance position) and repositions Link — the signature warp. Retreats after a 7-tile trip if it
+misses. **Lanmola** ($3A red 1px/f, $3B blue 2px/f): one object owning a segment trail; head
+re-chooses direction toward Link at 8px boundaries, body follows a position-history buffer;
+`getHitbox()` returns the head only ⇒ head-only vulnerability + contact (skips the NES
+body-resurrection dance — same player experience). SpawnManager factory + placeholder colors for
+all. **Also fixed a pre-existing Pols Voice bug** (G4a): it treated `moveQSpeed` returning false on
+frames that emit no full pixel (QSpeed $20 = 1px/2f) as hitting a wall and reversed, ping-ponging
+in place ~25% of spawns — now peeks with `isBlockedAhead()` and only bounces on a real wall.
+11 new tests + fix (1037 total, all green ×3 runs). Typecheck clean (src). **Next: G5 (roster/projectile audit).**
+
+### 2026-08-25 — G4a Dungeon enemies tier 2, part 1 (Claude Opus 4.8)
+
+Split G4 into G4a (self-contained) + G4b (Link-state/dungeon wiring). G4a = 5 families / 8 object
+types, AI from Z_04.asm. **Gibdo** ($30): thin WalkerEnemy config (turnRate $80). **Darknut**
+($0B red/$0C blue): walker + **directional parry** — new `Enemy.blocksAttackFrom(weaponDir)` hook
+(default false), honored in `enemy-collision.ts` for sword + beam; Darknut blocks a hit whose
+travel dir is the exact OPPOSITE of its facing (frontal), per Z_01.asm:6316 (ORs the two dirs,
+parries $0C/$03). Never stunned (overrides `stun()` no-op). Blue faster (qSpeed $30 vs $20).
+**Vire** ($12): walker that **splits into 2 Red Keese** ($1C) on death via `onDeath()` →
+`_childSpawns` (reuses G3's SpawnManager drain). **Pols Voice** ($16): bouncing hopper with a
+vertical bob; high HP (sword-resistant; flute-kill deferred). **Bubble** ($2B flash/$2C blue/$2D
+red): invulnerable (`_vulnerable=false`), no contact damage, **jinxes Link's sword** on touch.
+Link gained sword-jinx: `disableSword(frames?)` (perm if no arg) / `enableSword()` /
+`swordDisabled` getter, timer decremented in `update()`, gates the swing start, cleared in
+`reset()`. Wired via new `applyBubbleJinx()` in main.ts dungeon contact ($2D disable, $2B temp
+$A0f, $2C restore). SpawnManager factory + placeholder colors for all. 13 new tests (1026 total,
+9 g4a + 4 Link jinx). Typecheck clean (src). **Next: G4b (Wizzrobe, Like-Like, Wallmaster, Lanmola).**
+
+### 2026-08-25 — G3 Dungeon enemies tier 1 (Claude Opus 4.8)
+
+Populated dungeons with their first-tier roster (dungeons were walkable but empty; H1b's
+"kill all → shutters open" had nothing to kill). 6 families / 10 object types, all AI from
+Z_04.asm. **Stalfos** ($2A): thin WalkerEnemy config (turnRate $80, qSpeed $20, no shooting).
+**Rope** ($28): wander at $20, rushes at $60 when aligned with Link on an axis, stops at walls
+(new `rope.ts` extends Enemy). **Goriya** ($05 blue/$06 red): wander + throws a returning
+boomerang (type $5C), frozen while it's out; blue throws readily, red occasionally. **Zol**
+($13): slow jelly that splits into 2 Gels when hurt-but-not-killed (bomb kills outright, no
+split). **Gel** ($14/$15): fast erratic jelly, 1 hit. **Keese** ($1B/$1C/$1D): erratic
+pause/dart flyer, ignores walls, 1 hit. New base classes: `jelly-enemy.ts` (Gel/Zol hop-pause),
+`flyer-enemy.ts` (Keese flight state machine, always vulnerable — separate from Peahat to avoid
+regressions), `goriya-boomerang.ts` (extends EnemyProjectile with owner-homing return, so it
+flows through the existing `_pendingProjectile → SpawnManager._projectiles → collision/render`
+pipeline with **zero main.ts changes**). Enemy base gained `_childSpawns`/`collectChildSpawns()`
+(Zol split), drained in `SpawnManager.update()` via new `drainChildSpawns()`. Made
+EnemyProjectile's `_x/_y/_direction/_state` protected for the boomerang subclass. Placeholder
+colored-rect rendering (sprite rows for these in enemies.png not confirmed — deferred like G1→G2).
+14 new tests (1013 total). Typecheck clean. **Next: G4 (dungeon enemies tier 2).**
+
+### 2026-08-24 — H1b Dungeon doors + traps + items (Claude Opus 4.8)
+
+(Logged retroactively — completed last session, tracker update was missed.) Added the
+interactive dungeon room mechanics: **8 NES door types** (open/wall/false-wall×2/bombable/key×2/
+shutter) via `DungeonManager.touchDoor()`, with the `CurOpenedDoors` bitmask (N=8,S=4,W=2,E=1)
+persisted in room flags so opened doors stay open. Key doors consume a key (or magic key);
+bombable open on bomb-detonation proximity; shutters open on the "all enemies dead" trigger.
+**7 secret triggers** (`dungeon-secrets.ts`): AllDead/Ringleader/LastBoss/BlockDoor/BlockStairs/
+MoneyOrLife/FoesForItem. **Spike traps** (`spike-trap.ts`): 3-state invulnerable entities at
+fixed NES positions ($49=6 traps, $4A=4). **Push blocks** in dungeons (wired to secret triggers
+4/5). **Dark rooms** (black overlay, candle fire brightens). **Map + Compass** items (per-level
+bitmasks; minimap shows all rooms with Map, blinks Triforce room with Compass). **Room item
+placement** from packed shortcutOrItemPositions byte, secret-gated, item-taken bit ($10) in room
+flags. room-flags.ts: VISITED_BIT corrected to $20, added ITEM_TAKEN + DOOR bits. 999 tests
+total. Typecheck clean. **Next was: G3.**
 
 ### 2026-08-23 — H1a Dungeon room loading + navigation (Claude Opus 4.6)
 

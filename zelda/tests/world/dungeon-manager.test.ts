@@ -111,6 +111,20 @@ describe('DungeonManager', () => {
     expect(dm.visitedRooms.size).toBe(2);
   });
 
+  it('returnToEntranceRoom warps back to the start room (Wallmaster grab)', () => {
+    const data = createTestDungeonData();
+    const dm = new DungeonManager(1, data, createDummyRenderer());
+
+    dm.transitionToRoom(Direction.Right); // move off the start room
+    expect(dm.currentRoomId).toBe(116);
+
+    const entry = dm.returnToEntranceRoom();
+    expect(dm.currentRoomId).toBe(dm.startRoomId); // back at start room 115
+    // Entry position is the entrance (bottom-center), same as first dungeon entry.
+    expect(entry.y).toBe(160);
+    expect(entry.x).toBe(120);
+  });
+
   it('getEntryPosition returns opposite edge', () => {
     const data = createTestDungeonData();
     const dm = new DungeonManager(1, data, createDummyRenderer());

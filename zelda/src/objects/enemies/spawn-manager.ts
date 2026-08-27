@@ -22,6 +22,21 @@ import { Zora } from './zora.js';
 import { Peahat } from './peahat.js';
 import { Ghini, FlyingGhini } from './ghini.js';
 import { Armos } from './armos.js';
+import { createStalfos } from './stalfos.js';
+import { Rope } from './rope.js';
+import { Goriya } from './goriya.js';
+import { Zol } from './zol.js';
+import { Gel } from './gel.js';
+import { Keese } from './keese.js';
+import { createGibdo } from './gibdo.js';
+import { Darknut } from './darknut.js';
+import { Vire } from './vire.js';
+import { PolsVoice } from './pols-voice.js';
+import { Bubble } from './bubble.js';
+import { BlueWizzrobe, RedWizzrobe } from './wizzrobe.js';
+import { LikeLike } from './like-like.js';
+import { Wallmaster } from './wallmaster.js';
+import { Lanmola } from './lanmola.js';
 
 export class SpawnManager {
   private _enemies: Enemy[] = [];
@@ -175,6 +190,9 @@ export class SpawnManager {
       return;
     }
 
+    // Drain child spawns requested last frame (e.g. Zol → 2 Gels) before updating.
+    this.drainChildSpawns();
+
     const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY };
     for (const enemy of this._enemies) {
       enemy.update(ctx);
@@ -187,6 +205,21 @@ export class SpawnManager {
 
     this._enemies = this._enemies.filter(e => !e.isDead);
     this.updateProjectiles();
+  }
+
+  // Create monsters that existing enemies requested (Zol split → child Gels).
+  private drainChildSpawns(): void {
+    const newborns: Enemy[] = [];
+    for (const enemy of this._enemies) {
+      for (const spec of enemy.collectChildSpawns()) {
+        if (newborns.length + this._enemies.length >= MAX_ENEMY_SLOTS) break;
+        const hp = getEnemyHp(spec.objectType, this._hpPairs);
+        newborns.push(createEnemyByType(spec.x, spec.y, spec.objectType, hp, SPAWN_CLOUD_FRAMES));
+      }
+    }
+    if (newborns.length > 0) {
+      this._enemies.push(...newborns);
+    }
   }
 
   private updateProjectiles(): void {
@@ -249,6 +282,57 @@ function createEnemyByType(
     // Armos
     case 30:
       return new Armos(x, y, objectType, hp, spawnDelay);
+    // --- Dungeon tier-1 enemies (G3) ---
+    // Goriya (blue/red) — throws returning boomerang
+    case 0x05: case 0x06:
+      return new Goriya(x, y, objectType, hp, spawnDelay);
+    // Zol — splits into 2 Gels
+    case 0x13:
+      return new Zol(x, y, objectType, hp, spawnDelay);
+    // Gel (normal / Zol child)
+    case 0x14: case 0x15:
+      return new Gel(x, y, objectType, hp, spawnDelay);
+    // Keese (blue/red/black)
+    case 0x1b: case 0x1c: case 0x1d:
+      return new Keese(x, y, objectType, hp, spawnDelay);
+    // Rope
+    case 0x28:
+      return new Rope(x, y, objectType, hp, spawnDelay);
+    // Stalfos
+    case 0x2a:
+      return createStalfos(x, y, objectType, hp, spawnDelay);
+    // --- Dungeon tier-2 enemies (G4a) ---
+    // Gibdo
+    case 0x30:
+      return createGibdo(x, y, objectType, hp, spawnDelay);
+    // Darknut (red/blue) — directional parry
+    case 0x0b: case 0x0c:
+      return new Darknut(x, y, objectType, hp, spawnDelay);
+    // Vire — splits into 2 Red Keese
+    case 0x12:
+      return new Vire(x, y, objectType, hp, spawnDelay);
+    // Pols Voice — hopper
+    case 0x16:
+      return new PolsVoice(x, y, objectType, hp, spawnDelay);
+    // Bubble (flash/blue/red) — invulnerable, sword-jinx on touch
+    case 0x2b: case 0x2c: case 0x2d:
+      return new Bubble(x, y, objectType, hp, spawnDelay);
+    // --- Dungeon tier-2 enemies (G4b) ---
+    // Blue Wizzrobe — walk/teleport + magic shot
+    case 0x23:
+      return new BlueWizzrobe(x, y, objectType, hp, spawnDelay);
+    // Red Wizzrobe — stationary phaser + magic shot
+    case 0x24:
+      return new RedWizzrobe(x, y, objectType, hp, spawnDelay);
+    // Like-Like — captures Link + eats Magic Shield
+    case 0x17:
+      return new LikeLike(x, y, objectType, hp, spawnDelay);
+    // Wallmaster — wall-emerge crawl + grab-to-entrance
+    case 0x27:
+      return new Wallmaster(x, y, objectType, hp, spawnDelay);
+    // Lanmola (red/blue) — segmented worm, head-only vulnerable
+    case 0x3a: case 0x3b:
+      return new Lanmola(x, y, objectType, hp, spawnDelay);
     // Default fallback (uses base Enemy generic walker)
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);

@@ -15,11 +15,11 @@ export enum ProjectileState {
 }
 
 export class EnemyProjectile {
-  private _x: number;
-  private _y: number;
-  private _direction: Direction;
-  private readonly _type: ProjectileType;
-  private _state = ProjectileState.Flying;
+  protected _x: number;
+  protected _y: number;
+  protected _direction: Direction;
+  protected readonly _type: ProjectileType;
+  protected _state = ProjectileState.Flying;
   private subPixel = 0;
   private deflectTimer = 0;
 
