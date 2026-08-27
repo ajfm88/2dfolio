@@ -58,6 +58,11 @@ export function checkWeaponEnemyCollisions(
 
     if (weapons.swordHitbox) {
       if (rectsOverlap(enemyRect, weapons.swordHitbox)) {
+        // Darknut parries a hit on the axis it faces.
+        if (enemy.blocksAttackFrom(weapons.swordDirection)) {
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const damage = SWORD_DAMAGE[weapons.swordLevel] ?? 0x10;
         const killed = enemy.takeDamage(damage, weapons.swordDirection);
         results.push({ enemy, killed });
@@ -68,6 +73,11 @@ export function checkWeaponEnemyCollisions(
     if (weapons.swordBeam && weapons.swordBeam.isActive()) {
       const beamRect = weapons.swordBeam.getHitbox();
       if (rectsOverlap(enemyRect, beamRect)) {
+        if (enemy.blocksAttackFrom(weapons.swordBeam.direction)) {
+          weapons.swordBeam.deactivate();
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const damage = SWORD_DAMAGE[weapons.swordLevel] ?? 0x10;
         const dir = weapons.swordBeam.direction;
         const killed = enemy.takeDamage(damage, dir);

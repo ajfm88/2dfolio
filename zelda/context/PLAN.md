@@ -110,8 +110,9 @@ Sliced by environment so each is playtestable as you go.
 |---|---|---|
 | G1 ✅ | Enemy base system: AI state machine, spawn/despawn lifecycle, item drops, damage reception, death animation | dummy enemy spawns, takes damage, drops item, dies |
 | G2 ✅ | Overworld enemies: Octorok (red/blue), Tektite (red/blue), Leever (red/blue), Peahat, Zora, Moblin (red/blue), Lynel (red/blue), Armos, Ghini | each enemy moves + attacks per its AI pattern |
-| G3 ⬜ | Dungeon enemies tier 1: Stalfos, Keese, Gel, Zol (splits into Gels), Rope, Goriya (red/blue, throws boomerang) | enemies behave in dungeon rooms |
-| G4 ⬜ | Dungeon enemies tier 2: Darknut (red/blue), Wizzrobe (red/blue), Gibdo, Like-Like (eats shield), Wallmaster (grabs to entrance), Pols Voice, Vire (splits), Bubble, Lanmola | all tier 2 mechanics correct |
+| G3 ✅ | Dungeon enemies tier 1: Stalfos, Keese, Gel, Zol (splits into Gels), Rope, Goriya (red/blue, throws boomerang) | enemies behave in dungeon rooms |
+| G4a ✅ | Dungeon enemies tier 2 (part 1): Gibdo, Darknut (red/blue, directional parry), Vire (splits into 2 Keese), Pols Voice, Bubble (sword-jinx) | tier-2 self-contained mechanics correct |
+| G4b ✅ | Dungeon enemies tier 2 (part 2): Wizzrobe (red/blue), Like-Like (eats shield), Wallmaster (grabs to entrance), Lanmola | Link-capture / shield-eat / warp-to-entrance wiring |
 | G5 ⬜ | Enemy projectiles (rocks, arrows, boomerangs, magic blasts, fireballs) + **full roster audit** | all enemy types accounted for; projectiles collide correctly |
 
 ## Phase H — Dungeons (4 slices)
@@ -119,7 +120,7 @@ Sliced by environment so each is playtestable as you go.
 | ID | Slice | Verify |
 |---|---|---|
 | H1a ✅ | Dungeon room loading, rendering from dungeons-map.png, open-door navigation, overworld entry/exit via curtain, dungeon minimap in HUD, dungeon respawn | enter dungeon; walk between rooms; exit to overworld |
-| H1b ⬜ | Dungeon door types (locked/key, bombable, shutter/kill-all), spike traps, push blocks, secret triggers, dark rooms, Map + Compass items, room item placement | use key on door; bomb wall; kill enemies to open shutters |
+| H1b ✅ | Dungeon door types (locked/key, bombable, shutter/kill-all), spike traps, push blocks, secret triggers, dark rooms, Map + Compass items, room item placement | use key on door; bomb wall; kill enemies to open shutters |
 | H2 ⬜ | Dungeons 1–3: Eagle, Moon, Manji — room layouts, enemy placement, item placement, Triforce piece | complete dungeon 1 start to Triforce |
 | H3 ⬜ | Dungeons 4–6: Snake, Lizard, Dragon — progressively harder layouts and enemy mixes | all 3 dungeons navigable |
 | H4 ⬜ | Dungeons 7–9: Demon, Lion, Death Mountain — including the final dungeon's unique mechanics | reach Ganon in dungeon 9 |

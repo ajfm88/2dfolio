@@ -45,6 +45,13 @@ export interface EnemyUpdateContext {
   readonly linkY: number;
 }
 
+// A monster this enemy wants the SpawnManager to create (e.g. Zol → 2 Gels).
+export interface ChildSpawn {
+  readonly x: number;
+  readonly y: number;
+  readonly objectType: number;
+}
+
 export class Enemy {
   protected _x: number;
   protected _y: number;
@@ -61,6 +68,8 @@ export class Enemy {
   protected _walkAnimFrame = 0;
   protected _walkAnimCounter = 0;
   protected _pendingProjectile: EnemyProjectile | null = null;
+  // Monsters this enemy wants spawned (drained by SpawnManager) — e.g. Zol split.
+  protected _childSpawns: ChildSpawn[] = [];
   // Whether this enemy can be damaged by weapons (overridden by Peahat/Armos etc.)
   protected _vulnerable = true;
 
@@ -99,6 +108,14 @@ export class Enemy {
     const p = this._pendingProjectile;
     this._pendingProjectile = null;
     return p;
+  }
+
+  // Drained by SpawnManager each frame; returns monsters to create (e.g. Zol → Gels).
+  collectChildSpawns(): ChildSpawn[] {
+    if (this._childSpawns.length === 0) return [];
+    const spawns = this._childSpawns;
+    this._childSpawns = [];
+    return spawns;
   }
 
   getHitbox(): Rect {
@@ -204,6 +221,13 @@ export class Enemy {
 
   // Override for special death behavior (e.g., Ghini kills flying Ghini)
   protected onDeath(): void {}
+
+  // Darknut parry: a melee/beam hit whose direction this enemy "faces off" against
+  // is blocked. Default: nothing is blocked. weaponDirection is where the weapon
+  // is travelling (the direction of the swing/beam).
+  blocksAttackFrom(_weaponDirection: Direction): boolean {
+    return false;
+  }
 
   stun(): void {
     if (this._state === EnemyState.Spawning || this._state === EnemyState.Dying || this._state === EnemyState.Dead) return;
@@ -349,6 +373,28 @@ function getEnemyColor(objectType: number): string {
     case 30: return '#888888';
     case 33: case 34: return '#cccccc';
     case 42: return '#cccccc';
+    // Dungeon tier-1 enemies (G3)
+    case 0x05: return '#0058f0'; // Blue Goriya
+    case 0x06: return '#d82800'; // Red Goriya
+    case 0x13: return '#c07830'; // Zol
+    case 0x14: case 0x15: return '#48b8b8'; // Gel
+    case 0x1b: return '#5878f0'; // Blue Keese
+    case 0x1c: return '#d82800'; // Red Keese
+    case 0x1d: return '#484848'; // Black Keese
+    case 0x28: return '#d0a040'; // Rope
+    case 0x2a: return '#e0d8c0'; // Stalfos
+    // Dungeon tier-2 enemies (G4a)
+    case 0x0b: return '#d82800'; // Red Darknut
+    case 0x0c: return '#0058f0'; // Blue Darknut
+    case 0x12: return '#a800a8'; // Vire
+    case 0x30: return '#f0d8a8'; // Gibdo
+    // Dungeon tier-2 enemies (G4b)
+    case 0x23: return '#3858f0'; // Blue Wizzrobe
+    case 0x24: return '#d82800'; // Red Wizzrobe
+    case 0x17: return '#c86818'; // Like-Like
+    case 0x27: return '#48b0c8'; // Wallmaster
+    case 0x3a: return '#f0a048'; // Red Lanmola
+    case 0x3b: return '#48b8f0'; // Blue Lanmola
     default: return '#ff6600';
   }
 }

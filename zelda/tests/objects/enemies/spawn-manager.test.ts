@@ -176,4 +176,26 @@ describe('SpawnManager', () => {
     // Now the dead enemy should be removed by update()
     expect(sm.activeEnemies.length).toBe(3);
   });
+
+  it('drains Zol split into two child Gels', () => {
+    const data = createTestSpawnData();
+    const sm = new SpawnManager(data, hpPairs);
+    const col = mockCollision();
+    const scr = mockScreen(0);
+
+    // Spawn a single Zol (type 0x13) in a dungeon room.
+    sm.spawnForDungeonRoom(0x13, 1, Direction.Down);
+    for (let i = 0; i < 12; i++) sm.update(col, scr, 120, 80);
+    expect(sm.enemies.length).toBe(1);
+    expect(sm.enemies[0]!.objectType).toBe(0x13);
+
+    // Sub-lethal hit → Zol requests two child Gels and marks itself dead.
+    sm.enemies[0]!.takeDamage(0x01, Direction.Down);
+
+    // Next update drains the split and removes the Zol.
+    sm.update(col, scr, 120, 80);
+    const gels = sm.enemies.filter(e => e.objectType === 0x14);
+    expect(gels.length).toBe(2);
+    expect(sm.enemies.some(e => e.objectType === 0x13)).toBe(false);
+  });
 });
