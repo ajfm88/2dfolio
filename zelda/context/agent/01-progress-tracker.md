@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-25 · **Phase:** G/H (Dungeon enemies + dungeons) in progress · **Slices done:** 36 / 45
+**Last updated:** 2026-08-27 · **Phase:** G complete; I started; H in progress · **Slices done:** 38 / 45
 
 ---
 
@@ -22,10 +22,10 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice G5** — Enemy projectiles + roster audit: confirm the full enemy roster is accounted for and every projectile↔Link / weapon↔enemy collision path is correct. Plan: none yet (write one). After G5, H2 (Dungeons 1-3 → Triforce) becomes unblocked once a boss (Phase I, Aquamentus) also exists.
-G4 was split G4a/G4b — **both done.** G4a (Gibdo, Darknut+parry, Vire+split, Pols Voice, Bubble+sword-jinx); **G4b done** (Wizzrobe blue/red, Like-Like capture+shield-eat, Wallmaster grab→entrance, Lanmola head-only).
+**Next action: slice H2** — Dungeons 1-3 completable (room/enemy/item placement + Triforce). **No longer boss-blocked** — I1 (Aquamentus $3D) is done, so H2 can place the Level-1 boss and wire its death → heart container + Triforce. **Phase G complete (G1–G5); Phase I started (I1 done).**
+I1 done — Aquamentus, the Level-1 dragon boss: horizontal-only wobble (x∈[$88,$C7], 1px/8f), 3-way fireball fan ($55, drift ±1 fan) on a ≥$70-frame cadence, mouth-open tell. Two reusable boss primitives added: per-weapon **invincibility mask** (`DamageTypeBit` + `Enemy.isImmuneToDamageType`, honored in enemy-collision — Aquamentus $E2 = immune to boomerang+fire) and **fireball spread** (optional `verticalDrift` on EnemyProjectile). Boss death spectacle (explosion/heart/Triforce) is H2's job.
 
-**Note on phase order:** Phase G (enemies) and Phase H (dungeons) are being interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). Remaining Phase G: G5.
+**Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
 
 ---
 
@@ -134,6 +134,11 @@ G4 was split G4a/G4b — **both done.** G4a (Gibdo, Darknut+parry, Vire+split, P
 | Dungeon enemies tier 1 | `src/objects/enemies/{stalfos,rope,goriya,goriya-boomerang,jelly-enemy,gel,zol,flyer-enemy,keese}.ts` | ✅ Stalfos ($2A walker), Rope ($28 wander+charge), Goriya ($05/$06 walker + returning boomerang, frozen while out), Zol ($13 splits into 2 Gels when hurt), Gel ($14/$15 erratic jelly), Keese ($1B/$1C/$1D flyer). GoriyaBoomerang extends EnemyProjectile (owner-homing) → reuses projectile pipeline. Zol split via new Enemy.collectChildSpawns() drained in SpawnManager.update(). Placeholder colored-rect rendering (G3) |
 | Dungeon enemies tier 2a | `src/objects/enemies/{gibdo,darknut,vire,pols-voice,bubble}.ts` | ✅ Gibdo ($30 walker), Darknut ($0B/$0C walker + directional parry via new Enemy.blocksAttackFrom() honored in enemy-collision, never stunned), Vire ($12 walker + splits into 2 Red Keese on death), Pols Voice ($16 hopper), Bubble ($2B/$2C/$2D invulnerable + sword-jinx). Link sword-jinx: `link.disableSword()/enableSword()/swordDisabled` + gate in swing; wired via `applyBubbleJinx()` in main.ts dungeon contact. Placeholder rendering (G4a) |
 | Dungeon enemies tier 2b | `src/objects/enemies/{wizzrobe,like-like,wallmaster,lanmola}.ts` | ✅ Blue Wizzrobe ($23 walk/teleport-through-walls + MagicShot $58), Red Wizzrobe ($24 stationary phaser, vulnerable only while solid, MagicShot2 $59) — both ride the EnemyProjectile pipeline. Like-Like ($17 walker; on contact paralyzes Link via `link.halted`, eats Magic Shield at $60 frames, frees on death). Wallmaster ($27 wall-emerge crawl; grab → `DungeonManager.returnToEntranceRoom()` warp). Lanmola ($3A/$3B segmented worm, head-only getHitbox = head-only vulnerability + contact). main.ts routes Like-Like/Wallmaster contact specially. Also fixed a pre-existing Pols Voice bounce bug (misread moveQSpeed's no-pixel-this-frame as a wall → ping-ponged in place ~25%). Placeholder rendering (G4b) |
+| Enemy projectile system | `src/objects/projectiles/enemy-projectile.ts`, `src/world/dungeon-statues.ts`, `src/objects/enemies/spawn-manager.ts` | ✅ Per-type projectile visuals (rock/fireball/sword-beam/magic/arrow) via renderByType() + animTimer. Statue fireballs: `DungeonStatues` reads room uniqueRoomId ($24→4 statues, $23→2), fires Fireball ($55) aimed cardinally at Link on NES cadence, fed into the shared pipeline via new `SpawnManager.addProjectile()` — zero new collision code. main.ts inits statues in initDungeonRoomObjects + drains fireballs in the dungeon update loop. Fixed a pre-existing shield-deflection bounce bug (blocked shots flew back through Link instead of away). Debug: `SpawnManager.debugSpawn` + `__zelda.goToDungeon`/`spawnEnemy` (G5) |
+| Enemy roster audit | `context/agent/enemy-roster-audit.md` | ✅ Definitive object-type→status table from Z_07.asm UpdateObject_JumpTable. Every non-boss combat enemy implemented; remaining types parked as bosses→Phase I or NPCs/specials→content slices, each naming why + owner. Boulder ($1F/$20) named as a deferred G5 stretch (G5) |
+| Aquamentus (boss) | `src/objects/enemies/aquamentus.ts` | ✅ Level-1 dragon boss ($3D), from Z_04.asm UpdateAquamentus. Pinned to right wall ($B0,$80→local 176,64), horizontal-only wobble (x∈[$88,$C7], 1px/8f, random 7/$F legs), 3-way fireball fan ($55 ×3, vertical drift 0/+1/−1) on ≥$70-frame cadence, mouth-open tell while timer<$20. HP $60 (6 wood hits). Never stunnable. Placeholder rect render (CHR→sheet deferred like roster). SFX deferred (I1) |
+| Invincibility mask (boss primitive) | `src/core/constants.ts`, `src/objects/enemies/enemy.ts`, `enemy-collision.ts` | ✅ Per-weapon `DamageTypeBit` (sword $01/boomerang $02/arrow $04/bomb $08/magic-shot $10/fire $20) + `Enemy._invincibilityMask` + `isImmuneToDamageType()`, honored in every weapon branch of checkWeaponEnemyCollisions. Default 0 = hurt by all (regression-guarded). Aquamentus $E2 = immune to boomerang+fire (I1) |
+| Fireball spread (boss primitive) | `src/objects/projectiles/enemy-projectile.ts` | ✅ Optional `verticalDrift` ctor param, applied every other frame while Flying (NES Aquamentus_Shoot @SpreadOutFireballs). Default 0 = straight cardinal travel. `Enemy._pendingProjectiles[]` + `consumeProjectiles()` let a boss emit >1 shot/frame, drained in SpawnManager.update (I1) |
 
 ---
 
@@ -179,8 +184,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~34~~ | ~~**G3** Dungeon enemies tier 1~~ | ✅ done 2026-08-25 |
 | ~~35~~ | ~~**G4a** Dungeon enemies tier 2 (part 1)~~ | ✅ done 2026-08-25 — Gibdo, Darknut, Vire, Pols Voice, Bubble |
 | ~~36~~ | ~~**G4b** Dungeon enemies tier 2 (part 2)~~ | ✅ done 2026-08-25 — Wizzrobe, Like-Like, Wallmaster, Lanmola |
-| 37 | **G5** Enemy projectiles + roster audit | Full enemy roster accounted for; projectile collisions verified |
-| 38 | **H2** Dungeons 1-3 completable | Room/enemy/item placement + Triforce — needs a boss (Phase I, Aquamentus) too |
+| ~~37~~ | ~~**G5** Enemy projectiles + roster audit~~ | ✅ done 2026-08-26 — per-type shot visuals, statue fireballs, roster-audit doc. **Phase G complete.** |
+| ~~38~~ | ~~**I1** Aquamentus (first boss)~~ | ✅ done 2026-08-27 — wobble + 3-way fan, mask + spread primitives. **Phase I started.** |
+| 39 | **H2** Dungeons 1-3 completable | Room/enemy/item placement + Triforce. **No longer boss-blocked** (I1 done) — place Aquamentus in L1 boss room, wire death → heart container + Triforce |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -216,6 +222,78 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-27 — I1 Aquamentus, first boss (Claude Opus 4.8)
+
+First **boss** slice; opens Phase I and unblocks H2. AI ported from `Z_04.asm`
+(`InitAquamentus` 4842, `UpdateAquamentus` 5596, `_Move` 5613, `_Shoot` 5684,
+`_Draw` 5762). **The boss** (`src/objects/enemies/aquamentus.ts`): `InitAquamentus`
+pins it to ($B0,$80) → local (176,64) on the right wall regardless of the monster-list
+slot; it **wobbles horizontally only** (Y fixed) between $88–$C7, moving 1px on
+1-of-8 frames in random 7/$F-px legs, reversing at the limits (the NES clamp is
+reactive so it transiently overshoots each limit by 1px — reproduced faithfully).
+Its shoot timer (starts $80, resets to `Random|$70` ≥112f) lobs a **3-way fireball
+fan** ($55 ×3) leftward, the three shots fanning apart via vertical drift 0/+1/−1
+applied every other frame; the mouth-tell opens while the timer <$20. HP $60 (the
+existing `getEnemyHp($3D)` decoder already returns it — 6 wood-sword hits). Never
+stunnable (overrides `stun()`). Placeholder green-dragon rect render (CHR→sheet
+mapping deferred like the whole G3/G4 roster; layout is staged in
+`sprites.json bosses.aquamentus`). **Two reusable boss primitives**, built generic
+because every remaining boss needs them: **(1) per-weapon invincibility mask** —
+`DamageTypeBit` consts (sword $01 / boomerang $02 / arrow $04 / bomb $08 / magic-shot
+$10 / fire $20, from Z_01.asm:6039–6261) + `Enemy._invincibilityMask` +
+`isImmuneToDamageType()`, guarded in **every** weapon branch of
+`checkWeaponEnemyCollisions` (immune = harmless clink / bounce, no damage or stun);
+Aquamentus' mask $E2 ⇒ immune to boomerang + candle fire, hurt by
+sword/beam/arrow/bomb/rod/magic-shot. Default mask 0 leaves every existing enemy
+unchanged (regression-guarded by a "fire still hurts a default enemy" test).
+**(2) fireball spread** — optional `verticalDrift` on `EnemyProjectile` (every-other-
+frame Y nudge, default 0 = straight travel) + `Enemy._pendingProjectiles[]` /
+`consumeProjectiles()` so a boss can emit several shots in one frame, drained in
+`SpawnManager.update`. Registered $3D in `createEnemyByType`. No main.ts change needed
+(rides the normal dungeon enemy path); `__zelda.spawnEnemy(0x3d)` already drops one
+for manual testing. **Deferred to H2:** the boss death spectacle — big explosion,
+heart-container drop, Triforce. SFX deferred globally (no audio subsystem). 14 new
+tests (7 boss + 6 mask + 1 projectile-drift), **1067 total** (1066 green + the one
+pre-existing g2 Octorok flaky, which passed 3/3 in isolation — unrelated). Typecheck
+clean (src). **Phase I started. Next: H2 (Dungeons 1-3 completable).**
+
+### 2026-08-26 — G5 Enemy projectiles + roster audit (Claude Opus 4.8)
+
+Closing slice of Phase G. Not a new enemy family — an audit + polish pass with one real
+gap filled. **(A) Per-type projectile visuals:** `EnemyProjectile.render` gained a
+`renderByType()` switch (+ an `animTimer` for flicker) so the previously-uniform red square now
+reads as rock (grey pellet) / fireball (orange-yellow flicker) / sword-beam (white-cyan streak,
+elongated along travel) / magic (magenta-blue flash) / arrow (thin oriented line). **(B) Statue
+fireballs** (`src/world/dungeon-statues.ts`, from Z_04.asm `UpdateStatues`): dungeon rooms whose
+`uniqueRoomId` is $24 (4 statues) or $23 (2 statues) periodically lob a Fireball ($55) aimed
+cardinally at Link, on the NES reload cadence (`StatueFireballStartTimes` $50/$80/$F0/$60,
+15/16 fire chance). Positions from `StatueXs/Ys` (NES raw Y → local via −$40). Not an Enemy
+(no HP, invulnerable, keyed to room not monster list); fireballs ride the existing pipeline via a
+new `SpawnManager.addProjectile()` — **zero new collision code**. Wired in main.ts:
+`initDungeonRoomObjects` builds the statues, the dungeon update loop drains their fireballs into
+`spawnManager` right after `spawnManager.update` so they're collision-checked the same frame.
+Simplification (documented): cardinal aim instead of the NES diagonal Link-tracking fireball;
+pattern 2 (the `PersonFireballsEnabled` two-fire boss variant) deferred to Phase I with GuardFire.
+**Also fixed a pre-existing shield-deflection bug** (from D3, surfaced during manual testing):
+a blocked shot's `updateDeflected()` moved in `getOppositeDirection(_direction)`, but `deflect()`
+already stores `linkDirection` (the bounce heading, back toward the shooter) — so the shot flew
+back *through* Link instead of bouncing away. Now moves in `_direction` directly; blocked shots
+visibly bounce off toward the enemy. **Debug helpers added** for manual testing:
+`SpawnManager.debugSpawn(type,x,y)` + `__zelda.goToDungeon(level)` / `__zelda.spawnEnemy(typeHex)`
+(default $23 Blue Wizzrobe) — drops any enemy next to Link (Wizzrobes aren't in early dungeons).
+**(C) The roster audit** (`context/agent/enemy-roster-audit.md`): definitive object-type→status
+table from `Z_07.asm:5321 UpdateObject_JumpTable`. Result — **every non-boss combat enemy is
+implemented**; all remaining types are bosses (→ Phase I: Aquamentus/Dodongo/Gohma/Digdogger/
+Manhandla/Moldorm/Gleeok/Patra/Ganon + GuardFire/StandingFire) or non-combat NPCs/specials
+(→ later content slices), each row naming *why* + *owner*. Boulder ($1F/$20) named as the
+deferred G5 stretch (overworld-hazard slice). Verified: all 10 shot types have non-zero
+DAMAGE_TABLE entries. 16 new tests incl. deflection-bounce regression (1053 total, green full runs).
+Typecheck clean (src).
+**Note:** one pre-existing flaky test — `g2-enemies.test.ts` "walks after spawn" (slow Octorok
+QSpeed $10 can pause to shoot inside the 30-frame window) — passed 5/5 in isolation; not caused
+by this slice, enemy behavior is correct, test is just too tight. **Phase G complete. Next: I1
+(Aquamentus) to unblock H2.**
 
 ### 2026-08-25 — G4b Dungeon enemies tier 2, part 2 (Claude Opus 4.8)
 
