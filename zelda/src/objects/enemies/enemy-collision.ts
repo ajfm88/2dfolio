@@ -6,6 +6,7 @@ import {
   ARROW_DAMAGE,
   BOMB_DAMAGE,
   BOOMERANG_DAMAGE,
+  DamageTypeBit,
   FIRE_DAMAGE,
   MAGIC_SHOT_DAMAGE,
   SILVER_ARROW_DAMAGE,
@@ -63,6 +64,11 @@ export function checkWeaponEnemyCollisions(
           results.push({ enemy, killed: false });
           continue;
         }
+        // Boss immune to sword (mask): a harmless clink, no damage.
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Sword)) {
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const damage = SWORD_DAMAGE[weapons.swordLevel] ?? 0x10;
         const killed = enemy.takeDamage(damage, weapons.swordDirection);
         results.push({ enemy, killed });
@@ -74,6 +80,11 @@ export function checkWeaponEnemyCollisions(
       const beamRect = weapons.swordBeam.getHitbox();
       if (rectsOverlap(enemyRect, beamRect)) {
         if (enemy.blocksAttackFrom(weapons.swordBeam.direction)) {
+          weapons.swordBeam.deactivate();
+          results.push({ enemy, killed: false });
+          continue;
+        }
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Sword)) {
           weapons.swordBeam.deactivate();
           results.push({ enemy, killed: false });
           continue;
@@ -91,6 +102,11 @@ export function checkWeaponEnemyCollisions(
       const boomRect = weapons.boomerang.getHitbox();
       if (rectsOverlap(enemyRect, boomRect)) {
         weapons.boomerang.forceReturn();
+        // Boss immune to boomerang (mask): it bounces off, no stun or damage.
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Boomerang)) {
+          results.push({ enemy, killed: false });
+          continue;
+        }
         if (weapons.hasMagicBoomerang) {
           const killed = enemy.takeDamage(BOOMERANG_DAMAGE, Direction.Down);
           results.push({ enemy, killed });
@@ -104,6 +120,7 @@ export function checkWeaponEnemyCollisions(
     for (const bomb of weapons.bombs) {
       const explosionRect = bomb.getExplosionHitbox();
       if (explosionRect && rectsOverlap(enemyRect, explosionRect)) {
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Bomb)) break;
         const killed = enemy.takeDamage(BOMB_DAMAGE, Direction.Down);
         results.push({ enemy, killed });
         break;
@@ -114,6 +131,11 @@ export function checkWeaponEnemyCollisions(
     if (weapons.arrow && weapons.arrow.isActive) {
       const arrowRect = weapons.arrow.getHitbox();
       if (rectsOverlap(enemyRect, arrowRect)) {
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Arrow)) {
+          weapons.arrow.deactivate();
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const damage = weapons.arrow.isSilver ? SILVER_ARROW_DAMAGE : ARROW_DAMAGE;
         const dir = weapons.arrow.direction;
         const killed = enemy.takeDamage(damage, dir);
@@ -126,6 +148,11 @@ export function checkWeaponEnemyCollisions(
     if (weapons.magicRod && weapons.magicRod.isActive()) {
       const rodRect = weapons.magicRod.getHitbox(weapons.linkX, weapons.linkY);
       if (rodRect && rectsOverlap(enemyRect, rodRect)) {
+        // Rod's melee stab uses the sword damage type.
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Sword)) {
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const killed = enemy.takeDamage(MAGIC_SHOT_DAMAGE, weapons.magicRod.direction);
         results.push({ enemy, killed });
         continue;
@@ -135,6 +162,11 @@ export function checkWeaponEnemyCollisions(
     if (weapons.magicShot && weapons.magicShot.isActive) {
       const shotRect = weapons.magicShot.getHitbox();
       if (rectsOverlap(enemyRect, shotRect)) {
+        if (enemy.isImmuneToDamageType(DamageTypeBit.MagicShot)) {
+          weapons.magicShot.deactivate();
+          results.push({ enemy, killed: false });
+          continue;
+        }
         const killed = enemy.takeDamage(MAGIC_SHOT_DAMAGE, weapons.magicShot.direction);
         weapons.magicShot.deactivate();
         results.push({ enemy, killed });
@@ -146,6 +178,7 @@ export function checkWeaponEnemyCollisions(
       if (!fire.isActive) continue;
       const fireRect = fire.getHitbox();
       if (rectsOverlap(enemyRect, fireRect)) {
+        if (enemy.isImmuneToDamageType(DamageTypeBit.Fire)) break;
         const killed = enemy.takeDamage(FIRE_DAMAGE, fire.direction);
         results.push({ enemy, killed });
         break;

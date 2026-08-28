@@ -68,6 +68,12 @@ export class Enemy {
   protected _walkAnimFrame = 0;
   protected _walkAnimCounter = 0;
   protected _pendingProjectile: EnemyProjectile | null = null;
+  // Bosses can emit more than one shot per frame (e.g. Aquamentus' 3-way fan);
+  // drained by SpawnManager alongside the single-slot _pendingProjectile.
+  protected _pendingProjectiles: EnemyProjectile[] = [];
+  // Weapons this enemy is immune to (Z_04 InitXxx ObjInvincibilityMask). Bit set =
+  // immune. Default 0 = hurt by everything. See DamageTypeBit in constants.
+  protected _invincibilityMask = 0;
   // Monsters this enemy wants spawned (drained by SpawnManager) — e.g. Zol split.
   protected _childSpawns: ChildSpawn[] = [];
   // Whether this enemy can be damaged by weapons (overridden by Peahat/Armos etc.)
@@ -108,6 +114,20 @@ export class Enemy {
     const p = this._pendingProjectile;
     this._pendingProjectile = null;
     return p;
+  }
+
+  // Drained by SpawnManager each frame; returns extra projectiles a boss emitted
+  // this frame (beyond the single _pendingProjectile slot).
+  consumeProjectiles(): EnemyProjectile[] {
+    if (this._pendingProjectiles.length === 0) return [];
+    const ps = this._pendingProjectiles;
+    this._pendingProjectiles = [];
+    return ps;
+  }
+
+  // True if this enemy is immune to the given weapon (DamageTypeBit).
+  isImmuneToDamageType(damageBit: number): boolean {
+    return (this._invincibilityMask & damageBit) !== 0;
   }
 
   // Drained by SpawnManager each frame; returns monsters to create (e.g. Zol → Gels).

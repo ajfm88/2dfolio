@@ -184,3 +184,14 @@ export const ENEMY_STUN_FRAMES = 0xA0; // 160 frames boomerang stun
 // Sword damage by level — Z_01.asm:5849 CheckMonsterSwordCollision
 export const SWORD_DAMAGE = [0x00, 0x10, 0x20, 0x40] as const; // none, wood, white, magic
 export const BOOMERANG_DAMAGE = 0x10; // magic boomerang only
+
+// Per-weapon damage-type bits — Z_01.asm:6039-6261 (the value stored in [09]).
+// A monster's ObjInvincibilityMask ANDed with a weapon's bit != 0 => immune to it.
+export const DamageTypeBit = {
+  Sword: 0x01,      // sword, sword beam, magic-rod stab
+  Boomerang: 0x02,
+  Arrow: 0x04,
+  Bomb: 0x08,
+  MagicShot: 0x10,  // the magic rod's fired shot
+  Fire: 0x20,       // candle fire
+} as const;

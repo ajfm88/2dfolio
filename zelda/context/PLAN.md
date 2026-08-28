@@ -113,7 +113,7 @@ Sliced by environment so each is playtestable as you go.
 | G3 ✅ | Dungeon enemies tier 1: Stalfos, Keese, Gel, Zol (splits into Gels), Rope, Goriya (red/blue, throws boomerang) | enemies behave in dungeon rooms |
 | G4a ✅ | Dungeon enemies tier 2 (part 1): Gibdo, Darknut (red/blue, directional parry), Vire (splits into 2 Keese), Pols Voice, Bubble (sword-jinx) | tier-2 self-contained mechanics correct |
 | G4b ✅ | Dungeon enemies tier 2 (part 2): Wizzrobe (red/blue), Like-Like (eats shield), Wallmaster (grabs to entrance), Lanmola | Link-capture / shield-eat / warp-to-entrance wiring |
-| G5 ⬜ | Enemy projectiles (rocks, arrows, boomerangs, magic blasts, fireballs) + **full roster audit** | all enemy types accounted for; projectiles collide correctly |
+| G5 ✅ | Enemy projectiles (rocks, arrows, boomerangs, magic blasts, fireballs) + **full roster audit** | all enemy types accounted for; projectiles collide correctly |
 
 ## Phase H — Dungeons (4 slices)
 
@@ -129,7 +129,7 @@ Sliced by environment so each is playtestable as you go.
 
 | ID | Slice | Verify |
 |---|---|---|
-| I1 ⬜ | Boss framework (health, arena, phases, Triforce drop on death) + Aquamentus (fireball pattern), Dodongo (bomb-feeding mechanic), Manhandla (4 pincers, accelerates) | all 3 bosses defeatable |
+| I1 🟡 | Boss framework (health, arena, phases, Triforce drop on death) + **Aquamentus ✅** (fireball fan; done 2026-08-27 — + reusable invincibility-mask & fireball-spread primitives), Dodongo (bomb-feeding mechanic) ⬜, Manhandla (4 pincers, accelerates) ⬜. Triforce-drop-on-death deferred to H2. | all 3 bosses defeatable |
 | I2 ⬜ | Gleeok (2/3/4 detaching heads), Digdogger (shrinks with Recorder), Gohma (red/blue, eye vulnerability) | all 3 bosses defeatable with correct items |
 | I3 ⬜ | Patra (orbiting flies), Ganon (invisible, Silver Arrow kill), Zelda rescue sequence | beat Ganon; rescue Zelda; game ends |
 
