@@ -64,6 +64,7 @@ import type { TileCollisionMap } from './world/collision.js';
 import { RoomFlags } from './world/room-flags.js';
 import { checkSecretTrigger } from './world/dungeon-secrets.js';
 import { SpikeTrap } from './objects/enemies/spike-trap.js';
+import { DungeonStatues } from './world/dungeon-statues.js';
 import { BUBBLE_FLASH, BUBBLE_BLUE, BUBBLE_RED, BUBBLE_TEMP_JINX_FRAMES } from './objects/enemies/bubble.js';
 import { LikeLike } from './objects/enemies/like-like.js';
 import { Wallmaster } from './objects/enemies/wallmaster.js';
@@ -167,6 +168,7 @@ let dungeonEntryX = 0;
 let dungeonEntryY = 0;
 let dungeonRoomFlags: RoomFlags | null = null;
 let dungeonSpikeTraps: SpikeTrap[] = [];
+let dungeonStatues: DungeonStatues | null = null;
 let dungeonPushBlock: PushBlock | null = null;
 let dungeonRoomItem: ItemPickup | null = null;
 let dungeonRoomItemActive = false;
@@ -295,6 +297,16 @@ void init();
     link.addKeys(9);
     link.setHealth(32, 32);
   },
+  // Warp straight into a dungeon (default Level 1) via the normal transition.
+  goToDungeon(level = 1) {
+    enterDungeon(level);
+  },
+  // Drop a single enemy next to Link for inspection. Default $23 = Blue Wizzrobe;
+  // $24 = Red Wizzrobe. Works in overworld or dungeon.
+  spawnEnemy(type = 0x23) {
+    if (!spawnManager || !link) return;
+    spawnManager.debugSpawn(type, Math.min(link.posX + 40, 224), link.posY);
+  },
 };
 
 function getActiveLinkSheet(): SpriteSheet | null {
@@ -365,6 +377,7 @@ function exitDungeon(): void {
   currentLevel = 0;
   dungeonManager = null;
   dungeonSpikeTraps = [];
+  dungeonStatues = null;
   dungeonPushBlock = null;
   dungeonRoomItem = null;
   dungeonRoomItemActive = false;
@@ -421,6 +434,7 @@ function initDungeonRoomObjects(): void {
   if (!dungeonManager) return;
 
   dungeonSpikeTraps = [];
+  dungeonStatues = null;
   dungeonPushBlock = null;
   dungeonRoomItem = null;
   dungeonRoomItemActive = false;
@@ -430,6 +444,12 @@ function initDungeonRoomObjects(): void {
   // Spike traps: monsterListId $49 or $4A
   if (room.monsterListId === 0x49 || room.monsterListId === 0x4A) {
     dungeonSpikeTraps = SpikeTrap.createTraps(room.monsterListId);
+  }
+
+  // Fireball statues: keyed off the room's unique-room layout ($23/$24)
+  const statues = new DungeonStatues(room.uniqueRoomId);
+  if (statues.active) {
+    dungeonStatues = statues;
   }
 
   // Push block
@@ -1054,6 +1074,14 @@ function updateDungeonGameplay(): void {
   // Update enemies
   if (spawnManager) {
     spawnManager.update(collision, screen, link.posX, link.posY);
+
+    // Fireball statues feed the shared projectile pipeline (collision-checked
+    // below, same frame, alongside enemy shots).
+    if (dungeonStatues) {
+      for (const fireball of dungeonStatues.update(link.posX, link.posY)) {
+        spawnManager.addProjectile(fireball);
+      }
+    }
 
     const hitResults = checkWeaponEnemyCollisions(spawnManager.activeEnemies, {
       swordHitbox: link.getSwordHitbox(),

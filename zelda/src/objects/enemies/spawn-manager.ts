@@ -37,6 +37,7 @@ import { BlueWizzrobe, RedWizzrobe } from './wizzrobe.js';
 import { LikeLike } from './like-like.js';
 import { Wallmaster } from './wallmaster.js';
 import { Lanmola } from './lanmola.js';
+import { Aquamentus } from './aquamentus.js';
 
 export class SpawnManager {
   private _enemies: Enemy[] = [];
@@ -57,6 +58,20 @@ export class SpawnManager {
 
   get activeEnemies(): Enemy[] {
     return this._enemies.filter(e => !e.isDead);
+  }
+
+  // Feed an externally-sourced enemy projectile into the shared pipeline
+  // (e.g. dungeon statue fireballs, which have no owning Enemy object).
+  addProjectile(proj: EnemyProjectile): void {
+    this._projectiles.push(proj);
+  }
+
+  // Debug-only: drop a single enemy of the given object type at a position.
+  // Used by the __zelda console helpers to inspect a specific enemy on demand.
+  debugSpawn(objectType: number, x: number, y: number): void {
+    if (this._enemies.length >= MAX_ENEMY_SLOTS) return;
+    const hp = getEnemyHp(objectType, this._hpPairs);
+    this._enemies.push(createEnemyByType(x, y, objectType, hp, SPAWN_CLOUD_FRAMES));
   }
 
   get projectiles(): readonly EnemyProjectile[] {
@@ -201,6 +216,10 @@ export class SpawnManager {
       if (proj) {
         this._projectiles.push(proj);
       }
+      // Bosses may emit several shots at once (Aquamentus' 3-way fan).
+      for (const extra of enemy.consumeProjectiles()) {
+        this._projectiles.push(extra);
+      }
     }
 
     this._enemies = this._enemies.filter(e => !e.isDead);
@@ -333,6 +352,10 @@ function createEnemyByType(
     // Lanmola (red/blue) — segmented worm, head-only vulnerable
     case 0x3a: case 0x3b:
       return new Lanmola(x, y, objectType, hp, spawnDelay);
+    // --- Bosses (Phase I) ---
+    // Aquamentus — Level 1 dragon: horizontal wobble + 3-way fireball fan
+    case 0x3d:
+      return new Aquamentus(x, y, objectType, hp, spawnDelay);
     // Default fallback (uses base Enemy generic walker)
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);
