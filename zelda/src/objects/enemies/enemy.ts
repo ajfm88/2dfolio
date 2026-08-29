@@ -38,11 +38,24 @@ export function getEnemyHp(objectType: number, hpPairs: readonly number[]): numb
   return (raw & 0x0F) << 4;
 }
 
+// A bomb an enemy can react to. Structural (no import of the Bomb class) so that
+// enemy.ts stays free of weapon dependencies. Dodongo eats un-exploded bombs and
+// is stunned by the blast; see dodongo.ts.
+export interface BombLike {
+  readonly x: number;
+  readonly y: number;
+  readonly isDetonating: boolean;
+  readonly state: number;
+  getExplosionHitbox(): Rect | null;
+}
+
 export interface EnemyUpdateContext {
   readonly collision: TileCollisionMap;
   readonly screen: OverworldScreen;
   readonly linkX: number;
   readonly linkY: number;
+  // Active bombs on screen (only Dodongo reads these); omitted for most updates.
+  readonly bombs?: readonly BombLike[];
 }
 
 // A monster this enemy wants the SpawnManager to create (e.g. Zol → 2 Gels).

@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-27 · **Phase:** G complete; I started; H in progress · **Slices done:** 38 / 45
+**Last updated:** 2026-08-27 · **Phase:** G complete; **I1 complete (all L1-3 bosses faithful)**; H2 done · **Slices done:** 40 / 45
 
 ---
 
@@ -22,8 +22,8 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: slice H2** — Dungeons 1-3 completable (room/enemy/item placement + Triforce). **No longer boss-blocked** — I1 (Aquamentus $3D) is done, so H2 can place the Level-1 boss and wire its death → heart container + Triforce. **Phase G complete (G1–G5); Phase I started (I1 done).**
-I1 done — Aquamentus, the Level-1 dragon boss: horizontal-only wobble (x∈[$88,$C7], 1px/8f), 3-way fireball fan ($55, drift ±1 fan) on a ≥$70-frame cadence, mouth-open tell. Two reusable boss primitives added: per-weapon **invincibility mask** (`DamageTypeBit` + `Enemy.isImmuneToDamageType`, honored in enemy-collision — Aquamentus $E2 = immune to boomerang+fire) and **fireball spread** (optional `verticalDrift` on EnemyProjectile). Boss death spectacle (explosion/heart/Triforce) is H2's job.
+**Next action: pick from — Phase I2 (Gleeok/Digdogger/Gohma), or H3 (Dungeons 4-6).** All three L1-3 bosses are now faithful (I1 complete: Aquamentus + Dodongo + Manhandla). H2 is done: the dungeon completion loop works end-to-end for L1-3 (enter → kill boss → heart container + shutter → Triforce → warp out). **Phase G complete (G1–G5); Phase I1 complete; H2 done.**
+H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wired (H1a/H1b + I1); H2 filled 4 gaps: (1) **boss single-spawn** (NES Z_05.asm:1723 — monster list ID ∈ [$32,$62) spawns exactly 1, else a boss room spawned 3 Aquamentus); (2) **Triforce-get completion sequence** (`GameMode.DungeonTriforceGet` — full heal + held display → curtain-warp out via existing exitDungeon); (3) Triforce room-item −8px offset (Z_05.asm:8255); (4) navigability pass (BFS confirmed start→boss→triforce traversable for all 3 levels, boss→triforce is a shutter that opens on boss death via trigger 7). Boss-room heart container (secret trigger 7) + shutter already worked from H1b. **Note:** L2 Dodongo ($32) / L3 Manhandla ($3C) currently fall back to the generic walker — the completion *machinery* works with them, but faithful boss fights are later I-slices.
 
 **Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
 
@@ -139,6 +139,9 @@ I1 done — Aquamentus, the Level-1 dragon boss: horizontal-only wobble (x∈[$8
 | Aquamentus (boss) | `src/objects/enemies/aquamentus.ts` | ✅ Level-1 dragon boss ($3D), from Z_04.asm UpdateAquamentus. Pinned to right wall ($B0,$80→local 176,64), horizontal-only wobble (x∈[$88,$C7], 1px/8f, random 7/$F legs), 3-way fireball fan ($55 ×3, vertical drift 0/+1/−1) on ≥$70-frame cadence, mouth-open tell while timer<$20. HP $60 (6 wood hits). Never stunnable. Placeholder rect render (CHR→sheet deferred like roster). SFX deferred (I1) |
 | Invincibility mask (boss primitive) | `src/core/constants.ts`, `src/objects/enemies/enemy.ts`, `enemy-collision.ts` | ✅ Per-weapon `DamageTypeBit` (sword $01/boomerang $02/arrow $04/bomb $08/magic-shot $10/fire $20) + `Enemy._invincibilityMask` + `isImmuneToDamageType()`, honored in every weapon branch of checkWeaponEnemyCollisions. Default 0 = hurt by all (regression-guarded). Aquamentus $E2 = immune to boomerang+fire (I1) |
 | Fireball spread (boss primitive) | `src/objects/projectiles/enemy-projectile.ts` | ✅ Optional `verticalDrift` ctor param, applied every other frame while Flying (NES Aquamentus_Shoot @SpreadOutFireballs). Default 0 = straight cardinal travel. `Enemy._pendingProjectiles[]` + `consumeProjectiles()` let a boss emit >1 shot/frame, drained in SpawnManager.update (I1) |
+| Dodongo (boss) | `src/objects/enemies/dodongo.ts` | ✅ Level-2 dino boss ($32), from Z_04.asm UpdateDodongo/CheckBombHit/TryEatBomb. 32×16 body wanders toward Link (Move state). **Immune to all direct weapons** (mask $FF). Bomb blast overlapping body → Stunned (mask drops to $FE) → a single sword hit = instant death. Un-exploded bomb in the leading-half "mouth" → eaten (Bloated); 2 eaten = death. HP irrelevant (scripted death). New primitive: optional `bombs?: BombLike[]` on EnemyUpdateContext threaded through SpawnManager.update ← main.ts. `phase`/`bombsEaten` getters for debug. Placeholder rect render (I1b) |
+| Manhandla (boss) | `src/objects/enemies/manhandla.ts` | ✅ Level-3 flower boss ($3C), from Z_04.asm UpdateManhandla/_Move/_CheckCollisions. Modeled as 5 coordinated Enemy objects: `ManhandlaCenter` (invulnerable, `_vulnerable=false`) drives 8-way group movement (`_dirMask`, retarget every 16f 50% toward-Link/50% random, bounce off play-area walls, fractional speed accumulator) and repositions 4 `ManhandlaHand` (mask $E2, own HP, killable) to N/S/E/W ±16 each frame. Each hand death → whole group speeds up (+$80 frac); center dies only when the last hand dies → gates trigger-7 completion with ZERO H2 change. Hands shoot unblockable $56 fireballs (4-way aimed at Link). Group-spawned via `createManhandla` + `SpawnManager.pushEnemyOrGroup` (one boss slot → 5 objects). `speedPerFrame`/`livingHands` getters. Placeholder rect render (I1c). **I1 complete.** |
+| Dungeon completion loop | `src/objects/enemies/spawn-manager.ts`, `src/core/game-mode.ts`, `src/world/dungeon-manager.ts`, `src/main.ts` | ✅ L1-3 completable end-to-end. Boss single-spawn clamp (`clampBossCount`: list ID ∈ [$32,$62) → 1, Z_05.asm:1723). `GameMode.DungeonTriforceGet`: on Triforce pickup (`beginTriforceGet`) set level bit + full heal + hold display (200f, gold wash + "TRIFORCE" banner) → curtain-warp out via existing exitDungeon path. Triforce room-item −8px X offset (Z_05.asm:8255). Boss-room heart container + shutter ride the existing trigger-7 (FoesForItem) path from H1b (H2) |
 
 ---
 
@@ -186,7 +189,10 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~36~~ | ~~**G4b** Dungeon enemies tier 2 (part 2)~~ | ✅ done 2026-08-25 — Wizzrobe, Like-Like, Wallmaster, Lanmola |
 | ~~37~~ | ~~**G5** Enemy projectiles + roster audit~~ | ✅ done 2026-08-26 — per-type shot visuals, statue fireballs, roster-audit doc. **Phase G complete.** |
 | ~~38~~ | ~~**I1** Aquamentus (first boss)~~ | ✅ done 2026-08-27 — wobble + 3-way fan, mask + spread primitives. **Phase I started.** |
-| 39 | **H2** Dungeons 1-3 completable | Room/enemy/item placement + Triforce. **No longer boss-blocked** (I1 done) — place Aquamentus in L1 boss room, wire death → heart container + Triforce |
+| ~~39~~ | ~~**H2** Dungeons 1-3 completable~~ | ✅ done 2026-08-27 — boss single-spawn + Triforce-get completion loop + navigability verified |
+| ~~40a~~ | ~~**I1b** Dodongo ($32, L2 boss)~~ | ✅ done 2026-08-27 — immune-to-all + bomb-stun-and-sword + bomb-feed fight; `bombs` ctx primitive. 1088 tests |
+| ~~40b~~ | ~~**I1c** Manhandla ($3C, L3 boss)~~ | ✅ done 2026-08-27 — 5-object group (invuln center + 4 killable hands), speed-up on hand death, center dies with last hand → gates completion. **I1 complete (all L1-3 bosses faithful).** 1097 tests |
+| 41 | **I2** (or **H3**) | Phase I2: Gleeok (2/3/4 detaching heads), Digdogger (shrinks w/ Recorder), Gohma (eye vulnerability). Or **H3** (Dungeons 4-6). Both open |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -222,6 +228,86 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-08-27 — I1c Manhandla, L3 boss faithful — I1 complete (Claude Opus 4.8)
+
+Replaced the generic-walker fallback for the Level-3 boss with a faithful **Manhandla**
+(`src/objects/enemies/manhandla.ts`, from Z_04.asm `UpdateManhandla`/`Manhandla_Move`/
+`_CheckCollisions`/`InitManhandla`). The flower boss = **1 center + 4 hands** (N/S/E/W).
+Design: **modeled as 5 real coordinated `Enemy` objects** (matches the NES's 5 slots) so
+the existing per-enemy collision/damage/drop code handles each hand for free — cleaner
+than Lanmola's single-object trick because hands must be independently killable. Only
+the coordination is new. **`ManhandlaCenter`** (`_vulnerable=false` → collision code
+skips it, never damaged) drives 8-way group movement (`_dirMask` bitmask; retarget every
+16f: 50% aim at Link / 50% random; **bounces off the play-area walls** by reflecting the
+offending axis bits; NES fractional speed accumulator seeded to $0080 = 0.5px/f), then
+repositions each living hand to its ±16 cardinal offset. **`ManhandlaHand`** (mask $E2 —
+immune to fire+boomerang, own HP, killed by base `takeDamage`) is passive (positioned by
+the center via `setPos`) and shoots unblockable **$56** fireballs aimed 4-way at Link.
+**Every hand death speeds the whole group up** (+$80 frac, carrying into the whole byte —
+frantic acceleration); the **center dies only when the last hand dies** (`reapDeadHands`),
+which means trigger-7 "all foes dead" fires exactly on full-boss death — **zero change to
+H2's completion code.** Group-spawned via `createManhandla` + new
+`SpawnManager.pushEnemyOrGroup` (the boss single-spawn clamp still forces one slot; that
+slot expands to the 5-object cluster — updated the boss-spawn-count test's $3C case from
+1→5). `speedPerFrame`/`livingHands` getters for debug/tests. Placeholder rect render.
+8 new Manhandla tests (+1 boss-spawn-count), **1097 total, all green**; typecheck clean
+(src). **Simplifications (documented):** 4-way fireball aim (our EnemyProjectile is
+cardinal); ≤4-fireball cap approximated by shoot probability; diagonal group movement
+kept. **I1 is now complete — all three L1-3 bosses are faithful.** **Next: Phase I2
+(Gleeok/Digdogger/Gohma) or H3 (Dungeons 4-6).**
+
+### 2026-08-27 — I1b Dodongo, L2 boss faithful (Claude Opus 4.8)
+
+Replaced the generic-walker fallback for the Level-2 boss with a faithful Dodongo
+(`src/objects/enemies/dodongo.ts`, from Z_04.asm `UpdateDodongo`/`Dodongo_CheckBombHit`/
+`Dodongo_TryEatBomb`). The signature mechanic: **immune to every direct weapon**
+(`_invincibilityMask=$FF` — the sword just clinks). Three sub-states run inside the
+Active state (like Aquamentus): **Move** (32×16 body wanders toward Link, ~1px/f with
+a turn-rate-$20 re-aim at grid boundaries); **Stunned** (entered when a bomb *blast*
+overlaps the body → mask drops to $FE so the sword bit gets through → a single sword
+hit = **instant death**, via an overridden `takeDamage` that ignores HP while stunned);
+**Bloated** (entered when an *un-exploded* bomb lands in the leading-half "mouth" → it
+eats the bomb; **2 eaten = death**, else back to Move). HP is irrelevant — death is
+scripted, matching the NES. **One cross-cutting primitive:** enemies couldn't see the
+bomb list, so added an optional `bombs?: readonly BombLike[]` to `EnemyUpdateContext`
+(structural `BombLike` — no Bomb import, avoids a cycle), threaded through
+`SpawnManager.update()` ← both `main.ts` call sites; all Dodongo logic stays in
+dodongo.ts and the generic collision code is untouched (the $FF/$FE mask already makes
+every weapon branch behave). `phase`/`bombsEaten` getters for debug/tests. Registered
+`$32` in the spawn manager (boss single-spawn clamp already covers it). Placeholder
+rect render (CHR→sheet deferred like the whole roster). 9 new tests, **1088 total, all
+green**; typecheck clean (src). **Next: I1c Manhandla ($3C, segmented 5-part boss) —
+plan at `~/.claude/plans/i-boss-backfill-dodongo-manhandla.md` — or Phase I2 / H3.**
+
+### 2026-08-27 — H2 Dungeons 1-3 completable (Claude Opus 4.8)
+
+The payoff slice: L1-3 now play end-to-end (enter → navigate → kill boss → heart
+container + shutter → grab Triforce → warp out). Investigation showed **most of the
+path was already data-wired** by H1a/H1b + I1 — the L1-3 boss rooms carry item $1A
+(heart container) gated by secret trigger 7 (FoesForItem) and the boss→triforce door
+is a shutter that opens on that same trigger, all handled by existing machinery. H2
+filled **four gaps**: **(1) Boss single-spawn** — `foeCounts` gave the boss room
+count 3, so it spawned *three* Aquamentus; NES rule (`Z_05.asm:1723`, verbatim: "make
+the count 1 if the object list ID >= $32 and < $62") → new `SpawnManager.clampBossCount`
+forces 1 for list IDs in [$32,$62) (every current + future boss), applied in both
+dungeon and overworld spawn paths. **(2) Triforce-get completion sequence** — new
+`GameMode.DungeonTriforceGet` (NES sets GameMode $12 on triforce pickup):
+`beginTriforceGet()` sets the level's triforce bit + full heal + halts Link, holds a
+display for 200f (pulsing gold wash + red "TRIFORCE" banner, Link centered), then
+curtain-warps out by reusing the existing `exitDungeon` path (`pendingCaveIndex=-3`).
+Wired into `handleDungeonItemPickup` case $1B (was just a bare bit-set). **(3)**
+Triforce room-item shifted −8px in X (`getRoomItemPosition`, Z_05.asm:8255). **(4)
+Navigability pass** — BFS over the door graph confirmed start→boss→triforce is
+traversable for all 3 levels (no hard wall blocks; boss→triforce is a shutter for
+L1/L2/L3, opened on boss death). **Known limitations (deferred):** L2 Dodongo ($32) /
+L3 Manhandla ($3C) fall back to the generic walker — the completion *machinery* works
+with whatever occupies the boss room, but faithful fights are later I-slices;
+room-clear persistence (killed monsters respawn on room re-entry — doesn't block the
+linear path); the NES spiral-wipe animation; audio/fanfare. 12 new tests (5
+boss-spawn-count + 7 dungeon-completion), **1079 total, all green** (the g2 Octorok
+flaky happened to pass this run). Typecheck clean (src). **Next: make L2/L3 boss
+fights faithful (Dodongo/Manhandla), or Phase I2 / H3.**
 
 ### 2026-08-27 — I1 Aquamentus, first boss (Claude Opus 4.8)
 
