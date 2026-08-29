@@ -337,6 +337,29 @@ export class DungeonManager {
     this._visitedRooms.add(nextRoomId);
     this._roomFlags.setVisited(nextRoomId);
     this.initRoomState();
+
+    // On the NES, shutters/locked doors close AFTER Link enters the room — they
+    // never block the entry itself. Without this, Link's entry position sits in
+    // a closed-shutter door channel he can't walk out of (soft-lock). Always open
+    // the entry door's collision so he can step into the room; shutter re-closes
+    // implicitly (the collision is only opened, never re-closed during the visit;
+    // canPassDoor() still blocks passage out until the trigger fires).
+    const entryDoorDir = this.getOppositeDoorKey(direction);
+    if (entryDoorDir) {
+      this._collision.openDoor(entryDoorDir);
+    }
+  }
+
+  // Map a movement direction to the door key on the side Link enters FROM.
+  // Going Up enters through the new room's South door, etc.
+  private getOppositeDoorKey(direction: Direction): string | null {
+    switch (direction) {
+      case Direction.Up: return 'south';
+      case Direction.Down: return 'north';
+      case Direction.Left: return 'east';
+      case Direction.Right: return 'west';
+      default: return null;
+    }
   }
 
   // Wallmaster grab — warp Link back to the level's entrance/start room.
@@ -395,8 +418,10 @@ export class DungeonManager {
     if (packed === undefined) return null;
 
     // NES GetShortcutOrItemXY: high nibble = X/16, low nibble = Y/16
-    const x = packed & 0xF0;
+    let x = packed & 0xF0;
     const y = (packed & 0x0F) << 4;
+    // Triforce pieces are drawn 8px left of their slot (Z_05.asm:8255).
+    if (itemId === 0x1B) x -= 8;
     return { x, y };
   }
 

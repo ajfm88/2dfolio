@@ -6,4 +6,5 @@ export enum GameMode {
   CaveInterior,
   DungeonGameplay,
   DungeonTransition,
+  DungeonTriforceGet,
 }

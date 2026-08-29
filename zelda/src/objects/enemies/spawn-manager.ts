@@ -12,7 +12,7 @@ import type { TileCollisionMap } from '../../world/collision.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
 import type { EnemyProjectile } from '../projectiles/enemy-projectile.js';
-import { Enemy, type EnemyUpdateContext, getEnemyHp } from './enemy.js';
+import { Enemy, type EnemyUpdateContext, type BombLike, getEnemyHp } from './enemy.js';
 import { createOctorok } from './octorok.js';
 import { createMoblin } from './moblin.js';
 import { createLynel } from './lynel.js';
@@ -38,6 +38,16 @@ import { LikeLike } from './like-like.js';
 import { Wallmaster } from './wallmaster.js';
 import { Lanmola } from './lanmola.js';
 import { Aquamentus } from './aquamentus.js';
+import { Dodongo } from './dodongo.js';
+import { createManhandla, MANHANDLA } from './manhandla.js';
+
+// Dungeon rooms have a 2-tile wall border; the walkable inner area is grid rows
+// 2-8 and cols 2-13 (see DungeonCollisionMap). Enemy spawn positions are clamped
+// into this box so nothing spawns inside a wall.
+const DUNGEON_INNER_MIN_ROW = 2;
+const DUNGEON_INNER_MAX_ROW = 8;
+const DUNGEON_INNER_MIN_COL = 2;
+const DUNGEON_INNER_MAX_COL = 13;
 
 export class SpawnManager {
   private _enemies: Enemy[] = [];
@@ -71,7 +81,7 @@ export class SpawnManager {
   debugSpawn(objectType: number, x: number, y: number): void {
     if (this._enemies.length >= MAX_ENEMY_SLOTS) return;
     const hp = getEnemyHp(objectType, this._hpPairs);
-    this._enemies.push(createEnemyByType(x, y, objectType, hp, SPAWN_CLOUD_FRAMES));
+    this.pushEnemyOrGroup(objectType, x, y, hp, SPAWN_CLOUD_FRAMES);
   }
 
   get projectiles(): readonly EnemyProjectile[] {
@@ -106,7 +116,7 @@ export class SpawnManager {
 
     const foeCountIndex = spawnEntry.monsterCountIndex;
     const foeCounts = this._spawnData.overworldFoeCounts;
-    const maxCount = foeCounts[foeCountIndex] ?? 4;
+    const maxCount = this.clampBossCount(monsterListId, foeCounts[foeCountIndex] ?? 4);
 
     const posListIndex = directionToSpawnList(entryDirection);
     const positions = this._spawnData.spawnPositions[posListIndex];
@@ -128,8 +138,7 @@ export class SpawnManager {
 
       const hp = getEnemyHp(enemyType, this._hpPairs);
       const spawnDelay = SPAWN_CLOUD_FRAMES + i;
-      const enemy = createEnemyByType(x, y, enemyType, hp, spawnDelay);
-      this._enemies.push(enemy);
+      this.pushEnemyOrGroup(enemyType, x, y, hp, spawnDelay);
     }
 
     // Wire Ghini siblings (main Ghini needs ref to all flying Ghini)
@@ -155,18 +164,24 @@ export class SpawnManager {
     const enemyTypes = this.resolveEnemyTypes(monsterListId);
     if (enemyTypes.length === 0) return;
 
+    const clampedMax = this.clampBossCount(monsterListId, maxCount);
+
     const posListIndex = directionToSpawnList(entryDirection);
     const positions = this._spawnData.spawnPositions[posListIndex];
     if (!positions) return;
 
-    const count = Math.min(maxCount, positions.length, MAX_ENEMY_SLOTS);
+    const count = Math.min(clampedMax, positions.length, MAX_ENEMY_SLOTS);
 
     for (let i = 0; i < count; i++) {
       const pos = positions[i];
       if (pos === undefined) continue;
 
-      const col = pos & 0x0F;
-      const row = (pos >> 4) & 0x0F;
+      // The overworld spawn-position lists reach rows 9-11 / edge cols, which in a
+      // dungeon are the wall border (walkable inner area is rows 2-8, cols 2-13).
+      // Clamp into that area so enemies never spawn embedded in a wall — otherwise
+      // they're unreachable and a shutter/kill-all room can never be cleared.
+      const col = Math.min(DUNGEON_INNER_MAX_COL, Math.max(DUNGEON_INNER_MIN_COL, pos & 0x0F));
+      const row = Math.min(DUNGEON_INNER_MAX_ROW, Math.max(DUNGEON_INNER_MIN_ROW, (pos >> 4) & 0x0F));
       const x = col * 16;
       const y = row * 16 - 3;
 
@@ -175,8 +190,7 @@ export class SpawnManager {
 
       const hp = getEnemyHp(enemyType, this._hpPairs);
       const spawnDelay = SPAWN_CLOUD_FRAMES + i;
-      const enemy = createEnemyByType(x, y, enemyType, hp, spawnDelay);
-      this._enemies.push(enemy);
+      this.pushEnemyOrGroup(enemyType, x, y, hp, spawnDelay);
     }
 
     const mainGhini = this._enemies.find(e => e instanceof Ghini && e.objectType === 33);
@@ -194,7 +208,37 @@ export class SpawnManager {
     return [monsterListId];
   }
 
-  update(collision: TileCollisionMap, screen: OverworldScreen, linkX = 0, linkY = 0): void {
+  // NES Z_05.asm:1723 — "make the count 1 if the object list ID >= $32 and < $62".
+  // Bosses and other non-recurring objects spawn exactly once regardless of the
+  // room's foe-count nibble (else a boss room would spawn 3 Aquamentus).
+  private clampBossCount(monsterListId: number, count: number): number {
+    if (monsterListId >= 0x32 && monsterListId < 0x62) return 1;
+    return count;
+  }
+
+  // Most enemies are a single object; Manhandla ($3C) is a cluster of 5 (1 center +
+  // 4 hands) that spawns from one boss slot. The center is clamped so all four ±16
+  // hands start inside the play area.
+  private pushEnemyOrGroup(
+    enemyType: number, x: number, y: number, hp: number, spawnDelay: number,
+  ): void {
+    if (enemyType === MANHANDLA) {
+      const cx = Math.min(224, Math.max(16, x));
+      const cy = Math.min(144, Math.max(16, y));
+      const { center, hands } = createManhandla(cx, cy, hp, spawnDelay);
+      this._enemies.push(center, ...hands);
+      return;
+    }
+    this._enemies.push(createEnemyByType(x, y, enemyType, hp, spawnDelay));
+  }
+
+  update(
+    collision: TileCollisionMap,
+    screen: OverworldScreen,
+    linkX = 0,
+    linkY = 0,
+    bombs: readonly BombLike[] = [],
+  ): void {
     if (this._frozen) {
       this._frozenTimer--;
       if (this._frozenTimer <= 0) {
@@ -208,7 +252,7 @@ export class SpawnManager {
     // Drain child spawns requested last frame (e.g. Zol → 2 Gels) before updating.
     this.drainChildSpawns();
 
-    const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY };
+    const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY, bombs };
     for (const enemy of this._enemies) {
       enemy.update(ctx);
       // Collect any projectiles spawned this frame
@@ -356,6 +400,9 @@ function createEnemyByType(
     // Aquamentus — Level 1 dragon: horizontal wobble + 3-way fireball fan
     case 0x3d:
       return new Aquamentus(x, y, objectType, hp, spawnDelay);
+    // Dodongo — Level 2 dino: immune to all weapons; bomb-feed / stun-and-sword
+    case 0x32:
+      return new Dodongo(x, y, objectType, hp, spawnDelay);
     // Default fallback (uses base Enemy generic walker)
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);
