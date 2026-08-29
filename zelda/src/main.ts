@@ -174,6 +174,10 @@ let dungeonRoomItem: ItemPickup | null = null;
 let dungeonRoomItemActive = false;
 // True while a Like-Like is holding Link captured (paralyzed).
 let dungeonLinkCaptured = false;
+// Triforce-get completion sequence (H2). Frames left to hold the display before
+// warping Link out of the dungeon. NES sets GameMode $12 on triforce pickup.
+let triforceGetTimer = 0;
+const TRIFORCE_GET_FRAMES = 200; // ~3.3s hold before the exit curtain
 
 async function init(): Promise<void> {
   try {
@@ -394,6 +398,28 @@ function exitDungeon(): void {
   }
 }
 
+// Triforce piece collected — NES sets GameMode $12: record the piece, full heal,
+// hold a triumphant display, then warp Link out to the overworld entrance.
+function beginTriforceGet(): void {
+  if (!link) return;
+  link.inventory.triforce |= (1 << (currentLevel - 1));
+  link.heal(link.maxHealth);
+  link.halted = true;
+  link.setDirection(Direction.Down);
+  // Clear any in-flight weapons/pickups so nothing lingers over the display.
+  boomerang = null;
+  arrow = null;
+  food = null;
+  magicRod = null;
+  magicShot = null;
+  bombs = [];
+  fires = [];
+  pickups = [];
+  dungeonRoomItem = null;
+  triforceGetTimer = TRIFORCE_GET_FRAMES;
+  gameMode = GameMode.DungeonTriforceGet;
+}
+
 function spawnDungeonRoomEnemies(): void {
   if (!spawnManager || !dungeonManager || !enemySpawnData) return;
 
@@ -409,6 +435,7 @@ function spawnDungeonRoomEnemies(): void {
     maxCount,
     Direction.Down,
   );
+
 }
 
 // Bubble contact jinxes Link's sword instead of dealing damage.
@@ -861,7 +888,7 @@ function updateGameplay(): void {
 
   // Update enemies
   if (spawnManager) {
-    spawnManager.update(overworld.collisionMap, overworld.currentScreen, link.posX, link.posY);
+    spawnManager.update(overworld.collisionMap, overworld.currentScreen, link.posX, link.posY, bombs);
 
     // Check weapon→enemy collisions
     const hitResults = checkWeaponEnemyCollisions(spawnManager.activeEnemies, {
@@ -1073,7 +1100,7 @@ function updateDungeonGameplay(): void {
 
   // Update enemies
   if (spawnManager) {
-    spawnManager.update(collision, screen, link.posX, link.posY);
+    spawnManager.update(collision, screen, link.posX, link.posY, bombs);
 
     // Fireball statues feed the shared projectile pipeline (collision-checked
     // below, same frame, alongside enemy shots).
@@ -1463,7 +1490,7 @@ function handleDungeonItemPickup(itemId: number): void {
     case 0x16: inv.giveCompass(currentLevel); break;
     case 0x17: inv.giveMap(currentLevel); break;
     case 0x19: link.addKeys(1); break;
-    case 0x1b: inv.triforce |= (1 << (currentLevel - 1)); break;
+    case 0x1b: beginTriforceGet(); return; // triforce piece → level-complete sequence
     case 0x00: link.addBombs(4); break;
     case 0x0f: link.addRupees(5); break;
     case 0x18: link.addRupees(1); break;
@@ -1703,6 +1730,20 @@ const loop = new GameLoop({
         }
         break;
 
+      case GameMode.DungeonTriforceGet:
+        // Hold the triforce-get display, then curtain out to the overworld.
+        if (triforceGetTimer > 0) {
+          triforceGetTimer--;
+          if (triforceGetTimer <= 0) {
+            if (link) link.halted = false;
+            curtainEffect = new CurtainEffect('close');
+            gameMode = GameMode.DungeonTransition;
+            caveWalkIntoFrames = 0;
+            pendingCaveIndex = -3; // sentinel: exiting dungeon
+          }
+        }
+        break;
+
       case GameMode.CaveTransition:
         // Walk-into-darkness phase: Link walks into the cave opening before curtain
         if (caveWalkIntoFrames > 0 && link) {
@@ -1792,9 +1833,46 @@ const loop = new GameLoop({
         const fill = (loadProgress.loaded / loadProgress.total) * barW;
         renderer.fillRect(barX, barY, fill, barH, '#0f0');
       }
+    } else if (inventorySlide && inventorySlide.isVisible && inventoryScreen && font && redFont && hudRenderer && link) {
+      // Inventory subscreen — checked before the gameplay branches so it renders in
+      // BOTH the overworld and dungeons (the play area slides down, panel slides in).
+      const offset = inventorySlide.offset;
+      const invLinkSheet = getActiveLinkSheet();
+
+      // Draw the current play area below, pushed down by the slide offset.
+      renderer.ctx.save();
+      renderer.ctx.translate(0, offset);
+      if (currentLevel > 0 && dungeonManager) {
+        dungeonManager.renderRoom(renderer);
+      } else if (overworld) {
+        overworld.renderScreen(renderer);
+      }
+      if (invLinkSheet) link.render(renderer, invLinkSheet);
+      renderer.ctx.restore();
+
+      // Draw the inventory panel above, sliding in from the top.
+      renderer.ctx.save();
+      renderer.ctx.translate(0, offset - renderer.playAreaHeight);
+      inventoryScreen.render(renderer, link.inventory, font, redFont, processedItems!, hudRenderer, getHudState());
+      renderer.ctx.restore();
     } else if (gameMode === GameMode.DungeonGameplay && dungeonManager && link) {
       dungeonManager.renderRoom(renderer);
       renderDungeonEntities();
+    } else if (gameMode === GameMode.DungeonTriforceGet && dungeonManager && link) {
+      // Frozen room, Link holding the triforce aloft, a pulsing gold wash + banner.
+      dungeonManager.renderRoom(renderer);
+      const tgSheet = getActiveLinkSheet();
+      if (tgSheet) link.render(renderer, tgSheet);
+      const pulse = Math.floor(triforceGetTimer / 4) % 2 === 0;
+      renderer.ctx.save();
+      renderer.ctx.globalAlpha = pulse ? 0.30 : 0.12;
+      renderer.fillRect(0, 0, renderer.playAreaWidth, renderer.playAreaHeight, '#f8d000');
+      renderer.ctx.restore();
+      if (font) {
+        const banner = 'TRIFORCE';
+        const x = Math.round((renderer.playAreaWidth - banner.length * 8) / 2);
+        (redFont ?? font).drawString(renderer, x, 72, banner);
+      }
     } else if (gameMode === GameMode.DungeonTransition && dungeonManager) {
       dungeonManager.renderRoom(renderer);
       const dtLinkSheet = getActiveLinkSheet();
@@ -1835,25 +1913,6 @@ const loop = new GameLoop({
       if (curtainEffect) {
         curtainEffect.render(renderer);
       }
-    } else if (inventorySlide && inventorySlide.isVisible && overworld && assets && inventoryScreen && font && redFont && hudRenderer && link) {
-      // Inventory subscreen with slide transition
-      const offset = inventorySlide.offset;
-
-      // Draw gameplay below (pushed down by offset)
-      const invLinkSheet = getActiveLinkSheet();
-      renderer.ctx.save();
-      renderer.ctx.translate(0, offset);
-      overworld.renderScreen(renderer);
-      if (invLinkSheet) {
-        link.render(renderer, invLinkSheet);
-      }
-      renderer.ctx.restore();
-
-      // Draw inventory screen above (slides in from top)
-      renderer.ctx.save();
-      renderer.ctx.translate(0, offset - renderer.playAreaHeight);
-      inventoryScreen.render(renderer, link.inventory, font, redFont, processedItems!, hudRenderer, getHudState());
-      renderer.ctx.restore();
     } else if (overworld.isTransitioning) {
       overworld.renderTransition(renderer);
 
