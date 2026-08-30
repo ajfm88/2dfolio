@@ -41,6 +41,7 @@ function makeData(startItemId: number, startSecretTrigger: number): DungeonData 
       triforceRoomId: 54,
       bossRoomId: 53,
       cellarRoomIds: [255],
+      cellarConnections: [],
       foeCounts: [3, 5, 6, 8],
       shortcutOrItemPositions: [0xC9, 172, 137, 135], // index 0 = $C9 → X $C0, Y $90
       startY: 221,

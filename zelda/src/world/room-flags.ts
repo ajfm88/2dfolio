@@ -8,6 +8,7 @@
 //   $0F = opened doors (N=8, S=4, W=2, E=1)
 
 const SECRET_FOUND_BIT = 0x80;
+const ROOM_CLEARED_BIT = 0x40;
 const VISITED_BIT = 0x20;
 const ITEM_TAKEN_BIT = 0x10;
 const DOOR_MASK = 0x0F;
@@ -31,6 +32,14 @@ export class RoomFlags {
 
   setSecretFound(roomId: number): void {
     this.flags[roomId] = this.flags[roomId]! | SECRET_FOUND_BIT;
+  }
+
+  isRoomCleared(roomId: number): boolean {
+    return (this.flags[roomId]! & ROOM_CLEARED_BIT) !== 0;
+  }
+
+  setRoomCleared(roomId: number): void {
+    this.flags[roomId] = this.flags[roomId]! | ROOM_CLEARED_BIT;
   }
 
   isVisited(roomId: number): boolean {

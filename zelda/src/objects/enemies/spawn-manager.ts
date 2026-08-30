@@ -40,6 +40,9 @@ import { Lanmola } from './lanmola.js';
 import { Aquamentus } from './aquamentus.js';
 import { Dodongo } from './dodongo.js';
 import { createManhandla, MANHANDLA } from './manhandla.js';
+import { Gohma, GOHMA_BLUE, GOHMA_RED } from './gohma.js';
+import { Digdogger, LittleDigdogger, DIGDOGGER1, DIGDOGGER2, LITTLE_DIGDOGGER } from './digdogger.js';
+import { createGleeok, GleeokFlyingHead, GLEEOK2, GLEEOK4B, GLEEOK_HEAD } from './gleeok.js';
 
 // Dungeon rooms have a 2-tile wall border; the walkable inner area is grid rows
 // 2-8 and cols 2-13 (see DungeonCollisionMap). Enemy spawn positions are clamped
@@ -229,6 +232,12 @@ export class SpawnManager {
       this._enemies.push(center, ...hands);
       return;
     }
+    if (enemyType >= GLEEOK2 && enemyType <= GLEEOK4B) {
+      const cx = Math.min(224, Math.max(16, x));
+      const { body, heads } = createGleeok(cx, 0, enemyType, hp, spawnDelay);
+      this._enemies.push(body, ...heads);
+      return;
+    }
     this._enemies.push(createEnemyByType(x, y, enemyType, hp, spawnDelay));
   }
 
@@ -238,6 +247,7 @@ export class SpawnManager {
     linkX = 0,
     linkY = 0,
     bombs: readonly BombLike[] = [],
+    fluteActive = false,
   ): void {
     if (this._frozen) {
       this._frozenTimer--;
@@ -252,7 +262,7 @@ export class SpawnManager {
     // Drain child spawns requested last frame (e.g. Zol → 2 Gels) before updating.
     this.drainChildSpawns();
 
-    const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY, bombs };
+    const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY, bombs, fluteActive };
     for (const enemy of this._enemies) {
       enemy.update(ctx);
       // Collect any projectiles spawned this frame
@@ -403,6 +413,18 @@ function createEnemyByType(
     // Dodongo — Level 2 dino: immune to all weapons; bomb-feed / stun-and-sword
     case 0x32:
       return new Dodongo(x, y, objectType, hp, spawnDelay);
+    // Gohma — Level 6 crab: arrow-only when eye half-open
+    case GOHMA_BLUE: case GOHMA_RED:
+      return new Gohma(x, y, objectType, hp, spawnDelay);
+    // Digdogger — Level 5: invulnerable, flute splits into children
+    case DIGDOGGER1: case DIGDOGGER2:
+      return new Digdogger(x, y, objectType, hp, spawnDelay);
+    // LittleDigdogger — Digdogger child, fast and killable
+    case LITTLE_DIGDOGGER:
+      return new LittleDigdogger(x, y, objectType, hp, spawnDelay);
+    // GleeokFlyingHead — invulnerable flying detached head
+    case GLEEOK_HEAD:
+      return new GleeokFlyingHead(x, y, objectType, hp, spawnDelay);
     // Default fallback (uses base Enemy generic walker)
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);

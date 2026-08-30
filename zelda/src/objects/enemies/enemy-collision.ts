@@ -138,7 +138,8 @@ export function checkWeaponEnemyCollisions(
         }
         const damage = weapons.arrow.isSilver ? SILVER_ARROW_DAMAGE : ARROW_DAMAGE;
         const dir = weapons.arrow.direction;
-        const killed = enemy.takeDamage(damage, dir);
+        const hitCtx = { x: weapons.arrow.x, y: weapons.arrow.y, dir };
+        const killed = enemy.takeDamage(damage, dir, hitCtx);
         weapons.arrow.deactivate();
         results.push({ enemy, killed });
         continue;

@@ -11299,6 +11299,15 @@
         255,
         255
       ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 127,
+          "leftDest": 34,
+          "rightDest": 34,
+          "exitPos": 106,
+          "layoutIndex": 1
+        }
+      ],
       "foeCounts": [
         3,
         5,
@@ -11331,6 +11340,7 @@
         255,
         255
       ],
+      "cellarConnections": [],
       "foeCounts": [
         3,
         5,
@@ -11363,6 +11373,7 @@
         255,
         255
       ],
+      "cellarConnections": [],
       "foeCounts": [
         3,
         5,
@@ -11394,6 +11405,15 @@
         255,
         255,
         255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 96,
+          "leftDest": 50,
+          "rightDest": 50,
+          "exitPos": 203,
+          "layoutIndex": 1
+        }
       ],
       "foeCounts": [
         3,
@@ -11427,6 +11447,22 @@
         255,
         255
       ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 7,
+          "leftDest": 100,
+          "rightDest": 6,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 4,
+          "leftDest": 5,
+          "rightDest": 5,
+          "exitPos": 152,
+          "layoutIndex": 1
+        }
+      ],
       "foeCounts": [
         3,
         5,
@@ -11458,6 +11494,22 @@
         255,
         255,
         255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 8,
+          "leftDest": 58,
+          "rightDest": 29,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 117,
+          "leftDest": 9,
+          "rightDest": 9,
+          "exitPos": 200,
+          "layoutIndex": 1
+        }
       ],
       "foeCounts": [
         3,
@@ -11491,6 +11543,22 @@
         255,
         255
       ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 123,
+          "leftDest": 41,
+          "rightDest": 13,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 74,
+          "leftDest": 26,
+          "rightDest": 26,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
+      ],
       "foeCounts": [
         3,
         5,
@@ -11523,6 +11591,29 @@
         255,
         255
       ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 47,
+          "leftDest": 76,
+          "rightDest": 63,
+          "exitPos": 119,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 15,
+          "leftDest": 31,
+          "rightDest": 31,
+          "exitPos": 105,
+          "layoutIndex": 1
+        },
+        {
+          "cellarRoomId": 111,
+          "leftDest": 124,
+          "rightDest": 124,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
+      ],
       "foeCounts": [
         3,
         5,
@@ -11554,6 +11645,64 @@
         79,
         255,
         255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 96,
+          "leftDest": 20,
+          "rightDest": 85,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 112,
+          "leftDest": 99,
+          "rightDest": 5,
+          "exitPos": 169,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 114,
+          "leftDest": 113,
+          "rightDest": 116,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 117,
+          "leftDest": 32,
+          "rightDest": 97,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 103,
+          "leftDest": 48,
+          "rightDest": 4,
+          "exitPos": 198,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 119,
+          "leftDest": 82,
+          "rightDest": 3,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 0,
+          "leftDest": 7,
+          "rightDest": 7,
+          "exitPos": 105,
+          "layoutIndex": 1
+        },
+        {
+          "cellarRoomId": 79,
+          "leftDest": 16,
+          "rightDest": 16,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
       ],
       "foeCounts": [
         3,
