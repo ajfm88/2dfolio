@@ -8,6 +8,7 @@ import {
 } from '../core/constants.js';
 import { Direction } from '../core/types.js';
 import type {
+  CellarConnection,
   DungeonData,
   DungeonInfo,
   DungeonLevelBlock,
@@ -65,6 +66,9 @@ export class DungeonManager {
   private _shuttersTriggered = false;
   private _isDark = false;
   private _secretTriggered = false;
+  private _inCellar = false;
+  private _cellarConnection: CellarConnection | null = null;
+  private _cellarLeftSide = true;
 
   constructor(
     level: number,
@@ -452,7 +456,65 @@ export class DungeonManager {
     }
   }
 
+  get inCellar(): boolean {
+    return this._inCellar;
+  }
+
+  get cellarConnection(): CellarConnection | null {
+    return this._cellarConnection;
+  }
+
+  get cellarLeftSide(): boolean {
+    return this._cellarLeftSide;
+  }
+
+  getCellarForRoom(roomId: number): { conn: CellarConnection; isLeftSide: boolean } | null {
+    for (const conn of this._dungeonInfo.cellarConnections) {
+      if (conn.leftDest === roomId) return { conn, isLeftSide: true };
+      if (conn.rightDest === roomId) return { conn, isLeftSide: false };
+    }
+    return null;
+  }
+
+  enterCellar(conn: CellarConnection, isLeftSide: boolean): void {
+    this._inCellar = true;
+    this._cellarConnection = conn;
+    this._cellarLeftSide = isLeftSide;
+    const cellarRoom = this._dungeonData.cellarRooms[conn.layoutIndex];
+    if (cellarRoom) {
+      this._collision = DungeonCollisionMap.forCellar(
+        cellarRoom,
+        this._dungeonData.squareTable,
+      );
+    }
+  }
+
+  exitCellar(isLeftSide: boolean): { roomId: number; x: number; y: number } {
+    const conn = this._cellarConnection!;
+    const destRoom = isLeftSide ? conn.leftDest : conn.rightDest;
+    const x = conn.exitPos & 0xF0;
+    const y = (conn.exitPos & 0x0F) << 4;
+    this._inCellar = false;
+    this._cellarConnection = null;
+
+    this._currentRoomId = destRoom;
+    this._currentRoom = this.getRoom(destRoom);
+    this._collision = this.buildCollision(this._currentRoom);
+    this._visitedRooms.add(destRoom);
+    this._roomFlags.setVisited(destRoom);
+    this.initRoomState();
+
+    return { roomId: destRoom, x, y };
+  }
+
   renderRoom(renderer: Renderer): void {
+    if (this._inCellar && this._cellarConnection) {
+      const cellarRoom = this._dungeonData.cellarRooms[this._cellarConnection.layoutIndex];
+      if (cellarRoom) {
+        this._renderer.renderCellarRoom(renderer, cellarRoom, this._dungeonData.squareTable);
+        return;
+      }
+    }
     this._renderer.renderRoom(
       renderer,
       this._currentRoomId,

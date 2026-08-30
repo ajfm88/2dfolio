@@ -27,12 +27,21 @@ export interface DungeonLevelBlock {
   readonly rooms: readonly DungeonRoom[];
 }
 
+export interface CellarConnection {
+  readonly cellarRoomId: number;
+  readonly leftDest: number;
+  readonly rightDest: number;
+  readonly exitPos: number;
+  readonly layoutIndex: number;
+}
+
 export interface DungeonInfo {
   readonly level: number;
   readonly startRoomId: number;
   readonly triforceRoomId: number;
   readonly bossRoomId: number;
   readonly cellarRoomIds: readonly number[];
+  readonly cellarConnections: readonly CellarConnection[];
   readonly foeCounts: readonly number[];
   readonly shortcutOrItemPositions: readonly number[];
   readonly startY: number;

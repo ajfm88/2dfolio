@@ -138,4 +138,29 @@ export class DungeonCollisionMap {
   clearWalkableOverrides(): void {
     this._walkableOverrides.clear();
   }
+
+  static forCellar(
+    cellarRoom: UniqueRoom,
+    squareTable: readonly number[],
+  ): DungeonCollisionMap {
+    const map = Object.create(DungeonCollisionMap.prototype) as DungeonCollisionMap;
+    (map as any)._walkableOverrides = new Set<string>();
+    const walkable: boolean[][] = Array.from({ length: ROOM_ROWS }, () =>
+      Array.from({ length: ROOM_COLS }, () => false),
+    );
+    for (let r = 0; r < cellarRoom.tiles.length; r++) {
+      const row = cellarRoom.tiles[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length && c < ROOM_COLS; c++) {
+        const tileIdx = row[c];
+        if (tileIdx === undefined) continue;
+        const value = squareTable[tileIdx];
+        if (tileIdx === 0 || (value !== undefined && value < DEFAULT_WALKABILITY_THRESHOLD)) {
+          walkable[r + INNER_OFFSET_ROW]![c] = true;
+        }
+      }
+    }
+    (map as any)._walkable = walkable;
+    return map;
+  }
 }
