@@ -46,6 +46,7 @@ function createTestDungeonData(): DungeonData {
         triforceRoomId: 54,
         bossRoomId: 53,
         cellarRoomIds: [255],
+        cellarConnections: [],
         foeCounts: [3, 5, 6, 8],
         shortcutOrItemPositions: [201, 172, 137, 135],
         startY: 221,

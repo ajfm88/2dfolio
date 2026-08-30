@@ -172,6 +172,8 @@ let dungeonStatues: DungeonStatues | null = null;
 let dungeonPushBlock: PushBlock | null = null;
 let dungeonRoomItem: ItemPickup | null = null;
 let dungeonRoomItemActive = false;
+let dungeonStairsPos: { x: number; y: number } | null = null;
+let cellarWalkInFrames = 0;
 // True while a Like-Like is holding Link captured (paralyzed).
 let dungeonLinkCaptured = false;
 // Triforce-get completion sequence (H2). Frames left to hold the display before
@@ -385,6 +387,8 @@ function exitDungeon(): void {
   dungeonPushBlock = null;
   dungeonRoomItem = null;
   dungeonRoomItemActive = false;
+  dungeonStairsPos = null;
+  cellarWalkInFrames = 0;
 
   overworld.setScreen(dungeonEntryScreenRow, dungeonEntryScreenCol);
   link.setPosition(dungeonEntryX, dungeonEntryY);
@@ -426,6 +430,7 @@ function spawnDungeonRoomEnemies(): void {
   spawnManager.clear();
   const room = dungeonManager.currentRoom;
   if (room.monsterListId === 0) return;
+  if (dungeonManager.roomFlags.isRoomCleared(dungeonManager.currentRoomId)) return;
 
   const foeCounts = dungeonManager.dungeonInfo.foeCounts;
   const maxCount = foeCounts[room.monsterCountIndex] ?? 4;
@@ -1008,6 +1013,27 @@ function updateDungeonGameplay(): void {
     return;
   }
 
+  if (cellarWalkInFrames > 0) {
+    cellarWalkInFrames--;
+    link.walkForward();
+    link.tickAnimation();
+    if (cellarWalkInFrames <= 0) {
+      link.halted = false;
+    }
+    return;
+  }
+
+  let dungeonFluteActive = false;
+  if (recorderEffect) {
+    recorderEffect.update(link.posX, link.posY);
+    if (recorderEffect.isDone) {
+      link.halted = false;
+      recorderEffect = null;
+    } else if (recorderEffect.phase === RecorderPhase.Tune) {
+      dungeonFluteActive = true;
+    }
+  }
+
   if (input.isJustPressed(Action.Start)) {
     inventorySlide.open();
     return;
@@ -1023,7 +1049,7 @@ function updateDungeonGameplay(): void {
   void result;
 
   // Check dungeon exit BEFORE room transitions (start room's south door leads out)
-  if (dungeonManager.checkDungeonExit(link)) {
+  if (!dungeonManager.inCellar && dungeonManager.checkDungeonExit(link)) {
     curtainEffect = new CurtainEffect('close');
     gameMode = GameMode.DungeonTransition;
     caveWalkIntoFrames = 0;
@@ -1031,8 +1057,8 @@ function updateDungeonGameplay(): void {
     return;
   }
 
-  // Check for room transitions through doors
-  const doorDir = dungeonManager.checkRoomTransition(link);
+  // Check for room transitions through doors (skip when in cellar)
+  const doorDir = dungeonManager.inCellar ? null : dungeonManager.checkRoomTransition(link);
   if (doorDir !== null) {
     // Try to pass through the door (key/bomb/shutter checks)
     if (dungeonManager.touchDoor(doorDir, link)) {
@@ -1050,11 +1076,61 @@ function updateDungeonGameplay(): void {
       magicShot = null;
       pickups = [];
       usedCandleThisScreen = false;
+      dungeonStairsPos = null;
 
       spawnDungeonRoomEnemies();
       initDungeonRoomObjects();
       return;
     }
+  }
+
+  // Stair entry detection — Link steps on revealed stairs → cellar transition
+  if (dungeonStairsPos && !dungeonManager.inCellar) {
+    const lx = link.posX;
+    const ly = link.posY;
+    const sx = dungeonStairsPos.x;
+    const sy = dungeonStairsPos.y;
+    if (lx + 12 > sx && lx < sx + 16 && ly + 12 > sy && ly < sy + 16) {
+      const cellar = dungeonManager.getCellarForRoom(dungeonManager.currentRoomId);
+      if (cellar) {
+        dungeonManager.enterCellar(cellar.conn, cellar.isLeftSide);
+        const entryX = cellar.isLeftSide ? 0x30 : 0xC0;
+        link.setPosition(entryX, 0x41);
+        link.setDirection(Direction.Down);
+        link.halted = true;
+        cellarWalkInFrames = 28;
+        bombs = [];
+        fires = [];
+        boomerang = null;
+        arrow = null;
+        food = null;
+        magicRod = null;
+        magicShot = null;
+        pickups = [];
+        dungeonStairsPos = null;
+        if (spawnManager) spawnManager.clear();
+        return;
+      }
+    }
+  }
+
+  // Cellar exit detection — Link walks up past Y threshold
+  if (dungeonManager.inCellar && link.posY < 40 && link.facing === Direction.Up) {
+    const isLeftSide = link.posX < 0x80;
+    const exit = dungeonManager.exitCellar(isLeftSide);
+    link.setPosition(exit.x, exit.y);
+    link.setDirection(Direction.Up);
+    bombs = [];
+    fires = [];
+    boomerang = null;
+    arrow = null;
+    food = null;
+    magicRod = null;
+    magicShot = null;
+    pickups = [];
+    spawnDungeonRoomEnemies();
+    initDungeonRoomObjects();
+    return;
   }
 
   // Item button
@@ -1100,7 +1176,7 @@ function updateDungeonGameplay(): void {
 
   // Update enemies
   if (spawnManager) {
-    spawnManager.update(collision, screen, link.posX, link.posY, bombs);
+    spawnManager.update(collision, screen, link.posX, link.posY, bombs, dungeonFluteActive);
 
     // Fireball statues feed the shared projectile pipeline (collision-checked
     // below, same frame, alongside enemy shots).
@@ -1200,57 +1276,70 @@ function updateDungeonGameplay(): void {
     }
   }
 
-  // Update spike traps
-  for (const trap of dungeonSpikeTraps) {
-    trap.update(link.posX, link.posY);
-    if (!link.isInvincible && !link.isDead) {
-      const trapHb = trap.getHitbox();
-      const linkRect = link.getCollisionRect();
-      if (
-        linkRect.x < trapHb.x + trapHb.width &&
-        linkRect.x + linkRect.width > trapHb.x &&
-        linkRect.y < trapHb.y + trapHb.height &&
-        linkRect.y + linkRect.height > trapHb.y
-      ) {
-        link.takeDamage(trap.damage, link.facing);
+  if (!dungeonManager.inCellar) {
+    // Update spike traps
+    for (const trap of dungeonSpikeTraps) {
+      trap.update(link.posX, link.posY);
+      if (!link.isInvincible && !link.isDead) {
+        const trapHb = trap.getHitbox();
+        const linkRect = link.getCollisionRect();
+        if (
+          linkRect.x < trapHb.x + trapHb.width &&
+          linkRect.x + linkRect.width > trapHb.x &&
+          linkRect.y < trapHb.y + trapHb.height &&
+          linkRect.y + linkRect.height > trapHb.y
+        ) {
+          link.takeDamage(trap.damage, link.facing);
+        }
       }
     }
-  }
 
-  // Update push block
-  if (dungeonPushBlock && dungeonPushBlock.state !== PushBlockState.Done) {
-    const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
-    dungeonPushBlock.update(
-      { posX: link.posX, posY: link.posY, facing: link.facing, isMoving: link.isMoving },
-      allDead,
-    );
-  }
-
-  // Check bomb detonation near bombable doors
-  for (const bomb of bombs) {
-    if (bomb.isDetonating) {
-      const bx = bomb.x;
-      const by = bomb.y;
-      // Check each direction for bombable doors
-      if (by < 32) dungeonManager.bombDoor(Direction.Up);
-      if (by > 128) dungeonManager.bombDoor(Direction.Down);
-      if (bx < 32) dungeonManager.bombDoor(Direction.Left);
-      if (bx > 208) dungeonManager.bombDoor(Direction.Right);
-    }
-  }
-
-  // Check secret triggers
-  if (!dungeonManager.secretTriggered) {
-    const trigger = dungeonManager.currentRoom.secretTrigger;
-    if (trigger !== 0) {
+    // Update push block
+    if (dungeonPushBlock && dungeonPushBlock.state !== PushBlockState.Done) {
       const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
-      const pushComplete = dungeonPushBlock ? dungeonPushBlock.pushComplete : false;
-      const result = checkSecretTrigger(trigger, allDead, pushComplete, false);
-      if (result.shuttersOpen || result.stairsRevealed || result.itemActivated) {
-        dungeonManager.markSecretTriggered();
-        if (result.shuttersOpen) dungeonManager.triggerShutters();
-        if (result.itemActivated && dungeonRoomItem) dungeonRoomItemActive = true;
+      dungeonPushBlock.update(
+        { posX: link.posX, posY: link.posY, facing: link.facing, isMoving: link.isMoving },
+        allDead,
+      );
+    }
+
+    // Check bomb detonation near bombable doors
+    for (const bomb of bombs) {
+      if (bomb.isDetonating) {
+        const bx = bomb.x;
+        const by = bomb.y;
+        if (by < 32) dungeonManager.bombDoor(Direction.Up);
+        if (by > 128) dungeonManager.bombDoor(Direction.Down);
+        if (bx < 32) dungeonManager.bombDoor(Direction.Left);
+        if (bx > 208) dungeonManager.bombDoor(Direction.Right);
       }
+    }
+
+    // Check secret triggers
+    if (!dungeonManager.secretTriggered) {
+      const trigger = dungeonManager.currentRoom.secretTrigger;
+      if (trigger !== 0) {
+        const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
+        const pushComplete = dungeonPushBlock ? dungeonPushBlock.pushComplete : false;
+        const result = checkSecretTrigger(trigger, allDead, pushComplete, false);
+        if (result.shuttersOpen || result.stairsRevealed || result.itemActivated) {
+          dungeonManager.markSecretTriggered();
+          if (result.shuttersOpen) dungeonManager.triggerShutters();
+          if (result.stairsRevealed) dungeonStairsPos = { x: 0xD0, y: 0x60 };
+          if (result.itemActivated && dungeonRoomItem) dungeonRoomItemActive = true;
+        }
+      }
+    }
+
+    // Mark room cleared when all enemies are dead
+    if (
+      spawnManager &&
+      dungeonManager.currentRoom.monsterListId > 0 &&
+      !dungeonManager.roomFlags.isRoomCleared(dungeonManager.currentRoomId) &&
+      spawnManager.enemies.length > 0 &&
+      spawnManager.activeEnemies.length === 0
+    ) {
+      dungeonManager.roomFlags.setRoomCleared(dungeonManager.currentRoomId);
     }
   }
 
@@ -1373,9 +1462,9 @@ function useBItem(linkRef: Link): void {
     case 5: { // Recorder/Flute
       if (!linkRef.inventory.flute) break;
       if (recorderEffect) break;
-      if (!overworld) break;
+      const screenId = overworld ? overworld.currentScreen.id : 0;
       recorderEffect = new RecorderEffect(
-        overworld.currentScreen.id,
+        screenId,
         linkRef.facing,
         linkRef.inventory.triforce,
         teleportingLevelIndex,
@@ -1640,11 +1729,19 @@ function renderDungeonEntities(): void {
   if (!link) return;
   const ctx = renderer.ctx;
 
-  // Render push block
-  if (dungeonPushBlock) dungeonPushBlock.render(renderer);
+  if (dungeonStairsPos) {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(dungeonStairsPos.x, dungeonStairsPos.y, 16, 16);
+    ctx.fillStyle = '#b86820';
+    for (let sy = 0; sy < 16; sy += 4) {
+      ctx.fillRect(dungeonStairsPos.x, dungeonStairsPos.y + sy, 16, 2);
+    }
+  }
 
-  // Render spike traps
-  for (const trap of dungeonSpikeTraps) trap.render(renderer);
+  if (!dungeonManager?.inCellar) {
+    if (dungeonPushBlock) dungeonPushBlock.render(renderer);
+    for (const trap of dungeonSpikeTraps) trap.render(renderer);
+  }
 
   // Render room item
   if (dungeonRoomItem && dungeonRoomItemActive && dungeonRoomItem.isActive && processedItems) {

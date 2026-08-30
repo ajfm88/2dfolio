@@ -19,7 +19,7 @@ export class Zol extends JellyEnemy {
     super(x, y, objectType, hp, spawnCloudFrames, ZOL_QSPEED, ZOL_LINK_BIAS);
   }
 
-  override takeDamage(damage: number, fromDirection: Direction): boolean {
+  override takeDamage(damage: number, fromDirection: Direction, _hitContext?: { x: number; y: number; dir: Direction }): boolean {
     if (this._invincibilityTimer > 0) return false;
     if (!this._vulnerable) return false;
     if (this._state === EnemyState.Spawning

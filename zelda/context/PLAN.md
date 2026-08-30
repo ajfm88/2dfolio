@@ -122,7 +122,7 @@ Sliced by environment so each is playtestable as you go.
 | H1a ✅ | Dungeon room loading, rendering from dungeons-map.png, open-door navigation, overworld entry/exit via curtain, dungeon minimap in HUD, dungeon respawn | enter dungeon; walk between rooms; exit to overworld |
 | H1b ✅ | Dungeon door types (locked/key, bombable, shutter/kill-all), spike traps, push blocks, secret triggers, dark rooms, Map + Compass items, room item placement | use key on door; bomb wall; kill enemies to open shutters |
 | H2 ✅ | Dungeons 1–3: Eagle, Moon, Manji — room layouts, enemy placement, item placement, Triforce piece (done 2026-08-27 — boss single-spawn + Triforce-get completion loop; L2 Dodongo/L3 Manhandla are generic-walker fallback until their I-slices) | complete dungeon 1 start to Triforce |
-| H3 ⬜ | Dungeons 4–6: Snake, Lizard, Dragon — progressively harder layouts and enemy mixes | all 3 dungeons navigable |
+| H3 ✅ | Dungeons 4–6: Snake, Lizard, Dragon — staircase/cellar system (tunnel + treasure cellars, entry/exit detection, cellar rendering/collision) + room-clear persistence (ROOM_CLEARED_BIT $40, enemies don't respawn in cleared rooms). Done 2026-08-29. | all 3 dungeons navigable |
 | H4 ⬜ | Dungeons 7–9: Demon, Lion, Death Mountain — including the final dungeon's unique mechanics | reach Ganon in dungeon 9 |
 
 ## Phase I — Bosses (3 slices)
@@ -130,7 +130,7 @@ Sliced by environment so each is playtestable as you go.
 | ID | Slice | Verify |
 |---|---|---|
 | I1 ✅ | Boss framework + **Aquamentus ✅** (fireball fan; + reusable invincibility-mask & fireball-spread primitives), **Dodongo ✅** (bomb-feeding + stun-and-sword; + `bombs` ctx primitive), **Manhandla ✅** (4 hands, accelerates on hand death; 5-object group, invuln center). All done 2026-08-27. Triforce-drop-on-death handled by H2. | all 3 bosses defeatable |
-| I2 ⬜ | Gleeok (2/3/4 detaching heads), Digdogger (shrinks with Recorder), Gohma (red/blue, eye vulnerability) | all 3 bosses defeatable with correct items |
+| I2 ✅ | Gohma ($33/$34, arrow-when-eye-half-open), Digdogger ($38/$39, flute splits into 1/3 children), Gleeok ($42-$45, multi-headed dragon + flying heads). Done 2026-08-28. | all 3 bosses defeatable with correct items |
 | I3 ⬜ | Patra (orbiting flies), Ganon (invisible, Silver Arrow kill), Zelda rescue sequence | beat Ganon; rescue Zelda; game ends |
 
 ## Phase J — UI & Game States (2 slices)
