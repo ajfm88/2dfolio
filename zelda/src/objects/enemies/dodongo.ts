@@ -94,7 +94,7 @@ export class Dodongo extends Enemy {
   }
 
   // Reachable only when the mask lets a weapon through — i.e. Stunned + sword.
-  override takeDamage(_damage: number, _fromDirection: Direction): boolean {
+  override takeDamage(_damage: number, _fromDirection: Direction, _hitContext?: { x: number; y: number; dir: Direction }): boolean {
     if (this._dstate !== DState.Stunned) return false;
     this._hp = 0;
     this._state = EnemyState.Dying;

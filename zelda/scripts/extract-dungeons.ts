@@ -80,7 +80,12 @@ interface RoomData {
   itemPositionIndex: number;
 }
 
-function extractLevelBlock(rom: Buffer, offset: number): RoomData[] {
+interface LevelBlockResult {
+  rooms: RoomData[];
+  rawAttrs: Uint8Array;
+}
+
+function extractLevelBlock(rom: Buffer, offset: number): LevelBlockResult {
   const block = new Uint8Array(rom.subarray(offset, offset + LEVEL_BLOCK_LENGTH));
   const rooms: RoomData[] = [];
 
@@ -116,7 +121,42 @@ function extractLevelBlock(rom: Buffer, offset: number): RoomData[] {
     });
   }
 
-  return rooms;
+  return { rooms, rawAttrs: block };
+}
+
+function getRawAttr(rawAttrs: Uint8Array, roomId: number, attrIndex: number): number {
+  return rawAttrs[roomId + attrIndex * 128]!;
+}
+
+interface CellarConnectionData {
+  cellarRoomId: number;
+  leftDest: number;
+  rightDest: number;
+  exitPos: number;
+  layoutIndex: number;
+}
+
+function computeCellarConnections(
+  cellarRoomIds: number[],
+  rawAttrs: Uint8Array,
+): CellarConnectionData[] {
+  const connections: CellarConnectionData[] = [];
+  for (const cellarRoomId of cellarRoomIds) {
+    if (cellarRoomId === 255) continue;
+    const attrsA = getRawAttr(rawAttrs, cellarRoomId, 0);
+    const attrsB = getRawAttr(rawAttrs, cellarRoomId, 1);
+    const attrsC = getRawAttr(rawAttrs, cellarRoomId, 2);
+    const attrsD = getRawAttr(rawAttrs, cellarRoomId, 3);
+    const uniqueRoomId = attrsD & 0x3F;
+    connections.push({
+      cellarRoomId,
+      leftDest: attrsA,
+      rightDest: attrsB,
+      exitPos: attrsC,
+      layoutIndex: uniqueRoomId - 62,
+    });
+  }
+  return connections;
 }
 
 // --- LevelInfo parsing ---
@@ -127,13 +167,18 @@ interface DungeonInfoData {
   triforceRoomId: number;
   bossRoomId: number;
   cellarRoomIds: number[];
+  cellarConnections: CellarConnectionData[];
   foeCounts: number[];
   shortcutOrItemPositions: number[];
   startY: number;
   levelBlock: string;
 }
 
-function extractLevelInfo(rom: Buffer, dungeonIndex: number): DungeonInfoData {
+function extractLevelInfo(
+  rom: Buffer,
+  dungeonIndex: number,
+  levelBlockRawAttrs: Record<string, Uint8Array>,
+): DungeonInfoData {
   const offset = LEVEL_INFO_BASE + dungeonIndex * LEVEL_INFO_LENGTH;
   const info = new Uint8Array(rom.subarray(offset, offset + LEVEL_INFO_LENGTH));
 
@@ -158,12 +203,16 @@ function extractLevelInfo(rom: Buffer, dungeonIndex: number): DungeonInfoData {
     throw new Error(`Unknown level number: ${level} for dungeon index ${dungeonIndex}`);
   }
 
+  const rawAttrs = levelBlockRawAttrs[levelBlock]!;
+  const cellarConnections = computeCellarConnections(cellarRoomIds, rawAttrs);
+
   return {
     level,
     startRoomId: info[LI_START_ROOM_ID]!,
     triforceRoomId: info[LI_TRIFORCE_ROOM_ID]!,
     bossRoomId: info[LI_BOSS_ROOM_ID]!,
     cellarRoomIds,
+    cellarConnections,
     foeCounts,
     shortcutOrItemPositions,
     startY: info[LI_START_Y]!,
@@ -445,19 +494,22 @@ const rom = readRom();
 
 console.log('Extracting level blocks...');
 const levelBlocks: Record<string, RoomData[]> = {};
+const levelBlockRawAttrs: Record<string, Uint8Array> = {};
 for (const [key, offset] of Object.entries(LEVEL_BLOCK_OFFSETS)) {
-  const rooms = extractLevelBlock(rom, offset);
+  const { rooms, rawAttrs } = extractLevelBlock(rom, offset);
   validateRooms(rooms, key);
   levelBlocks[key] = rooms;
+  levelBlockRawAttrs[key] = rawAttrs;
   console.log(`  ${key}: ${rooms.length} rooms`);
 }
 
 console.log('Extracting dungeon info (9 dungeons)...');
 const dungeons: DungeonInfoData[] = [];
 for (let i = 0; i < 9; i++) {
-  const info = extractLevelInfo(rom, i);
+  const info = extractLevelInfo(rom, i, levelBlockRawAttrs);
   dungeons.push(info);
-  console.log(`  Dungeon ${info.level}: start=${info.startRoomId}, triforce=${info.triforceRoomId}, boss=${info.bossRoomId}, block=${info.levelBlock}`);
+  const cellars = info.cellarConnections.length;
+  console.log(`  Dungeon ${info.level}: start=${info.startRoomId}, triforce=${info.triforceRoomId}, boss=${info.bossRoomId}, block=${info.levelBlock}, cellars=${cellars}`);
 }
 
 console.log('Parsing assembly source...');

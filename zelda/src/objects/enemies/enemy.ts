@@ -56,6 +56,8 @@ export interface EnemyUpdateContext {
   readonly linkY: number;
   // Active bombs on screen (only Dodongo reads these); omitted for most updates.
   readonly bombs?: readonly BombLike[];
+  // True while the Recorder/Flute tune is playing (Digdogger reacts to this).
+  readonly fluteActive?: boolean;
 }
 
 // A monster this enemy wants the SpawnManager to create (e.g. Zol → 2 Gels).
@@ -231,7 +233,7 @@ export class Enemy {
     }
   }
 
-  takeDamage(damage: number, fromDirection: Direction): boolean {
+  takeDamage(damage: number, fromDirection: Direction, _hitContext?: { x: number; y: number; dir: Direction }): boolean {
     if (this._invincibilityTimer > 0) return false;
     if (!this._vulnerable) return false;
     if (this._state === EnemyState.Spawning || this._state === EnemyState.Dying || this._state === EnemyState.Dead) return false;
