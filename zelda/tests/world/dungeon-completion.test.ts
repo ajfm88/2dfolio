@@ -103,3 +103,23 @@ describe('all-foes-dead trigger (boss defeat)', () => {
     });
   });
 });
+
+describe('L9 boss room — trigger 3 (LastBoss)', () => {
+  it('trigger 3 opens shutters and activates item (Red Ring) when boss defeated', () => {
+    expect(checkSecretTrigger(3, true, false, true)).toEqual({
+      shuttersOpen: true, stairsRevealed: false, itemActivated: true,
+    });
+  });
+
+  it('trigger 3 does nothing while boss alive', () => {
+    expect(checkSecretTrigger(3, false, false, false)).toEqual({
+      shuttersOpen: false, stairsRevealed: false, itemActivated: false,
+    });
+  });
+
+  it('trigger 3 fires with allDead=false if bossDefeated=true', () => {
+    const r = checkSecretTrigger(3, false, false, true);
+    expect(r.shuttersOpen).toBe(true);
+    expect(r.itemActivated).toBe(true);
+  });
+});

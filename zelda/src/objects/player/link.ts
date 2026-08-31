@@ -236,7 +236,7 @@ export class Link {
   }
 
   addRupees(amount: number): void {
-    this._rupees = Math.min(255, Math.max(0, this._rupees + amount));
+    this._rupees = Math.min(999, Math.max(0, this._rupees + amount));
   }
 
   spendRupees(amount: number): boolean {

@@ -9,6 +9,7 @@ import {
   RAFT_ROOM_B,
   RING_TINT_BLUE,
   RING_TINT_RED,
+  SILVER_ARROW_DAMAGE,
   SPRITE_SPACING,
 } from './core/constants.js';
 import { DebugOverlay } from './core/debug-overlay.js';
@@ -27,7 +28,7 @@ import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData } from './data/overworld-types.js';
 import type { SecretsData } from './data/secret-types.js';
 import { BitmapFont } from './ui/bitmap-font.js';
-import { HudRenderer } from './ui/hud.js';
+import { HudRenderer, processHudImage } from './ui/hud.js';
 import { InventoryScreen, getNextOwnedSlot } from './ui/inventory-screen.js';
 import { InventorySlide } from './ui/inventory-slide.js';
 import { createTintedFontImage } from './ui/tint-utils.js';
@@ -58,6 +59,7 @@ import type { EnemySpawnData } from './data/enemy-spawn-types.js';
 import type { DungeonData } from './data/dungeon-types.js';
 import { getDungeonLevel } from './data/dungeon-entrance-data.js';
 import { isCaveEntranceTile } from './data/cave-data.js';
+import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from './data/secret-types.js';
 import { DungeonManager } from './world/dungeon-manager.js';
 import { DungeonRenderer } from './render/dungeon-renderer.js';
 import type { TileCollisionMap } from './world/collision.js';
@@ -69,6 +71,8 @@ import { BUBBLE_FLASH, BUBBLE_BLUE, BUBBLE_RED, BUBBLE_TEMP_JINX_FRAMES } from '
 import { LikeLike } from './objects/enemies/like-like.js';
 import { Wallmaster } from './objects/enemies/wallmaster.js';
 import { PushBlock, PushBlockState } from './world/push-block.js';
+import { Ganon } from './objects/enemies/ganon.js';
+import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -139,6 +143,7 @@ let inventorySlide: InventorySlide | null = null;
 let inventoryScreen: InventoryScreen | null = null;
 let redFont: BitmapFont | null = null;
 let processedItems: HTMLCanvasElement | null = null;
+let processedNpcs: HTMLCanvasElement | null = null;
 
 // Cave data
 let caveTextData: CaveTextData | null = null;
@@ -181,6 +186,29 @@ let dungeonLinkCaptured = false;
 let triforceGetTimer = 0;
 const TRIFORCE_GET_FRAMES = 200; // ~3.3s hold before the exit curtain
 
+function applyTransparencyKey(image: HTMLImageElement): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = imageData.data;
+  if (d[3]! < 255) return canvas;
+  const keyR = d[0]!;
+  const keyG = d[1]!;
+  const keyB = d[2]!;
+  for (let i = 0; i < d.length; i += 4) {
+    if (Math.abs(d[i]! - keyR) < 3 &&
+        Math.abs(d[i + 1]! - keyG) < 3 &&
+        Math.abs(d[i + 2]! - keyB) < 3) {
+      d[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
 async function init(): Promise<void> {
   try {
     assets = await loadAllAssets((loaded, total) => {
@@ -216,6 +244,7 @@ async function init(): Promise<void> {
       autoDetectTransparency: true,
     });
     processedItems = processItemsImage(assets.sprites.items);
+    processedNpcs = applyTransparencyKey(assets.sprites.npcs);
     linkSheetBlue = new SpriteSheet({
       image: createTintedLinkImage(assets.sprites.link, RING_TINT_BLUE),
       columns: LINK_SHEET_COLUMNS,
@@ -249,7 +278,7 @@ async function init(): Promise<void> {
     });
     dungeonRenderer = new DungeonRenderer(assets.maps.dungeonsMap);
     hudRenderer = new HudRenderer(
-      assets.ui.hud,
+      processHudImage(assets.ui.hud),
       assets.sprites.font,
       assets.sprites.treasuresFull,
       processedItems,
@@ -298,7 +327,7 @@ void init();
     inv.bracelet = true;
     inv.magicShield = true;
     inv.potion = 2;
-    link.addRupees(255);
+    link.addRupees(999);
     link.addBombs(16);
     link.addKeys(9);
     link.setHealth(32, 32);
@@ -524,7 +553,7 @@ function startCaveInterior(): void {
 
   caveRoom = new CaveRoom(
     assets.maps.caveMap,
-    assets.sprites.npcs,
+    processedNpcs ?? assets.sprites.npcs,
     processedItems!,
     font,
     alreadyTaken ? { ...contents, items: [63, 63, 63] } : contents,
@@ -977,6 +1006,13 @@ function updateGameplay(): void {
         enterDungeon(dungeonLevel);
         return;
       }
+      // Check tile overrides for secret-revealed entrances (L7-9)
+      const gridIdx = row * 16 + col;
+      const override = overworld.tileObjectManager.tileOverrides.get(gridIdx);
+      if (override === SQUARE_INDEX_CAVE_ENTRANCE || override === SQUARE_INDEX_STAIRS) {
+        enterDungeon(dungeonLevel);
+        return;
+      }
     }
   }
 
@@ -1211,6 +1247,60 @@ function updateDungeonGameplay(): void {
       }
     }
 
+    // Ganon custom collision — _vulnerable=false bypasses normal pipeline
+    const ganon = spawnManager.activeEnemies.find(
+      (e): e is Ganon => e instanceof Ganon,
+    );
+    if (ganon && ganon.scenePhase === 2) {
+      // Sword collision check (blue/invisible state)
+      const swordHitbox = link.getSwordHitbox();
+      if (swordHitbox) {
+        const gHb = ganon.getHitbox();
+        if (swordHitbox.x < gHb.x + gHb.width && swordHitbox.x + swordHitbox.width > gHb.x &&
+            swordHitbox.y < gHb.y + gHb.height && swordHitbox.y + swordHitbox.height > gHb.y) {
+          const swordDmg = [0, 0x10, 0x20, 0x40, 0x80][link.inventory.sword] ?? 0x10;
+          ganon.takeDamage(swordDmg, link.swordDirection ?? Direction.Down);
+        }
+      }
+      // Arrow collision check (brown state — silver arrow kills)
+      if (arrow && arrow.isActive) {
+        const gHb = ganon.getHitbox();
+        const aRect = { x: arrow.x, y: arrow.y, width: 8, height: 8 };
+        if (aRect.x < gHb.x + gHb.width && aRect.x + aRect.width > gHb.x &&
+            aRect.y < gHb.y + gHb.height && aRect.y + aRect.height > gHb.y) {
+          const arrDmg = arrow.isSilver ? SILVER_ARROW_DAMAGE : 0x20;
+          const killed = ganon.takeDamage(arrDmg, arrow.direction,
+            { x: arrow.x, y: arrow.y, dir: arrow.direction });
+          if (killed) arrow.deactivate();
+        }
+      }
+      // Ganon room item activation on death
+      if (ganon.roomItemActivated && !dungeonRoomItem) {
+        dungeonRoomItem = new ItemPickup(0x0e, ganon.roomItemX, ganon.roomItemY);
+        dungeonRoomItemActive = true;
+      }
+    }
+
+    // Ganon scene phase 0/1: halt Link during intro
+    if (ganon && ganon.shouldHaltLink) {
+      link.halted = true;
+    }
+
+    // Zelda NPC: detect rescue trigger → ending
+    const zelda = spawnManager.activeEnemies.find(
+      (e): e is ZeldaNpc => e instanceof ZeldaNpc,
+    );
+    if (zelda) {
+      if (zelda.isRescueTriggered && !link.halted) {
+        link.halted = true;
+        link.setPosition(0x88, 0x48);
+        link.setDirection(Direction.Left);
+      }
+      if (zelda.isEndingTriggered) {
+        gameMode = GameMode.ZeldaRescue;
+      }
+    }
+
     if (!link.isInvincible && !link.isDead) {
       const hittingEnemy = checkEnemyLinkCollisions(spawnManager.activeEnemies, link.getCollisionRect());
       if (hittingEnemy) {
@@ -1321,7 +1411,7 @@ function updateDungeonGameplay(): void {
       if (trigger !== 0) {
         const allDead = spawnManager ? spawnManager.activeEnemies.length === 0 : true;
         const pushComplete = dungeonPushBlock ? dungeonPushBlock.pushComplete : false;
-        const result = checkSecretTrigger(trigger, allDead, pushComplete, false);
+        const result = checkSecretTrigger(trigger, allDead, pushComplete, allDead);
         if (result.shuttersOpen || result.stairsRevealed || result.itemActivated) {
           dungeonManager.markSecretTriggered();
           if (result.shuttersOpen) dungeonManager.triggerShutters();
@@ -1586,6 +1676,12 @@ function handleDungeonItemPickup(itemId: number): void {
     case 0x22: link.heal(2); break;
     case 0x23: link.heal(link.maxHealth); break;
     case 0x1a: link.addHeartContainer(); break;
+    // Triforce of Power — Ganon defeated, trigger ending path
+    case 0x0e:
+      // For now, just give ring (NES drops Red Ring in L9 boss room via trigger 3)
+      // The actual ending is triggered by Zelda NPC proximity, not this pickup
+      link.inventory.ring = Math.max(link.inventory.ring, 2);
+      break;
     default:
       // For other items (weapons, tools), use the common handler logic
       handleDungeonItemGeneric(masked);
@@ -1893,6 +1989,10 @@ const loop = new GameLoop({
           }
         }
         break;
+
+      case GameMode.ZeldaRescue:
+        // Ending stub — freeze here. Full credits in J2.
+        break;
     }
   },
 
@@ -1990,6 +2090,12 @@ const loop = new GameLoop({
       deathAnimation.render(renderer, linkSheet, tileRenderer, overworld!.currentScreen, font);
     } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
       gameOverScreen.render(renderer, font);
+    } else if (gameMode === GameMode.ZeldaRescue && font) {
+      // Ending stub: black screen with congratulations text
+      renderer.fillRect(0, 0, 256, 176, '#000');
+      font.drawString(renderer, 56, 48, 'THANKS LINK,');
+      font.drawString(renderer, 96, 72, "YOU'RE");
+      font.drawString(renderer, 32, 96, 'THE HERO OF HYRULE.');
     } else if (gameMode === GameMode.CaveInterior && caveRoom && link) {
       const caveLinkSheet = getActiveLinkSheet();
       if (caveLinkSheet) caveRoom.render(renderer, link, caveLinkSheet);

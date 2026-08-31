@@ -37,9 +37,16 @@ describe('checkSecretTrigger', () => {
     expect(r.shuttersOpen).toBe(false);
   });
 
-  it('trigger 3 (LastBoss) opens shutters when boss defeated', () => {
-    expect(checkSecretTrigger(3, false, false, true).shuttersOpen).toBe(true);
-    expect(checkSecretTrigger(3, false, false, false).shuttersOpen).toBe(false);
+  it('trigger 3 (LastBoss) opens shutters and activates item when boss defeated', () => {
+    const r = checkSecretTrigger(3, false, false, true);
+    expect(r.shuttersOpen).toBe(true);
+    expect(r.itemActivated).toBe(true);
+  });
+
+  it('trigger 3 (LastBoss) does nothing when boss alive', () => {
+    const r = checkSecretTrigger(3, false, false, false);
+    expect(r.shuttersOpen).toBe(false);
+    expect(r.itemActivated).toBe(false);
   });
 
   it('trigger 2 (Ringleader) always returns no effect', () => {
