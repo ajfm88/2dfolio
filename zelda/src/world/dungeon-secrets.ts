@@ -35,9 +35,9 @@ export function checkSecretTrigger(
     case 2: // Ringleader — slot-1 kill triggers mass kill (handled in main.ts)
       return NO_TRIGGER;
 
-    case 3: // LastBoss — boss defeated opens shutters
+    case 3: // LastBoss — boss defeated opens shutters + reveals item
       if (!_bossDefeated) return NO_TRIGGER;
-      return { shuttersOpen: true, stairsRevealed: false, itemActivated: false };
+      return { shuttersOpen: true, stairsRevealed: false, itemActivated: true };
 
     case 4: // BlockDoor — push block opens shutters
       if (!pushComplete) return NO_TRIGGER;

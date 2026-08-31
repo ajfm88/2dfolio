@@ -477,3 +477,311 @@ main.ts. Added updateRecorderEffect() blocking function with water walkable over
 whirlwind Link tracking, screen transition warp, and whirlwind rendering (colored column
 placeholder). Link hidden during whirlwind catch. 18 new tests (885 total). Typecheck clean.
 **Phase F complete. Next: G1.**
+
+## 2026-08-22 — G1 Enemy base system (Claude Opus 4.6)
+
+Created `src/objects/enemies/enemy.ts` — Enemy class with EnemyState enum (Spawning→Active→
+Stunned/Knockback→Dying→Dead), generic random walker AI, NES-faithful HP system (Z_04.asm
+ExtractHitPointValue: even types=high nibble AND $F0, odd types=low nibble ASL ×4), knockback
+($40 distance at 4px/f per Z_01.asm:6688), invincibility ($10 frames), stun ($A0 frames for
+boomerang), 12-frame death timer. Created `src/objects/enemies/spawn-manager.ts` — SpawnManager
+reads enemy-spawns.json: resolves monsterListId (0=none, 1-$61=single type repeated, $62-$7F=
+heterogeneous list index), spawns up to foeCounts[monsterCountIndex] enemies at NES spawn
+positions (4 direction-based lists of 9 packed X/Y bytes), staggered spawn cloud timers per
+Z_07.asm:5590, freezeAll() for Clock item, clear() on screen exit. Created
+`src/objects/enemies/enemy-collision.ts` — checkWeaponEnemyCollisions checks all 7 weapon types
+(sword hitbox via new Link.getSwordHitbox(), sword beam, boomerang stun/damage, bomb explosion,
+arrow wood/silver, candle fire, magic rod/shot) with correct damage constants (SWORD_DAMAGE by
+level, BOOMERANG_DAMAGE $10, BOMB_DAMAGE $40, ARROW_DAMAGE $20/$40). Sword beam/arrow/magic
+shot deactivate on hit, boomerang forceReturn(). checkEnemyLinkCollisions detects contact via
+DAMAGE_TABLE lookup. Added deactivate() to SwordBeam, direction getter to CandleFire,
+getSwordHitbox()/swordDirection to Link. Wired into main.ts: SpawnManager in gameplay loop,
+screen transitions, cave entry/exit, respawn. DropEngine.rollDrop() on kill spawns ItemPickup.
+Clock item ($21) freezes enemies 660f. Debug console `__zelda.giveAll()` grants all items.
+Colored rectangle placeholder rendering with type-based colors. 36 new tests (921 total).
+Typecheck clean. Visually verified: enemies spawn on screen entry, take sword/boomerang/bomb
+damage, die with flash, drop items, contact damages Link. **Phase G started. Next: G2.**
+
+## 2026-08-22 — G2 Overworld enemies (Claude Opus 4.6)
+
+Implemented all 9 overworld enemy types with NES-accurate AI patterns. Refactored Enemy base
+class: protected fields/methods, EnemyUpdateContext (collision+screen+linkX+linkY), abstract
+updateAI() hook, moveQSpeed() sub-pixel helper, moveOnePixel() with tile collision,
+tickWalkAnimation(), directionTowardLink(), _vulnerable flag, _pendingProjectile/consumeProjectile()
+for enemy shooting, onDeath() hook. Created `src/objects/enemies/walker-enemy.ts` — WalkerEnemy
+base implementing Z_04.asm Wanderer_TargetPlayer: turnRate vs random for direction toward Link,
+grid-aligned turning, QSpeed sub-pixel movement, _TryShooting timer ($30→$10 fire→0 reset,
+blue=always, red=random<$F8 gate), sprite rendering from enemies.png (30-col sheet). Created
+individual enemy files: `octorok.ts` (factory, 4 variants: slow/fast × red/blue, turnRate
+$70/$A0, QSpeed $20/$40, shoots rock $53), `moblin.ts` (turnRate $A0, QSpeed $20, shoots arrow
+$5B), `lynel.ts` (Goriya pattern, turnRate $70/$A0, shoots sword shot $57), `tektite.ts`
+(Ground/Jumping state machine with diagonal arc, boundary bounce, reversalCount>=2 escape),
+`leever.ts` (4-state burrower cycle, blue walks QSpeed $20, red max-2 + spawns near Link,
+invulnerable underground), `zora.ts` (water burrower, random surface position, shoots fireball
+$55, invulnerable underground), `peahat.ts` (6-state flyer: SpeedUp/Decide/Chase/Wander/
+SlowDown/Delay, only vulnerable in Delay, normalized velocity chase), `ghini.ts` (main turnRate
+$FF + FlyingGhini, setSiblings(), main death kills all type 34), `armos.ts` (dormant→active on
+Link touch <16px, Goriya walker pattern, no spawn cloud, invulnerable while dormant). Updated
+SpawnManager: createEnemyByType factory for all 9 types, _projectiles array for enemy-fired
+projectiles, render() accepts enemySheet, update() passes linkX/linkY. Updated enemy-collision:
+checkEnemyProjectileCollisions() with shield deflection via canShieldBlock(). Updated main.ts:
+enemySheet from enemies.png, projectile collision + damage, shield deflection wiring. 28 new
+tests (949 total). Typecheck clean. **Next: G3.**
+
+## 2026-08-23 — H1a Dungeon room loading + navigation (Claude Opus 4.6)
+
+Split H1 into H1a/H1b. H1a: dungeon room loading, rendering, open-door navigation, entry/exit,
+minimap, respawn. Created `src/data/dungeon-entrance-data.ts` — maps overworld screenId → dungeon
+level (6 verified entrances: screens 55/60/116/69/11/34 for levels 1-6; derived from
+WHIRLWIND_DEST_ROOMS proximity + tile 12 scan; levels 7-9 deferred). Created
+`src/render/dungeon-renderer.ts` — renders rooms from dungeons-map.png (16×16 grid, 256×176px per
+room, uw1q1 top half / uw2q1 bottom half). Created `src/world/dungeon-collision.ts` —
+DungeonCollisionMap builds 16×11 walkability grid: 12×7 inner tiles from uniqueRoom + squareTable
+threshold, border walls always solid, door openings (types 0/2) punch walkable holes at NES
+positions (N: cols 7-8 rows 0-1, S: cols 7-8 rows 9-10, W: cols 0-1 rows 4-6, E: cols 14-15
+rows 4-6). TileCollisionMap-compatible API (screen param accepted but ignored). Created
+`src/world/dungeon-manager.ts` — DungeonManager: loads level 1-9 from dungeons.json, resolves
+levelBlock, tracks currentRoomId + visitedRooms, room navigation (N:-16 S:+16 W:-1 E:+1),
+canPassDoor (types 0/2 only for H1a), entry position by direction, exit detection from startRoom
+south edge. dummyScreen getter for Link/enemy compatibility. Added GameMode.DungeonGameplay +
+DungeonTransition. Updated HUD: "LEVEL-N" text + dungeon minimap (blue visited rooms, blinking
+green current room). Updated respawn: isDungeon flag, dungeon death → startRoom. Updated main.ts:
+dungeons.json loading, dungeon entry (getDungeonLevel + tile 12 check before cave check),
+DungeonTransition mode (walk-in → curtain → startDungeonInterior), DungeonGameplay mode (full
+gameplay loop reusing weapons/enemies/collision), exit (south from startRoom → curtain → overworld
+restore), SpawnManager.spawnForDungeonRoom(). Fixed exit-before-transition ordering bug (exit
+check must precede room transition check, both at SCREEN_EDGE_BOTTOM threshold). Debug:
+__zelda.dungeonManager + currentLevel. 19 new tests (968 total). Typecheck clean. Visually
+verified: enter Level 1 from overworld, rooms render with correct teal palette, walk through open
+doors, minimap tracks visited rooms, exit back to overworld via south. **Next: H1b.**
+
+## 2026-08-24 — H1b Dungeon doors + traps + items (Claude Opus 4.8)
+
+(Logged retroactively — completed last session, tracker update was missed.) Added the
+interactive dungeon room mechanics: **8 NES door types** (open/wall/false-wall×2/bombable/key×2/
+shutter) via `DungeonManager.touchDoor()`, with the `CurOpenedDoors` bitmask (N=8,S=4,W=2,E=1)
+persisted in room flags so opened doors stay open. Key doors consume a key (or magic key);
+bombable open on bomb-detonation proximity; shutters open on the "all enemies dead" trigger.
+**7 secret triggers** (`dungeon-secrets.ts`): AllDead/Ringleader/LastBoss/BlockDoor/BlockStairs/
+MoneyOrLife/FoesForItem. **Spike traps** (`spike-trap.ts`): 3-state invulnerable entities at
+fixed NES positions ($49=6 traps, $4A=4). **Push blocks** in dungeons (wired to secret triggers
+4/5). **Dark rooms** (black overlay, candle fire brightens). **Map + Compass** items (per-level
+bitmasks; minimap shows all rooms with Map, blinks Triforce room with Compass). **Room item
+placement** from packed shortcutOrItemPositions byte, secret-gated, item-taken bit ($10) in room
+flags. room-flags.ts: VISITED_BIT corrected to $20, added ITEM_TAKEN + DOOR bits. 999 tests
+total. Typecheck clean. **Next was: G3.**
+
+## 2026-08-25 — G3 Dungeon enemies tier 1 (Claude Opus 4.8)
+
+Populated dungeons with their first-tier roster (dungeons were walkable but empty; H1b's
+"kill all → shutters open" had nothing to kill). 6 families / 10 object types, all AI from
+Z_04.asm. **Stalfos** ($2A): thin WalkerEnemy config (turnRate $80, qSpeed $20, no shooting).
+**Rope** ($28): wander at $20, rushes at $60 when aligned with Link on an axis, stops at walls
+(new `rope.ts` extends Enemy). **Goriya** ($05 blue/$06 red): wander + throws a returning
+boomerang (type $5C), frozen while it's out; blue throws readily, red occasionally. **Zol**
+($13): slow jelly that splits into 2 Gels when hurt-but-not-killed (bomb kills outright, no
+split). **Gel** ($14/$15): fast erratic jelly, 1 hit. **Keese** ($1B/$1C/$1D): erratic
+pause/dart flyer, ignores walls, 1 hit. New base classes: `jelly-enemy.ts` (Gel/Zol hop-pause),
+`flyer-enemy.ts` (Keese flight state machine, always vulnerable — separate from Peahat to avoid
+regressions), `goriya-boomerang.ts` (extends EnemyProjectile with owner-homing return, so it
+flows through the existing `_pendingProjectile → SpawnManager._projectiles → collision/render`
+pipeline with **zero main.ts changes**). Enemy base gained `_childSpawns`/`collectChildSpawns()`
+(Zol split), drained in `SpawnManager.update()` via new `drainChildSpawns()`. Made
+EnemyProjectile's `_x/_y/_direction/_state` protected for the boomerang subclass. Placeholder
+colored-rect rendering (sprite rows for these in enemies.png not confirmed — deferred like G1→G2).
+14 new tests (1013 total). Typecheck clean. **Next: G4 (dungeon enemies tier 2).**
+
+## 2026-08-25 — G4a Dungeon enemies tier 2, part 1 (Claude Opus 4.8)
+
+Split G4 into G4a (self-contained) + G4b (Link-state/dungeon wiring). G4a = 5 families / 8 object
+types, AI from Z_04.asm. **Gibdo** ($30): thin WalkerEnemy config (turnRate $80). **Darknut**
+($0B red/$0C blue): walker + **directional parry** — new `Enemy.blocksAttackFrom(weaponDir)` hook
+(default false), honored in `enemy-collision.ts` for sword + beam; Darknut blocks a hit whose
+travel dir is the exact OPPOSITE of its facing (frontal), per Z_01.asm:6316 (ORs the two dirs,
+parries $0C/$03). Never stunned (overrides `stun()` no-op). Blue faster (qSpeed $30 vs $20).
+**Vire** ($12): walker that **splits into 2 Red Keese** ($1C) on death via `onDeath()` →
+`_childSpawns` (reuses G3's SpawnManager drain). **Pols Voice** ($16): bouncing hopper with a
+vertical bob; high HP (sword-resistant; flute-kill deferred). **Bubble** ($2B flash/$2C blue/$2D
+red): invulnerable (`_vulnerable=false`), no contact damage, **jinxes Link's sword** on touch.
+Link gained sword-jinx: `disableSword(frames?)` (perm if no arg) / `enableSword()` /
+`swordDisabled` getter, timer decremented in `update()`, gates the swing start, cleared in
+`reset()`. Wired via new `applyBubbleJinx()` in main.ts dungeon contact ($2D disable, $2B temp
+$A0f, $2C restore). SpawnManager factory + placeholder colors for all. 13 new tests (1026 total,
+9 g4a + 4 Link jinx). Typecheck clean (src). **Next: G4b (Wizzrobe, Like-Like, Wallmaster, Lanmola).**
+
+## 2026-08-25 — G4b Dungeon enemies tier 2, part 2 (Claude Opus 4.8)
+
+The Link-state + dungeon-integration half. 4 families / 6 object types, AI from Z_04.asm.
+**Blue Wizzrobe** ($23): walks square-aligned toward Link, then **teleports** $20px (translucent,
+through walls, non-collidable mid-hop); lobs `MagicShot` ($58) when Link shares its square row/col.
+**Red Wizzrobe** ($24): **stationary phaser** — a state byte counts down, top bits pick a phase
+(relocate near Link → fade-in → solid → fade-out → hidden); **vulnerable only while solid**
+(toggles `_vulnerable`); shoots `MagicShot2` ($59) at the solid midpoint; `getHitbox()` returns
+off-screen while hidden so it can't be hit/contacted then. Both shots ride the existing
+`_pendingProjectile → SpawnManager._projectiles` pipeline (magic-shield-only blockable) — **zero
+new collision code**. **Like-Like** ($17, WalkerEnemy turnRate $80): on contact **captures Link**
+(`beginCapture()`); main.ts sets `link.halted = true` and, at $60 capture-frames, `consumeShieldEat()`
+→ `link.setMagicShield(false)`; `onDeath()` frees him. **Wallmaster** ($27): emerges from the wall
+nearest Link, crawls toward him at QSpeed $18; on contact `grab()` → main.ts calls new
+`DungeonManager.returnToEntranceRoom()` (jumps to `startRoomId`, rebuilds collision, returns the
+entrance position) and repositions Link — the signature warp. Retreats after a 7-tile trip if it
+misses. **Lanmola** ($3A red 1px/f, $3B blue 2px/f): one object owning a segment trail; head
+re-chooses direction toward Link at 8px boundaries, body follows a position-history buffer;
+`getHitbox()` returns the head only ⇒ head-only vulnerability + contact (skips the NES
+body-resurrection dance — same player experience). SpawnManager factory + placeholder colors for
+all. **Also fixed a pre-existing Pols Voice bug** (G4a): it treated `moveQSpeed` returning false on
+frames that emit no full pixel (QSpeed $20 = 1px/2f) as hitting a wall and reversed, ping-ponging
+in place ~25% of spawns — now peeks with `isBlockedAhead()` and only bounces on a real wall.
+11 new tests + fix (1037 total, all green ×3 runs). Typecheck clean (src). **Next: G5 (roster/projectile audit).**
+
+## 2026-08-26 — G5 Enemy projectiles + roster audit (Claude Opus 4.8)
+
+Closing slice of Phase G. Not a new enemy family — an audit + polish pass with one real
+gap filled. **(A) Per-type projectile visuals:** `EnemyProjectile.render` gained a
+`renderByType()` switch (+ an `animTimer` for flicker) so the previously-uniform red square now
+reads as rock (grey pellet) / fireball (orange-yellow flicker) / sword-beam (white-cyan streak,
+elongated along travel) / magic (magenta-blue flash) / arrow (thin oriented line). **(B) Statue
+fireballs** (`src/world/dungeon-statues.ts`, from Z_04.asm `UpdateStatues`): dungeon rooms whose
+`uniqueRoomId` is $24 (4 statues) or $23 (2 statues) periodically lob a Fireball ($55) aimed
+cardinally at Link, on the NES reload cadence (`StatueFireballStartTimes` $50/$80/$F0/$60,
+15/16 fire chance). Positions from `StatueXs/Ys` (NES raw Y → local via −$40). Not an Enemy
+(no HP, invulnerable, keyed to room not monster list); fireballs ride the existing pipeline via a
+new `SpawnManager.addProjectile()` — **zero new collision code**. Wired in main.ts:
+`initDungeonRoomObjects` builds the statues, the dungeon update loop drains their fireballs into
+`spawnManager` right after `spawnManager.update` so they're collision-checked the same frame.
+Simplification (documented): cardinal aim instead of the NES diagonal Link-tracking fireball;
+pattern 2 (the `PersonFireballsEnabled` two-fire boss variant) deferred to Phase I with GuardFire.
+**Also fixed a pre-existing shield-deflection bug** (from D3, surfaced during manual testing):
+a blocked shot's `updateDeflected()` moved in `getOppositeDirection(_direction)`, but `deflect()`
+already stores `linkDirection` (the bounce heading, back toward the shooter) — so the shot flew
+back *through* Link instead of bouncing away. Now moves in `_direction` directly; blocked shots
+visibly bounce off toward the enemy. **Debug helpers added** for manual testing:
+`SpawnManager.debugSpawn(type,x,y)` + `__zelda.goToDungeon(level)` / `__zelda.spawnEnemy(typeHex)`
+(default $23 Blue Wizzrobe) — drops any enemy next to Link (Wizzrobes aren't in early dungeons).
+**(C) The roster audit** (`context/agent/enemy-roster-audit.md`): definitive object-type→status
+table from `Z_07.asm:5321 UpdateObject_JumpTable`. Result — **every non-boss combat enemy is
+implemented**; all remaining types are bosses (→ Phase I: Aquamentus/Dodongo/Gohma/Digdogger/
+Manhandla/Moldorm/Gleeok/Patra/Ganon + GuardFire/StandingFire) or non-combat NPCs/specials
+(→ later content slices), each row naming *why* + *owner*. Boulder ($1F/$20) named as the
+deferred G5 stretch (overworld-hazard slice). Verified: all 10 shot types have non-zero
+DAMAGE_TABLE entries. 16 new tests incl. deflection-bounce regression (1053 total, green full runs).
+Typecheck clean (src).
+**Note:** one pre-existing flaky test — `g2-enemies.test.ts` "walks after spawn" (slow Octorok
+QSpeed $10 can pause to shoot inside the 30-frame window) — passed 5/5 in isolation; not caused
+by this slice, enemy behavior is correct, test is just too tight. **Phase G complete. Next: I1
+(Aquamentus) to unblock H2.**
+
+## 2026-08-27 — I1 Aquamentus, first boss (Claude Opus 4.8)
+
+First **boss** slice; opens Phase I and unblocks H2. AI ported from `Z_04.asm`
+(`InitAquamentus` 4842, `UpdateAquamentus` 5596, `_Move` 5613, `_Shoot` 5684,
+`_Draw` 5762). **The boss** (`src/objects/enemies/aquamentus.ts`): `InitAquamentus`
+pins it to ($B0,$80) → local (176,64) on the right wall regardless of the monster-list
+slot; it **wobbles horizontally only** (Y fixed) between $88–$C7, moving 1px on
+1-of-8 frames in random 7/$F-px legs, reversing at the limits (the NES clamp is
+reactive so it transiently overshoots each limit by 1px — reproduced faithfully).
+Its shoot timer (starts $80, resets to `Random|$70` ≥112f) lobs a **3-way fireball
+fan** ($55 ×3) leftward, the three shots fanning apart via vertical drift 0/+1/−1
+applied every other frame; the mouth-tell opens while the timer <$20. HP $60 (the
+existing `getEnemyHp($3D)` decoder already returns it — 6 wood-sword hits). Never
+stunnable (overrides `stun()`). Placeholder green-dragon rect render (CHR→sheet
+mapping deferred like the whole G3/G4 roster; layout is staged in
+`sprites.json bosses.aquamentus`). **Two reusable boss primitives**, built generic
+because every remaining boss needs them: **(1) per-weapon invincibility mask** —
+`DamageTypeBit` consts (sword $01 / boomerang $02 / arrow $04 / bomb $08 / magic-shot
+$10 / fire $20, from Z_01.asm:6039–6261) + `Enemy._invincibilityMask` +
+`isImmuneToDamageType()`, guarded in **every** weapon branch of
+`checkWeaponEnemyCollisions` (immune = harmless clink / bounce, no damage or stun);
+Aquamentus' mask $E2 ⇒ immune to boomerang + candle fire, hurt by
+sword/beam/arrow/bomb/rod/magic-shot. Default mask 0 leaves every existing enemy
+unchanged (regression-guarded by a "fire still hurts a default enemy" test).
+**(2) fireball spread** — optional `verticalDrift` on `EnemyProjectile` (every-other-
+frame Y nudge, default 0 = straight travel) + `Enemy._pendingProjectiles[]` /
+`consumeProjectiles()` so a boss can emit several shots in one frame, drained in
+`SpawnManager.update`. Registered $3D in `createEnemyByType`. No main.ts change needed
+(rides the normal dungeon enemy path); `__zelda.spawnEnemy(0x3d)` already drops one
+for manual testing. **Deferred to H2:** the boss death spectacle — big explosion,
+heart-container drop, Triforce. SFX deferred globally (no audio subsystem). 14 new
+tests (7 boss + 6 mask + 1 projectile-drift), **1067 total** (1066 green + the one
+pre-existing g2 Octorok flaky, which passed 3/3 in isolation — unrelated). Typecheck
+clean (src). **Phase I started. Next: H2 (Dungeons 1-3 completable).**
+
+## 2026-08-27 — H2 Dungeons 1-3 completable (Claude Opus 4.8)
+
+The payoff slice: L1-3 now play end-to-end (enter → navigate → kill boss → heart
+container + shutter → grab Triforce → warp out). Investigation showed **most of the
+path was already data-wired** by H1a/H1b + I1 — the L1-3 boss rooms carry item $1A
+(heart container) gated by secret trigger 7 (FoesForItem) and the boss→triforce door
+is a shutter that opens on that same trigger, all handled by existing machinery. H2
+filled **four gaps**: **(1) Boss single-spawn** — `foeCounts` gave the boss room
+count 3, so it spawned *three* Aquamentus; NES rule (`Z_05.asm:1723`, verbatim: "make
+the count 1 if the object list ID >= $32 and < $62") → new `SpawnManager.clampBossCount`
+forces 1 for list IDs in [$32,$62) (every current + future boss), applied in both
+dungeon and overworld spawn paths. **(2) Triforce-get completion sequence** — new
+`GameMode.DungeonTriforceGet` (NES sets GameMode $12 on triforce pickup):
+`beginTriforceGet()` sets the level's triforce bit + full heal + halts Link, holds a
+display for 200f (pulsing gold wash + red "TRIFORCE" banner, Link centered), then
+curtain-warps out by reusing the existing `exitDungeon` path (`pendingCaveIndex=-3`).
+Wired into `handleDungeonItemPickup` case $1B (was just a bare bit-set). **(3)**
+Triforce room-item shifted −8px in X (`getRoomItemPosition`, Z_05.asm:8255). **(4)
+Navigability pass** — BFS over the door graph confirmed start→boss→triforce is
+traversable for all 3 levels (no hard wall blocks; boss→triforce is a shutter for
+L1/L2/L3, opened on boss death). **Known limitations (deferred):** L2 Dodongo ($32) /
+L3 Manhandla ($3C) fall back to the generic walker — the completion *machinery* works
+with whatever occupies the boss room, but faithful fights are later I-slices;
+room-clear persistence (killed monsters respawn on room re-entry — doesn't block the
+linear path); the NES spiral-wipe animation; audio/fanfare. 12 new tests (5
+boss-spawn-count + 7 dungeon-completion), **1079 total, all green** (the g2 Octorok
+flaky happened to pass this run). Typecheck clean (src). **Next: make L2/L3 boss
+fights faithful (Dodongo/Manhandla), or Phase I2 / H3.**
+
+## 2026-08-27 — I1b Dodongo, L2 boss faithful (Claude Opus 4.8)
+
+Replaced the generic-walker fallback for the Level-2 boss with a faithful Dodongo
+(`src/objects/enemies/dodongo.ts`, from Z_04.asm `UpdateDodongo`/`Dodongo_CheckBombHit`/
+`Dodongo_TryEatBomb`). The signature mechanic: **immune to every direct weapon**
+(`_invincibilityMask=$FF` — the sword just clinks). Three sub-states run inside the
+Active state (like Aquamentus): **Move** (32×16 body wanders toward Link, ~1px/f with
+a turn-rate-$20 re-aim at grid boundaries); **Stunned** (entered when a bomb *blast*
+overlaps the body → mask drops to $FE so the sword bit gets through → a single sword
+hit = **instant death**, via an overridden `takeDamage` that ignores HP while stunned);
+**Bloated** (entered when an *un-exploded* bomb lands in the leading-half "mouth" → it
+eats the bomb; **2 eaten = death**, else back to Move). HP is irrelevant — death is
+scripted, matching the NES. **One cross-cutting primitive:** enemies couldn't see the
+bomb list, so added an optional `bombs?: readonly BombLike[]` to `EnemyUpdateContext`
+(structural `BombLike` — no Bomb import, avoids a cycle), threaded through
+`SpawnManager.update()` ← both `main.ts` call sites; all Dodongo logic stays in
+dodongo.ts and the generic collision code is untouched (the $FF/$FE mask already makes
+every weapon branch behave). `phase`/`bombsEaten` getters for debug/tests. Registered
+`$32` in the spawn manager (boss single-spawn clamp already covers it). Placeholder
+rect render (CHR→sheet deferred like the whole roster). 9 new tests, **1088 total, all
+green**; typecheck clean (src). **Next: I1c Manhandla ($3C, segmented 5-part boss) —
+plan at `~/.claude/plans/i-boss-backfill-dodongo-manhandla.md` — or Phase I2 / H3.**
+
+## 2026-08-27 — I1c Manhandla, L3 boss faithful — I1 complete (Claude Opus 4.8)
+
+Replaced the generic-walker fallback for the Level-3 boss with a faithful **Manhandla**
+(`src/objects/enemies/manhandla.ts`, from Z_04.asm `UpdateManhandla`/`Manhandla_Move`/
+`_CheckCollisions`/`InitManhandla`). The flower boss = **1 center + 4 hands** (N/S/E/W).
+Design: **modeled as 5 real coordinated `Enemy` objects** (matches the NES's 5 slots) so
+the existing per-enemy collision/damage/drop code handles each hand for free — cleaner
+than Lanmola's single-object trick because hands must be independently killable. Only
+the coordination is new. **`ManhandlaCenter`** (`_vulnerable=false` → collision code
+skips it, never damaged) drives 8-way group movement (`_dirMask` bitmask; retarget every
+16f: 50% aim at Link / 50% random; **bounces off the play-area walls** by reflecting the
+offending axis bits; NES fractional speed accumulator seeded to $0080 = 0.5px/f), then
+repositions each living hand to its ±16 cardinal offset. **`ManhandlaHand`** (mask $E2 —
+immune to fire+boomerang, own HP, killed by base `takeDamage`) is passive (positioned by
+the center via `setPos`) and shoots unblockable **$56** fireballs aimed 4-way at Link.
+**Every hand death speeds the whole group up** (+$80 frac, carrying into the whole byte —
+frantic acceleration); the **center dies only when the last hand dies** (`reapDeadHands`),
+which means trigger-7 "all foes dead" fires exactly on full-boss death — **zero change to
+H2's completion code.** Group-spawned via `createManhandla` + new
+`SpawnManager.pushEnemyOrGroup` (the boss single-spawn clamp still forces one slot; that
+slot expands to the 5-object cluster — updated the boss-spawn-count test's $3C case from
+1→5). `speedPerFrame`/`livingHands` getters for debug/tests. Placeholder rect render.
+8 new Manhandla tests (+1 boss-spawn-count), **1097 total, all green**; typecheck clean
+(src). **Simplifications (documented):** 4-way fireball aim (our EnemyProjectile is
+cardinal); ≤4-fireball cap approximated by shoot probability; diagonal group movement
+kept. **I1 is now complete — all three L1-3 bosses are faithful.** **Next: Phase I2
+(Gleeok/Digdogger/Gohma) or H3 (Dungeons 4-6).**

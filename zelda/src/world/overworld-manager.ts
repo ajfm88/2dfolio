@@ -15,7 +15,7 @@ import { Direction } from '../core/types.js';
 import { getScreenCaveIndex, isCaveEntranceTile } from '../data/cave-data.js';
 import type { OverworldData, OverworldScreen } from '../data/overworld-types.js';
 import type { SecretsData } from '../data/secret-types.js';
-import { SQUARE_INDEX_CAVE_ENTRANCE } from '../data/secret-types.js';
+import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from '../data/secret-types.js';
 import type { Renderer } from '../render/renderer.js';
 import { TileRenderer, getScreenByCoord } from '../render/tile-renderer.js';
 import type { Link } from '../objects/player/link.js';
@@ -253,7 +253,7 @@ export class OverworldManager {
     // Also check tile overrides for revealed cave entrances
     const gridIdx = row * 16 + col;
     const override = this._tileObjectManager.tileOverrides.get(gridIdx);
-    if (override === SQUARE_INDEX_CAVE_ENTRANCE) {
+    if (override === SQUARE_INDEX_CAVE_ENTRANCE || override === SQUARE_INDEX_STAIRS) {
       return caveIndex;
     }
 

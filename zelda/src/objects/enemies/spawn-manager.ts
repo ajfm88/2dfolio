@@ -43,6 +43,13 @@ import { createManhandla, MANHANDLA } from './manhandla.js';
 import { Gohma, GOHMA_BLUE, GOHMA_RED } from './gohma.js';
 import { Digdogger, LittleDigdogger, DIGDOGGER1, DIGDOGGER2, LITTLE_DIGDOGGER } from './digdogger.js';
 import { createGleeok, GleeokFlyingHead, GLEEOK2, GLEEOK4B, GLEEOK_HEAD } from './gleeok.js';
+import { createPatra } from './patra.js';
+import { Ganon } from './ganon.js';
+import { GuardFire, StandingFire } from './guard-fire.js';
+import { createZeldaGroup } from './zelda-npc.js';
+
+const PATRA1 = 0x47;
+const PATRA2 = 0x48;
 
 // Dungeon rooms have a 2-tile wall border; the walkable inner area is grid rows
 // 2-8 and cols 2-13 (see DungeonCollisionMap). Enemy spawn positions are clamped
@@ -238,6 +245,16 @@ export class SpawnManager {
       this._enemies.push(body, ...heads);
       return;
     }
+    if (enemyType === PATRA1 || enemyType === PATRA2) {
+      const { center, children } = createPatra(x, y, enemyType, hp, spawnDelay);
+      this._enemies.push(center, ...children);
+      return;
+    }
+    if (enemyType === 0x37) {
+      const { zelda, fires } = createZeldaGroup(x, y, hp, spawnDelay);
+      this._enemies.push(zelda, ...fires);
+      return;
+    }
     this._enemies.push(createEnemyByType(x, y, enemyType, hp, spawnDelay));
   }
 
@@ -425,6 +442,19 @@ function createEnemyByType(
     // GleeokFlyingHead — invulnerable flying detached head
     case GLEEOK_HEAD:
       return new GleeokFlyingHead(x, y, objectType, hp, spawnDelay);
+    // --- I3 bosses ---
+    // Ganon — final boss: invisible, sword→brown, silver arrow kill
+    case 0x3e:
+      return new Ganon(x, y, objectType, hp, spawnDelay);
+    // GuardFire — killable fire guarding Zelda
+    case 0x3f:
+      return new GuardFire(x, y, objectType, hp, spawnDelay);
+    // StandingFire — invulnerable damaging fire
+    case 0x40:
+      return new StandingFire(x, y, objectType, hp, spawnDelay);
+    // GuardFire/StandingFire/Ganon/Zelda/PatraChild are spawned via group factories
+    // in pushEnemyOrGroup or listed above. $25/$26 (PatraChild) and $37 (Zelda) reach
+    // here only if spawned individually (shouldn't happen); fall through to default.
     // Default fallback (uses base Enemy generic walker)
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);
