@@ -10,8 +10,13 @@ export const DUNGEON_ENTRANCE_SCREENS: Readonly<Record<number, number>> = {
   69: 4,  // screen 69 (row 4, col 5)  — Level 4 Snake
   11: 5,  // screen 11 (row 0, col 11) — Level 5 Lizard
   34: 6,  // screen 34 (row 2, col 2)  — Level 6 Dragon
-  // Levels 7-8 may use bomb-reveal or special entrance mechanisms (H4)
-  // Level 9 Death Mountain — bomb-reveal at Spectacle Rock (H4)
+  66: 7,  // screen 66 (row 4, col 2)  — Level 7 Demon (flute dries pond → stairs)
+  109: 8, // screen 109 (row 6, col 13) — Level 8 Lion (candle burns tree → stairs)
+  5: 9,   // screen 5 (row 0, col 5)   — Level 9 Death Mountain (bomb rock → cave)
+  // Q2 alternates (needed when Second Quest lands)
+  25: 7,  // Q2 Level 7
+  108: 8, // Q2 Level 8
+  0: 9,   // Q2 Level 9
 };
 
 export function getDungeonLevel(screenId: number): number | null {

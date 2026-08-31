@@ -7,4 +7,5 @@ export enum GameMode {
   DungeonGameplay,
   DungeonTransition,
   DungeonTriforceGet,
+  ZeldaRescue,
 }

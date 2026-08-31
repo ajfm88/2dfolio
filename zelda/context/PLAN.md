@@ -123,7 +123,7 @@ Sliced by environment so each is playtestable as you go.
 | H1b ✅ | Dungeon door types (locked/key, bombable, shutter/kill-all), spike traps, push blocks, secret triggers, dark rooms, Map + Compass items, room item placement | use key on door; bomb wall; kill enemies to open shutters |
 | H2 ✅ | Dungeons 1–3: Eagle, Moon, Manji — room layouts, enemy placement, item placement, Triforce piece (done 2026-08-27 — boss single-spawn + Triforce-get completion loop; L2 Dodongo/L3 Manhandla are generic-walker fallback until their I-slices) | complete dungeon 1 start to Triforce |
 | H3 ✅ | Dungeons 4–6: Snake, Lizard, Dragon — staircase/cellar system (tunnel + treasure cellars, entry/exit detection, cellar rendering/collision) + room-clear persistence (ROOM_CLEARED_BIT $40, enemies don't respawn in cleared rooms). Done 2026-08-29. | all 3 dungeons navigable |
-| H4 ⬜ | Dungeons 7–9: Demon, Lion, Death Mountain — including the final dungeon's unique mechanics | reach Ganon in dungeon 9 |
+| H4 ✅ | Dungeons 7–9: Demon, Lion, Death Mountain — entrance screens, tile-override entry, trigger 3 fix. Done 2026-08-29. | reach Ganon in dungeon 9 |
 
 ## Phase I — Bosses (3 slices)
 
@@ -131,7 +131,7 @@ Sliced by environment so each is playtestable as you go.
 |---|---|---|
 | I1 ✅ | Boss framework + **Aquamentus ✅** (fireball fan; + reusable invincibility-mask & fireball-spread primitives), **Dodongo ✅** (bomb-feeding + stun-and-sword; + `bombs` ctx primitive), **Manhandla ✅** (4 hands, accelerates on hand death; 5-object group, invuln center). All done 2026-08-27. Triforce-drop-on-death handled by H2. | all 3 bosses defeatable |
 | I2 ✅ | Gohma ($33/$34, arrow-when-eye-half-open), Digdogger ($38/$39, flute splits into 1/3 children), Gleeok ($42-$45, multi-headed dragon + flying heads). Done 2026-08-28. | all 3 bosses defeatable with correct items |
-| I3 ⬜ | Patra (orbiting flies), Ganon (invisible, Silver Arrow kill), Zelda rescue sequence | beat Ganon; rescue Zelda; game ends |
+| I3 ✅ | Patra (orbiting flies), Ganon (invisible, Silver Arrow kill), Zelda rescue sequence | beat Ganon; rescue Zelda; game ends |
 
 ## Phase J — UI & Game States (2 slices)
 
@@ -147,7 +147,12 @@ Sliced by environment so each is playtestable as you go.
 | K1 ⬜ | Web Audio SFX engine: sword, bomb, item pickup, damage, enemy hit/kill, secret reveal, low health beep, text crawl, stairs, door unlock, shield block | all SFX fire on the correct events |
 | K2 ⬜ | Music engine: overworld, dungeon, final dungeon, boss fight, game over, title, ending, fairy, item fanfare. Crossfade on area transitions | music plays and transitions correctly |
 
-## Phase L — Save, Second Quest & Ship (2 slices)
+## Phase L — Save, Second Quest & Ship (3 slices)
+
+| ID | Slice | Verify |
+|---|---|---|
+| L0 ⬜ | Sprite polish: replace all placeholder colored-rectangle renders with actual sprites from sprite sheets (enemies, bosses, fires, NPCs, projectiles). Fix transparency keys on NPC/item images. Thorough visual audit of every entity type | every entity renders with real sprites; no colored rectangles remain |
+
 
 | ID | Slice | Verify |
 |---|---|---|
