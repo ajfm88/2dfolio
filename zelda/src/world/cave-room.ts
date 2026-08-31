@@ -107,7 +107,7 @@ function generateMoneyGameAmounts(): number[] {
 
 export class CaveRoom {
   private readonly caveMap: HTMLImageElement;
-  private readonly npcsImage: HTMLImageElement;
+  private readonly npcsImage: HTMLImageElement | HTMLCanvasElement;
   private readonly itemsImage: HTMLImageElement | HTMLCanvasElement;
   private readonly font: BitmapFont;
   private readonly contents: CaveContents;
@@ -134,7 +134,7 @@ export class CaveRoom {
 
   constructor(
     caveMap: HTMLImageElement,
-    npcsImage: HTMLImageElement,
+    npcsImage: HTMLImageElement | HTMLCanvasElement,
     itemsImage: HTMLImageElement | HTMLCanvasElement,
     font: BitmapFont,
     contents: CaveContents,
@@ -414,12 +414,14 @@ export class CaveRoom {
     return (this.contents.items[1] ?? 63) & 0x3f;
   }
 
+  private _fireFrame = 0;
+
   private drawFire(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    const flicker = Math.random() > 0.5;
-    ctx.fillStyle = flicker ? '#f80' : '#f40';
-    ctx.fillRect(x + 2, y + 2, 12, 12);
-    ctx.fillStyle = flicker ? '#ff0' : '#fa0';
-    ctx.fillRect(x + 4, y + 4, 8, 6);
+    // Fire sprites from npcs.png: fire1 at (51,11), fire2 at (68,11), 16×16 each
+    // Alternate every 6 frames (matching NES Fire visibleFrameCount % 12 > 6)
+    this._fireFrame = (this._fireFrame + 1) % 12;
+    const sx = this._fireFrame > 6 ? 51 : 68;
+    ctx.drawImage(this.npcsImage, sx, 11, 16, 16, x, y, 16, 16);
   }
 
   private drawNpc(ctx: CanvasRenderingContext2D, x: number, y: number): void {

@@ -4,6 +4,41 @@ import type { Renderer } from '../render/renderer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { HeartMeter } from './heart-meter.js';
 
+// Remove the baked-in sword graphic from hud.png. Scan the A-slot area and
+// black out any pixel that isn't part of the blue box border or already black.
+export function processHudImage(image: HTMLImageElement): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(image, 0, 0);
+
+  // Scan only the interior of the A-slot box (inside the blue border),
+  // avoiding the "A" label above and the border itself.
+  const sx = A_ITEM_X;
+  const sy = A_ITEM_Y;
+  const sw = 16;
+  const sh = 16;
+  const imageData = ctx.getImageData(sx, sy, sw, sh);
+  const d = imageData.data;
+
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i]!;
+    const g = d[i + 1]!;
+    const b = d[i + 2]!;
+    const isBlack = r < 20 && g < 20 && b < 20;
+    const isBlue = b > 100 && r < 60 && g < 60;
+    if (!isBlack && !isBlue) {
+      d[i] = 0;
+      d[i + 1] = 0;
+      d[i + 2] = 0;
+    }
+  }
+
+  ctx.putImageData(imageData, sx, sy);
+  return canvas;
+}
+
 export interface HudState {
   readonly rupees: number;
   readonly keys: number;
@@ -39,7 +74,7 @@ const BOMB_Y = 48;
 // HUD item slot positions (NES: B at $7C,$1F = 124,31; A at $94,$1F = 148,31)
 const B_ITEM_X = 124;
 const B_ITEM_Y = 32;
-const A_ITEM_X = 152;
+const A_ITEM_X = 147;
 const A_ITEM_Y = 32;
 
 // Minimap dot (from UpdatePlayerPositionMarker in Z_01.asm)
@@ -68,12 +103,12 @@ const LEVEL_TEXT_Y = 16;
 export class HudRenderer {
   private readonly font: BitmapFont;
   private readonly heartMeter: HeartMeter;
-  private readonly hudImage: HTMLImageElement;
+  private readonly hudImage: HTMLImageElement | HTMLCanvasElement;
   private readonly itemsImage: HTMLImageElement | HTMLCanvasElement | null;
   private _blinkTimer = 0;
 
   constructor(
-    hudImage: HTMLImageElement,
+    hudImage: HTMLImageElement | HTMLCanvasElement,
     fontImage: HTMLImageElement,
     treasuresImage: HTMLImageElement,
     itemsImage?: HTMLImageElement | HTMLCanvasElement,
