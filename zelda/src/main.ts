@@ -73,6 +73,9 @@ import { Wallmaster } from './objects/enemies/wallmaster.js';
 import { PushBlock, PushBlockState } from './world/push-block.js';
 import { Ganon } from './objects/enemies/ganon.js';
 import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
+import { SaveManager } from './save/save-manager.js';
+import { TitleScreen } from './ui/title-screen.js';
+import { FileSelectScreen } from './ui/file-select-screen.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -93,11 +96,20 @@ let link: Link | null = null;
 let overworld: OverworldManager | null = null;
 
 // Death + respawn
-let gameMode: GameMode = GameMode.Gameplay;
+let gameMode: GameMode = GameMode.Title;
 let deathAnimation: DeathAnimation | null = null;
 let gameOverScreen: GameOverScreen | null = null;
 let font: BitmapFont | null = null;
 let deathCount = 0;
+
+// Front-end (J1): title, file select, save slots. The world is not created until
+// a file is started (see startGameFromSlot). SaveManager persists slot metadata to
+// localStorage now; slice L1 widens it to full game state via IndexedDB.
+const saveManager = new SaveManager();
+const titleScreen = new TitleScreen();
+const fileSelectScreen = new FileSelectScreen();
+let activeSaveSlot = 0;
+let overworldDataModule: OverworldData | null = null;
 
 // Cave system
 let curtainEffect: CurtainEffect | null = null;
@@ -223,7 +235,7 @@ async function init(): Promise<void> {
       fetch('/src/data/enemy-spawns.json'),
       fetch('/src/data/dungeons.json'),
     ]);
-    const overworldData = (await owResp.json()) as OverworldData;
+    overworldDataModule = (await owResp.json()) as OverworldData;
     const itemsData = (await itemsResp.json()) as ItemData;
     const secretsData = (await secretsResp.json()) as SecretsData;
     caveTextData = (await caveTextResp.json()) as CaveTextData;
@@ -287,12 +299,8 @@ async function init(): Promise<void> {
     redFont = new BitmapFont(createTintedFontImage(assets.sprites.font, '#d82800'));
     inventorySlide = new InventorySlide();
     inventoryScreen = new InventoryScreen();
-    link = new Link();
-    overworld = new OverworldManager(overworldData, tileRenderer, 7, 7, secretsData);
-    spawnManager = new SpawnManager(enemySpawnData, itemsData.objectHpPairs);
-    dropEngine = new DropEngine();
-    // Spawn enemies for the starting screen
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    // The playable world is created lazily by startGameFromSlot() once a file is
+    // chosen on the file-select screen — boot lands on GameMode.Title.
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : String(err);
   }
@@ -342,7 +350,35 @@ void init();
     if (!spawnManager || !link) return;
     spawnManager.debugSpawn(type, Math.min(link.posX + 40, 224), link.posY);
   },
+  // Jump to a front-end screen (title / file select) for inspection.
+  goToTitle() { titleScreen.reset(); gameMode = GameMode.Title; },
+  goToFileSelect() { fileSelectScreen.reset(); gameMode = GameMode.FileSelect; },
+  // Skip the front end and start a game on the given slot (default 0).
+  startGame(slot = 0) {
+    startGameFromSlot(slot);
+  },
+  // Seed a registered save slot so the file-select screen has a playable file
+  // (name registration itself lands in J1b).
+  registerTest(slot = 0, name = 'LINK') {
+    saveManager.register(slot, name);
+  },
+  get saveManager() { return saveManager; },
 };
+
+// Create the playable world for a chosen file and drop into gameplay. This is the
+// single seam through which any new game begins (front end, or debug). Slot name/
+// quest are display + L2 concerns; a new game always starts on the overworld start
+// screen (7,7). Slice L1 will branch here to restore a saved game state.
+function startGameFromSlot(index: number): void {
+  if (!overworldDataModule || !enemySpawnData || !itemsDataForDrops || !moduleLevelSecretsData) return;
+  activeSaveSlot = index;
+  link = new Link();
+  overworld = new OverworldManager(overworldDataModule, tileRenderer, 7, 7, moduleLevelSecretsData);
+  spawnManager = new SpawnManager(enemySpawnData, itemsDataForDrops.objectHpPairs);
+  dropEngine = new DropEngine();
+  spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+  gameMode = GameMode.Gameplay;
+}
 
 function getActiveLinkSheet(): SpriteSheet | null {
   if (!link) return linkSheet;
@@ -1884,6 +1920,30 @@ const loop = new GameLoop({
     frameCount++;
 
     switch (gameMode) {
+      case GameMode.Title:
+        titleScreen.update(input);
+        if (titleScreen.shouldGoToFileSelect) {
+          titleScreen.reset();
+          fileSelectScreen.reset();
+          gameMode = GameMode.FileSelect;
+        }
+        break;
+
+      case GameMode.FileSelect: {
+        fileSelectScreen.update(input);
+        const sel = fileSelectScreen.selection;
+        if (sel) {
+          fileSelectScreen.clearSelection();
+          if (sel.kind === 'slot') {
+            const slot = saveManager.getSlot(sel.index);
+            // Only a registered file can be played. Registering an empty slot and
+            // elimination mode are wired in J1b.
+            if (slot && slot.registered) startGameFromSlot(sel.index);
+          }
+        }
+        break;
+      }
+
       case GameMode.Gameplay:
         updateGameplay();
         break;
@@ -1976,6 +2036,8 @@ const loop = new GameLoop({
             gameMode = GameMode.GameOver;
             gameOverScreen = new GameOverScreen();
             deathAnimation = null;
+            // Record the death against the active file (no-op for unregistered slots).
+            saveManager.recordDeath(activeSaveSlot);
           }
         }
         break;
@@ -1999,6 +2061,18 @@ const loop = new GameLoop({
   render() {
     fpsCounter.tick(performance.now());
     renderer.clear();
+
+    // Front-end screens draw full-screen (no HUD, outside the play-area clip). While
+    // assets are still loading these fall through to the loading UI below.
+    if ((gameMode === GameMode.Title || gameMode === GameMode.FileSelect) && assets && font) {
+      if (gameMode === GameMode.Title) {
+        titleScreen.render(renderer, assets.ui.title, font, assets.ui.crest);
+      } else {
+        fileSelectScreen.render(renderer, font, redFont ?? font, saveManager.getSlots());
+      }
+      if (debug.enabled) renderDebugOverlay();
+      return;
+    }
 
     if (hudRenderer && gameMode !== GameMode.GameOver) {
       hudRenderer.render(renderer, getHudState());

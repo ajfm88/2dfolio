@@ -43,6 +43,24 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
    big, split it with a letter suffix (`G4a`, `G4b`) rather than silently
    expanding scope.
 
+8. **Save-slot metadata now (localStorage), full game state in L1 (IndexedDB)**
+   (2026-09-01, user). J1's file-select screen needs three save files, but the
+   real persistence slice is L1. Decision: J1 ships a thin `SaveManager`
+   (`src/save/save-manager.ts`) that persists only slot *metadata* — name, quest,
+   registered flag, death count — to `localStorage` under key `zelda-nes:saves:v1`,
+   so files survive reload immediately. L1 widens the `SaveSlot` shape to the full
+   persisted game state (inventory, hearts, dungeon progress, Triforce count) and
+   swaps the backing store to IndexedDB. `SaveManager` is the single seam for this;
+   it must stay additive, never a competing save format. All storage access is
+   guarded (private-mode/blocked storage degrades to in-memory).
+
+9. **J1 split into J1a / J1b** (2026-09-01, user). J1 (title + file-select + name
+   registration + elimination) is larger than one session. J1a = boot refactor +
+   title + backstory scroll + file-select + start-game wiring (done 2026-09-01).
+   J1b = name-registration character board + elimination mode. The title uses a
+   static `title.png` + backstory scroll on idle; the scripted attract-mode
+   gameplay demo is intentionally out of scope.
+
 ## Open questions for the user
 
 - **Asset gaps.** The reference repos may not have every sprite needed (especially
