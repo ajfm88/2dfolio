@@ -14,10 +14,10 @@ describe('Link inventory', () => {
       expect(link.rupees).toBe(50);
     });
 
-    it('caps at 255', () => {
+    it('caps at 999', () => {
       const link = new Link();
-      link.addRupees(300);
-      expect(link.rupees).toBe(255);
+      link.addRupees(1200);
+      expect(link.rupees).toBe(999);
     });
 
     it('spendRupees deducts correctly', () => {
