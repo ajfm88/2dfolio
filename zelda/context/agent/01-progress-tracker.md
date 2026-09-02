@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-08-30 · **Phase:** G complete; **I3 complete — all bosses implemented (Patra, Ganon, GuardFire, StandingFire, Zelda NPC)**; H complete — **all 9 dungeons navigable + completable** · **Phase I complete.** · **Plan slots done:** 39 / 45 (6 remaining: J1, J2, K1, K2, L1, L2)
+**Last updated:** 2026-09-01 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1a complete — title screen + backstory scroll + file select + boot refactor.** · **Plan slots done:** 40 / 45+ (J1 split into J1a ✅ / J1b; remaining: J1b, J2, K1, K2, L0, L1, L2)
 
 ---
 
@@ -22,7 +22,7 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: J1 (Title screen, file select, name entry).** All bosses implemented (I1-I3 complete). All 9 dungeons navigable + completable (H complete). Ganon beatable, Zelda rescue triggers ending stub. **Phase G complete; Phase H complete; Phase I complete.**
+**Next action: J1b (name registration + elimination mode).** J1a is done — boot lands on the title screen, Start → file select, selecting a registered file starts the game. J1b wires the two file-select option rows: the NES name-entry character board (`Z_02.asm:1798-1954` cursor math) and elimination/delete (`Z_02.asm:1747-1796`), committing via `SaveManager.register`/`eliminate`. Plan file: `~/.claude/plans/rippling-moseying-peach.md`. All bosses implemented (I1-I3 complete). All 9 dungeons navigable + completable (H complete). **Phase G/H/I complete.**
 H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wired (H1a/H1b + I1); H2 filled 4 gaps: (1) **boss single-spawn** (NES Z_05.asm:1723 — monster list ID ∈ [$32,$62) spawns exactly 1, else a boss room spawned 3 Aquamentus); (2) **Triforce-get completion sequence** (`GameMode.DungeonTriforceGet` — full heal + held display → curtain-warp out via existing exitDungeon); (3) Triforce room-item −8px offset (Z_05.asm:8255); (4) navigability pass (BFS confirmed start→boss→triforce traversable for all 3 levels, boss→triforce is a shutter that opens on boss death via trigger 7). Boss-room heart container (secret trigger 7) + shutter already worked from H1b. **Note:** L2 Dodongo ($32) / L3 Manhandla ($3C) currently fall back to the generic walker — the completion *machinery* works with them, but faithful boss fights are later I-slices.
 
 **Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
@@ -148,6 +148,7 @@ H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wire
 | Patra (boss) | `src/objects/enemies/patra.ts` | ✅ Orbiting flies boss ($47/$48). PatraCenter: 4-state flyer (SpeedUp/Decide/Chase/Wander) with screen-edge bounce, tracks movement offsets for children. 8 PatraChild ($25/$26): NES-faithful fixed-point orbital math using PatraSines 16-entry table + ShiftMultiply + DecreaseObjectAngle. Sequential appearance (children appear one-at-a-time as first child's angle reaches start angles). Two maneuver modes with different rotation bit counts per timer. Center invulnerable while any child alive, sword-only when all dead (mask $FE). Group spawn (1+8=9 objects) via createPatra() + SpawnManager.pushEnemyOrGroup (I3) |
 | Ganon (boss) | `src/objects/enemies/ganon.ts` | ✅ Final boss ($3E). 3 scene phases: DarkRoom (Link halted $40f), LightRoom ($C0f), Fighting. Invisible movement reuses BlueWizzrobe walk pattern (re-aim every $40f, moveOnePixel, direction flip on wall). Shoots unblockable fireball ($56) every $40f. Custom collision completely bypasses normal pipeline (_vulnerable=false). Blue/invisible: sword hits → visible timer $40, HP→0 resets HP to $F0 and goes brown. Brown: flickers (opaque>$30, translucent<$30), decrements every other frame, silver arrow kills (damage≥SILVER_ARROW_DAMAGE via hitContext). Dying: phase $50→ashes+8 burst rays at cardinal+diagonal dirs, clouds shrink every 8f; phase $A0→drops Triforce of Power room item. 32×32 hitbox (I3) |
 | GuardFire + StandingFire | `src/objects/enemies/guard-fire.ts` | ✅ GuardFire ($3F): killable fire, mask $00, animated. StandingFire ($40): invulnerable (mask $FF, _vulnerable=false), animated. Both deal contact damage $80. GuardFire appears in Zelda rescue room (4 flames around her) (I3) |
+| Front-end: title + file select | `src/ui/title-screen.ts`, `src/ui/file-select-screen.ts`, `src/save/save-manager.ts` | ✅ **J1a.** `GameMode.Title`/`FileSelect` added; boot now lands on Title (world created lazily by `startGameFromSlot()`, extracted from `init()`). TitleScreen: static `title.png`, idle (~7s) → vertical backstory scroll (crest + text, `Z_02.asm` UpdateMode0Demo), any button skips. FileSelectScreen: 3 slots + REGISTER/ELIMINATION rows, `>` cursor (GameOverScreen pattern), Up/Down nav, Start selects; registered slot → start game (empty/register/eliminate = J1b stub). SaveManager: slot metadata (name/quest/registered/deaths) in localStorage `zelda-nes:saves:v1`, guarded, injectable storage for tests. Front-end renders full-screen (early-return before HUD/play-area). recordDeath wired at death→GameOver. Debug: `__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. 26 new tests (1181 total). Deferred to J1b: name entry + elimination. Cursor is `>` not a Link-head sprite (→ L0) |
 | Zelda NPC | `src/objects/enemies/zelda-npc.ts` | ✅ Rescue NPC ($37). State 0: waits for Link at ($70-$80, $55 local). State 1: halts Link, positions at ($88,$48), timer $80. Timer expires → triggers GameMode.ZeldaRescue. createZeldaGroup() factory: 1 Zelda + 4 GuardFire at NES positions. Ending stub shows "THANKS LINK, YOU'RE THE HERO OF HYRULE." Full credits deferred to J2. **Phase I complete.** (I3) |
 
 ---
@@ -203,6 +204,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~42~~ | ~~**H3** Dungeons 4-6 completable~~ | ✅ done 2026-08-29 — staircase/cellar system + room-clear persistence |
 | ~~43~~ | ~~**H4** Dungeons 7-9 completable~~ | ✅ done 2026-08-29 — entrance screens + tile override entry + trigger 3 fix. **Phase H complete** |
 | ~~44~~ | ~~**I3** Patra + Ganon + Zelda rescue~~ | ✅ done 2026-08-30 — Patra (orbital 9-object boss), Ganon (invisible+brown+silver arrow, burst death), GuardFire/StandingFire, Zelda NPC rescue trigger, ending stub. **Phase I complete.** 1156 tests |
+| ~~45a~~ | ~~**J1a** Title + backstory scroll + file select + boot refactor~~ | ✅ done 2026-09-01 — GameMode.Title/FileSelect, lazy world start, SaveManager (localStorage). 1181 tests |
+| 45b | **J1b** Name registration + elimination mode | ⬜ next — char board (`Z_02.asm:1798-1954`) + delete (`:1747-1796`), commit via SaveManager |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -241,6 +244,33 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-09-01 — J1a Title + backstory scroll + file select + boot refactor (Claude Opus 4.8)
+
+First front-end slice. **J1 split into J1a/J1b** (user, DECISIONS #9). Added `GameMode.Title`
+and `GameMode.FileSelect`; **boot now lands on Title** instead of Gameplay. Refactored `init()`
+so it only loads assets/data + builds renderers/fonts — the playable world (Link, OverworldManager,
+SpawnManager, DropEngine, start-screen spawn) is created lazily by the new `startGameFromSlot(index)`,
+the single seam through which any game begins. **TitleScreen** (`src/ui/title-screen.ts`): draws the
+ready-made `title.png` full-screen (PUSH START BUTTON is baked in — static, as on NES); after ~7s idle
+with no input it enters a vertical **backstory scroll** (Triforce crest + hardcoded story text,
+`Z_02.asm` UpdateMode0Demo, ~0.5px/f), any button skips back. **FileSelectScreen**
+(`src/ui/file-select-screen.ts`): 3 save-file rows (name + `-deaths`) + REGISTER YOUR NAME +
+ELIMINATION MODE rows, `>` cursor (GameOverScreen pattern), Up/Down wrap-nav, Start emits a selection;
+main.ts starts the game only for a *registered* slot (empty/register/eliminate are J1b stubs).
+**SaveManager** (`src/save/save-manager.ts`, DECISIONS #8): persists slot metadata (name, quest,
+registered, deaths) to `localStorage` key `zelda-nes:saves:v1`; storage is injectable (tests) and all
+access guarded (corrupt/blocked/private-mode → in-memory empty slots). L1 widens SaveSlot to full game
+state + IndexedDB. `recordDeath(activeSaveSlot)` wired at the death→GameOver transition. Front-end
+renders full-screen via an early return before the HUD/play-area translate. Debug helpers added:
+`__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. **26 new tests
+(1181 total, all green); src/ typecheck clean.** Verified in-browser: title, story scroll, file select
+(seeded LINK/ZELDA slots), and start-game→overworld all render correctly; no console errors. Also fixed
+a stale unrelated test (`inventory.test.ts` rupee cap 255→999 per prior user decision). **Next: J1b.**
+
+Note for next agent: the Claude-in-Chrome tab runs in the background, where Chrome freezes
+requestAnimationFrame — the game loop only ticks when the tab is foreground/focused. Use the `__zelda`
+debug helpers to drive state when verifying via automation.
 
 ### 2026-08-30 — I3 Patra + Ganon + Zelda rescue — Phase I complete (Claude Opus 4.6)
 
