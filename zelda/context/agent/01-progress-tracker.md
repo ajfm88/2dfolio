@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-09-01 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1a complete — title screen + backstory scroll + file select + boot refactor.** · **Plan slots done:** 40 / 45+ (J1 split into J1a ✅ / J1b; remaining: J1b, J2, K1, K2, L0, L1, L2)
+**Last updated:** 2026-09-01 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1 COMPLETE (J1a + J1b) — title + backstory scroll + file select + name registration + elimination.** · **Plan slots done:** 41 / 45+ (J1 done; remaining: J2, K1, K2, L0, L1, L2)
 
 ---
 
@@ -22,7 +22,7 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: J1b (name registration + elimination mode).** J1a is done — boot lands on the title screen, Start → file select, selecting a registered file starts the game. J1b wires the two file-select option rows: the NES name-entry character board (`Z_02.asm:1798-1954` cursor math) and elimination/delete (`Z_02.asm:1747-1796`), committing via `SaveManager.register`/`eliminate`. Plan file: `~/.claude/plans/rippling-moseying-peach.md`. All bosses implemented (I1-I3 complete). All 9 dungeons navigable + completable (H complete). **Phase G/H/I complete.**
+**Next action: J2 (game-over screen polish + ending sequence / credits scroll).** J1 is fully done — title → file select → register a name / eliminate a file → start game all work. All bosses (I1-I3), all 9 dungeons completable (H), game winnable. **Phase G/H/I complete; Phase J half done (J1 ✅, J2 next).** J2 builds the ending/credits after Ganon (the ZeldaRescue mode is currently a text stub at `main.ts` render dispatch) and can reuse the story-scroll pattern from `title-screen.ts`.
 H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wired (H1a/H1b + I1); H2 filled 4 gaps: (1) **boss single-spawn** (NES Z_05.asm:1723 — monster list ID ∈ [$32,$62) spawns exactly 1, else a boss room spawned 3 Aquamentus); (2) **Triforce-get completion sequence** (`GameMode.DungeonTriforceGet` — full heal + held display → curtain-warp out via existing exitDungeon); (3) Triforce room-item −8px offset (Z_05.asm:8255); (4) navigability pass (BFS confirmed start→boss→triforce traversable for all 3 levels, boss→triforce is a shutter that opens on boss death via trigger 7). Boss-room heart container (secret trigger 7) + shutter already worked from H1b. **Note:** L2 Dodongo ($32) / L3 Manhandla ($3C) currently fall back to the generic walker — the completion *machinery* works with them, but faithful boss fights are later I-slices.
 
 **Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
@@ -148,6 +148,7 @@ H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wire
 | Patra (boss) | `src/objects/enemies/patra.ts` | ✅ Orbiting flies boss ($47/$48). PatraCenter: 4-state flyer (SpeedUp/Decide/Chase/Wander) with screen-edge bounce, tracks movement offsets for children. 8 PatraChild ($25/$26): NES-faithful fixed-point orbital math using PatraSines 16-entry table + ShiftMultiply + DecreaseObjectAngle. Sequential appearance (children appear one-at-a-time as first child's angle reaches start angles). Two maneuver modes with different rotation bit counts per timer. Center invulnerable while any child alive, sword-only when all dead (mask $FE). Group spawn (1+8=9 objects) via createPatra() + SpawnManager.pushEnemyOrGroup (I3) |
 | Ganon (boss) | `src/objects/enemies/ganon.ts` | ✅ Final boss ($3E). 3 scene phases: DarkRoom (Link halted $40f), LightRoom ($C0f), Fighting. Invisible movement reuses BlueWizzrobe walk pattern (re-aim every $40f, moveOnePixel, direction flip on wall). Shoots unblockable fireball ($56) every $40f. Custom collision completely bypasses normal pipeline (_vulnerable=false). Blue/invisible: sword hits → visible timer $40, HP→0 resets HP to $F0 and goes brown. Brown: flickers (opaque>$30, translucent<$30), decrements every other frame, silver arrow kills (damage≥SILVER_ARROW_DAMAGE via hitContext). Dying: phase $50→ashes+8 burst rays at cardinal+diagonal dirs, clouds shrink every 8f; phase $A0→drops Triforce of Power room item. 32×32 hitbox (I3) |
 | GuardFire + StandingFire | `src/objects/enemies/guard-fire.ts` | ✅ GuardFire ($3F): killable fire, mask $00, animated. StandingFire ($40): invulnerable (mask $FF, _vulnerable=false), animated. Both deal contact damage $80. GuardFire appears in Zelda rescue room (4 flames around her) (I3) |
+| Front-end: name registration + elimination | `src/ui/name-board.ts`, `src/ui/name-registration.ts`, `src/ui/elimination.ts` | ✅ **J1b.** `GameMode.Register`/`Elimination` added; file-select REGISTER/ELIMINATION rows now wired (were J1a stubs). **NameBoard** (`name-board.ts`): 44-cell char board (4×11) mirroring `ModeE_CharMap` (Z_02.asm:1423); cursor moves = ±1 / ±11 mod 44 (traced from `ModeE_HandleDirections` X/Y edge logic — reduces to modular arithmetic). Symbol row uses supported font glyphs (`- . ! '`); rest degrade → L0. **NameRegistrationScreen**: per-slot 8-char buffers (registered slots skipped/display-only), Select cycles slots skipping registered ones (`UpdateModeEandF_Idle`), directions drive board w/ DAS repeat (16f then 8f, `Z_02.asm:1830`), A=write+advance / B=advance-only (`ModeE_HandleAOrB`), Start on END → emits registrations → main.ts calls `SaveManager.register`. **EliminationScreen**: slot cursor + END, Start on slot → `SaveManager.eliminate`, END → back to file select. Shared row/title draw helpers exported from `file-select-screen.ts`. Debug: `__zelda.goToRegister/goToElimination`. 21 new tests (1202 total). **J1 complete.** |
 | Front-end: title + file select | `src/ui/title-screen.ts`, `src/ui/file-select-screen.ts`, `src/save/save-manager.ts` | ✅ **J1a.** `GameMode.Title`/`FileSelect` added; boot now lands on Title (world created lazily by `startGameFromSlot()`, extracted from `init()`). TitleScreen: static `title.png`, idle (~7s) → vertical backstory scroll (crest + text, `Z_02.asm` UpdateMode0Demo), any button skips. FileSelectScreen: 3 slots + REGISTER/ELIMINATION rows, `>` cursor (GameOverScreen pattern), Up/Down nav, Start selects; registered slot → start game (empty/register/eliminate = J1b stub). SaveManager: slot metadata (name/quest/registered/deaths) in localStorage `zelda-nes:saves:v1`, guarded, injectable storage for tests. Front-end renders full-screen (early-return before HUD/play-area). recordDeath wired at death→GameOver. Debug: `__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. 26 new tests (1181 total). Deferred to J1b: name entry + elimination. Cursor is `>` not a Link-head sprite (→ L0) |
 | Zelda NPC | `src/objects/enemies/zelda-npc.ts` | ✅ Rescue NPC ($37). State 0: waits for Link at ($70-$80, $55 local). State 1: halts Link, positions at ($88,$48), timer $80. Timer expires → triggers GameMode.ZeldaRescue. createZeldaGroup() factory: 1 Zelda + 4 GuardFire at NES positions. Ending stub shows "THANKS LINK, YOU'RE THE HERO OF HYRULE." Full credits deferred to J2. **Phase I complete.** (I3) |
 
@@ -205,7 +206,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~43~~ | ~~**H4** Dungeons 7-9 completable~~ | ✅ done 2026-08-29 — entrance screens + tile override entry + trigger 3 fix. **Phase H complete** |
 | ~~44~~ | ~~**I3** Patra + Ganon + Zelda rescue~~ | ✅ done 2026-08-30 — Patra (orbital 9-object boss), Ganon (invisible+brown+silver arrow, burst death), GuardFire/StandingFire, Zelda NPC rescue trigger, ending stub. **Phase I complete.** 1156 tests |
 | ~~45a~~ | ~~**J1a** Title + backstory scroll + file select + boot refactor~~ | ✅ done 2026-09-01 — GameMode.Title/FileSelect, lazy world start, SaveManager (localStorage). 1181 tests |
-| 45b | **J1b** Name registration + elimination mode | ⬜ next — char board (`Z_02.asm:1798-1954`) + delete (`:1747-1796`), commit via SaveManager |
+| ~~45b~~ | ~~**J1b** Name registration + elimination mode~~ | ✅ done 2026-09-01 — 44-cell char board + DAS, register/eliminate wired to SaveManager. **J1 complete.** 1202 tests |
+| 46 | **J2** Game-over polish + ending/credits | ⬜ next — ending after Ganon (reuse title-screen scroll pattern), credits |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -244,6 +246,30 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-09-01 — J1b Name registration + elimination — J1 complete (Claude Opus 4.8)
+
+Completes slice J1. Added `GameMode.Register`/`Elimination` and wired the two file-select
+option rows that were J1a no-op stubs. **NameBoard** (`src/ui/name-board.ts`, pure): the 44-cell
+character board (4 rows × 11 cols) mirroring `ModeE_CharMap` (`Z_02.asm:1423-1429`). The NES
+cursor logic (`ModeE_HandleDirections`, `:1844-1931`) juggles pixel X/Y with edge checks; on a
+row-major grid that reduces exactly to modular arithmetic — Right/Left = ±1 mod 44, Down/Up = ±11
+mod 44 (every wrap case traced against the asm). The 7 symbol tiles ($62 $63 $28-$2C) map to the
+glyphs BitmapFont supports (`- . ! '`); the rest degrade to the fallback tile → L0 font pass.
+**NameRegistrationScreen** (`src/ui/name-registration.ts`): per-slot 8-char buffers (already-
+registered slots are display-only and skipped), **Select** cycles the slot cursor over the 3 files +
+END skipping registered slots (`UpdateModeEandF_Idle`), directions drive the board with DAS
+auto-repeat (act on press, then 16f to first repeat, then every 8f — `ModeE_ChooseRepeatDelay`
+`:1830-1838`), **A** writes the highlighted char + advances the name cursor (wrap 0-7), **B** advances
+only (`ModeE_HandleAOrB`), **Start on END** emits registration intents → `main.ts` calls
+`SaveManager.register`. **EliminationScreen** (`src/ui/elimination.ts`): slot cursor + END (Up/Down or
+Select), Start on a slot → `SaveManager.eliminate` (`DeleteSlot` `:1770`), Start on END → back to file
+select (simplification: NES sends Eliminate's END to Register). Shared title/slot-row draw helpers
+exported from `file-select-screen.ts` (`drawFrontEndTitle`, `drawSlotRow`, `FS_*` layout consts).
+Debug: `__zelda.goToRegister()`/`goToElimination()`. **21 new tests (1202 total, all green); src/
+typecheck clean.** Verified in-browser: register screen (board + slots + END + flashing cursor),
+name-entry writes a char (A appeared in the row), and the elimination screen all render correctly;
+no console errors. **J1 complete. Phase J half done. Next: J2 (ending + credits).**
 
 ### 2026-09-01 — J1a Title + backstory scroll + file select + boot refactor (Claude Opus 4.8)
 
