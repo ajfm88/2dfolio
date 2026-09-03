@@ -76,6 +76,8 @@ import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
 import { SaveManager } from './save/save-manager.js';
 import { TitleScreen } from './ui/title-screen.js';
 import { FileSelectScreen } from './ui/file-select-screen.js';
+import { NameRegistrationScreen } from './ui/name-registration.js';
+import { EliminationScreen } from './ui/elimination.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -108,6 +110,8 @@ let deathCount = 0;
 const saveManager = new SaveManager();
 const titleScreen = new TitleScreen();
 const fileSelectScreen = new FileSelectScreen();
+const registerScreen = new NameRegistrationScreen();
+const eliminationScreen = new EliminationScreen();
 let activeSaveSlot = 0;
 let overworldDataModule: OverworldData | null = null;
 
@@ -350,9 +354,11 @@ void init();
     if (!spawnManager || !link) return;
     spawnManager.debugSpawn(type, Math.min(link.posX + 40, 224), link.posY);
   },
-  // Jump to a front-end screen (title / file select) for inspection.
+  // Jump to a front-end screen (title / file select / register / eliminate).
   goToTitle() { titleScreen.reset(); gameMode = GameMode.Title; },
   goToFileSelect() { fileSelectScreen.reset(); gameMode = GameMode.FileSelect; },
+  goToRegister() { registerScreen.reset(saveManager.getSlots()); gameMode = GameMode.Register; },
+  goToElimination() { eliminationScreen.reset(); gameMode = GameMode.Elimination; },
   // Skip the front end and start a game on the given slot (default 0).
   startGame(slot = 0) {
     startGameFromSlot(slot);
@@ -1936,10 +1942,40 @@ const loop = new GameLoop({
           fileSelectScreen.clearSelection();
           if (sel.kind === 'slot') {
             const slot = saveManager.getSlot(sel.index);
-            // Only a registered file can be played. Registering an empty slot and
-            // elimination mode are wired in J1b.
+            // Only a registered file can be played. Empty slots need a name first.
             if (slot && slot.registered) startGameFromSlot(sel.index);
+          } else if (sel.kind === 'register') {
+            registerScreen.reset(saveManager.getSlots());
+            gameMode = GameMode.Register;
+          } else {
+            eliminationScreen.reset();
+            gameMode = GameMode.Elimination;
           }
+        }
+        break;
+      }
+
+      case GameMode.Register:
+        registerScreen.update(input);
+        if (registerScreen.done) {
+          for (const reg of registerScreen.registrations) {
+            saveManager.register(reg.slot, reg.name);
+          }
+          fileSelectScreen.reset();
+          gameMode = GameMode.FileSelect;
+        }
+        break;
+
+      case GameMode.Elimination: {
+        eliminationScreen.update(input);
+        const pending = eliminationScreen.pendingEliminate;
+        if (pending !== null) {
+          saveManager.eliminate(pending);
+          eliminationScreen.clearPending();
+        }
+        if (eliminationScreen.done) {
+          fileSelectScreen.reset();
+          gameMode = GameMode.FileSelect;
         }
         break;
       }
@@ -2064,11 +2100,18 @@ const loop = new GameLoop({
 
     // Front-end screens draw full-screen (no HUD, outside the play-area clip). While
     // assets are still loading these fall through to the loading UI below.
-    if ((gameMode === GameMode.Title || gameMode === GameMode.FileSelect) && assets && font) {
+    const isFrontEnd = gameMode === GameMode.Title || gameMode === GameMode.FileSelect
+      || gameMode === GameMode.Register || gameMode === GameMode.Elimination;
+    if (isFrontEnd && assets && font) {
+      const rf = redFont ?? font;
       if (gameMode === GameMode.Title) {
         titleScreen.render(renderer, assets.ui.title, font, assets.ui.crest);
+      } else if (gameMode === GameMode.FileSelect) {
+        fileSelectScreen.render(renderer, font, rf, saveManager.getSlots());
+      } else if (gameMode === GameMode.Register) {
+        registerScreen.render(renderer, font, rf);
       } else {
-        fileSelectScreen.render(renderer, font, redFont ?? font, saveManager.getSlots());
+        eliminationScreen.render(renderer, font, rf, saveManager.getSlots());
       }
       if (debug.enabled) renderDebugOverlay();
       return;

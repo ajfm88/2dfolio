@@ -31,7 +31,8 @@ contract — split a slice that turns out too big with a letter suffix (`G4a`,
 | **I** | I1–I3 | Bosses | dungeons completable |
 | **J** | J1–J2 | UI & game states | title, game over, ending |
 | **K** | K1–K2 | Audio | music and SFX |
-| **L** | L1–L2 | Save, Second Quest & ship | full playthrough |
+| **L** | L0–L2 | Save, Second Quest & ship | full playthrough |
+| **M** | M1–M2 | Mobile & touch (post-completion) | plays on a phone |
 
 **Critical path:** A → B → C → D → E. Nothing is playable until E is done.
 Phases F–I are the wide part and can be worked in any order once D and E land.
@@ -158,6 +159,17 @@ Sliced by environment so each is playtestable as you go.
 |---|---|---|
 | L1 ⬜ | Save system: 3 slots via IndexedDB. Save on death/quit, load from file select. Persist: inventory, hearts, dungeon progress, Triforce count, quest number | save → reload → identical state |
 | L2 ⬜ | Second Quest: load alternate overworld/dungeon JSON data (different secrets, dungeons, enemy placement). Unlocks after first completion. + Full playthrough audit | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
+
+## Phase M — Mobile & touch (post-completion, 2 slices)
+
+**Added 2026-09-01 (user).** Only start *after* the game is otherwise complete
+(A–L done). Stays localhost-only (`DECISIONS.md` #1) — this is about the browser
+build working on a phone, not deploying anywhere.
+
+| ID | Slice | Verify |
+|---|---|---|
+| M1 ⬜ | Responsive layout: canvas scales to fit any viewport / aspect ratio (portrait + landscape), no horizontal page scroll, correct `image-rendering: pixelated` at fractional device-pixel ratios, safe-area insets. Prefer landscape prompt if needed | renders full-screen and crisp on a phone in both orientations |
+| M2 ⬜ | Touch controls: on-screen D-pad + A/B/Start/Select buttons mapped through the existing `InputManager` action-name abstraction (A4) — pointer/touch events feed the same actions as keyboard/gamepad, so no game logic changes. Multi-touch, sensible hit areas, hidden when a physical keyboard/gamepad is used | full game playable on a touchscreen with no keyboard |
 
 ---
 
