@@ -21,20 +21,43 @@ const REGISTER_TARGET = SAVE_SLOT_COUNT;
 const ELIMINATE_TARGET = SAVE_SLOT_COUNT + 1;
 const TARGET_COUNT = SAVE_SLOT_COUNT + 2;
 
-// Full-screen layout (256×240).
-const TITLE_Y = 24;
-const SLOT_Y0 = 72;
-const SLOT_SPACING = 24;
+// Full-screen layout (256×240). Exported so Register/Elimination screens share it.
+export const FS_TITLE_Y = 24;
+export const FS_SLOT_Y0 = 72;
+export const FS_SLOT_SPACING = 24;
 const OPTION_Y0 = 168;
 const OPTION_SPACING = 20;
-const CURSOR_X = 48;
-const LABEL_X = 64;
+export const FS_CURSOR_X = 48;
+export const FS_LABEL_X = 64;
 
-const CURSOR_FLASH_FRAMES = 8;
+export const CURSOR_FLASH_FRAMES = 8;
 
 function targetY(target: number): number {
-  if (target < SAVE_SLOT_COUNT) return SLOT_Y0 + target * SLOT_SPACING;
+  if (target < SAVE_SLOT_COUNT) return FS_SLOT_Y0 + target * FS_SLOT_SPACING;
   return OPTION_Y0 + (target - SAVE_SLOT_COUNT) * OPTION_SPACING;
+}
+
+/** Red "THE LEGEND OF / ZELDA" header shared by all three front-end file screens. */
+export function drawFrontEndTitle(renderer: Renderer, redFont: BitmapFont): void {
+  redFont.drawString(renderer, FS_LABEL_X, FS_TITLE_Y, 'THE LEGEND OF');
+  redFont.drawString(renderer, FS_LABEL_X + 24, FS_TITLE_Y + 16, 'ZELDA');
+}
+
+/** One save-file row: the name (or dashes when empty) and, if registered, deaths. */
+export function drawSlotRow(
+  renderer: Renderer,
+  font: BitmapFont,
+  y: number,
+  slot: SaveSlot | undefined,
+  showDeaths = true,
+): void {
+  const label = slot && slot.registered && slot.name.trim().length > 0
+    ? slot.name.padEnd(8, ' ')
+    : '- - - - -';
+  font.drawString(renderer, FS_LABEL_X, y, label);
+  if (showDeaths && slot && slot.registered) {
+    font.drawString(renderer, FS_LABEL_X + 88, y, `-${slot.deaths}`);
+  }
 }
 
 export class FileSelectScreen {
@@ -97,31 +120,22 @@ export class FileSelectScreen {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    redFont.drawString(renderer, LABEL_X, TITLE_Y, 'THE LEGEND OF');
-    redFont.drawString(renderer, LABEL_X + 24, TITLE_Y + 16, 'ZELDA');
+    drawFrontEndTitle(renderer, redFont);
 
     // Three save-file rows.
     for (let i = 0; i < SAVE_SLOT_COUNT; i++) {
-      const slot = slots[i];
-      const y = SLOT_Y0 + i * SLOT_SPACING;
-      const label = slot && slot.registered && slot.name.length > 0
-        ? slot.name.padEnd(8, ' ')
-        : '- - - - -';
-      font.drawString(renderer, LABEL_X, y, label);
-      if (slot && slot.registered) {
-        font.drawString(renderer, LABEL_X + 88, y, `-${slot.deaths}`);
-      }
+      drawSlotRow(renderer, font, FS_SLOT_Y0 + i * FS_SLOT_SPACING, slots[i]);
     }
 
     // Options.
-    font.drawString(renderer, LABEL_X, OPTION_Y0, 'REGISTER YOUR');
-    font.drawString(renderer, LABEL_X, OPTION_Y0 + 10, 'NAME');
-    font.drawString(renderer, LABEL_X, OPTION_Y0 + OPTION_SPACING, 'ELIMINATION');
-    font.drawString(renderer, LABEL_X, OPTION_Y0 + OPTION_SPACING + 10, 'MODE');
+    font.drawString(renderer, FS_LABEL_X, OPTION_Y0, 'REGISTER YOUR');
+    font.drawString(renderer, FS_LABEL_X, OPTION_Y0 + 10, 'NAME');
+    font.drawString(renderer, FS_LABEL_X, OPTION_Y0 + OPTION_SPACING, 'ELIMINATION');
+    font.drawString(renderer, FS_LABEL_X, OPTION_Y0 + OPTION_SPACING + 10, 'MODE');
 
     // Cursor.
     if (this.cursorVisible) {
-      font.drawString(renderer, CURSOR_X, targetY(this.cursor), '>');
+      font.drawString(renderer, FS_CURSOR_X, targetY(this.cursor), '>');
     }
   }
 }
