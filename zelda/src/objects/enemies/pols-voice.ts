@@ -4,6 +4,7 @@
 // HP; the flute-kill is deferred. Type $16, ~10 sword hits.
 
 import { Direction, type Rect } from '../../core/types.js';
+import { drawDungeonEnemySprite, POLS_VOICE_SPRITES } from '../../render/enemy-sprite-data.js';
 import {
   SCREEN_EDGE_BOTTOM,
   SCREEN_EDGE_LEFT,
@@ -58,19 +59,11 @@ export class PolsVoice extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    // Vertical bob to sell the hop.
     const lift = this._bob < BOB_PERIOD / 2 ? this._bob >> 1 : (BOB_PERIOD - this._bob) >> 1;
     const y = this._y - lift;
-    ctx.fillStyle = '#f0a0b0';
-    ctx.fillRect(this._x + 3, y + 4, 10, 10);
-    // Big ears.
-    ctx.fillStyle = '#c04868';
-    ctx.fillRect(this._x + 1, y + 2, 3, 7);
-    ctx.fillRect(this._x + 12, y + 2, 3, 7);
-    // Eyes.
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(this._x + 5, y + 7, 2, 2);
-    ctx.fillRect(this._x + 9, y + 7, 2, 2);
+    const frame = POLS_VOICE_SPRITES[this._walkAnimFrame] ?? POLS_VOICE_SPRITES[0];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, y);
+    }
   }
 }

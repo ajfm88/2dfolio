@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-09-01 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1 COMPLETE (J1a + J1b) — title + backstory scroll + file select + name registration + elimination.** · **Plan slots done:** 41 / 45+ (J1 done; remaining: J2, K1, K2, L0, L1, L2)
+**Last updated:** 2026-09-02 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1+J2 COMPLETE — Phase J done.** Title + file select + name registration + elimination + ending sequence + credits scroll all working. · **Plan slots done:** 42 / 45+ (J done; remaining: K1, K2, L0, L1, L2)
 
 ---
 
@@ -22,7 +22,7 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: J2 (game-over screen polish + ending sequence / credits scroll).** J1 is fully done — title → file select → register a name / eliminate a file → start game all work. All bosses (I1-I3), all 9 dungeons completable (H), game winnable. **Phase G/H/I complete; Phase J half done (J1 ✅, J2 next).** J2 builds the ending/credits after Ganon (the ZeldaRescue mode is currently a text stub at `main.ts` render dispatch) and can reuse the story-scroll pattern from `title-screen.ts`.
+**Next action: L0 (sprite polish).** Phase J is fully done — title → file select → register/eliminate → play → beat Ganon → rescue Zelda → ending sequence (flash + peace text + credits scroll + ash/triforce) → Second Quest switch → back to title. Game-over SAVE option returns to title (was respawning like Continue). All bosses (I1-I3), all 9 dungeons completable (H), game winnable end-to-end. **Reordered (user, 2026-09-02):** L0 sprite polish before K1/K2 audio — visuals first, sound later.
 H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wired (H1a/H1b + I1); H2 filled 4 gaps: (1) **boss single-spawn** (NES Z_05.asm:1723 — monster list ID ∈ [$32,$62) spawns exactly 1, else a boss room spawned 3 Aquamentus); (2) **Triforce-get completion sequence** (`GameMode.DungeonTriforceGet` — full heal + held display → curtain-warp out via existing exitDungeon); (3) Triforce room-item −8px offset (Z_05.asm:8255); (4) navigability pass (BFS confirmed start→boss→triforce traversable for all 3 levels, boss→triforce is a shutter that opens on boss death via trigger 7). Boss-room heart container (secret trigger 7) + shutter already worked from H1b. **Note:** L2 Dodongo ($32) / L3 Manhandla ($3C) currently fall back to the generic walker — the completion *machinery* works with them, but faithful boss fights are later I-slices.
 
 **Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
@@ -149,6 +149,7 @@ H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wire
 | Ganon (boss) | `src/objects/enemies/ganon.ts` | ✅ Final boss ($3E). 3 scene phases: DarkRoom (Link halted $40f), LightRoom ($C0f), Fighting. Invisible movement reuses BlueWizzrobe walk pattern (re-aim every $40f, moveOnePixel, direction flip on wall). Shoots unblockable fireball ($56) every $40f. Custom collision completely bypasses normal pipeline (_vulnerable=false). Blue/invisible: sword hits → visible timer $40, HP→0 resets HP to $F0 and goes brown. Brown: flickers (opaque>$30, translucent<$30), decrements every other frame, silver arrow kills (damage≥SILVER_ARROW_DAMAGE via hitContext). Dying: phase $50→ashes+8 burst rays at cardinal+diagonal dirs, clouds shrink every 8f; phase $A0→drops Triforce of Power room item. 32×32 hitbox (I3) |
 | GuardFire + StandingFire | `src/objects/enemies/guard-fire.ts` | ✅ GuardFire ($3F): killable fire, mask $00, animated. StandingFire ($40): invulnerable (mask $FF, _vulnerable=false), animated. Both deal contact damage $80. GuardFire appears in Zelda rescue room (4 flames around her) (I3) |
 | Front-end: name registration + elimination | `src/ui/name-board.ts`, `src/ui/name-registration.ts`, `src/ui/elimination.ts` | ✅ **J1b.** `GameMode.Register`/`Elimination` added; file-select REGISTER/ELIMINATION rows now wired (were J1a stubs). **NameBoard** (`name-board.ts`): 44-cell char board (4×11) mirroring `ModeE_CharMap` (Z_02.asm:1423); cursor moves = ±1 / ±11 mod 44 (traced from `ModeE_HandleDirections` X/Y edge logic — reduces to modular arithmetic). Symbol row uses supported font glyphs (`- . ! '`); rest degrade → L0. **NameRegistrationScreen**: per-slot 8-char buffers (registered slots skipped/display-only), Select cycles slots skipping registered ones (`UpdateModeEandF_Idle`), directions drive board w/ DAS repeat (16f then 8f, `Z_02.asm:1830`), A=write+advance / B=advance-only (`ModeE_HandleAOrB`), Start on END → emits registrations → main.ts calls `SaveManager.register`. **EliminationScreen**: slot cursor + END, Start on slot → `SaveManager.eliminate`, END → back to file select. Shared row/title draw helpers exported from `file-select-screen.ts`. Debug: `__zelda.goToRegister/goToElimination`. 21 new tests (1202 total). **J1 complete.** |
+| Ending sequence | `src/ui/ending-screen.ts` | ✅ **J2.** `EndingScreen` class with 5-phase NES-faithful state machine (Z_02.asm Mode $13 UpdateMode13WinGame): **Flash** (192f, background palette cycles 4 NES colors after 64f static, Link+Zelda+Triforces shown), **PeaceText** (640f, typewriter "FINALLY, PEACE RETURNS TO HYRULE. THIS ENDS THE STORY." one char every 8f), **Credits** (scrolling staff credits inside brick-walled frame at ~0.5px/f, player name + death count), **AshTriforce** (Ganon ashes + Triforce, waits 64f then Start to finish), **Done** (→ switchToSecondQuest + title). Full-screen rendering (no HUD). Game-over SAVE option now returns to title instead of respawning. SaveManager.switchToSecondQuest() added. Debug: `__zelda.goToEnding()`. 16 new tests (1218 total). **Phase J complete.** |
 | Front-end: title + file select | `src/ui/title-screen.ts`, `src/ui/file-select-screen.ts`, `src/save/save-manager.ts` | ✅ **J1a.** `GameMode.Title`/`FileSelect` added; boot now lands on Title (world created lazily by `startGameFromSlot()`, extracted from `init()`). TitleScreen: static `title.png`, idle (~7s) → vertical backstory scroll (crest + text, `Z_02.asm` UpdateMode0Demo), any button skips. FileSelectScreen: 3 slots + REGISTER/ELIMINATION rows, `>` cursor (GameOverScreen pattern), Up/Down nav, Start selects; registered slot → start game (empty/register/eliminate = J1b stub). SaveManager: slot metadata (name/quest/registered/deaths) in localStorage `zelda-nes:saves:v1`, guarded, injectable storage for tests. Front-end renders full-screen (early-return before HUD/play-area). recordDeath wired at death→GameOver. Debug: `__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. 26 new tests (1181 total). Deferred to J1b: name entry + elimination. Cursor is `>` not a Link-head sprite (→ L0) |
 | Zelda NPC | `src/objects/enemies/zelda-npc.ts` | ✅ Rescue NPC ($37). State 0: waits for Link at ($70-$80, $55 local). State 1: halts Link, positions at ($88,$48), timer $80. Timer expires → triggers GameMode.ZeldaRescue. createZeldaGroup() factory: 1 Zelda + 4 GuardFire at NES positions. Ending stub shows "THANKS LINK, YOU'RE THE HERO OF HYRULE." Full credits deferred to J2. **Phase I complete.** (I3) |
 
@@ -207,7 +208,9 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~44~~ | ~~**I3** Patra + Ganon + Zelda rescue~~ | ✅ done 2026-08-30 — Patra (orbital 9-object boss), Ganon (invisible+brown+silver arrow, burst death), GuardFire/StandingFire, Zelda NPC rescue trigger, ending stub. **Phase I complete.** 1156 tests |
 | ~~45a~~ | ~~**J1a** Title + backstory scroll + file select + boot refactor~~ | ✅ done 2026-09-01 — GameMode.Title/FileSelect, lazy world start, SaveManager (localStorage). 1181 tests |
 | ~~45b~~ | ~~**J1b** Name registration + elimination mode~~ | ✅ done 2026-09-01 — 44-cell char board + DAS, register/eliminate wired to SaveManager. **J1 complete.** 1202 tests |
-| 46 | **J2** Game-over polish + ending/credits | ⬜ next — ending after Ganon (reuse title-screen scroll pattern), credits |
+| ~~46~~ | ~~**J2** Game-over polish + ending/credits~~ | ✅ done 2026-09-02 — 5-phase ending (flash+peace+credits+ash), full-screen, SAVE→title, switchToSecondQuest. **Phase J complete.** 1218 tests |
+| 47 | **L0** Sprite polish | ⬜ next — replace all placeholder colored-rectangle renders with real sprites (reordered before K1/K2, user 2026-09-02) |
+| 48 | **K1** Web Audio SFX engine | ⬜ — ~30 sound effects |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -246,6 +249,26 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-09-02 — J2 Ending sequence + credits + game-over polish — Phase J complete (Claude Opus 4.6)
+
+Replaced the ZeldaRescue text stub with a full 5-phase ending sequence (`src/ui/ending-screen.ts`,
+from Z_02.asm Mode $13 InitMode13_Full + UpdateMode13WinGame). **EndingScreen** class with phase
+state machine: **Flash** (192f total — first 64f static black, then 128f cycling 4 NES palette
+colors $0F/$12/$16/$2A; Link+Zelda placeholders with gold Triforces above each), **PeaceText**
+(640f long timer; typewriter reveals "FINALLY, PEACE RETURNS TO HYRULE. THIS ENDS THE STORY."
+one character every 8 frames across 3 lines), **Credits** (brick-walled frame with staff credits
+scrolling at ~0.5px/f: STAFF, EXECUTIVE PRODUCER H.YAMAUCHI, S.MIYAMOTO, K.KONDO, T.WAKAI,
+T.TEZUKA, T.NAKAZOO, "ANOTHER QUEST WILL START FROM HERE. PRESS THE START BUTTON.", player
+name + death count), **AshTriforce** (Ganon grey ash pile + gold Triforce, "PUSH START BUTTON",
+64f minimum wait then Start finishes), **Done** (calls `SaveManager.switchToSecondQuest()` → sets
+quest=2 + persists, resets title, → `GameMode.Title`). Renders full-screen via the `isFrontEnd`
+early-return path (no HUD during ending — fixed from initial implementation that showed HUD).
+**Game-over SAVE option** now returns to title (NES Mode $D behavior) instead of respawning like
+Continue/Retry. Added `GameOverOption` import + branch in main.ts GameOver handler. Debug:
+`__zelda.goToEnding()`. **16 new tests (1218 total, all green); src/ typecheck clean.** Verified
+in-browser: all 5 phases render correctly, no HUD, Start on AshTriforce returns to title, no
+console errors. **Phase J complete. Next: L0 (sprite polish).**
 
 ### 2026-09-01 — J1b Name registration + elimination — J1 complete (Claude Opus 4.8)
 

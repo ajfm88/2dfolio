@@ -5,6 +5,9 @@
 // Blue ($05) throws readily; Red ($06) throws only occasionally. 5/3 hits.
 
 import { Direction } from '../../core/types.js';
+import type { Renderer } from '../../render/renderer.js';
+import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySprite, GORIYA_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 import { GoriyaBoomerang } from './goriya-boomerang.js';
 
@@ -87,5 +90,14 @@ export class Goriya extends Enemy {
     this._direction = dir;
     this._boomerang = new GoriyaBoomerang(this._x + 4, this._y + 4, dir, this);
     this._pendingProjectile = this._boomerang;
+  }
+
+  protected override renderEnemy(renderer: Renderer, _enemySheet?: SpriteSheet): void {
+    const dirFrames = this._isBlue ? GORIYA_SPRITES.blue : GORIYA_SPRITES.red;
+    const dirIndex = this._direction; // Down=0, Left=1, Up=2, Right=3
+    const frame = dirFrames[dirIndex];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+    }
   }
 }
