@@ -84,6 +84,24 @@ describe('SaveManager', () => {
     expect(mgr.getSlot(0)?.deaths).toBe(2);
   });
 
+  it('switchToSecondQuest sets quest to 2 for registered slots', () => {
+    const store = fakeStorage();
+    const mgr = new SaveManager(store);
+    mgr.register(0, 'LINK');
+    expect(mgr.getSlot(0)?.quest).toBe(1);
+    mgr.switchToSecondQuest(0);
+    expect(mgr.getSlot(0)?.quest).toBe(2);
+    // Persisted
+    const reload = new SaveManager(store);
+    expect(reload.getSlot(0)?.quest).toBe(2);
+  });
+
+  it('switchToSecondQuest is a no-op for unregistered slots', () => {
+    const mgr = new SaveManager(fakeStorage());
+    mgr.switchToSecondQuest(0);
+    expect(mgr.getSlot(0)?.quest).toBe(1);
+  });
+
   it('ignores out-of-range slot indices', () => {
     const mgr = new SaveManager(fakeStorage());
     expect(mgr.getSlot(-1)).toBeNull();

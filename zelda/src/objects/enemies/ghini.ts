@@ -10,6 +10,7 @@ import {
 } from '../../core/constants.js';
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawOverworldEnemySprite, GHINI_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 export class Ghini extends Enemy {
@@ -62,23 +63,8 @@ export class Ghini extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#cccccc';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    // Ghost face
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(this._x + 3, this._y + 4, 3, 3);
-    ctx.fillRect(this._x + 10, this._y + 4, 3, 3);
-    ctx.fillRect(this._x + 5, this._y + 10, 6, 2);
-    // Wavy bottom
-    ctx.fillStyle = '#aaaaaa';
-    if (this._walkAnimFrame === 0) {
-      ctx.fillRect(this._x, this._y + 14, 4, 2);
-      ctx.fillRect(this._x + 8, this._y + 14, 4, 2);
-    } else {
-      ctx.fillRect(this._x + 4, this._y + 14, 4, 2);
-      ctx.fillRect(this._x + 12, this._y + 14, 4, 2);
-    }
+    const frame = GHINI_SPRITES[this._walkAnimFrame] ?? GHINI_SPRITES[0];
+    if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
   }
 }
 
@@ -128,15 +114,11 @@ export class FlyingGhini extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
     const alpha = 0.6 + (this.distanceTraveled & 1) * 0.2;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = '#cccccc';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(this._x + 3, this._y + 4, 3, 3);
-    ctx.fillRect(this._x + 10, this._y + 4, 3, 3);
-    ctx.restore();
+    renderer.ctx.save();
+    renderer.ctx.globalAlpha = alpha;
+    const frame = GHINI_SPRITES[0];
+    if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
+    renderer.ctx.restore();
   }
 }

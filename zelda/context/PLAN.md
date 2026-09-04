@@ -138,8 +138,8 @@ Sliced by environment so each is playtestable as you go.
 
 | ID | Slice | Verify |
 |---|---|---|
-| J1 ⬜ | Title screen (with demo playback or static), file select (3 slots), name entry (register), elimination mode | create file; start game; delete file |
-| J2 ⬜ | Game over screen (continue/save/retry), ending sequence + credits scroll | game over → continue works; ending plays after Ganon |
+| J1 ✅ | Title screen (with demo playback or static), file select (3 slots), name entry (register), elimination mode | create file; start game; delete file |
+| J2 ✅ | Game over screen (continue/save/retry), ending sequence + credits scroll | game over → continue works; ending plays after Ganon |
 
 ## Phase K — Audio (2 slices)
 
@@ -185,3 +185,5 @@ build working on a phone, not deploying anywhere.
   the tracker, and note it in `DECISIONS.md` if the shape of the plan changed.
 - **Second Quest (L2) is data, not code.** If the engine is data-driven (decision
   #4), Second Quest is just loading alternate JSON files.
+- **L0 before K1/K2** (user, 2026-09-02). Sprite polish before audio — visuals
+  first so every entity renders with real sprites, then layer on sound.

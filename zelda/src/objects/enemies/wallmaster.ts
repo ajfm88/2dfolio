@@ -15,6 +15,7 @@ import {
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySprite, WALLMASTER_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 
 export const WALLMASTER = 0x27;
@@ -89,18 +90,9 @@ export class Wallmaster extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x, y = this._y;
-    // A clawed hand.
-    ctx.fillStyle = '#48b0c8';
-    ctx.fillRect(x + 3, y + 6, 10, 8); // palm
-    ctx.fillRect(x + 2, y + 10, 12, 4); // wrist
-    ctx.fillStyle = '#48b0c8';
-    // fingers
-    for (let i = 0; i < 4; i++) {
-      const fx = x + 3 + i * 3;
-      const wiggle = (this._walkAnimFrame + i) & 1;
-      ctx.fillRect(fx, y + 2 + wiggle, 2, 5);
+    const frame = WALLMASTER_SPRITES[this._walkAnimFrame] ?? WALLMASTER_SPRITES[0];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
     }
   }
 }

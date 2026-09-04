@@ -3,6 +3,7 @@
 // Only vulnerable in Delay state (state 5)
 // Type 26 ($1A)
 
+import { drawOverworldEnemySprite, PEAHAT_SPRITES } from '../../render/enemy-sprite-data.js';
 import {
   SCREEN_EDGE_BOTTOM,
   SCREEN_EDGE_LEFT,
@@ -147,26 +148,8 @@ export class Peahat extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-
-    // Peahat — propeller plant creature
-    const frame = this.distanceTraveled & 1;
-    ctx.fillStyle = '#00a800';
-    ctx.fillRect(this._x + 2, this._y + 4, 12, 10);
-
-    // Propeller blades — alternate between two frames
-    ctx.fillStyle = '#d88000';
-    if (this.flyingState !== FlyingState.Delay) {
-      if (frame === 0) {
-        ctx.fillRect(this._x, this._y, 16, 4);
-      } else {
-        ctx.fillRect(this._x + 4, this._y, 8, 4);
-        ctx.fillRect(this._x, this._y + 2, 4, 2);
-        ctx.fillRect(this._x + 12, this._y + 2, 4, 2);
-      }
-    } else {
-      // Stopped — blades out
-      ctx.fillRect(this._x, this._y, 16, 3);
-    }
+    const frameIndex = (this.distanceTraveled & 1);
+    const frame = PEAHAT_SPRITES[frameIndex] ?? PEAHAT_SPRITES[0];
+    if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
   }
 }

@@ -8,6 +8,7 @@
 
 import type { Renderer } from '../../render/renderer.js';
 import { getOppositeDirection } from '../../core/collision-utils.js';
+import { drawDungeonEnemySpriteScaled, BUBBLE_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 const QSPEED = 0x40;
@@ -41,17 +42,12 @@ export class Bubble extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    let color: string;
+    let sprite;
     switch (this._objectType) {
-      case BUBBLE_BLUE: color = '#5878f0'; break;
-      case BUBBLE_RED: color = '#d82800'; break;
-      default: // flashing
-        color = (this._walkAnimFrame & 1) === 0 ? '#ffffff' : '#f8b8f8';
+      case BUBBLE_BLUE: sprite = BUBBLE_SPRITES.blue; break;
+      case BUBBLE_RED: sprite = BUBBLE_SPRITES.red; break;
+      default: sprite = BUBBLE_SPRITES.flash;
     }
-    ctx.fillStyle = color;
-    ctx.fillRect(this._x + 3, this._y + 3, 10, 10);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(this._x + 5, this._y + 5, 3, 3);
+    drawDungeonEnemySpriteScaled(renderer, sprite, this._x + 4, this._y, 8, 16);
   }
 }

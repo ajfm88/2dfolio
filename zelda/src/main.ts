@@ -19,11 +19,12 @@ import { GameMode } from './core/game-mode.js';
 import { Action, InputManager } from './core/input.js';
 import { Direction } from './core/types.js';
 import { DeathAnimation } from './death/death-animation.js';
-import { GameOverScreen } from './death/game-over-screen.js';
+import { GameOverScreen, GameOverOption } from './death/game-over-screen.js';
 import { computeRespawnParams } from './death/respawn.js';
 import { Renderer } from './render/renderer.js';
 import { SpriteSheet } from './render/sprite-renderer.js';
 import { TileRenderer } from './render/tile-renderer.js';
+import { initDungeonEnemySprites, initOverworldEnemySprites, initDeathSprites, initSpawnSprites } from './render/enemy-sprite-data.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData } from './data/overworld-types.js';
 import type { SecretsData } from './data/secret-types.js';
@@ -78,6 +79,7 @@ import { TitleScreen } from './ui/title-screen.js';
 import { FileSelectScreen } from './ui/file-select-screen.js';
 import { NameRegistrationScreen } from './ui/name-registration.js';
 import { EliminationScreen } from './ui/elimination.js';
+import { EndingScreen } from './ui/ending-screen.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -113,6 +115,7 @@ const fileSelectScreen = new FileSelectScreen();
 const registerScreen = new NameRegistrationScreen();
 const eliminationScreen = new EliminationScreen();
 let activeSaveSlot = 0;
+let endingScreen: EndingScreen | null = null;
 let overworldDataModule: OverworldData | null = null;
 
 // Cave system
@@ -261,6 +264,10 @@ async function init(): Promise<void> {
     });
     processedItems = processItemsImage(assets.sprites.items);
     processedNpcs = applyTransparencyKey(assets.sprites.npcs);
+    initDungeonEnemySprites(assets.sprites.dungeonEnemies);
+    initOverworldEnemySprites(assets.sprites.overworldEnemiesAlt);
+    initDeathSprites(assets.sprites.enemyDies);
+    initSpawnSprites(assets.sprites.enemySpawn);
     linkSheetBlue = new SpriteSheet({
       image: createTintedLinkImage(assets.sprites.link, RING_TINT_BLUE),
       columns: LINK_SHEET_COLUMNS,
@@ -359,6 +366,7 @@ void init();
   goToFileSelect() { fileSelectScreen.reset(); gameMode = GameMode.FileSelect; },
   goToRegister() { registerScreen.reset(saveManager.getSlots()); gameMode = GameMode.Register; },
   goToElimination() { eliminationScreen.reset(); gameMode = GameMode.Elimination; },
+  goToEnding() { endingScreen = null; gameMode = GameMode.ZeldaRescue; },
   // Skip the front end and start a game on the given slot (default 0).
   startGame(slot = 0) {
     startGameFromSlot(slot);
@@ -2082,15 +2090,36 @@ const loop = new GameLoop({
         if (gameOverScreen) {
           gameOverScreen.update(input);
           if (gameOverScreen.done) {
+            const choice = gameOverScreen.selectedOption;
             gameOverScreen = null;
-            handleRespawn();
+            if (choice === GameOverOption.Save) {
+              // NES SAVE: persist + return to title (Z_02.asm UpdateModeDSave)
+              titleScreen.reset();
+              fileSelectScreen.reset();
+              gameMode = GameMode.Title;
+            } else {
+              handleRespawn();
+            }
           }
         }
         break;
 
-      case GameMode.ZeldaRescue:
-        // Ending stub — freeze here. Full credits in J2.
+      case GameMode.ZeldaRescue: {
+        if (!endingScreen) {
+          const slot = saveManager.getSlot(activeSaveSlot);
+          const name = slot?.name ?? 'LINK';
+          const deaths = slot?.deaths ?? 0;
+          endingScreen = new EndingScreen(name, deaths);
+        }
+        endingScreen.update(input.isJustPressed(Action.Start));
+        if (endingScreen.isDone) {
+          saveManager.switchToSecondQuest(activeSaveSlot);
+          endingScreen = null;
+          titleScreen.reset();
+          gameMode = GameMode.Title;
+        }
         break;
+      }
     }
   },
 
@@ -2101,7 +2130,8 @@ const loop = new GameLoop({
     // Front-end screens draw full-screen (no HUD, outside the play-area clip). While
     // assets are still loading these fall through to the loading UI below.
     const isFrontEnd = gameMode === GameMode.Title || gameMode === GameMode.FileSelect
-      || gameMode === GameMode.Register || gameMode === GameMode.Elimination;
+      || gameMode === GameMode.Register || gameMode === GameMode.Elimination
+      || gameMode === GameMode.ZeldaRescue;
     if (isFrontEnd && assets && font) {
       const rf = redFont ?? font;
       if (gameMode === GameMode.Title) {
@@ -2110,6 +2140,8 @@ const loop = new GameLoop({
         fileSelectScreen.render(renderer, font, rf, saveManager.getSlots());
       } else if (gameMode === GameMode.Register) {
         registerScreen.render(renderer, font, rf);
+      } else if (gameMode === GameMode.ZeldaRescue && endingScreen) {
+        endingScreen.render(renderer, font);
       } else {
         eliminationScreen.render(renderer, font, rf, saveManager.getSlots());
       }
@@ -2207,12 +2239,6 @@ const loop = new GameLoop({
       deathAnimation.render(renderer, linkSheet, tileRenderer, overworld!.currentScreen, font);
     } else if (gameMode === GameMode.GameOver && gameOverScreen && font) {
       gameOverScreen.render(renderer, font);
-    } else if (gameMode === GameMode.ZeldaRescue && font) {
-      // Ending stub: black screen with congratulations text
-      renderer.fillRect(0, 0, 256, 176, '#000');
-      font.drawString(renderer, 56, 48, 'THANKS LINK,');
-      font.drawString(renderer, 96, 72, "YOU'RE");
-      font.drawString(renderer, 32, 96, 'THE HERO OF HYRULE.');
     } else if (gameMode === GameMode.CaveInterior && caveRoom && link) {
       const caveLinkSheet = getActiveLinkSheet();
       if (caveLinkSheet) caveRoom.render(renderer, link, caveLinkSheet);

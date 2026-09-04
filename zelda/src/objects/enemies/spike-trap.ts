@@ -4,6 +4,7 @@
 
 import type { Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawDungeonEnemySprite, SPIKE_TRAP_SPRITES } from '../../render/enemy-sprite-data.js';
 
 const TRAP_XS = [0x20, 0x20, 0xD0, 0xD0, 0x40, 0xB0];
 const TRAP_YS = [0x5D, 0xBD, 0x5D, 0xBD, 0x8D, 0x8D];
@@ -167,10 +168,10 @@ export class SpikeTrap {
   }
 
   render(renderer: Renderer): void {
-    renderer.fillRect(this._x, this._y, HITBOX_SIZE, HITBOX_SIZE, '#808080');
-    // Inner dark cross pattern
-    renderer.fillRect(this._x + 4, this._y + 2, 8, 12, '#404040');
-    renderer.fillRect(this._x + 2, this._y + 4, 12, 8, '#404040');
+    const frame = SPIKE_TRAP_SPRITES[0];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+    }
   }
 
   static createTraps(objectType: number): SpikeTrap[] {
