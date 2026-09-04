@@ -7,6 +7,7 @@
 
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySprite, LIKE_LIKE_SPRITES } from '../../render/enemy-sprite-data.js';
 import { type EnemyUpdateContext } from './enemy.js';
 import { WalkerEnemy } from './walker-enemy.js';
 
@@ -72,18 +73,9 @@ export class LikeLike extends WalkerEnemy {
   }
 
   protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x, y = this._y;
-    ctx.fillStyle = '#c86818'; // brown tube body
-    ctx.fillRect(x + 1, y, 14, 16);
-    // Mouth ring — opens/closes; wide open while chewing a captured Link.
-    const open = this._capturing ? 2 + (this._animPhase & 1) * 2 : 4;
-    ctx.fillStyle = '#3a1e08';
-    ctx.fillRect(x + 4, y + 8 - open, 8, open * 2);
-    if (this._capturing) {
-      // Hint of the captured Link inside.
-      ctx.fillStyle = 'rgba(120,180,80,0.6)';
-      ctx.fillRect(x + 6, y + 6, 4, 6);
+    const frame = LIKE_LIKE_SPRITES[this._walkAnimFrame] ?? LIKE_LIKE_SPRITES[0];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
     }
   }
 }

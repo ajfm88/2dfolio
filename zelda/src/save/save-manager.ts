@@ -142,4 +142,12 @@ export class SaveManager {
     slot.deaths++;
     this.persist();
   }
+
+  /** Mark a slot as Second Quest (NES SwitchProfileToSecondQuest). */
+  switchToSecondQuest(index: number): void {
+    const slot = this.slots[index];
+    if (!slot || !slot.registered) return;
+    slot.quest = 2;
+    this.persist();
+  }
 }

@@ -3,6 +3,7 @@
 // Type 30 ($1E). No spawn cloud (Z_07.asm:5283).
 
 import type { Renderer } from '../../render/renderer.js';
+import { drawOverworldEnemySprite, ARMOS_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 enum ArmosPhase {
@@ -60,27 +61,10 @@ export class Armos extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    // Stone statue appearance
-    ctx.fillStyle = this.phase === ArmosPhase.Dormant ? '#888888' : '#aa8844';
-    ctx.fillRect(this._x, this._y, 16, 16);
-
-    if (this.phase === ArmosPhase.Active) {
-      // Animated face
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(this._x + 3, this._y + 4, 3, 3);
-      ctx.fillRect(this._x + 10, this._y + 4, 3, 3);
-      // Animation wobble
-      if (this._walkAnimFrame === 1) {
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.fillRect(this._x, this._y, 16, 16);
-      }
-    } else {
-      // Dormant — stone pattern
-      ctx.fillStyle = '#666666';
-      ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-      ctx.fillStyle = '#888888';
-      ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
+    const frame = ARMOS_SPRITES[0];
+    if (frame) {
+      drawOverworldEnemySprite(renderer, frame, this._x, this._y);
+      return;
     }
   }
 }

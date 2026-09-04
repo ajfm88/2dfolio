@@ -2,6 +2,7 @@
 // Water burrower: surfaces at water tiles, shoots fireball (type $55)
 
 import type { Renderer } from '../../render/renderer.js';
+import { drawOverworldEnemySprite, ZORA_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -85,29 +86,15 @@ export class Zora extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-
     if (this.zoraState === ZoraState.Underground) return;
 
     if (this.zoraState === ZoraState.Emerging || this.zoraState === ZoraState.Submerging) {
-      const progress = this.zoraState === ZoraState.Emerging
-        ? 1 - (this.phaseTimer / EMERGE_TIMER)
-        : this.phaseTimer / SUBMERGE_TIMER;
-      const height = Math.max(4, Math.floor(16 * progress));
-      ctx.fillStyle = '#0058f0';
-      ctx.fillRect(this._x + 2, this._y + (16 - height), 12, height);
+      const frame = ZORA_SPRITES[1] ?? ZORA_SPRITES[0];
+      if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
       return;
     }
 
-    // Surface
-    ctx.fillStyle = '#0058f0';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    // Eyes
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(this._x + 3, this._y + 4, 4, 4);
-    ctx.fillRect(this._x + 9, this._y + 4, 4, 4);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(this._x + 5, this._y + 5, 2, 2);
-    ctx.fillRect(this._x + 11, this._y + 5, 2, 2);
+    const frame = ZORA_SPRITES[0];
+    if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
   }
 }

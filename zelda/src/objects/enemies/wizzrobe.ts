@@ -18,6 +18,7 @@ import {
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySprite, WIZZROBE_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -130,17 +131,16 @@ export class BlueWizzrobe extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    // Translucent while teleporting (drawn every other frame on NES).
+    const frame = WIZZROBE_SPRITES.blue[this._walkAnimFrame] ?? WIZZROBE_SPRITES.blue[0]!;
     if (this._teleportRemaining > 0) {
       if ((this._teleportRemaining & 1) === 1) return;
-      ctx.save();
-      ctx.globalAlpha = 0.5;
-      drawWizzrobeBody(ctx, this._x, this._y, '#3858f0');
-      ctx.restore();
+      renderer.ctx.save();
+      renderer.ctx.globalAlpha = 0.5;
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+      renderer.ctx.restore();
       return;
     }
-    drawWizzrobeBody(ctx, this._x, this._y, '#3858f0');
+    drawDungeonEnemySprite(renderer, frame, this._x, this._y);
   }
 }
 
@@ -231,28 +231,16 @@ export class RedWizzrobe extends Enemy {
 
   protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
     const phase = this.phase;
-    if (phase === 0) return; // hidden
-    const ctx = renderer.ctx;
+    if (phase === 0) return;
+    const frame = WIZZROBE_SPRITES.red[this._walkAnimFrame] ?? WIZZROBE_SPRITES.red[0]!;
     if (phase === 2) {
-      drawWizzrobeBody(ctx, this._x, this._y, '#d82800');
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
       return;
     }
-    // Appearing / fading: translucent, every other frame.
     if ((this._animCounter & 1) === 1) return;
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    drawWizzrobeBody(ctx, this._x, this._y, '#d82800');
-    ctx.restore();
+    renderer.ctx.save();
+    renderer.ctx.globalAlpha = 0.5;
+    drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+    renderer.ctx.restore();
   }
-}
-
-function drawWizzrobeBody(
-  ctx: CanvasRenderingContext2D, x: number, y: number, color: string,
-): void {
-  ctx.fillStyle = color;
-  ctx.fillRect(x + 2, y, 12, 16); // robed body
-  ctx.fillStyle = '#f0c8a0';
-  ctx.fillRect(x + 5, y + 3, 6, 4); // face
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y + 2, 16, 3); // hat brim
 }
