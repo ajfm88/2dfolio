@@ -4,6 +4,9 @@
 // resumes wandering. Type $28, 1 wooden-sword hit.
 
 import { Direction } from '../../core/types.js';
+import type { Renderer } from '../../render/renderer.js';
+import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySprite, ROPE_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 const WANDER_QSPEED = 0x20;
@@ -50,5 +53,15 @@ export class Rope extends Enemy {
     }
 
     this.tickWalkAnimation(this._rushing ? 4 : 10);
+  }
+
+  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
+    // Rope faces Left or Right primarily; map all 4 dirs to 2 facing sprites
+    const facingLeft = this._direction === Direction.Left || this._direction === Direction.Up;
+    const baseIndex = facingLeft ? 0 : 2;
+    const frame = ROPE_SPRITES.frames[baseIndex + this._walkAnimFrame] ?? ROPE_SPRITES.frames[baseIndex];
+    if (frame) {
+      drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+    }
   }
 }

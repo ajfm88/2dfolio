@@ -18,6 +18,7 @@ import { Direction, type Rect } from '../../core/types.js';
 import { getOppositeDirection } from '../../core/collision-utils.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDungeonEnemySpriteScaled, LANMOLA_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 
 export const LANMOLA_RED = 0x3a;
@@ -108,18 +109,12 @@ export class Lanmola extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    // Draw body segments back-to-front so the head sits on top.
+    const bodyFrame = LANMOLA_SPRITES.body[this._walkAnimFrame] ?? LANMOLA_SPRITES.body[0]!;
     for (let i = SEGMENTS - 1; i >= 1; i--) {
       const p = this._trail[i * SPACING] ?? this._trail[this._trail.length - 1]!;
-      ctx.fillStyle = '#c07038';
-      ctx.fillRect(p.x + 4, p.y + 4, 8, 8);
+      drawDungeonEnemySpriteScaled(renderer, bodyFrame, p.x + 4, p.y + 2, 8, 12);
     }
-    // Head.
-    ctx.fillStyle = '#f0a048';
-    ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(this._x + 5, this._y + 6, 2, 2);
-    ctx.fillRect(this._x + 9, this._y + 6, 2, 2);
+    const headFrame = LANMOLA_SPRITES.head[this._walkAnimFrame] ?? LANMOLA_SPRITES.head[0]!;
+    drawDungeonEnemySpriteScaled(renderer, headFrame, this._x + 2, this._y, 12, 16);
   }
 }

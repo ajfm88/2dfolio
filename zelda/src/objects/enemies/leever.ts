@@ -4,6 +4,7 @@
 // Red (type 16): spawns near Link, max 2 at a time
 
 import type { Renderer } from '../../render/renderer.js';
+import { drawOverworldEnemySprite, LEEVER_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 enum BurrowerState {
@@ -117,30 +118,19 @@ export class Leever extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-
     if (this.burrowerState === BurrowerState.Underground) return;
 
-    const color = this.isBlue ? '#0058f0' : '#d82800';
+    const variant = this.isBlue ? LEEVER_SPRITES.blue : LEEVER_SPRITES.red;
 
-    if (this.burrowerState === BurrowerState.Emerging || this.burrowerState === BurrowerState.Submerging) {
-      // Partial visibility
-      const progress = this.burrowerState === BurrowerState.Emerging
-        ? 1 - (this.phaseTimer / EMERGE_TIMER)
-        : this.phaseTimer / SUBMERGE_TIMER;
-      const height = Math.max(4, Math.floor(16 * progress));
-      ctx.fillStyle = color;
-      ctx.fillRect(this._x + 2, this._y + (16 - height), 12, height);
+    if (this.burrowerState === BurrowerState.Emerging) {
+      drawOverworldEnemySprite(renderer, variant.emerging, this._x, this._y);
       return;
     }
-
-    // Surface — full sprite placeholder
-    ctx.fillStyle = color;
-    ctx.fillRect(this._x, this._y, 16, 16);
-    // Worm-like body marks
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillRect(this._x + 3, this._y + 4, 10, 2);
-    ctx.fillRect(this._x + 3, this._y + 8, 10, 2);
-    ctx.fillRect(this._x + 3, this._y + 12, 10, 2);
+    if (this.burrowerState === BurrowerState.Submerging) {
+      drawOverworldEnemySprite(renderer, variant.submerging, this._x, this._y);
+      return;
+    }
+    const frame = variant.surface[this._walkAnimFrame] ?? variant.surface[0];
+    if (frame) drawOverworldEnemySprite(renderer, frame, this._x, this._y);
   }
 }

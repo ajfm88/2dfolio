@@ -14,6 +14,7 @@ import {
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawDeathFrame, drawSpawnFrame } from '../../render/enemy-sprite-data.js';
 import type { TileCollisionMap } from '../../world/collision.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
 import type { EnemyProjectile } from '../projectiles/enemy-projectile.js';
@@ -277,23 +278,16 @@ export class Enemy {
     const ctx = renderer.ctx;
 
     if (this._state === EnemyState.Spawning) {
-      const alpha = 1 - (this._spawnTimer / 7);
-      ctx.save();
-      ctx.globalAlpha = Math.max(0.3, alpha);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-      ctx.fillStyle = '#aaaaff';
-      ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
-      ctx.restore();
+      // 4-frame spawn cloud from enemy-spawn.png (frames play in reverse: 3→0)
+      const frameIndex = Math.min(3, Math.floor(this._spawnTimer / 2));
+      drawSpawnFrame(renderer, frameIndex, this._x, this._y);
       return;
     }
 
     if (this._state === EnemyState.Dying) {
-      const flash = this._deathTimer & 0x02;
-      ctx.fillStyle = flash ? '#ff0000' : '#ffff00';
-      ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-      ctx.fillStyle = flash ? '#ffff00' : '#ffffff';
-      ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
+      // 6-frame death poof from enemy-dies.png
+      const frameIndex = Math.min(5, 5 - Math.floor(this._deathTimer / 2));
+      drawDeathFrame(renderer, frameIndex, this._x, this._y);
       return;
     }
 

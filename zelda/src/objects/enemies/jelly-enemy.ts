@@ -4,6 +4,7 @@
 
 import { type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawDungeonEnemySprite, drawDungeonEnemySpriteScaled, ZOL_SPRITES, GEL_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 export class JellyEnemy extends Enemy {
@@ -51,12 +52,22 @@ export class JellyEnemy extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = this._objectType === 0x13 ? '#c07830' : '#48b8b8';
-    const wobble = this._walkAnimFrame === 0 ? 0 : 1;
-    ctx.fillRect(this._x + 3, this._y + 3 + wobble, 10, 10 - wobble);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(this._x + 5, this._y + 6, 2, 2);
-    ctx.fillRect(this._x + 9, this._y + 6, 2, 2);
+    const isZol = this._objectType === 0x13;
+    const isBlue = !isZol && this._objectType === 0x15;
+    if (isZol) {
+      const variant = isBlue ? ZOL_SPRITES.blue : ZOL_SPRITES.green;
+      const frame = variant[this._walkAnimFrame] ?? variant[0];
+      if (frame) {
+        drawDungeonEnemySprite(renderer, frame, this._x, this._y);
+        return;
+      }
+    }
+    // Gel ($14 green, $15 blue) — 8px wide sprites, draw scaled to 16×16
+    const gelVariant = isBlue ? GEL_SPRITES.blue : GEL_SPRITES.green;
+    const gelFrame = gelVariant[this._walkAnimFrame] ?? gelVariant[0];
+    if (gelFrame) {
+      drawDungeonEnemySpriteScaled(renderer, gelFrame, this._x + 4, this._y, 8, 16);
+      return;
+    }
   }
 }
