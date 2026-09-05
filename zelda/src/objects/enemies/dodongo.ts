@@ -18,7 +18,7 @@ import {
 import { Direction, type Rect } from '../../core/types.js';
 import { rectsOverlap } from '../../core/collision-utils.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, DODONGO_SPRITES, type SpriteRect } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext, type BombLike } from './enemy.js';
 import { BombState } from '../weapons/bomb.js';
 
@@ -55,7 +55,6 @@ export class Dodongo extends Enemy {
   private _bombHits = 0;
   private _stateTimer = 0;
   private readonly _subpixel = { value: 0 };
-  private _mouthOpen = false;
 
   constructor(x: number, y: number, objectType: number, hp: number, spawnCloudFrames: number) {
     super(x, y, objectType, hp, spawnCloudFrames);
@@ -130,7 +129,6 @@ export class Dodongo extends Enemy {
 
   private enterMove(): void {
     this._dstate = DState.Move;
-    this._mouthOpen = false;
     this._invincibilityMask = MASK_ALL;
   }
 
@@ -144,7 +142,6 @@ export class Dodongo extends Enemy {
     this._dstate = DState.Bloated;
     this._bombHits++;
     this._stateTimer = BLOATED_FRAMES;
-    this._mouthOpen = true;
     this._invincibilityMask = MASK_ALL;
   }
 
@@ -209,37 +206,19 @@ export class Dodongo extends Enemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x;
-    const y = this._y;
-    const facingRight = this._direction === Direction.Right;
-
-    // Body — armored green; puffs lighter when bloated, tinted yellow when stunned.
-    let body = '#78a800';
-    if (this._dstate === DState.Bloated) body = '#a8d020';
-    ctx.fillStyle = body;
-    ctx.fillRect(x, y + 2, BODY_W, BODY_H - 2);
-
-    // Armor plates.
-    ctx.fillStyle = '#3c6800';
-    for (let i = 0; i < 4; i++) ctx.fillRect(x + 2 + i * 8, y + 4, 5, BODY_H - 6);
-
-    // Head/mouth on the facing end.
-    const headX = facingRight ? x + BODY_W - 8 : x;
-    ctx.fillStyle = '#c0f040';
-    ctx.fillRect(headX, y, 8, BODY_H);
-    if (this._mouthOpen) {
-      ctx.fillStyle = '#d82800';
-      ctx.fillRect(facingRight ? headX + 2 : headX - 2, y + 5, 6, 6);
+  protected override renderEnemy(renderer: Renderer): void {
+    const frameIdx = this._walkAnimFrame & 1;
+    let frames: readonly SpriteRect[];
+    if (this._direction === Direction.Right) {
+      frames = DODONGO_SPRITES.right;
     } else {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(facingRight ? headX + 3 : headX + 1, y + 7, 5, 2);
+      frames = DODONGO_SPRITES.left;
     }
-
+    const frame = frames[frameIdx] ?? frames[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
     if (this._dstate === DState.Stunned) {
-      ctx.fillStyle = 'rgba(255,255,0,0.35)';
-      ctx.fillRect(x, y, BODY_W, BODY_H);
+      renderer.ctx.fillStyle = 'rgba(255,255,0,0.35)';
+      renderer.ctx.fillRect(this._x, this._y, BODY_W, BODY_H);
     }
   }
 }

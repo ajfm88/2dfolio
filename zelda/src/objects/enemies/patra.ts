@@ -12,6 +12,7 @@ import {
 } from '../../core/constants.js';
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawBossSprite, PATRA_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 
 // --- NES data from sprites.json / Z_04.asm ---
@@ -216,13 +217,7 @@ export class PatraCenter extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#a04000';
-    ctx.fillRect(this._x + 1, this._y + 1, 14, 14);
-    ctx.fillStyle = '#f87858';
-    ctx.fillRect(this._x + 3, this._y + 3, 10, 10);
-    ctx.fillStyle = '#f8d870';
-    ctx.fillRect(this._x + 6, this._y + 6, 4, 4);
+    drawBossSprite(renderer, PATRA_SPRITES.center, this._x, this._y);
   }
 }
 
@@ -392,11 +387,9 @@ export class PatraChild extends Enemy {
 
   protected override renderEnemy(renderer: Renderer): void {
     if (this._orbitState === 0) return;
-    const ctx = renderer.ctx;
-    ctx.fillStyle = this._isType25 ? '#f83800' : '#e45c10';
-    ctx.fillRect(this._x + 3, this._y + 3, 10, 10);
-    ctx.fillStyle = '#f8b800';
-    ctx.fillRect(this._x + 5, this._y + 5, 6, 6);
+    const frameIdx = this._angleWhole & 1;
+    const frame = PATRA_SPRITES.child[frameIdx] ?? PATRA_SPRITES.child[0];
+    if (frame) drawBossSprite(renderer, frame, this._x + 4, this._y);
   }
 }
 

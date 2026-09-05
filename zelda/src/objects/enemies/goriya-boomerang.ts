@@ -5,6 +5,7 @@
 
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawProjectileFrameFlipped, BOOMERANG_BASE } from '../../render/projectile-sprite-data.js';
 import { EnemyProjectile, ProjectileState } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
 
@@ -90,14 +91,11 @@ export class GoriyaBoomerang extends EnemyProjectile {
       super.render(renderer);
       return;
     }
-    // Spinning boomerang — alternate a horizontal/vertical bar for a "rotation" feel.
-    const color = '#f0d078';
-    if ((this._animFrame & 1) === 0) {
-      renderer.fillRect(this._x, this._y + 2, 8, 4, color);
-      renderer.fillRect(this._x + 2, this._y, 4, 8, color);
-    } else {
-      renderer.fillRect(this._x + 1, this._y + 1, 6, 6, color);
-    }
+    const FRAME_CYCLE = [0, 1, 2, 1];
+    const frameIdx = FRAME_CYCLE[this._animFrame & 0x03]!;
+    const flipH = (this._animFrame & 0x02) !== 0;
+    const flipV = (this._animFrame & 0x01) !== 0;
+    drawProjectileFrameFlipped(renderer, BOOMERANG_BASE + frameIdx, this._x, this._y, flipH, flipV);
   }
 }
 

@@ -12,6 +12,8 @@
 
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../core/constants.js';
 import type { Renderer } from '../render/renderer.js';
+import { drawLinkEndingSpriteUp, drawNpcSprite, ZELDA_NPC_SPRITES } from '../render/boss-sprite-data.js';
+import { drawItemSprite, getProcessedItemsCanvas } from '../data/item-sprites.js';
 import type { BitmapFont } from './bitmap-font.js';
 
 export enum EndingPhase {
@@ -208,11 +210,11 @@ export class EndingScreen {
     }
     renderer.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);
 
-    // Link + Zelda + Triforces (placeholder colored shapes)
-    this.drawLinkPlaceholder(renderer, LINK_DISPLAY_X, LINK_DISPLAY_Y);
-    this.drawZeldaPlaceholder(renderer, ZELDA_DISPLAY_X, ZELDA_DISPLAY_Y);
-    this.drawTriforcePlaceholder(renderer, LINK_DISPLAY_X + 4, LINK_DISPLAY_Y + TRIFORCE_OFFSET_Y);
-    this.drawTriforcePlaceholder(renderer, ZELDA_DISPLAY_X + 4, ZELDA_DISPLAY_Y + TRIFORCE_OFFSET_Y);
+    // Link + Zelda + Triforces
+    this.drawLinkSprite(renderer, LINK_DISPLAY_X, LINK_DISPLAY_Y);
+    this.drawZeldaSprite(renderer, ZELDA_DISPLAY_X, ZELDA_DISPLAY_Y);
+    this.drawTriforce(renderer, LINK_DISPLAY_X + 4, LINK_DISPLAY_Y + TRIFORCE_OFFSET_Y);
+    this.drawTriforce(renderer, ZELDA_DISPLAY_X + 4, ZELDA_DISPLAY_Y + TRIFORCE_OFFSET_Y);
   }
 
   private renderPeaceText(renderer: Renderer, font: BitmapFont): void {
@@ -221,10 +223,10 @@ export class EndingScreen {
     // Show Link + Zelda + Triforces while long timer >= 4
     const longTimerCountdown = PEACE_LONG_TIMER - this.peaceLongTimer;
     if (longTimerCountdown >= 4) {
-      this.drawLinkPlaceholder(renderer, LINK_DISPLAY_X, LINK_DISPLAY_Y);
-      this.drawZeldaPlaceholder(renderer, ZELDA_DISPLAY_X, ZELDA_DISPLAY_Y);
-      this.drawTriforcePlaceholder(renderer, LINK_DISPLAY_X + 4, LINK_DISPLAY_Y + TRIFORCE_OFFSET_Y);
-      this.drawTriforcePlaceholder(renderer, ZELDA_DISPLAY_X + 4, ZELDA_DISPLAY_Y + TRIFORCE_OFFSET_Y);
+      this.drawLinkSprite(renderer, LINK_DISPLAY_X, LINK_DISPLAY_Y);
+      this.drawZeldaSprite(renderer, ZELDA_DISPLAY_X, ZELDA_DISPLAY_Y);
+      this.drawTriforce(renderer, LINK_DISPLAY_X + 4, LINK_DISPLAY_Y + TRIFORCE_OFFSET_Y);
+      this.drawTriforce(renderer, ZELDA_DISPLAY_X + 4, ZELDA_DISPLAY_Y + TRIFORCE_OFFSET_Y);
     }
 
     // Typewriter: reveal characters one-at-a-time across the 3 peace lines
@@ -288,7 +290,7 @@ export class EndingScreen {
     ctx.fillRect(ashX + 8, ashY - 8, 16, 4);
 
     // Triforce above ashes
-    this.drawTriforcePlaceholder(renderer, ashX + 12, ashY - 32);
+    this.drawTriforce(renderer, ashX + 12, ashY - 32);
 
     // "PUSH START" hint at bottom
     const hintText = 'PUSH START BUTTON';
@@ -296,33 +298,22 @@ export class EndingScreen {
     font.drawString(renderer, hintX, 152, hintText);
   }
 
-  // Placeholder renderers (real sprites deferred to L0)
-  private drawLinkPlaceholder(renderer: Renderer, x: number, y: number): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#80b838'; // green tunic
-    ctx.fillRect(x + 2, y + 4, 12, 12);
-    ctx.fillStyle = '#f8d8b0'; // skin
-    ctx.fillRect(x + 4, y, 8, 6);
-    ctx.fillStyle = '#804000'; // hair
-    ctx.fillRect(x + 2, y + 1, 3, 5);
+  private drawLinkSprite(renderer: Renderer, x: number, y: number): void {
+    drawLinkEndingSpriteUp(renderer, x, y);
   }
 
-  private drawZeldaPlaceholder(renderer: Renderer, x: number, y: number): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#f868f8'; // pink dress
-    ctx.fillRect(x + 4, y + 2, 8, 14);
-    ctx.fillStyle = '#f8d8b0'; // skin
-    ctx.fillRect(x + 5, y, 6, 5);
-    ctx.fillStyle = '#a03000'; // hair
-    ctx.fillRect(x + 4, y, 2, 6);
-    ctx.fillRect(x + 10, y, 2, 6);
-    ctx.fillStyle = '#f8d870'; // crown
-    ctx.fillRect(x + 6, y - 2, 4, 2);
+  private drawZeldaSprite(renderer: Renderer, x: number, y: number): void {
+    drawNpcSprite(renderer, ZELDA_NPC_SPRITES.rescued, x + 1, y);
   }
 
-  private drawTriforcePlaceholder(renderer: Renderer, x: number, y: number): void {
+  private drawTriforce(renderer: Renderer, x: number, y: number): void {
+    const itemsCanvas = getProcessedItemsCanvas();
+    if (itemsCanvas) {
+      drawItemSprite(renderer.ctx, itemsCanvas, 0x1b, x, y, 8);
+      return;
+    }
     const ctx = renderer.ctx;
-    ctx.fillStyle = '#f8d870'; // gold
+    ctx.fillStyle = '#f8d870';
     ctx.beginPath();
     ctx.moveTo(x, y + 8);
     ctx.lineTo(x + 4, y);

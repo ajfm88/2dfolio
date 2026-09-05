@@ -251,6 +251,7 @@ export class Link {
 
   addBombs(amount: number): void {
     this._bombs = Math.min(this._maxBombs, Math.max(0, this._bombs + amount));
+    if (this._bombs > 0) this.inventory.hasBombs = true;
   }
 
   addHeartContainer(): void {
@@ -498,9 +499,14 @@ export class Link {
       frameIndex = this.walkAnim.currentStep * LINK_SHEET_COLUMNS + col;
     }
 
+    const swordActive = this.sword.isActive();
+    if (swordActive && this._direction === Direction.Up) {
+      this.sword.render(renderer, spriteSheet, this._x + offsetX, this._y + offsetY);
+    }
+
     spriteSheet.drawFrame(renderer, frameIndex, this._x + offsetX, this._y + offsetY);
 
-    if (this.sword.isActive()) {
+    if (swordActive && this._direction !== Direction.Up) {
       this.sword.render(renderer, spriteSheet, this._x + offsetX, this._y + offsetY);
     }
 

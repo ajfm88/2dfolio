@@ -13,7 +13,7 @@ import {
 } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, GLEEOK_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 import { FlyerEnemy } from './flyer-enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
@@ -177,28 +177,17 @@ export class GleeokBody extends Enemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-
-    ctx.fillStyle = '#58a800';
-    ctx.fillRect(this._x, this._y, BODY_W, BODY_H);
-    ctx.fillStyle = '#387000';
-    ctx.fillRect(this._x + 4, this._y + 4, BODY_W - 8, BODY_H - 8);
+  protected override renderEnemy(renderer: Renderer): void {
+    const bodyFrame = GLEEOK_SPRITES.body[this._bodyFrame % 3] ?? GLEEOK_SPRITES.body[0];
+    if (bodyFrame) drawBossSprite(renderer, bodyFrame, this._x + 12, this._y);
 
     for (let i = 0; i < this._headCount; i++) {
       if (this._deadMask & (1 << i)) continue;
       const segments = this._necks[i];
       if (!segments) continue;
-      ctx.fillStyle = '#58a800';
-      for (let s = 0; s < NECK_SEGMENTS - 1; s++) {
-        const a = segments[s]!;
-        const b = segments[s + 1]!;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#58a800';
-        ctx.stroke();
+      for (let s = 0; s < NECK_SEGMENTS; s++) {
+        const seg = segments[s]!;
+        drawBossSprite(renderer, GLEEOK_SPRITES.neckSegment, seg.x - 4, seg.y - 4);
       }
     }
   }
@@ -272,15 +261,10 @@ export class GleeokNeckHead extends Enemy {
     if (this._x > SCREEN_EDGE_RIGHT - 16) { this._x = SCREEN_EDGE_RIGHT - 16; this._hDir = -1; }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#58a800';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    ctx.fillStyle = '#d82800';
-    ctx.fillRect(this._x + 4, this._y + 4, 4, 4);
-    ctx.fillRect(this._x + 10, this._y + 4, 4, 4);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(this._x + 4, this._y + 10, 8, 3);
+  protected override renderEnemy(renderer: Renderer): void {
+    const frameIdx = this._hSteps & 1;
+    const frame = GLEEOK_SPRITES.neckHead[frameIdx] ?? GLEEOK_SPRITES.neckHead[0];
+    if (frame) drawBossSprite(renderer, frame, this._x + 4, this._y);
   }
 }
 
@@ -311,13 +295,8 @@ export class GleeokFlyingHead extends FlyerEnemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#d82800';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    ctx.fillStyle = '#f8a060';
-    ctx.fillRect(this._x + 3, this._y + 3, 4, 4);
-    ctx.fillRect(this._x + 9, this._y + 3, 4, 4);
+  protected override renderEnemy(renderer: Renderer): void {
+    drawBossSprite(renderer, GLEEOK_SPRITES.flyingHead, this._x, this._y);
   }
 }
 

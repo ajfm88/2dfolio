@@ -25,12 +25,14 @@ import { Renderer } from './render/renderer.js';
 import { SpriteSheet } from './render/sprite-renderer.js';
 import { TileRenderer } from './render/tile-renderer.js';
 import { initDungeonEnemySprites, initOverworldEnemySprites, initDeathSprites, initSpawnSprites } from './render/enemy-sprite-data.js';
+import { initBossSprites, initNpcSprites, initLinkEndingSprite } from './render/boss-sprite-data.js';
+import { initProjectileSprites } from './render/projectile-sprite-data.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData } from './data/overworld-types.js';
 import type { SecretsData } from './data/secret-types.js';
 import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer, processHudImage } from './ui/hud.js';
-import { InventoryScreen, getNextOwnedSlot } from './ui/inventory-screen.js';
+import { InventoryScreen, getNextOwnedSlot, getVerticalSlot } from './ui/inventory-screen.js';
 import { InventorySlide } from './ui/inventory-slide.js';
 import { createTintedFontImage } from './ui/tint-utils.js';
 import { OverworldManager } from './world/overworld-manager.js';
@@ -38,7 +40,7 @@ import { CurtainEffect } from './world/curtain-effect.js';
 import { CaveRoom, type CaveContents } from './world/cave-room.js';
 import type { CaveTextData, CaveTextMessage } from './data/cave-text-types.js';
 import type { ItemData, CaveTypeInfo } from './data/item-types.js';
-import { processItemsImage } from './data/item-sprites.js';
+import { processItemsImage, processNESItemStrip } from './data/item-sprites.js';
 import { createTintedLinkImage } from './render/link-tint.js';
 import { Link } from './objects/player/link.js';
 import { ItemPickup } from './objects/pickups/item-pickup.js';
@@ -162,6 +164,7 @@ let inventorySlide: InventorySlide | null = null;
 let inventoryScreen: InventoryScreen | null = null;
 let redFont: BitmapFont | null = null;
 let processedItems: HTMLCanvasElement | null = null;
+let processedNESItems: HTMLCanvasElement | null = null;
 let processedNpcs: HTMLCanvasElement | null = null;
 
 // Cave data
@@ -263,11 +266,16 @@ async function init(): Promise<void> {
       autoDetectTransparency: true,
     });
     processedItems = processItemsImage(assets.sprites.items);
+    processedNESItems = processNESItemStrip(assets.sprites.primaryItems);
     processedNpcs = applyTransparencyKey(assets.sprites.npcs);
     initDungeonEnemySprites(assets.sprites.dungeonEnemies);
     initOverworldEnemySprites(assets.sprites.overworldEnemiesAlt);
     initDeathSprites(assets.sprites.enemyDies);
     initSpawnSprites(assets.sprites.enemySpawn);
+    initBossSprites(assets.sprites.bosses);
+    initNpcSprites(assets.sprites.npcs);
+    initProjectileSprites(assets.sprites.projectiles);
+    initLinkEndingSprite(assets.sprites.link);
     linkSheetBlue = new SpriteSheet({
       image: createTintedLinkImage(assets.sprites.link, RING_TINT_BLUE),
       columns: LINK_SHEET_COLUMNS,
@@ -335,7 +343,7 @@ void init();
     inv.bow = true;
     inv.arrow = 2;
     inv.candle = 2;
-    inv.ring = 0;
+    inv.ring = 2;
     inv.food = true;
     inv.flute = true;
     inv.wand = true;
@@ -346,6 +354,8 @@ void init();
     inv.bracelet = true;
     inv.magicShield = true;
     inv.potion = 2;
+    inv.hasBombs = true;
+    inv.triforce = 0xFF;
     link.addRupees(999);
     link.addBombs(16);
     link.addKeys(9);
@@ -722,6 +732,9 @@ function updateInventory(): void {
     }
     if (input.isJustPressed(Action.Right)) {
       link.inventory.selectedBSlot = getNextOwnedSlot(link.inventory, link.inventory.selectedBSlot, 1);
+    }
+    if (input.isJustPressed(Action.Up) || input.isJustPressed(Action.Down)) {
+      link.inventory.selectedBSlot = getVerticalSlot(link.inventory, link.inventory.selectedBSlot);
     }
     if (input.isJustPressed(Action.Start)) {
       inventorySlide.close();
@@ -2199,7 +2212,7 @@ const loop = new GameLoop({
       // Draw the inventory panel above, sliding in from the top.
       renderer.ctx.save();
       renderer.ctx.translate(0, offset - renderer.playAreaHeight);
-      inventoryScreen.render(renderer, link.inventory, font, redFont, processedItems!, hudRenderer, getHudState());
+      inventoryScreen.render(renderer, link.inventory, font, redFont, processedItems!, hudRenderer, getHudState(), processedNESItems);
       renderer.ctx.restore();
     } else if (gameMode === GameMode.DungeonGameplay && dungeonManager && link) {
       dungeonManager.renderRoom(renderer);
