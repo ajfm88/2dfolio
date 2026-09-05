@@ -14,6 +14,7 @@ export const SPRITE_ASSETS = {
   linkFull: '/assets/sprites/link-full.png',
   linkAlt: '/assets/sprites/link-alt.png',
   items: '/assets/sprites/items.png',
+  primaryItems: '/assets/sprites/primaryItems.png',
   projectiles: '/assets/sprites/projectiles.png',
   cloud: '/assets/sprites/cloud.png',
   swordBeamExp: '/assets/sprites/sword-beam-exp.png',

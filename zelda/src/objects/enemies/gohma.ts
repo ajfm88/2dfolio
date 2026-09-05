@@ -8,7 +8,7 @@
 
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, GOHMA_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -190,43 +190,15 @@ export class Gohma extends Enemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x;
-    const y = this._y;
-
-    // Body (dark crab shape)
-    const isBlue = this._objectType === GOHMA_BLUE;
-    ctx.fillStyle = isBlue ? '#0058f0' : '#d82800';
-    ctx.fillRect(x - 16, y + 2, BODY_W, BODY_H - 2);
-
-    // Legs on each side
-    ctx.fillStyle = isBlue ? '#0040b0' : '#a01800';
-    ctx.fillRect(x - 20, y + 4, 6, 10);
-    ctx.fillRect(x + 20, y + 4, 6, 10);
-
-    // Eye in the center
+  protected override renderEnemy(renderer: Renderer): void {
+    let frame;
     switch (this._eyeState) {
-      case EYE_CLOSED_LEFT:
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x - 2, y + 5, 6, 2);
-        break;
-      case EYE_CLOSED_RIGHT:
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x, y + 5, 6, 2);
-        break;
-      case EYE_FULLY_OPEN:
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x - 2, y + 3, 8, 8);
-        ctx.fillStyle = '#d82800';
-        ctx.fillRect(x, y + 5, 4, 4);
-        break;
-      case EYE_HALF_OPEN:
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x - 1, y + 4, 6, 6);
-        ctx.fillStyle = '#d82800';
-        ctx.fillRect(x + 1, y + 6, 3, 3);
-        break;
+      case EYE_CLOSED_LEFT: frame = GOHMA_SPRITES.eyeClosedLeft; break;
+      case EYE_CLOSED_RIGHT: frame = GOHMA_SPRITES.eyeClosedRight; break;
+      case EYE_FULLY_OPEN: frame = GOHMA_SPRITES.eyeFullyOpen; break;
+      case EYE_HALF_OPEN: frame = GOHMA_SPRITES.eyeHalfOpen; break;
+      default: frame = GOHMA_SPRITES.eyeClosedLeft;
     }
+    drawBossSprite(renderer, frame, this._x - 16, this._y);
   }
 }

@@ -9,7 +9,7 @@
 
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, AQUAMENTUS_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -108,28 +108,10 @@ export class Aquamentus extends Enemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x;
-    const y = this._y;
-
-    // Body (green dragon). Placeholder — CHR→sheet mapping deferred like the
-    // rest of the roster; layout staged in sprites.json bosses.aquamentus.
-    ctx.fillStyle = '#38a800';
-    ctx.fillRect(x, y + 4, BODY_W, BODY_H - 4);
-    // Head/neck on the left (toward Link), slightly lighter.
-    ctx.fillStyle = '#68d820';
-    ctx.fillRect(x - 2, y, 12, 18);
-    // Horn.
-    ctx.fillStyle = '#f8f8f8';
-    ctx.fillRect(x + 2, y - 3, 3, 5);
-    // Mouth: open (red maw) while about to shoot, else a thin closed line.
-    if (this._mouthOpen) {
-      ctx.fillStyle = '#d82800';
-      ctx.fillRect(x - 4, y + 8, 6, 6);
-    } else {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(x - 2, y + 10, 6, 2);
-    }
+  protected override renderEnemy(renderer: Renderer): void {
+    const frames = this._mouthOpen ? AQUAMENTUS_SPRITES.mouthOpen : AQUAMENTUS_SPRITES.mouthClosed;
+    const frameIdx = (this._frame >> 3) & 1;
+    const frame = frames[frameIdx] ?? frames[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
   }
 }

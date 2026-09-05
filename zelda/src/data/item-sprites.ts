@@ -57,7 +57,8 @@ export function drawItemSprite(
   itemId: number,
   x: number,
   y: number,
-  size = 16,
+  w = 16,
+  h?: number,
 ): boolean {
   const pos = getItemSpritePos(itemId);
   if (!pos) return false;
@@ -73,7 +74,104 @@ export function drawItemSprite(
   const sw = cellW - inset * 2;
   const sh = cellH - inset * 2;
 
-  ctx.drawImage(itemsImage, sx, sy, sw, sh, x, y, size, size);
+  ctx.drawImage(itemsImage, sx, sy, sw, sh, x, y, w, h ?? w);
+  return true;
+}
+
+export function getProcessedItemsCanvas(): HTMLCanvasElement | null {
+  return processedItemsCanvas;
+}
+
+// NES-resolution item strip (primaryItems.png): 24×48 cells in a horizontal strip.
+// col2 = second cell for double-wide items (raft, ladder) rendered side by side.
+const NES_STRIP_CELL_W = 24;
+const NES_STRIP_CELL_H = 48;
+
+interface StripEntry { col: number; col2?: number; }
+
+const NES_STRIP_MAP: Record<number, StripEntry> = {
+  0x00: { col: 10 },            // Bomb
+  0x04: { col: 18 },            // Food/Bait (meat)
+  0x05: { col: 20 },            // Flute/Recorder
+  0x06: { col: 15 },            // Blue Candle
+  0x07: { col: 14 },            // Red Candle
+  0x08: { col: 12 },            // Wood Arrow
+  0x09: { col: 13 },            // Silver Arrow
+  0x0a: { col: 11 },            // Bow
+  0x0b: { col: 28 },            // Magic Key (lion head)
+  0x0c: { col: 21, col2: 22 },  // Raft (left + right halves)
+  0x0d: { col: 23, col2: 24 },  // Ladder (left + right halves)
+  0x10: { col: 25 },            // Wand/Magic Rod (blue staff)
+  0x11: { col: 26 },            // Book of Magic (red book)
+  0x12: { col: 17 },            // Blue Ring
+  0x13: { col: 16 },            // Red Ring
+  0x14: { col: 19 },            // Power Bracelet
+  0x15: { col: 6 },             // Letter (red parchment)
+  0x1c: { col: 3 },             // Magic Shield
+  0x1d: { col: 8 },             // Wood Boomerang
+  0x1e: { col: 9 },             // Magic Boomerang
+  0x1f: { col: 5 },             // Blue Potion
+  0x20: { col: 4 },             // Red Potion
+};
+
+let processedNESStrip: HTMLCanvasElement | null = null;
+
+export function processNESItemStrip(image: HTMLImageElement): HTMLCanvasElement {
+  if (processedNESStrip) return processedNESStrip;
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  if (data[3]! < 255) {
+    processedNESStrip = canvas;
+    return canvas;
+  }
+  const keyR = data[0]!, keyG = data[1]!, keyB = data[2]!;
+  const tolerance = 2;
+  for (let i = 0; i < data.length; i += 4) {
+    if (Math.abs(data[i]! - keyR) <= tolerance &&
+        Math.abs(data[i + 1]! - keyG) <= tolerance &&
+        Math.abs(data[i + 2]! - keyB) <= tolerance) {
+      data[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  processedNESStrip = canvas;
+  return canvas;
+}
+
+export function drawNESItemSprite(
+  ctx: CanvasRenderingContext2D,
+  stripImage: HTMLImageElement | HTMLCanvasElement,
+  itemId: number,
+  x: number,
+  y: number,
+  w = 8,
+  h = 16,
+): boolean {
+  const entry = NES_STRIP_MAP[itemId];
+  if (!entry) return false;
+  if (entry.col2 !== undefined) {
+    ctx.drawImage(
+      stripImage,
+      entry.col * NES_STRIP_CELL_W, 0, NES_STRIP_CELL_W, NES_STRIP_CELL_H,
+      x, y, w, h,
+    );
+    ctx.drawImage(
+      stripImage,
+      entry.col2 * NES_STRIP_CELL_W, 0, NES_STRIP_CELL_W, NES_STRIP_CELL_H,
+      x + w, y, w, h,
+    );
+  } else {
+    ctx.drawImage(
+      stripImage,
+      entry.col * NES_STRIP_CELL_W, 0, NES_STRIP_CELL_W, NES_STRIP_CELL_H,
+      x, y, w, h,
+    );
+  }
   return true;
 }
 

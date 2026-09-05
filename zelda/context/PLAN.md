@@ -152,7 +152,7 @@ Sliced by environment so each is playtestable as you go.
 
 | ID | Slice | Verify |
 |---|---|---|
-| L0 ⬜ | Sprite polish: replace all placeholder colored-rectangle renders with actual sprites from sprite sheets (enemies, bosses, fires, NPCs, projectiles). Fix transparency keys on NPC/item images. Thorough visual audit of every entity type | every entity renders with real sprites; no colored rectangles remain |
+| L0 ✅ | Sprite polish: replaced placeholder colored-rectangle renders with real sprites from sprite sheets. L0b: all bosses/NPCs (bosses.png, npcs.png). L0c: enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce (projectiles.png, items.png, link.png). Procedural kept for: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. Done 2026-09-03 | every entity renders with real sprites; remaining procedural items documented |
 
 
 | ID | Slice | Verify |

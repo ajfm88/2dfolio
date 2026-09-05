@@ -9,6 +9,7 @@ import {
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawProjectileFrameFlipped, ROD_VERTICAL, ROD_HORIZONTAL } from '../../render/projectile-sprite-data.js';
 
 export { MAGIC_SHOT_DAMAGE } from '../../core/constants.js';
 
@@ -186,19 +187,10 @@ export class MagicRod {
     // Retract2 — invisible (same as sword's last retract frame)
     if (this._state === RodState.Retract2) return;
 
-    // Rod sprite: item slot $08 in projectiles sheet
-    // For now use a placeholder — exact sprite index TBD when projectile sheet layout is audited
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#8b4513';
-    switch (this._direction) {
-      case Direction.Up:
-      case Direction.Down:
-        ctx.fillRect(pos.x + 5, pos.y, 6, 16);
-        break;
-      case Direction.Left:
-      case Direction.Right:
-        ctx.fillRect(pos.x, pos.y + 5, 16, 6);
-        break;
-    }
+    const isVertical = this._direction === Direction.Up || this._direction === Direction.Down;
+    const spriteIdx = isVertical ? ROD_VERTICAL : ROD_HORIZONTAL;
+    const flipH = this._direction === Direction.Right;
+    const flipV = this._direction === Direction.Down;
+    drawProjectileFrameFlipped(renderer, spriteIdx, pos.x, pos.y, flipH, flipV);
   }
 }

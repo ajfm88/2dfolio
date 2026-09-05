@@ -10,6 +10,7 @@ import { getOppositeDirection } from '../../core/collision-utils.js';
 import { Direction } from '../../core/types.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawItemSprite, getProcessedItemsCanvas } from '../../data/item-sprites.js';
 import type { TileCollisionMap } from '../../world/collision.js';
 
 export enum LadderState {
@@ -109,15 +110,13 @@ export class Stepladder {
 
   render(renderer: Renderer): void {
     if (this._state === LadderState.Done) return;
-
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#8b6914';
-    ctx.fillRect(this._x, this._y, TILE_SIZE, TILE_SIZE);
-    // Cross-plank pattern
-    ctx.fillStyle = '#6b4f10';
-    ctx.fillRect(this._x + 2, this._y + 3, TILE_SIZE - 4, 2);
-    ctx.fillRect(this._x + 2, this._y + 8, TILE_SIZE - 4, 2);
-    ctx.fillRect(this._x + 2, this._y + 13, TILE_SIZE - 4, 2);
+    const itemsCanvas = getProcessedItemsCanvas();
+    if (itemsCanvas) {
+      drawItemSprite(renderer.ctx, itemsCanvas, 0x0d, this._x, this._y);
+    } else {
+      renderer.ctx.fillStyle = '#8b6914';
+      renderer.ctx.fillRect(this._x, this._y, 16, 16);
+    }
   }
 
   private computeDistance(linkX: number, linkY: number): number {

@@ -27,6 +27,7 @@ export class Inventory {
   magicKey = false;   // $0664
   bracelet = false;   // $0665
   magicShield = false; // $0676
+  hasBombs = false;
 
   // Per-dungeon bitmasks
   compass = 0;    // $0667: bits 0-7 for levels 1-8
@@ -39,7 +40,7 @@ export class Inventory {
   hasSelectableItem(slot: number): boolean {
     switch (slot) {
       case 0: return this.woodBoomerang || this.magicBoomerang;
-      case 1: return true; // bombs always "selectable" if you have any
+      case 1: return this.hasBombs;
       case 2: return this.bow && this.arrow > 0;
       case 3: return false; // bow is never independently selectable
       case 4: return this.candle > 0;

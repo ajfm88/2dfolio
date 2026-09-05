@@ -7,11 +7,11 @@ import {
   RAFT_DEPARTURE_Y,
   RAFT_MIDPOINT_Y,
   RAFT_SPRITE_OFFSET_Y,
-  TILE_SIZE,
 } from '../../core/constants.js';
 import { Direction } from '../../core/types.js';
 import type { Link } from '../player/link.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawItemSprite, getProcessedItemsCanvas } from '../../data/item-sprites.js';
 
 export enum RaftState {
   Idle      = 0,
@@ -86,14 +86,12 @@ export class Raft {
 
   render(renderer: Renderer, linkX: number): void {
     if (this._state === RaftState.Idle) return;
-
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#8b5e14';
-    ctx.fillRect(linkX, this._raftY, TILE_SIZE, TILE_SIZE);
-    // Plank lines
-    ctx.fillStyle = '#6b4410';
-    ctx.fillRect(linkX + 1, this._raftY + 4, TILE_SIZE - 2, 1);
-    ctx.fillRect(linkX + 1, this._raftY + 8, TILE_SIZE - 2, 1);
-    ctx.fillRect(linkX + 1, this._raftY + 12, TILE_SIZE - 2, 1);
+    const itemsCanvas = getProcessedItemsCanvas();
+    if (itemsCanvas) {
+      drawItemSprite(renderer.ctx, itemsCanvas, 0x0c, linkX, this._raftY);
+    } else {
+      renderer.ctx.fillStyle = '#8b5e14';
+      renderer.ctx.fillRect(linkX, this._raftY, 16, 16);
+    }
   }
 }
