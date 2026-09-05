@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-09-02 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1+J2 COMPLETE — Phase J done.** Title + file select + name registration + elimination + ending sequence + credits scroll all working. · **Plan slots done:** 42 / 45+ (J done; remaining: K1, K2, L0, L1, L2)
+**Last updated:** 2026-09-03 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1+J2 COMPLETE — Phase J done.** **L0 in progress — L0b (boss sprites) + L0c (weapon/projectile/item/ending sprites) done.** · **Plan slots done:** 42 / 45+ (J done; remaining: K1, K2, L0 visual verification, L1, L2)
 
 ---
 
@@ -209,7 +209,8 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~45a~~ | ~~**J1a** Title + backstory scroll + file select + boot refactor~~ | ✅ done 2026-09-01 — GameMode.Title/FileSelect, lazy world start, SaveManager (localStorage). 1181 tests |
 | ~~45b~~ | ~~**J1b** Name registration + elimination mode~~ | ✅ done 2026-09-01 — 44-cell char board + DAS, register/eliminate wired to SaveManager. **J1 complete.** 1202 tests |
 | ~~46~~ | ~~**J2** Game-over polish + ending/credits~~ | ✅ done 2026-09-02 — 5-phase ending (flash+peace+credits+ash), full-screen, SAVE→title, switchToSecondQuest. **Phase J complete.** 1218 tests |
-| 47 | **L0** Sprite polish | ⬜ next — replace all placeholder colored-rectangle renders with real sprites (reordered before K1/K2, user 2026-09-02) |
+| 47a | ~~**L0b** Boss sprite polish~~ | ✅ done 2026-09-03 — all 10 boss/NPC files use real sprites from bosses.png/npcs.png |
+| 47b | ~~**L0c** Weapon/projectile/item/ending sprite polish~~ | ✅ done 2026-09-03 — enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce all use real sprites. Remaining procedural: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. **L0 complete.** |
 | 48 | **K1** Web Audio SFX engine | ⬜ — ~30 sound effects |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
@@ -249,6 +250,39 @@ Answer cheaply, unblock later work. **None of these block A1.**
 
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
+
+### 2026-09-03 — L0c Weapon/projectile/item/ending sprite polish (Claude Opus 4.6)
+
+Replaced fillRect placeholder rendering with real sprites for weapons, enemy projectiles, world items,
+and the ending screen. Created `src/render/projectile-sprite-data.ts`: module-level SpriteSheet from
+`projectiles.png` (15 cols, 16×16) with `initProjectileSprites()`/`drawProjectileFrame()`/
+`drawProjectileFrameFlipped()` and sprite index constants. Added `initLinkEndingSprite()` +
+`drawLinkEndingSprite()`/`drawLinkEndingSpriteUp()` to `boss-sprite-data.ts` for ending sequence Link.
+Added `getProcessedItemsCanvas()` accessor to `item-sprites.ts`. Updated 8 render files:
+**enemy-projectile.ts** (fireballs/magic/arrows/sword shots now use projectile sprites; rocks kept as
+styled fillRect), **goriya-boomerang.ts** (spinning boomerang sprite frames), **magic-rod.ts** (rod
+sprite replacing brown stick), **magic-shot.ts** (alternating sprite frames replacing cycling squares),
+**raft.ts** (item sprite 0x0c replacing brown planks), **stepladder.ts** (item sprite 0x0d replacing
+cross-planks), **ending-screen.ts** (Link sprite from link.png, Zelda from npcs.png ZELDA_NPC_SPRITES,
+Triforce from items.png). Kept procedural: whirlwind (no sprite), push block (wall approximation),
+Ganon ash pile, arrow spark, shield deflection. **1218 tests all pass; src/ typecheck clean.**
+
+### 2026-09-03 — L0b Boss sprite polish (Claude Opus 4.6)
+
+Replaced fillRect placeholder rendering with real sprite sheet art for all 10 boss/NPC files.
+Created `src/render/boss-sprite-data.ts`: central module with `initBossSprites()`/`initNpcSprites()`
+(green/cyan transparency keying), `drawBossSprite()`/`drawBossSpriteScaled()`/`drawNpcSprite()`,
+and hardcoded pixel coordinates for all boss sprites from `bosses.png` (494×296, Mister Mike /
+Spriters Resource) and `npcs.png` (280×256). Wired init calls in `main.ts`. Updated 10 enemy files:
+**Aquamentus** (mouth open/closed × 2 walk frames), **Dodongo** (left/right × 2 walk frames + stunned
+overlay), **Manhandla** (center 2 frames + hand 2 frames), **Digdogger** (big 5 pulsing frames +
+little 2 frames), **Gohma** (4 eye states: closed-left/right, fully-open, half-open, each 48×32),
+**Gleeok** (body 3 frames + neck segments 8×8 + neck heads 8×16 + flying head 16×16),
+**Patra** (center 16×16 + child 8×16 × 2 frames), **Ganon** (4 body frames + tint overlay for
+brown/dying states, procedural ashes/burst preserved), **GuardFire/StandingFire** (2 fire frames
+from npcs.png), **Zelda NPC** (standing/rescued from npcs.png). Removed unused `_mouthOpen` from
+Dodongo, unused `_cardinal` from ManhandlaHand, fixed inline import type in Dodongo. **1218 tests
+(1216 pass, 2 pre-existing flaky movement tests); src/ typecheck clean.**
 
 ### 2026-09-02 — J2 Ending sequence + credits + game-over polish — Phase J complete (Claude Opus 4.6)
 

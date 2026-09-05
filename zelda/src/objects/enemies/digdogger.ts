@@ -13,7 +13,7 @@ import {
 } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, DIGDOGGER_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 
 export const DIGDOGGER1 = 0x38;
@@ -167,17 +167,11 @@ export class Digdogger extends Enemy {
     this._state = EnemyState.Dead;
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
+  protected override renderEnemy(renderer: Renderer): void {
     if (this._flickering && (this._frame & 0x04)) return;
-
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#d85800';
-    ctx.fillRect(this._x, this._y, BODY_SIZE, BODY_SIZE);
-    ctx.fillStyle = '#f8a060';
-    ctx.fillRect(this._x + 4, this._y + 4, BODY_SIZE - 8, BODY_SIZE - 8);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(this._x + 10, this._y + 12, 4, 4);
-    ctx.fillRect(this._x + 18, this._y + 12, 4, 4);
+    const frameIdx = (this._frame >> 2) % 5;
+    const frame = DIGDOGGER_SPRITES.big[frameIdx] ?? DIGDOGGER_SPRITES.big[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
   }
 }
 
@@ -203,6 +197,7 @@ export class LittleDigdogger extends Enemy {
   }
 
   protected override updateAI(ctx: EnemyUpdateContext): void {
+    this.tickWalkAnimation(8);
     this.updateSpeed();
     this.updateDirection(ctx);
     this.move();
@@ -266,15 +261,10 @@ export class LittleDigdogger extends Enemy {
     this._y = ny;
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#d85800';
-    ctx.fillRect(this._x, this._y, 16, 16);
-    ctx.fillStyle = '#f8a060';
-    ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(this._x + 5, this._y + 6, 2, 2);
-    ctx.fillRect(this._x + 9, this._y + 6, 2, 2);
+  protected override renderEnemy(renderer: Renderer): void {
+    const frameIdx = this._walkAnimFrame & 1;
+    const frame = DIGDOGGER_SPRITES.little[frameIdx] ?? DIGDOGGER_SPRITES.little[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
   }
 }
 

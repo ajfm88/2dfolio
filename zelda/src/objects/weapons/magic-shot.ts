@@ -8,6 +8,7 @@ import {
   SCREEN_WIDTH,
 } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
+import { drawProjectileFrame, MAGIC_SHOT_A, MAGIC_SHOT_B } from '../../render/projectile-sprite-data.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { TileCollisionMap } from '../../world/collision.js';
@@ -95,17 +96,8 @@ export class MagicShot {
 
   render(renderer: Renderer): void {
     if (this._state === MagicShotState.Dead) return;
-
-    // Z_07.asm:3456 — palette cycles every 4 frames (FrameCounter AND $03)
-    const paletteCycle = this._frameCount & 0x03;
-    const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44'];
-    const color = colors[paletteCycle]!;
-
-    const ctx = renderer.ctx;
-    ctx.fillStyle = color;
-    ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
+    const frame = (this._frameCount & 0x02) === 0 ? MAGIC_SHOT_A : MAGIC_SHOT_B;
+    drawProjectileFrame(renderer, frame, this._x, this._y);
   }
 
   private computePixels(): number {

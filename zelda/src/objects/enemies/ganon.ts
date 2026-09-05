@@ -14,6 +14,7 @@ import {
 } from '../../core/constants.js';
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
+import { drawBossSprite, GANON_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -286,21 +287,17 @@ export class Ganon extends Enemy {
     }
   }
 
-  private drawBody(renderer: Renderer, color = '#3060d0'): void {
-    const ctx = renderer.ctx;
-    // 32×32 body (4 quadrants)
-    ctx.fillStyle = color;
-    ctx.fillRect(this._x, this._y, 32, 32);
-    // Face detail
-    ctx.fillStyle = '#f8d870';
-    ctx.fillRect(this._x + 8, this._y + 6, 16, 8);
-    // Eyes
-    ctx.fillStyle = '#e02020';
-    ctx.fillRect(this._x + 10, this._y + 8, 4, 4);
-    ctx.fillRect(this._x + 18, this._y + 8, 4, 4);
-    // Snout
-    ctx.fillStyle = '#804020';
-    ctx.fillRect(this._x + 12, this._y + 16, 8, 6);
+  private drawBody(renderer: Renderer, tint?: string): void {
+    const frameIdx = this._animFrame % 4;
+    const frame = GANON_SPRITES.body[frameIdx] ?? GANON_SPRITES.body[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
+    if (tint) {
+      const ctx = renderer.ctx;
+      ctx.fillStyle = tint;
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(this._x, this._y, 32, 32);
+      ctx.globalAlpha = 1;
+    }
   }
 
   private renderDying(renderer: Renderer): void {

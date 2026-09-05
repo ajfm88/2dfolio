@@ -1,7 +1,7 @@
 // NES-accurate inventory subscreen renderer
 // Layout from ZeldaJS InventoryState.ts + NES disassembly Z_05.asm DrawSubmenuItems
 import { PLAY_AREA_HEIGHT, SCREEN_WIDTH } from '../core/constants.js';
-import { drawItemSprite } from '../data/item-sprites.js';
+import { drawItemSprite, drawNESItemSprite } from '../data/item-sprites.js';
 import type { Inventory } from '../objects/player/inventory.js';
 import { SELECTABLE_SLOT_COUNT } from '../objects/player/inventory.js';
 import type { Renderer } from '../render/renderer.js';
@@ -13,22 +13,24 @@ const BOX_COLOR = '#4040ef';
 const TRIFORCE_COLOR = '#f0cac2';
 
 // B-item box (left)
-const B_BOX_X = 58;
-const B_BOX_Y = 40;
-const B_BOX_W = 28;
+const B_BOX_X = 60;
+const B_BOX_Y = 44;
+const B_BOX_W = 24;
 const B_BOX_H = 24;
-const B_ITEM_X = 64;
-const B_ITEM_Y = 44;
+const B_ITEM_X = 68;
+const B_ITEM_Y = 48;
 
-// Item grid box (right)
+// Non-selectable passive items row — ABOVE the grid box
+const PASSIVE_Y = 28;
+const PASSIVE_W = 8;
+const PASSIVE_H = 16;
+const PASSIVE_XS = [128, 148, 160, 176, 196, 208] as const;
+
+// Item grid box (right) — only contains selectable items
 const GRID_BOX_X = 126;
-const GRID_BOX_Y = 40;
+const GRID_BOX_Y = 48;
 const GRID_BOX_W = 98;
 const GRID_BOX_H = 48;
-
-// Non-selectable passive items row (top of grid)
-const PASSIVE_Y = 44;
-const PASSIVE_XS = [128, 144, 160, 176, 192, 208] as const;
 // Order: raft, book, ring, ladder, magicKey, bracelet
 const PASSIVE_CHECKS: ((inv: Inventory) => number)[] = [
   inv => inv.raft ? 0x0c : -1,
@@ -39,10 +41,12 @@ const PASSIVE_CHECKS: ((inv: Inventory) => number)[] = [
   inv => inv.bracelet ? 0x14 : -1,
 ];
 
-// Selectable item grid (2 rows × 4 columns)
-const SELECT_ROW_0_Y = 56;
+// Selectable item grid (2 rows × 4 columns) — NES: 8×16
+const SELECT_W = 8;
+const SELECT_H = 16;
+const SELECT_ROW_0_Y = 52;
 const SELECT_ROW_1_Y = 72;
-const SELECT_COL_XS = [128, 152, 176, 200] as const;
+const SELECT_COL_XS = [132, 156, 180, 204] as const;
 
 // Slot → grid position: row 0 = slots 0-4 (skip bow=3), row 1 = slots 5-8
 function slotToGridPos(slot: number): { x: number; y: number } | null {
@@ -62,7 +66,7 @@ function slotToGridPos(slot: number): { x: number; y: number } | null {
 function getSelectableItemId(inv: Inventory, slot: number): number {
   switch (slot) {
     case 0: return inv.magicBoomerang ? 0x1e : inv.woodBoomerang ? 0x1d : -1;
-    case 1: return 0x00; // bomb icon always shown if any bombs ever held
+    case 1: return inv.hasBombs ? 0x00 : -1;
     case 2: return inv.arrow >= 2 ? 0x09 : inv.arrow >= 1 ? 0x08 : -1;
     case 4: return inv.candle >= 2 ? 0x07 : inv.candle >= 1 ? 0x06 : -1;
     case 5: return inv.flute ? 0x05 : -1;
@@ -99,6 +103,7 @@ export class InventoryScreen {
     itemsImage: HTMLImageElement | HTMLCanvasElement,
     hudRenderer: HudRenderer,
     hudState: HudState,
+    nesStripImage?: HTMLImageElement | HTMLCanvasElement | null,
   ): void {
     const ctx = renderer.ctx;
 
@@ -113,37 +118,45 @@ export class InventoryScreen {
     this.drawBox(ctx, B_BOX_X, B_BOX_Y, B_BOX_W, B_BOX_H);
     const bItemId = inventory.getEquippedBItemId();
     if (bItemId !== null) {
-      drawItemSprite(ctx, itemsImage, bItemId, B_ITEM_X, B_ITEM_Y);
+      if (!nesStripImage || !drawNESItemSprite(ctx, nesStripImage, bItemId, B_ITEM_X, B_ITEM_Y)) {
+        drawItemSprite(ctx, itemsImage, bItemId, B_ITEM_X, B_ITEM_Y);
+      }
     }
 
     // Labels
-    whiteFont.drawString(renderer, 14, 68, 'USE B BUTTON');
-    whiteFont.drawString(renderer, 30, 78, 'FOR THIS');
+    whiteFont.drawString(renderer, 14, 72, 'USE B BUTTON');
+    whiteFont.drawString(renderer, 30, 82, 'FOR THIS');
 
     // Item grid box
     this.drawBox(ctx, GRID_BOX_X, GRID_BOX_Y, GRID_BOX_W, GRID_BOX_H);
 
-    // Passive (non-selectable) items top row
+    // Passive (non-selectable) items top row — NES 8×16
     for (let i = 0; i < PASSIVE_CHECKS.length; i++) {
       const check = PASSIVE_CHECKS[i]!;
       const itemId = check(inventory);
       if (itemId >= 0) {
-        drawItemSprite(ctx, itemsImage, itemId, PASSIVE_XS[i]!, PASSIVE_Y);
+        if (!nesStripImage || !drawNESItemSprite(ctx, nesStripImage, itemId, PASSIVE_XS[i]!, PASSIVE_Y, PASSIVE_W, PASSIVE_H)) {
+          drawItemSprite(ctx, itemsImage, itemId, PASSIVE_XS[i]!, PASSIVE_Y, PASSIVE_W, PASSIVE_H);
+        }
       }
     }
 
-    // Selectable items grid
+    // Selectable items grid — NES 8×16
     const selectableSlots = [0, 1, 2, 4, 5, 6, 7, 8];
     for (const slot of selectableSlots) {
       const itemId = getSelectableItemId(inventory, slot);
       if (itemId < 0) continue;
       const pos = slotToGridPos(slot);
       if (!pos) continue;
-      drawItemSprite(ctx, itemsImage, itemId, pos.x, pos.y);
+      if (!nesStripImage || !drawNESItemSprite(ctx, nesStripImage, itemId, pos.x, pos.y, SELECT_W, SELECT_H)) {
+        drawItemSprite(ctx, itemsImage, itemId, pos.x, pos.y, SELECT_W, SELECT_H);
+      }
 
       // Arrow+bow: draw bow next to arrow (NES renders both at slot 2 area)
       if (slot === 2 && inventory.bow) {
-        drawItemSprite(ctx, itemsImage, 0x0a, pos.x + 8, pos.y);
+        if (!nesStripImage || !drawNESItemSprite(ctx, nesStripImage, 0x0a, pos.x + 8, pos.y, SELECT_W, SELECT_H)) {
+          drawItemSprite(ctx, itemsImage, 0x0a, pos.x + 8, pos.y, SELECT_W, SELECT_H);
+        }
       }
     }
 
@@ -153,7 +166,7 @@ export class InventoryScreen {
       if (pos) {
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
-        ctx.strokeRect(pos.x - 2, pos.y - 2, 20, 20);
+        ctx.strokeRect(pos.x - 4, pos.y - 2, SELECT_W + 8, SELECT_H + 4);
       }
     }
 
@@ -210,20 +223,28 @@ export class InventoryScreen {
   }
 
   private drawTriforcePieces(
-    ctx: CanvasRenderingContext2D, mask: number, _baseY: number,
+    ctx: CanvasRenderingContext2D, mask: number, baseY: number,
   ): void {
     if (mask === 0) return;
-    // Simple representation: draw filled golden triangles for collected pieces
-    // 8 pieces arranged around the triforce outline
+    const midX = SCREEN_WIDTH / 2;
+    const ratio = 115 / 141;
+    const yOff = baseY + 0.5;
+    const inset = 3;
+    const h = 60 * ratio - inset;
     ctx.fillStyle = '#f0c000';
     for (let i = 0; i < 8; i++) {
       if (!(mask & (1 << i))) continue;
-      // Distribute pieces in two rows of 4 within the triforce area
-      const row = i < 4 ? 0 : 1;
-      const col = i % 4;
-      const px = 96 + col * 20;
-      const py = 126 + row * 16;
-      ctx.fillRect(px, py, 8, 8);
+      const sliceTop = yOff + inset + (i * h) / 8;
+      const sliceBot = yOff + inset + ((i + 1) * h) / 8;
+      const wTop = (60 - inset) * (sliceTop - yOff) / (60 * ratio);
+      const wBot = (60 - inset) * (sliceBot - yOff) / (60 * ratio);
+      ctx.beginPath();
+      ctx.moveTo(midX - wTop, sliceTop);
+      ctx.lineTo(midX + wTop, sliceTop);
+      ctx.lineTo(midX + wBot, sliceBot);
+      ctx.lineTo(midX - wBot, sliceBot);
+      ctx.closePath();
+      ctx.fill();
     }
   }
 }
@@ -240,5 +261,22 @@ export function getNextOwnedSlot(
     if (slot === 3) continue; // bow always skipped
     if (inventory.hasSelectableItem(slot)) return slot;
   }
+  return currentSlot;
+}
+
+// Up/Down navigation between the 2-row × 4-column selectable grid.
+// Row 0: slots 0,1,2,4  |  Row 1: slots 5,6,7,8
+const VERTICAL_PAIR: Record<number, number> = {
+  0: 5, 1: 6, 2: 7, 4: 8,
+  5: 0, 6: 1, 7: 2, 8: 4,
+};
+
+export function getVerticalSlot(
+  inventory: Inventory,
+  currentSlot: number,
+): number {
+  const target = VERTICAL_PAIR[currentSlot];
+  if (target === undefined) return currentSlot;
+  if (inventory.hasSelectableItem(target)) return target;
   return currentSlot;
 }
