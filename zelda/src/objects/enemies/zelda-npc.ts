@@ -4,6 +4,7 @@
 // Spawned as a group: 1 Zelda + 4 GuardFire via createZeldaGroup().
 
 import type { Renderer } from '../../render/renderer.js';
+import { drawNpcSprite, ZELDA_NPC_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 import { GuardFire } from './guard-fire.js';
 
@@ -72,18 +73,10 @@ export class ZeldaNpc extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    // Zelda NPC — simple dress shape
-    ctx.fillStyle = '#f868f8'; // pink dress
-    ctx.fillRect(this._x + 4, this._y + 2, 8, 14);
-    ctx.fillStyle = '#f8d8b0'; // skin
-    ctx.fillRect(this._x + 5, this._y, 6, 5);
-    ctx.fillStyle = '#a03000'; // hair
-    ctx.fillRect(this._x + 4, this._y, 2, 6);
-    ctx.fillRect(this._x + 10, this._y, 2, 6);
-    // Crown
-    ctx.fillStyle = '#f8d870';
-    ctx.fillRect(this._x + 6, this._y - 2, 4, 2);
+    const sprite = this._zeldaState === ZeldaState.RescueTriggered
+      ? ZELDA_NPC_SPRITES.rescued
+      : ZELDA_NPC_SPRITES.standing;
+    drawNpcSprite(renderer, sprite, this._x + 1, this._y);
   }
 }
 

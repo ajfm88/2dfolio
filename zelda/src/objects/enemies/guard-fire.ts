@@ -5,6 +5,7 @@
 // GuardFire appears in the Zelda rescue room (4 flames around her).
 
 import type { Renderer } from '../../render/renderer.js';
+import { drawNpcSprite, FIRE_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 
 export class StandingFire extends Enemy {
@@ -22,12 +23,9 @@ export class StandingFire extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    const flicker = (this._walkAnimFrame & 1) === 0;
-    ctx.fillStyle = flicker ? '#e04000' : '#f89020';
-    ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-    ctx.fillStyle = '#f8d870';
-    ctx.fillRect(this._x + 5, this._y + 4, 6, 6);
+    const frameIdx = this._walkAnimFrame & 1;
+    const frame = FIRE_SPRITES.frames[frameIdx] ?? FIRE_SPRITES.frames[0];
+    if (frame) drawNpcSprite(renderer, frame, this._x, this._y);
   }
 }
 
@@ -45,11 +43,8 @@ export class GuardFire extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const ctx = renderer.ctx;
-    const flicker = (this._walkAnimFrame & 1) === 0;
-    ctx.fillStyle = flicker ? '#e04000' : '#f89020';
-    ctx.fillRect(this._x + 2, this._y + 2, 12, 12);
-    ctx.fillStyle = '#f8d870';
-    ctx.fillRect(this._x + 5, this._y + 4, 6, 6);
+    const frameIdx = this._walkAnimFrame & 1;
+    const frame = FIRE_SPRITES.frames[frameIdx] ?? FIRE_SPRITES.frames[0];
+    if (frame) drawNpcSprite(renderer, frame, this._x, this._y);
   }
 }

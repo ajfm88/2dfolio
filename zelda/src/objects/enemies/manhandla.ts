@@ -14,7 +14,7 @@
 
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import { drawBossSprite, MANHANDLA_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
 import { EnemyProjectile } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
@@ -42,13 +42,10 @@ const SHOOT_CHANCE = 1 / 96;    // approximates frame-0 & Random≥$E0 & ≤4-on
 // ---------------------------------------------------------------------------
 
 export class ManhandlaHand extends Enemy {
-  private readonly _cardinal: Direction;
-
   constructor(
-    x: number, y: number, hp: number, spawnCloudFrames: number, cardinal: Direction,
+    x: number, y: number, hp: number, spawnCloudFrames: number, _cardinal: Direction,
   ) {
     super(x, y, MANHANDLA, hp, spawnCloudFrames);
-    this._cardinal = cardinal;
     this._invincibilityMask = MASK_FIRE_AND_BOOMERANG;
   }
 
@@ -72,23 +69,10 @@ export class ManhandlaHand extends Enemy {
     }
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    const x = this._x;
-    const y = this._y;
-    // Bulb.
-    ctx.fillStyle = '#48b048';
-    ctx.fillRect(x + 1, y + 1, 14, 14);
-    ctx.fillStyle = '#c0f040';
-    ctx.fillRect(x + 4, y + 4, 8, 8);
-    // Stem pointing back toward the center.
-    ctx.fillStyle = '#286028';
-    switch (this._cardinal) {
-      case Direction.Up: ctx.fillRect(x + 6, y + 12, 4, 4); break;
-      case Direction.Down: ctx.fillRect(x + 6, y, 4, 4); break;
-      case Direction.Left: ctx.fillRect(x + 12, y + 6, 4, 4); break;
-      case Direction.Right: ctx.fillRect(x, y + 6, 4, 4); break;
-    }
+  protected override renderEnemy(renderer: Renderer): void {
+    const frameIdx = this._walkAnimFrame & 1;
+    const frame = MANHANDLA_SPRITES.hand[frameIdx] ?? MANHANDLA_SPRITES.hand[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
   }
 }
 
@@ -101,6 +85,7 @@ export class ManhandlaCenter extends Enemy {
   private _speedFrac = START_SPEED_FRAC;
   private _speedWhole = 0;
   private _speedAccum = 0;
+  private _frame = 0;
 
   constructor(x: number, y: number, hp: number, spawnCloudFrames: number) {
     super(x, y, MANHANDLA, hp, spawnCloudFrames);
@@ -124,6 +109,7 @@ export class ManhandlaCenter extends Enemy {
   override stun(): void {}
 
   protected override updateAI(ctx: EnemyUpdateContext): void {
+    this._frame++;
     this.retarget(ctx);
     this.move();
     this.repositionHands();
@@ -221,12 +207,10 @@ export class ManhandlaCenter extends Enemy {
     return { x: this._x, y: this._y, width: 16, height: 16 };
   }
 
-  protected override renderEnemy(renderer: Renderer, _sheet?: SpriteSheet): void {
-    const ctx = renderer.ctx;
-    ctx.fillStyle = '#1c8c8c';
-    ctx.fillRect(this._x + 1, this._y + 1, 14, 14);
-    ctx.fillStyle = '#48d0d0';
-    ctx.fillRect(this._x + 4, this._y + 4, 8, 8);
+  protected override renderEnemy(renderer: Renderer): void {
+    const frameIdx = (this._frame >> 3) & 1;
+    const frame = MANHANDLA_SPRITES.center[frameIdx] ?? MANHANDLA_SPRITES.center[0];
+    if (frame) drawBossSprite(renderer, frame, this._x, this._y);
   }
 }
 
