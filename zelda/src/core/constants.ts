@@ -165,7 +165,18 @@ export const WHIRLWIND_CATCH_THRESHOLD = 9;            // px on each axis
 export const WHIRLWIND_EXIT_X = 0xF0;                  // 240 — right edge trigger
 export const WHIRLWIND_DROP_X = 0x80;                  // 128 — Link released here
 export const WHIRLWIND_DEST_ROOMS = [0x36, 0x3B, 0x73, 0x44, 0x0A, 0x21, 0x41, 0x6C] as const;
+// NES screen coordinates put the play area below the 64px HUD, with Link's top
+// walkable row at y=$3D. Our play area is its own 0..160 space, so any Y taken
+// straight from the ROM has to have this subtracted. Used raw, five of the eight
+// whirlwind destinations below drop Link inside a mountain, unable to move.
+export const NES_PLAY_AREA_TOP_Y = 0x3D;
+/** Raw ROM values — convert with `nesScreenYToPlayArea` before positioning Link. */
 export const WHIRLWIND_DEST_YS = [0x8D, 0xAD, 0x8D, 0x8D, 0xAD, 0x8D, 0xAD, 0x5D] as const;
+
+/** NES screen Y → play-area Y. */
+export function nesScreenYToPlayArea(nesY: number): number {
+  return nesY - NES_PLAY_AREA_TOP_Y;
+}
 
 // Respawn — Z_07.asm:1442 InitMode3_Sub1
 export const RESPAWN_SCREEN_ROW = 7;

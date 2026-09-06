@@ -12,7 +12,7 @@
 browser.
 **Working dir for all commands:** `zelda-nes-ts/`
 
-**Last updated:** 2026-09-03 · **Phase:** G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1+J2 COMPLETE — Phase J done.** **L0 in progress — L0b (boss sprites) + L0c (weapon/projectile/item/ending sprites) done.** · **Plan slots done:** 42 / 45+ (J done; remaining: K1, K2, L0 visual verification, L1, L2)
+**Last updated:** 2026-09-04 · **Phase:** L0d complete (in-world sprite fixes). G/H/I complete (all bosses, all 9 dungeons completable, game winnable). **J1+J2 COMPLETE — Phase J done.** **L0 COMPLETE.** **K1+K2 COMPLETE — Phase K done (SFX + music).** **L1 COMPLETE (save system).** · **Plan slots done:** 45 / 45+ (remaining: L2)
 
 ---
 
@@ -22,7 +22,7 @@ This is a **reimplementation from reference**, not a port or emulator. You read
 6502 assembly (the disassembly) and TypeScript/C#/JS (the reference repos) and
 write TypeScript by hand. Nothing is transpiled; nothing is emulated.
 
-**Next action: L0 (sprite polish).** Phase J is fully done — title → file select → register/eliminate → play → beat Ganon → rescue Zelda → ending sequence (flash + peace text + credits scroll + ash/triforce) → Second Quest switch → back to title. Game-over SAVE option returns to title (was respawning like Continue). All bosses (I1-I3), all 9 dungeons completable (H), game winnable end-to-end. **Reordered (user, 2026-09-02):** L0 sprite polish before K1/K2 audio — visuals first, sound later.
+**Next action: L2 (Second Quest + full playthrough audit) — the last planned slice.** L1 done 2026-09-04: 3-slot save in localStorage, written only on SAVE, reachable mid-game via Start then Up+A. Phase K complete (K1 SFX + K2 music, 2026-09-04). Phase J is fully done — title → file select → register/eliminate → play → beat Ganon → rescue Zelda → ending sequence (flash + peace text + credits scroll + ash/triforce) → Second Quest switch → back to title. Game-over SAVE option returns to title (was respawning like Continue). All bosses (I1-I3), all 9 dungeons completable (H), game winnable end-to-end. **Reordered (user, 2026-09-02):** L0 sprite polish before K1/K2 audio — visuals first, sound later.
 H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wired (H1a/H1b + I1); H2 filled 4 gaps: (1) **boss single-spawn** (NES Z_05.asm:1723 — monster list ID ∈ [$32,$62) spawns exactly 1, else a boss room spawned 3 Aquamentus); (2) **Triforce-get completion sequence** (`GameMode.DungeonTriforceGet` — full heal + held display → curtain-warp out via existing exitDungeon); (3) Triforce room-item −8px offset (Z_05.asm:8255); (4) navigability pass (BFS confirmed start→boss→triforce traversable for all 3 levels, boss→triforce is a shutter that opens on boss death via trigger 7). Boss-room heart container (secret trigger 7) + shutter already worked from H1b. **Note:** L2 Dodongo ($32) / L3 Manhandla ($3C) currently fall back to the generic walker — the completion *machinery* works with them, but faithful boss fights are later I-slices.
 
 **Note on phase order:** Phase G (enemies) and Phase H (dungeons) were interleaved — H1a/H1b built the dungeon scaffolding first so G3+ dungeon enemies have somewhere to spawn (PLAN.md allows F–I in any order). **Phase G is done, and I1 (Aquamentus) is done** — H2 is no longer boss-blocked.
@@ -150,6 +150,11 @@ H2 done — **Dungeons 1-3 completable.** Most of the path was already data-wire
 | GuardFire + StandingFire | `src/objects/enemies/guard-fire.ts` | ✅ GuardFire ($3F): killable fire, mask $00, animated. StandingFire ($40): invulnerable (mask $FF, _vulnerable=false), animated. Both deal contact damage $80. GuardFire appears in Zelda rescue room (4 flames around her) (I3) |
 | Front-end: name registration + elimination | `src/ui/name-board.ts`, `src/ui/name-registration.ts`, `src/ui/elimination.ts` | ✅ **J1b.** `GameMode.Register`/`Elimination` added; file-select REGISTER/ELIMINATION rows now wired (were J1a stubs). **NameBoard** (`name-board.ts`): 44-cell char board (4×11) mirroring `ModeE_CharMap` (Z_02.asm:1423); cursor moves = ±1 / ±11 mod 44 (traced from `ModeE_HandleDirections` X/Y edge logic — reduces to modular arithmetic). Symbol row uses supported font glyphs (`- . ! '`); rest degrade → L0. **NameRegistrationScreen**: per-slot 8-char buffers (registered slots skipped/display-only), Select cycles slots skipping registered ones (`UpdateModeEandF_Idle`), directions drive board w/ DAS repeat (16f then 8f, `Z_02.asm:1830`), A=write+advance / B=advance-only (`ModeE_HandleAOrB`), Start on END → emits registrations → main.ts calls `SaveManager.register`. **EliminationScreen**: slot cursor + END, Start on slot → `SaveManager.eliminate`, END → back to file select. Shared row/title draw helpers exported from `file-select-screen.ts`. Debug: `__zelda.goToRegister/goToElimination`. 21 new tests (1202 total). **J1 complete.** |
 | Ending sequence | `src/ui/ending-screen.ts` | ✅ **J2.** `EndingScreen` class with 5-phase NES-faithful state machine (Z_02.asm Mode $13 UpdateMode13WinGame): **Flash** (192f, background palette cycles 4 NES colors after 64f static, Link+Zelda+Triforces shown), **PeaceText** (640f, typewriter "FINALLY, PEACE RETURNS TO HYRULE. THIS ENDS THE STORY." one char every 8f), **Credits** (scrolling staff credits inside brick-walled frame at ~0.5px/f, player name + death count), **AshTriforce** (Ganon ashes + Triforce, waits 64f then Start to finish), **Done** (→ switchToSecondQuest + title). Full-screen rendering (no HUD). Game-over SAVE option now returns to title instead of respawning. SaveManager.switchToSecondQuest() added. Debug: `__zelda.goToEnding()`. 16 new tests (1218 total). **Phase J complete.** |
+| Save system | `src/save/save-manager.ts`, `src/main.ts` | ✅ **L1.** `SaveSlot` widened with `state: SavedGameState \| null` — Link's counters (`Link.snapshotStats/restoreStats`), the full inventory, three 128-byte world-flag blocks, visited screens. localStorage `zelda-nes:saves:v2`, guarded; a J1a `v1` payload loads as metadata-only. Every field coerced on read, so a truncated/garbage state repairs instead of losing the file. Written **only** on SAVE (no autosave). `snapshotGameState()`/`restoreGameState()`/`saveActiveSlot()` in main.ts; `startGameFromSlot` restores. Loading always restarts on overworld (7,7) with 3 hearts (`Z_07.asm:1442`) — position/level/room deliberately unpersisted, matching the NES |
+| Mid-game save chord | `src/main.ts`, `src/ui/inventory-slide.ts` | ✅ **L1.** `Z_05.asm:362 UpdateMenuActive` — subscreen open + Up (`$08`) + A (`$80`) held (`AND #$88 / CMP #$88`) → snap subscreen shut (`hideImmediately`, NES resets MenuState outright), stop music/loops, `GameMode.GameOver` (Mode $08). Any input device counts (InputManager merges all pads). `handleRespawn(countDeath)` — CONTINUE via the chord does not increment deaths (NES counts in Mode $11, not $08) |
+| World-flag blocks | `src/world/room-flags.ts`, `src/main.ts` | ✅ **L1 + bugfix.** Was ONE shared 128-byte `RoomFlags` for all 9 dungeons → L1 room 60 and L7 room 60 were the same byte. Now one per NES WorldFlags block (`$067F-$07FE` = 3×128, `SaveFileAWorldFlags0/1/2`): overworld + `uw1q1` (L1-6) + `uw2q1` (L7-9), keyed off `dungeons.json` `levelBlock` via `roomFlagsForLevel()`. `RoomFlags.toBytes/loadBytes/fromBytes` + `size`. `DungeonManager` now seeds `_visitedRooms` from the VISITED bits, so the dungeon minimap survives re-entry and reload |
+| Debug cheats | `src/main.ts`, `src/core/game-loop.ts` | ✅ **L1.** `giveDungeon()` (map+compass+9 keys, current level), `godMode()`, `noclip()`, `warp(row,col)`, `goToRoom(id)`, `killAll()`, `saveNow()`, `dumpSave()`, plus `step(frames)` / `roomFlagBlocks` / `gameMode`. New primitives: `Link._godMode` gate in `takeDamage`, `noclip` module flag honoured by both collision maps, `DungeonManager.debugGoToRoom`, `Enemy.debugKill()` (bypasses spawn cloud/invincibility/`_vulnerable` — plain damage silently skipped both), `GameLoop.stepOnce()` |
+| Audio engine | `src/audio/audio-manager.ts` | ✅ **K1 SFX:** AudioManager with lazy AudioContext, 30 WAV buffer preload, play/playLoop/stopLoop/stopAllLoops, mute toggle (M key). 25 trigger points wired. **K2 Music:** playMusic/stopMusic(fade)/pauseMusic/resumeMusic, lazy OGG decode, GainNode fade-out. 2 tracks (overworld/dungeon). 6 transition points: game start, enter/exit dungeon, enter/exit cave, death/triforce. Respawn restarts correct track. Phase K complete |
 | Front-end: title + file select | `src/ui/title-screen.ts`, `src/ui/file-select-screen.ts`, `src/save/save-manager.ts` | ✅ **J1a.** `GameMode.Title`/`FileSelect` added; boot now lands on Title (world created lazily by `startGameFromSlot()`, extracted from `init()`). TitleScreen: static `title.png`, idle (~7s) → vertical backstory scroll (crest + text, `Z_02.asm` UpdateMode0Demo), any button skips. FileSelectScreen: 3 slots + REGISTER/ELIMINATION rows, `>` cursor (GameOverScreen pattern), Up/Down nav, Start selects; registered slot → start game (empty/register/eliminate = J1b stub). SaveManager: slot metadata (name/quest/registered/deaths) in localStorage `zelda-nes:saves:v1`, guarded, injectable storage for tests. Front-end renders full-screen (early-return before HUD/play-area). recordDeath wired at death→GameOver. Debug: `__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. 26 new tests (1181 total). Deferred to J1b: name entry + elimination. Cursor is `>` not a Link-head sprite (→ L0) |
 | Zelda NPC | `src/objects/enemies/zelda-npc.ts` | ✅ Rescue NPC ($37). State 0: waits for Link at ($70-$80, $55 local). State 1: halts Link, positions at ($88,$48), timer $80. Timer expires → triggers GameMode.ZeldaRescue. createZeldaGroup() factory: 1 Zelda + 4 GuardFire at NES positions. Ending stub shows "THANKS LINK, YOU'RE THE HERO OF HYRULE." Full credits deferred to J2. **Phase I complete.** (I3) |
 
@@ -211,7 +216,11 @@ Claim the top one, finish it, log it, stop. Full list of 45 in `../PLAN.md`.
 | ~~46~~ | ~~**J2** Game-over polish + ending/credits~~ | ✅ done 2026-09-02 — 5-phase ending (flash+peace+credits+ash), full-screen, SAVE→title, switchToSecondQuest. **Phase J complete.** 1218 tests |
 | 47a | ~~**L0b** Boss sprite polish~~ | ✅ done 2026-09-03 — all 10 boss/NPC files use real sprites from bosses.png/npcs.png |
 | 47b | ~~**L0c** Weapon/projectile/item/ending sprite polish~~ | ✅ done 2026-09-03 — enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce all use real sprites. Remaining procedural: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. **L0 complete.** |
-| 48 | **K1** Web Audio SFX engine | ⬜ — ~30 sound effects |
+| 48 | ~~**K1** Web Audio SFX engine~~ | ✅ done 2026-09-04 — AudioManager + 25 trigger points wired + M key mute. **Phase K started.** |
+| 49 | ~~**K2** Music engine (2 tracks)~~ | ✅ done 2026-09-04 — playMusic/stopMusic/pauseMusic/resumeMusic, lazy OGG decode, GainNode fade, 6 transition points wired. **Phase K complete.** |
+| 50 | ~~**L1** Save system (localStorage)~~ | ✅ done 2026-09-04 — full state persistence, Up+A mid-game save, per-block room flags, 8 cheats. 1232 tests |
+| 51 | ~~**L0d** In-world sprite fixes~~ | ✅ done 2026-09-04 — projectiles.png grid (6×4 of 40×40, not 15×16px) + second background colour flood-fill. 1243 tests |
+| 52 | **L2** Second Quest | ⬜ — alternate data swap + full playthrough audit. **Last planned slice.** |
 
 **Phase A gate:** blank canvas renders at a stable 60 fps, `npm run typecheck` and
 `npm test` clean, sprites load from `public/assets/`.
@@ -228,7 +237,11 @@ Answer cheaply, unblock later work. **None of these block A1.**
 3. **Music source.** Reference repos have some OGG/MP3 tracks. Sufficient?
 
 4. **Inventory cursor can't reach top row.** The inventory subscreen cursor only selects items in the bottom selectable row (boomerang, bombs, arrow, candle, flute, food, potion, wand). Items in the upper passive row (letter, bracelet, ring, etc.) are out of reach. The NES inventory has a 2-row selectable grid — cursor navigation needs Up/Down in addition to Left/Right. Fix in a later polish slice.
-5. **Sprite polish needed (L0).** Most enemies, bosses, fires, and NPCs still render as colored rectangles. Dedicated sprite polish slice added to PLAN.md as L0. Cave fires and Old Man transparency fixed 2026-08-30.
+5. ~~**Sprite polish needed (L0).**~~ Done 2026-09-03 (L0b bosses/NPCs, L0c weapons/projectiles/items/ending).
+
+6. ~~**In-world item sprites do not render.**~~ Fixed in L0d (2026-09-04) — `projectiles.png`
+   was read as 15 cols of 16×16 when it is 6×4 cells of 40×40. Same slice fixed the grey
+   background box around dungeon enemies/bosses/NPCs.
 
 ---
 
@@ -251,195 +264,194 @@ Answer cheaply, unblock later work. **None of these block A1.**
 Newest first. Keep entries to one short paragraph. Archive to `../PROGRESS.md`
 once this passes ~10 entries.
 
-### 2026-09-03 — L0c Weapon/projectile/item/ending sprite polish (Claude Opus 4.6)
+### 2026-09-04 — L0d follow-up: Tektite flicker (Claude Opus 5)
 
-Replaced fillRect placeholder rendering with real sprites for weapons, enemy projectiles, world items,
-and the ending screen. Created `src/render/projectile-sprite-data.ts`: module-level SpriteSheet from
-`projectiles.png` (15 cols, 16×16) with `initProjectileSprites()`/`drawProjectileFrame()`/
-`drawProjectileFrameFlipped()` and sprite index constants. Added `initLinkEndingSprite()` +
-`drawLinkEndingSprite()`/`drawLinkEndingSpriteUp()` to `boss-sprite-data.ts` for ending sequence Link.
-Added `getProcessedItemsCanvas()` accessor to `item-sprites.ts`. Updated 8 render files:
-**enemy-projectile.ts** (fireballs/magic/arrows/sword shots now use projectile sprites; rocks kept as
-styled fillRect), **goriya-boomerang.ts** (spinning boomerang sprite frames), **magic-rod.ts** (rod
-sprite replacing brown stick), **magic-shot.ts** (alternating sprite frames replacing cycling squares),
-**raft.ts** (item sprite 0x0c replacing brown planks), **stepladder.ts** (item sprite 0x0d replacing
-cross-planks), **ending-screen.ts** (Link sprite from link.png, Zelda from npcs.png ZELDA_NPC_SPRITES,
-Triforce from items.png). Kept procedural: whirlwind (no sprite), push block (wall approximation),
-Ganon ash pile, arrow spark, shield deflection. **1218 tests all pass; src/ typecheck clean.**
+User reported the jumping spiders "flicking on and off instead of staying solid". **Tektite was
+indexing enemies.png against the wrong axis.** The sheet's convention — the one `walker-enemy.ts:149`
+follows — is *a row pair holds the two animation frames, columns hold directions* (red 0-3, blue 4-7).
+Tektite instead did `col = colOffset + walkAnimFrame` and `row = 8 + (jumping ? 1 : 0)`, treating
+columns as frames. Measured occupancy of enemies.png rows 8/9 (16px cells, 1px spacing, pitch 17):
 
-### 2026-09-03 — L0b Boss sprite polish (Claude Opus 4.6)
+    row 8:  c0:130  c1:0  c2:0  c3:0   c4:130  c5:0  c6:0  c7:0
+    row 9:  c0:124  c1:0  c2:0  c3:0   c4:124  c5:0  c6:0  c7:0
 
-Replaced fillRect placeholder rendering with real sprite sheet art for all 10 boss/NPC files.
-Created `src/render/boss-sprite-data.ts`: central module with `initBossSprites()`/`initNpcSprites()`
-(green/cyan transparency keying), `drawBossSprite()`/`drawBossSpriteScaled()`/`drawNpcSprite()`,
-and hardcoded pixel coordinates for all boss sprites from `bosses.png` (494×296, Mister Mike /
-Spriters Resource) and `npcs.png` (280×256). Wired init calls in `main.ts`. Updated 10 enemy files:
-**Aquamentus** (mouth open/closed × 2 walk frames), **Dodongo** (left/right × 2 walk frames + stunned
-overlay), **Manhandla** (center 2 frames + hand 2 frames), **Digdogger** (big 5 pulsing frames +
-little 2 frames), **Gohma** (4 eye states: closed-left/right, fully-open, half-open, each 48×32),
-**Gleeok** (body 3 frames + neck segments 8×8 + neck heads 8×16 + flying head 16×16),
-**Patra** (center 16×16 + child 8×16 × 2 frames), **Ganon** (4 body frames + tint overlay for
-brown/dying states, procedural ashes/burst preserved), **GuardFire/StandingFire** (2 fire frames
-from npcs.png), **Zelda NPC** (standing/rescued from npcs.png). Removed unused `_mouthOpen` from
-Dodongo, unused `_cardinal` from ManhandlaHand, fixed inline import type in Dodongo. **1218 tests
-(1216 pass, 2 pre-existing flaky movement tests); src/ typecheck clean.**
+Columns 1 and 5 are **empty**, so every other animation frame drew nothing — the flicker. The Tektite
+faces the camera and has no directional variants; rows 8 and 9 at col 0 (red) / col 4 (blue) are its
+two frames. Fixed to `col = isBlue ? 4 : 0`, `row = 8 + _walkAnimFrame`. Jumping reuses the same pair
+(there is no separate jump sprite on this sheet).
 
-### 2026-09-02 — J2 Ending sequence + credits + game-over polish — Phase J complete (Claude Opus 4.6)
+**Swept the whole sheet for the same class of bug**: scanned every row pair for empty cells in cols
+0-7 and cross-checked the `spriteRowOffset` each enemy actually passes. Offsets in use are Octorok 0
+(rows 0/1), Moblin 4 (4/5), Lynel 12 (12/13) — all fully populated. Rows 8-11 and 16 have gaps but
+only Tektite ever read them, and every other enemy draws through explicit sprite-coordinate tables
+with `?? [0]` fallbacks. **Tektite was the only one.**
 
-Replaced the ZeldaRescue text stub with a full 5-phase ending sequence (`src/ui/ending-screen.ts`,
-from Z_02.asm Mode $13 InitMode13_Full + UpdateMode13WinGame). **EndingScreen** class with phase
-state machine: **Flash** (192f total — first 64f static black, then 128f cycling 4 NES palette
-colors $0F/$12/$16/$2A; Link+Zelda placeholders with gold Triforces above each), **PeaceText**
-(640f long timer; typewriter reveals "FINALLY, PEACE RETURNS TO HYRULE. THIS ENDS THE STORY."
-one character every 8 frames across 3 lines), **Credits** (brick-walled frame with staff credits
-scrolling at ~0.5px/f: STAFF, EXECUTIVE PRODUCER H.YAMAUCHI, S.MIYAMOTO, K.KONDO, T.WAKAI,
-T.TEZUKA, T.NAKAZOO, "ANOTHER QUEST WILL START FROM HERE. PRESS THE START BUTTON.", player
-name + death count), **AshTriforce** (Ganon grey ash pile + gold Triforce, "PUSH START BUTTON",
-64f minimum wait then Start finishes), **Done** (calls `SaveManager.switchToSecondQuest()` → sets
-quest=2 + persists, resets title, → `GameMode.Title`). Renders full-screen via the `isFrontEnd`
-early-return path (no HUD during ending — fixed from initial implementation that showed HUD).
-**Game-over SAVE option** now returns to title (NES Mode $D behavior) instead of respawning like
-Continue/Retry. Added `GameOverOption` import + branch in main.ts GameOver handler. Debug:
-`__zelda.goToEnding()`. **16 new tests (1218 total, all green); src/ typecheck clean.** Verified
-in-browser: all 5 phases render correctly, no HUD, Start on AshTriforce returns to title, no
-console errors. **Phase J complete. Next: L0 (sprite polish).**
+Verified in-browser by sampling the canvas: pixels differing from the terrain inside each Tektite's
+16×16 box, across 40 frames, split by `_walkAnimFrame` — frame 0 min 128 / max 213, frame 1 min 128 /
+max 211. Never near zero on either frame (frame 1 was 0 before). User confirmed: "rendering
+perfectly". **1248 tests, 1 failure — `recorder.test.ts`, NOT from this work; see the note below.**
 
-### 2026-09-01 — J1b Name registration + elimination — J1 complete (Claude Opus 4.8)
+> **Left for whoever owns it:** `tests/objects/items/recorder.test.ts > uses destination Y from
+> TeleportYs table` fails consistently (expects `0xAD` = 173, gets 112). `src/core/constants.ts` and
+> `src/objects/items/recorder.ts` were both modified at 19:02 by work outside this session, adding
+> `nesScreenYToPlayArea` (subtracts `NES_PLAY_AREA_TOP_Y` = `0x3D`) and applying it in
+> `destinationLinkY`. The **code looks right** — `main.ts` feeds that value to `link.setPosition`,
+> which takes play-area coordinates — so the stale part is the test, which still asserts the raw ROM
+> value. Left alone to avoid colliding with in-flight work.
 
-Completes slice J1. Added `GameMode.Register`/`Elimination` and wired the two file-select
-option rows that were J1a no-op stubs. **NameBoard** (`src/ui/name-board.ts`, pure): the 44-cell
-character board (4 rows × 11 cols) mirroring `ModeE_CharMap` (`Z_02.asm:1423-1429`). The NES
-cursor logic (`ModeE_HandleDirections`, `:1844-1931`) juggles pixel X/Y with edge checks; on a
-row-major grid that reduces exactly to modular arithmetic — Right/Left = ±1 mod 44, Down/Up = ±11
-mod 44 (every wrap case traced against the asm). The 7 symbol tiles ($62 $63 $28-$2C) map to the
-glyphs BitmapFont supports (`- . ! '`); the rest degrade to the fallback tile → L0 font pass.
-**NameRegistrationScreen** (`src/ui/name-registration.ts`): per-slot 8-char buffers (already-
-registered slots are display-only and skipped), **Select** cycles the slot cursor over the 3 files +
-END skipping registered slots (`UpdateModeEandF_Idle`), directions drive the board with DAS
-auto-repeat (act on press, then 16f to first repeat, then every 8f — `ModeE_ChooseRepeatDelay`
-`:1830-1838`), **A** writes the highlighted char + advances the name cursor (wrap 0-7), **B** advances
-only (`ModeE_HandleAOrB`), **Start on END** emits registration intents → `main.ts` calls
-`SaveManager.register`. **EliminationScreen** (`src/ui/elimination.ts`): slot cursor + END (Up/Down or
-Select), Start on a slot → `SaveManager.eliminate` (`DeleteSlot` `:1770`), Start on END → back to file
-select (simplification: NES sends Eliminate's END to Register). Shared title/slot-row draw helpers
-exported from `file-select-screen.ts` (`drawFrontEndTitle`, `drawSlotRow`, `FS_*` layout consts).
-Debug: `__zelda.goToRegister()`/`goToElimination()`. **21 new tests (1202 total, all green); src/
-typecheck clean.** Verified in-browser: register screen (board + slots + END + flashing cursor),
-name-entry writes a char (A appeared in the row), and the elimination screen all render correctly;
-no console errors. **J1 complete. Phase J half done. Next: J2 (ending + credits).**
+### 2026-09-04 — L0d In-world sprite fixes (Claude Opus 5)
 
-### 2026-09-01 — J1a Title + backstory scroll + file select + boot refactor (Claude Opus 4.8)
+Two user-reported rendering bugs, both traced to root cause rather than patched by eye.
 
-First front-end slice. **J1 split into J1a/J1b** (user, DECISIONS #9). Added `GameMode.Title`
-and `GameMode.FileSelect`; **boot now lands on Title** instead of Gameplay. Refactored `init()`
-so it only loads assets/data + builds renderers/fonts — the playable world (Link, OverworldManager,
-SpawnManager, DropEngine, start-screen spawn) is created lazily by the new `startGameFromSlot(index)`,
-the single seam through which any game begins. **TitleScreen** (`src/ui/title-screen.ts`): draws the
-ready-made `title.png` full-screen (PUSH START BUTTON is baked in — static, as on NES); after ~7s idle
-with no input it enters a vertical **backstory scroll** (Triforce crest + hardcoded story text,
-`Z_02.asm` UpdateMode0Demo, ~0.5px/f), any button skips back. **FileSelectScreen**
-(`src/ui/file-select-screen.ts`): 3 save-file rows (name + `-deaths`) + REGISTER YOUR NAME +
-ELIMINATION MODE rows, `>` cursor (GameOverScreen pattern), Up/Down wrap-nav, Start emits a selection;
-main.ts starts the game only for a *registered* slot (empty/register/eliminate are J1b stubs).
-**SaveManager** (`src/save/save-manager.ts`, DECISIONS #8): persists slot metadata (name, quest,
-registered, deaths) to `localStorage` key `zelda-nes:saves:v1`; storage is injectable (tests) and all
-access guarded (corrupt/blocked/private-mode → in-memory empty slots). L1 widens SaveSlot to full game
-state + IndexedDB. `recordDeath(activeSaveSlot)` wired at the death→GameOver transition. Front-end
-renders full-screen via an early return before the HUD/play-area translate. Debug helpers added:
-`__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. **26 new tests
-(1181 total, all green); src/ typecheck clean.** Verified in-browser: title, story scroll, file select
-(seeded LINK/ZELDA slots), and start-game→overworld all render correctly; no console errors. Also fixed
-a stale unrelated test (`inventory.test.ts` rupee cap 255→999 per prior user decision). **Next: J1b.**
+**(a) Using an item drew nothing.** `projectiles.png` is **6 columns × 4 rows of 40×40 cells** with
+each sprite centred in its cell — the same convention as `items.png`. L0c read it as **15 columns of
+16×16**, so every index landed on an empty or half-clipped cell: bomb index 2 held 0 content pixels,
+arrow index 0 held 0, fire index 7 held 0. Nothing to draw. Measured proof: content occupies X runs
+at 11/51/91/136/176/216 and Y runs at 12/52/95/135 — a 40px pitch both ways. **The column meanings
+are not guesses** — our `projectiles.png` is byte-identical (md5 `04fdd42c…`) to
+`zelda-clone-master/Game1/Content/Images/Projectile/projectiles.png`, and that repo's
+`ProjectileSpriteFactory.cs` names them: `arrowColumn=0, swordBeamColumn=1, boomerangColumn=3,
+fireballColumn=4, bombColumn=5 (bombRow=0, bombTotalFrames=1)`; `Arrow.cs` gives the row convention
+`north=0, south=1, west=2, east=3`; `SwordBeam.cs` toggles a columnModifier so the beam animates
+across columns 1 and 2. **When a curated asset misbehaves, check the repo it came from — it often
+names the layout.**
+
+`projectile-sprite-data.ts` is now the sole owner (main.ts built a *second* SpriteSheet of the same
+image with the same wrong config; deleted). It crops a centred 20×20 window and draws it 1:1 with a
+−2 offset — no scaling, which would blur pixel art. Two sprites turned out not to be on this sheet
+at all: the **candle flame** now draws from `npcs.png` via the existing `FIRE_SPRITES` (same source
+as the cave/boss-room fires), and the **magic rod** from `items.png` via `drawItemSprite` like
+raft/stepladder, since the rod is a held item and the sheet has no rod cell. Magic shot reuses the
+sword-beam column pair.
+
+**(b) Enemies drawn inside a grey box.** `dungeon-enemies.png`, `overworld-enemies-alt.png`,
+`bosses.png` and `npcs.png` carry **two** backgrounds — the outer green/cyan that was being keyed,
+and a grey `#747474` backing box behind each sprite that nothing keyed. `enemies.png` has *zero*
+grey, which is why overworld walkers looked right while dungeon enemies/bosses/NPCs showed squares.
+**Grey is also a real NES sprite colour**, so a global key would punch holes in armour and bones: new
+`src/render/transparency.ts` clears the primary globally, then clears the secondary **only where a
+flood fill from the image border can reach it**. Measured result — 14,730 / 7,826 / 18,463 / 2,314
+box pixels cleared per sheet, while 185 / 166 / 251 / 128 enclosed grey pixels survive.
+`enemies.png` is untouched (0 cleared), so no regression there. Deliberately did *not* flood-fill the
+primary: it is only 92-96% edge-connected, so ~3,000 px per sheet sit enclosed inside sprites and are
+correctly transparent today.
+
+**1243 tests (1 RNG-flaky failure, passes in isolation); `src/` typecheck clean.** 10 new tests
+(transparency algorithm as a pure function over an RGBA buffer — the vitest env is `node`, no DOM, so
+`clearBackgroundPixels` was split out from the canvas plumbing; plus the projectile grid/column/row
+constants). Verified in-browser: bomb, boomerang, arrow and candle flame all visible in the world;
+Darknut and Stalfos render with no grey box. **User confirmed both fixes.**
+
+Also settled a question the user raised: enemies appearing frozen was **not** a bug — measured
+`documentHidden: true`, no movement over 1.5s of wall clock, movement over 120 `__zelda.step()`
+frames. Chrome freezes `requestAnimationFrame` in the background automation tab.
+
+### 2026-09-04 — L1 Save system + debug cheats (Claude Opus 5)
+
+**Backing store is localStorage, not IndexedDB** (DECISIONS #10 amends #8): a full slot is ~6KB, so
+three fit in ~18KB of a 5MB budget, and staying synchronous keeps `SaveManager` constructible at
+module scope the way the front end already assumes. `SaveSlot` gained `state: SavedGameState | null`
+— Link's counters, the whole inventory, three world-flag blocks, visited screens. Key moved to
+`zelda-nes:saves:v2`; a J1a `v1` payload still loads as metadata-only so old files appear on file
+select rather than vanishing. Every field is coerced on read, so a truncated or garbage state
+repairs to defaults instead of losing the file.
+
+**Position, level and room are deliberately NOT persisted.** Loading a file on the NES always
+restarts Link on the overworld start screen with 3 hearts (`Z_07.asm:1442 InitMode3_Sub1`), so
+`restoreGameState` reuses the existing `computeRespawnParams(0)`. Only `maxHealth` carries over.
+
+**Saving without dying, per the user + disassembly.** `Z_05.asm:362 UpdateMenuActive`: with the
+inventory subscreen open, controller 2 holding Up (`$08`) + A (`$80`) (`AND #$88 / CMP #$88`) resets
+the submenu, sets `GameMode = $08` (the same SAVE/CONTINUE/RETRY screen as death) and silences
+sound. Wired as Start → hold Up + A; `InputManager` already merges every connected pad into one
+action set, so no input-layer change was needed. Held state, not just-pressed, matching the CMP.
+Subscreen snaps shut via new `InventorySlide.hideImmediately()` — the NES resets MenuState outright
+rather than playing the scroll-up (the animated `close()` left the subscreen drawn over Mode $08).
+`handleRespawn(countDeath)` — CONTINUE reached via the chord does not increment deaths, since the
+NES counts them in the death sequence (Mode $11), not in Mode $08. **Written only on SAVE — no
+autosave (DECISIONS #11), so closing the tab mid-play loses progress since the last SAVE.**
+
+**Bug found and fixed while shaping the save format (DECISIONS #13).** `main.ts` used ONE shared
+128-byte `RoomFlags` for all nine dungeons, so Level 1's room 60 and Level 7's room 60 were the
+same byte. The NES `WorldFlags` region is `$067F-$07FE` = `$180` = three 128-byte blocks
+(`SaveFileAWorldFlags0/1/2`, `Variables.inc:308-310`) chosen per level by
+`LevelInfo_WorldFlagsAddr`, and `dungeons.json` already carries the grouping: L1-6 = `uw1q1`,
+L7-9 = `uw2q1`. Now one `RoomFlags` per block via `roomFlagsForLevel()`. Also seeded
+`DungeonManager._visitedRooms` from the persisted VISITED bits — it started empty on every
+construction, so the dungeon minimap forgot explored rooms on re-entry even though the bit survived.
+
+**The 4 "pre-existing inventory failures" were stale tests, not sprite indices.** They asserted the
+pre-L0 behaviour where B-slot 1 was unconditionally selectable; the L0 inventory overhaul gated it
+on `hasBombs`. Updated the 3 `getNextOwnedSlot` cases + 1 `getEquippedBItemId` case and added a test
+for the gate itself.
+
+**8 cheats + 3 helpers on `__zelda`:** `giveDungeon()` (map+compass+9 keys for the current level),
+`godMode()`, `noclip()`, `warp(row,col)`, `goToRoom(id)`, `killAll()`, `saveNow()`, `dumpSave()`,
+plus `step(frames)`, `roomFlagBlocks`, `gameMode`. New primitives: `Link._godMode` gate in
+`takeDamage`, a `noclip` module flag honoured by both collision maps (module-level because
+`DungeonCollisionMap` is rebuilt per room), `DungeonManager.debugGoToRoom`, `Enemy.debugKill()`
+and `GameLoop.stepOnce()`. Two of these came out of testing: plain `takeDamage` silently skipped
+enemies still in their spawn cloud and every invulnerable boss part, hence `debugKill`; and a
+background tab freezes `requestAnimationFrame`, so `step()` is what makes browser-automated
+verification possible at all — **use it, it is the fix for the caveat at the bottom of this file.**
+
+**1232 tests, `src/` typecheck clean.** Two full runs were 1232/1232; a third had 3 failures and a
+fourth 2 — always the RNG-seeded "enemy moves after spawning" cases (Octorok / Bubble / Keese /
+LittleDigdogger), a *different* subset each run, and all pass in isolation. This is the
+long-standing flakiness noted in earlier sessions, unrelated to L1 (nothing here touches enemy
+movement). **Worth its own cleanup slice: seed the RNG in those tests rather than re-rolling.**
+20 new tests (save state
+round-trip, block separation, v1 migration, garbage repair, register/eliminate clearing state;
+RoomFlags serialization). Verified in-browser end to end: gave items → marked an overworld secret +
+2 visited screens → entered L1, cleared room 60 and opened its north door → Start, Up+A → Mode $08
+renders → SAVE → title → **page reload** → loaded the file: screen (7,7), 3 hearts, maxHealth 32,
+999 rupees, 18 keys, all items, the overworld secret, both visited screens, and L1 room 60 still
+cleared with its door open, while **L7 room 60 is untouched** (block separation holds). All 8
+cheats exercised; zero console errors. **Next: L2 (Second Quest) — the last planned slice.**
+
+Note: `npm run dev` binds `localhost`, not `127.0.0.1` — use `http://localhost:5173/`.
+
+### 2026-09-04 — K2 Music engine (Claude Opus 4.6)
+
+Added music playback to AudioManager using the 2 OGG tracks on disk (overworld.ogg, dungeon.ogg).
+`playMusic(key)` lazy-loads and decodes the OGG on first call (via `loadMusicBuffer`), then loops it
+through a GainNode for fade support. `stopMusic(fadeMs)` fades out via `linearRampToValueAtTime`
+(default 500ms, 0 for immediate). `pauseMusic()` saves the current track key and stops the source;
+`resumeMusic()` restarts from the saved key. Same-track `playMusic` is a no-op (no restart). Music
+respects the existing mute toggle. **6 transition points wired in main.ts:** `startGameFromSlot` →
+overworld, `startDungeonInterior` → dungeon, `exitDungeon` → overworld, `enterCave` → pause,
+`returnToOverworld` → resume, death transitions + `beginTriforceGet` → stop. `handleRespawn` restarts
+the appropriate track (dungeon for dungeon respawn, overworld for overworld respawn). `enterDungeon`
+stops overworld music immediately before the curtain transition. **Bug fix during testing:** 
+`stopMusicImmediate()` was clearing `_musicPaused`/`_musicPausedKey`, breaking `pauseMusic` → 
+`resumeMusic` flow. Fixed by moving those resets out of `stopMusicImmediate` into `toggleMute` only.
+**1214 tests pass (5 pre-existing); src/ typecheck clean; zero console errors.** Verified in browser:
+overworld music plays and loops, dungeon music plays, pause/resume works, stop works, same-track no-op
+works. **Phase K complete. Next: L1 (save system).**
+
+### 2026-09-04 — K1 Web Audio SFX engine (Claude Opus 4.6)
+
+Created `src/audio/audio-manager.ts` — AudioManager class: lazy AudioContext creation with browser
+autoplay policy handling (resume-on-gesture via AbortController), preloads all 30 WAV files from
+`public/assets/audio/sfx/` into AudioBuffers at init. `play(key)` one-shot playback, `playLoop(key)`/
+`stopLoop(key)` for looping SFX, `stopAllLoops()` for cleanup, `toggleMute()` with M key wired in
+main.ts. **25 SFX trigger points wired in main.ts:** sword swing (state-transition detection via
+`sfxPrevSwordActive`), sword beam fired, bomb drop (in `useBItem`), bomb detonation (WeakSet tracking
+in `updateSfxTracking`), boomerang/arrow/candle/rod/recorder (in `useBItem`), enemy hit/kill with
+boss scream differentiation (`isBossEnemy` checks type $32-$3E/$41-$48`), Link hurt (at all 5
+`takeDamage` call sites — enemy contact ×2, projectile ×2, spike trap), Link death (+ stopAllLoops),
+shield deflect (in both OW/dungeon projectile checks), item pickup (rupee→`getRupee`, heart/fairy→
+`getHeart`, triforce→`fanfare`, else→`getItem` via `playPickupSfx`), secret reveal (overworld tile
+objects + dungeon stairs/items), shutter open (`unlock`), key door (keys-before/after detection),
+stairs (cave/dungeon/cellar entry), low-health beep (loop while ≤1 heart, auto-stop on heal/death),
+heart-refill loop (potion use), triforce fanfare (+ stopAllLoops). SFX state tracking vars reset on
+death/triforce-get. Potion use plays `getItem`. Audio exposed via `__zelda.audio` for console testing.
+**1214 tests pass (5 pre-existing inventory failures); src/ typecheck clean; zero console errors.**
+Verified in browser: 30/30 buffers load, all play() calls succeed, loop start/stop works, mute toggle
+works. **Phase K started. Next: K2 (music engine, 2 tracks).**
+
+Older sessions archived → `../PROGRESS.md` (A1–L0c, 2026-08-02 through 2026-09-03).
 
 Note for next agent: the Claude-in-Chrome tab runs in the background, where Chrome freezes
 requestAnimationFrame — the game loop only ticks when the tab is foreground/focused. Use the `__zelda`
 debug helpers to drive state when verifying via automation.
-
-### 2026-08-30 — I3 Patra + Ganon + Zelda rescue — Phase I complete (Claude Opus 4.6)
-
-Final boss slice — completes Phase I and makes the game winnable. **Patra** (`patra.ts`):
-PatraCenter extends Enemy with a 4-state flyer (SpeedUp/Decide/Chase/Wander, screen-edge bounce)
-and tracks movement offsets for 8 PatraChild objects. Children orbit using NES-faithful fixed-point
-angle math: PatraSines 16-entry lookup table, ShiftMultiply bit-shift multiplication, DecreaseObjectAngle
-16-bit fixed-point subtraction. Sequential appearance (children appear one-at-a-time as first child's
-angle reaches PatraChildStartAngles). Two maneuver modes with different rotation bit counts per timer
-toggle. Center invulnerable while any child alive (mask $FE). Group spawn (1+8=9 objects) via
-createPatra() + SpawnManager.pushEnemyOrGroup. **Ganon** (`ganon.ts`): 3 scene phases (DarkRoom $40f,
-LightRoom $C0f, Fighting). Invisible movement reuses BlueWizzrobe walk pattern. Shoots unblockable
-fireball ($56) every $40 frames. Custom collision completely bypasses normal pipeline
-(_vulnerable=false): sword hits → visible $40f timer, HP→0 resets HP and goes brown; brown state
-flickers and decrements, silver arrow (damage≥SILVER_ARROW_DAMAGE via hitContext) kills; dying
-sequence: phase $50→ashes+8 burst rays, phase $A0→drops Triforce of Power as room item.
-**GuardFire/StandingFire** (`guard-fire.ts`): GuardFire ($3F) killable, StandingFire ($40) invulnerable,
-both deal contact damage. **Zelda NPC** (`zelda-npc.ts`): proximity check → halts Link → timer $80 →
-GameMode.ZeldaRescue ending stub ("THANKS LINK, YOU'RE THE HERO OF HYRULE."). createZeldaGroup()
-factory (1 Zelda + 4 GuardFire). 6 new files, spawn-manager + main.ts wiring. **1156 total tests**
-(1155 pass, 1 pre-existing flaky Octorok). Typecheck clean (src). **Phase I complete. Next: J1.**
-
-### 2026-08-29 — H4 Dungeons 7-9 completable — Phase H complete (Claude Opus 4.6)
-
-Made all 9 dungeons navigable and completable (subject to I3 for Ganon). Four bugs fixed:
-**(1) L7-9 entrance screens** — added screens 66→7, 109→8, 5→9 plus Q2 alternates (25, 108, 0)
-to `DUNGEON_ENTRANCE_SCREENS`. **(2) Dungeon entry ignores tile overrides** — L7-9 entrances are
-hidden behind secrets (flute dries pond→stairs, candle burns tree→stairs, bomb rock→cave). The
-dungeon entry detection in main.ts only checked raw tile 12; added override check for both
-`SQUARE_INDEX_CAVE_ENTRANCE` and `SQUARE_INDEX_STAIRS` from `tileObjectManager.tileOverrides`.
-**(3) `checkCaveEntry` ignores STAIRS overrides** — `overworld-manager.ts` only checked
-`SQUARE_INDEX_CAVE_ENTRANCE` override; added `SQUARE_INDEX_STAIRS` (also fixes regular cave stairs
-from tree-burning). **(4) Trigger 3 (LastBoss) broken** — two issues: `itemActivated` was `false`
-(Red Ring wouldn't appear after Ganon kill), and `_bossDefeated` was hardcoded `false` in main.ts.
-Fixed to `itemActivated: true` and pass `allDead` as `_bossDefeated` (in trigger-3 rooms, the boss
-IS the only enemy). Boss rooms: L7=Aquamentus $3D (implemented), L8=Gleeok4 $45 (implemented),
-L9=Ganon $3E (generic-walker fallback until I3). L9 boss room uses trigger 3 → drops Red Ring $0E
-+ opens shutters. All cellar infrastructure reused from H3 (L7: 2, L8: 3, L9: 8 connections).
-10 new tests (entrance mapping, trigger 3 activation/gating, regression guards). **1165 total tests**
-(1164 pass, 1 pre-existing flaky digdogger). Typecheck clean (src). **Phase H complete. Next: I3
-(Patra + Ganon + Zelda rescue).**
-
-### 2026-08-29 — H3 Dungeons 4-6 completable (Claude Opus 4.6)
-
-Implemented the staircase/cellar system and room-clear persistence — the two blockers
-preventing L4-6 from being played end-to-end. **H3a — Staircase/Cellar System:**
-Continued from previous session which built the core infrastructure (cellarConnections
-data extraction, DungeonManager.enterCellar/exitCellar/getCellarForRoom, DungeonCollisionMap
-.forCellar with stairs-tile-forced-walkable, DungeonRenderer.renderCellarRoom, stair entry/exit
-detection in main.ts, walk-in animation). This session completed: (1) fixed `exitCellar` method
-to accept `isLeftSide: boolean` parameter, removing the fragile `(dungeonManager as any)._cellarLeftSide`
-hack; (2) wrapped spike trap update, push block update, bomb/door checks, and secret triggers in
-`if (!dungeonManager.inCellar)` guard — these room-specific systems should not run in the
-cellar passage; (3) guarded push block and spike trap rendering in `renderDungeonEntities()`.
-5 cellar connections: L4 treasure (room 96), L5 tunnel (rooms 100↔6) + treasure (room 4),
-L6 tunnel (rooms 58↔29) + treasure (room 117). **H3b — Room-Clear Persistence:** Added
-`ROOM_CLEARED_BIT` ($40) to `RoomFlags` with `isRoomCleared/setRoomCleared`. Room marked cleared
-when `spawnManager.enemies.length > 0 && activeEnemies.length === 0` (enemies were spawned and all
-died). `spawnDungeonRoomEnemies()` returns early if room is already cleared — enemies no longer
-respawn on re-entry. Fixed test mocks in `dungeon-completion.test.ts` and `dungeon-manager.test.ts`
-(added missing `cellarConnections: []`). 12 new tests (cellar collision, connection data, exit
-position unpacking, room-cleared flags). **1145 total tests** (1144 pass, 1 pre-existing flaky
-digdogger). Typecheck clean (src). **Next: H4 (Dungeons 7-9).**
-
-### 2026-08-28 — I2 Gohma + Digdogger + Gleeok — I2 complete (Claude Opus 4.6)
-
-Implemented all three mid-game bosses (L4-6 backfill). **I2a Gohma** ($33 blue/$34 red,
-`src/objects/enemies/gohma.ts`): crab boss with eye state machine (4 states: closed-left/right,
-fully-open, half-open). Walks via 8-way direction bits at 0.5px/f, 32px sprints. Only vulnerable
-to arrows shot UP when eye is HALF-OPEN and arrow hits center body parts — new `hitContext?`
-primitive on `Enemy.takeDamage()` (optional `{x,y,dir}`, backward compatible, passed by
-arrow collision in `enemy-collision.ts`). Mask $FB = immune to everything except arrows.
-Shoots unblockable fireballs every 65f. 12 tests. **I2b Digdogger** ($38=3 children, $39=1 child,
-`src/objects/enemies/digdogger.ts`): large invulnerable creature (`_vulnerable=false`). 8-way
-movement with Manhandla-style fractional speed accumulator + speed oscillation. Flute reaction:
-when `ctx.fluteActive` → flicker 64 frames then spawn 1/3 LittleDigdogger ($18) children at
-parent position, parent destroyed. Children are fast and killable normally. **Critical fix:**
-recorder couldn't activate in dungeons — `useBItem` case 5 guarded `if (!overworld) break;`.
-Fixed to use `screenId=0` in dungeons (NothingDungeonOnly path → just plays tune). Added
-`fluteActive?: boolean` to `EnemyUpdateContext`, threaded through `SpawnManager.update()`.
-Processing recorder in `updateDungeonGameplay()` (ticks effect, sets fluteActive during Tune phase).
-11 tests. **I2c Gleeok** ($42=2, $43=3, $44=4, $45=4 heads, `src/objects/enemies/gleeok.ts`):
-Manhandla-style group spawn (body + N heads). `GleeokBody` (invulnerable, stationary at Y=$17
-local, manages neck segment physics + fireball shooting). `GleeokNeckHead` (mask $FE sword-only,
-HP $A0, oscillates independently with staggered delays). Head death → notifies body → spawns
-`GleeokFlyingHead` ($46, extends FlyerEnemy, completely invulnerable, shoots fireballs). All heads
-dead → body dies. 12 tests. **1133 total tests, all green.** Typecheck clean. **I2 complete. Next: H3.**
-
-Older sessions archived → `../PROGRESS.md` (A1–I1c, 2026-08-02 through 2026-08-27).

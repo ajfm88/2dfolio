@@ -5,7 +5,7 @@
 // GuardFire appears in the Zelda rescue room (4 flames around her).
 
 import type { Renderer } from '../../render/renderer.js';
-import { drawNpcSprite, FIRE_SPRITES } from '../../render/boss-sprite-data.js';
+import { drawFireSprite } from '../../render/boss-sprite-data.js';
 import { Enemy, type EnemyUpdateContext } from './enemy.js';
 
 export class StandingFire extends Enemy {
@@ -23,9 +23,7 @@ export class StandingFire extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const frameIdx = this._walkAnimFrame & 1;
-    const frame = FIRE_SPRITES.frames[frameIdx] ?? FIRE_SPRITES.frames[0];
-    if (frame) drawNpcSprite(renderer, frame, this._x, this._y);
+    drawFireSprite(renderer, this._walkAnimFrame & 1, this._x, this._y);
   }
 }
 
@@ -43,8 +41,6 @@ export class GuardFire extends Enemy {
   }
 
   protected override renderEnemy(renderer: Renderer): void {
-    const frameIdx = this._walkAnimFrame & 1;
-    const frame = FIRE_SPRITES.frames[frameIdx] ?? FIRE_SPRITES.frames[0];
-    if (frame) drawNpcSprite(renderer, frame, this._x, this._y);
+    drawFireSprite(renderer, this._walkAnimFrame & 1, this._x, this._y);
   }
 }

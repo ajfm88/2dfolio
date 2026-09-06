@@ -1,5 +1,10 @@
 // Per-room persistent flags — Z_07.asm GetRoomFlags / WorldFlags ($67F)
-// In-memory only for now; save/load deferred to L1.
+//
+// The NES WorldFlags region is $067F-$07FE = $180 bytes = three 128-byte blocks,
+// mirrored into SRAM as SaveFileAWorldFlags0/1/2 (Variables.inc:308-310). Each
+// level picks its block via LevelInfo_WorldFlagsAddr; our dungeons.json carries
+// the same grouping (levels 1-6 = uw1q1, 7-9 = uw2q1), so one RoomFlags instance
+// exists per block, not per dungeon. See WORLD_FLAG_BLOCKS in save-manager.ts.
 //
 // Bit layout (matches NES):
 //   $80 = secret found/taken
@@ -68,5 +73,35 @@ export class RoomFlags {
 
   getFlags(roomId: number): number {
     return this.flags[roomId]!;
+  }
+
+  /** Room count this block covers (128 on the NES). */
+  get size(): number {
+    return this.flags.length;
+  }
+
+  /** Serialize for the save file. Plain numbers so it survives JSON round-trips. */
+  toBytes(): number[] {
+    return Array.from(this.flags);
+  }
+
+  /**
+   * Overwrite in place from a saved byte array. Mutating rather than replacing
+   * matters because OverworldManager holds its RoomFlags as a readonly field.
+   * Shorter input zeroes the tail and longer input is truncated, so a save from a
+   * different room count still loads instead of throwing.
+   */
+  loadBytes(bytes: readonly number[]): void {
+    for (let i = 0; i < this.flags.length; i++) {
+      const b = bytes[i];
+      this.flags[i] = typeof b === 'number' && b >= 0 ? b & 0xff : 0;
+    }
+  }
+
+  /** Convenience constructor around loadBytes. */
+  static fromBytes(bytes: readonly number[], roomCount = 128): RoomFlags {
+    const rf = new RoomFlags(roomCount);
+    rf.loadBytes(bytes);
+    return rf;
   }
 }

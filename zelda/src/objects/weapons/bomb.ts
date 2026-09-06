@@ -5,6 +5,12 @@ import { TILE_SIZE, BOMB_BLAST_RADIUS } from '../../core/constants.js';
 import type { Rect } from '../../core/types.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
 import type { Renderer } from '../../render/renderer.js';
+import {
+  drawProjectileSprite,
+  hasProjectileSprites,
+  PROJ_COL_BOMB,
+  PROJ_ROW_NORTH,
+} from '../../render/projectile-sprite-data.js';
 
 // BombTimes from Z_07.asm:4783: $30, $18, $0C, $06
 const BOMB_TIMES: readonly number[] = [0x30, 0x18, 0x0C, 0x06];
@@ -26,8 +32,9 @@ export enum BombState {
   Dead = 0x15,
 }
 
-// Bomb sprite index in projectiles.png (row 0, column 2 — small dark bomb icon)
-const BOMB_SPRITE_INDEX = 2;
+// projectiles.png column 5, row 0 — the bomb's single frame
+// (zelda-clone-master ProjectileSpriteFactory: bombColumn = 5, bombRow = 0,
+// bombTotalFrames = 1).
 
 export class Bomb {
   private _x: number;
@@ -100,13 +107,13 @@ export class Bomb {
     };
   }
 
-  render(ctx: CanvasRenderingContext2D, cloudSheet?: SpriteSheet, renderer?: Renderer, projectilesSheet?: SpriteSheet): void {
+  render(ctx: CanvasRenderingContext2D, cloudSheet?: SpriteSheet, renderer?: Renderer): void {
     if (this._state === BombState.Dead) return;
 
     if (this._state === BombState.Detonating || this._state === BombState.Exploding) {
       this.renderExplosion(ctx, cloudSheet, renderer);
     } else {
-      this.renderBombBody(ctx, renderer, projectilesSheet);
+      this.renderBombBody(ctx, renderer);
     }
   }
 
@@ -140,9 +147,9 @@ export class Bomb {
     }
   }
 
-  private renderBombBody(ctx: CanvasRenderingContext2D, renderer?: Renderer, projectilesSheet?: SpriteSheet): void {
-    if (projectilesSheet && renderer) {
-      projectilesSheet.drawFrame(renderer, BOMB_SPRITE_INDEX, this._x, this._y);
+  private renderBombBody(ctx: CanvasRenderingContext2D, renderer?: Renderer): void {
+    if (renderer && hasProjectileSprites()) {
+      drawProjectileSprite(renderer, PROJ_COL_BOMB, PROJ_ROW_NORTH, this._x, this._y);
 
       // Fuse blink spark
       if (this._state === BombState.Fuse && (this._timer & 0x04)) {

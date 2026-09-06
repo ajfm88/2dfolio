@@ -9,8 +9,8 @@ describe('getNextOwnedSlot', () => {
     inv.candle = 1;
     inv.selectedBSlot = 0;
     const next = getNextOwnedSlot(inv, 0, 1);
-    // Slot 1 (bomb) is always selectable, so it's the next one
-    expect(next).toBe(1);
+    // Slot 1 (bomb) is gated on hasBombs, 2/3 need the bow — so candle is next
+    expect(next).toBe(4);
   });
 
   it('cycles backward going left', () => {
@@ -19,8 +19,8 @@ describe('getNextOwnedSlot', () => {
     inv.candle = 1;
     inv.selectedBSlot = 4;
     const next = getNextOwnedSlot(inv, 4, -1);
-    // Slot 1 (bomb) is between candle and boomerang going left (4→3skip→2no→1bomb)
-    expect(next).toBe(1);
+    // 4→3 skip→2 no bow→1 no bombs→0 boomerang
+    expect(next).toBe(0);
   });
 
   it('always skips slot 3 (bow)', () => {
@@ -46,8 +46,18 @@ describe('getNextOwnedSlot', () => {
     const inv = new Inventory();
     inv.wand = true; // slot 8 only
     const next = getNextOwnedSlot(inv, 8, 1);
-    // Slot 1 (bomb) is always selectable, so cycles to it
-    expect(next).toBe(1);
+    // Nothing else is owned, so the wrap lands back on the wand
+    expect(next).toBe(8);
+  });
+
+  it('slot 1 only selectable when bombs are owned', () => {
+    const inv = new Inventory();
+    inv.wand = true; // slot 8, so there is always somewhere else to land
+    // Without bombs, going right from 0 skips slot 1 entirely
+    expect(getNextOwnedSlot(inv, 0, 1)).toBe(8);
+    // Owning bombs opens the slot up
+    inv.hasBombs = true;
+    expect(getNextOwnedSlot(inv, 0, 1)).toBe(1);
   });
 
   it('slot 2 only selectable when bow is owned', () => {

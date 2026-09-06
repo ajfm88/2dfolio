@@ -90,6 +90,7 @@ describe('Inventory', () => {
     it('returns bomb ID for slot 1', () => {
       const inv = new Inventory();
       inv.selectedBSlot = 1;
+      inv.hasBombs = true; // slot 1 is gated on owning bombs
       expect(inv.getEquippedBItemId()).toBe(0x00);
     });
 

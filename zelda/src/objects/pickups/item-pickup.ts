@@ -14,10 +14,15 @@ export class ItemPickup {
   private frameToggle = false;
   private _collected = false;
 
-  constructor(x: number, y: number, itemId: number) {
+  // Argument order matches `drawItemSprite(ctx, sheet, itemId, x, y)` and every
+  // call site in main.ts. It used to be (x, y, itemId) while all four callers
+  // passed (itemId, x, y), so `itemId` held a world Y coordinate — no grid entry
+  // matched it and `drawItemSprite` bailed, which is why dropped items were
+  // invisible and uncollectable.
+  constructor(itemId: number, x: number, y: number) {
+    this.itemId = itemId;
     this.x = x;
     this.y = y;
-    this.itemId = itemId;
   }
 
   get isActive(): boolean {
@@ -53,6 +58,8 @@ export class ItemPickup {
     if (!this.isActive) return;
     // Flash during last ~64 ticks (blink every 4 frames)
     if (this.lifetime < FLASH_THRESHOLD && (this.lifetime & 0x04) === 0) return;
-    drawItemSprite(ctx, itemsImage, this.itemId, this.x, this.y);
+    // Dungeon room item ids carry flag bits in the top two bits (same mask as
+    // cave-room.ts and handleDungeonItemPickup).
+    drawItemSprite(ctx, itemsImage, this.itemId & 0x3f, this.x, this.y);
   }
 }

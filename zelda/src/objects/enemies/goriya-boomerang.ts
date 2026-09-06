@@ -5,7 +5,10 @@
 
 import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import { drawProjectileFrameFlipped, BOOMERANG_BASE } from '../../render/projectile-sprite-data.js';
+import {
+  drawProjectileSpriteFlipped,
+  PROJ_COL_BOOMERANG,
+} from '../../render/projectile-sprite-data.js';
 import { EnemyProjectile, ProjectileState } from '../projectiles/enemy-projectile.js';
 import { ProjectileType } from '../player/shield.js';
 
@@ -95,7 +98,9 @@ export class GoriyaBoomerang extends EnemyProjectile {
     const frameIdx = FRAME_CYCLE[this._animFrame & 0x03]!;
     const flipH = (this._animFrame & 0x02) !== 0;
     const flipV = (this._animFrame & 0x01) !== 0;
-    drawProjectileFrameFlipped(renderer, BOOMERANG_BASE + frameIdx, this._x, this._y, flipH, flipV);
+    drawProjectileSpriteFlipped(
+      renderer, PROJ_COL_BOOMERANG, frameIdx, this._x, this._y, flipH, flipV,
+    );
   }
 }
 

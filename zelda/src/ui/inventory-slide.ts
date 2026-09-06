@@ -30,6 +30,16 @@ export class InventorySlide {
     this._phase = SlidePhase.SlideUp;
   }
 
+  /**
+   * Snap shut with no scroll. The NES save chord resets MenuState outright before
+   * switching to Mode $08 (Z_05.asm:362 UpdateMenuActive, JSR EndGameMode / STA
+   * MenuState) rather than playing the scroll-up.
+   */
+  hideImmediately(): void {
+    this._phase = SlidePhase.Idle;
+    this._offset = 0;
+  }
+
   update(): void {
     if (this._phase === SlidePhase.SlideDown) {
       this._offset = Math.min(this._offset + SLIDE_SPEED, PLAY_AREA_HEIGHT);

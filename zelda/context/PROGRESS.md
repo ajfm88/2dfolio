@@ -785,3 +785,194 @@ slot expands to the 5-object cluster — updated the boss-spawn-count test's $3C
 cardinal); ≤4-fireball cap approximated by shoot probability; diagonal group movement
 kept. **I1 is now complete — all three L1-3 bosses are faithful.** **Next: Phase I2
 (Gleeok/Digdogger/Gohma) or H3 (Dungeons 4-6).**
+
+## 2026-08-28 — I2 Gohma + Digdogger + Gleeok — I2 complete (Claude Opus 4.6)
+
+Implemented all three mid-game bosses (L4-6 backfill). **I2a Gohma** ($33 blue/$34 red,
+`src/objects/enemies/gohma.ts`): crab boss with eye state machine (4 states: closed-left/right,
+fully-open, half-open). Walks via 8-way direction bits at 0.5px/f, 32px sprints. Only vulnerable
+to arrows shot UP when eye is HALF-OPEN and arrow hits center body parts — new `hitContext?`
+primitive on `Enemy.takeDamage()` (optional `{x,y,dir}`, backward compatible, passed by
+arrow collision in `enemy-collision.ts`). Mask $FB = immune to everything except arrows.
+Shoots unblockable fireballs every 65f. 12 tests. **I2b Digdogger** ($38=3 children, $39=1 child,
+`src/objects/enemies/digdogger.ts`): large invulnerable creature (`_vulnerable=false`). 8-way
+movement with Manhandla-style fractional speed accumulator + speed oscillation. Flute reaction:
+when `ctx.fluteActive` → flicker 64 frames then spawn 1/3 LittleDigdogger ($18) children at
+parent position, parent destroyed. Children are fast and killable normally. **Critical fix:**
+recorder couldn't activate in dungeons — `useBItem` case 5 guarded `if (!overworld) break;`.
+Fixed to use `screenId=0` in dungeons (NothingDungeonOnly path → just plays tune). Added
+`fluteActive?: boolean` to `EnemyUpdateContext`, threaded through `SpawnManager.update()`.
+Processing recorder in `updateDungeonGameplay()` (ticks effect, sets fluteActive during Tune phase).
+11 tests. **I2c Gleeok** ($42=2, $43=3, $44=4, $45=4 heads, `src/objects/enemies/gleeok.ts`):
+Manhandla-style group spawn (body + N heads). `GleeokBody` (invulnerable, stationary at Y=$17
+local, manages neck segment physics + fireball shooting). `GleeokNeckHead` (mask $FE sword-only,
+HP $A0, oscillates independently with staggered delays). Head death → notifies body → spawns
+`GleeokFlyingHead` ($46, extends FlyerEnemy, completely invulnerable, shoots fireballs). All heads
+dead → body dies. 12 tests. **1133 total tests, all green.** Typecheck clean. **I2 complete. Next: H3.**
+
+## 2026-08-29 — H3 Dungeons 4-6 completable (Claude Opus 4.6)
+
+Implemented the staircase/cellar system and room-clear persistence — the two blockers
+preventing L4-6 from being played end-to-end. **H3a — Staircase/Cellar System:**
+Continued from previous session which built the core infrastructure (cellarConnections
+data extraction, DungeonManager.enterCellar/exitCellar/getCellarForRoom, DungeonCollisionMap
+.forCellar with stairs-tile-forced-walkable, DungeonRenderer.renderCellarRoom, stair entry/exit
+detection in main.ts, walk-in animation). This session completed: (1) fixed `exitCellar` method
+to accept `isLeftSide: boolean` parameter, removing the fragile `(dungeonManager as any)._cellarLeftSide`
+hack; (2) wrapped spike trap update, push block update, bomb/door checks, and secret triggers in
+`if (!dungeonManager.inCellar)` guard — these room-specific systems should not run in the
+cellar passage; (3) guarded push block and spike trap rendering in `renderDungeonEntities()`.
+5 cellar connections: L4 treasure (room 96), L5 tunnel (rooms 100↔6) + treasure (room 4),
+L6 tunnel (rooms 58↔29) + treasure (room 117). **H3b — Room-Clear Persistence:** Added
+`ROOM_CLEARED_BIT` ($40) to `RoomFlags` with `isRoomCleared/setRoomCleared`. Room marked cleared
+when `spawnManager.enemies.length > 0 && activeEnemies.length === 0` (enemies were spawned and all
+died). `spawnDungeonRoomEnemies()` returns early if room is already cleared — enemies no longer
+respawn on re-entry. Fixed test mocks in `dungeon-completion.test.ts` and `dungeon-manager.test.ts`
+(added missing `cellarConnections: []`). 12 new tests (cellar collision, connection data, exit
+position unpacking, room-cleared flags). **1145 total tests** (1144 pass, 1 pre-existing flaky
+digdogger). Typecheck clean (src). **Next: H4 (Dungeons 7-9).**
+
+## 2026-08-29 — H4 Dungeons 7-9 completable — Phase H complete (Claude Opus 4.6)
+
+Made all 9 dungeons navigable and completable (subject to I3 for Ganon). Four bugs fixed:
+**(1) L7-9 entrance screens** — added screens 66→7, 109→8, 5→9 plus Q2 alternates (25, 108, 0)
+to `DUNGEON_ENTRANCE_SCREENS`. **(2) Dungeon entry ignores tile overrides** — L7-9 entrances are
+hidden behind secrets (flute dries pond→stairs, candle burns tree→stairs, bomb rock→cave). The
+dungeon entry detection in main.ts only checked raw tile 12; added override check for both
+`SQUARE_INDEX_CAVE_ENTRANCE` and `SQUARE_INDEX_STAIRS` from `tileObjectManager.tileOverrides`.
+**(3) `checkCaveEntry` ignores STAIRS overrides** — `overworld-manager.ts` only checked
+`SQUARE_INDEX_CAVE_ENTRANCE` override; added `SQUARE_INDEX_STAIRS` (also fixes regular cave stairs
+from tree-burning). **(4) Trigger 3 (LastBoss) broken** — two issues: `itemActivated` was `false`
+(Red Ring wouldn't appear after Ganon kill), and `_bossDefeated` was hardcoded `false` in main.ts.
+Fixed to `itemActivated: true` and pass `allDead` as `_bossDefeated` (in trigger-3 rooms, the boss
+IS the only enemy). Boss rooms: L7=Aquamentus $3D (implemented), L8=Gleeok4 $45 (implemented),
+L9=Ganon $3E (generic-walker fallback until I3). L9 boss room uses trigger 3 → drops Red Ring $0E
++ opens shutters. All cellar infrastructure reused from H3 (L7: 2, L8: 3, L9: 8 connections).
+10 new tests (entrance mapping, trigger 3 activation/gating, regression guards). **1165 total tests**
+(1164 pass, 1 pre-existing flaky digdogger). Typecheck clean (src). **Phase H complete. Next: I3
+(Patra + Ganon + Zelda rescue).**
+
+## 2026-08-30 — I3 Patra + Ganon + Zelda rescue — Phase I complete (Claude Opus 4.6)
+
+Final boss slice — completes Phase I and makes the game winnable. **Patra** (`patra.ts`):
+PatraCenter extends Enemy with a 4-state flyer (SpeedUp/Decide/Chase/Wander, screen-edge bounce)
+and tracks movement offsets for 8 PatraChild objects. Children orbit using NES-faithful fixed-point
+angle math: PatraSines 16-entry lookup table, ShiftMultiply bit-shift multiplication, DecreaseObjectAngle
+16-bit fixed-point subtraction. Sequential appearance (children appear one-at-a-time as first child's
+angle reaches PatraChildStartAngles). Two maneuver modes with different rotation bit counts per timer
+toggle. Center invulnerable while any child alive (mask $FE). Group spawn (1+8=9 objects) via
+createPatra() + SpawnManager.pushEnemyOrGroup. **Ganon** (`ganon.ts`): 3 scene phases (DarkRoom $40f,
+LightRoom $C0f, Fighting). Invisible movement reuses BlueWizzrobe walk pattern. Shoots unblockable
+fireball ($56) every $40 frames. Custom collision completely bypasses normal pipeline
+(_vulnerable=false): sword hits → visible $40f timer, HP→0 resets HP and goes brown; brown state
+flickers and decrements, silver arrow (damage≥SILVER_ARROW_DAMAGE via hitContext) kills; dying
+sequence: phase $50→ashes+8 burst rays, phase $A0→drops Triforce of Power as room item.
+**GuardFire/StandingFire** (`guard-fire.ts`): GuardFire ($3F) killable, StandingFire ($40) invulnerable,
+both deal contact damage. **Zelda NPC** (`zelda-npc.ts`): proximity check → halts Link → timer $80 →
+GameMode.ZeldaRescue ending stub ("THANKS LINK, YOU'RE THE HERO OF HYRULE."). createZeldaGroup()
+factory (1 Zelda + 4 GuardFire). 6 new files, spawn-manager + main.ts wiring. **1156 total tests**
+(1155 pass, 1 pre-existing flaky Octorok). Typecheck clean (src). **Phase I complete. Next: J1.**
+
+## 2026-09-01 — J1a Title + backstory scroll + file select + boot refactor (Claude Opus 4.8)
+
+First front-end slice. **J1 split into J1a/J1b** (user, DECISIONS #9). Added `GameMode.Title`
+and `GameMode.FileSelect`; **boot now lands on Title** instead of Gameplay. Refactored `init()`
+so it only loads assets/data + builds renderers/fonts — the playable world (Link, OverworldManager,
+SpawnManager, DropEngine, start-screen spawn) is created lazily by the new `startGameFromSlot(index)`,
+the single seam through which any game begins. **TitleScreen** (`src/ui/title-screen.ts`): draws the
+ready-made `title.png` full-screen (PUSH START BUTTON is baked in — static, as on NES); after ~7s idle
+with no input it enters a vertical **backstory scroll** (Triforce crest + hardcoded story text,
+`Z_02.asm` UpdateMode0Demo, ~0.5px/f), any button skips back. **FileSelectScreen**
+(`src/ui/file-select-screen.ts`): 3 save-file rows (name + `-deaths`) + REGISTER YOUR NAME +
+ELIMINATION MODE rows, `>` cursor (GameOverScreen pattern), Up/Down wrap-nav, Start emits a selection;
+main.ts starts the game only for a *registered* slot (empty/register/eliminate are J1b stubs).
+**SaveManager** (`src/save/save-manager.ts`, DECISIONS #8): persists slot metadata (name, quest,
+registered, deaths) to `localStorage` key `zelda-nes:saves:v1`; storage is injectable (tests) and all
+access guarded (corrupt/blocked/private-mode → in-memory empty slots). L1 widens SaveSlot to full game
+state + IndexedDB. `recordDeath(activeSaveSlot)` wired at the death→GameOver transition. Front-end
+renders full-screen via an early return before the HUD/play-area translate. Debug helpers added:
+`__zelda.goToTitle/goToFileSelect/startGame(slot)/registerTest(slot,name)/saveManager`. **26 new tests
+(1181 total, all green); src/ typecheck clean.** Verified in-browser: title, story scroll, file select
+(seeded LINK/ZELDA slots), and start-game→overworld all render correctly; no console errors. **Next: J1b.**
+
+Note for next agent: the Claude-in-Chrome tab runs in the background, where Chrome freezes
+requestAnimationFrame — the game loop only ticks when the tab is foreground/focused. Use the `__zelda`
+debug helpers to drive state when verifying via automation.
+
+## 2026-09-01 — J1b Name registration + elimination — J1 complete (Claude Opus 4.8)
+
+Completes slice J1. Added `GameMode.Register`/`Elimination` and wired the two file-select
+option rows that were J1a no-op stubs. **NameBoard** (`src/ui/name-board.ts`, pure): the 44-cell
+character board (4 rows × 11 cols) mirroring `ModeE_CharMap` (`Z_02.asm:1423-1429`). The NES
+cursor logic (`ModeE_HandleDirections`, `:1844-1931`) juggles pixel X/Y with edge checks; on a
+row-major grid that reduces exactly to modular arithmetic — Right/Left = ±1 mod 44, Down/Up = ±11
+mod 44 (every wrap case traced against the asm). The 7 symbol tiles ($62 $63 $28-$2C) map to the
+glyphs BitmapFont supports (`- . ! '`); the rest degrade to the fallback tile → L0 font pass.
+**NameRegistrationScreen** (`src/ui/name-registration.ts`): per-slot 8-char buffers (already-
+registered slots are display-only and skipped), **Select** cycles the slot cursor over the 3 files +
+END skipping registered slots (`UpdateModeEandF_Idle`), directions drive the board with DAS
+auto-repeat (act on press, then 16f to first repeat, then every 8f — `ModeE_ChooseRepeatDelay`
+`:1830-1838`), **A** writes the highlighted char + advances the name cursor (wrap 0-7), **B** advances
+only (`ModeE_HandleAOrB`), **Start on END** emits registration intents → `main.ts` calls
+`SaveManager.register`. **EliminationScreen** (`src/ui/elimination.ts`): slot cursor + END (Up/Down or
+Select), Start on a slot → `SaveManager.eliminate` (`DeleteSlot` `:1770`), Start on END → back to file
+select (simplification: NES sends Eliminate's END to Register). Shared title/slot-row draw helpers
+exported from `file-select-screen.ts` (`drawFrontEndTitle`, `drawSlotRow`, `FS_*` layout consts).
+Debug: `__zelda.goToRegister()`/`goToElimination()`. **21 new tests (1202 total, all green); src/
+typecheck clean.** Verified in-browser: register screen (board + slots + END + flashing cursor),
+name-entry writes a char (A appeared in the row), and the elimination screen all render correctly;
+no console errors. **J1 complete. Phase J half done. Next: J2 (ending + credits).**
+
+## 2026-09-02 — J2 Ending sequence + credits + game-over polish — Phase J complete (Claude Opus 4.6)
+
+Replaced the ZeldaRescue text stub with a full 5-phase ending sequence (`src/ui/ending-screen.ts`,
+from Z_02.asm Mode $13 InitMode13_Full + UpdateMode13WinGame). **EndingScreen** class with phase
+state machine: **Flash** (192f total — first 64f static black, then 128f cycling 4 NES palette
+colors $0F/$12/$16/$2A; Link+Zelda placeholders with gold Triforces above each), **PeaceText**
+(640f long timer; typewriter reveals "FINALLY, PEACE RETURNS TO HYRULE. THIS ENDS THE STORY."
+one character every 8 frames across 3 lines), **Credits** (brick-walled frame with staff credits
+scrolling at ~0.5px/f: STAFF, EXECUTIVE PRODUCER H.YAMAUCHI, S.MIYAMOTO, K.KONDO, T.WAKAI,
+T.TEZUKA, T.NAKAZOO, "ANOTHER QUEST WILL START FROM HERE. PRESS THE START BUTTON.", player
+name + death count), **AshTriforce** (Ganon grey ash pile + gold Triforce, "PUSH START BUTTON",
+64f minimum wait then Start finishes), **Done** (calls `SaveManager.switchToSecondQuest()` → sets
+quest=2 + persists, resets title, → `GameMode.Title`). Renders full-screen via the `isFrontEnd`
+early-return path (no HUD during ending — fixed from initial implementation that showed HUD).
+**Game-over SAVE option** now returns to title (NES Mode $D behavior) instead of respawning like
+Continue/Retry. Added `GameOverOption` import + branch in main.ts GameOver handler. Debug:
+`__zelda.goToEnding()`. **16 new tests (1218 total, all green); src/ typecheck clean.** Verified
+in-browser: all 5 phases render correctly, no HUD, Start on AshTriforce returns to title, no
+console errors. **Phase J complete. Next: L0 (sprite polish).**
+
+## 2026-09-03 — L0b Boss sprite polish (Claude Opus 4.6)
+
+Replaced fillRect placeholder rendering with real sprite sheet art for all 10 boss/NPC files.
+Created `src/render/boss-sprite-data.ts`: central module with `initBossSprites()`/`initNpcSprites()`
+(green/cyan transparency keying), `drawBossSprite()`/`drawBossSpriteScaled()`/`drawNpcSprite()`,
+and hardcoded pixel coordinates for all boss sprites from `bosses.png` (494×296, Mister Mike /
+Spriters Resource) and `npcs.png` (280×256). Wired init calls in `main.ts`. Updated 10 enemy files:
+**Aquamentus** (mouth open/closed × 2 walk frames), **Dodongo** (left/right × 2 walk frames + stunned
+overlay), **Manhandla** (center 2 frames + hand 2 frames), **Digdogger** (big 5 pulsing frames +
+little 2 frames), **Gohma** (4 eye states: closed-left/right, fully-open, half-open, each 48×32),
+**Gleeok** (body 3 frames + neck segments 8×8 + neck heads 8×16 + flying head 16×16),
+**Patra** (center 16×16 + child 8×16 × 2 frames), **Ganon** (4 body frames + tint overlay for
+brown/dying states, procedural ashes/burst preserved), **GuardFire/StandingFire** (2 fire frames
+from npcs.png), **Zelda NPC** (standing/rescued from npcs.png). Removed unused `_mouthOpen` from
+Dodongo, unused `_cardinal` from ManhandlaHand, fixed inline import type in Dodongo. **1218 tests
+(1216 pass, 2 pre-existing flaky movement tests); src/ typecheck clean.**
+
+## 2026-09-03 — L0c Weapon/projectile/item/ending sprite polish (Claude Opus 4.6)
+
+Replaced fillRect placeholder rendering with real sprites for weapons, enemy projectiles, world items,
+and the ending screen. Created `src/render/projectile-sprite-data.ts`: module-level SpriteSheet from
+`projectiles.png` (15 cols, 16×16) with `initProjectileSprites()`/`drawProjectileFrame()`/
+`drawProjectileFrameFlipped()` and sprite index constants. Added `initLinkEndingSprite()` +
+`drawLinkEndingSprite()`/`drawLinkEndingSpriteUp()` to `boss-sprite-data.ts` for ending sequence Link.
+Added `getProcessedItemsCanvas()` accessor to `item-sprites.ts`. Updated 8 render files:
+**enemy-projectile.ts** (fireballs/magic/arrows/sword shots now use projectile sprites; rocks kept as
+styled fillRect), **goriya-boomerang.ts** (spinning boomerang sprite frames), **magic-rod.ts** (rod
+sprite replacing brown stick), **magic-shot.ts** (alternating sprite frames replacing cycling squares),
+**raft.ts** (item sprite 0x0c replacing brown planks), **stepladder.ts** (item sprite 0x0d replacing
+cross-planks), **ending-screen.ts** (Link sprite from link.png, Zelda from npcs.png ZELDA_NPC_SPRITES,
+Triforce from items.png). Kept procedural: whirlwind (no sprite), push block (wall approximation),
+Ganon ash pile, arrow spark, shield deflection. **1218 tests all pass; src/ typecheck clean.
+L0 complete.**

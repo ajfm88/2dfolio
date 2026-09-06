@@ -11,7 +11,11 @@ import {
 import { Direction, type Rect } from '../../core/types.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import {
+  drawProjectileSprite,
+  directionToProjectileRow,
+  PROJ_COL_ARROW,
+} from '../../render/projectile-sprite-data.js';
 import type { TileCollisionMap } from '../../world/collision.js';
 
 export { ARROW_DAMAGE, SILVER_ARROW_DAMAGE } from '../../core/constants.js';
@@ -22,12 +26,6 @@ export enum ArrowState {
   Dead   = 0x00,
 }
 
-// Arrow sprite indices in projectiles.png — column 0, directional rows
-// Up=row0 col0 (idx 0), Down=row1 col0 (idx 15), Left=row2 col0 (idx 30), Right uses Left+H-flip
-const ARROW_SPRITE_UP = 0;
-const ARROW_SPRITE_DOWN = 15;
-const ARROW_SPRITE_LEFT = 30;
-const ARROW_SPRITE_RIGHT = 30; // same as left, H-flipped
 
 export class Arrow {
   private _x: number;
@@ -104,7 +102,7 @@ export class Arrow {
     }
   }
 
-  render(renderer: Renderer, spriteSheet: SpriteSheet): void {
+  render(renderer: Renderer): void {
     if (this._state === ArrowState.Dead) return;
 
     if (this._state === ArrowState.Spark) {
@@ -115,19 +113,13 @@ export class Arrow {
       return;
     }
 
-    const flipH = this._direction === Direction.Right;
-    const spriteIndex = this.getSpriteIndex();
-    spriteSheet.drawFrameFlipped(renderer, spriteIndex, this._x, this._y, flipH, false);
+    // The sheet has a dedicated cell per direction, so no flipping is needed.
+    drawProjectileSprite(
+      renderer, PROJ_COL_ARROW, directionToProjectileRow(this._direction),
+      this._x, this._y,
+    );
   }
 
-  private getSpriteIndex(): number {
-    switch (this._direction) {
-      case Direction.Up: return ARROW_SPRITE_UP;
-      case Direction.Down: return ARROW_SPRITE_DOWN;
-      case Direction.Left: return ARROW_SPRITE_LEFT;
-      case Direction.Right: return ARROW_SPRITE_RIGHT;
-    }
-  }
 
   private computePixels(): number {
     let pixels = 0;
