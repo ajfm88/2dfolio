@@ -1,7 +1,12 @@
 // NES-accurate inventory subscreen renderer
 // Layout from ZeldaJS InventoryState.ts + NES disassembly Z_05.asm DrawSubmenuItems
 import { PLAY_AREA_HEIGHT, SCREEN_WIDTH } from '../core/constants.js';
-import { drawItemSprite, drawNESItemSprite } from '../data/item-sprites.js';
+import {
+  drawItemSprite,
+  drawItemsRegion,
+  drawNESItemSprite,
+  TRIFORCE_PIECE_SRC,
+} from '../data/item-sprites.js';
 import type { Inventory } from '../objects/player/inventory.js';
 import { SELECTABLE_SLOT_COUNT } from '../objects/player/inventory.js';
 import type { Renderer } from '../render/renderer.js';
@@ -11,6 +16,15 @@ import type { HudState } from './hud.js';
 
 const BOX_COLOR = '#4040ef';
 const TRIFORCE_COLOR = '#f0cac2';
+// The empty outline is always drawn — it's the socket the pieces fill, and the
+// screen looks broken without it. The fill is the item sprite (items.png cell
+// 8,3) scaled to exactly that outline, so a complete set paints the outline
+// solid. Each level owns one horizontal eighth; the bands butt up against each
+// other, so they read as one triangle rather than as eight stripes.
+const TRIFORCE_BASE_Y = 108;
+const TRIFORCE_W = 120;
+const TRIFORCE_H = 60 * (115 / 141);
+const TRIFORCE_LEVELS = 8;
 
 // B-item box (left)
 const B_BOX_X = 60;
@@ -171,11 +185,9 @@ export class InventoryScreen {
     }
 
     // Triforce section
-    this.drawTriforceOutline(ctx, 108);
+    this.drawTriforceOutline(ctx, TRIFORCE_BASE_Y);
     redFont.drawString(renderer, 94, 165, 'TRIFORCE');
-
-    // Triforce pieces (bits 0-7)
-    this.drawTriforcePieces(ctx, inventory.triforce, 108);
+    this.drawTriforcePieces(ctx, itemsImage, inventory.triforce);
 
     // HUD bar at bottom of subscreen
     ctx.save();
@@ -202,13 +214,12 @@ export class InventoryScreen {
     ctx.strokeStyle = TRIFORCE_COLOR;
     ctx.lineWidth = 1.5;
     const yOff = y + 0.5;
-    const ratio = 115 / 141;
 
     // Outer triangle
     ctx.beginPath();
     ctx.moveTo(midX, yOff);
-    ctx.lineTo(midX + 60, yOff + 60 * ratio);
-    ctx.lineTo(midX - 60, yOff + 60 * ratio);
+    ctx.lineTo(midX + 60, yOff + TRIFORCE_H);
+    ctx.lineTo(midX - 60, yOff + TRIFORCE_H);
     ctx.closePath();
     ctx.stroke();
 
@@ -222,30 +233,33 @@ export class InventoryScreen {
     ctx.stroke();
   }
 
+  // Reveal the scaled triangle one horizontal band per collected level, top
+  // (level 1) to bottom (level 8), filling the outline drawn above.
   private drawTriforcePieces(
-    ctx: CanvasRenderingContext2D, mask: number, baseY: number,
+    ctx: CanvasRenderingContext2D,
+    itemsImage: HTMLImageElement | HTMLCanvasElement,
+    mask: number,
   ): void {
     if (mask === 0) return;
-    const midX = SCREEN_WIDTH / 2;
-    const ratio = 115 / 141;
-    const yOff = baseY + 0.5;
-    const inset = 3;
-    const h = 60 * ratio - inset;
-    ctx.fillStyle = '#f0c000';
-    for (let i = 0; i < 8; i++) {
-      if (!(mask & (1 << i))) continue;
-      const sliceTop = yOff + inset + (i * h) / 8;
-      const sliceBot = yOff + inset + ((i + 1) * h) / 8;
-      const wTop = (60 - inset) * (sliceTop - yOff) / (60 * ratio);
-      const wBot = (60 - inset) * (sliceBot - yOff) / (60 * ratio);
+    const x = (SCREEN_WIDTH - TRIFORCE_W) / 2;
+    const bandH = TRIFORCE_H / TRIFORCE_LEVELS;
+    const smoothing = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false; // keep the stair-stepped NES edge
+
+    for (let level = 0; level < TRIFORCE_LEVELS; level++) {
+      if (!(mask & (1 << level))) continue;
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(midX - wTop, sliceTop);
-      ctx.lineTo(midX + wTop, sliceTop);
-      ctx.lineTo(midX + wBot, sliceBot);
-      ctx.lineTo(midX - wBot, sliceBot);
-      ctx.closePath();
-      ctx.fill();
+      ctx.rect(x, TRIFORCE_BASE_Y + level * bandH, TRIFORCE_W, bandH);
+      ctx.clip();
+      drawItemsRegion(
+        ctx, itemsImage, TRIFORCE_PIECE_SRC,
+        x, TRIFORCE_BASE_Y, TRIFORCE_W, TRIFORCE_H,
+      );
+      ctx.restore();
     }
+
+    ctx.imageSmoothingEnabled = smoothing;
   }
 }
 

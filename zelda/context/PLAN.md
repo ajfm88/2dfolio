@@ -145,20 +145,20 @@ Sliced by environment so each is playtestable as you go.
 
 | ID | Slice | Verify |
 |---|---|---|
-| K1 ⬜ | Web Audio SFX engine: sword, bomb, item pickup, damage, enemy hit/kill, secret reveal, low health beep, text crawl, stairs, door unlock, shield block | all SFX fire on the correct events |
-| K2 ⬜ | Music engine: overworld, dungeon, final dungeon, boss fight, game over, title, ending, fairy, item fanfare. Crossfade on area transitions | music plays and transitions correctly |
+| K1 ✅ | Web Audio SFX engine: AudioManager with lazy AudioContext + 30 WAV buffer preload. 25 trigger points wired: sword swing/beam, bomb drop/explode, boomerang/arrow/candle/rod/recorder, enemy hit/kill, boss scream, link hurt/die, shield deflect, item pickup (rupee/heart/major), secret reveal, key/shutter/stairs, low-health beep loop, heart-refill loop, triforce fanfare. M key mute toggle. Done 2026-09-04 | all SFX fire on the correct events |
+| K2 ✅ | Music engine: playMusic/stopMusic/pauseMusic/resumeMusic added to AudioManager. Lazy OGG decode on demand. GainNode fade-out. 2 tracks (overworld.ogg, dungeon.ogg). 6 transition points wired: game start→overworld, enter dungeon→dungeon, exit dungeon→overworld, enter cave→pause, exit cave→resume, death/triforce→stop. Respawn restarts appropriate track. Missing tracks (title/boss/ending/game-over/fairy) play silence — engine ready for them. Done 2026-09-04. **Phase K complete.** | music plays and transitions correctly |
 
-## Phase L — Save, Second Quest & Ship (3 slices)
+## Phase L — Save, Second Quest & Ship (4 slices)
+
+**Order:** L0 → L1 → **L0d → L2**. L0d is sequenced *before* L2 deliberately: L2 ends in a full
+playthrough audit, and auditing parity with invisible bombs and boomerangs would mean re-running it.
 
 | ID | Slice | Verify |
 |---|---|---|
 | L0 ✅ | Sprite polish: replaced placeholder colored-rectangle renders with real sprites from sprite sheets. L0b: all bosses/NPCs (bosses.png, npcs.png). L0c: enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce (projectiles.png, items.png, link.png). Procedural kept for: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. Done 2026-09-03 | every entity renders with real sprites; remaining procedural items documented |
-
-
-| ID | Slice | Verify |
-|---|---|---|
-| L1 ⬜ | Save system: 3 slots via IndexedDB. Save on death/quit, load from file select. Persist: inventory, hearts, dungeon progress, Triforce count, quest number | save → reload → identical state |
-| L2 ⬜ | Second Quest: load alternate overworld/dungeon JSON data (different secrets, dungeons, enemy placement). Unlocks after first completion. + Full playthrough audit | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
+| L1 ✅ | Save system: 3 slots in localStorage (DECISIONS #10 amends #8 — ~6KB/slot). Persists Link's counters, the full inventory, three 128-byte world-flag blocks (overworld / uw1q1 / uw2q1, DECISIONS #13) and visited screens. Written only on SAVE (#11), reachable mid-game via Start then Up+A (`Z_05.asm:362`, #12). Loading restarts on the overworld start screen with 3 hearts like the NES. Done 2026-09-04 | save → reload → identical state |
+| L0d ✅ | **In-world sprite fixes** (user-reported 2026-09-04). Two bugs. (a) `projectiles.png` is 6×4 cells of 40×40, not 15 cols of 16×16 — every weapon index landed on an empty cell, so bombs/boomerangs/arrows drew nothing. Column meanings taken from `zelda-clone-master`'s `ProjectileSpriteFactory.cs`, which ships the byte-identical sheet. (b) Four sheets carry a second background colour (grey #747474 backing box) that nothing keyed, so enemies rendered inside a visible square; fixed with an edge-flood-fill in the new `src/render/transparency.ts` that preserves grey *inside* sprites. Done 2026-09-04 | bomb/boomerang/arrow/candle visible in-world; no grey box on dungeon enemies, bosses or NPCs |
+| L2 ⬜ | Second Quest: load alternate overworld/dungeon JSON data (different secrets, dungeons, enemy placement). Unlocks after first completion. + Full playthrough audit. **Last planned slice** | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
 
 ## Phase M — Mobile & touch (post-completion, 2 slices)
 

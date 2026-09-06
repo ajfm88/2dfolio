@@ -53,7 +53,7 @@ describe('NameRegistrationScreen', () => {
 
   it('Select cycles slots, skipping already-registered ones, and reaches END', () => {
     const slots = emptySlots();
-    slots[1] = { name: 'ZELDA', quest: 1, registered: true, deaths: 0 };
+    slots[1] = { name: 'ZELDA', quest: 1, registered: true, deaths: 0, state: null };
     const s = new NameRegistrationScreen();
     s.reset(slots);
     expect(s.slotCursorIndex).toBe(0);        // first editable

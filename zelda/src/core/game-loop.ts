@@ -32,6 +32,16 @@ export class GameLoop {
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
 
+  /**
+   * Run exactly one fixed-timestep update plus a render, outside the rAF loop.
+   * Debug only (__zelda.step): a background tab freezes requestAnimationFrame, so
+   * automated verification has no other way to make frames elapse.
+   */
+  stepOnce(): void {
+    this.callbacks.update(FRAME_TIME);
+    this.callbacks.render();
+  }
+
   private tick(now: number): void {
     if (!this.running) return;
 

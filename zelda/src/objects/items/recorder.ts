@@ -10,6 +10,7 @@ import {
   WHIRLWIND_CATCH_THRESHOLD,
   WHIRLWIND_DEST_ROOMS,
   WHIRLWIND_DEST_YS,
+  nesScreenYToPlayArea,
   WHIRLWIND_DROP_X,
   WHIRLWIND_EXIT_X,
   WHIRLWIND_SPEED,
@@ -126,7 +127,7 @@ export class RecorderEffect {
   }
 
   get destinationLinkY(): number {
-    return WHIRLWIND_DEST_YS[this._destIndex] ?? 0x8D;
+    return nesScreenYToPlayArea(WHIRLWIND_DEST_YS[this._destIndex] ?? 0x8D);
   }
 
   get isWhirlwindPhase(): boolean {

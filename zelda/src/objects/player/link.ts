@@ -44,7 +44,21 @@ export interface LinkUpdateResult {
   readonly screenEdge: Direction | null;
 }
 
+/** The counters a save file carries. See Link.snapshotStats / restoreStats. */
+export interface LinkStats {
+  readonly maxHealth: number;
+  readonly rupees: number;
+  readonly keys: number;
+  readonly bombs: number;
+  readonly maxBombs: number;
+}
+
 const NO_EDGE: LinkUpdateResult = { screenEdge: null };
+
+function clamp(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(max, Math.max(min, Math.floor(value)));
+}
 
 export class Link {
   private _x: number;
@@ -81,6 +95,9 @@ export class Link {
 
   // External halt flag — NES ObjState $40. Blocks all input/movement while visible.
   private _halted = false;
+
+  // Debug cheat (__zelda.godMode) — short-circuits takeDamage. Never set in play.
+  private _godMode = false;
 
   constructor(x: number = LINK_START_X, y: number = LINK_START_Y) {
     this._x = x;
@@ -263,6 +280,41 @@ export class Link {
     this._health = Math.min(this._maxHealth, this._health + halfHearts);
   }
 
+  get godMode(): boolean {
+    return this._godMode;
+  }
+
+  /** Debug cheat toggle. Returns the new state so the console prints something useful. */
+  toggleGodMode(): boolean {
+    this._godMode = !this._godMode;
+    return this._godMode;
+  }
+
+  /**
+   * Counters the save file persists (L1). Current health is deliberately absent —
+   * loading a file always restarts Link on 3 hearts (Z_07.asm:1442 InitMode3_Sub1),
+   * so only the *max* carries over.
+   */
+  snapshotStats(): LinkStats {
+    return {
+      maxHealth: this._maxHealth,
+      rupees: this._rupees,
+      keys: this._keys,
+      bombs: this._bombs,
+      maxBombs: this._maxBombs,
+    };
+  }
+
+  /** Apply a saved snapshot. Clamped the same way the add* mutators are. */
+  restoreStats(stats: LinkStats): void {
+    this._maxHealth = clamp(stats.maxHealth, 2, 32);
+    this._maxBombs = clamp(stats.maxBombs, 0, 16);
+    this._rupees = clamp(stats.rupees, 0, 999);
+    this._keys = clamp(stats.keys, 0, 255);
+    this._bombs = clamp(stats.bombs, 0, this._maxBombs);
+    if (this._health > this._maxHealth) this._health = this._maxHealth;
+  }
+
   setPosition(x: number, y: number): void {
     this._x = x;
     this._y = y;
@@ -297,6 +349,7 @@ export class Link {
 
   // Z_01.asm HarmLink + BeginShove
   takeDamage(damageRaw: number, sourceDirection: Direction): void {
+    if (this._godMode) return; // debug cheat — no damage, no knockback
     if (this._invincibilityTimer > 0) return;
     if (this._isDead) return;
 

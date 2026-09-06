@@ -8,6 +8,7 @@ import {
   RAFT_ROOM_A,
   RAFT_ROOM_B,
   RING_TINT_BLUE,
+  RESPAWN_HEALTH,
   RING_TINT_RED,
   SILVER_ARROW_DAMAGE,
   SPRITE_SPACING,
@@ -65,7 +66,7 @@ import { isCaveEntranceTile } from './data/cave-data.js';
 import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from './data/secret-types.js';
 import { DungeonManager } from './world/dungeon-manager.js';
 import { DungeonRenderer } from './render/dungeon-renderer.js';
-import type { TileCollisionMap } from './world/collision.js';
+import { noclip, type TileCollisionMap } from './world/collision.js';
 import { RoomFlags } from './world/room-flags.js';
 import { checkSecretTrigger } from './world/dungeon-secrets.js';
 import { SpikeTrap } from './objects/enemies/spike-trap.js';
@@ -76,12 +77,18 @@ import { Wallmaster } from './objects/enemies/wallmaster.js';
 import { PushBlock, PushBlockState } from './world/push-block.js';
 import { Ganon } from './objects/enemies/ganon.js';
 import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
-import { SaveManager } from './save/save-manager.js';
+import {
+  SaveManager,
+  WORLD_FLAG_BLOCKS,
+  type SavedGameState,
+  type WorldFlagBlock,
+} from './save/save-manager.js';
 import { TitleScreen } from './ui/title-screen.js';
 import { FileSelectScreen } from './ui/file-select-screen.js';
 import { NameRegistrationScreen } from './ui/name-registration.js';
 import { EliminationScreen } from './ui/elimination.js';
 import { EndingScreen } from './ui/ending-screen.js';
+import { AudioManager } from './audio/audio-manager.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
@@ -91,6 +98,7 @@ const fpsCounter = new FpsCounter();
 const debug = new DebugOverlay();
 debug.attach();
 const tileRenderer = new TileRenderer();
+const audio = new AudioManager();
 
 let frameCount = 0;
 let loadProgress = { loaded: 0, total: 0 };
@@ -140,9 +148,23 @@ let magicRod: MagicRod | null = null;
 let magicShot: MagicShot | null = null;
 let usedCandleThisScreen = false;
 
+// Save chord (Z_05.asm:362). `cameFromSaveChord` distinguishes the mid-game
+// Mode $08 from the post-death one, so CONTINUE there does not count a death.
+// `savedSlotBeforeChord` is the B-slot as of the previous frame: holding Up to
+// form the chord also moves the cursor, so the chord restores it.
+let cameFromSaveChord = false;
+let savedSlotBeforeChord = 0;
+
 // Potion heart refill — Z_05.asm:3019 WieldPotion
 let heartRefillActive = false;
 let heartRefillTimer = 0;
+
+// SFX state tracking (detect transitions each frame)
+let sfxPrevSwordActive = false;
+let sfxPrevHadBeam = false;
+const sfxDetonatedBombs = new WeakSet<Bomb>();
+let sfxLowHealthPlaying = false;
+let sfxRefillPlaying = false;
 
 // Ring-tinted link sheets
 let linkSheetBlue: SpriteSheet | null = null;
@@ -153,7 +175,6 @@ let stepladder: Stepladder | null = null;
 let raft: Raft | null = null;
 
 // Weapon sprite sheets (initialized in init)
-let projectilesSheet: SpriteSheet | null = null;
 let cloudSheet: SpriteSheet | null = null;
 
 // Item pickups on the overworld
@@ -193,7 +214,27 @@ let dungeonEntryScreenRow = 0;
 let dungeonEntryScreenCol = 0;
 let dungeonEntryX = 0;
 let dungeonEntryY = 0;
-let dungeonRoomFlags: RoomFlags | null = null;
+// Underworld room flags, one RoomFlags per NES WorldFlags block rather than one
+// shared across all nine dungeons: levels 1-6 use uw1q1 and levels 7-9 use uw2q1,
+// and both index rooms 0-127, so a single table made L1 room 60 and L7 room 60 the
+// same byte. See WORLD_FLAG_BLOCKS in save-manager.ts. The overworld keeps its own
+// instance inside OverworldManager.
+const dungeonRoomFlags = new Map<string, RoomFlags>();
+
+/** The room-flag block a dungeon level writes into (dungeons.json `levelBlock`). */
+function levelBlockName(level: number): string {
+  return dungeonData?.dungeons[level - 1]?.levelBlock ?? 'uw1q1';
+}
+
+function roomFlagsForLevel(level: number): RoomFlags {
+  const block = levelBlockName(level);
+  let flags = dungeonRoomFlags.get(block);
+  if (!flags) {
+    flags = new RoomFlags();
+    dungeonRoomFlags.set(block, flags);
+  }
+  return flags;
+}
 let dungeonSpikeTraps: SpikeTrap[] = [];
 let dungeonStatues: DungeonStatues | null = null;
 let dungeonPushBlock: PushBlock | null = null;
@@ -258,6 +299,7 @@ async function init(): Promise<void> {
     itemsDataForDrops = itemsData;
 
     tileRenderer.init(assets.maps.overworldMap);
+    await audio.init();
     linkSheet = new SpriteSheet({
       image: assets.sprites.link,
       columns: LINK_SHEET_COLUMNS,
@@ -290,11 +332,6 @@ async function init(): Promise<void> {
       spacingY: SPRITE_SPACING,
       autoDetectTransparency: true,
     });
-    projectilesSheet = new SpriteSheet({
-      image: assets.sprites.projectiles,
-      columns: 15,
-      autoDetectTransparency: true,
-    });
     cloudSheet = new SpriteSheet({
       image: assets.sprites.cloud,
       columns: 1,
@@ -313,6 +350,7 @@ async function init(): Promise<void> {
       assets.sprites.font,
       assets.sprites.treasuresFull,
       processedItems,
+      processedNESItems,
     );
     font = new BitmapFont(assets.sprites.font);
     redFont = new BitmapFont(createTintedFontImage(assets.sprites.font, '#d82800'));
@@ -326,6 +364,10 @@ async function init(): Promise<void> {
 }
 
 void init();
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'm' || e.key === 'M') audio.toggleMute();
+});
 
 // Debug: expose game state for console testing
 (window as unknown as Record<string, unknown>).__zelda = {
@@ -361,6 +403,21 @@ void init();
     link.addKeys(9);
     link.setHealth(32, 32);
   },
+
+  // Debug: add the next Triforce piece, low bit first, so the inventory display
+  // can be stepped through all nine states without clearing a dungeon each time.
+  // Returns how many pieces are held now.
+  giveTriforce() {
+    if (!link) return 0;
+    const inv = link.inventory;
+    if (inv.triforce === 0xFF) return 8;
+    inv.triforce |= (inv.triforce + 1) & ~inv.triforce; // lowest unset bit
+    return inv.triforce.toString(2).split('1').length - 1;
+  },
+  clearTriforce() {
+    if (!link) return;
+    link.inventory.triforce = 0;
+  },
   // Warp straight into a dungeon (default Level 1) via the normal transition.
   goToDungeon(level = 1) {
     enterDungeon(level);
@@ -387,12 +444,147 @@ void init();
     saveManager.register(slot, name);
   },
   get saveManager() { return saveManager; },
+  get audio() { return audio; },
+
+  // --- Cheats -------------------------------------------------------------
+  // Map + compass + a full key ring for whatever dungeon Link is standing in.
+  giveDungeon() {
+    if (!link) return 'no game running';
+    if (currentLevel < 1) return 'not in a dungeon';
+    link.inventory.giveMap(currentLevel);
+    link.inventory.giveCompass(currentLevel);
+    link.addKeys(9);
+    return `level ${currentLevel}: map + compass + 9 keys`;
+  },
+  // Link stops taking damage entirely (short-circuits takeDamage).
+  godMode() {
+    if (!link) return 'no game running';
+    return link.toggleGodMode() ? 'god mode ON' : 'god mode OFF';
+  },
+  // Walk through walls, in the overworld and dungeons alike.
+  noclip() {
+    noclip.enabled = !noclip.enabled;
+    return noclip.enabled ? 'noclip ON' : 'noclip OFF';
+  },
+  // Jump to an overworld screen without walking there.
+  warp(row = 7, col = 7) {
+    if (!overworld || !spawnManager) return 'not on the overworld';
+    overworld.setScreen(row, col);
+    usedCandleThisScreen = false;
+    spawnManager.clear();
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    return `screen (${row},${col}) id ${overworld.currentScreen.id}`;
+  },
+  // Jump to a dungeon room by ID, ignoring doors.
+  goToRoom(roomId: number) {
+    if (!dungeonManager || !link) return 'not in a dungeon';
+    const pos = dungeonManager.debugGoToRoom(roomId);
+    if (!pos) return `no room ${roomId} in level ${currentLevel}`;
+    link.setPosition(pos.x, pos.y);
+    spawnDungeonRoomEnemies();
+    initDungeonRoomObjects();
+    return `level ${currentLevel} room ${roomId}`;
+  },
+  // Clear the room so shutters, secret triggers and drops all fire normally.
+  // Uses `enemies`, not `activeEnemies`, so anything still inside its spawn cloud
+  // dies too rather than popping back a moment later.
+  killAll() {
+    if (!spawnManager) return 'no game running';
+    const targets = spawnManager.enemies.filter((e) => !e.isDead);
+    for (const enemy of targets) enemy.debugKill();
+    return `killed ${targets.length}`;
+  },
+  // Force the SAVE write without going through the Mode $08 menu.
+  saveNow() {
+    if (!saveActiveSlot()) return 'no game running';
+    return `saved slot ${activeSaveSlot}`;
+  },
+  // Drive N logic frames by hand. Chrome freezes requestAnimationFrame in a
+  // background tab, so anything that needs frames to elapse (curtain transitions,
+  // dungeon entry) stalls under browser automation. Same update path as the loop.
+  step(frames = 1) {
+    for (let i = 0; i < frames; i++) loop.stepOnce();
+    return { frame: frameCount, mode: GameMode[gameMode], level: currentLevel };
+  },
+  // Live handles for inspection.
+  get roomFlagBlocks() { return dungeonRoomFlags; },
+  get gameMode() { return GameMode[gameMode]; },
+  // Print what is actually persisted for the active slot.
+  dumpSave() {
+    const state = saveManager.getState(activeSaveSlot);
+    console.log(`slot ${activeSaveSlot}:`, state);
+    return state;
+  },
 };
 
+// Capture the current game for the save file (L1). Link's position and the room
+// he is in are deliberately not captured: loading always restarts him on the
+// overworld start screen with 3 hearts (Z_07.asm:1442 InitMode3_Sub1).
+function snapshotGameState(): SavedGameState | null {
+  if (!link || !overworld) return null;
+  const inv = link.inventory;
+  const worldFlags = {} as Record<WorldFlagBlock, number[]>;
+  for (const block of WORLD_FLAG_BLOCKS) {
+    worldFlags[block] = block === 'overworld'
+      ? overworld.roomFlags.toBytes()
+      : (dungeonRoomFlags.get(block) ?? new RoomFlags()).toBytes();
+  }
+  return {
+    stats: link.snapshotStats(),
+    inventory: {
+      selectedBSlot: inv.selectedBSlot,
+      sword: inv.sword, arrow: inv.arrow, candle: inv.candle,
+      ring: inv.ring, potion: inv.potion, letter: inv.letter,
+      woodBoomerang: inv.woodBoomerang, magicBoomerang: inv.magicBoomerang,
+      bow: inv.bow, flute: inv.flute, food: inv.food, wand: inv.wand,
+      raft: inv.raft, book: inv.book, ladder: inv.ladder,
+      magicKey: inv.magicKey, bracelet: inv.bracelet, magicShield: inv.magicShield,
+      hasBombs: inv.hasBombs,
+      compass: inv.compass, map: inv.map,
+      compass9: inv.compass9, map9: inv.map9, triforce: inv.triforce,
+    },
+    worldFlags,
+    visitedScreens: [...overworld.visitedScreens],
+  };
+}
+
+// Apply a saved file onto the freshly-built world. Order matters: world flags go in
+// before the screen is re-initialised, so already-found secrets pre-reveal.
+function restoreGameState(state: SavedGameState): void {
+  if (!link || !overworld) return;
+  const inv = link.inventory;
+  const s = state.inventory;
+  inv.selectedBSlot = s.selectedBSlot;
+  inv.sword = s.sword; inv.arrow = s.arrow; inv.candle = s.candle;
+  inv.ring = s.ring; inv.potion = s.potion; inv.letter = s.letter;
+  inv.woodBoomerang = s.woodBoomerang; inv.magicBoomerang = s.magicBoomerang;
+  inv.bow = s.bow; inv.flute = s.flute; inv.food = s.food; inv.wand = s.wand;
+  inv.raft = s.raft; inv.book = s.book; inv.ladder = s.ladder;
+  inv.magicKey = s.magicKey; inv.bracelet = s.bracelet; inv.magicShield = s.magicShield;
+  inv.hasBombs = s.hasBombs;
+  inv.compass = s.compass; inv.map = s.map;
+  inv.compass9 = s.compass9; inv.map9 = s.map9; inv.triforce = s.triforce;
+
+  link.restoreStats(state.stats);
+  link.setHealth(Math.min(RESPAWN_HEALTH, state.stats.maxHealth), state.stats.maxHealth);
+
+  overworld.roomFlags.loadBytes(state.worldFlags.overworld);
+  for (const block of WORLD_FLAG_BLOCKS) {
+    if (block === 'overworld') continue;
+    dungeonRoomFlags.set(block, RoomFlags.fromBytes(state.worldFlags[block]));
+  }
+  overworld.restoreVisitedScreens(state.visitedScreens);
+  // Re-init the start screen against the restored flags (revealed caves, burnt
+  // trees, moved rocks) and place Link exactly as a fresh start would.
+  const spawn = computeRespawnParams(0);
+  overworld.setScreen(spawn.screenRow, spawn.screenCol);
+  link.reset(spawn.linkX, spawn.linkY, spawn.linkDirection, link.health);
+}
+
 // Create the playable world for a chosen file and drop into gameplay. This is the
-// single seam through which any new game begins (front end, or debug). Slot name/
-// quest are display + L2 concerns; a new game always starts on the overworld start
-// screen (7,7). Slice L1 will branch here to restore a saved game state.
+// single seam through which any new game begins (front end, or debug), and where a
+// saved file is restored. A new game always starts on the overworld start screen
+// (7,7); so does a loaded one, matching the NES.
 function startGameFromSlot(index: number): void {
   if (!overworldDataModule || !enemySpawnData || !itemsDataForDrops || !moduleLevelSecretsData) return;
   activeSaveSlot = index;
@@ -400,8 +592,24 @@ function startGameFromSlot(index: number): void {
   overworld = new OverworldManager(overworldDataModule, tileRenderer, 7, 7, moduleLevelSecretsData);
   spawnManager = new SpawnManager(enemySpawnData, itemsDataForDrops.objectHpPairs);
   dropEngine = new DropEngine();
+  currentLevel = 0;
+  dungeonManager = null;
+  dungeonRoomFlags.clear();
+
+  const saved = saveManager.getState(index);
+  if (saved) restoreGameState(saved);
+
   spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
   gameMode = GameMode.Gameplay;
+  void audio.playMusic('overworld');
+}
+
+/** Persist the active file — the NES SAVE option, the only write path. */
+function saveActiveSlot(): boolean {
+  const state = snapshotGameState();
+  if (!state) return false;
+  saveManager.saveState(activeSaveSlot, state);
+  return true;
 }
 
 function getActiveLinkSheet(): SpriteSheet | null {
@@ -419,6 +627,9 @@ function enterCave(caveIndex: number): void {
   const contents = caveContentsData[caveIndex];
   if (!contents) return;
 
+  audio.play('stairs');
+  audio.pauseMusic();
+
   // Remember where Link was on the overworld for return
   caveEntryX = link.posX;
   caveEntryY = link.posY;
@@ -433,6 +644,8 @@ function enterCave(caveIndex: number): void {
 
 function enterDungeon(level: number): void {
   if (!link || !overworld || !dungeonData || !dungeonRenderer) return;
+  audio.play('stairs');
+  audio.stopMusic(0);
 
   dungeonEntryScreenRow = overworld.screenRow;
   dungeonEntryScreenCol = overworld.screenCol;
@@ -449,8 +662,9 @@ function enterDungeon(level: number): void {
 function startDungeonInterior(): void {
   if (!link || !dungeonData || !dungeonRenderer) return;
 
-  if (!dungeonRoomFlags) dungeonRoomFlags = new RoomFlags();
-  dungeonManager = new DungeonManager(currentLevel, dungeonData, dungeonRenderer, dungeonRoomFlags);
+  dungeonManager = new DungeonManager(
+    currentLevel, dungeonData, dungeonRenderer, roomFlagsForLevel(currentLevel),
+  );
 
   const info = dungeonManager.dungeonInfo;
   link.setPosition(120, info.startY - 64);
@@ -458,6 +672,7 @@ function startDungeonInterior(): void {
 
   curtainEffect = new CurtainEffect('open');
   gameMode = GameMode.DungeonGameplay;
+  void audio.playMusic('dungeon');
 
   if (spawnManager) {
     spawnManager.clear();
@@ -468,6 +683,8 @@ function startDungeonInterior(): void {
 
 function exitDungeon(): void {
   if (!link || !overworld) return;
+  audio.stopMusic(0);
+  void audio.playMusic('overworld');
 
   currentLevel = 0;
   dungeonManager = null;
@@ -495,6 +712,11 @@ function exitDungeon(): void {
 // hold a triumphant display, then warp Link out to the overworld entrance.
 function beginTriforceGet(): void {
   if (!link) return;
+  audio.play('fanfare');
+  audio.stopAllLoops();
+  audio.stopMusic(0);
+  sfxLowHealthPlaying = false;
+  sfxRefillPlaying = false;
   link.inventory.triforce |= (1 << (currentLevel - 1));
   link.heal(link.maxHealth);
   link.halted = true;
@@ -648,6 +870,7 @@ function exitCave(): void {
 
 function returnToOverworld(): void {
   if (!link || !overworld) return;
+  audio.resumeMusic();
 
   // Restore Link to where they were when they entered the cave, facing down
   link.setPosition(caveEntryX, caveEntryY);
@@ -727,6 +950,23 @@ function updateInventory(): void {
   inventoryScreen.update();
 
   if (inventorySlide.isActive) {
+    // Z_05.asm:362 UpdateMenuActive — with the submenu open, controller 2 holding
+    // Up ($08) + A ($80) (AND #$88 / CMP #$88) closes it, jumps to Mode $08
+    // (SAVE/CONTINUE/RETRY) and silences sound. That is how the NES lets you save
+    // without dying. We have no second controller, so any input device counts;
+    // held state, not just-pressed, matching the CMP.
+    if (input.isHeld(Action.Up) && input.isHeld(Action.Attack)) {
+      inventorySlide.hideImmediately();
+      link.inventory.selectedBSlot = savedSlotBeforeChord;
+      audio.stopMusic(0);
+      audio.stopAllLoops();
+      gameOverScreen = new GameOverScreen();
+      gameMode = GameMode.GameOver;
+      cameFromSaveChord = true;
+      return;
+    }
+    savedSlotBeforeChord = link.inventory.selectedBSlot;
+
     if (input.isJustPressed(Action.Left)) {
       link.inventory.selectedBSlot = getNextOwnedSlot(link.inventory, link.inventory.selectedBSlot, -1);
     }
@@ -879,6 +1119,7 @@ function updateGameplay(): void {
 
   link.blockSwordAttack = magicRod !== null && magicRod.isActive();
   const result = link.update(input, overworld.collisionMap, overworld.currentScreen);
+  updateSfxTracking();
 
   // Clear walkable overrides after Link update
   overworld.collisionMap.clearWalkableOverrides();
@@ -980,7 +1221,7 @@ function updateGameplay(): void {
   // Update tile objects (secret detection)
   const revealEvent = overworld.updateTileObjects(link, bombs, fires);
   if (revealEvent) {
-    // Secret was revealed — could play SFX here (K1)
+    audio.play('secret');
   }
 
   // Update enemies
@@ -1004,13 +1245,19 @@ function updateGameplay(): void {
       hasMagicBoomerang: link.inventory.magicBoomerang,
     });
 
-    // Handle kills — spawn item drops
+    // Handle hits + kills — spawn item drops
     for (const result of hitResults) {
-      if (result.killed && dropEngine && itemsDataForDrops) {
-        const droppedItemId = dropEngine.rollDrop(result.enemy.objectType, itemsDataForDrops.dropTables);
-        if (droppedItemId !== null) {
-          pickups.push(new ItemPickup(droppedItemId, result.enemy.x, result.enemy.y));
+      const boss = isBossEnemy(result.enemy.objectType);
+      if (result.killed) {
+        audio.play(boss ? 'bossScream2' : 'enemyKill');
+        if (dropEngine && itemsDataForDrops) {
+          const droppedItemId = dropEngine.rollDrop(result.enemy.objectType, itemsDataForDrops.dropTables);
+          if (droppedItemId !== null) {
+            pickups.push(new ItemPickup(droppedItemId, result.enemy.x, result.enemy.y));
+          }
         }
+      } else {
+        audio.play(boss ? 'bossScream1' : 'enemyHit');
       }
     }
 
@@ -1021,6 +1268,7 @@ function updateGameplay(): void {
         const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
         if (rawDamage > 0) {
           link.takeDamage(rawDamage, hittingEnemy.direction);
+          audio.play('linkHurt');
         }
       }
     }
@@ -1035,10 +1283,13 @@ function updateGameplay(): void {
         link.hasMagicShield,
       );
       if (projHit) {
-        if (!projHit.blocked) {
+        if (projHit.blocked) {
+          audio.play('shield');
+        } else {
           const projDamage = DAMAGE_TABLE[projHit.projectile.type] ?? 0x80;
           if (projDamage > 0) {
             link.takeDamage(projDamage, projHit.projectile.direction);
+            audio.play('linkHurt');
           }
           projHit.projectile.deactivate();
         }
@@ -1086,6 +1337,11 @@ function updateGameplay(): void {
   }
 
   if (link.isDead && gameMode === GameMode.Gameplay) {
+    audio.play('linkDie');
+    audio.stopAllLoops();
+    audio.stopMusic(0);
+    sfxLowHealthPlaying = false;
+    sfxRefillPlaying = false;
     gameMode = GameMode.DeathAnimation;
     deathAnimation = new DeathAnimation(link.posX, link.posY);
     return;
@@ -1143,6 +1399,7 @@ function updateDungeonGameplay(): void {
 
   link.blockSwordAttack = magicRod !== null && magicRod.isActive();
   const result = link.update(input, collision, screen);
+  updateSfxTracking();
 
   // Ignore screen edge results in dungeons — door transitions handled differently
   void result;
@@ -1160,7 +1417,9 @@ function updateDungeonGameplay(): void {
   const doorDir = dungeonManager.inCellar ? null : dungeonManager.checkRoomTransition(link);
   if (doorDir !== null) {
     // Try to pass through the door (key/bomb/shutter checks)
+    const keysBefore = link.keys;
     if (dungeonManager.touchDoor(doorDir, link)) {
+      if (link.keys < keysBefore) audio.play('key');
       dungeonManager.transitionToRoom(doorDir);
       const entry = dungeonManager.getEntryPosition(doorDir);
       link.setPosition(entry.x, entry.y);
@@ -1192,6 +1451,7 @@ function updateDungeonGameplay(): void {
     if (lx + 12 > sx && lx < sx + 16 && ly + 12 > sy && ly < sy + 16) {
       const cellar = dungeonManager.getCellarForRoom(dungeonManager.currentRoomId);
       if (cellar) {
+        audio.play('stairs');
         dungeonManager.enterCellar(cellar.conn, cellar.isLeftSide);
         const entryX = cellar.isLeftSide ? 0x30 : 0xC0;
         link.setPosition(entryX, 0x41);
@@ -1302,11 +1562,17 @@ function updateDungeonGameplay(): void {
     });
 
     for (const hitResult of hitResults) {
-      if (hitResult.killed && dropEngine && itemsDataForDrops) {
-        const droppedItemId = dropEngine.rollDrop(hitResult.enemy.objectType, itemsDataForDrops.dropTables);
-        if (droppedItemId !== null) {
-          pickups.push(new ItemPickup(droppedItemId, hitResult.enemy.x, hitResult.enemy.y));
+      const boss = isBossEnemy(hitResult.enemy.objectType);
+      if (hitResult.killed) {
+        audio.play(boss ? 'bossScream2' : 'enemyKill');
+        if (dropEngine && itemsDataForDrops) {
+          const droppedItemId = dropEngine.rollDrop(hitResult.enemy.objectType, itemsDataForDrops.dropTables);
+          if (droppedItemId !== null) {
+            pickups.push(new ItemPickup(droppedItemId, hitResult.enemy.x, hitResult.enemy.y));
+          }
         }
+      } else {
+        audio.play(boss ? 'bossScream1' : 'enemyHit');
       }
     }
 
@@ -1373,7 +1639,10 @@ function updateDungeonGameplay(): void {
           hittingEnemy.grab(); // warp-to-entrance handled below
         } else if (!applyBubbleJinx(hittingEnemy.objectType)) {
           const rawDamage = DAMAGE_TABLE[hittingEnemy.objectType] ?? 0x80;
-          if (rawDamage > 0) link.takeDamage(rawDamage, hittingEnemy.direction);
+          if (rawDamage > 0) {
+            link.takeDamage(rawDamage, hittingEnemy.direction);
+            audio.play('linkHurt');
+          }
         }
       }
     }
@@ -1421,10 +1690,17 @@ function updateDungeonGameplay(): void {
         link.isIdle,
         link.hasMagicShield,
       );
-      if (projHit && !projHit.blocked) {
-        const projDamage = DAMAGE_TABLE[projHit.projectile.type] ?? 0x80;
-        if (projDamage > 0) link.takeDamage(projDamage, projHit.projectile.direction);
-        projHit.projectile.deactivate();
+      if (projHit) {
+        if (projHit.blocked) {
+          audio.play('shield');
+        } else {
+          const projDamage = DAMAGE_TABLE[projHit.projectile.type] ?? 0x80;
+          if (projDamage > 0) {
+            link.takeDamage(projDamage, projHit.projectile.direction);
+            audio.play('linkHurt');
+          }
+          projHit.projectile.deactivate();
+        }
       }
     }
   }
@@ -1443,6 +1719,7 @@ function updateDungeonGameplay(): void {
           linkRect.y + linkRect.height > trapHb.y
         ) {
           link.takeDamage(trap.damage, link.facing);
+          audio.play('linkHurt');
         }
       }
     }
@@ -1477,9 +1754,18 @@ function updateDungeonGameplay(): void {
         const result = checkSecretTrigger(trigger, allDead, pushComplete, allDead);
         if (result.shuttersOpen || result.stairsRevealed || result.itemActivated) {
           dungeonManager.markSecretTriggered();
-          if (result.shuttersOpen) dungeonManager.triggerShutters();
-          if (result.stairsRevealed) dungeonStairsPos = { x: 0xD0, y: 0x60 };
-          if (result.itemActivated && dungeonRoomItem) dungeonRoomItemActive = true;
+          if (result.shuttersOpen) {
+            dungeonManager.triggerShutters();
+            audio.play('unlock');
+          }
+          if (result.stairsRevealed) {
+            dungeonStairsPos = { x: 0xD0, y: 0x60 };
+            audio.play('secret');
+          }
+          if (result.itemActivated && dungeonRoomItem) {
+            dungeonRoomItemActive = true;
+            audio.play('secret');
+          }
         }
       }
     }
@@ -1523,6 +1809,11 @@ function updateDungeonGameplay(): void {
   }
 
   if (link.isDead && gameMode === GameMode.DungeonGameplay) {
+    audio.play('linkDie');
+    audio.stopAllLoops();
+    audio.stopMusic(0);
+    sfxLowHealthPlaying = false;
+    sfxRefillPlaying = false;
     gameMode = GameMode.DeathAnimation;
     deathAnimation = new DeathAnimation(link.posX, link.posY);
   }
@@ -1548,6 +1839,54 @@ function isGridAligned(x: number, y: number): boolean {
   return x % 8 === 0 && y % 8 === 0;
 }
 
+function isBossEnemy(type: number): boolean {
+  return (type >= 0x32 && type <= 0x3E) || (type >= 0x41 && type <= 0x48);
+}
+
+function playPickupSfx(itemId: number): void {
+  const masked = itemId & 0x3f;
+  if (masked === 0x0f || masked === 0x18) { audio.play('getRupee'); return; }
+  if (masked === 0x22 || masked === 0x23) { audio.play('getHeart'); return; }
+  if (masked === 0x1b) { audio.play('fanfare'); return; }
+  audio.play('getItem');
+}
+
+function updateSfxTracking(): void {
+  if (!link) return;
+
+  const swordNow = link.isSwordActive;
+  if (swordNow && !sfxPrevSwordActive) audio.play('sword');
+  sfxPrevSwordActive = swordNow;
+
+  const beamNow = link.activeSwordBeam !== null;
+  if (beamNow && !sfxPrevHadBeam) audio.play('swordShoot');
+  sfxPrevHadBeam = beamNow;
+
+  for (const bomb of bombs) {
+    if (bomb.isDetonating && !sfxDetonatedBombs.has(bomb)) {
+      sfxDetonatedBombs.add(bomb);
+      audio.play('bombBlow');
+    }
+  }
+
+  const lowHp = link.health > 0 && link.health <= 2 && !link.isDead;
+  if (lowHp && !sfxLowHealthPlaying) {
+    audio.playLoop('lowHealth');
+    sfxLowHealthPlaying = true;
+  } else if (!lowHp && sfxLowHealthPlaying) {
+    audio.stopLoop('lowHealth');
+    sfxLowHealthPlaying = false;
+  }
+
+  if (heartRefillActive && !sfxRefillPlaying) {
+    audio.playLoop('refillLoop');
+    sfxRefillPlaying = true;
+  } else if (!heartRefillActive && sfxRefillPlaying) {
+    audio.stopLoop('refillLoop');
+    sfxRefillPlaying = false;
+  }
+}
+
 function useBItem(linkRef: Link): void {
   const slot = linkRef.inventory.selectedBSlot;
   switch (slot) {
@@ -1555,6 +1894,7 @@ function useBItem(linkRef: Link): void {
       if (linkRef.bombs > 0) {
         linkRef.addBombs(-1);
         bombs.push(new Bomb(linkRef.posX, linkRef.posY));
+        audio.play('bombDrop');
       }
       break;
     case 4: { // Candle
@@ -1562,6 +1902,7 @@ function useBItem(linkRef: Link): void {
       if (candleLevel <= 0) break;
       if (candleLevel === 1 && usedCandleThisScreen) break; // blue: once per screen
       fires.push(new CandleFire(linkRef.posX, linkRef.posY, linkRef.facing));
+      audio.play('candle');
       if (candleLevel === 1) usedCandleThisScreen = true;
       break;
     }
@@ -1587,6 +1928,7 @@ function useBItem(linkRef: Link): void {
       const ofsX = facingOffsetX(linkRef.facing);
       const ofsY = facingOffsetY(linkRef.facing);
       boomerang = new Boomerang(linkRef.posX + ofsX, linkRef.posY + ofsY, dirX, dirY, isMagic);
+      audio.play('boomerang');
       break;
     }
     case 2: { // Arrow — requires bow + 1 rupee per shot
@@ -1601,6 +1943,7 @@ function useBItem(linkRef: Link): void {
         linkRef.facing,
         isSilver,
       );
+      audio.play('arrow');
       break;
     }
     case 6: { // Food/Bait — shares NES slot $0F with boomerang
@@ -1626,6 +1969,7 @@ function useBItem(linkRef: Link): void {
       );
       teleportingLevelIndex = recorderEffect.updatedTeleportIndex;
       linkRef.halted = true;
+      audio.play('recorder');
       break;
     }
     case 7: { // Potion
@@ -1634,6 +1978,7 @@ function useBItem(linkRef: Link): void {
       inv.potion--;
       heartRefillActive = true;
       heartRefillTimer = 0;
+      audio.play('getItem');
       break;
     }
     case 8: { // Magic Rod (Wand)
@@ -1642,6 +1987,7 @@ function useBItem(linkRef: Link): void {
       if (linkRef.isSwordActive) break;
       magicRod = new MagicRod();
       magicRod.start(linkRef.facing);
+      audio.play('magicalRod');
       break;
     }
   }
@@ -1649,6 +1995,7 @@ function useBItem(linkRef: Link): void {
 
 function handleItemPickup(itemId: number): void {
   if (!link || !overworld) return;
+  playPickupSfx(itemId);
 
   const masked = itemId & 0x3f;
   const inv = link.inventory;
@@ -1725,6 +2072,7 @@ function handleItemPickup(itemId: number): void {
 
 function handleDungeonItemPickup(itemId: number): void {
   if (!link) return;
+  playPickupSfx(itemId);
   const masked = itemId & 0x3f;
   const inv = link.inventory;
 
@@ -1844,20 +2192,23 @@ function readCaveInputDirection(): Direction | null {
   return null;
 }
 
-function handleRespawn(): void {
+function handleRespawn(countDeath = true): void {
   const params = computeRespawnParams(currentLevel);
 
   if (params.isDungeon && dungeonManager && dungeonData && dungeonRenderer) {
     // Respawn at dungeon entrance room (preserve room flags)
-    dungeonManager = new DungeonManager(currentLevel, dungeonData, dungeonRenderer, dungeonRoomFlags ?? undefined);
+    dungeonManager = new DungeonManager(
+      currentLevel, dungeonData, dungeonRenderer, roomFlagsForLevel(currentLevel),
+    );
 
     if (link) {
       const info = dungeonManager.dungeonInfo;
       link.reset(120, info.startY - 64, Direction.Up, params.health);
     }
 
-    deathCount = Math.min(deathCount + 1, 255);
+    if (countDeath) deathCount = Math.min(deathCount + 1, 255);
     gameMode = GameMode.DungeonGameplay;
+    void audio.playMusic('dungeon');
 
     if (spawnManager) {
       spawnDungeonRoomEnemies();
@@ -1875,8 +2226,9 @@ function handleRespawn(): void {
       link.reset(params.linkX, params.linkY, params.linkDirection, params.health);
     }
 
-    deathCount = Math.min(deathCount + 1, 255);
+    if (countDeath) deathCount = Math.min(deathCount + 1, 255);
     gameMode = GameMode.Gameplay;
+    void audio.playMusic('overworld');
 
     if (spawnManager && overworld) {
       spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
@@ -1908,15 +2260,15 @@ function renderDungeonEntities(): void {
   }
 
   for (const bomb of bombs) {
-    bomb.render(ctx, cloudSheet ?? undefined, renderer, projectilesSheet ?? undefined);
+    bomb.render(ctx, cloudSheet ?? undefined, renderer);
   }
   for (const fire of fires) {
-    fire.render(renderer, projectilesSheet ?? undefined);
+    fire.render(renderer);
   }
-  if (boomerang && projectilesSheet) boomerang.render(renderer, projectilesSheet);
-  if (arrow && projectilesSheet) arrow.render(renderer, projectilesSheet);
+  if (boomerang) boomerang.render(renderer);
+  if (arrow) arrow.render(renderer);
   if (food) food.render(ctx, processedItems);
-  if (magicRod && link) magicRod.render(renderer, projectilesSheet!, link.posX, link.posY);
+  if (magicRod && link) magicRod.render(renderer, link.posX, link.posY);
   if (magicShot) magicShot.render(renderer);
   if (processedItems) {
     for (const pickup of pickups) pickup.render(ctx, processedItems);
@@ -2104,14 +2456,20 @@ const loop = new GameLoop({
           gameOverScreen.update(input);
           if (gameOverScreen.done) {
             const choice = gameOverScreen.selectedOption;
+            const fromChord = cameFromSaveChord;
             gameOverScreen = null;
+            cameFromSaveChord = false;
             if (choice === GameOverOption.Save) {
-              // NES SAVE: persist + return to title (Z_02.asm UpdateModeDSave)
+              // NES SAVE: persist + return to title (Z_02.asm UpdateModeDSave).
+              // This is the only path that writes the file — there is no autosave.
+              saveActiveSlot();
               titleScreen.reset();
               fileSelectScreen.reset();
               gameMode = GameMode.Title;
             } else {
-              handleRespawn();
+              // A death already counted itself; reaching Mode $08 via the Up+A
+              // chord must not, so CONTINUE/RETRY there leaves the tally alone.
+              handleRespawn(!fromChord);
             }
           }
         }
@@ -2286,22 +2644,22 @@ const loop = new GameLoop({
       // Render weapons, pickups, and tile objects
       const ctx = renderer.ctx;
       for (const bomb of bombs) {
-        bomb.render(ctx, cloudSheet ?? undefined, renderer, projectilesSheet ?? undefined);
+        bomb.render(ctx, cloudSheet ?? undefined, renderer);
       }
       for (const fire of fires) {
-        fire.render(renderer, projectilesSheet ?? undefined);
+        fire.render(renderer);
       }
-      if (boomerang && projectilesSheet) {
-        boomerang.render(renderer, projectilesSheet);
+      if (boomerang) {
+        boomerang.render(renderer);
       }
-      if (arrow && projectilesSheet) {
-        arrow.render(renderer, projectilesSheet);
+      if (arrow) {
+        arrow.render(renderer);
       }
       if (food) {
         food.render(ctx, processedItems);
       }
       if (magicRod && link) {
-        magicRod.render(renderer, projectilesSheet!, link.posX, link.posY);
+        magicRod.render(renderer, link.posX, link.posY);
       }
       if (magicShot) {
         magicShot.render(renderer);

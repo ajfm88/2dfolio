@@ -11,6 +11,7 @@ import {
 } from '../core/constants.js';
 import type { DungeonRoom, UniqueRoom } from '../data/dungeon-types.js';
 import type { OverworldScreen } from '../data/overworld-types.js';
+import { noclip } from './collision.js';
 
 const ROOM_COLS = 16;
 const ROOM_ROWS = 11;
@@ -98,6 +99,7 @@ export class DungeonCollisionMap {
 
   // TileCollisionMap-compatible API (screen param ignored)
   isPositionWalkable(_screen: OverworldScreen, px: number, py: number): boolean {
+    if (noclip.enabled) return true;
     if (px < 0 || px >= SCREEN_WIDTH || py < 0 || py >= PLAY_AREA_HEIGHT) {
       return true;
     }

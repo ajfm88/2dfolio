@@ -8,6 +8,13 @@ import {
 } from '../core/constants.js';
 import type { OverworldData, OverworldScreen } from '../data/overworld-types.js';
 
+/**
+ * Debug-only walk-through-walls toggle (__zelda.noclip). Module-level rather than
+ * per-instance because DungeonCollisionMap is rebuilt on every room change, which
+ * would otherwise reset it mid-dungeon. Never set during normal play.
+ */
+export const noclip = { enabled: false };
+
 export class TileCollisionMap {
   private readonly walkable: readonly boolean[];
   private readonly primaryValues: readonly number[];
@@ -27,6 +34,7 @@ export class TileCollisionMap {
   }
 
   isPositionWalkable(screen: OverworldScreen, px: number, py: number): boolean {
+    if (noclip.enabled) return true;
     if (px < 0 || px >= SCREEN_WIDTH || py < 0 || py >= PLAY_AREA_HEIGHT) {
       return true;
     }

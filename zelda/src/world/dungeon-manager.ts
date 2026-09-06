@@ -89,6 +89,12 @@ export class DungeonManager {
     this._currentRoomId = this._dungeonInfo.startRoomId;
     this._currentRoom = this.getRoom(this._currentRoomId);
     this._collision = this.buildCollision(this._currentRoom);
+    // Seed from the persisted VISITED bit so the minimap survives leaving and
+    // re-entering the dungeon (and a save/load round-trip) — the flags carry it,
+    // but this Set is rebuilt on every construction.
+    for (const roomId of this.validRoomIds) {
+      if (this._roomFlags.isVisited(roomId)) this._visitedRooms.add(roomId);
+    }
     this._visitedRooms.add(this._currentRoomId);
     this._roomFlags.setVisited(this._currentRoomId);
     this.initRoomState();
@@ -374,6 +380,24 @@ export class DungeonManager {
     this._collision = this.buildCollision(this._currentRoom);
     this._visitedRooms.add(this._currentRoomId);
     this._roomFlags.setVisited(this._currentRoomId);
+    this.initRoomState();
+    return this.getEntryPosition(Direction.Up);
+  }
+
+  /**
+   * Debug-only absolute room jump (__zelda.goToRoom). Normal play only ever moves
+   * between adjacent rooms via transitionToRoom, so this bypasses doors entirely.
+   * Returns the entry position, or null if the room ID does not exist.
+   */
+  debugGoToRoom(roomId: number): { x: number; y: number } | null {
+    if (!this._levelBlock.rooms[roomId]) return null;
+    this._currentRoomId = roomId;
+    this._currentRoom = this.getRoom(roomId);
+    this._collision = this.buildCollision(this._currentRoom);
+    this._visitedRooms.add(roomId);
+    this._roomFlags.setVisited(roomId);
+    this._inCellar = false;
+    this._cellarConnection = null;
     this.initRoomState();
     return this.getEntryPosition(Direction.Up);
   }
