@@ -5,7 +5,10 @@
 import { TILE_SIZE, FIRE_QFRAC, BOOK_FIRE_TIMER } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import {
+  drawFireSprite,
+  hasNpcSprites,
+} from '../../render/boss-sprite-data.js';
 
 export { FIRE_DAMAGE } from '../../core/constants.js';
 
@@ -13,8 +16,9 @@ const FIRE_WALK_DISTANCE = 0x10; // 16px
 const FIRE_STAND_TIMER = 0x3F; // 63 frames
 
 // Fire sprite indices in projectiles.png (verify at implementation time)
-const FIRE_SPRITE_FRAME_A = 6;
-const FIRE_SPRITE_FRAME_B = 7;
+// The flame is not on projectiles.png (its columns are arrow / sword beam /
+// boomerang / fireball / bomb). npcs.png carries the fire art, already used for
+// the cave and boss-room flames — see FIRE_SPRITES in boss-sprite-data.ts.
 const FIRE_FLICKER_INTERVAL = 5;
 
 export enum FireState {
@@ -90,14 +94,12 @@ export class CandleFire {
     return { x: this._x, y: this._y, width: TILE_SIZE, height: TILE_SIZE };
   }
 
-  render(renderer: Renderer, spriteSheet?: SpriteSheet): void {
+  render(renderer: Renderer): void {
     if (this._state === FireState.Dead) return;
 
-    if (spriteSheet) {
-      const frame = Math.floor(this._frameCount / FIRE_FLICKER_INTERVAL) % 2 === 0
-        ? FIRE_SPRITE_FRAME_A
-        : FIRE_SPRITE_FRAME_B;
-      spriteSheet.drawFrame(renderer, frame, this._x, this._y);
+    const frameIdx = Math.floor(this._frameCount / FIRE_FLICKER_INTERVAL) % 2;
+    if (hasNpcSprites()) {
+      drawFireSprite(renderer, frameIdx, this._x, this._y);
     } else {
       // Placeholder fallback
       const ctx = renderer.ctx;

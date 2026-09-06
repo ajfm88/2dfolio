@@ -16,7 +16,10 @@ import {
 } from '../../core/constants.js';
 import type { Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
-import type { SpriteSheet } from '../../render/sprite-renderer.js';
+import {
+  drawProjectileSpriteFlipped,
+  PROJ_COL_BOOMERANG,
+} from '../../render/projectile-sprite-data.js';
 
 export enum BoomerangState {
   FlyAway    = 0x10,
@@ -35,8 +38,8 @@ const ATTR_CYCLE = [0, 0, 0, 0x40, 0x40, 0xC0, 0x80, 0x80, 1] as const;
 const QSPEED_FRACS_X = [0x80, 0x78, 0x70, 0x68, 0x60, 0x4C, 0x36, 0x20, 0x00] as const;
 const QSPEED_FRACS_Y = [0x00, 0x20, 0x36, 0x4C, 0x60, 0x68, 0x70, 0x78, 0x80] as const;
 
-// Boomerang sprite in projectiles.png — row 0, col 1 (brown L-shape)
-const BOOMERANG_SPRITE_BASE = 1;
+// projectiles.png column 3 holds the boomerang, one cell per direction/rotation.
+// FRAME_CYCLE indexes those four rows; ATTR_CYCLE adds the NES mirror/flip bits.
 
 export class Boomerang {
   private _x: number;
@@ -120,7 +123,7 @@ export class Boomerang {
     }
   }
 
-  render(renderer: Renderer, spriteSheet: SpriteSheet): void {
+  render(renderer: Renderer): void {
     if (this._state === BoomerangState.Dead) return;
 
     const frameIdx = FRAME_CYCLE[this._cycleIndex]!;
@@ -128,8 +131,9 @@ export class Boomerang {
     const flipH = (attr & 0x40) !== 0;
     const flipV = (attr & 0x80) !== 0;
 
-    const spriteIndex = BOOMERANG_SPRITE_BASE + frameIdx;
-    spriteSheet.drawFrameFlipped(renderer, spriteIndex, this._x, this._y, flipH, flipV);
+    drawProjectileSpriteFlipped(
+      renderer, PROJ_COL_BOOMERANG, frameIdx, this._x, this._y, flipH, flipV,
+    );
   }
 
   // --- State updates ---

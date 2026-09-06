@@ -4,6 +4,7 @@
 // Coordinates measured from pixel-level analysis.
 
 import type { Renderer } from './renderer.js';
+import { applyTransparency, keyColor, SPRITE_BOX_GREY } from './transparency.js';
 
 export interface SpriteRect {
   readonly sx: number;
@@ -15,22 +16,17 @@ export interface SpriteRect {
 // Processed (transparency-applied) dungeon enemy sprite source
 let dungeonEnemySource: CanvasImageSource | null = null;
 
+// Outer green field plus a grey backing box behind each sprite; the box needs a
+// flood fill so grey *inside* a sprite survives. See src/render/transparency.ts.
+const GREEN_FIELD = (r: number, g: number, b: number): boolean =>
+  r < 3 && Math.abs(g - 128) < 3 && b < 3;
+const GREY_BOX = keyColor(...SPRITE_BOX_GREY);
+
 export function initDungeonEnemySprites(image: HTMLImageElement): void {
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(image, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = imageData.data;
-  // Green background: R=0, G=128, B=0
-  for (let i = 0; i < d.length; i += 4) {
-    if (d[i]! < 3 && Math.abs(d[i + 1]! - 128) < 3 && d[i + 2]! < 3) {
-      d[i + 3] = 0;
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-  dungeonEnemySource = canvas;
+  dungeonEnemySource = applyTransparency(image, {
+    primary: GREEN_FIELD,
+    secondary: GREY_BOX,
+  });
 }
 
 export function drawDungeonEnemySprite(
@@ -269,20 +265,10 @@ export const LIKE_LIKE_SPRITES = [
 let overworldEnemySource: CanvasImageSource | null = null;
 
 export function initOverworldEnemySprites(image: HTMLImageElement): void {
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(image, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = imageData.data;
-  for (let i = 0; i < d.length; i += 4) {
-    if (d[i]! < 3 && Math.abs(d[i + 1]! - 128) < 3 && d[i + 2]! < 3) {
-      d[i + 3] = 0;
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-  overworldEnemySource = canvas;
+  overworldEnemySource = applyTransparency(image, {
+    primary: GREEN_FIELD,
+    secondary: GREY_BOX,
+  });
 }
 
 export function drawOverworldEnemySprite(

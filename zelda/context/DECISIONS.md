@@ -61,6 +61,44 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
    static `title.png` + backstory scroll on idle; the scripted attract-mode
    gameplay demo is intentionally out of scope.
 
+10. **L1 saves to localStorage, not IndexedDB — amends #8** (2026-09-04, user).
+    A full save slot (Link's counters, the whole inventory, three 128-byte world-flag
+    blocks, visited screens) serializes to roughly 6KB, so all three files fit in
+    ~18KB of localStorage's 5MB budget. IndexedDB would buy capacity we do not need
+    and cost an async open/upgrade path plus making `SaveManager` construction
+    awaitable — the front end builds it at module scope and reads slots
+    synchronously. The `SaveSlot` shape widened with a `state` field exactly as #8
+    intended; only the backing store changed. Storage key moved to
+    `zelda-nes:saves:v2`, and a J1a `v1` payload is still read as metadata-only so
+    existing files appear on file select instead of vanishing.
+
+11. **The save file is written only on SAVE, never automatically** (2026-09-04, user).
+    Considered autosaving on screen changes and item pickups to imitate battery-backed
+    SRAM, but chose the explicit write. Consequence, accepted knowingly: closing the
+    tab mid-play loses progress since the last SAVE. `__zelda.saveNow()` is the
+    escape hatch while developing.
+
+12. **Mid-game saving via the NES controller-2 chord** (2026-09-04, user).
+    `Z_05.asm:362 UpdateMenuActive`: with the inventory subscreen open, controller 2
+    holding Up (`$08`) + A (`$80`) (`AND #$88 / CMP #$88`) resets the submenu, sets
+    `GameMode = $08` — the same SAVE/CONTINUE/RETRY screen as death — and silences
+    sound. So SAVE is reachable without dying. We have no second controller and
+    `InputManager` merges every connected pad into one action set, so the chord is
+    read from whatever device is present: Start, then hold Up + A. CONTINUE reached
+    this way must not increment the death count — on the NES that happens in the
+    death sequence (Mode $11), not in Mode $08.
+
+13. **Room flags are per world-flags block, not per dungeon or global**
+    (2026-09-04). The NES `WorldFlags` region is `$067F-$07FE` = `$180` bytes = three
+    128-byte blocks, mirrored to SRAM as `SaveFileAWorldFlags0/1/2`
+    (`Variables.inc:308-310`); `LevelInfo_WorldFlagsAddr` selects a level's block.
+    `dungeons.json` already carries the same grouping (levels 1-6 = `uw1q1`, 7-9 =
+    `uw2q1`). Until L1, `main.ts` used a single shared 128-byte `RoomFlags` for all
+    nine dungeons, so Level 1's room 60 and Level 7's room 60 were the same byte.
+    Now one `RoomFlags` exists per block — overworld, `uw1q1`, `uw2q1` — which fixes
+    the collision and gives the save format its shape. Q2's `uw1q2`/`uw2q2` slot into
+    the same structure in L2.
+
 ## Open questions for the user
 
 - **Asset gaps.** The reference repos may not have every sprite needed (especially

@@ -1,5 +1,5 @@
 import { SCREEN_WIDTH, HUD_HEIGHT } from '../core/constants.js';
-import { drawItemSprite } from '../data/item-sprites.js';
+import { drawItemSprite, drawNESItemSprite } from '../data/item-sprites.js';
 import type { Renderer } from '../render/renderer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { HeartMeter } from './heart-meter.js';
@@ -105,6 +105,7 @@ export class HudRenderer {
   private readonly heartMeter: HeartMeter;
   private readonly hudImage: HTMLImageElement | HTMLCanvasElement;
   private readonly itemsImage: HTMLImageElement | HTMLCanvasElement | null;
+  private readonly nesStripImage: HTMLImageElement | HTMLCanvasElement | null;
   private _blinkTimer = 0;
 
   constructor(
@@ -112,11 +113,26 @@ export class HudRenderer {
     fontImage: HTMLImageElement,
     treasuresImage: HTMLImageElement,
     itemsImage?: HTMLImageElement | HTMLCanvasElement,
+    nesStripImage?: HTMLImageElement | HTMLCanvasElement | null,
   ) {
     this.hudImage = hudImage;
     this.font = new BitmapFont(fontImage);
     this.heartMeter = new HeartMeter(treasuresImage);
     this.itemsImage = itemsImage ?? null;
+    this.nesStripImage = nesStripImage ?? null;
+  }
+
+  // Same source of truth as the inventory screen: the NES-resolution
+  // primaryItems.png strip first (its mapping is the verified one), items.png
+  // only for ids the strip has no cell for — the swords, chiefly. Drawing the
+  // HUD straight from items.png is what put a ring in the B box while the
+  // inventory, one screen away, drew the flute.
+  private drawSlotItem(
+    ctx: CanvasRenderingContext2D, itemId: number, x: number, y: number,
+  ): void {
+    // The strip's cells are 8×16; centre them in the 16-wide slot.
+    if (this.nesStripImage && drawNESItemSprite(ctx, this.nesStripImage, itemId, x + 4, y)) return;
+    if (this.itemsImage) drawItemSprite(ctx, this.itemsImage, itemId, x, y);
   }
 
   render(renderer: Renderer, state: HudState): void {
@@ -140,13 +156,11 @@ export class HudRenderer {
 
     this.font.drawString(renderer, BOMB_X, BOMB_Y, formatCount(state.bombs));
 
-    if (this.itemsImage) {
-      if (state.bItem !== null) {
-        drawItemSprite(renderer.ctx, this.itemsImage, state.bItem, B_ITEM_X, B_ITEM_Y);
-      }
-      if (state.aItem !== null) {
-        drawItemSprite(renderer.ctx, this.itemsImage, state.aItem, A_ITEM_X, A_ITEM_Y);
-      }
+    if (state.bItem !== null) {
+      this.drawSlotItem(renderer.ctx, state.bItem, B_ITEM_X, B_ITEM_Y);
+    }
+    if (state.aItem !== null) {
+      this.drawSlotItem(renderer.ctx, state.aItem, A_ITEM_X, A_ITEM_Y);
     }
 
     if (state.isOverworld) {

@@ -6,8 +6,12 @@ import {
 import { Direction, type Rect } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import {
-  drawProjectileFrame, drawProjectileFrameFlipped,
-  ARROW_UP, ARROW_DOWN, ARROW_LEFT,
+  drawProjectileSprite,
+  directionToProjectileRow,
+  PROJ_COL_ARROW,
+  PROJ_COL_SWORD_BEAM,
+  PROJ_COL_SWORD_BEAM_ALT,
+  PROJ_COL_FIREBALL,
 } from '../../render/projectile-sprite-data.js';
 import { ProjectileType } from '../player/shield.js';
 
@@ -151,30 +155,32 @@ export class EnemyProjectile {
 
       case ProjectileType.Fireball:
       case ProjectileType.Fireball2Unblockable:
-        drawProjectileFrame(renderer, flick ? 6 : 7, x, y);
+        // The fireball column is the same art in all four rows; flick between two
+        // of them so it still shimmers.
+        drawProjectileSprite(renderer, PROJ_COL_FIREBALL, flick ? 0 : 1, x, y);
         return;
 
-      case ProjectileType.SwordShot: {
-        const flipH = this._direction === Direction.Right;
-        const idx = this._direction === Direction.Up ? ARROW_UP
-          : this._direction === Direction.Down ? ARROW_DOWN : ARROW_LEFT;
-        drawProjectileFrameFlipped(renderer, idx, x, y, flipH, false);
+      case ProjectileType.SwordShot:
+        drawProjectileSprite(
+          renderer, PROJ_COL_SWORD_BEAM, directionToProjectileRow(this._direction), x, y,
+        );
         return;
-      }
 
       case ProjectileType.MagicShot:
       case ProjectileType.MagicShot2:
       case ProjectileType.UnblockableShot:
-        drawProjectileFrame(renderer, flick ? 14 : 6, x, y);
+        drawProjectileSprite(
+          renderer,
+          flick ? PROJ_COL_SWORD_BEAM : PROJ_COL_SWORD_BEAM_ALT,
+          directionToProjectileRow(this._direction), x, y,
+        );
         return;
 
-      case ProjectileType.Arrow: {
-        const aFlipH = this._direction === Direction.Right;
-        const aIdx = this._direction === Direction.Up ? ARROW_UP
-          : this._direction === Direction.Down ? ARROW_DOWN : ARROW_LEFT;
-        drawProjectileFrameFlipped(renderer, aIdx, x, y, aFlipH, false);
+      case ProjectileType.Arrow:
+        drawProjectileSprite(
+          renderer, PROJ_COL_ARROW, directionToProjectileRow(this._direction), x, y,
+        );
         return;
-      }
 
       default:
         renderer.fillRect(x, y, 8, 8, '#c44');
