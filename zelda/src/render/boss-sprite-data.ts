@@ -4,6 +4,7 @@
 // Coordinates measured from pixel-level analysis.
 
 import type { Renderer } from './renderer.js';
+import { applyTransparency, keyColor, SPRITE_BOX_GREY } from './transparency.js';
 
 export interface SpriteRect {
   readonly sx: number;
@@ -16,36 +17,23 @@ let bossSource: CanvasImageSource | null = null;
 let npcSource: CanvasImageSource | null = null;
 let linkEndingSource: CanvasImageSource | null = null;
 
-function processTransparency(
-  image: HTMLImageElement,
-  testFn: (r: number, g: number, b: number) => boolean,
-): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(image, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = imageData.data;
-  for (let i = 0; i < d.length; i += 4) {
-    if (testFn(d[i]!, d[i + 1]!, d[i + 2]!)) {
-      d[i + 3] = 0;
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-  return canvas;
-}
+// Both sheets carry a grey backing box behind each sprite on top of the outer
+// green/cyan field; see src/render/transparency.ts for why the secondary colour
+// needs a flood fill rather than a plain colour match.
+const GREY_BOX = keyColor(...SPRITE_BOX_GREY);
 
 export function initBossSprites(image: HTMLImageElement): void {
-  bossSource = processTransparency(image,
-    (r, g, b) => r < 3 && Math.abs(g - 128) < 3 && b < 3,
-  );
+  bossSource = applyTransparency(image, {
+    primary: (r, g, b) => r < 3 && Math.abs(g - 128) < 3 && b < 3,
+    secondary: GREY_BOX,
+  });
 }
 
 export function initNpcSprites(image: HTMLImageElement): void {
-  npcSource = processTransparency(image,
-    (r, g, b) => r < 3 && g > 252 && b > 252,
-  );
+  npcSource = applyTransparency(image, {
+    primary: (r, g, b) => r < 3 && g > 252 && b > 252,
+    secondary: GREY_BOX,
+  });
 }
 
 export function drawBossSprite(
@@ -100,6 +88,11 @@ export function drawLinkEndingSprite(renderer: Renderer, dx: number, dy: number)
 export function drawLinkEndingSpriteUp(renderer: Renderer, dx: number, dy: number): void {
   if (!linkEndingSource) return;
   renderer.drawImage(linkEndingSource, LINK_CELL * 2, 0, 16, 16, dx, dy, 16, 16);
+}
+
+/** True once initNpcSprites has run — lets callers keep a procedural fallback. */
+export function hasNpcSprites(): boolean {
+  return npcSource !== null;
 }
 
 export function drawNpcSprite(
@@ -263,17 +256,35 @@ export const GANON_SPRITES = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════
-// FIRE — from npcs.png (fireball section at y=137+)
-// Small animated fire sprites
+// FIRE — npcs.png, two 16×16 frames at (52,11) and (69,11).
+//
+// The pair is a mirrored flicker: same flame, tips leaning opposite ways, with
+// a white-hot core over red. Alternating them is what makes a flame look alive,
+// so every fire in the game — candle, book fire, dungeon standing fires — runs
+// both frames rather than picking one.
+//
+// Two earlier guesses lived here. L0b had (1,11)/(18,11) 16×16, which is the
+// Old Man in his red robe: the candle threw an old man. A later pass moved them
+// to (186,11)/(195,11), which is the fairy. Frames identified by the user
+// against a contact sheet of the whole file (2026-09-04); see
+// sprite-pickers/sprite-picker.png at the repo root.
 // ═══════════════════════════════════════════════════════════════════
 
 export const FIRE_SPRITES = {
-  // Fire frames from npcs.png fire section
   frames: [
-    { sx: 1, sy: 11, sw: 16, sh: 16 },
-    { sx: 18, sy: 11, sw: 16, sh: 16 },
+    { sx: 52, sy: 11, sw: 16, sh: 16 },
+    { sx: 69, sy: 11, sw: 16, sh: 16 },
   ],
 } as const;
+
+/** Draw flicker frame `frameIdx` (0 or 1) on the 16×16 tile at (dx, dy). */
+export function drawFireSprite(
+  renderer: Renderer, frameIdx: number, dx: number, dy: number,
+): void {
+  const frame = FIRE_SPRITES.frames[frameIdx % FIRE_SPRITES.frames.length]
+    ?? FIRE_SPRITES.frames[0];
+  drawNpcSprite(renderer, frame, dx, dy);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // ZELDA NPC — from npcs.png

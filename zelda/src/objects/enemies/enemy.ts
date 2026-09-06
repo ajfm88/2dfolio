@@ -255,6 +255,20 @@ export class Enemy {
     return false;
   }
 
+  /**
+   * Debug-only forced kill (__zelda.killAll). Bypasses the invincibility timer,
+   * the spawn cloud and `_vulnerable`, which takeDamage all honour — otherwise the
+   * cheat silently skips spawning enemies and every invulnerable boss part. Still
+   * routes through onDeath() so group behaviour (Ghini, Vire, Manhandla) fires.
+   */
+  debugKill(): void {
+    if (this._state === EnemyState.Dying || this._state === EnemyState.Dead) return;
+    this._hp = 0;
+    this._state = EnemyState.Dying;
+    this._deathTimer = 12;
+    this.onDeath();
+  }
+
   // Override for special death behavior (e.g., Ghini kills flying Ghini)
   protected onDeath(): void {}
 

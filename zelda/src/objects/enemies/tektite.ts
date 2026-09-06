@@ -26,6 +26,9 @@ enum TektitePhase {
   Jumping,
 }
 
+// First row of the Tektite's 2-frame pair in enemies.png.
+const TEKTITE_SPRITE_ROW = 8;
+
 export class Tektite extends Enemy {
   private readonly isBlue: boolean;
   private phase = TektitePhase.Ground;
@@ -112,9 +115,15 @@ export class Tektite extends Enemy {
 
   protected override renderEnemy(renderer: Renderer, enemySheet?: SpriteSheet): void {
     if (enemySheet) {
-      const colOffset = this.isBlue ? 4 : 0;
-      const col = colOffset + (this._walkAnimFrame === 0 ? 0 : 1);
-      const row = 8 + (this.phase === TektitePhase.Jumping ? 1 : 0);
+      // enemies.png convention (same as WalkerEnemy): a *row pair* holds the two
+      // animation frames, columns hold directions with red at 0-3 and blue at 4-7.
+      // The Tektite faces the camera, so it only occupies the first column of each
+      // colour — rows 8 and 9 at col 0 (red) / col 4 (blue). Advancing the column
+      // per animation frame, as this used to, landed on cols 1 and 5, which are
+      // empty on the sheet: the sprite vanished every other frame and read as a
+      // flicker. Jumping reuses the same pair; there is no separate jump sprite.
+      const col = this.isBlue ? 4 : 0;
+      const row = TEKTITE_SPRITE_ROW + this._walkAnimFrame;
       const frameIndex = row * ENEMY_SHEET_COLUMNS + col;
       enemySheet.drawFrame(renderer, frameIndex, this._x, this._y);
     } else {

@@ -78,6 +78,25 @@ export function drawItemSprite(
   return true;
 }
 
+// The small triforce-piece triangle (cell 8,3) is 10×10 of solid #FFA044 sitting
+// off-centre in its 40×40 cell. drawItemSprite's generic "centre 60%" crop keeps
+// it but pads it unevenly, and any rescale turns crisp pixel edges to mush — so
+// the inventory's triforce pyramid draws this exact rect at 1:1 instead.
+export const TRIFORCE_PIECE_SRC = { sx: 336, sy: 135, sw: 10, sh: 10 } as const;
+
+/** Draw an exact source rect from items.png, 1:1 by default. */
+export function drawItemsRegion(
+  ctx: CanvasRenderingContext2D,
+  itemsImage: HTMLImageElement | HTMLCanvasElement,
+  src: { readonly sx: number; readonly sy: number; readonly sw: number; readonly sh: number },
+  dx: number,
+  dy: number,
+  dw = src.sw,
+  dh = src.sh,
+): void {
+  ctx.drawImage(itemsImage, src.sx, src.sy, src.sw, src.sh, dx, dy, dw, dh);
+}
+
 export function getProcessedItemsCanvas(): HTMLCanvasElement | null {
   return processedItemsCanvas;
 }
@@ -141,6 +160,11 @@ export function processNESItemStrip(image: HTMLImageElement): HTMLCanvasElement 
   ctx.putImageData(imageData, 0, 0);
   processedNESStrip = canvas;
   return canvas;
+}
+
+/** The processed primaryItems.png strip, once processNESItemStrip has run. */
+export function getProcessedNESStrip(): HTMLCanvasElement | null {
+  return processedNESStrip;
 }
 
 export function drawNESItemSprite(

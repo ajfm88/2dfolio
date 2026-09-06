@@ -154,6 +154,14 @@ export class OverworldManager {
     }
   }
 
+  /**
+   * Re-seed the minimap's visited set from a save file (L1). Additive — the
+   * current screen stays visited.
+   */
+  restoreVisitedScreens(ids: readonly number[]): void {
+    for (const id of ids) this._visitedScreens.add(id);
+  }
+
   setScreen(row: number, col: number): void {
     this._screenRow = row;
     this._screenCol = col;

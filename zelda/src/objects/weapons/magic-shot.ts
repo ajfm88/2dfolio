@@ -8,7 +8,11 @@ import {
   SCREEN_WIDTH,
 } from '../../core/constants.js';
 import { Direction, type Rect } from '../../core/types.js';
-import { drawProjectileFrame, MAGIC_SHOT_A, MAGIC_SHOT_B } from '../../render/projectile-sprite-data.js';
+import {
+  drawProjectileSprite,
+  directionToProjectileRow,
+  PROJ_COL_MAGIC,
+} from '../../render/projectile-sprite-data.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { TileCollisionMap } from '../../world/collision.js';
@@ -96,8 +100,13 @@ export class MagicShot {
 
   render(renderer: Renderer): void {
     if (this._state === MagicShotState.Dead) return;
-    const frame = (this._frameCount & 0x02) === 0 ? MAGIC_SHOT_A : MAGIC_SHOT_B;
-    drawProjectileFrame(renderer, frame, this._x, this._y);
+    // Column 4 carries the magic shot itself, one cell per direction — no
+    // frame toggle, which is also what stops the shot strobing between two
+    // sword-beam frames as it flies.
+    drawProjectileSprite(
+      renderer, PROJ_COL_MAGIC, directionToProjectileRow(this._direction),
+      this._x, this._y,
+    );
   }
 
   private computePixels(): number {
