@@ -63,13 +63,13 @@ function dummyRenderer(): DungeonRenderer {
 describe('triforce room-item position', () => {
   it('shifts a triforce piece ($1B) 8px left of its slot', () => {
     const dm = new DungeonManager(1, makeData(0x1B, 0), dummyRenderer());
-    // Packed $C9 → X $C0 (192), Y $90 (144); triforce shifts X −8 → 184.
-    expect(dm.getRoomItemPosition()).toEqual({ x: 184, y: 144 });
+    // Packed $C9 → X $C0 (192), Y $90 (144) − $40 (HUD) = 80; triforce shifts X −8 → 184.
+    expect(dm.getRoomItemPosition()).toEqual({ x: 184, y: 80 });
   });
 
   it('does not shift a non-triforce item (heart container $1A)', () => {
     const dm = new DungeonManager(1, makeData(0x1A, 0), dummyRenderer());
-    expect(dm.getRoomItemPosition()).toEqual({ x: 192, y: 144 });
+    expect(dm.getRoomItemPosition()).toEqual({ x: 192, y: 80 });
   });
 
   it('returns null when the room has no item ($3 = none)', () => {

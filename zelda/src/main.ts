@@ -8,7 +8,6 @@ import {
   RAFT_ROOM_A,
   RAFT_ROOM_B,
   RING_TINT_BLUE,
-  RESPAWN_HEALTH,
   RING_TINT_RED,
   SILVER_ARROW_DAMAGE,
   SPRITE_SPACING,
@@ -89,11 +88,14 @@ import { NameRegistrationScreen } from './ui/name-registration.js';
 import { EliminationScreen } from './ui/elimination.js';
 import { EndingScreen } from './ui/ending-screen.js';
 import { AudioManager } from './audio/audio-manager.js';
+import { TouchControls } from './ui/touch-controls.js';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const renderer = new Renderer(canvas);
 const input = new InputManager();
 input.attach();
+const touchControls = new TouchControls(input);
+touchControls.init();
 const fpsCounter = new FpsCounter();
 const debug = new DebugOverlay();
 debug.attach();
@@ -345,6 +347,7 @@ async function init(): Promise<void> {
       autoDetectTransparency: true,
     });
     dungeonRenderer = new DungeonRenderer(assets.maps.dungeonsMap);
+    dungeonRenderer.setDoorImage(assets.tiles.dungeonDoors);
     hudRenderer = new HudRenderer(
       processHudImage(assets.ui.hud),
       assets.sprites.font,
@@ -472,7 +475,7 @@ document.addEventListener('keydown', (e) => {
     overworld.setScreen(row, col);
     usedCandleThisScreen = false;
     spawnManager.clear();
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
     return `screen (${row},${col}) id ${overworld.currentScreen.id}`;
   },
   // Jump to a dungeon room by ID, ignoring doors.
@@ -566,7 +569,7 @@ function restoreGameState(state: SavedGameState): void {
   inv.compass9 = s.compass9; inv.map9 = s.map9; inv.triforce = s.triforce;
 
   link.restoreStats(state.stats);
-  link.setHealth(Math.min(RESPAWN_HEALTH, state.stats.maxHealth), state.stats.maxHealth);
+  link.setHealth(state.stats.maxHealth, state.stats.maxHealth);
 
   overworld.roomFlags.loadBytes(state.worldFlags.overworld);
   for (const block of WORLD_FLAG_BLOCKS) {
@@ -599,7 +602,7 @@ function startGameFromSlot(index: number): void {
   const saved = saveManager.getState(index);
   if (saved) restoreGameState(saved);
 
-  spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+  spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
   gameMode = GameMode.Gameplay;
   void audio.playMusic('overworld');
 }
@@ -704,7 +707,7 @@ function exitDungeon(): void {
   gameMode = GameMode.DungeonTransition;
 
   if (spawnManager && overworld) {
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
   }
 }
 
@@ -806,7 +809,7 @@ function initDungeonRoomObjects(): void {
   if (itemId !== 3 && !dungeonManager.isItemTaken()) {
     const itemPos = dungeonManager.getRoomItemPosition();
     if (itemPos) {
-      dungeonRoomItem = new ItemPickup(itemId, itemPos.x, itemPos.y);
+      dungeonRoomItem = new ItemPickup(itemId, itemPos.x, itemPos.y, true);
       // Secret-gated items start hidden
       dungeonRoomItemActive = !dungeonManager.isItemSecretGated();
     }
@@ -882,7 +885,7 @@ function returnToOverworld(): void {
   pendingCaveIndex = -2; // sentinel: opening curtain on overworld
   // Respawn enemies when returning to overworld
   if (spawnManager && overworld) {
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
   }
 }
 
@@ -1089,7 +1092,7 @@ function updateGameplay(): void {
     // Spawn enemies for the new screen after transition completes
     if (!overworld.isTransitioning && spawnManager) {
       const entryDir = link.facing;
-      spawnManager.spawnForScreen(overworld.currentScreen, entryDir);
+      spawnManager.spawnForScreen(overworld.currentScreen, entryDir, overworld.collisionMap);
     }
 
     // Check for raft room after transition completes
@@ -1411,6 +1414,11 @@ function updateDungeonGameplay(): void {
     caveWalkIntoFrames = 0;
     pendingCaveIndex = -3; // sentinel: exiting dungeon
     return;
+  }
+
+  // Try to unlock a key door if Link is pushing against one from the alcove
+  if (!dungeonManager.inCellar) {
+    dungeonManager.tryOpenBlockedDoor(link);
   }
 
   // Check for room transitions through doors (skip when in cellar)
@@ -2231,7 +2239,7 @@ function handleRespawn(countDeath = true): void {
     void audio.playMusic('overworld');
 
     if (spawnManager && overworld) {
-      spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down);
+      spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
     }
   }
 }
@@ -2239,6 +2247,12 @@ function handleRespawn(countDeath = true): void {
 function renderDungeonEntities(): void {
   if (!link) return;
   const ctx = renderer.ctx;
+
+  // Mask the baked-in room item from dungeons-map.png — keep masking even after
+  // collection so the painted copy never shows through.
+  if (dungeonRoomItem && dungeonManager) {
+    dungeonManager.maskBakedRoomItem(renderer, dungeonRoomItem.x, dungeonRoomItem.y);
+  }
 
   if (dungeonStairsPos) {
     ctx.fillStyle = '#000000';

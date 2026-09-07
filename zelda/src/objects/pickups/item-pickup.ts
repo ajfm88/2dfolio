@@ -10,19 +10,16 @@ export class ItemPickup {
   readonly itemId: number;
   readonly x: number;
   readonly y: number;
+  readonly persistent: boolean;
   private lifetime = INITIAL_LIFETIME;
   private frameToggle = false;
   private _collected = false;
 
-  // Argument order matches `drawItemSprite(ctx, sheet, itemId, x, y)` and every
-  // call site in main.ts. It used to be (x, y, itemId) while all four callers
-  // passed (itemId, x, y), so `itemId` held a world Y coordinate — no grid entry
-  // matched it and `drawItemSprite` bailed, which is why dropped items were
-  // invisible and uncollectable.
-  constructor(itemId: number, x: number, y: number) {
+  constructor(itemId: number, x: number, y: number, persistent = false) {
     this.itemId = itemId;
     this.x = x;
     this.y = y;
+    this.persistent = persistent;
   }
 
   get isActive(): boolean {
@@ -35,6 +32,7 @@ export class ItemPickup {
 
   update(): void {
     if (!this.isActive) return;
+    if (this.persistent) return;
     // NES: timer decrements every 2 frames
     this.frameToggle = !this.frameToggle;
     if (this.frameToggle) {
