@@ -293,6 +293,42 @@ export class DungeonManager {
     this._secretTriggered = true;
   }
 
+  tryOpenBlockedDoor(link: Link): boolean {
+    const lx = link.posX;
+    const ly = link.posY;
+    const facing = link.facing;
+
+    // Check if Link is in a door alcove pushing against the door
+    // North: row 1, cols 7-8 (y ~16, x 96-143), facing up
+    if (facing === Direction.Up && ly <= 24 && lx >= 96 && lx <= 143) {
+      return this.tryUnlockKeyDoor(Direction.Up, link);
+    }
+    // South: row 9, cols 7-8, facing down
+    if (facing === Direction.Down && ly >= 128 && lx >= 96 && lx <= 143) {
+      return this.tryUnlockKeyDoor(Direction.Down, link);
+    }
+    // West: col 1, rows 4-6 (x ~16, y 48-111), facing left
+    if (facing === Direction.Left && lx <= 24 && ly >= 48 && ly <= 111) {
+      return this.tryUnlockKeyDoor(Direction.Left, link);
+    }
+    // East: col 14, rows 4-6, facing right
+    if (facing === Direction.Right && lx >= 208 && ly >= 48 && ly <= 111) {
+      return this.tryUnlockKeyDoor(Direction.Right, link);
+    }
+    return false;
+  }
+
+  private tryUnlockKeyDoor(direction: Direction, link: Link): boolean {
+    const doorType = this.getDoorType(direction);
+    if (doorType !== DOOR_KEY && doorType !== DOOR_KEY_2) return false;
+    const dirBit = directionToDoorBit(direction);
+    if (this._openedDoors & dirBit) return false;
+    if (!link.inventory.magicKey && link.keys <= 0) return false;
+    if (!link.inventory.magicKey) link.addKeys(-1);
+    this.openDoorDirection(dirBit);
+    return true;
+  }
+
   bombDoor(direction: Direction): boolean {
     const doorType = this.getDoorType(direction);
     if (doorType !== DOOR_BOMBABLE) return false;
@@ -446,8 +482,9 @@ export class DungeonManager {
     if (packed === undefined) return null;
 
     // NES GetShortcutOrItemXY: high nibble = X/16, low nibble = Y/16
+    // Y is in NES screen coords; subtract $40 (status bar) per Z_05.asm:6091
     let x = packed & 0xF0;
-    const y = (packed & 0x0F) << 4;
+    const y = ((packed & 0x0F) << 4) - 0x40;
     // Triforce pieces are drawn 8px left of their slot (Z_05.asm:8255).
     if (itemId === 0x1B) x -= 8;
     return { x, y };
@@ -543,6 +580,25 @@ export class DungeonManager {
       renderer,
       this._currentRoomId,
       this._dungeonInfo.levelBlock,
+    );
+    this._renderer.renderDoorOverlays(
+      renderer,
+      this._currentRoomId,
+      this._dungeonInfo.levelBlock,
+      this._currentRoom.doors,
+      this._openedDoors,
+    );
+  }
+
+  maskBakedRoomItem(renderer: Renderer, itemX: number, itemY: number): void {
+    const uniqueRoom = this.getUniqueRoom(this._currentRoom.uniqueRoomId);
+    this._renderer.maskBakedRoomItem(
+      renderer,
+      this._currentRoomId,
+      this._dungeonInfo.levelBlock,
+      uniqueRoom,
+      itemX,
+      itemY,
     );
   }
 }

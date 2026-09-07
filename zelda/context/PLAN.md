@@ -1,18 +1,18 @@
-# PLAN — 45 slices to a playable browser build
+# PLAN — 54 slices to a playable browser build
 
 Status legend: ✅ done · 🔨 in progress · ⬜ pending
 
-**Live status is not here.** This file is the map. What is actually done, in
-progress, and next lives in `context/agent/01-progress-tracker.md` — read that
-first.
+**Live status is not here.** This file is the map: every slice, its status, and
+what verifies it. What is being worked on *right now* lives in `STATUS.md` —
+read that first.
 
 A **slice** is one focused agent session, sized so it ends with something
 demonstrably working. Slices are atomic by design (user, 2026-08-02): claim one,
 finish it, log it, stop.
 
-**Budget: 45 slices** (user estimate, 2026-08-02). The count is a target, not a
-contract — split a slice that turns out too big with a letter suffix (`G4a`,
-`G4b`), and record it.
+**Budget: 45 slices** (user estimate, 2026-08-02) — the count was always a
+target, not a contract. Splitting oversized slices with a letter suffix (`G4a`,
+`G4b`) grew it to the 54 rows below. **51 done; L2b partly done; M1–M2 pending.**
 
 ---
 
@@ -158,7 +158,8 @@ playthrough audit, and auditing parity with invisible bombs and boomerangs would
 | L0 ✅ | Sprite polish: replaced placeholder colored-rectangle renders with real sprites from sprite sheets. L0b: all bosses/NPCs (bosses.png, npcs.png). L0c: enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce (projectiles.png, items.png, link.png). Procedural kept for: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. Done 2026-09-03 | every entity renders with real sprites; remaining procedural items documented |
 | L1 ✅ | Save system: 3 slots in localStorage (DECISIONS #10 amends #8 — ~6KB/slot). Persists Link's counters, the full inventory, three 128-byte world-flag blocks (overworld / uw1q1 / uw2q1, DECISIONS #13) and visited screens. Written only on SAVE (#11), reachable mid-game via Start then Up+A (`Z_05.asm:362`, #12). Loading restarts on the overworld start screen with 3 hearts like the NES. Done 2026-09-04 | save → reload → identical state |
 | L0d ✅ | **In-world sprite fixes** (user-reported 2026-09-04). Two bugs. (a) `projectiles.png` is 6×4 cells of 40×40, not 15 cols of 16×16 — every weapon index landed on an empty cell, so bombs/boomerangs/arrows drew nothing. Column meanings taken from `zelda-clone-master`'s `ProjectileSpriteFactory.cs`, which ships the byte-identical sheet. (b) Four sheets carry a second background colour (grey #747474 backing box) that nothing keyed, so enemies rendered inside a visible square; fixed with an edge-flood-fill in the new `src/render/transparency.ts` that preserves grey *inside* sprites. Done 2026-09-04 | bomb/boomerang/arrow/candle visible in-world; no grey box on dungeon enemies, bosses or NPCs |
-| L2 ⬜ | Second Quest: load alternate overworld/dungeon JSON data (different secrets, dungeons, enemy placement). Unlocks after first completion. + Full playthrough audit. **Last planned slice** | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
+| L2a ✅ | Second Quest data + wiring: Q2 dungeon info extracted (9 LevelInfoUWQ2 replacements applied), quest threaded through all systems (entrance mapping, cave data, tile-object secrets, DungeonManager, DungeonRenderer, RecorderEffect, SpawnManager), Q2 enemy behavior (Stalfos shoots, Rope HP+flash), "ZELDA" name → Q2, file-select Q2 marker. 5 bug fixes: whirlwind spawn, cave fire animation, enemy spawn nudge to walkable tiles, dungeon minimap BFS origin, save-load full health. Done 2026-09-05 | register "ZELDA" → Q2; enter Q2 dungeons; enemies behave differently |
+| L2b ⬜ | Full playthrough audit of both quests. **Last planned slice** | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
 
 ## Phase M — Mobile & touch (post-completion, 2 slices)
 
@@ -182,7 +183,7 @@ build working on a phone, not deploying anywhere.
 - **The roster audit (G5) matters.** The enemy list is large enough that types
   get silently skipped; the audit is what makes "done" mean something.
 - **When a slice exceeds one session**, split it (`G4a`/`G4b`), log the split in
-  the tracker, and note it in `DECISIONS.md` if the shape of the plan changed.
+  `STATUS.md`, and note it in `DECISIONS.md` if the shape of the plan changed.
 - **Second Quest (L2) is data, not code.** If the engine is data-driven (decision
   #4), Second Quest is just loading alternate JSON files.
 - **L0 before K1/K2** (user, 2026-09-02). Sprite polish before audio — visuals

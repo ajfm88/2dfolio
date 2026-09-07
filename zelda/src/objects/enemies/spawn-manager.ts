@@ -3,7 +3,10 @@
 
 import {
   MAX_ENEMY_SLOTS,
+  PLAY_AREA_HEIGHT,
+  SCREEN_WIDTH,
   SPAWN_CLOUD_FRAMES,
+  TILE_SIZE,
 } from '../../core/constants.js';
 import { Direction } from '../../core/types.js';
 import type { EnemySpawnData } from '../../data/enemy-spawn-types.js';
@@ -59,6 +62,35 @@ const DUNGEON_INNER_MAX_ROW = 8;
 const DUNGEON_INNER_MIN_COL = 2;
 const DUNGEON_INNER_MAX_COL = 13;
 
+function nudgeToWalkable(
+  x: number, y: number,
+  collision: TileCollisionMap,
+  screen: OverworldScreen,
+): { x: number; y: number } {
+  if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < PLAY_AREA_HEIGHT &&
+      collision.isPositionWalkable(screen, x + 4, y + 8)) {
+    return { x, y };
+  }
+  for (let ring = 1; ring <= 5; ring++) {
+    const step = ring * TILE_SIZE;
+    const offsets: [number, number][] = [
+      [0, -step], [0, step], [-step, 0], [step, 0],
+      [-step, -step], [step, -step], [-step, step], [step, step],
+    ];
+    for (const [dx, dy] of offsets) {
+      const nx = x + dx;
+      const ny = y + dy;
+      const checkX = nx + 4;
+      const checkY = ny + 8;
+      if (checkX < 0 || checkX >= SCREEN_WIDTH || checkY < 0 || checkY >= PLAY_AREA_HEIGHT) continue;
+      if (collision.isPositionWalkable(screen, checkX, checkY)) {
+        return { x: nx, y: ny };
+      }
+    }
+  }
+  return { x, y };
+}
+
 export class SpawnManager {
   private _enemies: Enemy[] = [];
   private _projectiles: EnemyProjectile[] = [];
@@ -107,7 +139,7 @@ export class SpawnManager {
     this._frozenTimer = frames;
   }
 
-  spawnForScreen(screen: OverworldScreen, entryDirection: Direction): void {
+  spawnForScreen(screen: OverworldScreen, entryDirection: Direction, collision?: TileCollisionMap): void {
     this._enemies = [];
     this._projectiles = [];
     this._frozen = false;
@@ -140,8 +172,14 @@ export class SpawnManager {
 
       const col = pos & 0x0F;
       const row = (pos >> 4) & 0x0F;
-      const x = col * 16;
-      const y = row * 16 - 3;
+      let x = col * 16;
+      let y = row * 16 - 3;
+
+      if (collision) {
+        const nudged = nudgeToWalkable(x, y, collision, screen);
+        x = nudged.x;
+        y = nudged.y;
+      }
 
       const enemyType = enemyTypes[i % enemyTypes.length]!;
       if (enemyType === 0) continue;

@@ -1,15 +1,8 @@
-# PROGRESS — session archive
+# HISTORY — session archive
 
-> **This is not the live log.**
->
-> Current state, the ordered slice queue, open questions and recent sessions live
-> in **`context/agent/01-progress-tracker.md`** — read that first, and update it
-> before you stop working.
->
-> This file keeps older session entries once the tracker's Session Log gets long,
-> so the tracker stays short enough that agents actually read it.
+One entry per finished session, oldest first. Written when a slice lands; never
+edited afterwards. Live state is in `STATUS.md`, not here.
 
-Oldest first.
 
 ## 2026-08-02 — Context system created (Claude Opus 4.6)
 
@@ -658,7 +651,7 @@ back *through* Link instead of bouncing away. Now moves in `_direction` directly
 visibly bounce off toward the enemy. **Debug helpers added** for manual testing:
 `SpawnManager.debugSpawn(type,x,y)` + `__zelda.goToDungeon(level)` / `__zelda.spawnEnemy(typeHex)`
 (default $23 Blue Wizzrobe) — drops any enemy next to Link (Wizzrobes aren't in early dungeons).
-**(C) The roster audit** (`context/agent/enemy-roster-audit.md`): definitive object-type→status
+**(C) The roster audit** (`ENEMY-ROSTER.md`): definitive object-type→status
 table from `Z_07.asm:5321 UpdateObject_JumpTable`. Result — **every non-boss combat enemy is
 implemented**; all remaining types are bosses (→ Phase I: Aquamentus/Dodongo/Gohma/Digdogger/
 Manhandla/Moldorm/Gleeok/Patra/Ganon + GuardFire/StandingFire) or non-combat NPCs/specials
@@ -976,3 +969,299 @@ cross-planks), **ending-screen.ts** (Link sprite from link.png, Zelda from npcs.
 Triforce from items.png). Kept procedural: whirlwind (no sprite), push block (wall approximation),
 Ganon ash pile, arrow spark, shield deflection. **1218 tests all pass; src/ typecheck clean.
 L0 complete.**
+## 2026-09-04 — K1 Web Audio SFX engine (Claude Opus 4.6)
+
+Created `src/audio/audio-manager.ts` — AudioManager class: lazy AudioContext creation with browser
+autoplay policy handling (resume-on-gesture via AbortController), preloads all 30 WAV files from
+`public/assets/audio/sfx/` into AudioBuffers at init. `play(key)` one-shot playback, `playLoop(key)`/
+`stopLoop(key)` for looping SFX, `stopAllLoops()` for cleanup, `toggleMute()` with M key wired in
+main.ts. **25 SFX trigger points wired in main.ts:** sword swing (state-transition detection via
+`sfxPrevSwordActive`), sword beam fired, bomb drop (in `useBItem`), bomb detonation (WeakSet tracking
+in `updateSfxTracking`), boomerang/arrow/candle/rod/recorder (in `useBItem`), enemy hit/kill with
+boss scream differentiation (`isBossEnemy` checks type $32-$3E/$41-$48`), Link hurt (at all 5
+`takeDamage` call sites — enemy contact ×2, projectile ×2, spike trap), Link death (+ stopAllLoops),
+shield deflect (in both OW/dungeon projectile checks), item pickup (rupee→`getRupee`, heart/fairy→
+`getHeart`, triforce→`fanfare`, else→`getItem` via `playPickupSfx`), secret reveal (overworld tile
+objects + dungeon stairs/items), shutter open (`unlock`), key door (keys-before/after detection),
+stairs (cave/dungeon/cellar entry), low-health beep (loop while ≤1 heart, auto-stop on heal/death),
+heart-refill loop (potion use), triforce fanfare (+ stopAllLoops). SFX state tracking vars reset on
+death/triforce-get. Potion use plays `getItem`. Audio exposed via `__zelda.audio` for console testing.
+**1214 tests pass (5 pre-existing inventory failures); src/ typecheck clean; zero console errors.**
+Verified in browser: 30/30 buffers load, all play() calls succeed, loop start/stop works, mute toggle
+works. **Phase K started. Next: K2 (music engine, 2 tracks).**
+
+Older sessions are above in this file (A1–L0c, 2026-08-02 through 2026-09-03).
+
+Note for next agent: the Claude-in-Chrome tab runs in the background, where Chrome freezes
+requestAnimationFrame — the game loop only ticks when the tab is foreground/focused. Use the `__zelda`
+debug helpers to drive state when verifying via automation.
+
+## 2026-09-04 — K2 Music engine (Claude Opus 4.6)
+
+Added music playback to AudioManager using the 2 OGG tracks on disk (overworld.ogg, dungeon.ogg).
+`playMusic(key)` lazy-loads and decodes the OGG on first call (via `loadMusicBuffer`), then loops it
+through a GainNode for fade support. `stopMusic(fadeMs)` fades out via `linearRampToValueAtTime`
+(default 500ms, 0 for immediate). `pauseMusic()` saves the current track key and stops the source;
+`resumeMusic()` restarts from the saved key. Same-track `playMusic` is a no-op (no restart). Music
+respects the existing mute toggle. **6 transition points wired in main.ts:** `startGameFromSlot` →
+overworld, `startDungeonInterior` → dungeon, `exitDungeon` → overworld, `enterCave` → pause,
+`returnToOverworld` → resume, death transitions + `beginTriforceGet` → stop. `handleRespawn` restarts
+the appropriate track (dungeon for dungeon respawn, overworld for overworld respawn). `enterDungeon`
+stops overworld music immediately before the curtain transition. **Bug fix during testing:** 
+`stopMusicImmediate()` was clearing `_musicPaused`/`_musicPausedKey`, breaking `pauseMusic` → 
+`resumeMusic` flow. Fixed by moving those resets out of `stopMusicImmediate` into `toggleMute` only.
+**1214 tests pass (5 pre-existing); src/ typecheck clean; zero console errors.** Verified in browser:
+overworld music plays and loops, dungeon music plays, pause/resume works, stop works, same-track no-op
+works. **Phase K complete. Next: L1 (save system).**
+
+
+## 2026-09-04 — L1 Save system + debug cheats (Claude Opus 5)
+
+**Backing store is localStorage, not IndexedDB** (DECISIONS #10 amends #8): a full slot is ~6KB, so
+three fit in ~18KB of a 5MB budget, and staying synchronous keeps `SaveManager` constructible at
+module scope the way the front end already assumes. `SaveSlot` gained `state: SavedGameState | null`
+— Link's counters, the whole inventory, three world-flag blocks, visited screens. Key moved to
+`zelda-nes:saves:v2`; a J1a `v1` payload still loads as metadata-only so old files appear on file
+select rather than vanishing. Every field is coerced on read, so a truncated or garbage state
+repairs to defaults instead of losing the file.
+
+**Position, level and room are deliberately NOT persisted.** Loading a file on the NES always
+restarts Link on the overworld start screen with 3 hearts (`Z_07.asm:1442 InitMode3_Sub1`), so
+`restoreGameState` reuses the existing `computeRespawnParams(0)`. Only `maxHealth` carries over.
+
+**Saving without dying, per the user + disassembly.** `Z_05.asm:362 UpdateMenuActive`: with the
+inventory subscreen open, controller 2 holding Up (`$08`) + A (`$80`) (`AND #$88 / CMP #$88`) resets
+the submenu, sets `GameMode = $08` (the same SAVE/CONTINUE/RETRY screen as death) and silences
+sound. Wired as Start → hold Up + A; `InputManager` already merges every connected pad into one
+action set, so no input-layer change was needed. Held state, not just-pressed, matching the CMP.
+Subscreen snaps shut via new `InventorySlide.hideImmediately()` — the NES resets MenuState outright
+rather than playing the scroll-up (the animated `close()` left the subscreen drawn over Mode $08).
+`handleRespawn(countDeath)` — CONTINUE reached via the chord does not increment deaths, since the
+NES counts them in the death sequence (Mode $11), not in Mode $08. **Written only on SAVE — no
+autosave (DECISIONS #11), so closing the tab mid-play loses progress since the last SAVE.**
+
+**Bug found and fixed while shaping the save format (DECISIONS #13).** `main.ts` used ONE shared
+128-byte `RoomFlags` for all nine dungeons, so Level 1's room 60 and Level 7's room 60 were the
+same byte. The NES `WorldFlags` region is `$067F-$07FE` = `$180` = three 128-byte blocks
+(`SaveFileAWorldFlags0/1/2`, `Variables.inc:308-310`) chosen per level by
+`LevelInfo_WorldFlagsAddr`, and `dungeons.json` already carries the grouping: L1-6 = `uw1q1`,
+L7-9 = `uw2q1`. Now one `RoomFlags` per block via `roomFlagsForLevel()`. Also seeded
+`DungeonManager._visitedRooms` from the persisted VISITED bits — it started empty on every
+construction, so the dungeon minimap forgot explored rooms on re-entry even though the bit survived.
+
+**The 4 "pre-existing inventory failures" were stale tests, not sprite indices.** They asserted the
+pre-L0 behaviour where B-slot 1 was unconditionally selectable; the L0 inventory overhaul gated it
+on `hasBombs`. Updated the 3 `getNextOwnedSlot` cases + 1 `getEquippedBItemId` case and added a test
+for the gate itself.
+
+**8 cheats + 3 helpers on `__zelda`:** `giveDungeon()` (map+compass+9 keys for the current level),
+`godMode()`, `noclip()`, `warp(row,col)`, `goToRoom(id)`, `killAll()`, `saveNow()`, `dumpSave()`,
+plus `step(frames)`, `roomFlagBlocks`, `gameMode`. New primitives: `Link._godMode` gate in
+`takeDamage`, a `noclip` module flag honoured by both collision maps (module-level because
+`DungeonCollisionMap` is rebuilt per room), `DungeonManager.debugGoToRoom`, `Enemy.debugKill()`
+and `GameLoop.stepOnce()`. Two of these came out of testing: plain `takeDamage` silently skipped
+enemies still in their spawn cloud and every invulnerable boss part, hence `debugKill`; and a
+background tab freezes `requestAnimationFrame`, so `step()` is what makes browser-automated
+verification possible at all — **use it, it is the fix for the caveat at the bottom of this file.**
+
+**1232 tests, `src/` typecheck clean.** Two full runs were 1232/1232; a third had 3 failures and a
+fourth 2 — always the RNG-seeded "enemy moves after spawning" cases (Octorok / Bubble / Keese /
+LittleDigdogger), a *different* subset each run, and all pass in isolation. This is the
+long-standing flakiness noted in earlier sessions, unrelated to L1 (nothing here touches enemy
+movement). **Worth its own cleanup slice: seed the RNG in those tests rather than re-rolling.**
+20 new tests (save state
+round-trip, block separation, v1 migration, garbage repair, register/eliminate clearing state;
+RoomFlags serialization). Verified in-browser end to end: gave items → marked an overworld secret +
+2 visited screens → entered L1, cleared room 60 and opened its north door → Start, Up+A → Mode $08
+renders → SAVE → title → **page reload** → loaded the file: screen (7,7), 3 hearts, maxHealth 32,
+999 rupees, 18 keys, all items, the overworld secret, both visited screens, and L1 room 60 still
+cleared with its door open, while **L7 room 60 is untouched** (block separation holds). All 8
+cheats exercised; zero console errors. **Next: L2 (Second Quest) — the last planned slice.**
+
+Note: `npm run dev` binds `localhost`, not `127.0.0.1` — use `http://localhost:5173/`.
+
+
+## 2026-09-04 — L0d In-world sprite fixes (Claude Opus 5)
+
+Two user-reported rendering bugs, both traced to root cause rather than patched by eye.
+
+**(a) Using an item drew nothing.** `projectiles.png` is **6 columns × 4 rows of 40×40 cells** with
+each sprite centred in its cell — the same convention as `items.png`. L0c read it as **15 columns of
+16×16**, so every index landed on an empty or half-clipped cell: bomb index 2 held 0 content pixels,
+arrow index 0 held 0, fire index 7 held 0. Nothing to draw. Measured proof: content occupies X runs
+at 11/51/91/136/176/216 and Y runs at 12/52/95/135 — a 40px pitch both ways. **The column meanings
+are not guesses** — our `projectiles.png` is byte-identical (md5 `04fdd42c…`) to
+`zelda-clone-master/Game1/Content/Images/Projectile/projectiles.png`, and that repo's
+`ProjectileSpriteFactory.cs` names them: `arrowColumn=0, swordBeamColumn=1, boomerangColumn=3,
+fireballColumn=4, bombColumn=5 (bombRow=0, bombTotalFrames=1)`; `Arrow.cs` gives the row convention
+`north=0, south=1, west=2, east=3`; `SwordBeam.cs` toggles a columnModifier so the beam animates
+across columns 1 and 2. **When a curated asset misbehaves, check the repo it came from — it often
+names the layout.**
+
+`projectile-sprite-data.ts` is now the sole owner (main.ts built a *second* SpriteSheet of the same
+image with the same wrong config; deleted). It crops a centred 20×20 window and draws it 1:1 with a
+−2 offset — no scaling, which would blur pixel art. Two sprites turned out not to be on this sheet
+at all: the **candle flame** now draws from `npcs.png` via the existing `FIRE_SPRITES` (same source
+as the cave/boss-room fires), and the **magic rod** from `items.png` via `drawItemSprite` like
+raft/stepladder, since the rod is a held item and the sheet has no rod cell. Magic shot reuses the
+sword-beam column pair.
+
+**(b) Enemies drawn inside a grey box.** `dungeon-enemies.png`, `overworld-enemies-alt.png`,
+`bosses.png` and `npcs.png` carry **two** backgrounds — the outer green/cyan that was being keyed,
+and a grey `#747474` backing box behind each sprite that nothing keyed. `enemies.png` has *zero*
+grey, which is why overworld walkers looked right while dungeon enemies/bosses/NPCs showed squares.
+**Grey is also a real NES sprite colour**, so a global key would punch holes in armour and bones: new
+`src/render/transparency.ts` clears the primary globally, then clears the secondary **only where a
+flood fill from the image border can reach it**. Measured result — 14,730 / 7,826 / 18,463 / 2,314
+box pixels cleared per sheet, while 185 / 166 / 251 / 128 enclosed grey pixels survive.
+`enemies.png` is untouched (0 cleared), so no regression there. Deliberately did *not* flood-fill the
+primary: it is only 92-96% edge-connected, so ~3,000 px per sheet sit enclosed inside sprites and are
+correctly transparent today.
+
+**1243 tests (1 RNG-flaky failure, passes in isolation); `src/` typecheck clean.** 10 new tests
+(transparency algorithm as a pure function over an RGBA buffer — the vitest env is `node`, no DOM, so
+`clearBackgroundPixels` was split out from the canvas plumbing; plus the projectile grid/column/row
+constants). Verified in-browser: bomb, boomerang, arrow and candle flame all visible in the world;
+Darknut and Stalfos render with no grey box. **User confirmed both fixes.**
+
+Also settled a question the user raised: enemies appearing frozen was **not** a bug — measured
+`documentHidden: true`, no movement over 1.5s of wall clock, movement over 120 `__zelda.step()`
+frames. Chrome freezes `requestAnimationFrame` in the background automation tab.
+
+
+## 2026-09-04 — L0d follow-up: Tektite flicker (Claude Opus 5)
+
+User reported the jumping spiders "flicking on and off instead of staying solid". **Tektite was
+indexing enemies.png against the wrong axis.** The sheet's convention — the one `walker-enemy.ts:149`
+follows — is *a row pair holds the two animation frames, columns hold directions* (red 0-3, blue 4-7).
+Tektite instead did `col = colOffset + walkAnimFrame` and `row = 8 + (jumping ? 1 : 0)`, treating
+columns as frames. Measured occupancy of enemies.png rows 8/9 (16px cells, 1px spacing, pitch 17):
+
+    row 8:  c0:130  c1:0  c2:0  c3:0   c4:130  c5:0  c6:0  c7:0
+    row 9:  c0:124  c1:0  c2:0  c3:0   c4:124  c5:0  c6:0  c7:0
+
+Columns 1 and 5 are **empty**, so every other animation frame drew nothing — the flicker. The Tektite
+faces the camera and has no directional variants; rows 8 and 9 at col 0 (red) / col 4 (blue) are its
+two frames. Fixed to `col = isBlue ? 4 : 0`, `row = 8 + _walkAnimFrame`. Jumping reuses the same pair
+(there is no separate jump sprite on this sheet).
+
+**Swept the whole sheet for the same class of bug**: scanned every row pair for empty cells in cols
+0-7 and cross-checked the `spriteRowOffset` each enemy actually passes. Offsets in use are Octorok 0
+(rows 0/1), Moblin 4 (4/5), Lynel 12 (12/13) — all fully populated. Rows 8-11 and 16 have gaps but
+only Tektite ever read them, and every other enemy draws through explicit sprite-coordinate tables
+with `?? [0]` fallbacks. **Tektite was the only one.**
+
+Verified in-browser by sampling the canvas: pixels differing from the terrain inside each Tektite's
+16×16 box, across 40 frames, split by `_walkAnimFrame` — frame 0 min 128 / max 213, frame 1 min 128 /
+max 211. Never near zero on either frame (frame 1 was 0 before). User confirmed: "rendering
+perfectly". **1248 tests, 1 failure — `recorder.test.ts`, NOT from this work; see the note below.**
+
+> **Left for whoever owns it:** `tests/objects/items/recorder.test.ts > uses destination Y from
+> TeleportYs table` fails consistently (expects `0xAD` = 173, gets 112). `src/core/constants.ts` and
+> `src/objects/items/recorder.ts` were both modified at 19:02 by work outside this session, adding
+> `nesScreenYToPlayArea` (subtracts `NES_PLAY_AREA_TOP_Y` = `0x3D`) and applying it in
+> `destinationLinkY`. The **code looks right** — `main.ts` feeds that value to `link.setPosition`,
+> which takes play-area coordinates — so the stale part is the test, which still asserts the raw ROM
+> value. Left alone to avoid colliding with in-flight work.
+
+
+## 2026-09-05 — L2a Second Quest data + wiring + bug fixes (Claude Opus 4.6)
+
+**Q2 data extraction:** Extended `scripts/extract-dungeons.ts` to parse `LevelInfoUWQ2Replacements1-9`
+from Z_06.asm and apply them to Q1 LevelInfo bytes (starting at offset $29) to produce 9 Q2
+DungeonInfo entries. Output: `dungeonsQ2` array in `dungeons.json`. Q2 level number swaps confirmed:
+dungeon indices 1↔2 → levels 3↔2, indices 3↔4 → levels 5↔4, indices 6↔7 → levels 8↔7.
+
+**Quest-aware systems:** Added `currentQuest` (1 or 2) to main.ts, set from `SaveSlot.quest` in
+`startGameFromSlot()`. Threaded through: `getDungeonLevel(screenId, quest)` with Q2 entrance mapping
+(L3 moves 116→52, L7-9 move to 25/108/0), `getScreenCaveIndex(screenId, quest)` with Q2 AttrsB
+patches (8 screens from Z_06.asm PatchQ2Rooms), `TileObjectManager.initForScreen()` (proper
+`IsQuestSecretMismatch` using `SecretQuestNumbers` lookup instead of hardcoded Q1 check),
+`DungeonManager` (selects `dungeonsQ2` when quest=2), `DungeonRenderer` (uniqueRoomId→map-position
+lookup from Q1 blocks for Q2 room visuals), `RecorderEffect` (Q2 reverses flute-secret room logic:
+room 66 whirlwinds, 10 other rooms reveal secrets), `SpawnManager` (quest field passed to enemy
+factories), room-flag blocks (Q2 `uw1q2`/`uw2q2` map to Q1 `uw1q1`/`uw2q1` — NES reuses same SRAM).
+
+**Q2 enemy behavior:** Stalfos shoots sword shots ($57) in Q2 via `WalkerEnemy._TryShooting`
+(Z_04.asm:4679). Rope HP $10→$40 + palette flash in Q2 (Z_04.asm:4537/4634).
+
+**"ZELDA" name → Q2:** Registration checks name against "ZELDA" (Z_02.asm:1683) and sets quest=2.
+File-select shows a white cross marker for Q2 files.
+
+**Bug fixes (pre-existing, user-reported during testing):**
+1. **Whirlwind teleport didn't spawn enemies for destination screen** — old enemies lingered.
+   Fixed: `spawnManager.clear()` on screen change, `spawnForScreen()` on whirlwind completion.
+2. **Cave fires didn't animate** — `_fireFrame` incremented inside `drawFire()` (called 2× per render
+   for left+right fires). Fixed: `tickFireAnimation()` called once in `update()`, both fires share
+   the same frame counter.
+3. **Enemies spawned on non-walkable tiles** (trees, water) — NES spawn positions are fixed and
+   don't check tile layout. Added `nudgeToWalkable()` in `spawn-manager.ts`: after computing spawn
+   position, searches expanding rings (up to 5 tiles / 80px) for the nearest walkable tile using
+   the collision map. Bounds check tightened to reject positions where the check point would be
+   out of the play area (prevented enemies sliding off the bottom edge onto border trees). Applied
+   to overworld spawns only (dungeons use clamped positions).
+4. **Dungeon minimap marker appeared outside the gray box** — `mapOriginCol`/`mapOriginRow` used ALL
+   valid rooms in the level block (covering all 6 dungeons sharing the block). Q2 dungeons at high
+   column offsets overflowed the 8-column minimap. Fixed: BFS from `startRoomId` through connected
+   doors to find only THIS dungeon's reachable rooms, then computes bounding box from those. Cached
+   in `_reachableRooms`.
+5. **Save-load restored 3 hearts instead of max** — NES behavior (`Z_07.asm:1442`) but user
+   requested full health on reload. Changed `restoreGameState()` to set health to `maxHealth`
+   instead of `RESPAWN_HEALTH`. Death→CONTINUE still gives 3 hearts (separate respawn path).
+
+**1249 tests (1248 pass, 1 pre-existing recorder); src/ typecheck clean.** **L2a complete.**
+**Next: L2b (full playthrough audit of both quests).**
+
+
+## 2026-09-05 — L2b playtest fixes: locked doors, room items, Stalfos (Claude Opus 5)
+
+User playtesting Level 1 surfaced four bugs; all traced to root cause rather than patched by eye.
+
+**1. Locked doors could never be opened — the blocker ("i cant finish a single dungeon").** Not a key
+bug: the key count was incrementing correctly all along (console showed 9→10 on pickup). A room is a
+16×11 tile grid but the walkable floor only spans rows 2-8 / cols 2-13; `DungeonCollisionMap` punched
+a walkable hole **only for already-open doors** (`OPEN_DOOR_TYPES = [0,2]`). A locked door left its
+whole doorway solid, so Link — 8×8 hitbox at offset (4,8) — could reach `posY=24` at best while
+`checkRoomTransition` requires the outermost tile ring (`posY<=0`). He was stopped two tiles short, so
+`touchDoor()` (which spends the key and opens the door) was **never reached**. The NES lets Link stand
+*inside* the doorway recess and unlock by pushing against the door: `Z_05.asm CheckDoorway` matches a
+~2-tile-deep doorway (`DoorwayBoundsMinOver/MaxOver`, e.g. north = X $78, Y $3D-$5E) then calls
+`TouchDoorKey`, which decrements `InvKeys`, calls `TriggerOpenDoor` and blocks $20 frames. Fixes:
+new `ALCOVE_DOOR_TYPES = [4,5,6,7]` frees **only the inner doorway tile** (outer stays solid, so Link
+can't leave the room or walk off the play area), plus `DungeonManager.tryOpenBlockedDoor()` which fires
+when Link pushes against a locked door from the recess. Only key doors respond to touch — bombable and
+shutter doors open via bomb/room-clear, matching `TouchDoorBombable`/`TouchDoorShutter`.
+Also: door type **3 (false wall) was passable per `canPassDoor` but solid in the collision map** —
+impassable for the same reason; added to `OPEN_DOOR_TYPES`. **noclip** now passes any door with a room
+behind it (`DOOR_WALL` still blocked) instead of walking Link off the play area onto the status bar.
+
+**2. Room items sat inside the wall and expired.** `getRoomItemPosition()` used the packed nibble Y
+verbatim, but `GetShortcutOrItemXY` returns **NES screen coords**; `Z_05.asm:6091` subtracts `#$40`
+("get rid of status bar"). Proof it's $40 and not `NES_PLAY_AREA_TOP_Y` ($3D): with $40 every dungeon-1
+slot lands on an exact tile row (5.0/8.0/3.0) as the X values do, and raw Y $C0 (192) exceeds the 176px
+play area outright. Also gave `ItemPickup` a `persistent` flag — the $FF lifetime is right for enemy
+drops but a room item must wait until collected.
+
+**3. Every dungeon item appeared twice, one copy uncollectable (user diagnosed this one).**
+`DungeonRenderer.renderRoom` blits a whole pre-rendered 256×176 room straight out of
+`dungeons-map.png` — a *reference map* that pictures each room already explored, **with its item
+painted onto the floor and bombable walls already blown open**. We then drew the live `ItemPickup` on
+top: collecting removed ours and left the painted one forever. New `maskBakedRoomItem()` covers the
+baked-in copy with a matching floor tile lifted from elsewhere in the same room (farthest tile sharing
+that square index, so a neighbouring baked item can't be copied in); handles the triforce's −8px
+straddle by masking every tile the sprite overlaps. Verified by compositing the real map image offline.
+
+**4. Stalfos slid without animating.** It drew `STALFOS_SPRITES[0]` unconditionally, and the sheet has
+only one Stalfos cell (the neighbouring cells are swords — a first guess at a second frame drew a
+sword). Frame 2 is the horizontal mirror, via new `drawDungeonEnemySpriteFlipped()`. User confirmed.
+
+**Still open:** bombable doors *render* pre-bombed (same baked-in map image; collision correctly keeps
+them shut until bombed) — needs door graphics drawn over the blit, `public/assets/tiles/dungeon-doors.png`
+exists for it. **1256 tests pass**; 6 new door-recess regression tests + 1 item-offset test. The single
+failure is the pre-existing stale `recorder.test.ts` case already documented below. `src/` typecheck
+clean apart from the pre-existing unused `RESPAWN_HEALTH` import.
+**Note for testers: Vite does a full page reload on every edit, which restarts the game and zeroes
+Link's keys/items — re-run `__zelda.giveDungeon()` after any hot reload.** New debug helper
+`__zelda.keyInfo()` reports the real key count, the magic-key flag, and what the HUD should draw.
+
+
