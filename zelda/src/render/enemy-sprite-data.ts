@@ -52,6 +52,22 @@ export function drawDungeonEnemySpriteScaled(
   );
 }
 
+export function drawDungeonEnemySpriteFlipped(
+  renderer: Renderer, rect: SpriteRect, dx: number, dy: number,
+): void {
+  if (!dungeonEnemySource) return;
+  const ctx = renderer.ctx;
+  ctx.save();
+  ctx.translate(dx + rect.sw, dy);
+  ctx.scale(-1, 1);
+  ctx.drawImage(
+    dungeonEnemySource as CanvasImageSource,
+    rect.sx, rect.sy, rect.sw, rect.sh,
+    0, 0, rect.sw, rect.sh,
+  );
+  ctx.restore();
+}
+
 // ─── Section 1: y=11 (row 1), y=28 (row 2) ───
 // Gel, Zol, Keese, Goriya, Bubble, Wallmaster
 

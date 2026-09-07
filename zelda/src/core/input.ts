@@ -75,6 +75,7 @@ export class InputManager {
   private readonly gamepadButtonBindings: Map<number, Action>;
   private readonly actionStates: Map<Action, ActionState>;
   private readonly keysDown = new Set<string>();
+  private readonly _externalHeld = new Set<Action>();
   private readonly prevActionHeld: Map<Action, boolean>;
   private target: EventTarget | null = null;
 
@@ -135,6 +136,10 @@ export class InputManager {
     }
 
     this.pollGamepads(currentHeld);
+
+    for (const action of this._externalHeld) {
+      currentHeld.set(action, true);
+    }
 
     for (const action of ALL_ACTIONS) {
       const prevHeld = this.prevActionHeld.get(action) ?? false;
@@ -204,5 +209,14 @@ export class InputManager {
 
   getAllActionStates(): ReadonlyMap<Action, Readonly<ActionState>> {
     return this.actionStates;
+  }
+
+  setActionHeld(action: Action, held: boolean): void {
+    if (held) this._externalHeld.add(action);
+    else this._externalHeld.delete(action);
+  }
+
+  clearExternalActions(): void {
+    this._externalHeld.clear();
   }
 }

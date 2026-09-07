@@ -20,8 +20,12 @@ const INNER_ROWS = 7;
 const INNER_OFFSET_COL = 2;
 const INNER_OFFSET_ROW = 2;
 
-// Door types that allow passage
-const OPEN_DOOR_TYPES = new Set([0, 2]);
+// Door types that allow full passage (both doorway tiles walkable)
+const OPEN_DOOR_TYPES = new Set([0, 2, 3]);
+
+// Door types where only the inner alcove tile is walkable, so Link can
+// stand in the recess and touch the door (Z_05.asm CheckDoorway)
+const ALCOVE_DOOR_TYPES = new Set([4, 5, 6, 7]);
 
 export class DungeonCollisionMap {
   private readonly _walkable: boolean[][];
@@ -58,15 +62,23 @@ export class DungeonCollisionMap {
 
     if (OPEN_DOOR_TYPES.has(room.doors.north)) {
       this.setDoorOpen('north');
+    } else if (ALCOVE_DOOR_TYPES.has(room.doors.north)) {
+      this.setDoorAlcoveOpen('north');
     }
     if (OPEN_DOOR_TYPES.has(room.doors.south)) {
       this.setDoorOpen('south');
+    } else if (ALCOVE_DOOR_TYPES.has(room.doors.south)) {
+      this.setDoorAlcoveOpen('south');
     }
     if (OPEN_DOOR_TYPES.has(room.doors.west)) {
       this.setDoorOpen('west');
+    } else if (ALCOVE_DOOR_TYPES.has(room.doors.west)) {
+      this.setDoorAlcoveOpen('west');
     }
     if (OPEN_DOOR_TYPES.has(room.doors.east)) {
       this.setDoorOpen('east');
+    } else if (ALCOVE_DOOR_TYPES.has(room.doors.east)) {
+      this.setDoorAlcoveOpen('east');
     }
   }
 
@@ -89,6 +101,31 @@ export class DungeonCollisionMap {
         this._walkable[4]![14] = true; this._walkable[4]![15] = true;
         this._walkable[5]![14] = true; this._walkable[5]![15] = true;
         this._walkable[6]![14] = true; this._walkable[6]![15] = true;
+        break;
+    }
+  }
+
+  private setDoorAlcoveOpen(direction: string): void {
+    switch (direction) {
+      case 'north':
+        // Only row 1 (inner); row 0 (outer) stays solid
+        this._walkable[1]![7] = true; this._walkable[1]![8] = true;
+        break;
+      case 'south':
+        // Only row 9 (inner); row 10 (outer) stays solid
+        this._walkable[9]![7] = true; this._walkable[9]![8] = true;
+        break;
+      case 'west':
+        // Only col 1 (inner); col 0 (outer) stays solid
+        this._walkable[4]![1] = true;
+        this._walkable[5]![1] = true;
+        this._walkable[6]![1] = true;
+        break;
+      case 'east':
+        // Only col 14 (inner); col 15 (outer) stays solid
+        this._walkable[4]![14] = true;
+        this._walkable[5]![14] = true;
+        this._walkable[6]![14] = true;
         break;
     }
   }
