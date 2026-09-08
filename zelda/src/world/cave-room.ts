@@ -1,6 +1,7 @@
 import { PLAY_AREA_HEIGHT, SCREEN_WIDTH } from '../core/constants.js';
 import { Direction } from '../core/types.js';
 import { drawItemSprite } from '../data/item-sprites.js';
+import { drawFireSprite } from '../render/boss-sprite-data.js';
 import type { Renderer } from '../render/renderer.js';
 import type { SpriteSheet } from '../render/sprite-renderer.js';
 import { BitmapFont } from '../ui/bitmap-font.js';
@@ -198,6 +199,11 @@ export class CaveRoom {
   }
 
   update(link: Link): void {
+    // Tick once per logic frame so both fires share a frame. Incrementing
+    // inside drawFire (called twice per render) made the swap 2× too fast
+    // and put left/right on opposite sprites (Z_01 Fire % 12 > 6).
+    this._fireFrame = (this._fireFrame + 1) % 12;
+
     if (this._walkInFrames > 0) {
       this._walkInFrames--;
       link.walkForward();
@@ -251,8 +257,8 @@ export class CaveRoom {
 
     ctx.drawImage(this.caveMap, 0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT, 0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT);
 
-    this.drawFire(ctx, FIRE_LEFT_X, FIRE_Y);
-    this.drawFire(ctx, FIRE_RIGHT_X, FIRE_Y);
+    this.drawFire(renderer, FIRE_LEFT_X, FIRE_Y);
+    this.drawFire(renderer, FIRE_RIGHT_X, FIRE_Y);
 
     this.drawNpc(ctx, NPC_X, NPC_Y);
 
@@ -416,12 +422,13 @@ export class CaveRoom {
 
   private _fireFrame = 0;
 
-  private drawFire(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-    // Fire sprites from npcs.png: fire1 at (51,11), fire2 at (68,11), 16×16 each
-    // Alternate every 6 frames (matching NES Fire visibleFrameCount % 12 > 6)
-    this._fireFrame = (this._fireFrame + 1) % 12;
-    const sx = this._fireFrame > 6 ? 51 : 68;
-    ctx.drawImage(this.npcsImage, sx, 11, 16, 16, x, y, 16, 16);
+  /** 0 or 1 — which of the two npcs.png flame frames is showing. */
+  get fireAnimFrame(): number {
+    return this._fireFrame > 6 ? 1 : 0;
+  }
+
+  private drawFire(renderer: Renderer, x: number, y: number): void {
+    drawFireSprite(renderer, this.fireAnimFrame, x, y);
   }
 
   private drawNpc(ctx: CanvasRenderingContext2D, x: number, y: number): void {

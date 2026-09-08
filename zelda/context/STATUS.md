@@ -12,14 +12,14 @@
 in the browser.
 **Run commands from:** `zelda-nes-ts/`
 **Last updated:** 2026-09-06 · **Phase:** L (bug fixes, Q2 deferred) ·
-**Slices:** 51 of 54 done — M1–M2 pending
+**Slices:** 51 of 54 done — M1 done in tree, M2 done in tree, L2b pending
 
 ---
 
 ## Next action
 
-**M1 (responsive layout), then M2 (touch controls)** — the user chose to do the
-mobile phase next. Second Quest (Q2) is deferred — no Q2 code has been kept.
+Session stopped. User signed off after L4 sprite fixes (Vire, Bubbles/Goriya/Keese
+sheet shift). Next agent: more Q1 playtest. M1/M2 in tree; Q2 deferred.
 
 ## Where the game stands
 
@@ -31,12 +31,14 @@ every entity renders with real sprites.
   case and a flaky `digdogger.test.ts` movement test.
 - **`src/` typecheck clean** — test files have pre-existing warnings only.
 
+User-confirmed this session: title waterfall; L1 key/compass leftovers; lake
+Zoras; overlay Up/Down as Select; new file + file-select on desktop and mobile;
+inventory cursor reaches all rows. L4 “boomerangs” diagnosed as Bubbles on the
+wrong sheet cells (water room and Like-Like/Zol room).
+
 ## Known open bugs
 
-1. **Inventory cursor can't reach the top row.** Only the bottom selectable row
-   (boomerang, bombs, arrow, candle, flute, food, potion, wand) is reachable.
-   The NES grid is two selectable rows — cursor navigation needs Up/Down as well
-   as Left/Right.
+None logged.
 
 ## Testing notes
 
@@ -46,40 +48,35 @@ every entity renders with real sprites.
   `noclip`, `warp(row,col)`, `goToRoom(id)`, `goToDungeon`, `killAll`,
   `keyInfo`, `saveNow`, `dumpSave`, `step(frames)`, `goToTitle`,
   `goToFileSelect`, `goToRegister`, `goToElimination`, `goToEnding`.
+- Dev server this session: http://localhost:5175/ (5173 was taken).
+- Mid-game SAVE menu: inventory open, hold Up + A (desktop: Arrow Up + X/Space).
 
 ## Session log
 
-Newest first, one short paragraph each. Move entries to `HISTORY.md` once this
-passes ~5, so the file stays short enough that agents actually read it.
+Newest first. Older 2026-09-06 notes are in `HISTORY.md`.
 
-### 2026-09-06 — Bug fixes + context cleanup + touch controls (Claude Opus 4.6 1M)
+### 2026-09-06 — Playtest sign-off (Grok 4.6)
 
-Deleted old `context/agent/*`, `PROGRESS.md`, `README.md` — context/ is now 10
-files at one level matching CLAUDE.md. Eight Q1 dungeon/overworld bug fixes
-re-implemented from L2a/L2b notes (no Q2 code kept): (1) Stalfos walk animation
-via horizontal flip, (2) `getRoomItemPosition` HUD_HEIGHT subtraction, (3)
-`ItemPickup.persistent` flag for room items, (4) `maskBakedRoomItem` covers
-baked-in items from dungeons-map.png, (5) door overlays from dungeon-doors.png
-for bombable/key/shutter doors, (6) door alcove walkability
-(`setDoorAlcoveOpen`), (7) `tryOpenBlockedDoor` for key doors on touch, (8)
-`nudgeToWalkable` for overworld enemy spawns. False-wall type 3 added to
-`OPEN_DOOR_TYPES`. Save-load now restores full hearts instead of 3.
+User stopped for the day after L4 sprite work. Re-enter L4 water / Like-Like
+rooms to confirm Bubbles are orbs, not boomerangs.
 
-Touch controls (Phase M2): `src/ui/touch-controls.ts` + controller assets from
-zelda30tribute. NES-style d-pad (bottom-left) + Start/B/A buttons (bottom-right)
-using `controller2.png` sprite strip + `dpad.png` cross overlay. Touch events
-feed into `InputManager.setActionHeld()` (new external action API). D-pad tilts
-via CSS 3D transforms. Only shown on touch-capable devices. Per-button press
-indicators (dark circle overlays). Multi-touch supported. 1246 tests pass.
+### 2026-09-06 — L4 Bubbles were Goriya boomerang frames (Grok 4.6)
 
-### 2026-09-06 — Context system flattened (Claude Opus 5)
+Water-room and Like-Like-room C-shapes were Bubbles. BUBBLE_SPRITES 290/299/308
+were the boomerang spin frames; orbs are 321/338/355. Goriya was on those orbs
+(real Goriya 222–273). Keese red/dark had been using Goriya cells; red Keese
+is the y=28 bats. Like-Like room list 115 = Bubbles + Zols + Like-Likes.
 
-Reworked `context/` from 16 files across two levels into 10 files at one level,
-with a new root `CLAUDE.md` as the entry point. Dissolved the `agent/` subfolder:
-its five knowledge files merged into their top-level counterparts, and
-`01-progress-tracker.md` split into this file (live state), `IMPLEMENTATION.md`
-(the 119-row systems inventory it had accumulated) and `HISTORY.md` (its session
-log, merged with the old `PROGRESS.md`). Dropped the 52-row queue table — `PLAN.md`
-already carries per-slice status. Open questions now have one home,
-`DECISIONS.md`. Recorded as `DECISIONS.md` #14 with the full old→new mapping. No
-code touched; no dangling links remain.
+### 2026-09-06 — L4 Vire used Pols Voice cells (Grok 4.6)
+
+VIRE_SPRITES (270,90)/(287,90) were Pols Voice. Now (215,90)/(232,90).
+
+### 2026-09-06 — Touch Select shortcut + name-entry DAS (Grok 4.6)
+
+Overlay has no Select (DECISIONS #15). Game Over Up/Down; name-entry edge
+Up/Down cycles files with 16-then-8 DAS so a tap does not skip END.
+
+### 2026-09-06 — Lake Leevers replaced with Zoras (Grok 4.6)
+
+Land enemies on water skipped. CheckZora places a Zora. Body #13–#16, shots
+#17–#20.

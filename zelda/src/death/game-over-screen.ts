@@ -53,10 +53,13 @@ export class GameOverScreen {
       return;
     }
 
-    // Z_05.asm:2199 — Select cycles through options
-    if (input.isJustPressed(Action.Select)) {
+    // Z_05.asm:2199 — Select cycles through options. Touch overlay has no Select,
+    // so D-pad Up/Down is the mobile shortcut (Down = next, Up = previous).
+    if (input.isJustPressed(Action.Select) || input.isTouchJustPressed(Action.Down)) {
       this._selectedOption = ((this._selectedOption + 1) % OPTION_COUNT) as GameOverOption;
       // TODO(K1): play selection changed sound (Tune0Request = $01)
+    } else if (input.isTouchJustPressed(Action.Up)) {
+      this._selectedOption = ((this._selectedOption + OPTION_COUNT - 1) % OPTION_COUNT) as GameOverOption;
     }
 
     if (input.isJustPressed(Action.Start)) {

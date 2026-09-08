@@ -109,56 +109,44 @@ export const ZOL_SPRITES = {
   ],
 } as const;
 
-// Keese: 3 colors × 2 frames per row
+// Keese: blue on row 1, red on row 2. The sheet has no black pair; dark reuses blue.
 export const KEESE_SPRITES = {
   blue: [
     { sx: 183, sy: 11, sw: 16, sh: 16 },
     { sx: 200, sy: 11, sw: 16, sh: 16 },
   ],
-  blueAlt: [
+  red: [
     { sx: 183, sy: 28, sw: 16, sh: 16 },
     { sx: 200, sy: 28, sw: 16, sh: 16 },
   ],
-  red: [
-    { sx: 222, sy: 11, sw: 16, sh: 16 },
-    { sx: 239, sy: 11, sw: 16, sh: 16 },
-  ],
-  redAlt: [
-    { sx: 222, sy: 28, sw: 16, sh: 16 },
-    { sx: 239, sy: 28, sw: 16, sh: 16 },
-  ],
   dark: [
-    { sx: 256, sy: 11, sw: 16, sh: 16 },
-    { sx: 273, sy: 11, sw: 16, sh: 16 },
-  ],
-  darkAlt: [
-    { sx: 256, sy: 28, sw: 16, sh: 16 },
-    { sx: 273, sy: 28, sw: 16, sh: 16 },
+    { sx: 183, sy: 11, sw: 16, sh: 16 },
+    { sx: 200, sy: 11, sw: 16, sh: 16 },
   ],
 } as const;
 
-// Bubble: 3 types, small sprites (8×16 with transparency padding)
+// Goriya boomerang spin (3×8×16) sits here — not used for Bubbles.
+// Bubble: 16×16 orbs. Old 8×16 cells at 290/299/308 were the boomerang frames.
 export const BUBBLE_SPRITES = {
-  flash: { sx: 290, sy: 11, sw: 8, sh: 16 },
-  blue: { sx: 299, sy: 11, sw: 8, sh: 16 },
-  red: { sx: 308, sy: 11, sw: 8, sh: 16 },
+  flash: { sx: 321, sy: 11, sw: 16, sh: 16 },
+  blue: { sx: 338, sy: 11, sw: 16, sh: 16 },
+  red: { sx: 355, sy: 11, sw: 16, sh: 16 },
 } as const;
 
-// Goriya red: 4 directions (single frame per direction in this sheet)
-// Down=0, Left=1, Up=2, Right=3
+// Goriya: 4 directions. Indexed by Direction (Up=0, Down=1, Left=2, Right=3).
+// Old 321–372 cells were the Bubble orbs.
 export const GORIYA_SPRITES = {
   red: [
-    { sx: 321, sy: 11, sw: 16, sh: 16 }, // Down
-    { sx: 338, sy: 11, sw: 16, sh: 16 }, // Left
-    { sx: 355, sy: 11, sw: 16, sh: 16 }, // Up
-    { sx: 372, sy: 11, sw: 16, sh: 16 }, // Right
+    { sx: 239, sy: 11, sw: 16, sh: 16 }, // Up
+    { sx: 222, sy: 11, sw: 16, sh: 16 }, // Down
+    { sx: 273, sy: 11, sw: 16, sh: 16 }, // Left
+    { sx: 256, sy: 11, sw: 16, sh: 16 }, // Right
   ],
-  // Blue goriya uses same positions in row 2 if available, else tinted
   blue: [
-    { sx: 321, sy: 28, sw: 16, sh: 16 },
-    { sx: 338, sy: 28, sw: 16, sh: 16 },
-    { sx: 355, sy: 28, sw: 16, sh: 16 },
-    { sx: 372, sy: 28, sw: 16, sh: 16 },
+    { sx: 239, sy: 28, sw: 16, sh: 16 },
+    { sx: 222, sy: 28, sw: 16, sh: 16 },
+    { sx: 273, sy: 28, sw: 16, sh: 16 },
+    { sx: 256, sy: 28, sw: 16, sh: 16 },
   ],
 } as const;
 
@@ -256,10 +244,11 @@ export const WIZZROBE_SPRITES = {
   ],
 } as const;
 
-// Vire: 2 frames
+// Vire: 2 frames (blue demon under the "Vire" label). Old coords 270/287 were
+// Pols Voice cells; a 16×16 cut through an ear looked like a boomerang.
 export const VIRE_SPRITES = [
-  { sx: 270, sy: 90, sw: 16, sh: 16 },
-  { sx: 287, sy: 90, sw: 16, sh: 16 },
+  { sx: 215, sy: 90, sw: 16, sh: 16 },
+  { sx: 232, sy: 90, sw: 16, sh: 16 },
 ] as const;
 
 // Pols Voice: 2 frames
@@ -298,10 +287,22 @@ export function drawOverworldEnemySprite(
   );
 }
 
-// Zora: surface sprite + emerging/submerging partial
-export const ZORA_SPRITES = [
-  { sx: 189, sy: 11, sw: 16, sh: 16 },
-  { sx: 206, sy: 11, sw: 16, sh: 16 },
+// Zora / Zola on overworld-enemies-alt.png (picker #13–#16).
+// NES UpdateBurrower (Z_04.asm:2671): states 1 and 5 use the mound frames;
+// states 2–4 use front (frame 2) or back (frame 3) from ObjDir.
+export const ZORA_SPRITES = {
+  emerging: { sx: 189, sy: 11, sw: 16, sh: 16 },   // #13 mound
+  submerging: { sx: 206, sy: 11, sw: 16, sh: 16 }, // #14 mound
+  front: { sx: 223, sy: 11, sw: 16, sh: 16 },      // #15
+  back: { sx: 240, sy: 11, sw: 16, sh: 16 },       // #16
+} as const;
+
+// Zora shot orbs on the same row (picker #17–#20). 8×16, cycled in flight.
+export const ZORA_SHOT_SPRITES = [
+  { sx: 257, sy: 11, sw: 8, sh: 16 },
+  { sx: 266, sy: 11, sw: 8, sh: 16 },
+  { sx: 275, sy: 11, sw: 8, sh: 16 },
+  { sx: 284, sy: 11, sw: 8, sh: 16 },
 ] as const;
 
 // Leever: 5 sprites — underground, emerging, surface×2 (blue), submerging

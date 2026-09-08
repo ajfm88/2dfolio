@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getDungeonLevel, DUNGEON_ENTRANCE_SCREENS } from '../../src/data/dungeon-entrance-data.js';
+import {
+  getDungeonLevel,
+  DUNGEON_ENTRANCE_SCREENS,
+  getDungeonEntranceScreenId,
+  findDungeonEntranceStandingPos,
+} from '../../src/data/dungeon-entrance-data.js';
+import overworldJson from '../../src/data/overworld.json';
+import type { OverworldData } from '../../src/data/overworld-types.js';
 
 describe('getDungeonLevel', () => {
   it('L1-6 entrance screens map to correct levels', () => {
@@ -39,5 +46,23 @@ describe('getDungeonLevel', () => {
     for (let l = 1; l <= 9; l++) {
       expect(levels.has(l)).toBe(true);
     }
+  });
+});
+
+describe('getDungeonEntranceScreenId', () => {
+  it('returns Q1 entrance screens, not Q2 alternates', () => {
+    expect(getDungeonEntranceScreenId(1)).toBe(55);
+    expect(getDungeonEntranceScreenId(7)).toBe(66);
+    expect(getDungeonEntranceScreenId(7)).not.toBe(25);
+  });
+});
+
+describe('findDungeonEntranceStandingPos', () => {
+  const ow = overworldJson as OverworldData;
+
+  it('L1 screen 55 stands one tile south of the cave (tile 12 at col 7, row 4)', () => {
+    const screen = ow.screens.find(s => s.id === 55);
+    expect(screen).toBeDefined();
+    expect(findDungeonEntranceStandingPos(screen!.tiles)).toEqual({ x: 112, y: 80 });
   });
 });

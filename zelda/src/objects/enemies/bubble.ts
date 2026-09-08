@@ -8,7 +8,7 @@
 
 import type { Renderer } from '../../render/renderer.js';
 import { getOppositeDirection } from '../../core/collision-utils.js';
-import { drawDungeonEnemySpriteScaled, BUBBLE_SPRITES } from '../../render/enemy-sprite-data.js';
+import { drawDungeonEnemySprite, BUBBLE_SPRITES } from '../../render/enemy-sprite-data.js';
 import { Enemy, type EnemyUpdateContext, randomDirection } from './enemy.js';
 
 const QSPEED = 0x40;
@@ -48,6 +48,6 @@ export class Bubble extends Enemy {
       case BUBBLE_RED: sprite = BUBBLE_SPRITES.red; break;
       default: sprite = BUBBLE_SPRITES.flash;
     }
-    drawDungeonEnemySpriteScaled(renderer, sprite, this._x + 4, this._y, 8, 16);
+    drawDungeonEnemySprite(renderer, sprite, this._x, this._y);
   }
 }

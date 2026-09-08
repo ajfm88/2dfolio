@@ -35,6 +35,8 @@ export const UI_ASSETS = {
   hud: '/assets/ui/hud.png',
   title: '/assets/ui/title.png',
   crest: '/assets/ui/crest.png',
+  waterfall: '/assets/ui/waterfall.png',
+  waterfallSpray: '/assets/ui/waterfall-spray.png',
 } as const;
 
 export const MAP_ASSETS = {

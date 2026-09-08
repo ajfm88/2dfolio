@@ -268,6 +268,23 @@ describe('InputManager', () => {
     });
   });
 
+  describe('touch overlay actions', () => {
+    it('isTouchJustPressed is true only for setActionHeld presses', () => {
+      input.setActionHeld(Action.Down, true);
+      input.update();
+      expect(input.isJustPressed(Action.Down)).toBe(true);
+      expect(input.isTouchJustPressed(Action.Down)).toBe(true);
+      expect(input.isTouchHeld(Action.Down)).toBe(true);
+
+      target.dispatchKeyDown('ArrowUp');
+      input.update();
+      expect(input.isJustPressed(Action.Up)).toBe(true);
+      expect(input.isTouchJustPressed(Action.Up)).toBe(false);
+      expect(input.isTouchHeld(Action.Up)).toBe(false);
+      expect(input.isTouchHeld(Action.Down)).toBe(true);
+    });
+  });
+
   describe('getAllActionStates', () => {
     it('returns map with entry for every action', () => {
       const states = input.getAllActionStates();

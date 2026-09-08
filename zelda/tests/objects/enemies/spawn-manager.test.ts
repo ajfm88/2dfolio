@@ -177,6 +177,48 @@ describe('SpawnManager', () => {
     expect(sm.activeEnemies.length).toBe(3);
   });
 
+  it('skips land enemies whose spawn stays on water', () => {
+    const data = createTestSpawnData();
+    const sm = new SpawnManager(data, hpPairs);
+    const col = {
+      ...mockCollision(),
+      isPositionWalkable: () => false,
+      isRectWalkable: () => false,
+      isWaterTileAt: () => true,
+    } as unknown as import('../../../src/world/collision.js').TileCollisionMap;
+    sm.spawnForScreen(mockScreen(1), Direction.Right, col);
+    // Octoroks dropped; CheckZora still places one zora on the water.
+    expect(sm.enemies.length).toBe(1);
+    expect(sm.enemies[0]!.objectType).toBe(17);
+  });
+
+  it('CheckZora still runs when the monster list is empty', () => {
+    const data = createTestSpawnData();
+    const sm = new SpawnManager(data, hpPairs);
+    const col = {
+      ...mockCollision(),
+      isWaterTileAt: () => true,
+    } as unknown as import('../../../src/world/collision.js').TileCollisionMap;
+    sm.spawnForScreen(mockScreen(0), Direction.Right, col);
+    expect(sm.enemies.length).toBe(1);
+    expect(sm.enemies[0]!.objectType).toBe(17);
+  });
+
+  it('adds a CheckZora on screens that have water', () => {
+    const data = createTestSpawnData();
+    const sm = new SpawnManager(data, hpPairs);
+    const col = {
+      ...mockCollision(),
+      isWaterTileAt: (_s: unknown, px: number) => px >= 160,
+    } as unknown as import('../../../src/world/collision.js').TileCollisionMap;
+    sm.spawnForScreen(mockScreen(1), Direction.Right, col);
+    const zoras = sm.enemies.filter(e => e.objectType === 17);
+    const others = sm.enemies.filter(e => e.objectType !== 17);
+    expect(others.length).toBe(4);
+    expect(zoras.length).toBe(1);
+    expect(zoras[0]!.x).toBeGreaterThanOrEqual(160);
+  });
+
   it('drains Zol split into two child Gels', () => {
     const data = createTestSpawnData();
     const sm = new SpawnManager(data, hpPairs);

@@ -17,7 +17,7 @@ import type {
 } from '../data/dungeon-types.js';
 import type { OverworldScreen } from '../data/overworld-types.js';
 import type { Renderer } from '../render/renderer.js';
-import { DungeonRenderer } from '../render/dungeon-renderer.js';
+import { DungeonRenderer, type DoorDir } from '../render/dungeon-renderer.js';
 import { DungeonCollisionMap } from './dungeon-collision.js';
 import { RoomFlags, DOOR_BIT_N, DOOR_BIT_S, DOOR_BIT_W, DOOR_BIT_E } from './room-flags.js';
 import type { Link } from '../objects/player/link.js';
@@ -69,6 +69,8 @@ export class DungeonManager {
   private _inCellar = false;
   private _cellarConnection: CellarConnection | null = null;
   private _cellarLeftSide = true;
+  private _openDoorDonors: Partial<Record<DoorDir, number>> = {};
+  private _dungeonRoomIds: Set<number> | null = null;
 
   constructor(
     level: number,
@@ -443,12 +445,62 @@ export class DungeonManager {
     this._shuttersTriggered = false;
     this._secretTriggered = false;
     this._isDark = this._currentRoom.isDark;
+    this._openDoorDonors = {};
+    for (const dir of ['north', 'south', 'west', 'east'] as const) {
+      const donor = this.findOpenDoorDonor(dir);
+      if (donor !== null) this._openDoorDonors[dir] = donor;
+    }
 
     // Re-open previously opened doors in collision map
     if (this._openedDoors & DOOR_BIT_N) this._collision.openDoor('north');
     if (this._openedDoors & DOOR_BIT_S) this._collision.openDoor('south');
     if (this._openedDoors & DOOR_BIT_W) this._collision.openDoor('west');
     if (this._openedDoors & DOOR_BIT_E) this._collision.openDoor('east');
+  }
+
+  /**
+   * Rooms belonging to THIS dungeon (BFS from the start room through any
+   * non-wall door). The uw1q1 block holds L1–L6; picking the first type-0
+   * east door in the block grabbed L4's gold room 1 for L1 room 82.
+   */
+  roomsInThisDungeon(): Set<number> {
+    if (this._dungeonRoomIds) return this._dungeonRoomIds;
+    const start = this._dungeonInfo.startRoomId;
+    const seen = new Set<number>([start]);
+    const queue = [start];
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      const room = this._levelBlock.rooms[id];
+      if (!room) continue;
+      const next: [number, number][] = [
+        [room.doors.north, id - 16],
+        [room.doors.south, id + 16],
+        [room.doors.west, id - 1],
+        [room.doors.east, id + 1],
+      ];
+      for (const [doorType, nid] of next) {
+        if (doorType === DOOR_WALL) continue;
+        if (nid < 0 || nid >= 128 || seen.has(nid)) continue;
+        seen.add(nid);
+        queue.push(nid);
+      }
+    }
+    this._dungeonRoomIds = seen;
+    return seen;
+  }
+
+  /**
+   * Room in this dungeon whose door in `dir` is already open (type 0),
+   * so we can copy its map pixels over a painted-closed shutter/key.
+   */
+  findOpenDoorDonor(dir: DoorDir): number | null {
+    const here = this._currentRoomId;
+    for (const id of this.roomsInThisDungeon()) {
+      if (id === here) continue;
+      const room = this._levelBlock.rooms[id];
+      if (room && room.doors[dir] === 0) return id;
+    }
+    return null;
   }
 
   findPushBlockPosition(): { x: number; y: number } | null {
@@ -587,6 +639,7 @@ export class DungeonManager {
       this._dungeonInfo.levelBlock,
       this._currentRoom.doors,
       this._openedDoors,
+      this._openDoorDonors,
     );
   }
 
@@ -600,6 +653,18 @@ export class DungeonManager {
       itemX,
       itemY,
     );
+  }
+
+  /**
+   * Cover the painted-on room item from dungeons-map.png. Must run every frame
+   * the room is shown — including after the live pickup is collected, otherwise
+   * the baked sprite shows through (L1 room 83 key).
+   */
+  maskBakedRoomItemIfPresent(renderer: Renderer): void {
+    if (this._inCellar) return;
+    const pos = this.getRoomItemPosition();
+    if (!pos) return;
+    this.maskBakedRoomItem(renderer, pos.x, pos.y);
   }
 }
 

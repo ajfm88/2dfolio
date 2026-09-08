@@ -1264,4 +1264,18 @@ clean apart from the pre-existing unused `RESPAWN_HEALTH` import.
 Link's keys/items — re-run `__zelda.giveDungeon()` after any hot reload.** New debug helper
 `__zelda.keyInfo()` reports the real key count, the magic-key flag, and what the HUD should draw.
 
+## 2026-09-06 — Q1 playtest bugfixes (Grok 4.6)
+
+Playtest session. User-confirmed: title waterfall (mint channel under foam, original crest, 30s idle), L1 key/compass leftovers, cave fires, `goToDungeon(1)` return point.
+
+**Doors:** opened key/shutter overlays copy an open doorway from a BFS-reachable room of *this* dungeon (not L4 gold, not the transparent `dungeon-doors.png` hole). Closed key/shutter skip overlay (map already closed). L1 boss heart mask pads one tile around the NES slot.
+
+**Lakes:** water “dudes” were blue Leevers sitting on water. Land enemies whose spawn stays on water are skipped. `CheckZora` (Z_04.asm:1757) places a type-17 Zora on a water tile. Body frames picker #13–#16, shots cycle #17–#20.
+
+**Touch Select:** overlay has no Select button (DECISIONS #15). Game Over overlay Up/Down cycles CONTINUE/SAVE/RETRY. Name-entry overlay Up/Down at letter-board edges (or on END) cycles files; DAS delay so a tap does not skip the next slot. Desktop still uses Shift to leave the letter grid. User confirmed new-file create and file-select navigation on desktop and mobile. File select and elimination already used Up/Down.
+
+**L4 sprites:** Vire was on Pols Voice cells (an ear looked like a boomerang); now 215,90 / 232,90. “Boomerangs” in the water room and the Like-Like room were Bubbles using Goriya-boomerang frames (290/299/308). Bubble orbs are 321/338/355; Goriya is 222–273; Keese red is y=28. Like-Like room list is Bubbles + Zols + Like-Likes (`monsterListId` 115).
+
+Still open at stop: none logged. (Inventory top-row cursor was listed in error; user confirmed it works.)
+
 

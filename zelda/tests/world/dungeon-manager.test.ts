@@ -3,6 +3,7 @@ import { DungeonManager } from '../../src/world/dungeon-manager.js';
 import { DungeonRenderer } from '../../src/render/dungeon-renderer.js';
 import { Direction } from '../../src/core/types.js';
 import type { DungeonData } from '../../src/data/dungeon-types.js';
+import dungeonsJson from '../../src/data/dungeons.json';
 
 function createTestDungeonData(): DungeonData {
   const rooms = Array.from({ length: 128 }, (_, i) => ({
@@ -150,5 +151,55 @@ describe('DungeonManager', () => {
     const data = createTestDungeonData();
     const dm = new DungeonManager(1, data, createDummyRenderer());
     expect(dm.startRoomId).toBe(115);
+  });
+
+  // L1 room 83 (two north of entrance): itemId 0x19 Key at slot 3 (packed $87 → 128,48)
+  it('getRoomItemPosition still returns coords after the item is taken', () => {
+    const data = createTestDungeonData();
+    const room83 = data.levelBlocks.uw1q1.rooms[83];
+    if (!room83) throw new Error('missing room 83');
+    (room83 as { itemId: number }).itemId = 0x19;
+    (room83 as { itemPositionIndex: number }).itemPositionIndex = 3;
+
+    const dm = new DungeonManager(1, data, createDummyRenderer());
+    dm.debugGoToRoom(83);
+    const before = dm.getRoomItemPosition();
+    expect(before).toEqual({ x: 128, y: 48 });
+
+    dm.setItemTaken();
+    expect(dm.isItemTaken()).toBe(true);
+    // Masking keys off this position after collect — it must not go null.
+    expect(dm.getRoomItemPosition()).toEqual({ x: 128, y: 48 });
+  });
+
+  it('triggerShutters sets the east bit for L1 room 82 (kill-all shutter)', () => {
+    const data = createTestDungeonData();
+    const room82 = data.levelBlocks.uw1q1.rooms[82];
+    if (!room82) throw new Error('missing room 82');
+    (room82 as { doors: { east: number } }).doors = {
+      ...room82.doors,
+      east: 7,
+    };
+
+    const dm = new DungeonManager(1, data, createDummyRenderer());
+    dm.debugGoToRoom(82);
+    expect(dm.openedDoors & 0x01).toBe(0);
+    dm.triggerShutters();
+    expect(dm.openedDoors & 0x01).toBe(0x01);
+  });
+});
+
+describe('open-door map donors', () => {
+  const real = dungeonsJson as DungeonData;
+
+  it('L1 room 82 east shutter donates from an open east door IN level 1, not L4 gold', () => {
+    const dm = new DungeonManager(1, real, createDummyRenderer());
+    dm.debugGoToRoom(82);
+    const donorId = dm.findOpenDoorDonor('east');
+    expect(donorId).not.toBeNull();
+    expect(donorId).not.toBe(1); // room 1 is L4 gold with east=0 and palette 2
+    expect(dm.roomsInThisDungeon().has(donorId!)).toBe(true);
+    const donor = real.levelBlocks.uw1q1.rooms[donorId!];
+    expect(donor?.doors.east).toBe(0);
   });
 });

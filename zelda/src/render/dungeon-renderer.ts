@@ -13,6 +13,22 @@ const INNER_COLS = 12;
 const INNER_ROWS = 7;
 const INNER_OFFSET_COL = 2;
 const INNER_OFFSET_ROW = 2;
+// dungeons-map.png often paints the item one tile off the NES slot
+// (L1 boss heart is at tile 13,5 while GetShortcutOrItemXY is 12,5).
+const ITEM_MASK_PAD = TILE_SIZE;
+
+/** Play-area tile range covered when masking a baked-in room item. */
+export function itemMaskTileRange(
+  itemX: number,
+  itemY: number,
+): { startCol: number; endCol: number; startRow: number; endRow: number } {
+  return {
+    startCol: Math.floor((itemX - ITEM_MASK_PAD) / TILE_SIZE),
+    endCol: Math.floor((itemX + 15 + ITEM_MASK_PAD) / TILE_SIZE),
+    startRow: Math.floor((itemY - ITEM_MASK_PAD) / TILE_SIZE),
+    endRow: Math.floor((itemY + 15 + ITEM_MASK_PAD) / TILE_SIZE),
+  };
+}
 
 const CELLAR_BORDER_ROWS = 2;
 
@@ -34,24 +50,44 @@ const DOOR_KEY = 5;
 const DOOR_KEY_2 = 6;
 const DOOR_SHUTTER = 7;
 
-// Door type → sprite column
-function doorTypeToSpriteCol(doorType: number): number {
+// Door type → sprite column on dungeon-doors.png.
+// Closed: cover the map's explored-state blit. Open: dungeons-map.png paints
+// some shutters already closed (L1 room 82 east), so skipping the overlay
+// leaves a closed door — draw the open/hole column instead.
+export function doorOverlaySpriteCol(doorType: number, opened: boolean): number {
   switch (doorType) {
-    case DOOR_BOMBABLE: return 0; // wall (looks like solid wall)
+    case DOOR_BOMBABLE:
+      return opened ? 4 : 0; // hole / wall
     case DOOR_KEY:
-    case DOOR_KEY_2: return 2;    // locked (keyhole)
-    case DOOR_SHUTTER: return 3;  // shutter (bars)
-    default: return -1;
+    case DOOR_KEY_2:
+    case DOOR_SHUTTER:
+      // Map already paints these closed (L1 room 82 east shutter, 66 west
+      // shutter, 115 north key, …). Overlaying the 32×32 sheet cell on that
+      // doorway looks like a second, misaligned door. Only blit the open
+      // graphic after the door is actually opened.
+      return opened ? 1 : -1;
+    default:
+      return -1;
   }
 }
 
-// Direction → sprite row + play-area position
-const DOOR_DIR_INFO = {
+export type DoorDir = 'north' | 'south' | 'west' | 'east';
+
+// Play-area rectangle covering a doorway (E/W are 2×3 tiles, N/S 2×2).
+export const DOOR_SLOTS: Record<DoorDir, { x: number; y: number; w: number; h: number }> = {
+  north: { x: 112, y: 0, w: DOOR_CELL_SIZE, h: DOOR_CELL_SIZE },
+  south: { x: 112, y: 144, w: DOOR_CELL_SIZE, h: DOOR_CELL_SIZE },
+  west:  { x: 0,   y: 64, w: DOOR_CELL_SIZE, h: 48 },
+  east:  { x: 224, y: 64, w: DOOR_CELL_SIZE, h: 48 },
+};
+
+// Direction → sprite row on dungeon-doors.png (bombable wall overlay only)
+const DOOR_DIR_INFO: Record<DoorDir, { row: number; x: number; y: number; h: number }> = {
   north: { row: 0, x: 112, y: 0, h: DOOR_CELL_SIZE },
   south: { row: 3, x: 112, y: 144, h: DOOR_CELL_SIZE },
   west:  { row: 1, x: 0,   y: 64,  h: 48 },
   east:  { row: 2, x: 224,  y: 64,  h: 48 },
-} as const;
+};
 
 export class DungeonRenderer {
   private readonly _mapImage: HTMLImageElement;
@@ -98,11 +134,10 @@ export class DungeonRenderer {
     const roomSrcX = mapCol * ROOM_WIDTH;
     const roomSrcY = mapRow * ROOM_HEIGHT;
 
-    // The item sprite is 16×16 but may straddle tile boundaries (triforce -8px)
-    const startTileCol = Math.floor(itemX / TILE_SIZE);
-    const endTileCol = Math.floor((itemX + 15) / TILE_SIZE);
-    const startTileRow = Math.floor(itemY / TILE_SIZE);
-    const endTileRow = Math.floor((itemY + 15) / TILE_SIZE);
+    // NES slot plus one tile of padding — the map artist often paints the
+    // item one tile off (L1 boss heart at 210,84 vs slot 192,80).
+    const { startCol: startTileCol, endCol: endTileCol, startRow: startTileRow, endRow: endTileRow } =
+      itemMaskTileRange(itemX, itemY);
 
     for (let tr = startTileRow; tr <= endTileRow; tr++) {
       for (let tc = startTileCol; tc <= endTileCol; tc++) {
@@ -113,8 +148,9 @@ export class DungeonRenderer {
         const tileIdx = uniqueRoom.tiles[innerR]?.[innerC];
         if (tileIdx === undefined) continue;
 
-        // Find a matching floor tile as far away as possible
-        const donor = this.findDonorTile(uniqueRoom, tileIdx, innerR, innerC);
+        // Find a matching floor tile as far away as possible (never the
+        // painted tile itself — copying it would leave the baked item).
+        const donor = findDonorTile(uniqueRoom, tileIdx, innerR, innerC);
         if (!donor) continue;
 
         const donorPixelX = roomSrcX + (donor.col + INNER_OFFSET_COL) * TILE_SIZE;
@@ -129,37 +165,37 @@ export class DungeonRenderer {
     }
   }
 
-  private findDonorTile(
-    uniqueRoom: UniqueRoom,
-    targetIdx: number,
-    avoidRow: number,
-    avoidCol: number,
-  ): { row: number; col: number } | null {
-    let best: { row: number; col: number } | null = null;
-    let bestDist = -1;
-    for (let r = 0; r < INNER_ROWS; r++) {
-      const row = uniqueRoom.tiles[r];
-      if (!row) continue;
-      for (let c = 0; c < INNER_COLS; c++) {
-        if (row[c] !== targetIdx) continue;
-        const dist = Math.abs(r - avoidRow) + Math.abs(c - avoidCol);
-        if (dist > bestDist) {
-          bestDist = dist;
-          best = { row: r, col: c };
-        }
-      }
-    }
-    return best;
+  /**
+   * Copy an already-open doorway from another room on dungeons-map.png.
+   * dungeon-doors.png "open" cells have a transparent hole, so blitting them
+   * over a painted-closed shutter leaves the diamond showing through.
+   */
+  blitOpenDoorFromRoom(
+    renderer: Renderer,
+    srcRoomId: number,
+    levelBlock: string,
+    dir: DoorDir,
+  ): void {
+    const slot = DOOR_SLOTS[dir];
+    const blockRowOffset = levelBlock === 'uw2q1' ? 8 : 0;
+    const srcX = (srcRoomId % MAP_COLS) * ROOM_WIDTH + slot.x;
+    const srcY = (Math.floor(srcRoomId / MAP_COLS) + blockRowOffset) * ROOM_HEIGHT + slot.y;
+    renderer.drawImage(
+      this._mapImage,
+      srcX, srcY, slot.w, slot.h,
+      slot.x, slot.y, slot.w, slot.h,
+    );
   }
 
   renderDoorOverlays(
     renderer: Renderer,
-    roomId: number,
+    _roomId: number,
     levelBlock: string,
     doors: DungeonRoomDoors,
     openedDoors: number,
+    openDonors?: Partial<Record<DoorDir, number>>,
   ): void {
-    const entries: [string, number, number][] = [
+    const entries: [DoorDir, number, number][] = [
       ['north', doors.north, 8],
       ['south', doors.south, 4],
       ['west',  doors.west,  2],
@@ -167,11 +203,28 @@ export class DungeonRenderer {
     ];
 
     for (const [dir, doorType, dirBit] of entries) {
-      if (openedDoors & dirBit) continue;
-      const spriteCol = doorTypeToSpriteCol(doorType);
+      const opened = (openedDoors & dirBit) !== 0;
+
+      if (
+        opened &&
+        (doorType === DOOR_KEY || doorType === DOOR_KEY_2 || doorType === DOOR_SHUTTER)
+      ) {
+        const donor = openDonors?.[dir];
+        if (donor !== undefined) {
+          this.blitOpenDoorFromRoom(renderer, donor, levelBlock, dir);
+        } else {
+          // Never fall back to dungeon-doors.png "open" — those cells are
+          // transparent in the opening, so the painted shutter shows through.
+          const slot = DOOR_SLOTS[dir];
+          renderer.fillRect(slot.x, slot.y, slot.w, slot.h, '#000000');
+        }
+        continue;
+      }
+
+      const spriteCol = doorOverlaySpriteCol(doorType, opened);
       if (spriteCol < 0) continue;
 
-      const info = DOOR_DIR_INFO[dir as keyof typeof DOOR_DIR_INFO];
+      const info = DOOR_DIR_INFO[dir];
 
       if (this._doorImage) {
         const sx = spriteCol * DOOR_CELL_SIZE;
@@ -179,30 +232,8 @@ export class DungeonRenderer {
         renderer.drawImage(
           this._doorImage,
           sx, sy, DOOR_CELL_SIZE, DOOR_CELL_SIZE,
-          info.x, info.y, DOOR_CELL_SIZE, DOOR_CELL_SIZE,
+          info.x, info.y, DOOR_CELL_SIZE, info.h,
         );
-      }
-
-      // E/W doors span 3 tile rows (48px) but sprite cell is 32px.
-      // Cover the remaining tile row by sampling wall from the room border.
-      if (info.h > DOOR_CELL_SIZE) {
-        const blockRowOffset = levelBlock === 'uw2q1' ? 8 : 0;
-        const mapCol = roomId % MAP_COLS;
-        const mapRow = Math.floor(roomId / MAP_COLS) + blockRowOffset;
-        const roomSrcX = mapCol * ROOM_WIDTH;
-        const roomSrcY = mapRow * ROOM_HEIGHT;
-
-        // Sample a wall tile from the corner of the same border
-        const wallSrcX = roomSrcX + (dir === 'west' ? 0 : 14 * TILE_SIZE);
-        const wallSrcY = roomSrcY; // top row is always wall
-        const extraY = info.y + DOOR_CELL_SIZE;
-        for (let c = 0; c < 2; c++) {
-          renderer.drawImage(
-            this._mapImage,
-            wallSrcX + c * TILE_SIZE, wallSrcY, TILE_SIZE, TILE_SIZE,
-            info.x + c * TILE_SIZE, extraY, TILE_SIZE, TILE_SIZE,
-          );
-        }
       }
     }
   }
@@ -243,4 +274,28 @@ export class DungeonRenderer {
       }
     }
   }
+}
+
+/** Same-index tile farthest from the painted cell. Dist 0 (self) is rejected. */
+export function findDonorTile(
+  uniqueRoom: UniqueRoom,
+  targetIdx: number,
+  avoidRow: number,
+  avoidCol: number,
+): { row: number; col: number } | null {
+  let best: { row: number; col: number } | null = null;
+  let bestDist = 0;
+  for (let r = 0; r < INNER_ROWS; r++) {
+    const row = uniqueRoom.tiles[r];
+    if (!row) continue;
+    for (let c = 0; c < INNER_COLS; c++) {
+      if (row[c] !== targetIdx) continue;
+      const dist = Math.abs(r - avoidRow) + Math.abs(c - avoidCol);
+      if (dist > bestDist) {
+        bestDist = dist;
+        best = { row: r, col: c };
+      }
+    }
+  }
+  return best;
 }
