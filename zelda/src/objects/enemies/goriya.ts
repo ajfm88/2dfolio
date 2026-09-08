@@ -94,7 +94,7 @@ export class Goriya extends Enemy {
 
   protected override renderEnemy(renderer: Renderer, _enemySheet?: SpriteSheet): void {
     const dirFrames = this._isBlue ? GORIYA_SPRITES.blue : GORIYA_SPRITES.red;
-    const dirIndex = this._direction; // Down=0, Left=1, Up=2, Right=3
+    const dirIndex = this._direction; // Direction: Up=0 Down=1 Left=2 Right=3
     const frame = dirFrames[dirIndex];
     if (frame) {
       drawDungeonEnemySprite(renderer, frame, this._x, this._y);

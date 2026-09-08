@@ -6,17 +6,19 @@ import { createLynel } from '../../../src/objects/enemies/lynel.js';
 import { Tektite } from '../../../src/objects/enemies/tektite.js';
 import { Leever } from '../../../src/objects/enemies/leever.js';
 import { Zora } from '../../../src/objects/enemies/zora.js';
+import { ZORA_SPRITES, ZORA_SHOT_SPRITES } from '../../../src/render/enemy-sprite-data.js';
 import { Peahat } from '../../../src/objects/enemies/peahat.js';
 import { Ghini, FlyingGhini } from '../../../src/objects/enemies/ghini.js';
 import { Armos } from '../../../src/objects/enemies/armos.js';
 import { WalkerEnemy } from '../../../src/objects/enemies/walker-enemy.js';
 import { Direction } from '../../../src/core/types.js';
 
-function mockCtx(linkX = 120, linkY = 80): EnemyUpdateContext {
+function mockCtx(linkX = 120, linkY = 80, water = true): EnemyUpdateContext {
   return {
     collision: {
       isRectWalkable: () => true,
       isPositionWalkable: () => true,
+      isWaterTileAt: () => water,
     } as unknown as import('../../../src/world/collision.js').TileCollisionMap,
     screen: { id: 0, tiles: Array(11).fill(Array(16).fill(0)) } as unknown as import('../../../src/data/overworld-types.js').OverworldScreen,
     linkX,
@@ -135,6 +137,38 @@ describe('Zora', () => {
     const ctx = mockCtx();
     enemy.update(ctx); // finish spawn
     expect(enemy.vulnerable).toBe(false);
+  });
+
+  it('fires a zora-shot fireball after surfacing', () => {
+    const enemy = new Zora(80, 80, 17, 0x20, 0);
+    const ctx = mockCtx();
+    let shot = null;
+    for (let i = 0; i < 400; i++) {
+      enemy.update(ctx);
+      shot = enemy.consumeProjectile();
+      if (shot) break;
+    }
+    expect(shot).not.toBeNull();
+    expect(shot!.type).toBe(0x55);
+    expect(shot!.visual).toBe('zora-shot');
+  });
+
+  it('stays underground when the screen has no water', () => {
+    const enemy = new Zora(80, 80, 17, 0x20, 0);
+    const ctx = mockCtx(120, 80, false);
+    for (let i = 0; i < 200; i++) enemy.update(ctx);
+    expect(enemy.vulnerable).toBe(false);
+    expect(enemy.consumeProjectile()).toBeNull();
+  });
+
+  it('uses picker #13-16 for the body and #17-20 for shots', () => {
+    expect(ZORA_SPRITES.emerging).toEqual({ sx: 189, sy: 11, sw: 16, sh: 16 });
+    expect(ZORA_SPRITES.submerging).toEqual({ sx: 206, sy: 11, sw: 16, sh: 16 });
+    expect(ZORA_SPRITES.front).toEqual({ sx: 223, sy: 11, sw: 16, sh: 16 });
+    expect(ZORA_SPRITES.back).toEqual({ sx: 240, sy: 11, sw: 16, sh: 16 });
+    expect(ZORA_SHOT_SPRITES).toHaveLength(4);
+    expect(ZORA_SHOT_SPRITES[0]).toEqual({ sx: 257, sy: 11, sw: 8, sh: 16 });
+    expect(ZORA_SHOT_SPRITES[3]).toEqual({ sx: 284, sy: 11, sw: 8, sh: 16 });
   });
 });
 

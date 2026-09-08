@@ -3,12 +3,18 @@ import { NameRegistrationScreen } from '../../src/ui/name-registration.js';
 import { Action, type InputManager } from '../../src/core/input.js';
 import { createEmptySlot, type SaveSlot } from '../../src/save/save-manager.js';
 
-function fakeInput(opts: { held?: Action[]; just?: Action[] } = {}): InputManager {
+function fakeInput(opts: {
+  held?: Action[]; just?: Action[]; touch?: Action[]; touchHeld?: Action[];
+} = {}): InputManager {
   const held = new Set(opts.held ?? []);
   const just = new Set(opts.just ?? []);
+  const touch = new Set(opts.touch ?? []);
+  const touchHeld = new Set(opts.touchHeld ?? []);
   return {
-    isHeld: (a: Action) => held.has(a),
-    isJustPressed: (a: Action) => just.has(a),
+    isHeld: (a: Action) => held.has(a) || touch.has(a) || touchHeld.has(a),
+    isJustPressed: (a: Action) => just.has(a) || touch.has(a),
+    isTouchJustPressed: (a: Action) => touch.has(a),
+    isTouchHeld: (a: Action) => touch.has(a) || touchHeld.has(a),
   } as unknown as InputManager;
 }
 
@@ -88,6 +94,70 @@ describe('NameRegistrationScreen', () => {
     expect(s.boardIndex).toBe(1); // no repeat yet
     s.update(fakeInput({ held: [Action.Right] })); // frame 17 → first repeat
     expect(s.boardIndex).toBe(2);
+  });
+
+  function tapHeld(s: NameRegistrationScreen, action: Action): void {
+    s.update(fakeInput({ held: [action], just: [action] }));
+    s.update(fakeInput({}));
+  }
+
+  it('touch Down from the bottom letter row cycles to the next file', () => {
+    const s = new NameRegistrationScreen();
+    s.reset(emptySlots());
+    // 3 Downs wrap A → L → W → 0 (last row).
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    expect(s.boardIndex).toBe(33); // '0'
+    s.update(fakeInput({ touch: [Action.Down] }));
+    expect(s.slotCursorIndex).toBe(1);
+    // Next held frame must not skip slot 1 (the old justPressed+DAS double-fire).
+    s.update(fakeInput({ touchHeld: [Action.Down] }));
+    expect(s.slotCursorIndex).toBe(1);
+  });
+
+  it('touch Up from the top letter row cycles to END (wrap)', () => {
+    const s = new NameRegistrationScreen();
+    s.reset(emptySlots());
+    expect(s.boardIndex).toBe(0); // row 0
+    s.update(fakeInput({ touch: [Action.Up] }));
+    expect(s.slotCursorIndex).toBe(3); // END
+  });
+
+  it('holding overlay Down from the last letter row can stop on END', () => {
+    const s = new NameRegistrationScreen();
+    s.reset(emptySlots());
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    s.update(fakeInput({ touch: [Action.Down] })); // slot 1
+    for (let i = 0; i < 16; i++) s.update(fakeInput({ touchHeld: [Action.Down] })); // slot 2
+    expect(s.slotCursorIndex).toBe(2);
+    for (let i = 0; i < 8; i++) s.update(fakeInput({ touchHeld: [Action.Down] })); // END
+    expect(s.slotCursorIndex).toBe(3);
+    s.update(fakeInput({ touchHeld: [Action.Down] }));
+    expect(s.slotCursorIndex).toBe(3); // still holding does not wrap off END
+  });
+
+  it('touch Down on END cycles back to the first editable slot', () => {
+    const s = new NameRegistrationScreen();
+    s.reset(emptySlots());
+    s.update(fakeInput({ touch: [Action.Up] })); // → END
+    expect(s.slotCursorIndex).toBe(3);
+    s.update(fakeInput({ touch: [Action.Down] }));
+    expect(s.slotCursorIndex).toBe(0);
+  });
+
+  it('keyboard Down on the bottom row still wraps the letter board', () => {
+    const s = new NameRegistrationScreen();
+    s.reset(emptySlots());
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    tapHeld(s, Action.Down);
+    expect(s.slotCursorIndex).toBe(0);
+    tapHeld(s, Action.Down);
+    expect(s.boardIndex).toBe(0); // wrapped to 'A'
+    expect(s.slotCursorIndex).toBe(0);
   });
 
   it('does not move the board while parked on END', () => {

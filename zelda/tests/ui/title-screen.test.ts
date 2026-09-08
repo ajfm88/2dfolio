@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TitleScreen, TitlePhase } from '../../src/ui/title-screen.js';
+import { TitleScreen, TitlePhase, TITLE_IDLE_FRAMES } from '../../src/ui/title-screen.js';
 import { Action, type InputManager } from '../../src/core/input.js';
 
 function fakeInput(pressed: Action[] = []): InputManager {
@@ -10,7 +10,7 @@ function fakeInput(pressed: Action[] = []): InputManager {
   } as unknown as InputManager;
 }
 
-const IDLE_FRAMES = 420;
+const IDLE_FRAMES = TITLE_IDLE_FRAMES;
 
 describe('TitleScreen', () => {
   it('starts on the Title phase awaiting input', () => {
@@ -63,5 +63,18 @@ describe('TitleScreen', () => {
     expect(t.phase).toBe(TitlePhase.Title);
     expect(t.shouldGoToFileSelect).toBe(false);
     expect(t.scrollOffset).toBe(0);
+  });
+
+  it('waterfall waves start at NES TitleWaveYs and advance 2px per frame', () => {
+    const t = new TitleScreen();
+    expect([...t.waterfallWaveYs]).toEqual([0xb6, 0xc8, 0xd8]);
+    t.update(fakeInput());
+    expect([...t.waterfallWaveYs]).toEqual([0xb8, 0xca, 0xda]);
+  });
+
+  it('waterfall waves wrap from $E3 back to $B2', () => {
+    const t = new TitleScreen();
+    for (let i = 0; i < 23; i++) t.update(fakeInput());
+    expect(t.waterfallWaveYs[0]).toBe(0xb2);
   });
 });

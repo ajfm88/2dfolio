@@ -11,7 +11,7 @@ import {
 import { Direction } from '../../core/types.js';
 import type { EnemySpawnData } from '../../data/enemy-spawn-types.js';
 import type { OverworldScreen } from '../../data/overworld-types.js';
-import type { TileCollisionMap } from '../../world/collision.js';
+import { pickRandomWaterPosition, type TileCollisionMap } from '../../world/collision.js';
 import type { Renderer } from '../../render/renderer.js';
 import type { SpriteSheet } from '../../render/sprite-renderer.js';
 import type { EnemyProjectile } from '../projectiles/enemy-projectile.js';
@@ -21,7 +21,7 @@ import { createMoblin } from './moblin.js';
 import { createLynel } from './lynel.js';
 import { Tektite } from './tektite.js';
 import { Leever } from './leever.js';
-import { Zora } from './zora.js';
+import { Zora, ZORA } from './zora.js';
 import { Peahat } from './peahat.js';
 import { Ghini, FlyingGhini } from './ghini.js';
 import { Armos } from './armos.js';
@@ -148,46 +148,57 @@ export class SpawnManager {
 
     const screenId = screen.id;
     const spawnEntry = this._spawnData.overworldSpawns[screenId];
-    if (!spawnEntry) return;
+    const monsterListId = spawnEntry?.monsterListId ?? 0;
 
-    const monsterListId = spawnEntry.monsterListId;
-    if (monsterListId === 0) return;
+    if (monsterListId !== 0) {
+      const enemyTypes = this.resolveEnemyTypes(monsterListId);
+      const foeCountIndex = spawnEntry?.monsterCountIndex ?? 0;
+      const foeCounts = this._spawnData.overworldFoeCounts;
+      const maxCount = this.clampBossCount(monsterListId, foeCounts[foeCountIndex] ?? 4);
 
-    const enemyTypes = this.resolveEnemyTypes(monsterListId);
-    if (enemyTypes.length === 0) return;
+      const posListIndex = directionToSpawnList(entryDirection);
+      const positions = this._spawnData.spawnPositions[posListIndex];
 
-    const foeCountIndex = spawnEntry.monsterCountIndex;
-    const foeCounts = this._spawnData.overworldFoeCounts;
-    const maxCount = this.clampBossCount(monsterListId, foeCounts[foeCountIndex] ?? 4);
+      if (enemyTypes.length > 0 && positions) {
+        const count = Math.min(maxCount, positions.length, MAX_ENEMY_SLOTS);
 
-    const posListIndex = directionToSpawnList(entryDirection);
-    const positions = this._spawnData.spawnPositions[posListIndex];
-    if (!positions) return;
+        for (let i = 0; i < count; i++) {
+          const pos = positions[i];
+          if (pos === undefined) continue;
 
-    const count = Math.min(maxCount, positions.length, MAX_ENEMY_SLOTS);
+          const col = pos & 0x0F;
+          const row = (pos >> 4) & 0x0F;
+          let x = col * 16;
+          let y = row * 16 - 3;
 
-    for (let i = 0; i < count; i++) {
-      const pos = positions[i];
-      if (pos === undefined) continue;
+          const enemyType = enemyTypes[i % enemyTypes.length]!;
+          if (enemyType === 0) continue;
 
-      const col = pos & 0x0F;
-      const row = (pos >> 4) & 0x0F;
-      let x = col * 16;
-      let y = row * 16 - 3;
+          if (collision) {
+            if (enemyType === ZORA) {
+              const water = pickRandomWaterPosition(collision, screen);
+              if (!water) continue;
+              x = water.x;
+              y = water.y;
+            } else {
+              const nudged = nudgeToWalkable(x, y, collision, screen);
+              x = nudged.x;
+              y = nudged.y;
+              // Land enemies that still sit on water after the nudge stay there and
+              // look like they popped out of the lake. Skip the slot instead.
+              if (collision.isWaterTileAt(screen, x + 8, y + 8)) continue;
+            }
+          }
 
-      if (collision) {
-        const nudged = nudgeToWalkable(x, y, collision, screen);
-        x = nudged.x;
-        y = nudged.y;
+          const hp = getEnemyHp(enemyType, this._hpPairs);
+          const spawnDelay = enemyType === ZORA ? 0 : SPAWN_CLOUD_FRAMES + i;
+          this.pushEnemyOrGroup(enemyType, x, y, hp, spawnDelay);
+        }
       }
-
-      const enemyType = enemyTypes[i % enemyTypes.length]!;
-      if (enemyType === 0) continue;
-
-      const hp = getEnemyHp(enemyType, this._hpPairs);
-      const spawnDelay = SPAWN_CLOUD_FRAMES + i;
-      this.pushEnemyOrGroup(enemyType, x, y, hp, spawnDelay);
     }
+
+    // NES CheckZora (Z_04.asm:1757): extra water-only spawn, even on empty lists.
+    if (collision) this.trySpawnZora(screen, collision);
 
     // Wire Ghini siblings (main Ghini needs ref to all flying Ghini)
     const mainGhini = this._enemies.find(e => e instanceof Ghini && e.objectType === 33);
@@ -245,6 +256,16 @@ export class SpawnManager {
     if (mainGhini instanceof Ghini) {
       mainGhini.setSiblings(this._enemies);
     }
+  }
+
+  // Z_04.asm:1757 CheckZora — one zora on a water tile if none is already active.
+  private trySpawnZora(screen: OverworldScreen, collision: TileCollisionMap): void {
+    if (this._enemies.some(e => e.objectType === ZORA)) return;
+    if (this._enemies.length >= MAX_ENEMY_SLOTS) return;
+    const water = pickRandomWaterPosition(collision, screen);
+    if (!water) return;
+    const hp = getEnemyHp(ZORA, this._hpPairs);
+    this.pushEnemyOrGroup(ZORA, water.x, water.y, hp, 0);
   }
 
   private resolveEnemyTypes(monsterListId: number): number[] {
@@ -396,7 +417,7 @@ function createEnemyByType(
     case 15: case 16:
       return new Leever(x, y, objectType, hp, spawnDelay);
     // Zora
-    case 17:
+    case ZORA:
       return new Zora(x, y, objectType, hp, spawnDelay);
     // Peahat
     case 26:

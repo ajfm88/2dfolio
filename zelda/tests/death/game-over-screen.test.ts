@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { GameOverScreen, GameOverOption } from '../../src/death/game-over-screen.js';
 import { Action, type InputManager } from '../../src/core/input.js';
 
-function fakeInput(pressed: Action[] = []): InputManager {
+function fakeInput(pressed: Action[] = [], touch = false): InputManager {
   const set = new Set(pressed);
   return {
     isJustPressed: (a: Action) => set.has(a),
     isHeld: () => false,
+    isTouchJustPressed: (a: Action) => touch && set.has(a),
+    isTouchHeld: (a: Action) => touch && set.has(a),
   } as unknown as InputManager;
 }
 
@@ -45,6 +47,23 @@ describe('GameOverScreen', () => {
     expect(g.done).toBe(false);
     g.update(fakeInput());
     expect(g.done).toBe(true);
+  });
+
+  it('touch D-pad Down cycles like Select, Up goes backwards', () => {
+    const g = new GameOverScreen();
+    g.update(fakeInput([Action.Down], true));
+    expect(g.selectedOption).toBe(GameOverOption.Save);
+    g.update(fakeInput([Action.Down], true));
+    expect(g.selectedOption).toBe(GameOverOption.Retry);
+    g.update(fakeInput([Action.Up], true));
+    expect(g.selectedOption).toBe(GameOverOption.Save);
+  });
+
+  it('keyboard D-pad does not cycle (Select shortcut is touch-only)', () => {
+    const g = new GameOverScreen();
+    g.update(fakeInput([Action.Down]));
+    g.update(fakeInput([Action.Up]));
+    expect(g.selectedOption).toBe(GameOverOption.Continue);
   });
 
   it('exposes the selected option after done', () => {

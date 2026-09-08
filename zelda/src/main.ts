@@ -60,7 +60,11 @@ import { DropEngine } from './objects/enemies/drop-engine.js';
 import { DAMAGE_TABLE } from './core/damage-tables.js';
 import type { EnemySpawnData } from './data/enemy-spawn-types.js';
 import type { DungeonData } from './data/dungeon-types.js';
-import { getDungeonLevel } from './data/dungeon-entrance-data.js';
+import {
+  getDungeonLevel,
+  getDungeonEntranceScreenId,
+  findDungeonEntranceStandingPos,
+} from './data/dungeon-entrance-data.js';
 import { isCaveEntranceTile } from './data/cave-data.js';
 import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from './data/secret-types.js';
 import { DungeonManager } from './world/dungeon-manager.js';
@@ -422,7 +426,10 @@ document.addEventListener('keydown', (e) => {
     link.inventory.triforce = 0;
   },
   // Warp straight into a dungeon (default Level 1) via the normal transition.
+  // Also snaps the overworld return point to that dungeon's entrance, so
+  // walking out doesn't dump you wherever you were when you cheated.
   goToDungeon(level = 1) {
+    placeAtDungeonEntrance(level);
     enterDungeon(level);
   },
   // Drop a single enemy next to Link for inspection. Default $23 = Blue Wizzrobe;
@@ -643,6 +650,17 @@ function enterCave(caveIndex: number): void {
   link.setDirection(Direction.Up);
   gameMode = GameMode.CaveTransition;
   if (spawnManager) spawnManager.clear();
+}
+
+function placeAtDungeonEntrance(level: number): void {
+  if (!overworld || !link) return;
+  const screenId = getDungeonEntranceScreenId(level);
+  if (screenId === null) return;
+  const row = Math.floor(screenId / 16);
+  const col = screenId % 16;
+  overworld.setScreen(row, col);
+  const pos = findDungeonEntranceStandingPos(overworld.currentScreen.tiles);
+  link.setPosition(pos?.x ?? 120, pos?.y ?? 80);
 }
 
 function enterDungeon(level: number): void {
@@ -2248,10 +2266,17 @@ function renderDungeonEntities(): void {
   if (!link) return;
   const ctx = renderer.ctx;
 
-  // Mask the baked-in room item from dungeons-map.png — keep masking even after
-  // collection so the painted copy never shows through.
-  if (dungeonRoomItem && dungeonManager) {
-    dungeonManager.maskBakedRoomItem(renderer, dungeonRoomItem.x, dungeonRoomItem.y);
+  // Mask the baked-in room item from dungeons-map.png. The live pickup is
+  // nulled on collect and skipped on re-entry (isItemTaken), so masking must
+  // key off the room's item slot — not dungeonRoomItem's lifetime.
+  if (dungeonManager) {
+    dungeonManager.maskBakedRoomItemIfPresent(renderer);
+    if (dungeonRoomItem) {
+      const pos = dungeonManager.getRoomItemPosition();
+      if (!pos || pos.x !== dungeonRoomItem.x || pos.y !== dungeonRoomItem.y) {
+        dungeonManager.maskBakedRoomItem(renderer, dungeonRoomItem.x, dungeonRoomItem.y);
+      }
+    }
   }
 
   if (dungeonStairsPos) {
@@ -2520,7 +2545,14 @@ const loop = new GameLoop({
     if (isFrontEnd && assets && font) {
       const rf = redFont ?? font;
       if (gameMode === GameMode.Title) {
-        titleScreen.render(renderer, assets.ui.title, font, assets.ui.crest);
+        titleScreen.render(
+          renderer,
+          assets.ui.title,
+          font,
+          assets.ui.crest,
+          assets.ui.waterfall,
+          assets.ui.waterfallSpray,
+        );
       } else if (gameMode === GameMode.FileSelect) {
         fileSelectScreen.render(renderer, font, rf, saveManager.getSlots());
       } else if (gameMode === GameMode.Register) {

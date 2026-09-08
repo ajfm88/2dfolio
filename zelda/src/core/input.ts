@@ -187,6 +187,16 @@ export class InputManager {
     return this.actionStates.get(action)?.justPressed ?? false;
   }
 
+  /** True when this action was pressed by the on-screen overlay this frame. */
+  isTouchJustPressed(action: Action): boolean {
+    return this.isJustPressed(action) && this._externalHeld.has(action);
+  }
+
+  /** True while the on-screen overlay is holding this action. */
+  isTouchHeld(action: Action): boolean {
+    return this.isHeld(action) && this._externalHeld.has(action);
+  }
+
   isJustReleased(action: Action): boolean {
     return this.actionStates.get(action)?.justReleased ?? false;
   }

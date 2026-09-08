@@ -13,7 +13,10 @@ import {
   PROJ_COL_SWORD_BEAM_ALT,
   PROJ_COL_FIREBALL,
 } from '../../render/projectile-sprite-data.js';
+import { drawOverworldEnemySprite, ZORA_SHOT_SPRITES } from '../../render/enemy-sprite-data.js';
 import { ProjectileType } from '../player/shield.js';
+
+export type EnemyShotVisual = 'default' | 'zora-shot';
 
 export enum ProjectileState {
   Flying,
@@ -33,6 +36,7 @@ export class EnemyProjectile {
   // Extra vertical drift applied every other frame while flying (Aquamentus'
   // fan: middle 0, lower +1, upper -1). Default 0 = straight cardinal travel.
   protected readonly _verticalDrift: number;
+  private readonly _visual: EnemyShotVisual;
 
   constructor(
     x: number,
@@ -40,12 +44,14 @@ export class EnemyProjectile {
     direction: Direction,
     type: ProjectileType,
     verticalDrift = 0,
+    visual: EnemyShotVisual = 'default',
   ) {
     this._x = x;
     this._y = y;
     this._direction = direction;
     this._type = type;
     this._verticalDrift = verticalDrift;
+    this._visual = visual;
   }
 
   get x(): number {
@@ -62,6 +68,10 @@ export class EnemyProjectile {
 
   get type(): ProjectileType {
     return this._type;
+  }
+
+  get visual(): EnemyShotVisual {
+    return this._visual;
   }
 
   get state(): ProjectileState {
@@ -155,6 +165,11 @@ export class EnemyProjectile {
 
       case ProjectileType.Fireball:
       case ProjectileType.Fireball2Unblockable:
+        if (this._visual === 'zora-shot') {
+          const frame = ZORA_SHOT_SPRITES[Math.floor(this.animTimer / 4) % ZORA_SHOT_SPRITES.length];
+          if (frame) drawOverworldEnemySprite(renderer, frame, x, y);
+          return;
+        }
         // The fireball column is the same art in all four rows; flick between two
         // of them so it still shimmers.
         drawProjectileSprite(renderer, PROJ_COL_FIREBALL, flick ? 0 : 1, x, y);
