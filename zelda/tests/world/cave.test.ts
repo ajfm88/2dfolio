@@ -112,6 +112,20 @@ describe('CaveRoom', () => {
     });
   });
 
+  describe('fire animation', () => {
+    it('advances one step per update and holds each sprite for several frames', () => {
+      const contents = makeCaveContents(1);
+      const room = new CaveRoom(stubImage, stubImage, stubImage, stubFont, contents, null);
+      const link = new Link(112, 100);
+      const frames: number[] = [];
+      for (let i = 0; i < 12; i++) {
+        room.update(link);
+        frames.push(room.fireAnimFrame);
+      }
+      expect(frames).toEqual([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0]);
+    });
+  });
+
   describe('exit detection', () => {
     it('requests exit when Link reaches bottom', () => {
       const contents = makeCaveContents(63);

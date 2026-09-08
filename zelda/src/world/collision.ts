@@ -93,3 +93,41 @@ export class TileCollisionMap {
 export function createCollisionMap(data: OverworldData): TileCollisionMap {
   return new TileCollisionMap(data.squareTable.primary);
 }
+
+/** Duck-typed so dungeon collision (always dry) and test mocks both work. */
+export interface WaterTileQuery {
+  isWaterTileAt(screen: OverworldScreen, px: number, py: number): boolean;
+}
+
+// NES CheckZora (Z_04.asm:1780) rejects X = 0 / $F0 and Y < $50 / >= $E0.
+// Those Y bounds are HUD-inclusive; in play-area space they are rows 1–9.
+const ZORA_MIN_COL = 1;
+const ZORA_MAX_COL = 14;
+const ZORA_MIN_ROW = 1;
+const ZORA_MAX_ROW = 9;
+
+export function collectWaterPositions(
+  collision: WaterTileQuery,
+  screen: OverworldScreen,
+): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let row = ZORA_MIN_ROW; row <= ZORA_MAX_ROW; row++) {
+    for (let col = ZORA_MIN_COL; col <= ZORA_MAX_COL; col++) {
+      const x = col * TILE_SIZE;
+      const y = row * TILE_SIZE - 3;
+      if (collision.isWaterTileAt(screen, x + 8, y + 8)) {
+        out.push({ x, y });
+      }
+    }
+  }
+  return out;
+}
+
+export function pickRandomWaterPosition(
+  collision: WaterTileQuery,
+  screen: OverworldScreen,
+): { x: number; y: number } | null {
+  const tiles = collectWaterPositions(collision, screen);
+  if (tiles.length === 0) return null;
+  return tiles[Math.floor(Math.random() * tiles.length)] ?? null;
+}

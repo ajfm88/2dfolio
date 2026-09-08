@@ -9,6 +9,7 @@ import { WalkerEnemy } from '../../../src/objects/enemies/walker-enemy.js';
 import { checkWeaponEnemyCollisions, type WeaponSet } from '../../../src/objects/enemies/enemy-collision.js';
 import { getOppositeDirection } from '../../../src/core/collision-utils.js';
 import { Direction } from '../../../src/core/types.js';
+import { VIRE_SPRITES, BUBBLE_SPRITES, GORIYA_SPRITES, KEESE_SPRITES } from '../../../src/render/enemy-sprite-data.js';
 
 function mockCtx(linkX = 120, linkY = 80, walkable = true): EnemyUpdateContext {
   return {
@@ -106,6 +107,11 @@ describe('Vire', () => {
     expect(children).toHaveLength(2);
     expect(children.every(c => c.objectType === 0x1c)).toBe(true);
   });
+
+  it('uses the blue Vire cells, not Pols Voice', () => {
+    expect(VIRE_SPRITES[0]).toEqual({ sx: 215, sy: 90, sw: 16, sh: 16 });
+    expect(VIRE_SPRITES[1]).toEqual({ sx: 232, sy: 90, sw: 16, sh: 16 });
+  });
 });
 
 describe('Pols Voice', () => {
@@ -126,6 +132,14 @@ describe('Bubble', () => {
     const killed = b.takeDamage(0xFF, Direction.Down);
     expect(killed).toBe(false);
     expect(b.isDead).toBe(false);
+  });
+
+  it('uses the 16×16 orb cells, not the Goriya boomerang frames', () => {
+    expect(BUBBLE_SPRITES.flash).toEqual({ sx: 321, sy: 11, sw: 16, sh: 16 });
+    expect(BUBBLE_SPRITES.blue).toEqual({ sx: 338, sy: 11, sw: 16, sh: 16 });
+    expect(BUBBLE_SPRITES.red).toEqual({ sx: 355, sy: 11, sw: 16, sh: 16 });
+    expect(GORIYA_SPRITES.red[1]).toEqual({ sx: 222, sy: 11, sw: 16, sh: 16 });
+    expect(KEESE_SPRITES.red[0]).toEqual({ sx: 183, sy: 28, sw: 16, sh: 16 });
   });
 
   it('deals no contact damage (0 in the damage table)', () => {

@@ -22,3 +22,41 @@ export const DUNGEON_ENTRANCE_SCREENS: Readonly<Record<number, number>> = {
 export function getDungeonLevel(screenId: number): number | null {
   return DUNGEON_ENTRANCE_SCREENS[screenId] ?? null;
 }
+
+/** Quest 1 overworld screen for each dungeon (not the Q2 alternates). */
+export const DUNGEON_ENTRANCE_SCREEN_BY_LEVEL: Readonly<Record<number, number>> = {
+  1: 55,
+  2: 60,
+  3: 116,
+  4: 69,
+  5: 11,
+  6: 34,
+  7: 66,
+  8: 109,
+  9: 5,
+};
+
+export function getDungeonEntranceScreenId(level: number): number | null {
+  return DUNGEON_ENTRANCE_SCREEN_BY_LEVEL[level] ?? null;
+}
+
+/**
+ * Stand one tile south of the cave/stairs opening so exiting faces the mouth
+ * and goToDungeon's walk-into-darkness walks up into it.
+ */
+export function findDungeonEntranceStandingPos(
+  tiles: readonly (readonly number[])[],
+): { x: number; y: number } | null {
+  for (let row = 0; row < tiles.length; row++) {
+    const line = tiles[row];
+    if (!line) continue;
+    for (let col = 0; col < line.length; col++) {
+      const t = line[col];
+      if (t !== 12 && t !== 18) continue;
+      const x = col * 16;
+      const y = Math.min((row + 1) * 16, 160);
+      return { x, y };
+    }
+  }
+  return null;
+}

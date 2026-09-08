@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TileCollisionMap, createCollisionMap } from '../../src/world/collision.js';
+import { TileCollisionMap, createCollisionMap, pickRandomWaterPosition, collectWaterPositions } from '../../src/world/collision.js';
 import type { OverworldScreen, OverworldData } from '../../src/data/overworld-types.js';
 import { TILE_SIZE, SCREEN_WIDTH, PLAY_AREA_HEIGHT } from '../../src/core/constants.js';
 
@@ -144,6 +144,21 @@ describe('TileCollisionMap', () => {
       const screen = makeScreen(Array.from({ length: 11 }, () => Array.from({ length: 16 }, () => 0)));
       expect(map.getTileValueAtPosition(screen, -1, 0)).toBeUndefined();
       expect(map.getTileValueAtPosition(screen, 0, 200)).toBeUndefined();
+    });
+
+    it('collectWaterPositions lists inner water tiles and pickRandomWaterPosition hits one', () => {
+      const tiles = Array.from({ length: 11 }, () => Array.from({ length: 16 }, () => 0));
+      tiles[4]![8] = 1; // 0x8D water
+      const screen = makeScreen(tiles);
+      const found = collectWaterPositions(map, screen);
+      expect(found.length).toBe(1);
+      expect(found[0]).toEqual({ x: 8 * 16, y: 4 * 16 - 3 });
+      expect(pickRandomWaterPosition(map, screen)).toEqual(found[0]);
+    });
+
+    it('pickRandomWaterPosition returns null when the screen is dry', () => {
+      const screen = makeScreen(Array.from({ length: 11 }, () => Array.from({ length: 16 }, () => 0)));
+      expect(pickRandomWaterPosition(map, screen)).toBeNull();
     });
   });
 

@@ -255,5 +255,12 @@ action set.
 | `start` | Enter | Start (pause / inventory) |
 | `select` | Shift | Select |
 
+Touch overlay (phones/tablets) has D-pad + A/B/Start, no Select. Overlay Up/Down
+stand in for Select on Continue/Save/Retry and, at the letter-board edges, on
+name registration (DECISIONS #15). File select and elimination already use
+Up/Down. Keyboard Select (Shift) is unchanged and is still how desktop leaves
+the name-entry letter grid. No remaining Select-only feature is unreachable on
+mobile.
+
 Gamepad mapping follows the Xbox layout: A = attack, B/X = item, Start = start.
 Backtick toggles the debug overlay; M mutes audio.

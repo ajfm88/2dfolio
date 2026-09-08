@@ -13,7 +13,7 @@ import { Action, type InputManager } from '../core/input.js';
 import type { Renderer } from '../render/renderer.js';
 import type { BitmapFont } from './bitmap-font.js';
 import { SAVE_SLOT_COUNT, MAX_NAME_LENGTH, type SaveSlot } from '../save/save-manager.js';
-import { NameBoard, BOARD_COLS, NAME_BOARD } from './name-board.js';
+import { NameBoard, BOARD_COLS, BOARD_ROWS, NAME_BOARD } from './name-board.js';
 import {
   CURSOR_FLASH_FRAMES,
   FS_CURSOR_X,
@@ -118,7 +118,17 @@ export class NameRegistrationScreen {
     return null;
   }
 
-  private applyDir(dir: Dir): void {
+  private applyDir(dir: Dir, touchVertical = false): void {
+    // Overlay Up/Down at the letter-board edges cycle files instead of wrapping
+    // the grid, so END is reachable without a Select button.
+    if (touchVertical && dir === 'down' && this.board.row === BOARD_ROWS - 1) {
+      this.cycleSlot(1);
+      return;
+    }
+    if (touchVertical && dir === 'up' && this.board.row === 0) {
+      this.cycleSlot(-1);
+      return;
+    }
     switch (dir) {
       case 'right': this.board.moveRight(); break;
       case 'left': this.board.moveLeft(); break;
@@ -128,11 +138,11 @@ export class NameRegistrationScreen {
     }
   }
 
-  /** Select cycles to the next editable slot or END, skipping registered slots. */
-  private cycleSlot(): void {
+  /** Cycle the slot cursor, skipping already-registered files. `step` is +1 or -1. */
+  private cycleSlot(step = 1): void {
     let next = this.slotCursor;
     for (let i = 0; i < SLOT_TARGET_COUNT; i++) {
-      next = (next + 1) % SLOT_TARGET_COUNT;
+      next = (next + step + SLOT_TARGET_COUNT) % SLOT_TARGET_COUNT;
       if (next === END_TARGET || this.editable[next]) break;
     }
     this.slotCursor = next;
@@ -147,7 +157,7 @@ export class NameRegistrationScreen {
     }
 
     if (input.isJustPressed(Action.Select)) {
-      this.cycleSlot();
+      this.cycleSlot(1);
       return;
     }
 
@@ -158,21 +168,35 @@ export class NameRegistrationScreen {
 
     const onSlot = this.slotCursor < SAVE_SLOT_COUNT;
 
-    // Character-board movement with DAS auto-repeat (only while editing a slot).
-    const dir = onSlot ? this.currentDir(input) : null;
+    // Parked on END: overlay Up/Down move the file cursor. justPressed only, so
+    // holding Down through the last letter row can stop on END instead of wrapping.
+    if (!onSlot) {
+      if (input.isTouchJustPressed(Action.Down)) this.cycleSlot(1);
+      else if (input.isTouchJustPressed(Action.Up)) this.cycleSlot(-1);
+      this.heldDir = null;
+      this.repeatTimer = 0;
+      return;
+    }
+
+    // Character-board movement with DAS auto-repeat. Overlay vertical wraps at
+    // the top/bottom row cycle files (applyDir) with the same 16-then-8 delay,
+    // so a tap lands on the next slot instead of skipping it on the next frame.
+    const dir = this.currentDir(input);
+    const touchVertical = (dir === 'down' && input.isTouchHeld(Action.Down))
+      || (dir === 'up' && input.isTouchHeld(Action.Up));
     if (dir === null) {
       this.heldDir = null;
       this.repeatTimer = 0;
     } else if (dir !== this.heldDir) {
-      this.applyDir(dir);
+      this.applyDir(dir, touchVertical);
       this.heldDir = dir;
       this.repeatTimer = DAS_INITIAL;
     } else if (--this.repeatTimer <= 0) {
-      this.applyDir(dir);
+      this.applyDir(dir, touchVertical);
       this.repeatTimer = DAS_REPEAT;
     }
 
-    if (!onSlot) return;
+    if (this.slotCursor >= SAVE_SLOT_COUNT) return;
 
     // A writes the highlighted character; B advances the name cursor only.
     if (input.isJustPressed(Action.Attack)) {

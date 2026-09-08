@@ -132,6 +132,16 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     `context/` changed except the root `README.md`, whose stale "Pre-code" status was
     corrected at the same time.
 
+15. **Touch overlay has no Select; D-pad Up/Down is the Select shortcut** (2026-09-06, user).
+    The on-screen pad is arrows + A/B/Start. On Continue/Save/Retry, overlay Down
+    cycles forward and Up cycles back (keyboard still uses Shift). On name
+    registration the letter board still uses the D-pad, but overlay Down from the
+    bottom row / Up from the top row (or Up/Down while parked on END) cycles files
+    the way Select does, so a touch player can reach END and commit. File select
+    and elimination already use Up/Down, so they never needed Select. User
+    confirmed 2026-09-06: desktop Shift-only to leave the letter grid is correct;
+    new-file create and file-select navigation work on desktop and mobile.
+
 ## Open questions for the user
 
 The one home for these. Answer cheaply, unblock later work. Known *bugs* are not
