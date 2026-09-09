@@ -5,6 +5,7 @@ import {
   MAX_NAME_LENGTH,
   ROOM_FLAG_BLOCK_SIZE,
   WORLD_FLAG_BLOCKS,
+  nameStartsSecondQuest,
   type SavedGameState,
   type StorageLike,
 } from '../../src/save/save-manager.js';
@@ -37,6 +38,24 @@ describe('SaveManager', () => {
     mgr.register(0, 'ZELDA');
     expect(mgr.getSlot(0)?.registered).toBe(true);
     expect(mgr.getSlot(0)?.name).toBe('ZELDA');
+    expect(mgr.getSlot(0)?.quest).toBe(2);
+  });
+
+  it('nameStartsSecondQuest matches the NES 5-char ZELDA compare', () => {
+    expect(nameStartsSecondQuest('ZELDA')).toBe(true);
+    expect(nameStartsSecondQuest('zelda')).toBe(true);
+    expect(nameStartsSecondQuest('ZELDABOB')).toBe(true);
+    expect(nameStartsSecondQuest('LINK')).toBe(false);
+    expect(nameStartsSecondQuest('ZELD')).toBe(false);
+    expect(nameStartsSecondQuest('')).toBe(false);
+  });
+
+  it('registering the name ZELDA starts Second Quest (Z_02.asm:1683)', () => {
+    const mgr = new SaveManager(fakeStorage());
+    mgr.register(0, 'ZELDA');
+    expect(mgr.getSlot(0)?.quest).toBe(2);
+    mgr.register(1, 'LINK');
+    expect(mgr.getSlot(1)?.quest).toBe(1);
   });
 
   it('registers a name and persists it', () => {
@@ -197,6 +216,22 @@ describe('SaveManager — game state (L1)', () => {
     expect(mgr.getState(1)).toBeNull();
   });
 
+  it('switchToSecondQuest wipes inventory and flags (Z_02.asm:4037)', () => {
+    const mgr = new SaveManager(fakeStorage());
+    mgr.register(0, 'LINK');
+    mgr.saveState(0, sampleState());
+    mgr.switchToSecondQuest(0);
+    const state = mgr.getState(0)!;
+    expect(mgr.getSlot(0)?.quest).toBe(2);
+    expect(state.inventory.sword).toBe(0);
+    expect(state.inventory.triforce).toBe(0);
+    expect(state.stats.maxHealth).toBe(6);
+    expect(state.stats.maxBombs).toBe(8);
+    expect(state.stats.rupees).toBe(0);
+    expect(state.worldFlags.uw1q1.every((b) => b === 0)).toBe(true);
+    expect(state.visitedScreens).toEqual([]);
+  });
+
   it('registering over a slot clears any previous save', () => {
     const mgr = new SaveManager(fakeStorage());
     mgr.register(0, 'LINK');
@@ -204,6 +239,7 @@ describe('SaveManager — game state (L1)', () => {
     expect(mgr.getState(0)).not.toBeNull();
     mgr.register(0, 'ZELDA');
     expect(mgr.getState(0)).toBeNull();
+    expect(mgr.getSlot(0)?.quest).toBe(2);
   });
 
   it('eliminating a slot drops its saved game', () => {

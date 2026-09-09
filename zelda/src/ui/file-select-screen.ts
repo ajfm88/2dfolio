@@ -58,6 +58,20 @@ export function drawSlotRow(
   if (showDeaths && slot && slot.registered) {
     font.drawString(renderer, FS_LABEL_X + 88, y, `-${slot.deaths}`);
   }
+  // NES file-select sword marker when QuestNumbers != 0 (Z_02.asm:2887).
+  if (slot && slot.registered && slot.quest === 2) {
+    drawQuestSword(renderer, FS_LABEL_X - 16, y);
+  }
+}
+
+/** Tiny wooden-sword stand-in (no items.png on this screen). */
+export function drawQuestSword(renderer: Renderer, x: number, y: number): void {
+  const ctx = renderer.ctx;
+  ctx.fillStyle = '#d0d0d0';
+  ctx.fillRect(x + 3, y, 2, 10);
+  ctx.fillStyle = '#b8b8b8';
+  ctx.fillRect(x, y + 8, 8, 2);
+  ctx.fillRect(x + 2, y + 10, 4, 2);
 }
 
 export class FileSelectScreen {

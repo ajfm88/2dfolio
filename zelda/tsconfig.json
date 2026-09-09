@@ -15,8 +15,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "jsx": "preserve",
-    "outDir": "dist",
+    "noEmit": true,
     "sourceMap": true
   },
-  "include": ["src", "tests"]
+  "include": ["src"]
 }
