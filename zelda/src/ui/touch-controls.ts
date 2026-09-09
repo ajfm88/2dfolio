@@ -15,9 +15,9 @@ const BG_W = 860;
 const BG_H = 250;
 
 // Frame offsets in the 860-wide display strip.
-// Frame 0 = d-pad bg, Frame 1 = buttons pressed, Frame 2 = buttons normal.
+// Frame 0 = d-pad bg, Frame 2 = buttons normal. Pressed-state uses overlay
+// circles rather than frame 1 of the strip.
 const BTN_FRAME_NORMAL = 597;
-const BTN_FRAME_PRESSED = 287;
 
 // D-pad cross overlay
 const DPAD_CROSS_SIZE = 95;

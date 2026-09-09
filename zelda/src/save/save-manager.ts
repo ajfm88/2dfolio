@@ -35,6 +35,66 @@ export type WorldFlagBlock = (typeof WORLD_FLAG_BLOCKS)[number];
 
 export const ROOM_FLAG_BLOCK_SIZE = 128;
 
+/** NES ZeldaString is 5 characters (Z_02.asm:1683 @CompareToZelda). */
+const ZELDA_NAME = 'ZELDA';
+
+/**
+ * True when the registered name's first 5 characters are ZELDA.
+ * Extra characters are ignored, matching the NES 5-byte compare.
+ */
+export function nameStartsSecondQuest(name: string): boolean {
+  return name.toUpperCase().padEnd(ZELDA_NAME.length, ' ').slice(0, ZELDA_NAME.length) === ZELDA_NAME;
+}
+
+function emptySavedInventory(): SavedInventory {
+  const d = new Inventory();
+  return {
+    selectedBSlot: d.selectedBSlot,
+    sword: d.sword,
+    arrow: d.arrow,
+    candle: d.candle,
+    ring: d.ring,
+    potion: d.potion,
+    letter: d.letter,
+    woodBoomerang: d.woodBoomerang,
+    magicBoomerang: d.magicBoomerang,
+    bow: d.bow,
+    flute: d.flute,
+    food: d.food,
+    wand: d.wand,
+    raft: d.raft,
+    book: d.book,
+    ladder: d.ladder,
+    magicKey: d.magicKey,
+    bracelet: d.bracelet,
+    magicShield: d.magicShield,
+    hasBombs: d.hasBombs,
+    compass: d.compass,
+    map: d.map,
+    compass9: d.compass9,
+    map9: d.map9,
+    triforce: d.triforce,
+  };
+}
+
+function emptyWorldFlags(): Record<WorldFlagBlock, number[]> {
+  const worldFlags = {} as Record<WorldFlagBlock, number[]>;
+  for (const block of WORLD_FLAG_BLOCKS) {
+    worldFlags[block] = new Array<number>(ROOM_FLAG_BLOCK_SIZE).fill(0);
+  }
+  return worldFlags;
+}
+
+/** NES SwitchProfileToSecondQuest: empty items, 3 hearts, 8 max bombs, flags cleared. */
+export function freshSecondQuestState(): SavedGameState {
+  return {
+    stats: { maxHealth: 6, rupees: 0, keys: 0, bombs: 0, maxBombs: 8 },
+    inventory: emptySavedInventory(),
+    worldFlags: emptyWorldFlags(),
+    visitedScreens: [],
+  };
+}
+
 /** Every mutable Inventory field, as persisted. Mirrors the class one-for-one. */
 export type SavedInventory = Pick<
   Inventory,
@@ -268,8 +328,10 @@ export class SaveManager {
   register(index: number, name: string, quest = 1): void {
     const slot = this.slots[index];
     if (!slot) return;
-    slot.name = name.slice(0, MAX_NAME_LENGTH);
-    slot.quest = quest === 2 ? 2 : 1;
+    const trimmed = name.slice(0, MAX_NAME_LENGTH);
+    slot.name = trimmed;
+    // Name "ZELDA" forces Q2 (Z_02.asm:1683). Explicit quest=2 still works for other names.
+    slot.quest = nameStartsSecondQuest(trimmed) || quest === 2 ? 2 : 1;
     slot.registered = true;
     slot.deaths = 0;
     slot.state = null; // registering re-uses the slot: a fresh file, not a resume
@@ -291,11 +353,18 @@ export class SaveManager {
     this.persist();
   }
 
-  /** Mark a slot as Second Quest (NES SwitchProfileToSecondQuest). */
+  /**
+   * Mark a slot as Second Quest (Z_02.asm:4037 SwitchProfileToSecondQuest).
+   * Wipes world flags, inventory, and counters — NES does not keep Q1 items.
+   * Death count is left alone (not in the NES wipe list).
+   */
   switchToSecondQuest(index: number): void {
     const slot = this.slots[index];
     if (!slot || !slot.registered) return;
     slot.quest = 2;
+    if (slot.state !== null) {
+      slot.state = freshSecondQuestState();
+    }
     this.persist();
   }
 }

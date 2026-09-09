@@ -11,15 +11,19 @@
 **Project:** zelda-nes — *The Legend of Zelda* (NES, 1986) as native TypeScript
 in the browser.
 **Run commands from:** `zelda-nes-ts/`
-**Last updated:** 2026-09-06 · **Phase:** L (bug fixes, Q2 deferred) ·
-**Slices:** 51 of 54 done — M1 done in tree, M2 done in tree, L2b pending
+**Last updated:** 2026-09-08 · **Phase:** L (L2a1 done; L2a2–L2a5 open) ·
+**Slices:** L2a split into L2a1–L2a5; L2a1 done. M1/M2 in tree. L2b blocked.
 
 ---
 
 ## Next action
 
-Session stopped. User signed off after L4 sprite fixes (Vire, Bubbles/Goriya/Keese
-sheet shift). Next agent: more Q1 playtest. M1/M2 in tree; Q2 deferred.
+**L2a2 only** (data extract). Full recipe is in `PLAN.md` under “L2a remaining”.
+
+- Spec: `Z_06.asm:203` LevelInfo overlays from offset `$29`; `@PatchQ2Rooms` at `:239`.
+- Output: `dungeonsQ2` in `dungeons.json` + overworld attr patches. Tests for 2↔3 level swap and screen 52.
+- Do **not** touch `DungeonManager` / renderer / secrets runtime (that is L2a3–L2a4).
+- HISTORY 2026-09-05 is a ghost — the extract/wiring it describes is **not in the tree**.
 
 ## Where the game stands
 
@@ -27,9 +31,9 @@ Winnable end to end (Q1). Title → file select → register → play → all 9
 dungeons → Ganon → Zelda rescue → ending. Save/load works, audio works,
 every entity renders with real sprites.
 
-- **1246 tests pass.** Two pre-existing failures: a stale `recorder.test.ts`
-  case and a flaky `digdogger.test.ts` movement test.
-- **`src/` typecheck clean** — test files have pre-existing warnings only.
+- **1282 tests pass.** One pre-existing failure: stale `recorder.test.ts`
+  TeleportY case (expected 173, got 112). Digdogger did not flake this run.
+- **`src/` typecheck clean.** `npm run build` succeeds; JSON is bundled.
 
 User-confirmed this session: title waterfall; L1 key/compass leftovers; lake
 Zoras; overlay Up/Down as Select; new file + file-select on desktop and mobile;
@@ -54,6 +58,34 @@ None logged.
 ## Session log
 
 Newest first. Older 2026-09-06 notes are in `HISTORY.md`.
+
+### 2026-09-08 — L2a1 Quest flag / ZELDA / ending wipe (Grok 4.6)
+
+`nameStartsSecondQuest` (5-char `ZELDA`, `Z_02.asm:1683`). File-select draws a
+small sword left of Q2 names. `switchToSecondQuest` now wipes inventory, world
+flags, hearts, bombs (`Z_02.asm:4037`) so a beaten Q1 file does not keep the
+Magical Sword. `currentQuest` set in `startGameFromSlot`. Not yet used by
+dungeons/overworld. Next: L2a2 data extract.
+
+### 2026-09-08 — Second Quest code audit (Grok 4.6)
+
+PLAN L2a claimed full Q2 wiring. The tree has Q2 **data** (`uw1q2`/`uw2q2`
+rooms, `questSecretByScreen`, save `quest` flag, `switchToSecondQuest` after
+the ending) but **no runtime read of quest**. DungeonManager always
+`dungeons[level-1]` (9 Q1 LevelInfos). `saveManager.register(slot, name)` never
+passes quest 2 for "ZELDA". Tile-object `if (questSecret === 2) return`.
+Stalfos constructed with `canShoot=false`. File-select draws name + deaths
+only. Corrected PLAN/STATUS.
+
+### 2026-09-08 — Production build for temporary Netlify (Grok 4.6)
+
+User overrode #1 for a short-lived preview (#16). Applied only in
+`zelda-nes-ts/`. (1) Unused `BTN_FRAME_PRESSED`. (2) tsconfig `include:
+["src"]` + `noEmit`. (3) Game JSON imported in `main.ts` instead of
+`fetch('/src/data/...')`. (4) `netlify.toml`: `npm run build` → `dist`,
+Node 22. Verified `vite preview` on :4173 (HTML/JS/title/map/music 200;
+bundle contains uniqueRoomId; no `/src/data/` fetch). 1282 tests pass;
+recorder TeleportY still stale.
 
 ### 2026-09-06 — Playtest sign-off (Grok 4.6)
 

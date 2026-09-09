@@ -30,6 +30,12 @@ import { initProjectileSprites } from './render/projectile-sprite-data.js';
 import { loadAllAssets, type LoadedAssets } from './data/asset-manifest.js';
 import type { OverworldData } from './data/overworld-types.js';
 import type { SecretsData } from './data/secret-types.js';
+import overworldJson from './data/overworld.json';
+import itemsJson from './data/items.json';
+import secretsJson from './data/secrets.json';
+import caveTextJson from './data/cave-text.json';
+import enemySpawnJson from './data/enemy-spawns.json';
+import dungeonJson from './data/dungeons.json';
 import { BitmapFont } from './ui/bitmap-font.js';
 import { HudRenderer, processHudImage } from './ui/hud.js';
 import { InventoryScreen, getNextOwnedSlot, getVerticalSlot } from './ui/inventory-screen.js';
@@ -213,6 +219,7 @@ let enemySheet: SpriteSheet | null = null;
 
 // Dungeon system (H1a + H1b)
 let currentLevel = 0; // 0 = overworld, 1-9 = dungeon
+let currentQuest = 1; // 1 = first quest, 2 = second (SaveSlot.quest)
 let dungeonManager: DungeonManager | null = null;
 let dungeonRenderer: DungeonRenderer | null = null;
 let dungeonData: DungeonData | null = null;
@@ -284,20 +291,14 @@ async function init(): Promise<void> {
       loadProgress = { loaded, total };
     });
 
-    const [owResp, itemsResp, secretsResp, caveTextResp, enemySpawnResp, dungeonResp] = await Promise.all([
-      fetch('/src/data/overworld.json'),
-      fetch('/src/data/items.json'),
-      fetch('/src/data/secrets.json'),
-      fetch('/src/data/cave-text.json'),
-      fetch('/src/data/enemy-spawns.json'),
-      fetch('/src/data/dungeons.json'),
-    ]);
-    overworldDataModule = (await owResp.json()) as OverworldData;
-    const itemsData = (await itemsResp.json()) as ItemData;
-    const secretsData = (await secretsResp.json()) as SecretsData;
-    caveTextData = (await caveTextResp.json()) as CaveTextData;
-    enemySpawnData = (await enemySpawnResp.json()) as EnemySpawnData;
-    dungeonData = (await dungeonResp.json()) as DungeonData;
+    // Bundled at build time. fetch('/src/data/...') only works under Vite's
+    // dev server — production dist has no src/ tree.
+    overworldDataModule = overworldJson as OverworldData;
+    const itemsData = itemsJson as ItemData;
+    const secretsData = secretsJson as SecretsData;
+    caveTextData = caveTextJson as CaveTextData;
+    enemySpawnData = enemySpawnJson as EnemySpawnData;
+    dungeonData = dungeonJson as DungeonData;
     caveContentsData = [...itemsData.caveContents];
     caveTypesData = itemsData.caveTypes;
     fluteSecretRoomIds = itemsData.fluteSecretRoomIds;
@@ -519,6 +520,7 @@ document.addEventListener('keydown', (e) => {
   // Live handles for inspection.
   get roomFlagBlocks() { return dungeonRoomFlags; },
   get gameMode() { return GameMode[gameMode]; },
+  get quest() { return currentQuest; },
   // Print what is actually persisted for the active slot.
   dumpSave() {
     const state = saveManager.getState(activeSaveSlot);
@@ -598,6 +600,7 @@ function restoreGameState(state: SavedGameState): void {
 function startGameFromSlot(index: number): void {
   if (!overworldDataModule || !enemySpawnData || !itemsDataForDrops || !moduleLevelSecretsData) return;
   activeSaveSlot = index;
+  currentQuest = saveManager.getSlot(index)?.quest === 2 ? 2 : 1;
   link = new Link();
   overworld = new OverworldManager(overworldDataModule, tileRenderer, 7, 7, moduleLevelSecretsData);
   spawnManager = new SpawnManager(enemySpawnData, itemsDataForDrops.objectHpPairs);

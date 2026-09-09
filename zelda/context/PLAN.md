@@ -12,7 +12,8 @@ finish it, log it, stop.
 
 **Budget: 45 slices** (user estimate, 2026-08-02) — the count was always a
 target, not a contract. Splitting oversized slices with a letter suffix (`G4a`,
-`G4b`) grew it to the 54 rows below. **51 done; L2b partly done; M1–M2 pending.**
+`G4b`) grew it to the 54 rows below. L2a split L2a1–L2a5; **L2a1 done, L2a2 next.**
+L2b blocked. M1–M2 in tree (STATUS).
 
 ---
 
@@ -158,8 +159,31 @@ playthrough audit, and auditing parity with invisible bombs and boomerangs would
 | L0 ✅ | Sprite polish: replaced placeholder colored-rectangle renders with real sprites from sprite sheets. L0b: all bosses/NPCs (bosses.png, npcs.png). L0c: enemy projectiles, goriya boomerang, magic rod/shot, raft, stepladder, ending screen Link/Zelda/Triforce (projectiles.png, items.png, link.png). Procedural kept for: rocks (styled), whirlwind (no sprite), push block (wall approx), ash pile. Done 2026-09-03 | every entity renders with real sprites; remaining procedural items documented |
 | L1 ✅ | Save system: 3 slots in localStorage (DECISIONS #10 amends #8 — ~6KB/slot). Persists Link's counters, the full inventory, three 128-byte world-flag blocks (overworld / uw1q1 / uw2q1, DECISIONS #13) and visited screens. Written only on SAVE (#11), reachable mid-game via Start then Up+A (`Z_05.asm:362`, #12). Loading restarts on the overworld start screen with 3 hearts like the NES. Done 2026-09-04 | save → reload → identical state |
 | L0d ✅ | **In-world sprite fixes** (user-reported 2026-09-04). Two bugs. (a) `projectiles.png` is 6×4 cells of 40×40, not 15 cols of 16×16 — every weapon index landed on an empty cell, so bombs/boomerangs/arrows drew nothing. Column meanings taken from `zelda-clone-master`'s `ProjectileSpriteFactory.cs`, which ships the byte-identical sheet. (b) Four sheets carry a second background colour (grey #747474 backing box) that nothing keyed, so enemies rendered inside a visible square; fixed with an edge-flood-fill in the new `src/render/transparency.ts` that preserves grey *inside* sprites. Done 2026-09-04 | bomb/boomerang/arrow/candle visible in-world; no grey box on dungeon enemies, bosses or NPCs |
-| L2a ✅ | Second Quest data + wiring: Q2 dungeon info extracted (9 LevelInfoUWQ2 replacements applied), quest threaded through all systems (entrance mapping, cave data, tile-object secrets, DungeonManager, DungeonRenderer, RecorderEffect, SpawnManager), Q2 enemy behavior (Stalfos shoots, Rope HP+flash), "ZELDA" name → Q2, file-select Q2 marker. 5 bug fixes: whirlwind spawn, cave fire animation, enemy spawn nudge to walkable tiles, dungeon minimap BFS origin, save-load full health. Done 2026-09-05 | register "ZELDA" → Q2; enter Q2 dungeons; enemies behave differently |
-| L2b ⬜ | Full playthrough audit of both quests. **Last planned slice** | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
+| L2a1 ✅ | Quest flag + UI + ending wipe (2026-09-08). Register name `ZELDA` → quest 2 (`Z_02.asm:1683`). File-select sword marker. `switchToSecondQuest` wipes inventory/flags/hearts (`Z_02.asm:4037`). `currentQuest` in main.ts. Gameplay still loads Q1 dungeons. | register ZELDA → quest 2 on file select |
+| L2a2 ⬜ | Extract Q2 LevelInfo patches + OW AttrsB patches. **Next.** Spec below. | `dungeonsQ2` in JSON; tests for level-number swaps |
+| L2a3 ⬜ | Dungeon runtime: Q2 level block + uniqueRoomId donor blit | ZELDA file, L1 cave is a different maze |
+| L2a4 ⬜ | Overworld secrets, cave/dungeon index, flute | Q2 secrets; L3/L7–9 move; flute inversion |
+| L2a5 ⬜ | Stalfos shoot, Rope HP+flash | Q2 Stalfos sword shots; Rope $40 HP |
+| L2b ⬜ | Full playthrough audit of both quests. Blocked on L2a2–L2a5. | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
+
+### L2a remaining — do not skip this
+
+HISTORY 2026-09-05 describes Q2 wiring as shipped. **That code is not in `zelda-nes-ts/`.** Re-implement against the disassembly. `currentQuest` exists but dungeons/overworld still run Q1.
+
+**L2a2 (this slice, data only — no dungeon manager changes):**
+
+NES: `Z_06.asm:203 UpdateMode2Load_Full`. Same 9 Q1 LevelInfo blobs, then Q2 overwrites from offset `$29` / 41 (`LevelInfoUWQ2Replacements1–9` + `LevelInfoUWQ2ReplacementSizes`). `@PatchQ2Rooms` (`Z_06.asm:239`) patches overworld AttrsB (8 screens) plus AttrsA/D/F. Cave index `< $40` → `CurLevel = AttrsB >> 2` (`Z_05.asm:7389`). Displayed level number swaps: 2↔3, 4↔5, 7↔8.
+
+Do:
+
+1. `scripts/extract-dungeons.ts` — parse the replacement tables from `Z_06.asm`; copy each Q1 LevelInfo; overlay replacements from offset 41; set `levelBlock` L1–6 `uw1q2`, L7–9 `uw2q2`; emit `dungeonsQ2: DungeonInfo[]` (indexed by NES CurLevel 1–9). `.level` is the **patched display number**, not the array index.
+2. Emit `q2OverworldPatches` (AttrsB offsets/values + the AttrsA/D/F writes). `secrets.json` or a small `src/data/q2-overworld.json`.
+3. Types in `dungeon-types.ts` / `secret-types.ts`.
+4. Tests: 9 Q2 infos; info index 2 display level 3, index 3 display level 2; screen 52 is a dungeon cave-index after patch.
+5. `npm run extract:dungeons` once; keep JSON committed.
+6. Stop. Do not start L2a3.
+
+**Later (not this slice):** L2a3 `DungeonManager` takes quest, uses `dungeonsQ2` + `uw1q2`/`uw2q2`; renderer donor-blits Q2 rooms by `uniqueRoomId` from Q1 `dungeons-map.png`. `enterDungeon` must use AttrsB cave index, **not** patched `.level`. Room flags still key `uw1q1`/`uw2q1` (NES reuses three blocks; DECISIONS #13). L2a4 secrets/flute/entrances. L2a5 Stalfos `$57` / Rope `$40` + flash.
 
 ## Phase M — Mobile & touch (post-completion, 2 slices)
 
