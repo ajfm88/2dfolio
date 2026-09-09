@@ -96,8 +96,9 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     `uw2q1`). Until L1, `main.ts` used a single shared 128-byte `RoomFlags` for all
     nine dungeons, so Level 1's room 60 and Level 7's room 60 were the same byte.
     Now one `RoomFlags` exists per block — overworld, `uw1q1`, `uw2q1` — which fixes
-    the collision and gives the save format its shape. Q2's `uw1q2`/`uw2q2` slot into
-    the same structure in L2.
+    the collision and gives the save format its shape. Q2 **reuses** those three
+    blocks (NES `WorldFlagBlockAddrs`); `switchToSecondQuest` clears them rather
+    than allocating `uw1q2`/`uw2q2` SRAM.
 
 14. **Context system flattened to one level, entry point moved to root `CLAUDE.md`**
     (2026-09-06, user). `context/` had grown to 16 files across two levels, with
@@ -142,6 +143,13 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     confirmed 2026-09-06: desktop Shift-only to leave the letter grid is correct;
     new-file create and file-select navigation work on desktop and mobile.
 
+16. **Temporary Netlify preview is allowed — amends #1 for preview only**
+    (2026-09-08, user). User asked for a short-lived Netlify deploy they will
+    take down. `npm run build` must succeed (tsc on `src` only; game JSON is
+    bundled, not fetched from `/src/data/`). `zelda-nes-ts/netlify.toml` is the
+    build recipe. Still no analytics, no CDN, no custom domain. The game must
+    not assume a public origin at runtime.
+
 ## Open questions for the user
 
 The one home for these. Answer cheaply, unblock later work. Known *bugs* are not
@@ -153,5 +161,6 @@ questions — they live in `STATUS.md`.
 - **Music source.** Only `overworld.ogg` and `dungeon.ogg` exist. The engine
   plays silence for title, boss, ending, game-over and fairy tracks. Source the
   missing seven from a reference repo, or leave them silent?
-- ~~**Second Quest priority.**~~ Settled: stayed last, shipped as L2a
-  (2026-09-05).
+- ~~**Second Quest priority.**~~ Settled as last (L2). L2a **data** is in
+  tree; **runtime wiring is not** (code audit 2026-09-08). L2b playthrough
+  blocked until gameplay reads `slot.quest`.

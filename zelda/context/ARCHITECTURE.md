@@ -29,9 +29,11 @@ Reference repos (5)           ──manual curation──►      public/assets/
                                                         src/**/*.ts
                                                     (hand-written game logic)
                                                              │
-                                                        npm run dev
+                                              npm run dev  /  npm run build
                                                              ▼
-                                                 browser @ 127.0.0.1:5173
+                                      browser @ 127.0.0.1:5173  /  dist/ (Vite)
+JSON in `src/data/` is imported by `main.ts` and bundled. Do not fetch
+`/src/data/*.json` at runtime — that path exists only on the Vite dev server.
 ```
 
 One direction only. Nothing writes back into the reference repos.
