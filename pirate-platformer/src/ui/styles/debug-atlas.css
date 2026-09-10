@@ -1,0 +1,39 @@
+html,
+body {
+  overflow: auto;
+  height: auto;
+  overscroll-behavior: auto;
+}
+
+#atlas {
+  padding: calc(16px * var(--ui-scale));
+  display: flex;
+  flex-direction: column;
+  gap: calc(24px * var(--ui-scale));
+  max-inline-size: none;
+}
+
+.atlas__head {
+  font-size: var(--fs-lg);
+  color: var(--text-display);
+}
+
+.clip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(6px * var(--ui-scale));
+}
+
+.clip__label {
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+  color: var(--paper-light);
+}
+
+.clip canvas {
+  display: block;
+  image-rendering: pixelated;
+  background: repeating-conic-gradient(var(--ink) 0% 25%, var(--wood-dark) 0% 50%)
+    0 0 / 16px 16px;
+}

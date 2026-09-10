@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "include": ["src/**/*.js"],
+  "exclude": ["node_modules", "dist", "reference", "tools"]
+}

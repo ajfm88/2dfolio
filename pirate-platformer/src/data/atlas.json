@@ -1,0 +1,588 @@
+{
+  "bg/cloud-1": {
+    "src": "sprites/cloud-1.png",
+    "fw": 74,
+    "fh": 24,
+    "n": 1
+  },
+  "bg/cloud-2": {
+    "src": "sprites/cloud-2.png",
+    "fw": 133,
+    "fh": 35,
+    "n": 1
+  },
+  "bg/cloud-3": {
+    "src": "sprites/cloud-3.png",
+    "fw": 140,
+    "fh": 39,
+    "n": 1
+  },
+  "bg/clouds-big": {
+    "src": "sprites/clouds-big.png",
+    "fw": 448,
+    "fh": 101,
+    "n": 1
+  },
+  "bg/image": {
+    "src": "sprites/bg-image.png",
+    "fw": 384,
+    "fh": 128,
+    "n": 1
+  },
+  "bg/sky-tile": {
+    "src": "sprites/sky-tile.png",
+    "fw": 32,
+    "fh": 32,
+    "n": 1
+  },
+  "bg/water-tile": {
+    "src": "sprites/water-tile.png",
+    "fw": 32,
+    "fh": 32,
+    "n": 1
+  },
+  "cannon/ball": {
+    "src": "sprites/cannon-ball.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 1,
+    "fps": 10
+  },
+  "cannon/ball-dead": {
+    "src": "sprites/cannon-ball-dead.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 3,
+    "fps": 10
+  },
+  "cannon/ball-explode": {
+    "src": "sprites/cannon-ball-explode.png",
+    "fw": 54,
+    "fh": 60,
+    "n": 7,
+    "fps": 10
+  },
+  "cannon/fire": {
+    "src": "sprites/cannon-fire.png",
+    "fw": 40,
+    "fh": 26,
+    "n": 6,
+    "fps": 10
+  },
+  "cannon/fire-effect": {
+    "src": "sprites/cannon-fire-effect.png",
+    "fw": 20,
+    "fh": 28,
+    "n": 6,
+    "fps": 10
+  },
+  "cannon/idle": {
+    "src": "sprites/cannon-idle.png",
+    "fw": 40,
+    "fh": 26,
+    "n": 1,
+    "fps": 10
+  },
+  "coin/gold": {
+    "src": "sprites/coin-gold.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 4,
+    "fps": 10
+  },
+  "coin/silver": {
+    "src": "sprites/coin-silver.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 4,
+    "fps": 10
+  },
+  "crabby/anticipation": {
+    "src": "sprites/crabby-anticipation.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 3,
+    "fps": 10
+  },
+  "crabby/attack": {
+    "src": "sprites/crabby-attack.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "crabby/attack-effect": {
+    "src": "sprites/crabby-attack-effect.png",
+    "fw": 118,
+    "fh": 24,
+    "n": 3,
+    "fps": 10
+  },
+  "crabby/dead-ground": {
+    "src": "sprites/crabby-dead-ground.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "crabby/dead-hit": {
+    "src": "sprites/crabby-dead-hit.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "crabby/hit": {
+    "src": "sprites/crabby-hit.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "crabby/idle": {
+    "src": "sprites/crabby-idle.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 9,
+    "fps": 10
+  },
+  "crabby/run": {
+    "src": "sprites/crabby-run.png",
+    "fw": 72,
+    "fh": 32,
+    "n": 6,
+    "fps": 10
+  },
+  "diamond/blue": {
+    "src": "sprites/diamond-blue.png",
+    "fw": 24,
+    "fh": 24,
+    "n": 4,
+    "fps": 10
+  },
+  "diamond/green": {
+    "src": "sprites/diamond-green.png",
+    "fw": 24,
+    "fh": 24,
+    "n": 4,
+    "fps": 10
+  },
+  "diamond/red": {
+    "src": "sprites/diamond-red.png",
+    "fw": 24,
+    "fh": 24,
+    "n": 4,
+    "fps": 10
+  },
+  "flag": {
+    "src": "sprites/flag.png",
+    "fw": 34,
+    "fh": 93,
+    "n": 9,
+    "fps": 10
+  },
+  "fx/coin": {
+    "src": "sprites/fx-coin.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 3,
+    "fps": 10
+  },
+  "fx/diamond": {
+    "src": "sprites/fx-diamond.png",
+    "fw": 24,
+    "fh": 24,
+    "n": 4,
+    "fps": 10
+  },
+  "fx/dust-fall": {
+    "src": "sprites/fx-dust-fall.png",
+    "fw": 52,
+    "fh": 20,
+    "n": 5,
+    "fps": 10
+  },
+  "fx/dust-jump": {
+    "src": "sprites/fx-dust-jump.png",
+    "fw": 52,
+    "fh": 20,
+    "n": 6,
+    "fps": 10
+  },
+  "fx/dust-run": {
+    "src": "sprites/fx-dust-run.png",
+    "fw": 52,
+    "fh": 20,
+    "n": 5,
+    "fps": 10
+  },
+  "fx/potion": {
+    "src": "sprites/fx-potion.png",
+    "fw": 16,
+    "fh": 39,
+    "n": 4,
+    "fps": 10
+  },
+  "fx/reflect-big": {
+    "src": "sprites/fx-reflect-big.png",
+    "fw": 170,
+    "fh": 10,
+    "n": 4,
+    "fps": 10
+  },
+  "fx/reflect-mid": {
+    "src": "sprites/fx-reflect-mid.png",
+    "fw": 53,
+    "fh": 3,
+    "n": 4,
+    "fps": 10
+  },
+  "fx/reflect-small": {
+    "src": "sprites/fx-reflect-small.png",
+    "fw": 35,
+    "fh": 3,
+    "n": 4,
+    "fps": 10
+  },
+  "fx/skull": {
+    "src": "sprites/fx-skull.png",
+    "fw": 24,
+    "fh": 28,
+    "n": 5,
+    "fps": 10
+  },
+  "palm/back": {
+    "src": "sprites/palm-back.png",
+    "fw": 64,
+    "fh": 64,
+    "n": 4,
+    "fps": 10
+  },
+  "palm/back-left": {
+    "src": "sprites/palm-back-left.png",
+    "fw": 51,
+    "fh": 53,
+    "n": 4,
+    "fps": 10
+  },
+  "palm/back-right": {
+    "src": "sprites/palm-back-right.png",
+    "fw": 52,
+    "fh": 53,
+    "n": 4,
+    "fps": 10
+  },
+  "palm/front": {
+    "src": "sprites/palm-front.png",
+    "fw": 39,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "pearl/dead": {
+    "src": "sprites/pearl-dead.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 3,
+    "fps": 10
+  },
+  "pearl/idle": {
+    "src": "sprites/pearl-idle.png",
+    "fw": 16,
+    "fh": 16,
+    "n": 1,
+    "fps": 10
+  },
+  "player/dead-ground": {
+    "src": "sprites/player-dead-ground.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 4,
+    "fps": 10
+  },
+  "player/dead-hit": {
+    "src": "sprites/player-dead-hit.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 4,
+    "fps": 10
+  },
+  "player/fall": {
+    "src": "sprites/player-fall.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 1,
+    "fps": 10
+  },
+  "player/ground": {
+    "src": "sprites/player-ground.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 2,
+    "fps": 10
+  },
+  "player/hit": {
+    "src": "sprites/player-hit.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 4,
+    "fps": 10
+  },
+  "player/idle": {
+    "src": "sprites/player-idle.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 5,
+    "fps": 10
+  },
+  "player/jump": {
+    "src": "sprites/player-jump.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 3,
+    "fps": 10
+  },
+  "player/run": {
+    "src": "sprites/player-run.png",
+    "fw": 64,
+    "fh": 40,
+    "n": 6,
+    "fps": 10
+  },
+  "potion/blue": {
+    "src": "sprites/potion-blue.png",
+    "fw": 13,
+    "fh": 17,
+    "n": 7,
+    "fps": 10
+  },
+  "potion/red": {
+    "src": "sprites/potion-red.png",
+    "fw": 13,
+    "fh": 17,
+    "n": 7,
+    "fps": 10
+  },
+  "seashell/fire": {
+    "src": "sprites/seashell-fire.png",
+    "fw": 48,
+    "fh": 38,
+    "n": 6,
+    "fps": 10
+  },
+  "seashell/idle": {
+    "src": "sprites/seashell-idle.png",
+    "fw": 48,
+    "fh": 38,
+    "n": 1,
+    "fps": 10
+  },
+  "skull/idle": {
+    "src": "sprites/skull-idle.png",
+    "fw": 24,
+    "fh": 28,
+    "n": 8,
+    "fps": 10
+  },
+  "spikes": {
+    "src": "sprites/spikes.png",
+    "fw": 32,
+    "fh": 32,
+    "n": 1
+  },
+  "star/anticipation": {
+    "src": "sprites/star-anticipation.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 3,
+    "fps": 10
+  },
+  "star/attack": {
+    "src": "sprites/star-attack.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "star/attack-effect": {
+    "src": "sprites/star-attack-effect.png",
+    "fw": 16,
+    "fh": 12,
+    "n": 4,
+    "fps": 10
+  },
+  "star/dead-ground": {
+    "src": "sprites/star-dead-ground.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "star/dead-hit": {
+    "src": "sprites/star-dead-hit.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "star/hit": {
+    "src": "sprites/star-hit.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "star/idle": {
+    "src": "sprites/star-idle.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 8,
+    "fps": 10
+  },
+  "star/run": {
+    "src": "sprites/star-run.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 6,
+    "fps": 10
+  },
+  "tiles/island": {
+    "src": "tiles/island.png",
+    "fw": 544,
+    "fh": 160,
+    "n": 1
+  },
+  "tiles/island-platforms": {
+    "src": "tiles/island-platforms.png",
+    "fw": 96,
+    "fh": 96,
+    "n": 1
+  },
+  "tooth/anticipation": {
+    "src": "sprites/tooth-anticipation.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 3,
+    "fps": 10
+  },
+  "tooth/attack": {
+    "src": "sprites/tooth-attack.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 5,
+    "fps": 10
+  },
+  "tooth/attack-effect": {
+    "src": "sprites/tooth-attack-effect.png",
+    "fw": 22,
+    "fh": 24,
+    "n": 3,
+    "fps": 10
+  },
+  "tooth/dead-ground": {
+    "src": "sprites/tooth-dead-ground.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "tooth/dead-hit": {
+    "src": "sprites/tooth-dead-hit.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "tooth/hit": {
+    "src": "sprites/tooth-hit.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 4,
+    "fps": 10
+  },
+  "tooth/idle": {
+    "src": "sprites/tooth-idle.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 8,
+    "fps": 10
+  },
+  "tooth/run": {
+    "src": "sprites/tooth-run.png",
+    "fw": 34,
+    "fh": 30,
+    "n": 6,
+    "fps": 10
+  },
+  "ui/board-green": {
+    "src": "ui/board-green.png",
+    "fw": 128,
+    "fh": 128,
+    "n": 1
+  },
+  "ui/board-yellow": {
+    "src": "ui/board-yellow.png",
+    "fw": 128,
+    "fh": 128,
+    "n": 1
+  },
+  "ui/button-green": {
+    "src": "ui/button-green.png",
+    "fw": 56,
+    "fh": 56,
+    "n": 1
+  },
+  "ui/button-yellow": {
+    "src": "ui/button-yellow.png",
+    "fw": 56,
+    "fh": 56,
+    "n": 1
+  },
+  "ui/hearts": {
+    "src": "ui/hearts.png",
+    "fw": 32,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  },
+  "ui/icons": {
+    "src": "ui/icons.png",
+    "fw": 28,
+    "fh": 28,
+    "n": 8,
+    "fps": 10
+  },
+  "ui/paper-yellow": {
+    "src": "ui/paper-yellow.png",
+    "fw": 128,
+    "fh": 128,
+    "n": 1
+  },
+  "ui/sliders": {
+    "src": "ui/sliders.png",
+    "fw": 12,
+    "fh": 12,
+    "n": 10,
+    "fps": 10
+  },
+  "ui/small-icons": {
+    "src": "ui/small-icons.png",
+    "fw": 8,
+    "fh": 6,
+    "n": 25,
+    "fps": 10
+  },
+  "water/body-wide": {
+    "src": "sprites/water-body-wide.png",
+    "fw": 96,
+    "fh": 32,
+    "n": 1
+  },
+  "water/top": {
+    "src": "sprites/water-top.png",
+    "fw": 96,
+    "fh": 32,
+    "n": 4,
+    "fps": 10
+  }
+}
