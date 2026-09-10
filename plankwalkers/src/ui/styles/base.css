@@ -1,0 +1,107 @@
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/PixelifySans-Regular.woff2') format('woff2');
+}
+
+:root {
+  /* Surfaces and frame */
+  --ink: #33323d;
+  --wood: #ae7764;
+  --wood-light: #b77357;
+  --wood-dark: #833f4c;
+  --strap: #985252;
+  --strap-dark: #a04f45;
+  --board: #daab76;
+  --board-light: #e7cd8d;
+  --paper: #eebd8a;
+  --paper-light: #f7e0b3;
+  --paper-dark: #e09170;
+  --stone: #949fa5;
+  --stone-dark: #777d8d;
+  --stone-light: #a7b8ba;
+
+  /* Accent and state */
+  --accent: #639d6d;
+  --accent-dark: #407769;
+  --accent-light: #7ab17a;
+  --text: #33323d;
+  --text-display: #dd8f61;
+  --text-muted: #8a6a5c;
+  --danger: #dc4949;
+  --success: #4fbd65;
+  --warning: #f7ec9b;
+  --info: #66a2d8;
+  --scrim: #33323dcc;
+
+  /* World palette */
+  --sky: #ddc6a1;
+  --sea: #92a9ce;
+  --horizon: #f5f1de;
+  --horizon-band: #d1aa9d;
+  --grass: #639d6d;
+  --rock-light: #9197b0;
+  --rock: #716b8e;
+  --rock-dark: #5a4e73;
+
+  /* Typography */
+  --font-ui: 'Pixelify Sans', 'Trebuchet MS', system-ui, sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* UI scale — set by JS on load and resize */
+  --ui-scale: 1;
+
+  /* Font sizes (multiply by --ui-scale) */
+  --fs-xl: calc(24px * var(--ui-scale));
+  --fs-lg: calc(18px * var(--ui-scale));
+  --fs-md: calc(14px * var(--ui-scale));
+  --fs-sm: calc(11px * var(--ui-scale));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+}
+
+#game {
+  flex: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  touch-action: none;
+  outline: none;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
