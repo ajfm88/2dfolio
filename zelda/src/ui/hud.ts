@@ -36,6 +36,20 @@ export function processHudImage(image: HTMLImageElement): HTMLCanvasElement {
   }
 
   ctx.putImageData(imageData, sx, sy);
+
+  // The NES screenshot that hud.png came from has "X0" baked into the counter
+  // areas. Clear them so BitmapFont can draw the live values without ghosting.
+  const counterAreas: [number, number, number, number][] = [
+    [RUPEE_X, RUPEE_Y, 24, 7],
+    [KEY_X,   KEY_Y,   24, 7],
+    [BOMB_X,  BOMB_Y,  24, 7],
+  ];
+  for (const [cx, cy, cw, ch] of counterAreas) {
+    ctx.clearRect(cx, cy, cw, ch);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(cx, cy, cw, ch);
+  }
+
   return canvas;
 }
 

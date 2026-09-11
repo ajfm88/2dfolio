@@ -20,6 +20,7 @@
     "extract:items": "tsx scripts/extract-items.ts",
     "extract:sprites": "tsx scripts/extract-sprites.ts",
     "extract:secrets": "tsx scripts/extract-secrets.ts",
+    "extract:q2-overworld": "tsx scripts/extract-q2-overworld.ts",
     "extract:cave-text": "tsx scripts/extract-cave-text.ts"
   },
   "devDependencies": {
