@@ -4,12 +4,35 @@ import {
   HUD_HEIGHT,
   PLAY_AREA_HEIGHT,
 } from '../core/constants.js';
+import {
+  computeCanvasLayout,
+  reservedBottomFor,
+  NO_INSETS,
+  type SafeAreaInsets,
+} from './canvas-layout.js';
+
+function readInsets(): SafeAreaInsets {
+  const styles = getComputedStyle(document.documentElement);
+  const read = (name: string): number => {
+    const parsed = parseFloat(styles.getPropertyValue(name));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  return {
+    top: read('--safe-top'),
+    right: read('--safe-right'),
+    bottom: read('--safe-bottom'),
+    left: read('--safe-left'),
+  };
+}
 
 export class Renderer {
   readonly ctx: CanvasRenderingContext2D;
   readonly canvas: HTMLCanvasElement;
   readonly width = SCREEN_WIDTH;
   readonly height = SCREEN_HEIGHT;
+
+  private _padReserve = 0;
+  private _resizePending = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -22,15 +45,50 @@ export class Renderer {
     this.ctx.imageSmoothingEnabled = false;
 
     this.resize();
-    window.addEventListener('resize', () => this.resize());
+
+    const schedule = () => this.scheduleResize();
+    window.addEventListener('resize', schedule);
+    window.addEventListener('orientationchange', schedule);
+    // Samsung Internet collapses its toolbar without always firing a useful
+    // window resize; the visual viewport reports the change reliably.
+    window.visualViewport?.addEventListener('resize', schedule);
+    window.visualViewport?.addEventListener('scroll', schedule);
+  }
+
+  /** Height of the touch-pad band the canvas must sit above. Triggers a relayout. */
+  setPadReserve(px: number): void {
+    this._padReserve = px;
+    this.resize();
+  }
+
+  private scheduleResize(): void {
+    if (this._resizePending) return;
+    this._resizePending = true;
+    requestAnimationFrame(() => {
+      this._resizePending = false;
+      this.resize();
+    });
   }
 
   resize(): void {
-    const scaleX = Math.floor(window.innerWidth / SCREEN_WIDTH);
-    const scaleY = Math.floor(window.innerHeight / SCREEN_HEIGHT);
-    const scale = Math.max(1, Math.min(scaleX, scaleY));
-    this.canvas.style.width = `${SCREEN_WIDTH * scale}px`;
-    this.canvas.style.height = `${SCREEN_HEIGHT * scale}px`;
+    const vv = window.visualViewport;
+    const viewportW = vv?.width ?? window.innerWidth;
+    const viewportH = vv?.height ?? window.innerHeight;
+
+    const layout = computeCanvasLayout({
+      viewportW,
+      viewportH,
+      dpr: window.devicePixelRatio || 1,
+      reservedBottom: reservedBottomFor(viewportW, viewportH, this._padReserve),
+      insets: typeof getComputedStyle === 'function' ? readInsets() : NO_INSETS,
+    });
+
+    const style = this.canvas.style;
+    style.position = 'absolute';
+    style.width = `${layout.cssW}px`;
+    style.height = `${layout.cssH}px`;
+    style.left = `${layout.left}px`;
+    style.top = `${layout.top}px`;
   }
 
   clear(color = '#000'): void {
