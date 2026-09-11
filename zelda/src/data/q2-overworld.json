@@ -1,0 +1,134 @@
+{
+  "patches": [
+    {
+      "table": "B",
+      "screen": 14,
+      "value": 123
+    },
+    {
+      "table": "B",
+      "screen": 15,
+      "value": 131
+    },
+    {
+      "table": "B",
+      "screen": 34,
+      "value": 132
+    },
+    {
+      "table": "B",
+      "screen": 52,
+      "value": 15
+    },
+    {
+      "table": "B",
+      "screen": 60,
+      "value": 11
+    },
+    {
+      "table": "B",
+      "screen": 69,
+      "value": 18
+    },
+    {
+      "table": "B",
+      "screen": 116,
+      "value": 122
+    },
+    {
+      "table": "C",
+      "screen": 11,
+      "value": 47
+    },
+    {
+      "table": "D",
+      "screen": 11,
+      "value": 123
+    },
+    {
+      "table": "D",
+      "screen": 60,
+      "value": 123
+    },
+    {
+      "table": "D",
+      "screen": 116,
+      "value": 90
+    },
+    {
+      "table": "A",
+      "screen": 60,
+      "value": 114
+    },
+    {
+      "table": "A",
+      "screen": 116,
+      "value": 114
+    },
+    {
+      "table": "F",
+      "screen": 60,
+      "value": 1
+    },
+    {
+      "table": "F",
+      "screen": 116,
+      "value": 0
+    }
+  ],
+  "screenOverrides": [
+    {
+      "screen": 11,
+      "monsterListId": 47,
+      "uniqueRoomId": 59,
+      "pushBlock": true
+    },
+    {
+      "screen": 14,
+      "caveIndex": 30,
+      "isDungeon": false
+    },
+    {
+      "screen": 15,
+      "caveIndex": 32,
+      "isDungeon": false
+    },
+    {
+      "screen": 34,
+      "caveIndex": 33,
+      "isDungeon": false
+    },
+    {
+      "screen": 52,
+      "caveIndex": 3,
+      "isDungeon": true
+    },
+    {
+      "screen": 60,
+      "caveIndex": 2,
+      "isDungeon": true,
+      "uniqueRoomId": 59,
+      "pushBlock": true,
+      "outerPalette": 2,
+      "secretTrigger": 1,
+      "shortcutPositionIndex": 0,
+      "questSecret": 0
+    },
+    {
+      "screen": 69,
+      "caveIndex": 4,
+      "isDungeon": true
+    },
+    {
+      "screen": 116,
+      "caveIndex": 30,
+      "isDungeon": false,
+      "uniqueRoomId": 26,
+      "pushBlock": true,
+      "outerPalette": 2,
+      "secretTrigger": 0,
+      "shortcutPositionIndex": 0,
+      "questSecret": 0
+    }
+  ]
+}

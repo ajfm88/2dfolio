@@ -2,19 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>The Legend of Zelda</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
+    /* Read back by the renderer to keep the canvas clear of notch and gesture bar.
+       Needs viewport-fit=cover above to report anything but 0. */
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
     }
+
+    html, body {
+      background: #000;
+      height: 100vh;   /* fallback */
+      height: 100dvh;  /* tracks Samsung Internet's collapsing toolbar */
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+
+    /* Positioning context only — the canvas places itself, because the vertical
+       centre depends on the touch-pad reserve, which CSS cannot know. */
+    body { position: relative; }
 
     canvas {
       image-rendering: pixelated;

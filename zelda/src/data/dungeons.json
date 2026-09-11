@@ -11720,6 +11720,545 @@
       "levelBlock": "uw2q1"
     }
   ],
+  "dungeonsQ2": [
+    {
+      "level": 1,
+      "startRoomId": 119,
+      "triforceRoomId": 8,
+      "bossRoomId": 7,
+      "cellarRoomIds": [
+        40,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 40,
+          "leftDest": 24,
+          "rightDest": 104,
+          "exitPos": 106,
+          "layoutIndex": 0
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        183
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 3,
+      "startRoomId": 117,
+      "triforceRoomId": 32,
+      "bossRoomId": 48,
+      "cellarRoomIds": [
+        86,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 86,
+          "leftDest": 48,
+          "rightDest": 118,
+          "exitPos": 105,
+          "layoutIndex": 0
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        135
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 2,
+      "startRoomId": 121,
+      "triforceRoomId": 27,
+      "bossRoomId": 43,
+      "cellarRoomIds": [
+        9,
+        11,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 9,
+          "leftDest": 59,
+          "rightDest": 123,
+          "exitPos": 104,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 11,
+          "leftDest": 58,
+          "rightDest": 58,
+          "exitPos": 104,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        55
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 5,
+      "startRoomId": 114,
+      "triforceRoomId": 0,
+      "bossRoomId": 16,
+      "cellarRoomIds": [
+        33,
+        88,
+        122,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 33,
+          "leftDest": 1,
+          "rightDest": 113,
+          "exitPos": 104,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 88,
+          "leftDest": 17,
+          "rightDest": 34,
+          "exitPos": 104,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 122,
+          "leftDest": 18,
+          "rightDest": 18,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        134
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 4,
+      "startRoomId": 125,
+      "triforceRoomId": 79,
+      "bossRoomId": 95,
+      "cellarRoomIds": [
+        15,
+        106,
+        127,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 15,
+          "leftDest": 14,
+          "rightDest": 111,
+          "exitPos": 107,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 106,
+          "leftDest": 31,
+          "rightDest": 31,
+          "exitPos": 106,
+          "layoutIndex": 1
+        },
+        {
+          "cellarRoomId": 127,
+          "leftDest": 94,
+          "rightDest": 94,
+          "exitPos": 106,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        135
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 6,
+      "startRoomId": 116,
+      "triforceRoomId": 22,
+      "bossRoomId": 38,
+      "cellarRoomIds": [
+        3,
+        115,
+        70,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 3,
+          "leftDest": 4,
+          "rightDest": 36,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 115,
+          "leftDest": 6,
+          "rightDest": 54,
+          "exitPos": 106,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 70,
+          "leftDest": 81,
+          "rightDest": 81,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        73,
+        121,
+        137,
+        86
+      ],
+      "startY": 221,
+      "levelBlock": "uw1q2"
+    },
+    {
+      "level": 8,
+      "startRoomId": 127,
+      "triforceRoomId": 45,
+      "bossRoomId": 61,
+      "cellarRoomIds": [
+        2,
+        3,
+        4,
+        5,
+        32,
+        33,
+        38,
+        43,
+        44,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 2,
+          "leftDest": 24,
+          "rightDest": 111,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 3,
+          "leftDest": 41,
+          "rightDest": 95,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 4,
+          "leftDest": 25,
+          "rightDest": 79,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 5,
+          "leftDest": 73,
+          "rightDest": 10,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 32,
+          "leftDest": 8,
+          "rightDest": 88,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 33,
+          "leftDest": 106,
+          "rightDest": 77,
+          "exitPos": 57,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 38,
+          "leftDest": 105,
+          "rightDest": 63,
+          "exitPos": 197,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 43,
+          "leftDest": 56,
+          "rightDest": 56,
+          "exitPos": 57,
+          "layoutIndex": 1
+        },
+        {
+          "cellarRoomId": 44,
+          "leftDest": 72,
+          "rightDest": 72,
+          "exitPos": 105,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        121
+      ],
+      "startY": 221,
+      "levelBlock": "uw2q2"
+    },
+    {
+      "level": 7,
+      "startRoomId": 121,
+      "triforceRoomId": 27,
+      "bossRoomId": 28,
+      "cellarRoomIds": [
+        39,
+        48,
+        55,
+        96,
+        103,
+        112,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 39,
+          "leftDest": 120,
+          "rightDest": 58,
+          "exitPos": 57,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 48,
+          "leftDest": 91,
+          "rightDest": 46,
+          "exitPos": 106,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 55,
+          "leftDest": 92,
+          "rightDest": 30,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 96,
+          "leftDest": 74,
+          "rightDest": 125,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 103,
+          "leftDest": 26,
+          "rightDest": 124,
+          "exitPos": 105,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 112,
+          "leftDest": 42,
+          "rightDest": 42,
+          "exitPos": 57,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        87
+      ],
+      "startY": 221,
+      "levelBlock": "uw2q2"
+    },
+    {
+      "level": 9,
+      "startRoomId": 116,
+      "triforceRoomId": 7,
+      "bossRoomId": 23,
+      "cellarRoomIds": [
+        113,
+        114,
+        117,
+        118,
+        119,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "cellarConnections": [
+        {
+          "cellarRoomId": 113,
+          "leftDest": 115,
+          "rightDest": 53,
+          "exitPos": 56,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 114,
+          "leftDest": 1,
+          "rightDest": 21,
+          "exitPos": 197,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 117,
+          "leftDest": 6,
+          "rightDest": 87,
+          "exitPos": 181,
+          "layoutIndex": 0
+        },
+        {
+          "cellarRoomId": 118,
+          "leftDest": 69,
+          "rightDest": 69,
+          "exitPos": 202,
+          "layoutIndex": 1
+        },
+        {
+          "cellarRoomId": 119,
+          "leftDest": 0,
+          "rightDest": 0,
+          "exitPos": 70,
+          "layoutIndex": 1
+        }
+      ],
+      "foeCounts": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "shortcutOrItemPositions": [
+        201,
+        172,
+        137,
+        182
+      ],
+      "startY": 221,
+      "levelBlock": "uw2q2"
+    }
+  ],
   "uniqueRooms": [
     {
       "id": 0,

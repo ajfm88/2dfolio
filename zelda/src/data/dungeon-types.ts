@@ -36,6 +36,8 @@ export interface CellarConnection {
 }
 
 export interface DungeonInfo {
+  /** The number the HUD prints. Quest 2 swaps 2<->3, 4<->5 and 7<->8, so this is
+   *  NOT an index — use the array position (NES CurLevel - 1) to select a dungeon. */
   readonly level: number;
   readonly startRoomId: number;
   readonly triforceRoomId: number;
@@ -60,7 +62,10 @@ export interface DungeonData {
     readonly uw1q2: DungeonLevelBlock;
     readonly uw2q2: DungeonLevelBlock;
   };
+  /** Quest 1, indexed by NES CurLevel - 1. */
   readonly dungeons: readonly DungeonInfo[];
+  /** Quest 2, same indexing. Quest 1's LevelInfo with the Z_06.asm:203 overlay applied. */
+  readonly dungeonsQ2: readonly DungeonInfo[];
   readonly uniqueRooms: readonly UniqueRoom[];
   readonly cellarRooms: readonly UniqueRoom[];
   readonly squareTable: readonly number[];
