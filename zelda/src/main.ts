@@ -89,6 +89,7 @@ import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
 import {
   SaveManager,
   WORLD_FLAG_BLOCKS,
+  nameIsCheatCode,
   type SavedGameState,
   type WorldFlagBlock,
 } from './save/save-manager.js';
@@ -106,6 +107,7 @@ const input = new InputManager();
 input.attach();
 const touchControls = new TouchControls(input);
 touchControls.init();
+renderer.setPadReserve(touchControls.reservedBottomPx());
 const fpsCounter = new FpsCounter();
 const debug = new DebugOverlay();
 debug.attach();
@@ -612,9 +614,47 @@ function startGameFromSlot(index: number): void {
   const saved = saveManager.getState(index);
   if (saved) restoreGameState(saved);
 
+  const slot = saveManager.getSlot(index);
+  if (slot && nameIsCheatCode(slot.name)) applyCheatLoadout();
+
   spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
   gameMode = GameMode.Gameplay;
   void audio.playMusic('overworld');
+}
+
+/** AJFM88 cheat: all items, max upgrades, 999 rupees, 99 bombs, 16 hearts, 9 keys. */
+function applyCheatLoadout(): void {
+  if (!link) return;
+  const inv = link.inventory;
+  inv.sword = 3;
+  inv.woodBoomerang = true;
+  inv.magicBoomerang = true;
+  inv.bow = true;
+  inv.arrow = 2;
+  inv.candle = 2;
+  inv.ring = 2;
+  inv.food = true;
+  inv.flute = true;
+  inv.wand = true;
+  inv.book = true;
+  inv.raft = true;
+  inv.ladder = true;
+  inv.magicKey = true;
+  inv.bracelet = true;
+  inv.magicShield = true;
+  inv.potion = 2;
+  inv.hasBombs = true;
+  inv.letter = 2;
+  inv.triforce = 0xFF;
+  inv.compass = 0xFF;
+  inv.map = 0xFF;
+  inv.compass9 = true;
+  inv.map9 = true;
+  link.setMaxBombs(99);
+  link.addBombs(99);
+  link.addRupees(999);
+  link.addKeys(9);
+  link.setHealth(32, 32);
 }
 
 /** Persist the active file — the NES SAVE option, the only write path. */
@@ -693,6 +733,12 @@ function startDungeonInterior(): void {
   const info = dungeonManager.dungeonInfo;
   link.setPosition(120, info.startY - 64);
   link.setDirection(Direction.Up);
+
+  // AJFM88 cheat: refill keys on every dungeon entry
+  const cheatSlot = saveManager.getSlot(activeSaveSlot);
+  if (cheatSlot && nameIsCheatCode(cheatSlot.name)) {
+    link.addKeys(9);
+  }
 
   curtainEffect = new CurtainEffect('open');
   gameMode = GameMode.DungeonGameplay;

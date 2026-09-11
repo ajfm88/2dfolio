@@ -150,6 +150,74 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     build recipe. Still no analytics, no CDN, no custom domain. The game must
     not assume a public origin at runtime.
 
+17. **Q2 overworld patches get their own file and script; the `$8B` overrun is
+    preserved** (2026-09-09, user). Two calls made in L2a2.
+
+    *Placement.* `@PatchQ2Rooms` (`Z_06.asm:239`) data lives in a new
+    `src/data/q2-overworld.json`, written by a new
+    `scripts/extract-q2-overworld.ts`, rather than being folded into
+    `secrets.json`. `secrets.json` is scoped to AttrsF-derived *secret gating*;
+    this is AttrsA/B/C/D/F *attribute patching*, and its extractor doesn't read
+    those planes. Keeping them apart preserves the repo's one-script-one-JSON
+    convention. The file emits both faithful `{table,screen,value}` `patches` and
+    decoded `screenOverrides` — the bit layouts are already known in the extract
+    script, so decoding there keeps them out of runtime code in L2a4.
+
+    *The `$8B` overrun.* `LevelBlockAttrsBQ2ReplacementOffsets` ends with `$8B`
+    (139), past the 128-screen AttrsB plane. `LevelBlockAttrsB` (`$68FE`) and
+    `LevelBlockAttrsC` (`$697E`) are contiguous, so the NES write lands on
+    **`AttrsC + 11`** — it changes screen 11's monster list, not any AttrsB
+    screen. This is original-ROM behaviour and stays: the record is emitted as
+    `{ table: "C", screen: 11, value: 0x2F }`. Do not "fix" it to AttrsB screen 11.
+
+    *Corollary for L2a3.* `dungeonsQ2` is indexed by NES CurLevel − 1, while
+    `.level` is the displayed number and Q2 shuffles it to `1,3,2,5,4,6,8,7,9`.
+    Anything selecting a dungeon must use the AttrsB cave index, never `.level`.
+
+18. **Canvas scales in whole *device* pixels; hybrid fill policy approved but not yet
+    built** (2026-09-09, user). M1.
+
+    *The bug.* `Renderer.resize()` scaled in whole **CSS** pixels
+    (`floor(innerWidth / 256)`), so any viewport under 512 CSS px wide — i.e. every
+    phone in portrait — got exactly 1×. Combined with `body { align-items: center;
+    min-height: 100vh }`, the 256×240 canvas sat centred in a box Samsung Internet
+    measures against the *collapsed*-toolbar height, so it floated mid-screen with a
+    black band above and its bottom edge behind the touch pads.
+
+    *The decision.* Scale in whole **device** pixels instead
+    (`floor(availablePx × devicePixelRatio / 256)`), keeping the backing store at
+    256×240 and letting the CSS box be deliberately fractional — `256 × scale / dpr`
+    CSS px is exactly `256 × scale` device px. Rounding that to whole CSS px would
+    reintroduce the uneven pixel widths the approach exists to avoid.
+
+    *The correction, and what is still open.* The plan claimed this "fills ~95% of
+    the width". That was true only for the assumed dpr 2.625; measured across real
+    ratios at a 412px viewport it ranges 83–95%, and at 375px/dpr 2 (iPhone SE, 8)
+    it falls to **68%**. The user was told this after the fact and chose a **hybrid**:
+    use the integer scale when it fills ≥ 90% of the perfect-fit width, else fall
+    back to fractional fill. **That hybrid is approved but NOT implemented** — the
+    code currently ships pure integer scaling. Implementing it is a small change to
+    `computeCanvasLayout` plus cases in `tests/render/canvas-layout.test.ts`.
+
+    *The pad reserve.* The touch pads are unchanged — their `left: -60px` /
+    `right: -30px` bleed is deliberate. The canvas keeps clear of them by reserving
+    `TOUCH_PAD_RESERVE_PX` (260) at the bottom **in portrait only**. In landscape the
+    canvas is height-limited and the pads fall into the left/right letterbox margins;
+    reserving there would crush the game into a ~150px strip.
+
+19. **AJFM88 cheat code** (2026-09-09, user). Registering the name "AJFM88"
+    grants a full loadout on game start: magic sword, both boomerangs, silver
+    arrows, red candle, red ring, magic key, all items, 999 rupees, 99 bombs
+    (max bombs raised to 99), 16 hearts, all maps/compasses/triforce, letter
+    delivered, red potion, 9 keys. Keys refill to 9 on every dungeon entry.
+    Pattern mirrors `nameStartsSecondQuest` for "ZELDA". The `restoreStats`
+    bomb clamp was raised from 16 to 99 so cheat saves round-trip correctly.
+
+20. **M1 hybrid fill policy parked** (2026-09-09, user). The user prefers whole
+    device-pixel scaling as shipped. The approved-but-unbuilt hybrid (integer
+    when ≥ 90% fill, else fractional) is no longer planned. Pure integer
+    device-pixel scaling stays.
+
 ## Open questions for the user
 
 The one home for these. Answer cheaply, unblock later work. Known *bugs* are not

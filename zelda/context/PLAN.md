@@ -160,8 +160,8 @@ playthrough audit, and auditing parity with invisible bombs and boomerangs would
 | L1 ✅ | Save system: 3 slots in localStorage (DECISIONS #10 amends #8 — ~6KB/slot). Persists Link's counters, the full inventory, three 128-byte world-flag blocks (overworld / uw1q1 / uw2q1, DECISIONS #13) and visited screens. Written only on SAVE (#11), reachable mid-game via Start then Up+A (`Z_05.asm:362`, #12). Loading restarts on the overworld start screen with 3 hearts like the NES. Done 2026-09-04 | save → reload → identical state |
 | L0d ✅ | **In-world sprite fixes** (user-reported 2026-09-04). Two bugs. (a) `projectiles.png` is 6×4 cells of 40×40, not 15 cols of 16×16 — every weapon index landed on an empty cell, so bombs/boomerangs/arrows drew nothing. Column meanings taken from `zelda-clone-master`'s `ProjectileSpriteFactory.cs`, which ships the byte-identical sheet. (b) Four sheets carry a second background colour (grey #747474 backing box) that nothing keyed, so enemies rendered inside a visible square; fixed with an edge-flood-fill in the new `src/render/transparency.ts` that preserves grey *inside* sprites. Done 2026-09-04 | bomb/boomerang/arrow/candle visible in-world; no grey box on dungeon enemies, bosses or NPCs |
 | L2a1 ✅ | Quest flag + UI + ending wipe (2026-09-08). Register name `ZELDA` → quest 2 (`Z_02.asm:1683`). File-select sword marker. `switchToSecondQuest` wipes inventory/flags/hearts (`Z_02.asm:4037`). `currentQuest` in main.ts. Gameplay still loads Q1 dungeons. | register ZELDA → quest 2 on file select |
-| L2a2 ⬜ | Extract Q2 LevelInfo patches + OW AttrsB patches. **Next.** Spec below. | `dungeonsQ2` in JSON; tests for level-number swaps |
-| L2a3 ⬜ | Dungeon runtime: Q2 level block + uniqueRoomId donor blit | ZELDA file, L1 cave is a different maze |
+| L2a2 ✅ | Extract Q2 LevelInfo patches + OW AttrsB patches (2026-09-09). `dungeonsQ2` (9 infos, display levels `1,3,2,5,4,6,8,7,9`) in `dungeons.json`; new `q2-overworld.json` (15 patches / 8 screens). Data only — no runtime reads it yet. | `dungeonsQ2` in JSON; tests for level-number swaps |
+| L2a3 ⬜ | Dungeon runtime: Q2 level block + uniqueRoomId donor blit. **Next.** | ZELDA file, L1 cave is a different maze |
 | L2a4 ⬜ | Overworld secrets, cave/dungeon index, flute | Q2 secrets; L3/L7–9 move; flute inversion |
 | L2a5 ⬜ | Stalfos shoot, Rope HP+flash | Q2 Stalfos sword shots; Rope $40 HP |
 | L2b ⬜ | Full playthrough audit of both quests. Blocked on L2a2–L2a5. | Quest 1 → ending → Quest 2 starts; documented parity gaps only |
@@ -170,20 +170,19 @@ playthrough audit, and auditing parity with invisible bombs and boomerangs would
 
 HISTORY 2026-09-05 describes Q2 wiring as shipped. **That code is not in `zelda-nes-ts/`.** Re-implement against the disassembly. `currentQuest` exists but dungeons/overworld still run Q1.
 
-**L2a2 (this slice, data only — no dungeon manager changes):**
+**What L2a2 produced (2026-09-09) — the inputs L2a3/L2a4 consume:**
 
-NES: `Z_06.asm:203 UpdateMode2Load_Full`. Same 9 Q1 LevelInfo blobs, then Q2 overwrites from offset `$29` / 41 (`LevelInfoUWQ2Replacements1–9` + `LevelInfoUWQ2ReplacementSizes`). `@PatchQ2Rooms` (`Z_06.asm:239`) patches overworld AttrsB (8 screens) plus AttrsA/D/F. Cave index `< $40` → `CurLevel = AttrsB >> 2` (`Z_05.asm:7389`). Displayed level number swaps: 2↔3, 4↔5, 7↔8.
+- `dungeons.json` → `dungeonsQ2`: 9 `DungeonInfo`, **indexed by NES CurLevel − 1**.
+  `.level` is the *displayed* number and is deliberately shuffled
+  (`1,3,2,5,4,6,8,7,9`). `levelBlock` is `uw1q2` (L1–6) / `uw2q2` (L7–9).
+  `foeCounts` and `startY` are inherited from Q1 — the `$29` overlay cannot reach them.
+- `q2-overworld.json` → `patches` (15 faithful `{table,screen,value}` writes) and
+  `screenOverrides` (8 screens, decoded). Dungeon entrances move to
+  **screen 52 → CurLevel 3, screen 60 → CurLevel 2, screen 69 → CurLevel 4**.
+  Screens 60 and 116 also change `questSecret` to 0 and their AttrsD tile layout;
+  screen 11 gets a new monster list via the `$8B` overrun (see DECISIONS #17).
 
-Do:
-
-1. `scripts/extract-dungeons.ts` — parse the replacement tables from `Z_06.asm`; copy each Q1 LevelInfo; overlay replacements from offset 41; set `levelBlock` L1–6 `uw1q2`, L7–9 `uw2q2`; emit `dungeonsQ2: DungeonInfo[]` (indexed by NES CurLevel 1–9). `.level` is the **patched display number**, not the array index.
-2. Emit `q2OverworldPatches` (AttrsB offsets/values + the AttrsA/D/F writes). `secrets.json` or a small `src/data/q2-overworld.json`.
-3. Types in `dungeon-types.ts` / `secret-types.ts`.
-4. Tests: 9 Q2 infos; info index 2 display level 3, index 3 display level 2; screen 52 is a dungeon cave-index after patch.
-5. `npm run extract:dungeons` once; keep JSON committed.
-6. Stop. Do not start L2a3.
-
-**Later (not this slice):** L2a3 `DungeonManager` takes quest, uses `dungeonsQ2` + `uw1q2`/`uw2q2`; renderer donor-blits Q2 rooms by `uniqueRoomId` from Q1 `dungeons-map.png`. `enterDungeon` must use AttrsB cave index, **not** patched `.level`. Room flags still key `uw1q1`/`uw2q1` (NES reuses three blocks; DECISIONS #13). L2a4 secrets/flute/entrances. L2a5 Stalfos `$57` / Rope `$40` + flash.
+**L2a3 (next):** `DungeonManager` takes quest, uses `dungeonsQ2` + `uw1q2`/`uw2q2`; renderer donor-blits Q2 rooms by `uniqueRoomId` from Q1 `dungeons-map.png`. `enterDungeon` must use the AttrsB cave index, **not** the patched `.level` — after the 2↔3 swap those disagree, and `dungeonsQ2` is keyed on the former. Room flags still key `uw1q1`/`uw2q1` (NES reuses three blocks; DECISIONS #13). L2a4 secrets/flute/entrances — must apply the `q2-overworld.json` AttrsF overrides *on top of* `secrets.json`'s `questSecretByScreen`. L2a5 Stalfos `$57` / Rope `$40` + flash.
 
 ## Phase M — Mobile & touch (post-completion, 2 slices)
 
@@ -193,8 +192,8 @@ build working on a phone, not deploying anywhere.
 
 | ID | Slice | Verify |
 |---|---|---|
-| M1 ⬜ | Responsive layout: canvas scales to fit any viewport / aspect ratio (portrait + landscape), no horizontal page scroll, correct `image-rendering: pixelated` at fractional device-pixel ratios, safe-area insets. Prefer landscape prompt if needed | renders full-screen and crisp on a phone in both orientations |
-| M2 ⬜ | Touch controls: on-screen D-pad + A/B/Start/Select buttons mapped through the existing `InputManager` action-name abstraction (A4) — pointer/touch events feed the same actions as keyboard/gamepad, so no game logic changes. Multi-touch, sensible hit areas, hidden when a physical keyboard/gamepad is used | full game playable on a touchscreen with no keyboard |
+| M1 ✅ | Responsive layout (2026-09-09). DPR-aware scaling in `src/render/canvas-layout.ts` + `renderer.ts` (integer *device*-pixel scale), canvas absolutely positioned and centred above touch pads, portrait-only pad reserve, `100dvh`, `viewport-fit=cover` + safe-area insets, `visualViewport`/`orientationchange` listeners. Hybrid fill policy **parked** per user preference (DECISIONS #20). | renders full-screen and crisp on a phone in both orientations |
+| M2 ✅ | Touch controls (2026-09-06). D-pad + Start/B/A from `controller2.png` + `dpad.png` (zelda30tribute). Touch → `InputManager.setActionHeld()`. D-pad 3×3 hit grid (8-way), CSS 3D tilt. Per-button dark-circle press indicators. Multi-touch. Touch-only (hidden with physical input). No Select: overlay Up/Down is the shortcut (DECISIONS #15). Button press visuals use dark overlays; sprite-sheet pressed frame attempted and reverted (user preference). | full game playable on a touchscreen with no keyboard |
 
 ---
 

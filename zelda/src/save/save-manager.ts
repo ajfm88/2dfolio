@@ -38,12 +38,20 @@ export const ROOM_FLAG_BLOCK_SIZE = 128;
 /** NES ZeldaString is 5 characters (Z_02.asm:1683 @CompareToZelda). */
 const ZELDA_NAME = 'ZELDA';
 
+/** Cheat code name — grants all items/upgrades on game start. */
+const CHEAT_NAME = 'AJFM88';
+
 /**
  * True when the registered name's first 5 characters are ZELDA.
  * Extra characters are ignored, matching the NES 5-byte compare.
  */
 export function nameStartsSecondQuest(name: string): boolean {
   return name.toUpperCase().padEnd(ZELDA_NAME.length, ' ').slice(0, ZELDA_NAME.length) === ZELDA_NAME;
+}
+
+/** True when the name exactly matches the cheat code (case-insensitive). */
+export function nameIsCheatCode(name: string): boolean {
+  return name.toUpperCase().trim() === CHEAT_NAME;
 }
 
 function emptySavedInventory(): SavedInventory {

@@ -9,14 +9,17 @@
 import { Action, type InputManager } from '../core/input.js';
 
 const PANEL_SIZE = 250;
+const PANEL_BOTTOM = 10;
+
+/** Vertical band the pads occupy, so the layout can keep the canvas above them. */
+export const TOUCH_PAD_RESERVE_PX = PANEL_SIZE + PANEL_BOTTOM;
 
 // controller2.png native: 1720×500, displayed at half → 860×250
 const BG_W = 860;
 const BG_H = 250;
 
 // Frame offsets in the 860-wide display strip.
-// Frame 0 = d-pad bg, Frame 2 = buttons normal. Pressed-state uses overlay
-// circles rather than frame 1 of the strip.
+// Frame 0 = d-pad bg, Frame 2 = buttons normal.
 const BTN_FRAME_NORMAL = 597;
 
 // D-pad cross overlay
@@ -95,6 +98,11 @@ export class TouchControls {
     document.addEventListener('touchcancel', handler, { passive: false });
   }
 
+  /** Zero unless the pads are actually on screen, so desktop keeps the full height. */
+  reservedBottomPx(): number {
+    return this._dpadPanel ? TOUCH_PAD_RESERVE_PX : 0;
+  }
+
   private isTouchDevice(): boolean {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   }
@@ -106,7 +114,7 @@ export class TouchControls {
       zIndex: '1000',
       width: `${PANEL_SIZE}px`,
       height: `${PANEL_SIZE}px`,
-      bottom: '10px',
+      bottom: `${PANEL_BOTTOM}px`,
       left: '-60px',
       backgroundImage: 'url(/assets/ui/controller2.png)',
       backgroundSize: `${BG_W}px ${BG_H}px`,
@@ -144,7 +152,7 @@ export class TouchControls {
       zIndex: '1000',
       width: `${PANEL_SIZE}px`,
       height: `${PANEL_SIZE}px`,
-      bottom: '10px',
+      bottom: `${PANEL_BOTTOM}px`,
       right: '-30px',
       backgroundImage: 'url(/assets/ui/controller2.png)',
       backgroundSize: `${BG_W}px ${BG_H}px`,

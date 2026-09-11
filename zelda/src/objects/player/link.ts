@@ -271,6 +271,10 @@ export class Link {
     if (this._bombs > 0) this.inventory.hasBombs = true;
   }
 
+  setMaxBombs(max: number): void {
+    this._maxBombs = max;
+  }
+
   addHeartContainer(): void {
     this._maxHealth = Math.min(32, this._maxHealth + 2); // +1 container = +2 half-hearts
     this._health = this._maxHealth;
@@ -308,7 +312,7 @@ export class Link {
   /** Apply a saved snapshot. Clamped the same way the add* mutators are. */
   restoreStats(stats: LinkStats): void {
     this._maxHealth = clamp(stats.maxHealth, 2, 32);
-    this._maxBombs = clamp(stats.maxBombs, 0, 16);
+    this._maxBombs = clamp(stats.maxBombs, 0, 99);
     this._rupees = clamp(stats.rupees, 0, 999);
     this._keys = clamp(stats.keys, 0, 255);
     this._bombs = clamp(stats.bombs, 0, this._maxBombs);
