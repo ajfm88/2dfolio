@@ -8,15 +8,19 @@ import { createLoop } from './core/loop.js';
 import { createSprite } from './core/sprite.js';
 import { createViewport } from './core/viewport.js';
 
+import { drawTiles } from './level/render.js';
+
+import { createAutotileFixture } from './data/fixtures/autotile-demo.js';
+import { getTheme } from './data/themes.js';
 import atlasJson from './data/atlas.json';
 
-const WORLD_COLS = 80;
-const WORLD_ROWS = 24;
-const WORLD_W = WORLD_COLS * TILE;
-const WORLD_H = WORLD_ROWS * TILE;
 const DEMO_SPEED = 100;
 const SKY = '#ddc6a1';
-const INK = '#33323d';
+
+const level = createAutotileFixture();
+const theme = getTheme(level.theme);
+const WORLD_W = level.cols * TILE;
+const WORLD_H = level.rows * TILE;
 
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
 const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
@@ -33,12 +37,14 @@ const viewport = createViewport(canvas, ctx, {
 const input = createInput(canvas, viewport);
 const camera = createCamera();
 
+/** @type {Awaited<ReturnType<typeof loadAtlas>> | null} */
+let atlas = null;
 /** @type {ReturnType<typeof createSprite> | null} */
 let sprite = null;
 let clipW = 64;
 let clipH = 40;
-let capX = (WORLD_W - clipW) / 2;
-let capY = (WORLD_H - clipH) / 2;
+let capX = level.spawn.c * TILE;
+let capY = level.spawn.r * TILE;
 let facing = 1;
 let dragCapX = 0;
 let dragCapY = 0;
@@ -93,54 +99,26 @@ function update(dt) {
   }
 }
 
-function drawGrid() {
-  const left = camera.x;
-  const top = camera.y;
-  const right = left + viewport.viewW;
-  const bottom = top + VIEW_H;
-  const x0 = Math.floor(left / TILE) * TILE;
-  const y0 = Math.floor(top / TILE) * TILE;
-
-  ctx.strokeStyle = INK;
-  ctx.globalAlpha = 0.22;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let x = x0; x <= right; x += TILE) {
-    const sx = Math.round(x - left) + 0.5;
-    ctx.moveTo(sx, 0);
-    ctx.lineTo(sx, VIEW_H);
-  }
-  for (let y = y0; y <= bottom; y += TILE) {
-    const sy = Math.round(y - top) + 0.5;
-    ctx.moveTo(0, sy);
-    ctx.lineTo(viewport.viewW, sy);
-  }
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-
-  const bx = Math.round(0 - left) + 0.5;
-  const by = Math.round(0 - top) + 0.5;
-  ctx.strokeStyle = INK;
-  ctx.strokeRect(bx, by, WORLD_W - 1, WORLD_H - 1);
-}
-
 function render() {
   viewport.apply(ctx);
   ctx.fillStyle = SKY;
   ctx.fillRect(0, 0, viewport.viewW, VIEW_H);
-  drawGrid();
+  if (atlas) {
+    drawTiles(ctx, camera, viewport.viewW, VIEW_H, level, theme, atlas);
+  }
   if (sprite) sprite.draw(ctx, camera, capX, capY, facing < 0);
 }
 
 const loop = createLoop({ update, render });
 loop.start();
 
-loadAtlas(atlasJson).then((atlas) => {
-  const clip = atlas.get('player/idle');
+loadAtlas(atlasJson).then((loaded) => {
+  atlas = loaded;
+  const clip = loaded.get('player/idle');
   clipW = clip.fw;
   clipH = clip.fh;
-  capX = (WORLD_W - clipW) / 2;
-  capY = (WORLD_H - clipH) / 2;
+  capX = level.spawn.c * TILE;
+  capY = level.spawn.r * TILE - (clipH - TILE);
   sprite = createSprite(clip);
 }).catch((err) => {
   console.error(err);

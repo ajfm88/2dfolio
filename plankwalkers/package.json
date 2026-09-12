@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "assets": "node tools/build-assets.mjs"
+    "assets": "node tools/build-assets.mjs",
+    "test": "vitest run"
   },
   "devDependencies": {
     "sharp": "^0.35.4",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
   }
 }
