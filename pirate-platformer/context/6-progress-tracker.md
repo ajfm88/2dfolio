@@ -6,13 +6,13 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Unit 02 — Engine Core complete.** Fixed-timestep loop, viewport, camera,
-  input, atlas loader and sprite playback live in `src/core/`. The game canvas
-  shows an animated idle Captain you can move with keys or a pointer drag.
+- **Unit 04 — Tile Rendering and Autotiling complete.** 4-neighbour autotile
+  draws terrain, platforms, and water from a `LevelModel`. Fixture shows
+  singles, columns, bars, a mass with a hole, and a water line.
 
 ## Current Goal
 
-- **Unit 03 — Level Model and Codec.** See `specs/00-build-plan.md`.
+- **Unit 05 — Parallax Background.** See `specs/00-build-plan.md`.
 
 ## Completed
 
@@ -58,6 +58,18 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   pointer-drag, camera follow with clamp-or-centre. `core/` does not import
   `data/` — `main.js` passes `atlas.json` into `loadAtlas`. Spec at
   `specs/02-engine-core.md`. `/atlas.html` kept. `npm run build` passes.
+- **2026-09-06 — Unit 03 complete.** `level/schema.js` (`LevelError` names the
+  field), `level/model.js` (`Uint8Array` layers, resize), `level/codec.js` (RLE,
+  JSON, share codes with `z` deflate-raw and `u` uncompressed). Typedefs in
+  `src/types.js`. Vitest 38 tests. Kind-in-registry checks deferred until
+  `palette.js` exists (Unit 07) so schema does not hardcode kind ids. Spec at
+  `specs/03-level-model-and-codec.md`. Captain demo unchanged.
+- **2026-09-06 — Unit 04 complete.** `level/autotile.js` closed form matches the
+  16-mask table; tests cover all masks, grid edges, and erase. `data/themes.js`
+  island only, origin (0,0), same blob sheet for terrain and platform.
+  `level/render.js` draws the visible cell range. Fixture `autotile-demo.js`
+  (40×12). Debug grid removed. `npm test` 44 passing. Spec at
+  `specs/04-tile-rendering-and-autotiling.md`. No collision yet.
 
 ## In Progress
 
@@ -65,8 +77,8 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Next Up
 
-- **Unit 03 — Level Model and Codec.** See `specs/00-build-plan.md`. Write
-  `specs/03-level-model-and-codec.md` before implementing.
+- **Unit 05 — Parallax Background.** See `specs/00-build-plan.md`. Write
+  `specs/05-parallax-background.md` before implementing.
 
 ## Open Questions
 
