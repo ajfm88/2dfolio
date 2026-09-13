@@ -218,6 +218,13 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     when ≥ 90% fill, else fractional) is no longer planned. Pure integer
     device-pixel scaling stays.
 
+21. **Vanilla JS export is a parallel folder, not a rewrite** (2026-09-10, user).
+    `zelda-nes-ts/` stays the living game (L2a3+). `zelda-nes-js/` is a
+    playable copy: Vite only (`dev` / `build` / `preview`), no tests, no
+    extract scripts, no TypeScript, no ESLint. Enums become `Object.freeze`
+    objects; types are stripped later; files rename `.ts` → `.js` last.
+    Spec is root `JS-MIGRATION-PLAN.md`. Do not recreate `context/JS-MIGRATION.md`.
+
 ## Open questions for the user
 
 The one home for these. Answer cheaply, unblock later work. Known *bugs* are not

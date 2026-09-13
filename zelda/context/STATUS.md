@@ -9,17 +9,18 @@
 > `IMPLEMENTATION.md` and `DECISIONS.md`, finished sessions go to `HISTORY.md`.
 
 **Project:** zelda-nes — *The Legend of Zelda* (NES, 1986) as native TypeScript
-in the browser.
+in the browser, plus a vanilla JS export in `zelda-nes-js/`.
 **Run commands from:** `zelda-nes-ts/`
-**Last updated:** 2026-09-09 · **Phase:** L (L2a1–L2a2 done; L2a3–L2a5 open) ·
-**Slices:** L2a1+L2a2 done. M1 core in (hybrid fill parked). M2 in tree.
-L2b blocked.
+**Last updated:** 2026-09-11 · **Phase:** L (L2a1–L2a2 done; L2a3–L2a5 open).
+JS export N1–N3 done; `zelda-nes-js/` is frozen.
+**Slices:** N1–N3 done. L2a1+L2a2 done. M1/M2 in tree. L2b blocked.
 
 ---
 
 ## Next action
 
-**L2a3** (dungeon runtime). Recipe in `PLAN.md` under “L2a remaining”.
+**L2a3** (dungeon runtime) in `zelda-nes-ts/`. Recipe in `PLAN.md` under
+“L2a remaining”. Do **not** edit `zelda-nes-js/` (N1–N3 finished).
 
 - `DungeonManager` takes a quest and selects `dungeonsQ2[curLevel-1]` + that row's
   `levelBlock` (`uw1q2`/`uw2q2`). The Q2 data landed in L2a2 and is unused so far.
@@ -52,7 +53,7 @@ wrong sheet cells (water room and Like-Like/Zol room).
 
 ## Known open bugs
 
-None logged.
+None logged. (Minimap, raft, stairs bugs fixed 2026-09-11.)
 
 ## Testing notes
 
@@ -62,12 +63,81 @@ None logged.
   `noclip`, `warp(row,col)`, `goToRoom(id)`, `goToDungeon`, `killAll`,
   `keyInfo`, `saveNow`, `dumpSave`, `step(frames)`, `goToTitle`,
   `goToFileSelect`, `goToRegister`, `goToElimination`, `goToEnding`.
-- Dev server this session: http://localhost:5175/ (5173 was taken).
+- JS export (frozen): `zelda-nes-js/`, `npm run dev` → http://localhost:5173/.
+  `giveDungeon()` requires being in a dungeon; use `goToDungeon(1)` first.
 - Mid-game SAVE menu: inventory open, hold Up + A (desktop: Arrow Up + X/Space).
 
 ## Session log
 
 Newest first. Older 2026-09-06 notes are in `HISTORY.md`.
+
+### 2026-09-11 — Playtest bugfixes: minimap, raft, stairs masking (Claude Opus 4.6)
+
+User playtested dungeons and overworld; found and fixed four bugs in both
+`zelda-nes-ts/` and `zelda-nes-js/`:
+
+1. **Dungeon minimap solid blue grid.** `validRoomIds` iterated all 128 rooms in
+   the shared level block instead of only the current dungeon's rooms. Replaced
+   with BFS via `roomsInThisDungeon()`. Also added bounding-box centering
+   (horizontal center, bottom-align) using NES `StatusBarMapXOffset` logic.
+   `DMAP_BASE_Y` tuned from 22 → 25. Files: `dungeon-manager.ts/js`, `hud.ts/js`.
+
+2. **Raft going south / stuck at sea.** Three sub-issues: (a) Y constants were
+   raw NES screen-Y, needed subtracting `$3D` HUD offset for play-area coords;
+   (b) sub-pixel movement skipped exact Y match — changed to ±1 range checks;
+   (c) raft re-triggered on arrival screen — added `suppressArrival()` flag,
+   set after raft-scroll transition completes. Files: `constants.ts/js`,
+   `raft.ts/js`, `main.ts/js`.
+
+3. **Dungeon stairs not working.** Hardcoded stairs position didn't match actual
+   tile data. Added `findStairsPosition()` to scan unique room tiles for square
+   index 0 (stairs). Also checks cellar connections and room secret trigger
+   flags to determine which rooms have functional stairs. Files:
+   `dungeon-manager.ts/js`, `main.ts/js`.
+
+4. **Baked-in stairs visual artifacts.** Rooms without cellar connections showed
+   phantom stairs from the shared `dungeons-map.png` (same root cause as the
+   baked-in keys issue logged in DECISIONS). Added masking in
+   `renderDungeonEntities()` — draws floor tile over baked stairs when
+   `dungeonStairsPos` is null. Files: `main.ts/js`.
+
+Clock + Vire child spawn investigated: Vires split into Keese that must also be
+killed before the door opens — correct NES behavior, not a bug.
+
+### 2026-09-10 — N3 rename .js + play L1 (Grok 4.6)
+
+Renamed 116 files `.ts` → `.js`. `index.html` → `/src/main.js`. Imports were
+already `.js`. Vite 8 `npm run build` needed `cssMinify: false` (lightningcss
+rejects ES2022 as a CSS target). Dist bundle is JS. Play-verified: title;
+`registerTest` + `startGame(0)` + `goToDungeon(1)` + `giveDungeon()` → L1
+entrance, map, 9 keys, Link. Only console 404 is `favicon.ico`.
+`zelda-nes-js/` is frozen. Next is **L2a3** on `zelda-nes-ts/`.
+
+### 2026-09-10 — N2 strip types (Grok 4.6)
+
+Stripped types in `zelda-nes-js/src/` only (no recopy from `-ts`). Deleted
+`dungeon-types`, `overworld-types`, `enemy-spawn-types`, `sprite-types`,
+`cave-text-types`, `q2-overworld-types`. Kept `Direction`, secret/item name
+tables. 116 `.ts` files remain (rename is N3). Added `gameModeName()` for the
+debug overlay — frozen `GameMode` has no reverse mapping.
+
+Verified: module graph HTTP 200; title screen screenshot still NES title +
+waterfall. Dev server http://localhost:5173/.
+
+Next is **N3** rename + play L1.
+
+### 2026-09-10 — N1 JS export scaffold + 39 enums (Grok 4.6)
+
+Refreshed `zelda-nes-js/` from `zelda-nes-ts/` (src + public + html + netlify).
+Deleted tests, scripts, tsconfig, vitest, eslint. `package.json` is Vite only
+(`dev` / `build` / `preview`). Converted all 39 enums to `Object.freeze`
+objects; member access unchanged. Files still `.ts` (Vite/esbuild serves them).
+`zelda-nes-ts/` not modified.
+
+Verified: 121 reachable `/src/` modules transform with HTTP 200; headless
+Chrome screenshot shows the NES title screen (waterfall, PUSH START BUTTON).
+
+Next is **N2** type strip. Do not rename files in N2.
 
 ### 2026-09-09 — HUD ghost fix + AJFM88 cheat code + Netlify npm fix (Claude Opus 4.6)
 

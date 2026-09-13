@@ -1278,4 +1278,30 @@ Playtest session. User-confirmed: title waterfall (mint channel under foam, orig
 
 Still open at stop: none logged. (Inventory top-row cursor was listed in error; user confirmed it works.)
 
+## 2026-09-10 — N1 vanilla JS export scaffold + enums (Grok 4.6)
+
+Created `zelda-nes-js/` as a playable copy of `zelda-nes-ts/` (src + public +
+index.html + netlify.toml). Dropped tests, extract scripts, TypeScript, ESLint,
+vitest. `package.json` is Vite only (`dev` / `build` / `preview`). Converted all
+39 `enum`s to `Object.freeze` objects. Files still named `.ts`. Title screen
+verified at http://localhost:5173/. `zelda-nes-ts/` untouched. Next: N2 strip
+types.
+
+## 2026-09-10 — N2 strip types in zelda-nes-js (Grok 4.6)
+
+Stripped type syntax from `zelda-nes-js/src/` (sucrase + cleanup). Deleted six
+pure-type files. Kept `Direction`, `secret-types` constants, `ITEM_NAMES` /
+`CAVE_TYPE_NAMES`. Files still named `.ts`. Added `gameModeName()` because frozen
+`GameMode` has no reverse map. Title screen re-verified. Do not recopy from
+`-ts`. Next: N3 rename `.ts` → `.js` and play L1.
+
+## 2026-09-10 — N3 rename to .js and play L1 (Grok 4.6)
+
+Renamed 116 `src/**/*.ts` → `.js` in `zelda-nes-js/`. `index.html` loads
+`/src/main.js`. Vite 8 build needed `cssMinify: false` because lightningcss
+rejects the ES2022 JS target as a CSS target. `npm run build` emits
+`dist/assets/index-*.js`. Play: title, `__zelda.startGame(0)`,
+`goToDungeon(1)`, `giveDungeon()` → L1 entrance, map, 9 keys. Folder is
+frozen. Next game slice: L2a3 on `zelda-nes-ts/`.
+
 

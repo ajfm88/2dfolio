@@ -197,6 +197,19 @@ build working on a phone, not deploying anywhere.
 
 ---
 
+## Side track — vanilla JS export (N1–N3)
+
+Not a game-behaviour slice. Parallel copy in `zelda-nes-js/`. Spec:
+`JS-MIGRATION-PLAN.md`. Do not touch `zelda-nes-ts/` for this.
+
+| ID | Slice | Verify |
+|---|---|---|
+| N1 ✅ | Fresh export + 39 enums → `Object.freeze`. Vite-only `package.json`. Files still `.ts`. | `npm run dev` in `zelda-nes-js/` shows the title screen |
+| N2 ✅ | Strip type syntax from `src/`; delete pure-type files | title still loads; no leftover `enum` / `import type` / `export interface` |
+| N3 ✅ | Rename `.ts` → `.js`, point `index.html` at `main.js` | title → `__zelda.goToDungeon(1)` + `giveDungeon()` → L1 |
+
+---
+
 ## Sequencing notes
 
 - **Do not start C before B.** Rendering a screen needs tile data. Every attempt
