@@ -145,7 +145,8 @@ enemy spawn timing, damage interactions — not just the happy path.
 ## Repo hygiene and scope guards
 
 - **Reference repos are read-only.** Never edit, never delete, never write into
-  them. `zelda-nes-ts/` is the only place you write code.
+  them. Game slices are written in `zelda-nes-ts/`. The vanilla export
+  `zelda-nes-js/` is frozen (N1–N3 done).
 - **Localhost only, permanently** (`DECISIONS.md` #1). No deploy step, no
   hosting, no public origin, no CDN, no analytics endpoint.
 - **No emulation.** If a task seems to call for CPU/PPU emulation, stop and ask.
