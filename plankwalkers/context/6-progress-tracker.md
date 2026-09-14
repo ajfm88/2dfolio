@@ -6,13 +6,15 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Unit 04 — Tile Rendering and Autotiling complete.** 4-neighbour autotile
-  draws terrain, platforms, and water from a `LevelModel`. Fixture shows
-  singles, columns, bars, a mass with a hole, and a water line.
+- **Units 00–06 complete.** Physics-driven Captain on the autotiled island
+  fixture with parallax. Runs, jumps (variable height), wall-slides, wall-jumps,
+  lands on terrain, stands on semi-solid platforms, drops through them. Coyote
+  time and jump buffering work. Player confirmed `/` looks right.
 
 ## Current Goal
 
-- **Unit 05 — Parallax Background.** See `specs/00-build-plan.md`.
+- **Paused.** Next unit when work resumes: **Unit 07 — Play Scene Core.**
+  Write `specs/07-play-scene-core.md` before implementing.
 
 ## Completed
 
@@ -70,15 +72,34 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   `level/render.js` draws the visible cell range. Fixture `autotile-demo.js`
   (40×12). Debug grid removed. `npm test` 44 passing. Spec at
   `specs/04-tile-rendering-and-autotiling.md`. No collision yet.
+- **2026-09-07 — Unit 05 complete.** Horizon derived from the first water row
+  (no schema field). `level/parallax.js` owns a wrapping 20-cloud pool, big-cloud
+  drift, and 6 water-reflect sprites; `update` mutates, `draw` does not.
+  `drawLevel` paints sky/sea/horizon bands, `BG Image` at 0.25, big clouds at
+  0.5 plus drift, small clouds at 0.85, then tiles, then reflections. Island
+  theme carries colours and rates. Spec at `specs/05-parallax-background.md`.
+  `npm test` 52 passing. `npm run build` passes. Walked `/` in Chrome: layers
+  lag at distinct rates, horizon sits on the water row, no pop at the level end.
+  Player sign-off 2026-09-07: `/` looks right. Spec checklist ticked.
+- **2026-09-09 — Unit 06 complete.** `game/physics.js` (tile-grid collision
+  resolver: resolveH, resolveV, resolveSemiSolid, checkFloor, checkWallLeft,
+  checkWallRight), `game/player.js` (run, variable-height jump, coyote time,
+  jump buffer, wall slide, wall jump, drop-through, moving-platform carry stub,
+  five-state animation machine), `data/tuning.js` (all physics constants from
+  the architecture doc, SPW values halved). `core/input.js` extended with `jump`
+  action (Space key). Throwaway `main.js` demo replaced with physics-driven
+  player. Fixture extended with ceiling overhang at cols 28–30, spawn moved to
+  (8,9). Spec at `specs/06-player-physics.md`. `npm test` 74 passing (22 new
+  physics tests). `npm run build` passes. Player sign-off 2026-09-09: `/`
+  looks right.
 
 ## In Progress
 
-- None.
+- None. Session paused after Unit 06.
 
 ## Next Up
 
-- **Unit 05 — Parallax Background.** See `specs/00-build-plan.md`. Write
-  `specs/05-parallax-background.md` before implementing.
+- **Unit 07 — Play Scene Core.** Spec not written yet.
 
 ## Open Questions
 
@@ -212,27 +233,113 @@ that set from `reference/treasure-hunters/**/Sprites/**` plus
 `reference/super-pirate-world/audio/`. It does not pack `pirate-maker/graphics/`
 or `super-pirate-world/graphics/`.
 
+**2026-09-06 — `core/` does not import `src/data/atlas.json`.**
+Invariant 11. `main.js` loads the JSON and passes it to `loadAtlas`. Keep it
+that way.
+
+**2026-09-06 — Share-code prefixes `z` / `u` live in the codec now, not Unit 17.**
+`encodeShare` / `decodeShare` are async. Unknown prefix throws; decode never
+guesses. Storage UI is still Unit 17.
+
+**2026-09-06 — Schema does not check kind ids against a registry.**
+`palette.js` does not exist until Unit 07. `k` must be a non-empty string.
+Kind-in-registry validation waits for the palette so schema never hardcodes a
+kind list (invariant 5).
+
+**2026-09-06 — Island platform layer uses the terrain blob sheet.**
+`tiles/island-platforms` is a 3×3 palm-base sheet, not a 16-mask set. Autotile
+for terrain *and* platform samples `tiles/island` at origin (0,0). Ship theme
+still Unit 20.
+
+**2026-09-06 — Sprite X-flip uses `translate` + `scale(-1,1)`, not negative
+`drawImage` width.** Negative dest width was ignored under the viewport's
+`setTransform` scale. One `save`/`restore` per flipped sprite; the Unit 02
+demo draws one sprite so it stays within the per-frame budget.
+
+**2026-09-06 — Input listens on `window` in capture phase.**
+`#ui` is a full-viewport overlay with `pointer-events: none`. Canvas-only
+listeners did not receive clicks/keys reliably. Keyboard is arrows + WASD.
+`pointercancel` is treated as release.
+
+**2026-09-07 — Horizon is derived from the water layer, not stored.**
+Format 1 has no `horizon` field. `horizonY` is the top of the first water row
+(`rows * TILE` if empty). Pirate Maker's sky handle is maker UI (Unit 13+).
+A mid-level pool still sets one global horizon.
+
+**2026-09-07 — Parallax colours and rates live on the theme.**
+Canvas cannot read CSS custom properties. Island theme carries sky/sea/horizon
+hexes (matching `3-ui-context.md` tokens), clip ids, and the halved SPW speeds.
+Unit 20 can swap them without touching `autotile.js`. No `tuning.js` yet.
+
+**2026-09-07 — Clouds wrap a fixed pool; they are not spawned or killed.**
+20 small clouds and 6 reflections, seeded from an LCG on `level.id`. Positive
+modulo wrap so a negative camera offset does not pop. The 2.5 s timer recycles
+the leftmost cloud to the right of the view.
+
+**2026-09-09 — Grid-based collision resolver, not per-tile sprite objects.**
+SPW creates a `Sprite` per terrain tile and iterates `pygame.sprite.Group` for
+collision. We resolve directly against the `LevelModel` `Uint8Array` grid —
+compute the overlapping cell range from the hitbox bounds, iterate only those
+cells. No allocation, no sprite objects. The old-rect/new-rect edge comparison
+logic is identical to SPW.
+
+**2026-09-09 — `input.js` has a `jump` action separate from `up`.**
+Space maps to `jump`, not `up`. The player checks both `keys.jump.pressed` and
+`keys.up.pressed` for jump input. This keeps the maker (Unit 13+) from
+interpreting Space as a pan-up gesture.
+
+**2026-09-09 — `tuning.js` now exists with all physics constants.**
+Parallax colours and rates still live on the theme (2026-09-07 decision). Physics
+numbers live in `data/tuning.js`. The two do not overlap.
+
 ## Session Notes
 
-Context needed to resume cold:
+Resume cold from here.
 
-- Everything under `reference/` is **read-only**: the art pack and the two Python
-  projects. Never edit it. `reference/super-pirate-world/audio/` is where the CC0
-  sound effects and music come from — the art pack ships no audio.
-- Environment: Node 24.19, npm 11.17, git 2.52, Windows. Python 3.14 is present but
-  has no `pygame` or `pytmx`, so **neither reference project can actually be run**.
-  Read them; do not try to launch them.
-- The two facts everything else is built on are in `2-architecture.md`: the 16-case
-  autotile table and the player hitbox of 18 × 26 with sprite offset (−23, −6).
-  Both were measured from the files, not estimated. If either turns out wrong,
-  re-measure before changing anything downstream.
-- Unarmed Captain has no wall-slide clip (SPW's `wall` frame is a unique sword
-  pose). Unit 06 should reuse `player/fall`. Logged as a session note, not a defect.
-- Wood and Paper `1.png`–`16.png` recreate the kit guide, not a 4×4 9-slice.
-  See `7-current-issues.md` entry 1. Fix when `border-image` is first used.
-- Unit 02's Captain demo lives in `src/main.js` and must be deleted when the
-  play scene exists (Unit 07). Do not grow it into an App/scene framework.
-- `context/README.md` is the JS Mastery playbook this context system follows. Part 3
-  defines the spec-file pattern used in `specs/`.
-- Four product decisions were made by the user on 2026-09-05 and are recorded above:
-  DOM UI, level-select, stomp-only, local + share codes. Do not relitigate them.
+**Where we are:** Units 00–06 done. On `/` the Captain runs, jumps (variable
+height), wall-slides, wall-jumps, lands on terrain, stands on semi-solid
+platforms, and drops through them. Coyote time and jump buffering work.
+Parallax, autotiling, and all prior features still work. `/atlas.html` still
+lists packed clips.
+
+**Next:** Unit 07 — Play Scene Core. Spec first
+(`specs/07-play-scene-core.md`). Do not start Unit 08 until 07 is done.
+
+**How to run**
+
+- `npm run dev` — game at `/`, atlas at `/atlas.html`. Prefer a fixed port;
+  5173 may already be another project (ArcGIS). `--port 5174 --strictPort`.
+- `npm test` — 74 tests (schema, model, codec, autotile, parallax, physics).
+- `npm run build` — passes.
+- `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
+
+**Do not**
+
+- Grow `src/main.js` into an App/scene framework. That is Unit 07.
+- Import `atlas.json` from `core/`.
+- Pack sword clips, ship tilesheet, or Pixel Adventure leftovers.
+- Relitigate: DOM UI, level-select (no overworld), stomp-only, local + share
+  codes.
+
+**Standing hazards**
+
+- Zipping the repo while Vite is running used to EBUSY-crash the watcher on
+  `src.zip`. `.gitignore` has `*.zip`; `vite.config.js` `server.watch.ignored`
+  is `**/*.zip`. Restart Vite if you change that config.
+- Wood and Paper 16-tile composites are the kit *guide*, not a 9-slice. Open
+  issue 1 in `7-current-issues.md`. Fix when DOM `border-image` is first used
+  (maker/title, ~Unit 15/18).
+- Unarmed Captain has no wall-slide clip. `wall` state reuses `player/fall`.
+  Expected until sword combat is added (Beyond v1).
+- Hole in the autotile mass shows a grass top on the cell below (4-neighbour,
+  no inner corners). Expected until Unit 19.
+
+**Environment:** Node 24.19, npm 11.17, git 2.52, Windows. Python 3.14 has no
+`pygame`/`pytmx` — read the references, do not launch them. `reference/` is
+read-only. Audio is CC0 from `reference/super-pirate-world/audio/`.
+
+**Facts not to guess:** 16-case autotile table and player hitbox 18×26 offset
+(−23, −6) in `2-architecture.md`. Re-measure if either looks wrong.
+
+**Specs on disk:** `00-build-plan.md` plus units 00–06. Playbook:
+`context/README.md` Part 3.
