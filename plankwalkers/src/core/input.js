@@ -1,4 +1,4 @@
-/** @type {Record<string, 'left' | 'right' | 'up' | 'down'>} */
+/** @type {Record<string, 'left' | 'right' | 'up' | 'down' | 'jump'>} */
 const KEY_TO_DIR = {
   ArrowLeft: 'left',
   KeyA: 'left',
@@ -8,9 +8,10 @@ const KEY_TO_DIR = {
   KeyW: 'up',
   ArrowDown: 'down',
   KeyS: 'down',
+  Space: 'jump',
 };
 
-const DIRS = ['left', 'right', 'up', 'down'];
+const ACTIONS = ['left', 'right', 'up', 'down', 'jump'];
 
 /**
  * @typedef {{ held: boolean, pressed: boolean, released: boolean }} Button
@@ -22,13 +23,14 @@ const DIRS = ['left', 'right', 'up', 'down'];
  */
 export function createInput(canvas, viewport) {
   /** @type {Record<string, boolean>} */
-  const want = { left: false, right: false, up: false, down: false };
+  const want = { left: false, right: false, up: false, down: false, jump: false };
   /** @type {Record<string, Button>} */
   const keys = {
     left: { held: false, pressed: false, released: false },
     right: { held: false, pressed: false, released: false },
     up: { held: false, pressed: false, released: false },
     down: { held: false, pressed: false, released: false },
+    jump: { held: false, pressed: false, released: false },
   };
 
   const pointer = {
@@ -47,7 +49,7 @@ export function createInput(canvas, viewport) {
 
   /**
    * @param {KeyboardEvent} e
-   * @returns {'left' | 'right' | 'up' | 'down' | undefined}
+   * @returns {'left' | 'right' | 'up' | 'down' | 'jump' | undefined}
    */
   function dirFromEvent(e) {
     if (KEY_TO_DIR[e.code]) return KEY_TO_DIR[e.code];
@@ -56,6 +58,7 @@ export function createInput(canvas, viewport) {
     if (k === 'arrowright' || k === 'd') return 'right';
     if (k === 'arrowup' || k === 'w') return 'up';
     if (k === 'arrowdown' || k === 's') return 'down';
+    if (k === ' ') return 'jump';
     return undefined;
   }
 
@@ -139,8 +142,8 @@ export function createInput(canvas, viewport) {
     keys,
     pointer,
     advance() {
-      for (let i = 0; i < DIRS.length; i++) {
-        const dir = DIRS[i];
+      for (let i = 0; i < ACTIONS.length; i++) {
+        const dir = ACTIONS[i];
         const button = keys[dir];
         const next = want[dir];
         button.pressed = next && !button.held;
