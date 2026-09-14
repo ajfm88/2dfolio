@@ -49,6 +49,16 @@ move to Resolved.
 
 ---
 
+### 2. Autotile hole shows a grass top on the cell below [OPEN]
+
+**Where:** Unit 04 fixture mass hole (`src/data/fixtures/autotile-demo.js`); 4-neighbour autotile
+**Symptom:** The cell under a 1-tile hole draws a grass *top* edge because its north neighbour is empty.
+**Expected:** Inner-corner tiles from the remaining 31 blob cells (Unit 19).
+**Repro:** Look at the hole in the solid block on `/`.
+**Notes:** Correct for v1 4-neighbour autotile. Do not change the mask table to paper over it.
+
+---
+
 ## Resolved
 
 None yet.
@@ -106,10 +116,10 @@ from the simulation.
 
 ### 6. `CompressionStream` is not universal
 
-**Bites in:** Unit 17.
-`deflate-raw` is unavailable on older Safari. The codec must detect it, fall back to
-uncompressed base64, and mark which encoding was used with a one-character prefix so
-decoding never guesses. Both paths need a round-trip test.
+**Bites in:** Unit 17 (UI). **Countermeasure shipped in Unit 03.**
+`deflate-raw` is unavailable on older Safari. Codec uses prefix `z` (deflate-raw)
+or `u` (uncompressed base64url) and never guesses. Both paths have round-trip tests
+in `codec.test.js`. Unit 17 still needs a user-visible fallback if encode fails.
 
 ### 7. A backgrounded tab produces an enormous delta
 

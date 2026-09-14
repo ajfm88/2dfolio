@@ -36,7 +36,11 @@ export function createAutotileFixture() {
     level.set('platform', c, 6, 1);
   }
 
-  level.spawn = { c: 18, r: 6 };
+  for (let c = 28; c <= 30; c++) {
+    level.set('terrain', c, 4, 1);
+  }
+
+  level.spawn = { c: 8, r: 9 };
   level.goal = { c: 36, r: 9 };
   return level;
 }

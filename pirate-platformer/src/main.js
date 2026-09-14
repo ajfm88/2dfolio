@@ -5,17 +5,15 @@ import { loadAtlas } from './core/atlas.js';
 import { createCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
 import { createLoop } from './core/loop.js';
-import { createSprite } from './core/sprite.js';
 import { createViewport } from './core/viewport.js';
 
-import { drawTiles } from './level/render.js';
+import { createParallax } from './level/parallax.js';
+import { drawLevel } from './level/render.js';
 
 import { createAutotileFixture } from './data/fixtures/autotile-demo.js';
 import { getTheme } from './data/themes.js';
+import { Player } from './game/player.js';
 import atlasJson from './data/atlas.json';
-
-const DEMO_SPEED = 100;
-const SKY = '#ddc6a1';
 
 const level = createAutotileFixture();
 const theme = getTheme(level.theme);
@@ -39,74 +37,35 @@ const camera = createCamera();
 
 /** @type {Awaited<ReturnType<typeof loadAtlas>> | null} */
 let atlas = null;
-/** @type {ReturnType<typeof createSprite> | null} */
-let sprite = null;
-let clipW = 64;
-let clipH = 40;
-let capX = level.spawn.c * TILE;
-let capY = level.spawn.r * TILE;
-let facing = 1;
-let dragCapX = 0;
-let dragCapY = 0;
-let dragPtrX = 0;
-let dragPtrY = 0;
+/** @type {ReturnType<typeof createParallax> | null} */
+let parallax = null;
+/** @type {Player | null} */
+let player = null;
 
 /**
  * @param {number} dt
  */
 function update(dt) {
   input.advance();
-  if (!sprite) return;
+  if (!player || !parallax) return;
 
-  if (input.pointer.pressed) {
-    capX = camera.x + input.pointer.x - clipW / 2;
-    capY = camera.y + input.pointer.y - clipH / 2;
-    dragCapX = capX;
-    dragCapY = capY;
-    dragPtrX = input.pointer.x;
-    dragPtrY = input.pointer.y;
-  }
+  player.update(dt);
+  parallax.update(dt, camera.x, viewport.viewW);
 
-  if (input.pointer.down) {
-    const nextX = dragCapX + (input.pointer.x - dragPtrX);
-    if (nextX > capX) facing = 1;
-    else if (nextX < capX) facing = -1;
-    capX = nextX;
-    capY = dragCapY + (input.pointer.y - dragPtrY);
-  } else {
-    let vx = 0;
-    let vy = 0;
-    if (input.keys.left.held) vx -= 1;
-    if (input.keys.right.held) vx += 1;
-    if (input.keys.up.held) vy -= 1;
-    if (input.keys.down.held) vy += 1;
-    if (vx !== 0 || vy !== 0) {
-      const len = Math.sqrt(vx * vx + vy * vy);
-      capX += (vx / len) * DEMO_SPEED * dt;
-      capY += (vy / len) * DEMO_SPEED * dt;
-      if (vx !== 0) facing = vx;
-    }
-  }
-
-  if (capX < 0) capX = 0;
-  else if (capX > WORLD_W - clipW) capX = WORLD_W - clipW;
-  if (capY < 0) capY = 0;
-  else if (capY > WORLD_H - clipH) capY = WORLD_H - clipH;
-
-  sprite.update(dt);
-  if (!input.pointer.down) {
-    camera.follow(capX + clipW / 2, capY + clipH / 2, viewport.viewW, VIEW_H, WORLD_W, WORLD_H);
-  }
+  const cx = player.hitbox.x + player.hitbox.w / 2;
+  const cy = player.hitbox.y + player.hitbox.h / 2;
+  camera.follow(cx, cy, viewport.viewW, VIEW_H, WORLD_W, WORLD_H);
 }
 
 function render() {
   viewport.apply(ctx);
-  ctx.fillStyle = SKY;
-  ctx.fillRect(0, 0, viewport.viewW, VIEW_H);
-  if (atlas) {
-    drawTiles(ctx, camera, viewport.viewW, VIEW_H, level, theme, atlas);
+  if (atlas && parallax) {
+    drawLevel(ctx, camera, viewport.viewW, VIEW_H, level, theme, atlas, parallax);
+  } else {
+    ctx.fillStyle = theme.sky;
+    ctx.fillRect(0, 0, viewport.viewW, VIEW_H);
   }
-  if (sprite) sprite.draw(ctx, camera, capX, capY, facing < 0);
+  if (player) player.draw(ctx, camera);
 }
 
 const loop = createLoop({ update, render });
@@ -114,12 +73,19 @@ loop.start();
 
 loadAtlas(atlasJson).then((loaded) => {
   atlas = loaded;
-  const clip = loaded.get('player/idle');
-  clipW = clip.fw;
-  clipH = clip.fh;
-  capX = level.spawn.c * TILE;
-  capY = level.spawn.r * TILE - (clipH - TILE);
-  sprite = createSprite(clip);
+  parallax = createParallax(level, theme, loaded);
+
+  player = new Player(
+    level.spawn,
+    level,
+    input.keys,
+    {
+      idle: loaded.get('player/idle'),
+      run: loaded.get('player/run'),
+      jump: loaded.get('player/jump'),
+      fall: loaded.get('player/fall'),
+    },
+  );
 }).catch((err) => {
   console.error(err);
 });
