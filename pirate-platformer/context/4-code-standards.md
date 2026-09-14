@@ -168,7 +168,8 @@ z                      // draw layer from settings.Z
 - `vitest`, with tests colocated as `<module>.test.js`.
 - **Tested**: `level/codec.js` (round-trip fidelity, malformed input),
   `level/autotile.js` (all 16 masks, grid edges), `level/schema.js` (every
-  validation rule), `game/physics.js` (each resolution case), and any pure helper.
+  validation rule), `level/parallax.js` (`horizonY`, wrap including negatives),
+  `game/physics.js` (each resolution case), and any pure helper.
 - **Not tested**: rendering, DOM, scenes, audio. These are verified by running the
   game, which is what the per-unit verification checklist is for.
 - A bug fixed in a tested module gets a regression test in the same commit.
@@ -193,8 +194,8 @@ deliberately not ported:
 
 - `src/core/` — loop, viewport, camera, input, atlas, sprite, audio, rect, rng.
   Engine only; no game knowledge.
-- `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`, `render.js`.
-  Shared by both modes.
+- `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`,
+  `parallax.js`, `render.js`. Shared by both modes.
 - `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `atlas.json` (generated),
   `campaign/*.json`. Declarative; no logic beyond factory references.
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,

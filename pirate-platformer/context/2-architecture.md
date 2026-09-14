@@ -52,8 +52,9 @@ coral-corsairs/
 - `src/level/` — everything both modes share about a level. `model.js` (mutable
   in-memory level), `codec.js` (serialise, parse, share codes), `autotile.js`
   (neighbour bitmask to sheet cell), `schema.js` (defaults and validation),
-  `render.js` (tile layers and parallax drawing). Imported by both `game/` and
-  `maker/`; imports neither.
+  `parallax.js` (horizon, cloud pool, reflection clocks), `render.js` (tile
+  layers and parallax drawing). Imported by both `game/` and `maker/`; imports
+  neither.
 - `src/data/` — declarative data with no behaviour beyond factory references.
   `palette.js` (the entity registry), `themes.js` (tilesheet per theme),
   `tuning.js` (physics and gameplay numbers), `atlas.json` (generated),
@@ -100,6 +101,11 @@ only `npm run assets` needs it restored.
   `bg(0) · clouds(1) · bgTiles(2) · bgDecor(3) · main(5) · water(6) · fg(7) · fx(8)`.
 - Only tiles intersecting the camera rect are drawn — iterate the visible cell
   range, never the whole grid.
+- **Horizon Y** is derived, not stored: the top of the topmost row that contains
+  any water cell, or `rows * TILE` if the water layer is empty. Format 1 has no
+  `horizon` field. Sky, sea, horizon bands, `BG Image` and the cloud band all
+  sit on that line. Cloud positions wrap; they are never spawned or killed per
+  frame.
 
 ## Level Schema (format 1)
 
