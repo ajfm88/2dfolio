@@ -228,6 +228,47 @@ Player collision box is **18 × 26**, with the sprite drawn at
 art occupies x 20–44, y 4–32. Every entity declares its own hitbox and draw offset
 the same way, measured from its idle frame, never guessed.
 
+## Health and Coins
+
+`src/game/stats.js` is the run-scoped data model, ported from Super Pirate World's
+`code_complete/data.py` without UI side effects. World creates a fresh `Stats` on
+each enter/restart. Unit 09 HUD reads `world.stats`; setters never touch DOM.
+
+| Constant         | Value | Constant        | Value |
+| ---------------- | ----- | --------------- | ----- |
+| `startHealth`    | 5     | `coinGold`      | 5     |
+| `hazardDamage`   | 1     | `coinSilver`    | 1     |
+| `hitInvuln`      | 700 ms | `coinDiamond`  | 20    |
+| `invulnFlicker`  | 50 ms | `coinSkull`     | 50    |
+| `coinExtraLife`  | 100   | `potionHeal`    | 1     |
+
+- **Coins setter:** while `coins >= 100`, subtract 100 and `health += 1`. Intra-run
+  only; a new `Stats` resets both.
+- **Health setter:** clamps at 0, no maximum. Potions and the 100-coin bonus can
+  grow the heart row. Unit 09 must render `stats.health` hearts, not a hardcoded 3.
+- **`hurt(amount)`:** no-op while `invuln > 0` or `dead`. Otherwise subtract;
+  start `hitInvuln` only if still alive. Last hit does not flicker — the run ends
+  the same frame.
+- **Pit and water** bypass hearts and invuln: instant `'dead'`. Health 0 uses the
+  same `'dead'` return. Check order: pit → water → `stats.dead` → flag.
+- **Flicker** is draw-time only (invariant 3): while invuln, alternate the current
+  pose with `player/hit` frame 0 (white silhouette), period `invulnFlicker`, driven
+  from remaining invuln vs `dt`. No hit/dead player state, no knockback.
+- **Spikes** are entities (`k: 'spikes'`), not a tile layer. Format 1 has only
+  terrain/platform/water. Hitbox is the bottom 16 px of the cell (opaque bounds of
+  the 32×32 island spike tile, full cell width). `damages`, not `stompable`.
+
+Treasure kinds: `coin_gold`, `coin_silver`, `diamond_red`, `diamond_green`,
+`diamond_blue`, `skull`, `potion_red`, `potion_blue`. One `Collectible` class;
+per-kind clips, hitboxes and awards live on the palette entry plus `tuning.js`.
+Pickup plays a one-shot `fx/*` clip at the sprite centre, then despawns the
+runtime entity — never `level.entities`.
+
+World spawns every `level.entities` record through `byId(k).spawn`. Unknown kinds
+and entries without `spawn` are skipped. Kind-in-registry schema checks wait
+until the roster is complete (Unit 16); codec tests still use placeholder `k`
+values.
+
 ## Entity Registry
 
 `src/data/palette.js` is the single source of truth for everything placeable. It is

@@ -21,4 +21,13 @@ export const tuning = {
   dropThrough: 0.15,
   stompBounce: 300,
   hitInvuln: 0.7,
+  invulnFlicker: 0.05,
+  startHealth: 5,
+  hazardDamage: 1,
+  coinSilver: 1,
+  coinGold: 5,
+  coinDiamond: 20,
+  coinSkull: 50,
+  potionHeal: 1,
+  coinExtraLife: 100,
 };
