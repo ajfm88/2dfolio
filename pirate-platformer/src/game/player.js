@@ -42,6 +42,7 @@ const DRAW_OFFSET_Y = -6;
  *   run: AtlasClip,
  *   jump: AtlasClip,
  *   fall: AtlasClip,
+ *   hit: AtlasClip,
  * }} PlayerClips
  */
 
@@ -51,11 +52,13 @@ export class Player {
    * @param {LevelModel} level
    * @param {Keys} keys
    * @param {PlayerClips} clips
+   * @param {import('./stats.js').Stats} stats
    */
-  constructor(cell, level, keys, clips) {
+  constructor(cell, level, keys, clips, stats) {
     this.level = level;
     this.keys = keys;
     this.clips = clips;
+    this.stats = stats;
     this.z = Z.main;
 
     /** @type {Rect} */
@@ -261,8 +264,10 @@ export class Player {
    * @param {{ x: number, y: number }} cam
    */
   draw(ctx, cam) {
-    const clip = this.clip;
-    const frame = clip.n > 0 ? Math.floor(this.frameIndex) % clip.n : 0;
+    const flashing = this.stats.invuln > 0 &&
+      (Math.floor(this.stats.invuln / tuning.invulnFlicker) % 2 === 1);
+    const clip = flashing ? this.clips.hit : this.clip;
+    const frame = flashing ? 0 : (clip.n > 0 ? Math.floor(this.frameIndex) % clip.n : 0);
     const fw = clip.fw;
     const fh = clip.fh;
     const sx = frame * fw;

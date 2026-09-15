@@ -6,15 +6,15 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–06 complete.** Physics-driven Captain on the autotiled island
-  fixture with parallax. Runs, jumps (variable height), wall-slides, wall-jumps,
-  lands on terrain, stands on semi-solid platforms, drops through them. Coyote
-  time and jump buffering work. Player confirmed `/` looks right.
+- **Units 00–08 complete.** Collectibles, spikes, Stats property setters,
+  invulnerability flicker. Play-scene visual sign-off still needed (no browser
+  tools this session); logic covered by `world.test.js`.
 
 ## Current Goal
 
-- **Paused.** Next unit when work resumes: **Unit 07 — Play Scene Core.**
-  Write `specs/07-play-scene-core.md` before implementing.
+- **Unit 09 — HUD and Touch Controls.** Write `specs/09-hud-and-touch-controls.md`
+  before implementing. Do not start 09 until the player has signed off Unit 08
+  on `/`.
 
 ## Completed
 
@@ -92,14 +92,41 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   (8,9). Spec at `specs/06-player-physics.md`. `npm test` 74 passing (22 new
   physics tests). `npm run build` passes. Player sign-off 2026-09-09: `/`
   looks right.
+- **2026-09-10 — Unit 07 complete.** `game/play-scene.js` (scene lifecycle:
+  enter, exit, update, render, mountUI/unmountUI stubs), `game/world.js`
+  (factory that owns level, player, entities, parallax; update returns
+  `'playing'`/`'dead'`/`'complete'`; draw renders everything),
+  `game/flag.js` (animated flag entity at the goal cell, 34×93 sprite, 16×32
+  hitbox), `data/palette.js` (entity registry with 5 entries: spawn, goal,
+  terrain, platform, water; `byId` lookup). `main.js` rewritten from
+  throwaway demo to minimal App: owns canvas/viewport/input/camera/loop/atlas,
+  runs one PlayScene, restart on death or completion. New fixture
+  `data/fixtures/play-demo.js` (60×16: terrain floor with two gaps, water
+  bottom row, platforms over gaps, wall column, ceiling overhang). Death by
+  pit (bottom border) and water (center-bottom of hitbox in water cell) both
+  trigger restart. Flag completion triggers restart. Spec at
+  `specs/07-play-scene-core.md`. `npm test` 74 passing (no new tests — unit
+  is scene/entity wiring). `npm run build` passes. Player sign-off
+  2026-09-10: everything works.
+- **2026-09-12 — Unit 08 complete.** Spec at `specs/08-collectibles-and-hazards.md`.
+  `game/stats.js` ports SPW `Data` setters (start 5 hearts, 100 coins → extra
+  heart, no max, no DOM). `game/collectibles.js` (`Collectible` + one-shot
+  `PickupFx`) and `game/hazards/spikes.js`. Palette gains 9 entity entries with
+  `spawn` factories. `world.js` iterates `level.entities` via `byId(k).spawn`,
+  compacts `alive === false`, draws fx after the player, returns `'dead'` on
+  `stats.dead`. Player flicker uses `player/hit` frame 0. Fixture places every
+  treasure kind plus jumpable spikes. `npm test` 91 passing (11 stats + 6 world).
+  `npm run build` passes. Visual play (particles, flicker, pit/flag regression)
+  needs player sign-off — no browser tools this session. Dev server served on
+  5174; modules and sprites 200.
 
 ## In Progress
 
-- None. Session paused after Unit 06.
+- None. Waiting on Unit 08 play sign-off, then Unit 09 spec.
 
 ## Next Up
 
-- **Unit 07 — Play Scene Core.** Spec not written yet.
+- **Unit 09 — HUD and Touch Controls.** Spec not written yet.
 
 ## Open Questions
 
@@ -292,34 +319,82 @@ interpreting Space as a pan-up gesture.
 Parallax colours and rates still live on the theme (2026-09-07 decision). Physics
 numbers live in `data/tuning.js`. The two do not overlap.
 
+**2026-09-10 — Factory-function World, not a class.**
+`createWorld(level, theme, atlas, keys)` returns a plain object with `update`,
+`draw`, `player`, `level`, `worldW`, `worldH`. Created fresh on each level
+enter/restart. *Why:* consistent with `createLoop`, `createCamera`,
+`createParallax` — the core factory pattern. No `this` context to lose, no
+inheritance. The World does not own the camera, input, or viewport — those
+belong to the App (`main.js`). The scene passes `camX` and `viewW` into
+`world.update()`.
+
+**2026-09-10 — `world.update()` returns a status string.**
+`'playing'`, `'dead'`, or `'complete'`. The scene reads the return value and
+calls the appropriate callback (`onDeath`, `onComplete`). *Why:* the World
+knows the game state but must not know about scenes, UI, or transitions. A
+return value keeps it decoupled — the scene decides what death or completion
+means.
+
+**2026-09-10 — `main.js` is a minimal App, not a scene manager class.**
+It owns canvas/viewport/input/camera/loop/atlas and runs one PlayScene. The
+loop delegates to `scene.update(dt)` and `scene.render(ctx, cam)` via closures —
+no changes to `core/loop.js`. Restart re-deserialises the fixture for a fresh
+LevelModel. *Why:* a full scene manager with transition stack is premature until
+Unit 16 (test-play round trip) and Unit 18 (title, level select). The current
+shape is easy to grow without rework.
+
+**2026-09-10 — `palette.js` has tile and marker entries, not just entities.**
+Tile entries (`placement: 'tile'`) have no `spawn` function — they represent
+layers. Marker entries (`placement: 'marker'`) are structural metadata. Only
+entity entries (future) have `spawn` factories. *Why:* the maker palette
+(Unit 13) needs all placeable things in one registry. Having them from the start
+means the maker reads `palette.js` without changes.
+
+**2026-09-12 — Stats class with SPW property setters, not a 3-heart cap.**
+Start 5, no max, 100 coins → +1 heart, coin values unhalved (1/5/20/50).
+Setters never touch DOM. *Why:* Unit 08's "property setters" is SPW `data.py`.
+Unit 09 HUD must render `stats.health` hearts.
+
+**2026-09-12 — Spikes are entities, not a tile layer.** Format 1 cannot grow a
+fourth layer. Atlas `spikes` is a 32×32 object. Hitbox is the bottom 16 px.
+
+**2026-09-12 — Invuln flicker is `player/hit` frame 0, not a sixth state.**
+Draw-time only, period 50 ms from remaining invuln. No knockback, no death clip.
+
+**2026-09-12 — World spawns via `palette.spawn`; unknown kinds skipped.**
+No `switch` on kind. Kind-in-registry schema checks wait (codec tests still use
+`'crabby'`). Flag stays a hardcoded marker.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–06 done. On `/` the Captain runs, jumps (variable
-height), wall-slides, wall-jumps, lands on terrain, stands on semi-solid
-platforms, and drops through them. Coyote time and jump buffering work.
-Parallax, autotiling, and all prior features still work. `/atlas.html` still
-lists packed clips.
+**Where we are:** Units 00–08 done in code. World spawns treasure and spikes
+from `level.entities` through `palette.js`. Stats tracks hearts and coins.
+Spikes hurt with 700 ms invuln; health 0 is `'dead'` (restart). Pickups despawn
+with a one-shot fx clip. No HUD yet — coin wrap is proven by tests. Play visual
+(particles, white flicker, pit/flag still working) needs a look at
+`http://localhost:5174/` (dev server may already be up).
 
-**Next:** Unit 07 — Play Scene Core. Spec first
-(`specs/07-play-scene-core.md`). Do not start Unit 08 until 07 is done.
+**Next:** Player sign-off on Unit 08, then Unit 09 spec
+(`specs/09-hud-and-touch-controls.md`). Do not start 09 until 08 is signed off.
 
 **How to run**
 
 - `npm run dev` — game at `/`, atlas at `/atlas.html`. Prefer a fixed port;
   5173 may already be another project (ArcGIS). `--port 5174 --strictPort`.
-- `npm test` — 74 tests (schema, model, codec, autotile, parallax, physics).
+- `npm test` — 91 tests (schema, model, codec, autotile, parallax, physics,
+  stats, world collect/hurt).
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
 **Do not**
 
-- Grow `src/main.js` into an App/scene framework. That is Unit 07.
 - Import `atlas.json` from `core/`.
 - Pack sword clips, ship tilesheet, or Pixel Adventure leftovers.
+- Add HUD, touch controls, enemies, or audio (Units 09–12).
 - Relitigate: DOM UI, level-select (no overworld), stomp-only, local + share
-  codes.
+  codes, 5 starting hearts, spikes-as-entities.
 
 **Standing hazards**
 
@@ -339,7 +414,9 @@ lists packed clips.
 read-only. Audio is CC0 from `reference/super-pirate-world/audio/`.
 
 **Facts not to guess:** 16-case autotile table and player hitbox 18×26 offset
-(−23, −6) in `2-architecture.md`. Re-measure if either looks wrong.
+(−23, −6) in `2-architecture.md`. Flag hitbox 16×32, draw offset (−9, −61),
+sprite 34×93. Collectible opaque bounds and spike 32×16 hitbox in
+`specs/08-collectibles-and-hazards.md`. Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–06. Playbook:
+**Specs on disk:** `00-build-plan.md` plus units 00–08. Playbook:
 `context/README.md` Part 3.
