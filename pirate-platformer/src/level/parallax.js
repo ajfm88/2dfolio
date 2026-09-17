@@ -36,6 +36,35 @@ export function wrap(x, w) {
 }
 
 /**
+ * Index of the small cloud to recycle to the right of the view: the one that
+ * has most recently drifted fully off the left edge. Returns -1 when none has
+ * exited, so a still-visible cloud is never teleported (which would pop it out
+ * mid-screen). The signed screen x `s` is computed exactly as render.js draws
+ * it — `s` in `[0, viewW)` is on screen, `s` in `[-w, 0)` straddles the left
+ * edge, and `s <= -w` is fully off the left.
+ *
+ * @param {ReadonlyArray<{ x: number, w: number }>} clouds
+ * @param {number} camX
+ * @param {number} viewW
+ * @param {number} period
+ * @param {number} factor small-cloud parallax factor
+ * @returns {number}
+ */
+export function pickRecyclable(clouds, camX, viewW, period, factor) {
+  let best = -1;
+  let bestS = -Infinity;
+  for (let i = 0; i < clouds.length; i++) {
+    const sx = wrap(clouds[i].x - camX * factor, period);
+    const s = sx >= viewW ? sx - period : sx;
+    if (s + clouds[i].w <= 0 && s > bestS) {
+      bestS = s;
+      best = i;
+    }
+  }
+  return best;
+}
+
+/**
  * @param {string} id
  * @returns {number}
  */
@@ -120,18 +149,11 @@ export function createParallax(level, theme, atlas) {
    * @param {number} camX
    * @param {number} viewW
    */
-  function recycleLeftmost(camX, viewW) {
-    let best = 0;
-    let bestSx = Infinity;
+  function recycleExited(camX, viewW) {
     const factor = theme.smallCloudParallax;
-    for (let i = 0; i < small.length; i++) {
-      const sx = wrap(small[i].x - camX * factor, period);
-      if (sx < bestSx) {
-        bestSx = sx;
-        best = i;
-      }
-    }
-    const cloud = small[best];
+    const i = pickRecyclable(small, camX, viewW, period, factor);
+    if (i < 0) return;
+    const cloud = small[i];
     cloud.x = wrap(camX * factor + viewW + cloud.w, period);
   }
 
@@ -163,7 +185,7 @@ export function createParallax(level, theme, atlas) {
       timer += dt;
       if (timer >= theme.cloudTimer) {
         timer -= theme.cloudTimer;
-        recycleLeftmost(camX, viewW);
+        recycleExited(camX, viewW);
       }
 
       for (let i = 0; i < reflects.length; i++) {

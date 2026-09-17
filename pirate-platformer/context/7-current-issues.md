@@ -45,7 +45,7 @@ move to Resolved.
 **Symptom:** Compositing Yellow Board `1.png`–`16.png` in row-major 4×4 reproduces the kit's `(guide).png` — four example panel sizes with gaps — not a single panel with 2-tile-wide edges.
 **Expected:** `border-image` slice 32 on that 128×128 PNG yields clean corners, edges and fill.
 **Repro:** Open `public/assets/ui/board-yellow.png` next to `Yellow Board (guide).png`.
-**Notes:** Measured tiles: 1 = TL corner, 2 = top edge, 3 = TR corner. The usable 9-slice is the top-left 3×3 (tiles 1,2,3 / 5,6,7 / 9,10,11). Column 4 and row 4 are the extra size examples. Unit 01 followed the spec (16 tiles → 128×128). When Unit 15 first uses `border-image`, either extract that 3×3 (96×96, still slice 32) or expand it to a 4×4 by duplicating the mid-edge and fill tiles. Do not change the level schema.
+**Notes:** Measured tiles: 1 = TL corner, 2 = top edge, 3 = TR corner. The usable 9-slice is the top-left 3×3 (tiles 1,2,3 / 5,6,7 / 9,10,11). Column 4 and row 4 are the extra size examples. Unit 01 followed the spec (16 tiles → 128×128). When Unit 15 first uses `border-image`, either extract that 3×3 (96×96, still slice 32) or expand it to a 4×4 by duplicating the mid-edge and fill tiles. Do not change the level schema. **Update 2026-09-13:** Unit 09 is the first DOM UI and would be the first `border-image` user, but per this issue it deliberately ships **flat token-styled** panels and buttons (solid fills, `calc(2px * var(--ui-scale))` `--ink` borders, no radius) instead. The nine-slice `border-image` work stays assigned to Unit 15; sprite-backed HUD chrome (hearts, coin, control glyphs) uses the clean strips and is unaffected.
 
 ---
 
@@ -59,9 +59,46 @@ move to Resolved.
 
 ---
 
+### 4. Touch-control layout looks off at phone width [OPEN]
+
+**Where:** `src/ui/styles/touch-controls.css` (Unit 09)
+**Symptom:** At a narrow phone viewport the on-screen controls sit awkwardly — the D-pad cluster (left/right with `down` spanning below) and the jump button do not feel well balanced for thumbs. Seen in device emulation during the Unit 09 check.
+**Expected:** A comfortable, thumb-reachable control layout at phone widths in both orientations.
+**Repro:** Open `/` in device emulation (phone), tap once to reveal controls.
+**Notes:** Deferred by the player during Unit 09 ("we can worry about that once the game is completed"). Functionality is correct (movement, jump, drop-through, multi-touch all work); this is layout/ergonomics only. Handle in the responsive pass (around Unit 15 maker UI / a later polish unit), not inside an unrelated unit. Do not change the input wiring — CSS/layout only.
+
+---
+
+### 5. Throwaway atlas debug page still in the tree [OPEN]
+
+**Where:** `atlas.html`, `src/debug-atlas.js`, `src/ui/styles/debug-atlas.css` (Unit 01)
+**Symptom:** The Unit 01 clip-verification page is still in the source tree with no decision recorded either way. Unit 01's tracker entry says "`/atlas.html` is removable" once `core/atlas.js` landed; Unit 02's says "`/atlas.html` kept" without saying why or for how long. Nothing since has revisited it, so it reads as an oversight rather than a choice.
+**Expected:** Either deleted — its job, proving every clip packs with the right frame count, is done and `core/atlas.js` now covers the runtime path — or explicitly kept as a dev-only tool with that decision recorded here and in the tracker.
+**Repro:** `ls atlas.html src/debug-atlas.js src/ui/styles/debug-atlas.css`; run `npm run dev` and open `/atlas.html`.
+**Notes:** Found during a context review on 2026-09-16, not during a unit. **It does not ship:** `vite.config.js` declares no extra Rollup input, so the production build has `index.html` only — `dist/` was checked and contains no `atlas.html`. Nothing in `src/main.js` imports `debug-atlas.js`; the page is reachable only through the dev server. So the cost is three unreferenced files, not bundle weight. Useful again whenever `tools/asset-manifest.mjs` gains clips (Units 10, 11, 20), which is an argument for keeping it — decide then, and do not fold the deletion into an unrelated unit.
+
+---
+
+### 6. `jsconfig.json` `baseUrl` is deprecated and now reports as an error [OPEN]
+
+**Where:** `jsconfig.json` line 9 (Unit 00)
+**Symptom:** The editor's TypeScript service reports, against `jsconfig.json` itself:
+"Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0. Specify compilerOption '\"ignoreDeprecations\": \"6.0\"' to silence this error." Severity is **Error**, so `getDiagnostics` is no longer clean for the project even when every source file is.
+**Expected:** A clean diagnostics run, and a `jsconfig.json` that still resolves imports the same way after TypeScript 7.
+**Repro:** Run `getDiagnostics` with no file argument.
+**Notes:** Found during Unit 10, caused by an editor TypeScript upgrade, not by any code. `"paths"` is `{}` and every import in `src/` is relative, so `baseUrl` is doing nothing — deleting both keys is very likely the whole fix, and is strictly smaller than adding `ignoreDeprecations`. Not done inside Unit 10 because `jsconfig.json` is Unit 00's file and this is unrelated to walker enemies. TypeScript is not a project dependency (`npx tsc` is unavailable), so verify the fix through the editor's diagnostics.
+
+---
+
 ## Resolved
 
-None yet.
+### 3. Small clouds pop out mid-screen instead of exiting left [FIXED]
+
+**Fixed:** 2026-09-13 (found during the Unit 08 play check; scoped bug fix in Unit 05 code)
+**Where:** `src/level/parallax.js` `recycleLeftmost` → now `recycleExited` + pure `pickRecyclable`
+**Symptom:** Every `cloudTimer` (2.5 s) a small cloud that was still fully visible — near the left edge of the screen — vanished instantly, rather than drifting off the left edge.
+**Cause:** `recycleLeftmost` selected the cloud with the **minimum** wrapped `sx` in `[0, period)`. In that coordinate `sx ≈ 0` is a cloud at the left edge but still fully on screen; a cloud that has genuinely exited past the left wraps to `sx ≈ period` (the top of the range), because `wrap` maps a negative screen-x to `period + x`. So the "leftmost" pick was the most-visible left cloud, and teleporting it to the right popped it.
+**What changed:** Extracted the selection into an exported pure helper `pickRecyclable(clouds, camX, viewW, period, factor)` that computes the same signed screen x `s` the draw path uses, considers only clouds fully off the left edge (`s + w <= 0`), and returns the most recently exited one (greatest such `s`), or `-1` when none has exited (so a visible cloud is never moved). `recycleExited` is a thin wrapper; the right-edge destination is unchanged. Regression tests added in `parallax.test.js` (4 cases). `npm test` 95 passing, `npm run build` clean. No schema, theme, or invariant change.
 
 ---
 

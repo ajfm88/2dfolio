@@ -10,10 +10,13 @@ import { createViewport } from './core/viewport.js';
 import { getTheme } from './data/themes.js';
 import { createPlayFixture } from './data/fixtures/play-demo.js';
 import { createPlayScene } from './game/play-scene.js';
+import { createPlayHud } from './ui/hud.js';
+import { createTouchControls } from './ui/touch-controls.js';
 import atlasJson from './data/atlas.json';
 
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
 const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+const uiRoot = /** @type {HTMLElement} */ (document.getElementById('ui'));
 
 const viewport = createViewport(canvas, ctx, {
   onResize() {
@@ -42,12 +45,20 @@ function enterLevel() {
     input,
     camera,
     viewport,
-    onDeath() { restart(); },
-    onComplete() { restart(); },
+    ui: { createHud: createPlayHud, createTouch: createTouchControls },
+    onDeath() { pendingRestart = true; },
+    onReplay() { pendingRestart = true; },
   });
+  scene.mountUI(uiRoot);
 }
 
+// Death and replay are requested from inside scene.update; the actual scene
+// transition (which mounts/unmounts DOM) runs here, after update returns, so the
+// scene's update never touches the DOM (invariant 3).
+let pendingRestart = false;
+
 function restart() {
+  scene.unmountUI();
   scene.exit();
   enterLevel();
 }
@@ -57,6 +68,10 @@ function restart() {
  */
 function update(dt) {
   scene.update(dt);
+  if (pendingRestart) {
+    pendingRestart = false;
+    restart();
+  }
 }
 
 function render() {

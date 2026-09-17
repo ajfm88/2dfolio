@@ -198,6 +198,13 @@ export class Player {
     this.jumpBufferTimer = 0;
   }
 
+  /** Stomp bounce. Called by an enemy the player killed from above. */
+  bounce() {
+    this.vy = -tuning.stompBounce;
+    this.coyoteTimer = 0;
+    this.jumpBufferTimer = 0;
+  }
+
   doWallJump() {
     this.vy = -tuning.jumpVelocity;
     this.vx = this.onWallLeft ? 1 : -1;
