@@ -4,7 +4,7 @@
 
 | Layer          | Technology                          | Role                                                                 |
 | -------------- | ----------------------------------- | -------------------------------------------------------------------- |
-| Build          | Vite 7 (vanilla template)           | Dev server, ES module bundling, static asset serving, production build |
+| Build          | Vite 8 (vanilla template)           | Dev server, ES module bundling, static asset serving, production build |
 | Language       | JavaScript (ES2022 modules)         | All application code. No transpiled superset.                          |
 | Types          | JSDoc + `jsconfig.json` `checkJs`   | Editor-level type checking with zero build cost                        |
 | Rendering      | Canvas 2D                           | The game world only — tiles, entities, parallax                        |
@@ -394,7 +394,11 @@ correct.
 7. **Every maker edit goes through the command stack.** UI code never mutates
    `LevelModel` directly, or undo silently breaks.
 8. **Input is read only through `core/input.js`.** No `addEventListener` in scene,
-   game or maker code.
+   game or maker code. On-screen (touch) controls feed the same `keys` via
+   `input.bindVirtualButton(el, action)` — advance() merges keyboard OR virtual per
+   action — and `input.onTouchDetected` / `input.hasTouch` drive control-scheme
+   detection. All pointer wiring for these lives inside `input.js`; `ui/` only hands
+   it elements.
 9. **The canvas draws the world only.** All UI is DOM.
 10. **No code assumes a fixed viewport width.** Anything anchored to the screen
     anchors to an edge or a centre, never to a hardcoded coordinate.
