@@ -1,8 +1,9 @@
 import { deserialise } from '../../level/codec.js';
 
 /**
- * 60×16 fixture for Units 07–08: terrain floor with gaps, water, platforms,
- * spawn left, goal right, treasure and spikes on the path.
+ * 60×16 fixture for Units 07–10: terrain floor with gaps, water, platforms,
+ * spawn left, goal right, treasure and spikes on the path, and one of each
+ * walker enemy placed where its own behaviour is the thing being tested.
  * @returns {import('../../level/model.js').LevelModel}
  */
 export function createPlayFixture() {
@@ -41,6 +42,16 @@ export function createPlayFixture() {
       { k: 'skull', c: 44, r: 12 },
       { k: 'coin_silver', c: 48, r: 12 },
       { k: 'coin_silver', c: 50, r: 12 },
+      // Patrols between the col-10 wall and the col-20 pit edge, so it turns at
+      // both a wall and a ledge, and lunges along the flat between them.
+      { k: 'fierce_tooth', c: 17, r: 12, p: { dir: -1 } },
+      // Directly under the drop off the east end of the row-11 platform: dive on
+      // it and meet the spin block.
+      { k: 'pink_star', c: 25, r: 12 },
+      // Rides the semi-solid platform over the second pit, turning at both edges.
+      { k: 'crabby', c: 39, r: 10 },
+      // Guards the skull at (44, 12): taking it means stepping into the strike.
+      { k: 'crabby', c: 46, r: 12 },
     ],
   };
 
