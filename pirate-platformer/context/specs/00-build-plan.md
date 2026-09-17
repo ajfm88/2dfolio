@@ -136,13 +136,26 @@ nothing is obscured by a notch or home indicator.
 
 ## Unit 10 — Walker Enemies
 
-**Builds:** a shared `WalkerEnemy` base plus Crabby, Fierce Tooth and Pink Star —
-ledge and wall turning, lunge on proximity using the Anticipation and Attack clips,
-contact damage, stomp death with a bounce — and their palette entries.
+**Builds:** a shared `WalkerEnemy` base — ledge and wall turning, contact damage,
+stomp death with a bounce — plus Crabby, Fierce Tooth and Pink Star, and their
+palette entries. Per the 2026-09-13 decision the three get **genuinely distinct
+behaviour**, not one behaviour reskinned, each read off its own Anticipation,
+Attack and Attack Effect frames:
 
-**Depends on:** 09. **Installs:** none.
+- **Crabby** has no facing and strikes **both sides at once** in a wide, short
+  pulse. Its top is always safe, so the answer is to go over it.
+- **Fierce Tooth** **lunges** forward well above the player's run speed, stops at a
+  wall or ledge rather than committing off one, and is then helpless long enough
+  to be stomped.
+- **Pink Star** spins up only when the player is **above** it and is
+  **un-stompable while spinning** — the one enemy that punishes a lazy stomp.
+
+**Depends on:** 09. **Installs:** none. Uses only the eight clips per enemy that
+Unit 01 already packs; Jump, Fall and Ground exist in the pack but are not packed,
+and packing them would make this an asset-pipeline unit too.
 **Done when:** each enemy patrols, turns correctly at ledges and walls, damages on
-contact from the sides, dies to a stomp, and never walks off the level.
+contact from the sides, dies to a stomp, never walks off the level, and each one's
+distinct behaviour is demonstrable in the fixture.
 
 ## Unit 11 — Shooters and Projectiles
 

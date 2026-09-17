@@ -1,0 +1,89 @@
+/* Paused overlay and results panel. Flat token styling this unit; the nine-slice
+   border-image chrome lands in Unit 15 (Issue #1). No border-radius anywhere. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px * var(--ui-scale));
+  background: var(--scrim);
+  pointer-events: auto;
+  animation: overlay-in 120ms ease-out;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--ui-scale));
+  min-inline-size: calc(220px * var(--ui-scale));
+  max-inline-size: calc(480px * var(--ui-scale));
+  padding: calc(16px * var(--ui-scale));
+  background: var(--board);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  color: var(--text);
+}
+
+.panel__title {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-lg);
+  color: var(--text-display);
+  text-shadow: calc(1px * var(--ui-scale)) calc(1px * var(--ui-scale)) 0 var(--ink);
+}
+
+.panel__stats {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--ui-scale));
+}
+
+.panel__row {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(16px * var(--ui-scale));
+  font-size: var(--fs-md);
+}
+
+.panel__actions {
+  display: flex;
+  justify-content: center;
+  gap: calc(8px * var(--ui-scale));
+}
+
+.btn {
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
+  padding: calc(8px * var(--ui-scale)) calc(14px * var(--ui-scale));
+  background: var(--board-light);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.btn:hover { transform: translateY(calc(-1px * var(--ui-scale))); }
+.btn:active { transform: translateY(calc(1px * var(--ui-scale))); }
+.btn:disabled { opacity: 0.6; pointer-events: none; }
+.btn:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation: none; }
+  .btn:hover, .btn:active { transform: none; }
+}

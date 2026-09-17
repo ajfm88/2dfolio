@@ -2,6 +2,9 @@ import { Z } from '../settings.js';
 import { tuning } from './tuning.js';
 import { Collectible } from '../game/collectibles.js';
 import { Spikes } from '../game/hazards/spikes.js';
+import { Crabby } from '../game/entities/crabby.js';
+import { FierceTooth } from '../game/entities/fierce-tooth.js';
+import { PinkStar } from '../game/entities/pink-star.js';
 
 /**
  * @typedef {{
@@ -22,7 +25,16 @@ import { Spikes } from '../game/hazards/spikes.js';
  *   hitboxH?: number,
  *   drawOffsetX?: number,
  *   drawOffsetY?: number,
- *   spawn?: (world: unknown, cell: { c: number, r: number }) => unknown,
+ *   flipOffsetX?: number,
+ *   clips?: string,
+ *   speed?: number,
+ *   senseRange?: number,
+ *   cooldown?: number,
+ *   artFacing?: number,
+ *   strikeW?: number,
+ *   lungeSpeed?: number,
+ *   spinTime?: number,
+ *   spawn?: (world: unknown, rec: import('../types.js').EntityRecord) => unknown,
  * }} PaletteEntry
  */
 
@@ -250,6 +262,77 @@ export const palette = [
     drawOffsetX: 0,
     drawOffsetY: -16,
     spawn(world, cell) { return new Spikes(world, cell, this); },
+  },
+  {
+    id: 'crabby',
+    group: 'enemies',
+    label: 'Crabby',
+    icon: 'crabby/idle',
+    placement: 'entity',
+    layer: null,
+    z: Z.main,
+    clips: 'crabby',
+    speed: 30,
+    senseRange: 64,
+    cooldown: 1.2,
+    // Drawn face-on: never flipped.
+    artFacing: 0,
+    // Width of the crabby/attack-effect frame, the reach the art actually shows.
+    strikeW: 118,
+    // idle f0 72x32, art at x17 y6 w42 h23, feet at y29
+    hitboxW: 36,
+    hitboxH: 21,
+    drawOffsetX: -20,
+    drawOffsetY: -8,
+    spawn(world, rec) { return new Crabby(world, rec, this); },
+  },
+  {
+    id: 'fierce_tooth',
+    group: 'enemies',
+    label: 'Fierce Tooth',
+    icon: 'tooth/idle',
+    placement: 'entity',
+    layer: null,
+    z: Z.main,
+    clips: 'tooth',
+    speed: 45,
+    senseRange: 96,
+    cooldown: 1,
+    // The only one drawn in profile, facing left.
+    artFacing: -1,
+    lungeSpeed: 170,
+    // idle f0 34x30, art at x7 y5 w23 h23, feet at y28
+    hitboxW: 17,
+    hitboxH: 21,
+    drawOffsetX: -10,
+    drawOffsetY: -7,
+    // Art sits 3 px right of its canvas centre, so a canvas flip would shift it
+    // left by that much: drawOffsetX + (2*7 + 23 - 34).
+    flipOffsetX: -7,
+    spawn(world, rec) { return new FierceTooth(world, rec, this); },
+  },
+  {
+    id: 'pink_star',
+    group: 'enemies',
+    label: 'Pink Star',
+    icon: 'star/idle',
+    placement: 'entity',
+    layer: null,
+    z: Z.main,
+    clips: 'star',
+    speed: 60,
+    senseRange: 56,
+    cooldown: 0.9,
+    // Drawn face-on: never flipped.
+    artFacing: 0,
+    // Outlasts the 0.4 s attack clip, which wraps — a spin should loop.
+    spinTime: 0.8,
+    // idle f0 34x30, art at x3 y4 w27 h25, feet at y29
+    hitboxW: 21,
+    hitboxH: 23,
+    drawOffsetX: -6,
+    drawOffsetY: -6,
+    spawn(world, rec) { return new PinkStar(world, rec, this); },
   },
 ];
 

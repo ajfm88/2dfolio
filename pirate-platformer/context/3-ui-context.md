@@ -165,10 +165,22 @@ multiples, which is the only mode that keeps pixel art from tearing mid-tile.
 - **Minimum hit area is 44 × 44 CSS pixels** on every interactive element, enforced
   with `min-block-size` and `min-inline-size`, regardless of visual size.
 
-### Life bar
+### Hearts row and coin counter
 
-Hearts use `Life Bars/Big Bars` (4 frames at 32 × 32) as `<img>` elements in a row,
-one per heart, swapping frame on damage. Not canvas-drawn — the HUD is DOM.
+`Life Bars/Big Bars` is a segmented life *bar*, not a per-heart sprite: frame 0 is a
+red-heart medallion (with a rail stub), frame 1 a skull medallion, frames 2–3 are
+rail. So the HUD does **not** lay out one frame per heart. Instead it shows one heart
+per point of `stats.health` by cropping the heart medallion out of
+`/assets/ui/hearts.png` — source rect **x0 y6 w16 h18** — with `background-position`,
+rendered pixel-doubled and scaled by `--ui-scale`, `image-rendering: pixelated`. The
+row grows and shrinks with health (no maximum; see the Stats model). Not
+canvas-drawn — the HUD is DOM.
+
+The coin counter crops the first frame of `/assets/sprites/coin-gold.png` (x0 y0
+w16 h16) the same way, followed by the count in `--font-ui`. The pause button has no
+kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
+`/assets/ui/icons.png` (8 frames, 28 × 28): index **2 = left, 3 = right, 0 = down,
+1 = up/jump**.
 
 ### Form controls
 

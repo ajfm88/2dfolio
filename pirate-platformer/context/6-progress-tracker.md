@@ -6,15 +6,19 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–08 complete.** Collectibles, spikes, Stats property setters,
-  invulnerability flicker. Play-scene visual sign-off still needed (no browser
-  tools this session); logic covered by `world.test.js`.
+- **Units 00–10 complete and signed off.** Unit 10 (three walker enemies with
+  genuinely distinct behaviour) play-tested and signed off 2026-09-16.
 
 ## Current Goal
 
-- **Unit 09 — HUD and Touch Controls.** Write `specs/09-hud-and-touch-controls.md`
-  before implementing. Do not start 09 until the player has signed off Unit 08
-  on `/`.
+- **Unit 11 — Shooters and Projectiles.** Write `specs/11-shooters-and-projectiles.md`
+  before implementing. Seashell and Cannon with their fire states, the pearl and
+  cannonball projectiles, terrain collision with a burst particle, lifetime
+  despawn, and their palette entries. The clips are already packed (Unit 01:
+  `cannon/*`, `seashell/*`, `pearl/*`). SPW `enemies.py` `Shell` /
+  `Pearl` is the reference for the fire cycle and the near/front/level trigger —
+  `WalkerEnemy.playerNear` / `playerInFront` already implement that trigger and
+  should be the starting point rather than a second copy of it.
 
 ## Completed
 
@@ -119,14 +123,121 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   `npm run build` passes. Visual play (particles, flicker, pit/flag regression)
   needs player sign-off — no browser tools this session. Dev server served on
   5174; modules and sprites 200.
+- **2026-09-13 — Bug fix: cloud recycle popped visible clouds (Issue #3).**
+  Found during the Unit 08 play check. `parallax.js` `recycleLeftmost` selected
+  the minimum wrapped `sx`, which is a still-visible cloud near the left edge,
+  and teleported it to the right — clouds vanished mid-sky instead of drifting
+  off the left. Extracted an exported pure `pickRecyclable` (only recycles a
+  cloud fully off the left edge; returns -1 when none has, so a visible cloud is
+  never moved); `recycleLeftmost` → `recycleExited` wrapper, destination
+  unchanged. 4 regression tests in `parallax.test.js`. Unit 05 code, scoped bug
+  fix — no schema/theme/invariant change. Moved to Resolved in
+  `7-current-issues.md`.
+- **2026-09-13 — Unit 09 complete.** Spec at `specs/09-hud-and-touch-controls.md`.
+  First `src/ui/` layer: `dom.js`, `hud.js` (hearts row cropped from the life-bar
+  medallion, coin counter from `coin/gold` frame 0, level-name CSS flash, pause
+  button, paused + results overlays), `touch-controls.js` (D-pad + jump, revealed on
+  first touch), and `styles/{hud,touch-controls,dialog}.css` (flat token styling;
+  nine-slice still Unit 15). `core/input.js` gained virtual buttons
+  (`setVirtual`/`bindVirtualButton`), touch detection (`hasTouch`/`onTouchDetected`),
+  and Enter as an edge `pause` action. `play-scene.js` mounts UI via injected
+  factories (game never imports ui), owns pause/timer/finished, and reconciles all
+  HUD DOM in render (update stays DOM-free). `main.js` wires the `#ui` root, injects
+  the ui factories, and defers restart out of `scene.update`. Enter toggles
+  pause/resume and, on the results screen, triggers Play again. `npm test` 95,
+  `npm run build` clean, `getDiagnostics` clean. Player sign-off 2026-09-13
+  (keyboard + touch, pause/Enter, results, pit/water/flag).
+  - **Two bugs found and fixed in-unit:** (1) `input.js` captured the pointer to the
+    canvas on every `pointerdown`, swallowing clicks on DOM buttons — fixed by only
+    engaging the world pointer when `e.target === canvas`. (2) `showResults` and the
+    death/replay restart were being triggered from `update()` (DOM in update,
+    invariant 3) — moved overlay open/close into the render reconcile and deferred
+    restart to the App loop after `scene.update`.
+  - **Deferred:** mobile touch-control layout looks off at phone width — logged as
+    Issue #4, to be handled in the later responsive pass (user's call).
+
+- **2026-09-16 — Context review and doc sync.** Read all seven context files plus
+  `specs/00-build-plan.md` against the tree and fixed three drifts, no code
+  touched. (1) The **Session Notes** block — explicitly the cold-resume entry
+  point — still described Units 00–08 with "No HUD yet" and pointed at the Unit 09
+  spec as the next thing to write, six days after Unit 09 shipped; a cold session
+  trusting it would have redone finished work. Rewritten to Units 00–09, with the
+  do-not list, the relitigate list and the specs-on-disk line brought forward.
+  (2) `2-architecture.md` stack table said Vite 7; installed is **8.2.2**
+  (vitest 5.0.0), which the Unit 00 entry already recorded correctly. (3) The
+  Unit 01 atlas debug page is still in the tree, marked removable by Unit 01 and
+  kept by Unit 02 with no reason given — logged as issue 5 rather than deleted,
+  since it may earn its keep again when Units 10/11/20 add clips. Verified while
+  reviewing: `npm test` 95 passing across 8 files, `src/maker/` and
+  `src/storage/` correctly empty, `specs/10-walker-enemies.md` not yet written.
+
+- **2026-09-16 — Unit 10 complete.** Spec at `specs/10-walker-enemies.md`.
+  `game/entities/walker-enemy.js` (shared base) plus `crabby.js`,
+  `fierce-tooth.js`, `pink-star.js`; three palette entries; two `tuning.js` keys
+  (`enemySenseHeight`, `enemyTurnCooldown`); `Player.bounce()`; `level` added to
+  the world spawn handle. Everything else reused as-is — `resolveH`/`resolveV`/
+  `resolveSemiSolid`/`checkFloor`/`checkWall*` needed no new export, and
+  `world.js` needed no spawn or draw change. `npm test` 122 passing (95 prior +
+  27 walker), `npm run build` clean, `getDiagnostics` clean on every touched file.
+  Player sign-off 2026-09-16 after a full playthrough: "all 3 enemies were
+  implemented so well".
+  - **The three behaviours were derived from the art, not invented.** Measured
+    opaque bounds and centroid shift across all 24 enemy clips: Crabby's centroid
+    sits within 0.7 px of canvas centre in every clip and its `attack` throws both
+    claws to opposite canvas edges at once, so it is face-on with **no safe side**;
+    Fierce Tooth's centroid swings +0.5 → **−1.1 during `attack`**, so it is a
+    committed forward **lunge**; Pink Star's `attack` is a spinning pinwheel, so it
+    is **un-stompable while spinning** and triggers on the player being *above* it.
+    Silhouette mirror-symmetry was tried first and discarded — the player scores
+    5.6 % asymmetric and is plainly directional, so it measures nothing useful.
+  - **One state mechanism, no special cases.** Every state but `patrol` carries a
+    `stateTimer` that defaults to its clip's length, and every clip wraps. That
+    yields "plays exactly once" for free and lets Pink Star's longer spin loop its
+    clip, with no clip-end callbacks. Stomp tests the body hitbox; damage tests a
+    `damageBox` that defaults to it, which is the whole reason Crabby's 118 px
+    strike costs no branching in the base.
+  - **Decisions taken:** kind ids `crabby` / `fierce_tooth` / `pink_star` (see
+    below); `src/game/entities/` as the folder, per the architecture doc and
+    success criterion 7; enemies follow `Player`'s placement (hitbox bottom = feet),
+    not `Collectible`'s (sprite-canvas bottom), which would float art that has
+    transparent padding under the feet; `flipOffsetX` added for the one enemy that
+    flips.
+  - **Deliberately not built:** `hit` / `dead-hit` and the `tooth`/`star`
+    `attack-effect` clips stay unused, and `Jump`/`Fall`/`Ground` stay unpacked —
+    packing them would have made this an asset-pipeline unit too.
+  - **Found, not fixed:** `jsconfig.json`'s `baseUrl` now reports as a deprecation
+    **error** from the editor's TypeScript service, so a project-wide
+    `getDiagnostics` is no longer clean even though every source file is. Logged as
+    issue 6; it is Unit 00's file and unrelated to enemies.
 
 ## In Progress
 
-- None. Waiting on Unit 08 play sign-off, then Unit 09 spec.
+- None. Unit 10 signed off; next is the Unit 11 spec.
 
 ## Next Up
 
-- **Unit 09 — HUD and Touch Controls.** Spec not written yet.
+- **Unit 11 spec is written** (`specs/11-shooters-and-projectiles.md`, 2026-09-16)
+  and is waiting on sign-off. Implementation deferred by the player.
+  - It deliberately makes the **opposite** call to Unit 10: **one `Shooter` class
+    and one `Projectile` class**, both configured from the palette, because the art
+    gives Cannon and Seashell the same verb — idle (n=1) → fire (n=6) → idle, with
+    `fire` frame 3 the shot in both, which is also where SPW fires. Inventing a
+    behavioural split the art does not support would be worse than having none.
+  - The real difference is the ammunition, and it is one teachable fact: the pearl
+    moves at **75 px/s** (SPW's 150 halved) which is **slower than the player's 100**,
+    and the cannonball at **150** which is faster. You can out-run a pearl and never
+    a cannonball.
+  - Shooter bodies **do not damage** the player — a direct port, since SPW puts
+    `Shell` in `collision_sprites` and not `damage_sprites`. They are not solid
+    either, which *is* a deviation: we have no entity-vs-player resolution and
+    adding one would push against invariant 4.
+  - Two reuse points settled: `playerNear` / `playerInFront` move out of
+    `WalkerEnemy` into a pure `src/game/sense.js` now that a second consumer
+    exists, and `physics.js` gains one `checkSolid(rect, level)` query (terrain
+    only — platforms are thin ledges and must not stop shots).
+  - The muzzle flash needs no `PickupFx` change: `cannon/fire-effect` and
+    `cannon/fire` are both 6 frames, a matched pair, so the shooter draws it
+    itself at the muzzle sharing its own frameIndex and flip.
 
 ## Open Questions
 
@@ -141,9 +252,11 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 4. **Level growth UX.** The schema allows growing a level up to 400 × 48, but the
    maker interaction for growing it — edge handles? a size dialog? — is not
    designed. Needed by Unit 15.
-5. **Enemy variety.** Crabby, Fierce Tooth and Pink Star share an identical clip
-   structure, so all three are nearly free. Whether they get distinct behaviour or
-   just distinct art and stats is open. Decide at Unit 10.
+5. ~~**Enemy variety.**~~ **Resolved 2026-09-13** — Crabby, Fierce Tooth and Pink
+   Star get **genuinely distinct behaviour**, not just distinct art/stats (player
+   decision). They still share the `WalkerEnemy` base for movement/collision/stomp,
+   but each overrides behaviour meaningfully. The per-enemy behaviour design is part
+   of the Unit 10 spec. See the Architecture Decisions entry below.
 
 ## Architecture Decisions
 
@@ -365,36 +478,84 @@ Draw-time only, period 50 ms from remaining invuln. No knockback, no death clip.
 No `switch` on kind. Kind-in-registry schema checks wait (codec tests still use
 `'crabby'`). Flag stays a hardcoded marker.
 
+**2026-09-13 — UI factories are injected into scenes; scenes never import `ui/`.**
+Dependencies point inward (`ui → game → level → core`). `main.js` (composition root)
+imports `createPlayHud`/`createTouchControls` and passes them as `params.ui`; the
+scene calls them in `mountUI`. Future scenes follow this pattern.
+
+**2026-09-13 — HUD DOM is reconciled in the scene's render, never in update.**
+`update()` only flips state (paused/finished/coins/health via stats); `render()`
+calls the HUD controller's diff-based sync + overlay open/close. Invariant 3:
+update never touches the DOM; render never mutates game state. Restart (which
+mounts/unmounts DOM) is requested from update via a flag and executed by the App
+loop after `scene.update` returns — never inside update.
+
+**2026-09-13 — Enter is an edge `pause` action in `input.js`; input is preventDefaulted.**
+Keyboard still flows only through `core/input.js`. Enter maps to a `pause` action
+(edge-triggered like the others) and is `preventDefault`ed, so a focused overlay
+button never double-fires with the app-level Enter handling. The scene toggles
+pause on the edge, or triggers replay when the results panel is up.
+
+**2026-09-13 — On-screen controls feed input via `bindVirtualButton`; world pointer is canvas-only.**
+Touch buttons call `input.bindVirtualButton(el, action)` (all pointer wiring stays
+in `input.js`). The window-level world-drag pointer now engages only when
+`e.target === canvas`, so presses on DOM controls keep their own click/capture.
+
+**2026-09-13 — The three walker enemies get genuinely distinct behaviour.**
+Crabby, Fierce Tooth and Pink Star share the `WalkerEnemy` base (patrol, ledge/wall
+turn, contact damage, stomp-to-kill + bounce), but each overrides behaviour in a way
+that actually plays differently — not the same behaviour reskinned. *Why:* player
+decision; the pack gives each its own Anticipation/Attack frames, so the art already
+implies distinct combat reads. The concrete per-enemy behaviour (e.g. how each reacts
+to the player, lunge vs charge vs something else) is designed in the Unit 10 spec
+before implementation. Adding an enemy stays one palette entry + one class
+(invariant 5); distinct behaviour lives in each class, not in shared branching.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–08 done in code. World spawns treasure and spikes
-from `level.entities` through `palette.js`. Stats tracks hearts and coins.
-Spikes hurt with 700 ms invuln; health 0 is `'dead'` (restart). Pickups despawn
-with a one-shot fx clip. No HUD yet — coin wrap is proven by tests. Play visual
-(particles, white flicker, pit/flag still working) needs a look at
-`http://localhost:5174/` (dev server may already be up).
+**Where we are:** Units 00–10 done in code and signed off. World spawns
+treasure and spikes from `level.entities` through `palette.js`; Stats tracks
+hearts and coins (start 5, 100 coins → +1 heart). Spikes hurt with 700 ms invuln
+and a draw-time white flicker; health 0, the pit and water all return `'dead'`
+(restart). Pickups despawn with a one-shot fx clip. The first `src/ui/` layer is
+in: DOM HUD (hearts row, coin counter, level-name flash, pause button, paused and
+results overlays) plus an on-screen D-pad and jump button revealed on first touch.
+Scenes never import `ui/` — `main.js` injects the factories. All three walker
+enemies are in and play differently from each other: Crabby strikes both sides at
+once and has no facing, Fierce Tooth lunges then is helpless, Pink Star is
+un-stompable while spinning and triggers on being dived at. No shooters yet.
 
-**Next:** Player sign-off on Unit 08, then Unit 09 spec
-(`specs/09-hud-and-touch-controls.md`). Do not start 09 until 08 is signed off.
+**Next:** Implement Unit 11 against `specs/11-shooters-and-projectiles.md`, which
+is already written and needs no research — every number in it is measured and
+sourced. Read it in full before starting; the decisions that are easy to get wrong
+are all stated there. Two in particular: it is **one `Shooter` class and one
+`Projectile` class** for both kinds (the art gives them the same verb), not a class
+each; and the `fireFrame` shot **must** be guarded by a `hasFired` flag, because
+frame 3 spans six ticks at 60 Hz and an unguarded check fires six projectiles per
+cycle. `playerNear` / `playerInFront` move out of `WalkerEnemy` into a new pure
+`src/game/sense.js` — Unit 10's tests must keep passing unedited.
 
 **How to run**
 
-- `npm run dev` — game at `/`, atlas at `/atlas.html`. Prefer a fixed port;
-  5173 may already be another project (ArcGIS). `--port 5174 --strictPort`.
-- `npm test` — 91 tests (schema, model, codec, autotile, parallax, physics,
-  stats, world collect/hurt).
+- `npm run dev` — game at `/`, atlas at `/atlas.html` (throwaway debug page,
+  issue 5). Prefer a fixed port; 5173 may already be another project (ArcGIS).
+  `--port 5174 --strictPort`.
+- `npm test` — 122 tests (schema, model, codec, autotile, parallax incl. cloud
+  recycle, physics, stats, world collect/hurt, walker enemies).
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
 **Do not**
 
 - Import `atlas.json` from `core/`.
-- Pack sword clips, ship tilesheet, or Pixel Adventure leftovers.
-- Add HUD, touch controls, enemies, or audio (Units 09–12).
+- Pack sword clips, ship tilesheet, or Pixel Adventure leftovers. Enemy
+  `Jump`/`Fall`/`Ground` stay unpacked too — packing is its own unit.
+- Add audio or any maker code (Units 12+). Unit 11 is shooters only.
 - Relitigate: DOM UI, level-select (no overworld), stomp-only, local + share
-  codes, 5 starting hearts, spikes-as-entities.
+  codes, 5 starting hearts, spikes-as-entities, injected UI factories, distinct
+  per-enemy behaviour.
 
 **Standing hazards**
 
@@ -408,6 +569,12 @@ with a one-shot fx clip. No HUD yet — coin wrap is proven by tests. Play visua
   Expected until sword combat is added (Beyond v1).
 - Hole in the autotile mass shows a grass top on the cell below (4-neighbour,
   no inner corners). Expected until Unit 19.
+- Touch-control layout at phone width is deferred by player decision (issue 4 in
+  `7-current-issues.md`). Do not "fix" it inside an unrelated unit.
+- A project-wide `getDiagnostics` reports one error against `jsconfig.json`
+  (`baseUrl` deprecation, issue 6). Source files are clean; check per file.
+- Enemies are **not solid** — the player passes through them. Contact is an
+  overlap test, not a collision, so there is no standing on an enemy's head.
 
 **Environment:** Node 24.19, npm 11.17, git 2.52, Windows. Python 3.14 has no
 `pygame`/`pytmx` — read the references, do not launch them. `reference/` is
@@ -416,7 +583,13 @@ read-only. Audio is CC0 from `reference/super-pirate-world/audio/`.
 **Facts not to guess:** 16-case autotile table and player hitbox 18×26 offset
 (−23, −6) in `2-architecture.md`. Flag hitbox 16×32, draw offset (−9, −61),
 sprite 34×93. Collectible opaque bounds and spike 32×16 hitbox in
-`specs/08-collectibles-and-hazards.md`. Re-measure if any look wrong.
+`specs/08-collectibles-and-hazards.md`. Enemy hitboxes, draw offsets and the
+measurements they came from in `specs/10-walker-enemies.md`, and shooter/projectile hitboxes, muzzle points and
+projectile speeds in `specs/11-shooters-and-projectiles.md`; the offset formula
+is `drawOffsetX = -(opaqueX + (opaqueW - hitboxW) / 2)`,
+`drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
+Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–08. Playbook:
+**Specs on disk:** `00-build-plan.md` plus units 00–11 (11 written, not yet built).
+Playbook:
 `context/README.md` Part 3.
