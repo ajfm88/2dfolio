@@ -111,7 +111,13 @@ z                      // draw layer from settings.Z
   risk in this project.
 - Rectangles are plain `{ x, y, w, h }` objects with helpers in `core/rect.js`.
   No `Rect` class — allocation cost is not worth the ergonomics.
-- One `ctx.save()`/`restore()` pair per frame at most. Set transform once.
+- Set the transform once per frame, in the viewport. The only `ctx.save()` /
+  `restore()` pair allowed below that is the one that brackets an **X-flipped
+  sprite** (`translate` + `scale(-1, 1)`, per the 2026-09-06 decision — a
+  negative `drawImage` width is ignored under the viewport's `setTransform`).
+  One pair per flipped sprite, nothing else. Sprites whose art is drawn face-on
+  never flip, so they never open one: an entity declares which way its art faces
+  and the draw code reads that, rather than flipping everything by default.
 
 ## Input
 

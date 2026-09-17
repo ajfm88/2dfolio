@@ -1,0 +1,105 @@
+/* Play HUD. Anchored to the edges of #ui; every dimension scales with --ui-scale.
+   Sprite crops render pixel-doubled (2x native art) for crispness. */
+
+.hud__hearts {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 8px * var(--ui-scale));
+  left: calc(env(safe-area-inset-left) + 8px * var(--ui-scale));
+  display: flex;
+  gap: calc(2px * var(--ui-scale));
+  pointer-events: none;
+}
+
+/* Heart medallion cropped from /assets/ui/hearts.png (128x32): source rect
+   x0 y6 w16 h18, shown at 2x native and multiplied by --ui-scale. */
+.hud__heart {
+  width: calc(16px * 2 * var(--ui-scale));
+  height: calc(18px * 2 * var(--ui-scale));
+  background-image: url('/assets/ui/hearts.png');
+  background-repeat: no-repeat;
+  background-size: calc(128px * 2 * var(--ui-scale)) calc(32px * 2 * var(--ui-scale));
+  background-position: 0 calc(-6px * 2 * var(--ui-scale));
+  image-rendering: pixelated;
+}
+
+.hud__coins {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 8px * var(--ui-scale));
+  right: calc(env(safe-area-inset-right) + 8px * var(--ui-scale));
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--ui-scale));
+  pointer-events: none;
+  color: var(--text-display);
+  font-size: var(--fs-lg);
+  text-shadow: calc(1px * var(--ui-scale)) calc(1px * var(--ui-scale)) 0 var(--ink);
+}
+
+/* First frame of /assets/sprites/coin-gold.png (64x16, 4 frames): 16x16 at 2x. */
+.hud__coin-icon {
+  width: calc(16px * 2 * var(--ui-scale));
+  height: calc(16px * 2 * var(--ui-scale));
+  background-image: url('/assets/sprites/coin-gold.png');
+  background-repeat: no-repeat;
+  background-size: calc(64px * 2 * var(--ui-scale)) calc(16px * 2 * var(--ui-scale));
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
+
+.hud__name {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 10px * var(--ui-scale));
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: var(--text-display);
+  font-size: var(--fs-lg);
+  white-space: nowrap;
+  text-shadow: calc(1px * var(--ui-scale)) calc(1px * var(--ui-scale)) 0 var(--ink);
+  opacity: 0;
+  animation: hud-name-flash 2.5s ease-out forwards;
+}
+
+@keyframes hud-name-flash {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.hud__pause {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 44px * var(--ui-scale));
+  right: calc(env(safe-area-inset-right) + 8px * var(--ui-scale));
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3px * var(--ui-scale));
+  padding: calc(6px * var(--ui-scale));
+  background: var(--stone);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  color: var(--ink);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.hud__pause-bar {
+  width: calc(4px * var(--ui-scale));
+  height: calc(16px * var(--ui-scale));
+  background: var(--ink);
+}
+
+.hud__pause:hover { background: var(--stone-light); transform: translateY(calc(-1px * var(--ui-scale))); }
+.hud__pause:active { transform: translateY(calc(1px * var(--ui-scale))); }
+.hud__pause:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Appears then disappears with no smooth fade (stepped, not eased). */
+  .hud__name { animation-timing-function: steps(1, end); }
+  .hud__pause:hover, .hud__pause:active { transform: none; }
+}

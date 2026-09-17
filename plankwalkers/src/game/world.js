@@ -61,6 +61,7 @@ export function createWorld(level, theme, atlas, keys) {
 
   const handle = {
     atlas,
+    level,
     player,
     stats,
     /**
