@@ -54,8 +54,6 @@ class GameCoordinator {
 
     this.maxFps = 120;
     this.tileSize = 8;
-    this.scale = this.determineScale(1);
-    this.scaledTileSize = this.tileSize * this.scale;
     this.firstGame = true;
 
     this.movementKeys = {
@@ -72,11 +70,11 @@ class GameCoordinator {
       39: 'right',
     };
 
-    // Mobile touch trackers
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.touchEndX = 0;
-    this.touchEndY = 0;
+    this.touchControls = new TouchControls(this);
+    this.touchControls.init();
+
+    this.scale = this.determineScale(1);
+    this.scaledTileSize = this.tileSize * this.scale;
 
     this.fruitPoints = {
       1: 100,
@@ -114,7 +112,7 @@ class GameCoordinator {
     const availableScreenHeight = Math.min(
       document.documentElement.clientHeight,
       window.innerHeight || 0,
-    );
+    ) - this.touchControls.reservedBottomPx();
     const availableScreenWidth = Math.min(
       document.documentElement.clientWidth,
       window.innerWidth || 0,
@@ -148,6 +146,12 @@ class GameCoordinator {
 
     setTimeout(() => {
       this.mainMenu.style.visibility = 'hidden';
+      this.touchControls.show();
+      var reservedPx = this.touchControls.reservedBottomPx();
+      if (reservedPx > 0) {
+        this.gameUi.parentElement.style.height =
+          'calc(100vh - ' + reservedPx + 'px)';
+      }
     }, 1000);
 
     this.reset();
@@ -506,7 +510,6 @@ class GameCoordinator {
    */
   init() {
     this.registerEventListeners();
-    this.registerTouchListeners();
 
     this.gameEngine = new GameEngine(this.maxFps, this.entityList);
     this.gameEngine.start();
@@ -698,7 +701,6 @@ class GameCoordinator {
    */
   registerEventListeners() {
     window.addEventListener('keydown', this.handleKeyDown.bind(this));
-    window.addEventListener('swipe', this.handleSwipe.bind(this));
     window.addEventListener('awardPoints', this.awardPoints.bind(this));
     window.addEventListener('deathSequence', this.deathSequence.bind(this));
     window.addEventListener('dotEaten', this.dotEaten.bind(this));
@@ -708,47 +710,6 @@ class GameCoordinator {
     window.addEventListener('addTimer', this.addTimer.bind(this));
     window.addEventListener('removeTimer', this.removeTimer.bind(this));
     window.addEventListener('releaseGhost', this.releaseGhost.bind(this));
-  }
-
-  /**
-   * Register listeners for touchstart and touchend to handle mobile device swipes
-   */
-  registerTouchListeners() {
-    document.addEventListener('touchstart', this.handleTouchStart.bind(this));
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this));
-  }
-
-  /**
-   * Sets touch values where the user's touch begins
-   * @param {Event} event
-   */
-  handleTouchStart(event) {
-    this.touchStartX = event.touches[0].clientX;
-    this.touchStartY = event.touches[0].clientY;
-  }
-
-  /**
-   * Sets touch values where the user's touch ends and attempts to change Pac-Man's direction
-   * @param {*} event
-   */
-  handleTouchEnd(event) {
-    this.touchEndX = event.changedTouches[0].clientX;
-    this.touchEndY = event.changedTouches[0].clientY;
-    const diffX = this.touchEndX - this.touchStartX;
-    const diffY = this.touchEndY - this.touchStartY;
-    let direction;
-
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-      direction = diffX > 0 ? 'right' : 'left';
-    } else {
-      direction = diffY > 0 ? 'down' : 'up';
-    }
-
-    window.dispatchEvent(new CustomEvent('swipe', {
-      detail: {
-        direction,
-      },
-    }));
   }
 
   /**
@@ -775,15 +736,6 @@ class GameCoordinator {
     } else if (this.movementKeys[e.keyCode]) {
       this.changeDirection(this.movementKeys[e.keyCode]);
     }
-  }
-
-  /**
-   * Calls changeDirection with the direction of the user's swipe
-   * @param {Event} e - The direction of the swipe
-   */
-  handleSwipe(e) {
-    const { direction } = e.detail;
-    this.changeDirection(direction);
   }
 
   /**
@@ -933,6 +885,8 @@ class GameCoordinator {
       this.fruit.hideFruit();
 
       new Timer(() => {
+        this.touchControls.hide();
+        this.gameUi.parentElement.style.height = '100vh';
         this.leftCover.style.left = '0';
         this.rightCover.style.right = '0';
 
