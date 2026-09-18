@@ -41,6 +41,18 @@ describe('gameCoordinator', () => {
       start() {}
     };
 
+    global.TouchControls = class {
+      init() {}
+
+      show() {}
+
+      hide() {}
+
+      reservedBottomPx() { return 0; }
+
+      isTouchDevice() { return false; }
+    };
+
     global.SoundManager = class {
       setCutscene() {}
 
@@ -79,6 +91,8 @@ describe('gameCoordinator', () => {
         setAttribute: () => {},
         style: {},
       }),
+      addEventListener: () => {},
+      body: { appendChild: () => {} },
     };
 
     global.localStorage = {
@@ -294,7 +308,6 @@ describe('gameCoordinator', () => {
   describe('init', () => {
     it('calls necessary setup functions to start the game', () => {
       comp.registerEventListeners = sinon.fake();
-      comp.registerTouchListeners = sinon.fake();
       comp.collisionDetectionLoop = sinon.fake();
       global.SoundManager = class {};
 
@@ -510,72 +523,6 @@ describe('gameCoordinator', () => {
     });
   });
 
-  describe('registerTouchListeners', () => {
-    it('registers listeners for touches', () => {
-      global.document = {
-        addEventListener: sinon.fake(),
-      };
-
-      comp.registerTouchListeners();
-      assert(global.document.addEventListener.calledWith('touchstart'));
-      assert(global.document.addEventListener.calledWith('touchend'));
-    });
-  });
-
-  describe('handleTouchStart', () => {
-    it('updates touch values', () => {
-      comp.handleTouchStart({ touches: [{ clientX: 100, clientY: 200 }] });
-      assert.strictEqual(comp.touchStartX, 100);
-      assert.strictEqual(comp.touchStartY, 200);
-    });
-  });
-
-  describe('handleTouchEnd', () => {
-    it('calls the correct direction upon touchEnd', () => {
-      const originalX = 100;
-      const originalY = 100;
-      comp.touchStartX = originalX;
-      comp.touchStartY = originalY;
-      global.window.dispatchEvent = sinon.fake();
-
-      comp.handleTouchEnd({
-        changedTouches: [{ clientX: originalX, clientY: originalY * 2 }],
-      });
-      assert(global.window.dispatchEvent.calledWith(new CustomEvent('swipe', {
-        detail: {
-          direction: 'down',
-        },
-      })));
-
-      comp.handleTouchEnd({
-        changedTouches: [{ clientX: originalX, clientY: originalY * -1 }],
-      });
-      assert(global.window.dispatchEvent.calledWith(new CustomEvent('swipe', {
-        detail: {
-          direction: 'up',
-        },
-      })));
-
-      comp.handleTouchEnd({
-        changedTouches: [{ clientX: originalX * 2, clientY: originalY }],
-      });
-      assert(global.window.dispatchEvent.calledWith(new CustomEvent('swipe', {
-        detail: {
-          direction: 'right',
-        },
-      })));
-
-      comp.handleTouchEnd({
-        changedTouches: [{ clientX: originalX * -1, clientY: originalY }],
-      });
-      assert(global.window.dispatchEvent.calledWith(new CustomEvent('swipe', {
-        detail: {
-          direction: 'left',
-        },
-      })));
-    });
-  });
-
   describe('handleKeyDown', () => {
     beforeEach(() => {
       comp.gameEngine = {};
@@ -661,16 +608,6 @@ describe('gameCoordinator', () => {
       comp.handleKeyDown({ keyCode: 80 });
       assert(!comp.gameEngine.changePausedState.called);
       assert(!comp.pacman.changeDirection.called);
-    });
-  });
-
-  describe('handleSwipe', () => {
-    it('calls changeDirection with the direction of the user\'s swipe', () => {
-      const spy = sinon.fake();
-      comp.changeDirection = spy;
-
-      comp.handleSwipe({ detail: { direction: 'up' } });
-      assert(comp.changeDirection.calledWith('up'));
     });
   });
 
