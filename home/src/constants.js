@@ -13,11 +13,11 @@ export const dialogueData = {
     have assembled to study Japanese with.`,
   tv: `There is a video game console here, which game will I play?:
   <a href="https://2048-ajfm88.netlify.app" target="_blank">2048</a>,
-  <a href="https://play.ciabattasrevenge.com" target="_blank">Ciabatta’s Revenge</a>,
+  <a href="https://play.ciabattasrevenge.com" target="_blank">Ciabatta's Revenge</a>,
   <a href="https://duck-hunter-ajfm88.netlify.app" target="_blank">Duck Hunt</a>,
+  <a href="https://zelda-ajfm88.netlify.app" target="_blank">Legend of Zelda</a>,
   <a href="https://pac-man-ajfm88.netlify.app" target="_blank">Pac-Man</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">Pizza Legends</a>,
-  <a href="https://rpg-card-game-ajfm88.netlify.app" target="_blank">RPG Card Game</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Sonic Runner</a>,
   <a href="https://tetris-attack-ajfm88.netlify.app" target="_blank">Tetris Attack</a>.`,
   nightstand: `This is my nightstand, where I keep my cellphone. I occasionally like writing restaurant reviews, please check out 
