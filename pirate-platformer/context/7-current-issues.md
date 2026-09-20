@@ -90,6 +90,48 @@ move to Resolved.
 
 ---
 
+### 7. `PickupFx` name and home no longer fit its use [OPEN]
+
+**Where:** `src/game/collectibles.js` (`PickupFx`), used from `world.js` `spawnFx`
+**Symptom:** `PickupFx` was named and placed for treasure pickups, but as of Unit 11
+it is the generic one-shot sprite burst for four different things: pickup fx, the
+Crabby strike effect, projectile terrain/lifetime bursts (pearl/dead,
+ball-explode, ball-dead). Its name and its home in `collectibles.js` now undersell
+what it is.
+**Expected:** A neutral name (e.g. `OneShotFx`) in a neutral home (e.g.
+`src/game/fx.js`), imported by `world.js` and everything that spawns one.
+**Repro:** Grep `PickupFx` — it is imported by `world.js` and referenced by the
+collectible, walker (Crabby) and shooter/projectile paths.
+**Notes:** Called out by the Unit 11 spec as **not** to be folded into Unit 11 (it
+would touch `collectibles.js`, which Unit 11 does not). Pure rename + move, no
+behaviour change. It has **no `flip` parameter and must not grow one** — every clip
+that uses it is symmetric. Do it as its own small change.
+
+---
+
+### 8. Fixture cannonball always bursts on the pillar, never on lifetime [OPEN]
+
+**Where:** `src/data/fixtures/play-demo.js` — cannon (53,12) + pillar (col 49, rows 11-12)
+**Symptom:** The Unit 11 spec's verification checklist expects "a dodged cannonball
+dies on lifetime showing `ball-dead`", but with the placement the spec itself
+dictates, the pillar at col 49 sits directly in the left-firing cannon's line at
+muzzle height, so **every** ball bursts on it (`ball-explode`). There is no player
+position that both triggers the cannon (in range + in front + level) and leaves the
+ball an unobstructed 450 px (3 s × 150) of travel, so `ball-dead` never shows in
+this fixture during normal play.
+**Expected:** The fixture demonstrates both cannonball death clips, per the checklist.
+**Repro:** Play to the flag run-up; trigger the cannon from anywhere left of it —
+the ball always explodes on the pillar.
+**Notes:** The fixture was built **exactly** to the spec's placement table, so this
+is a spec/fixture inconsistency, not an implementation bug — both death paths are
+fully covered by `shooter.test.js` (`ball-explode` on terrain, `ball-dead` on
+lifetime and on the level edge). Fix options, none folded into Unit 11: move the
+cannon so a second, un-backstopped shot lane exists, or add a note to the checklist
+that `ball-dead` is proven by test rather than by this fixture. Do not change the
+`Shooter`/`Projectile` code for this — the behaviour is correct.
+
+---
+
 ## Resolved
 
 ### 3. Small clouds pop out mid-screen instead of exiting left [FIXED]

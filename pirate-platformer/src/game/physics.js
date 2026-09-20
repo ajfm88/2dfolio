@@ -134,6 +134,32 @@ export function resolveSemiSolid(hitbox, oldRect, level, dropping) {
 }
 
 /**
+ * Ask whether any terrain tile overlaps the rect. A query, not a resolver — a
+ * projectile only needs to know it has hit something, not be pushed out.
+ *
+ * Terrain only, never platforms: a semi-solid platform is a thin ledge you jump
+ * through from below, so a shot passing under it must read as a miss. Out-of-grid
+ * cells count as empty, like every other check in this file.
+ * @param {Rect} rect
+ * @param {LevelModel} level
+ * @returns {boolean} true when any terrain tile overlaps the rect
+ */
+export function checkSolid(rect, level) {
+  const terrain = level.layers.terrain;
+  const cols = level.cols;
+  const [c0, c1] = cellRangeX(rect.x, rect.w, cols);
+  const [r0, r1] = cellRangeY(rect.y, rect.h, level.rows);
+
+  for (let r = r0; r <= r1; r++) {
+    const rowOff = r * cols;
+    for (let c = c0; c <= c1; c++) {
+      if (terrain[rowOff + c] !== 0) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Check whether the hitbox is resting on a floor (terrain or platform).
  * Tests a 1 px sensor band immediately below the bottom edge.
  * @param {Rect} hitbox

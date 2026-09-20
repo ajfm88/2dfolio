@@ -269,6 +269,16 @@ and entries without `spawn` are skipped. Kind-in-registry schema checks wait
 until the roster is complete (Unit 16); codec tests still use placeholder `k`
 values.
 
+Entities can also be created **at runtime**, not only from `level.entities`: the
+spawn handle carries `spawnEntity(ent)`, which pushes into the same `entities`
+array (a shooter's projectile is the first use). The update loop snapshots
+`entities.length` before iterating, so an entity spawned mid-frame is updated from
+the next frame rather than the one it was created in. `compactAlive` still reaps
+`alive === false`, and the draw loop already covers the new entries, so nothing
+else changes. Because `createWorld` builds fresh `entities` / `fx` arrays on every
+enter and no runtime spawner holds module-level mutable state, nothing a shooter
+fires can leak across a restart.
+
 ## Entity Registry
 
 `src/data/palette.js` is the single source of truth for everything placeable. It is

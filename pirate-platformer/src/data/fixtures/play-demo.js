@@ -42,6 +42,13 @@ export function createPlayFixture() {
       { k: 'skull', c: 44, r: 12 },
       { k: 'coin_silver', c: 48, r: 12 },
       { k: 'coin_silver', c: 50, r: 12 },
+      // Fires pearls left toward the col-10 wall (~3.2 s at 75 px/s, inside the
+      // 5 s lifetime), so they burst on terrain in the cols 11–19 lane the player
+      // enters right after wall-jumping the col-10 wall.
+      { k: 'seashell', c: 19, r: 12, p: { dir: -1 } },
+      // Fires cannonballs left into the col-49 pillar 3 tiles away, so standing
+      // left of the pillar on the run-up to the flag is safe — terrain blocks it.
+      { k: 'cannon', c: 53, r: 12, p: { dir: -1 } },
       // Patrols between the col-10 wall and the col-20 pit edge, so it turns at
       // both a wall and a ledge, and lunges along the flat between them.
       { k: 'fierce_tooth', c: 17, r: 12, p: { dir: -1 } },
@@ -89,6 +96,11 @@ function buildTerrainRle() {
   for (let c = 28; c <= 30; c++) {
     grid[9 * cols + c] = 1;
   }
+
+  // 2-tile pillar at col 49 (rows 11-12): the cannon's backstop, so a ball
+  // explodes on terrain rather than only ever running out its lifetime.
+  grid[11 * cols + 49] = 1;
+  grid[12 * cols + 49] = 1;
 
   return rleEncode(grid);
 }

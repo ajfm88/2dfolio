@@ -17,6 +17,7 @@ import { TILE } from '../../settings.js';
 import { copy, intersects } from '../../core/rect.js';
 import { tuning } from '../../data/tuning.js';
 
+import { playerNear, playerInFront } from '../sense.js';
 import {
   resolveH,
   resolveV,
@@ -252,11 +253,7 @@ export class WalkerEnemy {
    * @returns {boolean}
    */
   playerNear(range) {
-    const p = this.world.player.hitbox;
-    const hb = this.hitbox;
-    const dx = p.x + p.w / 2 - (hb.x + hb.w / 2);
-    const dy = p.y + p.h / 2 - (hb.y + hb.h / 2);
-    return Math.abs(dx) <= range && Math.abs(dy) <= tuning.enemySenseHeight;
+    return playerNear(this.hitbox, this.world.player.hitbox, range, tuning.enemySenseHeight);
   }
 
   /**
@@ -264,9 +261,7 @@ export class WalkerEnemy {
    * @returns {boolean}
    */
   playerInFront() {
-    const p = this.world.player.hitbox;
-    const hb = this.hitbox;
-    return (p.x + p.w / 2 - (hb.x + hb.w / 2)) * this.dir > 0;
+    return playerInFront(this.hitbox, this.world.player.hitbox, this.dir);
   }
 
   /**
