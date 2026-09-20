@@ -6,6 +6,7 @@ import {
   checkFloor,
   checkWallLeft,
   checkWallRight,
+  checkSolid,
 } from './physics.js';
 import { TILE } from '../settings.js';
 import { createBlankLevel } from '../level/schema.js';
@@ -173,6 +174,42 @@ describe('checkWallRight', () => {
     const level = makeLevel();
     const hitbox = { x: TILE * 40 - 18, y: TILE, w: 18, h: 26 };
     expect(checkWallRight(hitbox, level)).toBe(false);
+  });
+});
+
+describe('checkSolid', () => {
+  it('is true when overlapping a terrain cell', () => {
+    const level = makeLevel();
+    // over the block at (5, 6)
+    expect(checkSolid({ x: TILE * 5 + 4, y: TILE * 6 + 4, w: 10, h: 10 }, level)).toBe(true);
+  });
+
+  it('is false in empty space', () => {
+    const level = makeLevel();
+    expect(checkSolid({ x: TILE * 20, y: TILE * 2, w: 10, h: 10 }, level)).toBe(false);
+  });
+
+  it('is true when straddling a cell boundary onto a solid cell', () => {
+    const level = makeLevel();
+    // spans col 5 (solid) and col 6 (empty)
+    expect(checkSolid({ x: TILE * 6 - 5, y: TILE * 6 + 4, w: 10, h: 10 }, level)).toBe(true);
+  });
+
+  it('is true when partially outside the grid but overlapping a solid in-grid cell', () => {
+    const level = makeLevel();
+    // straddles the left edge onto the col-0 wall
+    expect(checkSolid({ x: -5, y: TILE * 3, w: 10, h: 10 }, level)).toBe(true);
+  });
+
+  it('is false when fully outside the grid', () => {
+    const level = makeLevel();
+    expect(checkSolid({ x: -50, y: TILE * 3, w: 10, h: 10 }, level)).toBe(false);
+  });
+
+  it('is not triggered by a platform-layer tile', () => {
+    const level = makeLevel();
+    // over the platform at (3, 6) — semi-solid must not stop a shot
+    expect(checkSolid({ x: TILE * 3 + 4, y: TILE * 6 + 4, w: 10, h: 10 }, level)).toBe(false);
   });
 });
 
