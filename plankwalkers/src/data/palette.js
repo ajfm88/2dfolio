@@ -2,6 +2,7 @@ import { Z } from '../settings.js';
 import { tuning } from './tuning.js';
 import { Collectible } from '../game/collectibles.js';
 import { Spikes } from '../game/hazards/spikes.js';
+import { Shooter } from '../game/hazards/shooter.js';
 import { Crabby } from '../game/entities/crabby.js';
 import { FierceTooth } from '../game/entities/fierce-tooth.js';
 import { PinkStar } from '../game/entities/pink-star.js';
@@ -34,6 +35,13 @@ import { PinkStar } from '../game/entities/pink-star.js';
  *   strikeW?: number,
  *   lungeSpeed?: number,
  *   spinTime?: number,
+ *   fireFrame?: number,
+ *   fireFx?: string,
+ *   fireFxAnchorX?: number,
+ *   fireFxAnchorY?: number,
+ *   muzzleX?: number,
+ *   muzzleY?: number,
+ *   projectile?: import('../game/hazards/projectile.js').ProjectileSpec,
  *   spawn?: (world: unknown, rec: import('../types.js').EntityRecord) => unknown,
  * }} PaletteEntry
  */
@@ -333,6 +341,90 @@ export const palette = [
     drawOffsetX: -6,
     drawOffsetY: -6,
     spawn(world, rec) { return new PinkStar(world, rec, this); },
+  },
+  {
+    id: 'cannon',
+    group: 'hazards',
+    label: 'Cannon',
+    icon: 'cannon/idle',
+    placement: 'entity',
+    layer: null,
+    z: Z.main,
+    clips: 'cannon',
+    // Under 256 px (half the narrowest viewport), so it is always on screen when
+    // it fires. Faster ammo than the seashell but a longer wind-down.
+    senseRange: 208,
+    cooldown: 3,
+    fireFrame: 3,
+    // Drawn facing left; flips when dir > 0.
+    artFacing: -1,
+    fireFx: 'cannon/fire-effect',
+    // fire-effect canvas 20x28: persistent column x≈11, frames centre y≈14.
+    fireFxAnchorX: 11,
+    fireFxAnchorY: 14,
+    // idle f0 40x26, art at x5 y3 w30 h23, feet at y26
+    hitboxW: 24,
+    hitboxH: 21,
+    drawOffsetX: -8,
+    drawOffsetY: -5,
+    // Art centred on its canvas, so the flip needs no correction.
+    flipOffsetX: -8,
+    // fire f3 muzzle: leftmost opaque col x0, vertical mid y11 → offset from hitbox.
+    muzzleX: -8,
+    muzzleY: 6,
+    projectile: {
+      clip: 'cannon/ball',
+      // ball 16x16, art at x0 y1 w15 h15
+      hitboxW: 11,
+      hitboxH: 11,
+      drawOffsetX: -2,
+      drawOffsetY: -3,
+      // Faster than the player's 100 run — you cannot out-run it.
+      speed: 150,
+      lifetime: 3,
+      hitFx: 'cannon/ball-explode',
+      endFx: 'cannon/ball-dead',
+    },
+    spawn(world, rec) { return new Shooter(world, rec, this); },
+  },
+  {
+    id: 'seashell',
+    group: 'hazards',
+    label: 'Seashell',
+    icon: 'seashell/idle',
+    placement: 'entity',
+    layer: null,
+    z: Z.main,
+    clips: 'seashell',
+    senseRange: 176,
+    cooldown: 2,
+    fireFrame: 3,
+    artFacing: -1,
+    // idle f0 48x38, art at x9 y17 w32 h21, feet at y38
+    hitboxW: 26,
+    hitboxH: 19,
+    drawOffsetX: -12,
+    drawOffsetY: -19,
+    // Art sits 2 px right of centre, so a canvas flip needs the correction.
+    flipOffsetX: -10,
+    // fire f3 muzzle: leftmost opaque col x0, vertical mid y28 → offset from hitbox.
+    muzzleX: -12,
+    muzzleY: 9,
+    projectile: {
+      clip: 'pearl/idle',
+      // pearl 16x16, art at x5 y4 w7 h7
+      hitboxW: 5,
+      hitboxH: 5,
+      drawOffsetX: -6,
+      drawOffsetY: -5,
+      // SPW create_pearl(150) halved: slower than the player's 100 run, so it can
+      // be out-run. Lifetime is not halved — it is not a spatial quantity.
+      speed: 75,
+      lifetime: 5,
+      hitFx: 'pearl/dead',
+      endFx: 'pearl/dead',
+    },
+    spawn(world, rec) { return new Shooter(world, rec, this); },
   },
 ];
 

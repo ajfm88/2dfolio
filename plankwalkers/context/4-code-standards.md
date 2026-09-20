@@ -205,7 +205,8 @@ deliberately not ported:
 - `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `atlas.json` (generated),
   `campaign/*.json`. Declarative; no logic beyond factory references.
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,
-  `stats.js`, `entities/`, `hazards/`, `collectibles.js`.
+  `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
+  `collectibles.js`.
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `validate.js`,
   `grid-overlay.js`.
 - `src/ui/` — `dom.js`, `screens/`, `components/`, `styles/`.

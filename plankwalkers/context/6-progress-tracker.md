@@ -6,19 +6,17 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–10 complete and signed off.** Unit 10 (three walker enemies with
-  genuinely distinct behaviour) play-tested and signed off 2026-09-16.
+- **Units 00–11 complete and signed off.** Unit 11 (Seashell + Cannon shooters and
+  their projectiles) implemented and play-tested 2026-09-18: seashell fires pearls
+  that damage, cannon wind-up ("aspirate") → shot reads as a fair telegraph, no
+  console errors. Player sign-off 2026-09-18. Tests + build + diagnostics green.
 
 ## Current Goal
 
-- **Unit 11 — Shooters and Projectiles.** Write `specs/11-shooters-and-projectiles.md`
-  before implementing. Seashell and Cannon with their fire states, the pearl and
-  cannonball projectiles, terrain collision with a burst particle, lifetime
-  despawn, and their palette entries. The clips are already packed (Unit 01:
-  `cannon/*`, `seashell/*`, `pearl/*`). SPW `enemies.py` `Shell` /
-  `Pearl` is the reference for the fire cycle and the near/front/level trigger —
-  `WalkerEnemy.playerNear` / `playerInFront` already implement that trigger and
-  should be the starting point rather than a second copy of it.
+- **Unit 12 — Audio.** `core/audio.js`: one `AudioContext`, decoded buffers,
+  unlock on first gesture, pooled sfx, looping music with a crossfade, volumes.
+  Write `specs/12-audio.md` before implementing. SPW plays `pearl_sound` in
+  `create_pearl` — shooter firing audio belongs here, not in Unit 11.
 
 ## Completed
 
@@ -210,34 +208,58 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     `getDiagnostics` is no longer clean even though every source file is. Logged as
     issue 6; it is Unit 00's file and unrelated to enemies.
 
+- **2026-09-18 — Unit 11 complete and signed off.** Spec at
+  `specs/11-shooters-and-projectiles.md`. New: `game/sense.js` (pure `playerNear` /
+  `playerInFront`, extracted from `WalkerEnemy`, which now delegates in one line —
+  Unit 10's 27 tests pass **unedited**); `physics.js` `checkSolid(rect, level)`
+  (terrain-only overlap query, joins the `check*` family); `game/hazards/shooter.js`
+  (`Shooter`) and `game/hazards/projectile.js` (`Projectile`); two palette entries
+  `cannon` / `seashell`; `world.js` gained `spawnEntity` on the handle and a
+  pre-loop `entities.length` snapshot. Fixture adds a seashell (19,12), a cannon
+  (53,12) and a 2-tile pillar at col 49. `npm test` **155** (122 prior + 10 sense +
+  6 `checkSolid` + 17 shooter/projectile), `npm run build` clean, `getDiagnostics`
+  clean on every touched file. Play sign-off 2026-09-18: seashell fires pearls that
+  cost a heart, no console errors; the cannon's fire animation reads as a wind-up
+  ("aspirate") then shot — confirmed as the wanted feel; user confirmed stomping a
+  shooter does nothing (correct — see decision below).
+  - **One class, one projectile — the opposite call to Unit 10.** The art gives
+    both shooters one verb (idle n=1 → fire n=6 → idle, frame 3 the shot), so a
+    class each would have manufactured a difference the frames do not support. The
+    real difference is ammo: pearl 75 px/s (out-runnable, SPW's 150 halved),
+    cannonball 150 (not). Everything else is palette config.
+  - **`hasFired` guard is load-bearing.** Frame 3 spans six 60 Hz ticks; without
+    the guard one trigger fires six projectiles. `shooter.test.js` steps the whole
+    clip and asserts exactly one spawn — that is the regression lock.
+  - **Shooter bodies do not damage and are not solid.** Non-damaging is a direct
+    SPW port (`Shell` is not in `damage_sprites`); non-solid is a **recorded
+    deviation** — we have no entity-vs-player resolver and adding one would push
+    against invariant 4. So they are also **not stompable and indestructible in
+    v1** (destructible turrets are a Beyond-v1 row). "Jumping on it does nothing"
+    is the intended behaviour, not a bug: you close the distance to make it
+    harmless, or pass by.
+  - **Muzzle flash is drawn, not spawned** — `cannon/fire-effect` shares the
+    body's `frameIndex` and flip, anchored on the muzzle. No `PickupFx` change; the
+    seashell has no flash clip and omits it.
+  - **Runtime spawning generalised:** `spawnEntity` + the count snapshot mean a
+    projectile spawned at index *i* runs from the next frame, not one step
+    downrange. Fresh arrays per enter + no module-level pool = no leak across
+    restart (tested with two independent handles).
+  - **Found, not fixed:** the `PickupFx` name/home no longer fit its four users
+    (issue 7); the fixture's cannonball always bursts on the pillar so `ball-dead`
+    is proven by test, not by the fixture (issue 8). Neither is folded into Unit 11.
+
 ## In Progress
 
-- None. Unit 10 signed off; next is the Unit 11 spec.
+- None. Unit 11 implemented and verified in code + browser; awaiting play sign-off.
 
 ## Next Up
 
-- **Unit 11 spec is written** (`specs/11-shooters-and-projectiles.md`, 2026-09-16)
-  and is waiting on sign-off. Implementation deferred by the player.
-  - It deliberately makes the **opposite** call to Unit 10: **one `Shooter` class
-    and one `Projectile` class**, both configured from the palette, because the art
-    gives Cannon and Seashell the same verb — idle (n=1) → fire (n=6) → idle, with
-    `fire` frame 3 the shot in both, which is also where SPW fires. Inventing a
-    behavioural split the art does not support would be worse than having none.
-  - The real difference is the ammunition, and it is one teachable fact: the pearl
-    moves at **75 px/s** (SPW's 150 halved) which is **slower than the player's 100**,
-    and the cannonball at **150** which is faster. You can out-run a pearl and never
-    a cannonball.
-  - Shooter bodies **do not damage** the player — a direct port, since SPW puts
-    `Shell` in `collision_sprites` and not `damage_sprites`. They are not solid
-    either, which *is* a deviation: we have no entity-vs-player resolution and
-    adding one would push against invariant 4.
-  - Two reuse points settled: `playerNear` / `playerInFront` move out of
-    `WalkerEnemy` into a pure `src/game/sense.js` now that a second consumer
-    exists, and `physics.js` gains one `checkSolid(rect, level)` query (terrain
-    only — platforms are thin ledges and must not stop shots).
-  - The muzzle flash needs no `PickupFx` change: `cannon/fire-effect` and
-    `cannon/fire` are both 6 frames, a matched pair, so the shooter draws it
-    itself at the muzzle sharing its own frameIndex and flip.
+- **Unit 12 — Audio** (`specs/12-audio.md` to be written). `core/audio.js`: one
+  `AudioContext` unlocked on the first gesture (watchlist item 2 — starts
+  suspended), decoded CC0 buffers, pooled sfx, looping music with a scene-change
+  crossfade, and persisted music/sfx volumes. Shooter firing sfx (`pearl_sound`)
+  lands here. Do not touch shooter code for it — `Shooter.spawnProjectile` is the
+  hook point a later audio pass reads, not something Unit 11 wired.
 
 ## Open Questions
 
@@ -511,39 +533,77 @@ to the player, lunge vs charge vs something else) is designed in the Unit 10 spe
 before implementation. Adding an enemy stays one palette entry + one class
 (invariant 5); distinct behaviour lives in each class, not in shared branching.
 
+**2026-09-18 — One `Shooter` + one `Projectile` class, configured from the palette.**
+The deliberate opposite of the walker call above. Cannon and Seashell share one verb
+in the art (idle n=1 → fire n=6 → idle, frame 3 the shot in both), so one class
+serves both and the only real difference — the ammunition — lives in a nested
+`projectile` object on each palette entry, the way one `Collectible` serves eight
+treasures. *Why:* a class each would have invented a behavioural split the frames do
+not support. Adding a shooter stays one palette entry (both reuse `Shooter.spawn`);
+adding a projectile type is a `projectile` spec, never a palette row, because a
+projectile is not placeable.
+
+**2026-09-18 — Shooters are non-damaging, non-solid, and indestructible in v1.**
+The body never hurts the player (SPW port: `Shell` is not in `damage_sprites`) and
+is not solid (**deviation** from SPW, recorded — we have no entity-vs-player resolver
+and adding one fights invariant 4). Being non-solid, they are also not stompable, and
+they are indestructible in v1 (destructible turrets are a Beyond-v1 row). Only the
+projectile damages. *Why:* it gives the player a real tactic (close the distance and
+the shooter is harmless) and keeps the hazard roster legible — spikes static, walkers
+mobile, shooters ranged-with-a-safe-body.
+
+**2026-09-18 — Proximity tests live in `game/sense.js`; runtime spawns via `spawnEntity`.**
+`playerNear` / `playerInFront` moved out of `WalkerEnemy` into a pure module the
+moment a second consumer (the shooter) existed — not before. The spawn handle gained
+`spawnEntity`, and the world snapshots `entities.length` before its update loop so a
+mid-frame spawn (a projectile) runs from the next frame. Fresh `entities`/`fx` arrays
+per enter plus no module-level pool guarantee nothing leaks across a restart.
+
+**2026-09-18 — The fire animation is a wind-up telegraph, and the shot commits.**
+The 6-frame `fire` clip reads as idle → barrel extends (frames 0–2, the "aspirate")
+→ shot at frame 3 → settle (4–5). Once the wind-up starts it fires on frame 3 even
+if the player has left the lane — the shot goes where they were. *Why:* the tell is
+the fairness — the cannonball out-runs the player, so a readable ~0.3 s warning is
+owed; a committed telegraphed attack is standard and baitable, and it matches SPW's
+`has_fired`. Player confirmed the feel 2026-09-18. Tuning knobs if ever revisited:
+`fireFrame` (when in the clip the shot leaves) and the clip length; aborting the shot
+when the player breaks range mid-wind-up was considered and **declined** as less
+readable.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–10 done in code and signed off. World spawns
-treasure and spikes from `level.entities` through `palette.js`; Stats tracks
-hearts and coins (start 5, 100 coins → +1 heart). Spikes hurt with 700 ms invuln
-and a draw-time white flicker; health 0, the pit and water all return `'dead'`
-(restart). Pickups despawn with a one-shot fx clip. The first `src/ui/` layer is
-in: DOM HUD (hearts row, coin counter, level-name flash, pause button, paused and
-results overlays) plus an on-screen D-pad and jump button revealed on first touch.
-Scenes never import `ui/` — `main.js` injects the factories. All three walker
-enemies are in and play differently from each other: Crabby strikes both sides at
-once and has no facing, Fierce Tooth lunges then is helpless, Pink Star is
-un-stompable while spinning and triggers on being dived at. No shooters yet.
+**Where we are:** Units 00–11 done and signed off (11 play-tested 2026-09-18).
+World spawns treasure, spikes, walkers and now shooters from
+`level.entities` through `palette.js`, and can also spawn entities **at runtime**
+via the handle's `spawnEntity` (projectiles); the update loop snapshots
+`entities.length` first so a spawn runs from the next frame. Stats tracks hearts
+and coins (start 5, 100 coins → +1 heart). Spikes hurt with 700 ms invuln and a
+draw-time white flicker; health 0, the pit and water all return `'dead'` (restart).
+Pickups despawn with a one-shot fx clip. `src/ui/` DOM HUD + touch controls are in;
+scenes never import `ui/` (`main.js` injects the factories). All three walkers play
+distinctly. **Shooters:** one `Shooter` class + one `Projectile` class serve both
+Cannon and Seashell from the palette; body is non-damaging, non-solid, indestructible
+(only the projectile hurts); pearl 75 px/s (out-runnable), cannonball 150 (not);
+projectiles die on player hit / terrain (`checkSolid`, terrain only) / lifetime /
+level edge, each with a burst fx; `hasFired` guard makes it exactly one shot per
+cycle. `playerNear`/`playerInFront` now live in pure `game/sense.js`.
 
-**Next:** Implement Unit 11 against `specs/11-shooters-and-projectiles.md`, which
-is already written and needs no research — every number in it is measured and
-sourced. Read it in full before starting; the decisions that are easy to get wrong
-are all stated there. Two in particular: it is **one `Shooter` class and one
-`Projectile` class** for both kinds (the art gives them the same verb), not a class
-each; and the `fireFrame` shot **must** be guarded by a `hasFired` flag, because
-frame 3 spans six ticks at 60 Hz and an unguarded check fires six projectiles per
-cycle. `playerNear` / `playerInFront` move out of `WalkerEnemy` into a new pure
-`src/game/sense.js` — Unit 10's tests must keep passing unedited.
+**Next:** Unit 12 — Audio. Write `specs/12-audio.md` first. `core/audio.js`: one
+`AudioContext` unlocked on first gesture (watchlist 2), decoded CC0 buffers, pooled
+sfx, looping music with a scene-change crossfade, persisted volumes. Shooter firing
+sfx (`pearl_sound`) belongs here; `Shooter.spawnProjectile` is the hook, do not wire
+audio into shooter code retroactively.
 
 **How to run**
 
 - `npm run dev` — game at `/`, atlas at `/atlas.html` (throwaway debug page,
   issue 5). Prefer a fixed port; 5173 may already be another project (ArcGIS).
   `--port 5174 --strictPort`.
-- `npm test` — 122 tests (schema, model, codec, autotile, parallax incl. cloud
-  recycle, physics, stats, world collect/hurt, walker enemies).
+- `npm test` — 155 tests (schema, model, codec, autotile, parallax incl. cloud
+  recycle, physics incl. `checkSolid`, stats, world collect/hurt, walker enemies,
+  `sense`, shooter/projectile).
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
@@ -551,11 +611,14 @@ cycle. `playerNear` / `playerInFront` move out of `WalkerEnemy` into a new pure
 
 - Import `atlas.json` from `core/`.
 - Pack sword clips, ship tilesheet, or Pixel Adventure leftovers. Enemy
-  `Jump`/`Fall`/`Ground` stay unpacked too — packing is its own unit.
-- Add audio or any maker code (Units 12+). Unit 11 is shooters only.
+  `Jump`/`Fall`/`Ground` stay unpacked too — packing is its own unit. Shooter
+  `Hit`/`Destroyed`/`Opening`/`Bite` and the `Totems` tree stay unpacked (Beyond v1).
+- Give `PickupFx` a `flip` parameter (issue 7 tracks its rename/move — do that on
+  its own, not inside another unit).
 - Relitigate: DOM UI, level-select (no overworld), stomp-only, local + share
   codes, 5 starting hearts, spikes-as-entities, injected UI factories, distinct
-  per-enemy behaviour.
+  per-enemy behaviour, **shooters non-solid/non-stompable/indestructible** (stomping
+  one doing nothing is correct — destructible turrets are Beyond v1).
 
 **Standing hazards**
 
@@ -574,7 +637,9 @@ cycle. `playerNear` / `playerInFront` move out of `WalkerEnemy` into a new pure
 - A project-wide `getDiagnostics` reports one error against `jsconfig.json`
   (`baseUrl` deprecation, issue 6). Source files are clean; check per file.
 - Enemies are **not solid** — the player passes through them. Contact is an
-  overlap test, not a collision, so there is no standing on an enemy's head.
+  overlap test, not a collision, so there is no standing on an enemy's head. Same
+  for shooters: non-solid, non-stompable, non-damaging body. Only their projectiles
+  hurt. This is intended (issue 8 notes the fixture never shows `ball-dead`).
 
 **Environment:** Node 24.19, npm 11.17, git 2.52, Windows. Python 3.14 has no
 `pygame`/`pytmx` — read the references, do not launch them. `reference/` is
@@ -590,6 +655,5 @@ is `drawOffsetX = -(opaqueX + (opaqueW - hitboxW) / 2)`,
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–11 (11 written, not yet built).
-Playbook:
-`context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–11 (all built; 12+ not yet
+written). Playbook: `context/README.md` Part 3.

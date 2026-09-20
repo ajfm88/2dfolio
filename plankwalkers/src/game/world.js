@@ -72,6 +72,14 @@ export function createWorld(level, theme, atlas, keys) {
     spawnFx(clip, x, y) {
       fx.push(new PickupFx(clip, x, y));
     },
+    /**
+     * Add an entity created at runtime (e.g. a shooter's projectile). The update
+     * loop snapshots its length first, so a spawn this frame runs from the next.
+     * @param {typeof entities[0]} ent
+     */
+    spawnEntity(ent) {
+      entities.push(ent);
+    },
   };
 
   for (let i = 0; i < level.entities.length; i++) {
@@ -92,7 +100,11 @@ export function createWorld(level, theme, atlas, keys) {
     player.update(dt);
     stats.tick(dt);
 
-    for (let i = 0; i < entities.length; i++) {
+    // Snapshot the count so an entity spawned mid-loop (a projectile) is updated
+    // from the next frame, not the one it was created in — otherwise it starts
+    // life one step downrange.
+    const n = entities.length;
+    for (let i = 0; i < n; i++) {
       entities[i].update(dt);
     }
     compactAlive(entities);
