@@ -30,8 +30,9 @@ function compactAlive(list) {
  * @param {Theme} theme
  * @param {Atlas} atlas
  * @param {Keys} keys
+ * @param {(id: string) => void} [playSfx]
  */
-export function createWorld(level, theme, atlas, keys) {
+export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
   const worldW = level.cols * TILE;
   const worldH = level.rows * TILE;
 
@@ -50,6 +51,7 @@ export function createWorld(level, theme, atlas, keys) {
       hit: atlas.get('player/hit'),
     },
     stats,
+    playSfx,
   );
 
   const flag = new Flag(level.goal, atlas.get('flag'));
@@ -64,6 +66,7 @@ export function createWorld(level, theme, atlas, keys) {
     level,
     player,
     stats,
+    playSfx,
     /**
      * @param {AtlasClip} clip
      * @param {number} x

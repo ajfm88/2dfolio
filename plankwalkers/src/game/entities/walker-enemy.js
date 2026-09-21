@@ -39,6 +39,7 @@ import {
  *   level: LevelModel,
  *   stats: import('../stats.js').Stats,
  *   player: import('../player.js').Player,
+ *   playSfx: (id: string) => void,
  *   spawnFx: (clip: AtlasClip, x: number, y: number) => void,
  * }} WorldHandle
  */
@@ -276,12 +277,15 @@ export class WalkerEnemy {
 
     if (fromAbove && this.stompable && intersects(player.hitbox, this.hitbox)) {
       player.bounce();
+      this.world.playSfx('hit');
       this.enter('dying');
       return;
     }
 
     if (this.damages && intersects(player.hitbox, this.damageBox)) {
-      this.world.stats.hurt(tuning.hazardDamage);
+      if (this.world.stats.hurt(tuning.hazardDamage)) {
+        this.world.playSfx('damage');
+      }
       // A blocked stomp still bounces, so the player is knocked clear of a
       // spinning Pink Star instead of grinding on top of it.
       if (fromAbove) player.bounce();

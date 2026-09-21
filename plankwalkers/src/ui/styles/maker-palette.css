@@ -1,0 +1,112 @@
+/* Maker palette. Flat tokens this unit; nine-slice chrome is Unit 15. */
+
+.maker-palette {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  pointer-events: auto;
+  background: var(--board);
+  border-top: calc(2px * var(--ui-scale)) solid var(--ink);
+  padding: calc(6px * var(--ui-scale)) calc(8px * var(--ui-scale));
+  padding-bottom: calc(env(safe-area-inset-bottom) + 6px * var(--ui-scale));
+}
+
+.maker-palette__groups {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: calc(12px * var(--ui-scale));
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.maker-palette__group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2px * var(--ui-scale));
+  flex: 0 0 auto;
+}
+
+.maker-palette__group-label {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.maker-palette__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: calc(4px * var(--ui-scale));
+}
+
+.maker-palette__item {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
+  width: calc(44px * var(--ui-scale));
+  height: calc(44px * var(--ui-scale));
+  padding: calc(4px * var(--ui-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  cursor: pointer;
+}
+
+.maker-palette__item:hover {
+  background: var(--paper-light);
+}
+
+.maker-palette__item:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+.maker-palette__item--selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.maker-palette__icon {
+  width: calc(32px * var(--ui-scale));
+  height: calc(32px * var(--ui-scale));
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.maker-palette__item--eraser {
+  background: var(--stone);
+}
+
+.maker-palette__item--eraser.maker-palette__item--selected {
+  background: var(--danger);
+  border-color: var(--ink);
+}
+
+.maker-palette__eraser-mark {
+  width: calc(18px * var(--ui-scale));
+  height: calc(18px * var(--ui-scale));
+  pointer-events: none;
+  background:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% + 1px * var(--ui-scale)),
+      transparent calc(50% + 1px * var(--ui-scale))
+    ),
+    linear-gradient(
+      -45deg,
+      transparent calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% + 1px * var(--ui-scale)),
+      transparent calc(50% + 1px * var(--ui-scale))
+    );
+}

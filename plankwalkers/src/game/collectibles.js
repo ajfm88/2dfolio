@@ -9,6 +9,7 @@ import { intersects } from '../core/rect.js';
  *   atlas: { get: (id: string) => AtlasClip },
  *   stats: import('./stats.js').Stats,
  *   player: { hitbox: Rect },
+ *   playSfx: (id: string) => void,
  *   spawnFx: (clip: AtlasClip, x: number, y: number) => void,
  * }} WorldHandle
  */
@@ -76,6 +77,7 @@ export class Collectible {
     if (intersects(this.hitbox, this.world.player.hitbox)) {
       if (this.coins) this.world.stats.coins += this.coins;
       if (this.heal) this.world.stats.health += this.heal;
+      this.world.playSfx('coin');
       const fxClip = this.world.atlas.get(this.fxId);
       const cx = this.hitbox.x + this.drawOffsetX + this.spriteW / 2;
       const cy = this.hitbox.y + this.drawOffsetY + this.spriteH / 2;

@@ -11,6 +11,7 @@ import { Projectile } from './projectile.js';
  * @typedef {{
  *   atlas: { get: (id: string) => AtlasClip },
  *   player: { hitbox: Rect },
+ *   playSfx: (id: string) => void,
  *   spawnEntity: (ent: unknown) => void,
  * }} WorldHandle
  */
@@ -118,6 +119,7 @@ export class Shooter {
     // fire
     if (!this.hasFired && Math.floor(this.frameIndex) === this.entry.fireFrame) {
       this.spawnProjectile();
+      this.world.playSfx('pearl');
       this.hasFired = true;
     }
 

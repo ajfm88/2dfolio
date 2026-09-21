@@ -155,6 +155,7 @@ function spawn(kind, c, r, opts = {}) {
     level,
     player,
     stats,
+    playSfx() {},
     /**
      * @param {unknown} clip
      * @param {number} x
