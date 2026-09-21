@@ -42,9 +42,15 @@ import { PinkStar } from '../game/entities/pink-star.js';
  *   muzzleX?: number,
  *   muzzleY?: number,
  *   projectile?: import('../game/hazards/projectile.js').ProjectileSpec,
+ *   defaultProps?: Record<string, unknown>,
  *   spawn?: (world: unknown, rec: import('../types.js').EntityRecord) => unknown,
  * }} PaletteEntry
  */
+
+export const PALETTE_ORDER = [
+  'terrain', 'platforms', 'water', 'treasure',
+  'enemies', 'hazards', 'decor', 'markers',
+];
 
 /** @type {PaletteEntry[]} */
 export const palette = [
@@ -292,6 +298,7 @@ export const palette = [
     hitboxH: 21,
     drawOffsetX: -20,
     drawOffsetY: -8,
+    defaultProps: { dir: -1 },
     spawn(world, rec) { return new Crabby(world, rec, this); },
   },
   {
@@ -317,6 +324,7 @@ export const palette = [
     // Art sits 3 px right of its canvas centre, so a canvas flip would shift it
     // left by that much: drawOffsetX + (2*7 + 23 - 34).
     flipOffsetX: -7,
+    defaultProps: { dir: -1 },
     spawn(world, rec) { return new FierceTooth(world, rec, this); },
   },
   {
@@ -340,6 +348,7 @@ export const palette = [
     hitboxH: 23,
     drawOffsetX: -6,
     drawOffsetY: -6,
+    defaultProps: { dir: -1 },
     spawn(world, rec) { return new PinkStar(world, rec, this); },
   },
   {
@@ -385,6 +394,7 @@ export const palette = [
       hitFx: 'cannon/ball-explode',
       endFx: 'cannon/ball-dead',
     },
+    defaultProps: { dir: -1 },
     spawn(world, rec) { return new Shooter(world, rec, this); },
   },
   {
@@ -424,6 +434,7 @@ export const palette = [
       hitFx: 'pearl/dead',
       endFx: 'pearl/dead',
     },
+    defaultProps: { dir: -1 },
     spawn(world, rec) { return new Shooter(world, rec, this); },
   },
 ];

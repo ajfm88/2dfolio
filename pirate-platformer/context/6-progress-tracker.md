@@ -6,17 +6,13 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–11 complete and signed off.** Unit 11 (Seashell + Cannon shooters and
-  their projectiles) implemented and play-tested 2026-09-18: seashell fires pearls
-  that damage, cannon wind-up ("aspirate") → shot reads as a fair telegraph, no
-  console errors. Player sign-off 2026-09-18. Tests + build + diagnostics green.
+- **Units 00–13 complete and signed off.** Unit 13 (Maker Core) implemented
+  2026-09-20. Player sign-off 2026-09-20. Tests 178 passing, build clean.
 
 ## Current Goal
 
-- **Unit 12 — Audio.** `core/audio.js`: one `AudioContext`, decoded buffers,
-  unlock on first gesture, pooled sfx, looping music with a crossfade, volumes.
-  Write `specs/12-audio.md` before implementing. SPW plays `pearl_sound` in
-  `create_pearl` — shooter firing audio belongs here, not in Unit 11.
+- **Unit 14 — Maker Gestures.** Two-finger pan, pinch zoom, paint/pan toggle,
+  long-press eyedropper. Spec not yet written.
 
 ## Completed
 
@@ -248,18 +244,72 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     (issue 7); the fixture's cannonball always bursts on the pillar so `ball-dead`
     is proven by test, not by the fixture (issue 8). Neither is folded into Unit 11.
 
+- **2026-09-19 — Unit 12 complete.** Spec at `specs/12-audio.md`.
+  `core/audio.js` (one `AudioContext`, lazy creation, decoded buffers,
+  fire-and-forget SFX with per-sound mix levels, looping music with fade
+  transitions, master sfx/music volume controls). `data/sounds.js` (declarative
+  manifest for 5 SFX + 1 music track). `core/input.js` gained `onFirstGesture`
+  for AudioContext unlock. `main.js` loads audio in parallel with the atlas and
+  wires `input.onFirstGesture(() => audio.resume())`. `play-scene.js` starts
+  music on enter (no restart on death — same-track guard). `world.js` gained a
+  `playSfx` callback on the world handle. Six gameplay triggers wired: jump
+  (`player.js` `doJump`/`doWallJump`), coin pickup (`collectibles.js`), damage
+  from spikes/walkers/projectiles (each conditionally via `stats.hurt()` return),
+  shooter fire (`shooter.js`), enemy stomp (`walker-enemy.js`). `npm test` 155
+  passing (no new test file; stub handles gained `playSfx() {}`). `npm run build`
+  clean.
+  - **`hit.wav` assigned to enemy stomp — new, not an SPW port.** SPW packed it
+    but never used it; its stomp-less combat had no need. It fits our stomp event.
+  - **`attack.wav` stays unused in v1.** Sword combat is out of scope.
+  - **Music does not restart on death.** `playMusic('music')` is called on every
+    `enter`; its same-track guard makes re-enter a no-op. `stopMusic` is reserved
+    for true scene changes (e.g. transitioning to level select / maker).
+  - **Volume persistence deferred to Unit 17.** Getters/setters are exposed with
+    sensible defaults (`sfxVolume` 0.7, `musicVolume` 0.4).
+  - **Per-sound authored volumes from the manifest.** SPW mixed coin at 0.4 and
+    damage at 0.5; our manifest carries the same idea.
+
+- **2026-09-20 — Unit 13 complete and signed off.** Spec at
+  `specs/13-maker-core.md`. Player sign-off 2026-09-20: "it all works perfectly"
+  (paint, erase, autotile, undo/redo, entity replace, pan, `M` round trip).
+  `maker/maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
+  `ui/maker-palette.js` + CSS. `createEmptyModel` with nullable `goal`;
+  `camera.panBy` + x/y setters; input `pointer.button`, Ctrl+Z / Ctrl+Shift+Z /
+  Ctrl+Y, `M` mode-switch, canvas `contextmenu` suppress. Palette `defaultProps`
+  on the five facing entities and `PALETTE_ORDER`. Throwaway `main.js` bridge
+  starts in maker; `M` toggles play if a goal is placed. `npm test` **178**
+  (155 prior + 3 empty-model + 1 serialise-null-goal + 19 command/tool).
+  `npm run build` clean.
+  - **`CommandStack.push` records an already-applied drag.** Spec `execute`
+    would re-paint. Drags mutate the model cell-by-cell for live autotile, then
+    `push` on pointer-up without re-executing. Redo still goes through `execute`.
+  - **`codec.serialise` throws `LevelError('goal', …)` when `goal` is null.**
+    Named in the spec's model section; codec was also on the not-built list.
+    A TypeError on `goal.c` would have thrown, but a field-named error matches
+    every other codec failure. Existing round-trip tests unchanged.
+  - **Dev-bridge play stubs HUD and touch, keeps real audio.** play-scene.js
+    was not to be modified and requires `audio` / `ui` / `onDeath`. Stubs
+    satisfy the "bare world render"; passing the live audio object means
+    jump/coin/damage still play, which is useful for verifying a painted
+    level. Completion does **not** `console.log` — that would need a play-scene
+    callback. Death restarts in place; `M` returns to the maker with the saved
+    camera. The bridge reads `makerScene.getLevel()` before switching so it
+    always plays the live model.
+  - **Tile palette icons crop the blob "single" cell (4, 4).** `tiles/island`
+    is a 544×160 sheet, so "frame 0 scaled ×2" would be unusable on a 44px
+    button; the fill cell (1, 1) reads as a black square at icon size. Water
+    crops the first 32×32 of `water/top`.
+  - **Decor group is hidden** (zero entries). 19 placeable items + eraser.
+
 ## In Progress
 
-- None. Unit 11 implemented and verified in code + browser; awaiting play sign-off.
+- None.
 
 ## Next Up
 
-- **Unit 12 — Audio** (`specs/12-audio.md` to be written). `core/audio.js`: one
-  `AudioContext` unlocked on the first gesture (watchlist item 2 — starts
-  suspended), decoded CC0 buffers, pooled sfx, looping music with a scene-change
-  crossfade, and persisted music/sfx volumes. Shooter firing sfx (`pearl_sound`)
-  lands here. Do not touch shooter code for it — `Shooter.spawnProjectile` is the
-  hook point a later audio pass reads, not something Unit 11 wired.
+- **Unit 14 — Maker Gestures.** Two-finger pan, pinch zoom at 0.5× / 1× / 2×,
+  one-finger paint/pan toggle, long-press eyedropper, `pointercancel` recovery.
+  Spec not yet written.
 
 ## Open Questions
 
@@ -570,40 +620,72 @@ owed; a committed telegraphed attack is standard and baitable, and it matches SP
 when the player breaks range mid-wind-up was considered and **declined** as less
 readable.
 
+**2026-09-19 — Audio is an engine service; game code uses a `playSfx` callback.**
+`core/audio.js` creates and manages the `AudioContext`, decodes buffers, and
+provides `playSfx`, `playMusic`, `stopMusic` and volume controls. It does not
+touch `document` (only `input.js` and `viewport.js` do that in `core/`). The App
+creates the audio, wires `input.onFirstGesture(() => audio.resume())`, and passes
+`audio.playSfx` down through the scene to `createWorld` → the world handle → all
+entities and the player. Entities call `world.playSfx('damage')` etc. without
+importing or knowing about the audio module. *Why:* dependencies point inward,
+and audio is an engine concern, not a game-object concern. The callback pattern
+matches `spawnFx` and `spawnEntity` — the handle is the entity's interface to the
+outside world. The player receives `playSfx` as a constructor argument because it
+is created before the handle (same as `keys`, `level`, `stats`).
+
+**2026-09-19 — Music does not restart on death.**
+`playMusic('music')` is called on every scene `enter`, but its same-track guard
+makes re-enter a no-op when the track is already playing. `stopMusic` is called
+only on a true scene change (future: level select, maker). *Why:* death restarts
+go through `exit()` → `enter()`, and if `exit` faded the music and `enter` faded
+it back in, the player would hear a brief dip on every death. Keeping the music
+up during a same-scene restart is the correct feel.
+
+**2026-09-19 — `onFirstGesture` is separate from `onTouchDetected`.**
+`onFirstGesture(cb)` fires on the first `keydown` or `pointerdown` of *any* type,
+synchronously inside the event handler so `AudioContext.resume()` lands in the
+user gesture call stack. `onTouchDetected` fires on the first **touch** pointer
+specifically and drives control-scheme detection. Both coexist; a keyboard-only
+player triggers the gesture but not the touch.
+
+**2026-09-20 — Maker edits apply live and record as one already-executed command.**
+A paint drag mutates `LevelModel` cell-by-cell so autotile updates under the
+cursor, and the compact diff is `CommandStack.push`ed on release without
+re-executing. `execute` is the redo path. Empty drags (every cell already in
+the target state) are discarded. Cap 100. Invariant 7 holds: the only mutations
+are the ones the command's inverse can restore.
+
+**2026-09-20 — In-memory `goal` may be null; serialised levels may not.**
+`createEmptyModel` skips schema validation so a new maker level has no flag
+until the user places one. `codec.serialise` and `validateLevel` still require
+a goal, and the `M` bridge refuses to enter play without one.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–11 done and signed off (11 play-tested 2026-09-18).
-World spawns treasure, spikes, walkers and now shooters from
-`level.entities` through `palette.js`, and can also spawn entities **at runtime**
-via the handle's `spawnEntity` (projectiles); the update loop snapshots
-`entities.length` first so a spawn runs from the next frame. Stats tracks hearts
-and coins (start 5, 100 coins → +1 heart). Spikes hurt with 700 ms invuln and a
-draw-time white flicker; health 0, the pit and water all return `'dead'` (restart).
-Pickups despawn with a one-shot fx clip. `src/ui/` DOM HUD + touch controls are in;
-scenes never import `ui/` (`main.js` injects the factories). All three walkers play
-distinctly. **Shooters:** one `Shooter` class + one `Projectile` class serve both
-Cannon and Seashell from the palette; body is non-damaging, non-solid, indestructible
-(only the projectile hurts); pearl 75 px/s (out-runnable), cannonball 150 (not);
-projectiles die on player hit / terrain (`checkSolid`, terrain only) / lifetime /
-level edge, each with a burst fx; `hasFired` guard makes it exactly one shot per
-cycle. `playerNear`/`playerInFront` now live in pure `game/sense.js`.
+**Where we are:** Units 00–13 done and signed off (player 2026-09-20).
+The app **starts in the maker**: empty 160×24 grid, spawn at (4, 18), no goal.
+Bottom palette is driven by `palette.js` (19 entries; decor hidden; eraser at
+the end). Left-drag paints, right-drag erases the active tool's layer/kind,
+eraser clears tiles+entities+decor but never markers. Ctrl+Z / Ctrl+Shift+Z /
+Ctrl+Y undo and redo. Arrow/WASD pan; middle-mouse drags the world. `M`
+switches to a bare play of the painted level if a goal is placed, and back
+again with the maker camera restored.
 
-**Next:** Unit 12 — Audio. Write `specs/12-audio.md` first. `core/audio.js`: one
-`AudioContext` unlocked on first gesture (watchlist 2), decoded CC0 buffers, pooled
-sfx, looping music with a scene-change crossfade, persisted volumes. Shooter firing
-sfx (`pearl_sound`) belongs here; `Shooter.spawnProjectile` is the hook, do not wire
-audio into shooter code retroactively.
+Everything from before still holds: audio, HUD, three walkers, one Shooter +
+one Projectile. The play fixture is no longer the boot path — paint a floor
+and a flag, then press `M`.
+
+**Next:** Unit 14 — Maker Gestures. Spec not yet written.
 
 **How to run**
 
-- `npm run dev` — game at `/`, atlas at `/atlas.html` (throwaway debug page,
-  issue 5). Prefer a fixed port; 5173 may already be another project (ArcGIS).
-  `--port 5174 --strictPort`.
-- `npm test` — 155 tests (schema, model, codec, autotile, parallax incl. cloud
-  recycle, physics incl. `checkSolid`, stats, world collect/hurt, walker enemies,
-  `sense`, shooter/projectile).
+- `npm run dev` — game at `/` (maker), atlas at `/atlas.html` (throwaway debug
+  page, issue 5). Prefer a fixed port; 5173 may already be another project
+  (ArcGIS). `--port 5174 --strictPort`.
+- `npm test` — 178 tests (prior 155 plus empty-model, null-goal serialise,
+  command stack / tool dispatch).
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
@@ -619,6 +701,12 @@ audio into shooter code retroactively.
   codes, 5 starting hearts, spikes-as-entities, injected UI factories, distinct
   per-enemy behaviour, **shooters non-solid/non-stompable/indestructible** (stomping
   one doing nothing is correct — destructible turrets are Beyond v1).
+- Wire volume persistence into `core/audio.js` — it exposes getters/setters;
+  persistence is Unit 17's job via the settings store.
+- Mutate `LevelModel` from maker UI code. Every edit goes through
+  `CommandStack`. Painting without undo is an invariant-7 bug.
+- Treat a missing goal as playable. `M` must warn and stay in the maker.
+- Fold touch gestures, zoom, the top bar, or persistence into this unit.
 
 **Standing hazards**
 
@@ -649,11 +737,12 @@ read-only. Audio is CC0 from `reference/super-pirate-world/audio/`.
 (−23, −6) in `2-architecture.md`. Flag hitbox 16×32, draw offset (−9, −61),
 sprite 34×93. Collectible opaque bounds and spike 32×16 hitbox in
 `specs/08-collectibles-and-hazards.md`. Enemy hitboxes, draw offsets and the
-measurements they came from in `specs/10-walker-enemies.md`, and shooter/projectile hitboxes, muzzle points and
-projectile speeds in `specs/11-shooters-and-projectiles.md`; the offset formula
-is `drawOffsetX = -(opaqueX + (opaqueW - hitboxW) / 2)`,
+measurements they came from in `specs/10-walker-enemies.md`, and shooter/projectile
+hitboxes, muzzle points and projectile speeds in
+`specs/11-shooters-and-projectiles.md`; the offset formula is
+`drawOffsetX = -(opaqueX + (opaqueW - hitboxW) / 2)`,
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–11 (all built; 12+ not yet
-written). Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–13 (all built and signed
+off; 14+ not yet written). Playbook: `context/README.md` Part 3.

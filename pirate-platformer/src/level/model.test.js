@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { deserialise } from './codec.js';
+import { createEmptyModel } from './model.js';
 import { createBlankLevel } from './schema.js';
 
 function blank(cols = 40, rows = 12) {
@@ -51,5 +52,40 @@ describe('LevelModel', () => {
     expect(level.decor).toEqual([]);
     expect(level.spawn).toEqual({ c: 39, r: 11 });
     expect(level.goal).toEqual({ c: 39, r: 11 });
+  });
+});
+
+describe('createEmptyModel', () => {
+  it('builds a 160×24 island with spawn at (4, 18) and no goal', () => {
+    const level = createEmptyModel();
+    expect(level.format).toBe(1);
+    expect(level.id.startsWith('lvl_')).toBe(true);
+    expect(level.id.length).toBe(12);
+    expect(level.name).toBe('');
+    expect(level.theme).toBe('island');
+    expect(level.cols).toBe(160);
+    expect(level.rows).toBe(24);
+    expect(level.spawn).toEqual({ c: 4, r: 18 });
+    expect(level.goal).toBeNull();
+    expect(level.layers.terrain.length).toBe(160 * 24);
+    expect(level.layers.terrain.every((v) => v === 0)).toBe(true);
+    expect(level.entities).toEqual([]);
+    expect(level.decor).toEqual([]);
+  });
+
+  it('honours cols, rows, and theme', () => {
+    const level = createEmptyModel({ cols: 40, rows: 12, theme: 'island' });
+    expect(level.cols).toBe(40);
+    expect(level.rows).toBe(12);
+    expect(level.spawn).toEqual({ c: 4, r: 6 });
+    expect(level.goal).toBeNull();
+  });
+
+  it('resize with a null goal does not throw', () => {
+    const level = createEmptyModel({ cols: 48, rows: 16 });
+    expect(level.spawn).toEqual({ c: 4, r: 10 });
+    level.resize(40, 12);
+    expect(level.goal).toBeNull();
+    expect(level.spawn).toEqual({ c: 4, r: 10 });
   });
 });

@@ -132,6 +132,24 @@ that `ball-dead` is proven by test rather than by this fixture. Do not change th
 
 ---
 
+### 9. SFX playback bypasses the master `sfxGain` node [OPEN]
+
+**Where:** `src/core/audio.js` `playSfx` (Unit 12)
+**Symptom:** Unit 12 spec graphs `source → perPlayGain (mix) → sfxGain → destination`.
+The implementation sets `perPlayGain` to `_sfxVolume * mix` and connects it
+straight to `destination`. `sfxGain` is created and written by the `sfxVolume`
+setter but no SFX node feeds it.
+**Expected:** Per-play gain is the authored mix only; master SFX volume lives on
+`sfxGain`, so in-flight sounds follow a volume change.
+**Repro:** Call `playSfx('jump')`, then set `sfxVolume` while it is still playing —
+the in-flight sound does not change. New plays do honour the setter because they
+bake `_sfxVolume` into the per-play gain.
+**Notes:** Found while reading Unit 12 against the spec, not during Unit 13.
+Functionally OK for fire-and-forget SFX. Do not fold into an unrelated unit; a
+fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
+
+---
+
 ## Resolved
 
 ### 3. Small clouds pop out mid-screen instead of exiting left [FIXED]

@@ -64,6 +64,9 @@ export function decodeRle(encoded, expected, field) {
  * @returns {LevelData}
  */
 export function serialise(model) {
+  if (model.goal == null) {
+    throw new LevelError('goal', 'a level without a goal cannot be saved or shared');
+  }
   return {
     format: model.format,
     id: model.id,
