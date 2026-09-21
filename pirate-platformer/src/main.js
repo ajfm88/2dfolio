@@ -1,17 +1,19 @@
 import './ui/styles/base.css';
 
 import { VIEW_H } from './settings.js';
+import { createAudio } from './core/audio.js';
 import { loadAtlas } from './core/atlas.js';
 import { createCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
 import { createLoop } from './core/loop.js';
 import { createViewport } from './core/viewport.js';
 
+import { sounds } from './data/sounds.js';
 import { getTheme } from './data/themes.js';
-import { createPlayFixture } from './data/fixtures/play-demo.js';
+import { createEmptyModel } from './level/model.js';
 import { createPlayScene } from './game/play-scene.js';
-import { createPlayHud } from './ui/hud.js';
-import { createTouchControls } from './ui/touch-controls.js';
+import { createMakerScene } from './maker/maker-scene.js';
+import { createMakerPalette } from './ui/maker-palette.js';
 import atlasJson from './data/atlas.json';
 
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
@@ -27,50 +29,120 @@ const viewport = createViewport(canvas, ctx, {
   },
 });
 
+const audio = createAudio();
 const input = createInput(canvas, viewport);
 const camera = createCamera();
-const scene = createPlayScene();
+const playScene = createPlayScene();
+const makerScene = createMakerScene();
+
+input.onFirstGesture(() => audio.resume());
 
 /** @type {Awaited<ReturnType<typeof loadAtlas>> | null} */
 let atlas = null;
+/** @type {ReturnType<typeof createEmptyModel> | null} */
+let level = null;
+/** @type {'play' | 'maker'} */
+let currentMode = 'maker';
 
-function enterLevel() {
-  if (!atlas) return;
-  const level = createPlayFixture();
-  const theme = getTheme(level.theme);
-  scene.enter({
+let makerCamX = 0;
+let makerCamY = 0;
+let hasMakerCam = false;
+
+let pendingRestart = false;
+
+function createStubHud() {
+  return {
+    syncHearts() {},
+    syncCoins() {},
+    setPaused() {},
+    showResults() {},
+    destroy() {},
+  };
+}
+
+function createStubTouch() {
+  return { show() {}, hide() {}, destroy() {} };
+}
+
+function enterMaker() {
+  if (!atlas || !level) return;
+  makerScene.enter({
     level,
-    theme,
+    theme: getTheme(level.theme),
     atlas,
     input,
     camera,
     viewport,
-    ui: { createHud: createPlayHud, createTouch: createTouchControls },
+    ui: { createPalette: createMakerPalette },
+  });
+  makerScene.mountUI(uiRoot);
+  if (hasMakerCam) {
+    camera.x = makerCamX;
+    camera.y = makerCamY;
+  }
+}
+
+function enterPlay() {
+  if (!atlas || !level) return;
+  playScene.enter({
+    level,
+    theme: getTheme(level.theme),
+    atlas,
+    audio,
+    input,
+    camera,
+    viewport,
+    ui: { createHud: createStubHud, createTouch: createStubTouch },
     onDeath() { pendingRestart = true; },
     onReplay() { pendingRestart = true; },
   });
-  scene.mountUI(uiRoot);
+  playScene.mountUI(uiRoot);
 }
 
-// Death and replay are requested from inside scene.update; the actual scene
-// transition (which mounts/unmounts DOM) runs here, after update returns, so the
-// scene's update never touches the DOM (invariant 3).
-let pendingRestart = false;
+function switchToPlay() {
+  const editing = makerScene.getLevel();
+  if (editing) level = editing;
+  if (!level || level.goal == null) {
+    console.warn('Place a goal flag before playing');
+    return;
+  }
+  makerCamX = camera.x;
+  makerCamY = camera.y;
+  hasMakerCam = true;
+  makerScene.unmountUI();
+  makerScene.exit();
+  currentMode = 'play';
+  enterPlay();
+}
 
-function restart() {
-  scene.unmountUI();
-  scene.exit();
-  enterLevel();
+function switchToMaker() {
+  playScene.unmountUI();
+  playScene.exit();
+  audio.stopMusic();
+  currentMode = 'maker';
+  enterMaker();
+}
+
+function restartPlay() {
+  playScene.unmountUI();
+  playScene.exit();
+  enterPlay();
 }
 
 /**
  * @param {number} dt
  */
 function update(dt) {
-  scene.update(dt);
-  if (pendingRestart) {
-    pendingRestart = false;
-    restart();
+  if (currentMode === 'maker') {
+    makerScene.update(dt);
+    if (input.keys.modeSwitch.pressed) switchToPlay();
+  } else {
+    playScene.update(dt);
+    if (pendingRestart) {
+      pendingRestart = false;
+      restartPlay();
+    }
+    if (input.keys.modeSwitch.pressed) switchToMaker();
   }
 }
 
@@ -81,15 +153,21 @@ function render() {
     ctx.fillRect(0, 0, viewport.viewW, VIEW_H);
     return;
   }
-  scene.render(ctx, camera);
+  if (currentMode === 'maker') makerScene.render(ctx, camera);
+  else playScene.render(ctx, camera);
 }
 
 const loop = createLoop({ update, render });
 loop.start();
 
-loadAtlas(atlasJson).then((loaded) => {
+Promise.all([
+  loadAtlas(atlasJson),
+  audio.load(sounds),
+]).then(([loaded]) => {
   atlas = loaded;
-  enterLevel();
+  level = createEmptyModel();
+  currentMode = 'maker';
+  enterMaker();
 }).catch((err) => {
-  console.error('Failed to load atlas:', err);
+  console.error('Failed to load:', err);
 });

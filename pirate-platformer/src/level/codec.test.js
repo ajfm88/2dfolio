@@ -10,6 +10,7 @@ import {
   toJsonString,
 } from './codec.js';
 import { LevelError, createBlankLevel } from './schema.js';
+import { createEmptyModel } from './model.js';
 
 const CANNON_COVE = {
   format: 1,
@@ -87,6 +88,18 @@ describe('JSON serialise', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(LevelError);
       expect(/** @type {LevelError} */ (err).field).toBe('json');
+    }
+  });
+
+  it('throws when the in-memory goal is still null', () => {
+    const model = createEmptyModel({ cols: 40, rows: 12 });
+    expect(model.goal).toBeNull();
+    try {
+      serialise(model);
+      throw new Error('expected LevelError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(LevelError);
+      expect(/** @type {LevelError} */ (err).field).toBe('goal');
     }
   });
 

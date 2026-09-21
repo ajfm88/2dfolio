@@ -31,11 +31,14 @@ import { createWorld } from './world.js';
  * }} UiFactories
  */
 
+/** @typedef {ReturnType<import('../core/audio.js').createAudio>} Audio */
+
 /**
  * @typedef {{
  *   level: LevelModel,
  *   theme: Theme,
  *   atlas: Atlas,
+ *   audio: Audio,
  *   input: Input,
  *   camera: ReturnType<import('../core/camera.js').createCamera>,
  *   viewport: ReturnType<import('../core/viewport.js').createViewport>,
@@ -72,12 +75,14 @@ export function createPlayScene() {
      */
     enter(p) {
       params = p;
-      world = createWorld(p.level, p.theme, p.atlas, p.input.keys);
+      world = createWorld(p.level, p.theme, p.atlas, p.input.keys,
+        (id) => p.audio.playSfx(id));
       paused = false;
       finished = false;
       elapsedMs = 0;
       lastPausedShown = false;
       resultsShown = false;
+      p.audio.playMusic('music');
     },
 
     exit() {

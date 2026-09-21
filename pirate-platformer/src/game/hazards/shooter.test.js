@@ -101,6 +101,7 @@ function makeWorld(level, player) {
     level,
     player,
     stats,
+    playSfx() {},
     /**
      * @param {import('./projectile.js').Projectile} ent
      */

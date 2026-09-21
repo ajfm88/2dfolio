@@ -5,19 +5,72 @@
 /** @typedef {import('../types.js').Cell} Cell */
 
 import {
+  COLS_DEFAULT,
   COLS_MAX,
   COLS_MIN,
+  FORMAT,
   LevelError,
+  ROWS_DEFAULT,
   ROWS_MAX,
   ROWS_MIN,
 } from './schema.js';
+
+const ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+/**
+ * @returns {string}
+ */
+function randomLevelId() {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let id = 'lvl_';
+  for (let i = 0; i < 8; i++) id += ID_ALPHABET[bytes[i] % ID_ALPHABET.length];
+  return id;
+}
+
+/**
+ * Fresh maker level. Bypasses schema validation because a new level has no goal
+ * yet — `goal` is null until the user places the flag.
+ *
+ * @param {{ cols?: number, rows?: number, theme?: string }} [opts]
+ * @returns {LevelModel}
+ */
+export function createEmptyModel(opts = {}) {
+  const cols = opts.cols ?? COLS_DEFAULT;
+  const rows = opts.rows ?? ROWS_DEFAULT;
+  const n = cols * rows;
+  const now = Date.now();
+  return new LevelModel(
+    {
+      format: FORMAT,
+      id: randomLevelId(),
+      name: '',
+      author: '',
+      theme: opts.theme ?? 'island',
+      cols,
+      rows,
+      created: now,
+      modified: now,
+      spawn: { c: 4, r: rows - 6 },
+      goal: null,
+      layers: { terrain: '', platform: '', water: '' },
+      decor: [],
+      entities: [],
+    },
+    {
+      terrain: new Uint8Array(n),
+      platform: new Uint8Array(n),
+      water: new Uint8Array(n),
+    },
+  );
+}
 
 /**
  * Mutable in-memory level. Serialisation lives in codec.js.
  */
 export class LevelModel {
   /**
-   * @param {LevelData} data
+   * @param {Omit<LevelData, 'goal'> & { goal: Cell | null }} data
    * @param {{ terrain: Uint8Array, platform: Uint8Array, water: Uint8Array }} layers
    */
   constructor(data, layers) {
@@ -32,8 +85,8 @@ export class LevelModel {
     this.modified = data.modified;
     /** @type {Cell} */
     this.spawn = { c: data.spawn.c, r: data.spawn.r };
-    /** @type {Cell} */
-    this.goal = { c: data.goal.c, r: data.goal.r };
+    /** @type {Cell | null} */
+    this.goal = data.goal ? { c: data.goal.c, r: data.goal.r } : null;
     this.layers = layers;
     /** @type {EntityRecord[]} */
     this.entities = data.entities.map((e) => ({
@@ -119,8 +172,10 @@ export class LevelModel {
     this.decor = this.decor.filter((d) => d.c < cols && d.r < rows);
     this.spawn.c = Math.min(this.spawn.c, cols - 1);
     this.spawn.r = Math.min(this.spawn.r, rows - 1);
-    this.goal.c = Math.min(this.goal.c, cols - 1);
-    this.goal.r = Math.min(this.goal.r, rows - 1);
+    if (this.goal) {
+      this.goal.c = Math.min(this.goal.c, cols - 1);
+      this.goal.r = Math.min(this.goal.r, rows - 1);
+    }
     this.modified = Date.now();
   }
 }

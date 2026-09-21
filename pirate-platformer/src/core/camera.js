@@ -1,3 +1,5 @@
+import { TILE } from '../settings.js';
+
 /**
  * World-space top-left of the virtual view.
  * Clamp degrades to centring when the world is smaller than the view
@@ -29,13 +31,41 @@ export function createCamera() {
     cam.y = Math.round(y);
   }
 
+  /**
+   * Direct pan for the maker. Allows two tiles of margin past the level edges
+   * so the boundary stays visible.
+   *
+   * @param {number} dx world px
+   * @param {number} dy world px
+   * @param {number} worldW
+   * @param {number} worldH
+   * @param {number} viewW
+   * @param {number} viewH
+   */
+  function panBy(dx, dy, worldW, worldH, viewW, viewH) {
+    let x = cam.x + dx;
+    let y = cam.y + dy;
+    const margin = TILE * 2;
+    x = Math.max(-margin, Math.min(x, worldW - viewW + margin));
+    y = Math.max(-margin, Math.min(y, worldH - viewH + margin));
+    cam.x = Math.round(x);
+    cam.y = Math.round(y);
+  }
+
   return {
     get x() {
       return cam.x;
     },
+    set x(value) {
+      cam.x = Math.round(value);
+    },
     get y() {
       return cam.y;
     },
+    set y(value) {
+      cam.y = Math.round(value);
+    },
     follow,
+    panBy,
   };
 }

@@ -53,12 +53,14 @@ export class Player {
    * @param {Keys} keys
    * @param {PlayerClips} clips
    * @param {import('./stats.js').Stats} stats
+   * @param {(id: string) => void} [playSfx]
    */
-  constructor(cell, level, keys, clips, stats) {
+  constructor(cell, level, keys, clips, stats, playSfx = () => {}) {
     this.level = level;
     this.keys = keys;
     this.clips = clips;
     this.stats = stats;
+    this.playSfx = playSfx;
     this.z = Z.main;
 
     /** @type {Rect} */
@@ -191,6 +193,7 @@ export class Player {
   }
 
   doJump() {
+    this.playSfx('jump');
     this.vy = -tuning.jumpVelocity;
     this.wallSlideBlockTimer = tuning.wallSlideBlock;
     this.hitbox.y -= 1;
@@ -206,6 +209,7 @@ export class Player {
   }
 
   doWallJump() {
+    this.playSfx('jump');
     this.vy = -tuning.jumpVelocity;
     this.vx = this.onWallLeft ? 1 : -1;
     this.facing = this.vx;

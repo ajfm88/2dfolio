@@ -10,6 +10,7 @@ import { tuning } from '../../data/tuning.js';
  *   atlas: { get: (id: string) => AtlasClip },
  *   stats: import('../stats.js').Stats,
  *   player: { hitbox: Rect },
+ *   playSfx: (id: string) => void,
  * }} WorldHandle
  */
 
@@ -55,7 +56,9 @@ export class Spikes {
    */
   update(_dt) {
     if (intersects(this.hitbox, this.world.player.hitbox)) {
-      this.world.stats.hurt(tuning.hazardDamage);
+      if (this.world.stats.hurt(tuning.hazardDamage)) {
+        this.world.playSfx('damage');
+      }
     }
   }
 

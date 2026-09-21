@@ -162,8 +162,8 @@ z                      // draw layer from settings.Z
 
 ## Async
 
-- `await` appears only in boot, asset loading, clipboard access and compression.
-  **The game loop is entirely synchronous.**
+- `await` appears only in boot, asset loading (atlas images and audio buffers),
+  clipboard access and compression. **The game loop is entirely synchronous.**
 - No promise chains in `update`. If something must happen later, it is a timer in
   fixed-timestep seconds.
 - Every `await` on an external API — clipboard, `CompressionStream`, `fetch` — is
@@ -202,14 +202,16 @@ deliberately not ported:
   Engine only; no game knowledge.
 - `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`,
   `parallax.js`, `render.js`. Shared by both modes.
-- `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `atlas.json` (generated),
-  `campaign/*.json`. Declarative; no logic beyond factory references.
+- `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `sounds.js`,
+  `atlas.json` (generated), `campaign/*.json`. Declarative; no logic beyond
+  factory references.
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,
   `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
   `collectibles.js`.
-- `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `validate.js`,
-  `grid-overlay.js`.
-- `src/ui/` — `dom.js`, `screens/`, `components/`, `styles/`.
+- `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`.
+  `validate.js` is Unit 16.
+- `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
+  `screens/`, `components/`, `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.
 - `tools/` — Node-only build scripts. Never imported by `src/`.

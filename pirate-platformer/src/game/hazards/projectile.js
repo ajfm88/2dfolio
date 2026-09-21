@@ -26,6 +26,7 @@ import { checkSolid } from '../physics.js';
  *   level: import('../../level/model.js').LevelModel,
  *   stats: import('../stats.js').Stats,
  *   player: { hitbox: Rect },
+ *   playSfx: (id: string) => void,
  *   spawnFx: (clip: AtlasClip, x: number, y: number) => void,
  * }} WorldHandle
  */
@@ -83,7 +84,9 @@ export class Projectile {
     }
 
     if (intersects(this.hitbox, this.world.player.hitbox)) {
-      this.world.stats.hurt(tuning.hazardDamage);
+      if (this.world.stats.hurt(tuning.hazardDamage)) {
+        this.world.playSfx('damage');
+      }
       this.die(this.spec.hitFx);
       return;
     }

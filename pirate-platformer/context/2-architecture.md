@@ -45,26 +45,35 @@ coral-corsairs/
     └── storage/
 ```
 
-- `src/core/` — the engine. Fixed-timestep loop, viewport and scaling, camera,
-  pointer/keyboard input, atlas loading, sprite and animation playback, audio, rect
-  math. **Knows nothing about pirates, levels, enemies or the maker.** Nothing in
-  `core/` may import from `game/`, `maker/`, `level/`, `data/` or `ui/`.
+- `src/core/` — the engine. Fixed-timestep loop, viewport and scaling, camera
+  (`follow` plus `panBy` with a 2-tile maker margin, and x/y setters),
+  pointer/keyboard input (including `pointer.button`, Ctrl+Z undo, Ctrl+Shift+Z /
+  Ctrl+Y redo, and the throwaway `M` mode-switch), atlas loading, sprite and
+  animation playback, audio (one `AudioContext`, decoded buffers, fire-and-forget
+  SFX, looping music with fade, master volume controls), rect math. **Knows
+  nothing about pirates, levels, enemies or the maker.** Nothing in `core/` may
+  import from `game/`, `maker/`, `level/`, `data/` or `ui/`.
 - `src/level/` — everything both modes share about a level. `model.js` (mutable
-  in-memory level), `codec.js` (serialise, parse, share codes), `autotile.js`
-  (neighbour bitmask to sheet cell), `schema.js` (defaults and validation),
-  `parallax.js` (horizon, cloud pool, reflection clocks), `render.js` (tile
-  layers and parallax drawing). Imported by both `game/` and `maker/`; imports
-  neither.
+  in-memory level, `createEmptyModel` for a fresh maker level whose `goal` is
+  `null`), `codec.js` (serialise, parse, share codes — serialise throws if `goal`
+  is still null), `autotile.js` (neighbour bitmask to sheet cell), `schema.js`
+  (defaults and validation — still requires a goal on load), `parallax.js`
+  (horizon, cloud pool, reflection clocks), `render.js` (tile layers and parallax
+  drawing). Imported by both `game/` and `maker/`; imports neither.
 - `src/data/` — declarative data with no behaviour beyond factory references.
   `palette.js` (the entity registry), `themes.js` (tilesheet per theme),
-  `tuning.js` (physics and gameplay numbers), `atlas.json` (generated),
-  `campaign/*.json` (levels exported from our own maker).
+  `tuning.js` (physics and gameplay numbers), `sounds.js` (audio manifest),
+  `atlas.json` (generated), `campaign/*.json` (levels exported from our own maker).
 - `src/game/` — play mode. Scene, world, physics resolution, player, entities,
   hazards, collectibles, HUD data. Owns nothing the maker needs.
-- `src/maker/` — maker mode. Scene, edit commands and the undo stack, tools,
-  validation, grid overlay. Owns nothing play mode needs.
+- `src/maker/` — maker mode. `maker-scene.js`, `commands.js` (command stack plus
+  tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell and
+  tool dispatch), `grid-overlay.js` (grid, cursor, ghost). Validation and
+  gestures are later units. Owns nothing play mode needs.
 - `src/ui/` — every DOM screen and component, plus CSS. The only place that
-  touches `document` outside of `core/input.js` and `core/viewport.js`.
+  touches `document` outside of `core/input.js` and `core/viewport.js`. Includes
+  `maker-palette.js`, injected into the maker scene the same way the HUD is
+  injected into play.
 - `src/storage/` — the only place that touches `localStorage`. Wraps every access
   in try/catch and falls back to an in-memory map.
 - `tools/` — Node scripts run by npm scripts. Reads the read-only reference art,
@@ -145,14 +154,18 @@ One schema serves both modes. Campaign levels are maker exports.
   future variants. Run counts must sum to exactly `cols × rows` — this is a
   validation error, not a warning.
 - Every entity and decor sits in exactly one cell. There are no pixel offsets.
-- `spawn` is required and singular. `goal` is required. Both are markers, not
-  entities, so they can never be duplicated or deleted by a paint stroke.
+- `spawn` is required and singular. `goal` is required on load, share, and play.
+  Both are markers, not entities, so they can never be duplicated or deleted by
+  a paint stroke. **In the maker**, a brand-new level from `createEmptyModel()`
+  has `goal: null` until the user places the flag; `codec.serialise` throws if
+  it is still null, and the play path refuses to enter without one.
 - Limits: `cols` 40–400, `rows` 12–48, ≤ 400 entities, ≤ 2000 decor. Defaults are
   160 × 24.
 
 **In memory**, `LevelModel` holds one `Uint8Array(cols * rows)` per tile layer plus
-plain arrays for entities and decor. `codec.js` is the only module that converts
-between the model and the serialised form.
+plain arrays for entities and decor. `goal` may be `null` only on a model that
+has never been serialised. `codec.js` is the only module that converts between
+the model and the serialised form.
 
 ## Autotiling
 
@@ -271,7 +284,10 @@ values.
 
 Entities can also be created **at runtime**, not only from `level.entities`: the
 spawn handle carries `spawnEntity(ent)`, which pushes into the same `entities`
-array (a shooter's projectile is the first use). The update loop snapshots
+array (a shooter's projectile is the first use). The handle also carries
+`playSfx(id)` — a fire-and-forget callback wired by the scene from
+`core/audio.js` — so entities and the player can trigger sound effects without
+importing the audio module or the DOM. The update loop snapshots
 `entities.length` before iterating, so an entity spawned mid-frame is updated from
 the next frame rather than the one it was created in. `compactAlive` still reaps
 `alive === false`, and the draw loop already covers the new entries, so nothing
@@ -298,7 +314,10 @@ the direct descendant of `reference/pirate-maker/28_finish/settings.py:8` (`EDIT
 ```
 
 The maker palette, the maker preview, the play-mode spawner and the level validator
-all read this one array. **Adding an enemy is one entry plus one class.**
+all read this one array. **Adding an enemy is one entry plus one class.** Facing
+entities carry `defaultProps: { dir: -1 }` so a fresh placement is a valid record.
+`PALETTE_ORDER` is the maker tab order: terrain, platforms, water, treasure,
+enemies, hazards, decor, markers. Groups with no entries (decor in v1) are hidden.
 
 ## Storage Model
 
