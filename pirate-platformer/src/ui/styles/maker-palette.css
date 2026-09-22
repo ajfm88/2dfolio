@@ -1,5 +1,9 @@
 /* Maker palette. Flat tokens this unit; nine-slice chrome is Unit 15. */
 
+:root {
+  --palette-height: calc(72px * var(--ui-scale) + env(safe-area-inset-bottom));
+}
+
 .maker-palette {
   position: absolute;
   left: 0;

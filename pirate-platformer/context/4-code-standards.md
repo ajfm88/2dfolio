@@ -208,10 +208,10 @@ deliberately not ported:
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,
   `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
   `collectibles.js`.
-- `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`.
-  `validate.js` is Unit 16.
+- `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
+  `gestures.js`. `validate.js` is Unit 16.
 - `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
-  `screens/`, `components/`, `styles/`.
+  `maker-toggle.js`, `screens/`, `components/`, `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.
 - `tools/` — Node-only build scripts. Never imported by `src/`.
