@@ -69,6 +69,11 @@ export function createInput(canvas, viewport) {
   /** @type {number | null} */
   let pointerWantId = null;
 
+  /** @type {Array<{ id: number, x: number, y: number }>} */
+  const rawTouches = [];
+  /** @type {Array<{ id: number, x: number, y: number }>} */
+  const touches = [];
+
   let hasTouch = false;
   /** @type {Array<() => void>} */
   const touchCbs = [];
@@ -97,10 +102,31 @@ export function createInput(canvas, viewport) {
   /**
    * @param {PointerEvent} e
    */
+  /**
+   * @param {PointerEvent} e
+   * @returns {{ x: number, y: number }}
+   */
+  function toVirtual(e) {
+    return viewport.toVirtual(e.clientX, e.clientY);
+  }
+
+  /**
+   * @param {PointerEvent} e
+   */
   function samplePointer(e) {
-    const v = viewport.toVirtual(e.clientX, e.clientY);
+    const v = toVirtual(e);
     pointerWantX = v.x;
     pointerWantY = v.y;
+  }
+
+  /**
+   * @param {number} id
+   */
+  function touchIndex(id) {
+    for (let i = 0; i < rawTouches.length; i++) {
+      if (rawTouches[i].id === id) return i;
+    }
+    return -1;
   }
 
   /**
@@ -162,7 +188,19 @@ export function createInput(canvas, viewport) {
     // Only the canvas drives the world pointer. Presses on DOM UI (buttons in #ui)
     // must keep their own click/capture, so never capture those to the canvas.
     if (e.target !== canvas) return;
-    if (e.isPrimary === false) return;
+    // Mouse/pen non-primary is ignored; the second touch finger must pass through.
+    if (e.pointerType !== 'touch' && e.isPrimary === false) return;
+
+    if (e.pointerType === 'touch' && rawTouches.length < 2 && touchIndex(e.pointerId) < 0) {
+      const v = toVirtual(e);
+      rawTouches.push({ id: e.pointerId, x: v.x, y: v.y });
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {
+        // window-level move/up still track the drag
+      }
+    }
+
     if (pointerWantId !== null) return;
     pointerWantId = e.pointerId;
     pointerWantDown = true;
@@ -181,6 +219,12 @@ export function createInput(canvas, viewport) {
    * @param {PointerEvent} e
    */
   function onPointerMove(e) {
+    const ti = touchIndex(e.pointerId);
+    if (ti >= 0) {
+      const v = toVirtual(e);
+      rawTouches[ti].x = v.x;
+      rawTouches[ti].y = v.y;
+    }
     if (pointerWantId === null) {
       samplePointer(e);
       return;
@@ -193,6 +237,8 @@ export function createInput(canvas, viewport) {
    * @param {PointerEvent} e
    */
   function onPointerUp(e) {
+    const ti = touchIndex(e.pointerId);
+    if (ti >= 0) rawTouches.splice(ti, 1);
     if (e.pointerId !== pointerWantId) return;
     samplePointer(e);
     pointerWantDown = false;
@@ -211,6 +257,7 @@ export function createInput(canvas, viewport) {
     pointerWantDown = false;
     pointerWantButton = 0;
     pointerWantId = null;
+    rawTouches.length = 0;
   }
 
   canvas.tabIndex = 0;
@@ -302,6 +349,7 @@ export function createInput(canvas, viewport) {
   return {
     keys,
     pointer,
+    touches,
     setVirtual,
     bindVirtualButton,
     onTouchDetected,
@@ -340,6 +388,14 @@ export function createInput(canvas, viewport) {
       pointer.y = pointerWantY;
       pointer.button = pointerWantButton;
       pointer.id = pointerWantId;
+
+      touches.length = rawTouches.length;
+      for (let i = 0; i < rawTouches.length; i++) {
+        if (!touches[i]) touches[i] = { id: 0, x: 0, y: 0 };
+        touches[i].id = rawTouches[i].id;
+        touches[i].x = rawTouches[i].x;
+        touches[i].y = rawTouches[i].y;
+      }
     },
   };
 }

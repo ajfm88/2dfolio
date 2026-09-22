@@ -176,6 +176,8 @@ mid-drag all break painting and D-pad holds. Set `touch-action: none` on the can
 and every control, `user-select: none` and `-webkit-touch-callout: none` on the app
 shell, `overscroll-behavior: none` on `html, body`, and handle `pointercancel` as a
 release. Never rely on `preventDefault` inside `pointermove` alone.
+**Applied in Unit 14:** `-webkit-touch-callout: none` is now on `html, body`.
+The other items were already in place from Units 00 / 09 / 13.
 
 ### 2. Audio starts suspended
 

@@ -1,0 +1,66 @@
+/* Paint / pan toggle. Flat tokens; shown after the first touch. */
+
+.maker-toggle {
+  position: absolute;
+  right: calc(env(safe-area-inset-right) + 12px * var(--ui-scale));
+  bottom: calc(var(--palette-height, 80px) + 12px * var(--ui-scale));
+  z-index: 3;
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
+  width: calc(44px * var(--ui-scale));
+  height: calc(44px * var(--ui-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--board);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
+}
+
+.maker-toggle[hidden] {
+  display: none;
+}
+
+.maker-toggle:hover {
+  background: var(--board-light);
+}
+
+.maker-toggle:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+.maker-toggle--pan {
+  background: var(--stone);
+}
+
+.maker-toggle__mark {
+  width: calc(18px * var(--ui-scale));
+  height: calc(18px * var(--ui-scale));
+  pointer-events: none;
+}
+
+/* Brush: two thin diagonals, like the eraser but lighter. */
+.maker-toggle__mark--paint {
+  background:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% - 1px * var(--ui-scale)),
+      var(--ink) calc(50% + 1px * var(--ui-scale)),
+      transparent calc(50% + 1px * var(--ui-scale))
+    );
+}
+
+/* Pan: a plus of four short arms. */
+.maker-toggle__mark--pan {
+  background:
+    linear-gradient(var(--ink), var(--ink)) center / 100% calc(2px * var(--ui-scale)) no-repeat,
+    linear-gradient(var(--ink), var(--ink)) center / calc(2px * var(--ui-scale)) 100% no-repeat;
+}

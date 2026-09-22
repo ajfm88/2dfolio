@@ -191,6 +191,18 @@ export function createMakerPalette(root, opts) {
     isErasing() {
       return erasing;
     },
+    /**
+     * Programmatically select a palette entry by id (for the eyedropper).
+     * @param {string} id
+     */
+    selectById(id) {
+      const entry = byId(id);
+      if (!entry) return;
+      selected = entry;
+      erasing = false;
+      opts.onSelect(entry, false);
+      paintSelected();
+    },
     destroy() {
       bar.removeEventListener('click', onClick);
       bar.remove();

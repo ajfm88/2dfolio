@@ -47,7 +47,8 @@ coral-corsairs/
 
 - `src/core/` — the engine. Fixed-timestep loop, viewport and scaling, camera
   (`follow` plus `panBy` with a 2-tile maker margin, and x/y setters),
-  pointer/keyboard input (including `pointer.button`, Ctrl+Z undo, Ctrl+Shift+Z /
+  pointer/keyboard input (including `pointer.button`, a double-buffered
+  `touches` array of at most two touch pointers, Ctrl+Z undo, Ctrl+Shift+Z /
   Ctrl+Y redo, and the throwaway `M` mode-switch), atlas loading, sprite and
   animation playback, audio (one `AudioContext`, decoded buffers, fire-and-forget
   SFX, looping music with fade, master volume controls), rect math. **Knows
@@ -67,13 +68,16 @@ coral-corsairs/
 - `src/game/` — play mode. Scene, world, physics resolution, player, entities,
   hazards, collectibles, HUD data. Owns nothing the maker needs.
 - `src/maker/` — maker mode. `maker-scene.js`, `commands.js` (command stack plus
-  tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell and
-  tool dispatch), `grid-overlay.js` (grid, cursor, ghost). Validation and
-  gestures are later units. Owns nothing play mode needs.
+  tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell,
+  tool dispatch, eyedropper `pickToolAt`), `grid-overlay.js` (grid, cursor,
+  ghost), `gestures.js` (touch state machine: long-press, one-finger paint/pan,
+  two-finger pan+pinch). Maker zoom is 0.5× / 1× / 2×, applied as `ctx.scale`
+  after `viewport.apply` — it does not change `core/viewport.js`. Owns nothing
+  play mode needs.
 - `src/ui/` — every DOM screen and component, plus CSS. The only place that
   touches `document` outside of `core/input.js` and `core/viewport.js`. Includes
-  `maker-palette.js`, injected into the maker scene the same way the HUD is
-  injected into play.
+  `maker-palette.js` and `maker-toggle.js` (paint/pan, shown on first touch),
+  injected into the maker scene the same way the HUD is injected into play.
 - `src/storage/` — the only place that touches `localStorage`. Wraps every access
   in try/catch and falls back to an in-memory map.
 - `tools/` — Node scripts run by npm scripts. Reads the read-only reference art,

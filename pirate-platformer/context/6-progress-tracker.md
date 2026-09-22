@@ -6,13 +6,13 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–13 complete and signed off.** Unit 13 (Maker Core) implemented
-  2026-09-20. Player sign-off 2026-09-20. Tests 178 passing, build clean.
+- **Units 00–14 complete and signed off.** Unit 14 (Maker Gestures)
+  implemented 2026-09-20. Player sign-off 2026-09-20 (desktop + real phone).
+  Tests 191 passing, build clean.
 
 ## Current Goal
 
-- **Unit 14 — Maker Gestures.** Two-finger pan, pinch zoom, paint/pan toggle,
-  long-press eyedropper. Spec not yet written.
+- **Unit 15 — Maker Chrome.** Spec not yet written.
 
 ## Completed
 
@@ -301,15 +301,34 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     crops the first 32×32 of `water/top`.
   - **Decor group is hidden** (zero entries). 19 placeable items + eraser.
 
+- **2026-09-20 — Unit 14 complete and signed off.** Spec at
+  `specs/14-maker-gestures.md`. Player sign-off 2026-09-20: desktop mouse
+  plus real-phone gestures (paint/pan toggle, long-press, two-finger pan,
+  pinch zoom, `M` play once a goal is placed).
+  `maker/gestures.js` (touch state machine), `ui/maker-toggle.js` (paint/pan,
+  hidden until first touch). `input.js` `touches` (max 2, snapshotted in
+  `advance()`). `screenToCell` takes zoom; `pickToolAt` for the eyedropper;
+  palette `selectById`; maker zoom 0.5/1/2 via `ctx.scale`;
+  `-webkit-touch-callout: none`. `npm test` **191** (178 prior + 6 pick/zoom
+  + 7 gesture). `npm run build` clean.
+  - **Eyedrop consumes the finger until lift.** Spec goes `eyedrop` → `idle`
+    with the finger still down. Without a consume flag, the next frame would
+    re-enter `longPress` and fire again 300 ms later.
+  - **`grid-overlay.js` was not edited.** The files table listed it; the body
+    says the scene just passes `pixelScale * zoom`. Followed the body.
+  - **`main.js` injects `createToggle`.** Not in the files table, required by
+    the injection paragraph (maker must not import `ui/`).
+  - **Zoom persists on the scene across `M`.** Resetting it on enter would
+    disagree with the restored camera after play.
+
 ## In Progress
 
 - None.
 
 ## Next Up
 
-- **Unit 14 — Maker Gestures.** Two-finger pan, pinch zoom at 0.5× / 1× / 2×,
-  one-finger paint/pan toggle, long-press eyedropper, `pointercancel` recovery.
-  Spec not yet written.
+- **Unit 15 — Maker Chrome.** Scrolling category tabs, top bar, level-size
+  dialog. Spec not yet written.
 
 ## Open Questions
 
@@ -660,32 +679,34 @@ are the ones the command's inverse can restore.
 until the user places one. `codec.serialise` and `validateLevel` still require
 a goal, and the `M` bridge refuses to enter play without one.
 
+**2026-09-20 — Gesture module reads `input.touches`, never the DOM.**
+Invariant 8. Mouse still uses the single `pointer` channel. Touch paint/pan/
+pinch/eyedrop go through `gestures.js`. After a long-press eyedrop, that
+finger is ignored until lift.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–13 done and signed off (player 2026-09-20).
-The app **starts in the maker**: empty 160×24 grid, spawn at (4, 18), no goal.
-Bottom palette is driven by `palette.js` (19 entries; decor hidden; eraser at
-the end). Left-drag paints, right-drag erases the active tool's layer/kind,
-eraser clears tiles+entities+decor but never markers. Ctrl+Z / Ctrl+Shift+Z /
-Ctrl+Y undo and redo. Arrow/WASD pan; middle-mouse drags the world. `M`
-switches to a bare play of the painted level if a goal is placed, and back
-again with the maker camera restored.
+**Where we are:** Units 00–14 done and signed off (player 2026-09-20).
+The maker now has **touch gestures**: two-finger pan, pinch zoom at 0.5× / 1× /
+2× (centre preserved), a paint/pan toggle that appears after the first touch,
+long-press eyedropper (300 ms), middle-click eyedropper on desktop. Mouse
+painting from Unit 13 is unchanged. `-webkit-touch-callout: none` is on the
+app shell.
 
-Everything from before still holds: audio, HUD, three walkers, one Shooter +
-one Projectile. The play fixture is no longer the boot path — paint a floor
-and a flag, then press `M`.
+Everything from before still holds: boot in maker, palette, undo/redo, `M`
+play bridge, audio, three walkers, one Shooter + one Projectile.
 
-**Next:** Unit 14 — Maker Gestures. Spec not yet written.
+**Next:** Unit 15 — Maker Chrome. Spec not yet written.
 
 **How to run**
 
 - `npm run dev` — game at `/` (maker), atlas at `/atlas.html` (throwaway debug
   page, issue 5). Prefer a fixed port; 5173 may already be another project
   (ArcGIS). `--port 5174 --strictPort`.
-- `npm test` — 178 tests (prior 155 plus empty-model, null-goal serialise,
-  command stack / tool dispatch).
+- `npm test` — 191 tests (prior 178 plus `pickToolAt`, zoomed `screenToCell`,
+  gesture state machine).
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
@@ -744,5 +765,5 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–13 (all built and signed
-off; 14+ not yet written). Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–14 (all built and signed
+off; 15+ not yet written). Playbook: `context/README.md` Part 3.

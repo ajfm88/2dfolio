@@ -1,4 +1,5 @@
 import { TILE } from '../settings.js';
+import { byId } from '../data/palette.js';
 import {
   cloneCell,
   cloneDecor,
@@ -22,11 +23,12 @@ import {
  * @param {number} pointerX
  * @param {number} pointerY
  * @param {{ x: number, y: number }} cam
+ * @param {number} [zoom]
  * @returns {Cell}
  */
-export function screenToCell(pointerX, pointerY, cam) {
-  const wx = pointerX + cam.x;
-  const wy = pointerY + cam.y;
+export function screenToCell(pointerX, pointerY, cam, zoom = 1) {
+  const wx = pointerX / zoom + cam.x;
+  const wy = pointerY / zoom + cam.y;
   return { c: Math.floor(wx / TILE), r: Math.floor(wy / TILE) };
 }
 
@@ -173,6 +175,35 @@ function findDecorAt(model, c, r) {
     if (rec.c === c && rec.r === r) return i;
   }
   return -1;
+}
+
+/**
+ * Look up what is placed at a cell, for the eyedropper.
+ * Priority: entity → decor → terrain → platform → water → spawn → goal.
+ *
+ * @param {number} c
+ * @param {number} r
+ * @param {LevelModel} level
+ * @returns {PaletteEntry | null}
+ */
+export function pickToolAt(c, r, level) {
+  if (!level.inBounds(c, r)) return null;
+  const ei = findEntityAt(level, c, r);
+  if (ei >= 0) {
+    const entry = byId(level.entities[ei].k);
+    if (entry) return entry;
+  }
+  const di = findDecorAt(level, c, r);
+  if (di >= 0) {
+    const entry = byId(level.decor[di].k);
+    if (entry) return entry;
+  }
+  if (level.get('terrain', c, r) !== 0) return byId('terrain') ?? null;
+  if (level.get('platform', c, r) !== 0) return byId('platform') ?? null;
+  if (level.get('water', c, r) !== 0) return byId('water') ?? null;
+  if (level.spawn.c === c && level.spawn.r === r) return byId('spawn') ?? null;
+  if (level.goal && level.goal.c === c && level.goal.r === r) return byId('goal') ?? null;
+  return null;
 }
 
 /**
