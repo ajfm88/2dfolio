@@ -4,11 +4,13 @@ import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
 import { byId } from '../data/palette.js';
 import { CommandStack } from './commands.js';
+import { createGestures } from './gestures.js';
 import {
   applyCell,
   cellKey,
   classifyAction,
   createCommand,
+  pickToolAt,
   screenToCell,
 } from './tools.js';
 import {
@@ -34,8 +36,16 @@ const PAN_SPEED = 300;
  * @typedef {{
  *   getSelectedEntry: () => PaletteEntry | null,
  *   isErasing: () => boolean,
+ *   selectById: (id: string) => void,
  *   destroy: () => void,
  * }} PaletteController
+ */
+
+/**
+ * @typedef {{
+ *   isPanMode: () => boolean,
+ *   destroy: () => void,
+ * }} ToggleController
  */
 
 /**
@@ -46,7 +56,7 @@ const PAN_SPEED = 300;
  *   input: Input,
  *   camera: ReturnType<import('../core/camera.js').createCamera>,
  *   viewport: ReturnType<import('../core/viewport.js').createViewport>,
- *   ui: { createPalette: Function },
+ *   ui: { createPalette: Function, createToggle?: Function },
  * }} MakerSceneParams
  */
 
@@ -61,10 +71,15 @@ export function createMakerScene() {
   let stack = null;
   /** @type {PaletteController | null} */
   let palette = null;
+  /** @type {ToggleController | null} */
+  let toggle = null;
+  /** @type {ReturnType<typeof createGestures> | null} */
+  let gestures = null;
 
   /** @type {PaletteEntry | null} */
   let activeTool = null;
   let erasing = false;
+  let zoom = 1;
 
   /** @type {{ command: MakerCommand, action: import('./tools.js').ToolAction, button: number, dedupe: Set<number> } | null} */
   let dragState = null;
@@ -73,24 +88,64 @@ export function createMakerScene() {
   let panPrevX = 0;
   let panPrevY = 0;
 
+  function dims() {
+    const viewW = params.viewport.viewW;
+    return {
+      viewW,
+      eW: viewW / zoom,
+      eH: VIEW_H / zoom,
+      worldW: level.cols * TILE,
+      worldH: level.rows * TILE,
+    };
+  }
+
   /**
    * @param {LevelModel} model
    * @param {MakerSceneParams} p
    */
   function frameCameraOnSpawn(model, p) {
     const viewW = p.viewport.viewW;
+    const eW = viewW / zoom;
+    const eH = VIEW_H / zoom;
     const worldW = model.cols * TILE;
     const worldH = model.rows * TILE;
     const spawnX = model.spawn.c * TILE + TILE / 2;
-    p.camera.x = spawnX - viewW / 2;
-    p.camera.y = worldH - VIEW_H;
-    p.camera.panBy(0, 0, worldW, worldH, viewW, VIEW_H);
+    p.camera.x = spawnX - eW / 2;
+    p.camera.y = worldH - eH;
+    p.camera.panBy(0, 0, worldW, worldH, eW, eH);
+  }
+
+  /**
+   * @param {number} newZoom
+   * @param {number} centerVx
+   * @param {number} centerVy
+   */
+  function applyZoom(newZoom, centerVx, centerVy) {
+    if (!params || !level) return;
+    const worldX = centerVx / zoom + params.camera.x;
+    const worldY = centerVy / zoom + params.camera.y;
+    zoom = newZoom;
+    params.camera.x = worldX - centerVx / zoom;
+    params.camera.y = worldY - centerVy / zoom;
+    const d = dims();
+    params.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
   }
 
   function syncToolFromPalette() {
     if (!palette) return;
     activeTool = palette.getSelectedEntry();
     erasing = palette.isErasing();
+  }
+
+  /**
+   * @param {number} vx
+   * @param {number} vy
+   */
+  function eyedropAt(vx, vy) {
+    if (!params || !level || !palette) return;
+    const cell = screenToCell(vx, vy, params.camera, zoom);
+    const picked = pickToolAt(cell.c, cell.r, level);
+    if (picked) palette.selectById(picked.id);
   }
 
   function finalizeDrag() {
@@ -115,62 +170,30 @@ export function createMakerScene() {
   }
 
   /**
-   * @param {number} dt
+   * @param {{
+   *   x: number,
+   *   y: number,
+   *   pressed: boolean,
+   *   released: boolean,
+   *   down: boolean,
+   *   button: number,
+   * }} src
    */
-  function panCamera(dt) {
+  function processPaintFrom(src) {
     if (!params || !level) return;
-    const keys = params.input.keys;
-    const viewW = params.viewport.viewW;
-    const worldW = level.cols * TILE;
-    const worldH = level.rows * TILE;
-    let dx = 0;
-    let dy = 0;
-    if (keys.left.held) dx -= PAN_SPEED * dt;
-    if (keys.right.held) dx += PAN_SPEED * dt;
-    if (keys.up.held) dy -= PAN_SPEED * dt;
-    if (keys.down.held) dy += PAN_SPEED * dt;
-    if (dx !== 0 || dy !== 0) {
-      params.camera.panBy(dx, dy, worldW, worldH, viewW, VIEW_H);
-    }
+    if (src.released && dragState) finalizeDrag();
 
-    const ptr = params.input.pointer;
-    if (ptr.pressed && ptr.button === 1) {
-      panning = true;
-      panPrevX = ptr.x;
-      panPrevY = ptr.y;
-    }
-    if (panning && ptr.down && ptr.button === 1) {
-      params.camera.panBy(
-        panPrevX - ptr.x,
-        panPrevY - ptr.y,
-        worldW,
-        worldH,
-        viewW,
-        VIEW_H,
-      );
-      panPrevX = ptr.x;
-      panPrevY = ptr.y;
-    }
-    if (ptr.released) panning = false;
-  }
-
-  function processPaint() {
-    if (!params || !level) return;
-    const ptr = params.input.pointer;
-
-    if (ptr.released && dragState) finalizeDrag();
-
-    if (ptr.pressed && ptr.button !== 1) {
-      const action = classifyAction(ptr.button, erasing, activeTool);
+    if (src.pressed && src.button !== 1) {
+      const action = classifyAction(src.button, erasing, activeTool);
       if (action !== 'noop' && action !== 'pan') {
-        const cell = screenToCell(ptr.x, ptr.y, params.camera);
+        const cell = screenToCell(src.x, src.y, params.camera, zoom);
         if (level.inBounds(cell.c, cell.r)) {
           const command = createCommand(action, activeTool, level);
           if (command) {
             dragState = {
               command,
               action,
-              button: ptr.button,
+              button: src.button,
               dedupe: new Set(),
             };
             paintCell(cell);
@@ -179,9 +202,52 @@ export function createMakerScene() {
       }
     }
 
-    if (ptr.down && dragState && ptr.button === dragState.button) {
-      paintCell(screenToCell(ptr.x, ptr.y, params.camera));
+    if (src.down && dragState && src.button === dragState.button) {
+      paintCell(screenToCell(src.x, src.y, params.camera, zoom));
     }
+  }
+
+  /**
+   * @param {number} dt
+   */
+  function panKeyboard(dt) {
+    if (!params || !level) return;
+    const keys = params.input.keys;
+    const d = dims();
+    let dx = 0;
+    let dy = 0;
+    if (keys.left.held) dx -= PAN_SPEED * dt;
+    if (keys.right.held) dx += PAN_SPEED * dt;
+    if (keys.up.held) dy -= PAN_SPEED * dt;
+    if (keys.down.held) dy += PAN_SPEED * dt;
+    if (dx !== 0 || dy !== 0) {
+      params.camera.panBy(dx, dy, d.worldW, d.worldH, d.eW, d.eH);
+    }
+  }
+
+  function panMiddleMouse() {
+    if (!params || !level) return;
+    const ptr = params.input.pointer;
+    const d = dims();
+    if (ptr.pressed && ptr.button === 1) {
+      eyedropAt(ptr.x, ptr.y);
+      panning = true;
+      panPrevX = ptr.x;
+      panPrevY = ptr.y;
+    }
+    if (panning && ptr.down && ptr.button === 1) {
+      params.camera.panBy(
+        (panPrevX - ptr.x) / zoom,
+        (panPrevY - ptr.y) / zoom,
+        d.worldW,
+        d.worldH,
+        d.eW,
+        d.eH,
+      );
+      panPrevX = ptr.x;
+      panPrevY = ptr.y;
+    }
+    if (ptr.released) panning = false;
   }
 
   return {
@@ -197,19 +263,24 @@ export function createMakerScene() {
       erasing = false;
       dragState = null;
       panning = false;
+      gestures = createGestures(p.input, {
+        isPanMode: () => (toggle ? toggle.isPanMode() : false),
+      });
       frameCameraOnSpawn(level, p);
     },
 
     exit() {
       if (dragState) finalizeDrag();
+      if (gestures) gestures.reset();
       params = null;
       parallax = null;
       stack = null;
+      gestures = null;
       activeTool = null;
       erasing = false;
       dragState = null;
       panning = false;
-      // level is owned by the caller (the dev bridge).
+      // level is owned by the caller (the dev bridge). zoom persists on this scene.
     },
 
     /**
@@ -228,9 +299,16 @@ export function createMakerScene() {
           erasing = isErasing;
         },
       });
+      if (params.ui.createToggle) {
+        toggle = params.ui.createToggle(root, params.input);
+      }
     },
 
     unmountUI() {
+      if (toggle) {
+        toggle.destroy();
+        toggle = null;
+      }
       if (palette) {
         palette.destroy();
         palette = null;
@@ -241,19 +319,61 @@ export function createMakerScene() {
      * @param {number} dt
      */
     update(dt) {
-      if (!params || !level || !stack || !parallax) return;
+      if (!params || !level || !stack || !parallax || !gestures) return;
 
       params.input.advance();
       syncToolFromPalette();
+      gestures.update(dt, zoom);
 
       if (!dragState) {
         if (params.input.keys.undo.pressed) stack.undo(level);
         if (params.input.keys.redo.pressed) stack.redo(level);
       }
 
-      panCamera(dt);
-      processPaint();
-      parallax.update(dt, params.camera.x, params.viewport.viewW);
+      const d = dims();
+      if (gestures.panDx !== 0 || gestures.panDy !== 0) {
+        params.camera.panBy(
+          -gestures.panDx / zoom,
+          -gestures.panDy / zoom,
+          d.worldW,
+          d.worldH,
+          d.eW,
+          d.eH,
+        );
+      }
+      if (gestures.zoomSnap !== null) {
+        applyZoom(gestures.zoomSnap, gestures.zoomCenterX, gestures.zoomCenterY);
+      }
+
+      panKeyboard(dt);
+      if (!gestures.active) panMiddleMouse();
+
+      if (gestures.active) {
+        processPaintFrom({
+          x: gestures.paintX,
+          y: gestures.paintY,
+          pressed: gestures.paintPressed,
+          released: gestures.paintReleased,
+          down: gestures.state === 'onePaint',
+          button: 0,
+        });
+      } else {
+        const ptr = params.input.pointer;
+        processPaintFrom({
+          x: ptr.x,
+          y: ptr.y,
+          pressed: ptr.pressed,
+          released: ptr.released,
+          down: ptr.down,
+          button: ptr.button,
+        });
+      }
+
+      if (gestures.eyedropFired) {
+        eyedropAt(gestures.eyedropX, gestures.eyedropY);
+      }
+
+      parallax.update(dt, params.camera.x, d.eW);
     },
 
     /**
@@ -262,10 +382,11 @@ export function createMakerScene() {
      */
     render(ctx, cam) {
       if (!params || !level || !parallax) return;
-      const viewW = params.viewport.viewW;
+      const d = dims();
       const atlas = params.atlas;
+      ctx.scale(zoom, zoom);
 
-      drawLevel(ctx, cam, viewW, VIEW_H, level, params.theme, atlas, parallax);
+      drawLevel(ctx, cam, d.eW, d.eH, level, params.theme, atlas, parallax);
 
       for (let i = 0; i < level.entities.length; i++) {
         const rec = level.entities[i];
@@ -298,14 +419,15 @@ export function createMakerScene() {
       }
 
       drawGrid(
-        ctx, cam, viewW, VIEW_H, level.cols, level.rows,
-        params.viewport.pixelScale,
+        ctx, cam, d.eW, d.eH, level.cols, level.rows,
+        params.viewport.pixelScale * zoom,
       );
 
-      const cell = screenToCell(params.input.pointer.x, params.input.pointer.y, cam);
+      const ptr = params.input.pointer;
+      const cell = screenToCell(ptr.x, ptr.y, cam, zoom);
       if (!level.inBounds(cell.c, cell.r)) return;
 
-      const eraseCursor = erasing || params.input.pointer.button === 2;
+      const eraseCursor = erasing || ptr.button === 2;
       const color = eraseCursor
         ? CURSOR_ERASE
         : activeTool
