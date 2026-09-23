@@ -1,0 +1,148 @@
+/* Maker top bar. Nine-slice board background, safe-area-padded. */
+
+.maker-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(4px * var(--ui-scale));
+  border-style: solid;
+  border-width: calc(16px * var(--ui-scale));
+  border-top: 0;
+  border-image: url("/assets/ui/board-yellow.png") 32 fill /
+                calc(16px * var(--ui-scale)) / 0 round;
+  border-image-outset: 0;
+  image-rendering: pixelated;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 4px * var(--ui-scale));
+  padding-bottom: calc(4px * var(--ui-scale));
+  padding-left: calc(env(safe-area-inset-left, 0px) + 4px * var(--ui-scale));
+  padding-right: calc(env(safe-area-inset-right, 0px) + 4px * var(--ui-scale));
+}
+
+.maker-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--ui-scale));
+}
+
+.maker-toolbar__btn {
+  position: relative;
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
+  padding: calc(6px * var(--ui-scale)) calc(10px * var(--ui-scale));
+  border-style: solid;
+  border-width: calc(7px * var(--ui-scale));
+  border-image: url("/assets/ui/button-yellow.png") 14 fill /
+                calc(7px * var(--ui-scale)) / 0 round;
+  image-rendering: pixelated;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.maker-toolbar__btn:hover { transform: translateY(calc(-1px * var(--ui-scale))); }
+.maker-toolbar__btn:active { transform: translateY(calc(1px * var(--ui-scale))); }
+.maker-toolbar__btn:disabled { opacity: 0.6; pointer-events: none; }
+.maker-toolbar__btn:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+.maker-toolbar__btn--primary {
+  border-image-source: url("/assets/ui/button-green.png");
+}
+
+/* Back arrow — angular CSS chevron, no border-radius */
+.maker-toolbar__back-arrow {
+  display: inline-block;
+  width: calc(8px * var(--ui-scale));
+  height: calc(8px * var(--ui-scale));
+  border-left: calc(2px * var(--ui-scale)) solid var(--ink);
+  border-bottom: calc(2px * var(--ui-scale)) solid var(--ink);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+/* Menu hamburger icon — three horizontal bars */
+.maker-toolbar__menu-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(3px * var(--ui-scale));
+  width: calc(14px * var(--ui-scale));
+  height: calc(14px * var(--ui-scale));
+  pointer-events: none;
+}
+
+.maker-toolbar__menu-icon span {
+  display: block;
+  height: calc(2px * var(--ui-scale));
+  background: var(--ink);
+}
+
+/* Menu dropdown panel */
+.maker-toolbar__menu-wrap {
+  position: relative;
+}
+
+.maker-toolbar__menu-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 3;
+  margin-top: calc(4px * var(--ui-scale));
+  border-style: solid;
+  border-width: calc(16px * var(--ui-scale));
+  border-image: url("/assets/ui/paper-yellow.png") 32 fill /
+                calc(16px * var(--ui-scale)) / 0 round;
+  image-rendering: pixelated;
+  background: none;
+  padding: calc(4px * var(--ui-scale));
+  min-width: calc(140px * var(--ui-scale));
+}
+
+.maker-toolbar__menu-panel[hidden] {
+  display: none;
+}
+
+.maker-toolbar__menu-item {
+  display: block;
+  width: 100%;
+  min-height: calc(44px * var(--ui-scale));
+  padding: calc(8px * var(--ui-scale)) calc(12px * var(--ui-scale));
+  border-style: solid;
+  border-width: calc(7px * var(--ui-scale));
+  border-image: url("/assets/ui/button-yellow.png") 14 fill /
+                calc(7px * var(--ui-scale)) / 0 round;
+  image-rendering: pixelated;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.maker-toolbar__menu-item:hover {
+  transform: translateY(calc(-1px * var(--ui-scale)));
+}
+
+.maker-toolbar__menu-item:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(2px * var(--ui-scale));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maker-toolbar__btn:hover,
+  .maker-toolbar__btn:active,
+  .maker-toolbar__menu-item:hover { transform: none; }
+}

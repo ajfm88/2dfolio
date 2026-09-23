@@ -244,6 +244,78 @@ export class EraseAllCommand {
   }
 }
 
+export class ResizeCommand {
+  /**
+   * @param {number} newCols
+   * @param {number} newRows
+   * @param {{
+   *   cols: number, rows: number,
+   *   terrain: Uint8Array, platform: Uint8Array, water: Uint8Array,
+   *   entities: EntityRecord[], decor: DecorRecord[],
+   *   spawn: Cell, goal: Cell | null,
+   * }} snapshot
+   * @param {() => void} onResize
+   */
+  constructor(newCols, newRows, snapshot, onResize) {
+    this.newCols = newCols;
+    this.newRows = newRows;
+    this.snapshot = snapshot;
+    this.onResize = onResize;
+  }
+
+  /**
+   * @param {LevelModel} model
+   */
+  execute(model) {
+    model.resize(this.newCols, this.newRows);
+    this.onResize();
+  }
+
+  /**
+   * @param {LevelModel} model
+   */
+  undo(model) {
+    const s = this.snapshot;
+    model.cols = s.cols;
+    model.rows = s.rows;
+    model.layers.terrain = new Uint8Array(s.terrain);
+    model.layers.platform = new Uint8Array(s.platform);
+    model.layers.water = new Uint8Array(s.water);
+    model.entities = s.entities.map(cloneEntity);
+    model.decor = s.decor.map(cloneDecor);
+    model.spawn = cloneCell(s.spawn);
+    model.goal = s.goal ? cloneCell(s.goal) : null;
+    touch(model);
+    this.onResize();
+  }
+
+  hasChanges() {
+    return true;
+  }
+}
+
+/**
+ * @param {LevelModel} model
+ * @param {number} newCols
+ * @param {number} newRows
+ * @param {() => void} onResize
+ * @returns {ResizeCommand}
+ */
+export function createResizeCommand(model, newCols, newRows, onResize) {
+  const snapshot = {
+    cols: model.cols,
+    rows: model.rows,
+    terrain: new Uint8Array(model.layers.terrain),
+    platform: new Uint8Array(model.layers.platform),
+    water: new Uint8Array(model.layers.water),
+    entities: model.entities.map(cloneEntity),
+    decor: model.decor.map(cloneDecor),
+    spawn: cloneCell(model.spawn),
+    goal: model.goal ? cloneCell(model.goal) : null,
+  };
+  return new ResizeCommand(newCols, newRows, snapshot, onResize);
+}
+
 /**
  * @typedef {{
  *   execute: (model: LevelModel) => void,

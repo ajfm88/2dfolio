@@ -14,7 +14,9 @@ import { createEmptyModel } from './level/model.js';
 import { createPlayScene } from './game/play-scene.js';
 import { createMakerScene } from './maker/maker-scene.js';
 import { createMakerPalette } from './ui/maker-palette.js';
+import { createMakerToolbar } from './ui/maker-toolbar.js';
 import { createPaintPanToggle } from './ui/maker-toggle.js';
+import { openResizeDialog } from './ui/components/resize-dialog.js';
 import atlasJson from './data/atlas.json';
 
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
@@ -74,7 +76,14 @@ function enterMaker() {
     input,
     camera,
     viewport,
-    ui: { createPalette: createMakerPalette, createToggle: createPaintPanToggle },
+    ui: {
+      createPalette: createMakerPalette,
+      createToggle: createPaintPanToggle,
+      createToolbar: createMakerToolbar,
+    },
+    onBack() {},
+    onPlay() { switchToPlay(); },
+    openResizeDialog,
   });
   makerScene.mountUI(uiRoot);
   if (hasMakerCam) {

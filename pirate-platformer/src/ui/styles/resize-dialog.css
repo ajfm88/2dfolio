@@ -1,0 +1,59 @@
+/* Level-size dialog. Uses shared .overlay, .panel, .btn from dialog.css. */
+
+.resize-dialog__fields {
+  display: flex;
+  flex-direction: column;
+  gap: calc(10px * var(--ui-scale));
+}
+
+.resize-dialog__field {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--ui-scale));
+  font-size: var(--fs-md);
+}
+
+.resize-dialog__field label {
+  min-width: calc(50px * var(--ui-scale));
+  color: var(--text);
+}
+
+.resize-dialog__field input[type="number"] {
+  width: calc(70px * var(--ui-scale));
+  min-height: calc(36px * var(--ui-scale));
+  padding: calc(4px * var(--ui-scale)) calc(8px * var(--ui-scale));
+  background: var(--paper);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  text-align: center;
+}
+
+.resize-dialog__field input[type="number"]:focus {
+  outline: calc(2px * var(--ui-scale)) solid var(--accent);
+  outline-offset: 0;
+}
+
+.resize-dialog__field span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.resize-dialog__hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.resize-dialog__warning {
+  margin: 0;
+  text-align: center;
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+
+.resize-dialog__warning[hidden] {
+  display: none;
+}

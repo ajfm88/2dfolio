@@ -3,6 +3,7 @@ import { createEmptyModel } from '../level/model.js';
 import {
   CommandStack,
   TilePaintCommand,
+  createResizeCommand,
 } from './commands.js';
 import { applyCell, classifyAction, createCommand } from './tools.js';
 
@@ -240,6 +241,69 @@ describe('EraseAllCommand', () => {
     expect(model.get('terrain', 6, 6)).toBe(1);
     expect(model.get('platform', 6, 6)).toBe(1);
     expect(model.entities[0].k).toBe('crabby');
+  });
+});
+
+describe('ResizeCommand', () => {
+  it('grows a level preserving content', () => {
+    const model = empty();
+    model.set('terrain', 5, 5, 1);
+    model.entities.push({ k: 'crabby', c: 8, r: 6, p: { dir: -1 } });
+    let resized = 0;
+    const stack = new CommandStack();
+    const cmd = createResizeCommand(model, 60, 16, () => { resized++; });
+    stack.execute(cmd, model);
+    expect(model.cols).toBe(60);
+    expect(model.rows).toBe(16);
+    expect(model.get('terrain', 5, 5)).toBe(1);
+    expect(model.entities[0].k).toBe('crabby');
+    expect(resized).toBe(1);
+  });
+
+  it('shrinks a level clipping out-of-bounds content', () => {
+    const model = createEmptyModel({ cols: 80, rows: 24 });
+    model.set('terrain', 50, 10, 1);
+    model.entities.push({ k: 'crabby', c: 50, r: 10, p: { dir: -1 } });
+    const stack = new CommandStack();
+    const cmd = createResizeCommand(model, 40, 12, () => {});
+    stack.execute(cmd, model);
+    expect(model.cols).toBe(40);
+    expect(model.rows).toBe(12);
+    expect(model.entities).toHaveLength(0);
+  });
+
+  it('undo restores original dimensions and all content', () => {
+    const model = createEmptyModel({ cols: 80, rows: 24 });
+    model.set('terrain', 50, 20, 1);
+    model.entities.push({ k: 'crabby', c: 60, r: 20, p: { dir: -1 } });
+    model.goal = { c: 70, r: 10 };
+    let resized = 0;
+    const stack = new CommandStack();
+    const cmd = createResizeCommand(model, 40, 12, () => { resized++; });
+    stack.execute(cmd, model);
+    expect(model.cols).toBe(40);
+    expect(model.entities).toHaveLength(0);
+    expect(model.goal).toEqual({ c: 39, r: 10 });
+
+    stack.undo(model);
+    expect(model.cols).toBe(80);
+    expect(model.rows).toBe(24);
+    expect(model.get('terrain', 50, 20)).toBe(1);
+    expect(model.entities[0].k).toBe('crabby');
+    expect(model.goal).toEqual({ c: 70, r: 10 });
+    expect(resized).toBe(2);
+  });
+
+  it('redo re-applies the resize', () => {
+    const model = createEmptyModel({ cols: 80, rows: 24 });
+    const stack = new CommandStack();
+    const cmd = createResizeCommand(model, 100, 30, () => {});
+    stack.execute(cmd, model);
+    stack.undo(model);
+    expect(model.cols).toBe(80);
+    stack.redo(model);
+    expect(model.cols).toBe(100);
+    expect(model.rows).toBe(30);
   });
 });
 

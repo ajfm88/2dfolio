@@ -33,8 +33,6 @@ function drawPaletteIcon(canvas, atlas, entry) {
   let sw = clip.fw;
   let sh = clip.fh;
   if (entry.placement === 'tile' && clip.fw >= 17 * TILE && clip.fh >= 5 * TILE) {
-    // Isolated "single" cell of the 4-neighbour blob sheet (mask 0 at col 4, row 4).
-    // The fill cell (1,1) is dark interior rock and reads as a black square at icon size.
     sx = 4 * TILE;
     sy = 4 * TILE;
     sw = TILE;
@@ -69,18 +67,26 @@ export function createMakerPalette(root, opts) {
   /** @type {PaletteEntry | null} */
   let selected = null;
   let erasing = false;
+  let activeGroup = '';
 
-  /** @type {HTMLButtonElement[]} */
-  const buttons = [];
+  /** @type {Map<string, HTMLButtonElement[]>} */
+  const groupButtons = new Map();
+  /** @type {Map<string, HTMLButtonElement>} */
+  const tabButtons = new Map();
+  /** @type {string[]} */
+  const visibleGroups = [];
 
-  const groups = el('div', { class: 'maker-palette__groups' });
+  const tabs = el('div', { class: 'maker-palette__tabs' });
+  const strip = el('div', { class: 'maker-palette__strip' });
 
   for (let g = 0; g < PALETTE_ORDER.length; g++) {
     const groupId = PALETTE_ORDER[g];
     const entries = paletteEntries.filter((e) => e.group === groupId);
     if (entries.length === 0) continue;
 
-    const row = el('div', { class: 'maker-palette__row' });
+    visibleGroups.push(groupId);
+
+    const btns = [];
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       const icon = /** @type {HTMLCanvasElement} */ (el('canvas', {
@@ -101,17 +107,17 @@ export function createMakerPalette(root, opts) {
         },
         [icon],
       ));
-      buttons.push(btn);
-      row.append(btn);
+      btns.push(btn);
     }
+    groupButtons.set(groupId, btns);
 
-    groups.append(el('div', { class: 'maker-palette__group' }, [
-      el('span', {
-        class: 'maker-palette__group-label',
-        text: GROUP_LABELS[groupId] ?? groupId,
-      }),
-      row,
-    ]));
+    const tab = /** @type {HTMLButtonElement} */ (el('button', {
+      class: 'maker-palette__tab',
+      text: GROUP_LABELS[groupId] ?? groupId,
+      attrs: { type: 'button', 'data-group': groupId },
+    }));
+    tabButtons.set(groupId, tab);
+    tabs.append(tab);
   }
 
   const eraser = /** @type {HTMLButtonElement} */ (el(
@@ -122,34 +128,70 @@ export function createMakerPalette(root, opts) {
     },
     [el('span', { class: 'maker-palette__eraser-mark', attrs: { 'aria-hidden': 'true' } })],
   ));
-  buttons.push(eraser);
-  groups.append(
-    el('div', { class: 'maker-palette__group' }, [
-      el('span', { class: 'maker-palette__group-label', text: 'Erase' }),
-      el('div', { class: 'maker-palette__row' }, [eraser]),
-    ]),
-  );
 
-  const bar = el('div', { class: 'maker-palette' }, [groups]);
+  const bar = el('div', { class: 'maker-palette' }, [tabs, strip]);
   root.append(bar);
 
-  function paintSelected() {
-    for (let i = 0; i < buttons.length; i++) {
-      const btn = buttons[i];
-      const isEraser = btn.classList.contains('maker-palette__item--eraser');
-      const on = isEraser ? erasing : (!erasing && selected !== null && btn.dataset.id === selected.id);
-      btn.classList.toggle('maker-palette__item--selected', on);
+  /**
+   * @param {string} groupId
+   */
+  function switchTab(groupId) {
+    if (groupId === activeGroup) return;
+    activeGroup = groupId;
+
+    tabButtons.forEach((tab, id) => {
+      tab.classList.toggle('maker-palette__tab--active', id === groupId);
+    });
+
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    const btns = groupButtons.get(groupId);
+    if (btns) {
+      for (let i = 0; i < btns.length; i++) strip.append(btns[i]);
     }
+    strip.append(eraser);
+    strip.scrollLeft = 0;
+
+    paintSelected();
+  }
+
+  function paintSelected() {
+    groupButtons.forEach((btns) => {
+      for (let i = 0; i < btns.length; i++) {
+        const btn = btns[i];
+        const on = !erasing && selected !== null && btn.dataset.id === selected.id;
+        btn.classList.toggle('maker-palette__item--selected', on);
+      }
+    });
+    eraser.classList.toggle('maker-palette__item--selected', erasing);
+  }
+
+  /**
+   * @param {string} groupId
+   */
+  function findGroupForEntry(groupId) {
+    return groupId;
   }
 
   /**
    * @param {Event} e
    */
-  function onClick(e) {
+  function onTabClick(e) {
+    const target = e.target;
+    if (!(target instanceof Element)) return;
+    const tab = target.closest('.maker-palette__tab');
+    if (!(tab instanceof HTMLButtonElement)) return;
+    const groupId = tab.dataset.group;
+    if (groupId) switchTab(groupId);
+  }
+
+  /**
+   * @param {Event} e
+   */
+  function onStripClick(e) {
     const target = e.target;
     if (!(target instanceof Element)) return;
     const btn = target.closest('.maker-palette__item');
-    if (!(btn instanceof HTMLButtonElement) || !bar.contains(btn)) return;
+    if (!(btn instanceof HTMLButtonElement) || !strip.contains(btn)) return;
 
     if (btn.classList.contains('maker-palette__item--eraser')) {
       if (erasing) {
@@ -182,7 +224,12 @@ export function createMakerPalette(root, opts) {
     paintSelected();
   }
 
-  bar.addEventListener('click', onClick);
+  tabs.addEventListener('click', onTabClick);
+  strip.addEventListener('click', onStripClick);
+
+  if (visibleGroups.length > 0) {
+    switchTab(visibleGroups[0]);
+  }
 
   return {
     getSelectedEntry() {
@@ -192,7 +239,6 @@ export function createMakerPalette(root, opts) {
       return erasing;
     },
     /**
-     * Programmatically select a palette entry by id (for the eyedropper).
      * @param {string} id
      */
     selectById(id) {
@@ -201,10 +247,16 @@ export function createMakerPalette(root, opts) {
       selected = entry;
       erasing = false;
       opts.onSelect(entry, false);
-      paintSelected();
+
+      if (entry.group !== activeGroup) {
+        switchTab(entry.group);
+      } else {
+        paintSelected();
+      }
     },
     destroy() {
-      bar.removeEventListener('click', onClick);
+      tabs.removeEventListener('click', onTabClick);
+      strip.removeEventListener('click', onStripClick);
       bar.remove();
     },
   };

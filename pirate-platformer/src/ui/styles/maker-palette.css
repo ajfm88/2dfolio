@@ -1,7 +1,15 @@
-/* Maker palette. Flat tokens this unit; nine-slice chrome is Unit 15. */
+/* Maker palette. Tabbed categories + scrolling tool strip. Nine-slice board background. */
 
 :root {
-  --palette-height: calc(72px * var(--ui-scale) + env(safe-area-inset-bottom));
+  --palette-height: calc(
+    16px * var(--ui-scale) +
+    4px * var(--ui-scale) +
+    28px * var(--ui-scale) +
+    2px * var(--ui-scale) +
+    48px * var(--ui-scale) +
+    4px * var(--ui-scale) +
+    env(safe-area-inset-bottom, 0px)
+  );
 }
 
 .maker-palette {
@@ -11,43 +19,81 @@
   bottom: 0;
   z-index: 2;
   pointer-events: auto;
-  background: var(--board);
-  border-top: calc(2px * var(--ui-scale)) solid var(--ink);
-  padding: calc(6px * var(--ui-scale)) calc(8px * var(--ui-scale));
-  padding-bottom: calc(env(safe-area-inset-bottom) + 6px * var(--ui-scale));
-}
-
-.maker-palette__groups {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: calc(12px * var(--ui-scale));
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.maker-palette__group {
   display: flex;
   flex-direction: column;
   gap: calc(2px * var(--ui-scale));
-  flex: 0 0 auto;
+  border-style: solid;
+  border-width: calc(16px * var(--ui-scale));
+  border-bottom: 0;
+  border-image: url("/assets/ui/board-yellow.png") 32 fill /
+                calc(16px * var(--ui-scale)) / 0 round;
+  border-image-outset: 0;
+  image-rendering: pixelated;
+  padding-top: calc(4px * var(--ui-scale));
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px * var(--ui-scale));
+  padding-left: calc(env(safe-area-inset-left, 0px) + 4px * var(--ui-scale));
+  padding-right: calc(env(safe-area-inset-right, 0px) + 4px * var(--ui-scale));
 }
 
-.maker-palette__group-label {
+/* Tab row */
+.maker-palette__tabs {
+  display: flex;
+  flex-direction: row;
+  gap: calc(2px * var(--ui-scale));
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  scrollbar-width: none;
+}
+
+.maker-palette__tabs::-webkit-scrollbar { display: none; }
+
+.maker-palette__tab {
+  flex: 0 0 auto;
+  min-width: calc(44px * var(--ui-scale));
+  min-height: calc(28px * var(--ui-scale));
+  padding: calc(4px * var(--ui-scale)) calc(8px * var(--ui-scale));
+  background: var(--wood);
+  border: 0;
+  border-bottom: calc(2px * var(--ui-scale)) solid transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
   font-size: var(--fs-sm);
-  color: var(--text-muted);
-  line-height: 1.2;
+  cursor: pointer;
   white-space: nowrap;
 }
 
-.maker-palette__row {
+.maker-palette__tab:hover {
+  background: var(--wood-light);
+}
+
+.maker-palette__tab--active {
+  background: var(--board-light);
+  border-bottom-color: var(--accent);
+}
+
+.maker-palette__tab:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
+  outline-offset: calc(-2px * var(--ui-scale));
+}
+
+/* Tool strip */
+.maker-palette__strip {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   gap: calc(4px * var(--ui-scale));
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  min-height: calc(48px * var(--ui-scale));
 }
 
+.maker-palette__strip::-webkit-scrollbar { display: none; }
+
+/* Tool item buttons — flat styling, not nine-sliced */
 .maker-palette__item {
   position: relative;
   flex: 0 0 auto;

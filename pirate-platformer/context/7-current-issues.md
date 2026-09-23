@@ -39,13 +39,16 @@ move to Resolved.
 
 ## Open Issues
 
-### 1. UI nine-slice source is the kit guide, not a textbook 9-slice [OPEN]
+### 1. ~~UI nine-slice source is the kit guide, not a textbook 9-slice~~ [FIXED]
 
-**Where:** `public/assets/ui/board-*.png`, `paper-yellow.png`, `button-*.png` (Unit 01 packer)
-**Symptom:** Compositing Yellow Board `1.png`–`16.png` in row-major 4×4 reproduces the kit's `(guide).png` — four example panel sizes with gaps — not a single panel with 2-tile-wide edges.
-**Expected:** `border-image` slice 32 on that 128×128 PNG yields clean corners, edges and fill.
-**Repro:** Open `public/assets/ui/board-yellow.png` next to `Yellow Board (guide).png`.
-**Notes:** Measured tiles: 1 = TL corner, 2 = top edge, 3 = TR corner. The usable 9-slice is the top-left 3×3 (tiles 1,2,3 / 5,6,7 / 9,10,11). Column 4 and row 4 are the extra size examples. Unit 01 followed the spec (16 tiles → 128×128). When Unit 15 first uses `border-image`, either extract that 3×3 (96×96, still slice 32) or expand it to a 4×4 by duplicating the mid-edge and fill tiles. Do not change the level schema. **Update 2026-09-13:** Unit 09 is the first DOM UI and would be the first `border-image` user, but per this issue it deliberately ships **flat token-styled** panels and buttons (solid fills, `calc(2px * var(--ui-scale))` `--ink` borders, no radius) instead. The nine-slice `border-image` work stays assigned to Unit 15; sprite-backed HUD chrome (hearts, coin, control glyphs) uses the clean strips and is unaffected.
+**Fixed:** 2026-09-21 (Unit 15)
+**Where:** `tools/build-assets.mjs` `writeNineSlice`
+**What changed:** `writeNineSlice` now extracts the 3×3 nine-slice subset (indices
+0,1,2 / 4,5,6 / 8,9,10) from the 16-tile kit guide and composites them into a
+`tile × 3` PNG: 96×96 for boards/papers, 42×42 for buttons. `border-image-slice`
+at the tile size (32 or 14) produces correct corners, edges and fill. `dialog.css`
+`.panel` and `.btn` upgraded to nine-slice `border-image`. All five composites
+regenerated and committed.
 
 ---
 

@@ -6,13 +6,8 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–14 complete and signed off.** Unit 14 (Maker Gestures)
-  implemented 2026-09-20. Player sign-off 2026-09-20 (desktop + real phone).
-  Tests 191 passing, build clean.
-
-## Current Goal
-
-- **Unit 15 — Maker Chrome.** Spec not yet written.
+- **Units 00–15 complete.** Unit 15 (Maker Responsive UI)
+  implemented 2026-09-21. Tests 195 passing, build clean.
 
 ## Completed
 
@@ -321,14 +316,43 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   - **Zoom persists on the scene across `M`.** Resetting it on enter would
     disagree with the restored camera after play.
 
+- **2026-09-21 — Unit 15 complete.** Spec at `specs/15-maker-responsive-ui.md`.
+  Nine-slice composites fixed (Issue #1 resolved): `writeNineSlice` now extracts
+  the 3×3 subset from the 16-tile kit guide, producing 96×96 boards and 42×42
+  buttons. `dialog.css` upgraded `.panel` and `.btn` to `border-image` nine-slice.
+  `ui/maker-toolbar.js` + CSS: top bar with Back, Undo, Redo, Play (`.btn--primary`,
+  disabled without goal), Menu (dropdown with "Resize Level"). `ui/maker-palette.js`
+  redesigned: tab row (scrollable) + tool strip (scrollable), tab switching shows
+  only that group's tools plus eraser; `selectById` switches tab for the eyedropper.
+  `ui/components/resize-dialog.js`: centred nine-slice panel over scrim, number
+  inputs with schema-limit validation, shrink warning, Apply/Cancel, Escape/backdrop
+  close, focus trap. `ResizeCommand` in `commands.js`: snapshots all layers +
+  entities + decor + markers before `model.resize()`, undo restores everything,
+  `onResize` callback rebuilds parallax and re-clamps camera. `index.html` gained
+  `viewport-fit=cover`. Safe-area insets on toolbar, palette, and toggle.
+  `npm test` **195** (191 prior + 4 ResizeCommand). `npm run build` clean.
+  - **Nine-slice fix is a 3×3, not a 4×4 rearrangement.** Simpler composite,
+    `border-image-slice` at the tile size (32 or 14) works directly on the 3×tile
+    image. No CSS changes needed from what `3-ui-context.md` already specified.
+  - **Toolbar callbacks run from click handlers, not deferred to update.**
+    Undo/redo from buttons mutates the model between frames. Functionally identical
+    to keyboard undo running in update — the model is consistent, render sees the
+    new state next frame. Callbacks guard against `dragState`.
+  - **Palette tool buttons stay flat; only the bar and toolbar use nine-slice.**
+    The button nine-slice 7px border eats too much of the 44px icon button.
+
+## Current Goal
+
+- **Unit 16 — Test-Play Round Trip.** Spec not yet written.
+
 ## In Progress
 
 - None.
 
 ## Next Up
 
-- **Unit 15 — Maker Chrome.** Scrolling category tabs, top bar, level-size
-  dialog. Spec not yet written.
+- **Unit 16 — Test-Play Round Trip.** Validation, expanding-circle transition,
+  lossless return with camera/zoom/tool restored.
 
 ## Open Questions
 
@@ -340,9 +364,10 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 3. ~~**Second theme timing.**~~ **Resolved 2026-09-05** — Pirate Ship is now its
    own Unit 20, after the campaign. Unit 04 only has to shape `data/themes.js` to
    accept more than one theme.
-4. **Level growth UX.** The schema allows growing a level up to 400 × 48, but the
-   maker interaction for growing it — edge handles? a size dialog? — is not
-   designed. Needed by Unit 15.
+4. ~~**Level growth UX.**~~ **Resolved 2026-09-21** — A centered level-size dialog
+   opened from the toolbar Menu. Number inputs for width and height, validated
+   against schema limits. Resize goes through the command stack (undoable).
+   Shrink warning when content would be clipped.
 5. ~~**Enemy variety.**~~ **Resolved 2026-09-13** — Crabby, Fierce Tooth and Pink
    Star get **genuinely distinct behaviour**, not just distinct art/stats (player
    decision). They still share the `WalkerEnemy` base for movement/collision/stomp,
@@ -688,25 +713,24 @@ finger is ignored until lift.
 
 Resume cold from here.
 
-**Where we are:** Units 00–14 done and signed off (player 2026-09-20).
-The maker now has **touch gestures**: two-finger pan, pinch zoom at 0.5× / 1× /
-2× (centre preserved), a paint/pan toggle that appears after the first touch,
-long-press eyedropper (300 ms), middle-click eyedropper on desktop. Mouse
-painting from Unit 13 is unchanged. `-webkit-touch-callout: none` is on the
-app shell.
+**Where we are:** Units 00–15 done (2026-09-21). The maker now has a **top toolbar**
+(Back, Undo, Redo, Play, Menu) and a **tabbed palette** (category tabs + scrolling
+tool strip). Nine-slice `border-image` panels and buttons from the Wood and Paper kit
+are live on all shared UI components (`.panel`, `.btn`). A **resize dialog** lets
+the user change the level dimensions within schema limits (40–400 × 12–48), undoable
+via the command stack.
 
-Everything from before still holds: boot in maker, palette, undo/redo, `M`
-play bridge, audio, three walkers, one Shooter + one Projectile.
+Everything from before still holds: touch gestures, paint/pan toggle, undo/redo,
+`M` play bridge, audio, three walkers, one Shooter + one Projectile.
 
-**Next:** Unit 15 — Maker Chrome. Spec not yet written.
+**Next:** Unit 16 — Test-Play Round Trip. Spec not yet written.
 
 **How to run**
 
 - `npm run dev` — game at `/` (maker), atlas at `/atlas.html` (throwaway debug
   page, issue 5). Prefer a fixed port; 5173 may already be another project
   (ArcGIS). `--port 5174 --strictPort`.
-- `npm test` — 191 tests (prior 178 plus `pickToolAt`, zoomed `screenToCell`,
-  gesture state machine).
+- `npm test` — 195 tests.
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
 
@@ -726,17 +750,13 @@ play bridge, audio, three walkers, one Shooter + one Projectile.
   persistence is Unit 17's job via the settings store.
 - Mutate `LevelModel` from maker UI code. Every edit goes through
   `CommandStack`. Painting without undo is an invariant-7 bug.
-- Treat a missing goal as playable. `M` must warn and stay in the maker.
-- Fold touch gestures, zoom, the top bar, or persistence into this unit.
+- Treat a missing goal as playable. Play button is disabled without one; `M` warns.
 
 **Standing hazards**
 
 - Zipping the repo while Vite is running used to EBUSY-crash the watcher on
   `src.zip`. `.gitignore` has `*.zip`; `vite.config.js` `server.watch.ignored`
   is `**/*.zip`. Restart Vite if you change that config.
-- Wood and Paper 16-tile composites are the kit *guide*, not a 9-slice. Open
-  issue 1 in `7-current-issues.md`. Fix when DOM `border-image` is first used
-  (maker/title, ~Unit 15/18).
 - Unarmed Captain has no wall-slide clip. `wall` state reuses `player/fall`.
   Expected until sword combat is added (Beyond v1).
 - Hole in the autotile mass shows a grass top on the cell below (4-neighbour,
@@ -765,5 +785,5 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–14 (all built and signed
-off; 15+ not yet written). Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–15 (all built; 16+ not yet
+written). Playbook: `context/README.md` Part 3.
