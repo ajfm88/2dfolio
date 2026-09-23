@@ -211,7 +211,8 @@ deliberately not ported:
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
   `gestures.js`. `validate.js` is Unit 16.
 - `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
-  `maker-toggle.js`, `screens/`, `components/`, `styles/`.
+  `maker-toggle.js`, `maker-toolbar.js`, `screens/`, `components/`
+  (`resize-dialog.js`), `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.
 - `tools/` — Node-only build scripts. Never imported by `src/`.

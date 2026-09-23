@@ -130,8 +130,10 @@ There is no third-party component library. Components are hand-written in
 
 ### Nine-slice panels
 
-The kit ships boards and papers as 16 tiles of 32 × 32 arranged 4 × 4. The asset
-build composites each into a single 128 × 128 PNG, which `border-image` slices at 32.
+The kit ships boards and papers as 16 tiles of 32 × 32 arranged 4 × 4 (a guide
+image). The asset build extracts the 3 × 3 nine-slice subset (tiles 1–3, 5–7, 9–11)
+and composites each into a 96 × 96 PNG (boards/papers) or 42 × 42 PNG (buttons),
+which `border-image` slices at 32 or 14 respectively.
 
 | Component        | Source                          | Slice | Border width                    |
 | ---------------- | ------------------------------- | ----- | ------------------------------- |
