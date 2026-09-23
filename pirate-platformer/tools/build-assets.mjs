@@ -100,18 +100,21 @@ async function writeStrip(files, fw, fh, outAbs) {
  * @param {string} outAbs
  */
 async function writeNineSlice(files, tile, outAbs) {
-  if (files.length !== 16) {
-    throw new Error(`nineslice needs 16 tiles, got ${files.length}`);
+  if (files.length < 11) {
+    throw new Error(`nineslice needs at least 11 tiles, got ${files.length}`);
   }
-  for (const file of files) {
-    const meta = await sharp(file).metadata();
+  // The kit ships 16 tiles arranged as a guide image. The usable nine-slice is
+  // the top-left 3×3: indices 0,1,2 / 4,5,6 / 8,9,10 (0-based, row-major-4).
+  const pick = [0, 1, 2, 4, 5, 6, 8, 9, 10];
+  for (const idx of pick) {
+    const meta = await sharp(files[idx]).metadata();
     if (meta.width !== tile || meta.height !== tile) {
       throw new Error(
-        `${path.basename(file)} is ${meta.width}x${meta.height}, expected ${tile}x${tile}`,
+        `${path.basename(files[idx])} is ${meta.width}x${meta.height}, expected ${tile}x${tile}`,
       );
     }
   }
-  const size = tile * 4;
+  const size = tile * 3;
   await mkdir(path.dirname(outAbs), { recursive: true });
   await sharp({
     create: {
@@ -122,10 +125,10 @@ async function writeNineSlice(files, tile, outAbs) {
     },
   })
     .composite(
-      files.map((input, i) => ({
-        input,
-        left: (i % 4) * tile,
-        top: Math.floor(i / 4) * tile,
+      pick.map((srcIdx, i) => ({
+        input: files[srcIdx],
+        left: (i % 3) * tile,
+        top: Math.floor(i / 3) * tile,
       })),
     )
     .png(PNG)

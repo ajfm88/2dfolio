@@ -1,5 +1,5 @@
-/* Paused overlay and results panel. Flat token styling this unit; the nine-slice
-   border-image chrome lands in Unit 15 (Issue #1). No border-radius anywhere. */
+/* Overlays, panels and buttons. Nine-slice border-image from the Wood and Paper
+   kit composites (fixed in Unit 15 from the guide layout to proper 3×3). */
 
 .overlay {
   position: fixed;
@@ -26,9 +26,21 @@
   min-inline-size: calc(220px * var(--ui-scale));
   max-inline-size: calc(480px * var(--ui-scale));
   padding: calc(16px * var(--ui-scale));
-  background: var(--board);
-  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  border-style: solid;
+  border-width: calc(16px * var(--ui-scale));
+  border-image: url("/assets/ui/board-yellow.png") 32 fill /
+                calc(16px * var(--ui-scale)) / 0 round;
+  image-rendering: pixelated;
+  background: none;
   color: var(--text);
+}
+
+.panel--green {
+  border-image-source: url("/assets/ui/board-green.png");
+}
+
+.panel--paper {
+  border-image-source: url("/assets/ui/paper-yellow.png");
 }
 
 .panel__title {
@@ -62,8 +74,12 @@
   min-width: calc(44px * var(--ui-scale));
   min-height: calc(44px * var(--ui-scale));
   padding: calc(8px * var(--ui-scale)) calc(14px * var(--ui-scale));
-  background: var(--board-light);
-  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  border-style: solid;
+  border-width: calc(7px * var(--ui-scale));
+  border-image: url("/assets/ui/button-yellow.png") 14 fill /
+                calc(7px * var(--ui-scale)) / 0 round;
+  image-rendering: pixelated;
+  background: none;
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--fs-md);
@@ -71,8 +87,7 @@
 }
 
 .btn--primary {
-  background: var(--accent);
-  color: var(--ink);
+  border-image-source: url("/assets/ui/button-green.png");
 }
 
 .btn:hover { transform: translateY(calc(-1px * var(--ui-scale))); }

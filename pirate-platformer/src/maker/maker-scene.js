@@ -3,7 +3,7 @@ import { createParallax } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
 import { byId } from '../data/palette.js';
-import { CommandStack } from './commands.js';
+import { CommandStack, createResizeCommand } from './commands.js';
 import { createGestures } from './gestures.js';
 import {
   applyCell,
@@ -49,6 +49,11 @@ const PAN_SPEED = 300;
  */
 
 /**
+ * @typedef {import('./commands.js').MakerCommand} MakerCommand
+ * @typedef {import('../ui/maker-toolbar.js').ToolbarController} ToolbarController
+ */
+
+/**
  * @typedef {{
  *   level?: LevelModel,
  *   theme: Theme,
@@ -56,7 +61,10 @@ const PAN_SPEED = 300;
  *   input: Input,
  *   camera: ReturnType<import('../core/camera.js').createCamera>,
  *   viewport: ReturnType<import('../core/viewport.js').createViewport>,
- *   ui: { createPalette: Function, createToggle?: Function },
+ *   ui: { createPalette: Function, createToggle?: Function, createToolbar?: Function },
+ *   onBack?: () => void,
+ *   onPlay?: () => void,
+ *   openResizeDialog?: Function,
  * }} MakerSceneParams
  */
 
@@ -73,6 +81,8 @@ export function createMakerScene() {
   let palette = null;
   /** @type {ToggleController | null} */
   let toggle = null;
+  /** @type {ToolbarController | null} */
+  let toolbar = null;
   /** @type {ReturnType<typeof createGestures> | null} */
   let gestures = null;
 
@@ -302,9 +312,40 @@ export function createMakerScene() {
       if (params.ui.createToggle) {
         toggle = params.ui.createToggle(root, params.input);
       }
+      if (params.ui.createToolbar) {
+        toolbar = params.ui.createToolbar(root, {
+          onBack: () => { if (params.onBack) params.onBack(); },
+          onPlay: () => { if (params.onPlay) params.onPlay(); },
+          onUndo: () => { if (!dragState && stack && level && stack.canUndo()) stack.undo(level); },
+          onRedo: () => { if (!dragState && stack && level && stack.canRedo()) stack.redo(level); },
+          onResize: () => {
+            if (!params || !params.openResizeDialog || !level || !stack) return;
+            params.openResizeDialog(root, {
+              cols: level.cols,
+              rows: level.rows,
+              /** @param {number} newCols @param {number} newRows */
+              onApply(newCols, newRows) {
+                if (!level || !stack || !params) return;
+                if (newCols === level.cols && newRows === level.rows) return;
+                const cmd = createResizeCommand(level, newCols, newRows, () => {
+                  if (!level || !params) return;
+                  parallax = createParallax(level, params.theme, params.atlas);
+                  const d = dims();
+                  params.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
+                });
+                stack.execute(cmd, level);
+              },
+            });
+          },
+        });
+      }
     },
 
     unmountUI() {
+      if (toolbar) {
+        toolbar.destroy();
+        toolbar = null;
+      }
       if (toggle) {
         toggle.destroy();
         toggle = null;
@@ -437,6 +478,14 @@ export function createMakerScene() {
 
       if (activeTool && !erasing && activeTool.placement !== 'tile') {
         drawGhost(ctx, cam, cell.c, cell.r, atlas, activeTool);
+      }
+
+      if (toolbar && stack && level) {
+        toolbar.sync({
+          canUndo: stack.canUndo(),
+          canRedo: stack.canRedo(),
+          canPlay: level.goal !== null,
+        });
       }
     },
 
