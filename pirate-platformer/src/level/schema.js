@@ -124,11 +124,20 @@ export function rleSum(encoded, field) {
   return sum;
 }
 
+const ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
 /**
+ * The one level-id generator: `lvl_` plus 8 base-36 characters from the platform
+ * CSPRNG, so ids made in two browsers for share codes do not collide in practice.
+ *
  * @returns {string}
  */
 export function newLevelId() {
-  return `lvl_${Math.random().toString(36).slice(2, 8)}`;
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let id = 'lvl_';
+  for (let i = 0; i < bytes.length; i++) id += ID_ALPHABET[bytes[i] % ID_ALPHABET.length];
+  return id;
 }
 
 /**

@@ -13,20 +13,8 @@ import {
   ROWS_DEFAULT,
   ROWS_MAX,
   ROWS_MIN,
+  newLevelId,
 } from './schema.js';
-
-const ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-/**
- * @returns {string}
- */
-function randomLevelId() {
-  const bytes = new Uint8Array(8);
-  crypto.getRandomValues(bytes);
-  let id = 'lvl_';
-  for (let i = 0; i < 8; i++) id += ID_ALPHABET[bytes[i] % ID_ALPHABET.length];
-  return id;
-}
 
 /**
  * Fresh maker level. Bypasses schema validation because a new level has no goal
@@ -43,7 +31,7 @@ export function createEmptyModel(opts = {}) {
   return new LevelModel(
     {
       format: FORMAT,
-      id: randomLevelId(),
+      id: newLevelId(),
       name: '',
       author: '',
       theme: opts.theme ?? 'island',

@@ -46,3 +46,25 @@ export function el(tag, opts = {}, children = []) {
 export function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
+
+/**
+ * Fade the UI layer out and make it unclickable and unfocusable, for the length
+ * of a mode-switch wipe — a second Play tap or a stray Undo must not land mid-wipe.
+ *
+ * @param {HTMLElement} root
+ * @param {boolean} on
+ */
+export function setVeiled(root, on) {
+  root.inert = on;
+  root.classList.toggle('ui--veiled', on);
+}
+
+/**
+ * Read at the moment it is needed, so a change to the system setting applies to
+ * the next transition without a reload.
+ *
+ * @returns {boolean}
+ */
+export function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}

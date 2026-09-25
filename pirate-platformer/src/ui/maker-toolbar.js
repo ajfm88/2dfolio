@@ -3,8 +3,13 @@ import './styles/maker-toolbar.css';
 import { el } from './dom.js';
 
 /**
+ * `problem` is the reason the level cannot be played, or null when it can. Play
+ * is enabled exactly when it is null, and the reason shows in the status slot.
+ *
+ * @typedef {{ canUndo: boolean, canRedo: boolean, problem: string | null }} ToolbarState
+ *
  * @typedef {{
- *   sync: (state: { canUndo: boolean, canRedo: boolean, canPlay: boolean }) => void,
+ *   sync: (state: ToolbarState) => void,
  *   destroy: () => void,
  * }} ToolbarController
  */
@@ -23,7 +28,8 @@ import { el } from './dom.js';
 export function createMakerToolbar(root, opts) {
   let prevCanUndo = true;
   let prevCanRedo = true;
-  let prevCanPlay = true;
+  /** @type {string | null} */
+  let prevProblem = null;
 
   const undoBtn = /** @type {HTMLButtonElement} */ (el('button', {
     class: 'maker-toolbar__btn',
@@ -103,6 +109,15 @@ export function createMakerToolbar(root, opts) {
     menuPanel,
   ]);
 
+  const statusText = el('span', { class: 'maker-toolbar__status-text' });
+  const status = el('div', {
+    class: 'maker-toolbar__status maker-toolbar__status--clear',
+    attrs: { role: 'status', 'aria-live': 'polite' },
+  }, [
+    el('span', { class: 'maker-toolbar__status-pip', attrs: { 'aria-hidden': 'true' } }),
+    statusText,
+  ]);
+
   const bar = el('div', { class: 'maker-toolbar' }, [
     el('div', { class: 'maker-toolbar__group' }, [
       el('button', {
@@ -113,6 +128,7 @@ export function createMakerToolbar(root, opts) {
       undoBtn,
       redoBtn,
     ]),
+    status,
     el('div', { class: 'maker-toolbar__group' }, [
       playBtn,
       menuWrap,
@@ -122,7 +138,7 @@ export function createMakerToolbar(root, opts) {
   root.append(bar);
 
   return {
-    /** @param {{ canUndo: boolean, canRedo: boolean, canPlay: boolean }} state */
+    /** @param {ToolbarState} state */
     sync(state) {
       if (state.canUndo !== prevCanUndo) {
         undoBtn.disabled = !state.canUndo;
@@ -132,9 +148,13 @@ export function createMakerToolbar(root, opts) {
         redoBtn.disabled = !state.canRedo;
         prevCanRedo = state.canRedo;
       }
-      if (state.canPlay !== prevCanPlay) {
-        playBtn.disabled = !state.canPlay;
-        prevCanPlay = state.canPlay;
+      if (state.problem !== prevProblem) {
+        const clear = state.problem === null;
+        playBtn.disabled = !clear;
+        statusText.textContent = state.problem ?? '';
+        status.title = state.problem ?? '';
+        status.classList.toggle('maker-toolbar__status--clear', clear);
+        prevProblem = state.problem;
       }
     },
     destroy() {

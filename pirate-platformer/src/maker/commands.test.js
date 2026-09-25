@@ -375,3 +375,31 @@ describe('CommandStack', () => {
     expect(model.goal).toEqual({ c: 21, r: 8 });
   });
 });
+
+describe('CommandStack.revision', () => {
+  it('bumps on execute, push, undo and redo — not on a no-op', () => {
+    const model = empty();
+    const stack = new CommandStack();
+    expect(stack.revision).toBe(0);
+    stack.undo(model);
+    stack.redo(model);
+    expect(stack.revision).toBe(0);
+
+    const paint = new TilePaintCommand('terrain');
+    paint.changes.push({ c: 1, r: 1, oldValue: 0, newValue: 1 });
+    stack.execute(paint, model);
+    expect(stack.revision).toBe(1);
+
+    const drag = new TilePaintCommand('terrain');
+    drag.changes.push({ c: 2, r: 1, oldValue: 0, newValue: 1 });
+    stack.push(drag);
+    expect(stack.revision).toBe(2);
+
+    stack.undo(model);
+    expect(stack.revision).toBe(3);
+    stack.redo(model);
+    expect(stack.revision).toBe(4);
+    stack.redo(model);
+    expect(stack.revision).toBe(4);
+  });
+});

@@ -93,9 +93,6 @@ export class Player {
     this.state = 'idle';
     this.clip = clips.idle;
     this.frameIndex = 0;
-
-    /** @type {{ x: number, speed: number } | null} */
-    this.platform = null;
   }
 
   /**
@@ -130,10 +127,6 @@ export class Player {
       this.dropTimer > 0,
     );
     if (semiLanded && this.vy > 0) this.vy = 0;
-
-    if (this.platform) {
-      this.hitbox.x += this.platform.x * this.platform.speed * dt;
-    }
 
     this.wasOnFloor = this.onFloor;
     this.onFloor = checkFloor(this.hitbox, this.level);
