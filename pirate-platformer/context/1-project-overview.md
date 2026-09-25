@@ -72,7 +72,7 @@ platformer and, ten minutes later, want to build one.
 
 - Fixed-timestep platforming: run, jump with variable height, coyote time and jump
   buffering, wall slide and wall jump.
-- One-way platforms with drop-through, and moving platforms that carry the player.
+- One-way platforms with drop-through.
 - Stomp-to-defeat combat: land on an enemy to kill it and bounce; contact from any
   other direction costs a heart.
 - Enemies: Crabby, Fierce Tooth and Pink Star — patrolling walkers that turn at
@@ -96,9 +96,11 @@ platformer and, ten minutes later, want to build one.
 - Pan and zoom at 0.5×, 1× and 2×, with a paint/pan toggle for one-finger use.
 - Full undo and redo over every edit, including multi-cell drags as single steps.
 - Eyedropper: long-press or middle-click a placed thing to select its tool.
-- Live validation — a level needs exactly one spawn and at least one flag before
+- Live validation — a level needs a finish flag, and a spawn and flag in cells the
+  player can actually use (not buried, not underwater, not the same cell), before
   it can be played, with the problem shown inline.
-- Test-play round trip that preserves camera position, zoom and selected tool.
+- Test-play round trip that preserves camera position, zoom, palette tab, selected
+  tool, paint/pan mode and the full undo/redo history.
 
 ### Shared systems
 
@@ -123,7 +125,9 @@ platformer and, ten minutes later, want to build one.
 - Keyboard: arrows or WASD to move, Space or Up to jump, Down to drop through.
 - Touch: on-screen directional pad and jump button, sized for thumbs.
 - Mouse, touch and pen unified through pointer events.
-- Portrait and landscape both usable; landscape recommended for the maker.
+- Landscape only. In portrait, a prompt covers the screen and asks the player to
+  rotate the device (decision 2026-09-23 — a 360-tall view cannot fill a portrait
+  screen without stretching or letterboxing).
 - Installable as a PWA and playable offline after first load.
 
 ## Scope
@@ -170,6 +174,10 @@ Plausible later, but not built or designed for now beyond the data shapes alread
 specified:
 
 - Inner-corner autotiling using the remaining 31 tiles of the blob set.
+- Moving platforms that carry the player. Super Pirate World proves them out, but
+  with its own helicopter art; the Treasure Hunters pack has no moving-platform
+  sprite and the level format has no path for one. Deferred 2026-09-22, and the
+  inert carry stub was removed from `Player` — a future unit starts clean.
 - An overworld map, if overworld art is ever sourced.
 - Gamepad support.
 - Everything in **Beyond v1** below.

@@ -105,4 +105,16 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+/* Hidden for the length of a mode-switch wipe; DOM panels fade to match it. */
+#ui.ui--veiled {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ui {
+    transition: none;
+  }
 }

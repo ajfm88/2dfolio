@@ -153,6 +153,94 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
+### 16. Portrait screens stretch the game world ~3× vertically [PENDING TEST]
+
+**Decision (2026-09-23, player):** option (c) — portrait is not supported for the
+canvas; a DOM prompt covers the screen in portrait and asks the player to rotate.
+Recorded in `1-project-overview.md` (Input and platform) and `2-architecture.md`
+(Rendering Model). The fix is its own small change, not part of Unit 16: a
+`ui/` overlay shown when the display aspect is below 1, plus deciding whether the
+App holds the simulation while it is up (smallest defensible answer: yes, the same
+way it holds during a transition — a player who rotates mid-jump should not die
+behind the prompt). **Residual, not covered by the decision:** landscape displays
+with an aspect between 1 and 512 / 360 ≈ 1.42 still stretch — 6.7% on a 4:3
+tablet, up to 42% on a square desktop window. Revisit if it shows up in play.
+**What changed (2026-09-23):** new `src/ui/rotate-prompt.js` +
+`styles/rotate-prompt.css` — an opaque `--ink` cover (z-index 10) with a centred
+`.panel` ("Turn your device", "Coral Corsairs plays in landscape.") and a CSS phone
+outline that turns to landscape (static under reduced motion). It is mounted on
+`#app`, not `#ui`, so Unit 16's veiled UI layer can never hide it. `main.js`
+computes `portrait = innerWidth < innerHeight` in the viewport's `onResize` and
+shows or hides the prompt there; while it is up, `update` only calls
+`input.advance()`, so nothing simulates and a press made behind it is dropped, not
+replayed. `core/viewport.js` and `VIEW_H` are unchanged. **Not yet seen in a
+browser** (no browser tools this session): check a 390 × 844 viewport shows the
+prompt and a held game, and that turning to 844 × 390 hides it and resumes.
+
+
+**Where:** `src/core/viewport.js` + `#game` CSS (`src/ui/styles/base.css`); the Rendering Model in `2-architecture.md`
+**Symptom:** On a 390 × 844 portrait phone the canvas backing store is 512 × 360 (`VIEW_W_MIN` × `VIEW_H`) but CSS fills it to 390 × 844 — x scale 0.76, y scale 2.34, a **3.08× non-uniform stretch**. Tiles, the player and clouds all render tall and thin. Pointer input still maps correctly (`toVirtual` scales each axis separately). Landscape is fine (844 × 390 → 1.01×).
+**Expected:** `1-project-overview.md`: "Portrait and landscape both usable; landscape recommended for the maker."
+**Repro:** Load `/` in a 390 × 844 viewport (device emulation or an iframe) and compare `canvas.width/height` with its CSS box.
+**Notes:** Found 2026-09-22 while verifying Unit 15 in Chrome. This is a **conflict inside the architecture**, not a code slip: "360 units tall, always" + "width clamped to 512–768" + "nothing is letterboxed" cannot all hold when the display aspect is below 512 / 360 ≈ 1.42 (every portrait phone, and 4:3 tablets get a milder 6% stretch). Resolving it needs a decision before any code: (a) letterbox or pillarbox in portrait (the architecture currently forbids it); (b) let the virtual height grow in portrait (breaks "360 tall, always" and changes the field of view); or (c) treat portrait as unsupported for the canvas and ask the player to rotate (changes the overview's promise). Per CLAUDE.md this is reported, not fixed. Possibly related to issue 4's "looks off at phone width".
+
+---
+
+### 17. Maker palette category tabs are 28 px tall — under the 44 × 44 hit area [OPEN]
+
+**Where:** `src/ui/styles/maker-palette.css` (`.maker-palette__tab`), Unit 15
+**Symptom:** Measured in Chrome at `--ui-scale: 1`, all seven tabs are 50–70 × 28 CSS px. Every other toolbar and palette button meets 44 × 44.
+**Expected:** `3-ui-context.md`: "Minimum hit area is 44 × 44 CSS pixels on every interactive element … regardless of visual size."
+**Repro:** Phone-landscape (844 × 390) or portrait: measure `.maker-palette__tab` bounding boxes.
+**Notes:** Found 2026-09-22 while verifying Unit 15. Not fixed in the sweep because the fix has a layout cost worth choosing deliberately: at 844 × 390 the clear canvas between the bars is already only 220 px, and 16 px more tab height comes straight out of it. Options: taller tabs; or a hit area that extends past the visual tab (the tab row sits directly on the tool strip, so any extension has to go upward into the canvas edge).
+
+---
+
+### 18. A quick tap places nothing on touch [PENDING TEST]
+
+**Where:** `src/maker/gestures.js` (Unit 14)
+**Symptom:** A one-finger tap that lifts before moving 4 px or reaching the 300 ms long-press goes `longPress` → `idle` with no paint event, so nothing is placed. Placing a single coin, enemy or marker on a phone needs a small deliberate drag.
+**Expected:** Goal 2 — a first-time user builds a level on a touchscreen without instructions. A tap on a cell should place the selected tool there once, as a mouse click does.
+**Repro:** Touch emulation or a phone; pick Gold Coin; tap an empty cell — nothing appears. Drag a few pixels — a coin appears.
+**Notes:** Found 2026-09-22 in the repo review, logged 2026-09-23 while writing the Unit 16 spec. Behaves as spec 14 was written (a tap goes to `idle`), so this is a spec gap, not a code slip. Likely fix: on a lift from `longPress` before the threshold, emit `paintPressed` then `paintReleased` at the start point in the same frame, keeping long-press and pan untouched. Not folded into Unit 16 (round trip) — its own change, with a `gestures.test.js` case.
+**What changed (2026-09-23):** `gestures.js` — a finger that lifts while still in
+`longPress` emits `paintPressed` and `paintReleased` together at its touch-down
+point, and reports `active` for that frame so the tap reaches the scene through the
+gesture channel. Only a finger that landed on its own can tap (`tapAllowed`): the
+finger left behind by a pinch or two-finger pan does not. Pan mode, long-press
+eyedrop and drags are unchanged. `maker-scene.js` `processPaintFrom` now handles
+release **after** press and drag, so a same-frame press+release places once and
+closes its command (one undo step). 2 tests in `gestures.test.js`; a scratch
+harness against the real scene confirmed one coin per tap and one undo per tap.
+**Not yet tried on a touchscreen.**
+
+---
+
+### 19. Enter on a focused secondary overlay button runs the primary action [OPEN]
+
+**Where:** `src/core/input.js` `onKeyDown` (Unit 09 / the 2026-09-13 Enter decision); seen with Unit 16's Back to editor
+**Symptom:** `input.js` maps Enter to `pause` and Space to `jump`, and `preventDefault`s both, so a focused `<button>` never receives a keyboard click. On the pause overlay, Tab to **Back to editor** and press Enter: the game resumes instead. On the results panel, Enter on Back to editor replays. The primary buttons only work by coincidence, because `pause` does the same thing they do.
+**Expected:** A keyboard user can activate any focused overlay button with Enter or Space.
+**Repro:** Test-play a level, press Enter to pause, Tab to Back to editor, press Enter.
+**Notes:** Found 2026-09-23 while implementing Unit 16 (from reading `input.js`, not yet reproduced in a browser). Not fixed there — the fix is in `input.js`, which the Unit 16 spec leaves untouched, and it must keep the 2026-09-13 behaviour (Enter pauses and resumes the game when a non-button has focus). Likely fix: in `onKeyDown`, leave Enter and Space to the target when it is a `<button>`, the way form fields already own their keys; then check Resume and Play again still work on Enter by being clicked. Workarounds today: `M` goes back to the editor from anywhere in test-play, and the mouse or a tap works.
+
+---
+
+### 20. Every nine-slice composite is built from the wrong tiles [OPEN]
+
+**Where:** `tools/build-assets.mjs` `writeNineSlice` (the Unit 15 fix for issue 1); output `public/assets/ui/{board-yellow,board-green,paper-yellow,button-yellow,button-green}.png`
+**Symptom:** The palette bar, toolbar, dialogs and pause/results panels draw scrambled wood: repeating vertical posts, a gap cut into the frame, a row of small squares along the bottom edge (player screenshot 2026-09-23, maker palette bar). `board-yellow.png` enlarged: correct top row, then the fill, a right edge and a bottom-left corner in the middle row, and a corner plus two bar pieces in the bottom row.
+**Expected:** Each composite is a clean 3 × 3 frame: corners, edges, fill.
+**Cause:** `writeNineSlice` picks indices `0,1,2 / 4,5,6 / 8,9,10`, which assumes the 16 files are numbered like the 4 × 4 guide picture. They are not. The file order is numeric and correct (`build-assets.mjs:242`). What the numbers mean, checked tile by tile on 2026-09-23:
+- **Boards and paper** (Yellow Board, Green Board, Yellow Paper): `1–9` are the 3 × 3 frame in reading order; `10–12` the one-tall bar, `13–15` the one-wide column, `16` the single.
+- **Buttons** (Yellow Button, Green Button): `1` is the single, `2–4` the bar, `5–7` the column, and `8–16` the 3 × 3 frame.
+
+So the current pick is wrong for all five, differently for boards and buttons.
+**Repro:** Open the maker and look at the bottom palette bar, or view `public/assets/ui/board-yellow.png` enlarged.
+**Notes:** Found by the player during Unit 16 testing. Not a Unit 16 regression: `maker-palette.css` and the composites are unchanged since the baseline commit. Unit 15's verification checked hit areas and behaviour, not how the frames looked. Fix, already previewed in the scratchpad (clean frames for all five): give each manifest `nineslice` entry the number of its first frame tile (`1` for boards and paper, `8` for buttons), declared in `tools/asset-manifest.mjs` rather than guessed in the packer, then `npm run assets`. Sizes stay 96 × 96 and 42 × 42, so no CSS or atlas-size change is needed. The coverage report will change: tiles 1–9 or 8–16 become packed and the old wrong picks unpacked. The number stays 9 per kit.
+
+---
+
 ## Resolved
 
 ### 3. Small clouds pop out mid-screen instead of exiting left [FIXED]
@@ -162,6 +250,65 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 **Symptom:** Every `cloudTimer` (2.5 s) a small cloud that was still fully visible — near the left edge of the screen — vanished instantly, rather than drifting off the left edge.
 **Cause:** `recycleLeftmost` selected the cloud with the **minimum** wrapped `sx` in `[0, period)`. In that coordinate `sx ≈ 0` is a cloud at the left edge but still fully on screen; a cloud that has genuinely exited past the left wraps to `sx ≈ period` (the top of the range), because `wrap` maps a negative screen-x to `period + x`. So the "leftmost" pick was the most-visible left cloud, and teleporting it to the right popped it.
 **What changed:** Extracted the selection into an exported pure helper `pickRecyclable(clouds, camX, viewW, period, factor)` that computes the same signed screen x `s` the draw path uses, considers only clouds fully off the left edge (`s + w <= 0`), and returns the most recently exited one (greatest such `s`), or `-1` when none has exited (so a visible cloud is never moved). `recycleExited` is a thin wrapper; the right-edge destination is unchanged. Regression tests added in `parallax.test.js` (4 cases). `npm test` 95 passing, `npm run build` clean. No schema, theme, or invariant change.
+
+---
+
+### 10. Maker toolbar state goes stale while the pointer is off the level [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15; scoped fix in Unit 15 code)
+**Where:** `src/maker/maker-scene.js` `render`
+**Symptom:** On a fresh level, Undo, Redo and **Play** all showed enabled — Play with no goal placed — until the mouse moved over a level cell. Clicking toolbar Undo near the level's left edge could leave Undo enabled on an empty stack.
+**Cause:** `toolbar.sync` ran at the very end of `render`, after `if (!level.inBounds(cell.c, cell.r)) return;` for the cursor. The maker opens with the camera 2 tiles past the left edge and the pointer at (0, 0), and the Back/Undo buttons sit over that margin, so the sync was skipped exactly when it mattered. The toolbar's `prevCan*` start at `true`, so nothing disabled the buttons.
+**What changed:** The sync block moved above the cursor early-return, so it runs every rendered frame. Verified in Chrome: fresh load shows Undo/Redo/Play disabled; after a paint drag Undo enables; clicking Undo with the pointer parked over the toolbar disables Undo and enables Redo. DOM reconcile stays in `render` (invariant 3). No test — scene/DOM code is verified by running the game.
+
+---
+
+### 11. Game keys swallowed inside form fields; resize dialog outlives the maker [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15; scoped fix in Unit 02 / Unit 15 code)
+**Where:** `src/core/input.js` `onKeyDown`; `src/ui/components/resize-dialog.js`; `src/maker/maker-scene.js`
+**Symptom:** With the resize dialog's number field focused, ArrowUp/ArrowDown panned the maker instead of stepping the value (reproduced in Chrome: three ArrowUp presses left 160 unchanged). Any future text field (Unit 17 level name, share-code paste) could never receive W, A, S, D, M or Space. Pressing `M` while the dialog was open switched to play and left the dialog stranded over the game.
+**Cause:** `input.js` listens on `window` in the capture phase and `preventDefault`s every mapped key regardless of target, so the field never got its default action. Separately, `openResizeDialog` appended its overlay to `#ui` with no handle, so `makerScene.unmountUI` could not remove it.
+**What changed:** New exported pure helper `isFormField(target)` in `input.js`. `onKeyDown` returns early for form-field targets (after `fireGesture`, so audio unlock still works); `onKeyUp` is unchanged, so a key held before the field took focus still releases. Buttons are deliberately not form fields — the pause overlay relies on Enter reaching `input.js` while Resume has focus (2026-09-13 decision). `openResizeDialog` now returns an idempotent `{ close }`; the maker keeps it and closes it in `unmountUI`, and its `openResizeDialog` param is typed instead of `Function`. 4 tests in new `core/input.test.js`. Verified in Chrome: ArrowUp in the field steps 160 → 163; `M` typed in the field does not switch modes; `M` with focus on the dialog's Cancel button switches to play and the dialog closes with no stray overlay; six page-level `M` presses toggle modes six times.
+
+---
+
+### 12. Music track alone is 85% of Goal 4's 3 MB budget [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15; player chose re-encoding over rewording Goal 4)
+**Where:** `tools/asset-manifest.mjs` `audio`, `tools/build-assets.mjs`
+**Symptom:** `public/assets` was 2.74 MB, of which `starlight_city.mp3` (192 kbps stereo, 106 s) was 2.44 MB. With JS and CSS the shipped game was ~2.83 MB before any campaign level, the ship tilesheet (Unit 20) or PWA files (Unit 21). `attack.wav` (34 KB) also shipped although nothing plays it.
+**Expected:** Goal 4 — code, art, audio and campaign under 3 MB — with room for the remaining units.
+**What changed:** `ffmpeg-static` (devDependency, install script approved in `package.json` `allowScripts`) re-encodes any audio manifest entry that has a `bitrate`. The music is now 96 kbps CBR, 48 kHz stereo, 1.28 MB. `attack.wav` removed from the manifest. `public/assets` is now 1.49 MB. Two consecutive `npm run assets` runs are byte-identical, and every PNG plus `atlas.json` is unchanged from the previous commit. Verified in Chrome: the new MP3 decodes (106.44 s, 2 ch, 48 kHz) and the game loads with no audio warnings. **Not verified:** how it sounds — 96 kbps joint stereo should be transparent enough for background music, but it needs a listen on the player's speakers or headphones.
+
+---
+
+### 13. Moving platforms promised in the overview, but no unit builds them [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15; scope decision by the player: defer)
+**Where:** `context/1-project-overview.md` Features; `src/game/player.js`
+**Symptom:** The overview's play-mode features listed "moving platforms that carry the player", but no unit in `specs/00-build-plan.md` built one. Unit 06 left an inert `Player.platform = null` field plus a carry branch that nothing ever set; Units 07 and 08 re-deferred it without naming a home.
+**Cause:** The feature has no art in the pack — Super Pirate World's moving platforms use its own helicopter sprites, which we do not pack (2026-09-06 decision) — and format 1 has no way to express a platform's path, so no unit ever picked it up.
+**What changed:** Moved to **Deferred, not rejected** in `1-project-overview.md` with the reason; dropped from the Features list and from the architecture doc's physics paragraph; Unit 06's line in the build plan notes the stub's removal. Deleted `Player.platform` and its carry branch (dead code — git keeps it). No behaviour change: the field was always `null`. `npm test` unchanged.
+
+---
+
+### 14. Nine-slice sizes drifted after Unit 15 — atlas metadata and three docs [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15)
+**Where:** `tools/build-assets.mjs` (nineslice branch of `main`); `context/2-architecture.md` Asset Pipeline; `specs/00-build-plan.md` Unit 01; `context/4-code-standards.md` File Organization
+**Symptom:** Unit 15 (issue 1) changed `writeNineSlice` to composite a 3 × 3 subset, so the PNGs are 96 × 96 and 42 × 42, but `atlas.json` still declared all five `ui/board-*`, `ui/paper-yellow` and `ui/button-*` entries at 128 × 128 / 56 × 56. The architecture doc and the build plan still described the 4 × 4 layout. Separately, the code standards listed a `core/rng` module that has never existed (the parallax LCG lives in `level/parallax.js`).
+**Cause:** The Unit 15 fix updated `writeNineSlice`'s own `size` but not the atlas entry beside its call site (`clip.tile * 4`), and only `3-ui-context.md` was re-synced.
+**What changed:** Atlas size is `clip.tile * 3`; regenerated — only those five entries changed, every PNG byte-identical. Docs corrected. No runtime impact: CSS references the PNGs directly and nothing in `src/` reads these five atlas sizes; only the `/atlas.html` debug page drew them at the wrong size.
+
+---
+
+### 15. Dead code and a duplicated level-id generator [FIXED]
+
+**Fixed:** 2026-09-22 (found in a repo review after Unit 15)
+**Where:** `src/ui/maker-palette.js`; `src/level/schema.js` + `src/level/model.js`; `src/core/input.js`
+**Symptom:** `findGroupForEntry` in the palette was never called and returned its argument. Two level-id generators existed: `schema.newLevelId` (`Math.random`, 6 chars, used by `createBlankLevel`) and a private `model.randomLevelId` (`crypto`, 8 chars, used by `createEmptyModel`), so ids had two shapes depending on which path made the level. `input.js` had an orphaned duplicate JSDoc block above `toVirtual` and `onKeyDown`'s `@param` sitting on `fireGesture`.
+**What changed:** Deleted `findGroupForEntry`. One generator: `schema.newLevelId` now uses `crypto.getRandomValues` for `lvl_` + 8 base-36 chars, and `model.js` imports it. Existing ids are untouched (schema only requires a non-empty string). 2 tests added to `schema.test.js`. JSDoc fixed. `npm test` 201.
 
 ---
 

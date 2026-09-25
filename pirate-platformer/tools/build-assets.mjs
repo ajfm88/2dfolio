@@ -2,9 +2,12 @@
  * Pack Treasure Hunters frames and Super Pirate World audio into public/assets/.
  * Run with `npm run assets`. Never imported by src/.
  */
+import { execFile } from 'node:child_process';
 import { access, copyFile, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import ffmpegPath from 'ffmpeg-static';
 import sharp from 'sharp';
 import {
   AUDIO_ROOT,
@@ -63,6 +66,30 @@ async function listFrames(dirAbs, match) {
 async function emptyDir(dir) {
   await rm(dir, { recursive: true, force: true });
   await mkdir(dir, { recursive: true });
+}
+
+const run = promisify(execFile);
+
+/**
+ * Re-encode an MP3 at a constant bitrate. The bitexact flags and the stripped
+ * metadata keep the output byte-identical across runs (no encoder version or
+ * source tags), so regeneration stays deterministic.
+ *
+ * @param {string} srcAbs
+ * @param {string} destAbs
+ * @param {string} bitrate e.g. '96k'
+ */
+async function transcodeMp3(srcAbs, destAbs, bitrate) {
+  if (!ffmpegPath) throw new Error('ffmpeg-static has no binary for this platform');
+  await run(ffmpegPath, [
+    '-hide_banner', '-loglevel', 'error', '-y',
+    '-i', srcAbs,
+    '-map', '0:a:0', '-map_metadata', '-1',
+    '-fflags', '+bitexact', '-flags:a', '+bitexact',
+    '-c:a', 'libmp3lame', '-b:a', bitrate,
+    '-id3v2_version', '0', '-write_id3v1', '0',
+    destAbs,
+  ]);
 }
 
 /**
@@ -216,7 +243,8 @@ async function main() {
         const dest = clip.dest;
         await writeNineSlice(files, clip.tile, path.join(OUT, ...dest.split('/')));
         for (const file of files) consume(consumed, toPosix(file));
-        const size = clip.tile * 4;
+        // writeNineSlice composites the 3×3 subset, so the image is 3 tiles square.
+        const size = clip.tile * 3;
         atlas[clip.id] = { src: dest, fw: size, fh: size, n: 1 };
       } else {
         throw new Error(`unknown kind "${clip.kind}"`);
@@ -235,7 +263,11 @@ async function main() {
       throw new Error(`audio missing: ${AUDIO_ROOT}/${item.src}`);
     }
     await mkdir(path.dirname(destAbs), { recursive: true });
-    await copyFile(srcAbs, destAbs);
+    if (item.bitrate) {
+      await transcodeMp3(srcAbs, destAbs, item.bitrate);
+    } else {
+      await copyFile(srcAbs, destAbs);
+    }
   }
 
   const ids = Object.keys(atlas).sort();

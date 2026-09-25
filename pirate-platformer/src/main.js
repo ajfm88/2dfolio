@@ -6,22 +6,38 @@ import { loadAtlas } from './core/atlas.js';
 import { createCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
 import { createLoop } from './core/loop.js';
+import { createTransition } from './core/transition.js';
 import { createViewport } from './core/viewport.js';
 
 import { sounds } from './data/sounds.js';
 import { getTheme } from './data/themes.js';
+import { deserialise } from './level/codec.js';
 import { createEmptyModel } from './level/model.js';
 import { createPlayScene } from './game/play-scene.js';
 import { createMakerScene } from './maker/maker-scene.js';
+import { prefersReducedMotion, setVeiled } from './ui/dom.js';
+import { createPlayHud } from './ui/hud.js';
 import { createMakerPalette } from './ui/maker-palette.js';
 import { createMakerToolbar } from './ui/maker-toolbar.js';
 import { createPaintPanToggle } from './ui/maker-toggle.js';
+import { createRotatePrompt } from './ui/rotate-prompt.js';
+import { createTouchControls } from './ui/touch-controls.js';
 import { openResizeDialog } from './ui/components/resize-dialog.js';
 import atlasJson from './data/atlas.json';
 
+/** @typedef {import('./level/model.js').LevelModel} LevelModel */
+/** @typedef {import('./maker/maker-scene.js').MakerSession} MakerSession */
+/** @typedef {import('./types.js').LevelData} LevelData */
+
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
 const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+const appRoot = /** @type {HTMLElement} */ (document.getElementById('app'));
 const uiRoot = /** @type {HTMLElement} */ (document.getElementById('ui'));
+
+// Portrait is not a supported canvas orientation (2026-09-23): the game is held
+// behind a rotate prompt until the display is wider than it is tall.
+const rotatePrompt = createRotatePrompt(appRoot);
+let portrait = false;
 
 const viewport = createViewport(canvas, ctx, {
   onResize() {
@@ -29,12 +45,15 @@ const viewport = createViewport(canvas, ctx, {
     const dh = window.innerHeight;
     const uiScale = Math.max(1, Math.min(3, Math.floor(Math.min(dw / 480, dh / 320))));
     document.documentElement.style.setProperty('--ui-scale', String(uiScale));
+    portrait = dw < dh;
+    rotatePrompt.setShown(portrait);
   },
 });
 
 const audio = createAudio();
 const input = createInput(canvas, viewport);
 const camera = createCamera();
+const transition = createTransition();
 const playScene = createPlayScene();
 const makerScene = createMakerScene();
 
@@ -42,35 +61,29 @@ input.onFirstGesture(() => audio.resume());
 
 /** @type {Awaited<ReturnType<typeof loadAtlas>> | null} */
 let atlas = null;
-/** @type {ReturnType<typeof createEmptyModel> | null} */
-let level = null;
 /** @type {'play' | 'maker'} */
-let currentMode = 'maker';
-
-let makerCamX = 0;
-let makerCamY = 0;
-let hasMakerCam = false;
-
+let mode = 'maker';
+/** The maker as it was left, held while its level is being test-played. */
+/** @type {MakerSession | null} */
+let session = null;
+/** What the maker handed over; every attempt deserialises it afresh. */
+/** @type {LevelData | null} */
+let playData = null;
+// Set from scene callbacks (DOM events or a scene's update), acted on by the App
+// after the scene update returns — the same deferral as a restart.
+/** @type {'play' | 'maker' | null} */
+let request = null;
 let pendingRestart = false;
 
-function createStubHud() {
-  return {
-    syncHearts() {},
-    syncCoins() {},
-    setPaused() {},
-    showResults() {},
-    destroy() {},
-  };
-}
-
-function createStubTouch() {
-  return { show() {}, hide() {}, destroy() {} };
-}
-
-function enterMaker() {
-  if (!atlas || !level) return;
+/**
+ * @param {LevelModel} level
+ * @param {MakerSession | null} s
+ */
+function enterMaker(level, s) {
+  if (!atlas) return;
   makerScene.enter({
     level,
+    session: s ?? undefined,
     theme: getTheme(level.theme),
     atlas,
     input,
@@ -82,18 +95,20 @@ function enterMaker() {
       createToolbar: createMakerToolbar,
     },
     onBack() {},
-    onPlay() { switchToPlay(); },
+    onPlay(data, snap) {
+      playData = data;
+      session = snap;
+      request = 'play';
+    },
     openResizeDialog,
   });
   makerScene.mountUI(uiRoot);
-  if (hasMakerCam) {
-    camera.x = makerCamX;
-    camera.y = makerCamY;
-  }
 }
 
 function enterPlay() {
-  if (!atlas || !level) return;
+  if (!atlas || !playData) return;
+  // The maker proved this data loads before handing it over.
+  const level = deserialise(playData);
   playScene.enter({
     level,
     theme: getTheme(level.theme),
@@ -102,35 +117,12 @@ function enterPlay() {
     input,
     camera,
     viewport,
-    ui: { createHud: createStubHud, createTouch: createStubTouch },
+    ui: { createHud: createPlayHud, createTouch: createTouchControls },
     onDeath() { pendingRestart = true; },
     onReplay() { pendingRestart = true; },
+    onEdit() { request = 'maker'; },
   });
   playScene.mountUI(uiRoot);
-}
-
-function switchToPlay() {
-  const editing = makerScene.getLevel();
-  if (editing) level = editing;
-  if (!level || level.goal == null) {
-    console.warn('Place a goal flag before playing');
-    return;
-  }
-  makerCamX = camera.x;
-  makerCamY = camera.y;
-  hasMakerCam = true;
-  makerScene.unmountUI();
-  makerScene.exit();
-  currentMode = 'play';
-  enterPlay();
-}
-
-function switchToMaker() {
-  playScene.unmountUI();
-  playScene.exit();
-  audio.stopMusic();
-  currentMode = 'maker';
-  enterMaker();
 }
 
 function restartPlay() {
@@ -140,19 +132,69 @@ function restartPlay() {
 }
 
 /**
+ * Wipe to the other mode. The scenes swap while the screen is covered.
+ * @param {'play' | 'maker'} target
+ */
+function beginSwitch(target) {
+  if (target === mode) return;
+  const started = transition.start({
+    reducedMotion: prefersReducedMotion(),
+    onCover() {
+      if (target === 'play') {
+        makerScene.unmountUI();
+        makerScene.exit();
+        mode = 'play';
+        enterPlay();
+        return;
+      }
+      playScene.unmountUI();
+      playScene.exit();
+      mode = 'maker';
+      const s = session;
+      session = null;
+      playData = null;
+      if (s) enterMaker(s.level, s);
+    },
+    onEnd() {
+      setVeiled(uiRoot, false);
+    },
+  });
+  if (!started) return;
+  setVeiled(uiRoot, true);
+  // Fades out under the closing iris.
+  if (target === 'maker') audio.stopMusic();
+}
+
+/**
  * @param {number} dt
  */
 function update(dt) {
-  if (currentMode === 'maker') {
+  // Held behind the rotate prompt. Input still advances, so a press made behind
+  // it is dropped rather than replayed when the device turns back.
+  if (portrait) {
+    input.advance();
+    return;
+  }
+  // Neither scene steps during a wipe: the old one is frozen under the closing
+  // iris, the new one under the opening iris.
+  if (transition.active) {
+    input.advance();
+    transition.update(dt);
+    return;
+  }
+  if (mode === 'maker') {
     makerScene.update(dt);
-    if (input.keys.modeSwitch.pressed) switchToPlay();
   } else {
     playScene.update(dt);
     if (pendingRestart) {
       pendingRestart = false;
       restartPlay();
     }
-    if (input.keys.modeSwitch.pressed) switchToMaker();
+  }
+  if (request) {
+    const target = request;
+    request = null;
+    beginSwitch(target);
   }
 }
 
@@ -163,8 +205,13 @@ function render() {
     ctx.fillRect(0, 0, viewport.viewW, VIEW_H);
     return;
   }
-  if (currentMode === 'maker') makerScene.render(ctx, camera);
+  if (mode === 'maker') makerScene.render(ctx, camera);
   else playScene.render(ctx, camera);
+  if (transition.active) {
+    // The maker leaves its zoom scale on the context.
+    viewport.apply(ctx);
+    transition.draw(ctx, viewport.viewW, VIEW_H);
+  }
 }
 
 const loop = createLoop({ update, render });
@@ -175,9 +222,8 @@ Promise.all([
   audio.load(sounds),
 ]).then(([loaded]) => {
   atlas = loaded;
-  level = createEmptyModel();
-  currentMode = 'maker';
-  enterMaker();
+  mode = 'maker';
+  enterMaker(createEmptyModel(), null);
 }).catch((err) => {
   console.error('Failed to load:', err);
 });

@@ -9,10 +9,11 @@ import { el } from './dom.js';
  *
  * @param {HTMLElement} root
  * @param {Input} input
+ * @param {{ panMode?: boolean }} [opts] the mode to restore after a test-play
  * @returns {{ isPanMode: () => boolean, destroy: () => void }}
  */
-export function createPaintPanToggle(root, input) {
-  let panMode = false;
+export function createPaintPanToggle(root, input, opts = {}) {
+  let panMode = opts.panMode ?? false;
 
   const mark = el('span', {
     class: 'maker-toggle__mark maker-toggle__mark--paint',
@@ -46,6 +47,7 @@ export function createPaintPanToggle(root, input) {
     paint();
   }
 
+  paint();
   btn.addEventListener('click', onClick);
   const unsub = input.onTouchDetected(() => {
     btn.removeAttribute('hidden');

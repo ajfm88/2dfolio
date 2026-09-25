@@ -7,7 +7,14 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 ## Current Phase
 
 - **Units 00–15 complete.** Unit 15 (Maker Responsive UI)
-  implemented 2026-09-21. Tests 195 passing, build clean.
+  implemented 2026-09-21. 2026-09-22 review sweep fixed issues 10–15 and opened
+  16–17. Tests 201 passing, build clean. Everything is committed (no remote yet).
+- **2026-09-23:** portrait decided (ask the player to rotate). Issue 16 (rotate
+  prompt) and issue 18 (tap to place) fixed as their own changes, and **Unit 16
+  (Test-Play Round Trip) implemented.** All three are **PENDING TEST**: tests 223
+  passing, build clean, a scratch harness drove the real maker scene through the
+  round trip, but nothing has been seen in a browser yet (the Chrome extension was
+  not connected this session). Nothing from 2026-09-23 is committed yet.
 
 ## Completed
 
@@ -341,18 +348,102 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   - **Palette tool buttons stay flat; only the bar and toolbar use nine-slice.**
     The button nine-slice 7px border eats too much of the 44px icon button.
 
+- **2026-09-22 — Repo review and issue sweep (issues 10–17).** A full read of the
+  context and every source file, then one commit per finding. `npm test` **201**
+  (195 + 4 `isFormField` + 2 `newLevelId`), `npm run build` clean.
+  - **Git.** The repo had no commits at all — Units 00–15 lived only in the working
+    tree. Baseline commit `965dcf8` holds them exactly as built; each fix below is its
+    own commit on `master`. No remote exists yet.
+  - **Fixed:** 10 toolbar sync skipped while the pointer was off the level (Play
+    showed enabled with no goal); 11 game keys swallowed inside form fields, and the
+    resize dialog stranded by `M`; 12 music re-encoded 192 → 96 kbps via
+    `ffmpeg-static`, `attack.wav` dropped (assets 2.74 → 1.49 MB); 13 moving
+    platforms deferred and the inert `Player.platform` stub deleted (player
+    decision); 14 nine-slice atlas sizes and three docs still on the pre-Unit-15
+    4 × 4 layout; 15 dead `findGroupForEntry`, two level-id generators → one.
+  - **Opened, needs a decision:** 16 portrait stretches the canvas 3.08× — a
+    conflict inside the Rendering Model, reported not fixed; 17 palette category
+    tabs are 28 px tall, under the 44 px hit-area rule.
+  - **Unit 12 verification (Claude in Chrome, desktop).** Web Audio calls hooked
+    and counted during a scripted play-through: music starts once on enter (the
+    re-encoded 106.4 s track, looping); one jump sound per jump; one coin chime per
+    pickup; one damage sound on spikes with invulnerability silencing repeats; one
+    seashell fire sound per cycle (not six). No console errors or warnings. **Still
+    needs the player:** first-tap unlock on real iOS and Android (Chrome here had
+    the context running before any gesture, so the suspended path was not
+    exercised), stomp sound, seamless music loop and the 96 kbps quality by ear.
+    "Volumes persist across a reload" moved from Unit 12's done-when to Unit 17's.
+  - **Unit 15 verification (Claude in Chrome, desktop + 390 × 844 and 844 × 390
+    iframes).** Toolbar states track the stack and goal; every toolbar button and
+    palette tool is ≥ 44 × 44; tabs scroll at portrait width; 7 tabs, decor hidden,
+    eraser last in every tab; resize dialog opens with the current size, rejects
+    30 and 401 columns, warns only on shrink, traps Tab, closes on Escape, backdrop
+    and Cancel, grows, undoes, redoes, and a same-size Apply pushes nothing. Found
+    issues 16 and 17. **Still needs the player:** touch-emulated and real-phone
+    gestures and the paint/pan toggle, notch safe areas, hover/active visuals. The
+    nine-slice pause/results overlays cannot be seen yet — the dev bridge stubs the
+    HUD in play; Unit 16 wires the real one.
+
+- **2026-09-23 — Portrait decision, issues 16 and 18, Unit 16 implemented.**
+  Spec at `specs/16-test-play-round-trip.md` (written and approved the same day).
+  `npm test` **223** (201 + 2 tap + 12 `validate` + 1 `revision` + 7 transition),
+  `npm run build` clean. Type check: no diagnostics new to this change (checked
+  with VS Code's bundled TypeScript against a clean HEAD worktree — the project-wide
+  baseline still has ~220 older ones, mostly CSS side-effect imports and test
+  fakes).
+  - **Issue 16 — rotate prompt.** Portrait decided as "ask the player to rotate"
+    (player). `ui/rotate-prompt.js` on `#app`, held game while shown. See the
+    issue for detail.
+  - **Issue 18 — tap to place.** A finger that lifts before the move threshold
+    and the long-press places once at its touch-down point. See the issue.
+  - **Unit 16.** `maker/validate.js` (`findProblems`, seven rules, kind-in-registry
+    check), `CommandStack.revision`, `core/transition.js` (Pirate Maker's circle
+    wipe on fixed durations, reduced-motion fade through ink), the
+    `MakerSession` round trip, test-play through `serialise` → `deserialise`, the
+    real HUD and touch controls in test-play, Back to editor on the pause and
+    results panels, `M` in both scenes, the toolbar status slot, `#ui` veiled
+    during a wipe. `main.js` is now a two-mode App: stub HUD, stub touch,
+    `switchToPlay`'s `console.warn`, the camera stash and `getLevel()` are gone.
+  - **Found and fixed during implementation.** (1) Validation ran at the top of
+    `update`, before a finished drag was pushed, so the status showed one frame
+    stale after every drag, and a Play click or `M` after a between-frames
+    toolbar Undo could act on a stale answer. Now one `refreshProblems()` runs in
+    `enter`, at the end of `update`, and inside `requestPlay`. Caught by a scratch
+    harness that drives the real maker scene. (2) The play scene framed its
+    camera only in `update`, and a wipe draws the new scene before stepping it,
+    so the opening iris would have shown the maker's camera position and then
+    jumped. `enter` now frames the player. Both are recorded in the spec.
+  - **Harness (scratch, not committed).** Drove the real `createMakerScene` with
+    fake input and UI: status correct before the first update; `M` blocked on an
+    invalid level; problems in table order; the play data equals `serialise`
+    and deserialises to a separate, identical model; after the round trip the
+    camera (clamped for a resized viewport), tab, eraser, toggle mode,
+    byte-identical level, undo **and** redo tail all come back; ten round trips
+    with no drift; a touch tap places one coin and is one undo step.
+  - **Needs the player (browser):** the wipe itself (look, timing at 512 and 768
+    wide, frozen scenes, DOM fade, no double start), reduced-motion fade, real
+    HUD and touch controls in test-play, Back to editor on both panels, `M` in
+    play, music fading out on return, the toolbar status at phone and desktop
+    width, the rotate prompt, and tap-to-place on a touchscreen.
+  - **Logged, not fixed:** issue 19 — Enter/Space on a focused overlay button run
+    the primary action (`input.js` preventDefaults them), so keyboard users cannot
+    reach Back to editor by Tab + Enter. `M` works.
+
 ## Current Goal
 
-- **Unit 16 — Test-Play Round Trip.** Spec not yet written.
+- **Unit 16 — Test-Play Round Trip.** Implemented 2026-09-23 against
+  `specs/16-test-play-round-trip.md`; closes once its verification checklist has
+  been run in the game.
 
 ## In Progress
 
-- None.
+- **Unit 16 verification**, plus issues 16 and 18 (PENDING TEST) — see the
+  2026-09-23 entry for what still has to be seen in a browser.
 
 ## Next Up
 
-- **Unit 16 — Test-Play Round Trip.** Validation, expanding-circle transition,
-  lossless return with camera/zoom/tool restored.
+- **Unit 17 — Persistence and Sharing.** Spec not yet written. Only after Unit 16
+  is verified and closed.
 
 ## Open Questions
 
@@ -373,6 +464,11 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
    decision). They still share the `WalkerEnemy` base for movement/collision/stomp,
    but each overrides behaviour meaningfully. The per-enemy behaviour design is part
    of the Unit 10 spec. See the Architecture Decisions entry below.
+6. ~~**Portrait orientation (issue 16).**~~ **Resolved 2026-09-23** — ask the
+   player to rotate (player decision). Portrait is not a supported canvas
+   orientation; a DOM prompt covers the screen. The prompt itself is issue 16's
+   own change. Residual: landscape aspects between 1 and ≈ 1.42 still stretch
+   mildly (logged on issue 16).
 
 ## Architecture Decisions
 
@@ -709,11 +805,70 @@ Invariant 8. Mouse still uses the single `pointer` channel. Touch paint/pan/
 pinch/eyedrop go through `gestures.js`. After a long-press eyedrop, that
 finger is ignored until lift.
 
+**2026-09-22 — Form fields own their keys; scenes close the dialogs they open.**
+`input.js` skips any keydown aimed at an input, textarea, select or contenteditable
+(releases still count). Buttons are not form fields: the pause overlay depends on
+Enter reaching `input.js` while Resume is focused. A dialog opener returns
+`{ close }` and the scene calls it in `unmountUI`. *Why:* Unit 17 adds text fields
+(level name, share code) that must accept W/A/S/D/M/Space.
+
+**2026-09-22 — The music is re-encoded at build time, not shipped at source bitrate.**
+`ffmpeg-static` (devDependency) turns the 192 kbps track into 96 kbps CBR with
+bitexact flags, so `npm run assets` stays deterministic. *Why:* the source track
+alone was 85% of Goal 4's 3 MB; rewording the goal was the alternative, declined
+by the player.
+
+**2026-09-22 — Moving platforms deferred.** No moving-platform art in the pack and
+no path in format 1. Listed under Deferred in the overview; the Unit 06 stub is
+gone, so a future unit starts clean.
+
+**2026-09-23 — Portrait: ask the player to rotate.** A 360-tall view with a 512
+minimum width cannot fill a portrait screen without letterboxing (forbidden) or a
+non-uniform stretch (3.08× on a 390 × 844 phone). Growing the virtual height in
+portrait was the other option; it would have changed the field of view per
+orientation and broken "360 tall, always". *Why this one:* it keeps every
+Rendering Model rule intact, and the maker is already landscape-first. The
+overview's "portrait and landscape both usable" is now "landscape only".
+
+**2026-09-23 — Test-play goes through the codec.** The maker hands play
+`serialise(level)`, proof-loaded once; play `deserialise`s a fresh copy on every
+attempt. *Why:* invariant 2. Handing over the live model meant the maker could
+produce a level that plays but can never be saved, and play could mutate the level
+being edited.
+
+**2026-09-23 — The maker session is the whole editing state.** `MakerSession`
+carries the live level and command stack (undo *and* redo), camera, zoom, palette
+tab, tool, eraser and paint/pan mode. The App holds it during play. Zoom now
+belongs to the session, so a new level starts at 1×; this replaces the Unit 14
+"zoom persists on the scene across `M`". The session's field names match Unit 17's
+`cc:v1:maker:last` so persisting it later is a subset, not a migration.
+
+**2026-09-23 — Playability rules live in `maker/validate.js`, not `schema.js`.**
+Schema stays the format validator and stays palette-free. `findProblems` runs only
+when `CommandStack.revision` changes, never per frame.
+
+**2026-09-23 — `M` is the test-play shortcut, not a throwaway.** In the maker it
+goes through the same gate as Play; in test-play it does what Back to editor does;
+it does nothing in a play scene without `onEdit` (the Unit 18 campaign).
+
+**2026-09-23 — No scene updates during a wipe.** The App advances input and the
+transition only, so neither scene simulates under the iris and nothing pressed
+mid-wipe replays afterwards. `#ui` is inert and faded for the whole wipe. The
+rotate prompt holds the game the same way.
+
 ## Session Notes
 
 Resume cold from here.
 
-**Where we are:** Units 00–15 done (2026-09-21). The maker now has a **top toolbar**
+**Where we are (2026-09-23):** Unit 16 (Test-Play Round Trip) is **implemented
+but not yet verified in a browser**, and so are issues 16 (rotate prompt) and 18
+(tap to place). The maker's Play button and `M` now wipe into a real test-play
+(real HUD and touch controls, through the codec), and Back to editor or `M` wipes
+back with everything restored. A status line in the toolbar says why Play is
+disabled. Close Unit 16 by running its checklist in a browser; the 2026-09-23 entry
+lists what is still unseen. None of it is committed yet.
+
+**Before that:** Units 00–15 done (2026-09-21). The maker now has a **top toolbar**
 (Back, Undo, Redo, Play, Menu) and a **tabbed palette** (category tabs + scrolling
 tool strip). Nine-slice `border-image` panels and buttons from the Wood and Paper kit
 are live on all shared UI components (`.panel`, `.btn`). A **resize dialog** lets
@@ -721,18 +876,33 @@ the user change the level dimensions within schema limits (40–400 × 12–48),
 via the command stack.
 
 Everything from before still holds: touch gestures, paint/pan toggle, undo/redo,
-`M` play bridge, audio, three walkers, one Shooter + one Projectile.
+audio, three walkers, one Shooter + one Projectile.
 
-**Next:** Unit 16 — Test-Play Round Trip. Spec not yet written.
+2026-09-22: the repo is under git now (baseline `965dcf8` + one commit per fix);
+issues 10–15 fixed, 16 (portrait stretch) and 17 (28 px palette tabs) open. Units
+12 and 15 have Claude's Chrome verification recorded but still owe the player
+sign-off items listed in their 2026-09-22 entry.
+
+**Next:** verify Unit 16 and issues 16 and 18 in a browser (desktop and phone
+landscape, touch emulation on and off, reduced motion on and off), then close
+them. After that, Unit 17 — Persistence and Sharing (spec not yet written). Issue
+19 (keyboard activation of secondary overlay buttons) is a small `input.js`
+change worth doing on its own.
 
 **How to run**
 
 - `npm run dev` — game at `/` (maker), atlas at `/atlas.html` (throwaway debug
   page, issue 5). Prefer a fixed port; 5173 may already be another project
-  (ArcGIS). `--port 5174 --strictPort`.
-- `npm test` — 195 tests.
+  (ArcGIS). `--port 5174 --strictPort`. On 2026-09-22 another project's Vite was
+  also bound to `127.0.0.1:5174` alongside ours — if a page looks wrong or stale,
+  check what owns the port, or use 5175.
+- `npm test` — 223 tests.
 - `npm run build` — passes.
-- `npm run assets` — needs `reference/treasure-hunters`. Output is committed.
+- `npm run assets` — needs `reference/treasure-hunters` and the `ffmpeg-static`
+  binary (fetched by `npm install`; its install script is approved in
+  `package.json`). Output is committed and deterministic.
+- Edits made in two steps can leave Vite serving a broken intermediate module to an
+  open tab. If a reload shows an error for code that is fine on disk, restart Vite.
 
 **Do not**
 
@@ -750,7 +920,14 @@ Everything from before still holds: touch gestures, paint/pan toggle, undo/redo,
   persistence is Unit 17's job via the settings store.
 - Mutate `LevelModel` from maker UI code. Every edit goes through
   `CommandStack`. Painting without undo is an invariant-7 bug.
-- Treat a missing goal as playable. Play button is disabled without one; `M` warns.
+- Let play start on a level `findProblems` rejects, or hand play the live model.
+  Play and `M` share one gate (`requestPlay`); play gets `serialise`d data.
+- Update scenes during a wipe, or mount DOM from a scene's `update` — switches
+  are requests the App acts on after the scene update returns.
+- Copy audio into `public/assets` by hand or list a sound the game does not play.
+  Re-encoding is a `bitrate` on the manifest entry.
+- Letterbox portrait or change `VIEW_H` — portrait is decided (2026-09-23): a
+  rotate prompt, nothing in the Rendering Model changes.
 
 **Standing hazards**
 
@@ -785,5 +962,5 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–15 (all built; 16+ not yet
-written). Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–16 (00–15 built and
+verified; 16 built, awaiting browser verification); 17+ not yet written. Playbook: `context/README.md` Part 3.

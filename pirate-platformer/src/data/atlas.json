@@ -516,26 +516,26 @@
   },
   "ui/board-green": {
     "src": "ui/board-green.png",
-    "fw": 128,
-    "fh": 128,
+    "fw": 96,
+    "fh": 96,
     "n": 1
   },
   "ui/board-yellow": {
     "src": "ui/board-yellow.png",
-    "fw": 128,
-    "fh": 128,
+    "fw": 96,
+    "fh": 96,
     "n": 1
   },
   "ui/button-green": {
     "src": "ui/button-green.png",
-    "fw": 56,
-    "fh": 56,
+    "fw": 42,
+    "fh": 42,
     "n": 1
   },
   "ui/button-yellow": {
     "src": "ui/button-yellow.png",
-    "fw": 56,
-    "fh": 56,
+    "fw": 42,
+    "fh": 42,
     "n": 1
   },
   "ui/hearts": {
@@ -554,8 +554,8 @@
   },
   "ui/paper-yellow": {
     "src": "ui/paper-yellow.png",
-    "fw": 128,
-    "fh": 128,
+    "fw": 96,
+    "fh": 96,
     "n": 1
   },
   "ui/sliders": {

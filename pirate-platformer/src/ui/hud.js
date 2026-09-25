@@ -4,11 +4,15 @@ import './styles/dialog.css';
 import { clear, el } from './dom.js';
 
 /**
+ * With `onEdit` (a test-play from the maker), the pause and results panels also
+ * offer Back to editor.
+ *
  * @typedef {{
  *   levelName: string,
  *   onPause: () => void,
  *   onResume: () => void,
  *   onReplay: () => void,
+ *   onEdit?: () => void,
  * }} HudOpts
  */
 
@@ -109,6 +113,25 @@ export function createPlayHud(root, opts) {
     return panel;
   }
 
+  /**
+   * The panel's action row: the primary button, then Back to editor when there is
+   * an editor to go back to.
+   * @param {HTMLElement} primary
+   */
+  function actions(primary) {
+    const row = el('div', { class: 'panel__actions' }, [primary]);
+    const onEdit = opts.onEdit;
+    if (onEdit) {
+      row.append(el('button', {
+        class: 'btn',
+        attrs: { type: 'button' },
+        text: 'Back to editor',
+        on: { click: () => onEdit() },
+      }));
+    }
+    return row;
+  }
+
   return {
     /** @param {number} n */
     syncHearts(n) {
@@ -137,7 +160,7 @@ export function createPlayHud(root, opts) {
         text: 'Resume',
         on: { click: () => opts.onResume() },
       });
-      openOverlay('Paused', [el('div', { class: 'panel__actions' }, [resume])], opts.onResume);
+      openOverlay('Paused', [actions(resume)], opts.onResume);
       resume.focus();
     },
 
@@ -159,7 +182,7 @@ export function createPlayHud(root, opts) {
         text: 'Play again',
         on: { click: () => opts.onReplay() },
       });
-      openOverlay('Level Complete', [stats, el('div', { class: 'panel__actions' }, [replay])]);
+      openOverlay('Level Complete', [stats, actions(replay)]);
       replay.focus();
     },
 

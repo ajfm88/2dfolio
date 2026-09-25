@@ -198,12 +198,16 @@ export const clips = [
   strip('ui/sliders', `${UI}/Sliders`, 12, 12, 10, { dest: 'ui/sliders.png' }),
 ];
 
+/**
+ * attack.wav is not listed: sword combat is out of scope, and nothing ships that
+ * the game does not use. `bitrate` re-encodes an MP3 through ffmpeg-static instead
+ * of copying it — the source music is 192 kbps (2.44 MB), most of Goal 4's 3 MB.
+ */
 export const audio = [
   { src: 'coin.wav', dest: 'audio/coin.wav' },
   { src: 'jump.wav', dest: 'audio/jump.wav' },
   { src: 'damage.wav', dest: 'audio/damage.wav' },
   { src: 'pearl.wav', dest: 'audio/pearl.wav' },
-  { src: 'attack.wav', dest: 'audio/attack.wav' },
   { src: 'hit.wav', dest: 'audio/hit.wav' },
-  { src: 'starlight_city.mp3', dest: 'audio/starlight_city.mp3' },
+  { src: 'starlight_city.mp3', dest: 'audio/starlight_city.mp3', bitrate: '96k' },
 ];
