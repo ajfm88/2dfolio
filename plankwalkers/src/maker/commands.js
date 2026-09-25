@@ -333,12 +333,16 @@ export class CommandStack {
     /** @type {MakerCommand[]} */
     this.commands = [];
     this.index = 0;
+    // Bumped whenever the model may have changed through the stack, so the maker
+    // can re-validate only then instead of every frame.
+    this.revision = 0;
   }
 
   /**
    * @param {MakerCommand} command
    */
   _record(command) {
+    this.revision++;
     this.commands.length = this.index;
     this.commands.push(command);
     this.index++;
@@ -376,6 +380,7 @@ export class CommandStack {
     if (!this.canUndo()) return;
     this.index--;
     this.commands[this.index].undo(model);
+    this.revision++;
   }
 
   /**
@@ -385,6 +390,7 @@ export class CommandStack {
     if (!this.canRedo()) return;
     this.commands[this.index].execute(model);
     this.index++;
+    this.revision++;
   }
 
   canUndo() {

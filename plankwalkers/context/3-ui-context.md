@@ -213,13 +213,20 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   bottom-right, both at least 64px at `--ui-scale: 1`, `touch-action: none`,
   `user-select: none`. Shown only when a touch pointer has been seen, or when the
   control setting is forced to touch.
-- **Maker**: a top bar (Back · Undo · Redo · Play · Menu) and a bottom palette bar —
+- **Maker**: a top bar (Back · Undo · Redo · *status* · Play · Menu) and a bottom
+  palette bar. The status slot is one line of `--fs-sm` text with a square
+  `--danger` pip, naming the first reason the level cannot be played (Play is
+  disabled while there is one); it is empty when the level is playable. The palette bar is
   a row of category tabs above a horizontally scrolling strip of tool buttons. The
   canvas keeps the full viewport behind both bars; the left and right edges stay
   clear so a thumb can pan without hitting chrome.
 - **Dialogs**: centred `.panel--board`, `max-inline-size: 480px`, over a `--scrim`
   backdrop. Focus is trapped; Escape and a backdrop tap both close.
 - **Toasts**: bottom-centre `.panel--paper`, auto-dismiss at 2.5 s, one at a time.
+- **Rotate prompt**: in portrait, an opaque `--ink` cover with a centred
+  `.panel` ("Turn your device") and a CSS phone outline that turns to landscape
+  (static and already turned under reduced motion). It mounts on `#app`, outside
+  `#ui`, so a veiled UI layer never hides it. The game is held while it shows.
 
 ## Icons
 
@@ -239,4 +246,6 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
 - DOM motion is limited to 120 ms `ease-out` opacity and small translate. No
   spring physics, no layout animation.
 - Under `@media (prefers-reduced-motion: reduce)`, DOM transitions drop to 0 ms and
-  the circle wipe becomes a 100 ms cross-fade.
+  the circle wipe becomes a 100 ms fade through `--ink` (one scene is alive at a
+  time, so a true cross-fade is not possible). `#ui` fades out over 120 ms when a
+  wipe starts and back in when it ends, and is inert in between.

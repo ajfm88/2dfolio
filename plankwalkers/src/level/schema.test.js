@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LevelError,
   createBlankLevel,
+  newLevelId,
   validateLevel,
 } from './schema.js';
 
@@ -159,6 +160,18 @@ describe('validateLevel', () => {
     const decor = [];
     for (let i = 0; i < 2001; i++) decor.push({ k: 'palm_back', c: 0, r: 0 });
     expectField(valid({ decor }), 'decor');
+  });
+});
+
+describe('newLevelId', () => {
+  it('is lvl_ plus 8 lowercase base-36 characters', () => {
+    for (let i = 0; i < 20; i++) expect(newLevelId()).toMatch(/^lvl_[a-z0-9]{8}$/);
+  });
+
+  it('does not repeat across a batch', () => {
+    const ids = new Set();
+    for (let i = 0; i < 200; i++) ids.add(newLevelId());
+    expect(ids.size).toBe(200);
   });
 });
 

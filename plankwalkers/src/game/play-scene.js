@@ -26,6 +26,7 @@ import { createWorld } from './world.js';
  *     onPause: () => void,
  *     onResume: () => void,
  *     onReplay: () => void,
+ *     onEdit?: () => void,
  *   }) => HudController,
  *   createTouch: (root: HTMLElement, input: Input) => TouchController,
  * }} UiFactories
@@ -34,6 +35,9 @@ import { createWorld } from './world.js';
 /** @typedef {ReturnType<import('../core/audio.js').createAudio>} Audio */
 
 /**
+ * `onEdit` is present only for a test-play started from the maker — the scene knows
+ * there is somewhere to go back to, not what it is.
+ *
  * @typedef {{
  *   level: LevelModel,
  *   theme: Theme,
@@ -45,6 +49,7 @@ import { createWorld } from './world.js';
  *   ui: UiFactories,
  *   onDeath: () => void,
  *   onReplay: () => void,
+ *   onEdit?: () => void,
  * }} PlaySceneParams
  */
 
@@ -69,6 +74,16 @@ export function createPlayScene() {
   let lastPausedShown = false;
   let resultsShown = false;
 
+  function followPlayer() {
+    if (!world || !params) return;
+    const hb = world.player.hitbox;
+    params.camera.follow(
+      hb.x + hb.w / 2, hb.y + hb.h / 2,
+      params.viewport.viewW, VIEW_H,
+      world.worldW, world.worldH,
+    );
+  }
+
   return {
     /**
      * @param {PlaySceneParams} p
@@ -82,6 +97,9 @@ export function createPlayScene() {
       elapsedMs = 0;
       lastPausedShown = false;
       resultsShown = false;
+      // Framed now, not on the first update: a mode-switch wipe draws this scene
+      // for a while before it is first stepped.
+      followPlayer();
       p.audio.playMusic('music');
     },
 
@@ -111,6 +129,7 @@ export function createPlayScene() {
         onPause,
         onResume,
         onReplay: () => params.onReplay(),
+        onEdit: params.onEdit,
       });
       touch = params.ui.createTouch(root, params.input);
       const t = touch;
@@ -140,6 +159,12 @@ export function createPlayScene() {
 
       params.input.advance();
 
+      // `M` goes back to the maker from anywhere — running, paused or finished.
+      if (params.onEdit && params.input.keys.modeSwitch.pressed) {
+        params.onEdit();
+        return;
+      }
+
       // Enter (edge): replay on the results screen, otherwise toggle pause. This only
       // flips state — the overlay is opened/closed in render (invariant 3).
       if (params.input.keys.pause.pressed) {
@@ -155,14 +180,7 @@ export function createPlayScene() {
       if (paused || finished) return;
 
       const status = world.update(dt, params.camera.x, params.viewport.viewW);
-
-      const cx = world.player.hitbox.x + world.player.hitbox.w / 2;
-      const cy = world.player.hitbox.y + world.player.hitbox.h / 2;
-      params.camera.follow(
-        cx, cy,
-        params.viewport.viewW, VIEW_H,
-        world.worldW, world.worldH,
-      );
+      followPlayer();
 
       if (status === 'dead') {
         params.onDeath();

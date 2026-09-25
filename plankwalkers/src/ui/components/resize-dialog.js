@@ -8,12 +8,16 @@ import {
 } from '../../level/schema.js';
 
 /**
+ * The returned `close` is idempotent. The opener calls it when its own UI is torn
+ * down, so the dialog never outlives the scene that opened it.
+ *
  * @param {HTMLElement} root
  * @param {{
  *   cols: number,
  *   rows: number,
  *   onApply: (cols: number, rows: number) => void,
  * }} opts
+ * @returns {{ close: () => void }}
  */
 export function openResizeDialog(root, opts) {
   const colsInput = /** @type {HTMLInputElement} */ (el('input', {
@@ -109,7 +113,11 @@ export function openResizeDialog(root, opts) {
     }
   }
 
+  let closed = false;
+
   function close() {
+    if (closed) return;
+    closed = true;
     overlay.removeEventListener('pointerdown', onOverlayClick);
     document.removeEventListener('keydown', onKeyDown);
     colsInput.removeEventListener('input', updateState);
@@ -159,4 +167,6 @@ export function openResizeDialog(root, opts) {
   cancelBtn.addEventListener('click', close);
 
   updateState();
+
+  return { close };
 }

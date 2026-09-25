@@ -1,0 +1,56 @@
+/* Portrait cover. Opaque ink, above every UI layer, so the stretched canvas and
+   any open dialog stay out of sight until the device is turned. */
+
+.rotate-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-right, 0px) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-bottom, 0px) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-left, 0px) + 16px * var(--ui-scale));
+  background: var(--ink);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.rotate-prompt[hidden] {
+  display: none;
+}
+
+.rotate-prompt__panel {
+  align-items: center;
+  min-inline-size: 0;
+  text-align: center;
+}
+
+.rotate-prompt__text {
+  margin: 0;
+  font-size: var(--fs-md);
+}
+
+/* A phone outline that turns from portrait to landscape. */
+.rotate-prompt__device {
+  inline-size: calc(24px * var(--ui-scale));
+  block-size: calc(40px * var(--ui-scale));
+  margin-block: calc(8px * var(--ui-scale));
+  border: calc(3px * var(--ui-scale)) solid var(--ink);
+  background: var(--sea);
+  animation: rotate-prompt-turn 2s ease-in-out infinite;
+}
+
+@keyframes rotate-prompt-turn {
+  0%, 25% { transform: rotate(0deg); }
+  55%, 100% { transform: rotate(-90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate-prompt__device {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
