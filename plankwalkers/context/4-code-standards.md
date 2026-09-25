@@ -64,7 +64,8 @@ One entity class per file; the file name is the class name in kebab-case.
 ## Constants
 
 - Engine and layout constants — `TILE`, `VIEW_H`, `VIEW_W_MIN`, `VIEW_W_MAX`,
-  `ANIM_FPS`, `FIXED_DT`, `Z` — live in `src/settings.js` and nowhere else.
+  `ANIM_FPS`, `FIXED_DT`, `Z`, and the mode-switch wipe's `WIPE_*` durations and
+  colour — live in `src/settings.js` and nowhere else.
 - Gameplay numbers — speeds, gravity, jump height, timers, damage, coin values —
   live in `src/data/tuning.js` and nowhere else.
 - Per-entity numbers — hitbox size, sprite offset, clip names — live in that
@@ -129,6 +130,11 @@ z                      // draw layer from settings.Z
   `preventDefault` on every move.
 - The input module exposes edge-triggered state (`pressed`, `released`) as well as
   held state, so gameplay never has to track "was down last frame" itself.
+- Form fields own their keys. `input.js` ignores any keydown whose target is an
+  input, textarea, select or contenteditable, so a text field in `ui/` needs no
+  special handling to receive W, A, S, D, M, Space or Enter.
+- A dialog opened by a scene returns a `close` handle, and the scene calls it in
+  `unmountUI`. No DOM a scene opened may outlive the scene.
 - **Never trigger `alert`, `confirm` or `prompt`.** Use a DOM dialog component.
 
 ## DOM and CSS
@@ -198,7 +204,8 @@ deliberately not ported:
 
 ## File Organization
 
-- `src/core/` — loop, viewport, camera, input, atlas, sprite, audio, rect, rng.
+- `src/core/` — loop, viewport, camera, input, atlas, sprite, audio, transition,
+  rect.
   Engine only; no game knowledge.
 - `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`,
   `parallax.js`, `render.js`. Shared by both modes.
@@ -209,9 +216,10 @@ deliberately not ported:
   `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
   `collectibles.js`.
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
-  `gestures.js`. `validate.js` is Unit 16.
+  `gestures.js`, `validate.js`.
 - `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
-  `maker-toggle.js`, `maker-toolbar.js`, `screens/`, `components/`
+  `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `screens/`,
+  `components/`
   (`resize-dialog.js`), `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.

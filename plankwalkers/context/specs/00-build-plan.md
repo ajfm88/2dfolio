@@ -29,8 +29,9 @@ letterboxing at any window size, clears to `--sky`, and logs a stable tick count
 
 **Builds:** `tools/asset-manifest.mjs` (declarative clip list) and
 `tools/build-assets.mjs`. Packs animation folders into per-clip horizontal strips,
-copies tilesheets, composites the UI nine-slices (boards and papers from 16 × 32 px
-tiles into 128 × 128; buttons from 16 × 14 px tiles into 56 × 56), packs the
+copies tilesheets, composites the UI nine-slices (the 3 × 3 subset of each 16-tile
+kit guide: boards and papers into 96 × 96, buttons into 42 × 42 — corrected from a
+4 × 4 layout in Unit 15), packs the
 mobile-button icons, copies the CC0 audio from
 `reference/super-pirate-world/audio/`, and emits `src/data/atlas.json`. Adds
 `npm run assets`. Output is committed.
@@ -96,7 +97,8 @@ end of a level, and the horizon sits correctly at every camera position.
 
 **Builds:** `game/physics.js` (old-rect/new-rect resolution, solid and semi-solid,
 terminal velocity), `game/player.js` (run, variable jump, coyote time, jump buffer,
-wall slide, wall jump, drop-through, moving-platform carry), `data/tuning.js`.
+wall slide, wall jump, drop-through), `data/tuning.js`. (A moving-platform carry
+stub shipped here and was removed on 2026-09-22 when moving platforms were deferred.)
 
 **Depends on:** 04. **Installs:** none.
 **Done when:** a test level exercises each case by hand, the resolver has unit tests,
@@ -174,8 +176,9 @@ first user gesture, pooled sfx playback, looping music with a crossfade on scene
 change, and music/sfx volumes.
 
 **Depends on:** 11. **Installs:** none.
-**Done when:** audio starts after the first tap on iOS and Android, volumes persist
-across a reload, and muting produces no errors or stalls.
+**Done when:** audio starts after the first tap on iOS and Android, and muting
+produces no errors or stalls. (Volume persistence moved to Unit 17, which owns the
+settings store — Unit 12 exposes the getters and setters only.)
 
 ## Unit 13 — Maker Core
 
@@ -213,9 +216,11 @@ losing content.
 
 ## Unit 16 — Test-Play Round Trip
 
-**Builds:** `maker/validate.js` (exactly one spawn, at least one goal, inline error
-display), the Play button, the expanding-circle transition, and lossless return with
-camera, zoom and selected tool restored.
+**Builds:** `maker/validate.js` (a placed flag; spawn and flag in usable cells;
+the entity cap; kind-in-registry — the first reason shown inline in the toolbar),
+test-play through the codec, the Play button and `M`, Back to editor, the
+expanding-circle transition, and lossless return with the level, undo/redo stack,
+camera, zoom, palette tab, tool, eraser and paint/pan mode restored.
 
 **Depends on:** 15. **Installs:** none.
 **Done when:** the round trip is lossless in both directions ten times in a row, and
@@ -229,9 +234,10 @@ delete), autosave while editing, share-code copy and paste, and `.json`
 export/import on desktop.
 
 **Depends on:** 16. **Installs:** none.
-**Done when:** levels survive a reload, a share code round-trips into a different
-browser profile and plays identically, private mode degrades to in-memory without
-throwing, and quota exhaustion shows a readable message.
+**Done when:** levels survive a reload, music and sfx volumes survive a reload (moved
+here from Unit 12), a share code round-trips into a different browser profile and
+plays identically, private mode degrades to in-memory without throwing, and quota
+exhaustion shows a readable message.
 
 ## Unit 18 — Campaign, Level Select and Title
 

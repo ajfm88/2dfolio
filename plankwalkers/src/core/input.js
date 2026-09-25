@@ -25,6 +25,22 @@ const ACTIONS = [
  */
 
 /**
+ * True for an element that owns its own keys: an input, textarea, select or
+ * contenteditable. Game keys (WASD, arrows, Space, Enter, M, Ctrl+Z) typed into
+ * one must reach the field, not become actions — and must not be preventDefaulted,
+ * or the characters never arrive.
+ *
+ * @param {EventTarget | null} target
+ * @returns {boolean}
+ */
+export function isFormField(target) {
+  if (target === null || typeof target !== 'object') return false;
+  const t = /** @type {{ tagName?: unknown, isContentEditable?: unknown }} */ (target);
+  if (t.isContentEditable === true) return true;
+  return t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT';
+}
+
+/**
  * @param {HTMLCanvasElement} canvas
  * @param {{ toVirtual: (clientX: number, clientY: number) => { x: number, y: number } }} viewport
  */
@@ -101,9 +117,6 @@ export function createInput(canvas, viewport) {
 
   /**
    * @param {PointerEvent} e
-   */
-  /**
-   * @param {PointerEvent} e
    * @returns {{ x: number, y: number }}
    */
   function toVirtual(e) {
@@ -129,9 +142,6 @@ export function createInput(canvas, viewport) {
     return -1;
   }
 
-  /**
-   * @param {KeyboardEvent} e
-   */
   function fireGesture() {
     if (gestured) return;
     gestured = true;
@@ -139,8 +149,14 @@ export function createInput(canvas, viewport) {
     gestureCbs.length = 0;
   }
 
+  /**
+   * @param {KeyboardEvent} e
+   */
   function onKeyDown(e) {
     fireGesture();
+    // Presses aimed at a form field belong to it. Releases are still honoured in
+    // onKeyUp, so a key held before the field took focus cannot stick down.
+    if (isFormField(e.target)) return;
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
       if (e.shiftKey) want.redo = true; else want.undo = true;
       e.preventDefault();

@@ -46,6 +46,9 @@ export function createGestures(input, opts = {}) {
   // After eyedrop, the finger is still down; consume it until lift so we do not
   // re-enter longPress and fire again.
   let ignoreUntilLift = false;
+  // Only a finger that landed on its own can tap. The finger left behind by a
+  // pinch or two-finger pan lifts quickly too, and must not place anything.
+  let tapAllowed = false;
 
   const out = {
     state: 'idle',
@@ -81,9 +84,22 @@ export function createGestures(input, opts = {}) {
       out.active = n > 0;
 
       if (n === 0) {
-        if (state === 'onePaint') out.paintReleased = true;
+        if (state === 'onePaint') {
+          out.paintReleased = true;
+        } else if (state === 'longPress' && tapAllowed) {
+          // Lifted before moving or long-pressing: a tap. Place once at the
+          // touch-down point, as a mouse click does — press and release together.
+          out.paintPressed = true;
+          out.paintReleased = true;
+          out.paintX = startX;
+          out.paintY = startY;
+          // The finger is gone, but the tap still has to reach the scene through
+          // the gesture channel this frame.
+          out.active = true;
+        }
         state = 'idle';
         ignoreUntilLift = false;
+        tapAllowed = false;
         out.state = state;
         return;
       }
@@ -92,6 +108,7 @@ export function createGestures(input, opts = {}) {
         if (state === 'onePaint') out.paintReleased = true;
         stepTwoFinger(touches, state !== 'twoFinger', zoom);
         ignoreUntilLift = false;
+        tapAllowed = false;
         out.state = state;
         return;
       }
@@ -104,10 +121,12 @@ export function createGestures(input, opts = {}) {
 
       const t = touches[0];
 
+      let fromTwoFinger = false;
       if (state === 'twoFinger') {
         // Spec: fewer than 2 fingers → idle. Remaining finger starts a new
         // one-finger gesture this frame.
         state = 'idle';
+        fromTwoFinger = true;
       }
 
       if (state === 'idle') {
@@ -120,6 +139,7 @@ export function createGestures(input, opts = {}) {
           elapsed = 0;
           startX = t.x;
           startY = t.y;
+          tapAllowed = !fromTwoFinger;
         }
       }
 
@@ -155,6 +175,7 @@ export function createGestures(input, opts = {}) {
       state = 'idle';
       elapsed = 0;
       ignoreUntilLift = false;
+      tapAllowed = false;
       out.state = 'idle';
       out.paintPressed = false;
       out.paintReleased = false;

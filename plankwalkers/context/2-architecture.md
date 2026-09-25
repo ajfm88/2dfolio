@@ -12,6 +12,7 @@
 | Audio          | Web Audio API                       | Decoded buffers, one `AudioContext`, unlocked on first input           |
 | Storage        | `localStorage`                      | Levels, campaign progress, settings                                    |
 | Asset build    | `sharp` (devDependency)             | Packs 1204 loose frame PNGs into per-clip strips and UI nine-slices    |
+| Audio build    | `ffmpeg-static` (devDependency)     | Re-encodes the music track to 96 kbps so the game fits Goal 4's 3 MB   |
 | Tests          | `vitest` (devDependency)            | Pure modules: codec, autotiler, collision resolver, schema validation  |
 | Offline        | Vite PWA manifest + service worker  | Installable, playable offline after first load                         |
 
@@ -49,10 +50,14 @@ coral-corsairs/
   (`follow` plus `panBy` with a 2-tile maker margin, and x/y setters),
   pointer/keyboard input (including `pointer.button`, a double-buffered
   `touches` array of at most two touch pointers, Ctrl+Z undo, Ctrl+Shift+Z /
-  Ctrl+Y redo, and the throwaway `M` mode-switch), atlas loading, sprite and
+  Ctrl+Y redo, and `M`, the test-play shortcut; a keydown aimed at a form
+  field — input, textarea, select, contenteditable — is left to that field,
+  never mapped to an action or preventDefaulted, while key releases are always
+  honoured so nothing sticks down), atlas loading, sprite and
   animation playback, audio (one `AudioContext`, decoded buffers, fire-and-forget
-  SFX, looping music with fade, master volume controls), rect math. **Knows
-  nothing about pirates, levels, enemies or the maker.** Nothing in `core/` may
+  SFX, looping music with fade, master volume controls), the mode-switch
+  transition (circle wipe or reduced-motion fade, advanced in fixed steps), rect
+  math. **Knows nothing about pirates, levels, enemies or the maker.** Nothing in `core/` may
   import from `game/`, `maker/`, `level/`, `data/` or `ui/`.
 - `src/level/` — everything both modes share about a level. `model.js` (mutable
   in-memory level, `createEmptyModel` for a fresh maker level whose `goal` is
@@ -67,7 +72,9 @@ coral-corsairs/
   `atlas.json` (generated), `campaign/*.json` (levels exported from our own maker).
 - `src/game/` — play mode. Scene, world, physics resolution, player, entities,
   hazards, collectibles, HUD data. Owns nothing the maker needs.
-- `src/maker/` — maker mode. `maker-scene.js`, `commands.js` (command stack plus
+- `src/maker/` — maker mode. `maker-scene.js`, `validate.js` (`findProblems`:
+  the playability rules and the kind-in-registry check), `commands.js` (command
+  stack with a `revision` counter, plus
   tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell,
   tool dispatch, eyedropper `pickToolAt`), `grid-overlay.js` (grid, cursor,
   ghost), `gestures.js` (touch state machine: long-press, one-finger paint/pan,
@@ -107,6 +114,11 @@ only `npm run assets` needs it restored.
 - **Virtual viewport width = `clamp(round(360 × displayAspect), 512, 768)`.** The
   view widens on wide phones and narrows on 4:3 tablets. Nothing is letterboxed,
   which matters because the maker needs every pixel on a small screen.
+- **Portrait is not a supported canvas orientation** (decision 2026-09-23). Below
+  an aspect of 1 the rules above cannot hold without a non-uniform stretch, so a
+  DOM prompt covers the screen and asks the player to rotate. `VIEW_H` and the
+  width clamp do not change. (Landscape displays narrower than 512 / 360 ≈ 1.42 —
+  4:3 tablets, near-square windows — still stretch mildly; see issue 16.)
 - Canvas backing store is `virtualSize × pixelScale`, where `pixelScale` is capped
   at 2 for memory. `ctx.imageSmoothingEnabled = false`.
 - All draw destinations are rounded to whole world pixels before `drawImage`.
@@ -218,8 +230,8 @@ PirateMaker (whose gravity is frame-rate dependent and whose
   frame to prevent a spiral of death after a tab regains focus.
 - Float AABBs. Each entity keeps an `oldRect` snapshot taken at the top of its
   update; collisions are resolved by comparing old and new edges. This is what makes
-  one-way platforms, drop-through and moving-platform carry correct rather than
-  approximate.
+  one-way platforms and drop-through correct rather than approximate. (Moving
+  platforms are deferred — see `1-project-overview.md`.)
 - Horizontal then vertical resolution, in that order, against solid tiles.
 - Semi-solid platforms collide only when the player's `oldRect.bottom` was above the
   platform top and vertical velocity is downward. A drop-through timer suppresses
@@ -282,8 +294,10 @@ Pickup plays a one-shot `fx/*` clip at the sprite centre, then despawns the
 runtime entity — never `level.entities`.
 
 World spawns every `level.entities` record through `byId(k).spawn`. Unknown kinds
-and entries without `spawn` are skipped. Kind-in-registry schema checks wait
-until the roster is complete (Unit 16); codec tests still use placeholder `k`
+and entries without `spawn` are skipped. The kind-in-registry check lives in
+`maker/validate.js`, not in `level/schema.js`: schema stays palette-free, because
+importing `data/palette.js` would pull `game/` classes into `level/`. Codec tests
+still use placeholder `k`
 values.
 
 Entities can also be created **at runtime**, not only from `level.entities`: the
@@ -356,9 +370,14 @@ case. Shipping them as-is means hundreds of requests and fragile filename sortin
 - **Output**:
   - `public/assets/sprites/<clip>.png` — one horizontal strip per animation clip
   - `public/assets/tiles/<theme>.png` — tilesheets copied as-is
-  - `public/assets/ui/<part>.png` — nine-slice composites: boards and papers from
-    16 × 32 px tiles into 128 × 128, buttons from 16 × 14 px tiles into 56 × 56
-  - `public/assets/audio/*` — copied CC0 audio
+  - `public/assets/ui/<part>.png` — nine-slice composites: the 3 × 3 subset of
+    each kit's 16-tile guide, so boards and papers (32 px tiles) become 96 × 96
+    and buttons (14 px tiles) become 42 × 42
+  - `public/assets/audio/*` — CC0 audio. SFX are copied as-is; a manifest entry
+    with a `bitrate` is re-encoded through `ffmpeg-static` instead (the music,
+    192 → 96 kbps CBR, 2.56 MB → 1.28 MB), with bitexact flags and stripped
+    metadata so the output stays byte-identical across runs. Only sounds the
+    game plays are listed — `attack.wav` is not
   - `src/data/atlas.json` — the manifest the runtime reads
 - **Manifest entry**: `{"player/idle": {"src":"sprites/player-idle.png","fw":64,"fh":40,"n":5,"fps":10}}`
 - Generated output is committed so `npm run dev` works without running the asset
@@ -403,8 +422,21 @@ Boot → Title → LevelSelect → Play → (results) → LevelSelect
 
 A scene implements `enter(params)`, `exit()`, `update(dt)`, `render(ctx, camera)`,
 `mountUI(root)` and `unmountUI()`. Mode switching goes through the expanding-circle
-transition ported from `reference/pirate-maker/28_finish/main.py:105`; the maker stashes
-camera, zoom and selected tool in `enter` params so the round trip is lossless.
+transition ported from `reference/pirate-maker/28_finish/main.py:105`
+(`core/transition.js`). No scene updates while it runs, and `#ui` is veiled
+(inert, faded) until it ends.
+
+**Test-play round trip.** The maker hands the App two things. The first is the
+level as **`serialise`d data**, which it has proof-loaded once. Play
+`deserialise`s a fresh copy on every attempt, so a level that test-plays is a
+level that loads from storage, and play can never mutate the level being edited.
+The second is a **`MakerSession`**: the live level and command stack (undo *and*
+redo), camera x/y, zoom, palette tab, selected tool, eraser, and paint/pan mode.
+The App holds the session during play and passes it back through the maker's
+`enter` params, so the round trip is lossless. Play knows only that an `onEdit`
+callback exists (the architecture's `returnTo: maker`). `maker/validate.js` lists
+what blocks play; the first reason shows in the toolbar and Play stays disabled
+until none remain.
 
 ## Invariants
 

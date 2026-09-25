@@ -57,10 +57,14 @@ function drawPaletteIcon(canvas, atlas, entry) {
 }
 
 /**
+ * `initial` restores the palette after a test-play. It does not call `onSelect` —
+ * the scene has already restored its own tool state from the same session.
+ *
  * @param {HTMLElement} root
  * @param {{
  *   atlas: Atlas,
  *   onSelect: (entry: PaletteEntry | null, erasing: boolean) => void,
+ *   initial?: { group: string, toolId: string | null, erasing: boolean },
  * }} opts
  */
 export function createMakerPalette(root, opts) {
@@ -166,13 +170,6 @@ export function createMakerPalette(root, opts) {
   }
 
   /**
-   * @param {string} groupId
-   */
-  function findGroupForEntry(groupId) {
-    return groupId;
-  }
-
-  /**
    * @param {Event} e
    */
   function onTabClick(e) {
@@ -227,9 +224,15 @@ export function createMakerPalette(root, opts) {
   tabs.addEventListener('click', onTabClick);
   strip.addEventListener('click', onStripClick);
 
-  if (visibleGroups.length > 0) {
-    switchTab(visibleGroups[0]);
+  const initial = opts.initial;
+  if (initial) {
+    selected = initial.toolId ? byId(initial.toolId) ?? null : null;
+    erasing = initial.erasing;
   }
+  const firstGroup = initial && visibleGroups.includes(initial.group)
+    ? initial.group
+    : visibleGroups[0];
+  if (firstGroup) switchTab(firstGroup);
 
   return {
     getSelectedEntry() {
@@ -237,6 +240,9 @@ export function createMakerPalette(root, opts) {
     },
     isErasing() {
       return erasing;
+    },
+    getGroup() {
+      return activeGroup;
     },
     /**
      * @param {string} id

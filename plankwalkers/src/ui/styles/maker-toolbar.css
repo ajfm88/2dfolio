@@ -60,6 +60,37 @@
   border-image-source: url("/assets/ui/button-green.png");
 }
 
+/* Why the level cannot be played. One line between the button groups; the full
+   text is in the title. The pip marks it as a blocker, not a hint. */
+.maker-toolbar__status {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--ui-scale));
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.maker-toolbar__status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.maker-toolbar__status-pip {
+  flex: none;
+  inline-size: calc(8px * var(--ui-scale));
+  block-size: calc(8px * var(--ui-scale));
+  border: calc(1px * var(--ui-scale)) solid var(--ink);
+  background: var(--danger);
+}
+
+.maker-toolbar__status--clear .maker-toolbar__status-pip {
+  display: none;
+}
+
 /* Back arrow — angular CSS chevron, no border-radius */
 .maker-toolbar__back-arrow {
   display: inline-block;

@@ -1,10 +1,13 @@
 import { TILE, VIEW_H } from '../settings.js';
+import { deserialise, serialise } from '../level/codec.js';
 import { createParallax } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
+import { LevelError } from '../level/schema.js';
 import { byId } from '../data/palette.js';
 import { CommandStack, createResizeCommand } from './commands.js';
 import { createGestures } from './gestures.js';
+import { findProblems } from './validate.js';
 import {
   applyCell,
   cellKey,
@@ -36,6 +39,7 @@ const PAN_SPEED = 300;
  * @typedef {{
  *   getSelectedEntry: () => PaletteEntry | null,
  *   isErasing: () => boolean,
+ *   getGroup: () => string,
  *   selectById: (id: string) => void,
  *   destroy: () => void,
  * }} PaletteController
@@ -54,8 +58,27 @@ const PAN_SPEED = 300;
  */
 
 /**
+ * Everything the maker needs to come back exactly as it was left after a
+ * test-play. `level` and `stack` are the live objects, handed over, not copied —
+ * play runs on its own deserialised copy and never touches them.
+ *
+ * @typedef {{
+ *   level: LevelModel,
+ *   stack: CommandStack,
+ *   zoom: number,
+ *   camX: number,
+ *   camY: number,
+ *   group: string,
+ *   toolId: string | null,
+ *   erasing: boolean,
+ *   panMode: boolean,
+ * }} MakerSession
+ */
+
+/**
  * @typedef {{
  *   level?: LevelModel,
+ *   session?: MakerSession,
  *   theme: Theme,
  *   atlas: Atlas,
  *   input: Input,
@@ -63,8 +86,12 @@ const PAN_SPEED = 300;
  *   viewport: ReturnType<import('../core/viewport.js').createViewport>,
  *   ui: { createPalette: Function, createToggle?: Function, createToolbar?: Function },
  *   onBack?: () => void,
- *   onPlay?: () => void,
- *   openResizeDialog?: Function,
+ *   onPlay?: (data: import('../types.js').LevelData, session: MakerSession) => void,
+ *   openResizeDialog?: (root: HTMLElement, opts: {
+ *     cols: number,
+ *     rows: number,
+ *     onApply: (cols: number, rows: number) => void,
+ *   }) => { close: () => void },
  * }} MakerSceneParams
  */
 
@@ -85,6 +112,8 @@ export function createMakerScene() {
   let toolbar = null;
   /** @type {ReturnType<typeof createGestures> | null} */
   let gestures = null;
+  /** @type {{ close: () => void } | null} */
+  let resizeDialog = null;
 
   /** @type {PaletteEntry | null} */
   let activeTool = null;
@@ -97,6 +126,12 @@ export function createMakerScene() {
   let panning = false;
   let panPrevX = 0;
   let panPrevY = 0;
+
+  /** @type {import('./validate.js').Problem[]} */
+  let problems = [];
+  /** @type {string | null} */
+  let loadError = null;
+  let lastRevision = -1;
 
   function dims() {
     const viewW = params.viewport.viewW;
@@ -168,6 +203,65 @@ export function createMakerScene() {
   }
 
   /**
+   * @param {LevelModel} lvl
+   * @param {CommandStack} stk
+   * @param {MakerSceneParams} p
+   * @returns {MakerSession}
+   */
+  function snapshot(lvl, stk, p) {
+    return {
+      level: lvl,
+      stack: stk,
+      zoom,
+      camX: p.camera.x,
+      camY: p.camera.y,
+      // The palette is the source of truth: a tool picked since the last update
+      // (then Play tapped before the next frame) is still the one restored.
+      group: palette ? palette.getGroup() : '',
+      toolId: palette ? palette.getSelectedEntry()?.id ?? null : null,
+      erasing: palette ? palette.isErasing() : false,
+      panMode: toggle ? toggle.isPanMode() : false,
+    };
+  }
+
+  /**
+   * Re-check the level only when the stack says it may have changed. Every edit
+   * goes through the stack, including toolbar Undo/Redo clicks between frames.
+   */
+  function refreshProblems() {
+    if (!level || !stack || stack.revision === lastRevision) return;
+    problems = findProblems(level);
+    loadError = null;
+    lastRevision = stack.revision;
+  }
+
+  /**
+   * The one way into test-play, for the Play button and `M` alike. Play gets a
+   * serialised copy, proven to load, so a level that test-plays is a level that
+   * will load from storage (invariant 2).
+   *
+   * @returns {boolean} true when the play request was handed to the App
+   */
+  function requestPlay() {
+    if (!params || !level || !stack || !params.onPlay) return false;
+    // A toolbar Undo can land between frames, after the last check.
+    refreshProblems();
+    // The status message already says why.
+    if (dragState || problems.length > 0) return false;
+    let data;
+    try {
+      data = serialise(level);
+      deserialise(data);
+    } catch (err) {
+      if (!(err instanceof LevelError)) throw err;
+      loadError = err.message;
+      return false;
+    }
+    params.onPlay(data, snapshot(level, stack, params));
+    return true;
+  }
+
+  /**
    * @param {{ c: number, r: number }} cell
    */
   function paintCell(cell) {
@@ -191,7 +285,6 @@ export function createMakerScene() {
    */
   function processPaintFrom(src) {
     if (!params || !level) return;
-    if (src.released && dragState) finalizeDrag();
 
     if (src.pressed && src.button !== 1) {
       const action = classifyAction(src.button, erasing, activeTool);
@@ -215,6 +308,10 @@ export function createMakerScene() {
     if (src.down && dragState && src.button === dragState.button) {
       paintCell(screenToCell(src.x, src.y, params.camera, zoom));
     }
+
+    // Last, so a touch tap — pressed and released in the same frame — places once
+    // and then closes its command.
+    if (src.released && dragState) finalizeDrag();
   }
 
   /**
@@ -266,17 +363,39 @@ export function createMakerScene() {
      */
     enter(p) {
       params = p;
-      level = p.level ?? createEmptyModel();
+      const s = p.session;
+      if (s) {
+        level = s.level;
+        stack = s.stack;
+        zoom = s.zoom;
+        activeTool = s.toolId ? byId(s.toolId) ?? null : null;
+        erasing = s.erasing;
+      } else {
+        level = p.level ?? createEmptyModel();
+        stack = new CommandStack();
+        zoom = 1;
+        activeTool = null;
+        erasing = false;
+      }
       parallax = createParallax(level, p.theme, p.atlas);
-      stack = new CommandStack();
-      activeTool = null;
-      erasing = false;
       dragState = null;
       panning = false;
+      // Checked now, not on the first update: a frame can render before the first
+      // fixed step, and Play must never show enabled on an unplayable level.
+      lastRevision = -1;
+      refreshProblems();
       gestures = createGestures(p.input, {
         isPanMode: () => (toggle ? toggle.isPanMode() : false),
       });
-      frameCameraOnSpawn(level, p);
+      if (s) {
+        p.camera.x = s.camX;
+        p.camera.y = s.camY;
+        // The viewport may have changed size during play.
+        const d = dims();
+        p.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
+      } else {
+        frameCameraOnSpawn(level, p);
+      }
     },
 
     exit() {
@@ -290,7 +409,7 @@ export function createMakerScene() {
       erasing = false;
       dragState = null;
       panning = false;
-      // level is owned by the caller (the dev bridge). zoom persists on this scene.
+      // level and stack live on in the session the App holds during test-play.
     },
 
     /**
@@ -298,8 +417,10 @@ export function createMakerScene() {
      */
     mountUI(root) {
       if (!params) return;
+      const s = params.session;
       palette = params.ui.createPalette(root, {
         atlas: params.atlas,
+        initial: s ? { group: s.group, toolId: s.toolId, erasing: s.erasing } : undefined,
         /**
          * @param {PaletteEntry | null} entry
          * @param {boolean} isErasing
@@ -310,17 +431,17 @@ export function createMakerScene() {
         },
       });
       if (params.ui.createToggle) {
-        toggle = params.ui.createToggle(root, params.input);
+        toggle = params.ui.createToggle(root, params.input, { panMode: s ? s.panMode : false });
       }
       if (params.ui.createToolbar) {
         toolbar = params.ui.createToolbar(root, {
           onBack: () => { if (params.onBack) params.onBack(); },
-          onPlay: () => { if (params.onPlay) params.onPlay(); },
+          onPlay: () => { requestPlay(); },
           onUndo: () => { if (!dragState && stack && level && stack.canUndo()) stack.undo(level); },
           onRedo: () => { if (!dragState && stack && level && stack.canRedo()) stack.redo(level); },
           onResize: () => {
             if (!params || !params.openResizeDialog || !level || !stack) return;
-            params.openResizeDialog(root, {
+            resizeDialog = params.openResizeDialog(root, {
               cols: level.cols,
               rows: level.rows,
               /** @param {number} newCols @param {number} newRows */
@@ -342,6 +463,11 @@ export function createMakerScene() {
     },
 
     unmountUI() {
+      // A mode switch (the M key) can arrive while the dialog is open.
+      if (resizeDialog) {
+        resizeDialog.close();
+        resizeDialog = null;
+      }
       if (toolbar) {
         toolbar.destroy();
         toolbar = null;
@@ -363,6 +489,11 @@ export function createMakerScene() {
       if (!params || !level || !stack || !parallax || !gestures) return;
 
       params.input.advance();
+
+      // Stop here once the request is out: anything painted after the snapshot
+      // would be in the maker's level but not in the one being played.
+      if (params.input.keys.modeSwitch.pressed && requestPlay()) return;
+
       syncToolFromPalette();
       gestures.update(dt, zoom);
 
@@ -415,6 +546,9 @@ export function createMakerScene() {
       }
 
       parallax.update(dt, params.camera.x, d.eW);
+
+      // Last, so a drag that closed this frame is reflected in this frame's render.
+      refreshProblems();
     },
 
     /**
@@ -464,6 +598,16 @@ export function createMakerScene() {
         params.viewport.pixelScale * zoom,
       );
 
+      // Before the cursor early-return below: the toolbar must track the stack and
+      // the goal even while the pointer is off the level (e.g. over the toolbar).
+      if (toolbar && stack) {
+        toolbar.sync({
+          canUndo: stack.canUndo(),
+          canRedo: stack.canRedo(),
+          problem: loadError ?? (problems.length > 0 ? problems[0].message : null),
+        });
+      }
+
       const ptr = params.input.pointer;
       const cell = screenToCell(ptr.x, ptr.y, cam, zoom);
       if (!level.inBounds(cell.c, cell.r)) return;
@@ -479,18 +623,6 @@ export function createMakerScene() {
       if (activeTool && !erasing && activeTool.placement !== 'tile') {
         drawGhost(ctx, cam, cell.c, cell.r, atlas, activeTool);
       }
-
-      if (toolbar && stack && level) {
-        toolbar.sync({
-          canUndo: stack.canUndo(),
-          canRedo: stack.canRedo(),
-          canPlay: level.goal !== null,
-        });
-      }
-    },
-
-    getLevel() {
-      return level;
     },
   };
 }
