@@ -54,10 +54,11 @@ function copy(id, src, dest) {
  * @param {string} id
  * @param {string} dir
  * @param {number} tile
+ * @param {number} first file number of the frame's top-left tile; the next 8 follow in reading order
  * @param {string} dest
  */
-function nineslice(id, dir, tile, dest) {
-  return { id, kind: 'nineslice', dir, tile, dest };
+function nineslice(id, dir, tile, first, dest) {
+  return { id, kind: 'nineslice', dir, tile, first, dest };
 }
 
 /**
@@ -180,12 +181,13 @@ export const clips = [
     match: /^Water Reflect Small /,
   }),
 
-  // UI nine-slices
-  nineslice('ui/board-yellow', `${UI}/Yellow Board`, 32, 'ui/board-yellow.png'),
-  nineslice('ui/board-green', `${UI}/Green Board`, 32, 'ui/board-green.png'),
-  nineslice('ui/paper-yellow', `${UI}/Yellow Paper`, 32, 'ui/paper-yellow.png'),
-  nineslice('ui/button-yellow', `${UI}/Yellow Button`, 14, 'ui/button-yellow.png'),
-  nineslice('ui/button-green', `${UI}/Green Button`, 14, 'ui/button-green.png'),
+  // UI nine-slices. The 3×3 frame starts at file 1 in boards and paper (10–16 are
+  // bar, column and single variants) but at file 8 in buttons (1–7 come first).
+  nineslice('ui/board-yellow', `${UI}/Yellow Board`, 32, 1, 'ui/board-yellow.png'),
+  nineslice('ui/board-green', `${UI}/Green Board`, 32, 1, 'ui/board-green.png'),
+  nineslice('ui/paper-yellow', `${UI}/Yellow Paper`, 32, 1, 'ui/paper-yellow.png'),
+  nineslice('ui/button-yellow', `${UI}/Yellow Button`, 14, 8, 'ui/button-yellow.png'),
+  nineslice('ui/button-green', `${UI}/Green Button`, 14, 8, 'ui/button-green.png'),
 
   // UI strips
   strip('ui/hearts', `${UI}/Life Bars/Big Bars`, 32, 32, 4, { dest: 'ui/hearts.png' }),

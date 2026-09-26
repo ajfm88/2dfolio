@@ -370,8 +370,9 @@ case. Shipping them as-is means hundreds of requests and fragile filename sortin
 - **Output**:
   - `public/assets/sprites/<clip>.png` — one horizontal strip per animation clip
   - `public/assets/tiles/<theme>.png` — tilesheets copied as-is
-  - `public/assets/ui/<part>.png` — nine-slice composites: the 3 × 3 subset of
-    each kit's 16-tile guide, so boards and papers (32 px tiles) become 96 × 96
+  - `public/assets/ui/<part>.png` — nine-slice composites: the nine frame tiles
+    of each 16-tile kit (files 1–9 for boards and papers, 8–16 for buttons, set
+    per kit in the manifest), so boards and papers (32 px tiles) become 96 × 96
     and buttons (14 px tiles) become 42 × 42
   - `public/assets/audio/*` — CC0 audio. SFX are copied as-is; a manifest entry
     with a `bitrate` is re-encoded through `ffmpeg-static` instead (the music,
