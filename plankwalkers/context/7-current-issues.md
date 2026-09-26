@@ -48,7 +48,8 @@ move to Resolved.
 `tile × 3` PNG: 96×96 for boards/papers, 42×42 for buttons. `border-image-slice`
 at the tile size (32 or 14) produces correct corners, edges and fill. `dialog.css`
 `.panel` and `.btn` upgraded to nine-slice `border-image`. All five composites
-regenerated and committed.
+regenerated and committed. **The tile pick above was wrong:** see issue 20, fixed
+2026-09-24.
 
 ---
 
@@ -153,7 +154,80 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 16. Portrait screens stretch the game world ~3× vertically [PENDING TEST]
+### 17. Maker palette category tabs are 28 px tall — under the 44 × 44 hit area [OPEN]
+
+**Where:** `src/ui/styles/maker-palette.css` (`.maker-palette__tab`), Unit 15
+**Symptom:** Measured in Chrome at `--ui-scale: 1`, all seven tabs are 50–70 × 28 CSS px. Every other toolbar and palette button meets 44 × 44.
+**Expected:** `3-ui-context.md`: "Minimum hit area is 44 × 44 CSS pixels on every interactive element … regardless of visual size."
+**Repro:** Phone-landscape (844 × 390) or portrait: measure `.maker-palette__tab` bounding boxes.
+**Notes:** Found 2026-09-22 while verifying Unit 15. Not fixed in the sweep because the fix has a layout cost worth choosing deliberately: at 844 × 390 the clear canvas between the bars is already only 220 px, and 16 px more tab height comes straight out of it. Options: taller tabs; or a hit area that extends past the visual tab (the tab row sits directly on the tool strip, so any extension has to go upward into the canvas edge).
+
+---
+
+### 21. Secondary text on the wood board is hard to read [OPEN]
+
+**Where:** `src/ui/components/resize-dialog.js` + its CSS (Unit 15); any `--text-muted` or `--text-display` text on `.panel--board`
+**Symptom:** In the Level Size dialog, the "cells" / "rows" unit labels and the "40–400 × 12–48" limits hint (muted text) almost vanish into the brick fill, and the orange "Level Size" heading has low contrast against it. Seen 2026-09-24 in Chrome, desktop, once issue 20 made the board fill render properly.
+**Expected:** All dialog text is readable on the board. The playbook has no contrast rule yet, so the target (e.g. WCAG AA 4.5:1 for body text) has to be chosen first.
+**Repro:** Maker → Menu → Resize Level.
+**Notes:** Not caused by issue 20's fix. The fill colour is the same brick as before, now drawn as a clean frame. Options: put the form on an inner `.panel--paper` (as `3-ui-context.md` already specifies for text inputs), or use `--paper-light`/`--ink` for text on board. That is a token and component decision for `3-ui-context.md` first, so it is not folded into the nine-slice fix.
+
+---
+
+### 24. Desktop has no way to zoom the maker [OPEN]
+
+**Where:** `src/maker/maker-scene.js` / `src/maker/gestures.js` (Unit 14)
+**Symptom:** Maker zoom (0.5× / 1× / 2×) is reachable only through a two-finger pinch. There is no mouse-wheel, key or button path, so a mouse-and-keyboard user is stuck at 1×.
+**Expected:** `1-project-overview.md` Maker features: "Pan and zoom at 0.5×, 1× and 2×". Nothing restricts it to touch.
+**Repro:** From the code (2026-09-24): `zoom` changes only through `gestures.js` `zoomSnap`, which only a two-touch pinch sets. `input.js` has no wheel listener and no zoom keys, and the toolbar has no zoom control.
+**Notes:** Found 2026-09-24 while running the Unit 16 checklist (its "zoom to 2×" step had to use synthesized touch). Needs a small spec decision first (wheel snaps between the three levels about the pointer, and/or `+`/`-` keys through `input.js`), so it is not folded into Unit 16.
+
+---
+
+## Resolved
+
+### 19. Enter on a focused secondary overlay button runs the primary action [FIXED]
+
+**Closed:** 2026-09-24. Player sign-off in the game: "all 3 are fixed".
+
+**Where:** `src/core/input.js` `onKeyDown` (Unit 09 / the 2026-09-13 Enter decision); seen with Unit 16's Back to editor
+**Symptom:** `input.js` maps Enter to `pause` and Space to `jump`, and `preventDefault`s both, so a focused `<button>` never receives a keyboard click. On the pause overlay, Tab to **Back to editor** and press Enter: the game resumes instead. On the results panel, Enter on Back to editor replays. The primary buttons only work by coincidence, because `pause` does the same thing they do.
+**Expected:** A keyboard user can activate any focused overlay button with Enter or Space.
+**Repro:** Test-play a level, press Enter to pause, Tab to Back to editor, press Enter.
+**Notes:** Found 2026-09-23 while implementing Unit 16 (from reading `input.js`, not yet reproduced in a browser). Not fixed there — the fix is in `input.js`, which the Unit 16 spec leaves untouched, and it must keep the 2026-09-13 behaviour (Enter pauses and resumes the game when a non-button has focus). Likely fix: in `onKeyDown`, leave Enter and Space to the target when it is a `<button>`, the way form fields already own their keys; then check Resume and Play again still work on Enter by being clicked. Workarounds today: `M` goes back to the editor from anywhere in test-play, and the mouse or a tap works.
+**What changed (2026-09-24):** new exported pure helper `isButtonActivation(target, code)` in `input.js`: true for Enter, NumpadEnter or Space aimed at a `<button>`. `onKeyDown` returns early for it (after `fireGesture` and the form-field check) without `preventDefault`, so the focused button gets its native click. Every other key, `M` included, still reaches the game from a focused button, and `onKeyUp` is unchanged. Resume and Play again keep working on Enter because they are focused and now click themselves; Enter on a non-button still pauses and resumes. Checked that nothing keeps a HUD button focused during play: `hud.js` focuses Resume or Play again when an overlay opens, and closing removes it, so focus falls back to the body and Space still jumps. Side effect, standard web behaviour: Space or Enter re-activates the maker toolbar or palette button last clicked with the mouse (neither key does anything else in the maker). 3 tests in `input.test.js`; the `isFormField` test comment corrected. **Not yet seen in a browser** (the extension disconnected): test-play → Enter pauses → Tab to Back to editor → Enter returns to the maker; Enter on Resume resumes; Enter on Play again replays; Space still jumps after resuming with the mouse.
+
+---
+
+### 22. A press and release inside one frame are lost [FIXED]
+
+**Closed:** 2026-09-24. Player sign-off in the game: "all 3 are fixed".
+
+**Where:** `src/core/input.js` `advance()` (lines ~395–402, Unit 02)
+**Symptom:** Buttons and the pointer are sampled as levels once per frame: `pressed = next && !held`. If `pointerdown` and `pointerup` (or `keydown` and `keyup`) both arrive between two `advance()` calls, the frame sees nothing and the click is dropped. In the maker, a mouse click that fast places nothing.
+**Expected:** Every press the browser delivers produces one `pressed` edge, and its `released` edge follows.
+**Repro:** Reproduced 2026-09-24 in a visible Chrome tab running at ~230 fps: a Claude-in-Chrome `left_click` (browser-level mouse input, down and up a few ms apart) on an empty cell with the Goal tool placed nothing, and a 60 ms press on the same cell placed the flag. **Not yet reproduced with physical hardware.** The likely real case is laptop trackpad tap-to-click, which can deliver down and up a few ms apart.
+**Notes:** Same class as issue 18 (touch taps), which was fixed in `gestures.js` by emitting press+release together. The engine-level fix would latch an edge: a down seen since the last `advance()` sets `pressed` even if the button is already up again, and `released` fires on the following frame. That changes `input.js`, which Unit 16 does not touch, so it is its own change. Confirm with a trackpad tap in the maker first.
+**What changed (2026-09-24):** new exported pure helper `stepButton(button, down, latched)`: `now = down || (latched && !held)`, then the usual edges. `input.js` latches a fresh keydown (auto-repeat does not latch), a virtual-button press (`setVirtual`), and a mouse or pen `pointerdown` together with its button and id. `advance()` runs every action and the pointer through `stepButton` and clears the latches. A press already released before the frame is held for that one frame (`pressed`) and released on the next, so every consumer's existing "pressed, then down, then released" handling works unchanged. On that frame the pointer reports the button and id it was pressed with, because the release reset them (a right-click tap still erases). Touch is deliberately not latched: touch taps belong to `gestures.js` (issue 18) and must respect pan mode. `onBlur` clears the pointer latch. 4 tests in `input.test.js`. **Not yet seen in a browser** (the extension disconnected): a Claude-in-Chrome `left_click` on a cell should now place the selected tool, and a trackpad tap should too.
+
+---
+
+### 23. A fast drag skips cells [FIXED]
+
+**Closed:** 2026-09-24. Player sign-off in the game: "all 3 are fixed".
+
+**Where:** `src/maker/maker-scene.js` paint path (Unit 13)
+**Symptom:** A paint drag paints only the cell under the pointer on each frame. When the pointer crosses more than one cell between frames, the cells in between stay empty and a floor drawn in one sweep comes out with gaps.
+**Expected:** A drag paints every cell along the path, as a stroke.
+**Repro:** Seen 2026-09-24 with synthetic mouse moves of ~1.7 cells per event: a 17-cell floor came out in 7 separate pieces. With moves of ≤ 0.2 cells it was solid. A human sweep at 60 Hz crosses more than one cell per frame at 0.5× zoom or with a quick flick.
+**Notes:** Likely fix: remember the last painted cell during a drag and paint the grid line between it and the current cell (Bresenham), per-cell dedupe unchanged, still one command per drag. Pure helper in `tools.js` with tests. Not part of Unit 16.
+**What changed (2026-09-24):** new exported pure helper `forEachCellOnLine(c0, r0, c1, r1, visit)` in `tools.js`. It walks the grid path between two cells one axis step at a time (edge-connected, both ends included, the staircase a slow drag paints) using only integer arithmetic. The drag state remembers the last cell under the pointer (`lastC`, `lastR`). When the cell changes, `processPaintFrom` paints the whole path from there. `paintCell(cell)` became `paintAt(c, r)`, which reuses one scratch cell, safe because `applyCell` keeps no reference, so no allocation per painted cell. Per-cell dedupe and one command per drag are unchanged, so a stroke is still one undo step. It covers mouse and touch drags alike, since both go through `processPaintFrom`. 5 tests in `tools.test.js`. **Not yet seen in a browser** (the extension disconnected): the fast synthetic sweep that left 7 pieces on 2026-09-24 should now give one solid floor, and undo should remove it in one step.
+
+---
+
+### 16. Portrait screens stretch the game world ~3× vertically [FIXED]
+
+**Closed:** 2026-09-24. Verified in Chrome (see below), signed off by the player with Unit 16.
 
 **Decision (2026-09-23, player):** option (c) — portrait is not supported for the
 canvas; a DOM prompt covers the screen in portrait and asks the player to rotate.
@@ -173,9 +247,12 @@ outline that turns to landscape (static under reduced motion). It is mounted on
 computes `portrait = innerWidth < innerHeight` in the viewport's `onResize` and
 shows or hides the prompt there; while it is up, `update` only calls
 `input.advance()`, so nothing simulates and a press made behind it is dropped, not
-replayed. `core/viewport.js` and `VIEW_H` are unchanged. **Not yet seen in a
-browser** (no browser tools this session): check a 390 × 844 viewport shows the
-prompt and a held game, and that turning to 844 × 390 hides it and resumes.
+replayed. `core/viewport.js` and `VIEW_H` are unchanged.
+**Verified 2026-09-24 (Claude in Chrome, a 390 × 844 iframe of the app):** the
+prompt shows (mounted on `#app`, "Turn your device" / "Coral Corsairs plays in
+landscape."), the game is held (a 400 ms ArrowRight leaves the maker camera
+unmoved), resizing the frame to 844 × 390 hides it and the same key then pans.
+Still worth a look on a real phone. The title shares issue 21's contrast problem.
 
 
 **Where:** `src/core/viewport.js` + `#game` CSS (`src/ui/styles/base.css`); the Rendering Model in `2-architecture.md`
@@ -186,17 +263,9 @@ prompt and a held game, and that turning to 844 × 390 hides it and resumes.
 
 ---
 
-### 17. Maker palette category tabs are 28 px tall — under the 44 × 44 hit area [OPEN]
+### 18. A quick tap places nothing on touch [FIXED]
 
-**Where:** `src/ui/styles/maker-palette.css` (`.maker-palette__tab`), Unit 15
-**Symptom:** Measured in Chrome at `--ui-scale: 1`, all seven tabs are 50–70 × 28 CSS px. Every other toolbar and palette button meets 44 × 44.
-**Expected:** `3-ui-context.md`: "Minimum hit area is 44 × 44 CSS pixels on every interactive element … regardless of visual size."
-**Repro:** Phone-landscape (844 × 390) or portrait: measure `.maker-palette__tab` bounding boxes.
-**Notes:** Found 2026-09-22 while verifying Unit 15. Not fixed in the sweep because the fix has a layout cost worth choosing deliberately: at 844 × 390 the clear canvas between the bars is already only 220 px, and 16 px more tab height comes straight out of it. Options: taller tabs; or a hit area that extends past the visual tab (the tab row sits directly on the tool strip, so any extension has to go upward into the canvas edge).
-
----
-
-### 18. A quick tap places nothing on touch [PENDING TEST]
+**Closed:** 2026-09-24. Verified in Chrome with synthesized touch (see below), signed off by the player with Unit 16.
 
 **Where:** `src/maker/gestures.js` (Unit 14)
 **Symptom:** A one-finger tap that lifts before moving 4 px or reaching the 300 ms long-press goes `longPress` → `idle` with no paint event, so nothing is placed. Placing a single coin, enemy or marker on a phone needs a small deliberate drag.
@@ -212,36 +281,22 @@ eyedrop and drags are unchanged. `maker-scene.js` `processPaintFrom` now handles
 release **after** press and drag, so a same-frame press+release places once and
 closes its command (one undo step). 2 tests in `gestures.test.js`; a scratch
 harness against the real scene confirmed one coin per tap and one undo per tap.
-**Not yet tried on a touchscreen.**
+**2026-09-24, Chrome (844 × 390 iframe, synthesized `pointerType: 'touch'` events
+through the real `input.js`):** a 40 ms tap with the Goal tool placed the flag,
+cleared the status and enabled Undo. The physical-touchscreen check was among the
+items the player signed off with Unit 16.
 
 ---
 
-### 19. Enter on a focused secondary overlay button runs the primary action [OPEN]
+### 20. Every nine-slice composite is built from the wrong tiles [FIXED]
 
-**Where:** `src/core/input.js` `onKeyDown` (Unit 09 / the 2026-09-13 Enter decision); seen with Unit 16's Back to editor
-**Symptom:** `input.js` maps Enter to `pause` and Space to `jump`, and `preventDefault`s both, so a focused `<button>` never receives a keyboard click. On the pause overlay, Tab to **Back to editor** and press Enter: the game resumes instead. On the results panel, Enter on Back to editor replays. The primary buttons only work by coincidence, because `pause` does the same thing they do.
-**Expected:** A keyboard user can activate any focused overlay button with Enter or Space.
-**Repro:** Test-play a level, press Enter to pause, Tab to Back to editor, press Enter.
-**Notes:** Found 2026-09-23 while implementing Unit 16 (from reading `input.js`, not yet reproduced in a browser). Not fixed there — the fix is in `input.js`, which the Unit 16 spec leaves untouched, and it must keep the 2026-09-13 behaviour (Enter pauses and resumes the game when a non-button has focus). Likely fix: in `onKeyDown`, leave Enter and Space to the target when it is a `<button>`, the way form fields already own their keys; then check Resume and Play again still work on Enter by being clicked. Workarounds today: `M` goes back to the editor from anywhere in test-play, and the mouse or a tap works.
-
----
-
-### 20. Every nine-slice composite is built from the wrong tiles [OPEN]
-
-**Where:** `tools/build-assets.mjs` `writeNineSlice` (the Unit 15 fix for issue 1); output `public/assets/ui/{board-yellow,board-green,paper-yellow,button-yellow,button-green}.png`
-**Symptom:** The palette bar, toolbar, dialogs and pause/results panels draw scrambled wood: repeating vertical posts, a gap cut into the frame, a row of small squares along the bottom edge (player screenshot 2026-09-23, maker palette bar). `board-yellow.png` enlarged: correct top row, then the fill, a right edge and a bottom-left corner in the middle row, and a corner plus two bar pieces in the bottom row.
-**Expected:** Each composite is a clean 3 × 3 frame: corners, edges, fill.
-**Cause:** `writeNineSlice` picks indices `0,1,2 / 4,5,6 / 8,9,10`, which assumes the 16 files are numbered like the 4 × 4 guide picture. They are not. The file order is numeric and correct (`build-assets.mjs:242`). What the numbers mean, checked tile by tile on 2026-09-23:
-- **Boards and paper** (Yellow Board, Green Board, Yellow Paper): `1–9` are the 3 × 3 frame in reading order; `10–12` the one-tall bar, `13–15` the one-wide column, `16` the single.
-- **Buttons** (Yellow Button, Green Button): `1` is the single, `2–4` the bar, `5–7` the column, and `8–16` the 3 × 3 frame.
-
-So the current pick is wrong for all five, differently for boards and buttons.
-**Repro:** Open the maker and look at the bottom palette bar, or view `public/assets/ui/board-yellow.png` enlarged.
-**Notes:** Found by the player during Unit 16 testing. Not a Unit 16 regression: `maker-palette.css` and the composites are unchanged since the baseline commit. Unit 15's verification checked hit areas and behaviour, not how the frames looked. Fix, already previewed in the scratchpad (clean frames for all five): give each manifest `nineslice` entry the number of its first frame tile (`1` for boards and paper, `8` for buttons), declared in `tools/asset-manifest.mjs` rather than guessed in the packer, then `npm run assets`. Sizes stay 96 × 96 and 42 × 42, so no CSS or atlas-size change is needed. The coverage report will change: tiles 1–9 or 8–16 become packed and the old wrong picks unpacked. The number stays 9 per kit.
+**Fixed:** 2026-09-24 (found by the player during Unit 16 testing; scoped fix in Unit 01 / Unit 15 tooling)
+**Where:** `tools/asset-manifest.mjs`, `tools/build-assets.mjs` `writeNineSlice`; output `public/assets/ui/{board-yellow,board-green,paper-yellow,button-yellow,button-green}.png`
+**Symptom:** The palette bar, toolbar, dialogs and pause/results panels drew scrambled wood: repeating vertical posts, a gap cut into the frame, a row of small squares along the bottom edge.
+**Cause:** `writeNineSlice` picked files 1,2,3 / 5,6,7 / 9,10,11, assuming the 16 files are numbered like the 4 × 4 guide picture. They are not. Re-checked on 2026-09-24 with a labelled contact sheet of all five kits: boards and paper have the 3 × 3 frame at files `1–9` in reading order (`10–12` bar, `13–15` column, `16` single); buttons have it at `8–16` (`1` single, `2–4` bar, `5–7` column).
+**What changed:** `nineslice()` in the manifest takes a `first` argument, the file number of the frame's top-left tile: `1` for Yellow Board, Green Board and Yellow Paper, `8` for Yellow Button and Green Button. `writeNineSlice` takes nine consecutive files from there and throws if the kit has too few files. `npm run assets` regenerated **only** the five composites. Sizes are unchanged (96 × 96, 42 × 42), and `atlas.json` and `coverage.json` are byte-identical: the packer already marked all 16 tiles of each kit as consumed, so the earlier note that coverage would change was wrong. A second `npm run assets` is byte-identical. `npm test` 223, `npm run build` clean. Verified in Chrome (desktop, 1512 × 795): toolbar, palette bar, toolbar buttons, the Menu dropdown and the resize dialog all draw clean frames, with no console errors. `3-ui-context.md` (Nine-slice panels) and `2-architecture.md` (Asset Pipeline) corrected to the real numbering. Also seen later the same day during the Unit 16 run: the results panel in test-play and the maker at 844 × 390. Player sign-off 2026-09-24: "the ui got fixed".
 
 ---
-
-## Resolved
 
 ### 3. Small clouds pop out mid-screen instead of exiting left [FIXED]
 

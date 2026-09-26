@@ -124,15 +124,18 @@ async function writeStrip(files, fw, fh, outAbs) {
 /**
  * @param {string[]} files
  * @param {number} tile
+ * @param {number} first file number of the frame's top-left tile
  * @param {string} outAbs
  */
-async function writeNineSlice(files, tile, outAbs) {
-  if (files.length < 11) {
-    throw new Error(`nineslice needs at least 11 tiles, got ${files.length}`);
+async function writeNineSlice(files, tile, first, outAbs) {
+  // The kit's numbered files are not laid out like its guide picture: the nine
+  // frame tiles are consecutive, in reading order, starting at `first` (declared
+  // per kit in the manifest, checked tile by tile against the pack).
+  const start = first - 1;
+  if (start < 0 || files.length < start + 9) {
+    throw new Error(`nineslice needs files ${first}–${first + 8}, got ${files.length} files`);
   }
-  // The kit ships 16 tiles arranged as a guide image. The usable nine-slice is
-  // the top-left 3×3: indices 0,1,2 / 4,5,6 / 8,9,10 (0-based, row-major-4).
-  const pick = [0, 1, 2, 4, 5, 6, 8, 9, 10];
+  const pick = Array.from({ length: 9 }, (_, i) => start + i);
   for (const idx of pick) {
     const meta = await sharp(files[idx]).metadata();
     if (meta.width !== tile || meta.height !== tile) {
@@ -241,7 +244,7 @@ async function main() {
         const files = await listFrames(fromPack(clip.dir));
         files.sort((a, b) => frameNumber(path.basename(a)) - frameNumber(path.basename(b)));
         const dest = clip.dest;
-        await writeNineSlice(files, clip.tile, path.join(OUT, ...dest.split('/')));
+        await writeNineSlice(files, clip.tile, clip.first, path.join(OUT, ...dest.split('/')));
         for (const file of files) consume(consumed, toPosix(file));
         // writeNineSlice composites the 3×3 subset, so the image is 3 tiles square.
         const size = clip.tile * 3;
