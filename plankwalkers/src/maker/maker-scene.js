@@ -13,6 +13,7 @@ import {
   cellKey,
   classifyAction,
   createCommand,
+  forEachCellOnLine,
   pickToolAt,
   screenToCell,
 } from './tools.js';
@@ -120,7 +121,10 @@ export function createMakerScene() {
   let erasing = false;
   let zoom = 1;
 
-  /** @type {{ command: MakerCommand, action: import('./tools.js').ToolAction, button: number, dedupe: Set<number> } | null} */
+  /**
+   * `lastC` / `lastR` is the cell under the pointer on the previous frame of the drag.
+   * @type {{ command: MakerCommand, action: import('./tools.js').ToolAction, button: number, dedupe: Set<number>, lastC: number, lastR: number } | null}
+   */
   let dragState = null;
 
   let panning = false;
@@ -261,16 +265,22 @@ export function createMakerScene() {
     return true;
   }
 
+  // applyCell reads c and r and keeps no reference, so one scratch cell serves.
+  const scratchCell = { c: 0, r: 0 };
+
   /**
-   * @param {{ c: number, r: number }} cell
+   * @param {number} c
+   * @param {number} r
    */
-  function paintCell(cell) {
+  function paintAt(c, r) {
     if (!level || !dragState) return;
-    if (!level.inBounds(cell.c, cell.r)) return;
-    const key = cellKey(cell.c, cell.r, level.cols);
+    if (!level.inBounds(c, r)) return;
+    const key = cellKey(c, r, level.cols);
     if (dragState.dedupe.has(key)) return;
     dragState.dedupe.add(key);
-    applyCell(level, dragState.command, dragState.action, activeTool, cell);
+    scratchCell.c = c;
+    scratchCell.r = r;
+    applyCell(level, dragState.command, dragState.action, activeTool, scratchCell);
   }
 
   /**
@@ -298,15 +308,23 @@ export function createMakerScene() {
               action,
               button: src.button,
               dedupe: new Set(),
+              lastC: cell.c,
+              lastR: cell.r,
             };
-            paintCell(cell);
+            paintAt(cell.c, cell.r);
           }
         }
       }
     }
 
     if (src.down && dragState && src.button === dragState.button) {
-      paintCell(screenToCell(src.x, src.y, params.camera, zoom));
+      const cell = screenToCell(src.x, src.y, params.camera, zoom);
+      if (cell.c !== dragState.lastC || cell.r !== dragState.lastR) {
+        // Fill every cell the pointer crossed since last frame (issue 23).
+        forEachCellOnLine(dragState.lastC, dragState.lastR, cell.c, cell.r, paintAt);
+        dragState.lastC = cell.c;
+        dragState.lastR = cell.r;
+      }
     }
 
     // Last, so a touch tap — pressed and released in the same frame — places once

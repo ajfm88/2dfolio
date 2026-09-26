@@ -33,6 +33,42 @@ export function screenToCell(pointerX, pointerY, cam, zoom = 1) {
 }
 
 /**
+ * Visit every cell on the grid path from (c0, r0) to (c1, r1), both ends included,
+ * stepping one axis at a time: the staircase a slow drag would have painted, so a
+ * pointer that crossed several cells in one frame leaves no gaps. Visits
+ * |c1 - c0| + |r1 - r0| + 1 cells, in order.
+ *
+ * @param {number} c0
+ * @param {number} r0
+ * @param {number} c1
+ * @param {number} r1
+ * @param {(c: number, r: number) => void} visit
+ */
+export function forEachCellOnLine(c0, r0, c1, r1, visit) {
+  const dc = Math.abs(c1 - c0);
+  const dr = Math.abs(r1 - r0);
+  const sc = c1 < c0 ? -1 : 1;
+  const sr = r1 < r0 ? -1 : 1;
+  let c = c0;
+  let r = r0;
+  let ic = 0;
+  let ir = 0;
+  visit(c, r);
+  while (ic < dc || ir < dr) {
+    // Step the axis whose next cell boundary the line reaches first:
+    // (ic + ½) / dc against (ir + ½) / dr, cross-multiplied and doubled.
+    if ((ic + ic + 1) * dr < (ir + ir + 1) * dc) {
+      c += sc;
+      ic++;
+    } else {
+      r += sr;
+      ir++;
+    }
+    visit(c, r);
+  }
+}
+
+/**
  * @param {number} c
  * @param {number} r
  * @param {number} cols
