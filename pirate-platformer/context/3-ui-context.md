@@ -130,10 +130,13 @@ There is no third-party component library. Components are hand-written in
 
 ### Nine-slice panels
 
-The kit ships boards and papers as 16 tiles of 32 × 32 arranged 4 × 4 (a guide
-image). The asset build extracts the 3 × 3 nine-slice subset (tiles 1–3, 5–7, 9–11)
-and composites each into a 96 × 96 PNG (boards/papers) or 42 × 42 PNG (buttons),
-which `border-image` slices at 32 or 14 respectively.
+The kit ships each board, paper and button as 16 numbered tiles (32 × 32 for boards
+and papers, 14 × 14 for buttons). Nine of them are the 3 × 3 frame, consecutive in
+reading order — files 1–9 for boards and papers, 8–16 for buttons; the rest are bar,
+column and single variants. The numbering does not follow the kit's guide picture.
+The asset build composites those nine into a 96 × 96 PNG (boards/papers) or
+42 × 42 PNG (buttons), which `border-image` slices at 32 or 14 respectively. The
+first tile of each kit is declared in `tools/asset-manifest.mjs`.
 
 | Component        | Source                          | Slice | Border width                    |
 | ---------------- | ------------------------------- | ----- | ------------------------------- |

@@ -6,15 +6,14 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
-- **Units 00–15 complete.** Unit 15 (Maker Responsive UI)
-  implemented 2026-09-21. 2026-09-22 review sweep fixed issues 10–15 and opened
-  16–17. Tests 201 passing, build clean. Everything is committed (no remote yet).
-- **2026-09-23:** portrait decided (ask the player to rotate). Issue 16 (rotate
-  prompt) and issue 18 (tap to place) fixed as their own changes, and **Unit 16
-  (Test-Play Round Trip) implemented.** All three are **PENDING TEST**: tests 223
-  passing, build clean, a scratch harness drove the real maker scene through the
-  round trip, but nothing has been seen in a browser yet (the Chrome extension was
-  not connected this session). Nothing from 2026-09-23 is committed yet.
+- **Units 00–16 complete.** Unit 16 (Test-Play Round Trip) was implemented
+  2026-09-23, verified in Chrome 2026-09-24 and **marked complete by the player
+  2026-09-24**. Issues 16 (rotate prompt), 18 (tap to place) and 20 (nine-slice
+  panels) are fixed. Tests 223 passing, build clean, everything committed (no
+  remote yet).
+- **2026-09-24:** issues 19, 22 and 23 fixed and signed off (tests 235). Still
+  open and worth doing before or alongside Unit 17: 21 (text contrast on the
+  board, needs a colour decision) and 24 (no desktop zoom, needs a spec decision).
 
 ## Completed
 
@@ -429,21 +428,93 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     the primary action (`input.js` preventDefaults them), so keyboard users cannot
     reach Back to editor by Tab + Enter. `M` works.
 
+- **2026-09-24 — Issue 20: nine-slice composites built from the wrong tiles.**
+  The player reported that the maker UI "looks bad". Every Wood-and-Paper panel
+  and button drew scrambled wood because `writeNineSlice` assumed the 16 kit files
+  follow the guide picture's 4 × 4 layout. A labelled contact sheet of all five
+  kits showed the real layout: the frame is files 1–9 in boards and paper and
+  8–16 in buttons. The manifest now declares each kit's first frame tile, and
+  `npm run assets` changed only those five PNGs (`atlas.json` and `coverage.json`
+  are byte-identical, and a second run is byte-identical). `npm test` 223,
+  `npm run build` clean. Seen in Chrome at desktop size: toolbar, palette bar,
+  buttons, Menu and the resize dialog are all clean, with no console errors. The
+  Unit 15 note "Nine-slice composites fixed (Issue #1 resolved)" only became true
+  with this change. Docs corrected: `3-ui-context.md` and `2-architecture.md`.
+  - **Found, not fixed:** issue 21 — muted and display text on the board fill is
+    hard to read in the resize dialog. It needs a token or component decision
+    first.
+
+- **2026-09-24 — Unit 16 browser verification (Claude in Chrome).** Committed first:
+  `8a21531` (issue 20) and `92ea8e9` (Unit 16 + issues 16 and 18). Then the spec
+  checklist ran against the dev server, desktop 1707 × 842 CSS px (view 730 wide)
+  plus iframes at 600 × 422 (view 512), 1000 × 360 (view 768), 844 × 390 and
+  390 × 844. State was read through a temporary `window.__cc` hook in `main.js`
+  (mode, session, transition), removed afterwards. `main.js` is byte-identical to
+  the commit.
+  - **Validation, all pass:** fresh level blocked with "Place the finish flag to
+    play."; the flag clears it; terrain on spawn, water on spawn, terrain on flag
+    and flag on spawn each show their own message; with two problems, table order
+    wins; Undo clears; `M` on an invalid level does nothing; the longest message
+    fits one line at 844 wide, with its full text in `title`.
+  - **Round trip, lossless ×10:** before, a coin tool on the Treasure tab, the
+    camera panned, and an undone edit (index 4 of 5). The session's level JSON,
+    stack index and length, camera, zoom, tab and tool were identical on every
+    return. Entry by the Play button and by `M`; exit by results → Back to editor,
+    pause → Back to editor, `M` paused and `M` running. The eraser on a non-first
+    tab comes back. Undo and redo still walk the pre-play history.
+  - **Test-play:** real HUD and touch controls; a coin collected in play is still
+    in the maker; Enter pauses and resumes; Enter on results replays with coins
+    reset; death in a pit restarts at the spawn with full hearts.
+  - **Transition:** 0.9 s in both directions at view widths 512, 730 and 768.
+    `#ui` is veiled and `inert` mid-wipe. A double Play click and six mashed `M`s
+    each start exactly one wipe. A jump pressed mid-wipe is not replayed. The iris
+    was seen closing on the frozen play scene. Reduced motion (via a `matchMedia`
+    override in an iframe) is a ~115 ms fade each way.
+  - **Touch (synthesized `pointerType: 'touch'`, 844 × 390):** the toggle appears on
+    first touch; a pinch snaps to 2×; a tap places the flag (issue 18); zoom 2×,
+    pan mode, tab and tool survive the round trip.
+  - **Not verified here, needs the player:** music starting in play and fading on
+    return (audio by ear), the CSS side of reduced motion (DevTools emulation),
+    real-phone gestures and rotation, and the temporary `findProblems` call
+    counter (covered by `revision` tests only).
+  - **Found, logged, not fixed:** issue 22 (a press and release inside one frame are
+    lost, reproduced with browser-level clicks), issue 23 (a fast drag skips cells),
+    issue 24 (desktop has no zoom).
+
+- **2026-09-24 — Unit 16 complete.** Player sign-off after the Chrome run above
+  ("mark complete"). The sign-off covers the items that were listed as needing the
+  player (music by ear, reduced-motion CSS, real-phone gestures, tap to place and
+  rotation), so issues 16 and 18 close with it.
+
+- **2026-09-24 — Issues 19, 22 and 23 fixed, one commit each.** Player sign-off in
+  the game the same day ("all 3 are fixed"). All three are now in Resolved.
+  Player asked for all three. `npm test` **235** (226 after 19, 230 after 22),
+  `npm run build` clean. The Chrome extension disconnected before any of them could
+  be seen in the game, so each issue entry lists its browser check.
+  - **19** (`2fba4f3`): `isButtonActivation`. Enter and Space on a focused `<button>`
+    are left to the button. Resume and Play again still work on Enter.
+  - **22** (`8a22a58`): `stepButton` latches a press released within one frame, for
+    keys, virtual buttons and mouse/pen (not touch, which `gestures.js` owns).
+  - **23**: `forEachCellOnLine` fills the grid path between drag frames. It is
+    still one command per drag.
+
 ## Current Goal
 
-- **Unit 16 — Test-Play Round Trip.** Implemented 2026-09-23 against
-  `specs/16-test-play-round-trip.md`; closes once its verification checklist has
-  been run in the game.
+- **Unit 17 — Persistence and Sharing.** The spec comes first:
+  `specs/17-persistence-and-sharing.md` has to be written and approved before any
+  code (workflow rule).
 
 ## In Progress
 
-- **Unit 16 verification**, plus issues 16 and 18 (PENDING TEST) — see the
-  2026-09-23 entry for what still has to be seen in a browser.
+- Nothing.
 
 ## Next Up
 
-- **Unit 17 — Persistence and Sharing.** Spec not yet written. Only after Unit 16
-  is verified and closed.
+- **Unit 17 spec.** The build plan's scope: `storage/safe-storage.js`,
+  `storage/levels.js`, `storage/settings-store.js`, the level list screen, autosave,
+  share-code copy and paste, and `.json` export and import on desktop. Volume
+  persistence moved here from Unit 12. The `MakerSession` field names already match
+  `cc:v1:maker:last`.
 
 ## Open Questions
 
@@ -860,13 +931,12 @@ rotate prompt holds the game the same way.
 
 Resume cold from here.
 
-**Where we are (2026-09-23):** Unit 16 (Test-Play Round Trip) is **implemented
-but not yet verified in a browser**, and so are issues 16 (rotate prompt) and 18
-(tap to place). The maker's Play button and `M` now wipe into a real test-play
-(real HUD and touch controls, through the codec), and Back to editor or `M` wipes
-back with everything restored. A status line in the toolbar says why Play is
-disabled. Close Unit 16 by running its checklist in a browser; the 2026-09-23 entry
-lists what is still unseen. None of it is committed yet.
+**Where we are (2026-09-24):** **Units 00–16 complete** and committed. The maker's
+Play button and `M` wipe into a real test-play (real HUD and touch controls,
+through the codec), and Back to editor or `M` wipes back with everything restored.
+A status line in the toolbar says why Play is disabled. Portrait shows a rotate
+prompt, and a touch tap places one item. The Wood-and-Paper panels draw clean
+frames (issue 20).
 
 **Before that:** Units 00–15 done (2026-09-21). The maker now has a **top toolbar**
 (Back, Undo, Redo, Play, Menu) and a **tabbed palette** (category tabs + scrolling
@@ -883,11 +953,15 @@ issues 10–15 fixed, 16 (portrait stretch) and 17 (28 px palette tabs) open. Un
 12 and 15 have Claude's Chrome verification recorded but still owe the player
 sign-off items listed in their 2026-09-22 entry.
 
-**Next:** verify Unit 16 and issues 16 and 18 in a browser (desktop and phone
-landscape, touch emulation on and off, reduced motion on and off), then close
-them. After that, Unit 17 — Persistence and Sharing (spec not yet written). Issue
-19 (keyboard activation of secondary overlay buttons) is a small `input.js`
-change worth doing on its own.
+**Next:** write the Unit 17 spec (Persistence and Sharing) and get it approved.
+Issues 19, 22 and 23 are fixed (2026-09-24). Still waiting as standalone changes:
+24 (desktop zoom, needs a spec decision first) and 21 (text contrast on the board,
+needs a token decision first).
+
+**Testing tip (2026-09-24):** Claude-in-Chrome clicks are too fast for the
+per-frame input sampling (issue 22), and a hidden tab runs no frames. Keep Chrome in
+front and drive the canvas with timed `PointerEvent`s (≥ 50 ms press). Use iframes
+of set sizes for viewport checks, since resizing the window did not change it.
 
 **How to run**
 
@@ -896,7 +970,7 @@ change worth doing on its own.
   (ArcGIS). `--port 5174 --strictPort`. On 2026-09-22 another project's Vite was
   also bound to `127.0.0.1:5174` alongside ours — if a page looks wrong or stale,
   check what owns the port, or use 5175.
-- `npm test` — 223 tests.
+- `npm test` — 235 tests.
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters` and the `ffmpeg-static`
   binary (fetched by `npm install`; its install script is approved in
@@ -962,5 +1036,5 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–16 (00–15 built and
-verified; 16 built, awaiting browser verification); 17+ not yet written. Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–16 (all built and verified);
+17+ not yet written. Playbook: `context/README.md` Part 3.

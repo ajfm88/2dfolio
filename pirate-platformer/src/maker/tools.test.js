@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TILE } from '../settings.js';
 import { createEmptyModel } from '../level/model.js';
-import { pickToolAt, screenToCell } from './tools.js';
+import { forEachCellOnLine, pickToolAt, screenToCell } from './tools.js';
 
 describe('screenToCell', () => {
   const cam = { x: 64, y: 32 };
@@ -56,5 +56,47 @@ describe('pickToolAt', () => {
     level.set('terrain', 2, 2, 1);
     level.entities.push({ k: 'not_a_kind', c: 2, r: 2 });
     expect(pickToolAt(2, 2, level)?.id).toBe('terrain');
+  });
+});
+
+describe('forEachCellOnLine', () => {
+  /** @param {number} c0 @param {number} r0 @param {number} c1 @param {number} r1 */
+  const walk = (c0, r0, c1, r1) => {
+    /** @type {Array<[number, number]>} */
+    const cells = [];
+    forEachCellOnLine(c0, r0, c1, r1, (c, r) => cells.push([c, r]));
+    return cells;
+  };
+
+  it('visits a single cell once', () => {
+    expect(walk(3, 4, 3, 4)).toEqual([[3, 4]]);
+  });
+
+  it('fills a horizontal run with no gaps, both ends included', () => {
+    expect(walk(2, 5, 6, 5)).toEqual([[2, 5], [3, 5], [4, 5], [5, 5], [6, 5]]);
+  });
+
+  it('fills a vertical run in either direction', () => {
+    expect(walk(1, 3, 1, 0)).toEqual([[1, 3], [1, 2], [1, 1], [1, 0]]);
+  });
+
+  it('steps one axis at a time, so the path is edge-connected', () => {
+    const cells = walk(0, 0, 7, -3);
+    expect(cells).toHaveLength(7 + 3 + 1);
+    expect(cells[0]).toEqual([0, 0]);
+    expect(cells[cells.length - 1]).toEqual([7, -3]);
+    for (let i = 1; i < cells.length; i++) {
+      const [c, r] = cells[i];
+      const [pc, pr] = cells[i - 1];
+      expect(Math.abs(c - pc) + Math.abs(r - pr)).toBe(1);
+    }
+  });
+
+  it('stays close to the straight line', () => {
+    // Every visited cell centre lies within one cell of the segment from (0,0) to (9,4).
+    for (const [c, r] of walk(0, 0, 9, 4)) {
+      const dist = Math.abs(4 * c - 9 * r) / Math.hypot(4, 9);
+      expect(dist).toBeLessThan(1);
+    }
   });
 });
