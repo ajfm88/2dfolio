@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Retro ROM Player</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    body.touch-enabled canvas {
+      /* Push canvas up slightly so it's centered between top and controls */
+      flex-shrink: 0;
+    }
+
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* ── Touch Controls ── */
+
+    #touch-controls {
+      display: none;
+      width: 100%;
+      max-width: 480px;
+      padding: 16px 20px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      margin-top: auto;
+    }
+
+    .touch-enabled #touch-controls {
+      display: flex;
+    }
+
+    .touch-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.7);
+      font-family: -apple-system, sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    .touch-btn.active {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #fff;
+    }
+
+    /* D-Pad */
+    .touch-dpad {
+      display: grid;
+      grid-template-columns: 44px 44px 44px;
+      grid-template-rows: 44px 44px 44px;
+      gap: 2px;
+    }
+
+    .dpad-up    { grid-column: 2; grid-row: 1; border-radius: 8px 8px 2px 2px; }
+    .dpad-down  { grid-column: 2; grid-row: 3; border-radius: 2px 2px 8px 8px; }
+    .dpad-left  { grid-column: 1; grid-row: 2; border-radius: 8px 2px 2px 8px; }
+    .dpad-right { grid-column: 3; grid-row: 2; border-radius: 2px 8px 8px 2px; }
+
+    .touch-dpad .touch-btn {
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Action Buttons (A/B) */
+    .touch-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-a, .btn-b {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      font-size: 18px;
+    }
+
+    .touch-actions {
+      position: relative;
+    }
+
+    .btn-a {
+      margin-left: 28px;
+    }
+
+    .btn-b {
+      margin-right: 28px;
+    }
+
+    /* Select/Start */
+    .touch-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      align-self: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .btn-select, .btn-start {
+      width: 64px;
+      height: 28px;
+      border-radius: 14px;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Landscape Layout ── */
+    @media (orientation: landscape) {
+      body.touch-enabled {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .touch-enabled #touch-controls {
+        /* Split into left/right panels flanking the canvas */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        margin-top: 0;
+        padding: 10px;
+        padding-left: calc(10px + env(safe-area-inset-left, 0px));
+        padding-right: calc(10px + env(safe-area-inset-right, 0px));
+        padding-bottom: 10px;
+        pointer-events: none;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .touch-enabled #touch-controls > * {
+        pointer-events: auto;
+      }
+
+      .touch-meta {
+        position: absolute;
+        bottom: 10px;
+        left: calc(10px + env(safe-area-inset-left, 0px));
+        flex-direction: row;
+        margin-bottom: 0;
+        align-self: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="screen"></canvas>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
