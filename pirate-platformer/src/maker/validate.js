@@ -12,7 +12,8 @@ import { byId } from '../data/palette.js';
  *   | 'too-many-entities'
  *   | 'unknown-kind'} ProblemCode
  *
- * @typedef {{ code: ProblemCode, message: string }} Problem
+ * `k` names the offending kind on an `unknown-kind` problem, so an importer can list them.
+ * @typedef {{ code: ProblemCode, message: string, k?: string }} Problem
  */
 
 /**
@@ -30,7 +31,8 @@ export function findProblems(level) {
   const { spawn, goal } = level;
 
   if (goal === null) {
-    problems.push({ code: 'no-goal', message: 'Place the finish flag to play.' });
+    // A level without a flag cannot be serialised, so this is also why it is unsaved.
+    problems.push({ code: 'no-goal', message: 'Place the finish flag to play and save.' });
   }
   // The player spawns with its feet on the cell's bottom edge; inside a solid cell
   // the resolver has no clean edge to push it out through, so it starts stuck.
@@ -84,7 +86,11 @@ export function findProblems(level) {
     if ((!entry || entry.placement !== 'decor') && !unknown.includes(k)) unknown.push(k);
   }
   for (let i = 0; i < unknown.length; i++) {
-    problems.push({ code: 'unknown-kind', message: `Unknown object "${unknown[i]}".` });
+    problems.push({
+      code: 'unknown-kind',
+      message: `Unknown object "${unknown[i]}".`,
+      k: unknown[i],
+    });
   }
 
   return problems;

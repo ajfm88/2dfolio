@@ -35,12 +35,15 @@ platformer and, ten minutes later, want to build one.
 
 1. User opens the site; assets load behind a pirate-themed loading screen.
 2. Title screen offers **Play** and **Make**.
-3. User picks **Play** and lands on the level-select grid, which shows campaign
-   levels first and their own saved levels below.
+3. User picks **Play** and lands on level select, which has two tabs: **Campaign**
+   and **My Levels** (decision 2026-09-26).
 4. User taps a campaign level; a transition wipe plays and the level starts.
 5. User controls the pirate with keyboard (desktop) or on-screen buttons (touch),
-   collects treasure, loses hearts on damage, and touches the flag to finish.
-6. A results panel shows treasure collected and time; user returns to level select.
+   collects treasure, loses hearts on damage, and touches the flag to finish. Any
+   death returns them to level select.
+6. A results panel shows treasure collected and time, with **Next level**, **Play
+   again** and **Level select**. The card on level select remembers the level as
+   done, with the best time and treasure.
 
 ### Making a level
 
@@ -53,12 +56,15 @@ platformer and, ten minutes later, want to build one.
 4. User switches palette tabs to place platforms, water, treasure, enemies, hazards
    and decoration. Two-finger drag pans, pinch zooms, a toggle switches between
    paint and pan on one finger.
-5. User places the finish flag. Undo and redo are available at every step.
+5. User places the finish flag. Undo and redo are available at every step. From
+   here on the level autosaves; until the flag is placed it lives only in memory,
+   and leaving it asks first.
 6. User taps **Play** — the level validates, a transition wipe plays, and the same
    engine that runs the campaign runs their level.
 7. User taps **Back to editor**; the maker returns with the camera and selected
    tool exactly as they were left.
-8. Level autosaves to the device. **Share** copies a code to the clipboard.
+8. Level autosaves to the device. **Back** returns to My Levels. **Share** (in the
+   Menu) shows a code to copy to the clipboard.
 
 ### Sharing
 
@@ -81,8 +87,9 @@ platformer and, ten minutes later, want to build one.
   water that drowns, and a bottom death border.
 - Treasure: gold and silver coins, three diamond colours, golden skull, potions
   that restore a heart.
-- Hearts-based health with invulnerability flicker after a hit; running out
-  returns the player to level select.
+- Hearts-based health with invulnerability flicker after a hit. Any death —
+  running out of hearts, a pit or water — returns the player to level select
+  (decision 2026-09-26). A test-play from the maker still restarts at the spawn.
 - Parallax sky, drifting clouds, animated water and palm trees.
 - Level complete on touching the flag, with a treasure and time summary.
 
@@ -115,8 +122,12 @@ platformer and, ten minutes later, want to build one.
 ### Persistence and sharing
 
 - Levels, campaign progress and settings saved to the device with `localStorage`.
-- Autosave while editing; explicit save on leaving the maker.
-- Level list with create, rename, duplicate and delete.
+- Autosave while editing; explicit save on leaving the maker, before test-play
+  and when the page is hidden. Reopening the last-edited level restores its camera,
+  zoom and tool.
+- My Levels (the level list) with create, rename, duplicate and delete. Renaming
+  is on the card, not in the maker.
+- Music and effects volume, set from My Levels, saved with the settings.
 - Share codes: compressed, URL-safe text that can be pasted anywhere.
 - Desktop also gets `.json` export and import by file.
 

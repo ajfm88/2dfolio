@@ -64,8 +64,9 @@ One entity class per file; the file name is the class name in kebab-case.
 ## Constants
 
 - Engine and layout constants — `TILE`, `VIEW_H`, `VIEW_W_MIN`, `VIEW_W_MAX`,
-  `ANIM_FPS`, `FIXED_DT`, `Z`, and the mode-switch wipe's `WIPE_*` durations and
-  colour — live in `src/settings.js` and nowhere else.
+  `ANIM_FPS`, `FIXED_DT`, `Z`, the mode-switch wipe's `WIPE_*` durations and
+  colour, and the maker's `AUTOSAVE_*` timings — live in `src/settings.js` and
+  nowhere else.
 - Gameplay numbers — speeds, gravity, jump height, timers, damage, coin values —
   live in `src/data/tuning.js` and nowhere else.
 - Per-entity numbers — hitbox size, sprite offset, clip names — live in that
@@ -169,7 +170,8 @@ z                      // draw layer from settings.Z
 ## Async
 
 - `await` appears only in boot, asset loading (atlas images and audio buffers),
-  clipboard access and compression. **The game loop is entirely synchronous.**
+  clipboard access, compression (which includes every storage save and load) and
+  reading a chosen file (import by file). **The game loop is entirely synchronous.**
 - No promise chains in `update`. If something must happen later, it is a timer in
   fixed-timestep seconds.
 - Every `await` on an external API — clipboard, `CompressionStream`, `fetch` — is
@@ -210,17 +212,19 @@ deliberately not ported:
 - `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`,
   `parallax.js`, `render.js`. Shared by both modes.
 - `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `sounds.js`,
-  `atlas.json` (generated), `campaign/*.json`. Declarative; no logic beyond
-  factory references.
+  `atlas.json` (generated), `campaign.js`, `campaign/*.json`. Declarative; no
+  logic beyond factory references.
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,
   `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
   `collectibles.js`.
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
-  `gestures.js`, `validate.js`.
+  `gestures.js`, `validate.js`, `import-level.js`.
 - `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
-  `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `screens/`,
-  `components/`
-  (`resize-dialog.js`), `styles/`.
+  `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `files.js`,
+  `format.js`, `screens/` (`title.js`, `level-select.js`, `campaign-tab.js`,
+  `my-levels-tab.js`), `components/` (`dialog.js`, `rename-dialog.js`,
+  `share-dialog.js`, `import-dialog.js`, `sound-dialog.js`, `toast.js`,
+  `resize-dialog.js`), `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.
 - `tools/` — Node-only build scripts. Never imported by `src/`.

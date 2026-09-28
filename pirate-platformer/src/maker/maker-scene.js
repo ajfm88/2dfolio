@@ -1,12 +1,12 @@
-import { TILE, VIEW_H } from '../settings.js';
-import { deserialise, serialise } from '../level/codec.js';
+import { AUTOSAVE_IDLE, AUTOSAVE_MAX, TILE, VIEW_H } from '../settings.js';
+import { deserialise, encodeShare, serialise } from '../level/codec.js';
 import { createParallax } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
-import { LevelError } from '../level/schema.js';
+import { ENTITIES_MAX, LevelError, validateLevel } from '../level/schema.js';
 import { byId } from '../data/palette.js';
 import { CommandStack, createResizeCommand } from './commands.js';
-import { createGestures } from './gestures.js';
+import { ZOOM_LEVELS, createGestures } from './gestures.js';
 import { findProblems } from './validate.js';
 import {
   applyCell,
@@ -33,6 +33,7 @@ import {
 /** @typedef {ReturnType<import('../core/input.js').createInput>} Input */
 /** @typedef {import('../data/palette.js').PaletteEntry} PaletteEntry */
 /** @typedef {import('./commands.js').MakerCommand} MakerCommand */
+/** @typedef {import('../storage/levels.js').ResumePoint} ResumePoint */
 
 const PAN_SPEED = 300;
 
@@ -86,8 +87,13 @@ const PAN_SPEED = 300;
  *   camera: ReturnType<import('../core/camera.js').createCamera>,
  *   viewport: ReturnType<import('../core/viewport.js').createViewport>,
  *   ui: { createPalette: Function, createToggle?: Function, createToolbar?: Function },
+ *   resume?: ResumePoint,
  *   onBack?: () => void,
  *   onPlay?: (data: import('../types.js').LevelData, session: MakerSession) => void,
+ *   onSave?: (level: LevelModel, opts?: { immediate?: boolean }) => void,
+ *   openShareDialog?: (root: HTMLElement, opts: { code: Promise<string> }) => {
+ *     close: () => void,
+ *   },
  *   openResizeDialog?: (root: HTMLElement, opts: {
  *     cols: number,
  *     rows: number,
@@ -115,6 +121,8 @@ export function createMakerScene() {
   let gestures = null;
   /** @type {{ close: () => void } | null} */
   let resizeDialog = null;
+  /** @type {{ close: () => void } | null} */
+  let shareDialog = null;
 
   /** @type {PaletteEntry | null} */
   let activeTool = null;
@@ -136,6 +144,13 @@ export function createMakerScene() {
   /** @type {string | null} */
   let loadError = null;
   let lastRevision = -1;
+
+  // Autosave. `savedRevision` is the stack revision last handed to onSave; the
+  // timers run in fixed-timestep seconds while the level differs from it.
+  let savedRevision = 0;
+  let seenRevision = 0;
+  let idleTime = 0;
+  let dirtyTime = 0;
 
   function dims() {
     const viewW = params.viewport.viewW;
@@ -240,6 +255,75 @@ export function createMakerScene() {
   }
 
   /**
+   * Why the level cannot be written to storage, or null when it can. Storage holds
+   * only what loads (invariant 2): a level needs its flag to serialise, and the
+   * schema refuses more than ENTITIES_MAX objects. Serialises, so it runs when a
+   * save is due, never per frame.
+   *
+   * @returns {string | null} a phrase that completes "can't be saved: …"
+   */
+  function saveBlocker() {
+    if (!level) return 'there is no level';
+    if (level.goal === null) return 'it has no finish flag';
+    if (level.entities.length > ENTITIES_MAX) return `it has more than ${ENTITIES_MAX} objects`;
+    try {
+      validateLevel(serialise(level));
+    } catch (err) {
+      if (!(err instanceof LevelError)) throw err;
+      return err.message;
+    }
+    return null;
+  }
+
+  /**
+   * The explicit save, for Back, test-play and a hidden page. An open drag is
+   * closed first, so the save holds the whole stroke.
+   *
+   * @param {{ immediate?: boolean }} [opts]
+   * @returns {'clean' | 'saved' | 'unsaveable'}
+   */
+  function flush(opts) {
+    if (!level || !stack || !params) return 'clean';
+    if (dragState) finalizeDrag();
+    if (stack.revision === savedRevision) return 'clean';
+    if (saveBlocker() !== null) return 'unsaveable';
+    if (params.onSave) params.onSave(level, opts);
+    savedRevision = stack.revision;
+    return 'saved';
+  }
+
+  /**
+   * @param {number} dt
+   */
+  function tickAutosave(dt) {
+    if (!level || !stack || !params) return;
+    if (stack.revision === savedRevision) {
+      seenRevision = stack.revision;
+      idleTime = 0;
+      dirtyTime = 0;
+      return;
+    }
+    // Never mid-stroke: the stroke is saved whole after release.
+    if (dragState) return;
+    if (stack.revision !== seenRevision) {
+      seenRevision = stack.revision;
+      idleTime = 0;
+    } else {
+      idleTime += dt;
+    }
+    dirtyTime += dt;
+    if (idleTime < AUTOSAVE_IDLE && dirtyTime < AUTOSAVE_MAX) return;
+    if (saveBlocker() === null) {
+      if (params.onSave) params.onSave(level);
+      savedRevision = stack.revision;
+    }
+    // When it cannot save, wait a full period before checking again. The status
+    // line already says why.
+    idleTime = 0;
+    dirtyTime = 0;
+  }
+
+  /**
    * The one way into test-play, for the Play button and `M` alike. Play gets a
    * serialised copy, proven to load, so a level that test-plays is a level that
    * will load from storage (invariant 2).
@@ -261,6 +345,8 @@ export function createMakerScene() {
       loadError = err.message;
       return false;
     }
+    // The level on disk matches the one being test-played.
+    flush();
     params.onPlay(data, snapshot(level, stack, params));
     return true;
   }
@@ -382,6 +468,7 @@ export function createMakerScene() {
     enter(p) {
       params = p;
       const s = p.session;
+      const r = s ? undefined : p.resume;
       if (s) {
         level = s.level;
         stack = s.stack;
@@ -391,10 +478,16 @@ export function createMakerScene() {
       } else {
         level = p.level ?? createEmptyModel();
         stack = new CommandStack();
-        zoom = 1;
-        activeTool = null;
+        // The resume point comes from storage: trust only real zooms and tools.
+        zoom = r && ZOOM_LEVELS.includes(r.zoom) ? r.zoom : 1;
+        activeTool = r && r.tool ? byId(r.tool) ?? null : null;
         erasing = false;
       }
+      // requestPlay saves before handing over, so a returning session is clean.
+      savedRevision = stack.revision;
+      seenRevision = stack.revision;
+      idleTime = 0;
+      dirtyTime = 0;
       parallax = createParallax(level, p.theme, p.atlas);
       dragState = null;
       panning = false;
@@ -405,10 +498,11 @@ export function createMakerScene() {
       gestures = createGestures(p.input, {
         isPanMode: () => (toggle ? toggle.isPanMode() : false),
       });
-      if (s) {
-        p.camera.x = s.camX;
-        p.camera.y = s.camY;
-        // The viewport may have changed size during play.
+      const cam = s ?? r;
+      if (cam) {
+        p.camera.x = cam.camX;
+        p.camera.y = cam.camY;
+        // The viewport may have changed size since.
         const d = dims();
         p.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
       } else {
@@ -436,9 +530,17 @@ export function createMakerScene() {
     mountUI(root) {
       if (!params) return;
       const s = params.session;
+      /** @type {{ group: string, toolId: string | null, erasing: boolean } | undefined} */
+      let initial;
+      if (s) {
+        initial = { group: s.group, toolId: s.toolId, erasing: s.erasing };
+      } else if (activeTool) {
+        // Reopened from a resume point: show the tool's own tab.
+        initial = { group: activeTool.group, toolId: activeTool.id, erasing: false };
+      }
       palette = params.ui.createPalette(root, {
         atlas: params.atlas,
-        initial: s ? { group: s.group, toolId: s.toolId, erasing: s.erasing } : undefined,
+        initial,
         /**
          * @param {PaletteEntry | null} entry
          * @param {boolean} isErasing
@@ -457,6 +559,16 @@ export function createMakerScene() {
           onPlay: () => { requestPlay(); },
           onUndo: () => { if (!dragState && stack && level && stack.canUndo()) stack.undo(level); },
           onRedo: () => { if (!dragState && stack && level && stack.canRedo()) stack.redo(level); },
+          onShare: () => {
+            if (!params || !params.openShareDialog || !level) return;
+            const blocker = saveBlocker();
+            // encodeShare copies the live level before its first await.
+            const code = blocker === null
+              ? encodeShare(level)
+              : Promise.reject(new Error(`This level can't be shared yet: ${blocker}.`));
+            if (shareDialog) shareDialog.close();
+            shareDialog = params.openShareDialog(root, { code });
+          },
           onResize: () => {
             if (!params || !params.openResizeDialog || !level || !stack) return;
             resizeDialog = params.openResizeDialog(root, {
@@ -485,6 +597,10 @@ export function createMakerScene() {
       if (resizeDialog) {
         resizeDialog.close();
         resizeDialog = null;
+      }
+      if (shareDialog) {
+        shareDialog.close();
+        shareDialog = null;
       }
       if (toolbar) {
         toolbar.destroy();
@@ -567,6 +683,26 @@ export function createMakerScene() {
 
       // Last, so a drag that closed this frame is reflected in this frame's render.
       refreshProblems();
+      tickAutosave(dt);
+    },
+
+    flush,
+    saveBlocker,
+
+    /**
+     * Where the maker is now, for reopening this level where it was left.
+     * @returns {ResumePoint | null}
+     */
+    resumePoint() {
+      if (!level || !params) return null;
+      const entry = palette ? palette.getSelectedEntry() : activeTool;
+      return {
+        levelId: level.id,
+        camX: params.camera.x,
+        camY: params.camera.y,
+        zoom,
+        tool: entry ? entry.id : null,
+      };
     },
 
     /**

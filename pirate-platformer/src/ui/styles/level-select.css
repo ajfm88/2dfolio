@@ -1,0 +1,138 @@
+/* Level select: the Campaign and My Levels tabs. Full-viewport DOM screen over the
+   canvas's sky fill. Text sits on paper panels: on the board's wood fill it is too
+   faint to read (issue 21). */
+
+.level-select {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--ui-scale));
+  padding:
+    calc(env(safe-area-inset-top) + 8px * var(--ui-scale))
+    calc(env(safe-area-inset-right) + 8px * var(--ui-scale))
+    calc(env(safe-area-inset-bottom) + 8px * var(--ui-scale))
+    calc(env(safe-area-inset-left) + 8px * var(--ui-scale));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  background: var(--sky);
+  pointer-events: auto;
+}
+
+.level-select .panel {
+  min-inline-size: 0;
+  max-inline-size: none;
+}
+
+.level-select__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--ui-scale));
+  padding: calc(2px * var(--ui-scale)) calc(4px * var(--ui-scale));
+}
+
+.level-select__nav,
+.level-select__actions,
+.level-select__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(8px * var(--ui-scale));
+}
+
+.level-select__tabs {
+  gap: calc(4px * var(--ui-scale));
+}
+
+/* The active tab's own buttons flow in the actions row. */
+.level-select__tab-actions {
+  display: contents;
+}
+
+/* A tab is not an action, so the selected one is never the green primary: it is
+   drawn pressed, with an accent bar under its label. The bar is its own box,
+   because an inset shadow would sit under the nine-slice fill and never show. */
+.level-select__tab {
+  position: relative;
+}
+
+.level-select__tab[aria-selected="true"],
+.level-select__tab[aria-selected="true"]:hover {
+  transform: translateY(calc(1px * var(--ui-scale)));
+}
+
+.level-select__tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: calc(3px * var(--ui-scale));
+  background: var(--accent);
+}
+
+.level-select__notice,
+.level-select__empty {
+  margin: 0;
+  padding: calc(2px * var(--ui-scale)) calc(4px * var(--ui-scale));
+  font-size: var(--fs-md);
+  text-align: center;
+}
+
+.level-select__notice[hidden] {
+  display: none;
+}
+
+/* As many columns as fit at 240 units each: 2 on a narrow phone, 3 in phone
+   landscape, 4 on a desktop window. */
+.level-select__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(240px * var(--ui-scale)), 1fr));
+  gap: calc(8px * var(--ui-scale));
+  align-content: start;
+}
+
+.level-select__empty {
+  grid-column: 1 / -1;
+}
+
+.level-card {
+  gap: calc(4px * var(--ui-scale));
+  padding: calc(2px * var(--ui-scale)) calc(4px * var(--ui-scale));
+}
+
+.level-card__name {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.level-card__meta {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+/* A card is 240 units at its narrowest; four buttons, or a long label, wrap
+   rather than overflow. */
+.level-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(6px * var(--ui-scale));
+  margin-block-start: auto;
+}
+
+.level-card__actions .btn {
+  flex: 1 1 auto;
+}
+
+.level-card__actions .level-card__more {
+  flex: 0 0 auto;
+}

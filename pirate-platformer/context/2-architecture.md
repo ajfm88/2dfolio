@@ -69,7 +69,9 @@ coral-corsairs/
 - `src/data/` — declarative data with no behaviour beyond factory references.
   `palette.js` (the entity registry), `themes.js` (tilesheet per theme),
   `tuning.js` (physics and gameplay numbers), `sounds.js` (audio manifest),
-  `atlas.json` (generated), `campaign/*.json` (levels exported from our own maker).
+  `atlas.json` (generated), `campaign/*.json` (levels exported from our own maker),
+  and `campaign.js`, the campaign in play order. Each entry is `{ id, data }`, and
+  its `id` overrides the file's own, so a re-exported level keeps its progress.
 - `src/game/` — play mode. Scene, world, physics resolution, player, entities,
   hazards, collectibles, HUD data. Owns nothing the maker needs.
 - `src/maker/` — maker mode. `maker-scene.js`, `validate.js` (`findProblems`:
@@ -78,15 +80,24 @@ coral-corsairs/
   tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell,
   tool dispatch, eyedropper `pickToolAt`), `grid-overlay.js` (grid, cursor,
   ghost), `gestures.js` (touch state machine: long-press, one-finger paint/pan,
-  two-finger pan+pinch). Maker zoom is 0.5× / 1× / 2×, applied as `ctx.scale`
-  after `viewport.apply` — it does not change `core/viewport.js`. Owns nothing
-  play mode needs.
+  two-finger pan+pinch), `import-level.js` (`readLevelText`: a pasted share code
+  or JSON to a level, refusing unknown kinds). The maker autosaves through an
+  injected `onSave` and never imports `storage/`. Maker zoom is 0.5× / 1× / 2×,
+  applied as `ctx.scale` after `viewport.apply` — it does not change
+  `core/viewport.js`. Owns nothing play mode needs.
 - `src/ui/` — every DOM screen and component, plus CSS. The only place that
   touches `document` outside of `core/input.js` and `core/viewport.js`. Includes
   `maker-palette.js` and `maker-toggle.js` (paint/pan, shown on first touch),
   injected into the maker scene the same way the HUD is injected into play.
-- `src/storage/` — the only place that touches `localStorage`. Wraps every access
-  in try/catch and falls back to an in-memory map.
+  `screens/` holds the DOM screens: `title.js`, and `level-select.js` with its two
+  tabs, `campaign-tab.js` and `my-levels-tab.js` (My Levels). `components/` holds
+  the dialogs (a shared `openDialog` plus rename, share, import, sound and resize)
+  and the toast. `format.js` formats times.
+- `src/storage/` — the only place that touches `localStorage`. `safe-storage.js`
+  wraps every access and falls back to an in-memory map; `levels.js` (the index,
+  levels as share codes, the maker resume point), `progress.js` (campaign
+  progress) and `settings-store.js` sit on it. May import `level/` (the codec is the only serialiser); never imports
+  `game/`, `maker/` or `ui/`.
 - `tools/` — Node scripts run by npm scripts. Reads the read-only reference art,
   writes `public/assets/` and `src/data/atlas.json`. Never imported by `src/`.
 
@@ -174,7 +185,9 @@ One schema serves both modes. Campaign levels are maker exports.
   Both are markers, not entities, so they can never be duplicated or deleted by
   a paint stroke. **In the maker**, a brand-new level from `createEmptyModel()`
   has `goal: null` until the user places the flag; `codec.serialise` throws if
-  it is still null, and the play path refuses to enter without one.
+  it is still null, and the play path refuses to enter without one. **A goal-less
+  level is never written to storage** (decision 2026-09-25): a new level lives
+  only in memory until its flag is placed, and leaving it before then asks first.
 - Limits: `cols` 40–400, `rows` 12–48, ≤ 400 entities, ≤ 2000 decor. Defaults are
   160 × 24.
 
@@ -345,14 +358,32 @@ so private browsing degrades instead of throwing.
 
 | Key                  | Contents                                                              |
 | -------------------- | --------------------------------------------------------------------- |
-| `cc:v1:levels:index` | Array of `{ id, name, theme, cols, rows, modified }` for the level list |
+| `cc:v1:levels:index` | Array of `{ id, name, theme, cols, rows, modified }` for My Levels; `modified` is the level's own |
 | `cc:v1:level:<id>`   | One level as a **share code** — already compressed, never raw JSON     |
-| `cc:v1:progress`     | `{ campaign: { <levelId>: { done, bestCoins, bestTimeMs } } }`         |
-| `cc:v1:settings`     | `{ music, sfx, controls, crispScale }`                                 |
-| `cc:v1:maker:last`   | `{ levelId, camX, camY, zoom, tool }` for resuming the maker           |
+| `cc:v1:progress`     | `{ campaign: { <campaignId>: { done, bestTreasure, bestTimeMs } } }`, keyed by `data/campaign.js` ids. Bests are each the best of any finished run. |
+| `cc:v1:settings`     | `{ music, sfx }` today; `controls` and `crispScale` join with the features that use them |
+| `cc:v1:maker:last`   | `{ levelId, camX, camY, zoom, tool }`: reopening that level restores its camera, zoom and tool. Undo history is not persisted |
 
 Levels are stored compressed so the ~5 MB quota holds hundreds of them. Quota
 exhaustion surfaces as a user-visible message, never a silent failure.
+
+- **A level is written only if it would load**: it has a flag and passes
+  `validateLevel` (so no more than 400 objects). Autosave cannot store a level that
+  could never be opened again.
+- **Saves are asynchronous** (compression), and the game loop is not. `levels.save`
+  copies the model before it returns, and a newer save for the same id always wins
+  over an older one that finishes later. A deleted id is never written again.
+  `list()` waits for writes in flight.
+- **When saves happen:** the maker autosaves 1 s after the last edit, or 5 s
+  after the first unsaved one (`AUTOSAVE_*`), never mid-stroke. It also saves on
+  Back and before test-play. When the page is hidden, it saves at once and
+  uncompressed (`u`), so the write lands before a phone can freeze the tab.
+- **Failure modes.** Blocked or unavailable storage: `safe-storage` copies what it
+  can read into memory and runs there for the life of the page, and My Levels says
+  so. Full quota: the save reports it and the store stays on disk. One "Storage is
+  full" dialog per episode offers the level's share code.
+- `list()` reconciles: malformed or dangling index entries are dropped, and level
+  keys the index lost are decoded and added back.
 
 **Share codes** are `base64url(deflate-raw(JSON))` using `CompressionStream`, with an
 uncompressed-base64 fallback when it is unavailable. A one-character prefix marks
@@ -417,9 +448,22 @@ assets: 341 / 1195 source files packed (28.5%)
 overlay. It runs exactly one scene at a time.
 
 ```
-Boot → Title → LevelSelect → Play → (results) → LevelSelect
-              ↘ Maker ⇄ Play(returnTo: maker)
+Boot → Title ⇄ LevelSelect[Campaign | My Levels]
+                 ├─ Play (campaign) ⇄ Play (next level) ─→ LevelSelect
+                 ├─ Play (My Levels) ─→ LevelSelect
+                 └─ Maker ⇄ Play (test-play, returnTo: maker)
 ```
+
+Boot lands on **Title**. Title and level select are DOM screens (not scenes) over
+the canvas's sky fill. The App runs four modes, `title`, `select`, `maker` and
+`play`, and every switch between them goes through the wipe, including play to
+play for the campaign's Next level (the music carries on through that one). Title
+→ Play opens level select on the Campaign tab, and Title → Make opens it on My
+Levels. What is being played (a test-play, a campaign level, or one of My Levels)
+decides the play scene's callbacks. Death restarts a test-play at the spawn, and
+returns any other play to level select, on the tab it came from. Only the
+campaign has Next level and records progress, through an `onComplete` the App
+acts on after the scene update returns.
 
 A scene implements `enter(params)`, `exit()`, `update(dt)`, `render(ctx, camera)`,
 `mountUI(root)` and `unmountUI()`. Mode switching goes through the expanding-circle

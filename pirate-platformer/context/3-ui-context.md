@@ -193,8 +193,10 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   `--ink` border. Native `<input>` — never a canvas-drawn caret.
 - The share-code field uses `--font-code`, `readonly` on export, and pairs with a
   Copy button that reports success inline for 1.5 s.
-- Sliders (music, sfx) are native `<input type="range">` restyled with the kit's
-  Sliders sprites for the thumb.
+- Sliders (music, sfx) are native `<input type="range">` with
+  `accent-color: var(--accent)`, 0–100 in steps of 5, each with a live
+  percentage. Restyling the thumb with the kit's Sliders sprites needs an
+  asset-pipeline change first (issue 26).
 
 ## Layout Patterns
 
@@ -203,15 +205,37 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   `pointer-events: none`, and each mounted panel re-enables pointer events on itself.
 - **Safe areas**: every edge-anchored element pads with
   `env(safe-area-inset-*)`. Notches and home indicators must never cover a control.
-- **Title**: centred column — banner wordmark, then `Play` and `Make` as two large
-  stacked `.btn--primary` / `.btn`, then a small settings icon button.
-- **Level select**: sticky header with two tabs (Campaign · My Levels) on a
-  `.panel--board`, then a scrolling grid of level cards — 2 columns under 600px,
-  3 under 900px, 4 above. Each card is a `.panel--paper` with name, theme, best
-  time, and a Play / Edit / Share row.
+- **Title** (Unit 18): a centred column on `--sky`. The wordmark "Coral Corsairs"
+  is at `--fs-xl` in `--text` on a `.panel--paper` (display text on wood is too
+  faint, issue 21). Below it are **Play** (`.btn--primary`, focused) and **Make**
+  (`.btn`), stacked at equal width. The settings button waits for Unit 19's
+  settings screen, and Sound lives on level select.
+- **Level select** (Unit 18; its My Levels tab is Unit 17's My Levels screen): a
+  full-viewport screen on `--sky`. The sticky `.panel--paper` header has **Back**
+  (to the title), a `role="tablist"` of two `.btn` tabs (**Campaign** · **My
+  Levels**), **Sound**, and the active tab's own buttons: **Import** and **New
+  Level** (`.btn--primary`, the one primary) on My Levels, none on Campaign. A tab
+  is not an action, so the selected one is never green. It is drawn pressed, with
+  a 3 × ui-scale `--accent` bar inside its bottom edge. A paper notice line
+  appears when saving is unavailable. Below them is a grid of paper cards,
+  `repeat(auto-fill, minmax(240 × ui-scale, 1fr))` (2, 3 and 4 columns at 590, 844
+  and 1200 px at scale 1). Each card has the name (ellipsis, full name in
+  `title`), its meta lines, and an action row that wraps rather than overflows and
+  sits at the card's bottom:
+  - **Campaign:** `Level N · Done` or `Level N · Not finished yet`, then
+    `Best m:ss.cs · N treasure` once done. **Play**, **Share**, **Edit a copy**.
+  - **My Levels:** `cols × rows · Edited <date>`. **Play**, **Edit**, **Share**,
+    **⋯**. ⋯ opens an options dialog (Rename, Duplicate, Export file on a fine
+    pointer, Delete).
+
+  Everything with text is paper, not board (issue 21).
 - **Play HUD**: hearts top-left, coin count top-right, level name centred and fading
   after 2 s, pause button top-right below the coins. All anchored, never centred on
-  a fixed coordinate.
+  a fixed coordinate. The pause panel has **Resume**, the results panel **Play
+  again** (or **Next level** in the campaign before its last level, with Play
+  again beside it), plus a way out: **Back to editor** in a test-play, **Level
+  select** otherwise. The primary is focused. The results panel's Treasure is the
+  run's total, not the wrapping coin meter (issue 29).
 - **Touch controls**: a directional cluster bottom-left and a jump button
   bottom-right, both at least 64px at `--ui-scale: 1`, `touch-action: none`,
   `user-select: none`. Shown only when a touch pointer has been seen, or when the
@@ -224,7 +248,16 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   canvas keeps the full viewport behind both bars; the left and right edges stay
   clear so a thumb can pan without hitting chrome.
 - **Dialogs**: centred `.panel--board`, `max-inline-size: 480px`, over a `--scrim`
-  backdrop. Focus is trapped; Escape and a backdrop tap both close.
+  backdrop. Focus is trapped; Escape and a backdrop tap both close. Dialogs built
+  on `components/dialog.js` put their title and body on an inner `.panel--paper`
+  sheet, with the buttons on the board below. Text on the board's `--wood` fill
+  reaches only 3.4:1 (issue 21). There is no ghost button in dialogs for the
+  same reason: Cancel is a framed `.btn`. Error text is `--text` with a `--danger`
+  bar on its left, because `--danger` text on paper is too faint.
+- **Text fields** (`.field`): `--paper-light` with a 2 px `--ink` border, 44 px
+  tall, and `user-select: text`. The page's `user-select: none` would otherwise
+  stop iOS from selecting, copying or pasting in them. `.field--code` uses
+  `--font-code`.
 - **Toasts**: bottom-centre `.panel--paper`, auto-dismiss at 2.5 s, one at a time.
 - **Rotate prompt**: in portrait, an opaque `--ink` cover with a centred
   `.panel` ("Turn your device") and a CSS phone outline that turns to landscape
