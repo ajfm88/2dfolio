@@ -21,6 +21,7 @@ import { el } from './dom.js';
  *   onPlay: () => void,
  *   onUndo: () => void,
  *   onRedo: () => void,
+ *   onShare: () => void,
  *   onResize: () => void,
  * }} opts
  * @returns {ToolbarController}
@@ -56,6 +57,17 @@ export function createMakerToolbar(root, opts) {
     class: 'maker-toolbar__menu-panel',
     attrs: { hidden: '' },
   }, [
+    el('button', {
+      class: 'maker-toolbar__menu-item',
+      text: 'Share',
+      attrs: { type: 'button' },
+      on: {
+        click: () => {
+          closeMenu();
+          opts.onShare();
+        },
+      },
+    }),
     el('button', {
       class: 'maker-toolbar__menu-item',
       text: 'Resize Level',

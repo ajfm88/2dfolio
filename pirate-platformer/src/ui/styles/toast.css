@@ -1,0 +1,28 @@
+/* Short-lived status line, bottom centre. It never takes a pointer, so it cannot
+   block the palette or a card underneath it. */
+
+.toast {
+  position: fixed;
+  z-index: 3;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 12px * var(--ui-scale));
+  transform: translateX(-50%);
+  min-inline-size: 0;
+  inline-size: max-content;
+  max-inline-size: calc(100vw - 32px * var(--ui-scale));
+  padding: calc(2px * var(--ui-scale)) calc(6px * var(--ui-scale));
+  font-size: var(--fs-md);
+  text-align: center;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  animation: toast-in 120ms ease-out;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}

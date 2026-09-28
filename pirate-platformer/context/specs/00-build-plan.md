@@ -229,9 +229,10 @@ an invalid level shows a specific reason instead of failing to load.
 ## Unit 17 — Persistence and Sharing
 
 **Builds:** `storage/safe-storage.js`, `storage/levels.js`,
-`storage/settings-store.js`, the level list screen (create, rename, duplicate,
-delete), autosave while editing, share-code copy and paste, and `.json`
-export/import on desktop.
+`storage/settings-store.js`, the My Levels screen (create, rename, duplicate,
+delete), autosave while editing (a level is saved once it has a flag), the
+maker resume point, share-code copy and paste, `.json` export/import on a fine
+pointer, and a Sound dialog on My Levels for the volumes.
 
 **Depends on:** 16. **Installs:** none.
 **Done when:** levels survive a reload, music and sfx volumes survive a reload (moved
@@ -241,9 +242,13 @@ exhaustion shows a readable message.
 
 ## Unit 18 — Campaign, Level Select and Title
 
-**Builds:** the title screen, mode select, the level-select grid with Campaign and
-My Levels tabs, `storage/progress.js`, and five to eight campaign levels **authored
-in our own maker** and exported to `src/data/campaign/`.
+**Builds:** the title screen (Play, Make), level select as one screen with
+Campaign and My Levels tabs (the My Levels tab is Unit 17's screen plus Play),
+playing from either tab, `storage/progress.js`, and six campaign levels (Claude
+drafts them through the model and codec, the player tunes them in the maker) in
+`src/data/campaign/` with their manifest `data/campaign.js`. Death returns to level
+select; the campaign results panel gets Next level. Step 0 was issue 29 (the
+treasure total).
 
 **Depends on:** 17. **Installs:** none.
 **Done when:** the campaign is completable start to finish, progress persists, and

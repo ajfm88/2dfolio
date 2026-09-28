@@ -171,6 +171,7 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 **Expected:** All dialog text is readable on the board. The playbook has no contrast rule yet, so the target (e.g. WCAG AA 4.5:1 for body text) has to be chosen first.
 **Repro:** Maker → Menu → Resize Level.
 **Notes:** Not caused by issue 20's fix. The fill colour is the same brick as before, now drawn as a clean frame. Options: put the form on an inner `.panel--paper` (as `3-ui-context.md` already specifies for text inputs), or use `--paper-light`/`--ink` for text on board. That is a token and component decision for `3-ui-context.md` first, so it is not folded into the nine-slice fix.
+**2026-09-25 (Unit 17):** measured: the board fill is `--wood` `#ae7764`. Ink text on it reaches 3.4:1, `--paper-light` 2.9:1, and ink on paper 7.4:1. Unit 17's new dialogs and My Levels use the spec's fallback (text on an inner `.panel--paper` sheet, no ghost buttons), so only the resize dialog, the pause/results panels and the maker toolbar status still show text on board. Deciding this issue now means choosing whether those follow the same pattern.
 
 ---
 
@@ -184,7 +185,90 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
+### 25. `main.js` touches `document`, against the code standards [OPEN]
+
+**Where:** `src/main.js` (Unit 00, grown through Unit 16)
+**Symptom:** `main.js` calls `document.getElementById` four times and `document.documentElement.style.setProperty('--ui-scale', …)` in the viewport's `onResize`. `4-code-standards.md` (DOM and CSS) and `2-architecture.md` (`src/ui/`) both say only `src/ui/`, `core/input.js` and `core/viewport.js` may touch `document`.
+**Expected:** Either the composition root is listed as an allowed exception, or those calls move behind `ui/dom.js` helpers (for example a `setUiScale` next to `setVeiled`).
+**Repro:** `grep -n document src/main.js`.
+**Notes:** Found 2026-09-25 while drafting the Unit 17 spec. It has no behavioural impact. The `--ui-scale` formula from `3-ui-context.md` also lives inline there. Unit 17 adds no new `document` access to `main.js`: its page-hidden hook goes through `ui/dom.js`. A doc wording change or a small move, done on its own, not inside Unit 17.
+
+---
+
+### 26. Sound sliders are native, not the kit's Sliders sprites [OPEN]
+
+**Where:** `src/ui/components/sound-dialog.js`, `styles/sound-dialog.css` (Unit 17)
+**Symptom:** The Music and Effects sliders are native `<input type="range">` tinted with `accent-color: var(--accent)`. `3-ui-context.md` asks for the thumb to be restyled with the Wood and Paper kit's Sliders sprites.
+**Expected:** A kit-sprite thumb and track.
+**Repro:** My Levels → Sound.
+**Notes:** Deliberately left out of Unit 17. The Sliders sprites are not packed, so the fix is an asset-pipeline change (`tools/asset-manifest.mjs`, `npm run assets`) plus the CSS that reads the new output, and the workflow rules split those. Natural home: Unit 19's settings screen.
+
+---
+
+### 27. The resize dialog does not use the shared dialog helper [OPEN]
+
+**Where:** `src/ui/components/resize-dialog.js` (Unit 15)
+**Symptom:** Unit 17 added `components/dialog.js` (`openDialog`: overlay, Tab trap, Escape, backdrop close, focus return, paper sheet for text). The resize dialog still carries its own copy of the overlay and focus trap, and its text still sits on the board (issue 21).
+**Expected:** One dialog implementation.
+**Repro:** Compare `resize-dialog.js` with `dialog.js`.
+**Notes:** Not folded into Unit 17 (no refactoring of code the unit was not asked to touch). A small change, best done together with issue 21's decision.
+
+---
+
+### 28. `/favicon.ico` 404 on every fresh load [OPEN]
+
+**Where:** `index.html` (Unit 00)
+**Symptom:** Chrome requests `/favicon.ico` on first load and logs "Failed to load resource: 404". It is the only console error in a full Unit 17 run.
+**Expected:** No console errors in a normal run (workflow rule 6).
+**Repro:** Open `/` in a fresh profile and read the console.
+**Notes:** Found 2026-09-25 while verifying Unit 17. This existed before the unit. Unit 21 (PWA) brings real icons; until then, an icon link in `index.html` would silence it. Do not hand-add an icon under `public/assets/`, which is generated.
+
+---
+
+### 30. The player can slip into a wall and pass through it [OPEN]
+
+**Where:** `src/game/physics.js` `resolveH` / `cellRangeX` (Unit 06)
+**Symptom:** A player running into a wall face can end up inside the terrain, stand "on" rows inside it, and walk through it. Seen 2026-09-26 in a headless run of the real world (`world.js`, `player.js`, `physics.js`) on Castaway Beach: the player met the raised block at column 65, rose up its face with `onFloor` true in mid-air, and drifted into the block.
+**Expected:** Terrain is solid from every side, always.
+**Repro:** From the trace: after any push to a whole-pixel position, `x` advances by 1.6666… px a frame, so every third frame it is a whole number plus float error (for example `2062.0000000000002`). If that lands the hitbox's right edge 1e-13 px past a wall face, `cellRangeX` (`x + w - 0.001`) does not include the wall's column, so nothing pushes it back. On the next frame `oldRect` is already overlapping, so `resolveH`'s "was clear of the tile" test (`oldRect.x + oldRect.w <= tL`) never fires again, and the player walks in. `resolveV` then treats the wall's rows as floors and ceilings.
+**Notes:** Found while drafting the Unit 18 campaign, not caused by it. Not fixed inside Unit 18 (a Unit 06 module). A fix makes the overlap test and the cell range agree. Either the range includes any positive overlap, or positions are kept off sub-epsilon offsets. It needs a regression test in `physics.test.js` that starts at `x = tL - w + 1e-13`. The campaign drafts were checked by a bot that rounds positions to 1/1024 px to step around this. Real play may still hit it. Worth fixing before the campaign's final sign-off.
+
+---
+
+### 31. Nothing stops the player at a level's left and right edges [OPEN]
+
+**Where:** `src/game/world.js` / `src/game/player.js` (Unit 07)
+**Symptom:** Past column 0 or the last column there is no terrain, so the player walks off the side of the level and falls to the bottom death border. Seen 2026-09-26: the campaign bot jumped over Cannon Cove's flag and walked off the right edge.
+**Expected:** Undefined today. Unit 07 specified the bottom death border and said nothing about the sides.
+**Repro:** Maker → New Level → a floor across the whole width → play and walk left from the spawn.
+**Notes:** Every Unit 18 campaign level has a full-height terrain wall in its first and last column, so the campaign is not affected. A maker user's level is. Options: clamp the hitbox to `0..worldW` in `world.js` (a behaviour decision: an invisible wall), or leave it to level design. Needs a player decision. Not folded into Unit 18.
+
+---
+
+### 32. Pixelify Sans ligatures turn "fi" and "fl" into an "A" [OPEN]
+
+**Where:** `src/ui/styles/base.css` (`html, body` font rules, Unit 00); every UI string with "fi" or "fl"
+**Symptom:** The font's default `fi` and `fl` ligature glyphs read as a capital A. "Not finished yet" shows as "Not Anished yet", "Place the finish flag to play and save." as "Place the Anish Aag…", and "Export file" and "Choose file…" as "Export Ale" and "Choose Ale…". Seen 2026-09-26 in headless Chrome at 844 × 390 and in a side-by-side render with `font-variant-ligatures: normal` and `none`.
+**Expected:** Text reads as written.
+**Repro:** Maker → New Level: read the toolbar status. Or level select → Campaign: an unfinished card.
+**Notes:** Found while verifying Unit 18, whose Campaign cards use "Not finished yet". It predates Unit 18: the maker's status messages (Unit 16) and the file actions (Unit 17) have always had it. The root fix is one line, `font-variant-ligatures: none` on `html, body`, plus a line under Typography in `3-ui-context.md` (pixel fonts carry their own spacing, and their ligatures are not wanted). Not folded into Unit 18 (Unit 00's file).
+
+---
+
 ## Resolved
+
+### 29. The results panel's "Treasure" wraps at 100 [FIXED]
+
+**Closed:** 2026-09-26. Seen in the game: the player finished all six campaign levels, and their saved best treasure of 106, 120, 121 and 154 comes from the new total, which the wrapping meter could never reach.
+
+**Where:** `src/game/stats.js` (`coins` setter, Unit 08), `src/game/play-scene.js` / `src/ui/hud.js` results (Unit 09)
+**Symptom:** The results panel shows `stats.coins` as "Treasure". The `coins` setter (the SPW port) turns every 100 into an extra heart and keeps only the remainder, so a run that collects a skull (50), two diamonds (40) and three gold coins (15) finishes with "Treasure 5".
+**Expected:** `1-project-overview.md`: the results panel "shows treasure collected". Unit 18's progress also records best treasure, which needs the real total.
+**Repro:** From the code (2026-09-26): `stats.js:19-25`; `play-scene.js` passes `world.stats.coins` to `showResults`. In game: collect 100 or more treasure in one run and finish.
+**Notes:** Found while drafting the Unit 18 spec. The HUD counter's wrapping is correct: it is the extra-life meter, as in SPW. Only "treasure collected" needs a separate number. Likely fix: `Stats` gains a non-wrapping `treasure` total that a pickup adds to together with `coins` (for example a `collect(n)` method used by `collectibles.js`), and the results panel shows `treasure`. `stats.js` is tested, so it gets a regression test. Unit 18's spec makes this step 0, as its own change.
+**What changed (2026-09-26):** `Stats` gained `treasure` (read-only) and `collect(value)`, which adds the value to `treasure` and to `coins`. The `coins` setter still wraps into hearts. `collectibles.js` awards through `collect`. The results panel's Treasure row shows `stats.treasure`: `showResults` now takes `{ treasure, timeMs }`. The HUD's top-right counter still shows the wrapping `coins`. 2 tests in `stats.test.js` (one reproduces the 105-that-showed-as-5 run), and `world.test.js` checks `treasure` on a pickup. `npm test` 277.
+
+---
 
 ### 19. Enter on a focused secondary overlay button runs the primary action [FIXED]
 
@@ -395,7 +479,8 @@ gameplay to start.
 
 ### 3. `localStorage` throws in private mode, and has a hard quota
 
-**Bites in:** Unit 17.
+**Bites in:** Unit 17. **Handled in Unit 17** (`safe-storage.js`: memory fallback
+with a notice on My Levels; a quota is reported and never silently moved to memory).
 Safari private browsing throws on write; other browsers throw `QuotaExceededError`
 at roughly 5 MB. `safe-storage.js` must try/catch every access and fall back to an
 in-memory map. Quota exhaustion must surface a readable message with a way to free
@@ -420,7 +505,8 @@ from the simulation.
 
 ### 6. `CompressionStream` is not universal
 
-**Bites in:** Unit 17 (UI). **Countermeasure shipped in Unit 03.**
+**Bites in:** Unit 17 (UI). **Countermeasure shipped in Unit 03**, and Unit 17's
+saves inherit it (`encodeShare` falls back to `u`).
 `deflate-raw` is unavailable on older Safari. Codec uses prefix `z` (deflate-raw)
 or `u` (uncompressed base64url) and never guesses. Both paths have round-trip tests
 in `codec.test.js`. Unit 17 still needs a user-visible fallback if encode fails.
@@ -470,3 +556,13 @@ packer, not padding — padding would change the frame stride the manifest decla
 Pixelify Sans is self-hosted with `font-display: swap`, so the first paint uses the
 fallback and text reflows. Reserve layout with fixed-size buttons and avoid text
 that changes the size of its container, or the title screen will jump.
+
+### 13. iOS Safari evicts script-written storage
+
+**Bites in:** Unit 17 onward; Unit 21 is the countermeasure.
+Safari deletes a site's script-written storage (`localStorage` included) after
+seven days without a visit, unless the site is installed to the home screen. A
+player's levels can simply vanish. Share codes and `.json` export are the backup
+today. Unit 21 should request `navigator.storage.persist()` and make install to
+the home screen easy. Consider a gentle "back up your levels" hint then, and not
+before.

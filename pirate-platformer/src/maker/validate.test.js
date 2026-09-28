@@ -23,7 +23,7 @@ describe('findProblems', () => {
   it('a fresh maker level needs its flag', () => {
     const problems = findProblems(createEmptyModel());
     expect(codes(problems)).toEqual(['no-goal']);
-    expect(problems[0].message).toBe('Place the finish flag to play.');
+    expect(problems[0].message).toBe('Place the finish flag to play and save.');
   });
 
   it('spawn buried in terrain', () => {
@@ -93,6 +93,7 @@ describe('findProblems', () => {
       'Unknown object "terrain".',
       'Unknown object "crabby".',
     ]);
+    expect(problems.map((p) => p.k)).toEqual(['kraken', 'terrain', 'crabby']);
   });
 
   it('reports every problem in table order', () => {

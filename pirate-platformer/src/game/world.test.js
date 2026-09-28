@@ -60,6 +60,7 @@ describe('createWorld collectibles and hazards', () => {
     place(world.player, 5 * TILE + 8, 12 * TILE + 6);
     world.update(1 / 60, 0, 640);
     expect(world.stats.coins).toBe(tuning.coinGold);
+    expect(world.stats.treasure).toBe(tuning.coinGold);
   });
 
   it('spikes hurt once then ignore contact during invuln', () => {
