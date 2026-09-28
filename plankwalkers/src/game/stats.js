@@ -8,8 +8,26 @@ import { tuning } from '../data/tuning.js';
 export class Stats {
   constructor() {
     this._coins = 0;
+    this._treasure = 0;
     this._health = tuning.startHealth;
     this.invuln = 0;
+  }
+
+  /**
+   * Coins are the extra-life meter: they wrap at `coinExtraLife`. This is what the
+   * run collected in all, which never wraps.
+   */
+  get treasure() {
+    return this._treasure;
+  }
+
+  /**
+   * A pickup's value counts towards the meter and the run's total alike.
+   * @param {number} value
+   */
+  collect(value) {
+    this._treasure += value;
+    this.coins += value;
   }
 
   get coins() {

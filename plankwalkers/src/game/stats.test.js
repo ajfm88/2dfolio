@@ -79,6 +79,27 @@ describe('Stats', () => {
     expect(stats.invuln).toBe(0);
   });
 
+  it('collect adds to coins and to the treasure total', () => {
+    const stats = new Stats();
+    stats.collect(tuning.coinGold);
+    expect(stats.coins).toBe(tuning.coinGold);
+    expect(stats.treasure).toBe(tuning.coinGold);
+  });
+
+  // Issue 29: the results panel showed the wrapped meter as "Treasure".
+  it('treasure keeps counting past the extra-life wrap', () => {
+    const stats = new Stats();
+    stats.collect(tuning.coinSkull);
+    stats.collect(tuning.coinDiamond);
+    stats.collect(tuning.coinDiamond);
+    stats.collect(tuning.coinGold);
+    stats.collect(tuning.coinGold);
+    stats.collect(tuning.coinGold);
+    expect(stats.coins).toBe(5);
+    expect(stats.health).toBe(tuning.startHealth + 1);
+    expect(stats.treasure).toBe(105);
+  });
+
   it('hurt when dead returns false', () => {
     const stats = new Stats();
     stats.health = 0;

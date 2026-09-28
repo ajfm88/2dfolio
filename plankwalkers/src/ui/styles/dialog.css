@@ -99,6 +99,101 @@
   outline-offset: calc(2px * var(--ui-scale));
 }
 
+/* Dialogs built by components/dialog.js. The board frames them; their text sits on
+   an inner paper sheet, because text on the board's wood fill is too faint to read
+   (issue 21). */
+
+.dialog {
+  inline-size: 100%;
+  max-inline-size: calc(420px * var(--ui-scale));
+  max-block-size: 100%;
+  overflow-y: auto;
+  gap: calc(8px * var(--ui-scale));
+  padding: calc(4px * var(--ui-scale));
+}
+
+.dialog__sheet {
+  min-inline-size: 0;
+  max-inline-size: none;
+  gap: calc(8px * var(--ui-scale));
+  padding: calc(4px * var(--ui-scale));
+}
+
+.dialog__title {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-lg);
+  font-weight: normal;
+  color: var(--text);
+}
+
+.dialog__text {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.dialog__hint {
+  margin: 0;
+  min-block-size: 1.4em;
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+/* --danger on paper is too faint for text, so errors keep ink and carry a red bar. */
+.dialog__error {
+  margin: 0;
+  padding-inline-start: calc(6px * var(--ui-scale));
+  border-inline-start: calc(4px * var(--ui-scale)) solid var(--danger);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.dialog__error[hidden] {
+  display: none;
+}
+
+.dialog__actions--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Text inputs and textareas. The page sets user-select: none, which on iOS also
+   stops a field from being selected, copied or pasted into. */
+.field {
+  display: block;
+  inline-size: 100%;
+  min-block-size: calc(44px * var(--ui-scale));
+  padding: calc(6px * var(--ui-scale)) calc(8px * var(--ui-scale));
+  background: var(--paper-light);
+  border: calc(2px * var(--ui-scale)) solid var(--ink);
+  border-radius: 0;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
+.field--code {
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+  word-break: break-all;
+  resize: none;
+}
+
+.field:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--accent);
+  outline-offset: 0;
+}
+
+.field[hidden] {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay { animation: none; }
   .btn:hover, .btn:active { transform: none; }

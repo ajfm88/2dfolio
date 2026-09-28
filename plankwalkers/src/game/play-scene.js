@@ -14,7 +14,7 @@ import { createWorld } from './world.js';
  *   syncHearts: (n: number) => void,
  *   syncCoins: (n: number) => void,
  *   setPaused: (paused: boolean) => void,
- *   showResults: (result: { coins: number, timeMs: number }) => void,
+ *   showResults: (result: { treasure: number, timeMs: number }) => void,
  *   destroy: () => void,
  * }} HudController
  *
@@ -27,6 +27,8 @@ import { createWorld } from './world.js';
  *     onResume: () => void,
  *     onReplay: () => void,
  *     onEdit?: () => void,
+ *     onQuit?: () => void,
+ *     onNext?: () => void,
  *   }) => HudController,
  *   createTouch: (root: HTMLElement, input: Input) => TouchController,
  * }} UiFactories
@@ -35,8 +37,10 @@ import { createWorld } from './world.js';
 /** @typedef {ReturnType<import('../core/audio.js').createAudio>} Audio */
 
 /**
- * `onEdit` is present only for a test-play started from the maker — the scene knows
- * there is somewhere to go back to, not what it is.
+ * `onEdit` is present only for a test-play started from the maker, and `onQuit` for
+ * a level played from level select — the scene knows there is somewhere to go back
+ * to, not what it is. `onNext` is the campaign's next level. `onComplete` reports a
+ * finished run once; what it means (progress, or nothing) is the App's call.
  *
  * @typedef {{
  *   level: LevelModel,
@@ -50,6 +54,9 @@ import { createWorld } from './world.js';
  *   onDeath: () => void,
  *   onReplay: () => void,
  *   onEdit?: () => void,
+ *   onQuit?: () => void,
+ *   onNext?: () => void,
+ *   onComplete?: (run: { treasure: number, timeMs: number }) => void,
  * }} PlaySceneParams
  */
 
@@ -130,6 +137,8 @@ export function createPlayScene() {
         onResume,
         onReplay: () => params.onReplay(),
         onEdit: params.onEdit,
+        onQuit: params.onQuit,
+        onNext: params.onNext,
       });
       touch = params.ui.createTouch(root, params.input);
       const t = touch;
@@ -165,11 +174,13 @@ export function createPlayScene() {
         return;
       }
 
-      // Enter (edge): replay on the results screen, otherwise toggle pause. This only
-      // flips state — the overlay is opened/closed in render (invariant 3).
+      // Enter (edge): the results panel's primary action (next level, or replay),
+      // otherwise toggle pause. This only flips state — the overlay is opened and
+      // closed in render (invariant 3).
       if (params.input.keys.pause.pressed) {
         if (finished) {
-          params.onReplay();
+          if (params.onNext) params.onNext();
+          else params.onReplay();
           return;
         }
         paused = !paused;
@@ -188,6 +199,9 @@ export function createPlayScene() {
       }
       if (status === 'complete') {
         finished = true;
+        if (params.onComplete) {
+          params.onComplete({ treasure: world.stats.treasure, timeMs: elapsedMs });
+        }
         return;
       }
       elapsedMs += dt * 1000;
@@ -207,7 +221,7 @@ export function createPlayScene() {
       hud.syncCoins(world.stats.coins);
       if (finished) {
         if (!resultsShown) {
-          hud.showResults({ coins: world.stats.coins, timeMs: elapsedMs });
+          hud.showResults({ treasure: world.stats.treasure, timeMs: elapsedMs });
           resultsShown = true;
         }
       } else if (paused !== lastPausedShown) {

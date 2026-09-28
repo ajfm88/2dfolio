@@ -1,0 +1,41 @@
+/* Title: a centred column over the canvas's sky fill. The wordmark sits on paper,
+   because display text on the board's wood fill is too faint to read (issue 21). */
+
+.title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(16px * var(--ui-scale));
+  padding:
+    calc(env(safe-area-inset-top) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-right) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-bottom) + 16px * var(--ui-scale))
+    calc(env(safe-area-inset-left) + 16px * var(--ui-scale));
+  background: var(--sky);
+  pointer-events: auto;
+}
+
+.title__wordmark {
+  min-inline-size: 0;
+  margin: 0;
+  padding: calc(4px * var(--ui-scale)) calc(16px * var(--ui-scale));
+  font-size: var(--fs-xl);
+  font-weight: normal;
+  text-align: center;
+  color: var(--text);
+}
+
+.title__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--ui-scale));
+  inline-size: calc(160px * var(--ui-scale));
+}
+
+.title__button {
+  inline-size: 100%;
+  font-size: var(--fs-lg);
+}

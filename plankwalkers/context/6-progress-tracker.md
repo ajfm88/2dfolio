@@ -11,9 +11,20 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   2026-09-24**. Issues 16 (rotate prompt), 18 (tap to place) and 20 (nine-slice
   panels) are fixed. Tests 223 passing, build clean, everything committed (no
   remote yet).
-- **2026-09-24:** issues 19, 22 and 23 fixed and signed off (tests 235). Still
-  open and worth doing before or alongside Unit 17: 21 (text contrast on the
-  board, needs a colour decision) and 24 (no desktop zoom, needs a spec decision).
+- **2026-09-24:** issues 19, 22 and 23 fixed and signed off (tests 235).
+- **Units 00–17 complete.** Unit 17 (Persistence and Sharing) was implemented
+  2026-09-25, verified with a headless-Chrome harness, and **marked complete by
+  the player 2026-09-25** after they shared a level and re-created it from its
+  code. Tests 275, build clean, committed. Still open and worth doing:
+  21 (text on the board; Unit 17 sidestepped it with paper sheets) and 24 (no
+  desktop zoom).
+- **Units 00–18 complete.** Unit 18 (Campaign, Level Select and Title) was
+  implemented 2026-09-26 and **closed by the player the same day** after they
+  finished all six levels on the keyboard. The phone run is deferred until the
+  game is finished and deployed on Netlify (player decision). Tests 308, build
+  clean, committed (`e271d98` issue 29, `fed94aa` Unit 18). Found while building:
+  issues 30 (the player can slip into a wall), 31 (no side boundaries) and 32
+  (ligatures).
 
 ## Completed
 
@@ -498,11 +509,100 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   - **23**: `forEachCellOnLine` fills the grid path between drag frames. It is
     still one command per drag.
 
+- **2026-09-25 — Unit 17 complete.** Player sign-off the same day ("it does
+  work"): they copied a share code, closed and reopened the browser, and
+  re-created the level from it. Spec at
+  `specs/17-persistence-and-sharing.md`, approved the same day with two player
+  decisions: a level is saved **once it would load** (a flag, and passes the
+  schema; a new level lives in memory until its flag is placed), and the **Sound
+  dialog lives on My Levels only**. `npm test` **275** (235 + 8 safe-storage + 16
+  levels + 4 settings + 9 import + 3 files, and the `validate` `k` assertion), `npm run build`
+  clean, and no type diagnostics new against HEAD (checked with TypeScript 5.9 over
+  `jsconfig.json`; the ~210 older ones are unchanged).
+  - **New:** `storage/safe-storage.js`, `storage/levels.js`,
+    `storage/settings-store.js`, `maker/import-level.js`, `ui/screens/level-list.js`,
+    `ui/components/{dialog,rename-dialog,share-dialog,import-dialog,sound-dialog,toast}.js`,
+    `ui/files.js`, and CSS for the list, toast and sound rows. **Changed:**
+    `main.js` (three modes, storage wiring, boot on My Levels, save reporting, flush
+    on hide), `maker-scene.js` (autosave, `flush`, `saveBlocker`, `resumePoint`,
+    `resume`, Share), `maker-toolbar.js` (Menu → Share), `validate.js` (the
+    "…to play and save." hint, and `k` on `unknown-kind`), `gestures.js` (exports
+    `ZOOM_LEVELS`), `dom.js` (`onPageHidden`, `hasFinePointer`), `dialog.css`
+    (sheet and `.field`), and `settings.js` (`AUTOSAVE_*`).
+  - **Verification:** the Chrome extension was not connected, so a scratch
+    harness (puppeteer-core in the session scratchpad, not a project dependency)
+    drove the real app in headless Chrome. It covered:
+    - the first-run empty state and the leave-confirm
+    - no save without a flag, then autosave once the flag is placed
+    - no write mid-drag, and the 5 s cap
+    - the hidden-page immediate `u` save and the resume point (tool and tab restored)
+    - open-and-Back not reordering the list
+    - saving before test-play, and the round trip plus undo
+    - rename (typed keys stay in the field), duplicate, and delete with confirm
+    - share and clipboard copy, and Sound persisting across a reload
+    - import errors (malformed, unknown kind) and the corrupt-index rebuild
+    - import into a second profile, identical apart from the id, and twice giving
+      two levels
+    - blocked storage (memory mode and its notice)
+    - an injected quota (one dialog per episode, with recovery)
+    - layout at 590, 844, 1200 and 1280 px
+
+    60 of 61 checks passed; the failure was the harness's own date regex ("Sept").
+    Screenshots checked at phone landscape and desktop. **Needs the player:** a real
+    phone (the keyboard over the dialogs, the hide flush when the app is switched
+    away, the clipboard on a LAN http origin), the wipe between My Levels and the
+    maker, and sound by ear.
+  - **Decisions made while building** (all in the spec's As Built section):
+    - `SaveResult` gained `'invalid'`, and the store gained `has(id)`.
+    - `duplicate(id, name)` takes the copy's name from the UI.
+    - The resume point is written only for a saved or saving level.
+    - Every dialog and the My Levels header and cards put their text on paper,
+      and there are no ghost buttons. Issue 21 measured: the board fill is `--wood`,
+      where ink reaches 3.4:1.
+    - The grid is auto-fill at 240 × ui-scale, so a 1280 × 720 window (UI scale 2)
+      shows 2 columns.
+  - **Found, logged, not fixed:** 25 (`main.js` touches `document`), 26 (kit slider
+    sprites), 27 (resize dialog not on the shared helper), 28 (`favicon.ico` 404).
+    Watchlist 13: iOS Safari evicts storage after 7 idle days.
+
+- **2026-09-26 — Unit 18 complete.** Closed by the player the same day. Spec at
+  `specs/18-campaign-level-select-and-title.md` (approved the same day). Player
+  decisions: two tabs (Campaign · My Levels) on one screen, which is the Unit 17
+  screen plus Play; any death in the campaign or My Levels play returns to level
+  select (test-play still restarts); campaign cards Play, Share and Edit a copy;
+  Claude drafts the levels, the player tunes them; **our own levels, not ports of
+  Super Pirate World's maps**. The proposed rows were approved as written: six
+  levels, no locking, Next level on the results panel, the paper wordmark title.
+  - **Step 0, issue 29 (treasure total), done as its own change:** `Stats.collect`
+    and `Stats.treasure`. The results panel shows the total. Closed in play.
+  - **Built:** `storage/progress.js`, `ui/format.js` (moved from `hud.js`),
+    `ui/screens/{title,level-select,campaign-tab}.js`, `my-levels-tab.js`
+    (renamed from `level-list.js`), `level-select.css` (renamed), `title.css`,
+    `data/campaign.js` and six levels, `campaign.test.js`. `main.js` has four
+    modes and play sources. `play-scene.js` has `onQuit`, `onNext` and
+    `onComplete`. `hud.js` has Level select and Next level.
+  - **Checked so far:** `npm test` 308 (275 + 2 stats + 8 progress + 4 format + 19
+    campaign), `npm run build` clean, and TypeScript 5.9 over `jsconfig.json`
+    reports no diagnostic new against HEAD. A scratch bot finished all six levels
+    in the real simulation (see the spec's As Built). The Title rendered in Chrome.
+  - **Browser harness** (scratch puppeteer-core, own profile): 84 of 84 checks.
+    It found and fixed one thing: the selected tab's accent bar was hidden under
+    the nine-slice fill, so it is now an `::after` bar. See the spec's
+    Verification section.
+  - **The player finished all six levels on the keyboard** in Chrome
+    ("breathtaking stuff"). Their saved progress records all six, with best
+    treasure 90–154. Issue 29 closed on it.
+  - **Found:** issue 32 (the font's `fi` / `fl` ligatures read as "A"), logged.
+  - **Committed 2026-09-26** as two commits: issue 29, then Unit 18.
+  - **Closed without a phone run** (player decision): the player will play on a
+    phone once the game is finished and deployed on Netlify. Next level's music
+    by ear and any tuning of the levels go with it.
+
 ## Current Goal
 
-- **Unit 17 — Persistence and Sharing.** The spec comes first:
-  `specs/17-persistence-and-sharing.md` has to be written and approved before any
-  code (workflow rule).
+- **Standalone fixes, then the Unit 19 spec.** Issue 32 (ligatures) and issue 30
+  (wall slip) first. The Unit 19 spec (Polish) has to be written and approved
+  before any code (workflow rule).
 
 ## In Progress
 
@@ -510,17 +610,16 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Next Up
 
-- **Unit 17 spec.** The build plan's scope: `storage/safe-storage.js`,
-  `storage/levels.js`, `storage/settings-store.js`, the level list screen, autosave,
-  share-code copy and paste, and `.json` export and import on desktop. Volume
-  persistence moved here from Unit 12. The `MakerSession` field names already match
-  `cc:v1:maker:last`.
+- Standalone changes: **issue 32** (ligatures, one CSS line), **issue 30** (wall
+  slip; the campaign can hit it), 31 (side boundaries, needs a decision), 21, 24,
+  25–28.
+- **Unit 19 spec** (Polish): inner-corner autotiling, dust particles, screen
+  shake, the pause menu and the settings screen (which absorbs Sound).
 
 ## Open Questions
 
-1. **Campaign length.** Five to eight levels is the current target. The real number
-   depends on how fast levels can be authored once the maker exists. Revisit after
-   Unit 16.
+1. ~~**Campaign length.**~~ **Resolved 2026-09-26** — six levels, one per mechanic
+   (Unit 18 spec), inside the five-to-eight target.
 2. **PWA scope.** Offline play is a goal, but whether the service worker precaches
    every theme's assets or only the first is undecided. Revisit at Unit 21.
 3. ~~**Second theme timing.**~~ **Resolved 2026-09-05** — Pirate Ship is now its
@@ -540,6 +639,12 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
    orientation; a DOM prompt covers the screen. The prompt itself is issue 16's
    own change. Residual: landscape aspects between 1 and ≈ 1.42 still stretch
    mildly (logged on issue 16).
+
+7. **Deployment.** The player means to deploy the finished game on **Netlify**
+   (2026-09-26), and will do the real-phone checks there. No unit in
+   `specs/00-build-plan.md` covers deploying yet: static hosting fits the
+   no-backend rule, but the build output, the service worker (Unit 21) and the
+   host config need a home. Decide where it goes (likely with or after Unit 21).
 
 ## Architecture Decisions
 
@@ -927,6 +1032,49 @@ transition only, so neither scene simulates under the iris and nothing pressed
 mid-wipe replays afterwards. `#ui` is inert and faded for the whole wipe. The
 rotate prompt holds the game the same way.
 
+**2026-09-25 — A level is saved only once it would load.** A goal-less level cannot
+be serialised, and the schema refuses more than 400 objects. So a new level lives
+in memory until its flag is placed, and leaving it before then asks first.
+*Why:* allowing flagless levels in storage is a format change, and pre-placing the
+flag would reverse the Unit 13 decision and lose the first-run hint. The cost is
+that a reload before the first flag loses the level (player decision).
+
+**2026-09-25 — Scenes save through injected callbacks; storage stays a leaf.**
+The maker calls `onSave(level)` and `openShareDialog(...)`, and the App decides
+what storage does with them. `storage/` may import `level/` (the codec is the only
+serialiser) and nothing above it. *Why:* invariant 6 and the injected-UI pattern.
+The maker stays testable without `localStorage`.
+
+**2026-09-25 — Boot lands on My Levels until Unit 18.** Title and level select come
+later. My Levels becomes the destination of Make. No reload reopens the maker by
+itself; the resume point applies when that level is opened.
+
+**2026-09-26 — Level select is one screen with two tabs.** Campaign and My
+Levels; the My Levels tab is Unit 17's screen plus Play. Title → Play opens
+Campaign, Title → Make opens My Levels. *Why:* one list of the player's levels,
+not two that drift (player decision).
+
+**2026-09-26 — Death outside test-play returns to level select.** Any death
+(hearts, pit, water) in the campaign or in a level played from My Levels wipes
+back to the tab it came from; test-play still restarts at the spawn so building
+stays quick (player decision).
+
+**2026-09-26 — Campaign ids live in the manifest, not the files.**
+`data/campaign.js` pairs each level file with a stable id that overrides the
+file's own, so the progress key survives a re-export from the maker, and a tuned
+level drops in unchanged. `campaign.test.js` holds every file to a canonical
+maker export that passes every playability rule.
+
+**2026-09-26 — Campaign levels are only what the maker can make.** The maker
+places facing entities with `dir: -1` only, so every campaign enemy and shooter
+faces left. The levels are our own designs, not ports of Super Pirate World's
+maps (player decision), drafted by Claude through the model and codec and tuned
+by the player in the maker.
+
+**2026-09-26 — Real-phone checks wait for the Netlify deploy.** The player closed
+Unit 18 after a full keyboard playthrough and will test on a phone once the game
+is finished and deployed (player decision). Open Question 7 tracks the deploy.
+
 ## Session Notes
 
 Resume cold from here.
@@ -953,7 +1101,20 @@ issues 10–15 fixed, 16 (portrait stretch) and 17 (28 px palette tabs) open. Un
 12 and 15 have Claude's Chrome verification recorded but still owe the player
 sign-off items listed in their 2026-09-22 entry.
 
-**Next:** write the Unit 17 spec (Persistence and Sharing) and get it approved.
+**2026-09-25:** **Units 00–17 complete** (Unit 17 signed off by the player). The app now boots into **My Levels**, which
+lists every saved level with Edit, Share and ⋯, plus Sound, Import and New Level.
+The maker autosaves once a level has its flag, and Back returns to My Levels.
+Levels live in `localStorage` as share codes (`storage/`).
+
+**2026-09-26:** **Units 00–18 complete** (Unit 18 closed by the player). The app
+now boots on a **Title** (Play, Make). Level select has **Campaign** and **My
+Levels** tabs, six campaign levels ship in `src/data/campaign/`, and finishing
+one records progress on its card. Real-phone checks wait for the Netlify deploy
+(Open Question 7). **Next:** issues 32 and 30 as standalone changes, then write
+the Unit 19 spec.
+
+**Before that:** the standalone issues still open and worth a look: 21 (text on the board),
+24 (desktop zoom), 25–28.
 Issues 19, 22 and 23 are fixed (2026-09-24). Still waiting as standalone changes:
 24 (desktop zoom, needs a spec decision first) and 21 (text contrast on the board,
 needs a token decision first).
@@ -965,12 +1126,12 @@ of set sizes for viewport checks, since resizing the window did not change it.
 
 **How to run**
 
-- `npm run dev` — game at `/` (maker), atlas at `/atlas.html` (throwaway debug
+- `npm run dev` — game at `/` (Title), atlas at `/atlas.html` (throwaway debug
   page, issue 5). Prefer a fixed port; 5173 may already be another project
   (ArcGIS). `--port 5174 --strictPort`. On 2026-09-22 another project's Vite was
   also bound to `127.0.0.1:5174` alongside ours — if a page looks wrong or stale,
   check what owns the port, or use 5175.
-- `npm test` — 235 tests.
+- `npm test` — 308 tests.
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters` and the `ffmpeg-static`
   binary (fetched by `npm install`; its install script is approved in
@@ -1000,6 +1161,11 @@ of set sizes for viewport checks, since resizing the window did not change it.
   are requests the App acts on after the scene update returns.
 - Copy audio into `public/assets` by hand or list a sound the game does not play.
   Re-encoding is a `bitrate` on the manifest entry.
+- Import `storage/` from a scene, or touch `localStorage` outside
+  `safe-storage.js`. Scenes get `onSave` and dialog openers injected.
+- Write a level that would not load (no flag, or more than 400 objects), or a
+  resume point for a level that is not saved.
+- Put dialog text on the board's wood fill: it goes on a paper sheet (issue 21).
 - Letterbox portrait or change `VIEW_H` — portrait is decided (2026-09-23): a
   rotate prompt, nothing in the Rendering Model changes.
 
@@ -1036,5 +1202,5 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–16 (all built and verified);
-17+ not yet written. Playbook: `context/README.md` Part 3.
+**Specs on disk:** `00-build-plan.md` plus units 00–17, all built and verified,
+and unit 18 (complete 2026-09-26); 19+ not yet written. Playbook: `context/README.md` Part 3.
