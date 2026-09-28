@@ -1,4 +1,4 @@
-const ZOOM_LEVELS = [0.5, 1, 2];
+export const ZOOM_LEVELS = [0.5, 1, 2];
 
 /**
  * @param {number} current

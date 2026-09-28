@@ -68,3 +68,33 @@ export function setVeiled(root, on) {
 export function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+/**
+ * A mouse or trackpad is the primary pointer: file export and import are offered
+ * there. Phones and tablets share levels as codes.
+ *
+ * @returns {boolean}
+ */
+export function hasFinePointer() {
+  return window.matchMedia('(pointer: fine)').matches;
+}
+
+/**
+ * Call `cb` when the page is hidden, which is the last reliable moment to save on a
+ * phone that may kill the tab in the background. Both events can fire for one
+ * hide, so `cb` must not mind running twice.
+ *
+ * @param {() => void} cb
+ * @returns {() => void} unsubscribe
+ */
+export function onPageHidden(cb) {
+  const onVisibility = () => {
+    if (document.visibilityState === 'hidden') cb();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('pagehide', cb);
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.removeEventListener('pagehide', cb);
+  };
+}

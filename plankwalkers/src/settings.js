@@ -15,6 +15,11 @@ export const WIPE_FADE = 0.05;
 // --ink. The canvas cannot read CSS custom properties.
 export const WIPE_COLOR = '#33323d';
 
+// Maker autosave, in seconds: once edits pause for AUTOSAVE_IDLE, or at the latest
+// AUTOSAVE_MAX after the first unsaved edit while they keep coming.
+export const AUTOSAVE_IDLE = 1;
+export const AUTOSAVE_MAX = 5;
+
 export const Z = {
   bg: 0,
   clouds: 1,

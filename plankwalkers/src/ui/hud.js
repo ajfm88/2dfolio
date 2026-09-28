@@ -2,10 +2,13 @@ import './styles/hud.css';
 import './styles/dialog.css';
 
 import { clear, el } from './dom.js';
+import { formatTime } from './format.js';
 
 /**
- * With `onEdit` (a test-play from the maker), the pause and results panels also
- * offer Back to editor.
+ * The pause and results panels also offer a way out: Back to editor with `onEdit`
+ * (a test-play from the maker), otherwise Level select with `onQuit` (a level
+ * played from level select). With `onNext` (the campaign, before its last level),
+ * Next level leads the results panel.
  *
  * @typedef {{
  *   levelName: string,
@@ -13,22 +16,10 @@ import { clear, el } from './dom.js';
  *   onResume: () => void,
  *   onReplay: () => void,
  *   onEdit?: () => void,
+ *   onQuit?: () => void,
+ *   onNext?: () => void,
  * }} HudOpts
  */
-
-/**
- * Format milliseconds as m:ss.cs (centiseconds).
- * @param {number} ms
- * @returns {string}
- */
-function formatTime(ms) {
-  const totalCs = Math.floor(ms / 10);
-  const cs = totalCs % 100;
-  const totalS = Math.floor(totalCs / 100);
-  const s = totalS % 60;
-  const m = Math.floor(totalS / 60);
-  return `${m}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
-}
 
 /**
  * Build the play-mode HUD into `root` (the #ui overlay). All document access for
@@ -114,21 +105,29 @@ export function createPlayHud(root, opts) {
   }
 
   /**
-   * The panel's action row: the primary button, then Back to editor when there is
-   * an editor to go back to.
-   * @param {HTMLElement} primary
+   * @param {string} text
+   * @param {() => void} onClick
+   * @param {boolean} [primary]
    */
-  function actions(primary) {
-    const row = el('div', { class: 'panel__actions' }, [primary]);
-    const onEdit = opts.onEdit;
-    if (onEdit) {
-      row.append(el('button', {
-        class: 'btn',
-        attrs: { type: 'button' },
-        text: 'Back to editor',
-        on: { click: () => onEdit() },
-      }));
-    }
+  function button(text, onClick, primary = false) {
+    return el('button', {
+      class: primary ? 'btn btn--primary' : 'btn',
+      attrs: { type: 'button' },
+      text,
+      on: { click: () => onClick() },
+    });
+  }
+
+  /**
+   * A panel's action row: its own buttons, primary first, then the way out — Back
+   * to editor, or Level select — when there is one.
+   * @param {HTMLElement[]} buttons
+   */
+  function actions(buttons) {
+    const row = el('div', { class: 'panel__actions' }, buttons);
+    const { onEdit, onQuit } = opts;
+    if (onEdit) row.append(button('Back to editor', onEdit));
+    else if (onQuit) row.append(button('Level select', onQuit));
     return row;
   }
 
@@ -154,36 +153,30 @@ export function createPlayHud(root, opts) {
         closeOverlay();
         return;
       }
-      const resume = el('button', {
-        class: 'btn btn--primary',
-        attrs: { type: 'button' },
-        text: 'Resume',
-        on: { click: () => opts.onResume() },
-      });
-      openOverlay('Paused', [actions(resume)], opts.onResume);
+      const resume = button('Resume', opts.onResume, true);
+      openOverlay('Paused', [actions([resume])], opts.onResume);
       resume.focus();
     },
 
-    /** @param {{ coins: number, timeMs: number }} result */
+    /** @param {{ treasure: number, timeMs: number }} result */
     showResults(result) {
       const stats = el('div', { class: 'panel__stats' }, [
         el('div', { class: 'panel__row' }, [
           el('span', { text: 'Treasure' }),
-          el('span', { text: String(result.coins) }),
+          el('span', { text: String(result.treasure) }),
         ]),
         el('div', { class: 'panel__row' }, [
           el('span', { text: 'Time' }),
           el('span', { text: formatTime(result.timeMs) }),
         ]),
       ]);
-      const replay = el('button', {
-        class: 'btn btn--primary',
-        attrs: { type: 'button' },
-        text: 'Play again',
-        on: { click: () => opts.onReplay() },
-      });
-      openOverlay('Level Complete', [stats, actions(replay)]);
-      replay.focus();
+      const onNext = opts.onNext;
+      const primary = onNext
+        ? button('Next level', onNext, true)
+        : button('Play again', opts.onReplay, true);
+      const own = onNext ? [primary, button('Play again', opts.onReplay)] : [primary];
+      openOverlay('Level Complete', [stats, actions(own)]);
+      primary.focus();
     },
 
     destroy() {
