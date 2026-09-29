@@ -9,7 +9,6 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "dist",
     "types": ["vitest/globals", "node"]
   },
   "include": ["src"]
