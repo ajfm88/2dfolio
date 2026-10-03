@@ -1,0 +1,47 @@
+{
+  "grassRate": 25,
+  "grass": [
+    {
+      "level": 3,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 3,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 4,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 4,
+      "pokemon": "NIDORAN_M"
+    },
+    {
+      "level": 4,
+      "pokemon": "NIDORAN_F"
+    },
+    {
+      "level": 5,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 6,
+      "pokemon": "NIDORAN_M"
+    },
+    {
+      "level": 6,
+      "pokemon": "NIDORAN_F"
+    },
+    {
+      "level": 7,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 7,
+      "pokemon": "PIDGEY"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

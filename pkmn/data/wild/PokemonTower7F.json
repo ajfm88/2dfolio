@@ -1,0 +1,47 @@
+{
+  "grassRate": 20,
+  "grass": [
+    {
+      "level": 24,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 25,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 26,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 27,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 28,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 23,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 24,
+      "pokemon": "CUBONE"
+    },
+    {
+      "level": 29,
+      "pokemon": "GASTLY"
+    },
+    {
+      "level": 24,
+      "pokemon": "HAUNTER"
+    },
+    {
+      "level": 29,
+      "pokemon": "HAUNTER"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

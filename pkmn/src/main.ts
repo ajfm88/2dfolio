@@ -299,18 +299,8 @@ function renderSplash(): void {
 }
 
 async function init(): Promise<void> {
-  // Always require ROM — no static game assets are shipped with the code.
-  // After first upload, IndexedDB cache provides instant loads.
-  const useRom = true;
-  if (useRom) {
-    const { tryLoadFromCache, showUploadScreen } = await import('./rom/upload_ui');
-    // Try loading from IndexedDB cache first (instant if previously uploaded)
-    const cached = await tryLoadFromCache();
-    if (!cached) {
-      await showUploadScreen();
-    }
-  }
-
+  // All game data is plain static files (static/, the Vite publicDir) — the
+  // browser never loads or needs a ROM (Hard rule #1).
   initRenderer();
   initAudio();
   initTouchControls();
@@ -342,6 +332,7 @@ async function init(): Promise<void> {
   document.addEventListener('click', onSplashClick);
 
   requestAnimationFrame(gameLoop);
+  startBackgroundTicker();
 }
 
 /** Load a saved game and transition to overworld. */
@@ -1390,14 +1381,11 @@ function gameTick(): void {
   }
 }
 
-function gameLoop(now = 0): void {
-  requestAnimationFrame(gameLoop);
-
-  if (paused) return;
-
+/** Run the game ticks due at `now`. Returns false if none were due. */
+function runDueTicks(now: number): boolean {
   // Run multiple update ticks if targetFps exceeds monitor refresh rate
   const elapsed = now - lastFrameTime;
-  if (elapsed < targetFrameMs) return;
+  if (elapsed < targetFrameMs) return false;
   const ticks = Math.min(Math.floor(elapsed / targetFrameMs), 4); // cap at 4 to avoid spiral
   lastFrameTime = now;
 
@@ -1405,6 +1393,32 @@ function gameLoop(now = 0): void {
     updateInput();
     gameTick();
   }
+  return true;
+}
+
+// Browsers stop requestAnimationFrame in background tabs, which froze the whole
+// game — music included. A worker timer (not throttled like main-thread timers)
+// keeps the game ticking whenever rAF has gone idle; drawing resumes with rAF.
+const BACKGROUND_TICK_MS = 8;
+const RAF_IDLE_MS = 100;
+let lastRafTime = 0;
+
+function startBackgroundTicker(): void {
+  const src = `setInterval(() => postMessage(0), ${BACKGROUND_TICK_MS});`;
+  const worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  worker.onmessage = () => {
+    const now = performance.now();
+    if (paused || now - lastRafTime < RAF_IDLE_MS) return;
+    runDueTicks(now);
+  };
+}
+
+function gameLoop(now = 0): void {
+  requestAnimationFrame(gameLoop);
+  lastRafTime = performance.now();
+
+  if (paused) return;
+  if (!runDueTicks(now)) return;
 
   // Update debug panel (HTML, outside canvas)
   updateDebugPanel(currentBattle, playerBag, player, gameMap, playerParty);

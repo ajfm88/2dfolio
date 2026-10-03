@@ -1,0 +1,88 @@
+{
+  "grassRate": 15,
+  "grass": [
+    {
+      "level": 25,
+      "pokemon": "ODDISH"
+    },
+    {
+      "level": 25,
+      "pokemon": "BELLSPROUT"
+    },
+    {
+      "level": 28,
+      "pokemon": "PIDGEOTTO"
+    },
+    {
+      "level": 28,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 27,
+      "pokemon": "ODDISH"
+    },
+    {
+      "level": 27,
+      "pokemon": "BELLSPROUT"
+    },
+    {
+      "level": 29,
+      "pokemon": "GLOOM"
+    },
+    {
+      "level": 29,
+      "pokemon": "WEEPINBELL"
+    },
+    {
+      "level": 26,
+      "pokemon": "FARFETCHD"
+    },
+    {
+      "level": 31,
+      "pokemon": "FARFETCHD"
+    }
+  ],
+  "waterRate": 3,
+  "water": [
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 15,
+      "pokemon": "SLOWBRO"
+    },
+    {
+      "level": 20,
+      "pokemon": "SLOWBRO"
+    }
+  ]
+}

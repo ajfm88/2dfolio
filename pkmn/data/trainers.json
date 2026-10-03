@@ -1,0 +1,5465 @@
+{
+  "YOUNGSTER": {
+    "id": 1,
+    "displayName": "YOUNGSTER",
+    "baseMoney": 15,
+    "aiModifiers": [],
+    "parties": [
+      [
+        {
+          "species": "RATTATA",
+          "level": 11
+        },
+        {
+          "species": "EKANS",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 10
+        },
+        {
+          "species": "RATTATA",
+          "level": 10
+        },
+        {
+          "species": "ZUBAT",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 14
+        },
+        {
+          "species": "EKANS",
+          "level": 14
+        },
+        {
+          "species": "ZUBAT",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 15
+        },
+        {
+          "species": "SPEAROW",
+          "level": 15
+        }
+      ],
+      [
+        {
+          "species": "SLOWPOKE",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 14
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_M",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "SANDSHREW",
+          "level": 19
+        },
+        {
+          "species": "ZUBAT",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 17
+        },
+        {
+          "species": "RATTATA",
+          "level": 17
+        },
+        {
+          "species": "RATICATE",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_M",
+          "level": 18
+        },
+        {
+          "species": "NIDORINO",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 17
+        },
+        {
+          "species": "RATTATA",
+          "level": 17
+        },
+        {
+          "species": "RATTATA",
+          "level": 17
+        },
+        {
+          "species": "SPEAROW",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "SANDSHREW",
+          "level": 24,
+          "moveOverrides": {
+            "4": "FISSURE"
+          }
+        }
+      ]
+    ]
+  },
+  "BUG_CATCHER": {
+    "id": 2,
+    "displayName": "BUG CATCHER",
+    "baseMoney": 10,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "CATERPIE",
+          "level": 7
+        },
+        {
+          "species": "CATERPIE",
+          "level": 7
+        }
+      ],
+      [
+        {
+          "species": "METAPOD",
+          "level": 6
+        },
+        {
+          "species": "CATERPIE",
+          "level": 6
+        },
+        {
+          "species": "METAPOD",
+          "level": 6
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 10
+        },
+        {
+          "species": "WEEDLE",
+          "level": 10
+        },
+        {
+          "species": "CATERPIE",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "WEEDLE",
+          "level": 9
+        },
+        {
+          "species": "KAKUNA",
+          "level": 9
+        },
+        {
+          "species": "CATERPIE",
+          "level": 9
+        },
+        {
+          "species": "METAPOD",
+          "level": 9
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 11
+        },
+        {
+          "species": "METAPOD",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "WEEDLE",
+          "level": 11
+        },
+        {
+          "species": "KAKUNA",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 10
+        },
+        {
+          "species": "METAPOD",
+          "level": 10
+        },
+        {
+          "species": "CATERPIE",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 14
+        },
+        {
+          "species": "WEEDLE",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "WEEDLE",
+          "level": 16
+        },
+        {
+          "species": "CATERPIE",
+          "level": 16
+        },
+        {
+          "species": "WEEDLE",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "BUTTERFREE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "METAPOD",
+          "level": 18
+        },
+        {
+          "species": "CATERPIE",
+          "level": 18
+        },
+        {
+          "species": "VENONAT",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "BEEDRILL",
+          "level": 19
+        },
+        {
+          "species": "BEEDRILL",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 20
+        },
+        {
+          "species": "WEEDLE",
+          "level": 20
+        },
+        {
+          "species": "VENONAT",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "CATERPIE",
+          "level": 8
+        },
+        {
+          "species": "METAPOD",
+          "level": 8,
+          "moveOverrides": {
+            "2": "TACKLE",
+            "3": "STRING_SHOT"
+          }
+        }
+      ]
+    ]
+  },
+  "LASS": {
+    "id": 3,
+    "displayName": "LASS",
+    "baseMoney": 15,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "PIDGEY",
+          "level": 9
+        },
+        {
+          "species": "PIDGEY",
+          "level": 9
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 10
+        },
+        {
+          "species": "NIDORAN_M",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "JIGGLYPUFF",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "PARAS",
+          "level": 31
+        },
+        {
+          "species": "PARAS",
+          "level": 31
+        },
+        {
+          "species": "PARASECT",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 11
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "CLEFAIRY",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 16
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 14
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_M",
+          "level": 15
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 15
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 13
+        },
+        {
+          "species": "PIDGEY",
+          "level": 13
+        },
+        {
+          "species": "ODDISH",
+          "level": 13
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 18
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "JIGGLYPUFF",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_F",
+          "level": 23
+        },
+        {
+          "species": "NIDORINA",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "MEOWTH",
+          "level": 24
+        },
+        {
+          "species": "MEOWTH",
+          "level": 24
+        },
+        {
+          "species": "MEOWTH",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 19
+        },
+        {
+          "species": "RATTATA",
+          "level": 19
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 19
+        },
+        {
+          "species": "MEOWTH",
+          "level": 19
+        },
+        {
+          "species": "NIDORAN_M",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "CLEFAIRY",
+          "level": 22
+        },
+        {
+          "species": "CLEFAIRY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 23
+        },
+        {
+          "species": "WEEPINBELL",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 23
+        },
+        {
+          "species": "GLOOM",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_F",
+          "level": 6
+        },
+        {
+          "species": "NIDORAN_M",
+          "level": 6
+        }
+      ]
+    ]
+  },
+  "SAILOR": {
+    "id": 4,
+    "displayName": "SAILOR",
+    "baseMoney": 30,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "MACHOP",
+          "level": 18
+        },
+        {
+          "species": "SHELLDER",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 17
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "SHELLDER",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "HORSEA",
+          "level": 17
+        },
+        {
+          "species": "SHELLDER",
+          "level": 17
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 18
+        },
+        {
+          "species": "STARYU",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "HORSEA",
+          "level": 17
+        },
+        {
+          "species": "HORSEA",
+          "level": 17
+        },
+        {
+          "species": "HORSEA",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 24
+        }
+      ]
+    ]
+  },
+  "JR_TRAINER_M": {
+    "id": 5,
+    "displayName": "JR.TRAINER♂",
+    "baseMoney": 20,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "DIGLETT",
+          "level": 9
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 9
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 14
+        },
+        {
+          "species": "EKANS",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "MANKEY",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "SQUIRTLE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 16
+        },
+        {
+          "species": "RATICATE",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "DIGLETT",
+          "level": 18
+        },
+        {
+          "species": "DIGLETT",
+          "level": 18
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 21
+        },
+        {
+          "species": "CHARMANDER",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 19
+        },
+        {
+          "species": "DIGLETT",
+          "level": 19
+        },
+        {
+          "species": "EKANS",
+          "level": 19
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_M",
+          "level": 29
+        },
+        {
+          "species": "NIDORINO",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "WEEPINBELL",
+          "level": 16
+        }
+      ]
+    ]
+  },
+  "JR_TRAINER_F": {
+    "id": 6,
+    "displayName": "JR.TRAINER♀",
+    "baseMoney": 20,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 16
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 16
+        },
+        {
+          "species": "PIDGEY",
+          "level": 16
+        },
+        {
+          "species": "PIDGEY",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "BULBASAUR",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 18
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 18
+        },
+        {
+          "species": "ODDISH",
+          "level": 18
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "MEOWTH",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "JIGGLYPUFF",
+          "level": 20
+        },
+        {
+          "species": "CLEFAIRY",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 21
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "JIGGLYPUFF",
+          "level": 21
+        },
+        {
+          "species": "PIDGEY",
+          "level": 21
+        },
+        {
+          "species": "MEOWTH",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "ODDISH",
+          "level": 22
+        },
+        {
+          "species": "BULBASAUR",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "BULBASAUR",
+          "level": 24
+        },
+        {
+          "species": "IVYSAUR",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 24
+        },
+        {
+          "species": "MEOWTH",
+          "level": 24
+        },
+        {
+          "species": "RATTATA",
+          "level": 24
+        },
+        {
+          "species": "PIDGEY",
+          "level": 24
+        },
+        {
+          "species": "MEOWTH",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 30
+        },
+        {
+          "species": "POLIWAG",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 27
+        },
+        {
+          "species": "MEOWTH",
+          "level": 27
+        },
+        {
+          "species": "PIDGEY",
+          "level": 27
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 28
+        },
+        {
+          "species": "POLIWAG",
+          "level": 28
+        },
+        {
+          "species": "HORSEA",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 31
+        },
+        {
+          "species": "SEAKING",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 22
+        },
+        {
+          "species": "CLEFAIRY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "MEOWTH",
+          "level": 20
+        },
+        {
+          "species": "ODDISH",
+          "level": 20
+        },
+        {
+          "species": "PIDGEY",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 19
+        },
+        {
+          "species": "RATTATA",
+          "level": 19
+        },
+        {
+          "species": "RATTATA",
+          "level": 19
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "GLOOM",
+          "level": 28
+        },
+        {
+          "species": "ODDISH",
+          "level": 28
+        },
+        {
+          "species": "ODDISH",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 29
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "CLEFAIRY",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 29
+        },
+        {
+          "species": "ODDISH",
+          "level": 29
+        },
+        {
+          "species": "TANGELA",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 30
+        },
+        {
+          "species": "HORSEA",
+          "level": 30
+        },
+        {
+          "species": "SEEL",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 20
+        }
+      ]
+    ]
+  },
+  "POKEMANIAC": {
+    "id": 7,
+    "displayName": "POKéMANIAC",
+    "baseMoney": 50,
+    "aiModifiers": [
+      1,
+      2,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "RHYHORN",
+          "level": 30
+        },
+        {
+          "species": "LICKITUNG",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 20
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "SLOWPOKE",
+          "level": 20
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 20
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "CHARMANDER",
+          "level": 22
+        },
+        {
+          "species": "CUBONE",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "SLOWPOKE",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "CHARMELEON",
+          "level": 40
+        },
+        {
+          "species": "LAPRAS",
+          "level": 40
+        },
+        {
+          "species": "LICKITUNG",
+          "level": 40
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 23
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 23
+        }
+      ]
+    ]
+  },
+  "SUPER_NERD": {
+    "id": 8,
+    "displayName": "SUPER NERD",
+    "baseMoney": 25,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": [
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 11
+        },
+        {
+          "species": "VOLTORB",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 12
+        },
+        {
+          "species": "VOLTORB",
+          "level": 12
+        },
+        {
+          "species": "KOFFING",
+          "level": 12
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 20
+        },
+        {
+          "species": "KOFFING",
+          "level": 20
+        },
+        {
+          "species": "VOLTORB",
+          "level": 20
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 22
+        },
+        {
+          "species": "MUK",
+          "level": 22
+        },
+        {
+          "species": "GRIMER",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 22
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 22
+        },
+        {
+          "species": "WEEZING",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 20
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 20
+        },
+        {
+          "species": "KOFFING",
+          "level": 20
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 24
+        },
+        {
+          "species": "VOLTORB",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "VULPIX",
+          "level": 36
+        },
+        {
+          "species": "VULPIX",
+          "level": 36
+        },
+        {
+          "species": "NINETALES",
+          "level": 36
+        }
+      ],
+      [
+        {
+          "species": "PONYTA",
+          "level": 34
+        },
+        {
+          "species": "CHARMANDER",
+          "level": 34
+        },
+        {
+          "species": "VULPIX",
+          "level": 34
+        },
+        {
+          "species": "GROWLITHE",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "RAPIDASH",
+          "level": 41
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 37
+        },
+        {
+          "species": "VULPIX",
+          "level": 37
+        }
+      ]
+    ]
+  },
+  "HIKER": {
+    "id": 9,
+    "displayName": "HIKER",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "GEODUDE",
+          "level": 10
+        },
+        {
+          "species": "GEODUDE",
+          "level": 10
+        },
+        {
+          "species": "ONIX",
+          "level": 10
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 15
+        },
+        {
+          "species": "GEODUDE",
+          "level": 15
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 13
+        },
+        {
+          "species": "GEODUDE",
+          "level": 13
+        },
+        {
+          "species": "MACHOP",
+          "level": 13
+        },
+        {
+          "species": "GEODUDE",
+          "level": 13
+        }
+      ],
+      [
+        {
+          "species": "ONIX",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 21
+        },
+        {
+          "species": "ONIX",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 20
+        },
+        {
+          "species": "MACHOP",
+          "level": 20
+        },
+        {
+          "species": "GEODUDE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 21
+        },
+        {
+          "species": "ONIX",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "ONIX",
+          "level": 19
+        },
+        {
+          "species": "GRAVELER",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 21
+        },
+        {
+          "species": "GEODUDE",
+          "level": 21
+        },
+        {
+          "species": "GRAVELER",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 20
+        },
+        {
+          "species": "ONIX",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 19
+        },
+        {
+          "species": "MACHOP",
+          "level": 19
+        },
+        {
+          "species": "GEODUDE",
+          "level": 19
+        },
+        {
+          "species": "GEODUDE",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "ONIX",
+          "level": 20
+        },
+        {
+          "species": "ONIX",
+          "level": 20
+        },
+        {
+          "species": "GEODUDE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "GEODUDE",
+          "level": 21
+        },
+        {
+          "species": "GRAVELER",
+          "level": 21
+        }
+      ]
+    ]
+  },
+  "BIKER": {
+    "id": 10,
+    "displayName": "BIKER",
+    "baseMoney": 20,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "KOFFING",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 29
+        },
+        {
+          "species": "GRIMER",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "WEEZING",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "GRIMER",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 28
+        },
+        {
+          "species": "GRIMER",
+          "level": 28
+        },
+        {
+          "species": "WEEZING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 29
+        },
+        {
+          "species": "KOFFING",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 26
+        },
+        {
+          "species": "GRIMER",
+          "level": 26
+        },
+        {
+          "species": "GRIMER",
+          "level": 26
+        },
+        {
+          "species": "GRIMER",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        },
+        {
+          "species": "WEEZING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "MUK",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 29
+        },
+        {
+          "species": "VOLTORB",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 29
+        },
+        {
+          "species": "MUK",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "WEEZING",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "WEEZING",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "GRIMER",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 28
+        },
+        {
+          "species": "GRIMER",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 29
+        },
+        {
+          "species": "MUK",
+          "level": 29
+        }
+      ]
+    ]
+  },
+  "BURGLAR": {
+    "id": 11,
+    "displayName": "BURGLAR",
+    "baseMoney": 90,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 29
+        },
+        {
+          "species": "VULPIX",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "VULPIX",
+          "level": 28
+        },
+        {
+          "species": "CHARMANDER",
+          "level": 28
+        },
+        {
+          "species": "PONYTA",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 36
+        },
+        {
+          "species": "VULPIX",
+          "level": 36
+        },
+        {
+          "species": "NINETALES",
+          "level": 36
+        }
+      ],
+      [
+        {
+          "species": "PONYTA",
+          "level": 41
+        }
+      ],
+      [
+        {
+          "species": "VULPIX",
+          "level": 37
+        },
+        {
+          "species": "GROWLITHE",
+          "level": 37
+        }
+      ],
+      [
+        {
+          "species": "CHARMANDER",
+          "level": 34
+        },
+        {
+          "species": "CHARMELEON",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "NINETALES",
+          "level": 38
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 34
+        },
+        {
+          "species": "PONYTA",
+          "level": 34
+        }
+      ]
+    ]
+  },
+  "ENGINEER": {
+    "id": 12,
+    "displayName": "ENGINEER",
+    "baseMoney": 50,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "VOLTORB",
+          "level": 21
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 18
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 18
+        },
+        {
+          "species": "MAGNETON",
+          "level": 18
+        }
+      ]
+    ]
+  },
+  "UNUSED_JUGGLER": {
+    "id": 13,
+    "displayName": "JUGGLER",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": []
+  },
+  "FISHER": {
+    "id": 14,
+    "displayName": "FISHERMAN",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 17
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 17
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 17
+        },
+        {
+          "species": "STARYU",
+          "level": 17
+        },
+        {
+          "species": "SHELLDER",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 22
+        },
+        {
+          "species": "POLIWAG",
+          "level": 22
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 24
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 21
+        },
+        {
+          "species": "SHELLDER",
+          "level": 21
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 21
+        },
+        {
+          "species": "HORSEA",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "SEAKING",
+          "level": 28
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 28
+        },
+        {
+          "species": "SEAKING",
+          "level": 28
+        },
+        {
+          "species": "SEAKING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "SHELLDER",
+          "level": 31
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "SEAKING",
+          "level": 33
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MAGIKARP",
+          "level": 24
+        },
+        {
+          "species": "MAGIKARP",
+          "level": 24
+        }
+      ]
+    ]
+  },
+  "SWIMMER": {
+    "id": 15,
+    "displayName": "SWIMMER",
+    "baseMoney": 5,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "HORSEA",
+          "level": 16
+        },
+        {
+          "species": "SHELLDER",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 30
+        },
+        {
+          "species": "SHELLDER",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 29
+        },
+        {
+          "species": "HORSEA",
+          "level": 29
+        },
+        {
+          "species": "STARYU",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 30
+        },
+        {
+          "species": "POLIWHIRL",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "HORSEA",
+          "level": 27
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 27
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 27
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 29
+        },
+        {
+          "species": "SHELLDER",
+          "level": 29
+        },
+        {
+          "species": "SEAKING",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "HORSEA",
+          "level": 30
+        },
+        {
+          "species": "HORSEA",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 27
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 27
+        },
+        {
+          "species": "STARYU",
+          "level": 27
+        },
+        {
+          "species": "HORSEA",
+          "level": 27
+        },
+        {
+          "species": "TENTACRUEL",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "SHELLDER",
+          "level": 31
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "STARYU",
+          "level": 35
+        }
+      ],
+      [
+        {
+          "species": "HORSEA",
+          "level": 28
+        },
+        {
+          "species": "HORSEA",
+          "level": 28
+        },
+        {
+          "species": "SEADRA",
+          "level": 28
+        },
+        {
+          "species": "HORSEA",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "SEADRA",
+          "level": 33
+        },
+        {
+          "species": "TENTACRUEL",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "STARMIE",
+          "level": 37
+        }
+      ],
+      [
+        {
+          "species": "STARYU",
+          "level": 33
+        },
+        {
+          "species": "WARTORTLE",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "POLIWHIRL",
+          "level": 32
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 32
+        },
+        {
+          "species": "SEADRA",
+          "level": 32
+        }
+      ]
+    ]
+  },
+  "CUE_BALL": {
+    "id": 16,
+    "displayName": "CUE BALL",
+    "baseMoney": 25,
+    "aiModifiers": [],
+    "parties": [
+      [
+        {
+          "species": "MACHOP",
+          "level": 28
+        },
+        {
+          "species": "MANKEY",
+          "level": 28
+        },
+        {
+          "species": "MACHOP",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "MANKEY",
+          "level": 29
+        },
+        {
+          "species": "MACHOP",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MANKEY",
+          "level": 29
+        },
+        {
+          "species": "PRIMEAPE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 29
+        },
+        {
+          "species": "MACHOKE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "MACHOKE",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MANKEY",
+          "level": 26
+        },
+        {
+          "species": "MANKEY",
+          "level": 26
+        },
+        {
+          "species": "MACHOKE",
+          "level": 26
+        },
+        {
+          "species": "MACHOP",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "PRIMEAPE",
+          "level": 29
+        },
+        {
+          "species": "MACHOKE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "TENTACOOL",
+          "level": 31
+        },
+        {
+          "species": "TENTACOOL",
+          "level": 31
+        },
+        {
+          "species": "TENTACRUEL",
+          "level": 31
+        }
+      ]
+    ]
+  },
+  "GAMBLER": {
+    "id": 17,
+    "displayName": "GAMBLER",
+    "baseMoney": 70,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "POLIWAG",
+          "level": 18
+        },
+        {
+          "species": "HORSEA",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 18
+        },
+        {
+          "species": "ODDISH",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 18
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 18
+        },
+        {
+          "species": "VULPIX",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 22
+        },
+        {
+          "species": "POLIWAG",
+          "level": 22
+        },
+        {
+          "species": "POLIWHIRL",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "ONIX",
+          "level": 22
+        },
+        {
+          "species": "GEODUDE",
+          "level": 22
+        },
+        {
+          "species": "GRAVELER",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 24
+        },
+        {
+          "species": "VULPIX",
+          "level": 24
+        }
+      ]
+    ]
+  },
+  "BEAUTY": {
+    "id": 18,
+    "displayName": "BEAUTY",
+    "baseMoney": 70,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "ODDISH",
+          "level": 21
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 21
+        },
+        {
+          "species": "ODDISH",
+          "level": 21
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 24
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "EXEGGCUTE",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 27
+        },
+        {
+          "species": "VULPIX",
+          "level": 27
+        },
+        {
+          "species": "RATTATA",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "CLEFAIRY",
+          "level": 29
+        },
+        {
+          "species": "MEOWTH",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "SEAKING",
+          "level": 35
+        }
+      ],
+      [
+        {
+          "species": "SHELLDER",
+          "level": 30
+        },
+        {
+          "species": "SHELLDER",
+          "level": 30
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 31
+        },
+        {
+          "species": "SEAKING",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "PIDGEOTTO",
+          "level": 29
+        },
+        {
+          "species": "WIGGLYTUFF",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "BULBASAUR",
+          "level": 29
+        },
+        {
+          "species": "IVYSAUR",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "WEEPINBELL",
+          "level": 33
+        },
+        {
+          "species": "BELLSPROUT",
+          "level": 33
+        },
+        {
+          "species": "WEEPINBELL",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "POLIWAG",
+          "level": 27
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 27
+        },
+        {
+          "species": "SEAKING",
+          "level": 27
+        },
+        {
+          "species": "GOLDEEN",
+          "level": 27
+        },
+        {
+          "species": "POLIWAG",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "GOLDEEN",
+          "level": 30
+        },
+        {
+          "species": "SEAKING",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "STARYU",
+          "level": 29
+        },
+        {
+          "species": "STARYU",
+          "level": 29
+        },
+        {
+          "species": "STARYU",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "SEADRA",
+          "level": 30
+        },
+        {
+          "species": "HORSEA",
+          "level": 30
+        },
+        {
+          "species": "SEADRA",
+          "level": 30
+        }
+      ]
+    ]
+  },
+  "PSYCHIC_TR": {
+    "id": 19,
+    "displayName": "PSYCHIC",
+    "baseMoney": 10,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": [
+      [
+        {
+          "species": "KADABRA",
+          "level": 31
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 31
+        },
+        {
+          "species": "MR_MIME",
+          "level": 31
+        },
+        {
+          "species": "KADABRA",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "MR_MIME",
+          "level": 34
+        },
+        {
+          "species": "KADABRA",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "SLOWPOKE",
+          "level": 33
+        },
+        {
+          "species": "SLOWPOKE",
+          "level": 33
+        },
+        {
+          "species": "SLOWBRO",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "SLOWBRO",
+          "level": 38
+        }
+      ]
+    ]
+  },
+  "ROCKER": {
+    "id": 20,
+    "displayName": "ROCKER",
+    "baseMoney": 25,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "VOLTORB",
+          "level": 20
+        },
+        {
+          "species": "VOLTORB",
+          "level": 20
+        },
+        {
+          "species": "VOLTORB",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 29
+        },
+        {
+          "species": "ELECTRODE",
+          "level": 29
+        }
+      ]
+    ]
+  },
+  "JUGGLER": {
+    "id": 21,
+    "displayName": "JUGGLER",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "KADABRA",
+          "level": 29
+        },
+        {
+          "species": "MR_MIME",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 41
+        },
+        {
+          "species": "HYPNO",
+          "level": 41
+        },
+        {
+          "species": "KADABRA",
+          "level": 41
+        },
+        {
+          "species": "KADABRA",
+          "level": 41
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 31
+        },
+        {
+          "species": "DROWZEE",
+          "level": 31
+        },
+        {
+          "species": "KADABRA",
+          "level": 31
+        },
+        {
+          "species": "DROWZEE",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 34
+        },
+        {
+          "species": "HYPNO",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "MR_MIME",
+          "level": 48
+        }
+      ],
+      [
+        {
+          "species": "HYPNO",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "HYPNO",
+          "level": 38
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 34
+        },
+        {
+          "species": "KADABRA",
+          "level": 34
+        }
+      ]
+    ]
+  },
+  "TAMER": {
+    "id": 22,
+    "displayName": "TAMER",
+    "baseMoney": 40,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 34
+        },
+        {
+          "species": "ARBOK",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "ARBOK",
+          "level": 33
+        },
+        {
+          "species": "SANDSLASH",
+          "level": 33
+        },
+        {
+          "species": "ARBOK",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "RHYHORN",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "ARBOK",
+          "level": 39
+        },
+        {
+          "species": "TAUROS",
+          "level": 39
+        }
+      ],
+      [
+        {
+          "species": "PERSIAN",
+          "level": 44
+        },
+        {
+          "species": "GOLDUCK",
+          "level": 44
+        }
+      ],
+      [
+        {
+          "species": "RHYHORN",
+          "level": 42
+        },
+        {
+          "species": "PRIMEAPE",
+          "level": 42
+        },
+        {
+          "species": "ARBOK",
+          "level": 42
+        },
+        {
+          "species": "TAUROS",
+          "level": 42
+        }
+      ]
+    ]
+  },
+  "BIRD_KEEPER": {
+    "id": 23,
+    "displayName": "BIRD KEEPER",
+    "baseMoney": 25,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "PIDGEY",
+          "level": 29
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 25
+        },
+        {
+          "species": "PIDGEY",
+          "level": 25
+        },
+        {
+          "species": "PIDGEY",
+          "level": 25
+        },
+        {
+          "species": "SPEAROW",
+          "level": 25
+        },
+        {
+          "species": "SPEAROW",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 26
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 26
+        },
+        {
+          "species": "SPEAROW",
+          "level": 26
+        },
+        {
+          "species": "FEAROW",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "FARFETCHD",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 29
+        },
+        {
+          "species": "FEAROW",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "PIDGEOTTO",
+          "level": 26
+        },
+        {
+          "species": "FARFETCHD",
+          "level": 26
+        },
+        {
+          "species": "DODUO",
+          "level": 26
+        },
+        {
+          "species": "PIDGEY",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "DODRIO",
+          "level": 28
+        },
+        {
+          "species": "DODUO",
+          "level": 28
+        },
+        {
+          "species": "DODUO",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 29
+        },
+        {
+          "species": "FEAROW",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "DODRIO",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 26
+        },
+        {
+          "species": "SPEAROW",
+          "level": 26
+        },
+        {
+          "species": "FEAROW",
+          "level": 26
+        },
+        {
+          "species": "SPEAROW",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "FEAROW",
+          "level": 30
+        },
+        {
+          "species": "FEAROW",
+          "level": 30
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 30
+        }
+      ],
+      [
+        {
+          "species": "PIDGEOTTO",
+          "level": 39
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 39
+        },
+        {
+          "species": "PIDGEY",
+          "level": 39
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 39
+        }
+      ],
+      [
+        {
+          "species": "FARFETCHD",
+          "level": 42
+        },
+        {
+          "species": "FEAROW",
+          "level": 42
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 28
+        },
+        {
+          "species": "DODUO",
+          "level": 28
+        },
+        {
+          "species": "PIDGEOTTO",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "PIDGEY",
+          "level": 26
+        },
+        {
+          "species": "SPEAROW",
+          "level": 26
+        },
+        {
+          "species": "PIDGEY",
+          "level": 26
+        },
+        {
+          "species": "FEAROW",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "PIDGEOTTO",
+          "level": 29
+        },
+        {
+          "species": "FEAROW",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 28
+        },
+        {
+          "species": "DODUO",
+          "level": 28
+        },
+        {
+          "species": "FEAROW",
+          "level": 28
+        }
+      ]
+    ]
+  },
+  "BLACKBELT": {
+    "id": 24,
+    "displayName": "BLACKBELT",
+    "baseMoney": 25,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "HITMONLEE",
+          "level": 37
+        },
+        {
+          "species": "HITMONCHAN",
+          "level": 37
+        }
+      ],
+      [
+        {
+          "species": "MANKEY",
+          "level": 31
+        },
+        {
+          "species": "MANKEY",
+          "level": 31
+        },
+        {
+          "species": "PRIMEAPE",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 32
+        },
+        {
+          "species": "MACHOKE",
+          "level": 32
+        }
+      ],
+      [
+        {
+          "species": "PRIMEAPE",
+          "level": 36
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 31
+        },
+        {
+          "species": "MANKEY",
+          "level": 31
+        },
+        {
+          "species": "PRIMEAPE",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 40
+        },
+        {
+          "species": "MACHOKE",
+          "level": 40
+        }
+      ],
+      [
+        {
+          "species": "MACHOKE",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "MACHOKE",
+          "level": 38
+        },
+        {
+          "species": "MACHOP",
+          "level": 38
+        },
+        {
+          "species": "MACHOKE",
+          "level": 38
+        }
+      ],
+      [
+        {
+          "species": "MACHOKE",
+          "level": 43
+        },
+        {
+          "species": "MACHOP",
+          "level": 43
+        },
+        {
+          "species": "MACHOKE",
+          "level": 43
+        }
+      ]
+    ]
+  },
+  "RIVAL1": {
+    "id": 25,
+    "displayName": "RIVAL1",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "EEVEE",
+          "level": 5
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 9
+        },
+        {
+          "species": "EEVEE",
+          "level": 8
+        }
+      ],
+      [
+        {
+          "species": "SPEAROW",
+          "level": 18
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 15
+        },
+        {
+          "species": "RATTATA",
+          "level": 15
+        },
+        {
+          "species": "EEVEE",
+          "level": 17
+        }
+      ]
+    ]
+  },
+  "PROF_OAK": {
+    "id": 26,
+    "displayName": "PROF.OAK",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "TAUROS",
+          "level": 66
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 67
+        },
+        {
+          "species": "ARCANINE",
+          "level": 68
+        },
+        {
+          "species": "BLASTOISE",
+          "level": 69
+        },
+        {
+          "species": "GYARADOS",
+          "level": 70
+        }
+      ],
+      [
+        {
+          "species": "TAUROS",
+          "level": 66
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 67
+        },
+        {
+          "species": "ARCANINE",
+          "level": 68
+        },
+        {
+          "species": "VENUSAUR",
+          "level": 69
+        },
+        {
+          "species": "GYARADOS",
+          "level": 70
+        }
+      ],
+      [
+        {
+          "species": "TAUROS",
+          "level": 66
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 67
+        },
+        {
+          "species": "ARCANINE",
+          "level": 68
+        },
+        {
+          "species": "CHARIZARD",
+          "level": 69
+        },
+        {
+          "species": "GYARADOS",
+          "level": 70
+        }
+      ]
+    ]
+  },
+  "CHIEF": {
+    "id": 27,
+    "displayName": "CHIEF",
+    "baseMoney": 30,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": []
+  },
+  "SCIENTIST": {
+    "id": 28,
+    "displayName": "SCIENTIST",
+    "baseMoney": 50,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": [
+      [
+        {
+          "species": "KOFFING",
+          "level": 34
+        },
+        {
+          "species": "VOLTORB",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 26
+        },
+        {
+          "species": "WEEZING",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "WEEZING",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 28
+        },
+        {
+          "species": "VOLTORB",
+          "level": 28
+        },
+        {
+          "species": "MAGNETON",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "ELECTRODE",
+          "level": 29
+        },
+        {
+          "species": "WEEZING",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "ELECTRODE",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MAGNETON",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "WEEZING",
+          "level": 26
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "MAGNETON",
+          "level": 25
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 25
+        },
+        {
+          "species": "KOFFING",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "ELECTRODE",
+          "level": 29
+        },
+        {
+          "species": "MUK",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 29
+        },
+        {
+          "species": "ELECTRODE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        },
+        {
+          "species": "MAGNETON",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 29
+        },
+        {
+          "species": "KOFFING",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 33
+        },
+        {
+          "species": "MAGNETON",
+          "level": 33
+        },
+        {
+          "species": "VOLTORB",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MAGNEMITE",
+          "level": 34
+        },
+        {
+          "species": "ELECTRODE",
+          "level": 34
+        }
+      ]
+    ]
+  },
+  "GIOVANNI": {
+    "id": 29,
+    "displayName": "GIOVANNI",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "ONIX",
+          "level": 25
+        },
+        {
+          "species": "RHYHORN",
+          "level": 24
+        },
+        {
+          "species": "PERSIAN",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "NIDORINO",
+          "level": 37
+        },
+        {
+          "species": "PERSIAN",
+          "level": 35
+        },
+        {
+          "species": "RHYHORN",
+          "level": 37
+        },
+        {
+          "species": "NIDOQUEEN",
+          "level": 41
+        }
+      ],
+      [
+        {
+          "species": "DUGTRIO",
+          "level": 50,
+          "moveOverrides": {
+            "3": "FISSURE"
+          }
+        },
+        {
+          "species": "PERSIAN",
+          "level": 53,
+          "moveOverrides": {
+            "2": "DOUBLE_TEAM"
+          }
+        },
+        {
+          "species": "NIDOQUEEN",
+          "level": 53,
+          "moveOverrides": {
+            "1": "EARTHQUAKE",
+            "3": "THUNDER"
+          }
+        },
+        {
+          "species": "NIDOKING",
+          "level": 55,
+          "moveOverrides": {
+            "1": "EARTHQUAKE",
+            "2": "LEER",
+            "3": "THUNDER"
+          }
+        },
+        {
+          "species": "RHYDON",
+          "level": 55,
+          "moveOverrides": {
+            "1": "ROCK_SLIDE",
+            "4": "EARTHQUAKE"
+          }
+        }
+      ]
+    ]
+  },
+  "ROCKET": {
+    "id": 30,
+    "displayName": "ROCKET",
+    "baseMoney": 30,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "RATTATA",
+          "level": 13
+        },
+        {
+          "species": "ZUBAT",
+          "level": 13
+        }
+      ],
+      [
+        {
+          "species": "SANDSHREW",
+          "level": 11
+        },
+        {
+          "species": "RATTATA",
+          "level": 11
+        },
+        {
+          "species": "ZUBAT",
+          "level": 11
+        }
+      ],
+      [
+        {
+          "species": "ZUBAT",
+          "level": 12
+        },
+        {
+          "species": "EKANS",
+          "level": 12
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 17
+        },
+        {
+          "species": "DROWZEE",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 15
+        },
+        {
+          "species": "ZUBAT",
+          "level": 15
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 20
+        },
+        {
+          "species": "ZUBAT",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 21
+        },
+        {
+          "species": "MACHOP",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 21
+        },
+        {
+          "species": "RATICATE",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 20
+        },
+        {
+          "species": "KOFFING",
+          "level": 20
+        },
+        {
+          "species": "KOFFING",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 19
+        },
+        {
+          "species": "RATICATE",
+          "level": 19
+        },
+        {
+          "species": "RATICATE",
+          "level": 19
+        },
+        {
+          "species": "RATTATA",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "GRIMER",
+          "level": 22
+        },
+        {
+          "species": "KOFFING",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "ZUBAT",
+          "level": 17
+        },
+        {
+          "species": "KOFFING",
+          "level": 17
+        },
+        {
+          "species": "GRIMER",
+          "level": 17
+        },
+        {
+          "species": "ZUBAT",
+          "level": 17
+        },
+        {
+          "species": "RATICATE",
+          "level": 17
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 20
+        },
+        {
+          "species": "RATICATE",
+          "level": 20
+        },
+        {
+          "species": "DROWZEE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 21
+        },
+        {
+          "species": "MACHOP",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "SANDSHREW",
+          "level": 23
+        },
+        {
+          "species": "EKANS",
+          "level": 23
+        },
+        {
+          "species": "SANDSLASH",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 23
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 23
+        },
+        {
+          "species": "ARBOK",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 21
+        },
+        {
+          "species": "ZUBAT",
+          "level": 21
+        }
+      ],
+      [
+        {
+          "species": "ZUBAT",
+          "level": 25
+        },
+        {
+          "species": "ZUBAT",
+          "level": 25
+        },
+        {
+          "species": "GOLBAT",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "DROWZEE",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "ZUBAT",
+          "level": 23
+        },
+        {
+          "species": "RATTATA",
+          "level": 23
+        },
+        {
+          "species": "RATICATE",
+          "level": 23
+        },
+        {
+          "species": "ZUBAT",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 29
+        },
+        {
+          "species": "ZUBAT",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "GOLBAT",
+          "level": 25
+        },
+        {
+          "species": "ZUBAT",
+          "level": 25
+        },
+        {
+          "species": "ZUBAT",
+          "level": 25
+        },
+        {
+          "species": "RATICATE",
+          "level": 25
+        },
+        {
+          "species": "ZUBAT",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 28
+        },
+        {
+          "species": "HYPNO",
+          "level": 28
+        },
+        {
+          "species": "RATICATE",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 29
+        },
+        {
+          "species": "DROWZEE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 28
+        },
+        {
+          "species": "ZUBAT",
+          "level": 28
+        },
+        {
+          "species": "CUBONE",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "ARBOK",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "HYPNO",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "MACHOP",
+          "level": 29
+        },
+        {
+          "species": "MACHOKE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "ZUBAT",
+          "level": 28
+        },
+        {
+          "species": "ZUBAT",
+          "level": 28
+        },
+        {
+          "species": "GOLBAT",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 26
+        },
+        {
+          "species": "ARBOK",
+          "level": 26
+        },
+        {
+          "species": "KOFFING",
+          "level": 26
+        },
+        {
+          "species": "GOLBAT",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 29
+        },
+        {
+          "species": "CUBONE",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "SANDSHREW",
+          "level": 29
+        },
+        {
+          "species": "SANDSLASH",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "RATICATE",
+          "level": 26
+        },
+        {
+          "species": "ZUBAT",
+          "level": 26
+        },
+        {
+          "species": "GOLBAT",
+          "level": 26
+        },
+        {
+          "species": "RATTATA",
+          "level": 26
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 28
+        },
+        {
+          "species": "GOLBAT",
+          "level": 28
+        },
+        {
+          "species": "KOFFING",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "DROWZEE",
+          "level": 28
+        },
+        {
+          "species": "GRIMER",
+          "level": 28
+        },
+        {
+          "species": "MACHOP",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "GOLBAT",
+          "level": 28
+        },
+        {
+          "species": "DROWZEE",
+          "level": 28
+        },
+        {
+          "species": "HYPNO",
+          "level": 28
+        }
+      ],
+      [
+        {
+          "species": "MACHOKE",
+          "level": 33
+        }
+      ],
+      [
+        {
+          "species": "RATTATA",
+          "level": 25
+        },
+        {
+          "species": "RATTATA",
+          "level": 25
+        },
+        {
+          "species": "ZUBAT",
+          "level": 25
+        },
+        {
+          "species": "RATTATA",
+          "level": 25
+        },
+        {
+          "species": "EKANS",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "CUBONE",
+          "level": 32
+        },
+        {
+          "species": "DROWZEE",
+          "level": 32
+        },
+        {
+          "species": "MAROWAK",
+          "level": 32
+        }
+      ],
+      [
+        {
+          "species": "EKANS",
+          "level": 14
+        },
+        {
+          "species": "MEOWTH",
+          "level": 14
+        },
+        {
+          "species": "KOFFING",
+          "level": 14
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 25
+        },
+        {
+          "species": "MEOWTH",
+          "level": 25
+        },
+        {
+          "species": "EKANS",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "MEOWTH",
+          "level": 27
+        },
+        {
+          "species": "ARBOK",
+          "level": 27
+        },
+        {
+          "species": "WEEZING",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 31
+        },
+        {
+          "species": "ARBOK",
+          "level": 31
+        },
+        {
+          "species": "MEOWTH",
+          "level": 31
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 16
+        }
+      ],
+      [
+        {
+          "species": "KOFFING",
+          "level": 27
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 29
+        }
+      ],
+      [
+        {
+          "species": "WEEZING",
+          "level": 33
+        }
+      ]
+    ]
+  },
+  "COOLTRAINER_M": {
+    "id": 31,
+    "displayName": "COOLTRAINER♂",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "NIDORINO",
+          "level": 39
+        },
+        {
+          "species": "NIDOKING",
+          "level": 39
+        }
+      ],
+      [
+        {
+          "species": "EXEGGUTOR",
+          "level": 43
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 43
+        },
+        {
+          "species": "ARCANINE",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "KINGLER",
+          "level": 43
+        },
+        {
+          "species": "TENTACRUEL",
+          "level": 43
+        },
+        {
+          "species": "BLASTOISE",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "KINGLER",
+          "level": 45
+        },
+        {
+          "species": "STARMIE",
+          "level": 45
+        }
+      ],
+      [
+        {
+          "species": "IVYSAUR",
+          "level": 42
+        },
+        {
+          "species": "WARTORTLE",
+          "level": 42
+        },
+        {
+          "species": "CHARMELEON",
+          "level": 42
+        },
+        {
+          "species": "CHARIZARD",
+          "level": 42
+        }
+      ],
+      [
+        {
+          "species": "IVYSAUR",
+          "level": 44
+        },
+        {
+          "species": "WARTORTLE",
+          "level": 44
+        },
+        {
+          "species": "CHARMELEON",
+          "level": 44
+        }
+      ],
+      [
+        {
+          "species": "NIDOKING",
+          "level": 49
+        }
+      ],
+      [
+        {
+          "species": "KINGLER",
+          "level": 44
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 44
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 39
+        },
+        {
+          "species": "DUGTRIO",
+          "level": 39
+        }
+      ],
+      [
+        {
+          "species": "RHYHORN",
+          "level": 43
+        }
+      ]
+    ]
+  },
+  "COOLTRAINER_F": {
+    "id": 32,
+    "displayName": "COOLTRAINER♀",
+    "baseMoney": 35,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "WEEPINBELL",
+          "level": 24
+        },
+        {
+          "species": "GLOOM",
+          "level": 24
+        },
+        {
+          "species": "IVYSAUR",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "BELLSPROUT",
+          "level": 43
+        },
+        {
+          "species": "WEEPINBELL",
+          "level": 43
+        },
+        {
+          "species": "VICTREEBEL",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "PARASECT",
+          "level": 43
+        },
+        {
+          "species": "DEWGONG",
+          "level": 43
+        },
+        {
+          "species": "CHANSEY",
+          "level": 43
+        }
+      ],
+      [
+        {
+          "species": "VILEPLUME",
+          "level": 46
+        },
+        {
+          "species": "BUTTERFREE",
+          "level": 46
+        }
+      ],
+      [
+        {
+          "species": "PERSIAN",
+          "level": 44
+        },
+        {
+          "species": "NINETALES",
+          "level": 44
+        }
+      ],
+      [
+        {
+          "species": "IVYSAUR",
+          "level": 45
+        },
+        {
+          "species": "VENUSAUR",
+          "level": 45
+        }
+      ],
+      [
+        {
+          "species": "NIDORINA",
+          "level": 45
+        },
+        {
+          "species": "NIDOQUEEN",
+          "level": 45
+        }
+      ],
+      [
+        {
+          "species": "PERSIAN",
+          "level": 43
+        },
+        {
+          "species": "NINETALES",
+          "level": 43
+        },
+        {
+          "species": "RAICHU",
+          "level": 43
+        }
+      ]
+    ]
+  },
+  "BRUNO": {
+    "id": 33,
+    "displayName": "BRUNO",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "ONIX",
+          "level": 53,
+          "moveOverrides": {
+            "1": "ROCK_SLIDE",
+            "2": "SCREECH",
+            "4": "DIG"
+          }
+        },
+        {
+          "species": "HITMONCHAN",
+          "level": 55,
+          "moveOverrides": {
+            "3": "FIRE_PUNCH",
+            "4": "DOUBLE_TEAM"
+          }
+        },
+        {
+          "species": "HITMONLEE",
+          "level": 55,
+          "moveOverrides": {
+            "1": "DOUBLE_KICK",
+            "2": "MEGA_KICK",
+            "4": "DOUBLE_TEAM"
+          }
+        },
+        {
+          "species": "ONIX",
+          "level": 56,
+          "moveOverrides": {
+            "1": "ROCK_SLIDE",
+            "2": "SCREECH",
+            "4": "EARTHQUAKE"
+          }
+        },
+        {
+          "species": "MACHAMP",
+          "level": 58,
+          "moveOverrides": {
+            "2": "KARATE_CHOP",
+            "3": "STRENGTH"
+          }
+        }
+      ]
+    ]
+  },
+  "BROCK": {
+    "id": 34,
+    "displayName": "BROCK",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "GEODUDE",
+          "level": 10
+        },
+        {
+          "species": "ONIX",
+          "level": 12,
+          "moveOverrides": {
+            "3": "BIND",
+            "4": "BIDE"
+          }
+        }
+      ]
+    ]
+  },
+  "MISTY": {
+    "id": 35,
+    "displayName": "MISTY",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "STARYU",
+          "level": 18
+        },
+        {
+          "species": "STARMIE",
+          "level": 21,
+          "moveOverrides": {
+            "4": "BUBBLEBEAM"
+          }
+        }
+      ]
+    ]
+  },
+  "LT_SURGE": {
+    "id": 36,
+    "displayName": "LT.SURGE",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "RAICHU",
+          "level": 28,
+          "moveOverrides": {
+            "1": "THUNDERBOLT",
+            "2": "MEGA_PUNCH",
+            "3": "MEGA_KICK",
+            "4": "GROWL"
+          }
+        }
+      ]
+    ]
+  },
+  "ERIKA": {
+    "id": 37,
+    "displayName": "ERIKA",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "TANGELA",
+          "level": 30,
+          "moveOverrides": {
+            "3": "MEGA_DRAIN"
+          }
+        },
+        {
+          "species": "WEEPINBELL",
+          "level": 32,
+          "moveOverrides": {
+            "1": "RAZOR_LEAF"
+          }
+        },
+        {
+          "species": "GLOOM",
+          "level": 32,
+          "moveOverrides": {
+            "1": "PETAL_DANCE"
+          }
+        }
+      ]
+    ]
+  },
+  "KOGA": {
+    "id": 38,
+    "displayName": "KOGA",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "VENONAT",
+          "level": 44,
+          "moveOverrides": {
+            "1": "TOXIC",
+            "2": "TACKLE"
+          }
+        },
+        {
+          "species": "VENONAT",
+          "level": 46,
+          "moveOverrides": {
+            "1": "TOXIC",
+            "3": "SUPERSONIC"
+          }
+        },
+        {
+          "species": "VENONAT",
+          "level": 48,
+          "moveOverrides": {
+            "1": "TOXIC",
+            "2": "DOUBLE_EDGE"
+          }
+        },
+        {
+          "species": "VENOMOTH",
+          "level": 50,
+          "moveOverrides": {
+            "1": "LEECH_LIFE",
+            "2": "DOUBLE_TEAM",
+            "3": "PSYCHIC_M",
+            "4": "TOXIC"
+          }
+        }
+      ]
+    ]
+  },
+  "BLAINE": {
+    "id": 39,
+    "displayName": "BLAINE",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "NINETALES",
+          "level": 48,
+          "moveOverrides": {
+            "1": "FLAMETHROWER",
+            "4": "CONFUSE_RAY"
+          }
+        },
+        {
+          "species": "RAPIDASH",
+          "level": 50
+        },
+        {
+          "species": "ARCANINE",
+          "level": 54,
+          "moveOverrides": {
+            "1": "FLAMETHROWER",
+            "2": "FIRE_BLAST",
+            "3": "REFLECT"
+          }
+        }
+      ]
+    ]
+  },
+  "SABRINA": {
+    "id": 40,
+    "displayName": "SABRINA",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "ABRA",
+          "level": 50,
+          "moveOverrides": {
+            "1": "FLASH"
+          }
+        },
+        {
+          "species": "KADABRA",
+          "level": 50,
+          "moveOverrides": {
+            "1": "KINESIS",
+            "4": "PSYWAVE"
+          }
+        },
+        {
+          "species": "ALAKAZAM",
+          "level": 50,
+          "moveOverrides": {
+            "1": "PSYWAVE"
+          }
+        }
+      ]
+    ]
+  },
+  "GENTLEMAN": {
+    "id": 41,
+    "displayName": "GENTLEMAN",
+    "baseMoney": 70,
+    "aiModifiers": [
+      1,
+      2
+    ],
+    "parties": [
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 18
+        },
+        {
+          "species": "GROWLITHE",
+          "level": 18
+        }
+      ],
+      [
+        {
+          "species": "NIDORAN_M",
+          "level": 19
+        },
+        {
+          "species": "NIDORAN_F",
+          "level": 19
+        }
+      ],
+      [
+        {
+          "species": "VOLTORB",
+          "level": 22
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "PRIMEAPE",
+          "level": 48
+        }
+      ],
+      [
+        {
+          "species": "GROWLITHE",
+          "level": 17
+        },
+        {
+          "species": "PONYTA",
+          "level": 17
+        }
+      ]
+    ]
+  },
+  "RIVAL2": {
+    "id": 42,
+    "displayName": "RIVAL2",
+    "baseMoney": 65,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "SPEAROW",
+          "level": 19
+        },
+        {
+          "species": "RATTATA",
+          "level": 16
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 18
+        },
+        {
+          "species": "EEVEE",
+          "level": 20
+        }
+      ],
+      [
+        {
+          "species": "FEAROW",
+          "level": 25
+        },
+        {
+          "species": "SHELLDER",
+          "level": 23
+        },
+        {
+          "species": "VULPIX",
+          "level": 22
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 20
+        },
+        {
+          "species": "EEVEE",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "FEAROW",
+          "level": 25
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 23
+        },
+        {
+          "species": "SHELLDER",
+          "level": 22
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 20
+        },
+        {
+          "species": "EEVEE",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "FEAROW",
+          "level": 25
+        },
+        {
+          "species": "VULPIX",
+          "level": 23
+        },
+        {
+          "species": "MAGNEMITE",
+          "level": 22
+        },
+        {
+          "species": "SANDSHREW",
+          "level": 20
+        },
+        {
+          "species": "EEVEE",
+          "level": 25
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 38
+        },
+        {
+          "species": "NINETALES",
+          "level": 35
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 37
+        },
+        {
+          "species": "KADABRA",
+          "level": 35
+        },
+        {
+          "species": "JOLTEON",
+          "level": 40
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 38
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 35
+        },
+        {
+          "species": "MAGNETON",
+          "level": 37
+        },
+        {
+          "species": "KADABRA",
+          "level": 35
+        },
+        {
+          "species": "FLAREON",
+          "level": 40
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 38
+        },
+        {
+          "species": "MAGNETON",
+          "level": 35
+        },
+        {
+          "species": "NINETALES",
+          "level": 37
+        },
+        {
+          "species": "KADABRA",
+          "level": 35
+        },
+        {
+          "species": "VAPOREON",
+          "level": 40
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 47
+        },
+        {
+          "species": "EXEGGCUTE",
+          "level": 45
+        },
+        {
+          "species": "NINETALES",
+          "level": 45
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 47
+        },
+        {
+          "species": "KADABRA",
+          "level": 50
+        },
+        {
+          "species": "JOLTEON",
+          "level": 53
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 47
+        },
+        {
+          "species": "EXEGGCUTE",
+          "level": 45
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 45
+        },
+        {
+          "species": "MAGNETON",
+          "level": 47
+        },
+        {
+          "species": "KADABRA",
+          "level": 50
+        },
+        {
+          "species": "FLAREON",
+          "level": 53
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 47
+        },
+        {
+          "species": "EXEGGCUTE",
+          "level": 45
+        },
+        {
+          "species": "MAGNETON",
+          "level": 45
+        },
+        {
+          "species": "NINETALES",
+          "level": 47
+        },
+        {
+          "species": "KADABRA",
+          "level": 50
+        },
+        {
+          "species": "VAPOREON",
+          "level": 53
+        }
+      ]
+    ]
+  },
+  "RIVAL3": {
+    "id": 43,
+    "displayName": "RIVAL3",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 61,
+          "moveOverrides": {
+            "3": "EARTHQUAKE"
+          }
+        },
+        {
+          "species": "ALAKAZAM",
+          "level": 59,
+          "moveOverrides": {
+            "4": "KINESIS"
+          }
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 61,
+          "moveOverrides": {
+            "4": "LEECH_SEED"
+          }
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 61,
+          "moveOverrides": {
+            "1": "ICE_BEAM"
+          }
+        },
+        {
+          "species": "NINETALES",
+          "level": 63,
+          "moveOverrides": {
+            "1": "CONFUSE_RAY",
+            "4": "FIRE_SPIN"
+          }
+        },
+        {
+          "species": "JOLTEON",
+          "level": 65,
+          "moveOverrides": {
+            "3": "QUICK_ATTACK"
+          }
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 61,
+          "moveOverrides": {
+            "3": "EARTHQUAKE"
+          }
+        },
+        {
+          "species": "ALAKAZAM",
+          "level": 59,
+          "moveOverrides": {
+            "4": "KINESIS"
+          }
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 61,
+          "moveOverrides": {
+            "4": "LEECH_SEED"
+          }
+        },
+        {
+          "species": "MAGNETON",
+          "level": 61,
+          "moveOverrides": {
+            "1": "THUNDERBOLT"
+          }
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 63,
+          "moveOverrides": {
+            "1": "ICE_BEAM"
+          }
+        },
+        {
+          "species": "FLAREON",
+          "level": 65,
+          "moveOverrides": {
+            "2": "REFLECT",
+            "3": "QUICK_ATTACK"
+          }
+        }
+      ],
+      [
+        {
+          "species": "SANDSLASH",
+          "level": 61,
+          "moveOverrides": {
+            "3": "EARTHQUAKE"
+          }
+        },
+        {
+          "species": "ALAKAZAM",
+          "level": 59,
+          "moveOverrides": {
+            "4": "KINESIS"
+          }
+        },
+        {
+          "species": "EXEGGUTOR",
+          "level": 61,
+          "moveOverrides": {
+            "4": "LEECH_SEED"
+          }
+        },
+        {
+          "species": "NINETALES",
+          "level": 61,
+          "moveOverrides": {
+            "1": "CONFUSE_RAY",
+            "4": "FIRE_SPIN"
+          }
+        },
+        {
+          "species": "MAGNETON",
+          "level": 63,
+          "moveOverrides": {
+            "1": "THUNDERBOLT"
+          }
+        },
+        {
+          "species": "VAPOREON",
+          "level": 65,
+          "moveOverrides": {
+            "1": "AURORA_BEAM",
+            "3": "QUICK_ATTACK"
+          }
+        }
+      ]
+    ]
+  },
+  "LORELEI": {
+    "id": 44,
+    "displayName": "LORELEI",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      2,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "DEWGONG",
+          "level": 54,
+          "moveOverrides": {
+            "1": "BUBBLEBEAM"
+          }
+        },
+        {
+          "species": "CLOYSTER",
+          "level": 53,
+          "moveOverrides": {
+            "3": "ICE_BEAM"
+          }
+        },
+        {
+          "species": "SLOWBRO",
+          "level": 54,
+          "moveOverrides": {
+            "1": "PSYCHIC_M",
+            "2": "SURF"
+          }
+        },
+        {
+          "species": "JYNX",
+          "level": 56,
+          "moveOverrides": {
+            "3": "LOVELY_KISS"
+          }
+        },
+        {
+          "species": "LAPRAS",
+          "level": 56,
+          "moveOverrides": {
+            "3": "BLIZZARD"
+          }
+        }
+      ]
+    ]
+  },
+  "CHANNELER": {
+    "id": 45,
+    "displayName": "CHANNELER",
+    "baseMoney": 30,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "GASTLY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 23
+        },
+        {
+          "species": "GASTLY",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "HAUNTER",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 23
+        },
+        {
+          "species": "GASTLY",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "HAUNTER",
+          "level": 23
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "HAUNTER",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 22
+        },
+        {
+          "species": "GASTLY",
+          "level": 22
+        },
+        {
+          "species": "GASTLY",
+          "level": 22
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 24
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 34
+        },
+        {
+          "species": "HAUNTER",
+          "level": 34
+        }
+      ],
+      [
+        {
+          "species": "HAUNTER",
+          "level": 38
+        }
+      ],
+      [
+        {
+          "species": "GASTLY",
+          "level": 33
+        },
+        {
+          "species": "GASTLY",
+          "level": 33
+        },
+        {
+          "species": "HAUNTER",
+          "level": 33
+        }
+      ]
+    ]
+  },
+  "AGATHA": {
+    "id": 46,
+    "displayName": "AGATHA",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1
+    ],
+    "parties": [
+      [
+        {
+          "species": "GENGAR",
+          "level": 56,
+          "moveOverrides": {
+            "2": "SUBSTITUTE",
+            "3": "LICK",
+            "4": "MEGA_DRAIN"
+          }
+        },
+        {
+          "species": "GOLBAT",
+          "level": 56,
+          "moveOverrides": {
+            "2": "TOXIC",
+            "4": "LEECH_LIFE"
+          }
+        },
+        {
+          "species": "HAUNTER",
+          "level": 55,
+          "moveOverrides": {
+            "2": "LICK"
+          }
+        },
+        {
+          "species": "ARBOK",
+          "level": 58,
+          "moveOverrides": {
+            "1": "WRAP"
+          }
+        },
+        {
+          "species": "GENGAR",
+          "level": 60,
+          "moveOverrides": {
+            "2": "PSYCHIC_M"
+          }
+        }
+      ]
+    ]
+  },
+  "LANCE": {
+    "id": 47,
+    "displayName": "LANCE",
+    "baseMoney": 99,
+    "aiModifiers": [
+      1,
+      3
+    ],
+    "parties": [
+      [
+        {
+          "species": "GYARADOS",
+          "level": 58,
+          "moveOverrides": {
+            "1": "DRAGON_RAGE"
+          }
+        },
+        {
+          "species": "DRAGONAIR",
+          "level": 56,
+          "moveOverrides": {
+            "1": "THUNDER_WAVE",
+            "3": "THUNDERBOLT"
+          }
+        },
+        {
+          "species": "DRAGONAIR",
+          "level": 56,
+          "moveOverrides": {
+            "1": "BUBBLEBEAM",
+            "2": "WRAP",
+            "3": "ICE_BEAM"
+          }
+        },
+        {
+          "species": "AERODACTYL",
+          "level": 60,
+          "moveOverrides": {
+            "1": "WING_ATTACK",
+            "2": "SWIFT",
+            "3": "FLY"
+          }
+        },
+        {
+          "species": "DRAGONITE",
+          "level": 62,
+          "moveOverrides": {
+            "1": "BLIZZARD",
+            "2": "FIRE_BLAST",
+            "3": "THUNDER"
+          }
+        }
+      ]
+    ]
+  }
+}

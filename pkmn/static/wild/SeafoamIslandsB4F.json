@@ -1,0 +1,88 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 36,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 36,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 30,
+      "pokemon": "KRABBY"
+    },
+    {
+      "level": 32,
+      "pokemon": "KINGLER"
+    },
+    {
+      "level": 28,
+      "pokemon": "SEEL"
+    },
+    {
+      "level": 32,
+      "pokemon": "SEEL"
+    },
+    {
+      "level": 27,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 45,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 30,
+      "pokemon": "DEWGONG"
+    },
+    {
+      "level": 34,
+      "pokemon": "DEWGONG"
+    }
+  ],
+  "waterRate": 5,
+  "water": [
+    {
+      "level": 25,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 30,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 20,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 30,
+      "pokemon": "STARYU"
+    },
+    {
+      "level": 35,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 30,
+      "pokemon": "STARYU"
+    },
+    {
+      "level": 40,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 30,
+      "pokemon": "STARYU"
+    },
+    {
+      "level": 30,
+      "pokemon": "STARYU"
+    },
+    {
+      "level": 30,
+      "pokemon": "STARYU"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 50,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 55,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 45,
+      "pokemon": "GRAVELER"
+    },
+    {
+      "level": 55,
+      "pokemon": "GLOOM"
+    },
+    {
+      "level": 55,
+      "pokemon": "WEEPINBELL"
+    },
+    {
+      "level": 52,
+      "pokemon": "SANDSLASH"
+    },
+    {
+      "level": 54,
+      "pokemon": "VENOMOTH"
+    },
+    {
+      "level": 54,
+      "pokemon": "PARASECT"
+    },
+    {
+      "level": 55,
+      "pokemon": "DITTO"
+    },
+    {
+      "level": 60,
+      "pokemon": "DITTO"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

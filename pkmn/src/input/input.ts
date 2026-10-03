@@ -24,6 +24,12 @@ window.addEventListener('keyup', (e) => {
   if (btn) { keys[btn] = false; e.preventDefault(); }
 });
 
+// Losing focus swallows the keyup events. The game keeps running in the
+// background (main.ts), so a held key would stay "held" — release everything.
+window.addEventListener('blur', () => {
+  for (const k of Object.keys(keys) as GameButton[]) keys[k] = false;
+});
+
 export function updateInput(): void {
   for (const k of Object.keys(keys) as GameButton[]) {
     justPressed[k] = keys[k] && !prevKeys[k];

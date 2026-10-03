@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 34,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 34,
+      "pokemon": "RATICATE"
+    },
+    {
+      "level": 23,
+      "pokemon": "GRIMER"
+    },
+    {
+      "level": 26,
+      "pokemon": "GROWLITHE"
+    },
+    {
+      "level": 37,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 37,
+      "pokemon": "RATICATE"
+    },
+    {
+      "level": 30,
+      "pokemon": "GROWLITHE"
+    },
+    {
+      "level": 26,
+      "pokemon": "GRIMER"
+    },
+    {
+      "level": 34,
+      "pokemon": "GROWLITHE"
+    },
+    {
+      "level": 38,
+      "pokemon": "GROWLITHE"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

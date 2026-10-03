@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 8,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 9,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 10,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 10,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 11,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 11,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 9,
+      "pokemon": "PARAS"
+    },
+    {
+      "level": 11,
+      "pokemon": "PARAS"
+    },
+    {
+      "level": 10,
+      "pokemon": "CLEFAIRY"
+    },
+    {
+      "level": 12,
+      "pokemon": "CLEFAIRY"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

@@ -1,0 +1,47 @@
+{
+  "grassRate": 15,
+  "grass": [
+    {
+      "level": 52,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 57,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 50,
+      "pokemon": "GRAVELER"
+    },
+    {
+      "level": 56,
+      "pokemon": "SANDSLASH"
+    },
+    {
+      "level": 50,
+      "pokemon": "RHYHORN"
+    },
+    {
+      "level": 60,
+      "pokemon": "DITTO"
+    },
+    {
+      "level": 58,
+      "pokemon": "GLOOM"
+    },
+    {
+      "level": 58,
+      "pokemon": "WEEPINBELL"
+    },
+    {
+      "level": 60,
+      "pokemon": "RHYDON"
+    },
+    {
+      "level": 58,
+      "pokemon": "RHYDON"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

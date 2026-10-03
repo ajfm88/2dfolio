@@ -1,0 +1,47 @@
+{
+  "grassRate": 30,
+  "grass": [
+    {
+      "level": 14,
+      "pokemon": "NIDORAN_M"
+    },
+    {
+      "level": 36,
+      "pokemon": "NIDORAN_F"
+    },
+    {
+      "level": 24,
+      "pokemon": "EXEGGCUTE"
+    },
+    {
+      "level": 20,
+      "pokemon": "RHYHORN"
+    },
+    {
+      "level": 23,
+      "pokemon": "NIDORINO"
+    },
+    {
+      "level": 27,
+      "pokemon": "PARASECT"
+    },
+    {
+      "level": 27,
+      "pokemon": "PARAS"
+    },
+    {
+      "level": 32,
+      "pokemon": "PARASECT"
+    },
+    {
+      "level": 22,
+      "pokemon": "TANGELA"
+    },
+    {
+      "level": 7,
+      "pokemon": "CHANSEY"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

@@ -1,0 +1,47 @@
+{
+  "grassRate": 0,
+  "grass": [],
+  "waterRate": 5,
+  "water": [
+    {
+      "level": 5,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 10,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 15,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 5,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 10,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 15,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 20,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 30,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 35,
+      "pokemon": "TENTACOOL"
+    },
+    {
+      "level": 40,
+      "pokemon": "TENTACOOL"
+    }
+  ]
+}
