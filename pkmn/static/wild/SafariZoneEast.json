@@ -1,0 +1,47 @@
+{
+  "grassRate": 30,
+  "grass": [
+    {
+      "level": 21,
+      "pokemon": "NIDORAN_M"
+    },
+    {
+      "level": 29,
+      "pokemon": "NIDORAN_F"
+    },
+    {
+      "level": 22,
+      "pokemon": "EXEGGCUTE"
+    },
+    {
+      "level": 21,
+      "pokemon": "TAUROS"
+    },
+    {
+      "level": 32,
+      "pokemon": "NIDORINA"
+    },
+    {
+      "level": 19,
+      "pokemon": "CUBONE"
+    },
+    {
+      "level": 26,
+      "pokemon": "EXEGGCUTE"
+    },
+    {
+      "level": 24,
+      "pokemon": "MAROWAK"
+    },
+    {
+      "level": 21,
+      "pokemon": "CHANSEY"
+    },
+    {
+      "level": 15,
+      "pokemon": "SCYTHER"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

@@ -1,0 +1,83 @@
+{
+  "name": "ViridianSchoolHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    5,
+    18,
+    19,
+    9,
+    15,
+    20,
+    21,
+    15,
+    15,
+    24,
+    25,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 2
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 2
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "brunette_girl",
+      "sprite": "brunette_girl",
+      "x": 3,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "Whew! I'm trying\nto memorize all\nmy notes.",
+      "direction": "up"
+    },
+    {
+      "id": "cooltrainer_f",
+      "sprite": "cooltrainer_f",
+      "x": 4,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "Okay!\fBe sure to read\nthe blackboard\ncarefully!",
+      "direction": "down"
+    },
+    {
+      "id": "little_girl",
+      "sprite": "little_girl",
+      "x": 4,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "Sis says POKéMON\nwill become tame\nif you treat them\nnicely.",
+      "direction": "up"
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 3,
+      "y": 0,
+      "scriptId": "VIRIDIAN_SCHOOL_BLACKBOARD",
+      "facing": "up"
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "scriptId": "VIRIDIAN_SCHOOL_NOTEBOOK"
+    }
+  ]
+}

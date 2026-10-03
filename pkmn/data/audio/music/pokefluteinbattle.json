@@ -1,0 +1,27 @@
+{
+  "channels": [
+    {
+      "id": 15,
+      "commands": [
+        {
+          "cmd": "note",
+          "pitch": 2,
+          "length": 1
+        },
+        {
+          "cmd": "note",
+          "pitch": 0,
+          "length": 7
+        },
+        {
+          "cmd": "sound_loop",
+          "count": 2,
+          "target": 0
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

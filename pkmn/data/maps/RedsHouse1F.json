@@ -1,0 +1,71 @@
+{
+  "name": "RedsHouse1F",
+  "width": 4,
+  "height": 4,
+  "tileset": "REDS_HOUSE_1",
+  "connections": [],
+  "blocks": [
+    4,
+    9,
+    5,
+    7,
+    15,
+    15,
+    15,
+    15,
+    15,
+    1,
+    2,
+    15,
+    15,
+    11,
+    15,
+    15
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "PalletTown",
+      "destWarpId": 0
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "PalletTown",
+      "destWarpId": 0
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "destMap": "RedsHouse2F",
+      "destWarpId": 0
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "mom",
+      "sprite": "mom",
+      "x": 5,
+      "y": 4,
+      "movement": "stay",
+      "dialogue": "MOM: Right.\nAll boys leave\nhome someday.\nIt said so on TV.\fPROF.OAK, next\ndoor, is looking\nfor you.",
+      "direction": "left"
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 3,
+      "y": 1,
+      "facing": "up",
+      "text": "There's a movie\non TV. Four boys\nare walking on\nrailroad tracks.\fI better go too."
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "text": "Oops, wrong side."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "grassRate": 20,
+  "grass": [
+    {
+      "level": 18,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 19,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 17,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 20,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 16,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 15,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 21,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 22,
+      "pokemon": "DIGLETT"
+    },
+    {
+      "level": 29,
+      "pokemon": "DUGTRIO"
+    },
+    {
+      "level": 31,
+      "pokemon": "DUGTRIO"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

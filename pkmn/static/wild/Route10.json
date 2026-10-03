@@ -1,0 +1,47 @@
+{
+  "grassRate": 15,
+  "grass": [
+    {
+      "level": 16,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 18,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 18,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 20,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 17,
+      "pokemon": "NIDORAN_M"
+    },
+    {
+      "level": 17,
+      "pokemon": "NIDORAN_F"
+    },
+    {
+      "level": 22,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 20,
+      "pokemon": "RATICATE"
+    },
+    {
+      "level": 16,
+      "pokemon": "MACHOP"
+    },
+    {
+      "level": 18,
+      "pokemon": "MACHOP"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

@@ -1,7 +1,20 @@
-node_modules/
-dist/
-data/
-gfx
+# Reference clones — read-only spec repos, refreshed with ./pull-refs.sh
+refs/
+
+# Randomizer art pool — kept out of the repo at the user's request (2026-09-22)
+pkmn-sprites/
+
+# ROM — the user's own cartridge dump (game/pokeyellow.gbc). Development-time input
+# only, never shipped, never committed.
 *.gbc
 *.gb
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS / editor
 .DS_Store
+Thumbs.db
+*.swp

@@ -1,264 +1,443 @@
-# CLAUDE.md
+# pkmn — Pokemon Yellow in the browser, no ROM in the final product
 
-TypeScript browser rewrite of Pokemon Yellow — a full rewrite (not emulation) converting Z80 assembly into HTML5 Canvas. All game content is extracted from a user-uploaded ROM at runtime — no copyrighted assets are shipped with the code.
+A local-only, **1:1 replica of vanilla Pokemon Yellow** in browser TypeScript,
+built on `gididaf/pokemon-yellow-typescript` (copied into `game/`). Personal
+hobby project, never distributed.
 
-## Development Prerequisites
+**We are porting, not designing.** Nothing about the game changes — no
+rebalancing, no improvements, no added content; Gen 1 bugs are reproduced
+deliberately. The repos in `refs/` are how we get it right.
 
-This project requires the [pret/pokeyellow](https://github.com/pret/pokeyellow) disassembly as a reference for implementing features. Clone it alongside this repo:
+**Sprites: vanilla Yellow, extracted from the ROM.** That is the baseline and it
+already works — `/gfx/sprites/front/<dex>.png` (decoded in the browser today,
+committed PNGs after Phase R). Build the whole game on those.
+
+Game data is extracted from the user's own cartridge dump during development,
+then committed to the repo so the final product needs no ROM at all.
+
+**Scale:** ~1–2 years, on the order of **700–800 sessions**. The 34 milestones in
+`context/PLAN.md` are not sittings — split them freely, log every session.
+Nobody is expecting a Yellow port in two weeks.
+
+> A per-encounter sprite randomizer (`pkmn-sprites/`) is the one deviation from
+> vanilla we eventually want — but it is **Phase X1, dead last**, after the game
+> is beatable and audited. Realistically year two. Don't design around it, don't
+> start it, don't let it shape engine work. DECISIONS #21–#23 have the detail for
+> when that day comes.
+
+**This file is the entry point.** Everything else lives in `context/` — seven
+flat files, no nesting.
+
+## ⚠ The one rule: `context/STATUS.md`
+
+That file is **the live handoff log** — current phase, the ordered queue of work
+slices, open questions, and the session log. This project is built a little at a
+time by whichever agent is available (Claude, Grok, GPT), so:
+
+- **Read it first, every session.** It tells you what actually happened last time.
+- **Claim one slice** from its _Next up_ table. One slice per session — don't batch.
+- **Update it, then commit locally, before you stop.** An unlogged session is a
+  lost session: the next agent restarts from zero and the user pays twice for the
+  same work. Every finished slice ends in a local commit (never pushed) —
+  `CONVENTIONS.md` → *The session contract*, step 6.
+
+## The context system — `context/`
+
+Read in this order. Skim what your slice needs; don't re-explore what
+`ARCHITECTURE.md` already answers — that research is already paid for.
+
+| File | Role | When |
+|---|---|---|
+| **`STATUS.md`** | ⚠ live handoff log: phase, queue, open questions, session log | **always, first** |
+| `PROJECT.md` | what we're building and why; goals, non-goals, success criteria | new to the project |
+| `ARCHITECTURE.md` | data pipeline, the data contract, invariants, verified format findings, Game Boy rendering + asset rules | before touching data, assets or rendering |
+| `PLAN.md` | the phased roadmap — 34 milestones (R1a–c, V1–V5, A1–X2) | when picking or sizing work |
+| `CONVENTIONS.md` | session contract (incl. the per-slice local commit), code standards, naming traps, verification workflow | before writing code |
+| `DECISIONS.md` | settled choices and rationale (#1–#26), plus open questions that need the user | before proposing a change to a settled choice |
+| `HISTORY.md` | archived session entries + the table of lost prior work | rarely — background only |
+
+`context/_reference-article.md` is a third-party article (JavaScript Mastery's
+context-engineering playbook) that the original template came from — human
+background reading. **Agents: skip it.**
+
+For engine internals (rendering, battle, audio, save), read **_Engine reference_**
+at the bottom of this file and the per-subsystem
+`game/src/{battle,menus,overworld,pikachu,renderer,story,text}/ARCHITECTURE.md`
+before touching engine code.
+
+## Workspace layout
+
+This root is the git repo. `refs/` holds read-only clones of the spec repos and
+is **gitignored** — it is never committed, never edited, never pushed to.
 
 ```
-your-projects/
-├── pokeyellow/          # git clone https://github.com/pret/pokeyellow
-└── pokemon-yellow-typescript/    # this repo
+pkmn/                    ← the git repo
+  README.md              what this is + credits to our sources
+  CLAUDE.md              you are here — the entry point
+  context/               the 7 context files (see above)
+  notes/                 our spec notes, comparisons, probe results
+  game/                  our copy of gididaf/pokemon-yellow-typescript — the thing we change
+    pokeyellow.gbc       the ROM — GITIGNORED (*.gbc), development-time extraction only
+  pkmn-sprites/          GITIGNORED — user-curated randomizer art (ours)
+  refs/                  GITIGNORED clones of the reference repos
+    pokeyellow/  gen1recomp/  oldamber/  engine/  dmg/
+  pull-refs.sh           refresh every clone in refs/ on its correct branch
+  .gitignore
 ```
 
-The ASM source is the single source of truth for all game logic, UI layouts, text strings, and sprite data. Claude Code (and developers) need access to it for:
-- Adding new maps → read `data/maps/headers/*.asm`, `data/maps/objects/*.asm`
-- Debugging sprites → compare against `gfx/pokemon/front/*.png`
-- Implementing features → read `engine/*.asm` for exact logic
-- Verifying text → read `data/text/text_*.asm` for exact strings
+`game/` is a **copy, not a remote.** We cannot push back upstream, so the files
+were copied into this repo and we own them from here.
 
-## CRITICAL: Pixel-Perfect ASM Fidelity
+## Reference repos — `refs/` (read-only, gitignored)
 
-This project is a **pixel-perfect, logic-exact port** of the original Pokemon Yellow. Every implementation MUST:
+Consult these; never edit them, never commit them. Each is pinned to a specific
+branch — **do not use `origin/master` blindly**, most of these don't develop there.
 
-1. **Read the relevant ASM files FIRST** — never assume how something looks, works, or what text it displays.
-2. **Match the original game exactly** — no invented UI, no added text, no modified layouts, no "improvements".
-3. **Preserve all Gen 1 bugs and quirks** — they are features of faithful reproduction, not things to fix.
-4. **Verify coordinates, dimensions, text, and flow** against the assembly before writing any TypeScript code.
-5. **Never add content that doesn't exist in the original game** — no extra labels, no helper text, no UI enhancements.
+| Dir | Repo | Branch | Consult it for |
+| --- | --- | --- | --- |
+| `refs/pokeyellow/` | [pret/pokeyellow](https://github.com/pret/pokeyellow) | `master` | The cartridge itself — the disassembly. Ground truth for maps, text, data layout, engine behavior |
+| `refs/gen1recomp/` | [bryanthaboi/gen1recomp](https://github.com/bryanthaboi/gen1recomp) | **`dev`** | Lua full-game recomp + `gen1_faithful` — a working end-to-end implementation to compare against |
+| `refs/oldamber/` | [spiritsnails/oldamber](https://github.com/spiritsnails/oldamber) | `main` | C implementation of full Red/Blue — reach for it when implementing past Viridian |
+| `refs/engine/` | [pkmn/engine](https://github.com/pkmn/engine) | `main` | **Battle oracle.** Best Gen 1 battle sim for cartridge + Showdown fidelity. Don't reinvent 1/256 crits or the wrap/counter/psywave mess from memory |
+| `refs/dmg/` | [pkmn/dmg](https://github.com/pkmn/dmg) | `main` | One-move damage math — settle a single calculation |
 
-ASM reference paths (in the pokeyellow disassembly): `engine/` for logic, `data/text/` for strings, `gfx/` for sprites/tiles, `data/maps/` for map data, `constants/` for game constants.
+Refresh them all with `./pull-refs.sh` (fetch + checkout + ff-only pull, and it
+clones anything missing). First-time setup is in `README.md`.
+
+## Hard rules
+
+1. **The game must run with no ROM. Ever.** This is a full TypeScript
+   implementation of Pokemon Yellow — **not an emulator**, and not a wrapper that
+   loads a ROM. `pokeyellow.gbc` exists for one purpose: development-time
+   reference and asset/data extraction. It is never read at runtime, never
+   shipped, never required to play. Everything the game needs is committed static
+   JSON + PNG. Upstream shipped a ROM upload gate in `main.ts` `init()`; it was
+   removed in R1b (2026-09-22) and must never come back — no ROM-loading, upload, or
+   emulation path, ever. DECISIONS #2, #14, #18.
+2. **Never write into `refs/**`** — read-only clones. Never edit, never commit,
+   never push. If a ref needs updating, run `./pull-refs.sh`.
+3. Never modify `pkmn-sprites/` — it is the user's curated source data.
+4. Generated JSON must match the existing extractor schemas exactly.
+   `src/rom/extractors/*.ts` is the authoritative contract; consumers in
+   `src/battle/data.ts` and the tests prove it.
+5. **ASM fidelity.** Read the relevant `refs/pokeyellow/` ASM *before* writing
+   engine code, and match it exactly — see *Engine reference → Fidelity rules*.
+6. Leave `src/rom/` in place — it is the extraction system and schema authority.
+7. Gen 1 bugs are features. Do not fix them.
+8. Update `context/STATUS.md` before ending a session. Not optional.
+9. **This repo is local-only. Never push it anywhere.** No `git remote add`, no
+   `git push`, no GitHub/GitLab repo, no `gh repo create`, no uploading the code
+   to any service. Commits stay on this machine. DECISIONS #24.
 
 ## Commands
 
-```bash
-npm run setup <rom>   # Extract dev data from ROM (required before running tests)
-npx vite              # Start dev server (ROM upload required on first visit)
-npx tsc --noEmit      # Type-check without emitting
-npm test              # Run all tests (requires setup first)
-npm run test:watch    # Run tests in watch mode
-ROM_PATH=<rom> npm test  # Run all tests including ROM extraction verification
+Refresh the reference clones from the root: `./pull-refs.sh`
+
+Everything else runs inside `game/`:
+
+- `npm install` — first time only
+- `npm run typecheck` — strict tsc (`noUnusedLocals`, `noUnusedParameters`) over
+  `src/` and `scripts/`, must stay clean
+- `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
+  `data/`, then rebuild `static/` (518 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
+- `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
+  `ROM_PATH` the 47 ROM tests skip
+- `npm run test:watch` — vitest in watch mode
+- `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
+  tests. **Baseline 2026-09-22 (after R1a): 381/381.**
+- `npx vite` — dev server serving `static/` (no ROM involved); prefer
+  `http://127.0.0.1:5173/` (saves are origin-scoped). Missing files are real 404s
+  (`appType: 'mpa'`)
+- `npm run build` — typecheck + production bundle in `dist/` (includes `static/`)
+
+Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`,
+`scripts/smoke_p5_3.mjs`.
+
+## Where things stand
+
+**2026-09-22: R1a + R1b done — the game runs with no ROM.** `game/` is vanilla
+upstream (12 maps) plus our changes: `npm run setup` exports `static/`, the browser
+loads only those files (ROM gate deleted), and the game keeps running in
+background tabs. Typecheck clean, **381/381** tests. `data/` and `static/` are
+still git-ignored until **R1c** commits them.
+
+⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26) and
+is being rebuilt: **R1c** next, then **Phase V** (back to 30 maps), then Phase A.
+Git: local repo, commit per slice, never pushed. Live detail: `context/STATUS.md`.
+
+---
+
+## Engine reference
+
+Transcribed 2026-09-22 from upstream's `game/CLAUDE.md` (gididaf), which was then
+deleted — this section replaces it. Dropped as wrong for us: the "clone
+pokeyellow alongside" setup (we have `refs/`) and the "no assets shipped, ROM
+uploaded at runtime" framing (Hard rule #1 and R1 replace it). Rendering,
+palettes, coordinates and asset rules are in `context/ARCHITECTURE.md`.
+Per-subsystem detail: `game/src/{battle,menus,overworld,pikachu,renderer,story,text}/ARCHITECTURE.md`.
+(Upstream also cites `data/DATA_FORMATS.md` — it does not exist.)
+
+### Fidelity rules — the engine's house rule
+
+A pixel-perfect, logic-exact port. Every implementation must:
+
+1. **Read the relevant ASM first** — never assume how something looks, works or
+   what text it shows.
+2. **Match the original exactly** — no invented UI, no added text, no modified
+   layouts, no "improvements".
+3. **Preserve all Gen 1 bugs and quirks.**
+4. **Verify coordinates, dimensions, text and flow** against the ASM before
+   writing TypeScript.
+5. **Never add content that isn't in the original** — no extra labels, helper
+   text or UI enhancements.
+
+Where to look in `refs/pokeyellow/`: `engine/` logic · `data/text/text_*.asm`
+strings · `gfx/` sprites/tiles (`gfx/pokemon/front/*.png` to debug sprites) ·
+`data/maps/headers/*.asm` + `data/maps/objects/*.asm` for new maps ·
+`constants/` constants.
+
+### Module map (`game/src/`)
+
+Entry point: `index.html` → `src/main.ts`.
+
+| Module | Purpose | Key exports |
+|---|---|---|
+| `core/` | Shared types, constants, player state | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()` |
+| `renderer/` | Canvas 2D rendering | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()` |
+| `input/` | Keyboard + touch (arrows/WASD, Z=A, X=B, Enter=Start; mobile overlay) | `updateInput()`, `isHeld()`, `isPressed()`, `setKey()`, `initTouchControls()` |
+| `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
+| `overworld/` | Maps, player, NPCs, story state, transitions | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()` |
+| `battle/` | Wild/trainer battles, evolution | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
+| `menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `BlackboardMenu`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
+| `pikachu/` | Follower, happiness, battle & emotion | `PikachuFollower`, `modifyPikachuHappiness()`, `initPikachuBattle()` |
+| `story/` | Per-map story scripts & hidden events | `buildOakGrassScript()`, `buildOaksLabIntroScript()`, `buildOaksLabPokedexScript()`, `buildViridianMartParcelScript()` |
+| `script/` | Cutscene script engine & controller | `initScript()`, `updateScript()`, `ScriptCommand` |
+| `audio/` | GB audio engine (2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `suspendAudio()`, `resumeAudioOutput()` |
+| `rom/` | Extraction system — see below | `validateRom()`, `extractRom()`, `installRomData()`, `showUploadScreen()` |
+| `items.ts` | Bag & PC item storage | `Bag`, `ItemStack`, `addToInventory()`, `initItemNames()`, `getItemName()` |
+| `save.ts` | Save/load via localStorage | `saveGame()`, `loadGame()` |
+| `events.ts` | Event flags | `setFlag()`, `hasFlag()` |
+| `pokedex_state.ts` | Seen/owned tracking | `markSeen()`, `markOwned()`, `isSeen()`, `isOwned()`, `restorePokedex()` |
+| `debug.ts` | Debug overlay (backtick): tile grid, stats, HP, status, stat stages, badges, bag, Pikachu mood, warp-to-location | `renderDebugOverlay()`, `updateDebugPanel()`, `consumeDebugWarp()` |
+
+### Game state machine (`main.ts`)
+
+```
+splash            "Click to start" (unlocks browser audio)
+title_screen      animated title with Pikachu
+main_menu         NEW GAME / CONTINUE / OPTION
+oak_speech        Oak intro (portraits, text, naming)
+naming_screen     keyboard for player/rival names
+overworld         walk, NPCs move, warps/connections/encounters
+textbox           dialogue box active
+transition        fade out → async map load → fade in
+battle_transition visual effect before a battle
+battle            battle controller owns update+render
+trainer_approach  trainer NPC walks toward player
+start_menu        right-side overlay menu
+save_menu         save confirmation + saving
+option_menu       full-screen settings
+trainer_card      player card
+party_menu        party list (STATS, SWITCH, CANCEL)
+shop              Poké Mart BUY/SELL/QUIT
+item_menu         bag
+pc                Red's house item PC
+pokecenter_pc     SOMEONE's PC / YELLOW's PC / LOG OFF → BillsPcMenu / PcMenu
+blackboard        interactive board menu
+dex               Pokédex list/data/area
+town_map          map overlay
+pikachu_battle    Oak catches Pikachu cutscene
+pikachu_emotion   animated Pikachu face box
+evolution         post-battle evolution (sprite morph, B cancels)
+script            cutscene script engine running
 ```
 
-TypeScript is strict mode with `noUnusedLocals` and `noUnusedParameters` enabled — fix all warnings before committing.
+Other keys: `p` pauses (suspends the AudioContext); `-` / `+` change the sim FPS
+(upstream: default 50, range 10–200, stored in localStorage `p151-f`).
+
+**Game loop (ours, R1b — DECISIONS #27).** `gameLoop()` (rAF) calls
+`runDueTicks()` then renders. Browsers stop rAF in background tabs, so
+`startBackgroundTicker()` runs a tiny inline Web Worker (`setInterval` 8 ms,
+not throttled like main-thread timers) that calls `runDueTicks()` whenever rAF
+has been idle for 100 ms. Game logic and `tickAudio()` keep running unfocused;
+drawing resumes with rAF. `input.ts` releases every held key on window `blur`,
+because the keyup events are lost while unfocused. `p` still pauses everything.
+
+### Overworld movement pitfalls
+
+- **Turn delay** is 1 frame (ASM sets `BIT_TURNING`, loops back to OverworldLoop
+  once) — no multi-frame delay.
+- **Wall bump**: walk-in-place animation + collision SFX repeats every 8 frames
+  while the direction is held.
+- **Map connections fire mid-step.** `performMapConnection` must call
+  `player.cancelMovement()` after repositioning, or the next `update()`
+  interpolates from the old map's target and snaps the player to a wrong spot.
+- **Scripted movement**: `startScriptedMove` cancels in-progress movement. ASM
+  `SimulateJoypadStates` goes through the full overworld engine (collision +
+  connections); our `updateScriptedMove` moves directly without collision — don't
+  copy ASM joypad paths that go off-map.
+
+### Data conventions
+
+- **Names in JSON**: `<PLAYER>` / `<RIVAL>` tokens in NPC dialogue and signs —
+  `TextBox.show()` substitutes them. In TypeScript story scripts use
+  `getPlayerName()` / `getRivalName()` template literals instead.
+- **Pokemon sprites by dex number**: `/gfx/sprites/front/{dex}.png`; pass
+  `species.id` to `loadPokemonSprites()`.
+- **Dialogue** via `getText('KEY')` (`src/text/game_text.ts`, from `game_text.json`).
+- **Item names** via `getItemName(id)` (`src/items.ts`, from `item_names.json`).
+- **Asset paths use real names**: `/gfx/title/pokemon_logo.png`,
+  `/gfx/title/pikachu_bg.png`, `/gfx/sprites/pikachu.png` (follower),
+  `/gfx/pikachu/` (emotion faces).
+
+### ROM extraction system (`src/rom/`)
+
+| File | Purpose |
+|---|---|
+| `index.ts` | `validateRom()`, `extractRom()` — orchestrates every extractor; returns `{jsonData, imageData, binaryData}` keyed by URL path |
+| `binary_reader.ts` | ArrayBuffer utilities, SHA1 |
+| `rom_offsets.ts` | Hardcoded ROM byte offsets (from `pokeyellow.sym`), `ROM_SHA1`, `ROM_SIZE` |
+| `constants.ts` | Enum constants only: `TYPE_NAMES`, `EFFECT_NAMES`, `GROWTH_RATE_NAMES` |
+| `sprite_decompress.ts` | Gen 1 sprite decompression (port of `home/uncompress.asm`) |
+| `tile_decoder.ts` | 1bpp/2bpp → grayscale `ImageData` (2bpp shades 255/170/85/0) |
+| `data_provider.ts` | *Dead since R1b.* Was: `window.fetch` override + `injectRawImage` graphics injection |
+| `upload_ui.ts` | *Dead since R1b.* Was: ROM upload screen + IndexedDB cache check |
+| `rom_cache.ts` | *Dead since R1b.* Was: IndexedDB store (`CACHE_VERSION` 8) |
+| `town_map_data.ts` | Static town-map coordinates (not from ROM) |
+| `node_image_data.ts` | *(ours, R1a)* Node stand-in for `ImageData` so `extractRom()` runs in the setup script and tests |
+| `static_export.ts` | *(ours, R1a)* Node-only: `encodePng()` (lossless 8-bit gray / gray+alpha), `writeStatic()` rebuilds `static/`, `staticPathFor()` refuses keys outside `gfx/` |
+| `extractors/*.ts` | One per data type — the **schema authority** (Hard rule #4) |
+
+The three *Dead* files are upstream's in-browser ROM path. Since R1b nothing
+imports them and the production bundle contains none of their code. They stay in
+the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
+`extractRom()` is still live: the setup script and tests call it in Node. `scripts/extract_dev_data.ts`
+(`npm run setup`) runs the same extractors in Node; its SFX list is longer than
+`index.ts`'s.
+
+- **Adding an extractor**: create `extractors/foo.ts` exporting
+  `extractFoo(rom: BinaryReader, ...)` returning the ground-truth JSON shape; wire
+  it into `index.ts` **and** `scripts/extract_dev_data.ts`; add a test in
+  `src/rom/__tests__/extraction.test.ts`. Name-string data takes lookup tables as
+  parameters (`readMoveNames()`, `readItemNames()`, … from `extractors/text.ts`).
+  NPC/sign text: `textOffset` (sym-file offsets) or `readMapText()` (TextPointers →
+  `text_far` chain).
+- **Sprite bank pitfall** (`extractors/sprites.ts`): Pokemon sprite banks are
+  chosen by **internal species ID** thresholds (`home/pics.asm`), not dex number.
+  Convert dex → internal ID by scanning `PokedexOrder` in reverse. `PokedexToIndex`
+  at `10:5086` is **machine code, not a data table** — never read bytes from it.
+- **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
+  blocksets, collision, pokedex, maps (**12**), music (47 listed, 46 actually
+  extract), SFX (36 unique in `index.ts`, 46 in the setup script),
+  wave samples, noise instruments, font / font_extra / font_battle_extra,
+  tilesets, battle HUD, title screen (+ tilemaps), overworld sprites (~70),
+  Pokemon front/back (302), trainer & player sprites, emotes, party icons, town
+  map, Pokédex tiles, trainer card, heal machine.
 
 ### Testing
 
-375 tests across 12 files using **vitest**:
-- **Battle tests** (334): across 11 files in `src/battle/`
-- **ROM extraction tests** (41): `src/rom/__tests__/extraction.test.ts` — verifies every extractor against ground-truth JSON files. Requires `ROM_PATH` env var; skipped otherwise
-- **Test setup** (`src/test/setup.ts`): Mocks `fetch` globally to serve `data/*.json` from disk. Requires running `npm run setup <rom>` first to generate `data/`
-- **Test helpers** (`src/test/helpers.ts`): `makePokemon(overrides?)` factory, `mockRandom(values[])` / `mockRandomFixed(value)` / `restoreRandom()`
-- **Message format**: All battle messages are `string[][]`. Access as `result.messages[0][0]` or `result.messages[0].join(' ')`
+381 tests in 13 files (vitest, `environment: 'node'`):
 
-## Architecture
+- **Battle** — 334 tests across 11 files in `src/battle/`.
+- **Extraction** — 41 in `src/rom/__tests__/extraction.test.ts`; compares each
+  extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
+  Its Pikachu pixel test compares against `refs/pokeyellow/gfx/pokemon/front/pikachu.png`
+  (path fixed in R1a — it used to skip silently) and returns early if `refs/`
+  isn't cloned.
+- **Static export** — 6 in `src/rom/__tests__/static_export.test.ts` (R1a): key
+  shape, the four grays, lossless PNG round-trip of all 518 images, extracted JSON
+  == `data/`, and **`static/` not stale**. If that last one fails after an
+  extractor edit, re-run `npm run setup pokeyellow.gbc`. Needs `ROM_PATH`.
+- **Setup** (`src/test/setup.ts`) stubs `fetch` to serve `data/*.json`, and calls
+  `process.exit(1)` if `data/` is missing.
+- **Helpers** (`src/test/helpers.ts`): `makePokemon(overrides?)`,
+  `mockRandom(values[])`, `mockRandomFixed(value)`, `restoreRandom()`.
+- **Battle messages** are `string[][]` — `result.messages[0][0]` or
+  `result.messages[0].join(' ')`.
 
-Entry point: `index.html` -> `src/main.ts`
+### Audio (`src/audio/`)
 
-| Module | Purpose | Key exports |
-|--------|---------|-------------|
-| `src/core/` | Shared types, constants, player state | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()` |
-| `src/renderer/` | Canvas 2D rendering | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()` |
-| `src/input/` | Keyboard + touch input (arrows/WASD, Z=A, X=B, Enter=Start; mobile touch overlay with D-pad/A/B/Start/Select) | `updateInput()`, `isHeld()`, `isPressed()`, `setKey()`, `initTouchControls()` |
-| `src/text/` | Dialogue text box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
-| `src/overworld/` | Maps, player, NPCs, story state, transitions | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()` |
-| `src/battle/` | Wild/trainer battle system, evolution | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
-| `src/menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `BlackboardMenu`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
-| `src/pikachu/` | Pikachu follower, happiness, battle & emotion | `PikachuFollower`, `modifyPikachuHappiness()`, `initPikachuBattle()` |
-| `src/story/` | Per-map story scripts & hidden events | `buildOakGrassScript()`, `buildOaksLabIntroScript()`, `buildOaksLabPokedexScript()`, `buildViridianMartParcelScript()` |
-| `src/items.ts` | Bag & PC item storage | `Bag`, `ItemStack`, `addToInventory()`, `initItemNames()`, `getItemName()` |
-| `src/save.ts` | Save/load via localStorage | `saveGame()`, `loadGame()` |
-| `src/events.ts` | Event flag system | `setFlag()`, `hasFlag()` |
-| `src/pokedex_state.ts` | Pokedex seen/owned tracking | `markSeen()`, `markOwned()`, `isSeen()`, `isOwned()`, `restorePokedex()` |
-| `src/script/` | Cutscene script engine & controller | `initScript()`, `updateScript()`, `ScriptCommand` |
-| `src/audio/` | Game Boy audio engine (4 channels: 2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `suspendAudio()`, `resumeAudioOutput()` |
-| `src/rom/` | ROM extraction system — extracts all game data from user-uploaded ROM | `validateRom()`, `extractRom()`, `installRomData()`, `showUploadScreen()` |
-| `src/debug.ts` | Debug overlay (backtick key): tile grid, stats, HP, status, stat stages, badges, bag, pikachu mood, warp-to-location | `renderDebugOverlay()`, `updateDebugPanel()`, `consumeDebugWarp()` |
-
-**For detailed subsystem docs, read the `ARCHITECTURE.md` in the relevant `src/` subdirectory.**
-Data file format docs are in `data/DATA_FORMATS.md`.
-
-### Game State Machine (`main.ts`)
-
-```
-'overworld'        -> player walks, NPCs move, check warps/connections/encounters
-'textbox'          -> dialogue text box active
-'transition'       -> fade-out -> async map load -> fade-in
-'battle'           -> battle controller owns update+render
-'battle_transition'-> visual transition effect before battle starts
-'trainer_approach'  -> trainer NPC walks toward player
-'start_menu'       -> right-side overlay menu
-'save_menu'        -> save confirmation + saving flow
-'option_menu'      -> full-screen settings
-'trainer_card'     -> player card display
-'party_menu'       -> party list (STATS, SWITCH, CANCEL)
-'shop'             -> pokemart BUY/SELL/QUIT
-'item_menu'        -> item bag selection
-'pc'               -> player's PC item storage (Red's house PC)
-'pokecenter_pc'    -> pokecenter PC (SOMEONE's PC / YELLOW's PC / LOG OFF -> BillsPcMenu / PcMenu)
-'blackboard'       -> interactive menu board
-'dex'              -> pokedex list/data/area screens
-'town_map'         -> map overlay
-'pikachu_battle'   -> Oak catches Pikachu cutscene
-'pikachu_emotion'  -> animated Pikachu face box
-'evolution'        -> post-battle evolution animation (sprite morph, B to cancel)
-'script'           -> cutscene script engine running
-'splash'           -> "Click to start" screen (unlocks browser audio)
-'title_screen'     -> animated title screen with Pikachu
-'main_menu'        -> NEW GAME / CONTINUE / OPTION
-'oak_speech'       -> Prof Oak intro sequence (portraits, text, naming)
-'naming_screen'    -> full keyboard for entering player/rival names
-```
-
-### Coordinate Systems
-
-- **Pixels**: raw screen coordinates (160x144 native, scaled up)
-- **Tiles**: 8x8 pixels. Player position stored in pixels, `tileX`/`tileY` = `Math.round(px / 8)`
-- **Blocks**: 4x4 tiles = 32x32 pixels. Map dimensions are in blocks.
-- **Steps**: 16x16 pixels (2 tiles). NPC/warp/sign coords use step units.
-- **Camera**: `getCameraX() = player.x - 64`, `getCameraY() = player.y - 60`
-- **Walk speed**: 2px/frame, 8 frames per step (assembly: `wWalkCounter=8`, step vector doubled via `add a`). Player/NPC/Pikachu all use same speed.
-- **Turn delay**: 1 frame (assembly: sets `BIT_TURNING`, loops back to OverworldLoop once). No multi-frame delay.
-- **Wall bump**: Walking-in-place animation + collision SFX repeats every 8 frames while direction held.
-- **Map connections mid-step**: When the player walks off a map edge, the connection fires mid-step. `performMapConnection` must call `player.cancelMovement()` after repositioning to clear stale `moving`/`targetX`/`targetY`. Without this, the next `update()` interpolates from the old-map target and snaps the player to a wrong position.
-- **Scripted movement**: `startScriptedMove` cancels any in-progress movement. Assembly `SimulateJoypadStates` goes through the full overworld engine (collision + connections); our `updateScriptedMove` moves directly without collision. Don't copy assembly joypad paths that go off-map.
-
-### Asset Pipeline (ROM-Only)
-
-No game assets are shipped with the code. All game data is extracted from a user-uploaded ROM at runtime.
-
-- `publicDir: false` — NO static game data in `dist/` (~348KB total, zero `.json`/`.png` files)
-- All data extracted at runtime from user-uploaded ROM via `src/rom/` system
-- **Fetch override**: `window.fetch` is intercepted to serve ROM-extracted JSON data. For known game-data paths not in the cache (e.g., `wild/RedsHouse1F.json`), returns a local 404 instantly — no network request.
-- **Graphics cache injection**: `rawImageCache` in `renderer.ts` is pre-populated with decoded tile data. `loadImage()` also checks this cache and returns a canvas, so both `getRawImageData()` and direct image loads work.
-- **URL normalization**: Both `/gfx/foo.png` and `gfx/foo.png` resolve to the same cache entry via `normalizeUrl()`.
-- **IndexedDB caching**: Extracted data stored in browser for instant loads on return visits
-
-**Dev setup** (optional, for running tests):
-- `npm run setup <path-to-rom.gbc>` — extracts JSON data to `data/` (gitignored)
-- The test suite's mock fetch reads from `data/` — requires this setup step
-
-**Data conventions**:
-- **Dynamic names in JSON**: Use `<PLAYER>` and `<RIVAL>` tokens in NPC dialogue and sign text. `TextBox.show()` calls `substituteNames()` to replace these with the actual player/rival names at render time. In TypeScript story scripts, use `getPlayerName()` / `getRivalName()` template literals instead.
-- **Pokemon sprite paths use dex numbers**: `/gfx/sprites/front/{dexNum}.png`, not species names. Pass `species.id` to `loadPokemonSprites()`.
-- **Dialogue text uses `getText()`**: All dialogue loaded from `game_text.json` via `getText('KEY')` from `src/text/game_text.ts`. Extracted from ROM at runtime.
-- **Item display names**: Use `getItemName(id)` from `src/items.ts`. Names loaded from `item_names.json`.
-- **Asset paths use real names**: Title screen uses `/gfx/title/pokemon_logo.png`, `/gfx/title/pikachu_bg.png`, etc. Pikachu follower uses `/gfx/sprites/pikachu.png`. Pikachu emotion faces in `/gfx/pikachu/`.
-
-### ROM Extraction System (`src/rom/`)
-
-Extracts all game data from a Pokemon Yellow ROM binary in the browser. No game assets are checked into the repository — `data/` can be generated locally via `npm run setup <rom>` for testing.
+Three layers: extraction (ROM → JSON), synthesizer (Web Audio
+`ScriptProcessorNode`), music engine (command interpreter).
 
 | File | Purpose |
-|------|---------|
-| `src/rom/index.ts` | Public API: `validateRom()`, `extractRom()`, orchestrates all extractors |
-| `src/rom/binary_reader.ts` | ArrayBuffer utilities, SHA1 hashing |
-| `src/rom/rom_offsets.ts` | Hardcoded ROM byte offsets (from `pokeyellow.sym`) |
-| `src/rom/constants.ts` | Non-copyrightable enum constants only: TYPE_NAMES, EFFECT_NAMES, GROWTH_RATE_NAMES |
-| `src/rom/sprite_decompress.ts` | Gen 1 sprite decompression (port of `home/uncompress.asm`) |
-| `src/rom/tile_decoder.ts` | 1bpp/2bpp Game Boy tile format → grayscale ImageData |
-| `src/rom/data_provider.ts` | Install fetch override + graphics cache injection |
-| `src/rom/upload_ui.ts` | ROM upload screen UI + IndexedDB cache check |
-| `src/rom/rom_cache.ts` | IndexedDB storage for extracted data |
-| `src/rom/extractors/*.ts` | Per-data-type extractors (pokemon, moves, types, trainers, wild, maps, audio, etc.) |
+|---|---|
+| `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()` |
+| `music_engine.ts` | Interpreter ticked at ~59.7 Hz; channel suppression while SFX play |
+| `sfx_engine.ts` | SFX on channels 5–8 overriding music channels 1–4; `square_note` (direct frequency), `pitch_sweep` (NR10) |
+| `synthesizer.ts` | Per-sample generation of all 4 channels: pulse (phase accumulator + duty table), wave (32-sample lookup), noise (LFSR + 64 Hz hardware envelope in the callback) |
+| `frequency_table.ts` | Note → Hz, matching `Audio1_CalculateFrequency` (SRA shift, octave 1 = highest) |
+| `src/rom/extractors/audio.ts` | Parses binary music/SFX commands from the ROM |
 
-**Adding a new extractor**: Create `src/rom/extractors/foo.ts`, export an `extractFoo(rom: BinaryReader, ...)` function that returns data matching the ground-truth JSON format, add it to `index.ts`, add a verification test in `src/rom/__tests__/extraction.test.ts`. For name-string data, accept name lookup tables as parameters (built from ROM in `index.ts` via `readMoveNames()`, `readItemNames()`, etc. from `extractors/text.ts`). For NPC/sign text, use `textOffset` (sym-file ROM offsets) or `readMapText()` (TextPointers → text_far chain).
+- **Music JSON** (`audio/music/*.json`): `channels[].commands[]` — `tempo`,
+  `volume`, `note_type`, `octave`, `note`, `rest`, `duty_cycle`, `vibrato`,
+  `pitch_slide`, `drum_speed`, `drum_note`, `sound_call` / `sound_loop` / `sound_ret`.
+- **SFX JSON** (`audio/sfx/*.json`): channels 5–8 — `square_note`, `noise_note`,
+  `pitch_sweep`, `duty_cycle`, `sound_loop`, `sound_ret`.
+- **Map music**: `MAP_MUSIC` in `main.ts` (from `data/maps/songs.asm`);
+  `updateMapMusic()` only restarts when the track changes. Every new map needs an
+  entry — and outdoor maps need adding to `OUTDOOR_MAPS` (door SFX choice).
+- Audio ticks at a fixed 59.7275 Hz off `performance.now()`, independent of game FPS.
+- Each note resets volume to `volumeInitial` from the last `note_type` (GB
+  envelope re-trigger). Wave `note_type` 2nd param = output level (0–3), 3rd =
+  wave instrument. Drum notes use `audio/noise_instruments.json`.
+- Flow: splash click unlocks audio → title music through main menu → stops on
+  Continue/New Game → map music in the overworld. Battle music starts at the
+  transition, not after battle init. Victory fanfare
+  (`defeatedwildmon`/`defeatedtrainer`) fires from `battle.onVictory` when the last
+  enemy faints; map music resumes after. `meetprofoak` plays in the Oak grass
+  cutscene (`pallet_town.ts` `callback`).
+- SFX wired upstream: `press_ab` on every A/B in menus/textboxes, `collision` on
+  wall bumps, `start_menu`, `go_inside` / `go_outside` on door warps.
+- Upstream's own to-do: remaining music tracks, music fade in/out, Pokemon cries,
+  Pikachu PCM cries.
 
-**Sprite bank lookup** (`src/rom/extractors/sprites.ts`): Pokemon sprite data banks are determined by **internal species ID** thresholds (from `home/pics.asm`), NOT dex numbers. Convert dex→internal ID by scanning the `PokedexOrder` table in reverse. **Pitfall**: `PokedexToIndex` at `10:5086` is a function (machine code), NOT a data table — never read raw bytes from it.
+### Battle mechanics already implemented (upstream)
 
-**IndexedDB cache version** (`src/rom/rom_cache.ts`): Bump `CACHE_VERSION` (currently 8) when extraction code or output paths change to invalidate stale cached data.
+- **1/256 miss**: even 100%-accuracy moves roll, 1/256 miss (`damage.ts`).
+- **Badge stat boosts**: Boulder→ATK, Thunder→DEF, Soul→SPD, Volcano→SPC, +12.5%
+  each; applied at battle init, switch-in, level-up and after **any** stat-stage
+  change (Gen 1 reapplication bug). Badges flow `main.ts` → `Battle`
+  (`damage.ts:applyBadgeStatBoosts`).
+- **Focus Energy bug**: divides crit rate by 4.
+- **Faint**: `SlideDownFaintedMonPic` — slides down 8 rows × 2 frames, HUD clears after.
+- **Blackout**: `SET_PAL_BATTLE_BLACK` filter, "out of useable POKéMON!" /
+  "blacked out!", halves money, heals party, warps to the last Pokécenter door
+  (`handleBlackoutWarp`, `lastBlackoutWarp` saved).
+- **Evolution**: level-based, post-battle (`evolution.ts:checkEvolutions`),
+  8-cycle accelerating animation per `engine/movie/evolution.asm`, B cancels,
+  auto-renames an un-nicknamed mon, updates the Pokédex.
+- **Move learning** with a full moveset: `pendingMoves` →
+  `learn_move_prompt` → `learn_move_select` → `learn_move_confirm`, text from
+  `data/text/text_7.asm`; B / NO loops back to the full TryingToLearn text.
 
-**Key interception points** (minimal game engine changes):
-- `renderer.ts:injectRawImage()` — pre-populate `rawImageCache` with ROM-decoded ImageData. Also `loadImage()` checks the cache and returns a canvas when available.
-- `window.fetch` override in `data_provider.ts` — serve JSON/binary from ROM. Returns local 404 for missing game-data paths to prevent network noise.
-- `main.ts` — ROM mode is always enabled; IndexedDB cache provides instant loads after first upload
+### Pikachu happiness (`src/pikachu/pikachu_happiness.ts`)
 
-**Extractors implemented** (all verified against ground truth with 41 tests):
-pokemon, moves, types, trainers, wild encounters, blocksets, collision tiles, pokedex, maps (12), music (50+ tracks), SFX (37), wave samples, noise instruments, sprite decompression, font, font_extra, font_battle_extra, tilesets, battle HUD, title screen (graphics + tilemaps), all overworld sprites (~70), Pokemon front/back sprites (302), trainer sprites, player sprites, emotes, party icons, town map, pokedex tiles, trainer card, healing machine
+ASM: `engine/events/pikachu_happiness.asm`, `engine/pikachu/pikachu_emotions.asm`.
+State: `pikachuHappiness` 0–255 (default 90), `pikachuMood` 0–255 (default 128);
+face = mood × happiness matrix → 20 animation scripts. **Bug reproduced:**
+USEDITEM happiness fires *before* checking whether the item has any effect
+(`item_effects.asm:941`) — a Potion on full-HP Pikachu still counts.
 
-### Audio System (`src/audio/`)
+Implemented (effect tiers are happiness <100 / <200 / 200+):
 
-Three-layer architecture: **data extraction** (ASM → JSON), **synthesizer** (Web Audio API via ScriptProcessorNode), **music engine** (command interpreter).
+| Event | Effect | Mood | Trigger |
+|---|---|---|---|
+| LEVELUP | +5/+3/+2 | 0x8A | `main.ts` after level gain |
+| FAINTED | −1/−1/−1 | 0x6C | `main.ts`, player mon faints (level gap < 30) |
+| WALKING | +2/+1/+1 | 0x80 | `overworld_controller.ts`, every 256 steps |
+| GYMLEADER | +3/+2/+1 | 0x80 | `main.ts:startTrainerBattle`, before gym leaders |
+| USEDITEM | +5/+3/+2 | 0x83 | `battle.ts:usePotion/useStatusHeal`, `item_menu.ts:useItemOnMon` — Pikachu only |
+| CARELESSTRAINER | −5/−5/−10 | 0x6C | `battle.ts:checkFaint` + `main.ts`, enemy 30+ levels higher |
 
-**Files:**
-| File | Purpose |
-|------|---------|
-| `src/audio/index.ts` | Public API: `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()` |
-| `src/audio/music_engine.ts` | Music command interpreter — ticked at ~59.7Hz, processes music commands, updates synth. Supports channel suppression when SFX is active |
-| `src/audio/sfx_engine.ts` | SFX engine — plays sound effects on channels 5-8 that override music channels 1-4. Uses `square_note` (direct frequency) and `pitch_sweep` (NR10 hardware sweep) |
-| `src/audio/synthesizer.ts` | ScriptProcessorNode: sample-by-sample generation of all 4 channels. Pulse uses phase accumulator + duty table, wave uses phase accumulator + 32-sample waveform lookup, noise uses LFSR with hardware envelope running at 64Hz inside the audio callback |
-| `src/audio/frequency_table.ts` | Note → Hz lookup matching `Audio1_CalculateFrequency` (SRA shift, octave 1=highest) |
-| `src/rom/extractors/audio.ts` | ROM extractor: parses binary music/SFX commands from ROM |
+**Not yet implemented — add when the system is built:**
 
-**Music data format** (`data/audio/music/*.json`): Each track has `channels[]`, each channel has `commands[]`. Commands: `tempo`, `volume`, `note_type`, `octave`, `note`, `rest`, `duty_cycle`, `vibrato`, `pitch_slide`, `drum_speed`, `drum_note`, `sound_call`/`sound_loop`/`sound_ret`.
-
-**SFX data format** (`data/audio/sfx/*.json`): Each SFX has `channels[]` (id 5-8), each channel has `commands[]`. Commands: `square_note` (direct 11-bit frequency), `noise_note`, `pitch_sweep`, `duty_cycle`, `sound_loop`, `sound_ret`.
-
-**Music tracks extracted**: 50+ tracks extracted from ROM at runtime. The ROM extractor (`src/rom/extractors/audio.ts`) parses binary music commands directly and extracts all tracks listed in the `MUSIC_HEADERS` table.
-
-**Map music system:** `MAP_MUSIC` lookup table in `main.ts` maps each map name to its music track (from `data/maps/songs.asm`). `updateMapMusic()` starts the track only if different from current (avoids restarting same music on indoor transitions within a town).
-
-**Key implementation details:**
-- Audio ticks at fixed 59.7275 Hz using `performance.now()` accumulator (independent of game FPS)
-- Each note resets volume to `volumeInitial` from last `note_type` (matching GB hardware envelope re-trigger)
-- Splash screen ("Click to start") unlocks browser audio before title screen
-- Title music starts after splash click and continues through main menu
-- Music stops on Continue/New Game selection; map music starts on entering overworld
-- Battle music (`wildbattle`/`trainerbattle`) starts at transition effect (before sprites load), NOT after battle init. Victory fanfare (`defeatedwildmon`/`defeatedtrainer`) triggers via `battle.onVictory` callback when last enemy faints. Map music resumes on return to overworld.
-- `meetprofoak` plays during the Oak grass cutscene (triggered via script `callback` command in `pallet_town.ts`)
-- Pause (`p` key) suspends/resumes the AudioContext to mute audio
-- SFX channels 5-8 temporarily suppress corresponding music channels 1-4; music resumes when SFX finishes
-- SFX_PRESS_AB plays on all A/B button presses in menus/textboxes; SFX_COLLISION on wall bumps; SFX_START_MENU on start button; SFX_GO_INSIDE/SFX_GO_OUTSIDE on door warps
-- Drum notes trigger noise instruments from `data/audio/noise_instruments.json` with hardware envelope simulation
-- Wave channel: `note_type` second param = output level (0-3), third = wave instrument index
-
-**Next steps (Phase 3):** Remaining ~36 music tracks, music fade in/out transitions, Pokemon cries, Pikachu cries (PCM).
-
-### Palette System & Color Correction
-
-Palettes are defined in `src/renderer/palettes.ts` using RGB555 values from the assembly's `CGBBasePalettes`. A **GBC LCD color correction** is applied (`gbcCorrect()`) to approximate real hardware output — raw RGB555→RGB888 produces incorrect colors (e.g., pure yellow #FFFF00 instead of the correct warm gold #EBC15C).
-
-When adding a new screen, find which `SET_PAL_*` the assembly uses (in the relevant `.asm` file), trace it through `data/sgb/sgb_packets.asm` → `PAL_SET` → `data/sgb/sgb_palettes.asm` → `CGBBasePalettes` to find the palette name (e.g., `PAL_MEWMON` → `'MEWMON'`). Pass this name to `loadTileset()`/`loadSprite()`. There is no `'DEFAULT'` palette — unknown names fall back to `'ROUTE'`.
-
-### Gen 1 Battle Mechanics (faithfully implemented)
-
-- **1/256 miss glitch**: Even 100% accuracy moves go through the RNG accuracy check, giving a 1/256 miss chance (`damage.ts`)
-- **Badge stat boosts**: Boulder→ATK, Thunder→DEF, Soul→SPD, Volcano→SPC, each +12.5%. Applied at battle init, switch-in, level-up, and after ANY stat stage change (Gen 1 reapplication bug). Badges passed from `main.ts` → `Battle` constructor (`damage.ts:applyBadgeStatBoosts`)
-- **Focus Energy bug**: Divides crit rate by 4 instead of multiplying (making crits *less* likely)
-- **Faint animation**: `SlideDownFaintedMonPic` — sprite slides down off-screen (8 rows × 2 frames), HUD clears after (`battle_ui.ts:renderPlayerSpriteFaintSlide/renderEnemySpriteFaintSlide`)
-- **Blackout/whiteout**: When all party Pokemon faint, `SET_PAL_BATTLE_BLACK` (high-contrast B&W filter via `ctx.filter = 'saturate(0) contrast(10)'`) is applied. Shows "<PLAYER> is out of useable POKéMON!" then "<PLAYER> blacked out!". Halves money, heals party, warps to last pokecenter door (`handleBlackoutWarp` in `main.ts`). Last heal location tracked in `lastBlackoutWarp` (persisted in save)
-- **Evolution**: Post-battle level-based evolution check (`evolution.ts:checkEvolutions`). White background, colored old sprite → PAL_BLACK silhouettes during animation → colored new sprite. Assembly-accurate 8-cycle accelerating animation (`engine/movie/evolution.asm`: b=1→8 swaps, c=16→2 delay frames, 80-frame pre-delay). B button cancels. Auto-renames if nickname matches old species. Updates Pokedex. Text from `data/text/text_4.asm` (`_EvolvedText`, `_IntoText`, `_StoppedEvolvingText`) and `data/text/text_5.asm` (`_IsEvolvingText`)
-- **Move learning flow**: When moveset is full on level-up, `experience.ts` returns `pendingMoves` (no silent replacement). Battle enters interactive states: `learn_move_prompt` → `learn_move_select` → `learn_move_confirm`. Text strings from `data/text/text_7.asm` (TryingToLearnText, WhichMoveToForgetText, AbandonLearningText, OneTwoAndText, PoofText, ForgotAndText, DidNotLearnText). Move select screen: box at `hlcoord 4,7` (`lb bc,4,14`), moves at `(6,8)`, cursor at `(5,8)`, bottom text "Which move should be forgotten?". B on move select or NO on abandon → loops back to full TryingToLearnText (assembly `.loop` label). Yes/no menu only renders when `textQueue` is empty (after all preamble text is dismissed)
-
-### Pikachu Happiness System
-
-Assembly ref: `engine/events/pikachu_happiness.asm`, `engine/pikachu/pikachu_emotions.asm`
-
-State: `pikachuHappiness` (0-255, default 90), `pikachuMood` (0-255, default 128). Face selection uses a mood×happiness matrix → 20 animation scripts. Code: `src/pikachu/pikachu_happiness.ts`.
-
-**Assembly bug (faithfully reproduced):** USEDITEM happiness triggers BEFORE checking if the item has any effect (`item_effects.asm:941`). Using a Potion on full-HP Pikachu still boosts happiness. This applies in both battle and overworld item use.
-
-**Implemented events** (7 of 11):
-
-| Event | Effect (tiers: <100/<200/200+) | Mood target | Trigger location |
-|-------|-------------------------------|-------------|-----------------|
-| LEVELUP | +5/+3/+2 | 0x8A | `main.ts` — after battle level gain |
-| FAINTED | -1/-1/-1 | 0x6C | `main.ts` — when player mon faints (level gap < 30) |
-| WALKING | +2/+1/+1 | 0x80 | `overworld_controller.ts` — every 256 steps |
-| GYMLEADER | +3/+2/+1 | 0x80 | `main.ts:startTrainerBattle` — before gym leader battles |
-| USEDITEM | +5/+3/+2 | 0x83 | `battle.ts:usePotion/useStatusHeal` + `item_menu.ts:useItemOnMon` — on Pikachu only |
-| USEDXITEM | +1/+1/+0 | 0x80 | Data ready, no trigger yet (X items not implemented) |
-| CARELESSTRAINER | -5/-5/-10 | 0x6C | `battle.ts:checkFaint` + `main.ts` — when enemy is 30+ levels higher |
-
-**NOT YET IMPLEMENTED — add when systems are built:**
-
-| Event | Effect | Mood | ASM trigger | Where to add in JS |
-|-------|--------|------|-------------|--------------------|
-| USEDXITEM | +1/+1/+0 | 0x80 | `engine/items/item_effects.asm` (X Attack, X Defend, X Speed, X Special, X Accuracy, Dire Hit, Guard Spec) | When X-stat items are added to `battle.ts:handleItemUse`, call `modifyPikachuHappiness('USEDXITEM')` if target is Pikachu |
-| USEDTMHM | +1/+1/+0 | 0x94 | `engine/items/item_effects.asm` line 2468 | When TM/HM teaching is implemented, add happiness call after successful teach on Pikachu |
-| DEPOSITED | -3/-3/-5 | 0x62 | `engine/pokemon/bills_pc.asm` | When Bill's PC deposit is implemented, add happiness call when depositing Pikachu |
-| PSNFNT | -5/-5/-10 | 0x62 | `engine/events/poison.asm` | When overworld poison damage is implemented, add happiness call when Pikachu faints from poison |
-| TRADE | -10/-10/-20 | 0x00 | `engine/link/cable_club.asm` | When trading is implemented, add happiness call when trading Pikachu away |
-| `wd49b` emotion override | N/A | varies | `engine/pikachu/pikachu_emotions.asm:346` | Special Pikachu reactions to items: evolution stone refusal (1), healing (2), item refusal (4), Thunder/Thunderbolt learning (5). Skips mood target update when set. Add when item reactions are implemented |
-| NPC dialogue checks | N/A | N/A | Cerulean Melanie (threshold 147), Museum 2F Hiker (threshold 101), Celadon Mansion | Add `getPikachuHappiness()` checks in map scripts when these maps are created |
+| Event | Effect | Mood | ASM | Add where |
+|---|---|---|---|---|
+| USEDXITEM | +1/+1/+0 | 0x80 | `engine/items/item_effects.asm` (X items, Dire Hit, Guard Spec) | `battle.ts:handleItemUse` when X items land, if target is Pikachu (data ready, no trigger) |
+| USEDTMHM | +1/+1/+0 | 0x94 | `item_effects.asm` ~l.2468 | after a successful TM/HM teach on Pikachu (**A2**) |
+| DEPOSITED | −3/−3/−5 | 0x62 | `engine/pokemon/bills_pc.asm` | Bill's PC deposit of Pikachu (**E2**) |
+| PSNFNT | −5/−5/−10 | 0x62 | `engine/events/poison.asm` | Pikachu faints from overworld poison (**A3**) |
+| TRADE | −10/−10/−20 | 0x00 | `engine/link/cable_club.asm` | trading Pikachu away |
+| `wd49b` emotion override | — | varies | `pikachu_emotions.asm:346` | item reactions: stone refusal (1), healing (2), item refusal (4), Thunder/Thunderbolt learning (5); skips mood update when set |
+| NPC happiness checks | — | — | Cerulean Melanie (147), Museum 2F Hiker (101), Celadon Mansion | `getPikachuHappiness()` in those map scripts (**V3** Museum, **B2**, **D3**) |

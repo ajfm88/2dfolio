@@ -1,0 +1,47 @@
+{
+  "grassRate": 25,
+  "grass": [
+    {
+      "level": 3,
+      "pokemon": "CATERPIE"
+    },
+    {
+      "level": 4,
+      "pokemon": "METAPOD"
+    },
+    {
+      "level": 4,
+      "pokemon": "CATERPIE"
+    },
+    {
+      "level": 5,
+      "pokemon": "CATERPIE"
+    },
+    {
+      "level": 4,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 6,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 6,
+      "pokemon": "CATERPIE"
+    },
+    {
+      "level": 6,
+      "pokemon": "METAPOD"
+    },
+    {
+      "level": 8,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 9,
+      "pokemon": "PIDGEOTTO"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

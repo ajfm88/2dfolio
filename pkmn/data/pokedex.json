@@ -1,0 +1,3298 @@
+[
+  null,
+  {
+    "id": 1,
+    "species": "SEED",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 15,
+    "description": [
+      [
+        "It can go for days",
+        "without eating a",
+        "single morsel."
+      ],
+      [
+        "In the bulb on",
+        "its back, it",
+        "stores energy"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 2,
+    "species": "SEED",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 29,
+    "description": [
+      [
+        "The bulb on its",
+        "back grows by",
+        "drawing energy."
+      ],
+      [
+        "It gives off an",
+        "aroma when it is",
+        "ready to bloom"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 3,
+    "species": "SEED",
+    "heightFeet": 6,
+    "heightInches": 7,
+    "weight": 221,
+    "description": [
+      [
+        "The flower on its",
+        "back catches the",
+        "sun's rays."
+      ],
+      [
+        "The sunlight is",
+        "then absorbed and",
+        "used for energy"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 4,
+    "species": "LIZARD",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 19,
+    "description": [
+      [
+        "The flame at the",
+        "tip of its tail",
+        "makes a sound as"
+      ],
+      [
+        "it burns. You can",
+        "only hear it in",
+        "quiet places"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 5,
+    "species": "FLAME",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 42,
+    "description": [
+      [
+        "Tough fights could",
+        "excite this",
+        "POKéMON. When"
+      ],
+      [
+        "excited, it may",
+        "blow out bluish-",
+        "white flames"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 6,
+    "species": "FLAME",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 200,
+    "description": [
+      [
+        "When expelling a",
+        "blast of super",
+        "hot fire, the red"
+      ],
+      [
+        "flame at the tip",
+        "of its tail burns",
+        "more intensely"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 7,
+    "species": "TINYTURTLE",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 20,
+    "description": [
+      [
+        "Shoots water at",
+        "prey while in the",
+        "water."
+      ],
+      [
+        "Withdraws into",
+        "its shell when in",
+        "danger"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 8,
+    "species": "TURTLE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 50,
+    "description": [
+      [
+        "When tapped, this",
+        "POKéMON will pull",
+        "in its head, but"
+      ],
+      [
+        "its tail will",
+        "still stick out a",
+        "little bit"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 9,
+    "species": "SHELLFISH",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 189,
+    "description": [
+      [
+        "Once it takes aim",
+        "at its enemy, it",
+        "blasts out water"
+      ],
+      [
+        "with even more",
+        "force than a fire",
+        "hose"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 10,
+    "species": "WORM",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 6,
+    "description": [
+      [
+        "If you touch the",
+        "feeler on top of",
+        "its head, it will"
+      ],
+      [
+        "release a horrible",
+        "stink to protect",
+        "itself"
+      ]
+    ],
+    "locations": [
+      "ViridianForest"
+    ]
+  },
+  {
+    "id": 11,
+    "species": "COCOON",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 22,
+    "description": [
+      [
+        "Hardens its shell",
+        "to protect itself.",
+        "However, a large"
+      ],
+      [
+        "impact may cause",
+        "it to pop out of",
+        "its shell"
+      ]
+    ],
+    "locations": [
+      "ViridianForest"
+    ]
+  },
+  {
+    "id": 12,
+    "species": "BUTTERFLY",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 71,
+    "description": [
+      [
+        "Its wings, covered",
+        "with poisonous",
+        "powders, repel"
+      ],
+      [
+        "water. This",
+        "allows it to fly",
+        "in the rain"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 13,
+    "species": "HAIRY BUG",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 7,
+    "description": [
+      [
+        "Beware of the",
+        "sharp stinger on",
+        "its head. It"
+      ],
+      [
+        "hides in grass",
+        "and bushes where",
+        "it eats leaves"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 14,
+    "species": "COCOON",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 22,
+    "description": [
+      [
+        "Able to move only",
+        "slightly. When",
+        "endangered, it"
+      ],
+      [
+        "may stick out its",
+        "stinger and poison",
+        "its enemy"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 15,
+    "species": "POISON BEE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 65,
+    "description": [
+      [
+        "It has 3 poisonous",
+        "stingers on its",
+        "forelegs and its"
+      ],
+      [
+        "tail. They are",
+        "used to jab its",
+        "enemy repeatedly"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 16,
+    "species": "TINY BIRD",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 4,
+    "description": [
+      [
+        "Very docile. If",
+        "attacked, it will",
+        "often kick up"
+      ],
+      [
+        "sand to protect",
+        "itself rather",
+        "than fight back"
+      ]
+    ],
+    "locations": [
+      "Route1",
+      "Route11",
+      "Route12",
+      "Route13",
+      "Route2",
+      "Route21",
+      "Route24",
+      "Route25",
+      "Route5",
+      "Route6",
+      "Route7",
+      "Route8",
+      "ViridianForest"
+    ]
+  },
+  {
+    "id": 17,
+    "species": "BIRD",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 66,
+    "description": [
+      [
+        "This POKéMON is",
+        "full of vitality.",
+        "It constantly"
+      ],
+      [
+        "flies around its",
+        "large territory in",
+        "search of prey"
+      ]
+    ],
+    "locations": [
+      "Route11",
+      "Route12",
+      "Route13",
+      "Route14",
+      "Route15",
+      "Route21",
+      "Route24",
+      "Route25",
+      "Route5",
+      "Route6",
+      "Route7",
+      "Route8",
+      "ViridianForest"
+    ]
+  },
+  {
+    "id": 18,
+    "species": "BIRD",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 87,
+    "description": [
+      [
+        "This POKéMON flies",
+        "at Mach 2 speed,",
+        "seeking prey."
+      ],
+      [
+        "Its large talons",
+        "are feared as",
+        "wicked weapons"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 19,
+    "species": "RAT",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 8,
+    "description": [
+      [
+        "Will chew on any-",
+        "thing with its",
+        "fangs. If you see"
+      ],
+      [
+        "one, it is certain",
+        "that 40 more live",
+        "in the area"
+      ]
+    ],
+    "locations": [
+      "CinnabarIsland",
+      "Route1",
+      "Route10",
+      "Route11",
+      "Route16",
+      "Route18",
+      "Route2",
+      "Route21",
+      "Route22",
+      "Route3",
+      "Route4",
+      "Route5",
+      "Route6",
+      "Route7",
+      "Route8",
+      "Route9"
+    ]
+  },
+  {
+    "id": 20,
+    "species": "RAT",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 41,
+    "description": [
+      [
+        "Its hind feet are",
+        "webbed. They act",
+        "as flippers, so"
+      ],
+      [
+        "it can swim in",
+        "rivers and hunt",
+        "for prey"
+      ]
+    ],
+    "locations": [
+      "CinnabarIsland",
+      "Route10",
+      "Route11",
+      "Route16",
+      "Route18",
+      "Route21",
+      "Route9"
+    ]
+  },
+  {
+    "id": 21,
+    "species": "TINY BIRD",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 4,
+    "description": [
+      [
+        "Inept at flying",
+        "high. However, it",
+        "can fly around"
+      ],
+      [
+        "very fast to",
+        "protect its ter-",
+        "ritory"
+      ]
+    ],
+    "locations": [
+      "Route16",
+      "Route18",
+      "Route22",
+      "Route3",
+      "Route4",
+      "Route9"
+    ]
+  },
+  {
+    "id": 22,
+    "species": "BEAK",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 84,
+    "description": [
+      [
+        "A POKéMON that",
+        "dates back many",
+        "years. If it"
+      ],
+      [
+        "senses danger, it",
+        "flies high and",
+        "away, instantly"
+      ]
+    ],
+    "locations": [
+      "Route16",
+      "Route17",
+      "Route18",
+      "Route23",
+      "Route9"
+    ]
+  },
+  {
+    "id": 23,
+    "species": "SNAKE",
+    "heightFeet": 6,
+    "heightInches": 7,
+    "weight": 15,
+    "description": [
+      [
+        "The older it gets,",
+        "the longer it",
+        "grows. At night,"
+      ],
+      [
+        "it wraps its long",
+        "body around tree",
+        "branches to rest"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 24,
+    "species": "COBRA",
+    "heightFeet": 11,
+    "heightInches": 6,
+    "weight": 143,
+    "description": [
+      [
+        "The frightening",
+        "patterns on its",
+        "belly have been"
+      ],
+      [
+        "studied. Six",
+        "variations have",
+        "been confirmed"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 25,
+    "species": "MOUSE",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 13,
+    "description": [
+      [
+        "It keeps its tail",
+        "raised to monitor",
+        "its surroundings."
+      ],
+      [
+        "If you yank its",
+        "tail, it will try",
+        "to bite you"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 26,
+    "species": "MOUSE",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 66,
+    "description": [
+      [
+        "When electricity",
+        "builds up inside",
+        "its body, it"
+      ],
+      [
+        "becomes feisty.",
+        "It also glows in",
+        "the dark"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 27,
+    "species": "MOUSE",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 26,
+    "description": [
+      [
+        "Its body is dry.",
+        "When it gets cold",
+        "at night, its"
+      ],
+      [
+        "hide is said to",
+        "become coated with",
+        "a fine dew"
+      ]
+    ],
+    "locations": [
+      "MtMoon",
+      "Route3",
+      "Route4"
+    ]
+  },
+  {
+    "id": 28,
+    "species": "MOUSE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 65,
+    "description": [
+      [
+        "It is skilled at",
+        "slashing enemies",
+        "with its claws."
+      ],
+      [
+        "If broken, they",
+        "start to grow back",
+        "in a day"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity"
+    ]
+  },
+  {
+    "id": 29,
+    "species": "POISON PIN",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 15,
+    "description": [
+      [
+        "A mild-mannered",
+        "POKéMON that does",
+        "not like to"
+      ],
+      [
+        "fight. Beware, its",
+        "small horns",
+        "secrete venom"
+      ]
+    ],
+    "locations": [
+      "Route10",
+      "Route2",
+      "Route22",
+      "Route9",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 30,
+    "species": "POISON PIN",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 44,
+    "description": [
+      [
+        "When resting deep",
+        "in its burrow, its",
+        "thorns always"
+      ],
+      [
+        "retract.",
+        "This is proof that",
+        "it is relaxed"
+      ]
+    ],
+    "locations": [
+      "Route23",
+      "Route9",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 31,
+    "species": "DRILL",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 132,
+    "description": [
+      [
+        "Tough scales cover",
+        "the sturdy body",
+        "of this POKéMON."
+      ],
+      [
+        "It appears that",
+        "the scales grow",
+        "in cycles"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 32,
+    "species": "POISON PIN",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 20,
+    "description": [
+      [
+        "Its large ears",
+        "are always kept",
+        "upright. If it"
+      ],
+      [
+        "senses danger, it",
+        "will attack with a",
+        "poisonous sting"
+      ]
+    ],
+    "locations": [
+      "Route10",
+      "Route2",
+      "Route22",
+      "Route9",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 33,
+    "species": "POISON PIN",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 43,
+    "description": [
+      [
+        "Its horns contain",
+        "venom. If they",
+        "are stabbed into"
+      ],
+      [
+        "an enemy, the",
+        "impact makes the",
+        "poison leak out"
+      ]
+    ],
+    "locations": [
+      "Route23",
+      "Route9",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 34,
+    "species": "DRILL",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 137,
+    "description": [
+      [
+        "Its steel-like",
+        "hide adds to its",
+        "powerful tackle."
+      ],
+      [
+        "Its horns are so",
+        "hard, they can",
+        "pierce a diamond"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 35,
+    "species": "FAIRY",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 17,
+    "description": [
+      [
+        "Adored for their",
+        "cute looks and",
+        "playfulness. They"
+      ],
+      [
+        "are thought to be",
+        "rare, as they do",
+        "not appear often"
+      ]
+    ],
+    "locations": [
+      "MtMoon"
+    ]
+  },
+  {
+    "id": 36,
+    "species": "FAIRY",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 88,
+    "description": [
+      [
+        "They appear to be",
+        "very protective of",
+        "their own world."
+      ],
+      [
+        "It is a kind of",
+        "fairy, rarely seen",
+        "by people"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 37,
+    "species": "FOX",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 22,
+    "description": [
+      [
+        "Both its fur and",
+        "its tails are",
+        "beautiful. As it"
+      ],
+      [
+        "grows, the tails",
+        "split and form",
+        "more tails"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 38,
+    "species": "FOX",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 44,
+    "description": [
+      [
+        "According to an",
+        "enduring legend,",
+        "9 noble saints"
+      ],
+      [
+        "were united and",
+        "reincarnated as",
+        "this POKéMON"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 39,
+    "species": "BALLOON",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 12,
+    "description": [
+      [
+        "Uses its alluring",
+        "eyes to enrapture",
+        "its foe. It then"
+      ],
+      [
+        "sings a pleasing",
+        "melody that lulls",
+        "the foe to sleep"
+      ]
+    ],
+    "locations": [
+      "Route5",
+      "Route6",
+      "Route7",
+      "Route8"
+    ]
+  },
+  {
+    "id": 40,
+    "species": "BALLOON",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 26,
+    "description": [
+      [
+        "Its body is full",
+        "of elasticity. By",
+        "inhaling deeply,"
+      ],
+      [
+        "it can continue",
+        "to inflate itself",
+        "without limit"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 41,
+    "species": "BAT",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 17,
+    "description": [
+      [
+        "Emits ultrasonic",
+        "cries while it",
+        "flies. They act"
+      ],
+      [
+        "as a sonar used",
+        "to check for ob-",
+        "jects in its way"
+      ]
+    ],
+    "locations": [
+      "MtMoon",
+      "RockTunnel",
+      "SeafoamIslands",
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 42,
+    "species": "BAT",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 121,
+    "description": [
+      [
+        "It attacks in a",
+        "stealthy manner,",
+        "without warning."
+      ],
+      [
+        "Its sharp fangs",
+        "are used to bite",
+        "and suck blood"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "SeafoamIslands",
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 43,
+    "species": "WEED",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 12,
+    "description": [
+      [
+        "It may be mistaken",
+        "for a clump of",
+        "weeds. If you try"
+      ],
+      [
+        "to yank it out of",
+        "the ground, it",
+        "shrieks horribly"
+      ]
+    ],
+    "locations": [
+      "Route12",
+      "Route13",
+      "Route14",
+      "Route15",
+      "Route24",
+      "Route25"
+    ]
+  },
+  {
+    "id": 44,
+    "species": "WEED",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 19,
+    "description": [
+      [
+        "Smells incredibly",
+        "foul! However,",
+        "around 1 out of"
+      ],
+      [
+        "1,000 people enjoy",
+        "sniffing its nose-",
+        "bending stink"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "Route12",
+      "Route13",
+      "Route14",
+      "Route15"
+    ]
+  },
+  {
+    "id": 45,
+    "species": "FLOWER",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 41,
+    "description": [
+      [
+        "Flaps its broad",
+        "flower petals to",
+        "scatter its"
+      ],
+      [
+        "poisonous pollen.",
+        "The flapping sound",
+        "is very loud"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 46,
+    "species": "MUSHROOM",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 12,
+    "description": [
+      [
+        "Burrows under the",
+        "ground to gnaw on",
+        "tree roots. The"
+      ],
+      [
+        "mushrooms on its",
+        "back absorb most",
+        "of the nutrition"
+      ]
+    ],
+    "locations": [
+      "MtMoon",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 47,
+    "species": "MUSHROOM",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 65,
+    "description": [
+      [
+        "The bug host is",
+        "drained of energy",
+        "by the mushrooms"
+      ],
+      [
+        "on its back. They",
+        "appear to do all",
+        "the thinking"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 48,
+    "species": "INSECT",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 66,
+    "description": [
+      [
+        "Its large eyes act",
+        "as radars. In a",
+        "bright place, you"
+      ],
+      [
+        "can see that they",
+        "are clusters of",
+        "many tiny eyes"
+      ]
+    ],
+    "locations": [
+      "Route14",
+      "Route15",
+      "Route24",
+      "Route25"
+    ]
+  },
+  {
+    "id": 49,
+    "species": "POISONMOTH",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 28,
+    "description": [
+      [
+        "The powdery scales",
+        "on its wings are",
+        "hard to remove."
+      ],
+      [
+        "They also contain",
+        "poison that leaks",
+        "out on contact"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "Route14",
+      "Route15"
+    ]
+  },
+  {
+    "id": 50,
+    "species": "MOLE",
+    "heightFeet": 0,
+    "heightInches": 8,
+    "weight": 2,
+    "description": [
+      [
+        "It prefers dark",
+        "places. It spends",
+        "most of its time"
+      ],
+      [
+        "underground,",
+        "though it may pop",
+        "up in caves"
+      ]
+    ],
+    "locations": [
+      "DiglettsCave"
+    ]
+  },
+  {
+    "id": 51,
+    "species": "MOLE",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 73,
+    "description": [
+      [
+        "A team of triplets",
+        "that can burrow",
+        "over 60 MPH."
+      ],
+      [
+        "Due to this, some",
+        "people think it's",
+        "an earthquake"
+      ]
+    ],
+    "locations": [
+      "DiglettsCave"
+    ]
+  },
+  {
+    "id": 52,
+    "species": "SCRATCHCAT",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 9,
+    "description": [
+      [
+        "Appears to be more",
+        "active at night.",
+        "It loves round"
+      ],
+      [
+        "and shiny things.",
+        "It can't stop from",
+        "picking them up"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 53,
+    "species": "CLASSY CAT",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 71,
+    "description": [
+      [
+        "The gem in its",
+        "forehead glows on",
+        "its own! It walks"
+      ],
+      [
+        "with all the grace",
+        "and elegance of a",
+        "proud queen"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 54,
+    "species": "DUCK",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 43,
+    "description": [
+      [
+        "Always tormented",
+        "by headaches.",
+        "It uses psychic"
+      ],
+      [
+        "powers, but it is",
+        "not known if it",
+        "intends to do so"
+      ]
+    ],
+    "locations": [
+      "Route6"
+    ]
+  },
+  {
+    "id": 55,
+    "species": "DUCK",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 169,
+    "description": [
+      [
+        "Its slim and long",
+        "limbs end in broad",
+        "flippers. They"
+      ],
+      [
+        "are used for swim-",
+        "ming gracefully",
+        "in lakes"
+      ]
+    ],
+    "locations": [
+      "Route6"
+    ]
+  },
+  {
+    "id": 56,
+    "species": "PIG MONKEY",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 62,
+    "description": [
+      [
+        "An agile POKéMON",
+        "that lives in",
+        "trees. It angers"
+      ],
+      [
+        "easily and will",
+        "not hesitate to",
+        "attack anything"
+      ]
+    ],
+    "locations": [
+      "Route22",
+      "Route23",
+      "Route3",
+      "Route4"
+    ]
+  },
+  {
+    "id": 57,
+    "species": "PIG MONKEY",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 71,
+    "description": [
+      [
+        "It stops being",
+        "angry only when",
+        "nobody else is"
+      ],
+      [
+        "around. To view",
+        "this moment is",
+        "very difficult"
+      ]
+    ],
+    "locations": [
+      "Route23"
+    ]
+  },
+  {
+    "id": 58,
+    "species": "PUPPY",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 42,
+    "description": [
+      [
+        "A POKéMON with a",
+        "friendly nature.",
+        "However, it will"
+      ],
+      [
+        "bark fiercely at",
+        "anything invading",
+        "its territory"
+      ]
+    ],
+    "locations": [
+      "CinnabarIsland"
+    ]
+  },
+  {
+    "id": 59,
+    "species": "LEGENDARY",
+    "heightFeet": 6,
+    "heightInches": 3,
+    "weight": 342,
+    "description": [
+      [
+        "A legendary #-",
+        "MON in China.",
+        "Many people are"
+      ],
+      [
+        "charmed by its",
+        "grace and beauty",
+        "while running"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 60,
+    "species": "TADPOLE",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 27,
+    "description": [
+      [
+        "The direction of",
+        "the spiral on the",
+        "belly differs by"
+      ],
+      [
+        "area. It is more",
+        "adept at swimming",
+        "than walking"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 61,
+    "species": "TADPOLE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 44,
+    "description": [
+      [
+        "Under attack, it",
+        "uses its belly ",
+        "spiral to put the"
+      ],
+      [
+        "foe to sleep. It",
+        "then makes its",
+        "escape"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 62,
+    "species": "TADPOLE",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 119,
+    "description": [
+      [
+        "Swims powerfully",
+        "using all the",
+        "muscles in its"
+      ],
+      [
+        "body. It can even",
+        "overtake champion",
+        "swimmers"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 63,
+    "species": "PSI",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 43,
+    "description": [
+      [
+        "Sleeps 18 hours a",
+        "day. If it senses",
+        "danger, it will"
+      ],
+      [
+        "teleport itself to",
+        "safety even as it",
+        "sleeps"
+      ]
+    ],
+    "locations": [
+      "Route5",
+      "Route6",
+      "Route7",
+      "Route8"
+    ]
+  },
+  {
+    "id": 64,
+    "species": "PSI",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 125,
+    "description": [
+      [
+        "Many odd things",
+        "happen if this",
+        "POKéMON is close"
+      ],
+      [
+        "by. For example,",
+        "it makes clocks",
+        "run backwards"
+      ]
+    ],
+    "locations": [
+      "Route8"
+    ]
+  },
+  {
+    "id": 65,
+    "species": "PSI",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 106,
+    "description": [
+      [
+        "A POKéMON that can",
+        "memorize anything.",
+        "It never forgets"
+      ],
+      [
+        "what it learns--",
+        "that's why this",
+        "POKéMON is smart"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 66,
+    "species": "SUPERPOWER",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 43,
+    "description": [
+      [
+        "Very powerful in",
+        "spite of its small",
+        "size. Its mastery"
+      ],
+      [
+        "of many types of",
+        "martial arts makes",
+        "it very tough"
+      ]
+    ],
+    "locations": [
+      "RockTunnel",
+      "Route10"
+    ]
+  },
+  {
+    "id": 67,
+    "species": "SUPERPOWER",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 155,
+    "description": [
+      [
+        "The belt around",
+        "its waist holds",
+        "back its energy."
+      ],
+      [
+        "Without it, this",
+        "POKéMON would be",
+        "unstoppable"
+      ]
+    ],
+    "locations": [
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 68,
+    "species": "SUPERPOWER",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 287,
+    "description": [
+      [
+        "One arm alone can",
+        "move mountains.",
+        "Using all four"
+      ],
+      [
+        "arms, this POKéMON",
+        "fires off awesome",
+        "punches"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 69,
+    "species": "FLOWER",
+    "heightFeet": 2,
+    "heightInches": 4,
+    "weight": 9,
+    "description": [
+      [
+        "Prefers hot and",
+        "humid places.",
+        "It ensnares tiny"
+      ],
+      [
+        "insects with its",
+        "vines and devours",
+        "them"
+      ]
+    ],
+    "locations": [
+      "Route12",
+      "Route13",
+      "Route14",
+      "Route15",
+      "Route24",
+      "Route25"
+    ]
+  },
+  {
+    "id": 70,
+    "species": "FLYCATCHER",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 14,
+    "description": [
+      [
+        "When hungry, it",
+        "swallows anything",
+        "that moves. Its"
+      ],
+      [
+        "hapless prey is",
+        "melted inside by",
+        "strong acids"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "Route12",
+      "Route13",
+      "Route14",
+      "Route15"
+    ]
+  },
+  {
+    "id": 71,
+    "species": "FLYCATCHER",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 34,
+    "description": [
+      [
+        "Lures prey with",
+        "the sweet aroma of",
+        "honey. Swallowed"
+      ],
+      [
+        "whole, the prey is",
+        "melted in a day,",
+        "bones and all"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 72,
+    "species": "JELLYFISH",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 100,
+    "description": [
+      [
+        "It can sometimes",
+        "be found all dry",
+        "and shriveled up"
+      ],
+      [
+        "on a beach. Toss",
+        "it back into the",
+        "sea to revive it"
+      ]
+    ],
+    "locations": [
+      "Route19",
+      "Route20",
+      "Route21",
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 73,
+    "species": "JELLYFISH",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 121,
+    "description": [
+      [
+        "Its 80 tentacles",
+        "can stretch and",
+        "contract freely."
+      ],
+      [
+        "They wrap around",
+        "prey and weaken",
+        "it with poison"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 74,
+    "species": "ROCK",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 44,
+    "description": [
+      [
+        "Commonly found",
+        "near mountain",
+        "trails, etc."
+      ],
+      [
+        "If you step on",
+        "one by accident,",
+        "it gets angry"
+      ]
+    ],
+    "locations": [
+      "MtMoon",
+      "RockTunnel",
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 75,
+    "species": "ROCK",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 232,
+    "description": [
+      [
+        "Often seen rolling",
+        "down mountain",
+        "trails. Obstacles"
+      ],
+      [
+        "are just things to",
+        "roll straight",
+        "over, not avoid"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 76,
+    "species": "MEGATON",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 662,
+    "description": [
+      [
+        "Once it sheds its",
+        "skin, its body",
+        "turns tender and"
+      ],
+      [
+        "whitish. Its hide",
+        "hardens when it's",
+        "exposed to air"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 77,
+    "species": "FIRE HORSE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 66,
+    "description": [
+      [
+        "Capable of jumping",
+        "incredibly high.",
+        "Its hooves and"
+      ],
+      [
+        "sturdy legs absorb",
+        "the impact of a",
+        "hard landing"
+      ]
+    ],
+    "locations": [
+      "Route17"
+    ]
+  },
+  {
+    "id": 78,
+    "species": "FIRE HORSE",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 209,
+    "description": [
+      [
+        "Just loves to run.",
+        "If it sees some-",
+        "thing faster than"
+      ],
+      [
+        "itself, it will",
+        "give chase at top",
+        "speed"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 79,
+    "species": "DOPEY",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 79,
+    "description": [
+      [
+        "Incredibly slow",
+        "and sluggish. It",
+        "is quite content"
+      ],
+      [
+        "to loll about",
+        "without worrying",
+        "about the time"
+      ]
+    ],
+    "locations": [
+      "Route12",
+      "Route13",
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 80,
+    "species": "HERMITCRAB",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 173,
+    "description": [
+      [
+        "Lives lazily by",
+        "the sea. If the",
+        "SHELLDER on its"
+      ],
+      [
+        "tail comes off,",
+        "it becomes a",
+        "SLOWPOKE again"
+      ]
+    ],
+    "locations": [
+      "Route12",
+      "Route13",
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 81,
+    "species": "MAGNET",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 13,
+    "description": [
+      [
+        "It is born with",
+        "the ability to",
+        "defy gravity. It"
+      ],
+      [
+        "floats in air on",
+        "powerful electro-",
+        "magnetic waves"
+      ]
+    ],
+    "locations": [
+      "PowerPlant",
+      "Route10"
+    ]
+  },
+  {
+    "id": 82,
+    "species": "MAGNET",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 132,
+    "description": [
+      [
+        "Generates strange",
+        "radio signals. It",
+        "raises the tem-"
+      ],
+      [
+        "perature by 3.6F",
+        "degrees within",
+        "3,300 feet"
+      ]
+    ],
+    "locations": [
+      "PowerPlant"
+    ]
+  },
+  {
+    "id": 83,
+    "species": "WILD DUCK",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 33,
+    "description": [
+      [
+        "Lives where reedy",
+        "plants grow. They",
+        "are rarely seen,"
+      ],
+      [
+        "so it's thought",
+        "their numbers are",
+        "decreasing"
+      ]
+    ],
+    "locations": [
+      "Route12",
+      "Route13"
+    ]
+  },
+  {
+    "id": 84,
+    "species": "TWIN BIRD",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 86,
+    "description": [
+      [
+        "Its short wings",
+        "make flying dif-",
+        "ficult. Instead,"
+      ],
+      [
+        "this POKéMON runs",
+        "at high speed on",
+        "developed legs"
+      ]
+    ],
+    "locations": [
+      "Route16",
+      "Route17",
+      "Route18"
+    ]
+  },
+  {
+    "id": 85,
+    "species": "TRIPLEBIRD",
+    "heightFeet": 5,
+    "heightInches": 11,
+    "weight": 188,
+    "description": [
+      [
+        "One of DODUO's 2",
+        "heads splits to",
+        "form a unique"
+      ],
+      [
+        "species. It runs",
+        "close to 40 MPH",
+        "in prairies"
+      ]
+    ],
+    "locations": [
+      "Route17"
+    ]
+  },
+  {
+    "id": 86,
+    "species": "SEA LION",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 198,
+    "description": [
+      [
+        "Loves freezing",
+        "cold conditions.",
+        "Relishes swimming"
+      ],
+      [
+        "in a frigid cli-",
+        "mate of around 14F",
+        "degrees"
+      ]
+    ],
+    "locations": [
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 87,
+    "species": "SEA LION",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 265,
+    "description": [
+      [
+        "Its entire body is",
+        "a snowy-white.",
+        "Unharmed by even"
+      ],
+      [
+        "intense cold, it",
+        "swims powerfully",
+        "in icy waters"
+      ]
+    ],
+    "locations": [
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 88,
+    "species": "SLUDGE",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 66,
+    "description": [
+      [
+        "Made of hardened",
+        "sludge. It smells",
+        "too putrid to"
+      ],
+      [
+        "touch.",
+        "Even weeds won't",
+        "grow in its path"
+      ]
+    ],
+    "locations": [
+      "CinnabarIsland",
+      "PowerPlant"
+    ]
+  },
+  {
+    "id": 89,
+    "species": "SLUDGE",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 66,
+    "description": [
+      [
+        "Smells so awful,",
+        "it can cause",
+        "fainting. Through"
+      ],
+      [
+        "degeneration, it",
+        "lost its sense of",
+        "smell"
+      ]
+    ],
+    "locations": [
+      "CinnabarIsland",
+      "PowerPlant"
+    ]
+  },
+  {
+    "id": 90,
+    "species": "BIVALVE",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 9,
+    "description": [
+      [
+        "The shell can",
+        "withstand any",
+        "attack. However,"
+      ],
+      [
+        "when it is open,",
+        "the tender body",
+        "is exposed"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 91,
+    "species": "BIVALVE",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 292,
+    "description": [
+      [
+        "For protection, it",
+        "uses its harder-",
+        "than-diamonds"
+      ],
+      [
+        "shell. It also",
+        "shoots spikes from",
+        "the shell"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 92,
+    "species": "GAS",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 0.2,
+    "description": [
+      [
+        "Said to appear in",
+        "decrepit, deserted",
+        "buildings. It has"
+      ],
+      [
+        "no real shape as",
+        "it appears to be",
+        "made of a gas"
+      ]
+    ],
+    "locations": [
+      "PokemonTower"
+    ]
+  },
+  {
+    "id": 93,
+    "species": "GAS",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 0.2,
+    "description": [
+      [
+        "By licking, it",
+        "saps the victim's",
+        "life. It causes"
+      ],
+      [
+        "shaking that won't",
+        "stop until the",
+        "victim's demise"
+      ]
+    ],
+    "locations": [
+      "PokemonTower"
+    ]
+  },
+  {
+    "id": 94,
+    "species": "SHADOW",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 89,
+    "description": [
+      [
+        "A GENGAR is close",
+        "by if you feel a",
+        "sudden chill."
+      ],
+      [
+        "It may be trying",
+        "to lay a curse",
+        "on you"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 95,
+    "species": "ROCK SNAKE",
+    "heightFeet": 28,
+    "heightInches": 10,
+    "weight": 463,
+    "description": [
+      [
+        "Burrows at high",
+        "speed in search",
+        "of food. The"
+      ],
+      [
+        "tunnels it leaves",
+        "are used as homes",
+        "by DIGLETTs"
+      ]
+    ],
+    "locations": [
+      "RockTunnel",
+      "VictoryRoad"
+    ]
+  },
+  {
+    "id": 96,
+    "species": "HYPNOSIS",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 71,
+    "description": [
+      [
+        "If you sleep by",
+        "it all the time,",
+        "it will sometimes"
+      ],
+      [
+        "show you dreams",
+        "it has eaten in",
+        "the past"
+      ]
+    ],
+    "locations": [
+      "Route11"
+    ]
+  },
+  {
+    "id": 97,
+    "species": "HYPNOSIS",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 167,
+    "description": [
+      [
+        "Avoid eye contact",
+        "if you come across",
+        "one. It will try"
+      ],
+      [
+        "to put you to",
+        "sleep by using",
+        "its pendulum"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 98,
+    "species": "RIVER CRAB",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 14,
+    "description": [
+      [
+        "Its pincers are",
+        "superb weapons.",
+        "They sometimes"
+      ],
+      [
+        "break off during",
+        "battle, but they",
+        "grow back fast"
+      ]
+    ],
+    "locations": [
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 99,
+    "species": "PINCER",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 132,
+    "description": [
+      [
+        "One claw grew",
+        "massively and as",
+        "hard as steel."
+      ],
+      [
+        "It has 10,000-HP",
+        "strength. However,",
+        "it is too heavy"
+      ]
+    ],
+    "locations": [
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 100,
+    "species": "BALL",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 23,
+    "description": [
+      [
+        "It is said to",
+        "camouflage itself",
+        "as a POKéBALL. It"
+      ],
+      [
+        "will self-destruct",
+        "with very little",
+        "stimulus"
+      ]
+    ],
+    "locations": [
+      "PowerPlant"
+    ]
+  },
+  {
+    "id": 101,
+    "species": "BALL",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 147,
+    "description": [
+      [
+        "Stores electrical",
+        "energy inside its",
+        "body. Even the"
+      ],
+      [
+        "slightest shock",
+        "could trigger a",
+        "huge explosion"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 102,
+    "species": "EGG",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 6,
+    "description": [
+      [
+        "The heads attract",
+        "each other and",
+        "spin around."
+      ],
+      [
+        "There must be 6",
+        "heads for it to",
+        "maintain balance"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 103,
+    "species": "COCONUT",
+    "heightFeet": 6,
+    "heightInches": 7,
+    "weight": 265,
+    "description": [
+      [
+        "Its cries are very",
+        "noisy. This is",
+        "because each of"
+      ],
+      [
+        "the 3 heads thinks",
+        "about whatever it",
+        "likes"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 104,
+    "species": "LONELY",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 14,
+    "description": [
+      [
+        "Wears the skull",
+        "of its deceased",
+        "mother. Its cries"
+      ],
+      [
+        "echo inside the",
+        "skull and come out",
+        "as a sad melody"
+      ]
+    ],
+    "locations": [
+      "PokemonTower",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 105,
+    "species": "BONEKEEPER",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 99,
+    "description": [
+      [
+        "Small and weak,",
+        "this POKéMON is",
+        "adept with its"
+      ],
+      [
+        "bone club. It has",
+        "grown more vicious",
+        "over the ages"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 106,
+    "species": "KICKING",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 110,
+    "description": [
+      [
+        "When kicking, the",
+        "sole of its foot",
+        "turns as hard as"
+      ],
+      [
+        "a diamond on im-",
+        "pact and destroys",
+        "its enemy"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 107,
+    "species": "PUNCHING",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 111,
+    "description": [
+      [
+        "Punches in cork-",
+        "screw fashion. It",
+        "can punch its way"
+      ],
+      [
+        "through a concrete",
+        "wall in the same",
+        "way as a drill"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 108,
+    "species": "LICKING",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 144,
+    "description": [
+      [
+        "Its tongue spans",
+        "almost 7 feet and",
+        "moves more freely"
+      ],
+      [
+        "than its forelegs.",
+        "Its licks can",
+        "cause paralysis"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity"
+    ]
+  },
+  {
+    "id": 109,
+    "species": "POISON GAS",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 2,
+    "description": [
+      [
+        "In hot places, its",
+        "internal gases",
+        "could expand and"
+      ],
+      [
+        "explode without",
+        "any warning. Be",
+        "very careful!"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 110,
+    "species": "POISON GAS",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 21,
+    "description": [
+      [
+        "It lives and grows",
+        "by absorbing dust,",
+        "germs and poison"
+      ],
+      [
+        "gases that are",
+        "contained in toxic",
+        "waste and garbage"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 111,
+    "species": "SPIKES",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 254,
+    "description": [
+      [
+        "A POKéMON with a",
+        "one-track mind.",
+        "Once it charges, "
+      ],
+      [
+        "it won't stop",
+        "running until it",
+        "falls asleep"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 112,
+    "species": "DRILL",
+    "heightFeet": 6,
+    "heightInches": 3,
+    "weight": 265,
+    "description": [
+      [
+        "Walks on its hind",
+        "legs. Shows signs",
+        "of intelligence."
+      ],
+      [
+        "Its armor-like",
+        "hide even repels",
+        "molten lava"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity"
+    ]
+  },
+  {
+    "id": 113,
+    "species": "EGG",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 76,
+    "description": [
+      [
+        "A gentle and kind-",
+        "hearted POKéMON",
+        "that shares its"
+      ],
+      [
+        "nutritious eggs",
+        "if it sees an",
+        "injured POKéMON"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 114,
+    "species": "VINE",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 77,
+    "description": [
+      [
+        "Its identity is",
+        "obscured by masses",
+        "of thick, blue"
+      ],
+      [
+        "vines. The vines",
+        "are said to never",
+        "stop growing"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 115,
+    "species": "PARENT",
+    "heightFeet": 7,
+    "heightInches": 3,
+    "weight": 176,
+    "description": [
+      [
+        "Raises its young",
+        "in its belly",
+        "pouch. Won't run"
+      ],
+      [
+        "from any fight",
+        "to keep its young",
+        "protected"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 116,
+    "species": "DRAGON",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 18,
+    "description": [
+      [
+        "If it senses any",
+        "danger, it will",
+        "vigorously spray"
+      ],
+      [
+        "water or a special",
+        "type of ink from",
+        "its mouth"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 117,
+    "species": "DRAGON",
+    "heightFeet": 3,
+    "heightInches": 11,
+    "weight": 55,
+    "description": [
+      [
+        "Touching the back",
+        "fin causes numb-",
+        "ness. It hooks"
+      ],
+      [
+        "its tail to coral",
+        "to stay in place",
+        "while sleeping"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 118,
+    "species": "GOLDFISH",
+    "heightFeet": 2,
+    "heightInches": 0,
+    "weight": 33,
+    "description": [
+      [
+        "When it is time",
+        "for them to lay",
+        "eggs, they can be"
+      ],
+      [
+        "seen swimming up",
+        "rivers and falls",
+        "in large groups"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 119,
+    "species": "GOLDFISH",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 86,
+    "description": [
+      [
+        "It is the male's",
+        "job to make a",
+        "nest by carving"
+      ],
+      [
+        "out boulders in a",
+        "stream using the",
+        "horn on its head"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 120,
+    "species": "STARSHAPE",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 76,
+    "description": [
+      [
+        "As long as the",
+        "center section is",
+        "unharmed, it can"
+      ],
+      [
+        "grow back fully",
+        "even if it is",
+        "chopped to bits"
+      ]
+    ],
+    "locations": [
+      "SeafoamIslands"
+    ]
+  },
+  {
+    "id": 121,
+    "species": "MYSTERIOUS",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 176,
+    "description": [
+      [
+        "The center section",
+        "is named the core.",
+        "People think it"
+      ],
+      [
+        "is communicating",
+        "when it glows in",
+        "7 colors"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 122,
+    "species": "BARRIER",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 120,
+    "description": [
+      [
+        "Always practices",
+        "its pantomime act.",
+        "It makes enemies"
+      ],
+      [
+        "believe something",
+        "exists that",
+        "really doesn't"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 123,
+    "species": "MANTIS",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 123,
+    "description": [
+      [
+        "Leaps out of tall",
+        "grass and slices",
+        "prey with its"
+      ],
+      [
+        "scythes. The move-",
+        "ment looks like",
+        "that of a ninja"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 124,
+    "species": "HUMANSHAPE",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 90,
+    "description": [
+      [
+        "Appears to move",
+        "to a rhythm of",
+        "its own, as if it"
+      ],
+      [
+        "were dancing. It",
+        "wiggles its hips",
+        "as it walks"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 125,
+    "species": "ELECTRIC",
+    "heightFeet": 3,
+    "heightInches": 7,
+    "weight": 66,
+    "description": [
+      [
+        "If a major power",
+        "outage occurs, it",
+        "is certain that"
+      ],
+      [
+        "this POKéMON has",
+        "eaten electricity",
+        "at a power plant"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 126,
+    "species": "SPITFIRE",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 98,
+    "description": [
+      [
+        "Born in an active",
+        "volcano. Its body",
+        "is always cloaked"
+      ],
+      [
+        "in flames, so it",
+        "looks like a big",
+        "ball of fire"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 127,
+    "species": "STAGBEETLE",
+    "heightFeet": 4,
+    "heightInches": 11,
+    "weight": 121,
+    "description": [
+      [
+        "Grips its prey in",
+        "its pincers and",
+        "squeezes hard! It"
+      ],
+      [
+        "can't move if it's",
+        "cold, so it lives",
+        "in warm places"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 128,
+    "species": "WILD BULL",
+    "heightFeet": 4,
+    "heightInches": 7,
+    "weight": 195,
+    "description": [
+      [
+        "A rowdy POKéMON",
+        "with a lot of",
+        "stamina. Once"
+      ],
+      [
+        "running, it won't",
+        "stop until it hits",
+        "something"
+      ]
+    ],
+    "locations": [
+      "SafariZone"
+    ]
+  },
+  {
+    "id": 129,
+    "species": "FISH",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 22,
+    "description": [
+      [
+        "Famous for being",
+        "very unreliable.",
+        "It can be found"
+      ],
+      [
+        "swimming in seas,",
+        "lakes, rivers and",
+        "shallow puddles"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 130,
+    "species": "ATROCIOUS",
+    "heightFeet": 21,
+    "heightInches": 4,
+    "weight": 518,
+    "description": [
+      [
+        "Brutally vicious",
+        "and enormously",
+        "destructive."
+      ],
+      [
+        "Known for totally",
+        "destroying cities",
+        "in ancient times"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 131,
+    "species": "TRANSPORT",
+    "heightFeet": 8,
+    "heightInches": 2,
+    "weight": 485,
+    "description": [
+      [
+        "A gentle soul that",
+        "can read the minds",
+        "of people. It can"
+      ],
+      [
+        "ferry people",
+        "across the sea on",
+        "its back"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 132,
+    "species": "TRANSFORM",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 9,
+    "description": [
+      [
+        "When it spots an",
+        "enemy, its body",
+        "transfigures into"
+      ],
+      [
+        "an almost perfect",
+        "copy of its oppo-",
+        "nent"
+      ]
+    ],
+    "locations": [
+      "CeruleanCity",
+      "CinnabarIsland"
+    ]
+  },
+  {
+    "id": 133,
+    "species": "EVOLUTION",
+    "heightFeet": 1,
+    "heightInches": 0,
+    "weight": 14,
+    "description": [
+      [
+        "Its genetic code",
+        "is unstable, so it",
+        "could evolve in"
+      ],
+      [
+        "a variety of ways.",
+        "There are only a",
+        "few alive"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 134,
+    "species": "BUBBLE JET",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 64,
+    "description": [
+      [
+        "Its cell structure",
+        "is similar to",
+        "water molecules."
+      ],
+      [
+        "It will melt away",
+        "and become invis-",
+        "ible in water"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 135,
+    "species": "LIGHTNING",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 54,
+    "description": [
+      [
+        "A sensitive #-",
+        "MON that easily",
+        "becomes sad or"
+      ],
+      [
+        "angry. Every time",
+        "its mood changes,",
+        "it charges power"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 136,
+    "species": "FLAME",
+    "heightFeet": 2,
+    "heightInches": 11,
+    "weight": 55,
+    "description": [
+      [
+        "It has a flame",
+        "chamber inside its",
+        "body. It inhales,"
+      ],
+      [
+        "then blows out",
+        "fire that is over",
+        "3,000F degrees"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 137,
+    "species": "VIRTUAL",
+    "heightFeet": 2,
+    "heightInches": 7,
+    "weight": 80,
+    "description": [
+      [
+        "The only POKéMON",
+        "people anticipate",
+        "can fly into"
+      ],
+      [
+        "space. None has",
+        "managed the feat",
+        "yet, however"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 138,
+    "species": "SPIRAL",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 17,
+    "description": [
+      [
+        "An ancient POKéMON",
+        "that was recovered",
+        "from a fossil. It"
+      ],
+      [
+        "swims by cleverly",
+        "twisting its 10",
+        "tentacles about"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 139,
+    "species": "SPIRAL",
+    "heightFeet": 3,
+    "heightInches": 3,
+    "weight": 77,
+    "description": [
+      [
+        "Sharp beaks ring",
+        "its mouth. Its",
+        "shell was too big"
+      ],
+      [
+        "for it to move",
+        "freely, so it",
+        "became extinct"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 140,
+    "species": "SHELLFISH",
+    "heightFeet": 1,
+    "heightInches": 8,
+    "weight": 25,
+    "description": [
+      [
+        "A POKéMON that was",
+        "recovered from a",
+        "fossil. It uses"
+      ],
+      [
+        "the eyes on its",
+        "back while hiding",
+        "on the sea floor"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 141,
+    "species": "SHELLFISH",
+    "heightFeet": 4,
+    "heightInches": 3,
+    "weight": 89,
+    "description": [
+      [
+        "A slim and fast",
+        "swimmer. It slices",
+        "its prey with its"
+      ],
+      [
+        "sharp sickles and",
+        "drinks the body",
+        "fluids"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 142,
+    "species": "FOSSIL",
+    "heightFeet": 5,
+    "heightInches": 11,
+    "weight": 130,
+    "description": [
+      [
+        "A savage POKéMON",
+        "that died out in",
+        "ancient times. It"
+      ],
+      [
+        "was resurrected",
+        "using DNA taken",
+        "from amber"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 143,
+    "species": "SLEEPING",
+    "heightFeet": 6,
+    "heightInches": 11,
+    "weight": 1014,
+    "description": [
+      [
+        "Will eat anything,",
+        "even if the food",
+        "happens to be a"
+      ],
+      [
+        "little moldy. It",
+        "never gets an",
+        "upset stomach"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 144,
+    "species": "FREEZE",
+    "heightFeet": 5,
+    "heightInches": 7,
+    "weight": 122,
+    "description": [
+      [
+        "A legendary bird",
+        "POKéMON. It",
+        "freezes water"
+      ],
+      [
+        "that is contained",
+        "in winter air and",
+        "makes it snow"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 145,
+    "species": "ELECTRIC",
+    "heightFeet": 5,
+    "heightInches": 3,
+    "weight": 116,
+    "description": [
+      [
+        "This legendary",
+        "bird POKéMON is",
+        "said to appear"
+      ],
+      [
+        "when the sky turns",
+        "dark and lightning",
+        "showers down"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 146,
+    "species": "FLAME",
+    "heightFeet": 6,
+    "heightInches": 7,
+    "weight": 132,
+    "description": [
+      [
+        "A legendary bird",
+        "POKéMON. As it",
+        "flaps its flaming"
+      ],
+      [
+        "wings, even the",
+        "night sky will",
+        "turn red"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 147,
+    "species": "DRAGON",
+    "heightFeet": 5,
+    "heightInches": 11,
+    "weight": 7,
+    "description": [
+      [
+        "The existence of",
+        "this mythical",
+        "POKéMON was only"
+      ],
+      [
+        "recently confirmed",
+        "by a fisherman",
+        "who caught one"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 148,
+    "species": "DRAGON",
+    "heightFeet": 13,
+    "heightInches": 1,
+    "weight": 36,
+    "description": [
+      [
+        "According to a",
+        "witness, its body",
+        "was surrounded by"
+      ],
+      [
+        "a strange aura",
+        "that gave it a",
+        "mystical look"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 149,
+    "species": "DRAGON",
+    "heightFeet": 7,
+    "heightInches": 3,
+    "weight": 463,
+    "description": [
+      [
+        "It is said that",
+        "this POKéMON lives",
+        "somewhere in the"
+      ],
+      [
+        "sea and that it",
+        "flies. However, it",
+        "is only a rumor"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 150,
+    "species": "GENETIC",
+    "heightFeet": 6,
+    "heightInches": 7,
+    "weight": 269,
+    "description": [
+      [
+        "Its DNA is almost",
+        "the same as MEW's.",
+        "However, its size"
+      ],
+      [
+        "and disposition",
+        "are vastly dif-",
+        "ferent"
+      ]
+    ],
+    "locations": []
+  },
+  {
+    "id": 151,
+    "species": "NEW SPECIE",
+    "heightFeet": 1,
+    "heightInches": 4,
+    "weight": 9,
+    "description": [
+      [
+        "When viewed",
+        "through a micro-",
+        "scope, this"
+      ],
+      [
+        "POKéMON's short,",
+        "fine, delicate",
+        "hair can be seen"
+      ]
+    ],
+    "locations": []
+  }
+]

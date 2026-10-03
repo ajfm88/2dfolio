@@ -1,0 +1,47 @@
+{
+  "grassRate": 25,
+  "grass": [
+    {
+      "level": 12,
+      "pokemon": "ODDISH"
+    },
+    {
+      "level": 12,
+      "pokemon": "BELLSPROUT"
+    },
+    {
+      "level": 13,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 14,
+      "pokemon": "ODDISH"
+    },
+    {
+      "level": 14,
+      "pokemon": "BELLSPROUT"
+    },
+    {
+      "level": 15,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 13,
+      "pokemon": "VENONAT"
+    },
+    {
+      "level": 16,
+      "pokemon": "VENONAT"
+    },
+    {
+      "level": 17,
+      "pokemon": "PIDGEY"
+    },
+    {
+      "level": 17,
+      "pokemon": "PIDGEOTTO"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}
