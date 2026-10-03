@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 41,
+      "pokemon": "NIDORINO"
+    },
+    {
+      "level": 41,
+      "pokemon": "NIDORINA"
+    },
+    {
+      "level": 36,
+      "pokemon": "MANKEY"
+    },
+    {
+      "level": 44,
+      "pokemon": "NIDORINO"
+    },
+    {
+      "level": 44,
+      "pokemon": "NIDORINA"
+    },
+    {
+      "level": 40,
+      "pokemon": "FEAROW"
+    },
+    {
+      "level": 41,
+      "pokemon": "MANKEY"
+    },
+    {
+      "level": 45,
+      "pokemon": "FEAROW"
+    },
+    {
+      "level": 41,
+      "pokemon": "PRIMEAPE"
+    },
+    {
+      "level": 46,
+      "pokemon": "PRIMEAPE"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

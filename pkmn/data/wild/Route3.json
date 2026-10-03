@@ -1,0 +1,47 @@
+{
+  "grassRate": 20,
+  "grass": [
+    {
+      "level": 8,
+      "pokemon": "SPEAROW"
+    },
+    {
+      "level": 9,
+      "pokemon": "SPEAROW"
+    },
+    {
+      "level": 9,
+      "pokemon": "MANKEY"
+    },
+    {
+      "level": 10,
+      "pokemon": "SPEAROW"
+    },
+    {
+      "level": 8,
+      "pokemon": "SANDSHREW"
+    },
+    {
+      "level": 10,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 10,
+      "pokemon": "SANDSHREW"
+    },
+    {
+      "level": 12,
+      "pokemon": "RATTATA"
+    },
+    {
+      "level": 11,
+      "pokemon": "SPEAROW"
+    },
+    {
+      "level": 12,
+      "pokemon": "SPEAROW"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

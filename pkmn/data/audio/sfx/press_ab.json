@@ -1,0 +1,44 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle",
+          "value": 2
+        },
+        {
+          "cmd": "square_note",
+          "length": 0,
+          "volume": 9,
+          "fade": 1,
+          "frequency": 1984
+        },
+        {
+          "cmd": "square_note",
+          "length": 0,
+          "volume": 8,
+          "fade": 1,
+          "frequency": 2000
+        },
+        {
+          "cmd": "square_note",
+          "length": 0,
+          "volume": 9,
+          "fade": 1,
+          "frequency": 1984
+        },
+        {
+          "cmd": "square_note",
+          "length": 12,
+          "volume": 10,
+          "fade": 1,
+          "frequency": 2000
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

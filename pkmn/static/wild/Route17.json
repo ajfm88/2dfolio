@@ -1,0 +1,47 @@
+{
+  "grassRate": 25,
+  "grass": [
+    {
+      "level": 26,
+      "pokemon": "DODUO"
+    },
+    {
+      "level": 27,
+      "pokemon": "FEAROW"
+    },
+    {
+      "level": 27,
+      "pokemon": "DODUO"
+    },
+    {
+      "level": 28,
+      "pokemon": "DODUO"
+    },
+    {
+      "level": 28,
+      "pokemon": "PONYTA"
+    },
+    {
+      "level": 30,
+      "pokemon": "PONYTA"
+    },
+    {
+      "level": 29,
+      "pokemon": "FEAROW"
+    },
+    {
+      "level": 28,
+      "pokemon": "DODUO"
+    },
+    {
+      "level": 32,
+      "pokemon": "PONYTA"
+    },
+    {
+      "level": 29,
+      "pokemon": "DODRIO"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

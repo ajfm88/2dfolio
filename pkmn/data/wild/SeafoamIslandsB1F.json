@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 27,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 26,
+      "pokemon": "KRABBY"
+    },
+    {
+      "level": 36,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 28,
+      "pokemon": "KRABBY"
+    },
+    {
+      "level": 27,
+      "pokemon": "GOLBAT"
+    },
+    {
+      "level": 29,
+      "pokemon": "SLOWPOKE"
+    },
+    {
+      "level": 18,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 28,
+      "pokemon": "KINGLER"
+    },
+    {
+      "level": 22,
+      "pokemon": "SEEL"
+    },
+    {
+      "level": 26,
+      "pokemon": "SEEL"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

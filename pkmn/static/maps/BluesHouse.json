@@ -1,0 +1,82 @@
+{
+  "name": "BluesHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    4,
+    14,
+    5,
+    9,
+    15,
+    1,
+    2,
+    15,
+    15,
+    12,
+    13,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "PalletTown",
+      "destWarpId": 1
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "PalletTown",
+      "destWarpId": 1
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "daisy",
+      "sprite": "daisy",
+      "x": 2,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "Hi <PLAYER>!\n<RIVAL> is out at\nGrandpa's lab.",
+      "direction": "right"
+    },
+    {
+      "id": "town_map",
+      "sprite": "pokedex",
+      "x": 3,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "It's a big map!\nThis is useful!",
+      "direction": "down",
+      "object": true
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 0,
+      "y": 1,
+      "facing": "up",
+      "text": "Crammed full of\nPOKéMON books!"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "facing": "up",
+      "text": "Crammed full of\nPOKéMON books!"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "facing": "up",
+      "text": "Crammed full of\nPOKéMON books!"
+    }
+  ]
+}

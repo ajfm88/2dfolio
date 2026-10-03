@@ -1,0 +1,47 @@
+{
+  "grassRate": 15,
+  "grass": [
+    {
+      "level": 26,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 31,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 36,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 39,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 44,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 41,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 43,
+      "pokemon": "ONIX"
+    },
+    {
+      "level": 45,
+      "pokemon": "ONIX"
+    },
+    {
+      "level": 41,
+      "pokemon": "GRAVELER"
+    },
+    {
+      "level": 47,
+      "pokemon": "GRAVELER"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}
