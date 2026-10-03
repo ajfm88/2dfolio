@@ -1,0 +1,77 @@
+{
+  "name": "ViridianNicknameHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    4,
+    14,
+    5,
+    9,
+    15,
+    1,
+    2,
+    15,
+    15,
+    12,
+    13,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 3
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 3
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "balding_guy",
+      "sprite": "balding_guy",
+      "x": 5,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "Coming up with\nnicknames is fun,\nbut hard.\fSimple names are\nthe easiest to\nremember."
+    },
+    {
+      "id": "little_girl",
+      "sprite": "little_girl",
+      "x": 1,
+      "y": 4,
+      "movement": "walk",
+      "dialogue": "My Daddy loves\nPOKéMON too.",
+      "walkDir": "up_down"
+    },
+    {
+      "id": "spearow",
+      "sprite": "bird",
+      "x": 5,
+      "y": 5,
+      "movement": "walk",
+      "dialogue": "SPEARY: Tetweet!",
+      "walkDir": "left_right"
+    },
+    {
+      "id": "speary_sign",
+      "sprite": "clipboard",
+      "x": 4,
+      "y": 0,
+      "movement": "stay",
+      "dialogue": "SPEAROW\nName: SPEARY"
+    }
+  ]
+}

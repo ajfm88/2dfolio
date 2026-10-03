@@ -1,0 +1,113 @@
+{
+  "name": "ViridianPokecenter",
+  "width": 7,
+  "height": 4,
+  "tileset": "POKECENTER",
+  "connections": [],
+  "blocks": [
+    32,
+    16,
+    1,
+    2,
+    12,
+    13,
+    13,
+    39,
+    4,
+    5,
+    7,
+    7,
+    34,
+    35,
+    8,
+    15,
+    15,
+    15,
+    15,
+    15,
+    27,
+    14,
+    10,
+    11,
+    14,
+    15,
+    15,
+    14
+  ],
+  "borderBlock": 0,
+  "warps": [
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 0
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 0
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "nurse",
+      "sprite": "nurse",
+      "x": 3,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!",
+      "direction": "down"
+    },
+    {
+      "id": "gentleman1",
+      "sprite": "gentleman",
+      "x": 10,
+      "y": 5,
+      "movement": "walk",
+      "dialogue": "You can use that\nPC in the corner.\fThe receptionist\ntold me. So kind!"
+    },
+    {
+      "id": "cooltrainer1",
+      "sprite": "cooltrainer_m",
+      "x": 4,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "There's a POKéMON\nCENTER in every\ntown ahead.\fThey don't charge\nany money either!",
+      "direction": "up"
+    },
+    {
+      "id": "receptionist1",
+      "sprite": "link_receptionist",
+      "x": 11,
+      "y": 2,
+      "movement": "stay",
+      "dialogue": "Welcome to the\nCable Club!",
+      "direction": "down"
+    },
+    {
+      "id": "chansey1",
+      "sprite": "chansey",
+      "x": 4,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "CHANSEY: Chaaan\nsey!",
+      "direction": "down"
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 0,
+      "y": 4,
+      "facing": "left",
+      "text": "POKéMON CENTERs\nheal your tired,\nhurt or fainted\nPOKéMON!"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "scriptId": "POKECENTER_PC",
+      "facing": "up"
+    }
+  ]
+}

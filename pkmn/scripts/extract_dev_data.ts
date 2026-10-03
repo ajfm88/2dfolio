@@ -23,8 +23,12 @@ import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments }
 import { readMoveNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from '../src/rom/extractors/text';
 import { extractGameText } from '../src/rom/extractors/game_text';
 import townMapData from '../src/rom/town_map_data';
+import { extractRom } from '../src/rom/index';
+import { installNodeImageData } from '../src/rom/node_image_data';
+import { writeStatic } from '../src/rom/static_export';
 
 const DATA_DIR = resolve(__dirname, '../data');
+const STATIC_DIR = resolve(__dirname, '../static');
 
 // Music and SFX lists (matching src/rom/index.ts)
 const MUSIC_TRACKS = [
@@ -85,7 +89,8 @@ if (hash !== ROM_SHA1) {
 
 console.log('ROM validated. Extracting data...\n');
 
-const rom = new BinaryReader(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+const romBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+const rom = new BinaryReader(romBuffer);
 
 // Build name lookup tables
 const moveNames = readMoveNames(rom);
@@ -144,3 +149,22 @@ for (const sfxName of sfxSet) {
 }
 
 console.log(`Done! Extracted ${count} files to data/`);
+
+// ── static/: what the browser loads (Vite publicDir) ──
+// Graphics come from the browser's own extractRom(), so the PNGs are exactly the
+// ImageData the in-browser ROM path used to inject. JSON is mirrored from data/.
+
+async function exportStatic(): Promise<void> {
+  installNodeImageData();
+  const extracted = await extractRom(romBuffer);
+  const counts = writeStatic(extracted, DATA_DIR, STATIC_DIR);
+  console.log(
+    `Done! Wrote static/: ${counts.images} PNGs, ${counts.binaries} tilemaps, ` +
+    `${counts.json} JSON (mirrored from data/)`,
+  );
+}
+
+exportStatic().catch((err) => {
+  console.error('static/ export failed:', err);
+  process.exit(1);
+});

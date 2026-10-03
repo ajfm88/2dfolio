@@ -1,0 +1,47 @@
+{
+  "grassRate": 10,
+  "grass": [
+    {
+      "level": 30,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 35,
+      "pokemon": "MAGNEMITE"
+    },
+    {
+      "level": 33,
+      "pokemon": "MAGNETON"
+    },
+    {
+      "level": 33,
+      "pokemon": "VOLTORB"
+    },
+    {
+      "level": 37,
+      "pokemon": "VOLTORB"
+    },
+    {
+      "level": 33,
+      "pokemon": "GRIMER"
+    },
+    {
+      "level": 37,
+      "pokemon": "GRIMER"
+    },
+    {
+      "level": 38,
+      "pokemon": "MAGNETON"
+    },
+    {
+      "level": 33,
+      "pokemon": "MUK"
+    },
+    {
+      "level": 37,
+      "pokemon": "MUK"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

@@ -1,0 +1,47 @@
+{
+  "channels": [
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 15,
+          "fade": 7,
+          "param": 36
+        },
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 15,
+          "fade": 7,
+          "param": 52
+        },
+        {
+          "cmd": "noise_note",
+          "length": 4,
+          "volume": 15,
+          "fade": 7,
+          "param": 68
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 15,
+          "fade": 4,
+          "param": 85
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 15,
+          "fade": 1,
+          "param": 68
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

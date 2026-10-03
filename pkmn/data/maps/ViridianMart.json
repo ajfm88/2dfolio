@@ -1,0 +1,76 @@
+{
+  "name": "ViridianMart",
+  "width": 4,
+  "height": 4,
+  "tileset": "MART",
+  "connections": [],
+  "blocks": [
+    18,
+    19,
+    19,
+    9,
+    37,
+    15,
+    20,
+    20,
+    24,
+    25,
+    21,
+    21,
+    23,
+    26,
+    11,
+    15
+  ],
+  "borderBlock": 0,
+  "warps": [
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 1
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "ViridianCity",
+      "destWarpId": 1
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "clerk",
+      "sprite": "clerk",
+      "x": 0,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "Hi there!\nMay I help you?",
+      "direction": "right",
+      "shopItems": [
+        "POKE_BALL",
+        "POTION",
+        "ANTIDOTE",
+        "PARALYZE_HEAL",
+        "BURN_HEAL"
+      ]
+    },
+    {
+      "id": "youngster1",
+      "sprite": "youngster",
+      "x": 5,
+      "y": 5,
+      "movement": "walk",
+      "dialogue": "This shop sells a\nlot of PARLYZ\nHEALs.",
+      "walkDir": "up_down"
+    },
+    {
+      "id": "cooltrainer_m",
+      "sprite": "cooltrainer_m",
+      "x": 3,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "The shop finally\nhas some POTIONs\nin stock."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "grassRate": 15,
+  "grass": [
+    {
+      "level": 15,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 16,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 17,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 19,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 18,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 20,
+      "pokemon": "GEODUDE"
+    },
+    {
+      "level": 21,
+      "pokemon": "ZUBAT"
+    },
+    {
+      "level": 17,
+      "pokemon": "MACHOP"
+    },
+    {
+      "level": 19,
+      "pokemon": "MACHOP"
+    },
+    {
+      "level": 21,
+      "pokemon": "MACHOP"
+    }
+  ],
+  "waterRate": 0,
+  "water": []
+}

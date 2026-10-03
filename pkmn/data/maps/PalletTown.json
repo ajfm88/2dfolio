@@ -1,0 +1,174 @@
+{
+  "name": "PalletTown",
+  "width": 10,
+  "height": 9,
+  "tileset": "OVERWORLD",
+  "connections": [
+    {
+      "direction": "north",
+      "mapName": "Route1",
+      "offset": 0
+    }
+  ],
+  "blocks": [
+    82,
+    79,
+    82,
+    82,
+    79,
+    11,
+    80,
+    82,
+    82,
+    80,
+    78,
+    1,
+    56,
+    57,
+    1,
+    1,
+    56,
+    57,
+    1,
+    77,
+    78,
+    8,
+    60,
+    61,
+    1,
+    8,
+    60,
+    61,
+    1,
+    77,
+    78,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    77,
+    78,
+    1,
+    119,
+    86,
+    1,
+    12,
+    13,
+    14,
+    1,
+    77,
+    78,
+    1,
+    116,
+    116,
+    1,
+    16,
+    58,
+    0,
+    1,
+    77,
+    78,
+    1,
+    1,
+    1,
+    1,
+    119,
+    86,
+    119,
+    49,
+    77,
+    78,
+    10,
+    29,
+    30,
+    49,
+    116,
+    116,
+    10,
+    49,
+    77,
+    80,
+    10,
+    101,
+    100,
+    97,
+    97,
+    97,
+    97,
+    97,
+    79
+  ],
+  "borderBlock": 11,
+  "warps": [
+    {
+      "x": 5,
+      "y": 5,
+      "destMap": "RedsHouse1F",
+      "destWarpId": 0
+    },
+    {
+      "x": 13,
+      "y": 5,
+      "destMap": "BluesHouse",
+      "destWarpId": 0
+    },
+    {
+      "x": 12,
+      "y": 11,
+      "destMap": "OaksLab",
+      "destWarpId": 1
+    }
+  ],
+  "signs": [
+    {
+      "x": 13,
+      "y": 13,
+      "text": "OAK POKéMON\nRESEARCH LAB"
+    },
+    {
+      "x": 7,
+      "y": 9,
+      "text": "PALLET TOWN\nShades of your\njourney await!"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "text": "<PLAYER>'s house"
+    },
+    {
+      "x": 11,
+      "y": 5,
+      "text": "<RIVAL>'s house"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "prof",
+      "sprite": "prof",
+      "x": 10,
+      "y": 4,
+      "movement": "stay",
+      "dialogue": "OAK: Hey! Wait!\nDon't go out!"
+    },
+    {
+      "id": "girl",
+      "sprite": "girl",
+      "x": 3,
+      "y": 8,
+      "movement": "walk",
+      "dialogue": "I'm raising\nPOKéMON too!\fWhen they get\nstrong, they can\nprotect me!"
+    },
+    {
+      "id": "fisher",
+      "sprite": "fisher",
+      "x": 11,
+      "y": 14,
+      "movement": "walk",
+      "dialogue": "Technology is\nincredible!\fYou can now store\nand recall items\nand POKéMON as\ndata via PC!"
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "name": "OaksLab",
+  "width": 5,
+  "height": 6,
+  "tileset": "DOJO",
+  "connections": [],
+  "blocks": [
+    101,
+    102,
+    103,
+    104,
+    104,
+    107,
+    107,
+    5,
+    105,
+    106,
+    5,
+    5,
+    5,
+    109,
+    110,
+    104,
+    104,
+    5,
+    104,
+    104,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    4,
+    5,
+    5
+  ],
+  "borderBlock": 3,
+  "warps": [
+    {
+      "x": 4,
+      "y": 11,
+      "destMap": "PalletTown",
+      "destWarpId": 2
+    },
+    {
+      "x": 5,
+      "y": 11,
+      "destMap": "PalletTown",
+      "destWarpId": 2
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "prof",
+      "sprite": "prof",
+      "x": 5,
+      "y": 2,
+      "movement": "stay",
+      "dialogue": "OAK: If a wild\nPOKéMON appears,\nyour POKéMON can\nfight against it!\fAfterward, go on\nto the next town.",
+      "direction": "down"
+    },
+    {
+      "id": "rival",
+      "sprite": "blue",
+      "x": 4,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "<RIVAL>: Yo\n<PLAYER>! Gramps\nisn't around!\fI ran here 'cos\nhe said he had a\nPOKéMON for me."
+    },
+    {
+      "id": "item_ball",
+      "sprite": "poke_ball",
+      "x": 7,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "That's a POKé\nBALL. There's a\nPOKéMON inside!",
+      "direction": "down",
+      "object": true
+    },
+    {
+      "id": "pokedex1",
+      "sprite": "pokedex",
+      "x": 2,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "It's encyclopedia-\nlike, but the\npages are blank!",
+      "direction": "down",
+      "object": true
+    },
+    {
+      "id": "pokedex2",
+      "sprite": "pokedex",
+      "x": 3,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "It's encyclopedia-\nlike, but the\npages are blank!",
+      "direction": "down",
+      "object": true
+    },
+    {
+      "id": "girl",
+      "sprite": "girl",
+      "x": 1,
+      "y": 9,
+      "movement": "walk",
+      "dialogue": "PROF.OAK is the\nauthority on\nPOKéMON!\fMany POKéMON\ntrainers hold him\nin high regard!",
+      "walkDir": "up_down"
+    },
+    {
+      "id": "scientist1",
+      "sprite": "scientist",
+      "x": 2,
+      "y": 10,
+      "movement": "stay",
+      "dialogue": "I study POKéMON as\nPROF.OAK's AIDE."
+    },
+    {
+      "id": "scientist2",
+      "sprite": "scientist",
+      "x": 8,
+      "y": 10,
+      "movement": "stay",
+      "dialogue": "I study POKéMON as\nPROF.OAK's AIDE."
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 4,
+      "y": 0,
+      "facing": "up",
+      "text": "Push START to\nopen the MENU!"
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "facing": "up",
+      "text": "The SAVE option is\non the MENU\nscreen."
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "facing": "up",
+      "text": "There's an e-mail\nmessage here!\f...\fCalling all\nPOKéMON trainers!\fThe elite trainers\nof POKéMON LEAGUE\nare ready to take\non all comers!\fBring your best\nPOKéMON and see\nhow you rate as a\ntrainer!\fPOKéMON LEAGUE HQ\nINDIGO PLATEAU\fPS: PROF.OAK,\nplease visit us!\n..."
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "facing": "up",
+      "text": "There's an e-mail\nmessage here!\f...\fCalling all\nPOKéMON trainers!\fThe elite trainers\nof POKéMON LEAGUE\nare ready to take\non all comers!\fBring your best\nPOKéMON and see\nhow you rate as a\ntrainer!\fPOKéMON LEAGUE HQ\nINDIGO PLATEAU\fPS: PROF.OAK,\nplease visit us!\n..."
+    }
+  ]
+}
