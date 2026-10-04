@@ -1,4 +1,8 @@
 import { VIEW_H } from '../settings.js';
+
+import { tuning } from '../data/tuning.js';
+
+import { shakeOffset } from './shake.js';
 import { createWorld } from './world.js';
 
 /** @typedef {import('../level/model.js').LevelModel} LevelModel */
@@ -18,7 +22,7 @@ import { createWorld } from './world.js';
  *   destroy: () => void,
  * }} HudController
  *
- * @typedef {{ show: () => void, hide: () => void, destroy: () => void }} TouchController
+ * @typedef {{ setShown: (shown: boolean) => void, destroy: () => void }} TouchController
  *
  * @typedef {{
  *   createHud: (root: HTMLElement, opts: {
@@ -29,6 +33,7 @@ import { createWorld } from './world.js';
  *     onEdit?: () => void,
  *     onQuit?: () => void,
  *     onNext?: () => void,
+ *     openSettings?: (root: HTMLElement) => { close: () => void },
  *   }) => HudController,
  *   createTouch: (root: HTMLElement, input: Input) => TouchController,
  * }} UiFactories
@@ -41,6 +46,9 @@ import { createWorld } from './world.js';
  * a level played from level select — the scene knows there is somewhere to go back
  * to, not what it is. `onNext` is the campaign's next level. `onComplete` reports a
  * finished run once; what it means (progress, or nothing) is the App's call.
+ * `reducedMotion` reads a flag the App keeps current, never the DOM, so `update`
+ * can ask it (invariant 3). `controls` is the on-screen controls setting, read in
+ * `render`. `openSettings` is passed through to the pause menu.
  *
  * @typedef {{
  *   level: LevelModel,
@@ -57,6 +65,9 @@ import { createWorld } from './world.js';
  *   onQuit?: () => void,
  *   onNext?: () => void,
  *   onComplete?: (run: { treasure: number, timeMs: number }) => void,
+ *   reducedMotion?: () => boolean,
+ *   controls?: () => 'auto' | 'on' | 'off',
+ *   openSettings?: (root: HTMLElement) => { close: () => void },
  * }} PlaySceneParams
  */
 
@@ -70,8 +81,6 @@ export function createPlayScene() {
   let hud = null;
   /** @type {TouchController | null} */
   let touch = null;
-  /** @type {(() => void) | null} */
-  let touchUnsub = null;
 
   let paused = false;
   let finished = false;
@@ -80,6 +89,10 @@ export function createPlayScene() {
   // never from update — invariant 3).
   let lastPausedShown = false;
   let resultsShown = false;
+
+  // Seconds of screen shake left, and its offset this frame (reused, never allocated).
+  let shakeLeft = 0;
+  const shake = { x: 0, y: 0 };
 
   function followPlayer() {
     if (!world || !params) return;
@@ -104,6 +117,7 @@ export function createPlayScene() {
       elapsedMs = 0;
       lastPausedShown = false;
       resultsShown = false;
+      shakeLeft = 0;
       // Framed now, not on the first update: a mode-switch wipe draws this scene
       // for a while before it is first stepped.
       followPlayer();
@@ -139,17 +153,12 @@ export function createPlayScene() {
         onEdit: params.onEdit,
         onQuit: params.onQuit,
         onNext: params.onNext,
+        openSettings: params.openSettings,
       });
       touch = params.ui.createTouch(root, params.input);
-      const t = touch;
-      touchUnsub = params.input.onTouchDetected(() => t.show());
     },
 
     unmountUI() {
-      if (touchUnsub) {
-        touchUnsub();
-        touchUnsub = null;
-      }
       if (hud) {
         hud.destroy();
         hud = null;
@@ -190,6 +199,7 @@ export function createPlayScene() {
       // do not stick, but the simulation does not step.
       if (paused || finished) return;
 
+      const healthBefore = world.stats.health;
       const status = world.update(dt, params.camera.x, params.viewport.viewW);
       followPlayer();
 
@@ -204,6 +214,18 @@ export function createPlayScene() {
         }
         return;
       }
+
+      // A heart lost, and survived, shakes the view. Added after the camera has
+      // followed the player, so it never accumulates; the setters keep it whole.
+      const reduced = params.reducedMotion ? params.reducedMotion() : false;
+      if (world.stats.health < healthBefore && !reduced) shakeLeft = tuning.shakeTime;
+      if (shakeLeft > 0) {
+        shakeOffset(shakeLeft, tuning.shakeTime, tuning.shakeAmplitude, shake);
+        params.camera.x += shake.x;
+        params.camera.y += shake.y;
+        shakeLeft -= dt;
+      }
+
       elapsedMs += dt * 1000;
     },
 
@@ -214,6 +236,13 @@ export function createPlayScene() {
     render(ctx, cam) {
       if (!world || !params) return;
       world.draw(ctx, cam, params.viewport.viewW, VIEW_H);
+      // On-screen controls: always, never, or once a touch has been seen. Reconciled
+      // here rather than on an event, so a change made in Settings mid-level applies
+      // on the next frame.
+      if (touch) {
+        const mode = params.controls ? params.controls() : 'auto';
+        touch.setShown(mode === 'on' || (mode === 'auto' && params.input.hasTouch));
+      }
       // Reconcile HUD DOM to game state (reads only; invariant 3 permits DOM in
       // render, forbids it in update). Diff-based, so this is cheap per frame.
       if (!hud) return;

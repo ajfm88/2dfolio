@@ -22,7 +22,13 @@ import { createLevelStore } from './storage/levels.js';
 import { createProgressStore } from './storage/progress.js';
 import { createSafeStorage } from './storage/safe-storage.js';
 import { createSettingsStore } from './storage/settings-store.js';
-import { el, onPageHidden, prefersReducedMotion, setVeiled } from './ui/dom.js';
+import {
+  el,
+  onPageHidden,
+  prefersReducedMotion,
+  setVeiled,
+  watchReducedMotion,
+} from './ui/dom.js';
 import { createPlayHud } from './ui/hud.js';
 import { createMakerPalette } from './ui/maker-palette.js';
 import { createMakerToolbar } from './ui/maker-toolbar.js';
@@ -32,7 +38,7 @@ import { createTouchControls } from './ui/touch-controls.js';
 import { openDialog } from './ui/components/dialog.js';
 import { openResizeDialog } from './ui/components/resize-dialog.js';
 import { openShareDialog } from './ui/components/share-dialog.js';
-import { openSoundDialog } from './ui/components/sound-dialog.js';
+import { openSettingsDialog } from './ui/components/settings-dialog.js';
 import { createToaster } from './ui/components/toast.js';
 import { createLevelSelectScreen } from './ui/screens/level-select.js';
 import { createTitleScreen } from './ui/screens/title.js';
@@ -43,6 +49,7 @@ import atlasJson from './data/atlas.json';
 /** @typedef {import('./game/play-scene.js').PlaySceneParams} PlaySceneParams */
 /** @typedef {import('./storage/levels.js').ResumePoint} ResumePoint */
 /** @typedef {import('./storage/levels.js').SaveResult} SaveResult */
+/** @typedef {import('./storage/settings-store.js').ControlsMode} ControlsMode */
 /** @typedef {import('./types.js').LevelData} LevelData */
 /** @typedef {import('./ui/screens/level-select.js').LevelSelectTab} LevelSelectTab */
 
@@ -92,6 +99,9 @@ const audio = createAudio();
 const saved = settings.load();
 if (saved.music !== undefined) audio.musicVolume = saved.music;
 if (saved.sfx !== undefined) audio.sfxVolume = saved.sfx;
+/** On-screen controls: read by the play scene in render, set in Settings. */
+/** @type {ControlsMode} */
+let controls = saved.controls ?? 'auto';
 
 const input = createInput(canvas, viewport);
 const camera = createCamera();
@@ -101,6 +111,11 @@ const makerScene = createMakerScene();
 const toaster = createToaster(uiRoot);
 
 input.onFirstGesture(() => audio.resume());
+
+// Kept current from the system setting, so the play scene can read it from update
+// without touching the DOM. The wipe reads the setting itself when it starts.
+let reducedMotion = prefersReducedMotion();
+watchReducedMotion((reduced) => { reducedMotion = reduced; });
 
 /** Level select's view of the campaign: play order, progress key and name. */
 const campaignCards = campaign.map((entry) => ({ id: entry.id, name: entry.data.name }));
@@ -229,6 +244,31 @@ function report(result, level) {
   }));
 }
 
+/** Settings are saved whole: both volumes and the controls mode. */
+function saveSettings() {
+  const result = settings.save({ music: audio.musicVolume, sfx: audio.sfxVolume, controls });
+  if (result === 'quota') report({ ok: false, reason: 'quota' });
+}
+
+/**
+ * The one Settings dialog, opened from the Title, level select and the pause menu.
+ * Whoever opens it holds the handle and closes it when their own UI goes.
+ *
+ * @param {HTMLElement} root
+ * @returns {{ close: () => void }}
+ */
+function openSettings(root) {
+  return openSettingsDialog(root, {
+    audio,
+    controls: () => controls,
+    setControls(mode) {
+      controls = mode;
+      saveSettings();
+    },
+    onCommit: saveSettings,
+  });
+}
+
 /**
  * @param {LevelModel} level
  * @param {{ immediate?: boolean }} [opts]
@@ -261,6 +301,7 @@ function enterTitle() {
   titleScreen = createTitleScreen(uiRoot, {
     onPlay() { goToSelect('campaign'); },
     onMake() { goToSelect('mine'); },
+    openSettings,
   });
   // Mid-wipe the UI layer is inert and cannot take focus; the wipe's end gives it.
   if (!uiRoot.inert) titleScreen.focus();
@@ -288,14 +329,7 @@ function enterSelect() {
     },
     onPlay(id) { playLevel(id); },
     onEdit(id) { openLevel(id); },
-    openSound: (root) => openSoundDialog(root, {
-      audio,
-      onCommit() {
-        if (settings.save({ music: audio.musicVolume, sfx: audio.sfxVolume }) === 'quota') {
-          report({ ok: false, reason: 'quota' });
-        }
-      },
-    }),
+    openSettings,
     report: (r) => report(r),
     toast: (text) => toaster.show(text),
   });
@@ -421,7 +455,6 @@ function enterMaker() {
     level,
     session: s ?? undefined,
     resume: entry?.resume,
-    theme: getTheme(level.theme),
     atlas,
     input,
     camera,
@@ -463,6 +496,9 @@ function enterPlay() {
     ui: { createHud: createPlayHud, createTouch: createTouchControls },
     onDeath() { pendingRestart = true; },
     onReplay() { pendingRestart = true; },
+    reducedMotion: () => reducedMotion,
+    controls: () => controls,
+    openSettings,
   };
   if (src.kind === 'test') {
     params.onEdit = () => { request = 'maker'; };

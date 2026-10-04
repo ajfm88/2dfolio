@@ -100,6 +100,13 @@ in the optional crisp-scale mode) read as an intentional frame.
 All sizes multiply by `--ui-scale`. Line height is `1.4` everywhere; letter-spacing
 is `0` — pixel fonts already carry their own spacing.
 
+**Ligatures are off** (`font-variant-ligatures: none`, issue 32). Pixelify Sans
+ligates fi, fl, ff, ffi and ffl, and at pixel size those glyphs read as a capital A
+("Not Anished yet"). The rule sits on every element in `base.css`, not on `body`:
+buttons and text fields take their font from the browser's own `font` shorthand,
+which resets ligatures, so they never inherit the setting. For the same reason, no
+component CSS may use the `font` shorthand.
+
 ## UI Scale
 
 One integer variable drives every dimension so the chrome stays crisp and stays
@@ -193,10 +200,16 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   `--ink` border. Native `<input>` — never a canvas-drawn caret.
 - The share-code field uses `--font-code`, `readonly` on export, and pairs with a
   Copy button that reports success inline for 1.5 s.
-- Sliders (music, sfx) are native `<input type="range">` with
-  `accent-color: var(--accent)`, 0–100 in steps of 5, each with a live
-  percentage. Restyling the thumb with the kit's Sliders sprites needs an
-  asset-pipeline change first (issue 26).
+- **Sliders** (music, sfx) are `<input type="range">`, 0–100 in steps of 5, each
+  with a live percentage. They are drawn with the kit's Sliders sprites
+  (`/assets/ui/sliders.png`, 10 frames of 12 × 12) at 2× art pixels (Unit 19,
+  issue 26).
+  - **Track:** frame 4. Its columns 1–10 are identical, so it stretches across the
+    track straight from the sheet. The rounded caps (frames 3 and 5) cannot be
+    cut from a sheet in CSS, so a 1-art-pixel `--ink` end stands in for them.
+  - **Thumb:** frame 2.
+  - **Hit area and focus:** the input keeps a 44 px hit area, and focus shows as
+    an `--accent` outline.
 
 ## Layout Patterns
 
@@ -207,13 +220,12 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   `env(safe-area-inset-*)`. Notches and home indicators must never cover a control.
 - **Title** (Unit 18): a centred column on `--sky`. The wordmark "Coral Corsairs"
   is at `--fs-xl` in `--text` on a `.panel--paper` (display text on wood is too
-  faint, issue 21). Below it are **Play** (`.btn--primary`, focused) and **Make**
-  (`.btn`), stacked at equal width. The settings button waits for Unit 19's
-  settings screen, and Sound lives on level select.
+  faint, issue 21). Below it are **Play** (`.btn--primary`, focused), **Make** and
+  **Settings** (`.btn`), stacked at equal width.
 - **Level select** (Unit 18; its My Levels tab is Unit 17's My Levels screen): a
   full-viewport screen on `--sky`. The sticky `.panel--paper` header has **Back**
   (to the title), a `role="tablist"` of two `.btn` tabs (**Campaign** · **My
-  Levels**), **Sound**, and the active tab's own buttons: **Import** and **New
+  Levels**), **Settings**, and the active tab's own buttons: **Import** and **New
   Level** (`.btn--primary`, the one primary) on My Levels, none on Campaign. A tab
   is not an action, so the selected one is never green. It is drawn pressed, with
   a 3 × ui-scale `--accent` bar inside its bottom edge. A paper notice line
@@ -231,17 +243,42 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   Everything with text is paper, not board (issue 21).
 - **Play HUD**: hearts top-left, coin count top-right, level name centred and fading
   after 2 s, pause button top-right below the coins. All anchored, never centred on
-  a fixed coordinate. The pause panel has **Resume**, the results panel **Play
-  again** (or **Next level** in the campaign before its last level, with Play
-  again beside it), plus a way out: **Back to editor** in a test-play, **Level
-  select** otherwise. The primary is focused. The results panel's Treasure is the
-  run's total, not the wrapping coin meter (issue 29).
+  a fixed coordinate.
+  - **Pause menu** (Unit 19): **Resume** (primary, focused), **Restart**,
+    **Settings**, and a way out, stacked at equal width in a panel capped at
+    300 × ui-scale.
+  - **Results panel:** **Play again**, or **Next level** in the campaign before
+    its last level, with Play again beside it. Then the way out. The primary is
+    focused. Its Treasure is the run's total, not the wrapping coin meter
+    (issue 29).
+  - **The way out:** **Back to editor** in a test-play, **Level select**
+    otherwise.
+  - Both panels put their title and text on a paper sheet inside the board, like
+    every dialog (issue 21).
+  - Escape and a backdrop tap resume from the pause menu, but only when it is the
+    top panel. With Settings open over it, Escape closes Settings alone.
 - **Touch controls**: a directional cluster bottom-left and a jump button
   bottom-right, both at least 64px at `--ui-scale: 1`, `touch-action: none`,
-  `user-select: none`. Shown only when a touch pointer has been seen, or when the
-  control setting is forced to touch.
+  `user-select: none`. When they show follows the **Touch** setting (Unit 19):
+  **Auto** (the default) once a touch pointer has been seen, **On** always, **Off**
+  never. The play scene reconciles it every frame, so a change made from the pause
+  menu applies at once.
+- **Settings dialog** (Unit 19): one `openDialog` panel opened from the Title,
+  level select and the pause menu, so it can sit over a paused game.
+  - **Music** and **Effects** rows: a label, a kit slider and a percentage.
+  - **Touch** row: **Auto · On · Off**, drawn as pressed-with-accent-bar like a
+    selected tab, never green. Each button's title and accessible name start with
+    its visible word and explain it ("Auto: touch buttons once the screen is
+    touched").
+  - **Done**, the only action.
+  - It is kept to three rows so it fits a 360-tall landscape view with nothing
+    scrolled away. Focus starts on the Music slider, whose arrow keys it owns.
 - **Maker**: a top bar (Back · Undo · Redo · *status* · Play · Menu) and a bottom
-  palette bar. The status slot is one line of `--fs-sm` text with a square
+  palette bar. Menu contains Share, Resize Level, then a Theme label on paper
+  and Palm Tree Island / Pirate Ship choices in a labeled group. The current
+  choice has `aria-pressed="true"`, a 1 px pressed offset and a 3 px accent bar;
+  reduced motion removes the offset. Each choice has a minimum 44 × 44 hit area.
+  The status slot is one line of `--fs-sm` text with a square
   `--danger` pip, naming the first reason the level cannot be played (Play is
   disabled while there is one); it is empty when the level is playable. The palette bar is
   a row of category tabs above a horizontally scrolling strip of tool buttons. The
@@ -273,7 +310,11 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
 - Icons render as `<img>` or as a `background-position` offset into the packed
   sheet, always with `image-rendering: pixelated`, sized in `--ui-scale` multiples.
 - Palette buttons in the maker use the entity's own `icon` clip from
-  `src/data/palette.js` — never a separate hand-made icon.
+  `src/data/palette.js` — never a separate hand-made icon. The one exception is
+  Terrain and Platform (Unit 20): they draw what a lone tile draws in the level's
+  theme, which is the single blob tile for terrain and island platforms, and the
+  single capped plank for ship platforms. A theme switch, or its undo, redraws those
+  two icons and keeps the selected tool and tab.
 
 ## Motion
 
@@ -285,3 +326,8 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   the circle wipe becomes a 100 ms fade through `--ink` (one scene is alive at a
   time, so a true cross-fade is not possible). `#ui` fades out over 120 ms when a
   wipe starts and back in when it ends, and is inert in between.
+- **Screen shake** (Unit 19): losing a heart, and surviving it, shakes the play
+  camera 3 px, fading out over 0.25 s. Under reduced motion there is none. The App
+  follows the system setting live (`watchReducedMotion`), so a change applies from
+  the next hit. Dust puffs are sprite animation in place, not screen motion, so
+  they stay.

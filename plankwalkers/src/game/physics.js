@@ -19,7 +19,7 @@ import { TILE } from '../settings.js';
  */
 function cellRangeX(x, w, cols) {
   const c0 = Math.max(0, Math.floor(x / TILE));
-  const c1 = Math.min(cols - 1, Math.floor((x + w - 0.001) / TILE));
+  const c1 = Math.min(cols - 1, Math.ceil((x + w) / TILE) - 1);
   return [c0, c1];
 }
 
@@ -31,7 +31,7 @@ function cellRangeX(x, w, cols) {
  */
 function cellRangeY(y, h, rows) {
   const r0 = Math.max(0, Math.floor(y / TILE));
-  const r1 = Math.min(rows - 1, Math.floor((y + h - 0.001) / TILE));
+  const r1 = Math.min(rows - 1, Math.ceil((y + h) / TILE) - 1);
   return [r0, r1];
 }
 

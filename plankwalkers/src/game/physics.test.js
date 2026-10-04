@@ -8,7 +8,8 @@ import {
   checkWallRight,
   checkSolid,
 } from './physics.js';
-import { TILE } from '../settings.js';
+import { FIXED_DT, TILE } from '../settings.js';
+import { tuning } from '../data/tuning.js';
 import { createBlankLevel } from '../level/schema.js';
 import { deserialise } from '../level/codec.js';
 
@@ -214,6 +215,54 @@ describe('checkSolid', () => {
 });
 
 describe('edge cases', () => {
+  it('resolves a right-edge overlap smaller than the former range epsilon (#30)', () => {
+    const level = makeLevel();
+    level.set('terrain', 10, 2, 1);
+    const old = { x: 300, y: 64, w: 18, h: 26 };
+    const hitbox = { ...old, x: TILE * 10 - old.w + 1e-13 };
+    expect(hitbox.x + hitbox.w).toBeGreaterThan(TILE * 10);
+    resolveH(hitbox, old, level);
+    expect(hitbox.x).toBe(TILE * 10 - old.w);
+  });
+
+  it('keeps repeated fixed-step walks outside walls at every tested start (#30)', () => {
+    const level = deserialise(createBlankLevel({ cols: 400, rows: 12 }));
+    for (const col of [10, 30, 65, 120, 250]) {
+      level.set('terrain', col, 2, 1);
+      for (let k = 0; k < 64; k++) {
+        const hitbox = { x: col * TILE - 18 - 100 - k, y: 64, w: 18, h: 26 };
+        const old = { ...hitbox };
+        for (let frame = 0; frame < 600; frame++) {
+          old.x = hitbox.x;
+          hitbox.x += tuning.runSpeed * FIXED_DT;
+          resolveH(hitbox, old, level);
+        }
+        expect(hitbox.x + hitbox.w, `wall ${col}, start ${k}`).toBeLessThanOrEqual(col * TILE);
+      }
+      level.set('terrain', col, 2, 0);
+    }
+  });
+
+  it('lands on a floor crossed by less than the former range epsilon (#30)', () => {
+    const level = makeLevel();
+    const old = { x: 64, y: TILE * 10 - 27, w: 18, h: 26 };
+    const hitbox = { ...old, y: TILE * 10 - old.h + 1e-13 };
+    expect(hitbox.y + hitbox.h).toBeGreaterThan(TILE * 10);
+    expect(resolveV(hitbox, old, level)).toBe(true);
+    expect(hitbox.y).toBe(TILE * 10 - old.h);
+  });
+
+  it('leaves an exactly touching wall and floor unmoved (#30)', () => {
+    const level = makeLevel();
+    const hitbox = { x: TILE * 5 - 18, y: TILE * 6, w: 18, h: 26 };
+    resolveH(hitbox, { ...hitbox }, level);
+    expect(hitbox.x).toBe(TILE * 5 - 18);
+    hitbox.x = 64;
+    hitbox.y = TILE * 10 - hitbox.h;
+    expect(resolveV(hitbox, { ...hitbox }, level)).toBe(false);
+    expect(hitbox.y).toBe(TILE * 10 - hitbox.h);
+  });
+
   it('resolveH handles hitbox spanning multiple cells', () => {
     const level = makeLevel();
     const hitbox = { x: 28, y: 64, w: 18, h: 26 };

@@ -28,6 +28,13 @@ export const tuning = {
   enemyTurnCooldown: 0.1,
   hitInvuln: 0.7,
   invulnFlicker: 0.05,
+  // Screen shake on losing a heart: world px on each axis, fading to zero over
+  // shakeTime seconds. Off under prefers-reduced-motion.
+  shakeAmplitude: 3,
+  shakeTime: 0.25,
+  // Landing dust only from a fall at least this fast (px/s). A 1-tile step-down
+  // lands at about 204, so only the smallest hops go without.
+  landDustSpeed: 150,
   startHealth: 5,
   hazardDamage: 1,
   coinSilver: 1,
