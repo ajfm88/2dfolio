@@ -6,7 +6,14 @@ import { el } from './dom.js';
  * `problem` is the reason the level cannot be played, or null when it can. Play
  * is enabled exactly when it is null, and the reason shows in the status slot.
  *
- * @typedef {{ canUndo: boolean, canRedo: boolean, problem: string | null }} ToolbarState
+ * `theme` is the level's theme id; the Menu shows the matching choice pressed.
+ *
+ * @typedef {{
+ *   canUndo: boolean,
+ *   canRedo: boolean,
+ *   problem: string | null,
+ *   theme: string,
+ * }} ToolbarState
  *
  * @typedef {{
  *   sync: (state: ToolbarState) => void,
@@ -23,6 +30,8 @@ import { el } from './dom.js';
  *   onRedo: () => void,
  *   onShare: () => void,
  *   onResize: () => void,
+ *   themes: ReadonlyArray<{ id: string, label: string }>,
+ *   onTheme: (id: string) => void,
  * }} opts
  * @returns {ToolbarController}
  */
@@ -31,6 +40,8 @@ export function createMakerToolbar(root, opts) {
   let prevCanRedo = true;
   /** @type {string | null} */
   let prevProblem = null;
+  /** @type {string | null} */
+  let prevTheme = null;
 
   const undoBtn = /** @type {HTMLButtonElement} */ (el('button', {
     class: 'maker-toolbar__btn',
@@ -80,6 +91,20 @@ export function createMakerToolbar(root, opts) {
       },
     }),
   ]);
+
+  const themeButtons = opts.themes.map((theme) => el('button', {
+    class: 'maker-toolbar__menu-item maker-toolbar__menu-choice',
+    text: theme.label,
+    attrs: { type: 'button', 'data-theme': theme.id, 'aria-pressed': 'false' },
+    on: { click: () => { closeMenu(); opts.onTheme(theme.id); } },
+  }));
+  menuPanel.append(
+    el('span', {
+      class: 'maker-toolbar__menu-label', text: 'Theme',
+      attrs: { 'aria-hidden': 'true' },
+    }),
+    el('div', { attrs: { role: 'group', 'aria-label': 'Theme' } }, themeButtons),
+  );
 
   let menuOpen = false;
   /** @type {((e: Event) => void) | null} */
@@ -152,6 +177,13 @@ export function createMakerToolbar(root, opts) {
   return {
     /** @param {ToolbarState} state */
     sync(state) {
+      if (state.theme !== prevTheme) {
+        for (let i = 0; i < themeButtons.length; i++) {
+          const button = themeButtons[i];
+          button.setAttribute('aria-pressed', String(button.dataset.theme === state.theme));
+        }
+        prevTheme = state.theme;
+      }
       if (state.canUndo !== prevCanUndo) {
         undoBtn.disabled = !state.canUndo;
         prevCanUndo = state.canUndo;

@@ -60,10 +60,14 @@
   --fs-sm: calc(11px * var(--ui-scale));
 }
 
+/* Pixelify Sans turns fi, fl, ff, ffi and ffl into ligatures that read as a capital
+   A (issue 32). Set on every element, not inherited from body: buttons and fields
+   get their font from the browser's own `font` shorthand, which resets ligatures. */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+  font-variant-ligatures: none;
 }
 
 html,

@@ -172,8 +172,36 @@
   outline-offset: calc(2px * var(--ui-scale));
 }
 
+.maker-toolbar__menu-label {
+  display: block;
+  padding: calc(8px * var(--ui-scale)) calc(12px * var(--ui-scale));
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+}
+
+.maker-toolbar__menu-choice {
+  position: relative;
+}
+
+.maker-toolbar__menu-choice[aria-pressed="true"],
+.maker-toolbar__menu-choice[aria-pressed="true"]:hover {
+  transform: translateY(calc(1px * var(--ui-scale)));
+}
+
+.maker-toolbar__menu-choice[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: calc(3px * var(--ui-scale));
+  background: var(--accent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .maker-toolbar__btn:hover,
   .maker-toolbar__btn:active,
-  .maker-toolbar__menu-item:hover { transform: none; }
+  .maker-toolbar__menu-item:hover,
+  .maker-toolbar__menu-choice[aria-pressed="true"],
+  .maker-toolbar__menu-choice[aria-pressed="true"]:hover { transform: none; }
 }

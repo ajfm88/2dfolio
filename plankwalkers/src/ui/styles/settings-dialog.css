@@ -1,0 +1,106 @@
+/* Settings dialog: volume rows (label, kit slider, percentage) and the on-screen
+   controls choice. */
+
+.settings__row {
+  display: grid;
+  grid-template-columns: calc(64px * var(--ui-scale)) 1fr calc(44px * var(--ui-scale));
+  align-items: center;
+  gap: calc(8px * var(--ui-scale));
+  min-block-size: calc(44px * var(--ui-scale));
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+.settings__value {
+  text-align: end;
+  font-size: var(--fs-sm);
+}
+
+/* The Wood and Paper kit's slider (/assets/ui/sliders.png, 10 frames of 12 × 12),
+   drawn at 2× art pixels. --px is one art pixel. The track is frame 4, whose
+   columns 1–10 are identical, stretched across the track: a 1200% sheet puts those
+   ten columns over the full width at 44.5455% (4.9 / 11), and a 200% sheet shows
+   its six pipe rows. The caps (frames 3 and 5) cannot be cut from the sheet in CSS,
+   so an --ink end stands in for their outermost column. The thumb is frame 2. */
+.settings__slider {
+  --px: calc(2px * var(--ui-scale));
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(44px * var(--ui-scale));
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.settings__slider::-webkit-slider-runnable-track {
+  block-size: calc(6 * var(--px));
+  border-inline: var(--px) solid var(--ink);
+  background: url('/assets/ui/sliders.png') 44.5455% 50% / 1200% 200% no-repeat;
+  image-rendering: pixelated;
+}
+
+.settings__slider::-moz-range-track {
+  block-size: calc(6 * var(--px));
+  border-inline: var(--px) solid var(--ink);
+  background: url('/assets/ui/sliders.png') 44.5455% 50% / 1200% 200% no-repeat;
+  image-rendering: pixelated;
+}
+
+.settings__slider::-webkit-slider-thumb {
+  inline-size: calc(12 * var(--px));
+  block-size: calc(12 * var(--px));
+  /* Chrome lines the thumb's top up with the track's; centre it on the pipe. */
+  margin-block-start: calc(-3 * var(--px));
+  border: 0;
+  background: url('/assets/ui/sliders.png') calc(-24 * var(--px)) 0 /
+              calc(120 * var(--px)) calc(12 * var(--px)) no-repeat;
+  image-rendering: pixelated;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.settings__slider::-moz-range-thumb {
+  inline-size: calc(12 * var(--px));
+  block-size: calc(12 * var(--px));
+  border: 0;
+  border-radius: 0;
+  background: url('/assets/ui/sliders.png') calc(-24 * var(--px)) 0 /
+              calc(120 * var(--px)) calc(12 * var(--px)) no-repeat;
+  image-rendering: pixelated;
+}
+
+.settings__slider:focus-visible {
+  outline: calc(2px * var(--ui-scale)) solid var(--accent);
+  outline-offset: 0;
+}
+
+/* The choice spans the slider and value columns. */
+.settings__choices {
+  grid-column: 2 / -1;
+  display: flex;
+  gap: calc(6px * var(--ui-scale));
+}
+
+.settings__choice {
+  position: relative;
+  flex: 1 1 0;
+}
+
+/* The chosen one is drawn pressed with an accent bar, like a selected level-select
+   tab: it is a state, not an action, so it is never the green primary. */
+.settings__choice[aria-pressed="true"],
+.settings__choice[aria-pressed="true"]:hover {
+  transform: translateY(calc(1px * var(--ui-scale)));
+}
+
+.settings__choice[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: calc(3px * var(--ui-scale));
+  background: var(--accent);
+}

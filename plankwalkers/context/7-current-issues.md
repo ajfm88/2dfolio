@@ -39,30 +39,6 @@ move to Resolved.
 
 ## Open Issues
 
-### 1. ~~UI nine-slice source is the kit guide, not a textbook 9-slice~~ [FIXED]
-
-**Fixed:** 2026-09-21 (Unit 15)
-**Where:** `tools/build-assets.mjs` `writeNineSlice`
-**What changed:** `writeNineSlice` now extracts the 3×3 nine-slice subset (indices
-0,1,2 / 4,5,6 / 8,9,10) from the 16-tile kit guide and composites them into a
-`tile × 3` PNG: 96×96 for boards/papers, 42×42 for buttons. `border-image-slice`
-at the tile size (32 or 14) produces correct corners, edges and fill. `dialog.css`
-`.panel` and `.btn` upgraded to nine-slice `border-image`. All five composites
-regenerated and committed. **The tile pick above was wrong:** see issue 20, fixed
-2026-09-24.
-
----
-
-### 2. Autotile hole shows a grass top on the cell below [OPEN]
-
-**Where:** Unit 04 fixture mass hole (`src/data/fixtures/autotile-demo.js`); 4-neighbour autotile
-**Symptom:** The cell under a 1-tile hole draws a grass *top* edge because its north neighbour is empty.
-**Expected:** Inner-corner tiles from the remaining 31 blob cells (Unit 19).
-**Repro:** Look at the hole in the solid block on `/`.
-**Notes:** Correct for v1 4-neighbour autotile. Do not change the mask table to paper over it.
-
----
-
 ### 4. Touch-control layout looks off at phone width [OPEN]
 
 **Where:** `src/ui/styles/touch-controls.css` (Unit 09)
@@ -91,25 +67,6 @@ regenerated and committed. **The tile pick above was wrong:** see issue 20, fixe
 **Expected:** A clean diagnostics run, and a `jsconfig.json` that still resolves imports the same way after TypeScript 7.
 **Repro:** Run `getDiagnostics` with no file argument.
 **Notes:** Found during Unit 10, caused by an editor TypeScript upgrade, not by any code. `"paths"` is `{}` and every import in `src/` is relative, so `baseUrl` is doing nothing — deleting both keys is very likely the whole fix, and is strictly smaller than adding `ignoreDeprecations`. Not done inside Unit 10 because `jsconfig.json` is Unit 00's file and this is unrelated to walker enemies. TypeScript is not a project dependency (`npx tsc` is unavailable), so verify the fix through the editor's diagnostics.
-
----
-
-### 7. `PickupFx` name and home no longer fit its use [OPEN]
-
-**Where:** `src/game/collectibles.js` (`PickupFx`), used from `world.js` `spawnFx`
-**Symptom:** `PickupFx` was named and placed for treasure pickups, but as of Unit 11
-it is the generic one-shot sprite burst for four different things: pickup fx, the
-Crabby strike effect, projectile terrain/lifetime bursts (pearl/dead,
-ball-explode, ball-dead). Its name and its home in `collectibles.js` now undersell
-what it is.
-**Expected:** A neutral name (e.g. `OneShotFx`) in a neutral home (e.g.
-`src/game/fx.js`), imported by `world.js` and everything that spawns one.
-**Repro:** Grep `PickupFx` — it is imported by `world.js` and referenced by the
-collectible, walker (Crabby) and shooter/projectile paths.
-**Notes:** Called out by the Unit 11 spec as **not** to be folded into Unit 11 (it
-would touch `collectibles.js`, which Unit 11 does not). Pure rename + move, no
-behaviour change. It has **no `flip` parameter and must not grow one** — every clip
-that uses it is symmetric. Do it as its own small change.
 
 ---
 
@@ -172,6 +129,7 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 **Repro:** Maker → Menu → Resize Level.
 **Notes:** Not caused by issue 20's fix. The fill colour is the same brick as before, now drawn as a clean frame. Options: put the form on an inner `.panel--paper` (as `3-ui-context.md` already specifies for text inputs), or use `--paper-light`/`--ink` for text on board. That is a token and component decision for `3-ui-context.md` first, so it is not folded into the nine-slice fix.
 **2026-09-25 (Unit 17):** measured: the board fill is `--wood` `#ae7764`. Ink text on it reaches 3.4:1, `--paper-light` 2.9:1, and ink on paper 7.4:1. Unit 17's new dialogs and My Levels use the spec's fallback (text on an inner `.panel--paper` sheet, no ghost buttons), so only the resize dialog, the pause/results panels and the maker toolbar status still show text on board. Deciding this issue now means choosing whether those follow the same pattern.
+**2026-09-29 (Unit 19):** the pause and results panels now put their title and text on a paper sheet, like every `openDialog` dialog. Only the maker resize dialog (with issue 27) and the maker toolbar status still show text on the board.
 
 ---
 
@@ -195,16 +153,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 26. Sound sliders are native, not the kit's Sliders sprites [OPEN]
-
-**Where:** `src/ui/components/sound-dialog.js`, `styles/sound-dialog.css` (Unit 17)
-**Symptom:** The Music and Effects sliders are native `<input type="range">` tinted with `accent-color: var(--accent)`. `3-ui-context.md` asks for the thumb to be restyled with the Wood and Paper kit's Sliders sprites.
-**Expected:** A kit-sprite thumb and track.
-**Repro:** My Levels → Sound.
-**Notes:** Deliberately left out of Unit 17. The Sliders sprites are not packed, so the fix is an asset-pipeline change (`tools/asset-manifest.mjs`, `npm run assets`) plus the CSS that reads the new output, and the workflow rules split those. Natural home: Unit 19's settings screen.
-
----
-
 ### 27. The resize dialog does not use the shared dialog helper [OPEN]
 
 **Where:** `src/ui/components/resize-dialog.js` (Unit 15)
@@ -225,16 +173,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 30. The player can slip into a wall and pass through it [OPEN]
-
-**Where:** `src/game/physics.js` `resolveH` / `cellRangeX` (Unit 06)
-**Symptom:** A player running into a wall face can end up inside the terrain, stand "on" rows inside it, and walk through it. Seen 2026-09-26 in a headless run of the real world (`world.js`, `player.js`, `physics.js`) on Castaway Beach: the player met the raised block at column 65, rose up its face with `onFloor` true in mid-air, and drifted into the block.
-**Expected:** Terrain is solid from every side, always.
-**Repro:** From the trace: after any push to a whole-pixel position, `x` advances by 1.6666… px a frame, so every third frame it is a whole number plus float error (for example `2062.0000000000002`). If that lands the hitbox's right edge 1e-13 px past a wall face, `cellRangeX` (`x + w - 0.001`) does not include the wall's column, so nothing pushes it back. On the next frame `oldRect` is already overlapping, so `resolveH`'s "was clear of the tile" test (`oldRect.x + oldRect.w <= tL`) never fires again, and the player walks in. `resolveV` then treats the wall's rows as floors and ceilings.
-**Notes:** Found while drafting the Unit 18 campaign, not caused by it. Not fixed inside Unit 18 (a Unit 06 module). A fix makes the overlap test and the cell range agree. Either the range includes any positive overlap, or positions are kept off sub-epsilon offsets. It needs a regression test in `physics.test.js` that starts at `x = tL - w + 1e-13`. The campaign drafts were checked by a bot that rounds positions to 1/1024 px to step around this. Real play may still hit it. Worth fixing before the campaign's final sign-off.
-
----
-
 ### 31. Nothing stops the player at a level's left and right edges [OPEN]
 
 **Where:** `src/game/world.js` / `src/game/player.js` (Unit 07)
@@ -245,17 +183,170 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 32. Pixelify Sans ligatures turn "fi" and "fl" into an "A" [OPEN]
+### 33. The collision cell ranges allocate on every call [OPEN]
+
+**Where:** `src/game/physics.js` `cellRangeX` / `cellRangeY` (Unit 06)
+**Symptom:** Both return a new two-element array. Every fixed step, `resolveH`, `resolveV`, `resolveSemiSolid`, `checkSolid`, `checkFloor` and the wall checks call them for the player and for every walker and projectile. So play makes dozens of short-lived arrays a frame.
+**Expected:** `4-code-standards.md` Rendering: "No allocation in the per-frame path … Use module-level scratch objects."
+**Repro:** `physics.js` lines 20–36 and their callers.
+**Notes:** Found 2026-10-02 while planning issue 30's fix, which edits the same two lines. Not folded into it. No behaviour change is wanted, and `physics.test.js` covers every caller. Natural home: Unit 21's profiling pass, or its own small change. Measure first, in the Chrome profiler's allocation view, so the fix has a number.
+
+---
+
+### 34. Draw order follows the code, not `z` [OPEN]
+
+**Where:** `src/game/world.js` `draw`, `src/level/render.js` `drawLevel`; `2-architecture.md` Rendering Model; `4-code-standards.md` Patterns Rejected
+**Symptom:** The architecture says "Draw order is by `z` from `settings.js`". The code standards name "explicit `z` sort, stable and declared in `settings.Z`" as what replaces pygame's group order. Every entity sets `this.z`, but nothing reads it.
+- `drawLevel` draws the background, the tiles and the water.
+- Then `world.draw` draws the entities in spawn order, then the player, then fx.
+- So water (`Z.water` 6) is drawn under the entities (`Z.main` 5).
+**Expected:** Either draw order honours `z`, or the docs describe the fixed order.
+**Repro:** `grep -rn "\.z\b" src` finds assignments only.
+**Notes:** Found 2026-10-02 while planning Unit 20. No visible effect today: every entity is `Z.main`, and nothing is drawn behind the tiles or in front of the player. It starts to matter with decor (`Z.bgDecor` behind entities, `Z.fg` in front), so decide it in the decor unit's spec (Open Question 8). Not folded into Unit 20, which adds no entity.
+
+---
+
+### 35. Water in a ship level reads as a flat blue block [OPEN]
+
+**Where:** `src/data/themes.js` `shipTheme.waterClip` (Unit 20, Decision 7)
+**Symptom:** The ship reuses the island's `bg/water-tile`, a flat sea-blue tile with no surface. On the island it blends into the sea behind it. On the ship's plank wall, a pool reads as a plain light-blue rectangle, with no surface line and no motion.
+**Expected:** Undecided. Decision 7 chose the island tile and left the look to the player ("judge by eye, and log it if it reads wrong").
+**Repro:** Import or switch a level to Pirate Ship, paint water, and look in the maker or in play.
+**Notes:** Found 2026-10-02 in the Unit 20 review (screenshots, muted headless Chrome). An option exists without new art: `water/top`, the Merchant Ship's animated water surface (96 × 32, 4 frames), has been packed since Unit 01 and is drawn nowhere but the palette's Water icon. Using it for the top row of a pool would be a theme field plus a render rule, so it needs a spec decision. For the player's judgment first.
+**2026-10-03 (player, closing Unit 20):** "water looks a bit off inside of the ship, but maybe we can fix that later". Confirmed as a look problem. It is not a blocker and was not scheduled; it needs its own spec decision when picked up.
+
+---
+
+### 36. The HUD level name is faint, worst on the ship wall [OPEN]
+
+**Where:** `src/ui/styles/hud.css` `.hud__name` (Unit 09); shown more clearly by Unit 20's backdrop
+**Symptom:** The level name that flashes for 2.5 s at the start of play is `--text-display` (`#dd8f61`) with a 1 px `--ink` shadow, drawn straight over the canvas.
+- Against the ship's back wall (`#af8385`) the fill reaches **1.28 : 1**.
+- Against the island sky (`#ddc6a1`) it reaches 1.55 : 1, so it was already faint.
+- The ink shadow is what makes it legible at all.
+**Expected:** A readable title. The playbook still has no contrast target (issue 21).
+**Repro:** Play any level, and look at the name at the top centre. Compare a ship level with an island one.
+**Notes:** Found 2026-10-02 in the Unit 20 review. It is the same family as issue 21: display text on a coloured field. The fix is a token or component decision, for example the name on a paper strip like every other panel's text, so decide it with issue 21 and do not patch the colour alone.
+
+---
+
+## Resolved
+
+### 37. A solid block of ship terrain reads as a hollow room [FIXED — by design]
+
+**Where:** the Pirate Ship terrain art (`tiles/ship`, terrain copy at (1,1)) as drawn by Unit 20
+**Symptom:** The player painted a filled rectangle of terrain in a ship level, put the spawn inside it, and read the maker's "The spawn point is buried in terrain." as a false error. The block looked like a room.
+- The blob layout draws a mass as a plank rim around a **dark navy core**: the fill tile and the dark intrusions in its eight neighbours.
+- In the ship, empty space shows the pink plank back wall, so a dark core inside a plank frame reads as an opening, not as solid wall.
+- The island draws its core the same dark colour, but its stone rim with grass on top reads as rock.
+**Expected:** Solid terrain looks solid in every theme. The validation itself is correct.
+**Repro:** Maker → Menu → Pirate Ship. Paint a terrain rectangle at least 3 × 3, then place the spawn in its middle. Switching to Palm Tree Island shows the same cells as rock.
+**Notes:** Found 2026-10-03 by the player while testing Unit 20. The Unit 20 mockups already showed dark cores in solid ship blocks, but the spec's risk list did not flag that they read as space. Options, each needing the player's decision:
+1. **Keep the pack's art.** Ship hulls are built from walls one or two tiles thick, where no dark core appears, and that is said where players will see it.
+2. **Draw a planked core for the ship.** The sheet has no seamless planked fill: its only fill tile is the dark one, and every planked tile carries an edge or a notch. So this means new art derived from the pack in the asset pipeline.
+3. **Give the ship's core a lighter, solid-reading treatment** at render time, as a theme field.
+
+Not folded into anything: it is a look decision for the player first.
+
+**Closed:** 2026-10-03, by design (player). Once the dark core was explained as the ship's version of the island's rock under the grass, the player rebuilt the level with the deck as terrain and open space as backdrop, and closed Unit 20 with the art as it is. Option 1 stands: hulls read best built from walls one or two tiles thick. Options 2 and 3 can be reopened if solid ship blocks keep confusing players.
+
+---
+
+### 30. The player can slip into a wall and pass through it [FIXED]
+
+**Where:** `src/game/physics.js` `resolveH` / `cellRangeX` (Unit 06)
+**Symptom:** A player running into a wall face can end up inside the terrain, stand "on" rows inside it, and walk through it. Seen 2026-09-26 in a headless run of the real world (`world.js`, `player.js`, `physics.js`) on Castaway Beach: the player met the raised block at column 65, rose up its face with `onFloor` true in mid-air, and drifted into the block.
+**Expected:** Terrain is solid from every side, always.
+**Repro:** From the trace: after any push to a whole-pixel position, `x` advances by 1.6666… px a frame, so every third frame it is a whole number plus float error (for example `2062.0000000000002`). If that lands the hitbox's right edge 1e-13 px past a wall face, `cellRangeX` (`x + w - 0.001`) does not include the wall's column, so nothing pushes it back. On the next frame `oldRect` is already overlapping, so `resolveH`'s "was clear of the tile" test (`oldRect.x + oldRect.w <= tL`) never fires again, and the player walks in. `resolveV` then treats the wall's rows as floors and ceilings.
+**Notes:** Found while drafting the Unit 18 campaign, not caused by it. Not fixed inside Unit 18 (a Unit 06 module). A fix makes the overlap test and the cell range agree. Either the range includes any positive overlap, or positions are kept off sub-epsilon offsets. It needs a regression test in `physics.test.js` that starts at `x = tL - w + 1e-13`. The campaign drafts were checked by a bot that rounds positions to 1/1024 px to step around this. Real play may still hit it. Worth fixing before the campaign's final sign-off.
+**Original fix plan (2026-10-02; applied below).** Scheduled before Unit 20 as its own change (`specs/20-second-theme.md`, Before This Unit).
+- **The change.** Make the far edge of each cell range exact, as the near edge already is. In `cellRangeX`, `c1 = Math.min(cols - 1, Math.ceil((x + w) / TILE) - 1)`. In `cellRangeY`, `r1 = Math.min(rows - 1, Math.ceil((y + h) / TILE) - 1)`.
+  - A box that only touches a face (`x + w === tL`) still leaves that tile out.
+  - Any positive overlap brings it in, so the frame that crosses the face pushes back.
+  - The vertical twin, a floor reached 1e-13 deep and then fallen through, has the same cause and the same fix.
+  - Change nothing else: keep the tuple return (issue 33) and every caller.
+- **Measured** with a scratch harness over the real `resolveH`:
+  - Walking at `tuning.runSpeed * FIXED_DT` into a wall at columns 10, 30, 65, 120 and 250, from 64 whole-pixel starts each, **33 of 320 runs end inside the wall** today. With the fix, none do.
+  - A single step from a clear `oldRect` to a right edge 1e-13 past the face stays inside today (`x` 302.0000000000001). With the fix it is pushed to 302.
+  - All 322 existing tests pass with the fix applied. The trial was reverted, and the tree is clean.
+- **Regression tests** in `physics.test.js`. Write each first, and see it fail on today's code:
+  1. `resolveH`: `oldRect` clear of a wall, `hitbox` right edge at `tL + 1e-13` → `hitbox.x === tL - w`.
+  2. `resolveH`: the walk above. Walls at columns 10, 30, 65, 120 and 250; starts `tL - w - 100 - k` for `k` 0–63; step `100 * (1 / 60)` for up to 600 frames, with `oldRect` copied before each step. No run ends with `hitbox.x + w > tL`.
+  3. `resolveV`: `oldRect` above a floor, `hitbox` bottom at `tT + 1e-13` → `hitbox.y === tT - h`, and it returns true.
+  4. A box exactly touching a face (`x + w === tL`, `oldRect` the same) is not moved.
+- **In the game:** run into the Castaway Beach block at column 65 from the left, repeatedly. The scratch campaign bot no longer needs its 1/1024 px rounding.
+- Its own commit, before Unit 20, with `#30` in the message.
+
+
+**Resolved 2026-10-02:** exact far-edge ranges now use `Math.ceil(edge / TILE) - 1` on both axes. Three new regression cases failed before the fix; all four pass afterward (326 tests at this commit, build clean). Chrome verified 320 sustained resolver approaches and 64 real `world.js` / `player.js` approaches to the current Castaway Beach block at column 63 (the draft trace used 65). Tuple allocation and other collision code are unchanged. Prerequisite commit: `6c84a7e`.
+
+---
+
+
+### 26. Sound sliders are native, not the kit's Sliders sprites [FIXED]
+
+
+**Closed:** 2026-09-29 (Unit 19 Part C, the Settings dialog).
+
+**Where:** `src/ui/components/sound-dialog.js`, `styles/sound-dialog.css` (Unit 17)
+**Symptom:** The Music and Effects sliders are native `<input type="range">` tinted with `accent-color: var(--accent)`. `3-ui-context.md` asks for the thumb to be restyled with the Wood and Paper kit's Sliders sprites.
+**Expected:** A kit-sprite thumb and track.
+**Repro:** My Levels → Sound.
+**Notes:** Deliberately left out of Unit 17. The Sliders sprites are not packed, so the fix is an asset-pipeline change (`tools/asset-manifest.mjs`, `npm run assets`) plus the CSS that reads the new output, and the workflow rules split those. Natural home: Unit 19's settings screen.
+**2026-09-29 (drafting Unit 19):** the note above is wrong. The sprites **are** packed, and have been since Unit 01: `ui/sliders` in `atlas.json`, `/assets/ui/sliders.png`, 10 frames of 12 × 12 (manifest line `strip('ui/sliders', …)`). Read from the art: 3–5 are a horizontal track (left cap, middle, right cap), 2 is its thumb, 7–9 and 6 are the vertical track and thumb, and 0–1 are arrow ends. So the fix is CSS only, with no asset-pipeline step. The Unit 19 spec proposes it for the settings dialog.
+**What changed:** the Settings dialog draws its Music and Effects sliders with the kit sprites, in CSS only (`settings-dialog.css`), at 2x art pixels. The track is frame 4, whose columns 1-10 are identical, stretched across the track (a 1200% sheet at 44.5455%, 200% tall). The rounded caps (frames 3 and 5) cannot be cut from a sheet in CSS, so a 1-art-pixel `--ink` end stands in for their outer column. The thumb is frame 2, with WebKit and Firefox pseudo-elements. The input keeps its 44 px hit area and an `--accent` focus outline. Seen in headless Chrome at 1280 x 720 and 1000 x 360. Firefox and Safari still to be seen.
+
+---
+
+### 7. `PickupFx` name and home no longer fit its use [FIXED]
+
+**Closed:** 2026-09-29 (Unit 19 Part B, step 0, before dust became its fifth user).
+
+**Where:** `src/game/collectibles.js` (`PickupFx`), used from `world.js` `spawnFx`
+**Symptom:** `PickupFx` was named and placed for treasure pickups, but as of Unit 11
+it is the generic one-shot sprite burst for four different things: pickup fx, the
+Crabby strike effect, projectile terrain/lifetime bursts (pearl/dead,
+ball-explode, ball-dead). Its name and its home in `collectibles.js` now undersell
+what it is.
+**Expected:** A neutral name (e.g. `OneShotFx`) in a neutral home (e.g.
+`src/game/fx.js`), imported by `world.js` and everything that spawns one.
+**Repro:** Grep `PickupFx` — it is imported by `world.js` and referenced by the
+collectible, walker (Crabby) and shooter/projectile paths.
+**Notes:** Called out by the Unit 11 spec as **not** to be folded into Unit 11 (it
+would touch `collectibles.js`, which Unit 11 does not). Pure rename + move, no
+behaviour change. It has **no `flip` parameter and must not grow one** — every clip
+that uses it is symmetric. Do it as its own small change.
+**What changed:** the class moved to `src/game/fx.js` as `OneShotFx`, unchanged, and `world.js` imports it from there. It is still the only `fx` element type, and it still has no flip: the dust clips it gains in Unit 19 are symmetric (measured). `collectibles.js` no longer imports `Z`. No test file referenced it. `npm test` unchanged, build clean.
+
+---
+
+### 2. Autotile hole shows a grass top on the cell below [FIXED — by design]
+
+**Closed:** 2026-09-29 (Unit 19 Part A). The grass is correct, and what looked wrong around it is fixed.
+
+**Where:** Unit 04 fixture mass hole (`src/data/fixtures/autotile-demo.js`); 4-neighbour autotile
+**Symptom:** The cell under a 1-tile hole draws a grass *top* edge because its north neighbour is empty.
+**Expected:** Inner-corner tiles from the remaining 31 blob cells (Unit 19).
+**Repro:** Look at the hole in the solid block on `/`.
+**Notes:** Correct for v1 4-neighbour autotile. Do not change the mask table to paper over it.
+**What changed:** Unit 19 made the autotile 47-tile, 8-neighbour. The cell under a hole has an empty north and so stays a top edge with grass: a hole's floor is a surface, under 4- and 8-neighbour rules alike. The real defect was the hole's **corners**. Its four diagonal neighbours drew as plain fill, so the rock outline broke off at each corner. Those cells now draw the inner-corner notch facing the hole, and the outline runs continuously. `autotile.test.js` pins both halves (floor still mask 14; diagonals `15:SE`/`15:SW`/`15:NE`/`15:NW`). Seen in the real maker 2026-09-29: painting the hole shut returns plain fill, and undo brings the notches back.
+
+---
+
+### 32. Pixelify Sans ligatures turn "fi" and "fl" into an "A" [FIXED]
+
+**Closed:** 2026-09-29. Verified in the running game (headless Chrome, real app, real font).
 
 **Where:** `src/ui/styles/base.css` (`html, body` font rules, Unit 00); every UI string with "fi" or "fl"
 **Symptom:** The font's default `fi` and `fl` ligature glyphs read as a capital A. "Not finished yet" shows as "Not Anished yet", "Place the finish flag to play and save." as "Place the Anish Aag…", and "Export file" and "Choose file…" as "Export Ale" and "Choose Ale…". Seen 2026-09-26 in headless Chrome at 844 × 390 and in a side-by-side render with `font-variant-ligatures: normal` and `none`.
 **Expected:** Text reads as written.
 **Repro:** Maker → New Level: read the toolbar status. Or level select → Campaign: an unfinished card.
 **Notes:** Found while verifying Unit 18, whose Campaign cards use "Not finished yet". It predates Unit 18: the maker's status messages (Unit 16) and the file actions (Unit 17) have always had it. The root fix is one line, `font-variant-ligatures: none` on `html, body`, plus a line under Typography in `3-ui-context.md` (pixel fonts carry their own spacing, and their ligatures are not wanted). Not folded into Unit 18 (Unit 00's file).
+**Cause, measured 2026-09-29:** the shipped woff2's `GSUB` has one `liga` lookup with **five** ligatures, not two: fi, fl, ff, ffi and ffl (read with a scratch WOFF2 parser; its other features are `ccmp`, `locl` and `frac`, and `frac` is off by default). So "Starfall Cliffs" was ligated too.
+**The one-liner above was not enough.** In the real app's CSS, `font-variant-ligatures: none` on `html, body` fixed paragraphs and spans but left every `<button>` and `<input>` at `normal`: "Choose Ale…", "Export Ale", and a typed "Fire flag field" still showed "Fire Aag Aeld". Browsers give form controls their font through their own `font` shorthand (`font: -webkit-small-control` in Chrome), which resets `font-variant-ligatures`, and a declared value beats inheritance.
+**What changed:** `font-variant-ligatures: none` joins `box-sizing` in the `*, *::before, *::after` rule in `base.css`, so every element carries it and no browser reset can undo it. No project CSS uses the `font` shorthand, which is now a rule under Typography in `3-ui-context.md`. No test (CSS is verified by running the game). Checked in the running app at 1280 × 720 in a fresh profile, with an audit of every element's computed `font-variant-ligatures` on each screen: the Campaign cards ("Not finished yet", "Starfall Cliffs"), the maker and its status line ("the finish flag"), the Import dialog ("Choose file…"), the level options dialog ("Export file"), and the rename field with "Fire flag field" typed in. 10 of 10 checks pass, no element anywhere has ligatures on, and the console shows only the known `favicon.ico` 404 (issue 28). `npm test` 308, `npm run build` clean.
 
 ---
-
-## Resolved
 
 ### 29. The results panel's "Treasure" wraps at 100 [FIXED]
 
@@ -379,6 +470,20 @@ items the player signed off with Unit 16.
 **Symptom:** The palette bar, toolbar, dialogs and pause/results panels drew scrambled wood: repeating vertical posts, a gap cut into the frame, a row of small squares along the bottom edge.
 **Cause:** `writeNineSlice` picked files 1,2,3 / 5,6,7 / 9,10,11, assuming the 16 files are numbered like the 4 × 4 guide picture. They are not. Re-checked on 2026-09-24 with a labelled contact sheet of all five kits: boards and paper have the 3 × 3 frame at files `1–9` in reading order (`10–12` bar, `13–15` column, `16` single); buttons have it at `8–16` (`1` single, `2–4` bar, `5–7` column).
 **What changed:** `nineslice()` in the manifest takes a `first` argument, the file number of the frame's top-left tile: `1` for Yellow Board, Green Board and Yellow Paper, `8` for Yellow Button and Green Button. `writeNineSlice` takes nine consecutive files from there and throws if the kit has too few files. `npm run assets` regenerated **only** the five composites. Sizes are unchanged (96 × 96, 42 × 42), and `atlas.json` and `coverage.json` are byte-identical: the packer already marked all 16 tiles of each kit as consumed, so the earlier note that coverage would change was wrong. A second `npm run assets` is byte-identical. `npm test` 223, `npm run build` clean. Verified in Chrome (desktop, 1512 × 795): toolbar, palette bar, toolbar buttons, the Menu dropdown and the resize dialog all draw clean frames, with no console errors. `3-ui-context.md` (Nine-slice panels) and `2-architecture.md` (Asset Pipeline) corrected to the real numbering. Also seen later the same day during the Unit 16 run: the results panel in test-play and the maker at 844 × 390. Player sign-off 2026-09-24: "the ui got fixed".
+
+---
+
+### 1. ~~UI nine-slice source is the kit guide, not a textbook 9-slice~~ [FIXED]
+
+**Fixed:** 2026-09-21 (Unit 15). Moved here from Open Issues on 2026-10-02, where it had been left after it was fixed.
+**Where:** `tools/build-assets.mjs` `writeNineSlice`
+**What changed:** `writeNineSlice` now extracts the 3×3 nine-slice subset (indices
+0,1,2 / 4,5,6 / 8,9,10) from the 16-tile kit guide and composites them into a
+`tile × 3` PNG: 96×96 for boards/papers, 42×42 for buttons. `border-image-slice`
+at the tile size (32 or 14) produces correct corners, edges and fill. `dialog.css`
+`.panel` and `.btn` upgraded to nine-slice `border-image`. All five composites
+regenerated and committed. **The tile pick above was wrong:** see issue 20, fixed
+2026-09-24.
 
 ---
 

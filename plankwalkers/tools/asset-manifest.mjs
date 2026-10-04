@@ -26,6 +26,7 @@ const CREW = 'The Crusty Crew/Sprites';
 const TRAPS = 'Shooter Traps/Sprites';
 const LOOT = 'Pirate Treasure/Sprites';
 const ISLAND = 'Palm Tree Island/Sprites';
+const SHIP_TILES = 'Pirate Ship/Sprites/Tilesets';
 const SHIP_WATER = 'Merchant Ship/Sprites/Water/Water';
 const UI = 'Wood and Paper UI/Sprites';
 
@@ -141,6 +142,8 @@ export const clips = [
 
   // Island tiles and objects
   copy('tiles/island', `${ISLAND}/Terrain/Terrain (32x32).png`, 'tiles/island.png'),
+  copy('tiles/ship', `${SHIP_TILES}/Terrain and Back Wall (32x32).png`, 'tiles/ship.png'),
+  copy('tiles/ship-platforms', `${SHIP_TILES}/Platforms (32x32).png`, 'tiles/ship-platforms.png'),
   copy(
     'tiles/island-platforms',
     `${ISLAND}/Front Palm Trees/Front Palm Bottom and Grass (32x32).png`,

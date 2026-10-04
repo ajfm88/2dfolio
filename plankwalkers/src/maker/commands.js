@@ -52,6 +52,31 @@ function touch(model) {
   model.modified = Date.now();
 }
 
+export class ThemeCommand {
+  /** @param {string} from @param {string} to */
+  constructor(from, to) {
+    this.from = from;
+    this.to = to;
+  }
+
+  /** @param {LevelModel} model */
+  execute(model) {
+    model.theme = this.to;
+    touch(model);
+  }
+
+  /** @param {LevelModel} model */
+  undo(model) {
+    model.theme = this.from;
+    touch(model);
+  }
+
+  /** @returns {boolean} */
+  hasChanges() {
+    return this.from !== this.to;
+  }
+}
+
 export class TilePaintCommand {
   /**
    * @param {LayerName} layer
