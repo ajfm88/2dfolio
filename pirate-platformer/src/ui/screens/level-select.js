@@ -46,7 +46,7 @@ const TABS = [
  *   onNew: () => void,
  *   onPlay: (id: string) => void,
  *   onEdit: (id: string) => void,
- *   openSound: (root: HTMLElement) => { close: () => void },
+ *   openSettings: (root: HTMLElement) => { close: () => void },
  *   report: (result: SaveResult) => void,
  *   toast: (text: string) => void,
  * }} opts
@@ -102,9 +102,9 @@ export function createLevelSelectScreen(root, opts) {
     el('div', { class: 'level-select__actions' }, [
       el('button', {
         class: 'btn',
-        text: 'Sound',
+        text: 'Settings',
         attrs: { type: 'button' },
-        on: { click: () => show(() => opts.openSound(root)) },
+        on: { click: () => show(() => opts.openSettings(root)) },
       }),
       tabActions,
     ]),

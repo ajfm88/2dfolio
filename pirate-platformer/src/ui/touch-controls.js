@@ -5,7 +5,8 @@ import { el } from './dom.js';
 /** @typedef {ReturnType<import('../core/input.js').createInput>} Input */
 
 /**
- * Build the on-screen controls into `root`, starting hidden. Every button is
+ * Build the on-screen controls into `root`, starting hidden. The play scene decides
+ * each frame whether they show (the controls setting, and whether a touch was seen). Every button is
  * wired through `input.bindVirtualButton`, so no input listeners live here.
  *
  * @param {HTMLElement} root
@@ -48,13 +49,17 @@ export function createTouchControls(root, input) {
   const container = el('div', { class: 'touch' }, [pad, jump]);
   container.hidden = true;
   root.append(container);
+  let shown = false;
 
   return {
-    show() {
-      container.hidden = false;
-    },
-    hide() {
-      container.hidden = true;
+    /**
+     * Diff-based, so it is safe to call every frame.
+     * @param {boolean} next
+     */
+    setShown(next) {
+      if (next === shown) return;
+      shown = next;
+      container.hidden = !next;
     },
     destroy() {
       for (let i = 0; i < unbinds.length; i++) unbinds[i]();

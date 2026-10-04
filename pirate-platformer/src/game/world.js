@@ -6,7 +6,7 @@ import { byId } from '../data/palette.js';
 import { Player } from './player.js';
 import { Flag } from './flag.js';
 import { Stats } from './stats.js';
-import { PickupFx } from './collectibles.js';
+import { OneShotFx } from './fx.js';
 
 /** @typedef {import('../level/model.js').LevelModel} LevelModel */
 /** @typedef {import('../data/themes.js').Theme} Theme */
@@ -38,6 +38,16 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
 
   const parallax = createParallax(level, theme, atlas);
   const stats = new Stats();
+  /** @type {OneShotFx[]} */
+  const fx = [];
+  /**
+   * @param {AtlasClip} clip
+   * @param {number} x
+   * @param {number} y
+   */
+  const spawnFx = (clip, x, y) => {
+    fx.push(new OneShotFx(clip, x, y));
+  };
 
   const player = new Player(
     level.spawn,
@@ -49,17 +59,18 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
       jump: atlas.get('player/jump'),
       fall: atlas.get('player/fall'),
       hit: atlas.get('player/hit'),
+      dustJump: atlas.get('fx/dust-jump'),
+      dustLand: atlas.get('fx/dust-fall'),
     },
     stats,
     playSfx,
+    spawnFx,
   );
 
   const flag = new Flag(level.goal, atlas.get('flag'));
 
   /** @type {Array<{ update: (dt: number) => void, draw: (ctx: CanvasRenderingContext2D, cam: { x: number, y: number }) => void, z: number, alive?: boolean }>} */
   const entities = [flag];
-  /** @type {PickupFx[]} */
-  const fx = [];
 
   const handle = {
     atlas,
@@ -67,14 +78,7 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
     player,
     stats,
     playSfx,
-    /**
-     * @param {AtlasClip} clip
-     * @param {number} x
-     * @param {number} y
-     */
-    spawnFx(clip, x, y) {
-      fx.push(new PickupFx(clip, x, y));
-    },
+    spawnFx,
     /**
      * Add an entity created at runtime (e.g. a shooter's projectile). The update
      * loop snapshots its length first, so a spawn this frame runs from the next.

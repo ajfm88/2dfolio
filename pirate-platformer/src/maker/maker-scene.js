@@ -5,7 +5,8 @@ import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
 import { ENTITIES_MAX, LevelError, validateLevel } from '../level/schema.js';
 import { byId } from '../data/palette.js';
-import { CommandStack, createResizeCommand } from './commands.js';
+import { getTheme, themeList } from '../data/themes.js';
+import { CommandStack, ThemeCommand, createResizeCommand } from './commands.js';
 import { ZOOM_LEVELS, createGestures } from './gestures.js';
 import { findProblems } from './validate.js';
 import {
@@ -43,6 +44,7 @@ const PAN_SPEED = 300;
  *   isErasing: () => boolean,
  *   getGroup: () => string,
  *   selectById: (id: string) => void,
+ *   setTheme: (theme: Theme) => void,
  *   destroy: () => void,
  * }} PaletteController
  */
@@ -81,7 +83,6 @@ const PAN_SPEED = 300;
  * @typedef {{
  *   level?: LevelModel,
  *   session?: MakerSession,
- *   theme: Theme,
  *   atlas: Atlas,
  *   input: Input,
  *   camera: ReturnType<import('../core/camera.js').createCamera>,
@@ -109,6 +110,9 @@ export function createMakerScene() {
   let level = null;
   /** @type {ReturnType<typeof createParallax> | null} */
   let parallax = null;
+  let theme = getTheme('island');
+  /** @type {string | null} */
+  let themeId = null;
   /** @type {CommandStack | null} */
   let stack = null;
   /** @type {PaletteController | null} */
@@ -461,6 +465,13 @@ export function createMakerScene() {
     if (ptr.released) panning = false;
   }
 
+  function syncTheme() {
+    if (!params || !level || themeId === level.theme) return;
+    themeId = level.theme;
+    theme = getTheme(level.theme);
+    parallax = createParallax(level, theme, params.atlas);
+  }
+
   return {
     /**
      * @param {MakerSceneParams} p
@@ -488,7 +499,8 @@ export function createMakerScene() {
       seenRevision = stack.revision;
       idleTime = 0;
       dirtyTime = 0;
-      parallax = createParallax(level, p.theme, p.atlas);
+      themeId = null;
+      syncTheme();
       dragState = null;
       panning = false;
       // Checked now, not on the first update: a frame can render before the first
@@ -515,6 +527,7 @@ export function createMakerScene() {
       if (gestures) gestures.reset();
       params = null;
       parallax = null;
+      themeId = null;
       stack = null;
       gestures = null;
       activeTool = null;
@@ -540,6 +553,7 @@ export function createMakerScene() {
       }
       palette = params.ui.createPalette(root, {
         atlas: params.atlas,
+        theme,
         initial,
         /**
          * @param {PaletteEntry | null} entry
@@ -555,6 +569,13 @@ export function createMakerScene() {
       }
       if (params.ui.createToolbar) {
         toolbar = params.ui.createToolbar(root, {
+          themes: themeList.map((t) => ({ id: t.id, label: t.label })),
+          /** @param {string} id */
+          onTheme: (id) => {
+            if (dragState || !level || !stack || level.theme === id) return;
+            stack.execute(new ThemeCommand(level.theme, id), level);
+            syncTheme();
+          },
           onBack: () => { if (params.onBack) params.onBack(); },
           onPlay: () => { requestPlay(); },
           onUndo: () => { if (!dragState && stack && level && stack.canUndo()) stack.undo(level); },
@@ -580,7 +601,7 @@ export function createMakerScene() {
                 if (newCols === level.cols && newRows === level.rows) return;
                 const cmd = createResizeCommand(level, newCols, newRows, () => {
                   if (!level || !params) return;
-                  parallax = createParallax(level, params.theme, params.atlas);
+                  parallax = createParallax(level, theme, params.atlas);
                   const d = dims();
                   params.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
                 });
@@ -635,6 +656,7 @@ export function createMakerScene() {
         if (params.input.keys.undo.pressed) stack.undo(level);
         if (params.input.keys.redo.pressed) stack.redo(level);
       }
+      syncTheme();
 
       const d = dims();
       if (gestures.panDx !== 0 || gestures.panDy !== 0) {
@@ -715,7 +737,7 @@ export function createMakerScene() {
       const atlas = params.atlas;
       ctx.scale(zoom, zoom);
 
-      drawLevel(ctx, cam, d.eW, d.eH, level, params.theme, atlas, parallax);
+      drawLevel(ctx, cam, d.eW, d.eH, level, theme, atlas, parallax);
 
       for (let i = 0; i < level.entities.length; i++) {
         const rec = level.entities[i];
@@ -758,9 +780,12 @@ export function createMakerScene() {
         toolbar.sync({
           canUndo: stack.canUndo(),
           canRedo: stack.canRedo(),
+          theme: level.theme,
           problem: loadError ?? (problems.length > 0 ? problems[0].message : null),
         });
       }
+
+      if (palette) palette.setTheme(theme);
 
       const ptr = params.input.pointer;
       const cell = screenToCell(ptr.x, ptr.y, cam, zoom);

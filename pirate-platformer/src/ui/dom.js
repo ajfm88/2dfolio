@@ -70,6 +70,21 @@ export function prefersReducedMotion() {
 }
 
 /**
+ * Call `cb` with the new value whenever the reduced-motion system setting changes,
+ * so the App can hold it in a plain flag that the game loop reads without touching
+ * the DOM.
+ *
+ * @param {(reduced: boolean) => void} cb
+ * @returns {() => void} unsubscribe
+ */
+export function watchReducedMotion(cb) {
+  const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const onChange = () => cb(query.matches);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+/**
  * A mouse or trackpad is the primary pointer: file export and import are offered
  * there. Phones and tablets share levels as codes.
  *

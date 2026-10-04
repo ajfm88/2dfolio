@@ -62,7 +62,7 @@ coral-corsairs/
 - `src/level/` — everything both modes share about a level. `model.js` (mutable
   in-memory level, `createEmptyModel` for a fresh maker level whose `goal` is
   `null`), `codec.js` (serialise, parse, share codes — serialise throws if `goal`
-  is still null), `autotile.js` (neighbour bitmask to sheet cell), `schema.js`
+  is still null), `autotile.js` (8-neighbour blob mask to one of 47 sheet cells), `schema.js`
   (defaults and validation — still requires a goal on load), `parallax.js`
   (horizon, cloud pool, reflection clocks), `render.js` (tile layers and parallax
   drawing). Imported by both `game/` and `maker/`; imports neither.
@@ -77,21 +77,23 @@ coral-corsairs/
 - `src/maker/` — maker mode. `maker-scene.js`, `validate.js` (`findProblems`:
   the playability rules and the kind-in-registry check), `commands.js` (command
   stack with a `revision` counter, plus
-  tile/entity/decor/marker/erase-all commands), `tools.js` (pointer-to-cell,
+  tile/entity/decor/marker/erase-all commands and `ThemeCommand`), `tools.js` (pointer-to-cell,
   tool dispatch, eyedropper `pickToolAt`), `grid-overlay.js` (grid, cursor,
   ghost), `gestures.js` (touch state machine: long-press, one-finger paint/pan,
   two-finger pan+pinch), `import-level.js` (`readLevelText`: a pasted share code
   or JSON to a level, refusing unknown kinds). The maker autosaves through an
   injected `onSave` and never imports `storage/`. Maker zoom is 0.5× / 1× / 2×,
   applied as `ctx.scale` after `viewport.apply` — it does not change
-  `core/viewport.js`. Owns nothing play mode needs.
+  `core/viewport.js`. The maker resolves visuals from `level.theme`, synchronizes
+  after undo/redo and recreates parallax on changes. Theme edits use the same stack
+  and revision as paint edits. Owns nothing play mode needs.
 - `src/ui/` — every DOM screen and component, plus CSS. The only place that
   touches `document` outside of `core/input.js` and `core/viewport.js`. Includes
   `maker-palette.js` and `maker-toggle.js` (paint/pan, shown on first touch),
   injected into the maker scene the same way the HUD is injected into play.
   `screens/` holds the DOM screens: `title.js`, and `level-select.js` with its two
   tabs, `campaign-tab.js` and `my-levels-tab.js` (My Levels). `components/` holds
-  the dialogs (a shared `openDialog` plus rename, share, import, sound and resize)
+  the dialogs (a shared `openDialog` plus rename, share, import, settings and resize)
   and the toast. `format.js` formats times.
 - `src/storage/` — the only place that touches `localStorage`. `safe-storage.js`
   wraps every access and falls back to an in-memory map; `levels.js` (the index,
@@ -142,6 +144,11 @@ only `npm run assets` needs it restored.
   `horizon` field. Sky, sea, horizon bands, `BG Image` and the cloud band all
   sit on that line. Cloud positions wrap; they are never spawned or killed per
   frame.
+
+- A theme with a non-null `wallTile` is below decks. Its opaque sheet cell repeats
+  on the world tile grid over the entire view, including negative maker margins.
+  The background returns before sky, sea, horizon bands or clouds. Ship's cloud
+  and reflection pools are empty; its water cells still draw normally.
 
 ## Level Schema (format 1)
 
@@ -226,12 +233,46 @@ const row = (n && s) ? 1 : s ? 0 : n ? 2 : 4;
 ```
 
 The Pirate Ship sheet (`Terrain and Back Wall (32x32).png`, 608 × 416) contains the
-**identical layout twice**, padded by one tile. The same table applies with a per-theme
-tile origin offset — `(0,0)` for island, `(1,1)` for ship. Themes therefore change one
-number and one image path; the tiling logic never changes.
+**identical layout twice**, padded by one tile: terrain at `(1,1)` and a back wall at
+`(1,7)`. The same table applies with a per-theme tile origin offset: `(0,0)` for
+island, `(1,1)` for ship terrain. Themes therefore change only tile origins and image
+paths; the blob logic never changes. Of the back-wall copy, only its fill tile, the
+absolute sheet cell `(2,8)`, is used: it is the opaque below-decks backdrop (see
+Rendering Model). Its other 46 tiles are not drawn.
 
-The remaining 31 tiles are inner-corner variants. They are deliberately unused in v1
-and are the subject of a later polish unit.
+Platform art and tiling are separate theme fields. Island uses `tiles/island`
+at (0,0), with the existing blob. Ship uses `tiles/ship-platforms` at (1,1),
+with a four-cell bar indexed by `(east ? 1 : 0) | (west ? 2 : 0)`:
+`BAR_TABLE = [[3,0], [0,0], [2,0], [1,0]]`. North and south do not affect
+planks. A -1 px drawing offset aligns the top outline with the one-way surface;
+collision remains at the tile's top edge.
+
+### Inner corners (Unit 19)
+
+The remaining 31 tiles are inner-corner variants, and since Unit 19 they are used.
+A diagonal neighbour matters only when **both edges beside it are present**. A
+diagonal is **missing** when it is such a corner and its cell is empty. For
+example, NE is missing when N and E are present and the cell up and to the right is
+not.
+
+- A cell with no missing corners draws its base tile from the table above,
+  unchanged.
+- Otherwise it draws the inner-corner variant for its mask plus its missing
+  corners. The 31 variants are listed in `autotile.js` `INNER_TABLE` and in
+  `specs/19-polish.md`.
+- The variants were matched by pixel diff: each is its base tile with only those
+  corner quadrants redrawn.
+
+16 + 31 = 47. A relevant diagonal is always inside the grid, because both edge
+neighbours are. The lookup is a 256-entry table built once at module load, indexed
+by the mask and four missing-corner bits, so drawing a tile allocates nothing.
+
+- Both themes' terrain and island platforms use it. Ship platforms use the
+  horizontal bar rule above.
+- It is rendering only: collision and the level format are untouched, so existing
+  levels load and play the same and simply draw their inner corners.
+- A hole's floor still shows grass on top, because it is a surface. What the 31
+  tiles fix is the outline around a hole's or step's corners.
 
 ## Physics Model
 
@@ -300,6 +341,21 @@ each enter/restart. Unit 09 HUD reads `world.stats`; setters never touch DOM.
   terrain/platform/water. Hitbox is the bottom 16 px of the cell (opaque bounds of
   the 32×32 island spike tile, full cell width). `damages`, not `stompable`.
 
+**Game feel (Unit 19).**
+
+- **Dust.** The player spawns `fx/dust-jump` on a jump from the ground (not a
+  coyote or wall jump), and `fx/dust-fall` on landing from a fall at least
+  `landDustSpeed` fast. Both go through a `spawnFx` callback the world passes in
+  like `playSfx`, into the same `OneShotFx` list (`game/fx.js`). Both clips are
+  symmetric, so they never flip. They are centred on the hitbox, with the frame's
+  bottom on the feet.
+- **Shake.** The play scene compares `stats.health` before and after
+  `world.update`. When a heart is lost and survived, it runs `game/shake.js`'s
+  pure `shakeOffset` for `shakeTime`, and adds the offset to the camera after it
+  follows the player, so the offset never accumulates.
+- **Reduced motion.** It reaches the scene as a `reducedMotion()` getter over a
+  plain flag the App keeps current. The scene's `update` never reads the DOM.
+
 Treasure kinds: `coin_gold`, `coin_silver`, `diamond_red`, `diamond_green`,
 `diamond_blue`, `skull`, `potion_red`, `potion_blue`. One `Collectible` class;
 per-kind clips, hitboxes and awards live on the palette entry plus `tuning.js`.
@@ -361,7 +417,7 @@ so private browsing degrades instead of throwing.
 | `cc:v1:levels:index` | Array of `{ id, name, theme, cols, rows, modified }` for My Levels; `modified` is the level's own |
 | `cc:v1:level:<id>`   | One level as a **share code** — already compressed, never raw JSON     |
 | `cc:v1:progress`     | `{ campaign: { <campaignId>: { done, bestTreasure, bestTimeMs } } }`, keyed by `data/campaign.js` ids. Bests are each the best of any finished run. |
-| `cc:v1:settings`     | `{ music, sfx }` today; `controls` and `crispScale` join with the features that use them |
+| `cc:v1:settings`     | `{ music, sfx, controls }`. `controls` is `'auto' | 'on' | 'off'` (Unit 19), missing on older saves and read as `'auto'`. `crispScale` joins if that feature is ever built |
 | `cc:v1:maker:last`   | `{ levelId, camX, camY, zoom, tool }`: reopening that level restores its camera, zoom and tool. Undo history is not persisted |
 
 Levels are stored compressed so the ~5 MB quota holds hundreds of them. Quota

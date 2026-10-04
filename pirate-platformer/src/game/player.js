@@ -43,6 +43,8 @@ const DRAW_OFFSET_Y = -6;
  *   jump: AtlasClip,
  *   fall: AtlasClip,
  *   hit: AtlasClip,
+ *   dustJump: AtlasClip,
+ *   dustLand: AtlasClip,
  * }} PlayerClips
  */
 
@@ -54,13 +56,15 @@ export class Player {
    * @param {PlayerClips} clips
    * @param {import('./stats.js').Stats} stats
    * @param {(id: string) => void} [playSfx]
+   * @param {(clip: AtlasClip, x: number, y: number) => void} [spawnFx] a one-shot effect, e.g. dust
    */
-  constructor(cell, level, keys, clips, stats, playSfx = () => {}) {
+  constructor(cell, level, keys, clips, stats, playSfx = () => {}, spawnFx = () => {}) {
     this.level = level;
     this.keys = keys;
     this.clips = clips;
     this.stats = stats;
     this.playSfx = playSfx;
+    this.spawnFx = spawnFx;
     this.z = Z.main;
 
     /** @type {Rect} */
@@ -116,6 +120,8 @@ export class Player {
     // Gravity then vertical move then resolve
     this.applyGravity(dt);
     if (this.vy > tuning.maxFallSpeed) this.vy = tuning.maxFallSpeed;
+    // The fall speed before a landing zeroes it, for the landing dust.
+    const fallSpeed = this.vy;
 
     const vPushed = resolveV(this.hitbox, this.oldRect, this.level);
     if (vPushed) this.vy = 0;
@@ -138,6 +144,10 @@ export class Player {
     }
     if (this.onFloor) {
       this.coyoteTimer = 0;
+    }
+
+    if (!this.wasOnFloor && this.onFloor && fallSpeed >= tuning.landDustSpeed) {
+      this.dust(this.clips.dustLand);
     }
 
     if (!this.wasOnFloor && this.onFloor && this.jumpBufferTimer > 0) {
@@ -187,11 +197,23 @@ export class Player {
 
   doJump() {
     this.playSfx('jump');
+    // Only from the ground: a coyote jump leaves from mid-air.
+    if (this.onFloor) this.dust(this.clips.dustJump);
     this.vy = -tuning.jumpVelocity;
     this.wallSlideBlockTimer = tuning.wallSlideBlock;
     this.hitbox.y -= 1;
     this.coyoteTimer = 0;
     this.jumpBufferTimer = 0;
+  }
+
+  /**
+   * Dust at the feet. Both dust clips are centred on their canvas and stand on its
+   * bottom row (measured, specs/19-polish.md), so they never flip.
+   * @param {AtlasClip} clip
+   */
+  dust(clip) {
+    const hb = this.hitbox;
+    this.spawnFx(clip, hb.x + hb.w / 2 - clip.fw / 2, hb.y + hb.h - clip.fh);
   }
 
   /** Stomp bounce. Called by an enemy the player killed from above. */

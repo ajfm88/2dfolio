@@ -25,6 +25,41 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
   clean, committed (`e271d98` issue 29, `fed94aa` Unit 18). Found while building:
   issues 30 (the player can slip into a wall), 31 (no side boundaries) and 32
   (ligatures).
+- **2026-09-29:** issue 32 fixed. **Unit 19 (Polish) built** in three parts: inner
+  corners, dust and shake, pause menu and Settings. Issues 2, 7 and 26 are closed.
+  Tests 322, build clean. It awaits the player's sign-off.
+- **2026-10-02:** doc drifts fixed. **Unit 20 spec drafted**
+  (`specs/20-second-theme.md`), with three player decisions; implementation was
+  subsequently requested and completed the same day.
+  Issue 30 had a checked fix plan (now fixed). Issues 33 and 34 remain open.
+- **2026-10-02: Unit 20 implementation authorized by the player.**
+  - **Issue 30**, the prerequisite (collision boundary rounding), is fixed: 326
+    tests and the build pass.
+  - **Built and verified:** ship assets, rendering and the maker theme picker.
+    - **A1:** packed (430 / 1195 sources; two identical builds).
+    - **A2:** ship terrain, bar platforms and the wall backdrop. 336 tests pass,
+      and the six campaign tile renders match their pre-change pixel hashes in
+      Chrome.
+    - **B:** the Menu picker, the theme command, scene synchronization and palette
+      icons. 338 tests and the build pass. Browser checks cover mouse and touch,
+      keyboard and toolbar undo / redo, autosave and reload, fresh-profile sharing
+      and test-play history.
+  - The spec records the As Built measurements and limits.
+  - **Unit 19** still awaits visual sign-off; this authorization does not close
+    that gate.
+- **2026-10-02: Unit 20 reviewed, review fixes committed.**
+  - The review independently checked the commits, the tests, the asset build and
+    the running app, and found no functional error.
+  - Its doc and style findings are fixed; see Completed.
+  - Visual sign-off of Units 19 and 20 is still pending.
+- **2026-10-03: Unit 20 complete.** The player built and played ship levels on the
+  dev server and closed the unit ("everything looks good").
+  - The water in the hold looks a bit off: issue 35 stays open for later.
+  - Issue 37 (a solid ship block read as a room) is closed as by design.
+  - **Unit 19** is still built and awaiting the player's sign-off.
+- **2026-10-03: Unit 19 complete.** The player checked the dust, the screen shake,
+  the pause menu and Settings. **Units 00–20 are complete.** Next is Open Question 8
+  (decor before Unit 21?).
 
 ## Completed
 
@@ -598,23 +633,240 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     phone once the game is finished and deployed on Netlify. Next level's music
     by ear and any tuning of the levels go with it.
 
+- **2026-09-29 — Unit 18 close-out committed** (`86ae3d1`).
+
+- **2026-09-29 — Issue 32 fixed: ligatures off on every element.** The font has
+  five ligatures, not two (fi, fl, ff, ffi, ffl, read from its `GSUB` with a
+  scratch parser). The issue's proposed `html, body` rule was tested first in the
+  real app and **left every button and text field ligated**: form controls get
+  their font from the browser's `font` shorthand, which resets
+  `font-variant-ligatures`. So the rule sits in the `*, *::before, *::after` block
+  of `base.css`, and `3-ui-context.md` Typography says why (and forbids the `font`
+  shorthand in component CSS). Verified with a scratch DevTools-protocol driver
+  (Node's built-in WebSocket, a throwaway headless Chrome profile, no installs):
+  10 of 10 checks across the Campaign cards, maker status, Import, options and
+  rename dialogs, with no element anywhere still ligated. `npm test` 308, build
+  clean.
+
+- **2026-09-29 — Unit 19 spec drafted and approved** (`specs/19-polish.md`).
+  Measured from the packed art first:
+  - **Inner corners.** The blob sheet's 31 unused tiles were matched to the 31
+    inner-corner cases by a scratch pixel diff against the 16 base tiles: every
+    case found once, none illegal, corner notches 59–97 px against 0–35 px of edge
+    texture. A before/after render from the real sheet confirmed the table.
+  - **Issue 2** turns out to be by design: a hole's floor keeps its grass. The
+    real gap was the hole's corners.
+  - **Dust** clips are already packed and symmetric (centre x 26, bottom row 19,
+    no flip).
+  - **Issue 26 was wrong:** the kit Sliders sprites are already packed, so it is
+    CSS only (issue and `3-ui-context.md` corrected).
+
+  The player chose one unit in three parts, done in a row, and Settings as a
+  dialog. Asking for the unit approved the other rows, including leaving
+  unscheduled the older deferrals that named Unit 19 (death animation, knockback,
+  hit state, ceiling spikes).
+
+- **2026-09-29 — Unit 19 Part A: inner corners.**
+  - **What changed.** `autotile.js` gains `INNER_TABLE` (the 31 measured tiles), a
+    256-entry lookup built at load, and `blobCell`. `autotileAt` reads eight
+    neighbours. `render.js` is unchanged.
+  - **Tests** 314 (+6: all 47 cases, all 256 combinations, irrelevant corners,
+    the 1-tile hole, table sanity, one grid-edge inner corner). The old helper now
+    fills every diagonal, so "a full mass gives today's 16 tiles" is locked.
+  - **Campaign.** 2–9 cells per level now draw an inner corner, mostly where the
+    end walls meet the ground. The files are unchanged and `campaign.test.js` is
+    green.
+  - **Cost.** About 0.005 ms per screen of tiles.
+  - **Seen in the real maker** (scratch DevTools driver): a level of test shapes
+    imported through the Import dialog draws continuous outlines. Painting the
+    1-tile hole shut returns plain fill, and undo restores the notches. The only
+    console line is issue 28.
+  - Issue 2 closed as by design.
+
+- **2026-09-29 — Unit 19 Part B: dust and shake.**
+  - **Step 0 (issue 7)** is its own commit: `PickupFx` became `OneShotFx` in
+    `game/fx.js`.
+  - **Dust.** `Player` gets `dustJump`/`dustLand` clips and a `spawnFx` callback
+    from the world, like `playSfx`. Jump dust comes only from the ground (a
+    buffered landing jump counts, a coyote or wall jump does not). Landing dust
+    comes from a fall of at least `landDustSpeed` 150 px/s, measured before the
+    landing zeroes `vy`.
+  - **Shake.** `game/shake.js` `shakeOffset` is pure, a fixed 8-step pattern
+    fading to zero, whole pixels. `play-scene.js` compares `stats.health` before
+    and after `world.update`. `tuning.js` gains `shakeAmplitude` 3, `shakeTime`
+    0.25 and `landDustSpeed`. Reduced motion is a plain flag in `main.js`, kept
+    current by `ui/dom.js` `watchReducedMotion` and passed as a
+    `reducedMotion()` getter.
+  - **Tests** 320 (+6 shake).
+  - **Scratch harness over the real world, player, physics, play scene and
+    camera, 14 of 14 checks:**
+    - one jump dust and one landing dust per hop, standing on the floor and
+      centred on the player
+    - no dust on the tiny spawn settle, or on a coyote jump
+    - landing dust after walking off a 3-tile ledge
+    - standing on spikes: a ≤ 3 px shake for each heart lost, 42 frames
+      (0.7 s) apart
+    - none at all under reduced motion
+  - **Seen in the game:** jump and landing dust in a timed screenshot sequence.
+
+- **2026-09-29 — Unit 19 Part C: pause menu and Settings.**
+  - **Settings dialog.** `settings-dialog.js` replaces `sound-dialog.js`. It has
+    Music, Effects (kit sliders, issue 26 closed) and Touch: Auto · On · Off. It
+    opens from the Title (new third button), level select (Sound became
+    Settings) and the pause menu.
+  - **Controls setting.** `cc:v1:settings.controls` is new, and older saves read
+    as Auto. The play scene reconciles touch-control visibility in `render`
+    through `controls()`.
+  - **Pause menu.** Resume, Restart, Settings and the way out. Pause and results
+    text sits on paper, which closes issue 21 for those panels. Escape closes only
+    the top panel. The HUD closes its Settings dialog in `destroy`.
+  - **Tests** 322 (+2 settings-store).
+  - **Seen in the real app:** 34 of 34 checks. It found one real problem before
+    it passed: at 1280 × 720 (UI scale 2) the four-row dialog scrolled Done out of
+    view. It is now three rows, and the layout check tests the content, not just
+    the panel.
+  - **Harness note:** the headless Chrome played the game's sounds through the
+    player's speakers (a scripted key press counts as the gesture that unlocks
+    audio). The driver now passes `--mute-audio`.
+  - Details are in the spec's As Built section.
+
+- **2026-10-02 — Doc drift fixes.** Docs only.
+  - Issue 1 had been left under Open Issues after it was fixed. It is now under
+    Resolved.
+  - `4-code-standards.md`:
+    - Testing lists the 47-tile autotile coverage, not "all 16 masks".
+    - Engine Contracts no longer lists `carries`, which went with the
+      moving-platform stub on 2026-09-22.
+  - Session Notes: the Do-not list allows the ship tilesheets for Unit 20, the
+    volume-persistence line points at the settings store, and the repeated "Before
+    that" paragraph is merged.
+
+- **2026-10-02 — Unit 20 spec drafted** (`specs/20-second-theme.md`). Measured from
+  the pack first (scratch scripts, not committed):
+  - **Ship terrain sheet.** It holds two copies of the island's blob layout:
+    terrain at (1,1) and back wall at (1,7). `INNER_TABLE` holds for both. The pixel
+    diff is clean on the back wall. On the terrain it cannot decide, because the
+    planked inner corners differ from the dark fill, so Unit 19's shape set was
+    rendered through the real `autotileAt`, and it draws continuous outlines.
+  - **Ship platforms.** They are a separate plank sheet, not a blob: left cap,
+    middle, right cap and single in a row, two styles. The thin plank's top outline
+    sits 1 px below the cell top.
+  - **Decor is unbuilt.** The format and the maker carry it, but play never draws it
+    and the palette has no entries. The island palms are packed and unused. The
+    ship's props are a Beyond-v1 row, which conflicted with the build plan's
+    "matching decor".
+
+  **Player decisions:**
+  - The back wall is a below-decks backdrop that replaces the sky, not a paintable
+    layer, so the format stays at 1.
+  - Ship platforms use the plank art, with a left / middle / right / single rule.
+  - Decor is its own later unit (Open Question 8).
+
+  The build plan's Unit 20 line is amended to match. The other 11 decisions in the
+  spec are Proposed. The spec is written for a different model to implement.
+
+- **2026-10-02 — Issue 30 fix plan, checked.**
+  - A scratch harness over the real `resolveH` reproduces the slip: 33 of 320 walks
+    into walls end inside them.
+  - The fix makes the far edge of `cellRangeX` / `cellRangeY` exact
+    (`Math.ceil(...) - 1`). With it, none of the walks end inside, and all 322 tests
+    pass. The trial was reverted. The plan and its four regression tests are in the
+    issue.
+  - Found while planning and logged, not fixed:
+    - **33:** the cell ranges allocate an array per call.
+    - **34:** nothing reads `z`, so draw order is code order, against the
+      architecture's "by `z`".
+
+- **2026-10-02 — Unit 20 built (by GPT-6.1-Sol, from the spec).** Five commits:
+  - `6c84a7e` issue 30
+  - `606aee2` A1
+  - `9c65b4e` A2
+  - `e483fc8` B
+  - `119fe33` docs
+
+  Details are in the spec's As Built. Two of the drafting edits had been left
+  uncommitted: the amended Unit 20 line in `specs/00-build-plan.md`, and two
+  `4-code-standards.md` drift fixes.
+
+- **2026-10-02 — Unit 20 reviewed (Claude), no functional error found.** Checked
+  independently, not from the report:
+  - **Issue 30:** with the pre-fix `physics.js` restored, its three new regression
+    tests fail and the touching-case guard passes.
+  - **A1:** a fresh `npm run assets` changes nothing, and the packed sheets are
+    byte-identical to the pack.
+  - **Tests and build:** 338 tests, build clean.
+  - **The diffs:**
+    - The island takes its old drawing path.
+    - Theme switches go only through the stack.
+    - `syncTheme` runs in `update` and on pick, never in `render`.
+  - **Muted headless Chrome**, on an imported ship level with planks, holes,
+    steps and water near the spawn:
+    - the Menu choices, and undo / redo by Ctrl+Z and Ctrl+Shift+Z
+    - re-picking the current theme pushes nothing and keeps the redo tail
+    - the island renders after switching back
+    - the ship in test-play
+    - a pixel measurement shows the boot's bottom outline directly on the plank's
+      top outline, so the `-1` offset is right
+    - only issue 28 in the console
+
+  **Fixed in the review commit:**
+  - **Committed** the two leftover drafting edits.
+  - **`2-architecture.md`:** a garbled Autotiling sentence.
+  - **`3-ui-context.md`:** the Icons rule had contradicted the new theme icons;
+    it now names Terrain and Platform as the one exception.
+  - **This file:** Current Phase back in date order, and the test count.
+  - **`autotile.test.js`:** one import, with the bar tests after the blob tests.
+  - **Doc comments:** for the bar rule, the `autotile.js` header and
+    `drawBackground`.
+  - **Formatting:** `themes.test.js` and the `ToolbarState` typedef are back
+    under 100 columns.
+
+  **Logged, not fixed:** issues 35 (water in the hold reads as a flat block) and
+  36 (the HUD level name is faint on the ship wall), both for the player's
+  judgment.
+
+  **Raised for the player, not changed:** Next Up goes to the Unit 21 spec, but
+  Open Question 8 asks whether the decor unit comes before Unit 21.
+
+- **2026-10-03 — Unit 20 complete.** The player tested on the dev server.
+  - **What they did:** built island and ship levels, switched themes, and played a
+    ship level: deck, flag, water.
+  - **The sign-off:** "everything looks good", then "update the context files so
+    we can close this unit".
+  - **The terrain mix-up.** The player painted a solid rectangle of ship terrain
+    as a "room", so the spawn inside it read "buried in terrain". Once the dark core
+    was explained as the ship's version of the island's rock under the grass, it
+    made sense. They rebuilt the level with the deck as terrain and the backdrop as
+    open space. Issue 37 is closed as by design.
+  - **Water.** It "looks a bit off inside of the ship, but maybe we can fix that
+    later": issue 35 stays open.
+  - **Covered by their sign-off:** the ship art at 2×, which was the spec's
+    remaining "Ship in play" check.
+  - **Still open:** the phone run, which waits for the Netlify deploy, as for
+    every unit. Issue 36 (the faint level name) was not raised and stays open.
+
+- **2026-10-03 — Unit 19 complete.** The player checked the dust, the screen
+  shake, the pause menu and Settings on the dev server, and signed the unit off.
+  - **Not seen, and not blocking:** the kit sliders in Firefox and Safari, reduced
+    motion through the real OS setting, and the phone run (which waits for the
+    Netlify deploy).
+
 ## Current Goal
 
-- **Standalone fixes, then the Unit 19 spec.** Issue 32 (ligatures) and issue 30
-  (wall slip) first. The Unit 19 spec (Polish) has to be written and approved
-  before any code (workflow rule).
+- **Open Question 8:** decide whether the decor unit comes before Unit 21, then
+  write that unit's spec.
 
 ## In Progress
 
-- Nothing.
+- Nothing. Units 00–20 are complete.
 
 ## Next Up
 
-- Standalone changes: **issue 32** (ligatures, one CSS line), **issue 30** (wall
-  slip; the campaign can hit it), 31 (side boundaries, needs a decision), 21, 24,
-  25–28.
-- **Unit 19 spec** (Polish): inner-corner autotiling, dust particles, screen
-  shake, the pause menu and the settings screen (which absorbs Sound).
+1. **Open Question 8:** decide whether the decor unit comes before Unit 21.
+2. **The next spec:** Unit 21 or the decor unit, written and approved before
+   implementation. Phone verification remains deferred until the Netlify deploy.
+3. Standalone changes: 31 (side boundaries, needs a decision), 21, 24, 25–28,
+   33–36. Issue 35 (ship water) is the player's "later".
 
 ## Open Questions
 
@@ -645,6 +897,22 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
    `specs/00-build-plan.md` covers deploying yet: static hosting fits the
    no-backend rule, but the build output, the service worker (Unit 21) and the
    host config need a home. Decide where it goes (likely with or after Unit 21).
+
+8. **Decor has no unit (2026-10-02).**
+   - **What is promised.** The overview promises palm trees in play and a Decor tab
+     in the maker.
+   - **What exists.** Format 1 and the maker already carry decor: `level.decor`,
+     `DecorCommand`, decor previews. But play never draws it, and the palette has no
+     decor entries, so the tab stays hidden. The four island palm clips are packed
+     and unused.
+   - **The conflict.** The Pirate Ship's props (barrels and bottles, candle, chains,
+     window) are a Beyond-v1 row, while the build plan gave Unit 20 "matching
+     decor".
+   - **Player decision.** Decor is its own unit, not part of Unit 20.
+   - **Still open:**
+     - where that unit goes (before Unit 21, or after it)
+     - whether the ship's props move out of Beyond v1
+     - how decor is layered against entities (issue 34)
 
 ## Architecture Decisions
 
@@ -1075,6 +1343,25 @@ by the player in the maker.
 Unit 18 after a full keyboard playthrough and will test on a phone once the game
 is finished and deployed (player decision). Open Question 7 tracks the deploy.
 
+**2026-10-02 — Pirate Ship is below decks: the back wall is a backdrop.** The ship
+sheet's second blob copy is a back wall. It fills the view in place of the sky, sea,
+horizon and clouds, rather than being a paintable layer. *Why:* a fourth tile layer
+would be the first format change (format 2, a migration, six re-exported campaign
+files), and it would draw nothing in the island theme. So a theme switch would no
+longer be an art swap. The cost is that a ship level cannot mix open sky with an
+interior (player decision).
+
+**2026-10-02 — Ship platforms use their plank art, with a second tiling rule.**
+`BAR_TABLE` picks left cap, middle, right cap or single from the E and W neighbours.
+The blob rule and its tables are untouched, and the island still draws platforms
+from its terrain blob. *Why:* the plank sheet is a row, not a blob set, and planks
+are the first platforms that look different from terrain (player decision).
+
+**2026-10-02 — Decor is its own unit.** It is not part of Unit 20, despite the build
+plan's "matching decor". *Why:* nothing draws decor in play yet, so it is a feature
+of its own, and the ship's props were a Beyond-v1 row (player decision). Open
+Question 8.
+
 ## Session Notes
 
 Resume cold from here.
@@ -1113,11 +1400,63 @@ one records progress on its card. Real-phone checks wait for the Netlify deploy
 (Open Question 7). **Next:** issues 32 and 30 as standalone changes, then write
 the Unit 19 spec.
 
-**Before that:** the standalone issues still open and worth a look: 21 (text on the board),
-24 (desktop zoom), 25–28.
-Issues 19, 22 and 23 are fixed (2026-09-24). Still waiting as standalone changes:
-24 (desktop zoom, needs a spec decision first) and 21 (text contrast on the board,
-needs a token decision first).
+**2026-09-29:** **Unit 19 built, awaiting sign-off.**
+- Terrain and platforms use all 47 blob tiles (inner corners).
+- The player kicks up dust on jumping and landing. Losing a heart shakes the view,
+  but not under reduced motion.
+- Pause opens a menu: Resume, Restart, Settings, and the way out.
+- One Settings dialog (Music, Effects with the kit sliders, Touch: Auto/On/Off)
+  opens from the Title, level select and the pause menu.
+- Issue 32 (ligatures) is fixed.
+
+**2026-10-02:** Unit 20 built following the player's direct implementation request.
+- **Issue 30 fixed:** exact far-edge ranges, four regression tests, 320 resolver
+  wall approaches and 64 real-world approaches to Castaway Beach's current raised
+  block (column 63; the historical draft in the issue used column 65).
+- **A1:** both ship sheets packed; coverage 430/1195, repeatable hashes, existing
+  generated images unchanged.
+- **A2:** blob ship terrain at (1,1), thin bar planks and opaque wall at (2,8).
+  All six island tile-render hashes unchanged; all six worlds also run as ship.
+- **B:** Menu theme choices, undo/redo, theme-aware terrain/platform icons;
+  autosave/reload, JSON and fresh-profile share import, test-play history,
+  mouse/touch drag guards and resize undo/redo verified in muted Chrome.
+- **Performance:** 120 paced maker frames, 768 wide at 0.5×: median 0.8 ms,
+  p95 4.2 ms, max 6.0 ms for update/render submission in headless desktop Chrome.
+  This excludes compositor presentation and is not a phone measurement.
+- **338 tests, build clean.** Units 19 and 20 still need the player's visual
+  sign-off; no approval of Unit 19 is inferred from the implementation request.
+
+**2026-10-03: Unit 20 is complete** (the player's sign-off after testing on the dev
+server).
+- Pirate Ship is a per-level theme, picked from the maker's Menu, and undoable.
+- Ship levels are below decks: the back wall replaces the sky, and platforms are
+  planks.
+- Ship terrain draws a dark core in solid blocks, like the island's rock (issue 37,
+  closed as by design).
+- Water in the ship looks off: issue 35, for later.
+
+**2026-10-03: Unit 19 is complete too** (the player checked the dust, the shake,
+the pause menu and Settings). **Units 00–20 are complete.** Only Unit 21 (PWA and
+performance) remains in the build plan, plus the unscheduled decor unit.
+
+**Next:**
+1. Open Question 8: does the decor unit come before Unit 21?
+2. Then that unit's spec.
+
+The testing driver is a scratch DevTools-protocol script on a throwaway headless
+Chrome. Keep it muted (`--mute-audio`), or the player hears the game through their
+speakers.
+
+**Standalone issues still open:**
+- 21 (text on the board; needs a token decision first)
+- 24 (desktop zoom; needs a spec decision first)
+- 25–28
+- 31 (side boundaries; needs a player decision)
+- 33 (cell-range allocations)
+- 34 (`z` is not read)
+- 35 (ship water reads flat; the player confirmed it looks off and wants it fixed
+  later)
+- 36 (the HUD level name is faint; decide with 21)
 
 **Testing tip (2026-09-24):** Claude-in-Chrome clicks are too fast for the
 per-frame input sampling (issue 22), and a hidden tab runs no frames. Keep Chrome in
@@ -1131,7 +1470,7 @@ of set sizes for viewport checks, since resizing the window did not change it.
   (ArcGIS). `--port 5174 --strictPort`. On 2026-09-22 another project's Vite was
   also bound to `127.0.0.1:5174` alongside ours — if a page looks wrong or stale,
   check what owns the port, or use 5175.
-- `npm test` — 308 tests.
+- `npm test` — 338 tests.
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters` and the `ffmpeg-static`
   binary (fetched by `npm install`; its install script is approved in
@@ -1142,17 +1481,21 @@ of set sizes for viewport checks, since resizing the window did not change it.
 **Do not**
 
 - Import `atlas.json` from `core/`.
-- Pack sword clips, ship tilesheet, or Pixel Adventure leftovers. Enemy
-  `Jump`/`Fall`/`Ground` stay unpacked too — packing is its own unit. Shooter
-  `Hit`/`Destroyed`/`Opening`/`Bite` and the `Totems` tree stay unpacked (Beyond v1).
-- Give `PickupFx` a `flip` parameter (issue 7 tracks its rename/move — do that on
-  its own, not inside another unit).
+- Pack sword clips or Pixel Adventure leftovers.
+  - The two Pirate Ship tilesheets are packed by Unit 20 Part A1, and by nothing
+    earlier.
+  - The ship's decorations wait for the decor unit (Open Question 8).
+  - Enemy `Jump`/`Fall`/`Ground` stay unpacked too: packing is its own unit.
+  - Shooter `Hit`/`Destroyed`/`Opening`/`Bite` and the `Totems` tree stay unpacked
+    (Beyond v1).
+- Give `OneShotFx` (`game/fx.js`, formerly `PickupFx`) a `flip` parameter. Every
+  clip it plays is symmetric.
 - Relitigate: DOM UI, level-select (no overworld), stomp-only, local + share
   codes, 5 starting hearts, spikes-as-entities, injected UI factories, distinct
   per-enemy behaviour, **shooters non-solid/non-stompable/indestructible** (stomping
   one doing nothing is correct — destructible turrets are Beyond v1).
-- Wire volume persistence into `core/audio.js` — it exposes getters/setters;
-  persistence is Unit 17's job via the settings store.
+- Wire volume persistence into `core/audio.js`. It exposes getters and setters;
+  persistence lives in `storage/settings-store.js` (Unit 17).
 - Mutate `LevelModel` from maker UI code. Every edit goes through
   `CommandStack`. Painting without undo is an invariant-7 bug.
 - Let play start on a level `findProblems` rejects, or hand play the live model.
@@ -1176,8 +1519,6 @@ of set sizes for viewport checks, since resizing the window did not change it.
   is `**/*.zip`. Restart Vite if you change that config.
 - Unarmed Captain has no wall-slide clip. `wall` state reuses `player/fall`.
   Expected until sword combat is added (Beyond v1).
-- Hole in the autotile mass shows a grass top on the cell below (4-neighbour,
-  no inner corners). Expected until Unit 19.
 - Touch-control layout at phone width is deferred by player decision (issue 4 in
   `7-current-issues.md`). Do not "fix" it inside an unrelated unit.
 - A project-wide `getDiagnostics` reports one error against `jsconfig.json`
@@ -1202,5 +1543,12 @@ hitboxes, muzzle points and projectile speeds in
 `drawOffsetY = hitboxH - feetY`, which reproduces the player's own (−23, −6).
 Re-measure if any look wrong.
 
-**Specs on disk:** `00-build-plan.md` plus units 00–17, all built and verified,
-and unit 18 (complete 2026-09-26); 19+ not yet written. Playbook: `context/README.md` Part 3.
+**Specs on disk:**
+- `00-build-plan.md`
+- Units 00–17, all built and verified
+- Unit 18, complete 2026-09-26
+- Unit 19, complete 2026-10-03
+- Unit 20, complete 2026-10-03
+- Unit 21 is not yet written.
+
+Playbook: `context/README.md` Part 3.

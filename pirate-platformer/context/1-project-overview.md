@@ -92,6 +92,10 @@ platformer and, ten minutes later, want to build one.
   (decision 2026-09-26). A test-play from the maker still restarts at the spawn.
 - Parallax sky, drifting clouds, animated water and palm trees.
 - Level complete on touching the flag, with a treasure and time summary.
+- A pause menu: resume, restart, settings, and the way back (level select, or the
+  editor in a test-play).
+- Dust on jumping and landing, and a short screen shake on losing a heart (none
+  under the system's reduced-motion setting).
 
 ### Maker mode
 
@@ -99,7 +103,10 @@ platformer and, ten minutes later, want to build one.
 - Palette organised into tabs: Terrain, Platforms, Water, Treasure, Enemies,
   Hazards, Decor, Markers.
 - Paint by dragging; erase with a dedicated eraser tool or right-click on desktop.
-- Terrain and platforms auto-tile as you draw, including when you erase.
+- Terrain auto-tiles as you draw and erase, including all 47 blob tiles and their
+  inner corners. Island platforms use the same blob; ship platforms use thin
+  planks with left, middle, right and single caps.
+- Theme: Palm Tree Island or Pirate Ship, from the Menu, undoable.
 - Pan and zoom at 0.5×, 1× and 2×, with a paint/pan toggle for one-finger use.
 - Full undo and redo over every edit, including multi-cell drags as single steps.
 - Eyedropper: long-press or middle-click a placed thing to select its tool.
@@ -116,8 +123,9 @@ platformer and, ten minutes later, want to build one.
 - One level schema, one loader, one renderer for both modes.
 - Campaign levels are authored in the maker and exported into the build, so the
   two modes cannot drift apart.
-- Two visual themes — Palm Tree Island and Pirate Ship — that swap tilesheets
-  without changing any tiling logic.
+- Two visual themes chosen per level: Palm Tree Island and Pirate Ship. Pirate
+  Ship is below decks: its repeating back wall replaces the sky, and its one-way
+  platforms are planks. Both themes share collision and the unchanged level format.
 
 ### Persistence and sharing
 
@@ -127,7 +135,9 @@ platformer and, ten minutes later, want to build one.
   zoom and tool.
 - My Levels (the level list) with create, rename, duplicate and delete. Renaming
   is on the card, not in the maker.
-- Music and effects volume, set from My Levels, saved with the settings.
+- A Settings dialog, opened from the title, level select and the pause menu: music
+  and effects volume, and when the on-screen touch buttons show (Auto, On, Off).
+  Saved with the settings.
 - Share codes: compressed, URL-safe text that can be pasted anywhere.
 - Desktop also gets `.json` export and import by file.
 
@@ -184,7 +194,6 @@ Do not build, install dependencies for, or suggest these:
 Plausible later, but not built or designed for now beyond the data shapes already
 specified:
 
-- Inner-corner autotiling using the remaining 31 tiles of the blob set.
 - Moving platforms that carry the player. Super Pirate World proves them out, but
   with its own helicopter art; the Treasure Hunters pack has no moving-platform
   sprite and the level format has no path for one. Deferred 2026-09-22, and the

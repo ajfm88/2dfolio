@@ -1,16 +1,27 @@
 /**
  * Visual themes. Autotile logic is theme-agnostic; a theme is a sheet path
- * plus a tile origin. Only island is packed in v1. Unit 20 adds ship at (1,1).
+ * plus tile origins. Island uses blob terrain and platforms; ship uses blob
+ * terrain, horizontal plank platforms and a repeating below-decks wall.
  *
  * World colours match the CSS tokens in 3-ui-context.md (canvas cannot read
  * custom properties). Motion numbers are SPW/Pirate Maker values halved for
  * native 32 px art.
+ * Platform origins select either a 17x5 blob region or a 4x1 bar region.
+ * platformOffsetY adjusts only the art; wallTile is an absolute sheet cell,
+ * or null for the island's sky/sea backdrop.
  *
  * @typedef {{
  *   id: string,
+ *   label: string,
  *   sheet: string,
  *   originCol: number,
  *   originRow: number,
+ *   platformSheet: string,
+ *   platformOriginCol: number,
+ *   platformOriginRow: number,
+ *   platformTiling: 'blob' | 'bar',
+ *   platformOffsetY: number,
+ *   wallTile: readonly [number, number] | null,
  *   waterClip: string,
  *   sky: string,
  *   sea: string,
@@ -37,9 +48,16 @@
 /** @type {Theme} */
 export const islandTheme = {
   id: 'island',
+  label: 'Palm Tree Island',
   sheet: 'tiles/island',
   originCol: 0,
   originRow: 0,
+  platformSheet: 'tiles/island',
+  platformOriginCol: 0,
+  platformOriginRow: 0,
+  platformTiling: 'blob',
+  platformOffsetY: 0,
+  wallTile: null,
   waterClip: 'bg/water-tile',
   sky: '#ddc6a1',
   sea: '#92a9ce',
@@ -67,9 +85,33 @@ export const islandTheme = {
   reflects: ['fx/reflect-big', 'fx/reflect-mid', 'fx/reflect-small'],
 };
 
+/** @type {Theme} */
+export const shipTheme = {
+  ...islandTheme,
+  id: 'ship',
+  label: 'Pirate Ship',
+  sheet: 'tiles/ship',
+  originCol: 1,
+  originRow: 1,
+  platformSheet: 'tiles/ship-platforms',
+  platformOriginCol: 1,
+  platformOriginRow: 1,
+  platformTiling: 'bar',
+  // Align the sheet's one-pixel top outline with the collision surface.
+  platformOffsetY: -1,
+  // Absolute sheet coordinates of the opaque repeating back wall.
+  wallTile: [2, 8],
+  smallCloudCount: 0,
+  reflects: [],
+};
+
+/** @type {ReadonlyArray<Theme>} */
+export const themeList = [islandTheme, shipTheme];
+
 /** @type {Record<string, Theme>} */
 export const themes = {
   island: islandTheme,
+  ship: shipTheme,
 };
 
 /**

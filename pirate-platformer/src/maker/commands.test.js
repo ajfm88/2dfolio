@@ -1,11 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyModel } from '../level/model.js';
+import { serialise } from '../level/codec.js';
 import {
   CommandStack,
   TilePaintCommand,
+  ThemeCommand,
   createResizeCommand,
 } from './commands.js';
 import { applyCell, classifyAction, createCommand } from './tools.js';
+
+describe('ThemeCommand', () => {
+  it('switches, undoes and redoes through the stack without changing geometry', () => {
+    const level = createEmptyModel();
+    level.goal = { c: 20, r: 8 };
+    level.layers.terrain[10] = 1;
+    const terrain = level.layers.terrain;
+    const before = serialise(level);
+    const stack = new CommandStack();
+    const command = new ThemeCommand('island', 'ship');
+    expect(command.hasChanges()).toBe(true);
+    level.modified = 0;
+    stack.execute(command, level);
+    expect(stack.revision).toBe(1);
+    expect(level.modified).toBeGreaterThan(0);
+    expect(serialise(level).theme).toBe('ship');
+    expect(level.layers.terrain).toBe(terrain);
+    expect(serialise(level).layers).toEqual(before.layers);
+    level.modified = 0;
+    stack.undo(level);
+    expect(level.theme).toBe('island');
+    expect(level.modified).toBeGreaterThan(0);
+    expect(stack.revision).toBe(2);
+    level.modified = 0;
+    stack.redo(level);
+    expect(level.theme).toBe('ship');
+    expect(level.modified).toBeGreaterThan(0);
+    expect(stack.revision).toBe(3);
+  });
+
+  it('reports selecting the same theme as unchanged', () => {
+    expect(new ThemeCommand('ship', 'ship').hasChanges()).toBe(false);
+  });
+});
 
 /** @type {import('../data/palette.js').PaletteEntry} */
 const TERRAIN = {

@@ -12,10 +12,29 @@ describe('createSettingsStore', () => {
     expect(createSettingsStore(memoryStorage()).load()).toEqual({});
   });
 
-  it('round-trips both volumes', () => {
+  it('round-trips both volumes and the controls mode', () => {
     const settings = createSettingsStore(memoryStorage());
-    expect(settings.save({ music: 0.25, sfx: 0.9 })).toBe('ok');
-    expect(settings.load()).toEqual({ music: 0.25, sfx: 0.9 });
+    expect(settings.save({ music: 0.25, sfx: 0.9, controls: 'on' })).toBe('ok');
+    expect(settings.load()).toEqual({ music: 0.25, sfx: 0.9, controls: 'on' });
+  });
+
+  it('keeps every controls mode', () => {
+    const settings = createSettingsStore(memoryStorage());
+    for (const controls of /** @type {const} */ (['auto', 'on', 'off'])) {
+      settings.save({ music: 1, sfx: 1, controls });
+      expect(settings.load().controls).toBe(controls);
+    }
+  });
+
+  it('leaves controls out when a save has none (saved before Unit 19) or a bad one', () => {
+    const storage = memoryStorage();
+    const settings = createSettingsStore(storage);
+    storage.set('cc:v1:settings', JSON.stringify({ music: 0.4, sfx: 0.7 }));
+    expect(settings.load()).toEqual({ music: 0.4, sfx: 0.7 });
+    storage.set('cc:v1:settings', JSON.stringify({ music: 0.4, sfx: 0.7, controls: 'touch' }));
+    expect(settings.load()).toEqual({ music: 0.4, sfx: 0.7 });
+    storage.set('cc:v1:settings', JSON.stringify({ controls: 1 }));
+    expect(settings.load()).toEqual({});
   });
 
   it('clamps out-of-range values', () => {

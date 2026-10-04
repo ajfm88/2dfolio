@@ -97,8 +97,7 @@ z                      // draw layer from settings.Z
 - Every object snapshots `oldRect` at the top of `update` before moving, so the
   collision resolver can compare old and new edges.
 - Behaviour is selected by explicit capability fields — `solid`, `semiSolid`,
-  `damages`, `stompable`, `carries` — never by `instanceof` or
-  `constructor.name`.
+  `damages`, `stompable` — never by `instanceof` or `constructor.name`.
 
 ## Rendering
 
@@ -181,7 +180,8 @@ z                      // draw layer from settings.Z
 
 - `vitest`, with tests colocated as `<module>.test.js`.
 - **Tested**: `level/codec.js` (round-trip fidelity, malformed input),
-  `level/autotile.js` (all 16 masks, grid edges), `level/schema.js` (every
+  `level/autotile.js` (the 16 base masks, the 31 inner corners, all 256 neighbour
+  combinations, grid edges), `level/schema.js` (every
   validation rule), `level/parallax.js` (`horizonY`, wrap including negatives),
   `game/physics.js` (each resolution case), and any pure helper.
 - **Not tested**: rendering, DOM, scenes, audio. These are verified by running the
@@ -215,7 +215,8 @@ deliberately not ported:
   `atlas.json` (generated), `campaign.js`, `campaign/*.json`. Declarative; no
   logic beyond factory references.
 - `src/game/` — `play-scene.js`, `world.js`, `physics.js`, `player.js`,
-  `stats.js`, `sense.js` (pure proximity tests), `entities/`, `hazards/`,
+  `stats.js`, `sense.js` (pure proximity tests), `fx.js` (`OneShotFx`, the one-shot
+  sprite burst), `shake.js` (pure screen-shake offsets), `entities/`, `hazards/`,
   `collectibles.js`.
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
   `gestures.js`, `validate.js`, `import-level.js`.
@@ -223,7 +224,7 @@ deliberately not ported:
   `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `files.js`,
   `format.js`, `screens/` (`title.js`, `level-select.js`, `campaign-tab.js`,
   `my-levels-tab.js`), `components/` (`dialog.js`, `rename-dialog.js`,
-  `share-dialog.js`, `import-dialog.js`, `sound-dialog.js`, `toast.js`,
+  `share-dialog.js`, `import-dialog.js`, `settings-dialog.js`, `toast.js`,
   `resize-dialog.js`), `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
   `settings-store.js`.

@@ -1,5 +1,5 @@
 import { TILE } from '../settings.js';
-import { autotileAt, isPresent } from './autotile.js';
+import { autotileAt, barTileAt, isPresent } from './autotile.js';
 import { wrap } from './parallax.js';
 
 /** @typedef {import('./model.js').LevelModel} LevelModel */
@@ -28,7 +28,9 @@ function drawTiledX(ctx, image, fw, fh, offsetX, dy, viewW, viewH) {
 }
 
 /**
- * Sky, sea, horizon, BG Image, big clouds, small clouds.
+ * Sky, sea, horizon, BG Image, big clouds, small clouds. A below-decks theme (one
+ * with a `wallTile`) draws only its back wall instead: that sheet cell, on the world
+ * grid, over the whole view including the maker's margins past the level edge.
  * Does not mutate parallax.
  *
  * @param {CanvasRenderingContext2D} ctx
@@ -40,6 +42,22 @@ function drawTiledX(ctx, image, fw, fh, offsetX, dy, viewW, viewH) {
  * @param {Parallax} parallax
  */
 export function drawBackground(ctx, cam, viewW, viewH, theme, atlas, parallax) {
+  if (theme.wallTile) {
+    const wall = atlas.get(theme.sheet);
+    const sx = theme.wallTile[0] * TILE;
+    const sy = theme.wallTile[1] * TILE;
+    const c0 = Math.floor(cam.x / TILE);
+    const r0 = Math.floor(cam.y / TILE);
+    const c1 = Math.ceil((cam.x + viewW) / TILE);
+    const r1 = Math.ceil((cam.y + viewH) / TILE);
+    for (let r = r0; r < r1; r++) {
+      for (let c = c0; c < c1; c++) {
+        ctx.drawImage(wall.image, sx, sy, TILE, TILE,
+          Math.round(c * TILE - cam.x), Math.round(r * TILE - cam.y), TILE, TILE);
+      }
+    }
+    return;
+  }
   ctx.fillStyle = theme.sky;
   ctx.fillRect(0, 0, viewW, viewH);
 
@@ -156,15 +174,20 @@ export function drawTiles(ctx, cam, viewW, viewH, level, theme, atlas) {
     }
   }
 
+  const platformSheet = atlas.get(theme.platformSheet);
+  const platformOriginX = theme.platformOriginCol * TILE;
+  const platformOriginY = theme.platformOriginRow * TILE;
+  const platformTiler = theme.platformTiling === 'bar' ? barTileAt : autotileAt;
+  const platformOffsetY = theme.platformOffsetY;
   for (let r = r0; r < r1; r++) {
     for (let c = c0; c < c1; c++) {
-      if (!autotileAt(platform, cols, rows, c, r, scratch)) continue;
+      if (!platformTiler(platform, cols, rows, c, r, scratch)) continue;
       const dx = Math.round(c * TILE - cam.x);
-      const dy = Math.round(r * TILE - cam.y);
+      const dy = Math.round(r * TILE - cam.y + platformOffsetY);
       ctx.drawImage(
-        sheet.image,
-        originX + scratch.col * TILE,
-        originY + scratch.row * TILE,
+        platformSheet.image,
+        platformOriginX + scratch.col * TILE,
+        platformOriginY + scratch.row * TILE,
         TILE,
         TILE,
         dx,

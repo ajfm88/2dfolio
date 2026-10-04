@@ -258,7 +258,10 @@ format.
 ## Unit 19 — Polish
 
 **Builds:** inner-corner autotiling using the remaining 31 blob tiles, dust particles
-on jump and land, screen shake on damage, the pause menu, and the settings screen.
+on jump and land, screen shake on damage, the pause menu, and the settings screen,
+which is a Settings dialog (player decision). It is one unit in three parts, each
+verified and committed on its own: A inner corners, B dust and shake, C pause menu
+and Settings (player decision, 2026-09-29).
 
 **Depends on:** 18. **Installs:** none.
 **Done when:** diagonal terrain junctions render with correct inner corners, existing
@@ -267,12 +270,18 @@ transitions.
 
 ## Unit 20 — Second Theme
 
-**Builds:** the Pirate Ship theme — tilesheet, the `(1,1)` tile origin offset, the
-back-wall layer, matching decor — plus the theme picker in the maker.
+**Builds:** the Pirate Ship theme: its terrain tilesheet at the `(1,1)` origin, its
+plank platforms (a left / middle / right / single rule on E and W neighbours), and its
+back wall as the below-decks backdrop that replaces the sky. Plus the theme picker in
+the maker's Menu, as an undoable command. Two parts: A ship art (A1 assets, A2
+runtime), B the picker. Player decisions 2026-10-02: the back wall is a backdrop, not
+a paintable layer, so the level format is unchanged. Decor moved out of this unit to
+its own (Open Question 8).
 
-**Depends on:** 19. **Installs:** none.
-**Done when:** switching a level's theme changes only its art, autotiling logic is
-untouched, and a level authored in one theme renders correctly in the other.
+**Depends on:** 19, and issue 30 fixed first as its own change. **Installs:** none.
+**Done when:** switching a level's theme changes only its art; the blob autotile is
+untouched; a level authored in one theme renders correctly in the other; and the
+switch is undoable and survives autosave, share codes and the test-play round trip.
 
 ## Unit 21 — PWA and Performance
 

@@ -3,8 +3,10 @@ import './styles/maker-palette.css';
 import { TILE } from '../settings.js';
 import { el } from './dom.js';
 import { palette as paletteEntries, PALETTE_ORDER, byId } from '../data/palette.js';
+import { blobCell, barCell } from '../level/autotile.js';
 
 /** @typedef {import('../data/palette.js').PaletteEntry} PaletteEntry */
+/** @typedef {import('../data/themes.js').Theme} Theme */
 /** @typedef {Awaited<ReturnType<import('../core/atlas.js').loadAtlas>>} Atlas */
 
 /** @type {Record<string, string>} */
@@ -25,16 +27,22 @@ const ICON_BOX = 64;
  * @param {HTMLCanvasElement} canvas
  * @param {Atlas} atlas
  * @param {PaletteEntry} entry
+ * @param {Theme} theme
  */
-function drawPaletteIcon(canvas, atlas, entry) {
-  const clip = atlas.get(entry.icon);
+function drawPaletteIcon(canvas, atlas, entry, theme) {
+  const themedTile = entry.layer === 'terrain' || entry.layer === 'platform';
+  const platform = entry.layer === 'platform';
+  const clip = atlas.get(themedTile ? (platform ? theme.platformSheet : theme.sheet) : entry.icon);
   let sx = 0;
   let sy = 0;
   let sw = clip.fw;
   let sh = clip.fh;
-  if (entry.placement === 'tile' && clip.fw >= 17 * TILE && clip.fh >= 5 * TILE) {
-    sx = 4 * TILE;
-    sy = 4 * TILE;
+  if (themedTile) {
+    const cell = { col: 0, row: 0 };
+    if (platform && theme.platformTiling === 'bar') barCell(false, false, cell);
+    else blobCell(false, false, false, false, false, false, false, false, cell);
+    sx = ((platform ? theme.platformOriginCol : theme.originCol) + cell.col) * TILE;
+    sy = ((platform ? theme.platformOriginRow : theme.originRow) + cell.row) * TILE;
     sw = TILE;
     sh = TILE;
   } else if (entry.placement === 'tile') {
@@ -63,6 +71,7 @@ function drawPaletteIcon(canvas, atlas, entry) {
  * @param {HTMLElement} root
  * @param {{
  *   atlas: Atlas,
+ *   theme: Theme,
  *   onSelect: (entry: PaletteEntry | null, erasing: boolean) => void,
  *   initial?: { group: string, toolId: string | null, erasing: boolean },
  * }} opts
@@ -72,6 +81,9 @@ export function createMakerPalette(root, opts) {
   let selected = null;
   let erasing = false;
   let activeGroup = '';
+  let theme = opts.theme;
+  /** @type {Array<{ canvas: HTMLCanvasElement, entry: PaletteEntry }>} */
+  const themedIcons = [];
 
   /** @type {Map<string, HTMLButtonElement[]>} */
   const groupButtons = new Map();
@@ -97,7 +109,10 @@ export function createMakerPalette(root, opts) {
         class: 'maker-palette__icon',
         attrs: { 'aria-hidden': 'true' },
       }));
-      drawPaletteIcon(icon, opts.atlas, entry);
+      drawPaletteIcon(icon, opts.atlas, entry, theme);
+      if (entry.layer === 'terrain' || entry.layer === 'platform') {
+        themedIcons.push({ canvas: icon, entry });
+      }
       const btn = /** @type {HTMLButtonElement} */ (el(
         'button',
         {
@@ -235,6 +250,15 @@ export function createMakerPalette(root, opts) {
   if (firstGroup) switchTab(firstGroup);
 
   return {
+    /** @param {Theme} nextTheme */
+    setTheme(nextTheme) {
+      if (theme.id === nextTheme.id) return;
+      theme = nextTheme;
+      for (let i = 0; i < themedIcons.length; i++) {
+        const icon = themedIcons[i];
+        drawPaletteIcon(icon.canvas, opts.atlas, icon.entry, theme);
+      }
+    },
     getSelectedEntry() {
       return selected;
     },

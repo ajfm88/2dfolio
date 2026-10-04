@@ -8,7 +8,8 @@ import { formatTime } from './format.js';
  * The pause and results panels also offer a way out: Back to editor with `onEdit`
  * (a test-play from the maker), otherwise Level select with `onQuit` (a level
  * played from level select). With `onNext` (the campaign, before its last level),
- * Next level leads the results panel.
+ * Next level leads the results panel. The pause menu's Restart is `onReplay`, and
+ * its Settings opens `openSettings` over the panel.
  *
  * @typedef {{
  *   levelName: string,
@@ -18,6 +19,7 @@ import { formatTime } from './format.js';
  *   onEdit?: () => void,
  *   onQuit?: () => void,
  *   onNext?: () => void,
+ *   openSettings?: (root: HTMLElement) => { close: () => void },
  * }} HudOpts
  */
 
@@ -56,8 +58,17 @@ export function createPlayHud(root, opts) {
   let overlay = null;
   /** @type {(() => void) | null} */
   let overlayTeardown = null;
+  /** The Settings dialog opened from the pause menu, which the HUD must close. */
+  /** @type {{ close: () => void } | null} */
+  let settings = null;
+
+  function closeSettings() {
+    if (settings) settings.close();
+    settings = null;
+  }
 
   function closeOverlay() {
+    closeSettings();
     if (overlayTeardown) {
       overlayTeardown();
       overlayTeardown = null;
@@ -69,17 +80,26 @@ export function createPlayHud(root, opts) {
   }
 
   /**
+   * A board panel whose title and text sit on a paper sheet, like every dialog
+   * (issue 21), with the buttons on the board below.
+   *
    * @param {string} title
-   * @param {HTMLElement[]} body
+   * @param {HTMLElement[]} sheetBody
+   * @param {HTMLElement} actionRow
    * @param {(() => void)} [onDismiss] backdrop tap and Escape (omit for a modal result)
-   * @returns {HTMLElement} the panel element
    */
-  function openOverlay(title, body, onDismiss) {
+  function openOverlay(title, sheetBody, actionRow, onDismiss) {
     closeOverlay();
     const panel = el(
       'div',
-      { class: 'panel', attrs: { role: 'dialog', 'aria-modal': 'true' } },
-      [el('h2', { class: 'panel__title', text: title }), ...body],
+      { class: 'panel dialog hud__panel', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-label': title } },
+      [
+        el('div', { class: 'panel panel--paper dialog__sheet' }, [
+          el('h2', { class: 'dialog__title', text: title }),
+          ...sheetBody,
+        ]),
+        actionRow,
+      ],
     );
     const ov = el('div', { class: 'overlay' }, [panel]);
     overlay = ov;
@@ -90,9 +110,12 @@ export function createPlayHud(root, opts) {
       const onPointer = (e) => {
         if (e.target === ov) onDismiss();
       };
+      // Escape closes only the top panel. With Settings open over this one, the
+      // dialog has already taken the key (it listens on document, before window,
+      // and prevents the default), so the game stays paused.
       /** @param {KeyboardEvent} e */
       const onKey = (e) => {
-        if (e.key === 'Escape') onDismiss();
+        if (e.key === 'Escape' && !e.defaultPrevented) onDismiss();
       };
       ov.addEventListener('pointerdown', /** @type {EventListener} */ (onPointer));
       window.addEventListener('keydown', onKey);
@@ -101,7 +124,6 @@ export function createPlayHud(root, opts) {
         window.removeEventListener('keydown', onKey);
       };
     }
-    return panel;
   }
 
   /**
@@ -118,17 +140,22 @@ export function createPlayHud(root, opts) {
     });
   }
 
+  /** The way out, when there is one: Back to editor, or Level select. */
+  function wayOut() {
+    if (opts.onEdit) return button('Back to editor', opts.onEdit);
+    if (opts.onQuit) return button('Level select', opts.onQuit);
+    return null;
+  }
+
   /**
-   * A panel's action row: its own buttons, primary first, then the way out — Back
-   * to editor, or Level select — when there is one.
    * @param {HTMLElement[]} buttons
+   * @param {boolean} stacked
    */
-  function actions(buttons) {
-    const row = el('div', { class: 'panel__actions' }, buttons);
-    const { onEdit, onQuit } = opts;
-    if (onEdit) row.append(button('Back to editor', onEdit));
-    else if (onQuit) row.append(button('Level select', onQuit));
-    return row;
+  function actionRow(buttons, stacked) {
+    const out = wayOut();
+    return el('div', {
+      class: stacked ? 'panel__actions dialog__actions--stack' : 'panel__actions',
+    }, out ? [...buttons, out] : buttons);
   }
 
   return {
@@ -147,14 +174,25 @@ export function createPlayHud(root, opts) {
       coinCount.textContent = String(n);
     },
 
-    /** @param {boolean} isPaused */
+    /**
+     * The pause menu: Resume, Restart, Settings, and the way out, stacked.
+     * @param {boolean} isPaused
+     */
     setPaused(isPaused) {
       if (!isPaused) {
         closeOverlay();
         return;
       }
       const resume = button('Resume', opts.onResume, true);
-      openOverlay('Paused', [actions([resume])], opts.onResume);
+      const buttons = [resume, button('Restart', opts.onReplay)];
+      const openSettings = opts.openSettings;
+      if (openSettings) {
+        buttons.push(button('Settings', () => {
+          closeSettings();
+          settings = openSettings(root);
+        }));
+      }
+      openOverlay('Paused', [], actionRow(buttons, true), opts.onResume);
       resume.focus();
     },
 
@@ -175,7 +213,7 @@ export function createPlayHud(root, opts) {
         ? button('Next level', onNext, true)
         : button('Play again', opts.onReplay, true);
       const own = onNext ? [primary, button('Play again', opts.onReplay)] : [primary];
-      openOverlay('Level Complete', [stats, actions(own)]);
+      openOverlay('Level Complete', [stats], actionRow(own, false));
       primary.focus();
     },
 

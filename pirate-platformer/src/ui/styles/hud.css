@@ -98,6 +98,12 @@
   outline-offset: calc(2px * var(--ui-scale));
 }
 
+/* Pause and results panels: a board with a paper sheet, like every dialog (issue 21).
+   The pause menu stacks its buttons, so the panel stays narrow. */
+.hud__panel {
+  max-inline-size: calc(300px * var(--ui-scale));
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Appears then disappears with no smooth fade (stepped, not eased). */
   .hud__name { animation-timing-function: steps(1, end); }

@@ -458,6 +458,18 @@
     "fh": 96,
     "n": 1
   },
+  "tiles/ship": {
+    "src": "tiles/ship.png",
+    "fw": 608,
+    "fh": 416,
+    "n": 1
+  },
+  "tiles/ship-platforms": {
+    "src": "tiles/ship-platforms.png",
+    "fw": 192,
+    "fh": 128,
+    "n": 1
+  },
   "tooth/anticipation": {
     "src": "sprites/tooth-anticipation.png",
     "fw": 34,

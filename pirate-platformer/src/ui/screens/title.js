@@ -3,14 +3,22 @@ import '../styles/title.css';
 import { el } from '../dom.js';
 
 /**
- * The front door: Play goes to the campaign, Make to the player's own levels. A
- * DOM screen over the canvas's sky fill, like level select.
+ * The front door: Play goes to the campaign, Make to the player's own levels, and
+ * Settings opens over the title. A DOM screen over the canvas's sky fill, like
+ * level select.
  *
  * @param {HTMLElement} root
- * @param {{ onPlay: () => void, onMake: () => void }} opts
+ * @param {{
+ *   onPlay: () => void,
+ *   onMake: () => void,
+ *   openSettings: (root: HTMLElement) => { close: () => void },
+ * }} opts
  * @returns {{ focus: () => void, destroy: () => void }}
  */
 export function createTitleScreen(root, opts) {
+  /** @type {{ close: () => void } | null} */
+  let settings = null;
+
   const play = el('button', {
     class: 'btn btn--primary title__button',
     text: 'Play',
@@ -23,9 +31,20 @@ export function createTitleScreen(root, opts) {
     attrs: { type: 'button' },
     on: { click: () => opts.onMake() },
   });
+  const settingsButton = el('button', {
+    class: 'btn title__button',
+    text: 'Settings',
+    attrs: { type: 'button' },
+    on: {
+      click: () => {
+        if (settings) settings.close();
+        settings = opts.openSettings(root);
+      },
+    },
+  });
   const screen = el('section', { class: 'title', attrs: { 'aria-label': 'Coral Corsairs' } }, [
     el('h1', { class: 'panel panel--paper title__wordmark', text: 'Coral Corsairs' }),
-    el('div', { class: 'title__buttons' }, [play, make]),
+    el('div', { class: 'title__buttons' }, [play, make, settingsButton]),
   ]);
   root.append(screen);
 
@@ -35,6 +54,8 @@ export function createTitleScreen(root, opts) {
       play.focus();
     },
     destroy() {
+      if (settings) settings.close();
+      settings = null;
       screen.remove();
     },
   };
