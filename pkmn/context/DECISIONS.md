@@ -196,7 +196,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
 
     **Decided with the user:**
     - **R1 splits into three slices**: R1a export graphics (setup writes `static/` PNGs + tilemaps + JSON mirror, reusing the browser's own `extractRom()`), R1b run the browser from files (`publicDir: 'static'`, `base: '/'`, delete the gate), R1c commit the data (with a fresh-clone proof). Reason: upstream extracts in the browser, so no PNG exists on disk yet. That is more than one sitting, and the three steps separate extractor work from engine work (CONVENTIONS *Scoping rules*).
-    - **New Phase V (V1–V5) rebuilds the lost work before Phase A**: V1 Route 2 + Forest, V2 Pewter City, V3 Pewter Gym + Museum, V4 Diglett's Cave + Route 3, V5 recovered fixes (PSYCHIC #10, SFX, sim FPS O-5). Reason: Phase A's verify steps need Route 2, the Forest and Brock. The plan grows from 29 to **34** milestones.
+    - **New Phase V (V1–V5) rebuilds the lost work before Phase A**: V1 Route 2 + Forest, V2 Pewter City, V3 Pewter Gym + Museum, V4 Diglett's Cave + Route 3, V5 recovered fixes (PSYCHIC #10, SFX, sim FPS O-5). Reason: Phase A's verify steps need Route 2, the Forest and Brock. The plan grows from 29 to **34** milestones. *⚠ Corrected 2026-09-22 (same day): the real counts are **28 → 33**. "29" had been one too many since 2026-08-04 (the plan had R1 + 27 rows A1–X2), and "34" was 29 + 5. R1 counts once.*
     - **Phase A re-scoped** to what upstream actually lacks. Upstream already has whiteout, badge stat boosts, hidden items and the trainer line-of-sight engine. Missing: item balls, `sightRange` data, TM/HM, poison/Repel/Escape Rope.
     - **Commit locally at the end of every slice** (user standing instruction). Baseline commit `9bf2d7d` = docs + vanilla upstream. Never pushed (#24).
     - Upstream's `game/CLAUDE.md` was transcribed into root `CLAUDE.md` → *Engine reference* and deleted.
@@ -214,6 +214,36 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     **Not a game change.** This is how the browser host behaves, not game content, and it matches the hardware: a Game Boy doesn't pause when you look away. Rejected: driving ticks from the audio callback, which fails before the audio unlock click and while `p`-paused. Also rejected: plain `setInterval` on the main thread, which is throttled to ≥1 s in background tabs.
 
     **Caveat:** browsers may still freeze a **silent** background tab after several minutes (tab freezing / energy saver). Tabs playing audio are exempt.
+
+28. **Upstream's `game/LICENSE` is removed** (2026-09-22). *User decision.*
+
+    The user deleted `game/LICENSE` (upstream's MIT license, "Copyright (c) 2025 Gidi Daf") from the working copy. Asked whether to keep it, the user said *"pls leave LICENSE alone"* and then *"i want it gone"*. The deletion was committed with R1c. **Don't restore it.**
+
+    Context recorded for completeness: MIT asks that the copyright notice accompany copies of the software. This project is personal and never distributed (#24), and the root `README.md` still credits `gididaf/pokemon-yellow-typescript` by name and link. If the project is ever shared or published (X2), revisit this first.
+
+    Also on 2026-09-22 (R1c): `data/` and `static/` became tracked, and the root `.gitattributes` pins text to LF and marks PNG/tilemap/ROM binary. This amends #25's list of what git tracks.
+
+29. **V1 plan approved: five slices, A1 right after V1, new slice A4 for trades** (2026-09-22). *The user's answers to the plan in `notes/v1-plan.md` (STATUS O-6). User: "the split is perfect, and go ahead with all 6 recommendations".*
+
+    - **V1 is split into five slices:**
+      - V1a: extract the 7 maps and their trainer data (extraction only).
+      - V1b: make them playable — music, palettes, debug warps, Pikachu spawning, Oak's Aide.
+      - V1c: trainer battles as `home/trainers.asm` does them.
+      - V1d: the catch-demo battle type.
+      - V1e: the real Viridian old man, which removes the demo gate.
+
+      This keeps extraction and engine work in separate slices. The one deliberate mix is V1e: adding OLD_MAN2 and deleting `VIRIDIAN_OLDMAN_DEMO` must land together with the engine code that uses them, because either change alone would visibly break Viridian City.
+    - **A1 (item balls + trainer sight) moves to right after V1**, before V2. Its verify needs nothing past V1, it builds on V1c's trainer flow, and every map from Pewter on is then built with sight and item balls already working.
+    - **V1d rebuilds Oak's Pikachu catch** (`pikachu_battle.ts`) as the catch demo shared by `BATTLE_TYPE_OLD_MAN` and `BATTLE_TYPE_PIKACHU`. The intro gains the ASM's simulated FIGHT → ITEM → POKé BALL menu input.
+    - **Route 22's fake Blue is removed in V1e.** It is upstream's second demo gate, with invented "end of the demo" text (`maps.ts:329`). The real Route 22 rival battle stays in I1.
+    - **New slice A4: in-game trades** (`DoInGameTradeDialogue`). Route 2's trade house has the first one, but it asks for a Clefairy, and the player can't have one before Mt. Moon (B1). The plan grows to **34** milestones.
+    - **Texts with runtime values** (`text_ram`, `text_decimal`; Oak's Aide first) are transcribed in the engine with ASM citations, which is what upstream already does for this kind of text. Teaching the extractor those two text commands is logged as a later improvement.
+
+30. **V1b: Oak's Aide moves to A2; the player keeps their facing through warps; door SFX waits for V5** (2026-09-22). *The user's answer to `notes/v1b-plan.md` §3: "go", accepting all three recommendations.*
+
+    - **Oak's Aide (Route2Gate, HM05) moves from V1b to A2.** The bag has no TM/HM items at all: `item_names.json` holds only the 97 `ItemNames` entries. Giving HM05 needs the machine names and the `TechnicalMachines` table, which A2 builds anyway for Brock's TM34. A flood fill also shows the Aide can't be reached before Cut. Until A2 he is inert, like the trade kid.
+    - **The player keeps their facing through warps.** The ASM never resets it on a warp: `ResetPlayerSpriteData` runs only at Continue and new game. Upstream forced `down` after every warp, which turned the player around when leaving a gate northward and fed Pikachu's spawn rules the wrong facing. Visible on existing maps too: the player now faces up after entering a building, as in the original.
+    - **Door SFX:** the ASM picks go-inside or go-outside from the tile under the player (`PlayMapChangeSound`); upstream picks by destination map. This is fixed everywhere in V5's SFX slice rather than special-cased for the Forest in V1b.
 
 ---
 

@@ -51,9 +51,9 @@ Read in this order. Skim what your slice needs; don't re-explore what
 | **`STATUS.md`** | ⚠ live handoff log: phase, queue, open questions, session log | **always, first** |
 | `PROJECT.md` | what we're building and why; goals, non-goals, success criteria | new to the project |
 | `ARCHITECTURE.md` | data pipeline, the data contract, invariants, verified format findings, Game Boy rendering + asset rules | before touching data, assets or rendering |
-| `PLAN.md` | the phased roadmap — 34 milestones (R1a–c, V1–V5, A1–X2) | when picking or sizing work |
+| `PLAN.md` | the phased roadmap — 34 milestones (R1, V1–V5, A1–A4, B1–X2; R1 ran as slices R1a–c, V1 runs as V1a–e) | when picking or sizing work |
 | `CONVENTIONS.md` | session contract (incl. the per-slice local commit), code standards, naming traps, verification workflow | before writing code |
-| `DECISIONS.md` | settled choices and rationale (#1–#26), plus open questions that need the user | before proposing a change to a settled choice |
+| `DECISIONS.md` | settled choices and rationale (#1–#30), plus open questions that need the user | before proposing a change to a settled choice |
 | `HISTORY.md` | archived session entries + the table of lost prior work | rarely — background only |
 
 `context/_reference-article.md` is a third-party article (JavaScript Mastery's
@@ -139,12 +139,12 @@ Everything else runs inside `game/`:
 - `npm run typecheck` — strict tsc (`noUnusedLocals`, `noUnusedParameters`) over
   `src/` and `scripts/`, must stay clean
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
-  `data/`, then rebuild `static/` (518 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
+  `data/`, then rebuild `static/` (519 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 47 ROM tests skip
+  `ROM_PATH` the 65 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-09-22 (after R1a): 381/381.**
+  tests. **Baseline 2026-09-22 (after V1b): 409/409.**
 - `npx vite` — dev server serving `static/` (no ROM involved); prefer
   `http://127.0.0.1:5173/` (saves are origin-scoped). Missing files are real 404s
   (`appType: 'mpa'`)
@@ -155,15 +155,23 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-09-22: R1a + R1b done — the game runs with no ROM.** `game/` is vanilla
-upstream (12 maps) plus our changes: `npm run setup` exports `static/`, the browser
-loads only those files (ROM gate deleted), and the game keeps running in
-background tabs. Typecheck clean, **381/381** tests. `data/` and `static/` are
-still git-ignored until **R1c** commits them.
+**2026-09-22: Phase R done — the game runs with no ROM, from committed files.**
+`game/` is vanilla upstream (12 maps) plus our changes: `npm run setup` exports
+`static/`, the browser loads only those files (ROM gate deleted), `data/` +
+`static/` are committed, and the game keeps running in background tabs. A fresh
+clone with no ROM installs, tests, builds and plays.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26) and
-is being rebuilt: **R1c** next, then **Phase V** (back to 30 maps), then Phase A.
+is being rebuilt as **Phase V**. **V1 (Route 2 + Viridian Forest)** is in progress,
+split into five slices (DECISIONS #29, `notes/v1-plan.md`). V1a (the 7 maps and their
+trainer data, extracted) and V1b (made playable through the debug warps, with Yellow's
+Pikachu spawn states and the player's facing kept through warps) are done. **409/409**,
+typecheck clean. Next is V1c, then A1, then V2.
 Git: local repo, commit per slice, never pushed. Live detail: `context/STATUS.md`.
+
+**Generated data is committed but never hand-edited.** To change it: edit the
+extractor → `npm run setup pokeyellow.gbc` → commit the regenerated `data/` +
+`static/` with the code. `static_export.test.ts` fails if you forget the re-run.
 
 ---
 
@@ -209,7 +217,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `overworld/` | Maps, player, NPCs, story state, transitions | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()` |
 | `battle/` | Wild/trainer battles, evolution | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
 | `menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `BlackboardMenu`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
-| `pikachu/` | Follower, happiness, battle & emotion | `PikachuFollower`, `modifyPikachuHappiness()`, `initPikachuBattle()` |
+| `pikachu/` | Follower, happiness, battle & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b) | `PikachuFollower`, `modifyPikachuHappiness()`, `initPikachuBattle()`, `warpSpawnState()` |
 | `story/` | Per-map story scripts & hidden events | `buildOakGrassScript()`, `buildOaksLabIntroScript()`, `buildOaksLabPokedexScript()`, `buildViridianMartParcelScript()` |
 | `script/` | Cutscene script engine & controller | `initScript()`, `updateScript()`, `ScriptCommand` |
 | `audio/` | GB audio engine (2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `suspendAudio()`, `resumeAudioOutput()` |
@@ -312,8 +320,8 @@ The three *Dead* files are upstream's in-browser ROM path. Since R1b nothing
 imports them and the production bundle contains none of their code. They stay in
 the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 `extractRom()` is still live: the setup script and tests call it in Node. `scripts/extract_dev_data.ts`
-(`npm run setup`) runs the same extractors in Node; its SFX list is longer than
-`index.ts`'s.
+(`npm run setup`) runs the same extractors in Node; its SFX name list is longer than
+`index.ts`'s, but both are filtered by `extractors/audio.ts` `SFX_HEADERS` (see below).
 
 - **Adding an extractor**: create `extractors/foo.ts` exporting
   `extractFoo(rom: BinaryReader, ...)` returning the ground-truth JSON shape; wire
@@ -327,8 +335,11 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
   Convert dex → internal ID by scanning `PokedexOrder` in reverse. `PokedexToIndex`
   at `10:5086` is **machine code, not a data table** — never read bytes from it.
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
-  blocksets, collision, pokedex, maps (**12**), music (47 listed, 46 actually
-  extract), SFX (36 unique in `index.ts`, 46 in the setup script),
+  blocksets, collision, pokedex, maps (**19** since V1a: upstream's 12 + the Route 2 /
+  Viridian Forest set; NPCs can carry `item` and trainer fields), music (47 listed, 46 actually
+  extract), SFX (**10** extract: only names with an entry in `audio.ts`
+  `SFX_HEADERS` — `index.ts` lists 36 unique names, the setup script 46, and
+  `extractSfx()` returns null for the rest; V5 expands `SFX_HEADERS`),
   wave samples, noise instruments, font / font_extra / font_battle_extra,
   tilesets, battle HUD, title screen (+ tilemaps), overworld sprites (~70),
   Pokemon front/back (302), trainer & player sprites, emotes, party icons, town
@@ -336,16 +347,20 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 
 ### Testing
 
-381 tests in 13 files (vitest, `environment: 'node'`):
+409 tests in 14 files (vitest, `environment: 'node'`):
 
 - **Battle** — 334 tests across 11 files in `src/battle/`.
-- **Extraction** — 41 in `src/rom/__tests__/extraction.test.ts`; compares each
+- **Pikachu spawn** — 10 in `src/pikachu/pikachu_spawn.test.ts` (V1b): Yellow's
+  spawn states per warp, and placement + facing per state.
+- **Extraction** — 59 in `src/rom/__tests__/extraction.test.ts`; compares each
   extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
-  Its Pikachu pixel test compares against `refs/pokeyellow/gfx/pokemon/front/pikachu.png`
-  (path fixed in R1a — it used to skip silently) and returns early if `refs/`
-  isn't cloned.
+  Its Pikachu and old-man pixel tests compare against pret's PNGs in
+  `refs/pokeyellow/gfx/` and return early if `refs/` isn't cloned. The V1 block
+  (added in V1a) checks the new maps against values transcribed from the ASM:
+  trainer headers, NPC ids and facing parsed from `data/maps/objects/*.asm`,
+  item balls, and the leaving-sign bug.
 - **Static export** — 6 in `src/rom/__tests__/static_export.test.ts` (R1a): key
-  shape, the four grays, lossless PNG round-trip of all 518 images, extracted JSON
+  shape, the four grays, lossless PNG round-trip of all 519 images, extracted JSON
   == `data/`, and **`static/` not stale**. If that last one fails after an
   extractor edit, re-run `npm run setup pokeyellow.gbc`. Needs `ROM_PATH`.
 - **Setup** (`src/test/setup.ts`) stubs `fetch` to serve `data/*.json`, and calls

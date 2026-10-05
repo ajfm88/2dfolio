@@ -24,8 +24,8 @@ correct data and expanding the world — not rewriting it.
 for the entire build. `pkmn-sprites/` is not needed for any of it.
 
 **Scale.** Deliberately ambitious — realistically **one to two years and on the
-order of 700–800 sessions.** The 34 slices in `PLAN.md` are milestones, not
-sessions; each subdivides many times over. Nobody expects a Yellow port in two
+order of 700–800 sessions.** The 34 milestones in `PLAN.md` are not sessions;
+each subdivides many times over. Nobody expects a Yellow port in two
 weeks, and no session should feel behind for finishing one small verified thing.
 
 ## The randomizer is a year-two idea
@@ -43,8 +43,8 @@ During development the ROM (`pokeyellow.gbc`, from the user's own cartridge) is
 used to extract game data via `npm run setup pokeyellow.gbc`. The extracted JSON +
 PNG output is committed to the repo so the final product needs no ROM at all.
 
-**Current priority (user):** make the game ROM-free (R1a–c), rebuild the lost
-work (Phase V), then expand **vanilla Yellow** (more maps/story/gyms).
+**Current priority (user):** rebuild the lost work (Phase V), then expand
+**vanilla Yellow** (more maps/story/gyms). ROM-free play is done (Phase R).
 **Deferred:** sprite randomizer (X1), Netlify (X2). **Dead last:** deploy.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
@@ -53,11 +53,14 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
-- **12 maps**: Pallet Town, the two houses, Oak's Lab, Route 1, Route 22, Viridian
-  City + Pokécenter, Mart, School, Nickname House.
-- **381/381** tests (375 upstream + 6 static-export), typecheck clean.
-- **Runs with no ROM** since R1b: the browser loads only `static/` (upstream's
-  upload gate is deleted). The data isn't committed yet — that's R1c.
+- **12 playable maps**: Pallet Town, the two houses, Oak's Lab, Route 1, Route 22,
+  Viridian City + Pokécenter, Mart, School, Nickname House. The 7 Route 2 / Viridian
+  Forest maps are extracted (V1a) and playable through the debug warps (V1b); the
+  walking path north of Viridian opens in V1e.
+- **409/409** tests (375 upstream + 6 static-export + 18 from V1a + 10 from V1b), typecheck clean.
+- **Runs with no ROM, from committed files** (Phase R done): the browser loads
+  only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are
+  in git. A fresh clone plays with no ROM and no setup.
 - The game keeps running in background tabs (DECISIONS #27).
 - Git: local repo, baseline commit, never pushed (DECISIONS #24).
 - Plan: **34 milestones** — R (split R1a–c), **V** (rebuild the lost 30-map
@@ -66,10 +69,10 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 ## Goals
 
 1. Run `npx vite`, click, play — no ROM, no emulator, no upload screen. ✅ (R1b)
-2. All game data committed to the repo — no ROM in the final product. 🔨 (R1c)
+2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**381**)
+4. Full test suite green against generated data. ✅ (**409**)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -108,11 +111,11 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (381)
+1. `npm run typecheck` + full `npm test` green. ✅ (409)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
-3. Save/load works on the same origin (`127.0.0.1`). ✅ upstream — save code
-   untouched, but save → reload → CONTINUE has **not** been re-tested since R1b
-4. Game works from committed files with no setup step. 🔨 (R1c = Phase R gate)
+3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
+   re-tested in R1c from a fresh clone)
+4. Game works from committed files with no setup step. ✅ (R1c = Phase R gate)
 5. Keep expanding maps until the vanilla path feels complete. 🔨 (V, then B–I)
 6. **The end state:** start a new game, play Pallet Town → Elite Four → credits
    → postgame, and have it match the original throughout, vanilla sprites and

@@ -18,6 +18,7 @@ import { decompressSprite } from '../sprite_decompress';
 import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from '../extractors/audio';
 import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
+import { OLD_MAN_PIC_BACK } from '../rom_offsets';
 
 const ROM_PATH = process.env.ROM_PATH;
 const DATA_DIR = resolve(__dirname, '../../../data');
@@ -340,6 +341,27 @@ describe('Sprite decompression', () => {
 
     expect(mismatches).toBe(0);
   });
+
+  it('should decompress the old man back pic matching the reference PNG', () => {
+    // OldManPicBack (3d:4441, gfx/battle/oldmanb.pic) — the catch demo's "player" (V1d)
+    const result = decompressSprite(rom, OLD_MAN_PIC_BACK);
+
+    // Back pics are 4x4 tiles = 32x32 pixels
+    expect(result.width).toBe(32);
+    expect(result.height).toBe(32);
+    const pixels = tiles2bppToPixels(result.tiles2bpp, 4, 4);
+
+    const pngPath = resolve(__dirname, '../../../../refs/pokeyellow/gfx/battle/oldmanb.png');
+    if (!existsSync(pngPath)) return; // Skip if no reference PNG available
+    const png = PNG.sync.read(readFileSync(pngPath));
+    expect([png.width, png.height]).toEqual([32, 32]);
+
+    let mismatches = 0;
+    for (let i = 0; i < 32 * 32; i++) {
+      if (png.data[i * 4] !== pixels[i]) mismatches++;
+    }
+    expect(mismatches).toBe(0);
+  });
 });
 
 describe('Audio: Wave samples extraction', () => {
@@ -455,7 +477,7 @@ describe('Audio: SFX extraction', () => {
 
 describe('Map extraction', () => {
   it('should match PalletTown.json exactly', () => {
-    const extracted = extractMap(rom, 'PalletTown');
+    const extracted = extractMap(rom, 'PalletTown', itemNames, trainerClassNames);
     const expected = loadJson<Record<string, unknown>>('maps/PalletTown.json');
 
     expect(extracted).not.toBeNull();
@@ -472,7 +494,7 @@ describe('Map extraction', () => {
   });
 
   it('should match RedsHouse1F.json exactly', () => {
-    const extracted = extractMap(rom, 'RedsHouse1F');
+    const extracted = extractMap(rom, 'RedsHouse1F', itemNames, trainerClassNames);
     const expected = loadJson<Record<string, unknown>>('maps/RedsHouse1F.json');
 
     expect(extracted).not.toBeNull();
@@ -490,7 +512,7 @@ describe('Map extraction', () => {
   });
 
   it('should match ViridianCity.json exactly', () => {
-    const extracted = extractMap(rom, 'ViridianCity');
+    const extracted = extractMap(rom, 'ViridianCity', itemNames, trainerClassNames);
     const expected = loadJson<Record<string, unknown>>('maps/ViridianCity.json');
 
     expect(extracted).not.toBeNull();
@@ -507,31 +529,24 @@ describe('Map extraction', () => {
     expect(extracted!.npcs).toEqual(expected.npcs);
   });
 
-  it('should extract all 12 demo maps', () => {
-    const all = extractAllMaps(rom);
-    const mapNames = Object.keys(all);
-    expect(mapNames.length).toBe(12);
-
-    const expected = [
-      'PalletTown', 'ViridianCity', 'Route1', 'Route22',
-      'RedsHouse1F', 'RedsHouse2F', 'BluesHouse', 'OaksLab',
-      'ViridianPokecenter', 'ViridianMart', 'ViridianSchoolHouse', 'ViridianNicknameHouse',
-    ];
-    for (const name of expected) {
-      expect(all[name]).toBeDefined();
-    }
-  });
-
-  // Deep comparison of all 12 maps against ground truth
+  // Every extracted map (upstream's 12 + V1's 7)
   const ALL_MAP_NAMES = [
     'PalletTown', 'ViridianCity', 'Route1', 'Route22',
     'RedsHouse1F', 'RedsHouse2F', 'BluesHouse', 'OaksLab',
     'ViridianPokecenter', 'ViridianMart', 'ViridianSchoolHouse', 'ViridianNicknameHouse',
+    'Route2', 'Route2Gate', 'Route2TradeHouse', 'DiglettsCaveRoute2',
+    'ViridianForest', 'ViridianForestSouthGate', 'ViridianForestNorthGate',
   ];
 
+  it('should extract all 19 maps', () => {
+    const all = extractAllMaps(rom, itemNames, trainerClassNames);
+    expect(Object.keys(all).sort()).toEqual([...ALL_MAP_NAMES].sort());
+  });
+
+  // Deep comparison of every map against ground truth
   for (const mapName of ALL_MAP_NAMES) {
     it(`should match ${mapName}.json completely`, () => {
-      const extracted = extractMap(rom, mapName);
+      const extracted = extractMap(rom, mapName, itemNames, trainerClassNames);
       const expected = loadJson<Record<string, unknown>>(`maps/${mapName}.json`);
 
       expect(extracted).not.toBeNull();
@@ -541,4 +556,157 @@ describe('Map extraction', () => {
       expect(extractedJson).toEqual(expected);
     });
   }
+});
+
+// V1 (notes/v1-plan.md). The expected values are transcribed from the pret ASM —
+// data/maps/objects/*.asm, text/*.asm, data/trainers/parties.asm — not taken from
+// the extractor, so a wrong offset or a misread trainer header fails here.
+describe('V1 maps: Route 2 + Viridian Forest', () => {
+  const V1_MAPS = [
+    'Route2', 'Route2Gate', 'Route2TradeHouse', 'DiglettsCaveRoute2',
+    'ViridianForest', 'ViridianForestSouthGate', 'ViridianForestNorthGate',
+  ];
+  const map = (name: string) => extractMap(rom, name, itemNames, trainerClassNames)!;
+  const npc = (mapName: string, id: string) => map(mapName).npcs.find(n => n.id === id)!;
+
+  it('reads every Forest trainer from its own trainer header', () => {
+    // [id, class, 0-based party, before battle, end of battle, after battle]
+    const trainers: [string, string, number, string, string, string][] = [
+      ['youngster2', 'BUG_CATCHER', 0,
+        "Hey! You have\nPOKéMON! Come on!\nLet's battle 'em!",
+        "No!\nCATERPIE can't\ncut it!",
+        "Ssh! You'll scare\nthe bugs away!"],
+      ['youngster3', 'BUG_CATCHER', 1,
+        "Yo! You can't jam\nout if you're a\nPOKéMON trainer!",
+        'Huh?\nI ran out of\nPOKéMON!',
+        "Darn! I'm going\nto catch some\nstronger ones!"],
+      ['youngster4', 'BUG_CATCHER', 2,
+        "Hey, wait up!\nWhat's the hurry?",
+        "I\ngive! You're good\nat this!",
+        "Sometimes, you\ncan find stuff on\nthe ground!\fI'm looking for\nthe stuff I\ndropped!"],
+      ['cooltrainer_f', 'LASS', 18,
+        'Hi, do you have a\nPIKACHU?',
+        'Oh no,\nreally?',
+        'I looked forever,\nbut I never found\na PIKACHU here!'],
+      ['youngster5', 'BUG_CATCHER', 14,
+        "I'm gonna be the\nbest. You just\ncan't beat me!",
+        'After\nall I did...',
+        'A METAPOD is cool\nbecause its\nattack is its\ndefense!'],
+    ];
+    for (const [id, trainerClass, party, before, end, after] of trainers) {
+      const n = npc('ViridianForest', id);
+      expect(n.trainerClass).toBe(trainerClass);
+      expect(n.trainerParty).toBe(party);
+      expect(n.dialogue).toBe(before);
+      expect(n.endBattleText).toBe(end);
+      expect(n.afterBattleText).toBe(after);
+    }
+
+    // The 0-based party indexes land on the Forest's parties (parties.asm:
+    // BugCatcherData #1 and LassData #19 are commented "; Viridian Forest")
+    const classes = loadJson<Record<string, { parties: { species: string; level: number }[][] }>>('trainers.json');
+    expect(classes.BUG_CATCHER.parties[0]).toEqual([
+      { species: 'CATERPIE', level: 7 }, { species: 'CATERPIE', level: 7 },
+    ]);
+    expect(classes.LASS.parties[18]).toEqual([
+      { species: 'NIDORAN_F', level: 6 }, { species: 'NIDORAN_M', level: 6 },
+    ]);
+  });
+
+  it('gives non-trainer NPCs no trainer fields', () => {
+    for (const id of ['youngster1', 'youngster6']) {
+      const n = npc('ViridianForest', id);
+      expect(n.trainerClass).toBeUndefined();
+      expect(n.endBattleText).toBeUndefined();
+      expect(n.dialogue).not.toBe('');
+    }
+  });
+
+  it('marks item balls with their item and no dialogue', () => {
+    const balls: [string, string, string][] = [
+      ['Route2', 'moon_stone', 'MOON_STONE'],
+      ['Route2', 'hp_up', 'HP_UP'],
+      ['ViridianForest', 'potion1', 'POTION'],
+      ['ViridianForest', 'potion2', 'POTION'],
+      ['ViridianForest', 'poke_ball', 'POKE_BALL'],
+    ];
+    for (const [mapName, id, item] of balls) {
+      const n = npc(mapName, id);
+      expect(n.item).toBe(item);
+      expect(n.object).toBe(true);
+      expect(n.dialogue).toBe('');
+    }
+  });
+
+  it("keeps Blue's house objects' text despite their stray item byte", () => {
+    // objects/BluesHouse.asm: Daisy and the Town Map end in ", 0" — item-flagged, item 0
+    for (const n of map('BluesHouse').npcs) {
+      expect(n.item).toBeUndefined();
+      expect(n.dialogue).not.toBe('');
+    }
+  });
+
+  it('emits no dialogue for NPCs whose text comes from an engine script', () => {
+    expect(npc('Route2Gate', 'oaks_aide').dialogue).toBe('');       // OaksAideScript (V1b)
+    expect(npc('Route2TradeHouse', 'gameboy_kid').dialogue).toBe(''); // in-game trade (A4)
+  });
+
+  it("reproduces Yellow's bug: the LEAVING VIRIDIAN FOREST sign prints TRAINER TIPS 1", () => {
+    const signs = map('ViridianForest').signs;
+    const at = (x: number, y: number) => signs.find(s => s.x === x && s.y === y)!.text;
+    const tips1 = 'TRAINER TIPS\fIf you want to\navoid battles,\nstay away from\ngrassy areas!';
+    expect(at(24, 40)).toBe(tips1);
+    expect(at(2, 1)).toBe(tips1);
+    expect(signs.every(s => s.text.length > 0)).toBe(true);
+  });
+
+  it('connects Viridian north to Route 2, and Route 2 only south until Pewter exists', () => {
+    expect(map('ViridianCity').connections).toContainEqual({ direction: 'north', mapName: 'Route2', offset: 5 });
+    expect(map('Route2').connections).toEqual([{ direction: 'south', mapName: 'ViridianCity', offset: -5 }]);
+  });
+
+  it('resolves gate and house exits (LAST_MAP) to Route 2, and no warp to an unknown map', () => {
+    // Route2Gate opens onto Route 2 at both ends; the others have one 2-tile exit
+    const exitsToRoute2: Record<string, number> = {
+      Route2Gate: 4, Route2TradeHouse: 2, DiglettsCaveRoute2: 2,
+      ViridianForestSouthGate: 2, ViridianForestNorthGate: 2,
+    };
+    for (const [m, count] of Object.entries(exitsToRoute2)) {
+      expect(map(m).warps.filter(w => w.destMap === 'Route2').length).toBe(count);
+    }
+    for (const m of V1_MAPS) {
+      for (const w of map(m).warps) expect(w.destMap).not.toMatch(/^UnknownMap_/);
+    }
+  });
+
+  it('puts the Forest hidden items where hidden_events.asm has them', () => {
+    expect(map('ViridianForest').hiddenEvents).toEqual([
+      { x: 1, y: 18, item: 'POTION', flag: 'HIDDEN_ITEM_VIRIDIAN_FOREST_POTION' },
+      { x: 16, y: 42, item: 'ANTIDOTE', flag: 'HIDDEN_ITEM_VIRIDIAN_FOREST_ANTIDOTE' },
+    ]);
+  });
+
+  it('matches the ASM object lists: ids, positions, movement and facing', () => {
+    const objectsDir = resolve(__dirname, '../../../../refs/pokeyellow/data/maps/objects');
+    if (!existsSync(objectsDir)) return; // needs refs/ (pull-refs.sh)
+    for (const m of V1_MAPS) {
+      const asm = readFileSync(resolve(objectsDir, `${m}.asm`), 'utf-8');
+      // NPC id rule: the const_export name minus the map prefix, lowercased
+      const prefix = m.toUpperCase() + '_';
+      const ids = [...asm.matchAll(/const_export (\w+)/g)].map(c => c[1].slice(prefix.length).toLowerCase());
+      const objects = [...asm.matchAll(/object_event\s+(\d+),\s*(\d+),\s*\w+,\s*(\w+),\s*(\w+)/g)];
+      const npcs = map(m).npcs;
+      expect(npcs.map(n => n.id)).toEqual(ids);
+      expect(npcs.length).toBe(objects.length);
+      objects.forEach(([, x, y, movement, dir], i) => {
+        const n = npcs[i];
+        expect([n.x, n.y]).toEqual([Number(x), Number(y)]);
+        expect(n.movement).toBe(movement === 'WALK' ? 'walk' : 'stay');
+        const faces = ['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(dir) ? dir.toLowerCase() : undefined;
+        const walks = dir === 'UP_DOWN' || dir === 'LEFT_RIGHT' ? dir.toLowerCase() : undefined;
+        expect(n.direction).toBe(movement === 'STAY' ? faces : undefined);
+        expect(n.walkDir).toBe(movement === 'WALK' ? walks : undefined);
+      });
+    }
+  });
 });

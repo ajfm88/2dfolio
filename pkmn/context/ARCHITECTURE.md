@@ -16,7 +16,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **381** passing (2026-09-22, R1a) | Battle logic + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **409** passing (2026-09-22, V1b) | Battle logic + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -104,8 +104,8 @@ find hard to read out of ASM.
 game/pokeyellow.gbc  (user's own dump, development-time extraction, gitignored)
         │  npm run setup pokeyellow.gbc  →  src/rom/extractors/* + extractRom()  (Node)
         ▼
-data/          JSON for vitest                        ←── committed in R1c
-static/        Vite publicDir = data/ mirror + gfx/**  ←── written since R1a, committed in R1c
+data/          JSON for vitest                        ←── committed (R1c)
+static/        Vite publicDir = data/ mirror + gfx/**  ←── committed (R1c)
         │  plain fetch('pokemon.json') / <img src="/gfx/…">  (base '/')
         ▼
 game/ engine (consumers unchanged) — needs no ROM
@@ -138,12 +138,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (156 files, 9.7 MB).
+- **`data/`** — JSON only, produced by `npm run setup` (163 files, 9.8 MB, since V1a).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
-  if it is missing. Ignored by upstream's `game/.gitignore` until R1c.
+  if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. It holds 518 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 156 JSON files. That lets
+  (since R1a), which deletes and rebuilds it every run. It holds 519 PNGs + 3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 163 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -152,7 +152,8 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   - **Checked:** byte-identical across runs; `static_export.test.ts` proves
     lossless round-trips, that the JSON matches `data/`, and that `static/` is
     not stale.
-  - **Git:** ignored until R1c commits it. Don't hand-edit anything in it.
+  - **Git:** committed since R1c. Never hand-edit it — change the extractor, re-run
+    setup, commit the regenerated output with the code.
 - **Why two dirs:** tests hard-exit without `data/`; the browser needs a single
   public root that also holds graphics. One mirrored copy at setup end is simpler
   than dual-writing every JSON path.
@@ -161,9 +162,11 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 - **IndexedDB** — upstream's extracted-ROM cache (`src/rom/rom_cache.ts`). Unused
   since R1b; a browser that ran the upstream gate may still hold a stale one
   (harmless — nothing reads it).
-- ⚠ Upstream's `game/.gitignore` has unanchored `data/` and `gfx` patterns — `gfx`
-  would also swallow `static/gfx/`. R1c must remove both (check with
-  `git status --ignored`).
+- **Git (R1c):** `game/.gitignore` now ignores only `node_modules/`, `dist/`,
+  `*.gbc`, `*.gb`, `.DS_Store` (upstream's unanchored `data/` + `gfx` patterns
+  removed). The root `.gitattributes` keeps every text file LF on checkout, so
+  generated JSON stays byte-identical despite this machine's `core.autocrlf=true`,
+  and marks `*.png` / `*.tilemap` / `*.gbc` / `*.gb` binary.
 
 ## Invariants
 
@@ -203,7 +206,7 @@ Summary of path → shape → source:
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
 | `item_names.json` | `Record<CONSTANT, display>` (`text.ts:readItemDisplayNames`) | ROM via extractor |
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`) | ROM via extractor |
-| `maps/<Map>.json` | `MapData` (`maps.ts`) | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
+| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
 | `blockset_<name>.json` | `number[][]` 16 tile-ids per block (`blocksets.ts`) | ROM via extractor |
 | `collision_tiles.json` | `Record<collGroup, number[]>` (`collision.ts`) | ROM via extractor |
 | `town_map.json` | already static TS (`src/rom/town_map_data.ts`) | nothing to do |
@@ -248,8 +251,10 @@ DEST, id`, `bg_event x, y, TEXT_ID`, `object_event x, y, SPRITE, MOVEMENT, DIR,
 TEXT_ID`. `.blk` is one byte per block (PalletTown = 90 B = 10×9).
 
 **The test suite depends on `data/`.** `src/test/setup.ts` calls `process.exit(1)`
-when the directory is absent. After R1c, `data/` is committed and always present.
-Baseline 2026-09-22 (vanilla upstream): **375/375**. (The lost copy reached 395.)
+when the directory is absent. Since R1c, `data/` is committed and always present.
+Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, **409/409** since V1b
+(2026-09-22).
+(The lost copy reached 395.)
 
 **PSYCHIC — decided, not implemented** (DECISIONS #10): the asymmetric chart
 (`attacker: PSYCHIC_TYPE`, `defender: PSYCHIC`) as a post-processing step on
@@ -325,7 +330,8 @@ per step.
   Blocksets never reference those tiles.
 - **Fonts**: 1bpp PNGs, loaded through `loadFont()` (black on transparent).
 - **Tilemaps**: raw binary `.tilemap` files (`extractTitleTilemaps`), byte-identical
-  to pret's. Binary: keep git from touching their line endings (R1c).
+  to pret's. Marked `binary` in the root `.gitattributes` (R1c) — 2 of the 3 have
+  no NUL byte, so git would otherwise treat them as text.
 - All pret PNGs are grayscale (colortype 0) — 2bpp for art, 1bpp for fonts — which
   the browser expands to gray 0/85/170/255, landing exactly on the shade
   thresholds above. R1a's PNGs must decode to those same four values; verify any

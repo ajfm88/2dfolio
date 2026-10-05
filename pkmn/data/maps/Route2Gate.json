@@ -1,0 +1,77 @@
+{
+  "name": "Route2Gate",
+  "width": 5,
+  "height": 4,
+  "tileset": "GATE",
+  "connections": [],
+  "blocks": [
+    94,
+    92,
+    115,
+    92,
+    95,
+    58,
+    0,
+    0,
+    98,
+    99,
+    58,
+    0,
+    0,
+    96,
+    100,
+    58,
+    0,
+    11,
+    97,
+    101
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 4,
+      "y": 0,
+      "destMap": "Route2",
+      "destWarpId": 3
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "destMap": "Route2",
+      "destWarpId": 3
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 4
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 4
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "oaks_aide",
+      "sprite": "scientist",
+      "x": 1,
+      "y": 4,
+      "movement": "stay",
+      "dialogue": "",
+      "direction": "left"
+    },
+    {
+      "id": "youngster",
+      "sprite": "youngster",
+      "x": 5,
+      "y": 4,
+      "movement": "walk",
+      "dialogue": "Once a POKéMON\nlearns FLASH, you\ncan get through\nROCK TUNNEL.",
+      "walkDir": "left_right"
+    }
+  ]
+}

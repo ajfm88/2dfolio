@@ -23,8 +23,8 @@ Walkability check: `isWalkable(tileX, tileY)` checks tile at `(tileX, tileY + 1)
 
 ## Frame Rate Control
 
-- Adjustable FPS via `-`/`+` keys (steps of 5, range 10-120, default 50)
-- Persisted in localStorage key `pokeyellow-fps`
+- Adjustable FPS via `-`/`+` keys (steps of 5, range 10-200, default 50; `main.ts:885`)
+- Persisted in localStorage key `p151-f`
 - Toast overlay shows new value for ~2 seconds on change
 
 ## Screen Fade Transitions
@@ -55,6 +55,15 @@ Visual transitions before battles start (`battle_transitions.ts`):
 `map_transitions.ts` — async map loading for warps and connections:
 - `performWarpLoad(...)`: loads destination map, repositions player and Pikachu, returns `WarpLoadResult`
 - `performMapConnection(...)`: loads connected map (walked off edge), returns new NPC list
+- **The player keeps their facing through a warp** (V1b). The assembly never resets it:
+  `ResetPlayerSpriteData` runs only at Continue and new game. You enter a building still
+  facing up and leave a gate northward still facing north. A door step (landing on a
+  door tile) then walks the player down, as `PlayerStepOutFromDoor` does.
+- **Pikachu** is placed by Yellow's spawn states (`src/pikachu/pikachu_spawn.ts`), chosen
+  from the source and destination maps and the facing the warp fired with.
+- **A warp to a map that isn't extracted** fails gracefully: the player stays put (see
+  the Diglett's Cave entrance before V4). **A connection to one would hang**, because
+  `performMapConnection` doesn't catch the load error — so the extractor never emits one.
 
 ## Overworld Controller
 

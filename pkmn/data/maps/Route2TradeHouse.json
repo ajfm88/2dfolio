@@ -1,0 +1,61 @@
+{
+  "name": "Route2TradeHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    4,
+    14,
+    5,
+    9,
+    15,
+    1,
+    2,
+    15,
+    15,
+    12,
+    13,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 2
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 2
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "scientist",
+      "sprite": "scientist",
+      "x": 2,
+      "y": 4,
+      "movement": "stay",
+      "dialogue": "A fainted POKéMON\ncan't fight. But,\nit can still use\nmoves like CUT!",
+      "direction": "right"
+    },
+    {
+      "id": "gameboy_kid",
+      "sprite": "gameboy_kid",
+      "x": 4,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "",
+      "direction": "down"
+    }
+  ]
+}

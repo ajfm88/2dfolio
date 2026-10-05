@@ -1,0 +1,75 @@
+{
+  "name": "ViridianForestNorthGate",
+  "width": 5,
+  "height": 4,
+  "tileset": "FOREST_GATE",
+  "connections": [],
+  "blocks": [
+    94,
+    92,
+    115,
+    92,
+    95,
+    58,
+    0,
+    0,
+    98,
+    99,
+    58,
+    0,
+    0,
+    96,
+    100,
+    58,
+    0,
+    11,
+    97,
+    101
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 4,
+      "y": 0,
+      "destMap": "Route2",
+      "destWarpId": 1
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "destMap": "Route2",
+      "destWarpId": 1
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "ViridianForest",
+      "destWarpId": 0
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "destMap": "ViridianForest",
+      "destWarpId": 0
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "super_nerd",
+      "sprite": "super_nerd",
+      "x": 3,
+      "y": 2,
+      "movement": "stay",
+      "dialogue": "Many POKéMON live\nonly in forests\nand caves.\fYou need to look\neverywhere to get\ndifferent kinds!"
+    },
+    {
+      "id": "gramps",
+      "sprite": "gramps",
+      "x": 2,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "Have you noticed\nthe bushes on the\nroadside?\fThey can be cut\ndown by a special\nPOKéMON move."
+    }
+  ]
+}

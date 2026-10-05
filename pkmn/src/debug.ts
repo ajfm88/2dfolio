@@ -53,6 +53,15 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   { label: "House 2",             map: 'BluesHouse',           warpId: 0 },
   { label: 'Viridian Pokecenter', map: 'ViridianPokecenter',   warpId: 0 },
   { label: 'Viridian Mart',       map: 'ViridianMart',         warpId: 0 },
+  // Route 2 + Viridian Forest
+  { label: 'Route 2',             map: 'Route2',               warpId: 5 },  // at the Forest South Gate door
+  { label: 'Route 2 (north)',     map: 'Route2',               warpId: 1 },  // at the Forest North Gate exit
+  { label: 'Viridian Forest',     map: 'ViridianForest',       warpId: 3 },  // south entrance
+  { label: 'Forest South Gate',   map: 'ViridianForestSouthGate', warpId: 2 },
+  { label: 'Forest North Gate',   map: 'ViridianForestNorthGate', warpId: 2 },
+  { label: 'Route 2 Gate',        map: 'Route2Gate',           warpId: 2 },
+  { label: 'Route 2 Trade House', map: 'Route2TradeHouse',     warpId: 0 },
+  { label: "Diglett's Cave entrance", map: 'DiglettsCaveRoute2', warpId: 0 },
 ];
 
 // Toggle with backtick
@@ -268,15 +277,16 @@ function rebuildPanel(): void {
   const warpRow = row();
   const warpSelect = document.createElement('select');
   warpSelect.style.cssText = 'flex: 1; background: #222; color: #eee; border: 1px solid #555; border-radius: 2px; font: 11px monospace; padding: 2px 3px;';
-  for (const dest of WARP_DESTINATIONS) {
+  // Option values are list indexes: a map can have more than one entry (Route 2)
+  WARP_DESTINATIONS.forEach((dest, i) => {
     const opt = document.createElement('option');
-    opt.value = dest.map;
+    opt.value = String(i);
     opt.textContent = dest.label;
     warpSelect.appendChild(opt);
-  }
+  });
   warpRow.appendChild(warpSelect);
   const warpBtn = btn('Warp', () => {
-    const dest = WARP_DESTINATIONS.find(d => d.map === warpSelect.value);
+    const dest = WARP_DESTINATIONS[Number(warpSelect.value)];
     if (dest) {
       pendingWarp = { map: dest.map, warpId: dest.warpId, stepPos: dest.stepPos };
     }

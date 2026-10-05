@@ -12,7 +12,7 @@ import {
   GAMEFREAK_LOGO_GFX,
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
   SHOCK_EMOTE,
-  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, SHRINK_PIC_1, SHRINK_PIC_2,
+  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, SHRINK_PIC_1, SHRINK_PIC_2,
   HEAL_MACHINE_GFX,
   TOWN_MAP_TILES, TOWN_MAP_CURSOR, MON_NEST_ICON,
   POKEDEX_TILES,
@@ -449,6 +449,8 @@ export function extractPlayerAndTrainerSprites(rom: BinaryReader): Record<string
   const sprites: { url: string; offset: number }[] = [
     { url: '/gfx/player/redb.png', offset: RED_PIC_BACK },
     { url: '/gfx/battle/prof.oakb.png', offset: PROF_OAK_PIC_BACK },
+    // Old man's back pic for the BATTLE_TYPE_OLD_MAN catch demo (core.asm LoadPlayerBackPic)
+    { url: '/gfx/battle/oldmanb.png', offset: OLD_MAN_PIC_BACK },
     { url: '/gfx/player/shrink1.png', offset: SHRINK_PIC_1 },
     { url: '/gfx/player/shrink2.png', offset: SHRINK_PIC_2 },
   ];

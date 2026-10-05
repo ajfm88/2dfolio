@@ -5,6 +5,11 @@
   "tileset": "OVERWORLD",
   "connections": [
     {
+      "direction": "north",
+      "mapName": "Route2",
+      "offset": 5
+    },
+    {
       "direction": "south",
       "mapName": "Route1",
       "offset": 5

@@ -23,9 +23,12 @@ So: a **session** is one focused sitting, atomic — claim one unit of work, fin
 it, commit it, log it, stop. A **slice/milestone** below is a gate you may need
 many sessions to reach.
 
-**History of this plan:** 90 slices (2026-08-02) → 29 (2026-08-04, R1–X2) → 34
+**History of this plan:** 90 slices (2026-08-02) → 28 (2026-08-04, R1–X2) → 33
 (2026-09-22): the July–August code was lost, so **Phase V** (5 slices) was added
-to rebuild it, and R1 was split into R1a–c (DECISIONS #26).
+to rebuild it, and R1 was split into R1a–c (DECISIONS #26). The docs said "29"
+and then "34"; both were one too many (R1 + 27 rows A1–X2 = 28), corrected
+2026-09-22. Count R1 once — its three slices are one milestone. The same day the
+V1 plan added **A4 in-game trades**, which makes **34** (DECISIONS #29).
 
 ---
 
@@ -35,7 +38,7 @@ to rebuild it, and R1 was split into R1a–c (DECISIONS #26).
 12 maps (Pallet, Reds/Blues houses, Oak's Lab, Route 1, Route 22, Viridian City
 + 4 buildings), typecheck clean, **375/375** tests, and a **ROM upload gate** —
 the browser still extracts everything from the ROM at runtime. Full audit in
-`STATUS.md` → *What vanilla upstream actually has*. Baseline commit `9bf2d7d`.
+`STATUS.md` → *What the game has today*. Baseline commit `9bf2d7d`.
 
 The earlier work that reached 30 maps is gone; it is listed, with where each
 piece gets rebuilt, in `HISTORY.md` → *Prior work — code lost*.
@@ -46,9 +49,9 @@ piece gets rebuilt, in `HISTORY.md` → *Prior work — code lost*.
 
 | Phase | Slices | Theme | Gate |
 |---|---|---|---|
-| **R** | R1 (a–c) | Commit extracted data — permanent ROM-free | a fresh clone plays with no ROM and no setup |
+| **R** ✅ | R1 (a–c) | Commit extracted data — permanent ROM-free | a fresh clone plays with no ROM and no setup — **passed 2026-09-22** |
 | **V** | V1–V5 | Rebuild the lost work | 30 maps, Brock beatable, Psychic fix + SFX back |
-| **A** | A1–A3 | Core systems the upstream engine lacks | item balls, trainer sight, TMs, field effects |
+| **A** | A1–A4 | Core systems the upstream engine lacks | item balls, trainer sight, TMs, field effects, in-game trades |
 | **B** | B1–B2 | Mt. Moon → Cerulean | Misty beaten, S.S. Ticket obtained |
 | **C** | C1–C3 | Vermilion | have Cut, Lt. Surge beaten |
 | **D** | D1–D5 | Lavender + Celadon | have Silph Scope, Erika beaten, Poke Flute |
@@ -73,15 +76,16 @@ Goal: make the game permanently ROM-free. The ROM (`game/pokeyellow.gbc`) is use
 during development to extract; the output is committed so the product needs no
 ROM at all. Upstream extracts **in the browser** from an uploaded ROM, and its
 `npm run setup` wrote JSON only — no PNG existed on disk. That is why R1 is three
-slices. (R1a + R1b done 2026-09-22: setup writes `static/`, the browser loads only
-those files, ROM gate deleted; plus the game keeps running in background tabs —
-DECISIONS #27. 381 tests.)
+slices. **✅ Phase R done 2026-09-22** — setup writes `static/`, the browser loads
+only those files (ROM gate deleted), the data is committed, and a fresh clone
+with no ROM installs, tests, builds and plays (incl. save → CONTINUE). Also: the
+game keeps running in background tabs (DECISIONS #27). 381 tests.
 
 | ID | Slice | Verify |
 |---|---|---|
 | R1a ✅ | **Export graphics** (extraction side only) — `npm run setup` also writes `static/`: call the browser's own `extractRom()` from Node, write every `ImageData` as a lossless PNG at its exact URL key, `.tilemap` binaries verbatim, mirror `data/` JSON | test: every PNG decodes pixel-identical to its `ImageData`; setup twice → byte-identical; typecheck + 375 |
 | R1b ✅ | **Browser runs from files** (engine side only) — `vite.config.ts` `publicDir: 'static'`, `base: '/'`; delete the ROM gate in `main.ts` `init()`; tab title PKMN. `src/rom/` stays | `127.0.0.1:5173`: title → Oak intro → Pallet → Pikachu → Route 1 battle → Viridian → heal → save → reload → CONTINUE, zero failed requests, no ROM prompt |
-| R1c ⬜ | **Commit the data** — un-ignore `data/` + `static/` in `game/.gitignore`; root `.gitattributes` (`*.png binary`, `*.tilemap binary`, `*.sh text eol=lf`); commit | `git clone` the local repo to scratch → `npm install` → `npm test` (no `ROM_PATH`) → `npx vite` plays. **Phase R gate** |
+| R1c ✅ | **Commit the data** — un-ignore `data/` + `static/` in `game/.gitignore`; root `.gitattributes` (`*.png binary`, `*.tilemap binary`, `*.sh text eol=lf`); commit | `git clone` the local repo to scratch → `npm install` → `npm test` (no `ROM_PATH`) → `npx vite` plays. **Phase R gate** |
 
 ### R-phase notes
 
@@ -97,12 +101,13 @@ DECISIONS #27. 381 tests.)
 
 Goal: get back to where the lost July–August code was (30 maps, Brock, SFX,
 Psychic fix), on the committed-data pipeline from Phase R. Comes **before** A
-because A's verify steps need Route 2, the Forest and Brock. Each is likely
-several sessions — split freely.
+because A's verify steps need Route 2, the Forest and Brock. The exception is A1,
+which runs right after V1 (DECISIONS #29). Each slice is likely several sessions —
+split freely.
 
 | ID | Slice | Verify |
 |---|---|---|
-| V1 ⬜ | **Route 2 + Viridian Forest** — Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate; Viridian north connection; replace the upstream demo gate (Viridian old man, "as far as the demo goes") with the real ASM behavior; Forest trainers battle when talked to; music + debug warps | walk Viridian → Route 2 → Forest → north gate; battle a Bug Catcher |
+| V1 🔨 | **Route 2 + Viridian Forest** — Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate; Viridian north connection; replace the upstream demo gate (Viridian old man, "as far as the demo goes") with the real ASM behavior; Forest trainers battle when talked to; music + debug warps. **Five slices (DECISIONS #29, detail in `notes/v1-plan.md`):** V1a ✅ (2026-09-22) extract the maps + trainer data → V1b ✅ (2026-09-22) make them playable (music, palettes, warps, Pikachu spawn states, facing kept through warps; Oak's Aide moved to A2) → V1c trainer battles per `home/trainers.asm` → V1d catch-demo battle type (old man + Oak's Pikachu) → V1e the real old man, removing both demo gates (Viridian + Route 22's fake Blue) | walk Viridian → Route 2 → Forest → north gate; battle a Bug Catcher |
 | V2 ⬜ | **Pewter City** — PewterCity, PewterPokecenter, PewterMart, PewterNidoranHouse, PewterSpeechHouse; Route 2 ↔ Pewter connection; city scripts per ASM | enter Pewter from the Forest; heal; shop; talk to every NPC |
 | V3 ⬜ | **Pewter Gym + Museum** — PewterGym (Jr. Trainer, Brock; BADGE_1 on win, gym-leader music), Museum1F/2F (admission, Old Amber per ASM) | beat Brock → BADGE_1 on the trainer card; ATK boost applies in the next battle |
 | V4 ⬜ | **Diglett's Cave + Route 3** — DiglettsCave, DiglettsCaveRoute11 (entrance building; Route 11 outdoors is F1), Route3 + trainers; Pewter east exit | walk the cave end to end; Route 3 trainers battle |
@@ -110,7 +115,7 @@ several sessions — split freely.
 
 ---
 
-## Phase A — Core systems (3 slices)
+## Phase A — Core systems (4 slices)
 
 Re-scoped 2026-09-22 against what upstream **already has**: whiteout
 (`handleBlackoutWarp`), badge stat boosts, hidden-item pickup, the trainer
@@ -118,9 +123,10 @@ line-of-sight engine and `trainer_approach` state all work. What's missing:
 
 | ID | Slice | Verify |
 |---|---|---|
-| A1 ⬜ | **Item balls + trainer sight data** — visible item balls (`isItem` object events, already parsed in `maps.ts`) become collectible and stay gone once taken; populate each trainer's `sightRange` from the ROM so the existing sight engine fires | pick up an item ball in Viridian Forest; step into a Bug Catcher's line of sight → approach + battle |
-| A2 ⬜ | **Gym rewards + TM/HM teaching** — TM gifts after gym wins (Brock → TM34); teach TMs/HMs from the bag with ASM compatibility checks; USEDTMHM Pikachu happiness | beat Brock → receive TM34; teach it to a compatible mon; incompatible refused |
+| A1 ⬜ | **Item balls + trainer sight data** — **runs right after V1, before V2** (DECISIONS #29). Visible item balls become collectible and stay gone once taken (V1a already emits each ball's `item`). Populate each trainer's `sightRange` from the trainer header V1a already parses, and check the existing sight engine against `engine/overworld/trainer_sight.asm` | pick up an item ball in Viridian Forest; step into a Bug Catcher's line of sight → approach + battle |
+| A2 ⬜ | **Gym rewards + TM/HM teaching** — TM/HM items in the bag (none exist yet: machine names via `GetMachineName`, the `TechnicalMachines` table, HMs untossable); TM gifts after gym wins (Brock → TM34); teach TMs/HMs from the bag with ASM compatibility checks; USEDTMHM Pikachu happiness. **Plus Oak's Aide** in Route2Gate (HM05 for 10 owned, `OaksAideScript` — reusable for the later aides; moved here from V1b, DECISIONS #30) | beat Brock → receive TM34; teach it to a compatible mon; incompatible refused; Oak's Aide gives HM05 with 10 owned and refuses with fewer |
 | A3 ⬜ | **Field effects** — overworld poison damage per `engine/events/poison.asm` (+ PSNFNT happiness), Repel step counter, Escape Rope; re-verify whiteout | poisoned mon loses HP while walking; Repel suppresses weaker encounters; Escape Rope exits the Forest/cave |
+| A4 ⬜ | **In-game trades** (DECISIONS #29) — `DoInGameTradeDialogue` (`engine/events/in_game_trades.asm`, table `data/events/trades.asm`): the dialogue sets, choosing a party mon, the trade animation, and the received mon's nickname and OT. Yellow uses 7 trades: Route 2 trade house (Clefairy → Mr. Mime "MILES"), Route 11 gate 2F, Underground Path Route 5, Route 18 gate 2F, and 3 in the Cinnabar Lab. Must land before B1, the first point where the player can have a Clefairy | trade a Clefairy in the Route 2 trade house → receive "MILES"; talking again gives the after-trade text; the wrong species is refused |
 
 ## Phase B — Mt. Moon → Cerulean (2 slices)
 
@@ -212,6 +218,9 @@ Do not start either, and do not shape earlier work around them.
   steps use Route 2, the Forest and Brock.
 - **Phase A** adds only what upstream lacks (re-audited 2026-09-22 — see its
   intro). Audit again before claiming: the engine may already do part of a slice.
+  **A1 runs right after V1** (DECISIONS #29), so every map from Pewter on is built
+  with trainer sight and item balls working. The order is V1 → A1 → V2–V5 → A2–A4 →
+  B. A4 (trades) only has to land before B1.
 - **Phases B–I follow the game's story order.** Each area depends on items and
   events from the previous one.
 - **Map expansion pattern (V, B–I):** add the map to `EXTRACTABLE_MAPS` +
