@@ -747,6 +747,14 @@ const MAP_MUSIC: Record<string, string> = {
   ViridianSchoolHouse: 'cities1',
   ViridianNicknameHouse: 'cities1',
   ViridianGym: 'gym',
+  // Route 2 + Viridian Forest
+  Route2: 'routes1',
+  Route2Gate: 'cities1',
+  Route2TradeHouse: 'cities1',
+  DiglettsCaveRoute2: 'dungeon2',
+  ViridianForest: 'dungeon2',
+  ViridianForestSouthGate: 'cities1',
+  ViridianForestNorthGate: 'cities1',
 };
 
 /** Get the music track for a map, or null if unknown. */
@@ -850,7 +858,7 @@ async function handleWarpLoad(
   ow.justWarped = true;
   ow.doorExitStep = result.doorExitStep || forceStepDown;
   ow.standingOnWarp = result.standingOnWarp && !forceStepDown;
-  ow.pikachuDeferredSpawn = result.pikachuDeferredSpawn;
+  ow.pikachuDeferredSpawn = false; // performWarpLoad placed Pikachu already (spawn states)
   // For forced step-down (blackout): hide Pikachu, defer spawn until step completes
   if (forceStepDown && shouldPikachuFollow(playerParty)) {
     pikachuFollower.visible = false;

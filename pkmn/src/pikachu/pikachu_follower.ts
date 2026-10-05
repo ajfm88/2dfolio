@@ -3,6 +3,7 @@ import { TILE_SIZE } from '../core';
 import { drawSprite, loadSprite } from '../renderer';
 import { hasFlag } from '../events';
 import type { BattlePokemon } from '../battle';
+import { spawnPlacement, type PikachuSpawnState } from './pikachu_spawn';
 
 interface FrameSet { stand: number; walk: number }
 
@@ -149,21 +150,13 @@ export class PikachuFollower {
     this.moveProgress = 0;
   }
 
-  /** Place Pikachu after a warp.
-   *  'right'/'left': Pikachu beside player (assembly spawn states 1/6).
-   *  null: Pikachu on top of player (hidden until player moves, state 0). */
-  spawnAtWarp(playerX: number, playerY: number, playerDir: Direction, side: 'left' | 'right' | null): void {
-    if (side === 'right') {
-      this.x = playerX + STEP_SIZE;
-      this.y = playerY;
-    } else if (side === 'left') {
-      this.x = playerX - STEP_SIZE;
-      this.y = playerY;
-    } else {
-      this.x = playerX;
-      this.y = playerY;
-    }
-    this.direction = playerDir;
+  /** Place Pikachu after a warp, for a Yellow spawn state (pikachu_spawn.ts). On the
+   *  player's tile (states 0/3) it's drawn under the player until they step off. */
+  spawnAtState(playerX: number, playerY: number, playerDir: Direction, state: PikachuSpawnState): void {
+    const { dx, dy, facing } = spawnPlacement(state, playerDir);
+    this.x = playerX + dx * STEP_SIZE;
+    this.y = playerY + dy * STEP_SIZE;
+    this.direction = facing;
     this.clearBuffer();
     this.moving = false;
     this.moveProgress = 0;

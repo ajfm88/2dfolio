@@ -139,7 +139,7 @@ export async function extractRom(
   progress('Extracting Pokedex & maps...');
   data.jsonData['pokedex.json'] = extractPokedex(rom, pokemonInternalNames);
 
-  const maps = extractAllMaps(rom);
+  const maps = extractAllMaps(rom, itemNames, trainerClassNames);
   for (const [mapName, mapData] of Object.entries(maps)) {
     data.jsonData[`maps/${mapName}.json`] = mapData;
   }

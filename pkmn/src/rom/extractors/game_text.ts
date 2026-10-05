@@ -134,6 +134,18 @@ const TEXT_ENTRIES: Record<string, TextEntry> = {
   // Viridian City (bank 0x2D)
   VIRIDIAN_GIRL_PEWTER:      { offsets: [symToOffset(0x2D, 0x4752)] },
   VIRIDIAN_CATERPILLAR_ASK:  { offsets: [symToOffset(0x2D, 0x4686)] },
+  // The old man's catch demo and the north-exit checks (scripts/ViridianCity*.asm; used by V1e)
+  VIRIDIAN_OLDMAN_COFFEE:           { offsets: [symToOffset(0x2D, 0x44A4)] }, // _ViridianCityOldManHadMyCoffeeNowText
+  VIRIDIAN_OLDMAN_LOSING_TOUCH:     { offsets: [symToOffset(0x2D, 0x4553)] }, // _ViridianCityOldManLosingMyTouchText
+  VIRIDIAN_OLDMAN_WEAKEN_TARGET:    { offsets: [symToOffset(0x2D, 0x4478)] }, // _ViridianCityOldManYouNeedToWeakenTheTargetText
+  VIRIDIAN_OLDMAN_SHOW_AGAIN:       { offsets: [symToOffset(0x2D, 0x48EB)] }, // _ViridianCityOldManWantMeToShowYouAgainText
+  VIRIDIAN_OLDMAN_WATCH_CLOSELY:    { offsets: [symToOffset(0x2D, 0x4922)] }, // _ViridianCityOldManWatchCloselyText
+  VIRIDIAN_OLDMAN_NOT_GOOD_ENOUGH:  { offsets: [symToOffset(0x2D, 0x4947)] }, // _ViridianCityOldManNotGoodEnoughForYouText
+  VIRIDIAN_OLDMAN_PRIVATE_PROPERTY: { offsets: [symToOffset(0x2D, 0x47A7)] }, // _ViridianCityOldManSleepyPrivatePropertyText
+  VIRIDIAN_GYM_LOCKED:              { offsets: [symToOffset(0x2D, 0x4A98)] }, // _ViridianCityGymLockedText
+
+  // Route 2 gate (bank 0x28) — Oak's Aide, used by V1b
+  ROUTE2_GATE_FLASH_EXPLANATION: { offsets: [symToOffset(0x28, 0x4DE5)] }, // _Route2GateOaksAideFlashExplanationText
 
   // Blue's House (bank 0x2A)
   BLUES_HOUSE_USE_MAP:       { offsets: [symToOffset(0x2A, 0x4603)] },
@@ -141,6 +153,8 @@ const TEXT_ENTRIES: Record<string, TextEntry> = {
   // Battle UI text
   BATTLE_MISSED_MON:         { offsets: [symToOffset(0x2D, 0x6A0F)] },
   BATTLE_BROKE_FREE:         { offsets: [symToOffset(0x2D, 0x6A25)] },
+  BATTLE_SO_CLOSE:           { offsets: [symToOffset(0x2D, 0x6A62)] }, // _ItemUseBallText04 (3 shakes; the old man's failed throw, V1d)
+  BATTLE_OLD_MAN_NAME:       { offsets: [symToOffset(0x0F, 0x4FE7)] }, // DisplayBattleMenu.oldManName — "OLD MAN" (V1d)
 
   // Bookshelf text (bank 0x27)
   BOOKSHELF_BOOKS:           { offsets: [symToOffset(0x27, 0x6492)] },

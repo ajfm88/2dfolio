@@ -1,0 +1,57 @@
+{
+  "name": "DiglettsCaveRoute2",
+  "width": 4,
+  "height": 4,
+  "tileset": "CAVERN",
+  "connections": [],
+  "blocks": [
+    125,
+    125,
+    125,
+    125,
+    6,
+    1,
+    1,
+    125,
+    6,
+    1,
+    39,
+    125,
+    10,
+    36,
+    4,
+    125
+  ],
+  "borderBlock": 125,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 0
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 0
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "destMap": "DiglettsCave",
+      "destWarpId": 0
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "fishing_guru",
+      "sprite": "fishing_guru",
+      "x": 3,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "I went to ROCK\nTUNNEL, but it's\ndark and scary.\fIf a POKéMON's\nFLASH could light\nit up..."
+    }
+  ]
+}

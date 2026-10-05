@@ -130,6 +130,17 @@ Adding new maps (Phases V, B–I) follows this pattern:
 4. Verify: typecheck + tests + play-test.
 5. Commit the extracted output together with the code that uses it.
 
+Two things learned planning V1 (`notes/v1-plan.md`):
+
+- **Offsets come from pret's sym file**, which is already fetched in the clone:
+  `git -C refs/pokeyellow show origin/symbols:pokeyellow.sym > <scratchpad>/pokeyellow.sym`.
+  `git show` doesn't write to `refs/`. It matches our ROM (checked against the
+  offsets upstream already hardcodes).
+- **Never trust the NPC-text fallback for `text_asm` handlers.** `readMapText()`
+  grabs the first `text_far` within 80 bytes, which for V1 gave the wrong line to
+  all five Forest trainers and to Oak's Aide. Check every NPC's text against the ASM;
+  read trainer texts from the trainer header (`text_asm; ld hl, <header>`).
+
 ## Naming traps (learned the hard way — trust these)
 
 - **PSYCHIC family**: species types use `PSYCHIC` (`pokemon.ts` converts); move
@@ -152,6 +163,14 @@ Adding new maps (Phases V, B–I) follows this pattern:
   image width. 128 px = 16 tiles. Change the width and every map silently scrambles.
 - **Tileset ids share files**: MART→`pokecenter`, DOJO→`gym`, MUSEUM→`gate`,
   REDS_HOUSE_1/2→`reds_house`. Mappings are in `src/overworld/map.ts`.
+- **An item flag doesn't make an item ball.** Yellow's Blue's house Daisy and Town
+  Map objects end in a stray `, 0` (`objects/BluesHouse.asm`), so they are
+  item-flagged with item 0. An item ball is an item-flagged object whose
+  TextPointers entry is `PickUpItemText` (00:23ef). V1a nearly blanked Daisy's text
+  over this; the regenerated-data diff caught it.
+- **Diff the regenerated data after any extractor change** (`git diff --stat --
+  game/data`). The tests compare the extractor with `data/`, which setup just
+  rewrote, so only the diff shows an unintended change to an existing map.
 - **pret text tokens are already engine tokens**: `<PLAYER>`, `<RIVAL>` appear
   literally in the ASM source, and `#` means `POKé`. Don't invent a substitution layer.
 - Evolution targets in ASM are plain tokens; nothing evolves into a special-named
@@ -162,9 +181,9 @@ Adding new maps (Phases V, B–I) follows this pattern:
 - `scripts/extract_dev_data.ts` — the setup runner (`npm run setup pokeyellow.gbc`).
   Upstream's only script. (The lost copy also had `_extract_maps_only.ts`,
   `smoke_p5_3.mjs` and parked ASM generators in `scripts/gen/` — none exist now.)
-- `data/` — extracted JSON output (committed in R1c).
-- `static/` — Vite `publicDir` for the browser (JSON mirror + gfx; created in R1a,
-  committed in R1c).
+- `data/` — extracted JSON output (committed; regenerate, never hand-edit).
+- `static/` — Vite `publicDir` for the browser (JSON mirror + gfx; committed;
+  regenerate, never hand-edit).
 - `pokeyellow.gbc` — ROM, gitignored (`*.gbc`), development only.
 - Scratch files, experiments, one-off probes — session scratchpad, never the repos.
 - `pkmn/` root is the git repo (branch `master`, local-only). Commit at the end of
@@ -173,8 +192,8 @@ Adding new maps (Phases V, B–I) follows this pattern:
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 381/381** as of 2026-09-22
-   (R1a). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 409/409** as of 2026-09-22
+   (V1b). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite` at **`http://127.0.0.1:5173/`** (the save
@@ -199,3 +218,25 @@ Adding new maps (Phases V, B–I) follows this pattern:
 - The ROM is available during development (`game/pokeyellow.gbc`). Use it freely for
   extraction. The final product must not require it.
 - Prefer `http://127.0.0.1:5173/` when discussing saves.
+- **Plan first.** Before implementing a slice, the user wants a plan (asked for it
+  twice on 2026-09-22). Probe the unknowns, write the plan (a `notes/` file when
+  it's substantial), present it, and wait for the go-ahead.
+- **The user play-tests.** When they say they're testing in the browser, stop
+  driving it: hand over the URL, controls and what to check, and let them report.
+  Their "it works" is part of verification — log it as user-verified.
+- **Local only, commit every slice** (Hard rule #9; session contract step 6).
+  Stage specific paths — never sweep in changes you didn't make without asking.
+
+## Tooling traps (this machine: Windows, Git Bash + PowerShell)
+
+- **Never put backtick-laden text in a double-quoted shell string** (e.g.
+  `node -e "…"`): bash runs every `` `…` `` span as a command. To write Markdown,
+  use the Write/Edit tools, or a quoted heredoc (`node - <<'EOF'`).
+- Git Bash `grep` with a literal CR pattern gives false positives — count CR bytes
+  with `tr -cd '\r' < f | wc -c` or Node.
+- Node ESM `import()` needs `file://` URLs for absolute Windows paths
+  (`pathToFileURL`).
+- Browser automation: hold synthetic keys ~100 ms — the engine polls key state
+  once per tick, so shorter taps are lost.
+- Vite's dev watcher can crash on a locked file appearing in `game/` (EBUSY) —
+  just restart `npx vite`.

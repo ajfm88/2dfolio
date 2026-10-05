@@ -113,9 +113,16 @@ export function updateOverworld(
         }
       } else {
         player.forceStep('down');
+        // PlayerStepOutFromDoor simulates an ordinary DOWN press, so Pikachu follows
+        // this step like any other (it was placed on or beside the player by its
+        // spawn state — pikachu_spawn.ts)
+        if (pikachuFollower.visible) {
+          pikachuFollower.recordPlayerPosition(player.x, player.y, player.x, player.y + 16);
+        }
       }
     }
     player.update(gameMap, npcs);
+    if (pikachuFollower.visible) pikachuFollower.update();
     return null;
   }
 
@@ -312,6 +319,14 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
     // Mart clerk opens shop
     if (npcData.shopItems && npcData.shopItems.length > 0) {
       return { type: 'openShop', shopItems: npcData.shopItems };
+    }
+
+    // No text yet: item balls (pickup is A1), the trade kid (trades are A4) and Oak's
+    // Aide (HM05 is A2). Do nothing rather than open an empty text box.
+    if (!npcData.dialogue && !npcData.defeated) {
+      interaction.npc.restoreDirection();
+      ow.interactedNpc = null;
+      return null;
     }
 
     const text = npcData.defeated ? 'I lost to you...' : npcData.dialogue;

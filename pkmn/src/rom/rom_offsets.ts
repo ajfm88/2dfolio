@@ -98,6 +98,7 @@ export const SHOCK_EMOTE    = symToOffset(0x10, 0x51e5);  // 2bpp, 4 tiles
 export const RED_PIC_FRONT    = symToOffset(0x04, 0x5a97);  // RedPicFront — compressed (gfx/player/red.pic)
 export const RED_PIC_BACK     = symToOffset(0x3d, 0x43b1);  // RedPicBack — compressed
 export const PROF_OAK_PIC_BACK = symToOffset(0x3d, 0x44d2);  // ProfOakPicBack — compressed
+export const OLD_MAN_PIC_BACK = symToOffset(0x3d, 0x4441);   // OldManPicBack — compressed (gfx/battle/oldmanb.pic)
 export const SHRINK_PIC_1     = symToOffset(0x04, 0x5b96);  // ShrinkPic1 — compressed
 export const SHRINK_PIC_2     = symToOffset(0x04, 0x5bf0);  // ShrinkPic2 — compressed
 
@@ -240,6 +241,11 @@ export const QUADRUPED_ICON_FRAME1 = symToOffset(0x1c, 0x5aa6);
 export const SNAKE_ICON_FRAME2    = symToOffset(0x1c, 0x5ac6);
 export const QUADRUPED_ICON_FRAME2 = symToOffset(0x1c, 0x5ae6);
 
+/** PickUpItemText (home bank, 00:23ef): the TextPointers entry of every item ball.
+ *  A CPU address, not a file offset. The object's item flag alone isn't enough —
+ *  Yellow's BluesHouse Daisy and Town Map objects carry a stray item byte of 0. */
+export const PICK_UP_ITEM_TEXT_ADDR = 0x23ef;
+
 // ── Map Text Pointers (for NPC dialogue / sign text extraction) ──
 // Each map's TextPointers table: array of 2-byte pointers to text handlers.
 // Text handlers starting with 0x17 (TX_FAR) contain a 3-byte far pointer to actual text.
@@ -256,6 +262,14 @@ export const MAP_TEXT_PTRS: Record<string, { offset: number; bank: number; count
   ViridianMart:        { offset: symToOffset(0x07, 0x4d0d), bank: 0x07, count: 2 },
   ViridianSchoolHouse: { offset: symToOffset(0x07, 0x4d7d), bank: 0x07, count: 3 },
   ViridianNicknameHouse: { offset: symToOffset(0x07, 0x4dd6), bank: 0x07, count: 4 },
+  // V1 — Route 2 + Viridian Forest (pokeyellow.sym, pret symbols branch)
+  Route2:              { offset: symToOffset(0x15, 0x54fa), bank: 0x15, count: 4 },
+  Route2Gate:          { offset: symToOffset(0x17, 0x54e1), bank: 0x17, count: 2 },
+  Route2TradeHouse:    { offset: symToOffset(0x07, 0x57fa), bank: 0x07, count: 2 },
+  DiglettsCaveRoute2:  { offset: symToOffset(0x07, 0x57c2), bank: 0x07, count: 1 },
+  ViridianForest:      { offset: symToOffset(0x18, 0x5112), bank: 0x18, count: 16 },
+  ViridianForestSouthGate: { offset: symToOffset(0x17, 0x556a), bank: 0x17, count: 2 },
+  ViridianForestNorthGate: { offset: symToOffset(0x17, 0x5494), bank: 0x17, count: 2 },
 };
 
 // ── Palette Data ──────────────────────────────────────────────
