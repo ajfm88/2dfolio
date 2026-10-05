@@ -4,7 +4,7 @@
 // Per-map metadata provides NPC ids and structural overrides, but NO copyrighted text.
 
 import { BinaryReader } from '../binary_reader';
-import { MAP_HEADER_PTRS, MAP_HEADER_BANKS, MAP_TEXT_PTRS, symToOffset } from '../rom_offsets';
+import { MAP_HEADER_PTRS, MAP_HEADER_BANKS, MAP_TEXT_PTRS, PICK_UP_ITEM_TEXT_ADDR, symToOffset } from '../rom_offsets';
 import { decodeMapText } from './text';
 
 // ── Constants ───────────────────────────────────────────────────
@@ -26,9 +26,20 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x2C: 'ViridianNicknameHouse',
   0x2D: 'ViridianGym',      // Referenced by ViridianCity warp
   0xC1: 'Route22Gate',      // Referenced by Route22 warp
-  // Additional maps referenced by connections but not extracted
+  // V1 — Route 2 + Viridian Forest
   0x0D: 'Route2',
+  0x2E: 'DiglettsCaveRoute2',
+  0x2F: 'ViridianForestNorthGate',
+  0x30: 'Route2TradeHouse',
+  0x31: 'Route2Gate',
+  0x32: 'ViridianForestSouthGate',
+  0x33: 'ViridianForest',
+  0xC5: 'DiglettsCave',     // Referenced by DiglettsCaveRoute2 warp (extracted in V4)
+  // Additional maps referenced by connections but not extracted
   0x20: 'Route21',
+  // PewterCity (0x02) stays out until V2 extracts it: a connection to a missing map
+  // would hang the game (performMapConnection doesn't catch), so Route 2's north
+  // connection is dropped and its north edge is a tree wall until then.
 };
 
 /** Tileset byte ID → JSON tileset name string */
@@ -254,6 +265,13 @@ export interface MapNpc {
   object?: boolean;
   dialogue: string;
   shopItems?: string[];
+  /** Item balls: the item they hold (A1 makes them collectible). */
+  item?: string;
+  /** Standard map trainers (see readTrainerTexts). `dialogue` is the before-battle text. */
+  trainerClass?: string;      // trainers.json key, e.g. "BUG_CATCHER"
+  trainerParty?: number;      // 0-based index into that class's parties
+  endBattleText?: string;     // in battle after "PLAYER defeated CLASS!", shown as "CLASS: " + text
+  afterBattleText?: string;   // talking to the trainer once beaten
 }
 
 export interface MapData {
@@ -287,6 +305,9 @@ interface NpcMeta {
   y?: number;
   sprite?: string;
   movement?: string;
+  /** Text comes from engine code (e.g. OaksAideScript, an in-game trade), so emit no
+   *  dialogue: the TextPointers fallback would pick up the wrong text. */
+  scripted?: boolean;
 }
 
 /** Per-map metadata: structural overrides and text offsets.
@@ -330,7 +351,6 @@ const MAP_METADATA: Record<string, MapMeta> = {
     ],
   },
   ViridianCity: {
-    connectionFilter: ['south', 'west'],
     signTextOffsets: [
       symToOffset(0x2d, 0x496a), // VIRIDIAN CITY sign
       symToOffset(0x2d, 0x4997), // TRAINER TIPS 1
@@ -444,6 +464,88 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'speary_sign' },
     ],
   },
+
+  // ── V1: Route 2 + Viridian Forest (notes/v1-plan.md) ──
+  // NPC ids are pret's const_export names minus the map prefix, lowercased
+  // (data/maps/objects/<Map>.asm), in ROM object order. direction / walkDir mirror
+  // the object_event bytes: STAY <dir> → direction, WALK UP_DOWN / LEFT_RIGHT →
+  // walkDir, NONE / ANY_DIR → omitted.
+  Route2: {
+    signTextOffsets: [
+      symToOffset(0x28, 0x6d57), // _Route2SignText
+      symToOffset(0x28, 0x6d7c), // _Route2DiglettsCaveSignText
+    ],
+    npcs: [
+      { id: 'moon_stone', object: true },
+      { id: 'hp_up', object: true },
+    ],
+  },
+  Route2Gate: {
+    signTextOffsets: [],
+    npcs: [
+      // Talks through OaksAideScript (engine/events/oaks_aide.asm) — V1b
+      { id: 'oaks_aide', direction: 'left', scripted: true },
+      { id: 'youngster', walkDir: 'left_right' },
+    ],
+  },
+  Route2TradeHouse: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'scientist', direction: 'right' },
+      // In-game trade TRADE_FOR_MILES (DoInGameTradeDialogue) — slice A4
+      { id: 'gameboy_kid', direction: 'down', scripted: true },
+    ],
+  },
+  DiglettsCaveRoute2: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'fishing_guru' },
+    ],
+  },
+  ViridianForest: {
+    signTextOffsets: [
+      symToOffset(0x26, 0x45fa), // _ViridianForestTrainerTips1Text
+      symToOffset(0x26, 0x4643), // _ViridianForestUseAntidoteSignText
+      symToOffset(0x26, 0x4674), // _ViridianForestTrainerTips2Text
+      symToOffset(0x26, 0x46b6), // _ViridianForestTrainerTips3Text
+      symToOffset(0x26, 0x4703), // _ViridianForestTrainerTips4Text
+      // Yellow bug, reproduced on purpose: the LEAVING VIRIDIAN FOREST sign prints
+      // TRAINER TIPS 1 (scripts/ViridianForest.asm ViridianForestLeavingSignText:
+      // "supposed to be ViridianForestPrintLeavingSignText")
+      symToOffset(0x26, 0x45fa),
+    ],
+    hiddenEvents: [
+      // data/events/hidden_events.asm
+      { x: 1, y: 18, item: 'POTION', flag: 'HIDDEN_ITEM_VIRIDIAN_FOREST_POTION' },
+      { x: 16, y: 42, item: 'ANTIDOTE', flag: 'HIDDEN_ITEM_VIRIDIAN_FOREST_ANTIDOTE' },
+    ],
+    npcs: [
+      { id: 'youngster1' },
+      { id: 'youngster2', direction: 'left' },   // Bug Catcher
+      { id: 'youngster3', direction: 'left' },   // Bug Catcher
+      { id: 'youngster4', direction: 'left' },   // Bug Catcher
+      { id: 'cooltrainer_f' },                    // Lass
+      { id: 'youngster5', direction: 'right' },  // Bug Catcher
+      { id: 'potion1', object: true },
+      { id: 'potion2', object: true },
+      { id: 'poke_ball', object: true },
+      { id: 'youngster6' },
+    ],
+  },
+  ViridianForestSouthGate: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'girl', direction: 'left' },
+      { id: 'little_girl', walkDir: 'up_down' },
+    ],
+  },
+  ViridianForestNorthGate: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'super_nerd' },
+      { id: 'gramps' },
+    ],
+  },
 };
 
 // ── Map names that we extract ──────────────────────────────────
@@ -461,6 +563,13 @@ const EXTRACTABLE_MAPS: Record<string, number> = {
   ViridianMart: 0x2A,
   ViridianSchoolHouse: 0x2B,
   ViridianNicknameHouse: 0x2C,
+  Route2: 0x0D,
+  DiglettsCaveRoute2: 0x2E,
+  ViridianForestNorthGate: 0x2F,
+  Route2TradeHouse: 0x30,
+  Route2Gate: 0x31,
+  ViridianForestSouthGate: 0x32,
+  ViridianForest: 0x33,
 };
 
 // ── NPC index overrides (when ROM has more NPCs than JSON) ─────
@@ -515,6 +624,12 @@ interface RomNpc {
   textId: number;
   isTrainer: boolean;
   isItem: boolean;
+  /** Trainer objects: class byte — an OPP_* value (≥ OPP_ID_OFFSET), or a species for a static Pokémon */
+  trainerClassId?: number;
+  /** Trainer objects: which party of the class (1-based), or the static Pokémon's level */
+  trainerSet?: number;
+  /** Item-flagged objects: the item byte (an item ball only if its text is PickUpItemText) */
+  itemId?: number;
 }
 
 function parseMapHeader(rom: BinaryReader, mapId: number): {
@@ -632,6 +747,8 @@ function parseMapObjects(rom: BinaryReader, objectPtr: number, bank: number): {
       textId,
       isTrainer,
       isItem,
+      ...(isTrainer ? { trainerClassId: rom.readByte(pos + 6), trainerSet: rom.readByte(pos + 7) } : {}),
+      ...(isItem ? { itemId: rom.readByte(pos + 6) } : {}),
     });
     pos += size;
   }
@@ -639,10 +756,85 @@ function parseMapObjects(rom: BinaryReader, objectPtr: number, bank: number): {
   return { borderBlock, warps, signs, npcs };
 }
 
+// ── Trainer headers ────────────────────────────────────────────
+
+/** constants/trainer_constants.asm: object class bytes from here up are trainer
+ *  classes (OPP_* = 200 + class ID); lower values are species (static Pokémon). */
+const OPP_ID_OFFSET = 200;
+
+const TX_ASM = 0x08;   // text_asm — the TextPointers handler is Z80 code
+const LD_HL_NN = 0x21; // ld hl, nn
+
+interface TrainerTexts {
+  battleText: string;       // TRAINER_BEFORE_BATTLE_TEXT
+  endBattleText: string;    // TRAINER_WON_BATTLE_TEXT
+  afterBattleText: string;  // TRAINER_AFTER_BATTLE_TEXT
+}
+
+/** The raw TextPointers entry (a CPU address) for a map text ID, or null. */
+function textPointerAddr(rom: BinaryReader, mapName: string, textId: number): number | null {
+  const textPtrs = MAP_TEXT_PTRS[mapName];
+  if (!textPtrs || textId < 1 || textId > textPtrs.count) return null;
+  return rom.readWord(textPtrs.offset + (textId - 1) * 2);
+}
+
+/** Decode the text behind a `text_far` handler, or null if it isn't one. */
+function readFarText(rom: BinaryReader, handlerOffset: number): string | null {
+  if (rom.readByte(handlerOffset) !== TX_FAR) return null;
+  const addr = rom.readWord(handlerOffset + 1);
+  const bank = rom.readByte(handlerOffset + 3);
+  return decodeMapText(rom, rom.resolvePointer(bank, addr));
+}
+
+/**
+ * Read a standard map trainer's texts from its trainer header.
+ *
+ * Standard trainers' TextPointers handlers are `text_asm; ld hl, <Map>TrainerHeaderN`
+ * followed by `TalkToTrainer` (home/trainers.asm). The header — the `trainer` macro —
+ * is 12 bytes: event-flag bit, view range << 4, event-flag pointer, then pointers to
+ * the before-battle, after-battle, won and lost texts, each a `text_far` handler in
+ * the map script's bank. (Won and lost are the same text for map trainers.)
+ *
+ * Returns null for anything else — rivals and gym leaders run custom scripts — so
+ * a mismatch never yields a wrong text. (The generic TextPointers fallback gives
+ * every Viridian Forest trainer the first trainer's line: notes/v1-plan.md §2.2.)
+ */
+function readTrainerTexts(rom: BinaryReader, mapName: string, textId: number): TrainerTexts | null {
+  const textPtrs = MAP_TEXT_PTRS[mapName];
+  const handlerAddr = textPointerAddr(rom, mapName, textId);
+  if (!textPtrs || handlerAddr === null) return null;
+
+  // An address in the map script's ROM bank → file offset; null for home bank / RAM
+  const inBank = (addr: number): number | null =>
+    addr >= 0x4000 && addr <= 0x7FFF ? rom.resolvePointer(textPtrs.bank, addr) : null;
+
+  const handler = inBank(handlerAddr);
+  if (handler === null) return null;
+  if (rom.readByte(handler) !== TX_ASM || rom.readByte(handler + 1) !== LD_HL_NN) return null;
+  const header = inBank(rom.readWord(handler + 2));
+  if (header === null) return null;
+
+  const text = (field: number): string | null => {
+    const h = inBank(rom.readWord(header + field));
+    return h === null ? null : readFarText(rom, h);
+  };
+  const battleText = text(4);
+  const afterBattleText = text(6);
+  const endBattleText = text(8);
+  if (battleText === null || afterBattleText === null || endBattleText === null) return null;
+  return { battleText, endBattleText, afterBattleText };
+}
+
 // ── Public API ─────────────────────────────────────────────────
 
-/** Extract a single map by name, producing output matching data/maps/<name>.json */
-export function extractMap(rom: BinaryReader, mapName: string): MapData | null {
+/** Extract a single map by name, producing output matching data/maps/<name>.json.
+ *  itemNames / trainerClassNames: from readItemNames() / readTrainerClassNames(). */
+export function extractMap(
+  rom: BinaryReader,
+  mapName: string,
+  itemNames: Record<number, string>,
+  trainerClassNames: string[],
+): MapData | null {
   const mapId = EXTRACTABLE_MAPS[mapName];
   if (mapId === undefined) return null;
 
@@ -737,12 +929,28 @@ export function extractMap(rom: BinaryReader, mapName: string): MapData | null {
     const npcX = npcMeta.x !== undefined ? npcMeta.x : romNpc.x;
     const npcY = npcMeta.y !== undefined ? npcMeta.y : romNpc.y;
 
-    // Read dialogue: metadata override (demo-custom text) > textOffset (sym-file) > TextPointers (auto)
+    // Standard map trainer: class and party come from the object, texts from its header
+    const trainerClassId = romNpc.trainerClassId ?? 0;
+    const trainer = trainerClassId >= OPP_ID_OFFSET
+      ? readTrainerTexts(rom, mapName, romNpc.textId)
+      : null;
+
+    // Item ball = item-flagged object whose text is PickUpItemText
+    const isItemBall = romNpc.isItem &&
+      textPointerAddr(rom, mapName, romNpc.textId) === PICK_UP_ITEM_TEXT_ADDR;
+
+    // Read dialogue: metadata override (demo-custom text) > trainer header (before-battle
+    // text) > textOffset (sym-file) > TextPointers (auto). Engine-driven text — scripted
+    // NPCs and item balls — gets none, so the fallback can't guess.
+    const engineText = npcMeta.scripted === true || isItemBall;
     let dialogue = npcMeta.dialogue || '';
-    if (!dialogue && npcMeta.textOffset) {
+    if (!dialogue && trainer) {
+      dialogue = trainer.battleText;
+    }
+    if (!dialogue && !engineText && npcMeta.textOffset) {
       dialogue = decodeMapText(rom, npcMeta.textOffset);
     }
-    if (!dialogue) {
+    if (!dialogue && !engineText) {
       dialogue = readMapText(rom, mapName, romNpc.textId) || '';
     }
 
@@ -771,6 +979,19 @@ export function extractMap(rom: BinaryReader, mapName: string): MapData | null {
     // Add shop items
     if (npcMeta.shopItems) {
       npc.shopItems = npcMeta.shopItems;
+    }
+
+    // Item ball: the item it holds
+    if (isItemBall && romNpc.itemId !== undefined) {
+      npc.item = itemNames[romNpc.itemId] ?? `ITEM_${romNpc.itemId}`;
+    }
+
+    // Standard trainer: class, 0-based party, and the texts after the battle
+    if (trainer) {
+      npc.trainerClass = trainerClassNames[trainerClassId - OPP_ID_OFFSET] ?? `TRAINER_${trainerClassId}`;
+      npc.trainerParty = (romNpc.trainerSet ?? 1) - 1;
+      npc.endBattleText = trainer.endBattleText;
+      npc.afterBattleText = trainer.afterBattleText;
     }
 
     npcs.push(npc);
@@ -827,15 +1048,24 @@ function resolveLastMap(mapName: string): string {
     ViridianMart: 'ViridianCity',
     ViridianSchoolHouse: 'ViridianCity',
     ViridianNicknameHouse: 'ViridianCity',
+    Route2Gate: 'Route2',
+    Route2TradeHouse: 'Route2',
+    DiglettsCaveRoute2: 'Route2',  // its map script also forces wLastMap = ROUTE_2
+    ViridianForestSouthGate: 'Route2',
+    ViridianForestNorthGate: 'Route2',
   };
   return parentMap[mapName] || 'PalletTown';
 }
 
-/** Extract all 12 demo maps, keyed by map name */
-export function extractAllMaps(rom: BinaryReader): Record<string, MapData> {
+/** Extract every map in EXTRACTABLE_MAPS, keyed by map name */
+export function extractAllMaps(
+  rom: BinaryReader,
+  itemNames: Record<number, string>,
+  trainerClassNames: string[],
+): Record<string, MapData> {
   const result: Record<string, MapData> = {};
   for (const mapName of Object.keys(EXTRACTABLE_MAPS)) {
-    const data = extractMap(rom, mapName);
+    const data = extractMap(rom, mapName, itemNames, trainerClassNames);
     if (data) {
       result[mapName] = data;
     }

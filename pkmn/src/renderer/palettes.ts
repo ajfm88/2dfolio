@@ -96,6 +96,16 @@ const MAP_PALETTE: Record<string, string> = {
   ViridianSchoolHouse: 'VIRIDIAN',
   ViridianNicknameHouse: 'VIRIDIAN',
 
+  // Route 2 + Viridian Forest. Gates, houses and the Forest take wLastMap's palette
+  // (Route 2 → ROUTE); the CAVERN tileset forces PAL_CAVE
+  // (engine/gfx/palettes.asm SetPal_Overworld)
+  Route2: 'ROUTE',
+  Route2Gate: 'ROUTE',
+  Route2TradeHouse: 'ROUTE',
+  ViridianForest: 'ROUTE',
+  ViridianForestSouthGate: 'ROUTE',
+  ViridianForestNorthGate: 'ROUTE',
+  DiglettsCaveRoute2: 'CAVE',
 };
 
 /** Get the palette name for a map. Falls back to 'ROUTE' for unknown maps. */

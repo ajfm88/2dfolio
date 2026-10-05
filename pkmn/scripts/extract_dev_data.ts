@@ -125,7 +125,7 @@ writeJson('collision_tiles.json', extractCollisionTiles(rom)); count++;
 writeJson('town_map.json', townMapData); count++;
 writeJson('pokedex.json', extractPokedex(rom, pokemonInternalNames)); count++;
 
-const maps = extractAllMaps(rom);
+const maps = extractAllMaps(rom, itemNames, trainerClassNames);
 for (const [mapName, mapData] of Object.entries(maps)) {
   writeJson(`maps/${mapName}.json`, mapData); count++;
 }

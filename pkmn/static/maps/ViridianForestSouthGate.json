@@ -1,0 +1,77 @@
+{
+  "name": "ViridianForestSouthGate",
+  "width": 5,
+  "height": 4,
+  "tileset": "FOREST_GATE",
+  "connections": [],
+  "blocks": [
+    94,
+    92,
+    115,
+    92,
+    95,
+    58,
+    0,
+    0,
+    98,
+    99,
+    58,
+    0,
+    0,
+    96,
+    100,
+    58,
+    0,
+    11,
+    97,
+    101
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 4,
+      "y": 0,
+      "destMap": "ViridianForest",
+      "destWarpId": 3
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "destMap": "ViridianForest",
+      "destWarpId": 3
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 5
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "destMap": "Route2",
+      "destWarpId": 5
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "id": "girl",
+      "sprite": "girl",
+      "x": 8,
+      "y": 4,
+      "movement": "stay",
+      "dialogue": "Are you going to\nVIRIDIAN FOREST?\nBe careful, it's\na natural maze!",
+      "direction": "left"
+    },
+    {
+      "id": "little_girl",
+      "sprite": "little_girl",
+      "x": 2,
+      "y": 4,
+      "movement": "walk",
+      "dialogue": "You have to roam\nfar to get new\nkinds of POKéMON.\fLook for other\ntypes outside of\nVIRIDIAN FOREST.",
+      "walkDir": "up_down"
+    }
+  ]
+}

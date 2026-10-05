@@ -10,6 +10,7 @@ import { GameMap } from './map';
 import { Player } from './player';
 import { Npc, loadNpcs } from './npc';
 import { PikachuFollower, shouldPikachuFollow } from '../pikachu/pikachu_follower';
+import { warpSpawnState, CONNECTION_SPAWN_STATE } from '../pikachu/pikachu_spawn';
 import type { BattlePokemon } from '../battle';
 import { loadWildEncounters } from '../battle';
 import { setActivePalette, getMapPalette } from '../renderer';
@@ -22,7 +23,6 @@ export interface WarpLoadResult {
   npcs: Npc[];
   doorExitStep: boolean;
   standingOnWarp: boolean;
-  pikachuDeferredSpawn: boolean;
 }
 
 /** Load a warp destination map, reposition player and Pikachu.
@@ -37,8 +37,9 @@ export async function performWarpLoad(
   defeatedTrainers: Set<string>,
   stepPos?: { x: number; y: number }
 ): Promise<WarpLoadResult | null> {
-  // Remember if source map was outdoor before loading destination
-  const sourceWasOutdoor = (gameMap.mapData?.connections?.length ?? 0) > 0;
+  // The map being left decides which Pikachu spawn setter runs (WarpFound2)
+  const sourceName = gameMap.mapData?.name ?? '';
+  const sourceTileset = gameMap.mapData?.tileset ?? '';
 
   setActivePalette(getMapPalette(destMapName));
   await reloadBorderTiles();
@@ -68,8 +69,10 @@ export async function performWarpLoad(
     }
   }
 
-  player.direction = 'down';
-  // Auto-step out from door tiles (matching assembly PlayerStepOutFromDoor)
+  // The player keeps facing the way they walked in: the assembly never resets the
+  // facing on a warp (ResetPlayerSpriteData runs only at Continue and new game).
+  // Auto-step out from door tiles (matching assembly PlayerStepOutFromDoor) — that
+  // step turns them down.
   const doorExitStep = gameMap.isDoorTile(player.tileX, player.tileY);
   // If landing on a non-instant warp tile (e.g. door mat inside a building),
   // set standingOnWarp so pressing into the edge immediately triggers the warp.
@@ -82,35 +85,21 @@ export async function performWarpLoad(
   // Clear script NPCs when changing maps
   clearScriptNpcs();
 
-  // Reposition Pikachu for new map based on warp type (assembly SetPikachuSpawnOutside):
-  //  outdoor→indoor (entering building): Pikachu beside player (right or left per map)
-  //  indoor→outdoor (leaving building):  Pikachu hidden until door-exit step completes
-  //  indoor→indoor  (stairs/floor change): Pikachu on player (hidden until player moves)
-  let pikachuDeferredSpawn = false;
-  const pikaShouldFollow = shouldPikachuFollow(playerParty);
-  const destIsOutdoor = (gameMap.mapData?.connections?.length ?? 0) > 0;
-
-  if (destIsOutdoor && doorExitStep) {
-    // Leaving a building: hide Pikachu during door-exit, spawn after auto-step completes
-    pikachuFollower.visible = false;
-    pikachuDeferredSpawn = pikaShouldFollow;
-  } else if (sourceWasOutdoor && !destIsOutdoor) {
-    // Entering a building: Pikachu beside player (assembly spawn state 1=right, 6=left)
-    const PIKACHU_SPAWN_LEFT: string[] = ['OaksLab'];
-    const side = PIKACHU_SPAWN_LEFT.includes(destMapName) ? 'left' : 'right';
-    pikachuFollower.visible = pikaShouldFollow;
-    if (pikachuFollower.visible) {
-      pikachuFollower.spawnAtWarp(player.x, player.y, player.direction, side);
-    }
-  } else {
-    // Floor change (stairs) or other: Pikachu on player, hidden until they move
-    pikachuFollower.visible = pikaShouldFollow;
-    if (pikachuFollower.visible) {
-      pikachuFollower.spawnAtWarp(player.x, player.y, player.direction, null);
-    }
+  // Place Pikachu the way Yellow does (pikachu_spawn.ts: pikachu_follow.asm spawn
+  // states, the setter chosen as in WarpFound2), from the facing the warp fired with.
+  // Nothing hides it for a door step: PlayerStepOutFromDoor is an ordinary step, so a
+  // Pikachu on the player's tile shows up as the player walks off it.
+  pikachuFollower.visible = shouldPikachuFollow(playerParty);
+  if (pikachuFollower.visible) {
+    const state = warpSpawnState(
+      sourceName, sourceTileset,
+      destMapName, gameMap.mapData?.tileset ?? '',
+      player.direction,
+    );
+    pikachuFollower.spawnAtState(player.x, player.y, player.direction, state);
   }
 
-  return { npcs, doorExitStep, standingOnWarp, pikachuDeferredSpawn };
+  return { npcs, doorExitStep, standingOnWarp };
 }
 
 /** Load a connected map (player walked off map edge), reposition player and Pikachu. */
@@ -165,10 +154,11 @@ export async function performMapConnection(
   // Reset stale movement state — player may have been mid-step when the connection fired
   player.cancelMovement();
 
-  // Respawn Pikachu 1 step behind the player on the new map.
+  // Respawn Pikachu 1 step behind the player on the new map (spawn state 2,
+  // CheckMapConnections .loadNewMap).
   pikachuFollower.visible = shouldPikachuFollow(playerParty);
   if (pikachuFollower.visible) {
-    pikachuFollower.spawn(player.x, player.y, player.direction);
+    pikachuFollower.spawnAtState(player.x, player.y, player.direction, CONNECTION_SPAWN_STATE);
   }
 
   return npcs;

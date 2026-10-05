@@ -26,12 +26,13 @@ beforeAll(async () => {
 });
 
 describe('static/ export: asset keys', () => {
-  it('extracts 518 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 519 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
+    // (518 → 519 in V1a: /gfx/battle/oldmanb.png.)
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(518);
+    expect(imageKeys.length).toBe(519);
     expect(binaryKeys).toEqual([
       'gfx/title/pika_bubble.tilemap',
       'gfx/title/pikachu.tilemap',
