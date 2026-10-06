@@ -3,6 +3,7 @@ export { createScript, isCommandDone, currentCommand, advanceScript } from './en
 export {
   initScript, updateScript, getActiveScript,
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript,
+  setLastBattleWon, wasLastBattleWon,
   getScriptNpcs, clearScriptNpcs, getScriptFadeAlpha, lookupNpc,
   renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo,
 } from './script_controller';

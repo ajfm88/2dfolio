@@ -63,7 +63,7 @@ export type OverworldAction =
   | { type: 'openBlackboard' }
 
   | { type: 'startBattle'; pokemon: BattlePokemon }
-  | { type: 'startTrainerBattle'; trainerClass: string; partyIndex: number; trainerName?: string; npcId: string }
+  | { type: 'talkToTrainer'; npc: Npc }
   | { type: 'warp'; destMap: string; destWarpId: number }
   | { type: 'connectToMap'; destMap: string; dir: 'north' | 'south' | 'east' | 'west'; offset: number }
   | { type: 'trainerApproach'; npc: Npc }
@@ -219,16 +219,10 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
     ow.interactedNpc = interaction.npc;
     const npcData = interaction.npc.data;
 
-    // Trainer battle
+    // Trainer not yet beaten: before-battle text, then the battle (home/trainers.asm
+    // TalkToTrainer). The beaten flag is set only after a win (EndTrainerBattle).
     if (npcData.trainerClass && npcData.trainerParty !== undefined && !npcData.defeated) {
-      npcData.defeated = true;
-      return {
-        type: 'startTrainerBattle',
-        trainerClass: npcData.trainerClass,
-        partyIndex: npcData.trainerParty,
-        trainerName: npcData.trainerName,
-        npcId: npcData.id,
-      };
+      return { type: 'talkToTrainer', npc: interaction.npc };
     }
 
     // Nurse Joy heals the party (full pokecenter sequence)
@@ -321,15 +315,15 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
       return { type: 'openShop', shopItems: npcData.shopItems };
     }
 
+    // A beaten trainer says their after-battle text (TalkToTrainer, flag set).
+    const text = npcData.defeated ? (npcData.afterBattleText ?? npcData.dialogue) : npcData.dialogue;
     // No text yet: item balls (pickup is A1), the trade kid (trades are A4) and Oak's
     // Aide (HM05 is A2). Do nothing rather than open an empty text box.
-    if (!npcData.dialogue && !npcData.defeated) {
+    if (!text) {
       interaction.npc.restoreDirection();
       ow.interactedNpc = null;
       return null;
     }
-
-    const text = npcData.defeated ? 'I lost to you...' : npcData.dialogue;
     return { type: 'textbox', text };
   }
 

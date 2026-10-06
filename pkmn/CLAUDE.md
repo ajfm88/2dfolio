@@ -15,7 +15,7 @@ committed PNGs after Phase R). Build the whole game on those.
 Game data is extracted from the user's own cartridge dump during development,
 then committed to the repo so the final product needs no ROM at all.
 
-**Scale:** ~1–2 years, on the order of **700–800 sessions**. The 34 milestones in
+**Scale:** ~1–2 years, on the order of **700–800 sessions**. The 35 milestones in
 `context/PLAN.md` are not sittings — split them freely, log every session.
 Nobody is expecting a Yellow port in two weeks.
 
@@ -51,7 +51,7 @@ Read in this order. Skim what your slice needs; don't re-explore what
 | **`STATUS.md`** | ⚠ live handoff log: phase, queue, open questions, session log | **always, first** |
 | `PROJECT.md` | what we're building and why; goals, non-goals, success criteria | new to the project |
 | `ARCHITECTURE.md` | data pipeline, the data contract, invariants, verified format findings, Game Boy rendering + asset rules | before touching data, assets or rendering |
-| `PLAN.md` | the phased roadmap — 34 milestones (R1, V1–V5, A1–A4, B1–X2; R1 ran as slices R1a–c, V1 runs as V1a–e) | when picking or sizing work |
+| `PLAN.md` | the phased roadmap — 35 milestones (R1, V1–V5, A1–A5, B1–X2; R1 ran as slices R1a–c, V1 runs as V1a–e) | when picking or sizing work |
 | `CONVENTIONS.md` | session contract (incl. the per-slice local commit), code standards, naming traps, verification workflow | before writing code |
 | `DECISIONS.md` | settled choices and rationale (#1–#30), plus open questions that need the user | before proposing a change to a settled choice |
 | `HISTORY.md` | archived session entries + the table of lost prior work | rarely — background only |
@@ -144,7 +144,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the 65 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-09-22 (after V1b): 409/409.**
+  tests. **Baseline 2026-09-23 (after V1c): 429/429.**
 - `npx vite` — dev server serving `static/` (no ROM involved); prefer
   `http://127.0.0.1:5173/` (saves are origin-scoped). Missing files are real 404s
   (`appType: 'mpa'`)
@@ -164,9 +164,10 @@ clone with no ROM installs, tests, builds and plays.
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26) and
 is being rebuilt as **Phase V**. **V1 (Route 2 + Viridian Forest)** is in progress,
 split into five slices (DECISIONS #29, `notes/v1-plan.md`). V1a (the 7 maps and their
-trainer data, extracted) and V1b (made playable through the debug warps, with Yellow's
-Pikachu spawn states and the player's facing kept through warps) are done. **409/409**,
-typecheck clean. Next is V1c, then A1, then V2.
+trainer data, extracted), V1b (made playable through the debug warps, with Yellow's
+Pikachu spawn states and the player's facing kept through warps) and V1c (trainer
+battles as `home/trainers.asm` runs them) are done. **429/429**, typecheck clean. Next
+is V1d, V1e, then A1, A5, V2.
 Git: local repo, commit per slice, never pushed. Live detail: `context/STATUS.md`.
 
 **Generated data is committed but never hand-edited.** To change it: edit the
@@ -336,8 +337,8 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
   at `10:5086` is **machine code, not a data table** — never read bytes from it.
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
   blocksets, collision, pokedex, maps (**19** since V1a: upstream's 12 + the Route 2 /
-  Viridian Forest set; NPCs can carry `item` and trainer fields), music (47 listed, 46 actually
-  extract), SFX (**10** extract: only names with an entry in `audio.ts`
+  Viridian Forest set; NPCs can carry `item` and trainer fields), music (47 listed, all 47
+  extract since V1c fixed the `meeteviltrainer` typo), SFX (**10** extract: only names with an entry in `audio.ts`
   `SFX_HEADERS` — `index.ts` lists 36 unique names, the setup script 46, and
   `extractSfx()` returns null for the rest; V5 expands `SFX_HEADERS`),
   wave samples, noise instruments, font / font_extra / font_battle_extra,
@@ -347,12 +348,16 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 
 ### Testing
 
-409 tests in 14 files (vitest, `environment: 'node'`):
+429 tests in 15 files (vitest, `environment: 'node'`):
 
-- **Battle** — 334 tests across 11 files in `src/battle/`.
+- **Battle** — 352 tests across 12 files in `src/battle/`. `trainer_flow.test.ts` (V1c)
+  covers the trainer rules as data: meet/victory music, end-text pages (every map
+  trainer's first line fits), the pic scroll, the win/loss step lists, and that every
+  trainer class resolves to an exported pic. `data.test.ts` checks every trainer-party
+  and wild species resolves (V1c).
 - **Pikachu spawn** — 10 in `src/pikachu/pikachu_spawn.test.ts` (V1b): Yellow's
   spawn states per warp, and placement + facing per state.
-- **Extraction** — 59 in `src/rom/__tests__/extraction.test.ts`; compares each
+- **Extraction** — 61 in `src/rom/__tests__/extraction.test.ts`; compares each
   extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
   Its Pikachu and old-man pixel tests compare against pret's PNGs in
   `refs/pokeyellow/gfx/` and return early if `refs/` isn't cloned. The V1 block
@@ -399,8 +404,11 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
 - Flow: splash click unlocks audio → title music through main menu → stops on
   Continue/New Game → map music in the overworld. Battle music starts at the
   transition, not after battle init. Victory fanfare
-  (`defeatedwildmon`/`defeatedtrainer`) fires from `battle.onVictory` when the last
-  enemy faints; map music resumes after. `meetprofoak` plays in the Oak grass
+  (`defeatedwildmon`/`defeatedtrainer`) fires from `battle.onVictory`: a wild battle's
+  when the enemy faints, a trainer's once the whole party is down (V1c); map music
+  resumes after. Talking to a map trainer starts `meetmaletrainer` /
+  `meetfemaletrainer` / `meeteviltrainer` when the before-battle text has typed
+  (V1c, `trainer_flow.ts` `meetMusicFor`). `meetprofoak` plays in the Oak grass
   cutscene (`pallet_town.ts` `callback`).
 - SFX wired upstream: `press_ab` on every A/B in menus/textboxes, `collision` on
   wall bumps, `start_menu`, `go_inside` / `go_outside` on door warps.
@@ -419,6 +427,11 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
 - **Blackout**: `SET_PAL_BATTLE_BLACK` filter, "out of useable POKéMON!" /
   "blacked out!", halves money, heals party, warps to the last Pokécenter door
   (`handleBlackoutWarp`, `lastBlackoutWarp` saved).
+- **Trainer battles (V1c)**: before-battle text → meet music → battle; on a win the
+  fanfare, "defeated", the pic scrolling back in, 40 frames, "CLASS: " + end text,
+  money; beaten only after a win; after-battle text when talked to again; the Oak's
+  Lab rival's loss has no blackout and records `rivalStarter`. Detail:
+  `src/battle/ARCHITECTURE.md` → *Trainer Battles*.
 - **Evolution**: level-based, post-battle (`evolution.ts:checkEvolutions`),
   8-cycle accelerating animation per `engine/movie/evolution.asm`, B cancels,
   auto-renames an un-nicknamed mon, updates the Pokédex.
@@ -456,3 +469,4 @@ Implemented (effect tiers are happiness <100 / <200 / 200+):
 | TRADE | −10/−10/−20 | 0x00 | `engine/link/cable_club.asm` | trading Pikachu away |
 | `wd49b` emotion override | — | varies | `pikachu_emotions.asm:346` | item reactions: stone refusal (1), healing (2), item refusal (4), Thunder/Thunderbolt learning (5); skips mood update when set |
 | NPC happiness checks | — | — | Cerulean Melanie (147), Museum 2F Hiker (101), Celadon Mansion | `getPikachuHappiness()` in those map scripts (**V3** Museum, **B2**, **D3**) |
+| Mood floor after battle | — | ≥ 130 ($82) | `engine/battle/end_of_battle.asm` → `pikachu_status.asm:117` `UpdatePikachuMoodAfterBattle` — after any battle not lost, if the starter Pikachu is alive in the party | `main.ts` battle-finish handler (found in V1c) |

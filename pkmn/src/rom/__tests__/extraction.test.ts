@@ -19,6 +19,7 @@ import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments }
 import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
 import { OLD_MAN_PIC_BACK } from '../rom_offsets';
+import { extractGameText } from '../extractors/game_text';
 
 const ROM_PATH = process.env.ROM_PATH;
 const DATA_DIR = resolve(__dirname, '../../../data');
@@ -430,6 +431,27 @@ describe('Audio: Music extraction', () => {
         expect(extCh.commands[c]).toEqual(expCh.commands[c]);
       }
     }
+  });
+});
+
+describe('Audio: meet-trainer music (V1c)', () => {
+  // The name lists spelled it 'meetevilttrainer' until V1c, so it never extracted.
+  it('extracts all three meet-trainer tracks', () => {
+    for (const name of ['meeteviltrainer', 'meetfemaletrainer', 'meetmaletrainer']) {
+      const extracted = extractMusic(rom, name);
+      expect(extracted, name).not.toBeNull();
+      expect(extracted).toEqual(loadJson(`audio/music/${name}.json`));
+    }
+  });
+});
+
+describe('Game text: trainer battle texts (V1c)', () => {
+  it('matches the ASM strings', () => {
+    const text = extractGameText(rom);
+    // text/OaksLab.asm _OaksLabRivalIPickedTheWrongPokemonText
+    expect(text.LAB_RIVAL_WRONG_POKEMON).toBe('WHAT?\nUnbelievable!\nI picked the\nwrong POKéMON!');
+    // data/text/text_2.asm _Rival1WinText
+    expect(text.RIVAL1_WIN).toBe('<RIVAL>: Yeah! Am\nI great or what?');
   });
 });
 

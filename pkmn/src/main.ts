@@ -48,6 +48,7 @@ import {
   renderBattleText,
 } from "./battle";
 import { createSilhouette } from "./battle/battle_ui";
+import { meetMusicFor, victoryMusicFor } from "./battle/trainer_flow";
 import type { BattlePokemon, TrainerPartyMember, EvolutionCandidate } from "./battle";
 import { Bag, getItemName, initItemNames } from "./items";
 import type { ItemStack } from "./items";
@@ -81,7 +82,7 @@ import { markSeen, markOwned, getSeenList, getOwnedList, getOwnedCount, restoreP
 import type { ScriptCommand } from "./script";
 import {
   initScript, updateScript as runScript, getActiveScript,
-  isScriptBattlePending, clearScriptBattlePending, advanceActiveScript,
+  isScriptBattlePending, clearScriptBattlePending, advanceActiveScript, setLastBattleWon,
   getScriptNpcs, getScriptFadeAlpha, lookupNpc,
   renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo,
 } from "./script";
@@ -91,7 +92,10 @@ import {
   buildOaksLabAwaitBallScript,
 } from "./story/oaks_lab";
 import { buildViridianMartParcelScript } from "./story/viridian_mart";
-import { getPlayerName, getRivalName, setPlayerName, setRivalName, restoreNames } from "./core/player_state";
+import {
+  getPlayerName, getRivalName, setPlayerName, setRivalName, restoreNames,
+  getRivalStarter, setRivalStarter, substituteNames,
+} from "./core/player_state";
 
 const gameMap = new GameMap();
 const player = new Player();
@@ -239,6 +243,12 @@ let lastPlayTimeUpdate = Date.now();
 // Active battle
 let currentBattle: Battle | null = null;
 
+// Map trainer encounter (home/trainers.asm). `pendingTrainer` is set while the
+// before-battle text is up; `engagedTrainer` is the trainer being fought, flagged as
+// beaten only if the battle isn't lost (EndTrainerBattle).
+let pendingTrainer: { npc: Npc; meetMusic: string | null } | null = null;
+let engagedTrainer: Npc | null = null;
+
 
 // Screen fade transition state
 const FADE_FRAMES = 8; // frames for fade out or fade in (original ~8 frames)
@@ -384,6 +394,7 @@ async function loadSavedGame(): Promise<void> {
   }
   restorePikachuHappiness(saved.pikachuHappiness ?? 90, saved.pikachuMood ?? 128);
   restoreNames(saved.playerName, saved.rivalName);
+  setRivalStarter(saved.rivalStarter);
   restorePokedex(saved.pokedexSeen ?? [], saved.pokedexOwned ?? []);
   if (!saved.pokedexSeen && !saved.pokedexOwned) {
     for (const mon of playerParty) markOwned(mon.species.id);
@@ -430,6 +441,7 @@ async function startNewGame(): Promise<void> {
   resetPikachuHappiness();
   restoreFlags([]);           // clear all event flags
   restorePokedex([], []);     // clear pokedex
+  setRivalStarter(undefined);
   // Note: player/rival names are set during Oak speech, before this function runs
 }
 
@@ -463,12 +475,37 @@ function startBattle(wildPokemon: BattlePokemon): void {
   });
 }
 
+/**
+ * A map trainer engages: the before-battle text, then the battle.
+ * Talked to (home/trainers.asm TalkToTrainer): EngageMapTrainer starts the meet music
+ * right after the text has printed, before the A press. Seen (trainer sight,
+ * DisplayEnemyTrainerTextAndStartBattle): the music started when the player was
+ * spotted, so none plays here — that and the "!" bubble are A1's.
+ */
+function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
+  const { trainerClass, trainerParty, trainerName, dialogue, endBattleText } = npc.data;
+  if (!trainerClass || trainerParty === undefined) {
+    state = "overworld";
+    return;
+  }
+  if (!dialogue) {
+    startTrainerBattle(trainerClass, trainerParty, trainerName, { endBattleText, engaged: npc });
+    return;
+  }
+  pendingTrainer = { npc, meetMusic: seenByTrainer ? null : meetMusicFor(trainerClass) };
+  textBox.show(dialogue);
+  stateBeforeMenu = 'overworld';
+  state = 'textbox';
+}
+
 /** Start a trainer battle. */
 function startTrainerBattle(
   trainerClassName: string,
   partyIndex: number,
-  trainerName?: string
+  trainerName?: string,
+  opts: { endBattleText?: string; engaged?: Npc } = {},
 ): void {
+  engagedTrainer = null;
   if (playerParty.length === 0) return;
 
   const trainerClass = getTrainerClass(trainerClassName);
@@ -504,8 +541,16 @@ function startTrainerBattle(
   playMusic('trainerbattle');
   const battle = new Battle(playerParty[0], dummyEnemy, playerParty, playerBag, getPlayerBadges(), getPlayerName());
   const displayName = trainerName ?? trainerClass.displayName;
-  battle.setupTrainerBattle(trainerClass, partyMembers, displayName);
-  battle.onVictory = () => { stopMusic(); playMusic('defeatedtrainer'); };
+  battle.setupTrainerBattle(trainerClass, partyMembers, displayName, {
+    classKey: trainerClassName,
+    mapName: getMapName(),
+    endBattleText: opts.endBattleText ? substituteNames(opts.endBattleText) : undefined,
+  });
+  // TrainerBattleVictory: the fanfare starts once the whole party is down.
+  // Gym leaders (defeatedgymleader, wGymLeaderNo) arrive with their gyms in V3.
+  const victoryMusic = victoryMusicFor(trainerClassName);
+  battle.onVictory = () => { stopMusic(); playMusic(victoryMusic); };
+  engagedTrainer = opts.engaged ?? null;
   battle.init().then(() => {
     currentBattle = battle;
     state = "battle";
@@ -1150,6 +1195,7 @@ function gameTick(): void {
         getPlayerName(),
         getRivalName(),
         lastBlackoutWarp,
+        getRivalStarter(),
       );
     } else if (saveResult === "closed") {
       state = "start_menu";
@@ -1166,19 +1212,9 @@ function gameTick(): void {
     if (ow.approachingNpc) {
       ow.approachingNpc.updateApproach();
       if (ow.approachingNpc.approachDone) {
-        const npcData = ow.approachingNpc.data;
+        const npc = ow.approachingNpc;
         ow.approachingNpc = null;
-        if (npcData.trainerClass && npcData.trainerParty !== undefined) {
-          npcData.defeated = true;
-          markDefeated(npcData.id);
-          startTrainerBattle(
-            npcData.trainerClass,
-            npcData.trainerParty,
-            npcData.trainerName
-          );
-        } else {
-          state = "overworld";
-        }
+        engageTrainer(npc, true);
       }
     }
   } else if (state === "script") {
@@ -1212,7 +1248,9 @@ function gameTick(): void {
           break;
         case 'startBattleTransition':
           startBattleTransition(() => {
-            startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName);
+            startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName, {
+              endBattleText: scriptAction.endBattleText,
+            });
           });
           break;
         case 'warp':
@@ -1238,11 +1276,28 @@ function gameTick(): void {
     }
   } else if (state === "textbox") {
     textBox.update();
+    // EngageMapTrainer runs as soon as the before-battle text has printed (it ends
+    // with `done`, which doesn't wait); the A press comes after, in DisplayTextID.
+    if (pendingTrainer?.meetMusic && textBox.active && textBox.isWaitingForInput && !textBox.hasMorePages) {
+      stopMusic();
+      currentMapMusic = null;
+      playMusic(pendingTrainer.meetMusic);
+      pendingTrainer.meetMusic = null;
+    }
     if (!textBox.active) {
       if (ow.interactedNpc && !ow.interactedNpc.data.object) {
         ow.interactedNpc.restoreDirection();
       }
       ow.interactedNpc = null;
+      if (pendingTrainer) {
+        const { npc } = pendingTrainer;
+        pendingTrainer = null;
+        startTrainerBattle(npc.data.trainerClass!, npc.data.trainerParty!, npc.data.trainerName, {
+          endBattleText: npc.data.endBattleText,
+          engaged: npc,
+        });
+        return;
+      }
       if (pendingTownMap) {
         pendingTownMap = false;
         state = "town_map";
@@ -1311,6 +1366,16 @@ function gameTick(): void {
         // Check for blackout: battle sets isBlackout when all party Pokemon fainted
         // and has already shown "X is out of useable POKéMON!" + "X blacked out!" text
         const blackout = currentBattle.isBlackout;
+        // A loss without a blackout: RIVAL1 in Oak's Lab (HandlePlayerBlackOut `ret z`)
+        const lost = blackout || currentBattle.playerLost;
+        setLastBattleWon(!lost); // wBattleResult, read by story scripts
+
+        // EndTrainerBattle: flag the trainer as fought unless the battle was lost
+        if (engagedTrainer && !lost) {
+          engagedTrainer.data.defeated = true;
+          markDefeated(engagedTrainer.data.id);
+        }
+        engagedTrainer = null;
 
         currentBattle = null;
 
@@ -1332,7 +1397,8 @@ function gameTick(): void {
           pikachuFollower.visible = shouldPikachuFollow(playerParty);
 
           // Check for post-battle evolutions before returning to overworld
-          const evoCandidates = checkEvolutions(playerParty);
+          // (EndOfBattle skips them after a lost battle)
+          const evoCandidates = lost ? [] : checkEvolutions(playerParty);
           if (evoCandidates.length > 0) {
             // Determine where to return after all evolutions
             if (isScriptBattlePending() && getActiveScript()) {
@@ -1640,9 +1706,8 @@ function handleOverworldAction(action: OverworldAction): void {
     case 'startBattle':
       startBattle(action.pokemon);
       break;
-    case 'startTrainerBattle':
-      markDefeated(action.npcId);
-      startTrainerBattle(action.trainerClass, action.partyIndex, action.trainerName);
+    case 'talkToTrainer':
+      engageTrainer(action.npc, false);
       break;
     case 'warp':
       // Play door sound: indoor maps start with uppercase letter after prefix

@@ -30,9 +30,17 @@ export async function loadBattleData(): Promise<void> {
   }
 }
 
+/** Species names compare without case or punctuation: trainers.json and wild/*.json
+ *  use pret constants (NIDORAN_F, MR_MIME, FARFETCHD), pokemon.json display names
+ *  (Nidoran-F, Mr. Mime, Farfetch'd). */
+function speciesKey(name: string): string {
+  return name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
 export function getSpecies(name: string): PokemonSpecies | null {
   if (!pokemonData) return null;
-  return pokemonData.find(p => p && p.name.toUpperCase() === name.toUpperCase()) ?? null;
+  const key = speciesKey(name);
+  return pokemonData.find(p => p && speciesKey(p.name) === key) ?? null;
 }
 
 export function getSpeciesById(dexId: number): PokemonSpecies | null {

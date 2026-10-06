@@ -3,7 +3,9 @@
 
 import type { ScriptCommand } from '../script';
 import type { Direction } from '../core';
-import { getRivalName, substituteNames } from '../core/player_state';
+import { getRivalName, setRivalStarter, substituteNames } from '../core/player_state';
+import { wasLastBattleWon } from '../script/script_controller';
+import { rivalStarterAfterLabBattle } from '../battle/trainer_flow';
 import { getText } from '../text';
 
 /**
@@ -128,8 +130,15 @@ export function buildOaksLabRivalBattleScript(
       ? [{ type: 'moveNpc' as const, npcId: 'rival', path }]
       : []),
     { type: 'faceNpc', npcId: 'rival', direction: 'down' as Direction },
-    // Battle: RIVAL1 party 0 = Eevee Lv5
-    { type: 'startBattle', trainerClass: 'RIVAL1', partyIndex: 0, trainerName: getRivalName() },
+    // Battle: RIVAL1 party 0 = Eevee Lv5. SaveEndBattleTextPointers: the won text is
+    // (text/OaksLab.asm _OaksLabRivalIPickedTheWrongPokemonText); a loss prints
+    // _Rival1WinText from HandlePlayerBlackOut instead, with no blackout here.
+    {
+      type: 'startBattle', trainerClass: 'RIVAL1', partyIndex: 0, trainerName: getRivalName(),
+      endBattleText: getText('LAB_RIVAL_WRONG_POKEMON'),
+    },
+    // OaksLabRivalEndBattleScript: wBattleResult picks the rival's Eevee evolution
+    { type: 'callback', fn: () => setRivalStarter(rivalStarterAfterLabBattle(wasLastBattleWon())) },
     // After battle: heal player's party (assembly: HealParty predef)
     { type: 'healParty' },
     { type: 'setFlag', flag: 'BATTLED_RIVAL_IN_OAKS_LAB' },

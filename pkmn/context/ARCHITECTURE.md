@@ -16,7 +16,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **409** passing (2026-09-22, V1b) | Battle logic + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **429** passing (2026-09-23, V1c) | Battle logic + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -138,12 +138,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (163 files, 9.8 MB, since V1a).
+- **`data/`** — JSON only, produced by `npm run setup` (164 files, 9.8 MB, since V1c).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
   (since R1a), which deletes and rebuilds it every run. It holds 519 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 163 JSON files. That lets
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 164 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -252,7 +252,7 @@ TEXT_ID`. `.blk` is one byte per block (PalletTown = 90 B = 10×9).
 
 **The test suite depends on `data/`.** `src/test/setup.ts` calls `process.exit(1)`
 when the directory is absent. Since R1c, `data/` is committed and always present.
-Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, **409/409** since V1b
+Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, 409/409 after V1b, **429/429** since V1c
 (2026-09-22).
 (The lost copy reached 395.)
 

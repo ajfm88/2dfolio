@@ -34,6 +34,8 @@ export interface NpcData {
   trainerName?: string;     // display name override
   sightRange?: number;      // how many steps (16px) the trainer can see (default 0 = talk only)
   defeated?: boolean;        // set to true after losing to player
+  endBattleText?: string;    // printed after "CLASS: " when the player wins (trainer header won text)
+  afterBattleText?: string;  // what a beaten trainer says when talked to (trainer header after text)
   shopItems?: string[];      // mart inventory (item IDs)
   object?: boolean;           // inanimate object (item on table, etc.) — doesn't face player
 }

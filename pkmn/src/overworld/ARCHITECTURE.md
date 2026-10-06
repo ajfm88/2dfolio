@@ -39,7 +39,8 @@ Warp transitions use a white fade overlay (matching original Game Boy behavior):
 ## Battle Transitions
 
 Visual transitions before battles start (`battle_transitions.ts`):
-- **Spiral** (trainer battles): clockwise inward tile-by-tile blackout, 8 tiles/frame
+- **Spiral** (scripted trainer battles, e.g. the Oak's Lab rival): clockwise inward tile-by-tile blackout, 8 tiles/frame.
+  Map-trainer battles have no transition yet — A5 adds the ASM's 8
 - **Wild** (wild encounters): 3 flash blink cycles, then horizontal stripe fill
 - Module-owns-state: `startSpiralTransition(cb)` / `startWildTransition(cb)` -> `updateBattleTransition()` -> `renderBattleTransitionOverlay()`
 
@@ -48,7 +49,8 @@ Visual transitions before battles start (`battle_transitions.ts`):
 `story_state.ts` — stateless functions for NPC state based on story progression:
 - `applyStoryNpcState(mapName, npcs)`: sets NPC visibility/dialogue per event flags
 - `applyDefeatedTrainers(mapName, npcs, defeated)`: marks defeated trainers
-- `recordDefeated(mapName, npcId, defeated)`: records a defeat
+- `recordDefeated(mapName, npcId, defeated)`: records a defeat — called only when a
+  battle against that trainer ends without a loss (`EndTrainerBattle`, V1c)
 
 ## Map Transitions
 
@@ -73,6 +75,18 @@ Visual transitions before battles start (`battle_transitions.ts`):
 - `OverworldState`: mutable state tracked across frames (doorExitStep, justWarped, standingOnWarp, etc.)
 - `OverworldDeps`: read-only references passed each frame (player, gameMap, npcs, etc.)
 - Inline script builders: `buildNurseScript()`, `buildMomHealScript()` for NPC interaction scripts
+
+### Trainer encounters (V1c, `home/trainers.asm`)
+
+- Talking to an unbeaten trainer returns `{ type: 'talkToTrainer', npc }`; a beaten one
+  shows `afterBattleText`. `main.ts` `engageTrainer(npc, seen)` shows the before-battle
+  text (`dialogue`) and, when talked to, starts `meetMusicFor(class)` as soon as the last
+  page has typed (`TextBox.isWaitingForInput && !hasMorePages`) — the ASM text ends with
+  `done`, so `EngageMapTrainer` runs before the A press. Closing the text starts the battle.
+- The sight path (`trainer_approach`) calls `engageTrainer(npc, true)`: the same text, no
+  music there, because the ASM starts it at spotting — A1 wires that and the "!" bubble.
+- `main.ts` keeps the engaged trainer and flags it beaten in the battle-finish handler
+  unless the battle was lost.
 
 ## Pikachu Follower & Happiness
 

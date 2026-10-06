@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { loadBattleData, getSpecies, getSpeciesById, getMove, createPokemon } from './data';
 import { mockRandom, restoreRandom } from '../test/helpers';
+import { readFileSync, readdirSync } from 'fs';
+import { resolve } from 'path';
 
 beforeAll(async () => {
   await loadBattleData();
@@ -22,6 +24,27 @@ describe('loadBattleData', () => {
 });
 
 describe('getSpecies', () => {
+  // V1c: exact-name matching missed pret constants, so the Forest Lass's
+  // NIDORAN_F hung the game and Route 22's wild Nidorans never appeared.
+  it('resolves the pret constant names used by trainer parties and wild data', () => {
+    expect(getSpecies('NIDORAN_F')?.id).toBe(29);
+    expect(getSpecies('NIDORAN_M')?.id).toBe(32);
+    expect(getSpecies('MR_MIME')?.id).toBe(122);
+    expect(getSpecies('FARFETCHD')?.id).toBe(83);
+
+    const dataDir = resolve(__dirname, '../../data');
+    const names = new Set<string>();
+    const trainers = JSON.parse(readFileSync(resolve(dataDir, 'trainers.json'), 'utf-8'));
+    for (const cls of Object.values(trainers) as { parties: { species: string }[][] }[]) {
+      for (const party of cls.parties) for (const m of party) names.add(m.species);
+    }
+    for (const file of readdirSync(resolve(dataDir, 'wild'))) {
+      const wild = JSON.parse(readFileSync(resolve(dataDir, 'wild', file), 'utf-8'));
+      for (const slot of [...(wild.grass ?? []), ...(wild.water ?? [])]) names.add(slot.pokemon);
+    }
+    expect([...names].filter(n => !getSpecies(n))).toEqual([]);
+  });
+
   it('returns Pikachu by name (case-insensitive)', () => {
     const pika = getSpecies('pikachu');
     expect(pika).not.toBeNull();

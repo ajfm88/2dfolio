@@ -45,6 +45,11 @@ import type { TrainerClassData, TrainerPartyMember } from './trainer_ai';
 import { PartyMenu } from '../menus/party_menu';
 import { modifyPikachuHappiness } from '../pikachu';
 import { getText } from '../text/game_text';
+import { substituteNames } from '../core/player_state';
+import {
+  victorySequence, lossSequence, picScrollX, PIC_SCROLL_FRAMES, PIC_SCROLL_FINAL_X,
+} from './trainer_flow';
+import type { TrainerEndStep } from './trainer_flow';
 
 // Trainer intro animation constants
 const SLIDE_IN_FRAMES = 40;
@@ -119,7 +124,10 @@ export class Battle {
   playerPokemonFainted = false;
   carelessTrainerFaint = false;
   isBlackout = false;      // true when all party Pokemon fainted (main.ts checks this)
-  onVictory: (() => void) | null = null; // called when last enemy faints (for victory music)
+  playerLost = false;      // lost without a blackout: RIVAL1 in Oak's Lab (HandlePlayerBlackOut)
+  // Victory music: wild — when the enemy faints (FaintEnemyPokemon .wild_win);
+  // trainer — once the whole party is down (TrainerBattleVictory)
+  onVictory: (() => void) | null = null;
   private playerName = ''; // for blackout text
 
   // Trainer battle info
@@ -128,6 +136,15 @@ export class Battle {
   private trainerParty: BattlePokemon[] = [];
   private trainerPartyIndex = 0;
   private trainerName = '';
+  private trainerClassKey: string | null = null; // trainers.json key, e.g. 'RIVAL1'
+  private mapName = '';
+  private endBattleText: string | undefined;     // SaveEndBattleTextPointers (won text)
+
+  // Trainer end-of-battle sequence (trainer_flow.ts)
+  private endSteps: TrainerEndStep[] = [];
+  private endPicX: number | null = null;  // enemy trainer pic x once it scrolls back in
+  private endPicFrame = -1;               // frame of _ScrollTrainerPicAfterBattle, -1 = not scrolling
+  private enemyCleared = false;           // RIVAL1 loss: ClearScreenArea over the enemy side
 
   playerParty: BattlePokemon[] = [];
   private badges: ReadonlySet<string> = new Set();
@@ -234,10 +251,14 @@ export class Battle {
     trainerClass: TrainerClassData,
     partyMembers: TrainerPartyMember[],
     trainerName?: string,
+    opts: { classKey?: string; mapName?: string; endBattleText?: string } = {},
   ): void {
     this.isTrainerBattle = true;
     this.trainerClass = trainerClass;
     this.trainerName = trainerName ?? trainerClass.displayName;
+    this.trainerClassKey = opts.classKey ?? null;
+    this.mapName = opts.mapName ?? '';
+    this.endBattleText = opts.endBattleText;
 
     // Build trainer's party from member data
     this.trainerParty = [];
@@ -290,7 +311,8 @@ export class Battle {
     ];
     // Also load trainer sprites
     if (this.isTrainerBattle && this.trainerClass) {
-      loadPromises.push(loadTrainerIntroAssets(this.trainerClass.displayName, this.trainerClass.id));
+      // By class key: display names like "BUG CATCHER" have no matching file
+      loadPromises.push(loadTrainerIntroAssets(this.trainerClassKey ?? this.trainerClass.displayName, this.trainerClass.id));
     } else {
       // Wild battle: load Red's backsprite for intro
       loadPromises.push(loadPlayerTrainerSprite());
@@ -491,6 +513,9 @@ export class Battle {
       case 'blackout':
         this.updateTextWait();
         break;
+      case 'trainer_end':
+        this.updateTrainerEnd();
+        break;
       case 'check_faint':
         if (this.faintAnimating) {
           this.updateFaintAnimation();
@@ -596,7 +621,7 @@ export class Battle {
         // Auto-dismiss "Go! <pokemon>!" — no button press needed
         this.waitingForInput = false;
         this.trainerIntroPhase = null;
-        this.trainerAssets = null;
+        // trainerAssets stay loaded: the pic scrolls back in after the battle
         this.state = 'choose_action';
         this.textLines = [];
         break;
@@ -1756,13 +1781,18 @@ export class Battle {
           this.partyMenu.showForBattle(this.playerParty, activeIdx, true);
           this.state = 'forced_switch';
         } else {
-          // All Pokemon fainted — show blackout messages
-          // (assembly: HandlePlayerBlackOut, data/text/text_1.asm _PlayerBlackedOutText)
-          this.isBlackout = true;
-          this.state = 'blackout';
-          this.textQueue = [];
-          this.showText([`${this.playerName}${getText('BATTLE_OUT_OF_USEABLE').split('\n')[0]}`, getText('BATTLE_OUT_OF_USEABLE').split('\n')[1]]);
-          this.queueText([`${this.playerName} blacked`, `out!`]);
+          // All Pokemon fainted (assembly: HandlePlayerBlackOut). RIVAL1 shows his pic
+          // and _Rival1WinText first, and in Oak's Lab there is no blackout at all.
+          // (data/text/text_2.asm _PlayerBlackedOutText2)
+          const loss = lossSequence({
+            trainerClass: this.isTrainerBattle ? this.trainerClassKey : null,
+            mapName: this.mapName,
+            rival1WinText: substituteNames(getText('RIVAL1_WIN')),
+            blackoutText: `${this.playerName}${getText('BATTLE_OUT_OF_USEABLE')}\f${this.playerName} blacked\nout!`,
+          });
+          this.playerLost = !loss.blackout;
+          if (this.isTrainerBattle && this.trainerClassKey === 'RIVAL1') this.enemyCleared = true;
+          this.startTrainerEnd(loss.steps);
         }
       } else if (this.state === 'throw_ball') {
         if (this.caughtPokemon) {
@@ -1788,6 +1818,8 @@ export class Battle {
       } else if (this.state === 'blackout') {
         // All blackout text dismissed → end battle
         this.state = 'end';
+      } else if (this.state === 'trainer_end') {
+        this.runNextEndStep();
       } else if (this.state === 'player_move' || this.state === 'enemy_move') {
         // Done showing messages, pause before continuing turn
         this.startDelay(20, () => this.continueAfterAnimation());
@@ -1838,10 +1870,72 @@ export class Battle {
     this.moneyWon = this.trainerClass.baseMoney * lastPokemon.level;
 
     this.trainerDefeated = true;
-    this.state = 'gain_exp'; // reuse gain_exp for text display (dismisses → 'end')
-    // Assembly: data/text/text_2.asm _TrainerDefeatedText, _MoneyForWinningText
-    this.showText([`${this.playerName} defeated`, `${this.trainerName}!`]);
-    this.queueText([`${this.playerName} got ¥${this.moneyWon}`, `for winning!`]);
+    // Assembly: TrainerBattleVictory — fanfare, "defeated", pic scrolls back in,
+    // 40 frames, "NAME: " + end text, money
+    this.startTrainerEnd(victorySequence({
+      playerName: this.playerName,
+      trainerName: this.trainerName,
+      endBattleText: this.endBattleText,
+      moneyWon: this.moneyWon,
+    }));
+  }
+
+  /** Run a trainer_flow.ts step list; the battle ends after the last step. */
+  private startTrainerEnd(steps: TrainerEndStep[]): void {
+    this.state = 'trainer_end';
+    this.textQueue = [];
+    this.endSteps = [...steps];
+    this.runNextEndStep();
+  }
+
+  private runNextEndStep(): void {
+    const step = this.endSteps.shift();
+    if (!step) {
+      this.state = 'end';
+      return;
+    }
+    switch (step.type) {
+      case 'victoryMusic':
+        if (this.onVictory) this.onVictory();
+        this.runNextEndStep();
+        break;
+      case 'text':
+        this.textQueue = step.pages.slice(1);
+        this.showText(step.pages[0]);
+        break;
+      case 'scrollPic':
+        // The last text stays in the box while the pic scrolls in
+        this.waitingForInput = false;
+        this.endPicFrame = 0;
+        this.endPicX = picScrollX(0);
+        break;
+      case 'delay':
+        this.waitingForInput = false;
+        this.startDelay(step.frames, () => this.runNextEndStep());
+        break;
+      case 'blackout':
+        this.isBlackout = true;
+        this.state = 'blackout';
+        this.textQueue = step.pages.slice(1);
+        this.showText(step.pages[0]);
+        break;
+    }
+  }
+
+  /** _ScrollTrainerPicAfterBattle, then the texts of the sequence. */
+  private updateTrainerEnd(): void {
+    if (this.endPicFrame >= 0) {
+      this.endPicFrame++;
+      if (this.endPicFrame >= PIC_SCROLL_FRAMES) {
+        this.endPicFrame = -1;
+        this.endPicX = PIC_SCROLL_FINAL_X;
+        this.runNextEndStep();
+      } else {
+        this.endPicX = picScrollX(this.endPicFrame);
+      }
+      return;
+    }
+    this.updateTextWait();
   }
 
   // Track if we've shown the trainer-defeated message
@@ -1903,8 +1997,9 @@ export class Battle {
         this.enemyFaintDone = true;
         const enemyPrefix = this.isTrainerBattle ? 'Enemy' : 'Wild';
         this.state = 'victory';
-        // Assembly: victory fanfare plays immediately when last enemy faints
-        if (this.onVictory) this.onVictory();
+        // Assembly: FaintEnemyPokemon .wild_win — a wild battle's fanfare plays at the
+        // faint; a trainer's waits for TrainerBattleVictory (handleTrainerVictory)
+        if (!this.isTrainerBattle && this.onVictory) this.onVictory();
         this.showText([`${enemyPrefix} ${this.enemyPokemon.nickname.toUpperCase()} fainted!`]);
       } else {
         this.playerFaintDone = true;
@@ -2087,7 +2182,7 @@ export class Battle {
       // Enemy sprite: faint animation, hidden after faint, hidden after catch
       if (this.faintAnimating && this.faintAnimTarget === 'enemy') {
         renderEnemySpriteFaintSlide(this.sprites.enemyFront, this.getFaintSlideRows());
-      } else if (!this.enemyFaintDone && (!this.caughtPokemon || this.state !== 'end')) {
+      } else if (!this.enemyFaintDone && !this.enemyCleared && (!this.caughtPokemon || this.state !== 'end')) {
         renderEnemySprite(this.sprites.enemyFront);
       }
 
@@ -2119,8 +2214,17 @@ export class Battle {
       }
     }
 
+    // Enemy trainer pic scrolled back in after the battle (_ScrollTrainerPicAfterBattle;
+    // SET_PAL_BATTLE runs first, so it's in color). Columns past x=160 fall off-screen.
+    if (this.endPicX !== null && this.trainerAssets) {
+      renderTrainerSpriteAt(
+        this.trainerAssets.enemyTrainer, this.trainerAssets.enemySilhouette,
+        this.endPicX, getTrainerIntroLayout().enemyY, 1, false,
+      );
+    }
+
     // HUDs: hidden after faint animation completes (assembly: ClearScreenArea)
-    if (!this.enemyFaintDone) {
+    if (!this.enemyFaintDone && !this.enemyCleared) {
       renderEnemyHUD(this.enemyPokemon, this.enemyDisplayHp);
     }
     const inSwitchAnim = this.switchAnimating ||

@@ -175,6 +175,15 @@ Two things learned planning V1 (`notes/v1-plan.md`):
   literally in the ASM source, and `#` means `POKé`. Don't invent a substitution layer.
 - Evolution targets in ASM are plain tokens; nothing evolves into a special-named
   species, so simple TitleCase suffices there.
+- **Species names come in two spellings.** `trainers.json` and `wild/*.json` use pret
+  constants (`NIDORAN_F`, `MR_MIME`, `FARFETCHD`); `pokemon.json` uses display names
+  (`Nidoran-F`, `Mr. Mime`, `Farfetch'd`). Always resolve through `getSpecies()`, which
+  compares without case or punctuation since V1c. Before that, the Forest Lass's
+  Nidoran hung the game and Route 22's wild Nidorans silently never appeared.
+- **Trainer pics are keyed by class key, not display name** (`trainerPicName()` in
+  `battle/trainer_flow.ts`): `BUG_CATCHER` → `bugcatcher.png`, while "BUG CATCHER" has
+  no file. A failed pic load leaves `startTrainerBattle` stuck in `transition`
+  forever — no error on screen, only in the console.
 
 ## File organization
 
@@ -192,8 +201,8 @@ Two things learned planning V1 (`notes/v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 409/409** as of 2026-09-22
-   (V1b). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 429/429** as of 2026-09-23
+   (V1c). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite` at **`http://127.0.0.1:5173/`** (the save
