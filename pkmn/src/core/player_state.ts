@@ -20,6 +20,18 @@ export function setRivalName(name: string): void {
   rivalName = name;
 }
 
+// wRivalStarter: which Eevee evolution the rival's later teams use
+// (RIVAL_STARTER_* in battle/trainer_flow.ts). Unset until the Oak's Lab battle.
+let rivalStarter: number | undefined;
+
+export function getRivalStarter(): number | undefined {
+  return rivalStarter;
+}
+
+export function setRivalStarter(value: number | undefined): void {
+  rivalStarter = value;
+}
+
 export function restoreNames(pName?: string, rName?: string): void {
   playerName = pName ?? 'YELLOW';
   rivalName = rName ?? 'BLUE';

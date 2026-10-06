@@ -24,7 +24,7 @@ correct data and expanding the world — not rewriting it.
 for the entire build. `pkmn-sprites/` is not needed for any of it.
 
 **Scale.** Deliberately ambitious — realistically **one to two years and on the
-order of 700–800 sessions.** The 34 milestones in `PLAN.md` are not sessions;
+order of 700–800 sessions.** The 35 milestones in `PLAN.md` are not sessions;
 each subdivides many times over. Nobody expects a Yellow port in two
 weeks, and no session should feel behind for finishing one small verified thing.
 
@@ -49,21 +49,22 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-09-22
+## State as of 2026-09-24
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
 - **12 playable maps**: Pallet Town, the two houses, Oak's Lab, Route 1, Route 22,
   Viridian City + Pokécenter, Mart, School, Nickname House. The 7 Route 2 / Viridian
-  Forest maps are extracted (V1a) and playable through the debug warps (V1b); the
-  walking path north of Viridian opens in V1e.
-- **409/409** tests (375 upstream + 6 static-export + 18 from V1a + 10 from V1b), typecheck clean.
+  Forest maps are extracted (V1a) and playable through the debug warps (V1b); the Forest
+  trainers battle as in the original (V1c); the walking path north of Viridian
+  opens in V1e.
+- **429/429** tests (375 upstream + 6 static-export + 18 from V1a + 10 from V1b + 20 from V1c), typecheck clean.
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are
   in git. A fresh clone plays with no ROM and no setup.
 - The game keeps running in background tabs (DECISIONS #27).
 - Git: local repo, baseline commit, never pushed (DECISIONS #24).
-- Plan: **34 milestones** — R (split R1a–c), **V** (rebuild the lost 30-map
+- Plan: **35 milestones** — R (split R1a–c), **V** (rebuild the lost 30-map
   state), A (core systems), B–I (story order), J (postgame), X (extras).
 
 ## Goals
@@ -72,7 +73,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**409**)
+4. Full test suite green against generated data. ✅ (**429**)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -111,7 +112,7 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (409)
+1. `npm run typecheck` + full `npm test` green. ✅ (429)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

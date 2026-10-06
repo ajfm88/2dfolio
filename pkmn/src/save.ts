@@ -48,6 +48,7 @@ export interface SaveData {
   playerName?: string;
   rivalName?: string;
   lastBlackoutWarp?: { destMap: string; destWarpId: number };
+  rivalStarter?: number;
 }
 
 function serializePokemon(mon: BattlePokemon): SavedPokemon {
@@ -116,6 +117,7 @@ export function saveGame(
   playerName?: string,
   rivalName?: string,
   lastBlackoutWarp?: { destMap: string; destWarpId: number },
+  rivalStarter?: number,
 ): void {
   const data: SaveData = {
     version: SAVE_VERSION,
@@ -139,6 +141,7 @@ export function saveGame(
     playerName,
     rivalName,
     lastBlackoutWarp,
+    rivalStarter,
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }

@@ -37,7 +37,7 @@ export interface ScriptDeps {
 export type ScriptAction =
   | { type: 'scriptEnded' }
   | { type: 'pikachuBattle' }
-  | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string }
+  | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
   | { type: 'openStartMenu' };
 
@@ -52,6 +52,7 @@ let scriptExclamation: { target: 'player' | string; frames: number } | null = nu
 let scriptFade: { direction: 'out' | 'in'; frames: number; elapsed: number } | null = null;
 let scriptAsyncPending = false;
 let scriptBattlePending = false;
+let lastBattleWon = true; // wBattleResult == 0 for the most recent battle
 
 const yesNoMenu = new YesNoMenu();
 let scriptYesNoPending: { yes: ScriptCommand[]; no: ScriptCommand[] } | null = null;
@@ -112,6 +113,16 @@ export function isScriptBattlePending(): boolean {
 
 export function clearScriptBattlePending(): void {
   scriptBattlePending = false;
+}
+
+/** Record the outcome of the battle that just ended (main.ts). */
+export function setLastBattleWon(won: boolean): void {
+  lastBattleWon = won;
+}
+
+/** wBattleResult as story scripts read it: did the player win the last battle? */
+export function wasLastBattleWon(): boolean {
+  return lastBattleWon;
 }
 
 export function advanceActiveScript(): void {
@@ -496,6 +507,7 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
         trainerClass: cmd.trainerClass,
         partyIndex: cmd.partyIndex,
         trainerName: cmd.trainerName,
+        endBattleText: cmd.endBattleText,
       };
     }
 
@@ -669,7 +681,7 @@ function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
       }
       textBox.show(
         interaction.npc.data.defeated
-          ? 'I lost to you...'
+          ? (interaction.npc.data.afterBattleText ?? interaction.npc.data.dialogue)
           : interaction.npc.data.dialogue
       );
       scriptFreeSub = 'text';

@@ -245,6 +245,18 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **The player keeps their facing through warps.** The ASM never resets it on a warp: `ResetPlayerSpriteData` runs only at Continue and new game. Upstream forced `down` after every warp, which turned the player around when leaving a gate northward and fed Pikachu's spawn rules the wrong facing. Visible on existing maps too: the player now faces up after entering a building, as in the original.
     - **Door SFX:** the ASM picks go-inside or go-outside from the tile under the player (`PlayMapChangeSound`); upstream picks by destination map. This is fixed everywhere in V5's SFX slice rather than special-cased for the Forest in V1b.
 
+31. **V1c: fix the Oak's Lab loss, record the rival's starter, fix the meet-music typo, add A5** (2026-09-23). *The user's answer to `notes/v1c-plan.md` §3: "go", accepting all four recommendations.*
+
+    - **The Oak's Lab loss is fixed in V1c.** When RIVAL1 wipes your party, the ASM clears the top of the screen, scrolls his pic in, waits 40 frames and prints `_Rival1WinText`. In `OAKS_LAB` there is no blackout: `HandlePlayerBlackOut` returns early and `.battleOccurred` skips the faint check. The lab script then heals the party and carries on. Upstream sent this loss through its generic blackout, which halved the money, warped the player, and left the lab script unfinished.
+    - **The rival's starter (`wRivalStarter`) is recorded from V1c on.** It is saved as `rivalStarter`, next to the rival's name: 2 = FLAREON after a lab win, 3 = VAPOREON after a loss (`OaksLabRivalEndBattleScript`). The rival's team in every later rival battle depends on it: Route 22, Pokémon Tower 2F, Silph Co 7F, the Champion. Saves made before V1c don't have it, so the Route 22 slice picks a fallback.
+    - **The `meetevilttrainer` typo is fixed in V1c**, not V5. It was in both music name lists; the fix gives 47 tracks. V1c implements `PlayTrainerMusic` whole, so the evil-trainer track has to exist.
+    - **New slice A5, "Battle presentation per the ASM"**, queued right after A1 and before V2. It covers three things:
+      - all 8 battle transitions and the ASM's choice between them, keeping the dungeon-list bug (`battle_transitions.asm`);
+      - enemy pic positions: 5×5 front pics are centred at tile 13 (`LoadUncompressedSpriteData`), and the trainer intro pic sits at tile 12;
+      - battle text that types out and scrolls on `cont`.
+
+      Until A5, map-trainer battles keep upstream's instant cut rather than borrowing the spiral: the Forest's correct transition is Shrink or Split, so the spiral would be just as wrong. The plan grows to **35** milestones.
+
 ---
 
 ## Open — not decided, needs the user

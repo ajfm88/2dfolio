@@ -1,4 +1,4 @@
-# PLAN — 34 milestones to a complete ROM-free Pokemon Yellow
+# PLAN — 35 milestones to a complete ROM-free Pokemon Yellow
 
 Status legend: ✅ done · 🔨 in progress · ⬜ pending
 
@@ -8,9 +8,9 @@ progress, and next lives in `STATUS.md` — read that first.
 ## ⚠ These are milestones, not sessions (2026-09-05)
 
 The user's stated expectation is **one to two years, on the order of 700–800
-sessions** (DECISIONS #21), all of it on vanilla Yellow sprites. Read the 34
+sessions** (DECISIONS #21), all of it on vanilla Yellow sprites. Read the 35
 below as the *shape* of the work (the ordered list of gates that make a 1:1
-Yellow), not as 34 sittings.
+Yellow), not as 35 sittings.
 
 A slice like **D4 (Rocket Hideout)** is a whole area: four floors, spinner tiles,
 a Lift Key, an elevator, a Giovanni fight. That is many sessions. **Split freely**
@@ -28,7 +28,8 @@ many sessions to reach.
 to rebuild it, and R1 was split into R1a–c (DECISIONS #26). The docs said "29"
 and then "34"; both were one too many (R1 + 27 rows A1–X2 = 28), corrected
 2026-09-22. Count R1 once — its three slices are one milestone. The same day the
-V1 plan added **A4 in-game trades**, which makes **34** (DECISIONS #29).
+V1 plan added **A4 in-game trades**, which makes **34** (DECISIONS #29). The V1c
+plan added **A5 battle presentation** on 2026-09-23: **35** (DECISIONS #31).
 
 ---
 
@@ -51,7 +52,7 @@ piece gets rebuilt, in `HISTORY.md` → *Prior work — code lost*.
 |---|---|---|---|
 | **R** ✅ | R1 (a–c) | Commit extracted data — permanent ROM-free | a fresh clone plays with no ROM and no setup — **passed 2026-09-22** |
 | **V** | V1–V5 | Rebuild the lost work | 30 maps, Brock beatable, Psychic fix + SFX back |
-| **A** | A1–A4 | Core systems the upstream engine lacks | item balls, trainer sight, TMs, field effects, in-game trades |
+| **A** | A1–A5 | Core systems the upstream engine lacks | item balls, trainer sight, TMs, field effects, in-game trades, battle transitions |
 | **B** | B1–B2 | Mt. Moon → Cerulean | Misty beaten, S.S. Ticket obtained |
 | **C** | C1–C3 | Vermilion | have Cut, Lt. Surge beaten |
 | **D** | D1–D5 | Lavender + Celadon | have Silph Scope, Erika beaten, Poke Flute |
@@ -107,7 +108,7 @@ split freely.
 
 | ID | Slice | Verify |
 |---|---|---|
-| V1 🔨 | **Route 2 + Viridian Forest** — Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate; Viridian north connection; replace the upstream demo gate (Viridian old man, "as far as the demo goes") with the real ASM behavior; Forest trainers battle when talked to; music + debug warps. **Five slices (DECISIONS #29, detail in `notes/v1-plan.md`):** V1a ✅ (2026-09-22) extract the maps + trainer data → V1b ✅ (2026-09-22) make them playable (music, palettes, warps, Pikachu spawn states, facing kept through warps; Oak's Aide moved to A2) → V1c trainer battles per `home/trainers.asm` → V1d catch-demo battle type (old man + Oak's Pikachu) → V1e the real old man, removing both demo gates (Viridian + Route 22's fake Blue) | walk Viridian → Route 2 → Forest → north gate; battle a Bug Catcher |
+| V1 🔨 | **Route 2 + Viridian Forest** — Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate; Viridian north connection; replace the upstream demo gate (Viridian old man, "as far as the demo goes") with the real ASM behavior; Forest trainers battle when talked to; music + debug warps. **Five slices (DECISIONS #29, detail in `notes/v1-plan.md`):** V1a ✅ (2026-09-22) extract the maps + trainer data → V1b ✅ (2026-09-22) make them playable (music, palettes, warps, Pikachu spawn states, facing kept through warps; Oak's Aide moved to A2) → V1c ✅ (2026-09-23) trainer battles per `home/trainers.asm` (text, meet music, the win sequence, beaten only on a win, after-battle text, the Oak's Lab loss; DECISIONS #31) → V1d catch-demo battle type (old man + Oak's Pikachu) → V1e the real old man, removing both demo gates (Viridian + Route 22's fake Blue) | walk Viridian → Route 2 → Forest → north gate; battle a Bug Catcher |
 | V2 ⬜ | **Pewter City** — PewterCity, PewterPokecenter, PewterMart, PewterNidoranHouse, PewterSpeechHouse; Route 2 ↔ Pewter connection; city scripts per ASM | enter Pewter from the Forest; heal; shop; talk to every NPC |
 | V3 ⬜ | **Pewter Gym + Museum** — PewterGym (Jr. Trainer, Brock; BADGE_1 on win, gym-leader music), Museum1F/2F (admission, Old Amber per ASM) | beat Brock → BADGE_1 on the trainer card; ATK boost applies in the next battle |
 | V4 ⬜ | **Diglett's Cave + Route 3** — DiglettsCave, DiglettsCaveRoute11 (entrance building; Route 11 outdoors is F1), Route3 + trainers; Pewter east exit | walk the cave end to end; Route 3 trainers battle |
@@ -115,7 +116,7 @@ split freely.
 
 ---
 
-## Phase A — Core systems (4 slices)
+## Phase A — Core systems (5 slices)
 
 Re-scoped 2026-09-22 against what upstream **already has**: whiteout
 (`handleBlackoutWarp`), badge stat boosts, hidden-item pickup, the trainer
@@ -123,10 +124,11 @@ line-of-sight engine and `trainer_approach` state all work. What's missing:
 
 | ID | Slice | Verify |
 |---|---|---|
-| A1 ⬜ | **Item balls + trainer sight data** — **runs right after V1, before V2** (DECISIONS #29). Visible item balls become collectible and stay gone once taken (V1a already emits each ball's `item`). Populate each trainer's `sightRange` from the trainer header V1a already parses, and check the existing sight engine against `engine/overworld/trainer_sight.asm` | pick up an item ball in Viridian Forest; step into a Bug Catcher's line of sight → approach + battle |
+| A1 ⬜ | **Item balls + trainer sight data** — **runs right after V1, before V2** (DECISIONS #29). Visible item balls become collectible and stay gone once taken (V1a already emits each ball's `item`). Populate each trainer's `sightRange` from the trainer header V1a already parses, and check the existing sight engine against `engine/overworld/trainer_sight.asm`. Since V1c the sight path already shows the before-battle text and counts the trainer as beaten only after a win; A1 adds the meet music **at spotting** (`TrainerEngage` → `EngageMapTrainer`) and the "!" bubble (`notes/v1c-plan.md` §1.4) | pick up an item ball in Viridian Forest; step into a Bug Catcher's line of sight → approach + battle |
 | A2 ⬜ | **Gym rewards + TM/HM teaching** — TM/HM items in the bag (none exist yet: machine names via `GetMachineName`, the `TechnicalMachines` table, HMs untossable); TM gifts after gym wins (Brock → TM34); teach TMs/HMs from the bag with ASM compatibility checks; USEDTMHM Pikachu happiness. **Plus Oak's Aide** in Route2Gate (HM05 for 10 owned, `OaksAideScript` — reusable for the later aides; moved here from V1b, DECISIONS #30) | beat Brock → receive TM34; teach it to a compatible mon; incompatible refused; Oak's Aide gives HM05 with 10 owned and refuses with fewer |
 | A3 ⬜ | **Field effects** — overworld poison damage per `engine/events/poison.asm` (+ PSNFNT happiness), Repel step counter, Escape Rope; re-verify whiteout | poisoned mon loses HP while walking; Repel suppresses weaker encounters; Escape Rope exits the Forest/cave |
 | A4 ⬜ | **In-game trades** (DECISIONS #29) — `DoInGameTradeDialogue` (`engine/events/in_game_trades.asm`, table `data/events/trades.asm`): the dialogue sets, choosing a party mon, the trade animation, and the received mon's nickname and OT. Yellow uses 7 trades: Route 2 trade house (Clefairy → Mr. Mime "MILES"), Route 11 gate 2F, Underground Path Route 5, Route 18 gate 2F, and 3 in the Cinnabar Lab. Must land before B1, the first point where the player can have a Clefairy | trade a Clefairy in the Route 2 trade house → receive "MILES"; talking again gives the after-trade text; the wrong species is refused |
+| A5 ⬜ | **Battle presentation per the ASM** (DECISIONS #31) — **runs right after A1, before V2.** (1) All 8 battle transitions (`engine/battle/battle_transitions.asm`: DoubleCircle, Circle, Spiral in both directions, Horizontal/Vertical stripes, Shrink, Split, plus the flash) and the choice between them: trainer bit, enemy ≥ lead + 3 levels, dungeon map (`data/maps/dungeon_maps.asm`, keeping its missing-maps bug). Map-trainer battles use it too; today they cut straight in. (2) Enemy pic positions: a w-wide front pic sits at tile 12 + ⌊(8−w)/2⌋ (`home/pics.asm` `LoadUncompressedSpriteData`), so the 47 5×5 pics move 8 px left; the trainer intro pic sits at tile 12 (`init_battle.asm:46`), not 13. (3) Battle text that types out and scrolls on `cont` instead of paging. Detail: `notes/v1c-plan.md` §1.6 | a Route 1 wild battle → DoubleCircle; a Forest wild battle → horizontal stripes; a Forest trainer → Shrink (Split when ≥ 3 levels above the lead); the Oak's Lab rival → Spiral; Caterpie drawn at x 104; battle text types letter by letter |
 
 ## Phase B — Mt. Moon → Cerulean (2 slices)
 
@@ -219,8 +221,9 @@ Do not start either, and do not shape earlier work around them.
 - **Phase A** adds only what upstream lacks (re-audited 2026-09-22 — see its
   intro). Audit again before claiming: the engine may already do part of a slice.
   **A1 runs right after V1** (DECISIONS #29), so every map from Pewter on is built
-  with trainer sight and item balls working. The order is V1 → A1 → V2–V5 → A2–A4 →
-  B. A4 (trades) only has to land before B1.
+  with trainer sight and item balls working. The order is V1 → A1 → A5 → V2–V5 → A2–A4 →
+  B. A4 (trades) only has to land before B1. A5 (DECISIONS #31) runs early for
+  the same reason as A1: every battle play-tested from V2 on then looks right.
 - **Phases B–I follow the game's story order.** Each area depends on items and
   events from the previous one.
 - **Map expansion pattern (V, B–I):** add the map to `EXTRACTABLE_MAPS` +
