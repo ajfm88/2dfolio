@@ -10,6 +10,7 @@ import { charToTile, drawTileBorder } from '../text';
 import type { BattlePokemon } from './types';
 import { getMove } from './data';
 import { type ItemStack, getItemName } from '../items';
+import { trainerPicName } from './trainer_flow';
 
 let fontCanvas: HTMLCanvasElement | null = null;
 
@@ -616,14 +617,6 @@ export function renderItemMenu(items: ItemStack[], cursorIndex: number): void {
 
 // ──────── Trainer Intro Helpers ────────
 
-/** Trainer sprite filename overrides for non-trivial mappings. */
-const TRAINER_SPRITE_OVERRIDES: Record<string, string> = {
-  LT_SURGE: 'lt.surge', JR_TRAINER_M: 'jr.trainerm', JR_TRAINER_F: 'jr.trainerf',
-  PROF_OAK: 'prof.oak', JESSIE_JAMES: 'jessiejames', COOL_TRAINER_M: 'cooltrainerm',
-  COOL_TRAINER_F: 'cooltrainerf', SUPER_NERD: 'supernerd', CUE_BALL: 'cueball',
-  BIRD_KEEPER: 'birdkeeper', BLACK_BELT: 'blackbelt', POKE_MANIAC: 'pokemaniac',
-  BUG_CATCHER: 'bugcatcher',
-};
 
 /** Trainer CGB palettes by class ID (matching assembly trainer_pic_pointers_money.asm). */
 const TRAINER_PALETTES: Record<number, string> = {
@@ -668,9 +661,8 @@ export async function loadOakTrainerSprite(): Promise<{ sprite: HTMLCanvasElemen
 }
 
 /** Load trainer intro sprites (enemy front + player back) with silhouettes. */
-export async function loadTrainerIntroAssets(trainerClassName: string, trainerClassId?: number): Promise<TrainerIntroAssets> {
-  const spriteName = TRAINER_SPRITE_OVERRIDES[trainerClassName]
-    ?? trainerClassName.toLowerCase().replace(/_/g, '');
+export async function loadTrainerIntroAssets(classKey: string, trainerClassId?: number): Promise<TrainerIntroAssets> {
+  const spriteName = trainerPicName(classKey);
   const palette = TRAINER_PALETTES[trainerClassId ?? 0] ?? 'BROWNMON';
 
   const [enemyTrainer, playerTrainer] = await Promise.all([

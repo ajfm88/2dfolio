@@ -92,6 +92,7 @@ const TEXT_ENTRIES: Record<string, TextEntry> = {
   LAB_OAK_WHAT:             { offsets: [symToOffset(0x2A, 0x4F4A)] },
   LAB_OAK_PIKACHU_DISLIKES: { offsets: [symToOffset(0x2A, 0x4F56)] },
   LAB_RIVAL_SMELL_YOU_LATER:{ offsets: [symToOffset(0x2A, 0x4EFB)] },
+  LAB_RIVAL_WRONG_POKEMON:  { offsets: [symToOffset(0x2A, 0x4EAF)] }, // _OaksLabRivalIPickedTheWrongPokemonText — his end-battle text when you win (V1c)
   LAB_RIVAL_MON_STRONGER:   { offsets: [symToOffset(0x2A, 0x4706)] },
   LAB_OAK_DELIVER_PARCEL:   { offsets: [symToOffset(0x2A, 0x4802)] },
   LAB_OAK_PARCEL_THANKS:    { offsets: [symToOffset(0x2A, 0x48A8)] },
@@ -155,6 +156,7 @@ const TEXT_ENTRIES: Record<string, TextEntry> = {
   BATTLE_BROKE_FREE:         { offsets: [symToOffset(0x2D, 0x6A25)] },
   BATTLE_SO_CLOSE:           { offsets: [symToOffset(0x2D, 0x6A62)] }, // _ItemUseBallText04 (3 shakes; the old man's failed throw, V1d)
   BATTLE_OLD_MAN_NAME:       { offsets: [symToOffset(0x0F, 0x4FE7)] }, // DisplayBattleMenu.oldManName — "OLD MAN" (V1d)
+  RIVAL1_WIN:                { offsets: [symToOffset(0x27, 0x7602)] }, // _Rival1WinText — HandlePlayerBlackOut when RIVAL1 wins (V1c)
 
   // Bookshelf text (bank 0x27)
   BOOKSHELF_BOOKS:           { offsets: [symToOffset(0x27, 0x6492)] },

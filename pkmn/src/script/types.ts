@@ -20,7 +20,7 @@ export type ScriptCommand =
   | { type: 'moveParallel'; npcId: string; npcPath: Direction[]; playerPath: Direction[] }
   | { type: 'unhideNpc'; npcId: string }
   | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardText: string }
-  | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string }
+  | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'healParty' }
   | { type: 'pokecenterHeal' }
   | { type: 'pikachuToNurse' }

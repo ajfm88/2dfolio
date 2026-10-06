@@ -54,7 +54,7 @@ const MUSIC_TRACKS = [
   'indigoplateau', 'gymleaderbattle', 'finalbattle', 'defeatedgymleader',
   'credits', 'halloffame', 'jigglypuffsong', 'bikeriding', 'surfing',
   'gamecorner', 'dungeon1', 'dungeon3', 'cinnabarmansion', 'pokemontower',
-  'silphco', 'meetevilttrainer', 'meetfemaletrainer', 'meetmaletrainer',
+  'silphco', 'meeteviltrainer', 'meetfemaletrainer', 'meetmaletrainer',
   'surfingpikachu', 'pokefluteinbattle',
 ];
 

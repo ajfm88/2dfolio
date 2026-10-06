@@ -27,7 +27,8 @@ Wild battle flow:
 `intro -> choose_action -> choose_move -> execute_turn -> player_move/enemy_move -> check_faint -> victory/defeat -> gain_exp -> [learn_move_prompt -> learn_move_select -> learn_move_confirm] -> end`
 
 Trainer battle flow:
-`trainer_intro -> choose_action -> ... (same as above) -> [forced_switch -> switching_in] -> ... -> end`
+`trainer_intro -> choose_action -> ... (same as above) -> [forced_switch -> switching_in] -> ... -> gain_exp -> trainer_end -> end`
+(a loss: `defeat -> trainer_end -> [blackout] -> end`)
 
 Additional states:
 - `choose_item` — bag menu open to select an item
@@ -39,6 +40,7 @@ Additional states:
 - `run_away` — "Got away safely!" (wild battles only)
 - `run_failed` — failed to escape, enemy gets a free turn
 - `blackout` — "X is out of useable POKéMON!" / "X blacked out!" when entire party faints
+- `trainer_end` — runs a `trainer_flow.ts` step list: texts, the trainer pic scrolling back in, delays (V1c)
 
 ## Turn Order
 
@@ -68,10 +70,31 @@ When all party Pokemon faint: money halved, party fully healed, warp to `lastBla
 
 No catching/running. Trainer AI uses 3 modifier functions per class. Money = baseMoney x last enemy level.
 
+**Since V1c the end of a trainer battle follows the ASM** (`trainer_flow.ts`, unit-tested;
+`Battle` runs its steps in the `trainer_end` state):
+- **Win** (`TrainerBattleVictory`): fanfare → "RED defeated / BUG CATCHER!" → the trainer
+  pic scrolls in from the right (`_ScrollTrainerPicAfterBattle`: 6 steps × 4 frames, ending
+  at x = 112 with its last column off-screen) → 40 frames → "BUG CATCHER: " + the saved
+  end-battle text → "RED got ¥… / for winning!". The end text comes from
+  `setupTrainerBattle(..., { endBattleText })`; without one only that step is skipped.
+- **The fanfare waits for the whole party.** `onVictory` fires at the faint only in wild
+  battles (`FaintEnemyPokemon .wild_win`); a trainer's plays at the start of the win
+  sequence (`victoryMusicFor`: `defeatedgymleader` for gym leaders and RIVAL3).
+- **Loss** (`HandlePlayerBlackOut`): the blackout text only — the trainer's saved lose text
+  is never printed. Against RIVAL1 the enemy side is cleared, his pic scrolls in, 40
+  frames, `_Rival1WinText`; in Oak's Lab there's no blackout (`playerLost` instead of
+  `isBlackout`), elsewhere the blackout follows.
+- **Trainer pics load by class key** (`trainerPicName('BUG_CATCHER')` → `bugcatcher`), not
+  by display name: "BUG CATCHER" has no file, and before V1c that hung the game on the
+  battle's first frame for 11 classes.
+
 ## Battle Transitions
 
-- Trainer = clockwise spiral of black tiles
+- Trainer = clockwise spiral of black tiles — only scripted battles (Oak's Lab rival) use
+  it; map-trainer battles cut straight in until A5
 - Wild = 3 white flashes + horizontal stripes
+- The ASM picks one of 8 transitions (trainer / stronger enemy / dungeon map); A5
+  implements them (DECISIONS #31, `notes/v1c-plan.md` §1.6)
 
 ## Wild Intro Phases
 
@@ -102,6 +125,7 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 | `data.ts` | 157 | JSON data loading |
 | `types.ts` | 134 | TypeScript interfaces |
 | `trainer_ai.ts` | 213 | Trainer move selection |
+| `trainer_flow.ts` | 164 | V1c: meet/victory music choice, end-text pages, win/loss step lists, pic scroll, trainer pic names |
 | `catch.ts` | 105 | Catch rate formula |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
 | `volatiles.ts` | 77 | Substitute, confusion, etc. |

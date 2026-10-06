@@ -131,4 +131,5 @@ export type BattleState =
   | 'learn_move_select'   // Select which of 4 moves to forget
   | 'learn_move_confirm'  // "Abandon learning X?" yes/no
   | 'blackout'            // "X is out of useable POKéMON!" → "X blacked out!"
+  | 'trainer_end'         // trainer_flow.ts victory/loss steps: texts, pic scroll, delays
   | 'end';                // Battle is over, return to overworld
