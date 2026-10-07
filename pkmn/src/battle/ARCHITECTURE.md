@@ -88,6 +88,29 @@ No catching/running. Trainer AI uses 3 modifier functions per class. Money = bas
   by display name: "BUG CATCHER" has no file, and before V1c that hung the game on the
   battle's first frame for 11 classes.
 
+## Catch demo (V1d)
+
+`BATTLE_TYPE_OLD_MAN` (the Viridian old man) and `BATTLE_TYPE_PIKACHU` (Oak's catch in Pallet
+Town) are one demo, run beside `Battle` rather than inside it (DECISIONS #32): `Battle`
+assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM sources:
+`notes/v1d-plan.md`.
+
+- `catch_demo.ts` — the rules as tested data: `catchDemoCaught` (PIKACHU always; OLD_MAN
+  unless `INITIAL_CATCH_TRAINING` is set, `ItemUseBall`), `catchDemoBackPic`
+  (`oldmanb` / `prof.oakb`), `CATCH_DEMO_BAG` (one POKé BALL), `tossBallAnims` (4 or 6),
+  and `catchDemoSteps`: "Wild X appeared!" (A) → HUD + 40 frames → ▶ FIGHT 20 → ▶ ITEM
+  20 + 10 frozen → bag 3 → ▶ POKé BALL 20 → "OLD MAN used / POKé BALL!" 20 → the toss
+  animations → the result text (A).
+- `catch_demo_screen.ts` — upstream's `pikachu/pikachu_battle.ts`, moved and generalized:
+  loads the enemy by dex with its own palette and the back pic by battle type, keeps
+  upstream's slide-in and toss/poof/shake drawing (their exact ASM timings are A5 / later),
+  and walks the steps.
+- A script starts it with `{ type: 'catchDemo', battleType, species, level }` (what the ASM
+  scripts set). `main.ts` marks the enemy seen (`LoadEnemyMonData`), plays wildbattle, runs
+  the wild transition, then the `catch_demo` state; at the end: instant white, fade in, the
+  script resumes. No ball is used, nothing joins the party, no evolution or mood update
+  (`wBattleResult = 2`).
+
 ## Battle Transitions
 
 - Trainer = clockwise spiral of black tiles — only scripted battles (Oak's Lab rival) use
@@ -127,6 +150,8 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 | `trainer_ai.ts` | 213 | Trainer move selection |
 | `trainer_flow.ts` | 164 | V1c: meet/victory music choice, end-text pages, win/loss step lists, pic scroll, trainer pic names |
 | `catch.ts` | 105 | Catch rate formula |
+| `catch_demo.ts` | 111 | V1d: the catch demo's rules and step list (old man + Oak's Pikachu) |
+| `catch_demo_screen.ts` | 626 | V1d: runs and draws the catch demo (was `pikachu/pikachu_battle.ts`) |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
 | `volatiles.ts` | 77 | Substitute, confusion, etc. |
 | `run.ts` | 57 | Wild battle escape logic (Gen 1 TryRunningFromBattle) |

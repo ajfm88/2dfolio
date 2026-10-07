@@ -132,6 +132,10 @@ const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   swap:             { bank: 0x02, addr: 0x420a },
   withdraw_deposit: { bank: 0x02, addr: 0x4201 },
   cut:              { bank: 0x02, addr: 0x4204 },
+  // A1a: the item jingles, music-mode SFX on channels 5–7 (sym: SFX_Get_Item1_1,
+  // SFX_Get_Item2_1). Banks $1f and $20 hold byte-identical copies.
+  get_item1:        { bank: 0x02, addr: 0x4192 },
+  get_item2:        { bank: 0x02, addr: 0x419b },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -289,6 +293,10 @@ function parseMusicHeader(rom: BinaryReader, bank: number, addr: number): { id: 
  *
  * @param isNoiseChannel - true if this is channel 4 (noise), which uses drum_speed instead of note_type
  * @param isSfx - true if decoding SFX data (enables square_note, noise_note, pitch_sweep commands)
+ *
+ * An SFX channel that runs `execute_music` is in music mode from then on: the engine
+ * reads $10 and $20–$2F as notes there (engine_1.asm Audio1_sfx_note and
+ * Audio1_pitch_sweep check BIT_EXECUTE_MUSIC), so they decode as notes.
  */
 function decodeChannelCommands(
   rom: BinaryReader,
@@ -311,6 +319,8 @@ function decodeChannelCommands(
   // Track the maximum ROM offset we need to decode to
   // (furthest sound_call/sound_loop target + its code)
   let maxTargetRomPos = pos; // At minimum, decode the start
+  // BIT_EXECUTE_MUSIC: set by execute_music, never cleared before the channel ends
+  let musicMode = false;
 
   while (true) {
     const bankAddr = (pos & 0x3FFF) | 0x4000;
@@ -383,6 +393,7 @@ function decodeChannelCommands(
 
     if (byte === 0xF8) {
       commands.push({ cmd: 'execute_music' });
+      musicMode = true;
       pos += 1;
       continue;
     }
@@ -481,8 +492,8 @@ function decodeChannelCommands(
       continue;
     }
 
-    // SFX-only commands
-    if (isSfx && byte === 0x10) {
+    // SFX-only commands (not in music mode, where these bytes are notes)
+    if (isSfx && !musicMode && byte === 0x10) {
       const paramByte = rom.readByte(pos + 1);
       const length = (paramByte >> 4) & 0x0F;
       const shiftRaw = paramByte & 0x0F;
@@ -500,7 +511,7 @@ function decodeChannelCommands(
       continue;
     }
 
-    if (isSfx && byte >= 0x20 && byte <= 0x2F) {
+    if (isSfx && !musicMode && byte >= 0x20 && byte <= 0x2F) {
       const length = byte & 0x0F;
       const volFade = rom.readByte(pos + 1);
       const volume = (volFade >> 4) & 0x0F;

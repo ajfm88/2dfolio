@@ -7,23 +7,32 @@ import {
   loadEmoteSprite,
   getCtx,
   getScale,
+  captureUi,
+  beginSpriteLog,
+  endSpriteLog,
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput } from "./audio";
-import { updateInput, isPressed, initTouchControls } from "./input";
+import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
+import { PassClock } from "./overworld/walk_pace";
+import { enterMapCounters } from './overworld/step_end';
+import { GB_FPS, MIN_FPS, MAX_FPS, TickClock, stepFps } from "./core/tick_clock";
 import { GameMap, Player, Npc, loadNpcs } from "./overworld";
+import { UiEntry, overworldUiOpen, openOverworldUi, fontLoadedUpdateSprites } from "./overworld/ui_entry";
+import { spriteDrawOrder } from "./overworld/sprites";
+import { uiTiles } from "./renderer/ui_tiles";
 import {
   applyDefeatedTrainers, applyStoryNpcState, recordDefeated,
   startSpiralTransition, startWildTransition, updateBattleTransition, renderBattleTransitionOverlay,
   performWarpLoad, performMapConnection,
   updateOverworld as runOverworld, createOverworldState,
+  runMapScript, handleStepComplete,
 } from "./overworld";
-import type { OverworldAction } from "./overworld";
-import { PikachuFollower, shouldPikachuFollow, modifyPikachuHappiness, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood } from "./pikachu";
+import type { OverworldAction, OverworldDeps } from "./overworld";
+import { PikachuFollower, shouldPikachuFollow, modifyPikachuHappiness, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
 import {
-  initPikachuBattle, updatePikachuBattle, renderPikachuBattle,
-  clearPikachuBattle,
   startPikachuEmotion, updatePikachuEmotionAnim, renderPikachuEmotionBox,
   isPikachuEmotionActive, isPikachuEmotionExpired, clearPikachuEmotion,
+  pikachuEmotionPhase, tickPikachuEmotionEntry,
 } from "./pikachu";
 import {
   initTextSystem,
@@ -46,6 +55,10 @@ import {
   applyEvolution,
   loadPokemonSprites,
   renderBattleText,
+  initCatchDemo,
+  updateCatchDemo,
+  renderCatchDemo,
+  clearCatchDemo,
 } from "./battle";
 import { createSilhouette } from "./battle/battle_ui";
 import { meetMusicFor, victoryMusicFor } from "./battle/trainer_flow";
@@ -77,7 +90,8 @@ import {
 } from "./menus";
 import type { BoxedPokemon } from "./menus";
 import { saveGame, loadGame, restoreParty, restoreBag, hasSavedGame } from "./save";
-import { hasFlag, getAllFlags, restoreFlags } from "./events";
+import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts } from "./events";
+import { VIRIDIAN_CITY, initialViridianScript, martSpawnsOldMan } from "./story/viridian_city";
 import { markSeen, markOwned, getSeenList, getOwnedList, getOwnedCount, restorePokedex } from "./pokedex_state";
 import type { ScriptCommand } from "./script";
 import {
@@ -127,7 +141,7 @@ type GameState =
   | "trainer_card"
   | "option_menu"
   | "save_menu"
-  | "pikachu_battle"
+  | "catch_demo"
   | "pikachu_emotion"
   | "dex"
   | "evolution";
@@ -322,6 +336,7 @@ async function init(): Promise<void> {
     loadTrainerData(),
     loadEmoteSprite(),
     pikachuFollower.loadSprite(),
+    loadPikachuMovementData(),
     titleScreen.load(),
     fetch('item_names.json').then(r => r.ok ? r.json() : {}).then(names => initItemNames(names)),
     loadGameText(),
@@ -354,6 +369,7 @@ async function loadSavedGame(): Promise<void> {
   setActivePalette(getMapPalette(saved.mapName));
   await reloadBorderTiles();
   await gameMap.load(saved.mapName);
+  Object.assign(ow, createOverworldState());
   await player.loadSprite();
   npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
   await loadWildEncounters(saved.mapName);
@@ -392,6 +408,8 @@ async function loadSavedGame(): Promise<void> {
   if (saved.eventFlags) {
     restoreFlags(saved.eventFlags);
   }
+  // Saves made before V1e have no map script states: derive Viridian's from its events
+  restoreMapScripts(saved.mapScripts ?? { [VIRIDIAN_CITY]: initialViridianScript(hasFlag) });
   restorePikachuHappiness(saved.pikachuHappiness ?? 90, saved.pikachuMood ?? 128);
   restoreNames(saved.playerName, saved.rivalName);
   setRivalStarter(saved.rivalStarter);
@@ -419,6 +437,7 @@ async function loadSavedGame(): Promise<void> {
 
 /** Start a new game — place player in Red's bedroom. */
 async function startNewGame(): Promise<void> {
+  Object.assign(ow, createOverworldState());
   currentMapName = "RedsHouse2F";
   setActivePalette(getMapPalette("RedsHouse2F"));
   await reloadBorderTiles();
@@ -440,6 +459,7 @@ async function startNewGame(): Promise<void> {
   playTimeMs = 0;
   resetPikachuHappiness();
   restoreFlags([]);           // clear all event flags
+  restoreMapScripts({});      // init_player_data.asm clears wGameProgressFlags
   restorePokedex([], []);     // clear pokedex
   setRivalStarter(undefined);
   // Note: player/rival names are set during Oak speech, before this function runs
@@ -852,6 +872,7 @@ function handleBlackoutWarp(): void {
     }
     currentMapName = destMap;
     npcs = result.npcs;
+    Object.assign(ow, enterMapCounters(ow));
 
     // Move player one step (16px = 2 tiles) below the door tile
     player.setTilePosition(player.tileX, player.tileY + 2);
@@ -898,6 +919,7 @@ async function handleWarpLoad(
   }
   currentMapName = destMapName;
   npcs = result.npcs;
+  Object.assign(ow, enterMapCounters(ow));
   // Play map music if it changed
   updateMapMusic(destMapName);
   ow.justWarped = true;
@@ -933,39 +955,53 @@ async function connectToMap(
   state = "overworld";
 }
 
-// Frame rate cap — adjustable with -/+ keys, persisted in localStorage
+// Frame rate — the Game Boy's by default (DECISIONS #33); adjustable with -/+
+// keys, persisted in localStorage
 const FPS_KEY = "p151-f";
-const DEFAULT_FPS = 50;
-const MIN_FPS = 10;
-const MAX_FPS = 200;
-const FPS_STEP = 5;
 let targetFps = (() => {
   const saved = localStorage.getItem(FPS_KEY);
   if (saved) {
     const n = Number(saved);
     if (n >= MIN_FPS && n <= MAX_FPS) return n;
   }
-  return DEFAULT_FPS;
+  return GB_FPS;
 })();
-let targetFrameMs = 1000 / targetFps;
-let lastFrameTime = 0;
+const tickClock = new TickClock(targetFps);
+
+// The overworld's pass: everything that moves advances once every two frames, as the
+// ASM's OverworldLoop does (overworld/walk_pace.ts, DECISIONS #36). Text, waits, fades,
+// audio and battles keep counting frames.
+const passClock = new PassClock();
+const PASS_STATES: ReadonlySet<GameState> = new Set<GameState>(["overworld", "script", "trainer_approach"]);
+let prevTickInPassState = false;
 
 let fpsDisplayTimer = 0;
 function setTargetFps(fps: number): void {
   targetFps = Math.max(MIN_FPS, Math.min(MAX_FPS, fps));
-  targetFrameMs = 1000 / targetFps;
+  tickClock.setFps(targetFps);
   localStorage.setItem(FPS_KEY, String(targetFps));
   fpsDisplayTimer = targetFps * 2; // show for ~2 seconds
 }
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "-" || e.key === "_") {
-    setTargetFps(targetFps - FPS_STEP);
+    setTargetFps(stepFps(targetFps, -1));
   }
   if (e.key === "=" || e.key === "+") {
-    setTargetFps(targetFps + FPS_STEP);
+    setTargetFps(stepFps(targetFps, 1));
   }
 });
+
+function overworldDeps(): OverworldDeps {
+  return {
+    player, gameMap, npcs, pikachuFollower, playerParty, playerBag, currentMapName, findNpc,
+    onPokecenterHeal: () => {
+      // SetLastBlackoutMap: the Pokécenter door points to the town's destination.
+      const doorWarp = gameMap.getWarpByIndex(0);
+      if (doorWarp) lastBlackoutWarp = { destMap: doorWarp.destMap, destWarpId: doorWarp.destWarpId };
+    },
+  };
+}
 
 /** One game tick — all update logic (no rendering). */
 function gameTick(): void {
@@ -978,6 +1014,17 @@ function gameTick(): void {
 
   // Tick the audio engine every frame
   tickAudio();
+
+  // Is this frame an overworld pass? Entering the overworld from a menu, a text box or a
+  // battle restarts the pair (jp OverworldLoop). Elsewhere the joypad is read every frame.
+  // ApplyPikachuMovementData blocks the loop: no pass runs while it does, and the next one
+  // comes two frames after it returns (the caller's jp OverworldLoop).
+  const inPassState = PASS_STATES.has(state);
+  const movementBlocking = pikachuFollower.movementActive;
+  if (inPassState && (!prevTickInPassState || movementBlocking)) passClock.reset();
+  prevTickInPassState = inPassState;
+  const isPass = inPassState && !movementBlocking && passClock.tick();
+  if (!inPassState) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1077,28 +1124,28 @@ function gameTick(): void {
       warpToMap(debugWarp.map, debugWarp.warpId, false, debugWarp.stepPos);
       return;
     }
-    if (isPressed("start")) {
+    if (isPass) player.finishLanding(); // Delay3 continuation clears the ledge flag before input.
+    const deps = overworldDeps();
+    // JoypadOverworld runs RunMapScript before Joypad on every standing pass.
+    if (isPass && !player.isMoving && !player.isLanding) {
+      const mapAction = runMapScript(deps, ow);
+      if (mapAction) {
+        handleOverworldAction(mapAction);
+        return;
+      }
+      readJoypad();
+    }
+    if (!isPass) {
+      // (the pair's first frame)
+    } else if (!player.isBusy && isPassPressed("start")) {
       playSFX('start_menu');
       startMenu.show(hasFlag("GOT_POKEDEX"), getPlayerName());
       stateBeforeMenu = "overworld";
       state = "start_menu";
     } else {
-      const action = runOverworld(
-        {
-          player, gameMap, npcs, pikachuFollower, playerParty, playerBag, currentMapName, findNpc,
-          onPokecenterHeal: () => {
-            // Record the pokecenter door warp as the blackout destination.
-            // Warp 0 is the door exit — its destMap/destWarpId point to the
-            // correct position in the town. (assembly: SetLastBlackoutMap)
-            const doorWarp = gameMap.getWarpByIndex(0);
-            if (doorWarp) {
-              lastBlackoutWarp = { destMap: doorWarp.destMap, destWarpId: doorWarp.destWarpId };
-            }
-          },
-        },
-        ow,
-      );
+      const action = runOverworld(deps, ow);
       if (action) handleOverworldAction(action);
+      passClock.delay(player.takeFrameDelay()); // Delay3 after a ledge hop lands
     }
   } else if (state === "start_menu") {
     const action = startMenu.update();
@@ -1196,6 +1243,7 @@ function gameTick(): void {
         getRivalName(),
         lastBlackoutWarp,
         getRivalStarter(),
+        getAllMapScripts(),
       );
     } else if (saveResult === "closed") {
       state = "start_menu";
@@ -1209,7 +1257,7 @@ function gameTick(): void {
       state = "overworld";
     }
   } else if (state === "trainer_approach") {
-    if (ow.approachingNpc) {
+    if (isPass && ow.approachingNpc) {
       ow.approachingNpc.updateApproach();
       if (ow.approachingNpc.approachDone) {
         const npc = ow.approachingNpc;
@@ -1223,7 +1271,16 @@ function gameTick(): void {
       pikachuTile: pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined,
       pikachuFollower,
     };
-    const scriptAction = runScript(scriptDeps);
+    const stepsBefore = player.stepsCompleted;
+    const scriptAction = runScript(scriptDeps, isPass);
+    if (isPass) passClock.delay(player.takeFrameDelay()); // a pushed hop lands too
+    if (player.stepsCompleted !== stepsBefore && player.stepWasHop) {
+      const action = handleStepComplete(overworldDeps(), ow, true);
+      if (action) {
+        handleOverworldAction(action);
+        return;
+      }
+    }
     if (scriptAction) {
       switch (scriptAction.type) {
         case 'scriptEnded': {
@@ -1236,16 +1293,29 @@ function gameTick(): void {
           }
           break;
         }
-        case 'pikachuBattle':
-          // Assembly: BATTLE_TYPE_PIKACHU — standard battle transition, then custom auto-battle
+        case 'catchDemo': {
+          // Assembly: BATTLE_TYPE_OLD_MAN / BATTLE_TYPE_PIKACHU — a wild battle (wCurOpponent
+          // is a species) run with simulated input: battle/catch_demo.ts
+          const enemy = createPokemon(scriptAction.species, scriptAction.level);
+          if (!enemy) {
+            console.error(`catchDemo: unknown species ${scriptAction.species}`);
+            advanceActiveScript();
+            break;
+          }
+          markSeen(enemy.species.id); // LoadEnemyMonData marks it seen
           stopMusic();
           currentMapMusic = null;
-          playMusic('wildbattle');
+          playMusic('wildbattle'); // PlayBattleMusic: a wild opponent
           startWildBattleTransition(() => {
-            initPikachuBattle();
-            state = 'pikachu_battle';
+            initCatchDemo({
+              battleType: scriptAction.battleType,
+              enemy,
+              initialCatchTraining: hasFlag('INITIAL_CATCH_TRAINING'),
+            });
+            state = 'catch_demo';
           });
           break;
+        }
         case 'startBattleTransition':
           startBattleTransition(() => {
             startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName, {
@@ -1267,9 +1337,20 @@ function gameTick(): void {
     if (sfa !== null) fadeAlpha = sfa;
   } else if (state === "pikachu_emotion") {
     if (isPikachuEmotionActive()) {
-      if (isPressed('a') || isPressed('b') || isPikachuEmotionExpired()) {
+      if (pikachuEmotionPhase() !== 'portrait') {
+        // The movement prelude and the border: nothing reads input, nothing can close it
+        tickPikachuEmotionEntry({
+          follower: pikachuFollower,
+          player,
+          inGrass: () => gameMap.isGrassTile(pikachuFollower.tileX, pikachuFollower.tileY),
+          captureBorder: () => { captureUi(drawUiLayer); },
+          coveredUpdate: () => fontLoadedUpdateSprites(player, gameMap, uiTiles.tileAt, pikachuFollower),
+        });
+      } else if (isPressed('a') || isPressed('b') || isPikachuEmotionExpired()) {
+        // A press is an edge (input.ts): A or B held since the prelude closes nothing
         state = 'overworld';
         clearPikachuEmotion();
+        pikachuFollower.cancelMovement();
       } else {
         updatePikachuEmotionAnim();
       }
@@ -1285,9 +1366,8 @@ function gameTick(): void {
       pendingTrainer.meetMusic = null;
     }
     if (!textBox.active) {
-      if (ow.interactedNpc && !ow.interactedNpc.data.object) {
-        ow.interactedNpc.restoreDirection();
-      }
+      // CloseTextDisplay restores the facing saved AFTER MakeNPCFacePlayer.
+      // Keep it; fixed STAY sprites turn back through their own random cycle.
       ow.interactedNpc = null;
       if (pendingTrainer) {
         const { npc } = pendingTrainer;
@@ -1306,24 +1386,24 @@ function gameTick(): void {
       }
       state = stateBeforeMenu;
     }
-  } else if (state === "pikachu_battle") {
-    const action = updatePikachuBattle();
-    if (action?.type === "caught") {
-      // Caught → fade out → resume script
+  } else if (state === "catch_demo") {
+    const action = updateCatchDemo();
+    if (action?.type === "ended") {
+      // _InitBattleCommon calls EndOfBattle after StartBattle for catch demos too.
+      ow.encounterCooldown = 3; // EndOfBattle → EnterMap
+      Object.assign(ow, enterMapCounters(ow));
+      // EndOfBattle: GBPalWhiteOut (instant white), then the script carries on — as the
+      // "battle" state's finish handler returns to a script. wBattleResult = 2 skips
+      // evolution and the Pikachu mood update.
       stopMusic();
-      state = "transition";
-      fadeDir = "out";
-      fadeAlpha = 0;
-      fadeCallback = () => {
-        clearPikachuBattle();
-        setActivePalette(action.savedPalette);
-        reloadBorderTiles();
-        state = "script";
-        advanceActiveScript();
-        fadeDir = "in";
-        fadeCallback = null;
-        updateMapMusic(currentMapName);
-      };
+      clearCatchDemo();
+      setActivePalette(action.savedPalette);
+      reloadBorderTiles();
+      fadeAlpha = 1;
+      fadeDir = "in";
+      state = "script";
+      advanceActiveScript();
+      updateMapMusic(currentMapName);
     }
   } else if (state === "evolution") {
     updateEvolution();
@@ -1334,6 +1414,8 @@ function gameTick(): void {
       currentBattle.update();
 
       if (currentBattle.finished) {
+        ow.encounterCooldown = 3; // EndOfBattle sets BIT_WILD_ENCOUNTER_COOLDOWN
+        Object.assign(ow, enterMapCounters(ow));
         if (currentBattle.caughtPokemon) {
           const caught = currentBattle.caughtPokemon;
           caught.otName = getPlayerName();
@@ -1374,6 +1456,9 @@ function gameTick(): void {
         if (engagedTrainer && !lost) {
           engagedTrainer.data.defeated = true;
           markDefeated(engagedTrainer.data.id);
+          // PrintEndBattleText → SetEnemyTrainerToStayAndFaceAnyDirection, on the live
+          // sprite only. Nothing on the map updates between the end text and here.
+          engagedTrainer.stayAndFaceAnyDirection(getMapName());
         }
         engagedTrainer = null;
 
@@ -1456,16 +1541,44 @@ function gameTick(): void {
 }
 
 /** Run the game ticks due at `now`. Returns false if none were due. */
+/** The boxes and menus drawn over the map in the current state (the UI layer). */
+function drawUiLayer(): void {
+  switch (state) {
+    case 'item_menu': startMenu.render(); itemMenu.render(); break;
+    case 'shop': shopMenu.render(); break;
+    case 'pc': pcMenu.render(); break;
+    case 'pokecenter_pc': pokecenterPcMenu.render(); break;
+    case 'blackboard': blackboardMenu.render(); textBox.render(); break;
+    case 'save_menu': startMenu.render(); saveMenu.render(); break;
+    case 'pikachu_emotion': renderPikachuEmotionBox(); break;
+    case 'start_menu': startMenu.render(); break;
+    case 'overworld':
+    case 'script':
+    case 'trainer_approach':
+    case 'textbox': textBox.render(); renderScriptYesNo(); break;
+  }
+}
+
+/**
+ * A text box or menu opened over the map this tick: DisplayTextIDInit draws it, then runs
+ * UpdateSprites with the font loaded (overworld/ui_entry.ts). The boxes are captured here,
+ * in the tick, so the result never depends on rendering.
+ */
+const uiEntry = new UiEntry();
+function checkUiEntry(): void {
+  if (!uiEntry.opened(overworldUiOpen(state, textBox.active))) return;
+  openOverworldUi(state, player, gameMap, pikachuFollower, () => { captureUi(drawUiLayer); });
+}
+
 function runDueTicks(now: number): boolean {
   // Run multiple update ticks if targetFps exceeds monitor refresh rate
-  const elapsed = now - lastFrameTime;
-  if (elapsed < targetFrameMs) return false;
-  const ticks = Math.min(Math.floor(elapsed / targetFrameMs), 4); // cap at 4 to avoid spiral
-  lastFrameTime = now;
+  const ticks = tickClock.due(now);
+  if (ticks === 0) return false;
 
   for (let tick = 0; tick < ticks; tick++) {
     updateInput();
     gameTick();
+    checkUiEntry();
   }
   return true;
 }
@@ -1497,6 +1610,10 @@ function gameLoop(now = 0): void {
   // Update debug panel (HTML, outside canvas)
   updateDebugPanel(currentBattle, playerBag, player, gameMap, playerParty);
 
+  // DisplayTextIDInit checks sprite availability after the UI has written its
+  // tiles. Capture those boxes first, then composite them over the scene once.
+  const drawUi = captureUi(drawUiLayer);
+
   // Render
   if (state === "splash") {
     renderSplash();
@@ -1522,8 +1639,8 @@ function gameLoop(now = 0): void {
     renderBattleTransitionOverlay();
   } else if (state === "battle") {
     currentBattle?.render();
-  } else if (state === "pikachu_battle") {
-    renderPikachuBattle();
+  } else if (state === "catch_demo") {
+    renderCatchDemo();
   } else if (state === "evolution") {
     renderEvolution();
   } else if (state === "party_menu") {
@@ -1536,8 +1653,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    startMenu.render();
-    itemMenu.render();
   } else if (state === "shop") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
@@ -1546,7 +1661,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    shopMenu.render();
   } else if (state === "pc") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
@@ -1555,7 +1669,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    pcMenu.render();
   } else if (state === "pokecenter_pc") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
@@ -1564,7 +1677,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    pokecenterPcMenu.render();
   } else if (state === "blackboard") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
@@ -1573,8 +1685,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    blackboardMenu.render();
-    textBox.render();
   } else if (state === "trainer_card") {
     clear();
     trainerCard.render();
@@ -1589,8 +1699,6 @@ function gameLoop(now = 0): void {
     for (const npc of npcs) npc.render(camX, camY);
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
-    startMenu.render();
-    saveMenu.render();
   } else if (state === "dex") {
     clear();
     pokedexMenu.render();
@@ -1598,15 +1706,8 @@ function gameLoop(now = 0): void {
     clear();
     townMap.render();
   } else if (state === "pikachu_emotion") {
-    const camX = player.getCameraX();
-    const camY = player.getCameraY();
     clear();
-    gameMap.render(camX, camY);
-    for (const npc of npcs) npc.render(camX, camY);
-    for (const npc of getScriptNpcs()) npc.render(camX, camY);
-    pikachuFollower.render(camX, camY);
-    player.render(camX, camY);
-    renderPikachuEmotionBox();
+    renderOverworldScene(player.getCameraX(), player.getCameraY());
   } else if (state === "transition" && fadeAlpha >= 1) {
     // Fully faded out — draw white screen while loading
     clear();
@@ -1617,37 +1718,19 @@ function gameLoop(now = 0): void {
     const camY = player.getCameraY();
 
     clear();
-    gameMap.render(camX, camY);
-    for (const npc of npcs) {
-      npc.render(camX, camY);
-      gameMap.renderGrassOverlay(npc.x, npc.y, camX, camY);
-    }
-    for (const npc of getScriptNpcs()) {
-      npc.render(camX, camY);
-      gameMap.renderGrassOverlay(npc.x, npc.y, camX, camY);
-    }
-    if (pikachuFollower.visible) {
-      pikachuFollower.render(camX, camY);
-      gameMap.renderGrassOverlay(pikachuFollower.x, pikachuFollower.y, camX, camY);
-    }
-    player.render(camX, camY);
-    gameMap.renderGrassOverlay(player.x, player.y, camX, camY);
+    renderOverworldScene(camX, camY);
     renderPokecenterHeal(camX, camY, npcs);
     renderScriptExclamation(camX, camY, player, npcs);
-    if (state === "start_menu") {
-      startMenu.render();
-    }
-
-    textBox.render();
-    renderScriptYesNo();
   }
+
+  drawUi();
 
   // FPS display toast
   if (fpsDisplayTimer > 0) {
     fpsDisplayTimer--;
     const ctx = getCtx();
     const s = getScale();
-    const text = `FPS: ${targetFps}`;
+    const text = `FPS: ${Math.round(targetFps * 100) / 100}`;
     ctx.font = `${8 * s}px monospace`;
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     const w = ctx.measureText(text).width + 6 * s;
@@ -1660,6 +1743,41 @@ function gameLoop(now = 0): void {
   if (fadeAlpha > 0) {
     drawFadeOverlay(fadeAlpha);
   }
+}
+
+/**
+ * The map and its sprites, lowest OAM priority drawn first, each with its grass priority;
+ * then the OAM shadows, under every sprite pixel. Ordinarily the NPCs, Pikachu, then the
+ * player (slot 0) on top. While ApplyPikachuMovementData has swapped Pikachu into slot 0,
+ * the player (slot 15) goes first and Pikachu last; its grass priority is the one latched
+ * at the call (zero under the shadow). Draws latched state only — it advances nothing.
+ */
+function renderOverworldScene(camX: number, camY: number): void {
+  gameMap.render(camX, camY);
+  beginSpriteLog();
+  const pikachuOnTop = pikachuFollower.movementSwapped;
+  const drawPlayer = (): void => {
+    player.render(camX, camY);
+    gameMap.renderGrassOverlay(player.x, player.y, camX, camY);
+  };
+  const drawPikachu = (): void => {
+    if (!pikachuFollower.visible) return;
+    pikachuFollower.render(camX, camY);
+    if (pikachuFollower.movementGrassPriority !== false) {
+      gameMap.renderGrassOverlay(pikachuFollower.x, pikachuFollower.y, camX, camY);
+    }
+  };
+  const drawNpcs = (): void => {
+    for (const npc of [...npcs, ...getScriptNpcs()]) {
+      npc.render(camX, camY);
+      gameMap.renderGrassOverlay(npc.x, npc.y, camX, camY);
+    }
+  };
+  const draw = { player: drawPlayer, npcs: drawNpcs, pikachu: drawPikachu };
+  for (const sprite of spriteDrawOrder(pikachuOnTop)) draw[sprite]();
+  const sprites = endSpriteLog();
+  player.renderLedgeShadow(camX, camY);
+  pikachuFollower.renderMovementShadow(camX, camY, sprites);
 }
 
 /** Handle an action returned by the overworld controller. */
@@ -1748,6 +1866,12 @@ function checkMapEntryScripts(): void {
       // Player just entered lab — run full intro cutscene
       startScript(buildOaksLabIntroScript(findNpc));
     }
+  }
+
+  // Viridian Mart: ViridianMartScript2 — after the first catch demo, the walking old
+  // man replaces OLD_MAN2 in the city (EVENT_SPAWNED_OLD_MAN_1)
+  if (currentMapName === "ViridianMart" && martSpawnsOldMan(hasFlag)) {
+    setFlag("SPAWNED_OLD_MAN_1");
   }
 
   // Viridian Mart: parcel quest on first visit

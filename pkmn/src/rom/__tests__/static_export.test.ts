@@ -26,13 +26,13 @@ beforeAll(async () => {
 });
 
 describe('static/ export: asset keys', () => {
-  it('extracts 519 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 520 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
-    // (518 → 519 in V1a: /gfx/battle/oldmanb.png.)
+    // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(519);
+    expect(imageKeys.length).toBe(520);
     expect(binaryKeys).toEqual([
       'gfx/title/pika_bubble.tilemap',
       'gfx/title/pikachu.tilemap',
@@ -103,5 +103,7 @@ describe('static/ export: files on disk', () => {
       if (!existsSync(path) || !readFileSync(path).equals(readFileSync(resolve(DATA_DIR, key)))) stale.push(key);
     }
     expect(stale).toEqual([]);
-  });
+    // It re-encodes ~520 PNGs and reads ~850 files: under 1 s warm, but a cold file cache
+    // on the first run of a session went past vitest's default 5 s (2026-09-28, 2026-10-06).
+  }, 30_000);
 });

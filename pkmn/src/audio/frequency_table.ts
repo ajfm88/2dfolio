@@ -81,6 +81,16 @@ export function registerToHz(regVal: number): number {
 }
 
 /**
+ * The wave channel's pitch for a register value. Hardware channel 3 steps through its 32
+ * wave samples at 2097152/(2048 − x) Hz, so a full wave cycle is 65536/(2048 − x) Hz: an
+ * octave below a pulse channel at the same register (Pan Docs; gen1recomp #429). The
+ * engine writes the same register for both (Audio1_ApplyWavePatternAndFrequency).
+ */
+export function waveRegisterToHz(regVal: number): number {
+  return registerToHz(regVal) / 2;
+}
+
+/**
  * Get frequency in Hz for a given pitch (0-11) and octave (1-8).
  */
 export function getFrequencyHz(pitch: number, octave: number): number {

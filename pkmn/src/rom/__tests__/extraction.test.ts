@@ -20,6 +20,9 @@ import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
 import { OLD_MAN_PIC_BACK } from '../rom_offsets';
 import { extractGameText } from '../extractors/game_text';
+import { extractLedgeHoppingShadow } from '../extractors/graphics';
+import { extractPikachuMovement } from '../extractors/pikachu_movement';
+import { installNodeImageData } from '../node_image_data';
 
 const ROM_PATH = process.env.ROM_PATH;
 const DATA_DIR = resolve(__dirname, '../../../data');
@@ -365,6 +368,44 @@ describe('Sprite decompression', () => {
   });
 });
 
+describe('Ledge shadow graphics', () => {
+  it('extracts the native 8x8 tile and matches pret pixel for pixel', () => {
+    installNodeImageData();
+    const image = extractLedgeHoppingShadow(rom);
+    expect([image.width, image.height]).toEqual([8, 8]);
+    const rows = ['.....###', '...#####', '..######', '.#######', '.#######', '..######', '...#####', '.....###'];
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+      expect(image.data[(y * 8 + x) * 4]).toBe(rows[y][x] === '#' ? 0 : 255);
+    }
+    const path = resolve(__dirname, '../../../../refs/pokeyellow/gfx/overworld/shadow.png');
+    if (!existsSync(path)) return;
+    const png = PNG.sync.read(readFileSync(path));
+    expect([png.width, png.height]).toEqual([8, 8]);
+    expect(Array.from(image.data)).toEqual(Array.from(png.data));
+  });
+});
+
+describe('Pikachu movement data (A6e)', () => {
+  it('matches pikachu_movement.json exactly', () => {
+    const expected = JSON.parse(readFileSync(resolve(DATA_DIR, 'pikachu_movement.json'), 'utf8'));
+    expect(extractPikachuMovement(rom)).toEqual(expected);
+  });
+
+  it('every database record matches PikachuMovementDatabase in the disassembly', () => {
+    const path = resolve(__dirname, '../../../../refs/pokeyellow/engine/pikachu/pikachu_movement.asm');
+    if (!existsSync(path)) return;
+    const asm = readFileSync(path, 'utf8');
+    const block = asm.slice(asm.indexOf('PikachuMovementDatabase:'), asm.indexOf('PikaMovementFunc1Jumptable:'));
+    // rgbds expressions like "(1 << 5) | 8 - 1" evaluate the same way in JavaScript
+    const value = (expr: string): number => Number(Function(`return (${expr.trim().replace(/\$([0-9a-f]+)/gi, '0x$1')})`)());
+    const records = block.split(/\r?\n/)
+      .filter(line => line.trim().startsWith('db '))
+      .map(line => line.trim().slice(3).split(';')[0].split(',').map(value));
+    expect(records).toHaveLength(63);
+    expect(extractPikachuMovement(rom).commands.map(c => [c.func1, c.param1, c.func2, c.param2])).toEqual(records);
+  });
+});
+
 describe('Audio: Wave samples extraction', () => {
   it('should match wave_samples.json exactly', () => {
     const extracted = extractWaveSamples(rom);
@@ -455,6 +496,15 @@ describe('Game text: trainer battle texts (V1c)', () => {
   });
 });
 
+describe('Game text: catch demo names (V1d)', () => {
+  it('matches DisplayBattleMenu .oldManName / .profOakName', () => {
+    const text = extractGameText(rom);
+    // engine/battle/core.asm: db "OLD MAN@" / db "PROF.OAK@"
+    expect(text.BATTLE_OLD_MAN_NAME).toBe('OLD MAN');
+    expect(text.BATTLE_PROF_OAK_NAME).toBe('PROF.OAK');
+  });
+});
+
 describe('Audio: SFX extraction', () => {
   it('should match press_ab.json exactly', () => {
     const extracted = extractSfx(rom, 'press_ab');
@@ -494,6 +544,73 @@ describe('Audio: SFX extraction', () => {
         expect(extCh.commands[c]).toEqual(expCh.commands[c]);
       }
     }
+  });
+});
+
+describe('Audio: the item jingles, music-mode SFX (A1a)', () => {
+  const JINGLES = {
+    // pret's sym file: SFX_Get_Item1_1 02:4192 → _Ch5 02:6c4a, _Ch6 02:6c61, _Ch7 02:6c71
+    get_item1: { header: 0x4192, channels: [0x6c4a, 0x6c61, 0x6c71], asm: 'get_item1_1.asm' },
+    // SFX_Get_Item2_1 02:419b → _Ch5 02:71e9, _Ch6 02:7208, _Ch7 02:7220
+    get_item2: { header: 0x419b, channels: [0x71e9, 0x7208, 0x7220], asm: 'get_item2_1.asm' },
+  } as const;
+  const PITCHES = ['C_', 'C#', 'D_', 'D#', 'E_', 'F_', 'F#', 'G_', 'G#', 'A_', 'A#', 'B_'];
+
+  /** The macros the jingles use (macros/scripts/audio.asm), as the decoder emits them. */
+  function parseAsmChannels(asm: string): Record<string, unknown>[][] {
+    const channels: Record<string, unknown>[][] = [];
+    for (const raw of asm.split(/\r?\n/)) {
+      const line = raw.split(';')[0].trim();
+      if (!line) continue;
+      if (line.endsWith(':')) { channels.push([]); continue; }
+      const [op, ...rest] = line.split(/\s+/);
+      const args = rest.join('').split(',').filter(Boolean);
+      const n = (i: number): number => Number(args[i]);
+      const cur = channels[channels.length - 1];
+      switch (op) {
+        case 'execute_music': case 'toggle_perfect_pitch': case 'sound_ret': cur.push({ cmd: op }); break;
+        case 'tempo': cur.push({ cmd: op, value: n(0) }); break;
+        case 'volume': cur.push({ cmd: op, left: n(0), right: n(1) }); break;
+        case 'vibrato': cur.push({ cmd: op, delay: n(0), depth: n(1), rate: n(2) }); break;
+        case 'duty_cycle': cur.push({ cmd: op, value: n(0) }); break;
+        // The fade nibble is stored raw: a negative fade sets bit 3
+        case 'note_type': cur.push({ cmd: op, speed: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2) }); break;
+        case 'octave': cur.push({ cmd: op, value: n(0) }); break;
+        case 'note': cur.push({ cmd: op, pitch: PITCHES.indexOf(args[0]), length: n(1) }); break;
+        case 'rest': cur.push({ cmd: op, length: n(0) }); break;
+        default: throw new Error(`unexpected macro ${op}`);
+      }
+    }
+    return channels;
+  }
+
+  for (const [name, j] of Object.entries(JINGLES)) {
+    it(`${name}: its header points at channels 5, 6 and 7 as pret's sym file says`, () => {
+      const at = 0x02 * 0x4000 + (j.header & 0x3fff);
+      expect(rom.readByte(at)).toBe((2 << 6) | 4); // channel_count 3, channel 5
+      expect(rom.readByte(at + 3)).toBe(5);         // channel 6
+      expect(rom.readByte(at + 6)).toBe(6);         // channel 7
+      expect([rom.readWord(at + 1), rom.readWord(at + 4), rom.readWord(at + 7)]).toEqual(j.channels);
+    });
+
+    it(`${name}: matches audio/sfx/${name}.json`, () => {
+      expect(extractSfx(rom, name)).toEqual(loadJson(`audio/sfx/${name}.json`));
+    });
+
+    it(`${name}: every channel decodes to the disassembly's commands (music mode after execute_music)`, () => {
+      const path = resolve(__dirname, `../../../../refs/pokeyellow/audio/sfx/${j.asm}`);
+      if (!existsSync(path)) return;
+      const expected = parseAsmChannels(readFileSync(path, 'utf8'));
+      const extracted = extractSfx(rom, name)!;
+      expect(extracted.channels.map(c => c.id)).toEqual([5, 6, 7]);
+      expect(extracted.channels.map(c => c.commands)).toEqual(expected);
+    });
+  }
+
+  it('get_item2 ch5: D_ notes ($2x) are notes, not square_note', () => {
+    const ch5 = extractSfx(rom, 'get_item2')!.channels[0].commands;
+    expect(ch5.some(c => c.cmd === 'square_note' || c.cmd === 'pitch_sweep')).toBe(false);
+    expect(ch5.filter(c => c.cmd === 'note' && c.pitch === 2)).toHaveLength(2);
   });
 });
 
@@ -730,5 +847,44 @@ describe('V1 maps: Route 2 + Viridian Forest', () => {
         expect(n.walkDir).toBe(movement === 'WALK' ? walks : undefined);
       });
     }
+  });
+});
+
+describe('V1e: the Viridian old men and the demo gates', () => {
+  const map = (name: string) => extractMap(rom, name, itemNames, trainerClassNames)!;
+
+  it('ViridianCity carries all 8 ASM objects, OLD_MAN2 included, in NPC_INDEX_FILTER order', () => {
+    const npcs = map('ViridianCity').npcs;
+    // ROM objects 0,1,2,3,5,6,4,7 — the JSON keeps upstream's ids and order
+    expect(npcs.map(n => [n.id, n.x, n.y])).toEqual([
+      ['youngster1', 13, 20], ['gambler1', 30, 8], ['youngster2', 30, 25], ['girl1', 17, 9],
+      ['fisher1', 6, 23], ['oldman1', 17, 5], ['oldman_blocking', 18, 9], ['oldman2', 18, 9],
+    ]);
+    const objectsFile = resolve(__dirname, '../../../../refs/pokeyellow/data/maps/objects/ViridianCity.asm');
+    if (existsSync(objectsFile)) {
+      const objects = [...readFileSync(objectsFile, 'utf-8')
+        .matchAll(/object_event\s+(\d+),\s*(\d+),\s*(\w+),\s*(\w+),\s*(\w+)/g)];
+      const order = [0, 1, 2, 3, 5, 6, 4, 7];
+      order.forEach((romIdx, i) => {
+        const [, x, y, , movement, dir] = objects[romIdx];
+        expect([npcs[i].x, npcs[i].y]).toEqual([Number(x), Number(y)]);
+        expect(npcs[i].movement).toBe(movement === 'WALK' ? 'walk' : 'stay');
+        if (dir === 'LEFT_RIGHT' || dir === 'UP_DOWN') expect(npcs[i].walkDir).toBe(dir.toLowerCase());
+      });
+    }
+    const oldman1 = npcs.find(n => n.id === 'oldman1')!;
+    expect(oldman1.walkDir).toBe('left_right'); // OLD_MAN: WALK, LEFT_RIGHT
+    const oldman2 = npcs.find(n => n.id === 'oldman2')!;
+    expect(oldman2).toMatchObject({ sprite: 'gambler', movement: 'stay', direction: 'down', dialogue: '' });
+  });
+
+  it('Route 22 has no NPCs: the fake Blue is gone, the two rivals wait for I1', () => {
+    expect(map('Route22').npcs).toEqual([]);
+  });
+
+  it('no invented demo text is extracted', () => {
+    const text = extractGameText(rom);
+    expect(text['VIRIDIAN_OLDMAN_DEMO']).toBeUndefined();
+    expect(Object.values(text).filter(t => /demo/i.test(t))).toEqual([]);
   });
 });

@@ -2,6 +2,7 @@
 // + Parcel delivery & Pokédex scene
 
 import type { ScriptCommand } from '../script';
+import { VIRIDIAN_CITY, ViridianScript } from './viridian_city';
 import type { Direction } from '../core';
 import { getRivalName, setRivalStarter, substituteNames } from '../core/player_state';
 import { wasLastBattleWon } from '../script/script_controller';
@@ -44,11 +45,14 @@ export function buildOaksLabBallScript(): ScriptCommand[] {
     // Rival reacts — exclamation bubble only, no text (assembly: OaksLabRivalExclamationScript)
     { type: 'exclamation', target: 'rival', frames: 30 },
     // Assembly: rival walks D,R,R,R — player pushed RIGHT 2 on the last R
-    // (.RivalPushesPlayerAwayFromEeveeBall: wNPCNumScriptedSteps==1 triggers push)
-    { type: 'moveNpc', npcId: 'rival', path: ['down', 'right', 'right'] as Direction[] },
+    // (.RivalPushesPlayerAwayFromEeveeBall: DOWN, then Yellow's fast RIGHT, $07, three
+    // times. MoveSprite counts the terminator too, so wNPCNumScriptedSteps reads 1 once
+    // the last step has begun: OaksLabRivalTakesPokeballScript then presses RIGHT twice
+    // for the player, while the rival finishes it.)
     { type: 'moveParallel', npcId: 'rival',
-      npcPath: ['right'] as Direction[],
-      playerPath: ['right', 'right'] as Direction[] },
+      npcPath: ['down', 'right', 'right', 'right'] as Direction[],
+      npcModes: ['normal', 'fast', 'fast', 'fast'],
+      playerPath: ['right', 'right'] as Direction[], playerFromNpcStep: 4 },
     { type: 'hideNpc', npcId: 'item_ball' },
     // Rival faces up, then OaksLabRivalReceivedMonText shows all 5 texts
     { type: 'faceNpc', npcId: 'rival', direction: 'up' },
@@ -147,7 +151,9 @@ export function buildOaksLabRivalBattleScript(
     { type: 'text', message: substituteNames(getText('LAB_RIVAL_SMELL_YOU_LATER')) },
     // Rival walks around the player and out of the lab
     // Assembly: rival steps LEFT/RIGHT to avoid player, then walks DOWN to exit
-    { type: 'moveNpc', npcId: 'rival', path: exitPath },
+    // .RivalExitMovement: the side step and the first DOWN are normal NPC steps, the rest
+    // Yellow's fast DOWN ($04)
+    { type: 'moveNpc', npcId: 'rival', path: exitPath, modes: exitPath.map((_, i) => (i < 2 ? 'normal' : 'fast')) },
     { type: 'hideNpc', npcId: 'rival' },
 
     // --- Post-battle: Pikachu escapes Pokeball (OaksLabPikachuEscapesPokeballScript) ---
@@ -220,6 +226,9 @@ export function buildOaksLabPokedexScript(
     // ASM: text shows BEFORE rival appears, then rival walks in
     // (text/OaksLab.asm _OaksLabRivalGrampsText)
     { type: 'text', message: substituteNames(getText('LAB_RIVAL_GRAMPS')) },
+    // OaksLabPikachuMovementScript (scripts/OaksLab_2.asm): Pikachu steps out of the
+    // rival's way — TryApplyPikachuMovementData, by the player's Y when it runs
+    { type: 'tryPikachuMovement', caller: 'oaksLab' },
     // Reposition the existing (hidden) rival NPC to bottom of visible area
     { type: 'callback', fn: () => {
       const rival = findNpc('rival');
@@ -270,6 +279,9 @@ export function buildOaksLabPokedexScript(
 
     // Set event flags
     { type: 'setFlag', flag: 'GOT_POKEDEX' },
+    // OaksLab.asm:588 — SCRIPT_VIRIDIANCITY_AFTER_POKEDEX, whatever the city's state
+    // (the Gym-door push-back may have left it at POST_CATCH_TRAINING)
+    { type: 'setMapScript', map: VIRIDIAN_CITY, state: ViridianScript.AFTER_POKEDEX },
     { type: 'setFlag', flag: 'OAK_GOT_PARCEL' },
 
     // --- Phase 4: Rival exits ---
@@ -334,10 +346,14 @@ export function buildOaksLabIntroScript(findNpc?: (id: string) => { data: { dial
     // Rival reacts — exclamation bubble only, no text (assembly: OaksLabRivalExclamationScript)
     { type: 'exclamation', target: 'rival', frames: 30 },
     // Assembly: rival walks D,R,R,R — player pushed RIGHT 2 on the last R
-    { type: 'moveNpc', npcId: 'rival', path: ['down', 'right', 'right'] as Direction[] },
+    // (.RivalPushesPlayerAwayFromEeveeBall: DOWN, then Yellow's fast RIGHT, $07, three
+    // times. MoveSprite counts the terminator too, so wNPCNumScriptedSteps reads 1 once
+    // the last step has begun: OaksLabRivalTakesPokeballScript then presses RIGHT twice
+    // for the player, while the rival finishes it.)
     { type: 'moveParallel', npcId: 'rival',
-      npcPath: ['right'] as Direction[],
-      playerPath: ['right', 'right'] as Direction[] },
+      npcPath: ['down', 'right', 'right', 'right'] as Direction[],
+      npcModes: ['normal', 'fast', 'fast', 'fast'],
+      playerPath: ['right', 'right'] as Direction[], playerFromNpcStep: 4 },
     { type: 'hideNpc', npcId: 'item_ball' },
     // Rival faces up, then OaksLabRivalReceivedMonText shows all 5 texts
     { type: 'faceNpc', npcId: 'rival', direction: 'up' },

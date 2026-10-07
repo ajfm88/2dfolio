@@ -345,10 +345,9 @@ const MAP_METADATA: Record<string, MapMeta> = {
   Route22: {
     connectionOrder: ['east', 'north'],
     signTextOffsets: [symToOffset(0x29, 0x6c41)],
-    npcs: [
-      // Demo-only NPC: custom text NOT from Nintendo (our original content)
-      { id: 'blue_blocking', dialogue: 'Hey! <PLAYER>!\nYou\'ve reached the\nend of the demo!\fEverything beyond\nhere is still being\nbuilt.\fThanks for playing!', direction: 'left', x: 8, y: 6, sprite: 'blue' },
-    ],
+    // RIVAL1 / RIVAL2 stay toggle-hidden until the Route 22 rival battles (I1).
+    // Upstream's invented "end of the demo" Blue was removed in V1e.
+    npcs: [],
   },
   ViridianCity: {
     signTextOffsets: [
@@ -368,8 +367,12 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'youngster2', textOffset: symToOffset(0x2d, 0x4686) },
       { id: 'girl1', direction: 'right', textOffset: symToOffset(0x2d, 0x4717) },
       { id: 'fisher1', direction: 'down', textOffset: symToOffset(0x2d, 0x47dc) },
-      { id: 'oldman1', textOffset: symToOffset(0x2d, 0x48eb) },
+      // OLD_MAN: WALK, LEFT_RIGHT (objects/ViridianCity.asm); shown by ViridianMartScript2
+      { id: 'oldman1', walkDir: 'left_right', textOffset: symToOffset(0x2d, 0x48eb) },
       { id: 'oldman_blocking', direction: 'down', textOffset: symToOffset(0x2d, 0x47a7) },
+      // OLD_MAN2: stands where the sleeper lay once the Pokédex is given. His text is
+      // ViridianCityOldMan2Text (text_asm), run by story/viridian_city.ts
+      { id: 'oldman2', direction: 'down', scripted: true },
     ],
   },
   RedsHouse1F: {
@@ -582,12 +585,12 @@ const NPC_INDEX_FILTER: Record<string, number[]> = {
   // JSON order: prof(=OAK1@2), rival(=0), item_ball(=1), pokedex1(=3), pokedex2(=4), girl(=6), sci1(=7), sci2(=8)
   OaksLab: [2, 0, 1, 3, 4, 6, 7, 8],
 
-  // Route22 ROM has 2 NPCs (RIVAL1, RIVAL2); JSON has 1 demo-only NPC with overridden coords
-  Route22: [0],
+  // Route22 ROM has 2 NPCs (RIVAL1, RIVAL2), toggle-hidden until I1; JSON has none
+  Route22: [],
 
-  // ViridianCity ROM has 8 NPCs; JSON has 7 (skip OLD_MAN2 at index 7)
+  // ViridianCity ROM has 8 NPCs, all in the JSON (OLD_MAN2 since V1e)
   // ROM: 0=YOUNGSTER1, 1=GAMBLER1, 2=YOUNGSTER2, 3=GIRL, 4=OLD_MAN_SLEEPY, 5=FISHER, 6=OLD_MAN, 7=OLD_MAN2
-  ViridianCity: [0, 1, 2, 3, 5, 6, 4],
+  ViridianCity: [0, 1, 2, 3, 5, 6, 4, 7],
 
   // BluesHouse ROM has 3 NPCs; JSON has 2 (skip DAISY2 walking at index 1)
   // ROM: 0=DAISY1(sitting), 1=DAISY2(walking), 2=TOWN_MAP

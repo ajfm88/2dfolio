@@ -69,6 +69,7 @@
   "BATTLE_BROKE_FREE": "Darn! The POKéMON\nbroke free!",
   "BATTLE_SO_CLOSE": "Shoot! It was so\nclose too!",
   "BATTLE_OLD_MAN_NAME": "OLD MAN",
+  "BATTLE_PROF_OAK_NAME": "PROF.OAK",
   "RIVAL1_WIN": "<RIVAL>: Yeah! Am\nI great or what?",
   "BOOKSHELF_BOOKS": "Crammed full of\nPOKéMON books!",
   "BOOKSHELF_POKEMON_STUFF": "Wow! Tons of\nPOKéMON stuff!",
@@ -100,6 +101,5 @@
   "BATTLE_OUT_OF_USEABLE": " is out of\nuseable POKéMON!",
   "PC_ACCESSED_STORAGE": "Accessed POKéMON\nStorage System.",
   "PC_CANT_TAKE_MORE": "You can't take\nany more POKéMON.",
-  "ITEM_USE_ON_WHICH_MON": "POKéMON?",
-  "VIRIDIAN_OLDMAN_DEMO": "Ahh, I've had my\ncoffee now and I\nfeel great!\fBut this is as far\nas the demo goes!\fThanks for playing!"
+  "ITEM_USE_ON_WHICH_MON": "POKéMON?"
 }

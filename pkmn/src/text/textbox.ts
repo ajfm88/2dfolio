@@ -4,6 +4,7 @@ import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
 import { isPressed, isHeld } from '../input';
 import { charToTile } from './charmap';
 import { playSFX } from '../audio';
+import { uiTiles } from '../renderer/ui_tiles';
 
 // Text box dimensions (in tiles)
 // Original Game Boy: TextBoxBorder with b=4 (inner height) + 2 border rows = 6 tiles total
@@ -237,6 +238,7 @@ export class TextBox {
 
   render(): void {
     if (!this._active || !fontCanvas) return;
+    uiTiles.cover(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE);
 
     // Draw text box background (lightest color)
     fillRect(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE, 0);

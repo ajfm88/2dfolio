@@ -13,5 +13,5 @@ export { startSpiralTransition, startWildTransition, updateBattleTransition, ren
 export { performWarpLoad, performMapConnection } from './map_transitions';
 export type { WarpLoadResult } from './map_transitions';
 // Overworld controller
-export { updateOverworld, createOverworldState } from './overworld_controller';
+export { updateOverworld, runMapScript, handleStepComplete, createOverworldState } from './overworld_controller';
 export type { OverworldAction, OverworldState, OverworldDeps } from './overworld_controller';

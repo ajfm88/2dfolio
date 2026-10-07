@@ -496,7 +496,8 @@
       "x": 17,
       "y": 5,
       "movement": "walk",
-      "dialogue": "Hmm? You want me\nto show you how\nto catch POKéMON\nagain?"
+      "dialogue": "Hmm? You want me\nto show you how\nto catch POKéMON\nagain?",
+      "walkDir": "left_right"
     },
     {
       "id": "oldman_blocking",
@@ -505,6 +506,15 @@
       "y": 9,
       "movement": "stay",
       "dialogue": "You can't go\nthrough here!\fThis is private\nproperty!",
+      "direction": "down"
+    },
+    {
+      "id": "oldman2",
+      "sprite": "gambler",
+      "x": 18,
+      "y": 9,
+      "movement": "stay",
+      "dialogue": "",
       "direction": "down"
     }
   ],

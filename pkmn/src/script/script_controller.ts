@@ -7,14 +7,22 @@ import type { TextBox } from '../text';
 import type { Player } from '../overworld/player';
 import type { GameMap } from '../overworld/map';
 import { Npc } from '../overworld/npc';
-import type { BattlePokemon } from '../battle';
+import type { BattlePokemon, CatchDemoBattleType } from '../battle';
 import type { PikachuFollower } from '../pikachu/pikachu_follower';
+import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
+import { pikachuSide } from '../pikachu/pikachu_movement';
+import { getPikachuMovementData, pikachuMovementProgram } from '../pikachu/pikachu_movement_data';
+import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movement';
+import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
 import type { Bag } from '../items';
 import { getItemName } from '../items';
 import { loadSprite, getCtx, getScale, drawExclamationBubble } from '../renderer';
-import { isPressed } from '../input';
-import { setFlag, hasFlag } from '../events';
+import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
+import { updateSprites, recordStepForPikachu } from '../overworld/sprites';
+import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
+import { setFlag, hasFlag, clearFlag, setMapScript } from '../events';
+import type { Direction } from '../core';
 import { getPlayerName } from '../core/player_state';
 import { markOwned } from '../pokedex_state';
 import { YesNoMenu } from '../menus';
@@ -36,7 +44,7 @@ export interface ScriptDeps {
 
 export type ScriptAction =
   | { type: 'scriptEnded' }
-  | { type: 'pikachuBattle' }
+  | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
   | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
   | { type: 'openStartMenu' };
@@ -90,7 +98,17 @@ let pokecenterHealAnim: {
   flashVisible: boolean;
 } | null = null;
 
-let scriptPikachuMoving = false;  // waiting for Pikachu to finish walking to nurse
+// ApplyPikachuMovementData under way (pikachu_movement.ts); `refresh` is TryApply's
+// RefreshPikachuFollow after the return frame (a direct call has none)
+let scriptPikachuRun: { refresh: boolean } | null = null;
+// wPikachuSpawnState as the Pokécenter leaves it (5): a starter that wasn't out spawns there
+let pendingPikachuSpawnState: PikachuSpawnState | null = null;
+// Pikachu's facing as DisplayTextIDInit saved it; CloseTextDisplay restores it
+let savedPikachuFacing: Direction | null = null;
+// pushPlayer: one simulated joypad step in progress
+let scriptPush: { dir: Direction; started: boolean } | null = null;
+// moveParallel: the player's presses, waiting for the NPC to begin its step `fromNpcStep`
+let scriptParallel: { playerPath: Direction[]; fromNpcStep: number; playerStarted: boolean } | null = null;
 let pokecenterHealHidPikachu = false; // track if we hid Pikachu during heal
 
 const DEFAULT_FADE_FRAMES = 8;
@@ -164,18 +182,24 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptYesNoPending = null;
   scriptYesNoActive = false;
   pokecenterHealAnim = null;
-  scriptPikachuMoving = false;
+  scriptPikachuRun = null;
+  pendingPikachuSpawnState = null;
+  savedPikachuFacing = null;
+  setOpeningSpriteUpdates(true);
+  scriptPush = null;
+  scriptParallel = null;
   pokecenterHealHidPikachu = false;
 }
 
-/** Update the script engine (called each frame while in 'script' state).
- *  Returns an action when main.ts needs to handle a state transition. */
-export function updateScript(deps: ScriptDeps): ScriptAction | null {
+/**
+ * Update the script engine (called each frame while in 'script' state). Text, waits and
+ * fades count frames; every move runs once per overworld pass (`isPass`, every two
+ * frames, walk_pace.ts), with the NPCs and Pikachu updating as UpdateSprites does.
+ * Returns an action when main.ts needs to handle a state transition.
+ */
+export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | null {
   const { textBox, player, npcs, playerParty, playerBag, pikachuFollower } = deps;
   scriptFadeAlpha = null; // reset each frame; set below if fade active
-
-  // Update Pikachu follower every frame so it can animate during scripts
-  if (pikachuFollower?.visible) pikachuFollower.update();
 
   if (!activeScript || !activeScript.active) {
     activeScript = null;
@@ -184,7 +208,25 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
 
   // Handle awaitInteraction: player has free movement until they interact with target
   if (scriptAwaitInteraction) {
-    return updateScriptFreeMove(deps);
+    return updateScriptFreeMove(deps, isPass);
+  }
+
+  // ApplyPikachuMovementData blocks the script: one interpreter tick per frame, nothing
+  // else moves or reads input, and the next command runs in the frame the call returns.
+  if (scriptPikachuRun) {
+    if (pikachuFollower && !pikachuFollower.tickMovement()) return null;
+    if (scriptPikachuRun.refresh && pikachuFollower) {
+      pikachuFollower.refreshFollow({ x: player.mapStepX, y: player.mapStepY });
+    }
+    scriptPikachuRun = null;
+    advanceScript(activeScript);
+  } else if (pikachuFollower?.movementActive) {
+    pikachuFollower.cancelMovement(); // left behind by a replaced script
+  }
+
+  // Text, menus, DelayFrames and fades: the joypad is read every frame
+  if (scriptTextWaiting || scriptWaitFrames > 0 || scriptFade || pokecenterHealAnim || scriptExclamation) {
+    syncJoypadRead();
   }
 
   // Handle waiting states
@@ -291,64 +333,78 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
     return null;
   }
 
-  // Wait for Pikachu to finish walking to nurse (pikachuToNurse command)
-  if (scriptPikachuMoving && pikachuFollower) {
-    // Pikachu is done when its position buffer is empty and it's not mid-step
-    if (!pikachuFollower.isMoving && pikachuFollower.bufferLength === 0) {
-      scriptPikachuMoving = false;
+  // ── Moves: once per overworld pass. Each checks at the top of the pass whether it has
+  // finished, as the map script does before the rest of the loop runs. ──
+  const moving = scriptPush || scriptMoveTarget;
+  if (moving && !isPass) return null;
+  if (moving && !player.isMoving && !player.isLanding) readJoypad(); // JoypadOverworld on standing passes
+  const sprites = (): void => updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower);
+  const record = (): void => {
+    if (player.startedFollowStep && pikachuFollower?.visible) recordStepForPikachu(player, pikachuFollower);
+  };
+
+  // pushPlayer: the player's own overworld step with the joypad simulated — it walks,
+  // hops a ledge, or bumps (collision SFX) exactly as a held button would
+  if (scriptPush) {
+    if (scriptPush.started && !player.isBusy) {
+      player.finishLanding();
+      scriptPush = null;
       advanceScript(activeScript);
+      return null;
     }
+    const input = scriptPush.started ? null : scriptPush.dir;
+    scriptPush.started = true;
+    player.update(deps.gameMap, npcs, input, sprites);
+    record();
     return null;
   }
 
+
+  // moveNpc: the player stands while UpdateSprites moves the NPC (and everyone else)
   if (scriptMoveTarget === 'npc' && scriptMoveNpcId) {
     const npc = lookupNpc(scriptMoveNpcId, npcs);
-    if (npc) {
-      npc.updateScriptedMove();
-      if (npc.scriptedMoveDone) {
-        scriptMoveTarget = null;
-        scriptMoveNpcId = null;
-        advanceScript(activeScript);
-      }
-    } else {
-      scriptMoveTarget = null;
-      advanceScript(activeScript);
-    }
-    return null;
-  }
-
-  if (scriptMoveTarget === 'parallel' && scriptMoveNpcId) {
-    const npc = lookupNpc(scriptMoveNpcId, npcs);
-    if (npc) npc.updateScriptedMove();
-    const wasMoving = player.isMoving;
-    player.updateScriptedMove();
-    if (!wasMoving && player.isMoving && pikachuFollower?.visible) {
-      const dx = player.direction === 'left' ? -16 : player.direction === 'right' ? 16 : 0;
-      const dy = player.direction === 'up' ? -16 : player.direction === 'down' ? 16 : 0;
-      pikachuFollower.recordPlayerPosition(player.x, player.y, player.x + dx, player.y + dy);
-    }
-    const npcDone = npc ? npc.scriptedMoveDone : true;
-    if (npcDone && player.scriptedMoveDone) {
+    if (!npc || npc.scriptedMoveDone) {
       scriptMoveTarget = null;
       scriptMoveNpcId = null;
       advanceScript(activeScript);
+      return null;
+    }
+    player.update(deps.gameMap, npcs, null, sprites);
+    return null;
+  }
+
+  if (scriptMoveTarget === 'parallel' && scriptMoveNpcId && scriptParallel) {
+    const npc = lookupNpc(scriptMoveNpcId, npcs);
+    const npcDone = npc ? npc.scriptedMoveDone : true;
+    if (npcDone && scriptParallel.playerStarted && player.scriptedMoveDone) {
+      scriptMoveTarget = null;
+      scriptMoveNpcId = null;
+      scriptParallel = null;
+      advanceScript(activeScript);
+      return null;
+    }
+    // The map script starts the player's presses once the NPC is far enough along
+    if (!scriptParallel.playerStarted && (!npc || npc.scriptedStepsStarted >= scriptParallel.fromNpcStep)) {
+      scriptParallel.playerStarted = true;
+      player.startScriptedMove(scriptParallel.playerPath);
+    }
+    if (scriptParallel.playerStarted && !player.scriptedMoveDone) {
+      player.updateScriptedMove(sprites);
+      record();
+    } else {
+      player.update(deps.gameMap, npcs, null, sprites);
     }
     return null;
   }
 
   if (scriptMoveTarget === 'player') {
-    const wasMoving = player.isMoving;
-    player.updateScriptedMove();
-    // Record step start for Pikachu following
-    if (!wasMoving && player.isMoving && pikachuFollower?.visible) {
-      const dx = player.direction === 'left' ? -16 : player.direction === 'right' ? 16 : 0;
-      const dy = player.direction === 'up' ? -16 : player.direction === 'down' ? 16 : 0;
-      pikachuFollower.recordPlayerPosition(player.x, player.y, player.x + dx, player.y + dy);
-    }
     if (player.scriptedMoveDone) {
       scriptMoveTarget = null;
       advanceScript(activeScript);
+      return null;
     }
+    player.updateScriptedMove(sprites);
+    record();
     return null;
   }
 
@@ -371,7 +427,7 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
     case 'moveNpc': {
       const npc = lookupNpc(cmd.npcId, npcs);
       if (npc) {
-        npc.startScriptedMove(cmd.path);
+        npc.startScriptedMove(cmd.path, cmd.modes);
         scriptMoveTarget = 'npc';
         scriptMoveNpcId = cmd.npcId;
       } else {
@@ -404,6 +460,26 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
     case 'setFlag':
       setFlag(cmd.flag);
       advanceScript(activeScript);
+      break;
+
+    case 'clearFlag':
+      clearFlag(cmd.flag);
+      advanceScript(activeScript);
+      break;
+
+    case 'setMapScript':
+      setMapScript(cmd.map, cmd.state);
+      advanceScript(activeScript);
+      break;
+
+    case 'pushPlayer':
+      player.cancelMovement();
+      scriptPush = { dir: cmd.direction, started: false };
+      break;
+
+    case 'tryPikachuMovement':
+      if (tryPikachuMovement(cmd.caller, deps)) scriptPikachuRun = { refresh: true };
+      else advanceScript(activeScript); // a failed guard takes no frames and refreshes nothing
       break;
 
     case 'addPokemon': {
@@ -483,13 +559,16 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
       scriptExclamation = { target: cmd.target, frames: cmd.frames };
       break;
 
-    case 'pikachuBattle':
-      return { type: 'pikachuBattle' };
+    case 'catchDemo':
+      return { type: 'catchDemo', battleType: cmd.battleType, species: cmd.species, level: cmd.level };
 
     case 'moveParallel': {
       const npc = lookupNpc(cmd.npcId, npcs);
-      if (npc) npc.startScriptedMove(cmd.npcPath);
-      player.startScriptedMove(cmd.playerPath);
+      if (npc) {
+        if (cmd.npcInStep) npc.startInStepMove(cmd.npcPath);
+        else npc.startScriptedMove(cmd.npcPath, cmd.npcModes);
+      }
+      scriptParallel = { playerPath: cmd.playerPath, fromNpcStep: cmd.playerFromNpcStep ?? 0, playerStarted: false };
       scriptMoveTarget = 'parallel';
       scriptMoveNpcId = cmd.npcId;
       break;
@@ -526,35 +605,24 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
       break;
 
     case 'pikachuToNurse': {
-      // Assembly: PikachuWalksToNurseJoy — movement depends on Pikachu's position
-      if (!pikachuFollower?.visible) {
-        advanceScript(activeScript);
-        break;
-      }
-      const pikaX = pikachuFollower.x;
-      const pikaY = pikachuFollower.y;
-      if (pikaY > player.y) {
-        // Pikachu below player: PikaMovementData1 — walk up-left, hop up-right
-        pikachuFollower.pushPosition(pikaX - 16, pikaY - 16);
-        pikachuFollower.pushPosition(pikaX, pikaY - 32, true);
-      } else if (pikaY === player.y && pikaX <= player.x) {
-        // Pikachu to the left (same Y): PikaMovementData2 — hop up-right only
-        pikachuFollower.pushPosition(pikaX + 16, pikaY - 16, true);
-      } else if (pikaY === player.y && pikaX > player.x) {
-        // Pikachu to the right (same Y): PikaMovementData3 — hop up-left only
-        pikachuFollower.pushPosition(pikaX - 16, pikaY - 16, true);
+      // PikachuWalksToNurseJoy: a direct ApplyPikachuMovementData (no guard, no refresh),
+      // its program picked by map position, Y first: below → MovementData1; same row,
+      // left or on the player → 2; right → 3; above → no call
+      const program = pikachuFollower?.visible ? nurseProgram(pikachuFollower, player) : null;
+      if (program && pikachuFollower) {
+        pikachuFollower.startMovement(getPikachuMovementData(), pikachuMovementProgram(program),
+          deps.gameMap.isGrassTile(pikachuFollower.tileX, pikachuFollower.tileY), player);
+        scriptPikachuRun = { refresh: false };
       } else {
-        // Pikachu above player: no movement needed
         advanceScript(activeScript);
-        break;
       }
-      scriptPikachuMoving = true;
       break;
     }
 
     case 'hidePikachu':
-      // Assembly: DisablePikachuOverworldSpriteDrawing
+      // DisablePikachuOverworldSpriteDrawing (Pikachu always follows on today's maps)
       if (pikachuFollower?.visible) {
+        pikachuFollower.hideImage();
         pikachuFollower.visible = false;
         pokecenterHealHidPikachu = true;
       }
@@ -562,15 +630,67 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
       break;
 
     case 'showPikachu':
-      // Assembly: EnablePikachuOverworldSpriteDrawing + spawn state 5
-      // Pikachu reappears above the player (at the nurse counter where it walked to)
+      // wPikachuSpawnState = 5, EnablePikachuOverworldSpriteDrawing: drawing is allowed
+      // again, but nothing is drawn until an image is written (Func_6ebb or UpdateSprites).
+      // Spawn state 5 is read only by a Pikachu that isn't out (TrySpawnPikachu).
+      pendingPikachuSpawnState = 5;
       if (pokecenterHealHidPikachu && pikachuFollower) {
-        pikachuFollower.x = player.x;
-        pikachuFollower.y = player.y - 16;
-        pikachuFollower.direction = 'down';
-        pikachuFollower.clearBuffer();
         pikachuFollower.visible = true;
         pokecenterHealHidPikachu = false;
+      }
+      advanceScript(activeScript);
+      break;
+
+    case 'pikachuStandDown':
+      // Func_6ebb(15, 0): SetSpriteFacingDirectionAndDelay, then SpriteFunc_34a1 writes the
+      // standing-down IMAGEINDEX. A starter that wasn't out (it had fainted) has no
+      // position to draw at here; it appears at the next UpdateSprites.
+      if (pikachuFollower?.visible) {
+        const follower = pikachuFollower;
+        follower.setLiveFacing('down');
+        activeScript.commands.splice(activeScript.index + 1, 0,
+          { type: 'wait', frames: 6 },
+          { type: 'callback', fn: () => follower.showStandingImage('down') });
+      } else {
+        activeScript.commands.splice(activeScript.index + 1, 0, { type: 'wait', frames: 6 });
+      }
+      advanceScript(activeScript);
+      break;
+
+    case 'updateSprites':
+      // TrySpawnPikachu for a starter that wasn't out (status 0), at the pending spawn
+      // state; then SpawnPikachu_ with the font loaded (Func_fc76a). The boxes are gone
+      // (LoadCurrentMapView) wherever the scripts call this.
+      if (pikachuFollower && !pikachuFollower.visible && !pokecenterHealHidPikachu
+          && pendingPikachuSpawnState !== null && shouldPikachuFollow(playerParty)) {
+        pikachuFollower.visible = true;
+        pikachuFollower.spawnAtState(player.x, player.y, player.direction, pendingPikachuSpawnState);
+        pendingPikachuSpawnState = null;
+      }
+      fontLoadedUpdateSprites(player, deps.gameMap, () => 0, pikachuFollower);
+      advanceScript(activeScript);
+      break;
+
+    case 'uiEntryUpdates':
+      setOpeningSpriteUpdates(cmd.enabled);
+      advanceScript(activeScript);
+      break;
+
+    case 'pikachuFacing':
+      // DisplayTextIDInit copies, and CloseTextDisplay restores, every non-player slot's
+      // facing whether its sprite is drawn or not: a fainted starter's slot too, which the
+      // heal then spawns facing down (A6e review R-1)
+      if (cmd.action === 'save') {
+        savedPikachuFacing = pikachuFollower ? pikachuFollower.direction : null;
+      } else if (savedPikachuFacing && pikachuFollower) {
+        pikachuFollower.setLiveFacing(savedPikachuFacing);
+      }
+      advanceScript(activeScript);
+      break;
+
+    case 'ifStarterPikachu':
+      if (shouldPikachuFollow(playerParty)) {
+        activeScript.commands.splice(activeScript.index + 1, 0, ...cmd.then);
       }
       advanceScript(activeScript);
       break;
@@ -625,15 +745,57 @@ export function updateScript(deps: ScriptDeps): ScriptAction | null {
   return null;
 }
 
+// ── Pikachu's scripted movement (pikachu_movement.ts) ──────────────────
+
+const mapStep = (o: { mapStepX: number; mapStepY: number }): { x: number; y: number } =>
+  ({ x: o.mapStepX, y: o.mapStepY });
+
+/**
+ * TryApplyPikachuMovementData (engine/events/try_pikachu_movement.asm): the starter is out
+ * (wPikachuSpawnStateFlags' starter bit — the existing starter model) and the player walks
+ * (no bike or surf yet), and Pikachu is on the caller's side of the player by map
+ * position (GetPikachuFacingDirection, Y first; no distance limit, its facing unread).
+ * Starts the call and returns true; false takes no frames.
+ */
+function tryPikachuMovement(caller: 'viridianStepAside' | 'oaksLab', deps: ScriptDeps): boolean {
+  const { player, pikachuFollower, playerParty, gameMap } = deps;
+  if (!pikachuFollower?.visible || !shouldPikachuFollow(playerParty)) return false;
+  let program: PikachuMovementProgramId;
+  let side: 'up' | 'down' | 'left' | 'right';
+  if (caller === 'viridianStepAside') {
+    // ViridianCityMovePikachu: b = SPRITE_FACING_RIGHT
+    program = 'viridianStepAside';
+    side = 'right';
+  } else {
+    // OaksLabPikachuMovementScript: wYCoord = 3 → MovementData2 (LEFT), else 1 (DOWN)
+    const atY3 = player.mapStepY === 3;
+    program = atY3 ? 'oaksLab2' : 'oaksLab1';
+    side = atY3 ? 'left' : 'down';
+  }
+  if (pikachuSide(mapStep(pikachuFollower), mapStep(player)) !== side) return false;
+  pikachuFollower.startMovement(getPikachuMovementData(), pikachuMovementProgram(program),
+    gameMap.isGrassTile(pikachuFollower.tileX, pikachuFollower.tileY), player);
+  return true;
+}
+
+/** PikachuWalksToNurseJoy.GetMovementData: null when Pikachu is above the player. */
+function nurseProgram(pikachuFollower: PikachuFollower, player: Player): PikachuMovementProgramId | null {
+  const side = pikachuSide(mapStep(pikachuFollower), mapStep(player));
+  if (side === 'up') return null;
+  if (side === 'down') return 'nurse1';
+  return side === 'right' ? 'nurse3' : 'nurse2';
+}
+
 // ── Free-movement sub-state (awaitInteraction) ─────────────────────────
 
-function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
-  const { textBox, player, gameMap, npcs, playerBag, pikachuTile, pikachuFollower } = deps;
+function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction | null {
+  const { textBox, player, gameMap, npcs, playerBag, pikachuFollower } = deps;
 
   if (!scriptAwaitInteraction || !activeScript) return null;
 
   // Sub-state: showing regular NPC text (return to free move when dismissed)
   if (scriptFreeSub === 'text') {
+    syncJoypadRead();
     textBox.update();
     if (!textBox.active) scriptFreeSub = 'move';
     return null;
@@ -649,6 +811,7 @@ function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
 
   // Sub-state: showing guard text ("Don't go away yet!")
   if (scriptFreeSub === 'guard_text') {
+    syncJoypadRead();
     textBox.update();
     if (!textBox.active) {
       player.startScriptedMove(['up']);
@@ -657,21 +820,31 @@ function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
     return null;
   }
 
+  // The rest moves: once per overworld pass
+  if (!isPass) return null;
+  player.finishLanding(); // Clear the shadow before free movement can open START or text.
+  const allNpcs = [...npcs, ...scriptNpcs];
+  const sprites = (): void => updateSprites(allNpcs, gameMap, player, pikachuFollower);
+
   // Sub-state: player being forced 1 step up after guard
   if (scriptFreeSub === 'guard_step') {
-    player.updateScriptedMove();
-    if (player.scriptedMoveDone) scriptFreeSub = 'move';
+    if (player.scriptedMoveDone) {
+      scriptFreeSub = 'move';
+      return null;
+    }
+    player.updateScriptedMove(sprites);
+    if (player.startedFollowStep && pikachuFollower?.visible) recordStepForPikachu(player, pikachuFollower);
     return null;
   }
 
-  // Sub-state: free movement
+  // Sub-state: free movement (JoypadOverworld reads on standing passes)
+  if (!player.isMoving && !player.isLanding) readJoypad();
   // Allow Start menu during free movement
-  if (isPressed('start')) {
+  if (isPassPressed('start') && !player.isBusy) {
     return { type: 'openStartMenu' };
   }
 
   // Include script NPCs in interaction + collision checks
-  const allNpcs = [...npcs, ...scriptNpcs];
   const interaction = player.checkInteraction(gameMap, allNpcs);
   if (interaction) {
     if ('npc' in interaction) {
@@ -706,14 +879,10 @@ function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
     return null;
   }
 
-  player.update(gameMap, allNpcs);
+  player.update(gameMap, allNpcs, undefined, sprites);
 
   // Record player step for Pikachu following during free movement
-  if (player.justStartedStep && pikachuFollower?.visible) {
-    const dx = player.direction === 'left' ? -16 : player.direction === 'right' ? 16 : 0;
-    const dy = player.direction === 'up' ? -16 : player.direction === 'down' ? 16 : 0;
-    pikachuFollower.recordPlayerPosition(player.x, player.y, player.x + dx, player.y + dy);
-  }
+  if (player.startedFollowStep && pikachuFollower?.visible) recordStepForPikachu(player, pikachuFollower);
 
   // Guard check: prevent player from leaving
   if (player.justFinishedStep) {
@@ -727,16 +896,6 @@ function updateScriptFreeMove(deps: ScriptDeps): ScriptAction | null {
       scriptFreeSub = 'guard_text';
       return null;
     }
-  }
-
-  for (const npc of npcs) {
-    npc.update(
-      (tx, ty) => gameMap.isWalkable(tx, ty),
-      player.claimedTileX,
-      player.claimedTileY,
-      npcs,
-      pikachuTile
-    );
   }
 
   return null;

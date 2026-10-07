@@ -24,7 +24,7 @@ correct data and expanding the world — not rewriting it.
 for the entire build. `pkmn-sprites/` is not needed for any of it.
 
 **Scale.** Deliberately ambitious — realistically **one to two years and on the
-order of 700–800 sessions.** The 35 milestones in `PLAN.md` are not sessions;
+order of 700–800 sessions.** The 36 milestones in `PLAN.md` are not sessions;
 each subdivides many times over. Nobody expects a Yellow port in two
 weeks, and no session should feel behind for finishing one small verified thing.
 
@@ -49,31 +49,34 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-09-24
+## State as of 2026-10-06
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
 - **12 playable maps**: Pallet Town, the two houses, Oak's Lab, Route 1, Route 22,
   Viridian City + Pokécenter, Mart, School, Nickname House. The 7 Route 2 / Viridian
   Forest maps are extracted (V1a) and playable through the debug warps (V1b); the Forest
-  trainers battle as in the original (V1c); the walking path north of Viridian
-  opens in V1e.
-- **429/429** tests (375 upstream + 6 static-export + 18 from V1a + 10 from V1b + 20 from V1c), typecheck clean.
+  trainers battle as in the original (V1c); Oak's Pikachu catch runs the original's
+  catch demo, which the old man shares (V1d); the real Viridian old men replace
+  upstream's demo gates and the walk north is open (V1e) — **V1 done**.
+- **812/812** tests (375 upstream, then V1a–e, the tick clock, A6a–e and A1a), typecheck clean.
+- Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40). Next: A1b, item balls and hidden items.
+- The game ticks at the Game Boy's 59.7275 Hz (DECISIONS #33).
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are
   in git. A fresh clone plays with no ROM and no setup.
 - The game keeps running in background tabs (DECISIONS #27).
 - Git: local repo, baseline commit, never pushed (DECISIONS #24).
-- Plan: **35 milestones** — R (split R1a–c), **V** (rebuild the lost 30-map
+- Plan: **36 milestones** — R (split R1a–c), **V** (rebuild the lost 30-map
   state), A (core systems), B–I (story order), J (postgame), X (extras).
 
 ## Goals
 
-1. Run `npx vite`, click, play — no ROM, no emulator, no upload screen. ✅ (R1b)
+1. Run the dev server (`npx vite --host 127.0.0.1 --port 5173 --strictPort`), click, play — no ROM, no emulator, no upload screen. ✅ (R1b)
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**429**)
+4. Full test suite green against generated data. ✅ (**812**)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -104,15 +107,16 @@ Today (vanilla upstream's content, running ROM-free since R1b):
    yes starts in Red's room as YELLOW/BLUE, no plays the Oak intro + naming.
 3. Pallet → Oak's Lab (Pikachu) → Route 1 → Viridian (Pokécenter, Mart parcel
    quest, school, nickname house) → back to Oak → Pokédex. Route 22 is walkable.
-4. North of Viridian is blocked by upstream's **demo gate** (the old man: "this is
-   as far as the demo goes") — removed in V1.
+4. North of Viridian: the old man's catch demo (Yellow's, since V1e), then Route 2 →
+   Viridian Forest → its north gate. Pewter (V2) isn't extracted yet, so Route 2's
+   north edge is a wall.
 
 After Phase V: … → Route 2 / Forest → Pewter (Brock → BADGE_1, Museum) →
 Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (429)
+1. `npm run typecheck` + full `npm test` green. ✅ (812)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

@@ -5,6 +5,7 @@
 
 import type { Npc } from './npc';
 import { hasFlag } from '../events';
+import { viridianOldMenVisible } from '../story/viridian_city';
 import { substituteNames } from '../core/player_state';
 import { getText } from '../text';
 
@@ -67,25 +68,17 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
       npc.data.dialogue = getText('ROUTE1_POTION_FOLLOWUP');
     }
 
-    // ViridianCity: old man blocks north path
+    // ViridianCity: the three old men, from the events that toggle them
+    // (story/viridian_city.ts viridianOldMenVisible)
     if (mapName === "ViridianCity") {
-      if (hasFlag("GOT_POKEDEX")) {
-        // After pokedex: old man stands up but still blocks (no catching tutorial yet)
-        if (npc.data.id === "oldman_blocking") {
-          npc.data.sprite = "gambler";
-          npc.data.direction = "down";
-          npc.direction = "down";
-          npc.data.dialogue = getText('VIRIDIAN_OLDMAN_DEMO');
-          npc.load();
-        }
-        if (npc.data.id === "oldman1") npc.hidden = true;
-        // Girl changes dialogue to talk about Pewter City shopping
-        if (npc.data.id === "girl1") {
-          npc.data.dialogue = getText('VIRIDIAN_GIRL_PEWTER');
-        }
-      } else {
-        // Before pokedex: old man blocks, walking old man hidden
-        if (npc.data.id === "oldman1") npc.hidden = true;
+      const visible = viridianOldMenVisible(hasFlag);
+      if (npc.data.id === "oldman_blocking" || npc.data.id === "oldman2" || npc.data.id === "oldman1") {
+        npc.hidden = !visible[npc.data.id];
+      }
+      // Girl changes dialogue to talk about Pewter City shopping
+      // (scripts/ViridianCity_2.asm ViridianCityPrintGirlText)
+      if (npc.data.id === "girl1" && hasFlag("GOT_POKEDEX")) {
+        npc.data.dialogue = getText('VIRIDIAN_GIRL_PEWTER');
       }
     }
 

@@ -13,7 +13,7 @@ import {
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
   SHOCK_EMOTE,
   RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, SHRINK_PIC_1, SHRINK_PIC_2,
-  HEAL_MACHINE_GFX,
+  HEAL_MACHINE_GFX, LEDGE_HOPPING_SHADOW,
   TOWN_MAP_TILES, TOWN_MAP_CURSOR, MON_NEST_ICON,
   POKEDEX_TILES,
   TRAINER_INFO_GFX, CIRCLE_TILE, BADGE_NUMBERS_GFX, BADGE_GFX,
@@ -484,6 +484,11 @@ export function extractHealMachine(rom: BinaryReader): ImageData {
   return decode2bpp(data, 1);
 }
 
+/** LedgeHoppingShadow: one 8x8 1bpp tile, mirrored by OAM into an ellipse. */
+export function extractLedgeHoppingShadow(rom: BinaryReader): ImageData {
+  return decode1bpp(rom.readBytes(LEDGE_HOPPING_SHADOW, 8), 1);
+}
+
 // ── Town Map ──────────────────────────────────────────────────────
 
 /**
@@ -721,6 +726,7 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
 
   // Healing machine
   images['/gfx/overworld/heal_machine.png'] = extractHealMachine(rom);
+  images['/gfx/overworld/shadow.png'] = extractLedgeHoppingShadow(rom);
 
   // Town map
   images['/gfx/town_map/town_map.png'] = extractTownMapTiles(rom);

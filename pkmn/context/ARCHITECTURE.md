@@ -16,7 +16,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **429** passing (2026-09-23, V1c) | Battle logic + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **812** passing (2026-10-06, A1a) | Battle logic + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -138,12 +138,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (164 files, 9.8 MB, since V1c).
+- **`data/`** — JSON only, produced by `npm run setup` (167 files, 9.8 MB; `pikachu_movement.json` since A6e, the two item jingles since A1a).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. It holds 519 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 164 JSON files. That lets
+  (since R1a), which deletes and rebuilds it every run. It holds 520 PNGs + 3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 167 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -252,7 +252,7 @@ TEXT_ID`. `.blk` is one byte per block (PalletTown = 90 B = 10×9).
 
 **The test suite depends on `data/`.** `src/test/setup.ts` calls `process.exit(1)`
 when the directory is absent. Since R1c, `data/` is committed and always present.
-Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, 409/409 after V1b, **429/429** since V1c
+Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, 409/409 after V1b, 429/429 after V1c, 441/441 after V1d, 452/452 after the tick clock (O-5), 476/476 after V1e, 502/502 after A6a, 570/570 after A6b, 705/705 after A6c, 729/729 after A6d, 767/767 after A6e, 776/776 after its revision, **812/812** after A1a (2026-10-06)
 (2026-09-22).
 (The lost copy reached 395.)
 
@@ -289,8 +289,9 @@ Gen 1 bugs and quirks are reproduced deliberately.
 | Block | 4×4 tiles (32×32 px) | Map dimensions are in blocks |
 | Step | 2×2 tiles (16×16 px) | NPC, warp and sign coordinates |
 
-Camera: `x = player.x - 64`, `y = player.y - 60`. Walk speed 2 px/frame, 8 frames
-per step.
+Camera: `x = player.x - 64`, `y = player.y - 60`. Movement runs on the overworld
+pass (2 frames, A6a): the player 2 px a pass, 16 frames a step; a normal NPC 34
+frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
 
 ## Color
 
