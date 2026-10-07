@@ -257,7 +257,119 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
 
       Until A5, map-trainer battles keep upstream's instant cut rather than borrowing the spiral: the Forest's correct transition is Shrink or Split, so the spiral would be just as wrong. The plan grows to **35** milestones.
 
+32. **V1d: the catch demo is its own module, follows the ASM, and gets "PROF.OAK" from the ROM** (2026-09-24). *The user's answer to `notes/v1d-plan.md` §3: "go", accepting all four recommendations.*
+
+    - **The demo lives beside `Battle`, not inside it:** `battle/catch_demo.ts` (the rules, pure and tested) and `battle/catch_demo_screen.ts` (upstream's `pikachu/pikachu_battle.ts`, moved and generalized). `Battle` assumes a player Pokémon, and Oak's catch runs with an empty party. Folding both battle types into it would also touch every normal battle.
+    - **The old man's side is checked by unit tests plus a temporary, uncommitted hook** for the agent's browser check. No debug-overlay button: that would grow upstream's non-vanilla tooling before J2. The user first sees the old man's demo in V1e.
+    - **All 8 departures in upstream's Pikachu catch are fixed** (`notes/v1d-plan.md` §1.3): the simulated menu and bag, the HUD after "appeared!", 20 frames before the throw, the "used" text kept up, the pic hidden after the poof with the HUD kept, the caught text waiting for A, the battle engine's own name string, and the instant white at the end.
+    - **"PROF.OAK" is extracted** as `BATTLE_PROF_OAK_NAME` (`DisplayBattleMenu.profOakName`, 0f:4fef), next to V1a's `BATTLE_OLD_MAN_NAME`.
+
+33. **The game ticks at the Game Boy's frame rate, 59.7275 Hz** (2026-09-25). *Resolves O-5. User: "pls match the game boy 59.7".*
+
+    - **Default rate:** `GB_FPS = 4194304 / 70224` (one LCD frame is 70224 cycles of the 4.194304 MHz clock), in `src/core/tick_clock.ts`. Upstream's default was 50. The audio clock already ran at 59.7275.
+    - **The loop keeps its leftover time.** Upstream's `runDueTicks` reset its timestamp to `now` on every call, throwing away the remainder, so the rate was capped by the display refresh. Its "50 fps" ran **30** ticks/s at 60 Hz, 40 at 120 Hz, 48 at 144 Hz and 240 Hz, and 41.6 on the background worker. A plain 59.7 would still have run at 30 on a 60 Hz display, because 16.67 ms is just under one 16.74 ms tick. `TickClock` carries the remainder, the way `tickAudio()` already did. It still runs at most 4 ticks per call, and drops the backlog after a longer gap (pause, frozen tab), as before.
+    - **Measured** in the user's Chrome (240 Hz display): **59.70 ticks/s over 20 s**, where upstream's loop gave 48. That means the game had been running at about 80% of Game Boy speed there.
+    - **`-` / `+` keep working.** They step through multiples of 5 (10–200) with the Game Boy rate as one more stop between 55 and 60, so it can always be reached again. A rate saved in `localStorage` (`p151-f`) still wins. The keys themselves stay upstream's non-vanilla tooling for J2 to decide.
+
+34. **V1e: map scripts keep their state in the save; the Gym-door quirk is kept; V1e is one slice** (2026-09-25). *The user's answer to `notes/v1e-plan.md` §4 was "do v1e as one slice" (Q3). Q1 and Q2 weren't addressed, so they took the recommended defaults. The user then play-tested V1e and said "it all works as intended".*
+
+    - **`w<Map>CurScript` is saved per map** (`events.ts` `getMapScript` / `setMapScript`, `SaveData.mapScripts`). Only the resting values are saved (Viridian: 0 `DEFAULT`, 1 `AFTER_POKEDEX`, 2 `POST_CATCH_TRAINING`), because the other states run with input locked and are one command list each. A new game clears them (`init_player_data.asm`). Saves without the field get Viridian's state from `GOT_POKEDEX` / `COMPLETED_CATCH_TRAINING`. The rejected alternative was upstream's flags-only style, which can't reproduce the quirk below. Later maps with script state (Pewter, Route 22, Cerulean…) should reuse this.
+    - **The Gym-door quirk is kept (Hard rule 7).** The Gym's push-back sends the city to `POST_CATCH_TRAINING` from any state, which turns off the (19,9) old-man check. Touch the Gym door before the demo and you can walk north, before the Pokédex without one. The Pokédex re-arms the check (state 1), and so does talking to the sleeping man (his text handler ends in state 0). Browser-checked: the Gym door, a save with `ViridianCity: 2`, then walking to (19,3) with no Pokédex.
+    - **One slice**, data and engine together, as #29 already allowed for V1e.
+    - **Pushes are simulated joypad steps.** The ASM's one-step push-backs are `StartSimulatingJoypadStates` presses. They skip the turning frame (`.noDirectionChange`), and they still collide and hop ledges, because `GetSimulatedInput` has already brought the index to 0 by the time `CollisionCheckOnLand` runs. So at the Gym door the player **hops the ledge** at y = 9 down to (32,10). The new `pushPlayer` script command feeds a simulated direction into `player.update` rather than moving the player directly the way `movePlayer` does.
+
+35. **A1 splits into three slices; new milestone A6 (overworld pace) goes first** (2026-09-27). *The user's answer to `notes/a1-plan.md` §4 (STATUS O-8): "yes, pls do walking speed first, lol, that was bugging me a lot". That takes all six recommendations, with decision 2's "A6 first" alternative.*
+
+    - **A6 "Overworld pace per the ASM" is a new milestone (36 in all), and it runs first**, before A1a. The ASM's overworld loop takes two frames per pass, so a player step takes 16 frames and an NPC step 32. Upstream moves both one step per 8 ticks, and since #33 a tick is one frame, so the player and Pikachu walk at 2× and NPCs at 4×. A6 gets its own probe and plan (`notes/a6-plan.md`). *⚠ Refined by the A6 probe (#36): a normal NPC step is **34** frames — a start pass, then 16 × 1 px.*
+    - **A1 is three slices, in this order after A6:**
+      - A1a: music-mode SFX and the two item jingles (`get_item1`, `get_item2`). The other music-mode SFX stay in V5.
+      - A1b: item balls, plus the hidden-item pickup.
+      - A1c: trainer sight, built on A6's loop.
+    - **The hidden-item pickup is fixed in A1b.** The text comes before `GiveItem`, `SFX_GET_ITEM_2` plays, the box closes by itself, and a full bag shows "But, <PLAYER> has no more room for other items!".
+    - **`addToInventory` gets `AddItemToInventory_`'s 99-per-slot rule** in A1b. Past 99, the rest goes into a new slot if there's room, and otherwise the whole add fails.
+    - **Picked-up balls are saved as `hiddenObjects`**, a list of `Map:npcId` keys that mirrors the ASM's toggleable-object flags. Later `HideObject` users reuse it.
+    - **Small data changes go with their engine slice:** the jingle decoder fix and headers in A1a, `sightRange` in A1c. Each regenerated diff must show only that change. This is an exception to CONVENTIONS' "don't mix extraction and engine", as in #29 (V1e) and #31 (V1c).
+
+36. **A6 splits into four slices, runs on 2-frame passes, and goes first** (2026-09-27). *The user's answer to `notes/a6-plan.md` §4 (STATUS O-9): "go", taking all four recommendations.*
+
+    - **Four slices**, back to back, then A1a–c:
+      - A6a: the pace — the player, Pikachu, the three NPC walking modes, the walk animations, the ledge jump table, and every cutscene walk.
+      - A6b: the order inside a pass, sprite pop-in, NPCs keeping their facing after a talk, the turn encounter roll and the 3-step cooldown.
+      - A6c: NPC wandering and turning.
+      - A6d: the ledge-hop shadow and Pikachu's hop.
+    - **The overworld runs on the ASM's pass.** One pass is 2 frames (`OverworldLoop` → `DelayFrame` ×2), and every mover advances once per pass: 2 px for the player, 1 px for a normal NPC. So positions change every 2 frames, as on the Game Boy. Rejected: halving the speeds per frame, which is smoother than the original and needs fractional pixels for NPCs. Text, script waits, fades, audio and battles keep counting frames (#33).
+    - **Cutscene walks are ported with their ASM mode and concurrency in A6a**, not only re-timed. The modes are normal NPC steps, Yellow's fast codes, and walking in step with the player. Wrong paths or texts found on the way are logged, not fixed.
+
+37. **A6b takes all four plan decisions; Sol 6.1 implements it and Claude reviews** (2026-10-01). *The user's answer to `notes/a6-plan.md` §5.4 (STATUS O-10): "mark those 4 decisions as yes".*
+
+    - **Map triggers run in a per-pass map-script hook**, on every standing pass and before the joypad read, as `JoypadOverworld` → `RunMapScript` does. Pallet's, Viridian's and the Oak's Lab triggers move there, on their ASM conditions (Pallet: `wYCoord == 0`, no facing check). Trainer sight joins the hook in A1c.
+    - **Pikachu's walking happiness and mood are fixed in A6b** (`UpdatePikachuHappinessAndMood`): the step counter resets on map entry, the bonus is a 50% roll every 256 steps, and every step moves the mood 1 toward 128.
+    - **The fixed-facing NPC turn-back moves from A6c into A6b.** STAY NPCs run the ASM's status 1 ↔ 2 cycle, so a talked-to NPC turns back to its map facing after a random 1–256-pass delay. Random turning for `NONE` facing, the wander limits and beaten trainers spinning stay in A6c.
+    - **Sprites under a text box or menu are hidden whole in A6b** (`CheckSpriteAvailability`'s tile check), together with the window rule and the pop-in.
+    - **Who does what:** the user assigned the implementation to Sol 6.1, with Claude reviewing the diff before A6b is called done. This is the project's multi-agent setup (#11) used within a single slice.
+
 ---
+
+38. **A6d uses the native follow buffer; scripted Pikachu movement becomes A6e**
+    (2026-10-04). *The user asked Codex to read and implement `notes/a6d-plan.md`,
+    accepting its three recommendations (O-11).*
+
+    - A6d ports the ROM ledge shadow, extra landing UpdateSprites and Yellow's follow
+      buffer for all following, including the retained command and hop-half toggle.
+      Only `static/gfx/overworld/shadow.png` changes in generated output (#35 exception).
+    - `ApplyPikachuMovementData` stays a separate A6e slice. A6 has five slices;
+      the milestone count stays 36. Scripted targets retain their approximation in A6d.
+    - Hop-midpoint map scripts and trainer sight after landing stay in A1c.
+    - Codex implements, Claude reviews, then the user play-tests. The updated handoff
+      (`530363c`) drops a separate A6c re-review: Claude's A6d review also covers R-3
+      on `9897020`; the user can play-test both slices together.
+
+39. **A6e is one slice: the whole movement interpreter, bounded emotion and nurse work**
+    (2026-10-04). *The user asked Claude to plan and implement Codex's `notes/a6e-plan.md`
+    ("pls ultrathink, plan and implement this plan"), taking its three recommendations
+    (O-12).*
+
+    - One A6e slice with three verified checkpoints (`0a89455`, `1a7231f`, `89f620b`).
+      `pikachu_movement.json` is the slice's one generated-data addition (#35 exception).
+    - The interpreter is complete for `$00–$3e`; the callers are today's maps' four:
+      Viridian's step-aside, the nurse, Oak's Lab's missing step after "GRAMPS!", and the
+      emotion preludes (4, 6, 7, 9, 13). The scripted target queue and its sine arc are gone.
+    - Emotion work stops at the movement and the portrait's border; cries, bubbles and the
+      exit sequence stay in V5 / J2. Nurse work ports the outer routine's Pikachu calls and
+      waits; the healing machine's internals keep their audit homes.
+    - Corrections found while implementing (detail in the plan's *Implementation result*):
+      Viridian's program is read at `3c:5a0a` (the `ld hl` operand), not `3c:5e2b`; spawn
+      state 5 only places a starter that wasn't out.
+    - Who reviews A6e is the user's call; the user then play-tests.
+
+40. **A1a takes all seven plan decisions; Claude implements it** (2026-10-06). *The user's
+    answer to `notes/a1a-plan.md` §9 (O-13): "I reply yes for all of them", and "implement
+    the plan yourself".*
+
+    - One shared channel interpreter (`audio/sound_channel.ts`) for the music and for
+      music-mode SFX channels.
+    - The cartridge's SFX/music hand-off, for every SFX:
+      - music channels before SFX channels in each update;
+      - a suppressed music channel only counts;
+      - after the SFX, silence until the music's next note or rest;
+      - the wave pattern reloaded at every note.
+
+      Upstream's mid-note restore goes. `press_ab` over music sounds different as a result.
+    - The exact rules in shared code, so the music changes too:
+      - separate SFX tempo, channel by id;
+      - perfect pitch;
+      - vibrato with rate 0;
+      - the wave channel at 65536/(2048−x), an octave below today;
+      - `MultiplyAdd`'s note arithmetic.
+    - Channel 8's occupancy by drum hits, with the drop rule, so `isSoundFinished()` is
+      exact.
+    - A `_playSFX(name)` console helper beside upstream's `_audioEngine` / `_sfxEngine`, for
+      the ear test before A1b. J2 decides it with the rest of the debug tooling.
+    - The `static_export` timeout rides with A1a.
+    - One slice in four checkpoints. The two jingle JSON files ride with it (#35's
+      exception).
+    - **Who:** the user asked Claude to implement its own plan. The user picks the
+      reviewer.
 
 ## Open — not decided, needs the user
 

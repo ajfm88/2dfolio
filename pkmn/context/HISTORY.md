@@ -30,7 +30,7 @@ in the context files; the code is rebuilt in the slice named in the last column.
 | P5-1 | `publicDir: 'static'`, mirror data (DECISIONS #16) | ✅ R1a + R1b |
 | P5-2 | ROM gate deleted | ✅ R1b |
 | P5-3 | Full path smoke + map graph (`scripts/smoke_p5_3.mjs`) | rebuild only if needed |
-| Polish | Audio clock; walk FPS max 60; title PKMN; base `/` (#17) | ✅ R1b (title, base); **V5** (FPS — O-5) |
+| Polish | Audio clock; walk FPS max 60; title PKMN; base `/` (#17) | ✅ R1b (title, base); ✅ 2026-09-25 (FPS: the Game Boy rate, DECISIONS #33) |
 | Polish | Overworld sprite extract size fix | found in R1a (sheets are 16×768, harmless) — trim is a **V5** candidate |
 | Save | Harden + verify on 127.0.0.1 | ✅ save → reload → CONTINUE re-tested from a fresh clone in R1c (upstream save code; the old copy's "harden" changes are unknown) |
 | P7 | Final verification baseline | — |

@@ -3,6 +3,7 @@
 
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from "../core";
 import { getPaletteColors, paletteToHex } from "./palettes";
+import { uiTiles } from './ui_tiles';
 
 type Rgb = [number, number, number];
 
@@ -12,6 +13,25 @@ let currentPaletteName = "ROUTE";
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 let scale = 1;
+let uiCanvas: HTMLCanvasElement | null = null;
+
+/** Draw UI once to a transparent layer first, exposing its tile coverage to the
+ *  sprites. Composite it after the map/sprites, preserving the normal draw order. */
+export function captureUi(draw: () => void): () => void {
+  uiTiles.clear();
+  if (!uiCanvas) {
+    uiCanvas = document.createElement('canvas');
+    uiCanvas.width = GB_WIDTH;
+    uiCanvas.height = GB_HEIGHT;
+  }
+  const uiCtx = uiCanvas.getContext('2d')!;
+  uiCtx.clearRect(0, 0, GB_WIDTH, GB_HEIGHT);
+  uiCtx.imageSmoothingEnabled = false;
+  const sceneCtx = ctx;
+  ctx = uiCtx;
+  try { draw(); } finally { ctx = sceneCtx; }
+  return () => sceneCtx.drawImage(uiCanvas!, 0, 0);
+}
 
 export function getCtx(): CanvasRenderingContext2D {
   return ctx;
@@ -366,6 +386,74 @@ export async function loadFont(url: string): Promise<HTMLCanvasElement> {
   return tmp;
 }
 
+/** A sprite frame as drawSprite drew it (screen pixels). */
+export interface SpriteDraw {
+  sheet: HTMLCanvasElement;
+  frameX: number;
+  frameY: number;
+  destX: number;
+  destY: number;
+  flipX: boolean;
+}
+
+let spriteLog: SpriteDraw[] | null = null;
+
+/** Start recording the sprites drawn, for a shadow that sits under all of them. */
+export function beginSpriteLog(): void {
+  spriteLog = [];
+}
+
+/** Stop recording and return what was drawn. */
+export function endSpriteLog(): SpriteDraw[] {
+  const log = spriteLog ?? [];
+  spriteLog = null;
+  return log;
+}
+
+let shadowCanvas: HTMLCanvasElement | null = null;
+
+/**
+ * A two-tile OAM shadow (the 8×8 tile, then its X mirror) at screen (destX, destY): above
+ * every map tile, below every sprite's opaque pixels — including pixels that grass then
+ * hides, since the hardware picks the higher-priority object pixel first. `sprites` are
+ * the frames drawn this frame (beginSpriteLog / endSpriteLog).
+ */
+export function drawShadowUnderSprites(
+  shadow: HTMLCanvasElement, destX: number, destY: number, sprites: readonly SpriteDraw[],
+): void {
+  if (!shadowCanvas) {
+    shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 16;
+    shadowCanvas.height = 8;
+  }
+  const sctx = shadowCanvas.getContext('2d')!;
+  sctx.clearRect(0, 0, 16, 8);
+  sctx.drawImage(shadow, 0, 0);
+  sctx.save();
+  sctx.translate(16, 0);
+  sctx.scale(-1, 1);
+  sctx.drawImage(shadow, 0, 0);
+  sctx.restore();
+  sctx.save();
+  sctx.globalCompositeOperation = 'destination-out';
+  for (const s of sprites) {
+    const x = s.destX - destX;
+    const y = s.destY - destY;
+    if (x >= 16 || x <= -16 || y >= 8 || y <= -16) continue;
+    sctx.save();
+    if (s.flipX) {
+      sctx.translate(x + 16, y);
+      sctx.scale(-1, 1);
+      sctx.drawImage(s.sheet, s.frameX, s.frameY, 16, 16, 0, 0, 16, 16);
+    } else {
+      sctx.drawImage(s.sheet, s.frameX, s.frameY, 16, 16, x, y, 16, 16);
+    }
+    sctx.restore();
+  }
+  sctx.restore();
+  ctx.drawImage(shadowCanvas, destX * scale, destY * scale, 16 * scale, 8 * scale);
+}
+
 /** Draw a 16x16 sprite frame from a sprite sheet. */
 export function drawSprite(
   spriteSheet: HTMLCanvasElement,
@@ -375,6 +463,7 @@ export function drawSprite(
   destY: number,
   flipX = false
 ): void {
+  spriteLog?.push({ sheet: spriteSheet, frameX, frameY, destX, destY, flipX });
   ctx.save();
   if (flipX) {
     ctx.translate((destX + 16) * scale, destY * scale);

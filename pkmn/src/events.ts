@@ -26,6 +26,32 @@ export function restoreFlags(saved: string[]): void {
   for (const f of saved) flags.add(f);
 }
 
+// Map script states — the resting value of each map's w<Map>CurScript (wram.asm
+// wGameProgressFlags), saved with the game and cleared only by a new game
+// (init_player_data.asm). Maps without an entry are at 0. DECISIONS #34.
+
+const mapScripts = new Map<string, number>();
+
+export function getMapScript(mapName: string): number {
+  return mapScripts.get(mapName) ?? 0;
+}
+
+export function setMapScript(mapName: string, state: number): void {
+  if (state === 0) mapScripts.delete(mapName);
+  else mapScripts.set(mapName, state);
+}
+
+/** Get all map script states for save serialization. */
+export function getAllMapScripts(): Record<string, number> {
+  return Object.fromEntries(mapScripts);
+}
+
+/** Restore map script states from saved data. */
+export function restoreMapScripts(saved: Record<string, number>): void {
+  mapScripts.clear();
+  for (const [mapName, state] of Object.entries(saved)) setMapScript(mapName, state);
+}
+
 // Event flag constants
 export const EVENT = {
   // Pallet Town intro sequence

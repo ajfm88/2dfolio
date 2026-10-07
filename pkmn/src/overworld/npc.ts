@@ -1,6 +1,12 @@
 import type { Direction, NpcData } from '../core';
 import { TILE_SIZE } from '../core';
 import { drawSprite, loadSprite, drawExclamationBubble } from '../renderer';
+import { NpcWalk, walkFrame } from './walk_pace';
+import type { NpcStepPlan, NpcWalkMode, NpcMovement1, NpcMovement2 } from './walk_pace';
+import { inSpriteWindow, spriteCovered, SpriteVisibility } from './sprite_visibility';
+import { collisionMask, screenPixels, stepStaysOnScreen, DIRECTION_BIT } from './sprite_collision';
+import type { CollisionSprite } from './sprite_collision';
+import { uiTiles } from '../renderer/ui_tiles';
 
 // Same sprite frame layout as player (16x96 sprite sheets)
 interface FrameSet { stand: number; walk: number }
@@ -13,192 +19,207 @@ const FRAMES: Record<Direction, FrameSet> = {
 };
 
 const STEP_SIZE = 16;   // pixels per step (2 tiles)
-const WALK_SPEED = 2;   // 2 pixels per frame (matching player and assembly)
 
-// Random walk: wait 60-180 frames between steps
-const WALK_DELAY_MIN = 60;
-const WALK_DELAY_MAX = 180;
+/** The random byte UpdateNPCSprite reads (hRandomAdd). */
+const randomByte = (): number => Math.floor(Math.random() * 256);
 
+/** RivalIDs (engine/overworld/npc_movement_2.asm): the rival leaves after battling. */
+const RIVAL_CLASSES = new Set(['RIVAL1', 'RIVAL2', 'RIVAL3']);
+
+/**
+ * SetEnemyTrainerToStayAndFaceAnyDirection's exceptions: not on Pokémon Tower 7F (its
+ * Rockets leave), never the rival. Everyone else turns at random after losing.
+ */
+export function turnsAfterLosing(trainerClass: string | undefined, mapName: string): boolean {
+  if (mapName === 'PokemonTower7F') return false;
+  return trainerClass === undefined || !RIVAL_CLASSES.has(trainerClass);
+}
+
+/** What one UpdateSprites gives an NPC. */
+export interface NpcUpdateContext {
+  /** The map's terrain (_IsTilePassable reads the destination's lower-left tile). */
+  isWalkable: (tx: number, ty: number) => boolean;
+  /** wWalkCounter ≠ 0. */
+  playerWalking: boolean;
+  /** wXCoord / wYCoord, which change at the end of a step. */
+  playerMapStep: { x: number; y: number };
+  /** The player's world pixels: every sprite's screen pixels are relative to them. */
+  playerX: number;
+  playerY: number;
+  /** This sprite's slot (map NPCs from 1, in map order). */
+  slot: number;
+  /** The live sprite table in slot order: earlier slots already updated this pass. */
+  sprites: () => readonly CollisionSprite[];
+  /** A random byte (tests inject one). */
+  random?: () => number;
+}
+
+/**
+ * An NPC. Movement runs once per overworld pass through NpcWalk, UpdateNPCSprite's state
+ * machine (walk_pace.ts): 1 px a pass after a start pass, 17 passes a step.
+ */
 export class Npc {
   readonly data: NpcData;
   x: number;
   y: number;
-  direction: Direction = 'down';
   private spriteSheet: HTMLCanvasElement | null = null;
 
-  // Movement state
-  private isMoving = false;
-  private moveProgress = 0;
+  private readonly walk: NpcWalk;
+  private readonly visibility = new SpriteVisibility();
+  private imageDirection: Direction;
+  private imageFrame = 0;
+  /** The map position the current step leads to (TryWalking moves it at the start). */
   private targetX = 0;
   private targetY = 0;
-  private walkTimer = 0;
-  private stepCount = 0;
 
-  // Trainer approach state
+  // Trainer approach state (the sight engine; A1c ports TrainerEngage)
   approaching = false;        // true while walking toward the player
   showExclamation = false;    // true while "!" is displayed
   private exclamationTimer = 0;
   private approachTargetX = 0;
   private approachTargetY = 0;
+  private approachMoving = false;
+  private approachProgress = 0;
   approachDone = false;       // set when trainer arrives next to player
 
-  // Scripted movement state
-  private scriptedPath: Direction[] = [];
-  private scriptedPathIndex = 0;
-  scriptedMoveDone = false;
   hidden = false;             // if true, skip rendering and updates
   useWalkFrame = false;       // if true, show walk frame (used for nurse bow)
 
-  /** The NPC's resting direction (from map data). Restored after interaction. */
+  /** The sprite's starting facing. */
   readonly defaultDirection: Direction;
-
-  // Post-interaction restore: countdown before turning back to default direction
-  private restoreTimer = 0;
-
-  // Starting position for walk range bounding (assembly: XDISPLACEMENT/YDISPLACEMENT)
-  private startX: number;
-  private startY: number;
-  private static readonly MAX_WALK_RANGE = 2 * STEP_SIZE; // max 2 steps from start
 
   constructor(data: NpcData) {
     this.data = data;
     // NPC coords are in 16px step units
     this.x = data.x * STEP_SIZE;
     this.y = data.y * STEP_SIZE;
-    this.startX = this.x;
-    this.startY = this.y;
     this.defaultDirection = data.direction ?? 'down';
-    this.direction = this.defaultDirection;
-    this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
+    this.imageDirection = this.defaultDirection;
+    // The object_event movement bytes: a STAY/WALK byte, then a fixed facing, an axis, or
+    // NONE (STAY) / ANY_DIR (WALK)
+    const movement1: NpcMovement1 = data.movement === 'walk' ? 'walk' : 'stay';
+    const axis = data.walkDir && data.walkDir !== 'any' ? data.walkDir : null;
+    const movement2: NpcMovement2 = data.direction ?? axis ?? (movement1 === 'stay' ? 'none' : 'any');
+    this.walk = new NpcWalk(this.defaultDirection, movement1, movement2);
+    // EnterMap's UpdateSprites runs InitializeSpriteStatus before the first loop pass
+    this.walk.initialize();
   }
 
   async load(): Promise<void> {
     this.spriteSheet = await loadSprite(`/gfx/sprites/${this.data.sprite}.png`);
   }
 
+  /** The facing the sprite shows. */
+  get direction(): Direction { return this.walk.facing; }
+  set direction(dir: Direction) {
+    this.walk.facing = dir;
+    this.imageDirection = dir;
+  }
+
   get tileX(): number { return Math.round(this.x / TILE_SIZE); }
   get tileY(): number { return Math.round(this.y / TILE_SIZE); }
-  /** Tile position being moved to (or current if stationary). Used for collision reservation. */
-  get claimedTileX(): number { return this.isMoving ? Math.round(this.targetX / TILE_SIZE) : this.tileX; }
-  get claimedTileY(): number { return this.isMoving ? Math.round(this.targetY / TILE_SIZE) : this.tileY; }
+  /** SPRITESTATEDATA2_MAPX/MAPY in steps: a step's destination from its start. */
+  get mapStepX(): number { return Math.round((this.walk.isMoving ? this.targetX : this.x) / STEP_SIZE); }
+  get mapStepY(): number { return Math.round((this.walk.isMoving ? this.targetY : this.y) / STEP_SIZE); }
+
+  /** A scripted walk has read its terminator. */
+  get scriptedMoveDone(): boolean { return this.walk.scriptDone; }
+
+  /** How many steps of the scripted walk have started (wNPCNumScriptedSteps counts down from here). */
+  get scriptedStepsStarted(): number { return this.walk.stepsStarted; }
+
+  /** The live movement state (tests and the trainer hook read it). */
+  get movement(): Readonly<NpcWalk> { return this.walk; }
 
   /** Turn to face the player for interaction. */
   faceDirection(dir: Direction): void {
     this.direction = dir;
+    this.imageFrame = 0; // MakeNPCFacePlayer → NotYetMoving
   }
 
-  /** Schedule restoring the NPC's default facing direction after a delay. */
-  restoreDirection(): void {
-    // ~2 seconds at 60fps, matching the original game's sprite update cycle
-    this.restoreTimer = 120;
+  /**
+   * PrintEndBattleText → SetEnemyTrainerToStayAndFaceAnyDirection: after the player beats
+   * this trainer, its live movement bytes become STAY/NONE, so it turns at random. Only
+   * the sprite on the map now changes: a map load recreates it from the map's bytes.
+   */
+  stayAndFaceAnyDirection(mapName: string): void {
+    if (turnsAfterLosing(this.data.trainerClass, mapName)) this.walk.stayAndFaceAnyDirection();
   }
 
-  update(isWalkable: (tx: number, ty: number) => boolean, playerTileX: number, playerTileY: number, allNpcs?: Npc[], pikachuTile?: { x: number; y: number }): void {
+  /** This sprite in DetectCollisionBetweenSprites' table. */
+  collisionSprite(playerX: number, playerY: number, slot: number): CollisionSprite {
+    const p = screenPixels(this.x, this.y, playerX, playerY);
+    return {
+      slot,
+      available: !this.hidden && this.visibility.visible,
+      x: p.x,
+      y: p.y,
+      vx: this.walk.vx,
+      vy: this.walk.vy,
+    };
+  }
+
+  /** One UpdateSprites for this NPC (UpdateNPCSprite). */
+  update(ctx: NpcUpdateContext): void {
+    const random = ctx.random ?? randomByte;
+    // InitializeSpriteStatus comes before CheckSpriteAvailability, and leaves IMAGEINDEX $ff
+    if (this.walk.status === 'init') {
+      this.visibility.update(false, ctx.playerWalking);
+      this.walk.pass({ playerWalking: ctx.playerWalking, random, canWalk: () => false });
+      return;
+    }
     if (this.hidden) return;
+    const available = inSpriteWindow(this.mapStepX, this.mapStepY,
+      ctx.playerMapStep.x, ctx.playerMapStep.y, this.walk.scripted || this.approaching);
+    const inStepAnimation = this.walk.inStepAnimation;
+    this.visibility.update(available, ctx.playerWalking && !inStepAnimation);
+    if (!available) return; // invisible sprites don't advance movement or delay
 
-    // Post-interaction: count down then restore default facing direction
-    if (this.restoreTimer > 0) {
-      this.restoreTimer--;
-      if (this.restoreTimer <= 0) {
-        this.direction = this.defaultDirection;
-      }
+    this.walk.pass({
+      playerWalking: ctx.playerWalking,
+      random,
+      canWalk: dir => this.canWalk(dir, ctx),
+    });
+    if (this.walk.startedStep) {
+      const d = stepDelta(this.walk.facing);
+      this.targetX = this.x + d.dx;
+      this.targetY = this.y + d.dy;
     }
-
-    if (this.isMoving) {
-      this.moveProgress += WALK_SPEED;
-      const t = Math.min(this.moveProgress / STEP_SIZE, 1);
-
-      const dx = this.direction === 'left' ? STEP_SIZE :
-                 this.direction === 'right' ? -STEP_SIZE : 0;
-      const dy = this.direction === 'up' ? STEP_SIZE :
-                 this.direction === 'down' ? -STEP_SIZE : 0;
-      const startX = this.targetX + dx;
-      const startY = this.targetY + dy;
-
-      this.x = startX + (this.targetX - startX) * t;
-      this.y = startY + (this.targetY - startY) * t;
-
-      if (this.moveProgress >= STEP_SIZE) {
-        this.x = this.targetX;
-        this.y = this.targetY;
-        this.isMoving = false;
-        this.moveProgress = 0;
-        this.stepCount++;
-      }
-      return;
+    this.x += this.walk.dx;
+    this.y += this.walk.dy;
+    // CheckSpriteAvailability refreshes IMAGEINDEX only when wWalkCounter is zero.
+    if (!ctx.playerWalking || inStepAnimation) {
+      this.imageDirection = this.direction;
+      this.imageFrame = this.walk.displayFrame;
     }
+  }
 
-    if (this.data.movement !== 'walk') return;
+  /** MoveSprite: walk `path`, each step normal (1 px a pass) or fast (Yellow's $04–$07).
+   *  `modes` gives each step's mode; missing entries are normal. */
+  startScriptedMove(path: Direction[], modes?: NpcWalkMode[]): void {
+    const plan: NpcStepPlan[] = path.map((dir, i) => ({ dir, mode: modes?.[i] ?? 'normal' }));
+    this.walk.startScript(plan);
+  }
 
-    this.walkTimer--;
-    if (this.walkTimer > 0) return;
+  /** DoScriptedNPCMovement: walk `path` in step with the player (2 px a pass). */
+  startInStepMove(path: Direction[]): void {
+    this.walk.startInStep(path);
+  }
 
-    // Pick random direction respecting walkDir constraint
-    const constraint = this.data.walkDir ?? 'any';
-    let dirs: Direction[];
-    if (constraint === 'up_down') dirs = ['up', 'down'];
-    else if (constraint === 'left_right') dirs = ['left', 'right'];
-    else dirs = ['up', 'down', 'left', 'right'];
-
-    const dir = dirs[Math.floor(Math.random() * dirs.length)];
-    const dx = dir === 'left' ? -STEP_SIZE : dir === 'right' ? STEP_SIZE : 0;
-    const dy = dir === 'up' ? -STEP_SIZE : dir === 'down' ? STEP_SIZE : 0;
-
-    this.direction = dir;
-    const newX = this.x + dx;
-    const newY = this.y + dy;
-    const targetTileX = Math.round(newX / TILE_SIZE);
-    const targetTileY = Math.round(newY / TILE_SIZE);
-
-    // Bound check: don't walk too far from starting position
-    if (Math.abs(newX - this.startX) > Npc.MAX_WALK_RANGE ||
-        Math.abs(newY - this.startY) > Npc.MAX_WALK_RANGE) {
-      this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
-      return;
+  /**
+   * CanWalkOntoTile after its STAY check, for a try whose facing and step vector are set:
+   * the destination's terrain, then the screen edge (from this sprite's screen pixels),
+   * then the collision mask against the live sprite table. The displacement bytes are
+   * NpcWalk's.
+   */
+  private canWalk(dir: Direction, ctx: NpcUpdateContext): boolean {
+    const d = stepDelta(dir);
+    if (!ctx.isWalkable(Math.round((this.x + d.dx) / TILE_SIZE), Math.round((this.y + d.dy) / TILE_SIZE))) {
+      return false;
     }
-
-    // Check collision with map tiles
-    if (!isWalkable(targetTileX, targetTileY)) {
-      this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
-      return;
-    }
-
-    // Check collision with player (2x2 tile sprites)
-    const hitsPlayer = Math.abs(targetTileX - playerTileX) < 2 &&
-                       Math.abs(targetTileY - playerTileY) < 2;
-    if (hitsPlayer) {
-      this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
-      return;
-    }
-
-    // Check collision with other NPCs (2x2 tile sprites)
-    if (allNpcs) {
-      const hitsNpc = allNpcs.some(other => {
-        if (other === this || other.hidden) return false;
-        return Math.abs(targetTileX - other.claimedTileX) < 2 &&
-               Math.abs(targetTileY - other.claimedTileY) < 2;
-      });
-      if (hitsNpc) {
-        this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
-        return;
-      }
-    }
-
-    // Check collision with Pikachu follower (2x2 tile sprite)
-    if (pikachuTile) {
-      if (Math.abs(targetTileX - pikachuTile.x) < 2 &&
-          Math.abs(targetTileY - pikachuTile.y) < 2) {
-        this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
-        return;
-      }
-    }
-
-    this.targetX = newX;
-    this.targetY = newY;
-    this.isMoving = true;
-    this.moveProgress = 0;
-
-    this.walkTimer = WALK_DELAY_MIN + Math.floor(Math.random() * (WALK_DELAY_MAX - WALK_DELAY_MIN));
+    const self = this.collisionSprite(ctx.playerX, ctx.playerY, ctx.slot);
+    if (!stepStaysOnScreen(self.x, self.y, dir)) return false;
+    return (collisionMask(self, ctx.sprites()) & DIRECTION_BIT[dir]) === 0;
   }
 
   /** Check if player is in this trainer's line of sight. */
@@ -232,27 +253,24 @@ export class Npc {
   startApproach(playerX: number, playerY: number): void {
     this.approaching = true;
     this.showExclamation = true;
-    this.exclamationTimer = 40; // ~0.67s for "!" display
+    this.exclamationTimer = 20; // passes (upstream's 40 frames)
 
     // Target: one step away from the player (in the trainer's facing direction toward player)
-    // Calculate where to stop (one step before player position)
     const dx = playerX - this.x;
     const dy = playerY - this.y;
 
     if (Math.abs(dx) > Math.abs(dy)) {
-      // Horizontal approach
       this.direction = dx > 0 ? 'right' : 'left';
       this.approachTargetX = dx > 0 ? playerX - STEP_SIZE : playerX + STEP_SIZE;
       this.approachTargetY = this.y;
     } else {
-      // Vertical approach
       this.direction = dy > 0 ? 'down' : 'up';
       this.approachTargetX = this.x;
       this.approachTargetY = dy > 0 ? playerY - STEP_SIZE : playerY + STEP_SIZE;
     }
   }
 
-  /** Update the trainer approach (call each frame while approaching). */
+  /** Update the trainer approach, once per pass (A1c replaces this with TrainerEngage's). */
   updateApproach(): void {
     if (!this.approaching) return;
 
@@ -265,26 +283,15 @@ export class Npc {
       return;
     }
 
-    // Phase 2: walk toward the player
-    if (this.isMoving) {
-      this.moveProgress += WALK_SPEED;
-      const t = Math.min(this.moveProgress / STEP_SIZE, 1);
-
-      const dx = this.direction === 'left' ? STEP_SIZE :
-                 this.direction === 'right' ? -STEP_SIZE : 0;
-      const dy = this.direction === 'up' ? STEP_SIZE :
-                 this.direction === 'down' ? -STEP_SIZE : 0;
-      const startX = this.targetX + dx;
-      const startY = this.targetY + dy;
-
-      this.x = startX + (this.targetX - startX) * t;
-      this.y = startY + (this.targetY - startY) * t;
-
-      if (this.moveProgress >= STEP_SIZE) {
-        this.x = this.targetX;
-        this.y = this.targetY;
-        this.isMoving = false;
-        this.moveProgress = 0;
+    // Phase 2: walk toward the player at NPC pace (1 px a pass)
+    if (this.approachMoving) {
+      const d = stepDelta(this.direction);
+      this.x += d.dx / STEP_SIZE;
+      this.y += d.dy / STEP_SIZE;
+      this.approachProgress++;
+      if (this.approachProgress >= STEP_SIZE) {
+        this.approachMoving = false;
+        this.approachProgress = 0;
       }
       return;
     }
@@ -302,102 +309,55 @@ export class Npc {
     // Take next step toward target
     const dx = this.approachTargetX - this.x;
     const dy = this.approachTargetY - this.y;
-
     if (Math.abs(dx) >= Math.abs(dy) && dx !== 0) {
       this.direction = dx > 0 ? 'right' : 'left';
-      this.targetX = this.x + (dx > 0 ? STEP_SIZE : -STEP_SIZE);
-      this.targetY = this.y;
     } else if (dy !== 0) {
       this.direction = dy > 0 ? 'down' : 'up';
-      this.targetX = this.x;
-      this.targetY = this.y + (dy > 0 ? STEP_SIZE : -STEP_SIZE);
     }
-
-    this.isMoving = true;
-    this.moveProgress = 0;
-  }
-
-  /** Start a scripted walk along a list of directions. */
-  startScriptedMove(path: Direction[]): void {
-    this.scriptedPath = path;
-    this.scriptedPathIndex = 0;
-    this.scriptedMoveDone = false;
-    // Reset any stale movement state from previous walks
-    this.isMoving = false;
-    this.moveProgress = 0;
-  }
-
-  /** Update scripted movement (call each frame while in script state). */
-  updateScriptedMove(): void {
-    if (this.scriptedMoveDone) return;
-
-    if (this.isMoving) {
-      this.moveProgress += WALK_SPEED;
-      const t = Math.min(this.moveProgress / STEP_SIZE, 1);
-      const dx = this.direction === 'left' ? STEP_SIZE :
-                 this.direction === 'right' ? -STEP_SIZE : 0;
-      const dy = this.direction === 'up' ? STEP_SIZE :
-                 this.direction === 'down' ? -STEP_SIZE : 0;
-      const startX = this.targetX + dx;
-      const startY = this.targetY + dy;
-      this.x = startX + (this.targetX - startX) * t;
-      this.y = startY + (this.targetY - startY) * t;
-
-      if (this.moveProgress >= STEP_SIZE) {
-        this.x = this.targetX;
-        this.y = this.targetY;
-        this.isMoving = false;
-        this.moveProgress = 0;
-      }
-      return;
-    }
-
-    // Start next step
-    if (this.scriptedPathIndex >= this.scriptedPath.length) {
-      this.scriptedMoveDone = true;
-      return;
-    }
-
-    const dir = this.scriptedPath[this.scriptedPathIndex++];
-    this.direction = dir;
-    const dx = dir === 'left' ? -STEP_SIZE : dir === 'right' ? STEP_SIZE : 0;
-    const dy = dir === 'up' ? -STEP_SIZE : dir === 'down' ? STEP_SIZE : 0;
-    this.targetX = this.x + dx;
-    this.targetY = this.y + dy;
-    this.isMoving = true;
-    this.moveProgress = 0;
+    this.approachMoving = true;
+    this.approachProgress = 0;
   }
 
   render(cameraX: number, cameraY: number): void {
-    if (!this.spriteSheet || this.hidden) return;
+    if (!this.spriteSheet || this.hidden || !this.visibility.visible) return;
 
     const screenX = this.x - cameraX;
     const screenY = this.y - cameraY - 4; // -4px offset matches original GB sprite positioning
-    const frame = FRAMES[this.direction];
-    const flipX = this.direction === 'right';
+    // Upstream's camera draws the scene 4px above Yellow (A6b review F-1).
+    // Convert to GB YPIXELS for the tile-footprint check; leave the camera for its own slice.
+    if (spriteCovered(screenX, screenY + 4, uiTiles.tileAt)) return;
+    const frame = FRAMES[this.imageDirection];
 
     // Static sprites (e.g. gambler_asleep) are 16×16 with only one frame
     const isStatic = this.spriteSheet.height < 32;
 
     let frameY: number;
+    let flipX = this.imageDirection === 'right';
     if (isStatic) {
       frameY = 0;
-    } else if (this.isMoving) {
-      const phase = Math.floor(this.moveProgress / (STEP_SIZE / 4));
-      frameY = (phase === 1 || phase === 3) ? frame.walk : frame.stand;
+      flipX = false;
     } else if (this.useWalkFrame) {
       frameY = frame.walk;
     } else {
-      frameY = frame.stand;
+      const { walking, mirrored } = walkFrame(this.imageDirection, this.imageFrame);
+      frameY = walking ? frame.walk : frame.stand;
+      flipX = flipX !== mirrored;
     }
 
-    drawSprite(this.spriteSheet, 0, frameY, screenX, screenY, isStatic ? false : flipX);
+    drawSprite(this.spriteSheet, 0, frameY, screenX, screenY, flipX);
 
     // Draw "!" emote above trainer during approach
     if (this.showExclamation) {
       drawExclamationBubble(screenX, screenY);
     }
   }
+}
+
+function stepDelta(dir: Direction): { dx: number; dy: number } {
+  return {
+    dx: dir === 'left' ? -STEP_SIZE : dir === 'right' ? STEP_SIZE : 0,
+    dy: dir === 'up' ? -STEP_SIZE : dir === 'down' ? STEP_SIZE : 0,
+  };
 }
 
 /** Load all NPCs for a map from its data. */

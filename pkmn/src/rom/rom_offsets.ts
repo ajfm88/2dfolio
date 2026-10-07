@@ -287,3 +287,25 @@ export const EVOS_MOVES_BANK    = 0x0e;
 export const WILD_DATA_BANK     = 0x03;
 export const TRAINER_DATA_BANK  = 0x0e;
 export const POKEDEX_BANK       = 0x10;
+
+// LedgeHoppingShadow — 1bpp, 1 tile
+export const LEDGE_HOPPING_SHADOW = symToOffset(0x06, 0x6893);
+
+// Pikachu's scripted-movement interpreter (engine/pikachu/pikachu_movement.asm, A6e)
+export const PIKACHU_MOVEMENT_DATABASE = symToOffset(0x3f, 0x53b0); // 63 records × 4 bytes
+export const PIKACHU_MOVEMENT_SINE     = symToOffset(0x3f, 0x5938); // SineWave_3f: 32 words
+/** The movement byte programs today's callers run: offset and exact length (with $3f).
+ *  ViridianCityPikachuMovementData is 3c:5a0a — the operand of ViridianCityMovePikachu's
+ *  `ld hl` (21 0a 5a); identical bytes at 3c:5e2b belong to another map. */
+export const PIKACHU_MOVEMENT_PROGRAMS = {
+  viridianStepAside: { offset: symToOffset(0x3c, 0x5a0a), length: 5 }, // ViridianCityPikachuMovementData
+  oaksLab1:          { offset: symToOffset(0x3c, 0x5bf9), length: 5 }, // OaksLabPikachuMovementData1
+  oaksLab2:          { offset: symToOffset(0x3c, 0x5bfe), length: 5 }, // OaksLabPikachuMovementData2
+  nurse1:            { offset: symToOffset(0x3f, 0x5294), length: 5 }, // PikachuWalksToNurseJoy.PikaMovementData1
+  nurse2:            { offset: symToOffset(0x3f, 0x5299), length: 4 }, // .PikaMovementData2
+  nurse3:            { offset: symToOffset(0x3f, 0x529d), length: 4 }, // .PikaMovementData3
+  emotion_fd218:     { offset: symToOffset(0x3f, 0x5218), length: 6 }, // PikachuMovementData_fd218
+  emotion_fd21e:     { offset: symToOffset(0x3f, 0x521e), length: 6 }, // PikachuMovementData_fd21e
+  emotion_fd224:     { offset: symToOffset(0x3f, 0x5224), length: 8 }, // PikachuMovementData_fd224
+  emotion_fd230:     { offset: symToOffset(0x3f, 0x5230), length: 8 }, // PikachuMovementData_fd230
+} as const;

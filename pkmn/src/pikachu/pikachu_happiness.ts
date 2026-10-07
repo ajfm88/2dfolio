@@ -2,6 +2,7 @@
 // Assembly ref: engine/pikachu/pikachu_emotions.asm, data/pikachu/pikachu_pic_animation.asm
 
 import type { BattlePokemon } from '../battle';
+import { moodTowardNeutral, walkingHappinessRoll } from '../overworld/step_end';
 
 // --- State ---
 let pikachuHappiness = 90;   // assembly init_player_data default
@@ -221,22 +222,38 @@ const ANIM_SCRIPTS: Record<number, PikachuAnimScript> = {
   },
 };
 
-/** Get the animation script for Pikachu's current emotion. */
-export function getPikachuAnimScript(party: BattlePokemon[]): PikachuAnimScript {
-  // Check Pikachu status
+/** The emotion (wExpressionNumber) talking to Pikachu shows: asleep 11, another status
+ *  28, otherwise the happiness × mood matrix. The face and its movement prelude both
+ *  follow this one number. */
+export function selectPikachuEmotion(party: BattlePokemon[]): number {
   const pikachu = party.find(p => p.species.id === 25);
   if (pikachu) {
-    if (pikachu.status === 'SLP') return ANIM_SCRIPTS[11];
-    if (pikachu.status !== null) return ANIM_SCRIPTS[28];
+    if (pikachu.status === 'SLP') return 11;
+    if (pikachu.status !== null) return 28;
   }
-
   const scriptNum = getScriptFromMatrix(pikachuHappiness, pikachuMood);
-  return ANIM_SCRIPTS[scriptNum] ?? ANIM_SCRIPTS[1];
+  return ANIM_SCRIPTS[scriptNum] ? scriptNum : 1;
+}
+
+/** The face animation of an emotion. */
+export function pikachuAnimScriptFor(emotion: number): PikachuAnimScript {
+  return ANIM_SCRIPTS[emotion] ?? ANIM_SCRIPTS[1];
+}
+
+/** Get the animation script for Pikachu's current emotion. */
+export function getPikachuAnimScript(party: BattlePokemon[]): PikachuAnimScript {
+  return pikachuAnimScriptFor(selectPikachuEmotion(party));
 }
 
 // Keep for backward compat (used nowhere now but exports say so)
 export function getPikachuFacePath(party: BattlePokemon[]): string {
   return getPikachuAnimScript(party).baseFace;
+}
+
+/** UpdatePikachuHappinessAndMood, after StepCountCheck. */
+export function updatePikachuWalking(stepCounter: number, randomByte: () => number, starterAlive: boolean): void {
+  if (stepCounter === 0 && walkingHappinessRoll(stepCounter, randomByte()) && starterAlive) modifyPikachuHappiness('WALKING');
+  pikachuMood = moodTowardNeutral(pikachuMood);
 }
 
 // --- Happiness modifiers ---
@@ -265,6 +282,10 @@ export function modifyPikachuHappiness(event: HappinessEvent): void {
   const delta = mod.tiers[tier];
 
   pikachuHappiness = Math.max(0, Math.min(255, pikachuHappiness + delta));
+
+  // PikachuMoods[$06]=$80: ModifyPikachuHappiness returns without changing mood.
+  // The walking path's one-unit drift happens in UpdatePikachuHappinessAndMood.
+  if (event === 'WALKING') return;
 
   if (pikachuMood < mod.moodTarget) {
     pikachuMood = Math.min(255, pikachuMood + 1);

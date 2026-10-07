@@ -136,6 +136,10 @@ Two things learned planning V1 (`notes/v1-plan.md`):
   `git -C refs/pokeyellow show origin/symbols:pokeyellow.sym > <scratchpad>/pokeyellow.sym`.
   `git show` doesn't write to `refs/`. It matches our ROM (checked against the
   offsets upstream already hardcodes).
+- **Never find a ROM address by searching for its bytes.** Identical data repeats across
+  maps (A6e: Viridian's Pikachu program also appears at 3c:5e2b, while the game reads
+  3c:5a0a). Take the label from the sym file, and when a routine loads it, confirm with
+  its `ld hl, …` operand in the ROM.
 - **Never trust the NPC-text fallback for `text_asm` handlers.** `readMapText()`
   grabs the first `text_far` within 80 bytes, which for V1 gave the wrong line to
   all five Forest trainers and to Oak's Aide. Check every NPC's text against the ASM;
@@ -201,14 +205,15 @@ Two things learned planning V1 (`notes/v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 429/429** as of 2026-09-23
-   (V1c). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 812/812** as of 2026-10-06
+   (A6e revision). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
-3. For anything visible: `npx vite` at **`http://127.0.0.1:5173/`** (the save
-   origin) and play the path the slice touches. Today that is Pallet → Viridian
-   (north is blocked by the demo gate until V1). Debug overlay: backtick key, with
-   warps to every extracted map — add one for each new map.
+3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
+   origin) and play the path the slice touches. Today that is Pallet → Viridian →
+   Route 2 → Viridian Forest (the north opens after the old man's demo, V1e). Debug
+   overlay: backtick key, with warps to every extracted map — add one for each new
+   map. When the user play-tests, remind them the A button is **Z** (X is B).
 4. Spot-check hard entries when comparing generated JSON against expectations —
    Nidoran-F, Farfetch'd, Eevee's three item evolutions, Kadabra's trade
    evolution, a `$FF`-format trainer party — not just Bulbasaur.
@@ -246,6 +251,18 @@ Two things learned planning V1 (`notes/v1-plan.md`):
 - Node ESM `import()` needs `file://` URLs for absolute Windows paths
   (`pathToFileURL`).
 - Browser automation: hold synthetic keys ~100 ms — the engine polls key state
-  once per tick, so shorter taps are lost.
+  once per tick (once per standing pass in the overworld since A6a), so shorter taps
+  are lost.
 - Vite's dev watcher can crash on a locked file appearing in `game/` (EBUSY) —
   just restart `npx vite`.
+- **Many working copies under `game/src` are CRLF** (git stores LF, `.gitattributes`
+  normalizes on commit). A `node` string-replace that spans lines misses them and
+  throws. Edit those files with the Edit tool; `Write` replaces a whole file with LF,
+  which is fine.
+- **Measuring timing in the browser:** `requestAnimationFrame` doesn't run in a hidden
+  tab, but the game keeps ticking on its worker, so an rAF sampler logs nothing. Wrap
+  the per-pass method instead: a temporary `window` hook to `player`, then patch
+  `player.update` to log `performance.now()` and `x` per call (A6a measured 15.99
+  frames a step that way). Remove the hook before committing.
+- **A Bash-classifier outage** can refuse every Bash call for a while. PowerShell runs
+  the same `npx` / `npm` commands.

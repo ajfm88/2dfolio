@@ -10,6 +10,7 @@ import { extractTrainers } from './extractors/trainers';
 import { extractAllWild } from './extractors/wild';
 import { extractAllBlocksets } from './extractors/blocksets';
 import { extractCollisionTiles } from './extractors/collision';
+import { extractPikachuMovement } from './extractors/pikachu_movement';
 import { extractPokedex } from './extractors/pokedex';
 import { extractAllMaps } from './extractors/maps';
 import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from './extractors/audio';
@@ -131,6 +132,7 @@ export async function extractRom(
     data.jsonData[`blockset_${name}.json`] = blocks;
   }
   data.jsonData['collision_tiles.json'] = extractCollisionTiles(rom);
+  data.jsonData['pikachu_movement.json'] = extractPikachuMovement(rom);
 
   // Town map data is static coordinate data (tilemap + location positions).
   // Not extracted from ROM — embedded as static import for production mode.

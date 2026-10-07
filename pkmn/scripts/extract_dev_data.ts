@@ -17,6 +17,7 @@ import { extractTrainers } from '../src/rom/extractors/trainers';
 import { extractAllWild } from '../src/rom/extractors/wild';
 import { extractAllBlocksets } from '../src/rom/extractors/blocksets';
 import { extractCollisionTiles } from '../src/rom/extractors/collision';
+import { extractPikachuMovement } from '../src/rom/extractors/pikachu_movement';
 import { extractPokedex } from '../src/rom/extractors/pokedex';
 import { extractAllMaps } from '../src/rom/extractors/maps';
 import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
@@ -122,6 +123,7 @@ for (const [name, blocks] of Object.entries(blocksets)) {
 }
 
 writeJson('collision_tiles.json', extractCollisionTiles(rom)); count++;
+writeJson('pikachu_movement.json', extractPikachuMovement(rom)); count++;
 writeJson('town_map.json', townMapData); count++;
 writeJson('pokedex.json', extractPokedex(rom, pokemonInternalNames)); count++;
 

@@ -5,10 +5,22 @@
  * SFX uses direct frequency values (square_note) and hardware pitch sweep,
  * unlike music which uses octave + pitch note lookups.
  *
- * When an SFX finishes, the corresponding music channel resumes.
+ * When an SFX finishes, it hands its hardware channel back: the music channel there stays
+ * silent until its next note or rest (onChannelDone → MusicEngine.releaseChannel).
+ *
+ * A channel whose first command is `execute_music` (the item jingles and the other
+ * music-mode SFX) runs on the shared music interpreter, SoundChannel, at the SFX tempo:
+ * Audio1_SetSfxTempo forces $0100 before every note of anything that isn't a cry or a
+ * battle SFX, so an SFX's own `tempo` command never takes effect (engine_1.asm 700–746,
+ * 983–1004). Other channels keep the SFX-mode interpreter below.
  */
 
 import { GBSynthesizer } from './synthesizer';
+import { SoundChannel } from './sound_channel';
+import type { ChannelHost } from './sound_channel';
+
+/** wSfxTempo as Audio1_SetSfxTempo leaves it for every non-cry SFX. */
+export const SFX_TEMPO = 0x100;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,7 +62,10 @@ export interface SfxData {
 
 interface SfxChannelState {
   active: boolean;
+  id: number;             // software channel 5-8
   hwChannel: number;      // hardware channel 0-3 (id - 5)
+  /** Music mode (execute_music): the shared interpreter runs this channel. */
+  music: SoundChannel | null;
   commands: SfxCommand[];
   pc: number;
   noteDelayCounter: number;
@@ -81,27 +96,52 @@ export class SfxEngine {
   private synth: GBSynthesizer;
   private channels: SfxChannelState[] = [];
   private _playing: boolean = false;
+  private waveSamples: number[][] = [];
 
   // Callback to notify music engine when SFX finishes on a channel
   onChannelDone: ((hwChannel: number) => void) | null = null;
 
+  /** What music-mode SFX channels read: the SFX tempo and the wave instruments. */
+  private readonly host: ChannelHost;
+
   constructor(synth: GBSynthesizer) {
     this.synth = synth;
+    this.host = {
+      synth,
+      tempo: () => SFX_TEMPO,
+      // Audio1_tempo on CHAN5–8: wSfxTempo (overwritten before every note) and the
+      // fractions of CHAN5–8
+      setTempo: () => {
+        for (const ch of this.channels) if (ch.music) ch.music.noteDelayFractional = 0;
+      },
+      waveSamples: () => this.waveSamples,
+      noiseInstruments: () => [],
+      drumHit: () => false,
+    };
+  }
+
+  setWaveSamples(samples: number[][]): void {
+    this.waveSamples = samples;
   }
 
   /**
-   * Play an SFX. Stops any currently playing SFX first.
+   * Play an SFX. Stops any currently playing SFX first (upstream's rule; the cartridge
+   * replaces only the channels the new sound uses, by priority — a logged departure).
    */
   play(data: SfxData): void {
     this.stop();
     this.channels = [];
     this._playing = true;
 
-    for (const ch of data.channels) {
+    // Audio1_UpdateMusic runs CHAN5 → CHAN8 in order, whatever the header's order
+    for (const ch of [...data.channels].sort((a, b) => a.id - b.id)) {
       const hwCh = ch.id <= 4 ? ch.id - 1 : ch.id - 5; // ch5->0, ch6->1, ch7->2, ch8->3
+      const musicMode = ch.commands[0]?.cmd === 'execute_music';
       const state: SfxChannelState = {
         active: true,
+        id: ch.id,
         hwChannel: hwCh,
+        music: musicMode ? new SoundChannel(ch.id, ch.commands, this.host) : null,
         commands: ch.commands,
         pc: 0,
         noteDelayCounter: 0,
@@ -122,13 +162,14 @@ export class SfxEngine {
   }
 
   /**
-   * Stop all SFX channels.
+   * Stop all SFX channels. Each one stopped hands its hardware channel back to the music,
+   * as an ending one does.
    */
   stop(): void {
     for (const ch of this.channels) {
       if (ch.active) {
-        this.silenceHwChannel(ch.hwChannel);
         ch.active = false;
+        this.finishChannel(ch);
       }
     }
     this.channels = [];
@@ -167,6 +208,16 @@ export class SfxEngine {
   // ─── Tick Logic ────────────────────────────────────────────────────────
 
   private tickChannel(ch: SfxChannelState): void {
+    if (ch.music) {
+      ch.music.tick(false);
+      if (!ch.music.active) {
+        // Its final sound_ret: the sound ID is cleared and the channel handed back
+        ch.active = false;
+        this.finishChannel(ch);
+      }
+      return;
+    }
+
     if (ch.noteDelayCounter > 1) {
       ch.noteDelayCounter--;
       this.applyTickEffects(ch);

@@ -144,7 +144,20 @@ interface LoadedConnection {
   blockset: Blockset;
 }
 
+// FIRST_INDOOR_MAP follows the eleven towns and Routes 1–25. Forest maps are
+// numerically indoor; TryDoWildEncounter treats the FOREST tileset separately.
+const OUTDOOR_MAPS: ReadonlySet<string> = new Set([
+  'PalletTown', 'ViridianCity', 'PewterCity', 'CeruleanCity', 'LavenderTown',
+  'VermilionCity', 'CeladonCity', 'FuchsiaCity', 'CinnabarIsland', 'IndigoPlateau', 'SaffronCity',
+  'Route1', 'Route2', 'Route3', 'Route4', 'Route5', 'Route6', 'Route7', 'Route8',
+  'Route9', 'Route10', 'Route11', 'Route12', 'Route13', 'Route14', 'Route15',
+  'Route16', 'Route17', 'Route18', 'Route19', 'Route20', 'Route21', 'Route22',
+  'Route23', 'Route24', 'Route25',
+]);
+
 export class GameMap {
+  get isIndoor(): boolean { return this.mapData !== null && !OUTDOOR_MAPS.has(this.mapData.name); }
+
   mapData: MapData | null = null;
   tileset: HTMLCanvasElement | null = null;
   private tilesetTransparent: HTMLCanvasElement | null = null;

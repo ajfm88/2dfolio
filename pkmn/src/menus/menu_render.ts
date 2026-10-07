@@ -2,6 +2,7 @@
 import { TILE_SIZE } from '../core';
 import { fillRect, getCtx, getScale, paletteToHex, getActivePalette } from '../renderer';
 import { getFontCanvas, charToTile, drawTileBorder } from '../text';
+import { uiTiles } from '../renderer/ui_tiles';
 
 export function drawChar(ch: string, x: number, y: number): void {
   const fontCanvas = getFontCanvas();
@@ -27,6 +28,7 @@ export function drawText(text: string, x: number, y: number): void {
 }
 
 export function drawBox(x: number, y: number, w: number, h: number): void {
+  uiTiles.cover(x, y, w, h);
   fillRect(x, y, w, h, 0);
   const wTiles = Math.round(w / TILE_SIZE);
   const hTiles = Math.round(h / TILE_SIZE);
