@@ -82,9 +82,10 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
     { type: 'faceNpc', npcId: 'prof_script', direction: oakFacesGrass },
     { type: 'wait', frames: 15 },
 
-    // Wild Pikachu battle — auto-played, Oak catches it
-    // (scripts/PalletTown.asm PalletTownPikachuBattleScript: BATTLE_TYPE_PIKACHU)
-    { type: 'pikachuBattle' },
+    // Wild Pikachu battle — the catch demo, Oak catches it
+    // (scripts/PalletTown.asm PalletTownPikachuBattleScript: BATTLE_TYPE_PIKACHU,
+    // wCurOpponent = STARTER_PIKACHU, wCurEnemyLevel = 5)
+    { type: 'catchDemo', battleType: 'PIKACHU', species: 'PIKACHU', level: 5 },
 
     // After battle (text/PalletTown.asm _PalletTownOakWhewText)
     { type: 'text', message: getText('PALLET_OAK_WHEW') },
@@ -101,9 +102,10 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
       { type: 'movePlayer' as const, path: new Array<Direction>(alignSteps).fill('left') },
     ] : []),
 
-    // Phase 3: Both walk to lab simultaneously.
+    // Phase 3: Both walk to lab simultaneously. Oak walks in step with the player
+    // (PalletMovementScript_WalkToLab → DoScriptedNPCMovement, 2 px a pass).
     // Player trails Oak by 1 step: first step DOWN (to Oak's position), then Oak's path minus last step.
-    { type: 'moveParallel', npcId: 'prof_script', npcPath: oakLabPath,
+    { type: 'moveParallel', npcId: 'prof_script', npcPath: oakLabPath, npcInStep: true,
       playerPath: ['down' as Direction, ...oakLabPath.slice(0, -1)] },
     { type: 'hideNpc', npcId: 'prof_script' },
 

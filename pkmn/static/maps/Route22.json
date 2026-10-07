@@ -213,15 +213,5 @@
       "text": "POKéMON LEAGUE\nFront Gate"
     }
   ],
-  "npcs": [
-    {
-      "id": "blue_blocking",
-      "sprite": "blue",
-      "x": 8,
-      "y": 6,
-      "movement": "stay",
-      "dialogue": "Hey! <PLAYER>!\nYou've reached the\nend of the demo!\fEverything beyond\nhere is still being\nbuilt.\fThanks for playing!",
-      "direction": "left"
-    }
-  ]
+  "npcs": []
 }

@@ -111,6 +111,8 @@ describe('calculateDamage', () => {
     it('power-0 moves return damage=0, missed=false', () => {
       const attacker = makePokemon();
       const defender = makePokemon();
+      // GROWL still rolls accuracy, and misses 1 in 256 (Gen 1): fix the roll
+      mockRandomFixed(0.5);
       const result = calculateDamage(attacker, defender, 'GROWL');
       expect(result.damage).toBe(0);
       expect(result.missed).toBe(false);

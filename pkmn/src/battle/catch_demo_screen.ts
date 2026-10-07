@@ -1,6 +1,8 @@
-// Pikachu battle auto-sequence (Oak catches Pikachu in the grass cutscene)
-// Assembly: BATTLE_TYPE_PIKACHU — auto-plays with simulated input (Oak throws POKé BALL)
-// The standard battle transition (startWildBattleTransition) runs before this is entered.
+// The catch demo's screen: BATTLE_TYPE_OLD_MAN (the Viridian old man) and
+// BATTLE_TYPE_PIKACHU (Oak catches Pikachu in Pallet Town). The rules and the step list
+// are in catch_demo.ts; this runs them. Upstream's pikachu/pikachu_battle.ts, moved and
+// generalized in V1d (DECISIONS #32, notes/v1d-plan.md).
+// The battle transition (startWildBattleTransition) runs before this is entered.
 
 import {
   setActivePalette,
@@ -8,62 +10,32 @@ import {
   loadBattleSprite,
   getCtx,
   getScale,
+  getMonsterPalette,
 } from "../renderer";
 import { reloadBorderTiles } from "../text";
+import { getText } from "../text/game_text";
 import { isPressed } from "../input";
-import type { BattlePokemon } from "../battle";
+import { playSFX } from "../audio";
+import { getItemName } from "../items";
+import type { BattlePokemon } from "./types";
 import {
   renderBattleBg,
   renderEnemySprite,
   renderPlayerSprite,
   renderEnemyHUD,
   renderBattleText,
+  renderActionMenu,
+  renderItemMenu,
   createSilhouette,
-} from "../battle";
-import { getItemName } from "../items";
-import { getSpeciesById } from "../battle/data";
-import { getTrainerClass } from "../battle/trainer_ai";
-
-// --- Types ---
-
-type PikaBattlePhase =
-  | "slide_in"
-  | "colorize"
-  | "intro"
-  | "oak_throw"
-  | "ball_arc"
-  | "poof"
-  | "hit"
-  | "shake1"
-  | "shake2"
-  | "shake3"
-  | "caught"
-  | "ending";
-
-interface PikachuBattleState {
-  phase: PikaBattlePhase;
-  timer: number;
-  pikachuSprite: HTMLCanvasElement | null;
-  oakBackSprite: HTMLCanvasElement | null;
-  pikachuSilhouette: HTMLCanvasElement | null;
-  oakSilhouette: HTMLCanvasElement | null;
-  animTileset: HTMLCanvasElement | null;
-  animTilesetBW: HTMLCanvasElement | null; // grayscale version for ball throw arc
-  slideOffset: number;
-  colorT: number;
-  ballT: number;
-  ballX: number;
-  ballY: number;
-  showPikachu: boolean;
-  poofTimer: number;
-  savedPalette: string;
-}
-
-/** Returned by updatePikachuBattle when main.ts needs to take action. */
-export interface PikachuBattleAction {
-  type: "caught";
-  savedPalette: string;
-}
+} from "./battle_ui";
+import {
+  catchDemoCaught,
+  catchDemoBackPic,
+  catchDemoNameKey,
+  catchDemoSteps,
+  CATCH_DEMO_BAG,
+} from "./catch_demo";
+import type { CatchDemoBattleType, CatchDemoStep, CatchDemoAnim } from "./catch_demo";
 
 // --- Animation sprite data (from data/battle_anims/frame_blocks.asm) ---
 
@@ -196,294 +168,359 @@ const POOF_SEQUENCE: AnimSprite[][] = [
 // --- Constants ---
 
 // Ball arc positions (from base_coords.asm, converted to screen coords)
-// BASECOORD_30: ($58,$28) → screen center ~(40, 80) — near Oak's hand
+// BASECOORD_30: ($58,$28) → screen center ~(40, 80) — near the thrower's hand
 // BASECOORD_34: ($32,$78) → screen center ~(120, 42) — enemy area
-const PIKA_BALL_START_X = 40;
-const PIKA_BALL_START_Y = 80;
-const PIKA_BALL_END_X = 120;
-const PIKA_BALL_END_Y = 42;
+const BALL_START_X = 40;
+const BALL_START_Y = 80;
+const BALL_END_X = 120;
+const BALL_END_Y = 42;
 
+// Upstream's approximations of the toss animations (notes/v1d-plan.md §1.4). The exact
+// frames are in data/battle_anims (Subanim_0BallToss*, ShakeEnemy, PoofEnemy).
+const TOSS_FRAMES = 30;
 // Assembly poof: 6 frames × 4 frame delay = 24 frames
 const POOF_FRAMES = 24;
-// Assembly shake: 4 anim frames × 4 delay = 16 frames wobble + pause
+// The ball lands, then shakes: 4 anim frames × 4 delay = 16 frames wobble + pause
+const SHAKE_REST_FRAMES = 15;
 const SHAKE_FRAMES = 30;
+const SHAKE_COUNT = 3;
+// AnimationHideEnemyMonPic / AnimationShowMonPic end with Delay3
+const PIC_FRAMES = 3;
 
-// Slide-in animation (matching wild battle intro from battle.ts)
+// Slide-in animation (matching the wild battle intro in battle.ts)
 const SLIDE_IN_FRAMES = 40;
 const SLIDE_OFFSET = 160;       // full screen width
 const COLORIZE_FRAMES = 15;
 
-/** Fake BattlePokemon for rendering the enemy HUD. */
-const pikachuHudData = {
-  get nickname(): string { return (getSpeciesById(25)?.name ?? '???').toUpperCase(); },
-  level: 5,
-  maxHp: 22,
-  status: null as string | null,
-};
+// --- Types ---
+
+type Phase = "slide_in" | "colorize" | "steps" | "ended";
+
+interface CatchDemoState {
+  phase: Phase;
+  timer: number;
+  steps: CatchDemoStep[];
+  stepIndex: number;
+  pageIndex: number;
+  enemy: BattlePokemon;
+  enemySprite: HTMLCanvasElement | null;
+  backSprite: HTMLCanvasElement | null;
+  enemySilhouette: HTMLCanvasElement | null;
+  backSilhouette: HTMLCanvasElement | null;
+  animTileset: HTMLCanvasElement | null;
+  animTilesetBW: HTMLCanvasElement | null; // grayscale version for the thrown ball
+  slideOffset: number;
+  colorT: number;
+  /** The last text printed; it stays in the box until the next text or menu. */
+  textLines: string[];
+  showEnemyPic: boolean;
+  showHud: boolean;
+  ballVisible: boolean;
+  ballX: number;
+  ballY: number;
+  caught: boolean;
+  savedPalette: string;
+}
+
+export interface CatchDemoInit {
+  battleType: CatchDemoBattleType;
+  /** The opponent as LoadEnemyMonData builds it (the caller marks it seen). */
+  enemy: BattlePokemon;
+  /** EVENT_INITIAL_CATCH_TRAINING, read by ItemUseBall. */
+  initialCatchTraining: boolean;
+}
+
+/** Returned by updateCatchDemo when the battle is over and main.ts takes over. */
+export interface CatchDemoAction {
+  type: "ended";
+  savedPalette: string;
+}
 
 // --- Module state ---
 
-let battle: PikachuBattleState | null = null;
+let demo: CatchDemoState | null = null;
 
 // --- Public API ---
 
-/** Start the pikachu battle sequence.
- *  Called AFTER the standard battle transition has completed. */
-export function initPikachuBattle(): void {
+/** Start the catch demo. Called AFTER the battle transition has completed. */
+export function initCatchDemo(opts: CatchDemoInit): void {
   const savedPal = getActivePalette();
   setActivePalette("ROUTE");
   reloadBorderTiles();
+  const enemyName = opts.enemy.nickname.toUpperCase();
+  const caught = catchDemoCaught(opts.battleType, opts.initialCatchTraining);
   // Assembly: SetPal_Battle reads wBattleMonSpecies (0 = no player mon),
   // DeterminePaletteID maps species 0 → MonsterPalettes[0] = PAL_MEWMON.
-  // OBJ palette 0 = MEWMON (white, yellow, red, black) — used for Oak + pokeball.
+  // OBJ palette 0 = MEWMON (white, yellow, red, black) — used for the back pic + pokeball.
   const spritePromise = Promise.all([
-    loadBattleSprite("/gfx/sprites/front/25.png", "YELLOWMON"),
-    loadBattleSprite("/gfx/battle/prof.oakb.png", "MEWMON"),
+    loadBattleSprite(`/gfx/sprites/front/${opts.enemy.species.id}.png`, getMonsterPalette(opts.enemy.species.id)),
+    loadBattleSprite(catchDemoBackPic(opts.battleType), "MEWMON"),
     // Animation tileset for pokeball/poof sprites — uses OBJ palette 0 (MEWMON)
     loadBattleSprite("/gfx/battle/move_anim_0.png", "MEWMON"),
   ]);
-  battle = {
+  demo = {
     phase: "slide_in",
     timer: 0,
-    pikachuSprite: null,
-    oakBackSprite: null,
-    pikachuSilhouette: null,
-    oakSilhouette: null,
+    steps: catchDemoSteps({
+      enemyName,
+      demoName: getText(catchDemoNameKey(opts.battleType)),
+      ballName: getItemName("POKE_BALL"),
+      caught,
+      soCloseText: getText("BATTLE_SO_CLOSE"),
+    }),
+    stepIndex: 0,
+    pageIndex: 0,
+    enemy: opts.enemy,
+    enemySprite: null,
+    backSprite: null,
+    enemySilhouette: null,
+    backSilhouette: null,
     animTileset: null,
     animTilesetBW: null,
     slideOffset: SLIDE_OFFSET,
     colorT: 0,
-    ballT: 0,
+    textLines: [],
+    showEnemyPic: true,
+    showHud: false,
+    ballVisible: false,
     ballX: 0,
     ballY: 0,
-    showPikachu: true,
-    poofTimer: 0,
+    caught,
     savedPalette: savedPal,
   };
-  spritePromise.then(([pikachuFront, oakBack, animTiles]) => {
-    if (battle) {
-      battle.pikachuSprite = pikachuFront;
-      battle.oakBackSprite = oakBack;
-      battle.pikachuSilhouette = createSilhouette(pikachuFront);
-      battle.oakSilhouette = createSilhouette(oakBack);
-      battle.animTileset = animTiles;
-      battle.animTilesetBW = createBWTileset(animTiles);
+  spritePromise.then(([enemyFront, back, animTiles]) => {
+    if (demo) {
+      demo.enemySprite = enemyFront;
+      demo.backSprite = back;
+      demo.enemySilhouette = createSilhouette(enemyFront);
+      demo.backSilhouette = createSilhouette(back);
+      demo.animTileset = animTiles;
+      demo.animTilesetBW = createBWTileset(animTiles);
     }
   });
 }
 
-export function clearPikachuBattle(): void {
-  battle = null;
+export function clearCatchDemo(): void {
+  demo = null;
 }
 
-/** Update the auto-played battle. Returns an action when main.ts needs to handle a transition. */
-export function updatePikachuBattle(): PikachuBattleAction | null {
-  if (!battle) return null;
+/** Advance the demo one frame. Returns an action when main.ts needs to take over. */
+export function updateCatchDemo(): CatchDemoAction | null {
+  if (!demo) return null;
 
   // Slide-in phase: silhouettes slide in from opposite sides
-  if (battle.phase === "slide_in") {
-    battle.timer++;
-    const t = Math.min(battle.timer / SLIDE_IN_FRAMES, 1);
+  if (demo.phase === "slide_in") {
+    demo.timer++;
+    const t = Math.min(demo.timer / SLIDE_IN_FRAMES, 1);
     const eased = 1 - (1 - t) * (1 - t); // ease-out quadratic
-    battle.slideOffset = SLIDE_OFFSET * (1 - eased);
+    demo.slideOffset = SLIDE_OFFSET * (1 - eased);
     if (t >= 1) {
-      battle.slideOffset = 0;
-      battle.phase = "colorize";
-      battle.timer = 0;
-      battle.colorT = 0;
+      demo.slideOffset = 0;
+      demo.phase = "colorize";
+      demo.timer = 0;
+      demo.colorT = 0;
     }
     return null;
   }
 
   // Colorize phase: silhouette → full color
-  if (battle.phase === "colorize") {
-    battle.timer++;
-    battle.colorT = Math.min(battle.timer / COLORIZE_FRAMES, 1);
-    if (battle.colorT >= 1) {
-      battle.colorT = 1;
-      battle.phase = "intro";
-      battle.timer = 20;
+  if (demo.phase === "colorize") {
+    demo.timer++;
+    demo.colorT = Math.min(demo.timer / COLORIZE_FRAMES, 1);
+    if (demo.colorT >= 1) {
+      demo.colorT = 1;
+      startStep(demo);
     }
     return null;
   }
 
-  // Ball arc animation
-  if (battle.phase === "ball_arc") {
-    battle.ballT += 1 / 30;
-    const t = battle.ballT;
-    battle.ballX =
-      PIKA_BALL_START_X + (PIKA_BALL_END_X - PIKA_BALL_START_X) * t;
-    battle.ballY =
-      PIKA_BALL_START_Y +
-      (PIKA_BALL_END_Y - PIKA_BALL_START_Y) * t -
-      40 * 4 * t * (1 - t);
-    if (battle.ballT >= 1) {
-      battle.showPikachu = false;
-      battle.ballX = PIKA_BALL_END_X;
-      battle.ballY = PIKA_BALL_END_Y;
-      battle.phase = "poof";
-      battle.poofTimer = POOF_FRAMES;
-      battle.timer = POOF_FRAMES;
+  if (demo.phase !== "steps") return null;
+
+  const step = demo.steps[demo.stepIndex];
+  if (step.type === "text") {
+    // `prompt` / `text_promptbutton`: wait for A or B on every page
+    if (isPressed("a") || isPressed("b")) {
+      playSFX("press_ab");
+      demo.pageIndex++;
+      if (demo.pageIndex < step.pages.length) {
+        demo.textLines = step.pages[demo.pageIndex];
+        return null;
+      }
+      return nextStep(demo);
     }
     return null;
   }
 
-  // Poof animation
-  if (battle.phase === "poof") {
-    battle.poofTimer--;
-    battle.timer--;
-    if (battle.timer <= 0) {
-      battle.phase = "hit";
-      battle.timer = 15;
-    }
-    return null;
-  }
-
-  // Intro waits for button press
-  if (battle.phase === "intro") {
-    if (battle.timer > 0) battle.timer--;
-    if (battle.timer <= 0 && (isPressed("a") || isPressed("b"))) {
-      battle.phase = "oak_throw";
-      battle.timer = 60;
-    }
-    return null;
-  }
-
-  battle.timer--;
-  if (battle.timer > 0) return null;
-
-  switch (battle.phase) {
-    case "oak_throw":
-      battle.phase = "ball_arc";
-      battle.ballT = 0;
-      break;
-    case "hit":
-      battle.phase = "shake1";
-      battle.timer = SHAKE_FRAMES;
-      break;
-    case "shake1":
-      battle.phase = "shake2";
-      battle.timer = SHAKE_FRAMES;
-      break;
-    case "shake2":
-      battle.phase = "shake3";
-      battle.timer = SHAKE_FRAMES;
-      break;
-    case "shake3":
-      battle.phase = "caught";
-      battle.timer = 90;
-      break;
-    case "caught":
-      battle.phase = "ending";
-      return { type: "caught", savedPalette: battle.savedPalette };
-    case "ending":
-      break;
-  }
+  demo.timer++;
+  if (step.type === "anim") updateAnim(demo, step.anim);
+  if (demo.timer >= stepFrames(step)) return nextStep(demo);
   return null;
 }
 
-/** Render the auto-played Pikachu battle screen. */
-export function renderPikachuBattle(): void {
-  if (!battle) return;
-
-  const phase = battle.phase;
+/** Render the catch demo's battle screen. */
+export function renderCatchDemo(): void {
+  if (!demo) return;
 
   // --- Slide-in phase: silhouettes slide in from opposite sides ---
-  if (phase === "slide_in") {
+  if (demo.phase === "slide_in") {
     renderBattleBg();
-    if (battle.pikachuSilhouette) {
-      renderEnemySprite(battle.pikachuSilhouette, -battle.slideOffset);
-    }
-    if (battle.oakSilhouette) {
-      renderPlayerSprite(battle.oakSilhouette, battle.slideOffset);
-    }
+    if (demo.enemySilhouette) renderEnemySprite(demo.enemySilhouette, -demo.slideOffset);
+    if (demo.backSilhouette) renderPlayerSprite(demo.backSilhouette, demo.slideOffset);
     return;
   }
 
   // --- Colorize phase: blend silhouette → full color ---
-  if (phase === "colorize") {
+  if (demo.phase === "colorize") {
     renderBattleBg();
-    if (battle.pikachuSprite && battle.pikachuSilhouette) {
-      renderWithBlend(battle.pikachuSprite, battle.pikachuSilhouette,
-        (s, off) => renderEnemySprite(s, off), battle.colorT);
+    if (demo.enemySprite && demo.enemySilhouette) {
+      renderWithBlend(demo.enemySprite, demo.enemySilhouette,
+        (s, off) => renderEnemySprite(s, off), demo.colorT);
     }
-    if (battle.oakBackSprite && battle.oakSilhouette) {
-      renderWithBlend(battle.oakBackSprite, battle.oakSilhouette,
-        (s, off) => renderPlayerSprite(s, off), battle.colorT);
+    if (demo.backSprite && demo.backSilhouette) {
+      renderWithBlend(demo.backSprite, demo.backSilhouette,
+        (s, off) => renderPlayerSprite(s, off), demo.colorT);
     }
     return;
   }
 
-  // --- Normal phases (intro onward) ---
+  // --- The steps ---
   renderBattleBg();
+  if (demo.enemySprite && demo.showEnemyPic) renderEnemySprite(demo.enemySprite);
+  // AnimationHideMonPic clears only the pic; the HUD stays
+  if (demo.showHud) renderEnemyHUD(demo.enemy, demo.enemy.currentHp);
+  if (demo.backSprite) renderPlayerSprite(demo.backSprite);
 
-  if (battle.pikachuSprite && battle.showPikachu) {
-    renderEnemySprite(battle.pikachuSprite);
-  }
-
-  if (battle.showPikachu) {
-    renderEnemyHUD(
-      pikachuHudData as unknown as BattlePokemon,
-      pikachuHudData.maxHp
-    );
-  }
-
-  if (battle.oakBackSprite) {
-    renderPlayerSprite(battle.oakBackSprite);
-  }
+  const step = demo.phase === "steps" ? demo.steps[demo.stepIndex] : null;
 
   // Poof animation (tile-based, from move_anim_0.png FrameBlock06-0A)
-  if (phase === "poof" && battle.animTileset) {
-    const elapsed = POOF_FRAMES - battle.poofTimer;
-    const frameIdx = Math.min(Math.floor(elapsed / 4), POOF_SEQUENCE.length - 1);
-    drawFrameBlock(battle.animTileset, POOF_SEQUENCE[frameIdx],
-      battle.ballX, battle.ballY, true);
+  if (step?.type === "anim" && step.anim === "poof" && demo.animTileset) {
+    const frameIdx = Math.min(Math.floor(demo.timer / 4), POOF_SEQUENCE.length - 1);
+    drawFrameBlock(demo.animTileset, POOF_SEQUENCE[frameIdx], demo.ballX, demo.ballY, true);
   }
 
-  // Pokeball rendering (tile-based, from move_anim_0.png FrameBlock03-05)
-  // B&W during throw/shake, colored (MEWMON) only after catch confirmed
-  if (battle.animTileset && battle.animTilesetBW) {
-    const ballTiles = phase === "caught" ? battle.animTileset : battle.animTilesetBW;
-    if (phase === "ball_arc") {
-      drawFrameBlock(battle.animTilesetBW, FB_POKEBALL,
-        battle.ballX, battle.ballY);
-    } else if (
-      phase === "poof" || phase === "hit" ||
-      phase === "shake1" || phase === "shake2" || phase === "shake3" ||
-      phase === "caught"
-    ) {
-      // Assembly shake: FB03 → FB04 → FB03 → FB05 (normal, tilt R, normal, tilt L)
-      let fb = FB_POKEBALL;
-      if (phase === "shake1" || phase === "shake2" || phase === "shake3") {
-        const t = 1 - battle.timer / SHAKE_FRAMES;
-        const subFrame = Math.floor(t * 4);
-        if (subFrame === 1) fb = FB_SHAKE_R;
-        else if (subFrame === 3) fb = FB_SHAKE_L;
-      }
-      drawFrameBlock(ballTiles, fb, battle.ballX, battle.ballY);
-    }
+  // Pokeball (tile-based, from move_anim_0.png FrameBlock03-05).
+  // B&W while thrown and shaking, colored (MEWMON) once caught.
+  if (demo.ballVisible && demo.animTileset && demo.animTilesetBW) {
+    const caughtNow = step?.type === "text" && demo.caught;
+    let fb = FB_POKEBALL;
+    if (step?.type === "anim" && step.anim === "shake") fb = shakeFrameBlock(demo.timer);
+    drawFrameBlock(caughtNow ? demo.animTileset : demo.animTilesetBW, fb, demo.ballX, demo.ballY);
   }
 
-  switch (phase) {
-    case "intro":
-      renderBattleText([`Wild ${pikachuHudData.nickname} appeared!`]);
+  if (step?.type === "menu") {
+    renderActionMenu(step.cursor);
+  } else if (step?.type === "bag") {
+    renderItemMenu([...CATCH_DEMO_BAG], 0, step.cursor);
+  } else {
+    renderBattleText(demo.textLines);
+  }
+}
+
+// --- Step runner ---
+
+function stepFrames(step: CatchDemoStep): number {
+  switch (step.type) {
+    case "hud":
+    case "menu":
+    case "bag":
+    case "throw_text":
+      return step.frames;
+    case "anim":
+      return animFrames(step.anim);
+    case "text":
+      return 0;
+  }
+}
+
+function animFrames(anim: CatchDemoAnim): number {
+  switch (anim) {
+    case "toss": return TOSS_FRAMES;
+    case "poof": return POOF_FRAMES;
+    case "shake": return SHAKE_REST_FRAMES + SHAKE_COUNT * SHAKE_FRAMES;
+    case "hide_pic":
+    case "show_pic":
+      return PIC_FRAMES;
+  }
+}
+
+function nextStep(d: CatchDemoState): CatchDemoAction | null {
+  d.stepIndex++;
+  if (d.stepIndex >= d.steps.length) {
+    d.phase = "ended";
+    return { type: "ended", savedPalette: d.savedPalette };
+  }
+  startStep(d);
+  return null;
+}
+
+function startStep(d: CatchDemoState): void {
+  d.phase = "steps";
+  d.timer = 0;
+  d.pageIndex = 0;
+  const step = d.steps[d.stepIndex];
+  switch (step.type) {
+    case "text":
+      d.textLines = step.pages[0];
       break;
-    case "oak_throw":
-    case "ball_arc":
-      renderBattleText([(getTrainerClass('PROF_OAK')?.displayName ?? 'TRAINER') + ' used', getItemName('POKE_BALL') + '!']);
+    case "hud":
+      // _InitBattleCommon: PrintText .emptyString clears the box, then DrawEnemyHUDAndHPBar
+      d.textLines = [];
+      d.showHud = true;
+      break;
+    case "throw_text":
+      // BagWasSelected / ItemUseBall: LoadScreenTilesFromBuffer1 drops the menus
+      d.textLines = step.lines;
+      break;
+    case "anim":
+      startAnim(d, step.anim);
+      break;
+    case "menu":
+    case "bag":
+      break;
+  }
+}
+
+function startAnim(d: CatchDemoState, anim: CatchDemoAnim): void {
+  switch (anim) {
+    case "toss":
+      d.ballVisible = true;
+      d.ballX = BALL_START_X;
+      d.ballY = BALL_START_Y;
       break;
     case "poof":
-    case "hit":
-    case "shake1":
-    case "shake2":
-    case "shake3":
-      renderBattleText([""]);
+      // The second poof is the break-out: the ball is gone
+      if (d.stepIndex > 0 && isAfterShake(d)) d.ballVisible = false;
       break;
-    case "caught":
-      // Original: 3 lines with scroll; we fit in 2 lines for our 2-line textbox
-      renderBattleText([`All right! ${pikachuHudData.nickname}`, "was caught!"]);
+    case "hide_pic":
+      d.showEnemyPic = false;
+      break;
+    case "show_pic":
+      d.showEnemyPic = true;
+      break;
+    case "shake":
       break;
   }
+}
+
+function isAfterShake(d: CatchDemoState): boolean {
+  return d.steps.slice(0, d.stepIndex).some(s => s.type === "anim" && s.anim === "shake");
+}
+
+function updateAnim(d: CatchDemoState, anim: CatchDemoAnim): void {
+  if (anim !== "toss") return;
+  const t = Math.min(d.timer / TOSS_FRAMES, 1);
+  d.ballX = BALL_START_X + (BALL_END_X - BALL_START_X) * t;
+  d.ballY = BALL_START_Y + (BALL_END_Y - BALL_START_Y) * t - 40 * 4 * t * (1 - t);
+}
+
+/** Assembly shake: FB03 → FB04 → FB03 → FB05 (normal, tilt R, normal, tilt L), per shake. */
+function shakeFrameBlock(timer: number): AnimSprite[] {
+  const t = timer - SHAKE_REST_FRAMES;
+  if (t < 0) return FB_POKEBALL;
+  const subFrame = Math.floor(((t % SHAKE_FRAMES) / SHAKE_FRAMES) * 4);
+  if (subFrame === 1) return FB_SHAKE_R;
+  if (subFrame === 3) return FB_SHAKE_L;
+  return FB_POKEBALL;
 }
 
 // --- Private helpers ---

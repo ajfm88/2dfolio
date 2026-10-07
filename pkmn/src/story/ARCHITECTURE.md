@@ -4,12 +4,17 @@
 
 - **Storage** (`src/events.ts`): `Set<string>`, persisted in save data
 - **Key flags**: `OAK_APPEARED_IN_PALLET`, `FOLLOWED_OAK_INTO_LAB`, `GOT_STARTER`, `OAK_ASKED_TO_CHOOSE_MON`, `BATTLED_RIVAL_IN_OAKS_LAB`, `GOT_POTION_SAMPLE`, `HIDDEN_ITEM_*` (per hidden item)
-- **Story triggers**: Pallet Town north exit -> Oak grass script; OaksLab entry -> lab intro; Route 1 -> free Potion NPC
+- **Story triggers**: Pallet Town north exit -> Oak grass script; OaksLab entry -> lab intro; Route 1 -> free Potion NPC; Viridian City (19,9) / (32,8) -> the old men and the Gym door
+
+## Map Script State (V1e)
+
+- **Storage** (`src/events.ts`): each map's resting `w<Map>CurScript`, via `getMapScript()` / `setMapScript()`, saved as `mapScripts`; cleared by a new game. Only resting states are stored: the ASM's other states run with input locked and are one command list each (`setMapScript` command at their end).
+- **Viridian City** (`viridian_city.ts`): `viridianCityStep()` says which check fires per state; the Gym-door push-back leaves the city in `POST_CATCH_TRAINING`, which disables the (19,9) check (a Gen 1 quirk kept on purpose, DECISIONS #34).
 
 ## Script Engine Commands
 
 Commands available in `ScriptCommand` union (from `src/script/types.ts`):
-`text`, `moveNpc`, `movePlayer`, `faceNpc`, `facePlayer`, `wait`, `setFlag`, `addPokemon`, `showNpc`, `hideNpc`, `unhideNpc`, `callback`, `warp`, `exclamation`, `pikachuBattle`, `moveParallel`, `awaitInteraction`, `startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`, `fadeOut`, `fadeIn`, `yesNo`, `giveItem`, `removeItem`
+`text`, `moveNpc`, `movePlayer`, `pushPlayer` (one simulated joypad step: collides, hops ledges), `movePikachu`, `faceNpc`, `facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`, `hideNpc`, `unhideNpc`, `callback`, `warp`, `exclamation`, `catchDemo`, `moveParallel`, `awaitInteraction`, `startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`, `fadeOut`, `fadeIn`, `yesNo`, `giveItem`, `removeItem`
 
 ## Story Script Pattern
 
@@ -37,6 +42,7 @@ Exported builder functions (from `story/index.ts`):
 | `oaks_lab.ts` | 366 | Intro cutscene, ball selection, rival battle setup |
 | `pallet_town.ts` | 113 | Oak's grass encounter script |
 | `viridian_mart.ts` | 45 | Parcel delivery event |
+| `viridian_city.ts` | 230 | Viridian City's map script: the three old men, the catch demos, the Gym door (V1e) |
 | `hidden_events.ts` | 64 | Scripted hidden events (school notebook, etc.) |
 | `../script/` | 880 | Script types, engine (createScript, advanceScript), controller (updateScript, render helpers) |
 | `../overworld/story_state.ts` | 182 | NPC visibility/dialogue based on event flags |

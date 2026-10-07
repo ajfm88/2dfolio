@@ -49,6 +49,8 @@ export interface SaveData {
   rivalName?: string;
   lastBlackoutWarp?: { destMap: string; destWarpId: number };
   rivalStarter?: number;
+  /** Each map's resting w<Map>CurScript (events.ts), since V1e. */
+  mapScripts?: Record<string, number>;
 }
 
 function serializePokemon(mon: BattlePokemon): SavedPokemon {
@@ -118,6 +120,7 @@ export function saveGame(
   rivalName?: string,
   lastBlackoutWarp?: { destMap: string; destWarpId: number },
   rivalStarter?: number,
+  mapScripts?: Record<string, number>,
 ): void {
   const data: SaveData = {
     version: SAVE_VERSION,
@@ -142,6 +145,7 @@ export function saveGame(
     rivalName,
     lastBlackoutWarp,
     rivalStarter,
+    mapScripts,
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }

@@ -3,6 +3,7 @@
 // Returns an OverworldAction describing what main.ts should do next (state
 // transition, battle start, etc.), or null when no action is needed.
 
+import type { Direction } from '../core';
 import type { Player } from './player';
 import type { GameMap } from './map';
 import type { Npc } from './npc';
@@ -10,16 +11,24 @@ import type { PikachuFollower } from '../pikachu/pikachu_follower';
 import type { BattlePokemon } from '../battle';
 import type { Bag } from '../items';
 import type { ScriptCommand } from '../script';
-import { isPressed } from '../input';
-import { hasFlag, setFlag } from '../events';
+import { isPassPressed } from '../input';
+import { updateSprites, recordStepForPikachu, spriteTable } from './sprites';
+import { hasFlag, setFlag, getMapScript } from '../events';
 import { getItemName } from '../items';
 import { tryWildEncounter } from '../battle';
 import { isNoEncounters } from '../debug';
-import { modifyPikachuHappiness, shouldPikachuFollow } from '../pikachu';
+import { shouldPikachuFollow } from '../pikachu';
+import { updatePikachuWalking } from '../pikachu/pikachu_happiness';
+import { countStep, runStepEnd } from './step_end';
+import type { StepCounters } from './step_end';
 import { getPlayerName, substituteNames } from '../core/player_state';
 import { getHiddenEventScript } from '../story/hidden_events';
 import { getText } from '../text/game_text';
 import { buildOakGrassScript } from '../story/pallet_town';
+import {
+  VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
+  buildOldMan2Script, buildOldMan1Script,
+} from '../story/viridian_city';
 import {
   buildOaksLabBallScript,
   buildOaksLabRivalBattleScript,
@@ -29,12 +38,11 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────
 
 /** Mutable state tracked across overworld frames. */
-export interface OverworldState {
+export interface OverworldState extends StepCounters {
   doorExitStep: boolean;
   justWarped: boolean;
   pikachuDeferredSpawn: boolean;
   standingOnWarp: boolean;
-  happinessStepCounter: number;
   interactedNpc: Npc | null;
   approachingNpc: Npc | null;
 }
@@ -84,7 +92,8 @@ export function createOverworldState(): OverworldState {
     justWarped: false,
     pikachuDeferredSpawn: false,
     standingOnWarp: false,
-    happinessStepCounter: 0,
+    stepCounter: 0,
+    encounterCooldown: 0,
     interactedNpc: null,
     approachingNpc: null,
   };
@@ -92,37 +101,42 @@ export function createOverworldState(): OverworldState {
 
 // ── Main update ───────────────────────────────────────────────────────
 
-/** Run one frame of overworld logic. Returns an action for main.ts, or null. */
+/**
+ * Run one overworld pass (every two frames, walk_pace.ts), after main.ts has read the
+ * joypad (readJoypad on standing passes). Returns an action for main.ts, or null. The
+ * NPCs and Pikachu update inside the player's pass, where the ASM's loop calls
+ * UpdateSprites.
+ */
 export function updateOverworld(
   deps: OverworldDeps,
   ow: OverworldState,
 ): OverworldAction | null {
   const { player, gameMap, npcs, pikachuFollower } = deps;
+  player.finishLanding();
+  const sprites = (): void => updateSprites(npcs, gameMap, player, pikachuFollower);
 
   // Door exit auto-step: after warping onto a door tile, walk one step down
   // before resuming normal player control (matches assembly PlayerStepOutFromDoor).
   if (ow.doorExitStep) {
-    if (!player.isMoving) {
+    if (player.isMoving) {
+      player.update(gameMap, npcs, null, sprites);
       if (player.justFinishedStep) {
+        const action = handleStepComplete(deps, ow, true);
         ow.doorExitStep = false;
-        ow.justWarped = false;
         if (ow.pikachuDeferredSpawn) {
           pikachuFollower.visible = true;
           pikachuFollower.spawn(player.x, player.y, player.direction);
           ow.pikachuDeferredSpawn = false;
         }
-      } else {
-        player.forceStep('down');
-        // PlayerStepOutFromDoor simulates an ordinary DOWN press, so Pikachu follows
-        // this step like any other (it was placed on or beside the player by its
-        // spawn state — pikachu_spawn.ts)
-        if (pikachuFollower.visible) {
-          pikachuFollower.recordPlayerPosition(player.x, player.y, player.x, player.y + 16);
-        }
+        return action;
       }
+    } else {
+      player.forceStep('down', sprites);
+      // PlayerStepOutFromDoor simulates an ordinary DOWN press, so Pikachu follows
+      // this step like any other (it was placed on or beside the player by its
+      // spawn state — pikachu_spawn.ts)
+      if (pikachuFollower.visible) recordStepForPikachu(player, pikachuFollower);
     }
-    player.update(gameMap, npcs);
-    if (pikachuFollower.visible) pikachuFollower.update();
     return null;
   }
 
@@ -133,37 +147,30 @@ export function updateOverworld(
   }
 
   // Check for Pikachu interaction only if no other interaction found
-  if (isPressed('a') && !player.isMoving && pikachuFollower.visible) {
+  if (isPassPressed('a') && !player.isBusy && pikachuFollower.visible) {
     const facing = player.getFacingTile();
     const px = pikachuFollower.tileX, py = pikachuFollower.tileY;
     if (facing.tx >= px && facing.tx < px + 2 &&
         facing.ty >= py && facing.ty < py + 2) {
-      const oppositeDir = { up: 'down', down: 'up', left: 'right', right: 'left' } as const;
-      pikachuFollower.direction = oppositeDir[player.direction];
+      // IsSpriteInFrontOfPlayer sets its BIT_FACE_PLAYER; the box's UpdateSprites turns it
+      pikachuFollower.requestFacePlayer();
       return { type: 'pikachuEmotion' };
     }
   }
 
-  player.update(gameMap, npcs);
+  player.update(gameMap, npcs, undefined, sprites, () => spriteTable(player, npcs, pikachuFollower));
 
   // Deferred Pikachu spawn: show Pikachu on the player's first step after a blackout warp
   // (doorExitStep handles this for normal door exits, but blackout skips that system)
   if (ow.pikachuDeferredSpawn && player.justStartedStep) {
     pikachuFollower.visible = true;
-    pikachuFollower.spawn(player.x, player.y, player.direction);
+    pikachuFollower.spawn(player.stepStartX, player.stepStartY, player.direction);
     ow.pikachuDeferredSpawn = false;
   }
 
-  // Record player step for Pikachu following at step START so both walk simultaneously
-  if (player.justStartedStep && pikachuFollower.visible) {
-    const dx = player.direction === 'left' ? -16 : player.direction === 'right' ? 16 : 0;
-    const dy = player.direction === 'up' ? -16 : player.direction === 'down' ? 16 : 0;
-    if (player.startedHop) {
-      pikachuFollower.recordPlayerPosition(player.x, player.y, player.x + dx * 2, player.y + dy * 2);
-      pikachuFollower.setLedgeHopPending(player.x + dx, player.y + dy);
-    } else {
-      pikachuFollower.recordPlayerPosition(player.x, player.y, player.x + dx, player.y + dy);
-    }
+  // Pikachu follows each step from where it started
+  if (player.startedFollowStep && pikachuFollower.visible) {
+    recordStepForPikachu(player, pikachuFollower);
   }
 
   // Collision-based warp: player is on a non-instant warp tile and pressed into
@@ -176,23 +183,17 @@ export function updateOverworld(
     }
   }
 
-  // Check for map transitions after completing a step
+  // NewBattle runs on a turning pass too; turns do not count down the cooldown.
+  if (player.justTurned) {
+    const action = checkEncounter(deps, ow);
+    if (action) return action;
+  }
+
+  // Each ordinary step, and each simulated half of a ledge hop.
   if (player.justFinishedStep) {
     const stepAction = handleStepComplete(deps, ow);
     if (stepAction) return stepAction;
   }
-
-  const pikaTile = pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined;
-  for (const npc of npcs) {
-    npc.update(
-      (tx, ty) => gameMap.isWalkable(tx, ty),
-      player.claimedTileX, player.claimedTileY,
-      npcs, pikaTile,
-    );
-  }
-
-  // Update Pikachu follower
-  if (pikachuFollower.visible) pikachuFollower.update();
 
   // Check trainer line-of-sight (only after player finishes a step)
   if (player.justFinishedStep) {
@@ -297,6 +298,20 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
       return { type: 'script', commands: buildOaksLabPokedexScript(playerStepX, playerStepY, findNpc) };
     }
 
+    // ViridianCity: the three old men (story/viridian_city.ts)
+    if (currentMapName === VIRIDIAN_CITY) {
+      if (npcData.id === 'oldman_blocking') {
+        return { type: 'script', commands: buildSleepingOldManScript(false) };
+      }
+      if (npcData.id === 'oldman2' && !hasFlag('COMPLETED_CATCH_TRAINING')) {
+        const playerStep = { x: Math.round(player.x / 16), y: Math.round(player.y / 16) };
+        return { type: 'script', commands: buildOldMan2Script(false, playerStep) };
+      }
+      if (npcData.id === 'oldman1') {
+        return { type: 'script', commands: buildOldMan1Script() };
+      }
+    }
+
     // ViridianCity: Youngster asks about caterpillar POKéMON (YES/NO choice)
     if (currentMapName === 'ViridianCity' && npcData.id === 'youngster2') {
       return {
@@ -320,7 +335,6 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
     // No text yet: item balls (pickup is A1), the trade kid (trades are A4) and Oak's
     // Aide (HM05 is A2). Do nothing rather than open an empty text box.
     if (!text) {
-      interaction.npc.restoreDirection();
       ow.interactedNpc = null;
       return null;
     }
@@ -369,59 +383,36 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
 
 // ── Step-complete checks ──────────────────────────────────────────────
 
-/** Handle warp checks, story triggers, encounters, and happiness after a step completes. */
-function handleStepComplete(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
-  const { player, gameMap, npcs, pikachuFollower, playerParty, currentMapName } = deps;
-
-  // Check warps (but not immediately after warping in)
-  if (!ow.justWarped) {
-    const warp = gameMap.getWarpAt(player.tileX, player.tileY);
-    if (warp) {
-      if (gameMap.isInstantWarpTile(player.tileX, player.tileY)) {
-        ow.standingOnWarp = false;
-        return { type: 'warp', destMap: warp.destMap, destWarpId: warp.destWarpId };
-      }
-      ow.standingOnWarp = true;
-    } else {
-      ow.standingOnWarp = false;
-    }
-  }
-  ow.justWarped = false;
+/** RunMapScript, before Joypad, on every standing pass. */
+export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
+  if (player.isBusy || ow.doorExitStep) return null;
 
   // Story trigger: Pallet Town north exit without Pokemon → Oak grass event
   if (
     currentMapName === 'PalletTown' &&
-    !hasFlag('FOLLOWED_OAK_INTO_LAB') &&
-    !hasFlag('GOT_STARTER')
+    !hasFlag('FOLLOWED_OAK_INTO_LAB')
   ) {
-    if (player.tileY <= 0 && player.direction === 'up') {
+    if (player.mapStepY === 0) {
       return { type: 'script', commands: buildOakGrassScript(player.tileX) };
     }
   }
 
-  // Story trigger: Viridian City — old man blocks north path
-  // Assembly: ViridianCityCheckSleepingOldMan triggers at (19, 9), pushes player down
-  if (currentMapName === 'ViridianCity') {
+  // Story trigger: Viridian City's map script — the old men at (19, 9) and the Gym
+  // door at (32, 8), dispatched on wViridianCityCurScript (story/viridian_city.ts)
+  if (currentMapName === VIRIDIAN_CITY) {
     const stepX = Math.round(player.x / 16);
     const stepY = Math.round(player.y / 16);
-    if (stepX === 19 && stepY === 9 && player.direction === 'up') {
-      if (!hasFlag('GOT_POKEDEX')) {
-        return {
-          type: 'script',
-          commands: [
-            { type: 'text', message: "You can't go\nthrough here!\fThis is private\nproperty!" },
-            { type: 'movePlayer', path: ['down'] },
-          ],
-        };
-      } else {
-        return {
-          type: 'script',
-          commands: [
-            { type: 'text', message: "Ah, I've had my\ncoffee now and I\nfeel great!\fBut this is as far\nas the demo goes!\fThanks for playing!" },
-            { type: 'movePlayer', path: ['down'] },
-          ],
-        };
-      }
+    const step = viridianCityStep(getMapScript(VIRIDIAN_CITY), stepX, stepY, hasFlag);
+    if (step.openGym) setFlag('VIRIDIAN_GYM_OPEN');
+    if (step.trigger === 'sleepingOldMan') {
+      return { type: 'script', commands: buildSleepingOldManScript(true) };
+    }
+    if (step.trigger === 'gymLocked') {
+      return { type: 'script', commands: buildGymLockedScript() };
+    }
+    if (step.trigger === 'waitingOldMan') {
+      return { type: 'script', commands: buildOldMan2Script(true, { x: stepX, y: stepY }) };
     }
   }
 
@@ -433,7 +424,7 @@ function handleStepComplete(deps: OverworldDeps, ow: OverworldState): OverworldA
     !hasFlag('BATTLED_RIVAL_IN_OAKS_LAB')
   ) {
     const stepY = Math.round(player.y / 16);
-    if (stepY >= 6) {
+    if (stepY === 6) {
       const rival = npcs.find(n => n.data.id === 'rival');
       if (rival && !rival.hidden) {
         const rivalStepX = Math.round(rival.x / 16);
@@ -455,7 +446,69 @@ function handleStepComplete(deps: OverworldDeps, ow: OverworldState): OverworldA
     }
   }
 
-  // Check map connections (player walked off edge)
+  return null;
+}
+
+/** NewBattle → DetermineWildOpponent → TryDoWildEncounter. */
+function checkEncounter(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  const { player, gameMap } = deps;
+  const x = player.mapStepX * 2;
+  const y = player.mapStepY * 2;
+  const wild = tryWildEncounter({
+    inGrass: gameMap.isGrassTile(x, y),
+    inWater: gameMap.getTileAt(x, y + 1) === 0x14,
+    indoor: gameMap.isIndoor,
+    forest: gameMap.mapData?.tileset === 'FOREST',
+    controlled: ow.doorExitStep || player.stepWasSimulated,
+    movementBlocked: player.isBusy,
+    onDoorOrWarp: gameMap.isInstantWarpTile(x, y),
+    outsideMap: !gameMap.isInBounds(x, y),
+    cooldown: ow.encounterCooldown,
+    disabled: isNoEncounters(),
+  });
+  return wild ? { type: 'startBattle', pokemon: wild } : null;
+}
+
+/** The pure step-end sequence is shared by ordinary and simulated steps. */
+export function handleStepComplete(deps: OverworldDeps, ow: OverworldState, simulated = deps.player.stepWasSimulated): OverworldAction | null {
+  return runStepEnd<OverworldAction>(simulated, stage => {
+    switch (stage) {
+      case 'count':
+        Object.assign(ow, countStep(ow));
+        return null;
+      case 'pikachu':
+        // ApplyOutOfBattlePoisonDamage skips this when the party is empty.
+        if (deps.playerParty.length > 0) {
+          const starterAlive = deps.playerParty.some(mon => mon.species.id === 25 && mon.currentHp > 0);
+          updatePikachuWalking(ow.stepCounter, () => Math.floor(Math.random() * 256), starterAlive);
+        }
+        return null;
+      case 'encounter': return checkEncounter(deps, ow);
+      case 'warp': return checkWarp(deps, ow);
+      case 'connection': return checkConnection(deps);
+    }
+  });
+}
+
+function checkWarp(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  const { player, gameMap } = deps;
+  if (!ow.justWarped) {
+    const warp = gameMap.getWarpAt(player.tileX, player.tileY);
+    if (warp) {
+      if (gameMap.isInstantWarpTile(player.tileX, player.tileY)) {
+        ow.standingOnWarp = false;
+        return { type: 'warp', destMap: warp.destMap, destWarpId: warp.destWarpId };
+      }
+      ow.standingOnWarp = true;
+    } else {
+      ow.standingOnWarp = false;
+    }
+  }
+  ow.justWarped = false;
+  return null;
+}
+
+function checkConnection({ player, gameMap }: OverworldDeps): OverworldAction | null {
   if (!gameMap.isInBounds(player.tileX, player.tileY)) {
     const connDir = DIR_TO_CONN[player.direction];
     const conn = gameMap.getConnection(connDir);
@@ -464,71 +517,87 @@ function handleStepComplete(deps: OverworldDeps, ow: OverworldState): OverworldA
     }
   }
 
-  // Check for wild encounters (only on grass tiles, unless disabled)
-  if (!isNoEncounters() && gameMap.isGrassTile(player.tileX, player.tileY)) {
-    const wild = tryWildEncounter(true);
-    if (wild) {
-      return { type: 'startBattle', pokemon: wild };
-    }
-  }
-
-  // Pikachu happiness: walking modifier every 256 steps
-  ow.happinessStepCounter++;
-  if (ow.happinessStepCounter >= 256) {
-    ow.happinessStepCounter = 0;
-    modifyPikachuHappiness('WALKING');
-  }
-
   return null;
 }
 
 // ── Helper functions for building inline scripts ──────────────────────
 
-function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHeal?: () => void): ScriptCommand[] {
+/**
+ * The nurse: DisplayPokemonCenterDialogue_ (engine/events/pokecenter.asm), one
+ * DisplayTextID. Its PrintText calls open no new DisplayTextIDInit, so only the first box
+ * updates sprites; CloseTextDisplay restores Pikachu's saved facing at the end. Pikachu's
+ * branches are checked as they run: the heal can make a fainted starter eligible.
+ * The healing machine keeps its present animation (its timing is not A6e's claim).
+ */
+export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHeal?: () => void): ScriptCommand[] {
+  // Func_6eaa: the nurse's image $04 (facing up), then 64 frames
+  const nurseUp: ScriptCommand[] = [
+    { type: 'faceNpc', npcId: 'nurse', direction: 'up' },
+    { type: 'wait', frames: 64 },
+  ];
+  // Func_6ebb(1, c): her facing, 6 frames (SetSpriteFacingDirectionAndDelay), her image
+  const nurseFace = (direction: Direction): ScriptCommand[] => [
+    { type: 'wait', frames: 6 },
+    { type: 'faceNpc', npcId: 'nurse', direction },
+  ];
   return [
     // (data/text/text_7.asm _PokemonCenterWelcomeText)
     { type: 'text', message: getText('POKECENTER_WELCOME') },
+    { type: 'pikachuFacing', action: 'save' },
+    { type: 'uiEntryUpdates', enabled: false },
     // (data/text/text_7.asm _ShallWeHealYourPokemonText)
     {
       type: 'yesNo',
       message: getText('POKECENTER_HEAL_ASK'),
       yesBranch: [
-        // Assembly: PikachuWalksToNurseJoy — Pikachu hops to the nurse before she speaks
-        { type: 'pikachuToNurse' },
-        // (data/text/text_7.asm _NeedYourPokemonText)
+        // UpdateSprites after YesNoChoicePokeCenter, then SetLastBlackoutMap
+        { type: 'updateSprites' },
+        ...(onHeal ? [{ type: 'callback' as const, fn: onHeal }] : []),
+        // The starter alive and following: LoadCurrentMapView, Delay3, UpdateSprites,
+        // PikachuWalksToNurseJoy (no refresh after it)
+        { type: 'ifStarterPikachu', then: [
+          { type: 'wait', frames: 3 },
+          { type: 'updateSprites' },
+          { type: 'pikachuToNurse' },
+        ] },
+        // (data/text/text_7.asm _NeedYourPokemonText), then 64 frames
         { type: 'text', message: getText('POKECENTER_NEED_MON') },
         { type: 'wait', frames: 64 },
-        // Assembly: DisablePikachuOverworldSpriteDrawing — hide Pikachu as nurse turns
+        // DisablePikachuOverworldSpriteDrawing; Func_6eaa for a living starter
         { type: 'hidePikachu' },
-        // Nurse turns: UP first, then LEFT toward machine (assembly Func_6eaa → Func_6ebb)
-        { type: 'faceNpc', npcId: 'nurse', direction: 'up' },
+        { type: 'ifStarterPikachu', then: nurseUp },
+        // Func_6ebb(1, 8): left, toward the machine; 30 frames
+        ...nurseFace('left'),
         { type: 'wait', frames: 30 },
-        { type: 'faceNpc', npcId: 'nurse', direction: 'left' },
-        { type: 'wait', frames: 20 },
-        // Pokeball machine animation + heal
+        // AnimateHealingMachine (ends in UpdateSprites, Pikachu still undrawn), HealParty
         { type: 'pokecenterHeal' },
-        // Record last blackout map (assembly: SetLastBlackoutMap after heal)
-        ...(onHeal ? [{ type: 'callback' as const, fn: onHeal }] : []),
-        // Assembly: EnablePikachuOverworldSpriteDrawing — show Pikachu as nurse turns back
+        // Func_6eaa for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
+        { type: 'ifStarterPikachu', then: nurseUp },
         { type: 'showPikachu' },
-        // Nurse turns back: UP first, then DOWN (assembly Func_6eaa → Func_6ebb)
-        { type: 'faceNpc', npcId: 'nurse', direction: 'up' },
-        { type: 'wait', frames: 30 },
-        { type: 'faceNpc', npcId: 'nurse', direction: 'down' },
+        // Func_6ebb(1, 0): back down
+        ...nurseFace('down'),
         // (data/text/text_7.asm _PokemonFightingFitText)
         { type: 'text', message: getText('POKECENTER_FIGHTING_FIT') },
-        // Nurse bow: walk-down frame for 40 frames (assembly hSpriteImageIndex=1)
+        // Func_6ebb(15, 0): Pikachu faces down and its image is written — visible again
+        // here, before the bow
+        { type: 'ifStarterPikachu', then: [{ type: 'pikachuStandDown' }] },
+        // LoadCurrentMapView, Delay3, UpdateSprites
+        { type: 'wait', frames: 3 },
+        { type: 'updateSprites' },
+        // The bow: the nurse's image $01 for 40 frames, then UpdateSprites
         { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = true; } },
         { type: 'wait', frames: 40 },
         { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = false; } },
-        // (data/text/text_7.asm _PokemonCenterFarewellText)
-        { type: 'text', message: 'We hope to see\nyou again!' },
+        { type: 'updateSprites' },
       ],
-      noBranch: [
-        // (data/text/text_7.asm _PokemonCenterFarewellText)
-        { type: 'text', message: 'We hope to see\nyou again!' },
-      ],
+      noBranch: [],
     },
+    // .done: (data/text/text_7.asm _PokemonCenterFarewellText), UpdateSprites
+    { type: 'text', message: 'We hope to see\nyou again!' },
+    { type: 'updateSprites' },
+    // CloseTextDisplay
+    { type: 'uiEntryUpdates', enabled: true },
+    { type: 'pikachuFacing', action: 'restore' },
   ];
 }
 

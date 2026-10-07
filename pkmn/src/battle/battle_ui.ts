@@ -576,8 +576,9 @@ export function renderMoveMenu(pokemon: BattlePokemon, cursorIndex: number): voi
 
 /** Render the item selection menu with cursor.
  *  Assembly layout: item list box at (4,2)→(19,12), textbox at (0,12)→(19,17).
- *  cursorIndex ranges 0..items.length where items.length = CANCEL. */
-export function renderItemMenu(items: ItemStack[], cursorIndex: number): void {
+ *  cursorIndex ranges 0..items.length where items.length = CANCEL.
+ *  showCursor: false for the catch demo's list before its simulated cursor (V1d). */
+export function renderItemMenu(items: ItemStack[], cursorIndex: number, showCursor = true): void {
   // Empty textbox at the bottom
   drawBox(0, BOX_Y, 20, 6);
   // Item list box (assembly: LIST_MENU_BOX 4,2,19,12 → 16 wide × 11 tall)
@@ -610,6 +611,7 @@ export function renderItemMenu(items: ItemStack[], cursorIndex: number): void {
   }
 
   // Cursor at col 5
+  if (!showCursor) return;
   const cursorVisIdx = cursorIndex - scrollOffset;
   const cursorRow = 4 + cursorVisIdx * 2;
   drawText('\u25B6', TILE_SIZE * 5, cursorRow * TILE_SIZE);

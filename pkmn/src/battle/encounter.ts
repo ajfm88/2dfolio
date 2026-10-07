@@ -7,6 +7,29 @@ import { getWildData, createPokemon } from './data';
 let currentMapWild: WildEncounterData | null = null;
 let currentMapName = '';
 
+/** NewBattle / TryDoWildEncounter's gates. Repel is implemented in A3. */
+export interface EncounterContext {
+  inGrass: boolean;
+  inWater: boolean;
+  indoor: boolean;
+  forest: boolean;
+  controlled: boolean;
+  movementBlocked: boolean;
+  onDoorOrWarp: boolean;
+  outsideMap: boolean;
+  cooldown: number;
+  disabled: boolean;
+}
+
+/** Returns the encounter pool, or null before consuming any random number. */
+export function encounterTerrain(context: EncounterContext): 'grass' | 'water' | null {
+  if (context.controlled || context.movementBlocked || context.onDoorOrWarp ||
+      context.outsideMap || context.cooldown > 0 || context.disabled) return null;
+  if (context.inGrass) return 'grass';
+  if (context.inWater) return 'water';
+  return context.indoor && !context.forest ? 'grass' : null;
+}
+
 /** Load wild encounter data for a map. Call when entering a new map. */
 export async function loadWildEncounters(mapName: string): Promise<void> {
   if (mapName === currentMapName) return;
@@ -15,11 +38,13 @@ export async function loadWildEncounters(mapName: string): Promise<void> {
 }
 
 /** Check if a random encounter should trigger.
- *  Call each time the player takes a step in grass/water.
+ *  Call after an ordinary step or a turn, with the ASM's conditions.
  *  Returns a BattlePokemon if an encounter triggers, null otherwise. */
-export function tryWildEncounter(inGrass: boolean): BattlePokemon | null {
+export function tryWildEncounter(context: EncounterContext): BattlePokemon | null {
   if (!currentMapWild) return null;
-
+  const terrain = encounterTerrain(context);
+  if (terrain === null) return null;
+  const inGrass = terrain === 'grass';
   const rate = inGrass ? currentMapWild.grassRate : currentMapWild.waterRate;
   const pool = inGrass ? currentMapWild.grass : currentMapWild.water;
 

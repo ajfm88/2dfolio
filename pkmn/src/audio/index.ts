@@ -13,6 +13,8 @@
 import { GBSynthesizer } from './synthesizer';
 import { MusicEngine } from './music_engine';
 import { SfxEngine } from './sfx_engine';
+import { EXTRACTED_SFX } from './sfx_names';
+import { audioUpdate, soundFinished } from './sound_wait';
 import type { MusicData, NoiseInstrument } from './music_engine';
 import type { SfxData } from './sfx_engine';
 
@@ -33,6 +35,11 @@ let waveSamples: number[][] | null = null;
 let noiseInstruments: NoiseInstrument[] | null = null;
 const musicCache: Map<string, MusicData> = new Map();
 const sfxCache: Map<string, SfxData> = new Map();
+// The SFX asked for last: CollisionCheckOnLand replays SFX_COLLISION only when it isn't
+// already the sound playing (wChannelSoundIDs + CHAN5)
+let currentSfx: string | null = null;
+// SFX requested but still loading: they count as playing (isSoundFinished)
+let pendingSfx = 0;
 
 /**
  * Initialize the audio system. Safe to call before user interaction.
@@ -44,9 +51,10 @@ export function initAudio(): void {
   engine = new MusicEngine(synth);
   sfxEngine = new SfxEngine(synth);
 
-  // When SFX finishes on a channel, tell the music engine to re-apply its state
+  // An SFX ending hands its hardware channel back: the music there stays silent until its
+  // next note or rest (Audio1_sound_ret)
   sfxEngine.onChannelDone = (hwChannel: number) => {
-    engine?.restoreChannel(hwChannel);
+    engine?.releaseChannel(hwChannel);
   };
 }
 
@@ -101,20 +109,47 @@ export function stopMusic(): void {
  */
 export async function playSFX(name: string): Promise<void> {
   if (!sfxEngine || !audioReady) return;
+  currentSfx = name;
 
+  // Preloaded (loadSharedData), so this normally starts the sound synchronously, in the
+  // frame it's asked for
   let data = sfxCache.get(name);
   if (!data) {
+    pendingSfx++;
     try {
-      const resp = await fetch(`audio/sfx/${name}.json`);
-      data = await resp.json() as SfxData;
-      sfxCache.set(name, data);
-    } catch (e) {
-      console.warn(`Failed to load SFX: ${name}`, e);
-      return;
+      data = await loadSfx(name);
+    } finally {
+      pendingSfx--;
     }
+    if (!data) return;
   }
 
+  // A real SFX on channel 8 replaces a drum hit there (Audio1_PlaySound 1433–1436)
+  if (data.channels.some(ch => ch.id === 8)) engine?.cancelDrum();
   sfxEngine.play(data);
+}
+
+async function loadSfx(name: string): Promise<SfxData | undefined> {
+  try {
+    const resp = await fetch(`audio/sfx/${name}.json`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json() as SfxData;
+    sfxCache.set(name, data);
+    return data;
+  } catch (e) {
+    console.warn(`Failed to load SFX: ${name}`, e);
+    return undefined;
+  }
+}
+
+/**
+ * WaitForSoundToFinish's condition (home/delay.asm): software channels 5, 6 and 8 are
+ * idle. Channel 7 is skipped, as the ASM's `inc hl` ×3 skips it. Channel 8 is also busy
+ * while a music drum hit sounds (drums are noise-instrument SFX there). A requested SFX
+ * still loading counts as playing. A1b's text box polls this after a sound command.
+ */
+export function isSoundFinished(): boolean {
+  return soundFinished(sfxEngine, engine, pendingSfx);
 }
 
 /**
@@ -143,12 +178,7 @@ export function tickAudio(): void {
 
   while (audioAccumulatorMs >= TICK_INTERVAL_MS) {
     audioAccumulatorMs -= TICK_INTERVAL_MS;
-
-    // Tick SFX first (it takes priority over music)
-    sfxEngine?.tick();
-
-    // Tick music, but tell it which channels are overridden by SFX
-    engine.tick(sfxEngine ?? undefined);
+    audioUpdate(engine, sfxEngine);
   }
 }
 
@@ -160,9 +190,14 @@ export function isMusicPlaying(): boolean {
 }
 
 /**
- * Check if any SFX is currently playing.
+ * Check if an SFX is currently playing: any, or the one named. A named SFX still
+ * loading counts as playing.
  */
-export function isSfxPlaying(): boolean {
+export function isSfxPlaying(name?: string): boolean {
+  if (name !== undefined) {
+    if (currentSfx !== name) return false;
+    return !sfxCache.has(name) || (sfxEngine?.isPlaying() ?? false);
+  }
   return sfxEngine?.isPlaying() ?? false;
 }
 
@@ -185,6 +220,9 @@ const _win = window as unknown as Record<string, unknown>;
 _win._audioEngine = () => engine;
 _win._audioSynth = () => synth;
 _win._sfxEngine = () => sfxEngine;
+// A1a (DECISIONS #40): hear an SFX before anything in the game plays it, e.g.
+// _playSFX('get_item1'). J2 decides this with the rest of the debug tooling.
+_win._playSFX = (name: string) => playSFX(name);
 
 // ─── Internal ────────────────────────────────────────────────────────────────
 
@@ -197,6 +235,7 @@ async function loadSharedData(): Promise<void> {
       const resp = await fetch('audio/wave_samples.json');
       waveSamples = await resp.json() as number[][];
       engine.setWaveSamples(waveSamples);
+      sfxEngine?.setWaveSamples(waveSamples);
     }
 
     // Load noise instruments
@@ -208,4 +247,7 @@ async function loadSharedData(): Promise<void> {
   } catch (e) {
     console.warn('Failed to load audio data:', e);
   }
+
+  // Every extracted SFX, so playSFX never waits on a fetch
+  await Promise.all(EXTRACTED_SFX.filter(name => !sfxCache.has(name)).map(loadSfx));
 }

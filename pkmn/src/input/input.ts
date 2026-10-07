@@ -45,6 +45,33 @@ export function isPressed(button: GameButton): boolean {
   return justPressed[button];
 }
 
+// The overworld reads the joypad once per standing pass (JoypadOverworld → Joypad, every
+// two frames, and not mid-step): a button counts as pressed when it is down at a read and
+// wasn't at the one before. Menus and text boxes read it every frame.
+const lastRead: Record<GameButton, boolean> = { ...keys };
+const readPressed: Record<GameButton, boolean> = { ...keys };
+
+/** The overworld's joypad read (a standing pass). */
+export function readJoypad(): void {
+  for (const k of Object.keys(keys) as GameButton[]) {
+    readPressed[k] = keys[k] && !lastRead[k];
+    lastRead[k] = keys[k];
+  }
+}
+
+/** A frame where something else read the joypad (a menu, a text box). */
+export function syncJoypadRead(): void {
+  for (const k of Object.keys(keys) as GameButton[]) {
+    lastRead[k] = keys[k];
+    readPressed[k] = false;
+  }
+}
+
+/** Pressed at the overworld's last joypad read (use in the pass logic). */
+export function isPassPressed(button: GameButton): boolean {
+  return readPressed[button];
+}
+
 /** Set a button state programmatically (used by touch controls). */
 export function setKey(button: GameButton, pressed: boolean): void {
   keys[button] = pressed;
