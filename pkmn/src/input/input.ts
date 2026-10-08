@@ -1,4 +1,5 @@
 import type { GameButton } from '../core';
+import { joyIgnored } from './joy_ignore';
 
 const keys: Record<GameButton, boolean> = {
   up: false, down: false, left: false, right: false,
@@ -37,12 +38,13 @@ export function updateInput(): void {
   }
 }
 
+// wJoyIgnore (joy_ignore.ts) masks every read, as _Joypad masks hJoyHeld and hJoyPressed.
 export function isHeld(button: GameButton): boolean {
-  return keys[button];
+  return keys[button] && !joyIgnored(button);
 }
 
 export function isPressed(button: GameButton): boolean {
-  return justPressed[button];
+  return justPressed[button] && !joyIgnored(button);
 }
 
 // The overworld reads the joypad once per standing pass (JoypadOverworld → Joypad, every
@@ -51,10 +53,11 @@ export function isPressed(button: GameButton): boolean {
 const lastRead: Record<GameButton, boolean> = { ...keys };
 const readPressed: Record<GameButton, boolean> = { ...keys };
 
-/** The overworld's joypad read (a standing pass). */
+/** The overworld's joypad read (a standing pass). The edge is raw (hJoyLast); the mask
+ *  applies to what the read reports. */
 export function readJoypad(): void {
   for (const k of Object.keys(keys) as GameButton[]) {
-    readPressed[k] = keys[k] && !lastRead[k];
+    readPressed[k] = keys[k] && !lastRead[k] && !joyIgnored(k);
     lastRead[k] = keys[k];
   }
 }

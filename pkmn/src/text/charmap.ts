@@ -22,6 +22,14 @@ for (let i = 0; i < 26; i++) {
 
 // Accented/contraction chars: é 'd 'l 's 't 'v → tiles 58-63
 CHAR_TO_TILE['é'] = 58;
+export const textGlyphs = new Set(["'d", "'l", "'s", "'t", "'v", "'r", "'m"]);
+for (const [glyph, tile] of [["'d", 59], ["'l", 60], ["'s", 61], ["'t", 62],
+  ["'v", 63], ["'r", 100], ["'m", 101]] as const) CHAR_TO_TILE[glyph] = tile;
+
+/** Tiles in font_extra.png, whose VRAM range starts at $60. */
+export function extraCharToTile(glyph: string): number {
+  return ({ '‘': 16, '’': 17, '“': 18, '”': 19, '·': 20, '…': 21 } as Record<string, number>)[glyph] ?? -1;
+}
 
 // Row 4+ special characters
 CHAR_TO_TILE["'"] = 96;   // apostrophe $E0

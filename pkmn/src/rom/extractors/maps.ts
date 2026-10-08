@@ -267,9 +267,10 @@ export interface MapNpc {
   shopItems?: string[];
   /** Item balls: the item they hold (A1 makes them collectible). */
   item?: string;
-  /** Standard map trainers (see readTrainerTexts). `dialogue` is the before-battle text. */
+  /** Standard map trainers (see readTrainerHeader). `dialogue` is the before-battle text. */
   trainerClass?: string;      // trainers.json key, e.g. "BUG_CATCHER"
   trainerParty?: number;      // 0-based index into that class's parties
+  sightRange?: number;        // header byte 1 >> 4: steps TrainerEngage sees (0 = talk only)
   endBattleText?: string;     // in battle after "PLAYER defeated CLASS!", shown as "CLASS: " + text
   afterBattleText?: string;   // talking to the trainer once beaten
 }
@@ -468,7 +469,7 @@ const MAP_METADATA: Record<string, MapMeta> = {
     ],
   },
 
-  // ── V1: Route 2 + Viridian Forest (notes/v1-plan.md) ──
+  // ── V1: Route 2 + Viridian Forest (notes/02-v1-plan.md) ──
   // NPC ids are pret's const_export names minus the map prefix, lowercased
   // (data/maps/objects/<Map>.asm), in ROM object order. direction / walkDir mirror
   // the object_event bytes: STAY <dir> → direction, WALK UP_DOWN / LEFT_RIGHT →
@@ -768,7 +769,8 @@ const OPP_ID_OFFSET = 200;
 const TX_ASM = 0x08;   // text_asm — the TextPointers handler is Z80 code
 const LD_HL_NN = 0x21; // ld hl, nn
 
-interface TrainerTexts {
+interface TrainerHeader {
+  sightRange: number;       // header byte 1 = sight << 4 (TrainerEngage's distance)
   battleText: string;       // TRAINER_BEFORE_BATTLE_TEXT
   endBattleText: string;    // TRAINER_WON_BATTLE_TEXT
   afterBattleText: string;  // TRAINER_AFTER_BATTLE_TEXT
@@ -790,7 +792,7 @@ function readFarText(rom: BinaryReader, handlerOffset: number): string | null {
 }
 
 /**
- * Read a standard map trainer's texts from its trainer header.
+ * Read a standard map trainer's header: its sight range (byte 1 >> 4) and its texts.
  *
  * Standard trainers' TextPointers handlers are `text_asm; ld hl, <Map>TrainerHeaderN`
  * followed by `TalkToTrainer` (home/trainers.asm). The header — the `trainer` macro —
@@ -800,9 +802,9 @@ function readFarText(rom: BinaryReader, handlerOffset: number): string | null {
  *
  * Returns null for anything else — rivals and gym leaders run custom scripts — so
  * a mismatch never yields a wrong text. (The generic TextPointers fallback gives
- * every Viridian Forest trainer the first trainer's line: notes/v1-plan.md §2.2.)
+ * every Viridian Forest trainer the first trainer's line: notes/02-v1-plan.md §2.2.)
  */
-function readTrainerTexts(rom: BinaryReader, mapName: string, textId: number): TrainerTexts | null {
+function readTrainerHeader(rom: BinaryReader, mapName: string, textId: number): TrainerHeader | null {
   const textPtrs = MAP_TEXT_PTRS[mapName];
   const handlerAddr = textPointerAddr(rom, mapName, textId);
   if (!textPtrs || handlerAddr === null) return null;
@@ -825,7 +827,7 @@ function readTrainerTexts(rom: BinaryReader, mapName: string, textId: number): T
   const afterBattleText = text(6);
   const endBattleText = text(8);
   if (battleText === null || afterBattleText === null || endBattleText === null) return null;
-  return { battleText, endBattleText, afterBattleText };
+  return { sightRange: rom.readByte(header + 1) >> 4, battleText, endBattleText, afterBattleText };
 }
 
 // ── Public API ─────────────────────────────────────────────────
@@ -935,7 +937,7 @@ export function extractMap(
     // Standard map trainer: class and party come from the object, texts from its header
     const trainerClassId = romNpc.trainerClassId ?? 0;
     const trainer = trainerClassId >= OPP_ID_OFFSET
-      ? readTrainerTexts(rom, mapName, romNpc.textId)
+      ? readTrainerHeader(rom, mapName, romNpc.textId)
       : null;
 
     // Item ball = item-flagged object whose text is PickUpItemText
@@ -993,6 +995,7 @@ export function extractMap(
     if (trainer) {
       npc.trainerClass = trainerClassNames[trainerClassId - OPP_ID_OFFSET] ?? `TRAINER_${trainerClassId}`;
       npc.trainerParty = (romNpc.trainerSet ?? 1) - 1;
+      npc.sightRange = trainer.sightRange;
       npc.endBattleText = trainer.endBattleText;
       npc.afterBattleText = trainer.afterBattleText;
     }

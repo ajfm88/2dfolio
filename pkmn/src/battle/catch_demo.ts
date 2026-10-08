@@ -1,6 +1,6 @@
 // The catch demo — BATTLE_TYPE_OLD_MAN (the Viridian old man) and BATTLE_TYPE_PIKACHU
 // (Oak's Pikachu catch in Pallet Town) as rules and data. No DOM: the screen that runs
-// these steps is catch_demo_screen.ts. Detail: notes/v1d-plan.md §1.
+// these steps is catch_demo_screen.ts. Detail: notes/05-v1d-plan.md §1.
 //
 // Both battle types go through the normal battle engine in the ASM, with special cases:
 // a simulated FIGHT → ITEM → POKé BALL input (core.asm DisplayBattleMenu
@@ -87,7 +87,7 @@ export interface CatchDemoOpts {
   soCloseText: string;
 }
 
-/** The ordered steps after the slide-in (notes/v1d-plan.md §1.1 steps 5–15). */
+/** The ordered steps after the slide-in (notes/05-v1d-plan.md §1.1 steps 5–15). */
 export function catchDemoSteps(opts: CatchDemoOpts): CatchDemoStep[] {
   // _WildMonAppearedText: "Wild @" text_ram wEnemyMonNick / line "appeared!" / prompt
   const appeared: CatchDemoStep = { type: 'text', pages: [[`Wild ${opts.enemyName}`, 'appeared!']] };

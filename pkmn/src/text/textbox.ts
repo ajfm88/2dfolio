@@ -1,9 +1,11 @@
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { substituteNames } from '../core/player_state';
 import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
-import { isPressed, isHeld } from '../input';
-import { charToTile } from './charmap';
-import { playSFX } from '../audio';
+import { isPressed, isHeld, syncJoypadRead } from '../input';
+import { charToTile, extraCharToTile } from './charmap';
+import { TextPrinter, TEXT_A, TEXT_B } from './text_printer';
+import { textBgTransfer } from './bg_transfer';
+import { playSFX, isSoundFinished } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
 
 // Text box dimensions (in tiles)
@@ -91,216 +93,104 @@ export function getBorderCanvas(): HTMLCanvasElement | null {
   return borderCanvas;
 }
 
-/** Word-wrap a single line to fit BOX_TEXT_WIDTH characters. */
-function wrapLine(line: string): string[] {
-  if (line.length <= BOX_TEXT_WIDTH) return [line];
-  const words = line.split(' ');
-  const result: string[] = [];
-  let current = '';
-  for (const word of words) {
-    if (current.length === 0) {
-      current = word;
-    } else if (current.length + 1 + word.length <= BOX_TEXT_WIDTH) {
-      current += ' ' + word;
-    } else {
-      result.push(current);
-      current = word;
-    }
-  }
-  if (current.length > 0) result.push(current);
-  return result;
-}
-
-/**
- * Process text into display lines.
- * - \n = explicit line break (assembly `line` / `cont`)
- * - \f = paragraph break (assembly `para` — clears the text box)
- * - Long lines without \n are word-wrapped automatically.
- *
- * Returns an array of lines. Paragraph breaks are represented as null entries.
- */
-function processText(text: string): (string | null)[] {
-  const paragraphs = text.split('\f');
-  const result: (string | null)[] = [];
-  for (let pi = 0; pi < paragraphs.length; pi++) {
-    if (pi > 0) result.push(null); // paragraph break marker
-    const explicitLines = paragraphs[pi].split('\n');
-    for (const line of explicitLines) {
-      result.push(...wrapLine(line));
-    }
-  }
-  return result;
+/** text_end inside text_asm, or PromptText (home/text.asm). */
+export type TextBoxEnd = 'none' | 'prompt';
+export type TextBoxMode = 'legacy' | 'displayTextID' | 'printText';
+export interface TextBoxOptions {
+  end?: TextBoxEnd;
+  mode?: TextBoxMode;
+  /** TalkToTrainer calls PrintText inside the DisplayTextID opening. */
+  printText?: boolean;
 }
 
 export class TextBox {
-  // Lines to display. null = paragraph break (clear box).
-  private lines: (string | null)[] = [];
-  private topLine = 0;          // index of the line shown on row 1
-  private charIndex = 0;        // characters revealed on the SECOND line of current view
-  private firstLineRevealed = false; // true once line 1 is fully typed
-  private frameCount = 0;
   private _active = false;
-  private waitingForInput = false;
-  private blinkTimer = 0;
+  private complete = false;
+  private textComplete = false;
+  private finalWait = false;
+  private printer: TextPrinter | null = null;
+  private run: Generator<void> | null = null;
+  private frame = 0;
+  private mode: TextBoxMode = 'legacy';
+  private visible = Array<string>(20 * 6).fill(' ');
 
   get active(): boolean { return this._active; }
-  get isWaitingForInput(): boolean { return this.waitingForInput; }
-  get hasMorePages(): boolean { return this.hasMore(); }
-  dismiss(): void { this._active = false; }
+  /** The text's own terminator returned, before DisplayTextID's outer wait. */
+  get isTextComplete(): boolean { return this.textComplete; }
+  get isComplete(): boolean { return this.complete; }
+  get isWaitingForInput(): boolean { return this.finalWait || !!this.printer?.waiting; }
+  get hasMorePages(): boolean { return !this.finalWait && !!this.printer?.hasMore; }
+  dismiss(): void { this._active = false; this.run = null; }
 
-  show(text: string): void {
-    this.lines = processText(substituteNames(text));
-    this.topLine = 0;
-    this.charIndex = 0;
-    this.firstLineRevealed = false;
-    this.frameCount = 0;
-    this._active = true;
-    this.waitingForInput = false;
+  show(text: string, opts: TextBoxOptions = {}): void {
+    this.mode = opts.mode ?? 'legacy';
+    this._active = true; this.complete = false; this.textComplete = false;
+    this.finalWait = false; this.frame = 0; this.printer = null;
+    this.visible.fill(' ');
+    let message = substituteNames(text);
+    // Explicit A1b endings take precedence; legacy battle/script strings cannot
+    // acquire new waits from the map extractor's terminator.
+    if (opts.end || this.mode === 'legacy') message = message.replace(/<(PROMPT|DONE)>$/, '');
+    if (opts.end === 'prompt') message += '<PROMPT>';
+    const joy = this.buttons();
+    this.run = this.display(message, opts, joy);
+    this.run.next();
   }
-
-  /** Get the two display lines for the current view position. */
-  private getDisplayLines(): [string, string] {
-    const line1 = this.lines[this.topLine];
-    const line2 = this.topLine + 1 < this.lines.length ? this.lines[this.topLine + 1] : null;
-    return [
-      (line1 !== null && line1 !== undefined) ? line1 : '',
-      (line2 !== null && line2 !== undefined) ? line2 : '',
-    ];
+  private buttons(): number { return (isHeld('a') ? TEXT_A : 0) | (isHeld('b') ? TEXT_B : 0); }
+  private *delay(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
+  private *display(text: string, opts: TextBoxOptions, joy: number): Generator<void> {
+    if (this.mode === 'displayTextID') yield* this.delay(20);
+    else if (this.mode === 'printText') yield* this.delay(3);
+    else yield;
+    if (opts.printText) yield* this.delay(3);
+    this.printer = new TextPrinter(text, {
+      buttons: () => this.buttons(), speed: () => textSpeed,
+      soundFinished: isSoundFinished, beep: () => { playSFX('press_ab'); },
+      joypadRead: syncJoypadRead,
+    }, joy);
+    while (!this.printer.complete) { yield; this.printer.advance(); }
+    this.textComplete = true;
+    if (opts.end || this.mode === 'printText') { this.complete = true; return; }
+    this.finalWait = true;
+    if (this.mode === 'displayTextID') {
+      yield* this.printer.waitButton(false);
+      yield* this.printer.holdA();
+      // CloseTextDisplay's hWY write is visible after its DelayFrame.
+      yield;
+    } else {
+      // The legacy caller's dismissal remains its existing press/beep behavior.
+      while (!isPressed('a') && !isPressed('b')) yield;
+      playSFX('press_ab');
+    }
+    this.finalWait = false; this._active = false;
   }
-
-  /** Check if there are more lines after the current 2-line view. */
-  private hasMore(): boolean {
-    return this.topLine + 2 < this.lines.length;
+  /** One VBlank. Also called during retained script text's sound/button waits. */
+  updateDisplay(): void {
+    if (!this._active) return;
+    if ((this.mode !== 'displayTextID' || this.frame >= 20) && textBgTransfer.tick() && this.printer)
+      this.visible = this.printer.buffer.slice();
   }
-
   update(): void {
     if (!this._active) return;
-
-    if (this.waitingForInput) {
-      this.blinkTimer++;
-      if (isPressed('a') || isPressed('b')) {
-        playSFX('press_ab');
-        if (!this.hasMore()) {
-          // No more lines — close
-          this._active = false;
-          return;
-        }
-
-        // Advance: scroll by 1 line (like `cont` in the original)
-        this.topLine++;
-        this.charIndex = 0;
-        this.frameCount = 0;
-        this.waitingForInput = false;
-
-        if (this.lines[this.topLine] === null) {
-          // Current line1 IS the paragraph break — skip past null, type fresh
-          this.topLine++;
-          this.firstLineRevealed = false;
-        } else if (this.topLine + 1 < this.lines.length && this.lines[this.topLine + 1] === null) {
-          // Line2 is a paragraph break — skip ahead to clear box
-          this.topLine += 2;
-          this.firstLineRevealed = false;
-        } else {
-          // Normal scroll: line 1 was already visible, only type new line 2
-          this.firstLineRevealed = true;
-        }
-      }
-      return;
-    }
-
-    // Reveal characters — holding A or B reduces delay to 1 frame per char
-    // (assembly: PrintLetterDelay checks A/B held → DelayFrame → skip remaining delay)
-    const held = isHeld('a') || isHeld('b');
-    const delay = held ? 1 : textSpeed;
-    this.frameCount++;
-    if (this.frameCount >= delay) {
-      this.frameCount = 0;
-
-      const [line1, line2] = this.getDisplayLines();
-
-      if (!this.firstLineRevealed) {
-        // Typing line 1
-        this.charIndex++;
-        if (this.charIndex >= line1.length) {
-          this.firstLineRevealed = true;
-          this.charIndex = 0;
-        }
-      } else {
-        // Typing line 2
-        this.charIndex++;
-        if (this.charIndex >= line2.length) {
-          this.waitingForInput = true;
-          this.blinkTimer = 0;
-        }
-      }
-    }
+    this.updateDisplay();
+    this.frame++;
+    if (!this.complete) this.run?.next();
   }
-
   render(): void {
     if (!this._active || !fontCanvas) return;
+    // DisplayTextIDInit's font-loaded UpdateSprites sees the logical border at T,
+    // even though the window does not become visible until render T+3 (scanout T+4).
     uiTiles.cover(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE);
-
-    // Draw text box background (lightest color)
+    if (this.mode === 'displayTextID' && this.frame < 3) return;
     fillRect(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE, 0);
-
-    // Draw tile-based border from font_extra.png (matches original Game Boy textbox)
-    if (borderCanvas) {
-      // Top row: ┌ + 18× ─ + ┐
-      drawTile(borderCanvas, BORDER_TL, BOX_X, BOX_Y);
-      for (let i = 1; i < BOX_WIDTH - 1; i++) {
-        drawTile(borderCanvas, BORDER_H, BOX_X + i * TILE_SIZE, BOX_Y);
-      }
-      drawTile(borderCanvas, BORDER_TR, BOX_X + (BOX_WIDTH - 1) * TILE_SIZE, BOX_Y);
-
-      // Middle rows: │ + (white interior) + │
-      for (let row = 1; row < BOX_HEIGHT - 1; row++) {
-        drawTile(borderCanvas, BORDER_V, BOX_X, BOX_Y + row * TILE_SIZE);
-        drawTile(borderCanvas, BORDER_V, BOX_X + (BOX_WIDTH - 1) * TILE_SIZE, BOX_Y + row * TILE_SIZE);
-      }
-
-      // Bottom row: └ + 18× ─ + ┘
-      drawTile(borderCanvas, BORDER_BL, BOX_X, BOX_Y + (BOX_HEIGHT - 1) * TILE_SIZE);
-      for (let i = 1; i < BOX_WIDTH - 1; i++) {
-        drawTile(borderCanvas, BORDER_H, BOX_X + i * TILE_SIZE, BOX_Y + (BOX_HEIGHT - 1) * TILE_SIZE);
-      }
-      drawTile(borderCanvas, BORDER_BR, BOX_X + (BOX_WIDTH - 1) * TILE_SIZE, BOX_Y + (BOX_HEIGHT - 1) * TILE_SIZE);
-    }
-
-    const [line1, line2] = this.getDisplayLines();
-    const textX = BOX_X + TILE_SIZE;
-
-    // Render line 1 (row 2 of box, matching assembly coord hl, 1, 14)
-    const line1Len = this.firstLineRevealed ? line1.length : this.charIndex;
-    this.renderLine(line1, textX, BOX_Y + TILE_SIZE * 2, line1Len);
-
-    // Render line 2 (row 4 of box, matching assembly coord hl, 1, 16)
-    if (this.firstLineRevealed) {
-      const line2Len = this.waitingForInput ? line2.length : this.charIndex;
-      this.renderLine(line2, textX, BOX_Y + TILE_SIZE * 4, line2Len);
-    }
-
-    // Draw blinking ▼ prompt arrow when waiting for input and there's more text
-    // Assembly ref: HandleDownArrowBlinkTiming at hlcoord 18, 16
-    if (this.waitingForInput && this.hasMore()) {
-      const BLINK_HALF_PERIOD = 16; // frames per blink state (~0.27s on, ~0.27s off)
-      const visible = Math.floor(this.blinkTimer / BLINK_HALF_PERIOD) % 2 === 0;
-      if (visible) {
-        const arrowTile = charToTile('▼');
-        if (arrowTile >= 0) {
-          const arrowX = 18 * TILE_SIZE;          // column 18 (assembly: ldcoord_a 18, 16)
-          const arrowY = BOX_Y + TILE_SIZE * 4;   // row 16 = second text line
-          drawTile(fontCanvas!, arrowTile, arrowX, arrowY);
-        }
-      }
-    }
-  }
-
-  private renderLine(line: string, x: number, y: number, charCount: number): void {
-    if (!fontCanvas) return;
-    for (let i = 0; i < charCount && i < line.length; i++) {
-      const tileId = charToTile(line[i]);
-      if (tileId >= 0) {
-        drawTile(fontCanvas, tileId, x + i * TILE_SIZE, y);
+    drawTileBorder(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT);
+    for (let row = 1; row <= 4; row++) {
+      for (let col = 1; col <= BOX_TEXT_WIDTH; col++) {
+        const glyph = this.visible[row * 20 + col];
+        const extra = extraCharToTile(glyph);
+        const tile = extra >= 0 ? extra : charToTile(glyph);
+        const canvas = extra >= 0 ? borderCanvas : fontCanvas;
+        if (tile >= 0 && canvas) drawTile(canvas, tile, col * TILE_SIZE, BOX_Y + row * TILE_SIZE);
       }
     }
   }

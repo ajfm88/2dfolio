@@ -16,6 +16,25 @@
 Commands available in `ScriptCommand` union (from `src/script/types.ts`):
 `text`, `moveNpc`, `movePlayer`, `pushPlayer` (one simulated joypad step: collides, hops ledges), `movePikachu`, `faceNpc`, `facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`, `hideNpc`, `unhideNpc`, `callback`, `warp`, `exclamation`, `catchDemo`, `moveParallel`, `awaitInteraction`, `startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`, `fadeOut`, `fadeIn`, `yesNo`, `giveItem`, `removeItem`
 
+A1b adds the blocking text routines pickups need (`notes/18-a1b-plan.md` §4):
+
+| Command | Behavior |
+|---|---|
+| `text` with `end: 'none'` / `'prompt'` | Advances on `TextBox.isComplete`, keeping the box open; the next text replaces its contents |
+| `sound` | Plays once, waits for `isSoundFinished()`; `waitForCurrent` waits before playing too |
+| `textButtonWait` | Silent A/B wait, without an arrow |
+| `closeText` | Holds while A is down, then dismisses on the first A-up frame |
+| `hideObject` | Saves a `Map:npcId` key and hides the live NPC/collision slot immediately |
+
+Sound/button/close waits read the joypad every frame and freeze the world. Returning
+from these routines runs the next command in the same frame. Retained text likewise
+continues through `giveItem`/`setFlag` immediately, preserving the 73/181-update
+jingle traces. A script ending with retained text dismisses it as a guard. Legacy
+`text` behavior is unchanged; global terminators/paging timings belong to A5.
+
+Saved object toggles are separate from event flags (`hiddenObjects` in `events.ts`).
+Only objects that start ON are modeled today. `hideNpc` remains transient.
+
 ## Story Script Pattern
 
 Each map's story script is a builder function (e.g., `buildOaksLabIntroScript()`) that returns a `ScriptCommand[]` array. Scripts are started via `initScript(commands)` and executed frame-by-frame by the script controller (`src/script/script_controller.ts`).

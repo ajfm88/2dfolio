@@ -16,12 +16,12 @@ import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movemen
 import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
 import type { Bag } from '../items';
-import { getItemName } from '../items';
 import { loadSprite, getCtx, getScale, drawExclamationBubble } from '../renderer';
-import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
-import { updateSprites, recordStepForPikachu } from '../overworld/sprites';
+import { isPassPressed, isPressed, isHeld, readJoypad, syncJoypadRead } from '../input';
+import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
-import { setFlag, hasFlag, clearFlag, setMapScript } from '../events';
+import { setFlag, hasFlag, clearFlag, setMapScript, hideObject } from '../events';
+import { playSFX, isSoundFinished } from '../audio';
 import type { Direction } from '../core';
 import { getPlayerName } from '../core/player_state';
 import { markOwned } from '../pokedex_state';
@@ -53,6 +53,9 @@ export type ScriptAction =
 
 let activeScript: ScriptRunner | null = null;
 let scriptTextWaiting = false;
+let scriptSound: { name: string; played: boolean; waitForCurrent: boolean } | null = null;
+let scriptButtonWaiting = false;
+let scriptClosingText = false;
 let scriptMoveTarget: 'npc' | 'player' | 'parallel' | null = null;
 let scriptMoveNpcId: string | null = null;
 let scriptWaitFrames = 0;
@@ -171,6 +174,9 @@ export function lookupNpc(id: string, mapNpcs: Npc[]): Npc | undefined {
 export function initScript(commands: ScriptCommand[]): void {
   activeScript = createScript(commands);
   scriptTextWaiting = false;
+  scriptSound = null;
+  scriptButtonWaiting = false;
+  scriptClosingText = false;
   scriptMoveTarget = null;
   scriptMoveNpcId = null;
   scriptWaitFrames = 0;
@@ -197,13 +203,43 @@ export function initScript(commands: ScriptCommand[]): void {
  * frames, walk_pace.ts), with the NPCs and Pikachu updating as UpdateSprites does.
  * Returns an action when main.ts needs to handle a state transition.
  */
-export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | null {
+export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): ScriptAction | null {
   const { textBox, player, npcs, playerParty, playerBag, pikachuFollower } = deps;
   scriptFadeAlpha = null; // reset each frame; set below if fade active
 
   if (!activeScript || !activeScript.active) {
     activeScript = null;
+    textBox.dismiss();
     return { type: 'scriptEnded' };
+  }
+
+  // VBlank continues during retained text, even when several commands return in one frame.
+  if (!displayAdvanced && textBox.active && !scriptTextWaiting) {
+    textBox.updateDisplay();
+    displayAdvanced = true;
+  }
+
+  // These are blocking text routines, read each FRAME, with no overworld passes.
+  if (scriptSound || scriptButtonWaiting || scriptClosingText) {
+    syncJoypadRead();
+    if (scriptSound) {
+      if (!scriptSound.played) {
+        if (scriptSound.waitForCurrent && !isSoundFinished()) return null;
+        playSFX(scriptSound.name);
+        scriptSound.played = true;
+      }
+      if (!isSoundFinished()) return null;
+      scriptSound = null;
+    } else if (scriptButtonWaiting) {
+      if (!isPressed('a') && !isPressed('b')) return null;
+      scriptButtonWaiting = false;
+    } else {
+      if (isHeld('a')) return null;
+      scriptClosingText = false;
+      textBox.dismiss();
+    }
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced); // routine returns in this frame, not a frame later
   }
 
   // Handle awaitInteraction: player has free movement until they interact with target
@@ -225,7 +261,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
   }
 
   // Text, menus, DelayFrames and fades: the joypad is read every frame
-  if (scriptTextWaiting || scriptWaitFrames > 0 || scriptFade || pokecenterHealAnim || scriptExclamation) {
+  if (scriptWaitFrames > 0 || scriptFade || pokecenterHealAnim || scriptExclamation) {
     syncJoypadRead();
   }
 
@@ -247,6 +283,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
     }
 
     textBox.update();
+    displayAdvanced = true;
 
     if (scriptYesNoPending && textBox.isWaitingForInput && !textBox.hasMorePages) {
       yesNoMenu.show();
@@ -254,11 +291,18 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
       return null;
     }
 
-    if (!textBox.active) {
+    const command = currentCommand(activeScript);
+    if (command?.type === 'text' && command.end && textBox.isComplete) {
+      scriptTextWaiting = false;
+      advanceScript(activeScript);
+      // text_end returns directly into GiveItem / TextCommand_SOUND in this frame.
+    } else if (!textBox.active) {
       scriptTextWaiting = false;
       advanceScript(activeScript!);
+      return null;
+    } else {
+      return null;
     }
-    return null;
   }
 
   if (scriptWaitFrames > 0) {
@@ -415,14 +459,39 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
   const cmd = currentCommand(activeScript);
   if (!cmd) {
     activeScript = null;
+    textBox.dismiss(); // Guard against a script leaving a retained box open.
     return { type: 'scriptEnded' };
   }
 
   switch (cmd.type) {
     case 'text':
-      textBox.show(cmd.message);
+      textBox.show(cmd.message, { end: cmd.end });
       scriptTextWaiting = true;
       break;
+
+    case 'sound':
+      scriptSound = { name: cmd.name, played: false, waitForCurrent: cmd.waitForCurrent ?? false };
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'textButtonWait':
+      scriptButtonWaiting = true;
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'closeText':
+      scriptClosingText = true;
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'hideObject': {
+      hideObject(cmd.map, cmd.npcId);
+      if (deps.gameMap.mapData?.name === cmd.map) {
+        const npc = lookupNpc(cmd.npcId, npcs);
+        if (npc) npc.hidden = true;
+        // Refresh collision availability without advancing a single NPC or world pass.
+        player.detectSpriteCollisions(spriteTable(player, [...npcs, ...scriptNpcs], pikachuFollower));
+      }
+      advanceScript(activeScript);
+      return updateScript(deps, isPass, displayAdvanced);
+    }
 
     case 'moveNpc': {
       const npc = lookupNpc(cmd.npcId, npcs);
@@ -460,6 +529,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
     case 'setFlag':
       setFlag(cmd.flag);
       advanceScript(activeScript);
+      if (textBox.active && textBox.isComplete) return updateScript(deps, isPass, displayAdvanced);
       break;
 
     case 'clearFlag':
@@ -502,6 +572,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean): ScriptAction | 
         activeScript!.commands.splice(activeScript!.index + 1, 0, ...cmd.failCommands);
       }
       advanceScript(activeScript!);
+      if (textBox.active && textBox.isComplete) return updateScript(deps, isPass, displayAdvanced);
       break;
     }
 
@@ -789,7 +860,7 @@ function nurseProgram(pikachuFollower: PikachuFollower, player: Player): Pikachu
 // ── Free-movement sub-state (awaitInteraction) ─────────────────────────
 
 function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction | null {
-  const { textBox, player, gameMap, npcs, playerBag, pikachuFollower } = deps;
+  const { textBox, player, gameMap, npcs, pikachuFollower } = deps;
 
   if (!scriptAwaitInteraction || !activeScript) return null;
 
@@ -845,7 +916,7 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
   }
 
   // Include script NPCs in interaction + collision checks
-  const interaction = player.checkInteraction(gameMap, allNpcs);
+  const interaction = player.checkInteraction(gameMap, allNpcs, hasFlag);
   if (interaction) {
     if ('npc' in interaction) {
       if (interaction.npc.data.id === scriptAwaitInteraction.npcId) {
@@ -860,19 +931,7 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       scriptFreeSub = 'text';
     } else if ('scriptId' in interaction) {
       // Scripted hidden event during free-movement script — ignore
-    } else if ('item' in interaction) {
-      if (!hasFlag(interaction.flag)) {
-        const added = playerBag.add(interaction.item);
-        if (added) {
-          setFlag(interaction.flag);
-          const itemName = getItemName(interaction.item);
-          textBox.show(`${getPlayerName()} found\n${itemName}!`);
-        } else {
-          textBox.show("No more room for\nitems!");
-        }
-        scriptFreeSub = 'text';
-      }
-    } else {
+    } else if ('text' in interaction) {
       textBox.show(interaction.text);
       scriptFreeSub = 'text';
     }

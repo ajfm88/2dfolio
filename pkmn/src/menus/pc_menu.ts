@@ -6,8 +6,7 @@ import { isPressed } from '../input';
 import { drawText, drawBox } from './menu_render';
 import {
   Bag, getItemName, isKeyItem, isTossable,
-  addToInventory, removeFromInventory,
-  BAG_ITEM_CAPACITY, PC_ITEM_CAPACITY,
+  addToInventory, removeFromInventoryAt, PC_ITEM_CAPACITY,
 } from '../items';
 import type { ItemStack } from '../items';
 import { playSFX } from '../audio';
@@ -162,14 +161,12 @@ export class PcMenu {
   }
 
   private doWithdraw(id: string, count: number): void {
-    // Check if bag can hold it
-    const alreadyInBag = this.bag.items.some(i => i.id === id);
-    if (!alreadyInBag && this.bag.items.length >= BAG_ITEM_CAPACITY) {
+    // players_pc.asm: add to the destination before removing the selected source slot.
+    if (!this.bag.add(id, count)) {
       this.showMessage(["You can't carry", 'any more items.'], 'withdraw');
       return;
     }
-    this.bag.add(id, count);
-    removeFromInventory(this.pcItems, id, count);
+    removeFromInventoryAt(this.pcItems, this.listCursor, count);
     const name = getItemName(id);
     this.showMessage(['Withdrew', `${name}.`], 'withdraw');
     this.clampListCursor(this.pcItems.length + 1);
@@ -221,7 +218,7 @@ export class PcMenu {
       this.showMessage(['No room left to', 'store items.'], 'deposit');
       return;
     }
-    this.bag.remove(id, count);
+    this.bag.removeAt(this.listCursor, count);
     const name = getItemName(id);
     this.showMessage([`${name} was`, 'stored via PC.'], 'deposit');
     this.clampListCursor(this.bag.items.length + 1);
@@ -276,7 +273,7 @@ export class PcMenu {
       playSFX('press_ab');
       if (this.yesNoCursor === 0) {
         // YES
-        removeFromInventory(this.pcItems, this.selectedItemId, this.quantity);
+        removeFromInventoryAt(this.pcItems, this.listCursor, this.quantity);
         const name = getItemName(this.selectedItemId);
         this.showMessage(['Threw away', `${name}.`], 'toss');
         this.clampListCursor(this.pcItems.length + 1);
