@@ -213,7 +213,7 @@
       "x": 5,
       "y": 24,
       "movement": "walk",
-      "dialogue": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!"
+      "dialogue": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!<PROMPT>"
     },
     {
       "id": "youngster2",

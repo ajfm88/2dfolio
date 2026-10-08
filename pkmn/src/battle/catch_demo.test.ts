@@ -1,7 +1,7 @@
 // The catch demo — expected values from engine/battle/core.asm (DisplayBattleMenu
 // .doSimulatedMenuInput, StartBattle, LoadPlayerBackPic), home/list_menu.asm,
 // engine/items/item_effects.asm (ItemUseBall), engine/battle/animations.asm
-// (TossBallAnimation) and data/text/text_{2,9}.asm. Detail: notes/v1d-plan.md §1.
+// (TossBallAnimation) and data/text/text_{2,9}.asm. Detail: notes/05-v1d-plan.md §1.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { existsSync, readFileSync } from 'fs';

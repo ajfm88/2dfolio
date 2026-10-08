@@ -36,6 +36,13 @@ const OPPOSITE: Record<Direction, Direction> = {
 const noSprites = (): void => {};
 
 /**
+ * What A finds (OverworldLoop). `preDialogue`: a hidden event's text or a bookshelf, found by
+ * CheckForHiddenEventOrBookshelfOrCardKeyDoor before `.displayDialogue` — the gate that
+ * BIT_SEEN_BY_TRAINER closes (A1c). Hidden items and hidden-event scripts come from there too.
+ */
+export type Interaction = { npc: Npc } | { text: string; preDialogue?: true } | { item: string; flag: string } | { scriptId: string };
+
+/**
  * The player. Movement runs once per overworld pass (two frames) through PlayerWalk,
  * the ASM's loop (walk_pace.ts): 2 px a pass, 8 passes a step.
  */
@@ -145,10 +152,30 @@ export class Player {
   }
 
   /** Check if player wants to interact (A button) and return the interacted NPC, sign text, or hidden item. */
-  checkInteraction(gameMap: GameMap, npcs: Npc[]): { npc: Npc } | { text: string } | { item: string; flag: string } | { scriptId: string } | null {
+  checkInteraction(gameMap: GameMap, npcs: Npc[], hiddenItemFound: (flag: string) => boolean = () => false): Interaction | null {
     if (!isPassPressed('a') || this.isBusy) return null;
 
     const facing = this.getFacingTile();
+
+    // OverworldLoop: hidden events, bookshelf, signs, sprites. Already-found hidden
+    // items go directly to signs/sprites (hItemAlreadyFound), skipping the bookshelf.
+    const stepX = Math.floor(facing.tx / 2);
+    const stepY = Math.floor(facing.ty / 2);
+    const hiddenEvent = gameMap.getHiddenEventAt(stepX, stepY, this.direction);
+    if (hiddenEvent) {
+      if (hiddenEvent.scriptId) return { scriptId: hiddenEvent.scriptId };
+      if (hiddenEvent.item && hiddenEvent.flag) {
+        if (!hiddenItemFound(hiddenEvent.flag)) return { item: hiddenEvent.item, flag: hiddenEvent.flag };
+      } else if (hiddenEvent.text) return { text: hiddenEvent.text, preDialogue: true };
+    } else {
+      const adjTx = this.tileX + (this.direction === 'left' ? -1 : this.direction === 'right' ? 1 : 0);
+      const adjTy = this.tileY + (this.direction === 'up' ? -1 : this.direction === 'down' ? 1 : 0);
+      const bookshelfText = gameMap.getBookshelfText(adjTx, adjTy)
+        ?? gameMap.getBookshelfText(facing.tx, facing.ty);
+      if (bookshelfText) return { text: bookshelfText, preDialogue: true };
+    }
+    const signText = gameMap.getSignAt(stepX, stepY);
+    if (signText) return { text: signText };
 
     // Check NPCs (16x16 sprites occupy 2x2 tiles)
     const npcAt = (tx: number, ty: number): Npc | null => {
@@ -179,32 +206,6 @@ export class Player {
       }
       return { npc: found };
     }
-
-    // Check signs (coords are in 16px step units)
-    const stepX = Math.floor(facing.tx / 2);
-    const stepY = Math.floor(facing.ty / 2);
-    const signText = gameMap.getSignAt(stepX, stepY);
-    if (signText) return { text: signText };
-
-    // Check hidden events (tile-based interactions: TVs, PCs, bookshelves, hidden items)
-    const hiddenEvent = gameMap.getHiddenEventAt(stepX, stepY, this.direction);
-    if (hiddenEvent) {
-      if (hiddenEvent.scriptId) {
-        return { scriptId: hiddenEvent.scriptId };
-      }
-      if (hiddenEvent.item && hiddenEvent.flag) {
-        return { item: hiddenEvent.item, flag: hiddenEvent.flag };
-      }
-      if (hiddenEvent.text) return { text: hiddenEvent.text };
-    }
-
-    // Check bookshelf tiles (generic tile-based text per tileset)
-    // Check the tile directly adjacent to the sprite (1 tile ahead, not a full step)
-    const adjTx = this.tileX + (this.direction === 'left' ? -1 : this.direction === 'right' ? 1 : 0);
-    const adjTy = this.tileY + (this.direction === 'up' ? -1 : this.direction === 'down' ? 1 : 0);
-    const bookshelfText = gameMap.getBookshelfText(adjTx, adjTy)
-      ?? gameMap.getBookshelfText(facing.tx, facing.ty);
-    if (bookshelfText) return { text: bookshelfText };
 
     return null;
   }

@@ -3,9 +3,18 @@
 import type { Direction } from '../core';
 import type { CatchDemoBattleType } from '../battle/catch_demo';
 import type { NpcWalkMode } from '../overworld/walk_pace';
+import type { TextBoxEnd } from '../text/textbox';
 
 export type ScriptCommand =
-  | { type: 'text'; message: string }
+  | { type: 'text'; message: string; end?: TextBoxEnd }
+  // TextCommand_SOUND (home/text.asm), optionally PlaySoundWaitForCurrent first.
+  | { type: 'sound'; name: string; waitForCurrent?: boolean }
+  // WaitForTextScrollButtonPress (home/joypad2.asm): silent, no arrow.
+  | { type: 'textButtonWait' }
+  // HoldTextDisplayOpen + CloseTextDisplay (home/text_script.asm): wait for A up.
+  | { type: 'closeText' }
+  // HideObject (engine/overworld/toggleable_objects.asm): persistent map-object toggle.
+  | { type: 'hideObject'; map: string; npcId: string }
   // MoveSprite: each step normal (1 px a pass) or fast (Yellow's $04–$07, 2 px a pass);
   // `modes` gives each step's mode, missing entries are normal (walk_pace.ts)
   | { type: 'moveNpc'; npcId: string; path: Direction[]; modes?: NpcWalkMode[] }

@@ -218,7 +218,7 @@ export class ItemMenu {
         const item = this.bag.items[this.selectedItemIndex];
         if (!item) { this.state = 'list'; return 'open'; }
         const name = getItemName(item.id);
-        this.bag.remove(item.id, this.tossQty);
+        this.bag.removeAt(this.selectedItemIndex, this.tossQty);
         this.messageLines = [`Threw away`, `${this.tossQty} ${name}.`];
         this.messageReturnState = 'list';
         this.state = 'message';
@@ -268,7 +268,7 @@ export class ItemMenu {
       this.healDifference = newHp - oldHp;
       this.healFrameDelay = 0;
       // Don't update mon.currentHp yet — animation will do it
-      this.bag.remove(item.id);
+      this.bag.removeAt(this.selectedItemIndex);
       this.state = 'heal_anim';
       return;
     }
@@ -288,7 +288,7 @@ export class ItemMenu {
         mon.toxicCounter = 0;
         mon.badlyPoisoned = false;
       }
-      this.bag.remove(item.id);
+      this.bag.removeAt(this.selectedItemIndex);
       this.state = 'heal_anim';
       return;
     }
@@ -296,7 +296,7 @@ export class ItemMenu {
     // Non-HP items (status cures, revive, etc.)
     const result = this.applyItem(item.id, mon);
     if (result.success) {
-      this.bag.remove(item.id);
+      this.bag.removeAt(this.selectedItemIndex);
       this.messageReturnState = 'list';
     } else {
       this.messageReturnState = 'party_select';

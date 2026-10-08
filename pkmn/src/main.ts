@@ -10,13 +10,16 @@ import {
   captureUi,
   beginSpriteLog,
   endSpriteLog,
+  drawExclamationBubble,
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput } from "./audio";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
+import { MapDialogue } from './text/map_dialogue';
 import { PassClock } from "./overworld/walk_pace";
 import { enterMapCounters } from './overworld/step_end';
 import { GB_FPS, MIN_FPS, MAX_FPS, TickClock, stepFps } from "./core/tick_clock";
 import { GameMap, Player, Npc, loadNpcs } from "./overworld";
+import type { Direction } from "./core";
 import { UiEntry, overworldUiOpen, openOverworldUi, fontLoadedUpdateSprites } from "./overworld/ui_entry";
 import { spriteDrawOrder } from "./overworld/sprites";
 import { uiTiles } from "./renderer/ui_tiles";
@@ -27,6 +30,11 @@ import {
   updateOverworld as runOverworld, createOverworldState,
   runMapScript, handleStepComplete,
 } from "./overworld";
+import { finishTrainerEngage, seenStartPressed } from "./overworld/overworld_controller";
+import { endTrainerBattle } from "./overworld/map_trainers";
+import { EmotionBubble } from "./overworld/emotion_bubble";
+import { updateSprites } from "./overworld/sprites";
+import { setJoyIgnore } from "./input/joy_ignore";
 import type { OverworldAction, OverworldDeps } from "./overworld";
 import { PikachuFollower, shouldPikachuFollow, modifyPikachuHappiness, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
 import {
@@ -90,7 +98,7 @@ import {
 } from "./menus";
 import type { BoxedPokemon } from "./menus";
 import { saveGame, loadGame, restoreParty, restoreBag, hasSavedGame } from "./save";
-import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts } from "./events";
+import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts, getAllHiddenObjects, restoreHiddenObjects } from "./events";
 import { VIRIDIAN_CITY, initialViridianScript, martSpawnsOldMan } from "./story/viridian_city";
 import { markSeen, markOwned, getSeenList, getOwnedList, getOwnedCount, restorePokedex } from "./pokedex_state";
 import type { ScriptCommand } from "./script";
@@ -114,6 +122,7 @@ import {
 const gameMap = new GameMap();
 const player = new Player();
 const textBox = new TextBox();
+const mapDialogue = new MapDialogue(textBox);
 const pikachuFollower = new PikachuFollower();
 let npcs: Npc[] = [];
 
@@ -128,7 +137,7 @@ type GameState =
   | "transition"
   | "battle"
   | "battle_transition"
-  | "trainer_approach"
+  | "emotion_bubble"
   | "start_menu"
   | "party_menu"
   | "shop"
@@ -410,6 +419,7 @@ async function loadSavedGame(): Promise<void> {
   }
   // Saves made before V1e have no map script states: derive Viridian's from its events
   restoreMapScripts(saved.mapScripts ?? { [VIRIDIAN_CITY]: initialViridianScript(hasFlag) });
+  restoreHiddenObjects(saved.hiddenObjects ?? []);
   restorePikachuHappiness(saved.pikachuHappiness ?? 90, saved.pikachuMood ?? 128);
   restoreNames(saved.playerName, saved.rivalName);
   setRivalStarter(saved.rivalStarter);
@@ -460,6 +470,7 @@ async function startNewGame(): Promise<void> {
   resetPikachuHappiness();
   restoreFlags([]);           // clear all event flags
   restoreMapScripts({});      // init_player_data.asm clears wGameProgressFlags
+  restoreHiddenObjects([]);   // init_player_data.asm clears toggleable-object flags
   restorePokedex([], []);     // clear pokedex
   setRivalStarter(undefined);
   // Note: player/rival names are set during Oak speech, before this function runs
@@ -513,7 +524,14 @@ function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
     return;
   }
   pendingTrainer = { npc, meetMusic: seenByTrainer ? null : meetMusicFor(trainerClass) };
-  textBox.show(dialogue);
+  mapDialogue.show(dialogue, { trainer: true, onTextComplete: () => {
+    if (pendingTrainer?.meetMusic) {
+      stopMusic();
+      currentMapMusic = null;
+      playMusic(pendingTrainer.meetMusic);
+      pendingTrainer.meetMusic = null;
+    }
+  } });
   stateBeforeMenu = 'overworld';
   state = 'textbox';
 }
@@ -920,6 +938,7 @@ async function handleWarpLoad(
   currentMapName = destMapName;
   npcs = result.npcs;
   Object.assign(ow, enterMapCounters(ow));
+  setJoyIgnore('none'); // EnterMap ends with wJoyIgnore = 0
   // Play map music if it changed
   updateMapMusic(destMapName);
   ow.justWarped = true;
@@ -972,7 +991,7 @@ const tickClock = new TickClock(targetFps);
 // ASM's OverworldLoop does (overworld/walk_pace.ts, DECISIONS #36). Text, waits, fades,
 // audio and battles keep counting frames.
 const passClock = new PassClock();
-const PASS_STATES: ReadonlySet<GameState> = new Set<GameState>(["overworld", "script", "trainer_approach"]);
+const PASS_STATES: ReadonlySet<GameState> = new Set<GameState>(["overworld", "script"]);
 let prevTickInPassState = false;
 
 let fpsDisplayTimer = 0;
@@ -1003,6 +1022,39 @@ function overworldDeps(): OverworldDeps {
   };
 }
 
+// Trainer sight (A1c): the bubble over the engaged trainer, and the walk-up to start when
+// it ends (CheckFightingMapTrainers after EmotionBubble).
+const emotionBubble = new EmotionBubble();
+let pendingEngage: { npc: Npc; steps: number; facing: Direction } | null = null;
+
+/**
+ * A pass after RunMapScript and the joypad read (or a moving pass): START, or the
+ * overworld's pass. Also the rest of the spotting pass once EmotionBubble ends.
+ */
+function restOfPass(deps: OverworldDeps): void {
+  if (!player.isBusy && isPassPressed("start")) {
+    // BIT_SEEN_BY_TRAINER: .displayDialogue runs UpdateSprites and opens nothing
+    if (ow.seenByTrainer) {
+      seenStartPressed(deps);
+      return;
+    }
+    playSFX('start_menu');
+    startMenu.show(hasFlag("GOT_POKEDEX"), getPlayerName());
+    stateBeforeMenu = "overworld";
+    state = "start_menu";
+  } else {
+    const action = runOverworld(deps, ow);
+    if (action) handleOverworldAction(action);
+    passClock.delay(player.takeFrameDelay()); // Delay3 after a ledge hop lands
+  }
+}
+
+/** EnterMap's UpdateSprites after a battle (.battleOccurred → EnterMap): sprites aren't
+ *  re-initialized, so this refreshes their images before the first pass (A1c). */
+function enterMapAfterBattle(): void {
+  updateSprites(npcs, gameMap, player, pikachuFollower);
+}
+
 /** One game tick — all update logic (no rendering). */
 function gameTick(): void {
   // Accumulate play time (only during gameplay, not title/menu screens)
@@ -1024,7 +1076,8 @@ function gameTick(): void {
   if (inPassState && (!prevTickInPassState || movementBlocking)) passClock.reset();
   prevTickInPassState = inPassState;
   const isPass = inPassState && !movementBlocking && passClock.tick();
-  if (!inPassState) syncJoypadRead();
+  // EmotionBubble's DelayFrames read nothing: the spotting pass's own Joypad comes after it.
+  if (!inPassState && state !== "emotion_bubble" && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1135,17 +1188,18 @@ function gameTick(): void {
       }
       readJoypad();
     }
-    if (!isPass) {
-      // (the pair's first frame)
-    } else if (!player.isBusy && isPassPressed("start")) {
-      playSFX('start_menu');
-      startMenu.show(hasFlag("GOT_POKEDEX"), getPlayerName());
-      stateBeforeMenu = "overworld";
-      state = "start_menu";
-    } else {
-      const action = runOverworld(deps, ow);
-      if (action) handleOverworldAction(action);
-      passClock.delay(player.takeFrameDelay()); // Delay3 after a ledge hop lands
+    if (isPass) restOfPass(deps);
+  } else if (state === "emotion_bubble") {
+    // EmotionBubble holds everything for 61 frames (no passes, no joypad read). Then, in the
+    // same frame: its UpdateSprites and the walk-up, and the rest of the spotting pass.
+    if (emotionBubble.tick() && pendingEngage) {
+      const engage = pendingEngage;
+      pendingEngage = null;
+      const deps = overworldDeps();
+      finishTrainerEngage(deps, engage);
+      state = "overworld";
+      readJoypad();
+      restOfPass(deps);
     }
   } else if (state === "start_menu") {
     const action = startMenu.update();
@@ -1244,6 +1298,7 @@ function gameTick(): void {
         lastBlackoutWarp,
         getRivalStarter(),
         getAllMapScripts(),
+        getAllHiddenObjects(),
       );
     } else if (saveResult === "closed") {
       state = "start_menu";
@@ -1255,15 +1310,6 @@ function gameTick(): void {
   } else if (state === "town_map") {
     if (townMap.update() === "closed") {
       state = "overworld";
-    }
-  } else if (state === "trainer_approach") {
-    if (isPass && ow.approachingNpc) {
-      ow.approachingNpc.updateApproach();
-      if (ow.approachingNpc.approachDone) {
-        const npc = ow.approachingNpc;
-        ow.approachingNpc = null;
-        engageTrainer(npc, true);
-      }
     }
   } else if (state === "script") {
     const scriptDeps: ScriptDeps = {
@@ -1356,16 +1402,7 @@ function gameTick(): void {
       }
     }
   } else if (state === "textbox") {
-    textBox.update();
-    // EngageMapTrainer runs as soon as the before-battle text has printed (it ends
-    // with `done`, which doesn't wait); the A press comes after, in DisplayTextID.
-    if (pendingTrainer?.meetMusic && textBox.active && textBox.isWaitingForInput && !textBox.hasMorePages) {
-      stopMusic();
-      currentMapMusic = null;
-      playMusic(pendingTrainer.meetMusic);
-      pendingTrainer.meetMusic = null;
-    }
-    if (!textBox.active) {
+    if (mapDialogue.update()) {
       // CloseTextDisplay restores the facing saved AFTER MakeNPCFacePlayer.
       // Keep it; fixed STAY sprites turn back through their own random cycle.
       ow.interactedNpc = null;
@@ -1399,6 +1436,7 @@ function gameTick(): void {
       clearCatchDemo();
       setActivePalette(action.savedPalette);
       reloadBorderTiles();
+      enterMapAfterBattle(); // .battleOccurred → EnterMap
       fadeAlpha = 1;
       fadeDir = "in";
       state = "script";
@@ -1475,11 +1513,16 @@ function gameTick(): void {
           }
           clearScriptBattlePending();
           pikachuFollower.visible = false;
+          // AllPokemonFainted runs RunMapScript once: EndTrainerBattle resets a trainer map
+          endTrainerBattle(currentMapName, ow);
           handleBlackoutWarp();
         } else {
           // Victory fanfare is already playing (triggered by battle.onVictory callback)
           // Re-evaluate Pikachu visibility (Pikachu may have fainted)
           pikachuFollower.visible = shouldPikachuFollow(playerParty);
+          // EnterMap's UpdateSprites (after any evolutions on the cartridge; nothing on the
+          // map moves while they run)
+          enterMapAfterBattle();
 
           // Check for post-battle evolutions before returning to overworld
           // (EndOfBattle skips them after a lost battle)
@@ -1554,7 +1597,7 @@ function drawUiLayer(): void {
     case 'start_menu': startMenu.render(); break;
     case 'overworld':
     case 'script':
-    case 'trainer_approach':
+    case 'emotion_bubble':
     case 'textbox': textBox.render(); renderScriptYesNo(); break;
   }
 }
@@ -1721,6 +1764,9 @@ function gameLoop(now = 0): void {
     renderOverworldScene(camX, camY);
     renderPokecenterHeal(camX, camY, npcs);
     renderScriptExclamation(camX, camY, player, npcs);
+    // EmotionBubble's OAM entries come first: over every sprite
+    const bubble = state === 'emotion_bubble' ? emotionBubble.showing : null;
+    if (bubble) drawExclamationBubble(bubble.x - camX, bubble.y - camY - 4);
   }
 
   drawUi();
@@ -1788,7 +1834,7 @@ function handleOverworldAction(action: OverworldAction): void {
       state = 'pikachu_emotion';
       break;
     case 'textbox':
-      textBox.show(action.text);
+      mapDialogue.show(action.text);
       if (action.pendingTownMap) pendingTownMap = true;
       stateBeforeMenu = 'overworld';
       state = 'textbox';
@@ -1838,8 +1884,22 @@ function handleOverworldAction(action: OverworldAction): void {
     case 'connectToMap':
       connectToMap(action.destMap, action.dir, action.offset);
       break;
-    case 'trainerApproach':
-      state = 'trainer_approach';
+    case 'trainerEngage': {
+      // TrainerEngage → EngageMapTrainer → PlayTrainerMusic, before the bubble
+      const music = meetMusicFor(action.npc.data.trainerClass!);
+      if (music) {
+        stopMusic();
+        currentMapMusic = null;
+        playMusic(music);
+      }
+      pendingEngage = { npc: action.npc, steps: action.steps, facing: action.facing };
+      emotionBubble.start(action.npc);
+      state = 'emotion_bubble';
+      break;
+    }
+    case 'trainerText':
+      // DisplayEnemyTrainerTextAndStartBattle: the text (no music), then StartTrainerBattle
+      engageTrainer(action.npc, true);
       break;
   }
 }

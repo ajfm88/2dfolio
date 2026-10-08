@@ -504,7 +504,8 @@
       "direction": "left",
       "trainerClass": "BUG_CATCHER",
       "trainerParty": 0,
-      "endBattleText": "No!\nCATERPIE can't\ncut it!",
+      "sightRange": 4,
+      "endBattleText": "No!\nCATERPIE can't\ncut it!<PROMPT>",
       "afterBattleText": "Ssh! You'll scare\nthe bugs away!"
     },
     {
@@ -517,7 +518,8 @@
       "direction": "left",
       "trainerClass": "BUG_CATCHER",
       "trainerParty": 1,
-      "endBattleText": "Huh?\nI ran out of\nPOKéMON!",
+      "sightRange": 4,
+      "endBattleText": "Huh?\nI ran out of\nPOKéMON!<PROMPT>",
       "afterBattleText": "Darn! I'm going\nto catch some\nstronger ones!"
     },
     {
@@ -530,7 +532,8 @@
       "direction": "left",
       "trainerClass": "BUG_CATCHER",
       "trainerParty": 2,
-      "endBattleText": "I\ngive! You're good\nat this!",
+      "sightRange": 1,
+      "endBattleText": "I\ngive! You're good\nat this!<PROMPT>",
       "afterBattleText": "Sometimes, you\ncan find stuff on\nthe ground!\fI'm looking for\nthe stuff I\ndropped!"
     },
     {
@@ -542,7 +545,8 @@
       "dialogue": "Hi, do you have a\nPIKACHU?",
       "trainerClass": "LASS",
       "trainerParty": 18,
-      "endBattleText": "Oh no,\nreally?",
+      "sightRange": 0,
+      "endBattleText": "Oh no,\nreally?<PROMPT>",
       "afterBattleText": "I looked forever,\nbut I never found\na PIKACHU here!"
     },
     {
@@ -555,7 +559,8 @@
       "direction": "right",
       "trainerClass": "BUG_CATCHER",
       "trainerParty": 14,
-      "endBattleText": "After\nall I did...",
+      "sightRange": 4,
+      "endBattleText": "After\nall I did...<PROMPT>",
       "afterBattleText": "A METAPOD is cool\nbecause its\nattack is its\ndefense!"
     },
     {

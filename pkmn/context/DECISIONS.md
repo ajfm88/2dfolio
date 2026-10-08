@@ -223,7 +223,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
 
     Also on 2026-09-22 (R1c): `data/` and `static/` became tracked, and the root `.gitattributes` pins text to LF and marks PNG/tilemap/ROM binary. This amends #25's list of what git tracks.
 
-29. **V1 plan approved: five slices, A1 right after V1, new slice A4 for trades** (2026-09-22). *The user's answers to the plan in `notes/v1-plan.md` (STATUS O-6). User: "the split is perfect, and go ahead with all 6 recommendations".*
+29. **V1 plan approved: five slices, A1 right after V1, new slice A4 for trades** (2026-09-22). *The user's answers to the plan in `notes/02-v1-plan.md` (STATUS O-6). User: "the split is perfect, and go ahead with all 6 recommendations".*
 
     - **V1 is split into five slices:**
       - V1a: extract the 7 maps and their trainer data (extraction only).
@@ -239,13 +239,13 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **New slice A4: in-game trades** (`DoInGameTradeDialogue`). Route 2's trade house has the first one, but it asks for a Clefairy, and the player can't have one before Mt. Moon (B1). The plan grows to **34** milestones.
     - **Texts with runtime values** (`text_ram`, `text_decimal`; Oak's Aide first) are transcribed in the engine with ASM citations, which is what upstream already does for this kind of text. Teaching the extractor those two text commands is logged as a later improvement.
 
-30. **V1b: Oak's Aide moves to A2; the player keeps their facing through warps; door SFX waits for V5** (2026-09-22). *The user's answer to `notes/v1b-plan.md` §3: "go", accepting all three recommendations.*
+30. **V1b: Oak's Aide moves to A2; the player keeps their facing through warps; door SFX waits for V5** (2026-09-22). *The user's answer to `notes/03-v1b-plan.md` §3: "go", accepting all three recommendations.*
 
     - **Oak's Aide (Route2Gate, HM05) moves from V1b to A2.** The bag has no TM/HM items at all: `item_names.json` holds only the 97 `ItemNames` entries. Giving HM05 needs the machine names and the `TechnicalMachines` table, which A2 builds anyway for Brock's TM34. A flood fill also shows the Aide can't be reached before Cut. Until A2 he is inert, like the trade kid.
     - **The player keeps their facing through warps.** The ASM never resets it on a warp: `ResetPlayerSpriteData` runs only at Continue and new game. Upstream forced `down` after every warp, which turned the player around when leaving a gate northward and fed Pikachu's spawn rules the wrong facing. Visible on existing maps too: the player now faces up after entering a building, as in the original.
     - **Door SFX:** the ASM picks go-inside or go-outside from the tile under the player (`PlayMapChangeSound`); upstream picks by destination map. This is fixed everywhere in V5's SFX slice rather than special-cased for the Forest in V1b.
 
-31. **V1c: fix the Oak's Lab loss, record the rival's starter, fix the meet-music typo, add A5** (2026-09-23). *The user's answer to `notes/v1c-plan.md` §3: "go", accepting all four recommendations.*
+31. **V1c: fix the Oak's Lab loss, record the rival's starter, fix the meet-music typo, add A5** (2026-09-23). *The user's answer to `notes/04-v1c-plan.md` §3: "go", accepting all four recommendations.*
 
     - **The Oak's Lab loss is fixed in V1c.** When RIVAL1 wipes your party, the ASM clears the top of the screen, scrolls his pic in, waits 40 frames and prints `_Rival1WinText`. In `OAKS_LAB` there is no blackout: `HandlePlayerBlackOut` returns early and `.battleOccurred` skips the faint check. The lab script then heals the party and carries on. Upstream sent this loss through its generic blackout, which halved the money, warped the player, and left the lab script unfinished.
     - **The rival's starter (`wRivalStarter`) is recorded from V1c on.** It is saved as `rivalStarter`, next to the rival's name: 2 = FLAREON after a lab win, 3 = VAPOREON after a loss (`OaksLabRivalEndBattleScript`). The rival's team in every later rival battle depends on it: Route 22, Pokémon Tower 2F, Silph Co 7F, the Champion. Saves made before V1c don't have it, so the Route 22 slice picks a fallback.
@@ -257,11 +257,11 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
 
       Until A5, map-trainer battles keep upstream's instant cut rather than borrowing the spiral: the Forest's correct transition is Shrink or Split, so the spiral would be just as wrong. The plan grows to **35** milestones.
 
-32. **V1d: the catch demo is its own module, follows the ASM, and gets "PROF.OAK" from the ROM** (2026-09-24). *The user's answer to `notes/v1d-plan.md` §3: "go", accepting all four recommendations.*
+32. **V1d: the catch demo is its own module, follows the ASM, and gets "PROF.OAK" from the ROM** (2026-09-24). *The user's answer to `notes/05-v1d-plan.md` §3: "go", accepting all four recommendations.*
 
     - **The demo lives beside `Battle`, not inside it:** `battle/catch_demo.ts` (the rules, pure and tested) and `battle/catch_demo_screen.ts` (upstream's `pikachu/pikachu_battle.ts`, moved and generalized). `Battle` assumes a player Pokémon, and Oak's catch runs with an empty party. Folding both battle types into it would also touch every normal battle.
     - **The old man's side is checked by unit tests plus a temporary, uncommitted hook** for the agent's browser check. No debug-overlay button: that would grow upstream's non-vanilla tooling before J2. The user first sees the old man's demo in V1e.
-    - **All 8 departures in upstream's Pikachu catch are fixed** (`notes/v1d-plan.md` §1.3): the simulated menu and bag, the HUD after "appeared!", 20 frames before the throw, the "used" text kept up, the pic hidden after the poof with the HUD kept, the caught text waiting for A, the battle engine's own name string, and the instant white at the end.
+    - **All 8 departures in upstream's Pikachu catch are fixed** (`notes/05-v1d-plan.md` §1.3): the simulated menu and bag, the HUD after "appeared!", 20 frames before the throw, the "used" text kept up, the pic hidden after the poof with the HUD kept, the caught text waiting for A, the battle engine's own name string, and the instant white at the end.
     - **"PROF.OAK" is extracted** as `BATTLE_PROF_OAK_NAME` (`DisplayBattleMenu.profOakName`, 0f:4fef), next to V1a's `BATTLE_OLD_MAN_NAME`.
 
 33. **The game ticks at the Game Boy's frame rate, 59.7275 Hz** (2026-09-25). *Resolves O-5. User: "pls match the game boy 59.7".*
@@ -271,16 +271,16 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **Measured** in the user's Chrome (240 Hz display): **59.70 ticks/s over 20 s**, where upstream's loop gave 48. That means the game had been running at about 80% of Game Boy speed there.
     - **`-` / `+` keep working.** They step through multiples of 5 (10–200) with the Game Boy rate as one more stop between 55 and 60, so it can always be reached again. A rate saved in `localStorage` (`p151-f`) still wins. The keys themselves stay upstream's non-vanilla tooling for J2 to decide.
 
-34. **V1e: map scripts keep their state in the save; the Gym-door quirk is kept; V1e is one slice** (2026-09-25). *The user's answer to `notes/v1e-plan.md` §4 was "do v1e as one slice" (Q3). Q1 and Q2 weren't addressed, so they took the recommended defaults. The user then play-tested V1e and said "it all works as intended".*
+34. **V1e: map scripts keep their state in the save; the Gym-door quirk is kept; V1e is one slice** (2026-09-25). *The user's answer to `notes/06-v1e-plan.md` §4 was "do v1e as one slice" (Q3). Q1 and Q2 weren't addressed, so they took the recommended defaults. The user then play-tested V1e and said "it all works as intended".*
 
     - **`w<Map>CurScript` is saved per map** (`events.ts` `getMapScript` / `setMapScript`, `SaveData.mapScripts`). Only the resting values are saved (Viridian: 0 `DEFAULT`, 1 `AFTER_POKEDEX`, 2 `POST_CATCH_TRAINING`), because the other states run with input locked and are one command list each. A new game clears them (`init_player_data.asm`). Saves without the field get Viridian's state from `GOT_POKEDEX` / `COMPLETED_CATCH_TRAINING`. The rejected alternative was upstream's flags-only style, which can't reproduce the quirk below. Later maps with script state (Pewter, Route 22, Cerulean…) should reuse this.
     - **The Gym-door quirk is kept (Hard rule 7).** The Gym's push-back sends the city to `POST_CATCH_TRAINING` from any state, which turns off the (19,9) old-man check. Touch the Gym door before the demo and you can walk north, before the Pokédex without one. The Pokédex re-arms the check (state 1), and so does talking to the sleeping man (his text handler ends in state 0). Browser-checked: the Gym door, a save with `ViridianCity: 2`, then walking to (19,3) with no Pokédex.
     - **One slice**, data and engine together, as #29 already allowed for V1e.
     - **Pushes are simulated joypad steps.** The ASM's one-step push-backs are `StartSimulatingJoypadStates` presses. They skip the turning frame (`.noDirectionChange`), and they still collide and hop ledges, because `GetSimulatedInput` has already brought the index to 0 by the time `CollisionCheckOnLand` runs. So at the Gym door the player **hops the ledge** at y = 9 down to (32,10). The new `pushPlayer` script command feeds a simulated direction into `player.update` rather than moving the player directly the way `movePlayer` does.
 
-35. **A1 splits into three slices; new milestone A6 (overworld pace) goes first** (2026-09-27). *The user's answer to `notes/a1-plan.md` §4 (STATUS O-8): "yes, pls do walking speed first, lol, that was bugging me a lot". That takes all six recommendations, with decision 2's "A6 first" alternative.*
+35. **A1 splits into three slices; new milestone A6 (overworld pace) goes first** (2026-09-27). *The user's answer to `notes/07-a1-plan.md` §4 (STATUS O-8): "yes, pls do walking speed first, lol, that was bugging me a lot". That takes all six recommendations, with decision 2's "A6 first" alternative.*
 
-    - **A6 "Overworld pace per the ASM" is a new milestone (36 in all), and it runs first**, before A1a. The ASM's overworld loop takes two frames per pass, so a player step takes 16 frames and an NPC step 32. Upstream moves both one step per 8 ticks, and since #33 a tick is one frame, so the player and Pikachu walk at 2× and NPCs at 4×. A6 gets its own probe and plan (`notes/a6-plan.md`). *⚠ Refined by the A6 probe (#36): a normal NPC step is **34** frames — a start pass, then 16 × 1 px.*
+    - **A6 "Overworld pace per the ASM" is a new milestone (36 in all), and it runs first**, before A1a. The ASM's overworld loop takes two frames per pass, so a player step takes 16 frames and an NPC step 32. Upstream moves both one step per 8 ticks, and since #33 a tick is one frame, so the player and Pikachu walk at 2× and NPCs at 4×. A6 gets its own probe and plan (`notes/08-a6-plan.md`). *⚠ Refined by the A6 probe (#36): a normal NPC step is **34** frames — a start pass, then 16 × 1 px.*
     - **A1 is three slices, in this order after A6:**
       - A1a: music-mode SFX and the two item jingles (`get_item1`, `get_item2`). The other music-mode SFX stay in V5.
       - A1b: item balls, plus the hidden-item pickup.
@@ -290,7 +290,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **Picked-up balls are saved as `hiddenObjects`**, a list of `Map:npcId` keys that mirrors the ASM's toggleable-object flags. Later `HideObject` users reuse it.
     - **Small data changes go with their engine slice:** the jingle decoder fix and headers in A1a, `sightRange` in A1c. Each regenerated diff must show only that change. This is an exception to CONVENTIONS' "don't mix extraction and engine", as in #29 (V1e) and #31 (V1c).
 
-36. **A6 splits into four slices, runs on 2-frame passes, and goes first** (2026-09-27). *The user's answer to `notes/a6-plan.md` §4 (STATUS O-9): "go", taking all four recommendations.*
+36. **A6 splits into four slices, runs on 2-frame passes, and goes first** (2026-09-27). *The user's answer to `notes/08-a6-plan.md` §4 (STATUS O-9): "go", taking all four recommendations.*
 
     - **Four slices**, back to back, then A1a–c:
       - A6a: the pace — the player, Pikachu, the three NPC walking modes, the walk animations, the ledge jump table, and every cutscene walk.
@@ -300,7 +300,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **The overworld runs on the ASM's pass.** One pass is 2 frames (`OverworldLoop` → `DelayFrame` ×2), and every mover advances once per pass: 2 px for the player, 1 px for a normal NPC. So positions change every 2 frames, as on the Game Boy. Rejected: halving the speeds per frame, which is smoother than the original and needs fractional pixels for NPCs. Text, script waits, fades, audio and battles keep counting frames (#33).
     - **Cutscene walks are ported with their ASM mode and concurrency in A6a**, not only re-timed. The modes are normal NPC steps, Yellow's fast codes, and walking in step with the player. Wrong paths or texts found on the way are logged, not fixed.
 
-37. **A6b takes all four plan decisions; Sol 6.1 implements it and Claude reviews** (2026-10-01). *The user's answer to `notes/a6-plan.md` §5.4 (STATUS O-10): "mark those 4 decisions as yes".*
+37. **A6b takes all four plan decisions; Sol 6.1 implements it and Claude reviews** (2026-10-01). *The user's answer to `notes/08-a6-plan.md` §5.4 (STATUS O-10): "mark those 4 decisions as yes".*
 
     - **Map triggers run in a per-pass map-script hook**, on every standing pass and before the joypad read, as `JoypadOverworld` → `RunMapScript` does. Pallet's, Viridian's and the Oak's Lab triggers move there, on their ASM conditions (Pallet: `wYCoord == 0`, no facing check). Trainer sight joins the hook in A1c.
     - **Pikachu's walking happiness and mood are fixed in A6b** (`UpdatePikachuHappinessAndMood`): the step counter resets on map entry, the bonus is a 50% roll every 256 steps, and every step moves the mood 1 toward 128.
@@ -311,7 +311,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
 ---
 
 38. **A6d uses the native follow buffer; scripted Pikachu movement becomes A6e**
-    (2026-10-04). *The user asked Codex to read and implement `notes/a6d-plan.md`,
+    (2026-10-04). *The user asked Codex to read and implement `notes/12-a6d-plan.md`,
     accepting its three recommendations (O-11).*
 
     - A6d ports the ROM ledge shadow, extra landing UpdateSprites and Yellow's follow
@@ -325,7 +325,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       on `9897020`; the user can play-test both slices together.
 
 39. **A6e is one slice: the whole movement interpreter, bounded emotion and nurse work**
-    (2026-10-04). *The user asked Claude to plan and implement Codex's `notes/a6e-plan.md`
+    (2026-10-04). *The user asked Claude to plan and implement Codex's `notes/14-a6e-plan.md`
     ("pls ultrathink, plan and implement this plan"), taking its three recommendations
     (O-12).*
 
@@ -343,7 +343,7 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - Who reviews A6e is the user's call; the user then play-tests.
 
 40. **A1a takes all seven plan decisions; Claude implements it** (2026-10-06). *The user's
-    answer to `notes/a1a-plan.md` §9 (O-13): "I reply yes for all of them", and "implement
+    answer to `notes/16-a1a-plan.md` §9 (O-13): "I reply yes for all of them", and "implement
     the plan yourself".*
 
     - One shared channel interpreter (`audio/sound_channel.ts`) for the music and for
@@ -371,7 +371,116 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **Who:** the user asked Claude to implement its own plan. The user picks the
       reviewer.
 
+41. **A1b: Sol implements, Claude reviews; decisions 1–5 take the recommended defaults**
+    (2026-10-06). *The user's answer to `notes/18-a1b-plan.md` §9 (O-14): "let me have sol
+    implement" and "u will review their work". Decisions 1–5 weren't addressed, so they take
+    the recommendations, as in #34.*
+
+    - Scope as the plan's §3–§6: `AddItemToInventory_`'s exact rule (the first-overflow
+      quirk kept), removal by slot (`RemoveItemFromInventory_`; `remove(id)` stays
+      `RemoveItemByID`), and the shop, PC and `restoreBag` callers.
+    - The ASM's interaction order: hidden events → bookshelf → signs → NPCs; a found hidden
+      item falls through to signs and NPCs.
+    - Route 1's Potion sample is ported in A1b: the ASM texts, the flag set before the give
+      (a full bag loses the Potion), `get_item1`, the `prompt` ending.
+    - The free-move hidden-item branch in `script_controller.ts` is deleted.
+    - The global text-box ending finding (`done` closes silently on A's release; `prompt`'s
+      ▼; `Delay3`, `para`'s 20 frames, the two-step `cont` scroll) goes to **A5**, renamed
+      "Battle and text presentation per the ASM". A1b's primitives are the building blocks.
+    - **Who:** Sol (Codex) implements; Claude reviews (`notes/19-a1b-review.md`).
+
+42. **Root `CLAUDE.md` stays a short entry point; the engine reference moved out**
+    (2026-10-06). *Extends #19 and #26. The user asked after Claude Code warned that
+    `CLAUDE.md` was over its 40k-character limit (45.9k): "why is claude.md so large? can
+    we move some of its contents to the context files?"*
+
+    - **Why it grew:** it was 25k characters on 2026-09-22. Every slice since then added
+      1–4k:
+      - a *Where things stand* paragraph;
+      - a *Testing* bullet;
+      - subsystem detail in the *Engine reference*.
+
+      Claude Code loads the file into every session, so each slice made every later
+      session cost more.
+    - **Moved, verbatim apart from heading levels:**
+      - module map, game state machine, data conventions, ROM extraction system →
+        `ARCHITECTURE.md` → *Engine reference*;
+      - overworld movement pitfalls → `game/src/overworld/ARCHITECTURE.md`;
+      - audio → `game/src/audio/ARCHITECTURE.md` (new);
+      - the Pikachu happiness tables → `game/src/pikachu/ARCHITECTURE.md`;
+      - testing → `CONVENTIONS.md` → *The test suite*, regrouped into how it runs, by area
+        and per slice.
+    - **Merged, not copied:** the battle mechanics. `game/src/battle/ARCHITECTURE.md`
+      already had most of them; it gained Focus Energy, the faint slide, the move-learning
+      text, the evolution animation and the blackout details. Two stale facts were
+      corrected against the code:
+      - the faint slide is 7 rows (`PIC_HEIGHT`), not 8;
+      - the blackout destination is `lastBlackoutWarp`; `BLACKOUT_POSITIONS` no longer
+        exists.
+    - *Where things stand* shrank to one paragraph. STATUS.md and PROJECT.md already held
+      the detail.
+    - **The rule from now on** (CONVENTIONS, session contract step 5):
+      - **Keeps:** rules, reading order, commands, the house rule, a short state paragraph
+        and a table of where each engine topic lives.
+      - **A slice changes it only for:** the test baseline, plus a milestone's line when one
+        finishes.
+      - **Target:** about 15k characters.
+    - The context system is still seven flat files (#19). The subsystem docs were already
+      where per-module detail lives.
+
+43. **A1c takes all seven plan decisions; Claude implements** (2026-10-06). *The
+    user's answer to `notes/20-a1c-plan.md` §9 (O-15): "go".*
+
+    - **The hop-midpoint `RunMapScript` moves to V4.** This narrows #38. The midpoint hook and
+      the cartridge's mid-hop stranding (plan §1.8) wait for the first map that can reach them.
+      A1c adds tripwire tests that fail when an OVERWORLD map gets a trainer with sight, or when
+      `TRAINER_MAPS` drifts from pret's scripts. Sight after the landing and N-3 are fixed in
+      A1c.
+    - **Only the walk-up starts with `MoveSprite_`'s status rule.** The default `startScript`
+      keeps its forced resting pass. That pass matches Pallet's explicit `$2`, and the other
+      callers wait for the J2 cutscene audit.
+    - **`EnterMap`'s `UpdateSprites` runs on every battle return that doesn't black out**
+      (wild, trainer, script, catch demo).
+    - **The Forest's trainer phase is `w<Map>CurScript`**, kept with `setMapScript` (#34).
+    - **Pallet's and Oak's Lab's "!" bubbles move to V5.** A1c builds the shared `EmotionBubble`.
+    - **One slice, four checkpoints** (plan §6), each committed locally.
+    - **Who:** at first Sol was to implement and Claude to review. The user then asked Claude to
+      implement it ("pls implement yourself"). The user picks the reviewer; then the user
+      play-tests (plan §7).
+
+44. **A5 takes all nine plan decisions; Sol implements A5a, Claude reviews**
+    (2026-10-06). The user answered yes to all decisions in `notes/21-a5-plan.md`
+    and asked Sol to implement.
+
+    - A5a → A5b → A5c → A5d → A5e → A5f, each separately planned and verified.
+    - Keep `\n`; encode control tokens only where necessary, plus trailing `<PROMPT>`.
+      `game_text.json` terminators wait for A5b.
+    - Contractions are single tiles; decode the missing ellipsis, quotes and PK/MN glyphs.
+    - Model bottom-third BG transfers; phase remains approximate until other UI uses it.
+    - Blink defaults to 30 frames on / 30 off, pending measured evidence.
+    - Exact CloseTextDisplay reload cost and trailing UpdateSprites belong to A5b.
+    - Species display names belong to V5; normal wild catch stays A5f.
+    - Sol implements A5a in four locally committed checkpoints; Claude reviews,
+      then the user play-tests. No push.
+
+45. **A5b takes plan decisions 1–4; Claude implements, Sol reviews** (2026-10-06). *The user's
+    answer to `notes/23-a5b-plan.md` §8 (O-17): "go and yes to all 1 through 4 as recommended".
+    Decision 5 was left unanswered. The user had already said "sol will check your work
+    afterwards", so Claude implements and Sol reviews.*
+
+    - **Seven increments, A5b1–A5b7** (plan §6), data before wiring, each committed and logged on
+      its own. Extractor edits and engine wiring never share a checkpoint.
+    - **Two new extracted JSONs:** `text_programs.json` (strict text-command programs, FAR
+      chains resolved, stopping at `text_asm`) and `map_sprite_sets.json`. `game_text.json` keeps
+      its strings and the approved control encoding.
+    - **Only the required key-item and PC sounds are added now;** the already-extracted menu sounds
+      get wired; other audio stays in V5.
+    - **Pokémon cries stay in J2.** Oak's speech keeps the cry as a declared cue, and the missing
+      playback and wait are logged as a gap.
+    - **Who:** Claude implements, Sol reviews, then the user play-tests.
+
 ## Open — not decided, needs the user
+
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.
 

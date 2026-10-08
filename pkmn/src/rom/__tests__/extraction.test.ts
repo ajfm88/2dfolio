@@ -489,10 +489,11 @@ describe('Audio: meet-trainer music (V1c)', () => {
 describe('Game text: trainer battle texts (V1c)', () => {
   it('matches the ASM strings', () => {
     const text = extractGameText(rom);
+    // Both end in `prompt`, kept since A5b1
     // text/OaksLab.asm _OaksLabRivalIPickedTheWrongPokemonText
-    expect(text.LAB_RIVAL_WRONG_POKEMON).toBe('WHAT?\nUnbelievable!\nI picked the\nwrong POKéMON!');
+    expect(text.LAB_RIVAL_WRONG_POKEMON).toBe('WHAT?\nUnbelievable!\nI picked the\nwrong POKéMON!<PROMPT>');
     // data/text/text_2.asm _Rival1WinText
-    expect(text.RIVAL1_WIN).toBe('<RIVAL>: Yeah! Am\nI great or what?');
+    expect(text.RIVAL1_WIN).toBe('<RIVAL>: Yeah! Am\nI great or what?<PROMPT>');
   });
 });
 
@@ -697,7 +698,7 @@ describe('Map extraction', () => {
   }
 });
 
-// V1 (notes/v1-plan.md). The expected values are transcribed from the pret ASM —
+// V1 (notes/02-v1-plan.md). The expected values are transcribed from the pret ASM —
 // data/maps/objects/*.asm, text/*.asm, data/trainers/parties.asm — not taken from
 // the extractor, so a wrong offset or a misread trainer header fails here.
 describe('V1 maps: Route 2 + Viridian Forest', () => {
@@ -737,7 +738,7 @@ describe('V1 maps: Route 2 + Viridian Forest', () => {
       expect(n.trainerClass).toBe(trainerClass);
       expect(n.trainerParty).toBe(party);
       expect(n.dialogue).toBe(before);
-      expect(n.endBattleText).toBe(end);
+      expect(n.endBattleText).toBe(`${end}<PROMPT>`); // A5a preserves the ASM prompt.
       expect(n.afterBattleText).toBe(after);
     }
 
@@ -752,10 +753,30 @@ describe('V1 maps: Route 2 + Viridian Forest', () => {
     ]);
   });
 
+  it('reads each Forest trainer\'s sight range from header byte 1 (A1c)', () => {
+    // scripts/ViridianForest.asm: `trainer EVENT_…, <sight>, …` (macros/scripts/maps.asm:
+    // `db \2 << 4`), in header order.
+    const m = map('ViridianForest');
+    expect(['youngster2', 'youngster3', 'youngster4', 'cooltrainer_f', 'youngster5']
+      .map(id => npc('ViridianForest', id).sightRange)).toEqual([4, 4, 1, 0, 4]);
+
+    // Header byte 0 is the sprite slot (def_trainers 2, +1 per header), and the engine gives
+    // map NPCs slots from 1 in JSON order: header order must be slot order.
+    const asmPath = resolve(__dirname, '../../../../refs/pokeyellow/scripts/ViridianForest.asm');
+    if (!existsSync(asmPath)) return;
+    const asm = readFileSync(asmPath, 'utf8');
+    const first = Number(/def_trainers (\d+)/.exec(asm)![1]);
+    const sights = [...asm.matchAll(/^\s*trainer EVENT_\w+, (\d+),/gm)].map(r => Number(r[1]));
+    const trainers = m.npcs.map((n, i) => ({ n, slot: i + 1 })).filter(({ n }) => n.trainerClass);
+    expect(trainers.map(t => t.slot)).toEqual(sights.map((_, k) => first + k));
+    expect(trainers.map(t => t.n.sightRange)).toEqual(sights);
+  });
+
   it('gives non-trainer NPCs no trainer fields', () => {
     for (const id of ['youngster1', 'youngster6']) {
       const n = npc('ViridianForest', id);
       expect(n.trainerClass).toBeUndefined();
+      expect(n.sightRange).toBeUndefined();
       expect(n.endBattleText).toBeUndefined();
       expect(n.dialogue).not.toBe('');
     }

@@ -1,7 +1,7 @@
 // Trainer battle flow — expected values from home/trainers.asm (PlayTrainerMusic,
 // PrintEndBattleText), data/trainers/encounter_types.asm, engine/battle/core.asm
 // (TrainerBattleVictory, HandlePlayerBlackOut), scroll_draw_trainer_pic.asm and
-// scripts/OaksLab.asm. Detail: notes/v1c-plan.md §1.
+// scripts/OaksLab.asm. Detail: notes/04-v1c-plan.md §1.
 
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'fs';

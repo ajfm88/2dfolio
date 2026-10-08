@@ -20,7 +20,7 @@ const UI_STATES: ReadonlySet<string> = new Set([
 ]);
 
 /** States where the map runs with an optional text box on top (script text). */
-const MAP_STATES: ReadonlySet<string> = new Set(['overworld', 'script', 'trainer_approach']);
+const MAP_STATES: ReadonlySet<string> = new Set(['overworld', 'script', 'emotion_bubble']);
 
 /** A text box or menu is up over the map. */
 export function overworldUiOpen(state: string, textBoxActive: boolean): boolean {

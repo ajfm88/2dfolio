@@ -18,6 +18,11 @@ already knew.
 5. **Update `STATUS.md`**: move the slice to *Completed* with a one-line result
    and the commit hash, refresh *Next up*, and add a *Session log* entry saying
    exactly where you stopped and what the next agent should do.
+   **Don't grow root `CLAUDE.md`** (DECISIONS #42). Claude Code loads it into every
+   session and warns past 40k characters. A slice changes it only for the test
+   baseline, plus a milestone's line in *Where things stand* when one finishes. Put the
+   detail where it belongs: the result in STATUS.md, engine facts in `ARCHITECTURE.md`
+   or the subsystem's `ARCHITECTURE.md`, and new tests in *The test suite* below.
 6. **Commit locally — last step, every slice** (user standing instruction,
    2026-09-22; DECISIONS #26). From the root: check `git status` (the ROM must
    never appear), `git add` the slice's files including `STATUS.md`, commit with a
@@ -85,7 +90,7 @@ context files. Split with a letter suffix (`D4a`, `D4b`), log the split in
   `origin/master`.
 - `pkmn-sprites/**` — the user's curated source art.
 
-**Free to write:** `notes/` — our own spec notes, comparisons and probe results.
+**Free to write:** `notes/` — our own spec notes, comparisons and probe results. **Name each new file with the next sequence number**, oldest first: `NN-<slice>-<kind>.md` (`18-a1b-plan.md`, then `19-a1b-review.md`). Never renumber an existing file.
 Put anything you learn from `refs/` here rather than in the clone.
 
 **Touch carefully (with a claimed slice + tests):**
@@ -128,9 +133,12 @@ Adding new maps (Phases V, B–I) follows this pattern:
    `OUTDOOR_MAPS` in `main.ts`; a debug warp in `debug.ts` `WARP_DESTINATIONS`;
    connections, scripts and events per the ASM.
 4. Verify: typecheck + tests + play-test.
+   If the map is OVERWORLD with ledges, check its triggers and trainer lines against a
+   hop's midpoint: `RunMapScript` there isn't built yet (`notes/20-a1c-plan.md` §1.8;
+   `trainer_tripwires.test.ts` fails for a sight trainer on an OVERWORLD map).
 5. Commit the extracted output together with the code that uses it.
 
-Two things learned planning V1 (`notes/v1-plan.md`):
+Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 - **Offsets come from pret's sym file**, which is already fetched in the clone:
   `git -C refs/pokeyellow show origin/symbols:pokeyellow.sym > <scratchpad>/pokeyellow.sym`.
@@ -177,6 +185,13 @@ Two things learned planning V1 (`notes/v1-plan.md`):
   rewrote, so only the diff shows an unintended change to an existing map.
 - **pret text tokens are already engine tokens**: `<PLAYER>`, `<RIVAL>` appear
   literally in the ASM source, and `#` means `POKé`. Don't invent a substitution layer.
+- **Text widths count glyph tiles, not string characters.** The seven apostrophe
+  contractions are single tiles. Map extraction preserves `<PROMPT>` and exceptional
+  cursor controls; do not strip them in TextBox's DisplayTextID mode or add word wrap.
+  A leading $00 in a map text is TX_START, not a glyph; unknown bytes inside strings throw.
+- **Printer waits own Joypad reads.** Don't synchronize input globally during
+  ProtectedDelay3, scroll delays or sound waits. A release/press entirely between
+  reads produces no new edge. Retained script text still needs one BG transfer per frame.
 - Evolution targets in ASM are plain tokens; nothing evolves into a special-named
   species, so simple TitleCase suffices there.
 - **Species names come in two spellings.** `trainers.json` and `wild/*.json` use pret
@@ -205,8 +220,8 @@ Two things learned planning V1 (`notes/v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 812/812** as of 2026-10-06
-   (A6e revision). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 970/970** as of 2026-10-07
+   (A5a implementation). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -220,6 +235,160 @@ Two things learned planning V1 (`notes/v1-plan.md`):
 5. No invariant in `ARCHITECTURE.md` was violated.
 6. `STATUS.md` reflects reality — completed, next up, open questions, session log.
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
+
+## The test suite
+
+Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that adds tests
+adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
+the new baseline.
+
+970 tests in 45 files (vitest, `environment: 'node'`); without ROM, 878 pass / 92 skip.
+
+**How it runs**
+
+- **Setup** (`src/test/setup.ts`) stubs `fetch` to serve `data/*.json`, and calls
+  `process.exit(1)` if `data/` is missing.
+
+- **Helpers** (`src/test/helpers.ts`): `makePokemon(overrides?)`,
+  `mockRandom(values[])`, `mockRandomFixed(value)`, `restoreRandom()`.
+
+- **Battle messages** are `string[][]` — `result.messages[0][0]` or
+  `result.messages[0].join(' ')`.
+
+**By area**
+
+- **Extraction** — 76 in `src/rom/__tests__/extraction.test.ts`; compares each
+  extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
+  Its Pikachu and old-man pixel tests compare against pret's PNGs in
+  `refs/pokeyellow/gfx/` and return early if `refs/` isn't cloned. The V1 block
+  (added in V1a) checks the new maps against values transcribed from the ASM:
+  trainer headers, NPC ids and facing parsed from `data/maps/objects/*.asm`,
+  item balls, and the leaving-sign bug.
+
+- **Static export** — 6 in `src/rom/__tests__/static_export.test.ts` (R1a): key
+  shape, the four grays, lossless PNG round-trip of all 520 images, extracted JSON
+  == `data/`, and **`static/` not stale**. If that last one fails after an
+  extractor edit, re-run `npm run setup pokeyellow.gbc`. Needs `ROM_PATH`.
+
+- **Battle** — 373 tests across 13 files in `src/battle/`. `encounter.test.ts` adds the
+  A6b encounter gates and indoor/FOREST/water rules. `catch_demo.test.ts` (V1d, 11)
+  covers the catch demo: the outcome rule, back pics and names, the one-ball bag, the
+  toss animations, and the step list with its ASM frame counts. `trainer_flow.test.ts` (V1c)
+  covers the trainer rules as data: meet/victory music, end-text pages (every map
+  trainer's first line fits), the pic scroll, the win/loss step lists, and that every
+  trainer class resolves to an exported pic. `data.test.ts` checks every trainer-party
+  and wild species resolves (V1c).
+
+- **Walk pace** — 29 in `src/overworld/walk_pace.test.ts` (A6a + A6b): the pass clock and `Delay3`,
+  frames per step for the player (16), a normal NPC (34), a fast NPC (18) and an NPC in
+  step with the player, the turn rule, the `UpdateSprites` call points, the walk
+  animation with the mirrored frame, the ledge hop's jump table, wanderers' rests, and
+  Pikachu's happiness-dependent animation.
+
+- **Tick clock** — 11 in `src/core/tick_clock.test.ts` (2026-09-25): the Game Boy rate
+  held on 60/120/144/165 Hz displays and the background worker, the leftover time kept,
+  the backlog dropped after a long gap, and the `-`/`+` stops.
+
+- **Viridian City** — 21 in `src/story/viridian_city.test.ts` (V1e): the city's map
+  script as data (which check fires per resting state, the Gym-door quirk, the badge
+  rule), every command list (sleeping push, Gym push, forced demo, walk-aways, Pikachu
+  stepping aside, repeat demo), old-save state derivation, and a guard that no "demo"
+  text is back in `data/`.
+
+- **Pikachu spawn** — 10 in `src/pikachu/pikachu_spawn.test.ts` (V1b): Yellow's
+  spawn states per warp, and placement + facing per state.
+
+**Added per slice (newest first)**
+
+- **A5a** adds 53:
+  - `text/text_printer.test.ts` (24): place-then-delay and final delay, held input,
+    actual-read edges, controls, protected/sound waits, 5+5 scroll, 20-frame para,
+    30/30 blink, contraction tiles, clipping and no word wrap.
+  - `text/bg_transfer.test.ts` (3): persistent third-frame phase and fast/medium traces.
+  - `text/textbox.test.ts` (15): DisplayTextID / PrintText openings, silent ending,
+    fresh A/B and A release, prompt's two waits, legacy overrides, retained transfer,
+    font-extra rendering, render independence and trainer music callback timing.
+  - `rom/__tests__/text_decoder.test.ts` (11, three require ROM): strict byte decoding,
+    cursor controls, glyphs, the game_text SHA256 (with A5b1's trailing `<PROMPT>`s
+    stripped), map widths and all current map strings against pret's text macros.
+  - Existing text/pickup assertions now use held input at actual reads; A1b's
+    73 / 181 updates from completed text to close remain unchanged.
+
+- **A5b1** adds 7: `rom/__tests__/text_programs.test.ts` (ROM-dependent; the ASM checks
+  return early without `refs/`): every listed label extracted; every program op for op
+  against pret's macros; the JSON equals the extractor; every TextPointers entry's call
+  reproduced from pret's statements; every current medicine result of
+  `PartyMenuItemUseMessagePointers` listed; pinned calls (both Mart tables, the forest sign bug,
+  nurse, Mart sign) and programs (FAR return, key-item sound, Potion's operands).
+
+- **A1c** adds 46:
+  - `overworld/trainer_sight.test.ts` (12): `TrainerEngage` in screen bytes (range, axis,
+    behind, the $fc quirk and its unreachable rewrite, the left edge at X = $00, the latch, the
+    Power Plant), header order, `swap(d) − 1`.
+  - `overworld/map_trainers.test.ts` (23): the pop-in quirk on youngster5's geometry, where
+    sight runs (not mid-step, not a map's first pass, after a battle through `EnterMap`'s
+    update), the script phases, the T+133 / T+131 walk-up timeline, the adjacent case, the
+    talk path, the reset, the seen gates (hidden items pass), `EmotionBubble`.
+  - `input/joy_ignore.test.ts` (4, with a stubbed `window`): the mask on held and pressed,
+    the raw edge.
+  - `overworld/trainer_tripwires.test.ts` (3): no OVERWORLD sight trainer (the hop
+    midpoint, V4), `TRAINER_MAPS` against pret's scripts.
+  - `walk_pace.test.ts` (+3): `MoveSprite_`'s status rule; extraction (+1): the Forest's
+    sight ranges and header order = slot order.
+
+- **A1b** adds 52:
+  - `items.test.ts` (23): slot-order/99/byte rules for bag and PC, selected-stack
+    removal, verbatim save restoration, failed buys/transfers, and duplicate-stack
+    consumption through field and battle menu input.
+  - `script/text_commands.test.ts` (13): retained text, the protected prompt,
+    sound waits, silent A/B waits, held-A close, saved HideObject/collision state,
+    UI opening and legacy text behavior.
+  - `overworld/item_pickup.test.ts` (16): builder branches and ASM strings,
+    interaction priority/found-item fallthrough, Route 1's flag-first quirk,
+    save/reload/freed tiles, held A and full bags. The real audio rig checks
+    73 / 181 updates from completed text to closing; NPCs stay frozen.
+  - ROM-dependent suites still skip 81 without `ROM_PATH`. ASM-string tests skip
+    when the read-only `refs/pokeyellow` clone is absent.
+
+- **A1a** adds 36:
+  - `audio/sound_channel.test.ts` (18): channels by id, the wave octave, perfect pitch,
+    vibrato (period, rate 0, clamps, direction across notes), the note arithmetic (with a
+    whole-library zero-delay check), silent rests, suppression, the SFX tempo, the hand-off
+    and the update order (mutation-checked).
+  - `audio/sfx_jingles.test.ts` (11): both jingles' note and end updates; the wait
+    (73 / 181, channel 7 skipped, drums, channel 8, loading); drum drop and cancel;
+    `press_ab` timing; a stopped SFX's release; the preload list.
+  - 7 extraction tests: the headers against the sym file, and every channel against
+    pret's asm parsed directly.
+  - The rig is `src/test/audio_rig.ts`: a logging `GBSynthesizer` and `audioUpdate()`.
+    Audio tests import the engines, never `audio/index.ts` (it touches `window`).
+
+- **A6e** adds 38 (net): `pikachu/pikachu_movement.test.ts` (21: every opcode family,
+  durations 37/69/67/35, the sine traces, the subtimer animation bug, turns, shadow and
+  grass, no-init programs, the side check); 2 extraction tests (the JSON, and every
+  record against the disassembly); controller tests for TryApply's guard and refresh on
+  both pass parities, both lab branches, the nurse's three walks and a whole-heal trace
+  (healthy, fainted and no starter), and the frozen world; `ui_entry.test.ts` for the
+  emotion phases (entry turn, prelude, border 3 + 3, render frequency).
+
+- **A6d** adds 24 tests: native buffer states and guard, hop-half toggle, flat hop and
+  catch-up speeds, landing timing and input gates, shadow composition, two consecutive
+  ledges, START refresh, healing and script completion. A 30-step pixel trace matches
+  the committed position-buffer follower; a 200-step seeded walk keeps at most two
+  entries. The ROM shadow matches pret's PNG pixel for pixel.
+
+- **A6c** — `walk_pace.test.ts` grew to 55 (the direction byte, displacement bytes, the
+  rewritten NPC block, the player's vector and Pikachu counter);
+  `overworld/sprite_collision.test.ts` (29: geometry, screen edge, sprite in front, the
+  counter rule); `pikachu/pikachu_idle.test.ts` (25) and `pikachu/pikachu_follower.test.ts`
+  (23, render spy, UI coverage and the font-loaded reset); `overworld/ui_entry.test.ts`
+  (9, the real START menu and Pikachu portrait through `captureUi`); 22 more controller tests (walking into
+  Pikachu, slot order, beaten trainers, text and nurse openings).
+
+- **A6b** — 15 step-end/Pikachu tests, 16 sprite visibility tests, 23 controller/NPC
+  integration tests and 1 UI capture test. Covers the check order, counters, walking
+  bonus/mood, turns, both hop halves, door exits, stationary/held-key triggers, pop-in,
+  whole-sprite UI hiding and Oak's in-step animation. Walk pace adds fixed STAY delays.
 
 ## Working with the user
 

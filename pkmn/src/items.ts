@@ -77,20 +77,41 @@ export function isTossable(id: string): boolean {
 export const BAG_ITEM_CAPACITY = 20;
 export const PC_ITEM_CAPACITY = 50;
 
-/** Add items to an inventory array, respecting capacity. Returns false if no room. */
+/** AddItemToInventory_ (engine/items/inventory.asm): scan in slot order, splitting
+ * at 99 only when a new slot is available. A full inventory fails at its FIRST
+ * overflowing matching stack, even if a later stack has room. */
 export function addToInventory(
   items: ItemStack[],
   id: string,
   count: number,
   capacity: number
 ): boolean {
-  const existing = items.find((i) => i.id === id);
-  if (existing) {
-    existing.count += count;
-    return true;
+  const room = items.length < capacity;
+  let remaining = count;
+  for (const item of items) {
+    if (item.id !== id) continue;
+    const sum = (item.count + remaining) & 0xff;
+    if (sum < 100) {
+      item.count = sum;
+      return true;
+    }
+    // No writes have happened if room is false, so failure is atomic.
+    if (!room) return false;
+    item.count = 99;
+    remaining = sum - 99;
   }
-  if (items.length >= capacity) return false;
-  items.push({ id, count });
+  if (!room) return false;
+  items.push({ id, count: remaining });
+  return true;
+}
+
+/** RemoveItemFromInventory_ (engine/items/inventory.asm): subtract from the
+ * selected slot; remove just that slot at zero and shift later slots up. */
+export function removeFromInventoryAt(items: ItemStack[], index: number, count: number): boolean {
+  const item = items[index];
+  if (!item || count < 0 || item.count < count) return false;
+  item.count -= count;
+  if (item.count === 0) items.splice(index, 1);
   return true;
 }
 
@@ -100,14 +121,7 @@ export function removeFromInventory(
   id: string,
   count: number
 ): boolean {
-  const existing = items.find((i) => i.id === id);
-  if (!existing || existing.count < count) return false;
-  existing.count -= count;
-  if (existing.count <= 0) {
-    const idx = items.indexOf(existing);
-    if (idx >= 0) items.splice(idx, 1);
-  }
-  return true;
+  return removeFromInventoryAt(items, items.findIndex(i => i.id === id), count);
 }
 
 /** The player's bag. */
@@ -119,13 +133,12 @@ export class Bag {
   }
 
   remove(id: string, count = 1): boolean {
-    const existing = this.items.find((i) => i.id === id);
-    if (!existing || existing.count < count) return false;
-    existing.count -= count;
-    if (existing.count <= 0) {
-      this.items = this.items.filter((i) => i.id !== id);
-    }
-    return true;
+    // RemoveItemByID (engine/menus/pc.asm): the first matching slot only.
+    return removeFromInventory(this.items, id, count);
+  }
+
+  removeAt(index: number, count = 1): boolean {
+    return removeFromInventoryAt(this.items, index, count);
   }
 
   getCount(id: string): number {

@@ -8,7 +8,7 @@
  * effects (Audio1_ApplyMusicAffects), or, on its last delay frame, runs commands up to
  * its next note or rest (Audio1_PlayNextNote).
  *
- * Rules ported exactly (notes/a1a-plan.md §3–§4, line numbers in engine_1.asm):
+ * Rules ported exactly (notes/16-a1a-plan.md §3–§4, line numbers in engine_1.asm):
  *   - note length (700–746): (length × speed) & $ff, a 16-bit product with the tempo and
  *     the fractional byte, an 8-bit delay counter (0 counts as 256);
  *   - the hardware channel is the id's ((id − 1) & 3);

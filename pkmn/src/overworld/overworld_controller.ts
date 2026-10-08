@@ -4,7 +4,7 @@
 // transition, battle start, etc.), or null when no action is needed.
 
 import type { Direction } from '../core';
-import type { Player } from './player';
+import type { Player, Interaction } from './player';
 import type { GameMap } from './map';
 import type { Npc } from './npc';
 import type { PikachuFollower } from '../pikachu/pikachu_follower';
@@ -14,7 +14,7 @@ import type { ScriptCommand } from '../script';
 import { isPassPressed } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from './sprites';
 import { hasFlag, setFlag, getMapScript } from '../events';
-import { getItemName } from '../items';
+import { itemBallScript, hiddenItemScript, potionSampleScript } from './item_pickup';
 import { tryWildEncounter } from '../battle';
 import { isNoEncounters } from '../debug';
 import { shouldPikachuFollow } from '../pikachu';
@@ -29,6 +29,8 @@ import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
   buildOldMan2Script, buildOldMan1Script,
 } from '../story/viridian_city';
+import { TRAINER_MAPS, trainerMapScript, trainerTalkedTo, startTrainerWalkUp } from './map_trainers';
+import type { TrainerSightState, TrainerScriptAction } from './map_trainers';
 import {
   buildOaksLabBallScript,
   buildOaksLabRivalBattleScript,
@@ -37,14 +39,14 @@ import {
 
 // ── Types ─────────────────────────────────────────────────────────────
 
-/** Mutable state tracked across overworld frames. */
-export interface OverworldState extends StepCounters {
+/** Mutable state tracked across overworld frames. `seenByTrainer` / `engagedNpc` are
+ *  BIT_SEEN_BY_TRAINER and wSpriteIndex (map_trainers.ts). */
+export interface OverworldState extends StepCounters, TrainerSightState {
   doorExitStep: boolean;
   justWarped: boolean;
   pikachuDeferredSpawn: boolean;
   standingOnWarp: boolean;
   interactedNpc: Npc | null;
-  approachingNpc: Npc | null;
 }
 
 /** Dependencies passed from main.ts each frame. */
@@ -74,7 +76,7 @@ export type OverworldAction =
   | { type: 'talkToTrainer'; npc: Npc }
   | { type: 'warp'; destMap: string; destWarpId: number }
   | { type: 'connectToMap'; destMap: string; dir: 'north' | 'south' | 'east' | 'west'; offset: number }
-  | { type: 'trainerApproach'; npc: Npc }
+  | TrainerScriptAction
   ;
 
 // Direction-to-connection mapping
@@ -95,7 +97,8 @@ export function createOverworldState(): OverworldState {
     stepCounter: 0,
     encounterCooldown: 0,
     interactedNpc: null,
-    approachingNpc: null,
+    seenByTrainer: false,
+    engagedNpc: null,
   };
 }
 
@@ -141,8 +144,14 @@ export function updateOverworld(
   }
 
   // Check for NPC/sign/item interaction first (takes priority over Pikachu)
-  const interaction = player.checkInteraction(gameMap, npcs);
+  const interaction = player.checkInteraction(gameMap, npcs, hasFlag);
   if (interaction) {
+    // BIT_SEEN_BY_TRAINER closes .displayDialogue (signs, sprites) after its UpdateSprites;
+    // hidden events and bookshelves are found before it (A1c, an adjacent trainer only)
+    if (ow.seenByTrainer && !foundBeforeDialogue(interaction)) {
+      sprites();
+      return null;
+    }
     return handleInteraction(interaction, deps, ow);
   }
 
@@ -152,6 +161,10 @@ export function updateOverworld(
     const px = pikachuFollower.tileX, py = pikachuFollower.tileY;
     if (facing.tx >= px && facing.tx < px + 2 &&
         facing.ty >= py && facing.ty < py + 2) {
+      if (ow.seenByTrainer) {
+        sprites();
+        return null;
+      }
       // IsSpriteInFrontOfPlayer sets its BIT_FACE_PLAYER; the box's UpdateSprites turns it
       pikachuFollower.requestFacePlayer();
       return { type: 'pikachuEmotion' };
@@ -195,34 +208,54 @@ export function updateOverworld(
     if (stepAction) return stepAction;
   }
 
-  // Check trainer line-of-sight (only after player finishes a step)
-  if (player.justFinishedStep) {
-    for (const npc of npcs) {
-      if (npc.isPlayerInSight(player.tileX, player.tileY)) {
-        npc.startApproach(player.x, player.y);
-        ow.approachingNpc = npc;
-        return { type: 'trainerApproach', npc };
-      }
-    }
-  }
-
   return null;
+}
+
+/** CheckForHiddenEventOrBookshelfOrCardKeyDoor's finds, which come before `.displayDialogue`. */
+function foundBeforeDialogue(interaction: Interaction): boolean {
+  return 'item' in interaction || 'scriptId' in interaction || ('text' in interaction && interaction.preDialogue === true);
+}
+
+/**
+ * START while BIT_SEEN_BY_TRAINER is set: `.displayDialogue` runs UpdateSprites, then sees the
+ * bit and ends the pass (no menu). Only reachable with an adjacent trainer (A1c).
+ */
+export function seenStartPressed(deps: OverworldDeps): void {
+  updateSprites(deps.npcs, deps.gameMap, deps.player, deps.pikachuFollower);
+}
+
+/**
+ * The end of the spotting pass after EmotionBubble (CheckFightingMapTrainers): its
+ * UpdateSprites, then the walk-up (TrainerWalkUpToPlayer) and the joypad mask. The caller
+ * then runs the rest of the pass under that mask.
+ */
+export function finishTrainerEngage(
+  deps: OverworldDeps,
+  engage: { npc: Npc; steps: number; facing: Direction },
+): void {
+  updateSprites(deps.npcs, deps.gameMap, deps.player, deps.pikachuFollower);
+  startTrainerWalkUp(engage.npc, engage.steps, engage.facing);
 }
 
 // ── Interaction handling ──────────────────────────────────────────────
 
 /** Handle a player interaction (NPC talk, sign read, item pickup, script trigger). */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
   const { player, playerBag, currentMapName, findNpc } = deps;
 
   if ('npc' in interaction) {
     ow.interactedNpc = interaction.npc;
     const npcData = interaction.npc.data;
 
+    // Starter/story balls have no item and keep their own handlers.
+    if (npcData.item && !interaction.npc.hidden) {
+      return { type: 'script', commands: itemBallScript(currentMapName, npcData.id, npcData.item) };
+    }
+
     // Trainer not yet beaten: before-battle text, then the battle (home/trainers.asm
     // TalkToTrainer). The beaten flag is set only after a win (EndTrainerBattle).
     if (npcData.trainerClass && npcData.trainerParty !== undefined && !npcData.defeated) {
+      trainerTalkedTo(currentMapName);
       return { type: 'talkToTrainer', npc: interaction.npc };
     }
 
@@ -240,19 +273,7 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
     if (currentMapName === 'Route1' && npcData.id === 'youngster1' && !hasFlag('GOT_POTION_SAMPLE')) {
       return {
         type: 'script',
-        commands: [
-          // (data/text/text_7.asm _Route1ViridianMartSampleText)
-          { type: 'text', message: getText('ROUTE1_MART_SAMPLE') },
-          { type: 'giveItem', itemId: 'POTION',
-            successCommands: [
-              { type: 'text', message: `${getPlayerName()} received\na POTION!` },
-              { type: 'setFlag', flag: 'GOT_POTION_SAMPLE' },
-            ],
-            failCommands: [
-              { type: 'text', message: "You have no more\nroom for items." },
-            ],
-          },
-        ],
+        commands: potionSampleScript(),
       };
     }
 
@@ -332,7 +353,7 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
 
     // A beaten trainer says their after-battle text (TalkToTrainer, flag set).
     const text = npcData.defeated ? (npcData.afterBattleText ?? npcData.dialogue) : npcData.dialogue;
-    // No text yet: item balls (pickup is A1), the trade kid (trades are A4) and Oak's
+    // No text yet: the trade kid (trades are A4) and Oak's
     // Aide (HM05 is A2). Do nothing rather than open an empty text box.
     if (!text) {
       ow.interactedNpc = null;
@@ -364,16 +385,7 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
   }
 
   if ('item' in interaction) {
-    // Hidden item pickup
-    if (hasFlag(interaction.flag)) return null; // already collected
-    const added = playerBag.add(interaction.item);
-    if (added) {
-      setFlag(interaction.flag);
-      const itemName = getItemName(interaction.item);
-      return { type: 'textbox', text: `${getPlayerName()} found\n${itemName}!` };
-    } else {
-      return { type: 'textbox', text: "No more room for\nitems!" };
-    }
+    return { type: 'script', commands: hiddenItemScript(interaction.flag, interaction.item) };
   }
 
   // Sign or bookshelf text
@@ -387,6 +399,10 @@ function handleInteraction(interaction: any, deps: OverworldDeps, ow: OverworldS
 export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
   const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
   if (player.isBusy || ow.doorExitStep) return null;
+
+  // The trainer trio: CheckFightingMapTrainers / DisplayEnemyTrainerTextAndStartBattle /
+  // EndTrainerBattle (map_trainers.ts, A1c)
+  if (TRAINER_MAPS.has(currentMapName)) return trainerMapScript(currentMapName, player, npcs, ow);
 
   // Story trigger: Pallet Town north exit without Pokemon → Oak grass event
   if (

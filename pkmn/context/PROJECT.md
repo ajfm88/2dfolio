@@ -59,9 +59,18 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   trainers battle as in the original (V1c); Oak's Pikachu catch runs the original's
   catch demo, which the old man shares (V1d); the real Viridian old men replace
   upstream's demo gates and the walk north is open (V1e) — **V1 done**.
-- **812/812** tests (375 upstream, then V1a–e, the tick clock, A6a–e and A1a), typecheck clean.
-- Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40). Next: A1b, item balls and hidden items.
+- **970/970** tests (375 upstream, then V1a–e, the tick clock, A6a–e, A1a–c, A5a and A5b1), typecheck/build clean; no-ROM 878 pass / 92 skip.
+- Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40).
+- **A1b done 2026-10-06** (implemented by Sol, reviewed by Claude, user-verified; DECISIONS #41): collectible item balls that stay gone in saves, hidden items and Route 1's sample per the ASM, the cartridge's text/sound waits, the slot-order/99 inventory rule and selected-stack removal.
+- **A1c done 2026-10-06** (Claude; DECISIONS #43; user-verified): Forest trainers spot the player as `TrainerEngage` does, with the meet music, the "!" and the walk-up. **Milestone A1 is done.** Next: A5, V2.
+- **A5a done 2026-10-06** (Sol implemented, Claude reviewed, user-verified; DECISIONS #44): text types, scrolls and ends as the cartridge's printer does; NPC, sign and trainer texts open and close per `DisplayTextID`. Next: A5b.
 - The game ticks at the Game Boy's 59.7275 Hz (DECISIONS #33).
+- **A5b planned by Sol 2026-10-06, approved as DECISIONS #45**: seven increments
+  (`notes/23-a5b-plan.md`): text, sprite-set and audio extraction, then execution/close,
+  story, school/intro and menu texts. **A5b1 done 2026-10-07** (Claude implemented, Sol
+  reviewed and signed off): `text_programs.json` holds the cartridge's text programs and each
+  map text's call; the runtime is unchanged until A5b4. Next: A5b2. A5c–f follow in order;
+  species display names belong to V5.
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are
   in git. A fresh clone plays with no ROM and no setup.
@@ -76,7 +85,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**812**)
+4. Full test suite green against generated data. ✅ (**970**)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -116,7 +125,7 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (812)
+1. `npm run typecheck` + full `npm test` green. ✅ (970)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

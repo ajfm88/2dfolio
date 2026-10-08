@@ -1,0 +1,4029 @@
+{
+  "programs": {
+    "AccessedBillsPCText": [
+      {
+        "op": "far",
+        "program": "_AccessedBillsPCText"
+      }
+    ],
+    "AccessedMyPCText": [
+      {
+        "op": "far",
+        "program": "_AccessedMyPCText"
+      }
+    ],
+    "AccessedSomeonesPCText": [
+      {
+        "op": "far",
+        "program": "_AccessedSomeonesPCText"
+      }
+    ],
+    "AntidoteText": [
+      {
+        "op": "far",
+        "program": "_AntidoteText"
+      }
+    ],
+    "AwakeningText": [
+      {
+        "op": "far",
+        "program": "_AwakeningText"
+      }
+    ],
+    "BluesHouseDaisyBagFullText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseDaisyBagFullText"
+      }
+    ],
+    "BluesHouseDaisyOfferMapText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseDaisyOfferMapText"
+      }
+    ],
+    "BluesHouseDaisyRivalAtLabText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseDaisyRivalAtLabText"
+      }
+    ],
+    "BluesHouseDaisyUseMapText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseDaisyUseMapText"
+      }
+    ],
+    "BluesHouseDaisyWalkingText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseDaisyWalkingText"
+      }
+    ],
+    "BluesHouseTownMapText": [
+      {
+        "op": "far",
+        "program": "_BluesHouseTownMapText"
+      }
+    ],
+    "BoxFullText": [
+      {
+        "op": "far",
+        "program": "_BoxFullText"
+      }
+    ],
+    "BurnHealText": [
+      {
+        "op": "far",
+        "program": "_BurnHealText"
+      }
+    ],
+    "CannotGetOffHereText": [
+      {
+        "op": "far",
+        "program": "_CannotGetOffHereText"
+      }
+    ],
+    "CannotUseItemsHereText": [
+      {
+        "op": "far",
+        "program": "_CannotUseItemsHereText"
+      }
+    ],
+    "CantCarryMoreText": [
+      {
+        "op": "far",
+        "program": "_CantCarryMoreText"
+      }
+    ],
+    "CantDepositLastMonText": [
+      {
+        "op": "far",
+        "program": "_CantDepositLastMonText"
+      }
+    ],
+    "CantTakeMonText": [
+      {
+        "op": "far",
+        "program": "_CantTakeMonText"
+      }
+    ],
+    "ChooseABoxText": [
+      {
+        "op": "far",
+        "program": "_ChooseABoxText"
+      }
+    ],
+    "DepositHowManyText": [
+      {
+        "op": "far",
+        "program": "_DepositHowManyText"
+      }
+    ],
+    "DepositWhichMonText": [
+      {
+        "op": "far",
+        "program": "_DepositWhichMonText"
+      }
+    ],
+    "DiglettsCaveRoute2FishingGuruText": [
+      {
+        "op": "far",
+        "program": "_DiglettsCaveRoute2FishingGuruText"
+      }
+    ],
+    "DroppedHiddenCoinsText": [
+      {
+        "op": "far",
+        "program": "_FoundHiddenCoins2Text"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item2"
+      },
+      {
+        "op": "far",
+        "program": "_DroppedHiddenCoinsText"
+      }
+    ],
+    "FileDataDestroyedText": [
+      {
+        "op": "far",
+        "program": "_FileDataDestroyedText"
+      }
+    ],
+    "FoundHiddenCoinsText": [
+      {
+        "op": "far",
+        "program": "_FoundHiddenCoinsText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item2"
+      }
+    ],
+    "FoundHiddenItemText": [
+      {
+        "op": "far",
+        "program": "_FoundHiddenItemText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "FoundItemText": [
+      {
+        "op": "far",
+        "program": "_FoundItemText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      }
+    ],
+    "FullHealText": [
+      {
+        "op": "far",
+        "program": "_FullHealText"
+      }
+    ],
+    "GameSavedText": [
+      {
+        "op": "far",
+        "program": "_GameSavedText"
+      }
+    ],
+    "GotMapText": [
+      {
+        "op": "far",
+        "program": "_GotMapText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      }
+    ],
+    "HiddenItemBagFullText": [
+      {
+        "op": "far",
+        "program": "_HiddenItemBagFullText"
+      }
+    ],
+    "HisNameIsText": [
+      {
+        "op": "far",
+        "program": "_HisNameIsText"
+      }
+    ],
+    "IceHealText": [
+      {
+        "op": "far",
+        "program": "_IceHealText"
+      }
+    ],
+    "IntroducePlayerText": [
+      {
+        "op": "far",
+        "program": "_IntroducePlayerText"
+      }
+    ],
+    "IntroduceRivalText": [
+      {
+        "op": "far",
+        "program": "_IntroduceRivalText"
+      }
+    ],
+    "IsItOKToTossItemText": [
+      {
+        "op": "far",
+        "program": "_IsItOKToTossItemText"
+      }
+    ],
+    "ItemUseNoEffectText": [
+      {
+        "op": "far",
+        "program": "_ItemUseNoEffectText"
+      }
+    ],
+    "ItemUseNotTimeText": [
+      {
+        "op": "far",
+        "program": "_ItemUseNotTimeText"
+      }
+    ],
+    "ItemWasStoredText": [
+      {
+        "op": "far",
+        "program": "_ItemWasStoredText"
+      }
+    ],
+    "JustAMomentText": [
+      {
+        "op": "far",
+        "program": "_JustAMomentText"
+      }
+    ],
+    "LinkCableHelpText1": [
+      {
+        "op": "far",
+        "program": "_LinkCableHelpText1"
+      }
+    ],
+    "LinkCableHelpText2": [
+      {
+        "op": "far",
+        "program": "_LinkCableHelpText2"
+      }
+    ],
+    "LinkCableInfoText1": [
+      {
+        "op": "far",
+        "program": "_LinkCableInfoText1"
+      }
+    ],
+    "LinkCableInfoText2": [
+      {
+        "op": "far",
+        "program": "_LinkCableInfoText2"
+      }
+    ],
+    "LinkCableInfoText3": [
+      {
+        "op": "far",
+        "program": "_LinkCableInfoText3"
+      }
+    ],
+    "LinkMenuEmptyText": [],
+    "LooksContentText": [
+      {
+        "op": "far",
+        "program": "_LooksContentText"
+      }
+    ],
+    "MartSignText": [
+      {
+        "op": "far",
+        "program": "_MartSignText"
+      }
+    ],
+    "MonIsTakenOutText": [
+      {
+        "op": "far",
+        "program": "_MonIsTakenOutText"
+      }
+    ],
+    "MonWasReleasedText": [
+      {
+        "op": "far",
+        "program": "_MonWasReleasedText"
+      }
+    ],
+    "MonWasStoredText": [
+      {
+        "op": "far",
+        "program": "_MonWasStoredText"
+      }
+    ],
+    "NeedYourPokemonText": [
+      {
+        "op": "far",
+        "program": "_NeedYourPokemonText"
+      }
+    ],
+    "NoMonText": [
+      {
+        "op": "far",
+        "program": "_NoMonText"
+      }
+    ],
+    "NoMoreRoomForItemText": [
+      {
+        "op": "far",
+        "program": "_NoMoreRoomForItemText"
+      }
+    ],
+    "NoRoomToStoreText": [
+      {
+        "op": "far",
+        "program": "_NoRoomToStoreText"
+      }
+    ],
+    "NothingStoredText": [
+      {
+        "op": "far",
+        "program": "_NothingStoredText"
+      }
+    ],
+    "NothingToDepositText": [
+      {
+        "op": "far",
+        "program": "_NothingToDepositText"
+      }
+    ],
+    "OakSpeechText1": [
+      {
+        "op": "far",
+        "program": "_OakSpeechText1"
+      }
+    ],
+    "OakSpeechText2": [
+      {
+        "op": "far",
+        "program": "_OakSpeechText2A"
+      },
+      {
+        "op": "cry",
+        "species": "PIKACHU"
+      },
+      {
+        "op": "far",
+        "program": "_OakSpeechText2B"
+      }
+    ],
+    "OakSpeechText3": [
+      {
+        "op": "far",
+        "program": "_OakSpeechText3"
+      }
+    ],
+    "OaksLabEeveePokeBallText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabThatsAPokeball"
+      }
+    ],
+    "OaksLabGirlText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabGirlText"
+      }
+    ],
+    "OaksLabOak1Text.ComeSeeMeSometimesText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1ComeSeeMeSometimesText"
+      }
+    ],
+    "OaksLabOak1Text.DeliverParcelText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1DeliverParcelText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      },
+      {
+        "op": "far",
+        "program": "_OaksLabOak1ParcelThanksText"
+      }
+    ],
+    "OaksLabOak1Text.GivePokeballsText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1ReceivedPokeballsText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      },
+      {
+        "op": "far",
+        "program": "_OaksLabGivePokeballsExplanationText"
+      }
+    ],
+    "OaksLabOak1Text.GoAheadItsYours": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1GoAheadItsYours"
+      }
+    ],
+    "OaksLabOak1Text.HowIsYourPokedexComingText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1HowIsYourPokedexComingText"
+      }
+    ],
+    "OaksLabOak1Text.PokemonAroundTheWorldText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1PokemonAroundTheWorldText"
+      }
+    ],
+    "OaksLabOak1Text.YouShouldTalkToIt": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1YouShouldTalkToIt"
+      }
+    ],
+    "OaksLabOak1Text.YourPokemonCanFightText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak1YourPokemonCanFightText"
+      }
+    ],
+    "OaksLabOak2Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabOak2Text"
+      }
+    ],
+    "OaksLabOakBePatientText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakBePatientText"
+      }
+    ],
+    "OaksLabOakChooseMonText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakChooseMonText"
+      }
+    ],
+    "OaksLabOakDontGoAwayYetText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakDontGoAwayYetText"
+      }
+    ],
+    "OaksLabOakGivesText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakGivesText"
+      }
+    ],
+    "OaksLabOakGotPokedexText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakGotPokedexText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      }
+    ],
+    "OaksLabOakIHaveARequestText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakIHaveARequestText"
+      }
+    ],
+    "OaksLabOakMyInventionPokedexText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakMyInventionPokedexText"
+      }
+    ],
+    "OaksLabOakThatWasMyDreamText": [
+      {
+        "op": "far",
+        "program": "_OaksLabOakThatWasMyDreamText"
+      }
+    ],
+    "OaksLabPikachuDislikesPokeballsText1.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabPikachuDislikesPokeballsText1"
+      }
+    ],
+    "OaksLabPikachuDislikesPokeballsText2.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabPikachuDislikesPokeballsText2"
+      }
+    ],
+    "OaksLabPokedexText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabPokedexText"
+      }
+    ],
+    "OaksLabReceivedText": [
+      {
+        "op": "far",
+        "program": "_OaksLabReceivedText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      }
+    ],
+    "OaksLabRivalAmIGreatOrWhatText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalAmIGreatOrWhatText"
+      }
+    ],
+    "OaksLabRivalFedUpWithWaitingText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalFedUpWithWaitingText"
+      }
+    ],
+    "OaksLabRivalGrampsText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalGrampsText"
+      }
+    ],
+    "OaksLabRivalIPickedTheWrongPokemonText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalIPickedTheWrongPokemonText"
+      }
+    ],
+    "OaksLabRivalIllTakeYouOnText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalIllTakeYouOnText"
+      }
+    ],
+    "OaksLabRivalLeaveItAllToMeText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalLeaveItAllToMeText"
+      }
+    ],
+    "OaksLabRivalMyPokemonHasGrownStrongerText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalMyPokemonHasGrownStrongerText"
+      }
+    ],
+    "OaksLabRivalSmellYouLaterText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalSmellYouLaterText"
+      }
+    ],
+    "OaksLabRivalTakesText1": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalTakesText1"
+      }
+    ],
+    "OaksLabRivalTakesText2": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalTakesText2"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      }
+    ],
+    "OaksLabRivalTakesText3": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalTakesText3"
+      }
+    ],
+    "OaksLabRivalTakesText4": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalTakesText4"
+      }
+    ],
+    "OaksLabRivalTakesText5": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalTakesText5"
+      }
+    ],
+    "OaksLabRivalText.GrampsIsntAroundText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalGrampsIsntAroundText"
+      }
+    ],
+    "OaksLabRivalText.IllGetABetterPokemonThanYou": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalIllGetABetterPokemonThanYou"
+      }
+    ],
+    "OaksLabRivalText.MyPokemonLooksStrongerText": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalMyPokemonLooksStrongerText"
+      }
+    ],
+    "OaksLabRivalWhatAboutMeText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabRivalWhatAboutMeText"
+      }
+    ],
+    "OaksLabScientistText.Text": [
+      {
+        "op": "far",
+        "program": "_OaksLabScientistText"
+      }
+    ],
+    "OlderFileWillBeErasedText": [
+      {
+        "op": "far",
+        "program": "_OlderFileWillBeErasedText"
+      }
+    ],
+    "OnceReleasedText": [
+      {
+        "op": "far",
+        "program": "_OnceReleasedText"
+      }
+    ],
+    "PalletTownFisherText": [
+      {
+        "op": "far",
+        "program": "_PalletTownFisherText"
+      }
+    ],
+    "PalletTownGirlText": [
+      {
+        "op": "far",
+        "program": "_PalletTownGirlText"
+      }
+    ],
+    "PalletTownOakComeWithMe": [
+      {
+        "op": "far",
+        "program": "_PalletTownOakComeWithMe"
+      }
+    ],
+    "PalletTownOakText.HeyWaitDontGoOutText": [
+      {
+        "op": "far",
+        "program": "_PalletTownOakHeyWaitDontGoOutText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "PalletTownOakText.ThatWasCloseText": [
+      {
+        "op": "far",
+        "program": "_PalletTownOakThatWasCloseText"
+      }
+    ],
+    "PalletTownOakText.WhewText": [
+      {
+        "op": "far",
+        "program": "_PalletTownOakWhewText"
+      }
+    ],
+    "PalletTownOaksLabSignText": [
+      {
+        "op": "far",
+        "program": "_PalletTownOaksLabSignText"
+      }
+    ],
+    "PalletTownPlayersHouseSignText": [
+      {
+        "op": "far",
+        "program": "_PalletTownPlayersHouseSignText"
+      }
+    ],
+    "PalletTownRivalsHouseSignText": [
+      {
+        "op": "far",
+        "program": "_PalletTownRivalsHouseSignText"
+      }
+    ],
+    "PalletTownSignText": [
+      {
+        "op": "far",
+        "program": "_PalletTownSignText"
+      }
+    ],
+    "ParlyzHealText": [
+      {
+        "op": "far",
+        "program": "_ParlyzHealText"
+      }
+    ],
+    "PartyMenuBattleText": [
+      {
+        "op": "far",
+        "program": "_PartyMenuBattleText"
+      }
+    ],
+    "PartyMenuItemUseText": [
+      {
+        "op": "far",
+        "program": "_PartyMenuItemUseText"
+      }
+    ],
+    "PartyMenuNormalText": [
+      {
+        "op": "far",
+        "program": "_PartyMenuNormalText"
+      }
+    ],
+    "PartyMenuSwapMonText": [
+      {
+        "op": "far",
+        "program": "_PartyMenuSwapMonText"
+      }
+    ],
+    "PikachuUnhappyText": [
+      {
+        "op": "far",
+        "program": "_PikachuUnhappyText"
+      }
+    ],
+    "PokeCenterSignText": [
+      {
+        "op": "far",
+        "program": "_PokeCenterSignText"
+      }
+    ],
+    "PokemartAnythingElseText": [
+      {
+        "op": "far",
+        "program": "_PokemartAnythingElseText"
+      }
+    ],
+    "PokemartBoughtItemText": [
+      {
+        "op": "far",
+        "program": "_PokemartBoughtItemText"
+      }
+    ],
+    "PokemartBuyingGreetingText": [
+      {
+        "op": "far",
+        "program": "_PokemartBuyingGreetingText"
+      }
+    ],
+    "PokemartGreetingText": [
+      {
+        "op": "far",
+        "program": "_PokemartGreetingText"
+      }
+    ],
+    "PokemartItemBagEmptyText": [
+      {
+        "op": "far",
+        "program": "_PokemartItemBagEmptyText"
+      }
+    ],
+    "PokemartItemBagFullText": [
+      {
+        "op": "far",
+        "program": "_PokemartItemBagFullText"
+      }
+    ],
+    "PokemartNotEnoughMoneyText": [
+      {
+        "op": "far",
+        "program": "_PokemartNotEnoughMoneyText"
+      }
+    ],
+    "PokemartTellBuyPriceText": [
+      {
+        "op": "far",
+        "program": "_PokemartTellBuyPriceText"
+      }
+    ],
+    "PokemartTellSellPriceText": [
+      {
+        "op": "far",
+        "program": "_PokemartTellSellPriceText"
+      }
+    ],
+    "PokemartThankYouText": [
+      {
+        "op": "far",
+        "program": "_PokemartThankYouText"
+      }
+    ],
+    "PokemartUnsellableItemText": [
+      {
+        "op": "far",
+        "program": "_PokemartUnsellableItemText"
+      }
+    ],
+    "PokemonCenterFarewellText": [
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_PokemonCenterFarewellText"
+      }
+    ],
+    "PokemonCenterWelcomeText": [
+      {
+        "op": "far",
+        "program": "_PokemonCenterWelcomeText"
+      }
+    ],
+    "PokemonFightingFitText": [
+      {
+        "op": "far",
+        "program": "_PokemonFightingFitText"
+      }
+    ],
+    "PokemonSellingGreetingText": [
+      {
+        "op": "far",
+        "program": "_PokemonSellingGreetingText"
+      }
+    ],
+    "PotionText": [
+      {
+        "op": "far",
+        "program": "_PotionText"
+      }
+    ],
+    "RedsHouse1FMomLookingGreatText": [
+      {
+        "op": "far",
+        "program": "_RedsHouse1FMomLookingGreatText"
+      }
+    ],
+    "RedsHouse1FMomYouShouldRestText": [
+      {
+        "op": "far",
+        "program": "_RedsHouse1FMomYouShouldRestText"
+      }
+    ],
+    "RedsHouse1FPrintMomText.WakeUpText": [
+      {
+        "op": "far",
+        "program": "_RedsHouse1FMomWakeUpText"
+      }
+    ],
+    "RedsHouse1FPrintTVText.StandByMeMovieText": [
+      {
+        "op": "far",
+        "program": "_RedsHouse1FTVStandByMeMovieText"
+      }
+    ],
+    "RedsHouse1FPrintTVText.WrongSideText": [
+      {
+        "op": "far",
+        "program": "_RedsHouse1FTVWrongSideText"
+      }
+    ],
+    "ReleaseWhichMonText": [
+      {
+        "op": "far",
+        "program": "_ReleaseWhichMonText"
+      }
+    ],
+    "ReviveText": [
+      {
+        "op": "far",
+        "program": "_ReviveText"
+      }
+    ],
+    "Route1PrintSignText.text": [
+      {
+        "op": "far",
+        "program": "_Route1SignText"
+      }
+    ],
+    "Route1PrintYoungster1Text.AlsoGotPokeballsText": [
+      {
+        "op": "far",
+        "program": "_Route1Youngster1AlsoGotPokeballsText"
+      }
+    ],
+    "Route1PrintYoungster1Text.GotPotionText": [
+      {
+        "op": "far",
+        "program": "_Route1Youngster1GotPotionText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      }
+    ],
+    "Route1PrintYoungster1Text.MartSampleText": [
+      {
+        "op": "far",
+        "program": "_Route1Youngster1MartSampleText"
+      }
+    ],
+    "Route1PrintYoungster1Text.NoRoomText": [
+      {
+        "op": "far",
+        "program": "_Route1Youngster1NoRoomText"
+      }
+    ],
+    "Route1PrintYoungster2Text.text": [
+      {
+        "op": "far",
+        "program": "_Route1Youngster2Text"
+      }
+    ],
+    "Route22PrintPokemonLeagueSignText.text": [
+      {
+        "op": "far",
+        "program": "_Route22PokemonLeagueSignText"
+      }
+    ],
+    "Route22Rival1DefeatedText": [
+      {
+        "op": "far",
+        "program": "_Route22Rival1DefeatedText"
+      }
+    ],
+    "Route22Rival1VictoryText": [
+      {
+        "op": "far",
+        "program": "_Route22Rival1VictoryText"
+      }
+    ],
+    "Route22Rival2DefeatedText": [
+      {
+        "op": "far",
+        "program": "_Route22Rival2DefeatedText"
+      }
+    ],
+    "Route22Rival2VictoryText": [
+      {
+        "op": "far",
+        "program": "_Route22Rival2VictoryText"
+      }
+    ],
+    "Route22RivalAfterBattleText1": [
+      {
+        "op": "far",
+        "program": "_Route22RivalAfterBattleText1"
+      }
+    ],
+    "Route22RivalAfterBattleText2": [
+      {
+        "op": "far",
+        "program": "_Route22RivalAfterBattleText2"
+      }
+    ],
+    "Route22RivalBeforeBattleText1": [
+      {
+        "op": "far",
+        "program": "_Route22RivalBeforeBattleText1"
+      }
+    ],
+    "Route22RivalBeforeBattleText2": [
+      {
+        "op": "far",
+        "program": "_Route22RivalBeforeBattleText2"
+      }
+    ],
+    "Route2DiglettsCaveSignText": [
+      {
+        "op": "far",
+        "program": "_Route2DiglettsCaveSignText"
+      }
+    ],
+    "Route2GateOaksAideText.FlashExplanationText": [
+      {
+        "op": "far",
+        "program": "_Route2GateOaksAideFlashExplanationText"
+      }
+    ],
+    "Route2GateYoungsterText": [
+      {
+        "op": "far",
+        "program": "_Route2GateYoungsterText"
+      }
+    ],
+    "Route2SignText": [
+      {
+        "op": "far",
+        "program": "_Route2SignText"
+      }
+    ],
+    "Route2TradeHouseScientistText": [
+      {
+        "op": "far",
+        "program": "_Route2TradeHouseScientistText"
+      }
+    ],
+    "SavingText": [
+      {
+        "op": "far",
+        "program": "_SavingText"
+      }
+    ],
+    "ShallWeHealYourPokemonText": [
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_ShallWeHealYourPokemonText"
+      }
+    ],
+    "SleepingPikachuText2": [
+      {
+        "op": "far",
+        "program": "_SleepingPikachuText2"
+      }
+    ],
+    "StartMenu_Pokemon.cannotFlyHereText": [
+      {
+        "op": "far",
+        "program": "_CannotFlyHereText"
+      }
+    ],
+    "StartMenu_Pokemon.cannotUseTeleportNowText": [
+      {
+        "op": "far",
+        "program": "_CannotUseTeleportNowText"
+      }
+    ],
+    "StartMenu_Pokemon.flashLightsAreaText": [
+      {
+        "op": "far",
+        "program": "_FlashLightsAreaText"
+      }
+    ],
+    "StartMenu_Pokemon.newBadgeRequiredText": [
+      {
+        "op": "far",
+        "program": "_NewBadgeRequiredText"
+      }
+    ],
+    "StartMenu_Pokemon.notHealthyEnoughText": [
+      {
+        "op": "far",
+        "program": "_NotHealthyEnoughText"
+      }
+    ],
+    "StartMenu_Pokemon.warpToLastPokemonCenterText": [
+      {
+        "op": "far",
+        "program": "_WarpToLastPokemonCenterText"
+      }
+    ],
+    "SwitchOnText": [
+      {
+        "op": "far",
+        "program": "_SwitchOnText"
+      }
+    ],
+    "TMNotebook": [
+      {
+        "op": "far",
+        "program": "TMNotebookText"
+      },
+      {
+        "op": "waitButton"
+      }
+    ],
+    "TMNotebookText": [
+      {
+        "op": "text",
+        "text": "It's a pamphlet\non TMs.\f...\fThere are 50 TMs\nin all.\fThere are also 5\nHMs that can be\nused repeatedly.\fSILPH CO."
+      }
+    ],
+    "ThrewAwayItemText": [
+      {
+        "op": "far",
+        "program": "_ThrewAwayItemText"
+      }
+    ],
+    "TooImportantToTossText": [
+      {
+        "op": "far",
+        "program": "_TooImportantToTossText"
+      }
+    ],
+    "TossHowManyText": [
+      {
+        "op": "far",
+        "program": "_TossHowManyText"
+      }
+    ],
+    "TownMapText": [
+      {
+        "op": "far",
+        "program": "_TownMapText"
+      },
+      {
+        "op": "promptButton"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "TurnPageText": [
+      {
+        "op": "far",
+        "program": "_TurnPageText"
+      }
+    ],
+    "TurnedOnPC1Text": [
+      {
+        "op": "far",
+        "program": "_TurnedOnPC1Text"
+      }
+    ],
+    "TurnedOnPC2Text": [
+      {
+        "op": "far",
+        "program": "_TurnedOnPC2Text"
+      }
+    ],
+    "ViridianBlackboardBurnText": [
+      {
+        "op": "far",
+        "program": "_ViridianBlackboardBurnText"
+      }
+    ],
+    "ViridianBlackboardFrozenText": [
+      {
+        "op": "far",
+        "program": "_ViridianBlackboardFrozenText"
+      }
+    ],
+    "ViridianBlackboardPoisonText": [
+      {
+        "op": "far",
+        "program": "_ViridianBlackboardPoisonText"
+      }
+    ],
+    "ViridianBlackboardPrlzText": [
+      {
+        "op": "far",
+        "program": "_ViridianBlackboardPrlzText"
+      }
+    ],
+    "ViridianBlackboardSleepText": [
+      {
+        "op": "far",
+        "program": "_ViridianBlackboardSleepText"
+      }
+    ],
+    "ViridianCityFisherYouCanHaveThisText": [
+      {
+        "op": "text",
+        "text": "Yawn!\nI must have dozed\noff in the sun.\fI had this dream\nabout a DROWZEE\neating my dream.\nWhat's this?\nWhere did this TM\ncome from?\fThis is spooky!\nHere, you can\nhave this TM.<PROMPT>"
+      }
+    ],
+    "ViridianCityOldMan2Text.HadMyCoffeeNowText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManHadMyCoffeeNowText"
+      }
+    ],
+    "ViridianCityOldMan2Text.LosingMyTouchText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManLosingMyTouchText"
+      }
+    ],
+    "ViridianCityOldManYouNeedToWeakenTheTargetText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManYouNeedToWeakenTheTargetText"
+      }
+    ],
+    "ViridianCityPrintFisherText.ReceivedTM42Text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityFisherReceivedTM42Text"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item2"
+      }
+    ],
+    "ViridianCityPrintFisherText.TM42ExplanationText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityFisherTM42ExplanationText"
+      }
+    ],
+    "ViridianCityPrintFisherText.TM42NoRoomText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityFisherTM42NoRoomText"
+      }
+    ],
+    "ViridianCityPrintFisherText.YouCanHaveThisText": [
+      {
+        "op": "far",
+        "program": "ViridianCityFisherYouCanHaveThisText"
+      }
+    ],
+    "ViridianCityPrintGambler1Text.GymAlwaysClosedText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGambler1GymAlwaysClosedText"
+      }
+    ],
+    "ViridianCityPrintGambler1Text.GymLeaderReturnedText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGambler1GymLeaderReturnedText"
+      }
+    ],
+    "ViridianCityPrintGirlText.HasntHadHisCoffeeYetText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGirlHasntHadHisCoffeeYetText"
+      }
+    ],
+    "ViridianCityPrintGirlText.WhenIGoShopText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGirlWhenIGoShopText"
+      }
+    ],
+    "ViridianCityPrintGymLockedText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGymLockedText"
+      }
+    ],
+    "ViridianCityPrintGymSignText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityGymSignText"
+      }
+    ],
+    "ViridianCityPrintOldManSleepyText.PrivatePropertyText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManSleepyPrivatePropertyText"
+      }
+    ],
+    "ViridianCityPrintOldManText.NotGoodEnoughForYouText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManNotGoodEnoughForYouText"
+      }
+    ],
+    "ViridianCityPrintOldManText.WantMeToShowYouAgainText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManWantMeToShowYouAgainText"
+      }
+    ],
+    "ViridianCityPrintOldManText.WatchCloselyText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityOldManWatchCloselyText"
+      }
+    ],
+    "ViridianCityPrintSignText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCitySignText"
+      }
+    ],
+    "ViridianCityPrintTrainerTips1Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityTrainerTips1Text"
+      }
+    ],
+    "ViridianCityPrintTrainerTips2Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityTrainerTips2Text"
+      }
+    ],
+    "ViridianCityPrintYoungster1Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianCityYoungster1Text"
+      }
+    ],
+    "ViridianCityPrintYoungster2Text.CaterpieAndWeedleDescriptionText": [
+      {
+        "op": "far",
+        "program": "ViridianCityYoungster2CaterpieAndWeedleDescriptionText"
+      }
+    ],
+    "ViridianCityPrintYoungster2Text.OkThenText": [
+      {
+        "op": "far",
+        "program": "ViridianCityYoungster2OkThenText"
+      }
+    ],
+    "ViridianCityPrintYoungster2Text.YouWantToKnowAboutText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityYoungster2YouWantToKnowAboutText"
+      }
+    ],
+    "ViridianCityYoungster2CaterpieAndWeedleDescriptionText": [
+      {
+        "op": "text",
+        "text": "CATERPIE has no\npoison, but\nWEEDLE does.\fWatch out for its\nPOISON STING!<DONE>"
+      }
+    ],
+    "ViridianCityYoungster2OkThenText": [
+      {
+        "op": "text",
+        "text": "Oh, OK then!<DONE>"
+      }
+    ],
+    "ViridianForestCooltrainerFAfterBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestCooltrainerFAfterBattleText"
+      }
+    ],
+    "ViridianForestCooltrainerFBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestCooltrainerFBattleText"
+      }
+    ],
+    "ViridianForestCooltrainerFEndBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestCooltrainerFEndBattleText"
+      }
+    ],
+    "ViridianForestNorthGateGrampsText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestNorthGateGrampsText"
+      }
+    ],
+    "ViridianForestNorthGateSuperNerdText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestNorthGateSuperNerdText"
+      }
+    ],
+    "ViridianForestPrintLeavingSignText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestLeavingSignText"
+      }
+    ],
+    "ViridianForestPrintTrainerTips1Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestTrainerTips1Text"
+      }
+    ],
+    "ViridianForestPrintTrainerTips2Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestTrainerTips2Text"
+      }
+    ],
+    "ViridianForestPrintTrainerTips3Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestTrainerTips3Text"
+      }
+    ],
+    "ViridianForestPrintTrainerTips4Text.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestTrainerTips4Text"
+      }
+    ],
+    "ViridianForestPrintUseAntidoteSignText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestUseAntidoteSignText"
+      }
+    ],
+    "ViridianForestSouthGateGirlText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestSouthGateGirlText"
+      }
+    ],
+    "ViridianForestSouthGateLittleGirlText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestSouthGateLittleGirlText"
+      }
+    ],
+    "ViridianForestYoungster1Text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster1Text"
+      }
+    ],
+    "ViridianForestYoungster2AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster2AfterBattleText"
+      }
+    ],
+    "ViridianForestYoungster2BattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster2BattleText"
+      }
+    ],
+    "ViridianForestYoungster2EndBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster2EndBattleText"
+      }
+    ],
+    "ViridianForestYoungster3AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster3AfterBattleText"
+      }
+    ],
+    "ViridianForestYoungster3BattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster3BattleText"
+      }
+    ],
+    "ViridianForestYoungster3EndBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster3EndBattleText"
+      }
+    ],
+    "ViridianForestYoungster4AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster4AfterBattleText"
+      }
+    ],
+    "ViridianForestYoungster4BattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster4BattleText"
+      }
+    ],
+    "ViridianForestYoungster4EndBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster4EndBattleText"
+      }
+    ],
+    "ViridianForestYoungster5AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster5AfterBattleText"
+      }
+    ],
+    "ViridianForestYoungster5BattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster5BattleText"
+      }
+    ],
+    "ViridianForestYoungster5EndBattleText": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster5EndBattleText"
+      }
+    ],
+    "ViridianForestYoungster6Text": [
+      {
+        "op": "far",
+        "program": "_ViridianForestYoungster6Text"
+      }
+    ],
+    "ViridianMartClerkParcelQuestText": [
+      {
+        "op": "far",
+        "program": "_ViridianMartClerkParcelQuestText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_key_item"
+      }
+    ],
+    "ViridianMartClerkSayHiToOakText": [
+      {
+        "op": "far",
+        "program": "_ViridianMartClerkSayHiToOakText"
+      }
+    ],
+    "ViridianMartClerkYouCameFromPalletTownText": [
+      {
+        "op": "far",
+        "program": "_ViridianMartClerkYouCameFromPalletTownText"
+      }
+    ],
+    "ViridianMartCooltrainerMText": [
+      {
+        "op": "far",
+        "program": "_ViridianMartCooltrainerMText"
+      }
+    ],
+    "ViridianMartYoungsterText": [
+      {
+        "op": "far",
+        "program": "_ViridianMartYoungsterText"
+      }
+    ],
+    "ViridianNicknameHouseBaldingGuyText": [
+      {
+        "op": "far",
+        "program": "_ViridianNicknameHouseBaldingGuyText"
+      }
+    ],
+    "ViridianNicknameHouseLittleGirlText": [
+      {
+        "op": "far",
+        "program": "_ViridianNicknameHouseLittleGirlText"
+      }
+    ],
+    "ViridianNicknameHouseSpearowText.Text": [
+      {
+        "op": "far",
+        "program": "_ViridianNicknameHouseSpearowText"
+      }
+    ],
+    "ViridianNicknameHouseSpearySignText": [
+      {
+        "op": "far",
+        "program": "_ViridianNicknameHouseSpearySignText"
+      }
+    ],
+    "ViridianPokecenterCooltrainerMText": [
+      {
+        "op": "far",
+        "program": "_ViridianPokecenterCooltrainerMText"
+      }
+    ],
+    "ViridianPokecenterGentlemanText": [
+      {
+        "op": "far",
+        "program": "_ViridianPokecenterGentlemanText"
+      }
+    ],
+    "ViridianSchoolBlackboardText1": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolBlackboardText1"
+      }
+    ],
+    "ViridianSchoolBlackboardText2": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolBlackboardText2"
+      }
+    ],
+    "ViridianSchoolHouseBrunetteGirlText": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolHouseBrunetteGirlText"
+      }
+    ],
+    "ViridianSchoolHousePrintCooltrainerFText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolHouseCooltrainerFText"
+      }
+    ],
+    "ViridianSchoolHousePrintLittleGirlText.text": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolHouseLittleGirlText"
+      }
+    ],
+    "ViridianSchoolNotebookText1": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolNotebookText1"
+      }
+    ],
+    "ViridianSchoolNotebookText2": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolNotebookText2"
+      }
+    ],
+    "ViridianSchoolNotebookText3": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolNotebookText3"
+      }
+    ],
+    "ViridianSchoolNotebookText4": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolNotebookText4"
+      }
+    ],
+    "ViridianSchoolNotebookText5": [
+      {
+        "op": "far",
+        "program": "_ViridianSchoolNotebookText5"
+      },
+      {
+        "op": "waitButton"
+      }
+    ],
+    "WhatDoYouWantText": [
+      {
+        "op": "far",
+        "program": "_WhatDoYouWantText"
+      }
+    ],
+    "WhatText": [
+      {
+        "op": "far",
+        "program": "_WhatText"
+      }
+    ],
+    "WhatToDepositText": [
+      {
+        "op": "far",
+        "program": "_WhatToDepositText"
+      }
+    ],
+    "WhatToTossText": [
+      {
+        "op": "far",
+        "program": "_WhatToTossText"
+      }
+    ],
+    "WhatToWithdrawText": [
+      {
+        "op": "far",
+        "program": "_WhatToWithdrawText"
+      }
+    ],
+    "WhenYouChangeBoxText": [
+      {
+        "op": "far",
+        "program": "_WhenYouChangeBoxText"
+      }
+    ],
+    "WithdrawHowManyText": [
+      {
+        "op": "far",
+        "program": "_WithdrawHowManyText"
+      }
+    ],
+    "WithdrewItemText": [
+      {
+        "op": "far",
+        "program": "_WithdrewItemText"
+      }
+    ],
+    "WouldYouLikeToSaveText": [
+      {
+        "op": "far",
+        "program": "_WouldYouLikeToSaveText"
+      }
+    ],
+    "YourNameIsText": [
+      {
+        "op": "far",
+        "program": "_YourNameIsText"
+      }
+    ],
+    "_AccessedBillsPCText": [
+      {
+        "op": "text",
+        "text": "Accessed BILL's\nPC.\fAccessed POKéMON\nStorage System.<PROMPT>"
+      }
+    ],
+    "_AccessedMyPCText": [
+      {
+        "op": "text",
+        "text": "Accessed my PC.\fAccessed Item\nStorage System.<PROMPT>"
+      }
+    ],
+    "_AccessedSomeonesPCText": [
+      {
+        "op": "text",
+        "text": "Accessed someone's\nPC.\fAccessed POKéMON\nStorage System.<PROMPT>"
+      }
+    ],
+    "_AntidoteText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\ncured of poison!<DONE>"
+      }
+    ],
+    "_AwakeningText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\nwoke up!<DONE>"
+      }
+    ],
+    "_BluesHouseDaisyBagFullText": [
+      {
+        "op": "text",
+        "text": "You have too much\nstuff with you.<DONE>"
+      }
+    ],
+    "_BluesHouseDaisyOfferMapText": [
+      {
+        "op": "text",
+        "text": "Grandpa asked you\nto run an errand?\nHere, this will\nhelp you!<PROMPT>"
+      }
+    ],
+    "_BluesHouseDaisyRivalAtLabText": [
+      {
+        "op": "text",
+        "text": "Hi <PLAYER>!\n<RIVAL> is out at\nGrandpa's lab.<DONE>"
+      }
+    ],
+    "_BluesHouseDaisyUseMapText": [
+      {
+        "op": "text",
+        "text": "Use the TOWN MAP\nto find out where\nyou are.<DONE>"
+      }
+    ],
+    "_BluesHouseDaisyWalkingText": [
+      {
+        "op": "text",
+        "text": "Spending time\nwith your POKéMON\nmakes them more\nfriendly to you.<DONE>"
+      }
+    ],
+    "_BluesHouseTownMapText": [
+      {
+        "op": "text",
+        "text": "It's a big map!\nThis is useful!<DONE>"
+      }
+    ],
+    "_BoxFullText": [
+      {
+        "op": "text",
+        "text": "Oops! This Box is\nfull of POKéMON.<PROMPT>"
+      }
+    ],
+    "_BurnHealText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "'s\nburn was healed!<DONE>"
+      }
+    ],
+    "_CannotFlyHereText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " can't\nFLY here.<PROMPT>"
+      }
+    ],
+    "_CannotGetOffHereText": [
+      {
+        "op": "text",
+        "text": "You can't get off\nhere.<PROMPT>"
+      }
+    ],
+    "_CannotUseItemsHereText": [
+      {
+        "op": "text",
+        "text": "You can't use items\nhere.<PROMPT>"
+      }
+    ],
+    "_CannotUseTeleportNowText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " can't\nuse TELEPORT now.<PROMPT>"
+      }
+    ],
+    "_CantCarryMoreText": [
+      {
+        "op": "text",
+        "text": "You can't carry\nany more items.<PROMPT>"
+      }
+    ],
+    "_CantDepositLastMonText": [
+      {
+        "op": "text",
+        "text": "You can't deposit\nthe last POKéMON!<PROMPT>"
+      }
+    ],
+    "_CantTakeMonText": [
+      {
+        "op": "text",
+        "text": "You can't take\nany more POKéMON.\fDeposit POKéMON\nfirst.<PROMPT>"
+      }
+    ],
+    "_ChooseABoxText": [
+      {
+        "op": "text",
+        "text": "Choose a\n BOX."
+      }
+    ],
+    "_DepositHowManyText": [
+      {
+        "op": "text",
+        "text": "How many?<DONE>"
+      }
+    ],
+    "_DepositWhichMonText": [
+      {
+        "op": "text",
+        "text": "Deposit which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_DiglettsCaveRoute2FishingGuruText": [
+      {
+        "op": "text",
+        "text": "I went to ROCK\nTUNNEL, but it's\ndark and scary.\fIf a POKéMON's\nFLASH could light\nit up...<DONE>"
+      }
+    ],
+    "_DroppedHiddenCoinsText": [
+      {
+        "op": "text",
+        "text": "\fOops! Dropped\nsome coins!<DONE>"
+      }
+    ],
+    "_FileDataDestroyedText": [
+      {
+        "op": "text",
+        "text": "The file data is\ndestroyed!<PROMPT>"
+      }
+    ],
+    "_FlashLightsAreaText": [
+      {
+        "op": "text",
+        "text": "A blinding FLASH\nlights the area!<PROMPT>"
+      }
+    ],
+    "_FoundHiddenCoins2Text": [
+      {
+        "op": "text",
+        "text": "<PLAYER> found\n"
+      },
+      {
+        "op": "bcd",
+        "binding": "coins",
+        "bytes": 2,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": " coins!"
+      }
+    ],
+    "_FoundHiddenCoinsText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> found\n"
+      },
+      {
+        "op": "bcd",
+        "binding": "coins",
+        "bytes": 2,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": " coins!"
+      }
+    ],
+    "_FoundHiddenItemText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> found\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_FoundItemText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> found\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_FullHealText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "'s\nhealth returned!<DONE>"
+      }
+    ],
+    "_GameSavedText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> saved\nthe game!<DONE>"
+      }
+    ],
+    "_GotMapText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> got a\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_HiddenItemBagFullText": [
+      {
+        "op": "text",
+        "text": "But, <PLAYER> has\nno more room for\nother items!<DONE>"
+      }
+    ],
+    "_HisNameIsText": [
+      {
+        "op": "text",
+        "text": "That's right! I\nremember now! His\nname is <RIVAL>!<PROMPT>"
+      }
+    ],
+    "_IceHealText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\ndefrosted!<DONE>"
+      }
+    ],
+    "_IntroducePlayerText": [
+      {
+        "op": "text",
+        "text": "First, what is\nyour name?<PROMPT>"
+      }
+    ],
+    "_IntroduceRivalText": [
+      {
+        "op": "text",
+        "text": "This is my grand-\nson. He's been\nyour rival since\nyou were a baby.\f...Erm, what is\nhis name again?<PROMPT>"
+      }
+    ],
+    "_IsItOKToTossItemText": [
+      {
+        "op": "text",
+        "text": "Is it OK to toss\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "?<PROMPT>"
+      }
+    ],
+    "_ItemUseNoEffectText": [
+      {
+        "op": "text",
+        "text": "It won't have any\neffect.<PROMPT>"
+      }
+    ],
+    "_ItemUseNotTimeText": [
+      {
+        "op": "text",
+        "text": "OAK: <PLAYER>!\nThis isn't the\ntime to use that! <PROMPT>"
+      }
+    ],
+    "_ItemWasStoredText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\nstored via PC.<PROMPT>"
+      }
+    ],
+    "_JustAMomentText": [
+      {
+        "op": "text",
+        "text": "Just a moment.<DONE>"
+      }
+    ],
+    "_LinkCableHelpText1": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fUsing a Game Link\nCable<PROMPT>"
+      }
+    ],
+    "_LinkCableHelpText2": [
+      {
+        "op": "text",
+        "text": "Which heading do\nyou want to read?<DONE>"
+      }
+    ],
+    "_LinkCableInfoText1": [
+      {
+        "op": "text",
+        "text": "When you have\nlinked your GAME\nBOY with another\nGAME BOY, talk to\nthe attendant on\nthe right in any\nPOKéMON CENTER.<PROMPT>"
+      }
+    ],
+    "_LinkCableInfoText2": [
+      {
+        "op": "text",
+        "text": "COLOSSEUM lets\nyou play against\na friend.<PROMPT>"
+      }
+    ],
+    "_LinkCableInfoText3": [
+      {
+        "op": "text",
+        "text": "TRADE CENTER is\nused for trading\nPOKéMON.<PROMPT>"
+      }
+    ],
+    "_LooksContentText": [
+      {
+        "op": "text",
+        "text": "It looks very\ncontent asleep.<DONE>"
+      }
+    ],
+    "_MartSignText": [
+      {
+        "op": "text",
+        "text": "All your item\nneeds fulfilled!\nPOKéMON MART<DONE>"
+      }
+    ],
+    "_MonIsTakenOutText": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": " is\ntaken out.\nGot "
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ".<PROMPT>"
+      }
+    ],
+    "_MonWasReleasedText": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\nreleased outside.\nBye "
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_MonWasStoredText": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\nstored in Box "
+      },
+      {
+        "op": "ram",
+        "binding": "boxNumString"
+      },
+      {
+        "op": "text",
+        "text": ".<PROMPT>"
+      }
+    ],
+    "_NeedYourPokemonText": [
+      {
+        "op": "text",
+        "text": "OK. We'll need\nyour POKéMON.<DONE>"
+      }
+    ],
+    "_NewBadgeRequiredText": [
+      {
+        "op": "text",
+        "text": "No! A new BADGE\nis required.<PROMPT>"
+      }
+    ],
+    "_NoMonText": [
+      {
+        "op": "text",
+        "text": "What? There are\nno POKéMON here!<PROMPT>"
+      }
+    ],
+    "_NoMoreRoomForItemText": [
+      {
+        "op": "text",
+        "text": "No more room for\nitems!<DONE>"
+      }
+    ],
+    "_NoRoomToStoreText": [
+      {
+        "op": "text",
+        "text": "No room left to\nstore items.<PROMPT>"
+      }
+    ],
+    "_NotHealthyEnoughText": [
+      {
+        "op": "text",
+        "text": "Not healthy\nenough.<PROMPT>"
+      }
+    ],
+    "_NothingStoredText": [
+      {
+        "op": "text",
+        "text": "There is nothing\nstored.<PROMPT>"
+      }
+    ],
+    "_NothingToDepositText": [
+      {
+        "op": "text",
+        "text": "You have nothing\nto deposit.<PROMPT>"
+      }
+    ],
+    "_OakSpeechText1": [
+      {
+        "op": "text",
+        "text": "Hello there!\nWelcome to the\nworld of POKéMON!\fMy name is OAK!\nPeople call me\nthe POKéMON PROF!<PROMPT>"
+      }
+    ],
+    "_OakSpeechText2A": [
+      {
+        "op": "text",
+        "text": "This world is\ninhabited by\ncreatures called\nPOKéMON!"
+      }
+    ],
+    "_OakSpeechText2B": [
+      {
+        "op": "text",
+        "text": "\fFor some people,\nPOKéMON are\npets. Others use\nthem for fights.\fMyself...\fI study POKéMON\nas a profession.<PROMPT>"
+      }
+    ],
+    "_OakSpeechText3": [
+      {
+        "op": "text",
+        "text": "<PLAYER>!\fYour very own\nPOKéMON legend is\nabout to unfold!\fA world of dreams\nand adventures\nwith POKéMON\nawaits! Let's go!<DONE>"
+      }
+    ],
+    "_OaksLabGirlText": [
+      {
+        "op": "text",
+        "text": "PROF.OAK is the\nauthority on\nPOKéMON!\fMany POKéMON\ntrainers hold him\nin high regard!<DONE>"
+      }
+    ],
+    "_OaksLabGivePokeballsExplanationText": [
+      {
+        "op": "text",
+        "text": "\fWhen a wild\nPOKéMON appears,\nit's fair game.\fJust like I showed\nyou, throw a POKé\nBALL at it and try\nto catch it!\fThis won't always\nwork, though.\fA healthy POKéMON\ncould escape. You\nhave to be lucky!<DONE>"
+      }
+    ],
+    "_OaksLabOak1ComeSeeMeSometimesText": [
+      {
+        "op": "text",
+        "text": "OAK: Come see me\nsometimes.\fI want to know how\nyour POKéDEX is\ncoming along.<DONE>"
+      }
+    ],
+    "_OaksLabOak1DeliverParcelText": [
+      {
+        "op": "text",
+        "text": "OAK: Oh, <PLAYER>!\fHow is my old\nPOKéMON?\fWell, it seems to\nlike you a lot.\fYou must be\ntalented as a\nPOKéMON trainer!\fWhat? You have\nsomething for me?\f<PLAYER> delivered\nOAK's PARCEL."
+      }
+    ],
+    "_OaksLabOak1GoAheadItsYours": [
+      {
+        "op": "text",
+        "text": "OAK: Go ahead,\nit's yours!<DONE>"
+      }
+    ],
+    "_OaksLabOak1HowIsYourPokedexComingText": [
+      {
+        "op": "text",
+        "text": "OAK: Good to see \nyou! How is your \nPOKéDEX coming? \nHere, let me take\na look!<PROMPT>"
+      }
+    ],
+    "_OaksLabOak1ParcelThanksText": [
+      {
+        "op": "text",
+        "text": "\fAh! This is the\ncustom POKé BALL\nI ordered!\nThanks, <PLAYER>!\fBy the way, I must\nask you to do\nsomething for me.<DONE>"
+      }
+    ],
+    "_OaksLabOak1PokemonAroundTheWorldText": [
+      {
+        "op": "text",
+        "text": "POKéMON around the\nworld wait for\nyou, <PLAYER>!<DONE>"
+      }
+    ],
+    "_OaksLabOak1ReceivedPokeballsText": [
+      {
+        "op": "text",
+        "text": "OAK: You can't get\ndetailed data on\nPOKéMON by just\nseeing them.\fYou must catch\nthem! Use these\nto capture wild\nPOKéMON.\f<PLAYER> got 5\nPOKé BALLs!"
+      }
+    ],
+    "_OaksLabOak1YouShouldTalkToIt": [
+      {
+        "op": "text",
+        "text": "OAK: You should\ntalk to it and\nsee how it feels.<DONE>"
+      }
+    ],
+    "_OaksLabOak1YourPokemonCanFightText": [
+      {
+        "op": "text",
+        "text": "OAK: If a wild\nPOKéMON appears,\nyour POKéMON can\nfight against it!\fAfterward, go on\nto the next town.<DONE>"
+      }
+    ],
+    "_OaksLabOak2Text": [
+      {
+        "op": "text",
+        "text": "?<DONE>"
+      }
+    ],
+    "_OaksLabOakBePatientText": [
+      {
+        "op": "text",
+        "text": "OAK: Be patient,\n<RIVAL>, I'll give\nyou one later.<DONE>"
+      }
+    ],
+    "_OaksLabOakChooseMonText": [
+      {
+        "op": "text",
+        "text": "OAK: Hmm? <RIVAL>?\nWhy are you here\nalready?\fI said for you to\ncome by later...\fAh, whatever!\nJust wait there.\fLook, <PLAYER>! Do\nyou see that ball\non the table?\fIt's called a POKé\nBALL. It holds a\nPOKéMON inside.\fYou may have it!\nGo on, take it!<DONE>"
+      }
+    ],
+    "_OaksLabOakDontGoAwayYetText": [
+      {
+        "op": "text",
+        "text": "OAK: Hey! Don't go\naway yet!<DONE>"
+      }
+    ],
+    "_OaksLabOakGivesText": [
+      {
+        "op": "text",
+        "text": "OAK: <PLAYER>, this\nis the POKéMON I\ncaught earlier.\fYou can have it.\nI caught it in\nthe wild and it's\nnot tame yet.<PROMPT>"
+      }
+    ],
+    "_OaksLabOakGotPokedexText": [
+      {
+        "op": "text",
+        "text": "OAK: <PLAYER> and\n<RIVAL>! Take\nthese with you!\f<PLAYER> got\nPOKéDEX from OAK!"
+      }
+    ],
+    "_OaksLabOakIHaveARequestText": [
+      {
+        "op": "text",
+        "text": "OAK: Ah, <RIVAL>,\ngood timing!\fI needed to ask\nboth of you to do\nsomething for me.<DONE>"
+      }
+    ],
+    "_OaksLabOakMyInventionPokedexText": [
+      {
+        "op": "text",
+        "text": "On the desk there\nis my invention,\nPOKéDEX!\fIt automatically\nrecords data on\nPOKéMON you've\nseen or caught!\fIt's a hi-tech\nencyclopedia!<DONE>"
+      }
+    ],
+    "_OaksLabOakThatWasMyDreamText": [
+      {
+        "op": "text",
+        "text": "To make a complete\nguide on all the\nPOKéMON in the\nworld...\fThat was my dream!\fBut, I'm too old!\nI can't do it!\fSo, I want you two\nto fulfill my\ndream for me!\fGet moving, you\ntwo!\fThis is a great\nundertaking in\nPOKéMON history!<DONE>"
+      }
+    ],
+    "_OaksLabPikachuDislikesPokeballsText1": [
+      {
+        "op": "text",
+        "text": "OAK: What?<DONE>"
+      }
+    ],
+    "_OaksLabPikachuDislikesPokeballsText2": [
+      {
+        "op": "text",
+        "text": "OAK: Would you\nlook at that!\fIt's odd, but it\nappears that your\nPIKACHU dislikes\nPOKé BALLs.\fYou should just\nkeep it with you.\fThat should make\nit happy!\fYou can talk to it\nand see how it\nfeels about you.<DONE>"
+      }
+    ],
+    "_OaksLabPokedexText": [
+      {
+        "op": "text",
+        "text": "It's encyclopedia-\nlike, but the\npages are blank!<DONE>"
+      }
+    ],
+    "_OaksLabReceivedText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> received\na "
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_OaksLabRivalAmIGreatOrWhatText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Yeah! Am\nI great or what?<PROMPT>"
+      }
+    ],
+    "_OaksLabRivalFedUpWithWaitingText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Gramps!\nI'm fed up with\nwaiting!<DONE>"
+      }
+    ],
+    "_OaksLabRivalGrampsIsntAroundText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Yo\n<PLAYER>! Gramps\nisn't around!\fI ran here 'cos\nhe said he had a\nPOKéMON for me.<DONE>"
+      }
+    ],
+    "_OaksLabRivalGrampsText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Gramps!<DONE>"
+      }
+    ],
+    "_OaksLabRivalIPickedTheWrongPokemonText": [
+      {
+        "op": "text",
+        "text": "WHAT?\nUnbelievable!\nI picked the\nwrong POKéMON!<PROMPT>"
+      }
+    ],
+    "_OaksLabRivalIllGetABetterPokemonThanYou": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Humph!\nI'll get a better\nPOKéMON than you!<DONE>"
+      }
+    ],
+    "_OaksLabRivalIllTakeYouOnText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Wait\n<PLAYER>!\nLet's check out\nour POKéMON!\fCome on, I'll take\nyou on!<DONE>"
+      }
+    ],
+    "_OaksLabRivalLeaveItAllToMeText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Alright\nGramps! Leave it\nall to me!\f<PLAYER>, I hate to\nsay it, but I\ndon't need you!\fI know! I'll\nborrow a TOWN MAP\nfrom my sis!\fI'll tell her not\nto lend you one,\n<PLAYER>! Hahaha!<DONE>"
+      }
+    ],
+    "_OaksLabRivalMyPokemonHasGrownStrongerText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Gramps,\nmy POKéMON has\ngrown stronger!\nCheck it out!<DONE>"
+      }
+    ],
+    "_OaksLabRivalMyPokemonLooksStrongerText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Heh, my\nPOKéMON looks a\nlot stronger.<DONE>"
+      }
+    ],
+    "_OaksLabRivalSmellYouLaterText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Okay!\nI'll make my\nPOKéMON fight to\ntoughen it up!\f<PLAYER>! Gramps!\nSmell you later!<DONE>"
+      }
+    ],
+    "_OaksLabRivalTakesText1": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: No way!\n<PLAYER>, I want\nthis POKéMON!<PROMPT>"
+      }
+    ],
+    "_OaksLabRivalTakesText2": [
+      {
+        "op": "text",
+        "text": "<RIVAL> snatched\nthe POKéMON!"
+      }
+    ],
+    "_OaksLabRivalTakesText3": [
+      {
+        "op": "text",
+        "text": "OAK: <RIVAL>! What\nare you doing?<PROMPT>"
+      }
+    ],
+    "_OaksLabRivalTakesText4": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Gramps, I\nwant this one!<PROMPT>"
+      }
+    ],
+    "_OaksLabRivalTakesText5": [
+      {
+        "op": "text",
+        "text": "OAK: But, I... Oh,\nall right then.\nThat POKéMON is\nyours.\fI was going to\ngive you one\nanyway...\f<PLAYER>, come over\nhere.<DONE>"
+      }
+    ],
+    "_OaksLabRivalWhatAboutMeText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Hey!\nGramps! What\nabout me?<DONE>"
+      }
+    ],
+    "_OaksLabScientistText": [
+      {
+        "op": "text",
+        "text": "I study POKéMON as\nPROF.OAK's AIDE.<DONE>"
+      }
+    ],
+    "_OaksLabThatsAPokeball": [
+      {
+        "op": "text",
+        "text": "That's a POKé\nBALL. There's a\nPOKéMON inside!<DONE>"
+      }
+    ],
+    "_OlderFileWillBeErasedText": [
+      {
+        "op": "text",
+        "text": "The older file\nwill be erased to\nsave. Okay?<DONE>"
+      }
+    ],
+    "_OnceReleasedText": [
+      {
+        "op": "text",
+        "text": "Once released,\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": " is\ngone forever. OK?<DONE>"
+      }
+    ],
+    "_PalletTownFisherText": [
+      {
+        "op": "text",
+        "text": "Technology is\nincredible!\fYou can now store\nand recall items\nand POKéMON as\ndata via PC!<DONE>"
+      }
+    ],
+    "_PalletTownGirlText": [
+      {
+        "op": "text",
+        "text": "I'm raising\nPOKéMON too!\fWhen they get\nstrong, they can\nprotect me!<DONE>"
+      }
+    ],
+    "_PalletTownOakComeWithMe": [
+      {
+        "op": "text",
+        "text": "OAK: A POKéMON can\nappear anytime in\ntall grass.\fYou need your own\nPOKéMON for your\nprotection.\nI know!\fHere, come with\nme!<DONE>"
+      }
+    ],
+    "_PalletTownOakHeyWaitDontGoOutText": [
+      {
+        "op": "text",
+        "text": "OAK: Hey! Wait!\nDon't go out!"
+      }
+    ],
+    "_PalletTownOakThatWasCloseText": [
+      {
+        "op": "text",
+        "text": "OAK: That was\nclose!\fWild POKéMON live\nin tall grass!<DONE>"
+      }
+    ],
+    "_PalletTownOakWhewText": [
+      {
+        "op": "text",
+        "text": "OAK: Whew...<DONE>"
+      }
+    ],
+    "_PalletTownOaksLabSignText": [
+      {
+        "op": "text",
+        "text": "OAK POKéMON\nRESEARCH LAB<DONE>"
+      }
+    ],
+    "_PalletTownPlayersHouseSignText": [
+      {
+        "op": "text",
+        "text": "<PLAYER>'s house <DONE>"
+      }
+    ],
+    "_PalletTownRivalsHouseSignText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>'s house <DONE>"
+      }
+    ],
+    "_PalletTownSignText": [
+      {
+        "op": "text",
+        "text": "PALLET TOWN\nShades of your\njourney await!<DONE>"
+      }
+    ],
+    "_ParlyzHealText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "'s\nrid of paralysis!<DONE>"
+      }
+    ],
+    "_PartyMenuBattleText": [
+      {
+        "op": "text",
+        "text": "Bring out which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_PartyMenuItemUseText": [
+      {
+        "op": "text",
+        "text": "Use item on which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_PartyMenuNormalText": [
+      {
+        "op": "text",
+        "text": "Choose a POKéMON.<DONE>"
+      }
+    ],
+    "_PartyMenuSwapMonText": [
+      {
+        "op": "text",
+        "text": "Move POKéMON\nwhere?<DONE>"
+      }
+    ],
+    "_PikachuUnhappyText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " looks\nunhappy about it!<PROMPT>"
+      }
+    ],
+    "_PokeCenterSignText": [
+      {
+        "op": "text",
+        "text": "Heal Your POKéMON!\nPOKéMON CENTER<DONE>"
+      }
+    ],
+    "_PokemartAnythingElseText": [
+      {
+        "op": "text",
+        "text": "Is there anything\nelse I can do?<DONE>"
+      }
+    ],
+    "_PokemartBoughtItemText": [
+      {
+        "op": "text",
+        "text": "Here you are!\nThank you!<PROMPT>"
+      }
+    ],
+    "_PokemartBuyingGreetingText": [
+      {
+        "op": "text",
+        "text": "Take your time.<DONE>"
+      }
+    ],
+    "_PokemartGreetingText": [
+      {
+        "op": "text",
+        "text": "Hi there!\nMay I help you?<DONE>"
+      }
+    ],
+    "_PokemartItemBagEmptyText": [
+      {
+        "op": "text",
+        "text": "You don't have\nanything to sell.<PROMPT>"
+      }
+    ],
+    "_PokemartItemBagFullText": [
+      {
+        "op": "text",
+        "text": "You can't carry\nany more items.<PROMPT>"
+      }
+    ],
+    "_PokemartNotEnoughMoneyText": [
+      {
+        "op": "text",
+        "text": "You don't have\nenough money.<PROMPT>"
+      }
+    ],
+    "_PokemartTellBuyPriceText": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "?\nThat will be\n¥"
+      },
+      {
+        "op": "bcd",
+        "binding": "money",
+        "bytes": 3,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": ". OK?<DONE>"
+      }
+    ],
+    "_PokemartTellSellPriceText": [
+      {
+        "op": "text",
+        "text": "I can pay you\n¥"
+      },
+      {
+        "op": "bcd",
+        "binding": "money",
+        "bytes": 3,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": " for that.<DONE>"
+      }
+    ],
+    "_PokemartThankYouText": [
+      {
+        "op": "text",
+        "text": "Thank you!<DONE>"
+      }
+    ],
+    "_PokemartUnsellableItemText": [
+      {
+        "op": "text",
+        "text": "I can't put a\nprice on that.<PROMPT>"
+      }
+    ],
+    "_PokemonCenterFarewellText": [
+      {
+        "op": "text",
+        "text": "We hope to see\nyou again!<DONE>"
+      }
+    ],
+    "_PokemonCenterWelcomeText": [
+      {
+        "op": "text",
+        "text": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!<PROMPT>"
+      }
+    ],
+    "_PokemonFightingFitText": [
+      {
+        "op": "text",
+        "text": "Thank you!\nYour POKéMON are\nfighting fit!<PROMPT>"
+      }
+    ],
+    "_PokemonSellingGreetingText": [
+      {
+        "op": "text",
+        "text": "What would you\nlike to sell?<DONE>"
+      }
+    ],
+    "_PotionText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\nrecovered by "
+      },
+      {
+        "op": "decimal",
+        "binding": "hpDifference",
+        "bytes": 2,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_RedsHouse1FMomLookingGreatText": [
+      {
+        "op": "text",
+        "text": "MOM: Oh good!\nYou and your\nPOKéMON are\nlooking great!\nTake care now!<DONE>"
+      }
+    ],
+    "_RedsHouse1FMomWakeUpText": [
+      {
+        "op": "text",
+        "text": "MOM: Right.\nAll boys leave\nhome someday.\nIt said so on TV.\fPROF.OAK, next\ndoor, is looking\nfor you.<DONE>"
+      }
+    ],
+    "_RedsHouse1FMomYouShouldRestText": [
+      {
+        "op": "text",
+        "text": "MOM: <PLAYER>, if\nyou drive your\nPOKéMON too hard,\nthey'll dislike\nyou.\fYou should take a\nrest.<PROMPT>"
+      }
+    ],
+    "_RedsHouse1FTVStandByMeMovieText": [
+      {
+        "op": "text",
+        "text": "There's a movie\non TV. Four boys\nare walking on\nrailroad tracks.\fI better go too.<DONE>"
+      }
+    ],
+    "_RedsHouse1FTVWrongSideText": [
+      {
+        "op": "text",
+        "text": "Oops, wrong side.<DONE>"
+      }
+    ],
+    "_ReleaseWhichMonText": [
+      {
+        "op": "text",
+        "text": "Release which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_ReviveText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\nis revitalized!<DONE>"
+      }
+    ],
+    "_Route1SignText": [
+      {
+        "op": "text",
+        "text": "ROUTE 1\nPALLET TOWN -\nVIRIDIAN CITY<DONE>"
+      }
+    ],
+    "_Route1Youngster1AlsoGotPokeballsText": [
+      {
+        "op": "text",
+        "text": "We also carry\nPOKé BALLs for\ncatching POKéMON!<DONE>"
+      }
+    ],
+    "_Route1Youngster1GotPotionText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> got\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_Route1Youngster1MartSampleText": [
+      {
+        "op": "text",
+        "text": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!<PROMPT>"
+      }
+    ],
+    "_Route1Youngster1NoRoomText": [
+      {
+        "op": "text",
+        "text": "You have too much\nstuff with you!<DONE>"
+      }
+    ],
+    "_Route1Youngster2Text": [
+      {
+        "op": "text",
+        "text": "See those ledges\nalong the road?\fIt's a bit scary,\nbut you can jump\nfrom them.\fYou can get back\nto PALLET TOWN\nquicker that way.<DONE>"
+      }
+    ],
+    "_Route22PokemonLeagueSignText": [
+      {
+        "op": "text",
+        "text": "POKéMON LEAGUE\nFront Gate<DONE>"
+      }
+    ],
+    "_Route22Rival1DefeatedText": [
+      {
+        "op": "text",
+        "text": "Awww!\nYou just lucked\nout!<PROMPT>"
+      }
+    ],
+    "_Route22Rival1VictoryText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: What?\nWhy do I have 2\nPOKéMON?\fYou should catch<CONT>some more too!<PROMPT>"
+      }
+    ],
+    "_Route22Rival2DefeatedText": [
+      {
+        "op": "text",
+        "text": "What!?\fI was just\ncareless!<PROMPT>"
+      }
+    ],
+    "_Route22Rival2VictoryText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Hahaha!\n<PLAYER>! That's\nyour best? You're\nnowhere near as\ngood as me, pal!\fGo train some\nmore! You loser!<PROMPT>"
+      }
+    ],
+    "_Route22RivalAfterBattleText1": [
+      {
+        "op": "text",
+        "text": "I heard POKéMON\nLEAGUE has many\ntough trainers!\fI have to figure\nout how to get\npast them!\fYou should quit\ndawdling and get\na move on!<DONE>"
+      }
+    ],
+    "_Route22RivalAfterBattleText2": [
+      {
+        "op": "text",
+        "text": "That loosened me\nup! I'm ready for\nPOKéMON LEAGUE!\f<PLAYER>, you need\nmore practice!\fBut hey, you know\nthat! I'm out of\nhere. Smell ya!<DONE>"
+      }
+    ],
+    "_Route22RivalBeforeBattleText1": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Hey!\n<PLAYER>!\fYou're going to\nPOKéMON LEAGUE?\fForget it! You\nprobably don't\nhave any BADGEs!\fThe guard won't\nlet you through!\fBy the way, did\nyour POKéMON\nget any stronger?<DONE>"
+      }
+    ],
+    "_Route22RivalBeforeBattleText2": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: What?\n<PLAYER>! What a\nsurprise to see\nyou here!\fSo you're going to\nPOKéMON LEAGUE?\fYou collected all\nthe BADGEs too?\nThat's cool!\fThen I'll whip\nyou, <PLAYER>, as\na warmup for\nPOKéMON LEAGUE!\fCome on!<DONE>"
+      }
+    ],
+    "_Route2DiglettsCaveSignText": [
+      {
+        "op": "text",
+        "text": "DIGLETT's CAVE<DONE>"
+      }
+    ],
+    "_Route2GateOaksAideFlashExplanationText": [
+      {
+        "op": "text",
+        "text": "The HM FLASH\nlights even the\ndarkest dungeons.<DONE>"
+      }
+    ],
+    "_Route2GateYoungsterText": [
+      {
+        "op": "text",
+        "text": "Once a POKéMON\nlearns FLASH, you\ncan get through\nROCK TUNNEL.<DONE>"
+      }
+    ],
+    "_Route2SignText": [
+      {
+        "op": "text",
+        "text": "ROUTE 2\nVIRIDIAN CITY -\nPEWTER CITY<DONE>"
+      }
+    ],
+    "_Route2TradeHouseScientistText": [
+      {
+        "op": "text",
+        "text": "A fainted POKéMON\ncan't fight. But, \nit can still use \nmoves like CUT!<DONE>"
+      }
+    ],
+    "_SavingText": [
+      {
+        "op": "text",
+        "text": "Saving...<DONE>"
+      }
+    ],
+    "_ShallWeHealYourPokemonText": [
+      {
+        "op": "text",
+        "text": "Shall we heal your\nPOKéMON?<DONE>"
+      }
+    ],
+    "_SleepingPikachuText2": [
+      {
+        "op": "text",
+        "text": "There isn't any\nresponse...<PROMPT>"
+      }
+    ],
+    "_SwitchOnText": [
+      {
+        "op": "text",
+        "text": "Switch on!<PROMPT>"
+      }
+    ],
+    "_ThrewAwayItemText": [
+      {
+        "op": "text",
+        "text": "Threw away\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": ".<PROMPT>"
+      }
+    ],
+    "_TooImportantToTossText": [
+      {
+        "op": "text",
+        "text": "That's too impor-\ntant to toss!<PROMPT>"
+      }
+    ],
+    "_TossHowManyText": [
+      {
+        "op": "text",
+        "text": "How many?<DONE>"
+      }
+    ],
+    "_TownMapText": [
+      {
+        "op": "text",
+        "text": "A TOWN MAP."
+      }
+    ],
+    "_TurnPageText": [
+      {
+        "op": "text",
+        "text": "Turn the page?<DONE>"
+      }
+    ],
+    "_TurnedOnPC1Text": [
+      {
+        "op": "text",
+        "text": "<PLAYER> turned on\nthe PC.<PROMPT>"
+      }
+    ],
+    "_TurnedOnPC2Text": [
+      {
+        "op": "text",
+        "text": "<PLAYER> turned on\nthe PC.<PROMPT>"
+      }
+    ],
+    "_ViridianBlackboardBurnText": [
+      {
+        "op": "text",
+        "text": "A burn reduces\npower and speed.\nIt also causes\nongoing damage.\fBurns remain\nafter battles.\fUse BURN HEAL to\ncure a burn!<PROMPT>"
+      }
+    ],
+    "_ViridianBlackboardFrozenText": [
+      {
+        "op": "text",
+        "text": "If frozen, a\nPOKéMON becomes\ntotally immobile!\fIt stays frozen\neven after the\nbattle ends.\fUse ICE HEAL to\nthaw out POKéMON!<PROMPT>"
+      }
+    ],
+    "_ViridianBlackboardPoisonText": [
+      {
+        "op": "text",
+        "text": "When poisoned, a\nPOKéMON's health\nsteadily drops.\fPoison lingers\nafter battles.\fUse an ANTIDOTE\nto cure poison!<PROMPT>"
+      }
+    ],
+    "_ViridianBlackboardPrlzText": [
+      {
+        "op": "text",
+        "text": "Paralysis could\nmake POKéMON\nmoves misfire!\fParalysis remains\nafter battles.\fUse PARLYZ HEAL\nfor treatment!<PROMPT>"
+      }
+    ],
+    "_ViridianBlackboardSleepText": [
+      {
+        "op": "text",
+        "text": "A POKéMON can't\nattack if it's\nasleep!\fPOKéMON will stay\nasleep even after\nbattles.\fUse AWAKENING to\nwake them up!<PROMPT>"
+      }
+    ],
+    "_ViridianCityFisherReceivedTM42Text": [
+      {
+        "op": "text",
+        "text": "<PLAYER> received\nTM42!"
+      }
+    ],
+    "_ViridianCityFisherTM42ExplanationText": [
+      {
+        "op": "text",
+        "text": "TM42 contains\nDREAM EATER...\n...Snore...<DONE>"
+      }
+    ],
+    "_ViridianCityFisherTM42NoRoomText": [
+      {
+        "op": "text",
+        "text": "You have too much\nstuff already.<DONE>"
+      }
+    ],
+    "_ViridianCityGambler1GymAlwaysClosedText": [
+      {
+        "op": "text",
+        "text": "This POKéMON GYM\nis always closed.\fI wonder who the\nLEADER is?<DONE>"
+      }
+    ],
+    "_ViridianCityGambler1GymLeaderReturnedText": [
+      {
+        "op": "text",
+        "text": "VIRIDIAN GYM's\nLEADER returned!<DONE>"
+      }
+    ],
+    "_ViridianCityGirlHasntHadHisCoffeeYetText": [
+      {
+        "op": "text",
+        "text": "Oh Grandpa! Don't\nbe so mean!\nHe hasn't had his\ncoffee yet.<DONE>"
+      }
+    ],
+    "_ViridianCityGirlWhenIGoShopText": [
+      {
+        "op": "text",
+        "text": "When I go shop in\nPEWTER CITY, I\nhave to take the\nwinding trail in\nVIRIDIAN FOREST.<DONE>"
+      }
+    ],
+    "_ViridianCityGymLockedText": [
+      {
+        "op": "text",
+        "text": "The GYM's doors\nare locked...<DONE>"
+      }
+    ],
+    "_ViridianCityGymSignText": [
+      {
+        "op": "text",
+        "text": "VIRIDIAN CITY\nPOKéMON GYM<DONE>"
+      }
+    ],
+    "_ViridianCityOldManHadMyCoffeeNowText": [
+      {
+        "op": "text",
+        "text": "Ahh, I've had my\ncoffee now and I\nfeel great!\fSure, you can go\nthrough!\fI'm sorry I was\nso rude to you!\fI see you're using\na POKéDEX.\fI'll show you how\nto catch POKéMON\nas my apology.<DONE>"
+      }
+    ],
+    "_ViridianCityOldManLosingMyTouchText": [
+      {
+        "op": "text",
+        "text": "That didn't work!\nI must be losing\nmy touch.\fI've run out of\nPOKé BALLs too.\fI have to get some\nat POKéMON MART.<DONE>"
+      }
+    ],
+    "_ViridianCityOldManNotGoodEnoughForYouText": [
+      {
+        "op": "text",
+        "text": "Oh... I'm not good\nenough for you.<DONE>"
+      }
+    ],
+    "_ViridianCityOldManSleepyPrivatePropertyText": [
+      {
+        "op": "text",
+        "text": "You can't go\nthrough here!\fThis is private\nproperty!<DONE>"
+      }
+    ],
+    "_ViridianCityOldManWantMeToShowYouAgainText": [
+      {
+        "op": "text",
+        "text": "Hmm? You want me\nto show you how\nto catch POKéMON\nagain?<DONE>"
+      }
+    ],
+    "_ViridianCityOldManWatchCloselyText": [
+      {
+        "op": "text",
+        "text": "Dandy! Watch what\nI do closely now!<DONE>"
+      }
+    ],
+    "_ViridianCityOldManYouNeedToWeakenTheTargetText": [
+      {
+        "op": "text",
+        "text": "First, you need\nto weaken the\ntarget POKéMON.<DONE>"
+      }
+    ],
+    "_ViridianCitySignText": [
+      {
+        "op": "text",
+        "text": "VIRIDIAN CITY \nThe Eternally\nGreen Paradise<DONE>"
+      }
+    ],
+    "_ViridianCityTrainerTips1Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fCatch POKéMON\nand expand your\ncollection!\fThe more you have,\nthe easier it is\nto fight!<DONE>"
+      }
+    ],
+    "_ViridianCityTrainerTips2Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fThe battle moves\nof POKéMON are\nlimited by their\nPOWER POINTs, PP.\fTo replenish PP,\nrest your tired\nPOKéMON at a\nPOKéMON CENTER!<DONE>"
+      }
+    ],
+    "_ViridianCityYoungster1Text": [
+      {
+        "op": "text",
+        "text": "Those POKé BALLs\nat your waist!\nYou have POKéMON!\fIt's great that\nyou can carry and\nuse POKéMON any-\ntime, anywhere!<DONE>"
+      }
+    ],
+    "_ViridianCityYoungster2YouWantToKnowAboutText": [
+      {
+        "op": "text",
+        "text": "You want to know\nabout the 2 kinds\nof caterpillar\nPOKéMON?<DONE>"
+      }
+    ],
+    "_ViridianForestCooltrainerFAfterBattleText": [
+      {
+        "op": "text",
+        "text": "I looked forever,\nbut I never found\na PIKACHU here!<DONE>"
+      }
+    ],
+    "_ViridianForestCooltrainerFBattleText": [
+      {
+        "op": "text",
+        "text": "Hi, do you have a\nPIKACHU?<DONE>"
+      }
+    ],
+    "_ViridianForestCooltrainerFEndBattleText": [
+      {
+        "op": "text",
+        "text": "Oh no,\nreally?<PROMPT>"
+      }
+    ],
+    "_ViridianForestLeavingSignText": [
+      {
+        "op": "text",
+        "text": "LEAVING\nVIRIDIAN FOREST\nPEWTER CITY AHEAD<DONE>"
+      }
+    ],
+    "_ViridianForestNorthGateGrampsText": [
+      {
+        "op": "text",
+        "text": "Have you noticed\nthe bushes on the\nroadside?\fThey can be cut\ndown by a special\nPOKéMON move.<DONE>"
+      }
+    ],
+    "_ViridianForestNorthGateSuperNerdText": [
+      {
+        "op": "text",
+        "text": "Many POKéMON live\nonly in forests \nand caves.\fYou need to look\neverywhere to get\ndifferent kinds!<DONE>"
+      }
+    ],
+    "_ViridianForestSouthGateGirlText": [
+      {
+        "op": "text",
+        "text": "Are you going to\nVIRIDIAN FOREST?\nBe careful, it's\na natural maze!<DONE>"
+      }
+    ],
+    "_ViridianForestSouthGateLittleGirlText": [
+      {
+        "op": "text",
+        "text": "You have to roam\nfar to get new\nkinds of POKéMON.\fLook for other\ntypes outside of\nVIRIDIAN FOREST.<DONE>"
+      }
+    ],
+    "_ViridianForestTrainerTips1Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fIf you want to\navoid battles,\nstay away from\ngrassy areas!<DONE>"
+      }
+    ],
+    "_ViridianForestTrainerTips2Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fContact PROF.OAK\nvia PC to get\nyour POKéDEX\nevaluated!<DONE>"
+      }
+    ],
+    "_ViridianForestTrainerTips3Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fNo stealing of\nPOKéMON from\nother trainers!\nCatch only wild\nPOKéMON!<DONE>"
+      }
+    ],
+    "_ViridianForestTrainerTips4Text": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fWeaken POKéMON\nbefore attempting\ncapture!\fWhen healthy,\nthey may escape!<DONE>"
+      }
+    ],
+    "_ViridianForestUseAntidoteSignText": [
+      {
+        "op": "text",
+        "text": "For poison, use\nANTIDOTE! Get it\nat POKéMON MARTs!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster1Text": [
+      {
+        "op": "text",
+        "text": "I came here with\nsome friends!\fThey're out for\nPOKéMON fights!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster2AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Ssh! You'll scare\nthe bugs away!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster2BattleText": [
+      {
+        "op": "text",
+        "text": "Hey! You have\nPOKéMON! Come on!\nLet's battle 'em!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster2EndBattleText": [
+      {
+        "op": "text",
+        "text": "No!\nCATERPIE can't\ncut it!<PROMPT>"
+      }
+    ],
+    "_ViridianForestYoungster3AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Darn! I'm going\nto catch some\nstronger ones!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster3BattleText": [
+      {
+        "op": "text",
+        "text": "Yo! You can't jam\nout if you're a\nPOKéMON trainer!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster3EndBattleText": [
+      {
+        "op": "text",
+        "text": "Huh?\nI ran out of\nPOKéMON!<PROMPT>"
+      }
+    ],
+    "_ViridianForestYoungster4AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Sometimes, you\ncan find stuff on\nthe ground!\fI'm looking for\nthe stuff I\ndropped!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster4BattleText": [
+      {
+        "op": "text",
+        "text": "Hey, wait up!\nWhat's the hurry?<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster4EndBattleText": [
+      {
+        "op": "text",
+        "text": "I\ngive! You're good\nat this!<PROMPT>"
+      }
+    ],
+    "_ViridianForestYoungster5AfterBattleText": [
+      {
+        "op": "text",
+        "text": "A METAPOD is cool\nbecause its\nattack is its\ndefense!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster5BattleText": [
+      {
+        "op": "text",
+        "text": "I'm gonna be the\nbest. You just\ncan't beat me!<DONE>"
+      }
+    ],
+    "_ViridianForestYoungster5EndBattleText": [
+      {
+        "op": "text",
+        "text": "After\nall I did...<PROMPT>"
+      }
+    ],
+    "_ViridianForestYoungster6Text": [
+      {
+        "op": "text",
+        "text": "I ran out of POKé\nBALLs to catch\nPOKéMON with!\fYou should carry\nextras!<DONE>"
+      }
+    ],
+    "_ViridianMartClerkParcelQuestText": [
+      {
+        "op": "text",
+        "text": "You know PROF.\nOAK, right?\fHis order came in.\nWill you take it\nto him?\f<PLAYER> got\nOAK's PARCEL!"
+      }
+    ],
+    "_ViridianMartClerkSayHiToOakText": [
+      {
+        "op": "text",
+        "text": "Okay! Say hi to\nPROF.OAK for me!<DONE>"
+      }
+    ],
+    "_ViridianMartClerkYouCameFromPalletTownText": [
+      {
+        "op": "text",
+        "text": "Hey! You came from\nPALLET TOWN?<DONE>"
+      }
+    ],
+    "_ViridianMartCooltrainerMText": [
+      {
+        "op": "text",
+        "text": "The shop finally\nhas some POTIONs\nin stock.<DONE>"
+      }
+    ],
+    "_ViridianMartYoungsterText": [
+      {
+        "op": "text",
+        "text": "This shop sells a\nlot of PARLYZ\nHEALs.<DONE>"
+      }
+    ],
+    "_ViridianNicknameHouseBaldingGuyText": [
+      {
+        "op": "text",
+        "text": "Coming up with\nnicknames is fun,\nbut hard.\fSimple names are\nthe easiest to\nremember.<DONE>"
+      }
+    ],
+    "_ViridianNicknameHouseLittleGirlText": [
+      {
+        "op": "text",
+        "text": "My Daddy loves\nPOKéMON too.<DONE>"
+      }
+    ],
+    "_ViridianNicknameHouseSpearowText": [
+      {
+        "op": "text",
+        "text": "SPEARY: Tetweet!<DONE>"
+      }
+    ],
+    "_ViridianNicknameHouseSpearySignText": [
+      {
+        "op": "text",
+        "text": "SPEAROW\nName: SPEARY<DONE>"
+      }
+    ],
+    "_ViridianPokecenterCooltrainerMText": [
+      {
+        "op": "text",
+        "text": "There's a POKéMON\nCENTER in every\ntown ahead.\fThey don't charge\nany money either!<DONE>"
+      }
+    ],
+    "_ViridianPokecenterGentlemanText": [
+      {
+        "op": "text",
+        "text": "You can use that\nPC in the corner.\fThe receptionist\ntold me. So kind!<DONE>"
+      }
+    ],
+    "_ViridianSchoolBlackboardText1": [
+      {
+        "op": "text",
+        "text": "The blackboard\ndescribes POKéMON\nSTATUS changes\nduring battles.<PROMPT>"
+      }
+    ],
+    "_ViridianSchoolBlackboardText2": [
+      {
+        "op": "text",
+        "text": "Which heading do\nyou want to read?<DONE>"
+      }
+    ],
+    "_ViridianSchoolHouseBrunetteGirlText": [
+      {
+        "op": "text",
+        "text": "Whew! I'm trying\nto memorize all\nmy notes.<DONE>"
+      }
+    ],
+    "_ViridianSchoolHouseCooltrainerFText": [
+      {
+        "op": "text",
+        "text": "Okay!\fBe sure to read\nthe blackboard\ncarefully!<DONE>"
+      }
+    ],
+    "_ViridianSchoolHouseLittleGirlText": [
+      {
+        "op": "text",
+        "text": "Sis says POKéMON\nwill become tame\nif you treat them\nnicely.<DONE>"
+      }
+    ],
+    "_ViridianSchoolNotebookText1": [
+      {
+        "op": "text",
+        "text": "Looked at the\nnotebook!\fFirst page...\fPOKé BALLs are\nused to catch\nPOKéMON.\fUp to 6 POKéMON\ncan be carried.\fPeople who raise\nand make POKéMON\nfight are called\nPOKéMON trainers.<PROMPT>"
+      }
+    ],
+    "_ViridianSchoolNotebookText2": [
+      {
+        "op": "text",
+        "text": "Second page...\fA healthy POKéMON\nmay be hard to\ncatch, so weaken\nit first!\fPoison, burns and\nother damage are\neffective!<PROMPT>"
+      }
+    ],
+    "_ViridianSchoolNotebookText3": [
+      {
+        "op": "text",
+        "text": "Third page...\fPOKéMON trainers\nseek others to\nengage in POKéMON\nfights.\fBattles are\nconstantly fought\nat POKéMON GYMs.<PROMPT>"
+      }
+    ],
+    "_ViridianSchoolNotebookText4": [
+      {
+        "op": "text",
+        "text": "Fourth page...\fThe goal for\nPOKéMON trainers\nis to beat the \ntop 8 POKéMON\nGYM LEADERs.\fDo so to earn the\nright to face...\fThe ELITE FOUR of\nPOKéMON LEAGUE!<PROMPT>"
+      }
+    ],
+    "_ViridianSchoolNotebookText5": [
+      {
+        "op": "text",
+        "text": "GIRL: Hey! Don't\nlook at my notes!"
+      }
+    ],
+    "_WarpToLastPokemonCenterText": [
+      {
+        "op": "text",
+        "text": "Warp to the last\nPOKéMON CENTER.<DONE>"
+      }
+    ],
+    "_WhatDoYouWantText": [
+      {
+        "op": "text",
+        "text": "What do you want\nto do?<DONE>"
+      }
+    ],
+    "_WhatText": [
+      {
+        "op": "text",
+        "text": "What?<DONE>"
+      }
+    ],
+    "_WhatToDepositText": [
+      {
+        "op": "text",
+        "text": "What do you want\nto deposit?<DONE>"
+      }
+    ],
+    "_WhatToTossText": [
+      {
+        "op": "text",
+        "text": "What do you want\nto toss away?<DONE>"
+      }
+    ],
+    "_WhatToWithdrawText": [
+      {
+        "op": "text",
+        "text": "What do you want\nto withdraw?<DONE>"
+      }
+    ],
+    "_WhenYouChangeBoxText": [
+      {
+        "op": "text",
+        "text": "When you change a\nPOKéMON BOX, data\nwill be saved.\fIs that okay?<DONE>"
+      }
+    ],
+    "_WithdrawHowManyText": [
+      {
+        "op": "text",
+        "text": "How many?<DONE>"
+      }
+    ],
+    "_WithdrewItemText": [
+      {
+        "op": "text",
+        "text": "Withdrew\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": ".<PROMPT>"
+      }
+    ],
+    "_WouldYouLikeToSaveText": [
+      {
+        "op": "text",
+        "text": "Would you like to\nSAVE the game?<DONE>"
+      }
+    ],
+    "_YourNameIsText": [
+      {
+        "op": "text",
+        "text": "Right! So your\nname is <PLAYER>!<PROMPT>"
+      }
+    ]
+  },
+  "textPointers": {
+    "BluesHouse_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "BluesHouseDaisyWalkingText"
+      },
+      {
+        "call": "text",
+        "program": "BluesHouseTownMapText"
+      }
+    ],
+    "DiglettsCaveRoute2_TextPointers": [
+      {
+        "call": "text",
+        "program": "DiglettsCaveRoute2FishingGuruText"
+      }
+    ],
+    "OaksLab_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabPokedexText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabPokedexText.Text"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOak2Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabGirlText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabScientistText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabScientistText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabOakDontGoAwayYetText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabRivalIllTakeYouOnText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabRivalSmellYouLaterText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabRivalFedUpWithWaitingText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabOakChooseMonText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabRivalWhatAboutMeText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabOakBePatientText.Text"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabRivalGrampsText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabRivalMyPokemonHasGrownStrongerText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOakIHaveARequestText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOakMyInventionPokedexText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOakGotPokedexText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOakThatWasMyDreamText"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabRivalLeaveItAllToMeText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabPikachuDislikesPokeballsText2.Text"
+      }
+    ],
+    "OaksLab_TextPointers2": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabPokedexText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabPokedexText.Text"
+      },
+      {
+        "call": "text",
+        "program": "OaksLabOak2Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabGirlText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabScientistText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "OaksLabScientistText.Text"
+      }
+    ],
+    "PalletTown_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownGirlText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownFisherText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownOaksLabSignText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownSignText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownPlayersHouseSignText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownRivalsHouseSignText"
+      },
+      {
+        "call": "text",
+        "program": "PalletTownOakComeWithMe"
+      }
+    ],
+    "RedsHouse1F_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      }
+    ],
+    "RedsHouse2F_TextPointers": [],
+    "Route1_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "Route1PrintYoungster2Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "Route1PrintSignText.text"
+      }
+    ],
+    "Route22_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "Route22PrintPokemonLeagueSignText.text"
+      }
+    ],
+    "Route2Gate_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "Route2GateYoungsterText"
+      }
+    ],
+    "Route2TradeHouse_TextPointers": [
+      {
+        "call": "text",
+        "program": "Route2TradeHouseScientistText"
+      },
+      {
+        "call": "handler"
+      }
+    ],
+    "Route2_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "Route2SignText"
+      },
+      {
+        "call": "text",
+        "program": "Route2DiglettsCaveSignText"
+      }
+    ],
+    "ViridianCity_TextPointers": [
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintYoungster1Text.text"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintSignText.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintTrainerTips1Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintTrainerTips2Text.text"
+      },
+      {
+        "call": "text",
+        "program": "MartSignText"
+      },
+      {
+        "call": "text",
+        "program": "PokeCenterSignText"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintGymSignText.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianCityPrintGymLockedText.text"
+      },
+      {
+        "call": "text",
+        "program": "ViridianCityOldManYouNeedToWeakenTheTargetText"
+      }
+    ],
+    "ViridianForestNorthGate_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianForestNorthGateSuperNerdText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianForestNorthGateGrampsText"
+      }
+    ],
+    "ViridianForestSouthGate_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianForestSouthGateGirlText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianForestSouthGateLittleGirlText"
+      }
+    ],
+    "ViridianForest_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianForestYoungster1Text"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "ViridianForestYoungster6Text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintTrainerTips1Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintUseAntidoteSignText.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintTrainerTips2Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintTrainerTips3Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintTrainerTips4Text.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianForestPrintTrainerTips1Text.text"
+      }
+    ],
+    "ViridianMart_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianMartClerkSayHiToOakText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartYoungsterText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartCooltrainerMText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartClerkYouCameFromPalletTownText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartClerkParcelQuestText"
+      }
+    ],
+    "ViridianMart_TextPointers2": [
+      {
+        "call": "script",
+        "script": "mart"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartYoungsterText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianMartCooltrainerMText"
+      }
+    ],
+    "ViridianNicknameHouse_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianNicknameHouseBaldingGuyText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianNicknameHouseLittleGirlText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "ViridianNicknameHouseSpearySignText"
+      }
+    ],
+    "ViridianPokecenter_TextPointers": [
+      {
+        "call": "script",
+        "script": "pokecenterNurse"
+      },
+      {
+        "call": "text",
+        "program": "ViridianPokecenterGentlemanText"
+      },
+      {
+        "call": "text",
+        "program": "ViridianPokecenterCooltrainerMText"
+      },
+      {
+        "call": "script",
+        "script": "cableClubReceptionist"
+      },
+      {
+        "call": "handler"
+      }
+    ],
+    "ViridianSchoolHouse_TextPointers": [
+      {
+        "call": "text",
+        "program": "ViridianSchoolHouseBrunetteGirlText"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianSchoolHousePrintCooltrainerFText.text"
+      },
+      {
+        "call": "printText",
+        "program": "ViridianSchoolHousePrintLittleGirlText.text"
+      }
+    ]
+  }
+}

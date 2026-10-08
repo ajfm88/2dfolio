@@ -487,7 +487,7 @@
       "x": 6,
       "y": 23,
       "movement": "stay",
-      "dialogue": "Yawn!\nI must have dozed\noff in the sun.\fI had this dream\nabout a DROWZEE\neating my dream.\nWhat's this?\nWhere did this TM\ncome from?\fThis is spooky!\nHere, you can\nhave this TM.",
+      "dialogue": "Yawn!\nI must have dozed\noff in the sun.\fI had this dream\nabout a DROWZEE\neating my dream.\nWhat's this?\nWhere did this TM\ncome from?\fThis is spooky!\nHere, you can\nhave this TM.<PROMPT>",
       "direction": "down"
     },
     {

@@ -1,5 +1,5 @@
 // The item jingles as music-mode SFX, WaitForSoundToFinish, drums on software channel 8
-// and the SFX-mode sounds (A1a, notes/a1a-plan.md §6 checkpoint 4).
+// and the SFX-mode sounds (A1a, notes/16-a1a-plan.md §6 checkpoint 4).
 
 import { describe, it, expect } from 'vitest';
 import { readdirSync } from 'fs';

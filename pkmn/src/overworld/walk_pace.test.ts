@@ -546,6 +546,38 @@ describe('NPCs (engine/overworld/movement.asm)', () => {
     expect(n.scriptDone).toBe(true);
   });
 
+  it('MoveSprite_ keeps the status (the trainer walk-up): ready steps on its next update', () => {
+    const n = new NpcWalk('right', 'stay', 'right');
+    n.pass(npcCtx()); // init → ready
+    expect(n.status).toBe('ready');
+    n.startScript(plan(['right']), true);
+    n.pass(npcCtx());
+    expect(n.startedStep).toBe(true);
+    expect(n.facing).toBe('right');
+  });
+
+  it('MoveSprite_ on a resting sprite: one update makes it ready, whatever its delay', () => {
+    const n = new NpcWalk('right', 'stay', 'right');
+    n.pass(npcCtx());
+    n.pass(npcCtx({ random: bytes(0x00, 0x50) })); // STAY fails: rests 80
+    expect(n.status).toBe('resting');
+    n.startScript(plan(['right']), true);
+    n.pass(npcCtx());
+    expect([n.status, n.startedStep]).toEqual(['ready', false]);
+    n.pass(npcCtx());
+    expect(n.startedStep).toBe(true);
+  });
+
+  it('MoveSprite_ on a moving sprite: it finishes its step, then starts at once (no rest)', () => {
+    const n = new NpcWalk('down', 'walk', 'any');
+    n.pass(npcCtx());
+    n.pass(npcCtx({ random: bytes(0x00, 0x00) })); // a step down starts
+    expect(n.status).toBe('moving');
+    n.startScript(plan(['left']), true);
+    const passes = passesUntil(() => n.pass(npcCtx()), () => n.startedStep && n.facing === 'left');
+    expect(passes).toBe(16 + 1); // the step's 16 pixels, then the scripted start
+  });
+
   it("can't start a step while the player is mid-step", () => {
     const n = new NpcWalk('up', 'stay', 'none');
     n.startScript(plan(['up']));

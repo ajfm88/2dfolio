@@ -8,46 +8,16 @@
 
 import { BinaryReader } from '../binary_reader';
 
-// Charmap for decoding ROM text bytes into Unicode strings.
-// Matches the Game Boy charmap from constants/charmap.asm.
-const CHARMAP: Record<number, string> = {
-  // Control characters
-  0x4E: '\n', 0x4F: '\n', 0x50: '', 0x51: '\f',
-  0x52: '<PLAYER>', 0x53: '<RIVAL>', 0x54: 'POK\u00e9',
-  0x55: '\n', 0x57: '', 0x58: '', 0x7F: ' ',
-  // Uppercase A-Z: $80-$99
-  ...Object.fromEntries(Array.from({ length: 26 }, (_, i) => [0x80 + i, String.fromCharCode(65 + i)])),
-  // Symbols after Z: ( ) : ; [ ]
-  0x9A: '(', 0x9B: ')', 0x9C: ':', 0x9D: ';', 0x9E: '[', 0x9F: ']',
-  // Lowercase a-z: $A0-$B9
-  ...Object.fromEntries(Array.from({ length: 26 }, (_, i) => [0xA0 + i, String.fromCharCode(97 + i)])),
-  // Accented / contractions
-  0xBA: '\u00e9',  // é
-  0xBB: "'d", 0xBC: "'l", 0xBD: "'s", 0xBE: "'t", 0xBF: "'v",
-  // Special characters
-  0xE0: "'", 0xE1: 'PK', 0xE2: 'MN',
-  0xE3: '-', 0xE4: "'r", 0xE5: "'m",
-  0xE6: '?', 0xE7: '!', 0xE8: '.',
-  0xEF: '\u2642', // ♂
-  0xF0: '\u00a5', // ¥
-  0xF1: '\u00d7', // ×
-  0xF2: '.', // decimal point
-  0xF3: '/', 0xF4: ',',
-  0xF5: '\u2640', // ♀
-  // Digits 0-9: $F6-$FF
-  ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [0xF6 + i, String(i)])),
-};
+import { decodeMapText } from './text';
 
-/** Read a text string from ROM at the given offset, decoding via charmap. */
+/**
+ * A5b1 (DECISIONS #45): a text ending in `prompt` keeps its trailing `<PROMPT>`; nothing else
+ * changes from A5a's strings. `getText()` strips it for the callers A5b4–A5b7 haven't
+ * converted yet. The canonical full programs (choose-mon, the parcel, the notebook, the PCs)
+ * are in text_programs.json; the split keys below stay as aliases until their callers move.
+ */
 function readText(rom: BinaryReader, offset: number, maxLen = 500): string {
-  let result = '';
-  for (let i = 0; i < maxLen; i++) {
-    const b = rom.readByte(offset + i);
-    if (b === 0x50 || b === 0x57 || b === 0x58) break;
-    const ch = CHARMAP[b];
-    if (ch !== undefined) result += ch;
-  }
-  return result;
+  return decodeMapText(rom, offset, maxLen, { trim: false });
 }
 
 /** Convert sym-file bank:addr to file offset. */

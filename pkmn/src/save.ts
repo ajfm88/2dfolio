@@ -51,6 +51,8 @@ export interface SaveData {
   rivalStarter?: number;
   /** Each map's resting w<Map>CurScript (events.ts), since V1e. */
   mapScripts?: Record<string, number>;
+  /** HideObject keys (Map:npcId), since A1b; missing on old saves. */
+  hiddenObjects?: string[];
 }
 
 function serializePokemon(mon: BattlePokemon): SavedPokemon {
@@ -121,6 +123,7 @@ export function saveGame(
   lastBlackoutWarp?: { destMap: string; destWarpId: number },
   rivalStarter?: number,
   mapScripts?: Record<string, number>,
+  hiddenObjects?: string[],
 ): void {
   const data: SaveData = {
     version: SAVE_VERSION,
@@ -146,6 +149,7 @@ export function saveGame(
     lastBlackoutWarp,
     rivalStarter,
     mapScripts,
+    hiddenObjects,
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
@@ -173,9 +177,8 @@ export function restoreParty(saved: SaveData): BattlePokemon[] {
 
 export function restoreBag(saved: SaveData): Bag {
   const bag = new Bag();
-  for (const item of saved.bag) {
-    bag.add(item.id, item.count);
-  }
+  // Saves hold the inventory's slots, not a sequence of GiveItem requests.
+  bag.items = saved.bag.map(item => ({ id: item.id, count: item.count }));
   return bag;
 }
 

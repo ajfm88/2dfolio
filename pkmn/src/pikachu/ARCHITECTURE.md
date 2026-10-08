@@ -13,9 +13,38 @@
 
 ## Happiness & Mood
 
+ASM: `engine/events/pikachu_happiness.asm`, `engine/pikachu/pikachu_emotions.asm`.
+
 - **State**: `pikachuHappiness` (0-255, default 90) and `pikachuMood` (0-255, default 128)
 - **Face selection**: mood x happiness matrix maps to 1 of 20 animation scripts. Status overrides: SLP->sleeping face, other status->sick face
-- **Modifiers**: LEVELUP (+5/+3/+2 tiered), FAINTED (-1), WALKING (+2/+1/+1 every 256 steps). Each nudges mood toward a target value.
+- **Modifiers**: the tables below. Each nudges mood toward a target value. **Bug reproduced:**
+  USEDITEM happiness fires *before* checking whether the item has any effect
+  (`item_effects.asm:941`) — a Potion on full-HP Pikachu still counts.
+
+Implemented (effect tiers are happiness <100 / <200 / 200+):
+
+| Event | Effect | Mood | Trigger |
+|---|---|---|---|
+| LEVELUP | +5/+3/+2 | 0x8A | `main.ts` after level gain |
+| FAINTED | −1/−1/−1 | 0x6C | `main.ts`, player mon faints (level gap < 30) |
+| WALKING | +2/+1/+1 | 0x80 | `overworld_controller.ts`, every 256 steps |
+| GYMLEADER | +3/+2/+1 | 0x80 | `main.ts:startTrainerBattle`, before gym leaders |
+| USEDITEM | +5/+3/+2 | 0x83 | `battle.ts:usePotion/useStatusHeal`, `item_menu.ts:useItemOnMon` — Pikachu only |
+| CARELESSTRAINER | −5/−5/−10 | 0x6C | `battle.ts:checkFaint` + `main.ts`, enemy 30+ levels higher |
+
+**Not yet implemented — add when the system is built:**
+
+| Event | Effect | Mood | ASM | Add where |
+|---|---|---|---|---|
+| USEDXITEM | +1/+1/+0 | 0x80 | `engine/items/item_effects.asm` (X items, Dire Hit, Guard Spec) | `battle.ts:handleItemUse` when X items land, if target is Pikachu (data ready, no trigger) |
+| USEDTMHM | +1/+1/+0 | 0x94 | `item_effects.asm` ~l.2468 | after a successful TM/HM teach on Pikachu (**A2**) |
+| DEPOSITED | −3/−3/−5 | 0x62 | `engine/pokemon/bills_pc.asm` | Bill's PC deposit of Pikachu (**E2**) |
+| PSNFNT | −5/−5/−10 | 0x62 | `engine/events/poison.asm` | Pikachu faints from overworld poison (**A3**) |
+| TRADE | −10/−10/−20 | 0x00 | `engine/link/cable_club.asm` | trading Pikachu away |
+| `wd49b` emotion override | — | varies | `pikachu_emotions.asm:346` | item reactions: stone refusal (1), healing (2), item refusal (4), Thunder/Thunderbolt learning (5); skips mood update when set |
+| `wPikachuEmotionModifier` | — | — | `poison.asm` `.clearEmotionModifier`, `pikachu_happiness.asm` | blocks certain mood increases; walking clears it when mood reaches 128. Separate from `wd49b`; not implemented yet → Pikachu state audit / J2 |
+| NPC happiness checks | — | — | Cerulean Melanie (147), Museum 2F Hiker (101), Celadon Mansion | `getPikachuHappiness()` in those map scripts (**V3** Museum, **B2**, **D3**) |
+| Mood floor after battle | — | ≥ 130 ($82) | `engine/battle/end_of_battle.asm` → `pikachu_status.asm:117` `UpdatePikachuMoodAfterBattle` — after any battle not lost, if the starter Pikachu is alive in the party | `main.ts` battle-finish handler (found in V1c) |
 
 ## Emotion Animation
 
@@ -49,7 +78,7 @@ Since V1d it is the catch demo shared with the Viridian old man (`BATTLE_TYPE_PI
   for a hop), and the pixels follow by the step vector each update. Font-loaded resets put
   the pixels back on the map position (`InitializeSpriteScreenPosition`).
 
-## Scripted movement (A6e, `notes/a6e-plan.md`)
+## Scripted movement (A6e, `notes/14-a6e-plan.md`)
 
 - `pikachu_movement.ts` ports `ApplyPikachuMovementData_`: the 63-record database and the
   sine table from `pikachu_movement.json`, both function tables, the two timers (and
@@ -69,7 +98,7 @@ Since V1d it is the catch demo shared with the Viridian old man (`BATTLE_TYPE_PI
 - Door steps: the automatic step out of a door is an ordinary step for Pikachu
   (`PlayerStepOutFromDoor` just simulates a DOWN press), so it follows it like any other
 
-## Idle and antics (A6c, `notes/a6c-plan.md` §6)
+## Idle and antics (A6c, `notes/10-a6c-plan.md` §6)
 
 - **Three update paths.** `updateSprite(ctx)` is UpdateSprites (`SpawnPikachu_`): unless
   `WillPikachuSpawnOnTheScreen` passes (the sprite window, plus the UI footprint

@@ -547,13 +547,22 @@ export class NpcWalk {
     this.movement2 = 'none';
   }
 
-  /** MoveSprite: walk these steps. The terminator turns the sprite into STAY. */
-  startScript(steps: NpcStepPlan[]): void {
+  /**
+   * MoveSprite: walk these steps. The terminator turns the sprite into STAY.
+   *
+   * `keepStatus` is MoveSprite_ itself (home/pathfinding.asm): it leaves the movement status
+   * alone, so a ready sprite steps on its next update, a resting one is made ready first
+   * and a moving one finishes its step (the trainer walk-up, A1c). Without it the sprite is
+   * put to rest for one update first, which matches the cutscenes ported so far (Pallet's
+   * Oak gets MovementStatus $2 after ShowObject); the other callers wait for the J2 audit.
+   */
+  startScript(steps: NpcStepPlan[], keepStatus = false): void {
     this.inStep = null;
     this.heldAfterInStep = false;
     this.script = steps;
     this.stepsStarted = 0;
     this.scriptDone = false;
+    if (keepStatus) return;
     this.status = 'resting';
     this.delay = 1;
   }

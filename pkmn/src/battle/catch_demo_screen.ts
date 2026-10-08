@@ -1,7 +1,7 @@
 // The catch demo's screen: BATTLE_TYPE_OLD_MAN (the Viridian old man) and
 // BATTLE_TYPE_PIKACHU (Oak catches Pikachu in Pallet Town). The rules and the step list
 // are in catch_demo.ts; this runs them. Upstream's pikachu/pikachu_battle.ts, moved and
-// generalized in V1d (DECISIONS #32, notes/v1d-plan.md).
+// generalized in V1d (DECISIONS #32, notes/05-v1d-plan.md).
 // The battle transition (startWildBattleTransition) runs before this is entered.
 
 import {
@@ -175,7 +175,7 @@ const BALL_START_Y = 80;
 const BALL_END_X = 120;
 const BALL_END_Y = 42;
 
-// Upstream's approximations of the toss animations (notes/v1d-plan.md §1.4). The exact
+// Upstream's approximations of the toss animations (notes/05-v1d-plan.md §1.4). The exact
 // frames are in data/battle_anims (Subanim_0BallToss*, ShakeEnemy, PoofEnemy).
 const TOSS_FRAMES = 30;
 // Assembly poof: 6 frames × 4 frame delay = 24 frames

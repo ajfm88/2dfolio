@@ -1,4 +1,4 @@
-// The shared channel interpreter against audio/engine_1.asm (A1a, notes/a1a-plan.md §6
+// The shared channel interpreter against audio/engine_1.asm (A1a, notes/16-a1a-plan.md §6
 // checkpoint 3). Each test drives the real engines one audio update at a time and reads
 // the register writes they make (src/test/audio_rig.ts).
 
