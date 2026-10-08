@@ -1,6 +1,6 @@
 import type { Direction, NpcData } from '../core';
 import { TILE_SIZE } from '../core';
-import { drawSprite, loadSprite, drawExclamationBubble } from '../renderer';
+import { drawSprite, loadSprite } from '../renderer';
 import { NpcWalk, walkFrame } from './walk_pace';
 import type { NpcStepPlan, NpcWalkMode, NpcMovement1, NpcMovement2 } from './walk_pace';
 import { inSpriteWindow, spriteCovered, SpriteVisibility } from './sprite_visibility';
@@ -71,16 +71,6 @@ export class Npc {
   /** The map position the current step leads to (TryWalking moves it at the start). */
   private targetX = 0;
   private targetY = 0;
-
-  // Trainer approach state (the sight engine; A1c ports TrainerEngage)
-  approaching = false;        // true while walking toward the player
-  showExclamation = false;    // true while "!" is displayed
-  private exclamationTimer = 0;
-  private approachTargetX = 0;
-  private approachTargetY = 0;
-  private approachMoving = false;
-  private approachProgress = 0;
-  approachDone = false;       // set when trainer arrives next to player
 
   hidden = false;             // if true, skip rendering and updates
   useWalkFrame = false;       // if true, show walk frame (used for nurse bow)
@@ -170,7 +160,7 @@ export class Npc {
     }
     if (this.hidden) return;
     const available = inSpriteWindow(this.mapStepX, this.mapStepY,
-      ctx.playerMapStep.x, ctx.playerMapStep.y, this.walk.scripted || this.approaching);
+      ctx.playerMapStep.x, ctx.playerMapStep.y, this.walk.scripted);
     const inStepAnimation = this.walk.inStepAnimation;
     this.visibility.update(available, ctx.playerWalking && !inStepAnimation);
     if (!available) return; // invisible sprites don't advance movement or delay
@@ -195,10 +185,11 @@ export class Npc {
   }
 
   /** MoveSprite: walk `path`, each step normal (1 px a pass) or fast (Yellow's $04–$07).
-   *  `modes` gives each step's mode; missing entries are normal. */
-  startScriptedMove(path: Direction[], modes?: NpcWalkMode[]): void {
+   *  `modes` gives each step's mode; missing entries are normal. `keepStatus`: see
+   *  NpcWalk.startScript (the trainer walk-up). */
+  startScriptedMove(path: Direction[], modes?: NpcWalkMode[], keepStatus = false): void {
     const plan: NpcStepPlan[] = path.map((dir, i) => ({ dir, mode: modes?.[i] ?? 'normal' }));
-    this.walk.startScript(plan);
+    this.walk.startScript(plan, keepStatus);
   }
 
   /** DoScriptedNPCMovement: walk `path` in step with the player (2 px a pass). */
@@ -220,102 +211,6 @@ export class Npc {
     const self = this.collisionSprite(ctx.playerX, ctx.playerY, ctx.slot);
     if (!stepStaysOnScreen(self.x, self.y, dir)) return false;
     return (collisionMask(self, ctx.sprites()) & DIRECTION_BIT[dir]) === 0;
-  }
-
-  /** Check if player is in this trainer's line of sight. */
-  isPlayerInSight(playerTileX: number, playerTileY: number): boolean {
-    if (!this.data.trainerClass || this.data.defeated || this.approaching || this.approachDone) return false;
-    const range = this.data.sightRange ?? 0;
-    if (range <= 0) return false;
-
-    // NPC occupies 2x2 tiles; check along facing direction from center
-    const nTx = this.tileX;
-    const nTy = this.tileY;
-
-    for (let step = 1; step <= range; step++) {
-      let checkX = nTx;
-      let checkY = nTy;
-      switch (this.direction) {
-        case 'up':    checkY -= step * 2; break;
-        case 'down':  checkY += step * 2; break;
-        case 'left':  checkX -= step * 2; break;
-        case 'right': checkX += step * 2; break;
-      }
-      // Player occupies 2x2 tiles; check if any tile overlaps
-      if (Math.abs(checkX - playerTileX) < 2 && Math.abs(checkY - playerTileY) < 2) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /** Start the trainer approach sequence: show "!" then walk toward player. */
-  startApproach(playerX: number, playerY: number): void {
-    this.approaching = true;
-    this.showExclamation = true;
-    this.exclamationTimer = 20; // passes (upstream's 40 frames)
-
-    // Target: one step away from the player (in the trainer's facing direction toward player)
-    const dx = playerX - this.x;
-    const dy = playerY - this.y;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      this.direction = dx > 0 ? 'right' : 'left';
-      this.approachTargetX = dx > 0 ? playerX - STEP_SIZE : playerX + STEP_SIZE;
-      this.approachTargetY = this.y;
-    } else {
-      this.direction = dy > 0 ? 'down' : 'up';
-      this.approachTargetX = this.x;
-      this.approachTargetY = dy > 0 ? playerY - STEP_SIZE : playerY + STEP_SIZE;
-    }
-  }
-
-  /** Update the trainer approach, once per pass (A1c replaces this with TrainerEngage's). */
-  updateApproach(): void {
-    if (!this.approaching) return;
-
-    // Phase 1: show exclamation mark
-    if (this.showExclamation) {
-      this.exclamationTimer--;
-      if (this.exclamationTimer <= 0) {
-        this.showExclamation = false;
-      }
-      return;
-    }
-
-    // Phase 2: walk toward the player at NPC pace (1 px a pass)
-    if (this.approachMoving) {
-      const d = stepDelta(this.direction);
-      this.x += d.dx / STEP_SIZE;
-      this.y += d.dy / STEP_SIZE;
-      this.approachProgress++;
-      if (this.approachProgress >= STEP_SIZE) {
-        this.approachMoving = false;
-        this.approachProgress = 0;
-      }
-      return;
-    }
-
-    // Check if we've arrived
-    if (Math.abs(this.x - this.approachTargetX) < 2 &&
-        Math.abs(this.y - this.approachTargetY) < 2) {
-      this.x = this.approachTargetX;
-      this.y = this.approachTargetY;
-      this.approaching = false;
-      this.approachDone = true;
-      return;
-    }
-
-    // Take next step toward target
-    const dx = this.approachTargetX - this.x;
-    const dy = this.approachTargetY - this.y;
-    if (Math.abs(dx) >= Math.abs(dy) && dx !== 0) {
-      this.direction = dx > 0 ? 'right' : 'left';
-    } else if (dy !== 0) {
-      this.direction = dy > 0 ? 'down' : 'up';
-    }
-    this.approachMoving = true;
-    this.approachProgress = 0;
   }
 
   render(cameraX: number, cameraY: number): void {
@@ -345,11 +240,6 @@ export class Npc {
     }
 
     drawSprite(this.spriteSheet, 0, frameY, screenX, screenY, flipX);
-
-    // Draw "!" emote above trainer during approach
-    if (this.showExclamation) {
-      drawExclamationBubble(screenX, screenY);
-    }
   }
 }
 

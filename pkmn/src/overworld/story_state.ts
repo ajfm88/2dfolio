@@ -4,7 +4,7 @@
 // loading a map. They are stateless: all state is passed in as parameters.
 
 import type { Npc } from './npc';
-import { hasFlag } from '../events';
+import { hasFlag, isObjectHidden } from '../events';
 import { viridianOldMenVisible } from '../story/viridian_city';
 import { substituteNames } from '../core/player_state';
 import { getText } from '../text';
@@ -38,6 +38,10 @@ export function recordDefeated(
  *  Called after loading NPCs for a map, and after scripts end. */
 export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
   for (const npc of npcs) {
+    if (isObjectHidden(mapName, npc.data.id)) {
+      npc.hidden = true;
+      continue;
+    }
     // PalletTown: Oak is always hidden here — he only appears during the
     // grass cutscene (as a script NPC) and lives in the lab afterward
     if (mapName === "PalletTown" && npc.data.id === "prof") {

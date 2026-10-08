@@ -12,6 +12,15 @@ export async function loadGameText(): Promise<void> {
   }
 }
 
+/**
+ * A string for a caller that hasn't moved to its text program yet (A5b4–A5b7): a trailing
+ * `<PROMPT>`/`<DONE>` is dropped, so these callers keep their own endings.
+ */
 export function getText(key: string): string {
+  return getRawText(key).replace(/<(PROMPT|DONE)>$/, '');
+}
+
+/** The extracted string, terminator included (A5b1). */
+export function getRawText(key: string): string {
   return gameText[key] ?? `[${key}]`;
 }

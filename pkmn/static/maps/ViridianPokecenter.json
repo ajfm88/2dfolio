@@ -57,7 +57,7 @@
       "x": 3,
       "y": 1,
       "movement": "stay",
-      "dialogue": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!",
+      "dialogue": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!<PROMPT>",
       "direction": "down"
     },
     {

@@ -37,6 +37,7 @@ export interface NpcData {
   endBattleText?: string;    // printed after "CLASS: " when the player wins (trainer header won text)
   afterBattleText?: string;  // what a beaten trainer says when talked to (trainer header after text)
   shopItems?: string[];      // mart inventory (item IDs)
+  item?: string;             // PickUpItemText object: item constant, extracted since V1a
   object?: boolean;           // inanimate object (item on table, etc.) — doesn't face player
 }
 

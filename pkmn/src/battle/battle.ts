@@ -876,7 +876,7 @@ export class Battle {
       const item = items[this.itemCursor];
       if (isBall(item.id)) {
         // Use a ball
-        this.bag.remove(item.id);
+        this.bag.removeAt(this.itemCursor);
         this.throwBall(item.id as BallType);
       } else if (item.id === 'POTION') {
         this.usePotion(item.id, 20);
@@ -906,7 +906,7 @@ export class Battle {
       return;
     }
 
-    this.bag.remove(itemId);
+    this.bag.removeAt(this.itemCursor);
     const actualHeal = Math.min(healAmount, p.maxHp - p.currentHp);
     p.currentHp += actualHeal;
     if (itemId === 'FULL_RESTORE') {
@@ -967,7 +967,7 @@ export class Battle {
       return;
     }
 
-    this.bag.remove(itemId);
+    this.bag.removeAt(this.itemCursor);
 
     // Restore stats modified by status (burn halved attack, paralysis quartered speed)
     if (p.status === 'BRN') {

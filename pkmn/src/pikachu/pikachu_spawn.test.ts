@@ -1,6 +1,6 @@
 // Pikachu's spawn states after a warp — expected values from
 // engine/pikachu/pikachu_follow.asm and home/overworld.asm WarpFound2
-// (the transition table in notes/v1b-plan.md §1.4).
+// (the transition table in notes/03-v1b-plan.md §1.4).
 
 import { describe, it, expect } from 'vitest';
 import type { Direction } from '../core';

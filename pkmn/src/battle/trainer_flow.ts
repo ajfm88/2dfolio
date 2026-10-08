@@ -43,7 +43,9 @@ export const BATTLE_TEXT_WIDTH = 18;
  */
 export function battleTextPages(text: string): string[][] {
   const pages: string[][] = [];
-  for (const para of text.split('\f')) {
+  // A5a map terminators must not become literal battle text; A5c consumes them.
+  for (const para of text.replace(/<(PROMPT|DONE)>/g, '')
+    .replace(/<(CONT|LINE|NEXT|SCROLL)>/g, '\n').split('\f')) {
     const lines = para.split('\n');
     for (let i = 0; i < lines.length; i += 2) pages.push(lines.slice(i, i + 2));
   }

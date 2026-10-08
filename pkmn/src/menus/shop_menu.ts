@@ -6,7 +6,7 @@ import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { isPressed } from '../input';
 import { drawText, drawBox } from './menu_render';
 import { fillRect } from '../renderer';
-import { Bag, getItemName, getItemPrice, BAG_ITEM_CAPACITY } from '../items';
+import { Bag, getItemName, getItemPrice } from '../items';
 import { playSFX } from '../audio';
 
 type ShopState = 'buy_sell' | 'buying' | 'buy_confirm' | 'selling' | 'sell_confirm' | 'done';
@@ -176,15 +176,13 @@ export class ShopMenu {
         this.messageLines = ["You don't have", 'enough money.'];
         this.state = 'buying';
       } else {
-        // Check bag capacity before buying (assembly: AddItemToInventory)
-        const alreadyInBag = this.bag.items.some(i => i.id === this.items[this.cursor]);
-        if (!alreadyInBag && this.bag.items.length >= BAG_ITEM_CAPACITY) {
+        // pokemart.asm: AddItemToInventory before SubtractAmountPaidFromMoney.
+        if (!this.bag.add(this.items[this.cursor], this.quantity)) {
           this.messageLines = ["You can't carry", 'any more items.'];
           this.state = 'buying';
         } else {
           this.money -= total;
           this.onMoneyChange?.(-total);
-          this.bag.add(this.items[this.cursor], this.quantity);
           // Assembly: _PokemartBoughtItemText
           this.messageLines = ['Here you are!', 'Thank you!'];
           this.state = 'buying';
@@ -243,7 +241,7 @@ export class ShopMenu {
       playSFX('press_ab');
       const sellPrice = Math.floor(getItemPrice(item.id) / 2);
       const total = sellPrice * this.quantity;
-      this.bag.remove(item.id, this.quantity);
+      this.bag.removeAt(this.bag.items.indexOf(item), this.quantity);
       this.money += total;
       this.onMoneyChange?.(total);
       const name = getItemName(item.id);

@@ -52,6 +52,27 @@ export function restoreMapScripts(saved: Record<string, number>): void {
   for (const [mapName, state] of Object.entries(saved)) setMapScript(mapName, state);
 }
 
+// HideObject (engine/overworld/toggleable_objects.asm). Today's pickup objects start ON;
+// a future ShowObject caller can extend this model. Clear with init_player_data.asm.
+const hiddenObjects = new Set<string>();
+
+export function hideObject(map: string, npcId: string): void {
+  hiddenObjects.add(`${map}:${npcId}`);
+}
+
+export function isObjectHidden(map: string, npcId: string): boolean {
+  return hiddenObjects.has(`${map}:${npcId}`);
+}
+
+export function getAllHiddenObjects(): string[] {
+  return [...hiddenObjects];
+}
+
+export function restoreHiddenObjects(saved: string[]): void {
+  hiddenObjects.clear();
+  for (const key of saved) hiddenObjects.add(key);
+}
+
 // Event flag constants
 export const EVENT = {
   // Pallet Town intro sequence

@@ -54,21 +54,37 @@ Compare Speed (Quick Attack has priority). Both sides attack per turn unless one
 
 Gen 1 accuracy always runs the RNG check — even 100% accuracy moves go through `floor(random*256) >= threshold` where threshold=255, giving a 1/256 miss chance. No moves are exempt (Swift uses `skipAccuracy` which bypasses the check entirely).
 
+## Focus Energy Bug
+
+Focus Energy divides the crit rate by 4 instead of multiplying it (`srl` instead of `sla`; `damage.ts`).
+
+## Faint
+
+`SlideDownFaintedMonPic`: the fainted mon's pic slides down 7 rows (`PIC_HEIGHT`), 2 frames a row; the HUD clears after.
+
 ## Move Learning Flow
 
-When a Pokemon levels up with a full moveset (4 moves), the battle enters an interactive flow: `learn_move_prompt` (yes/no: delete a move?) → `learn_move_select` (pick move to forget) → `learn_move_confirm` (abandon learning?). Uses `forceLearnMove()` in `experience.ts` to replace a specific slot.
+When a Pokemon levels up with a full moveset (4 moves), the move waits in `pendingMoves` and the battle enters an interactive flow: `learn_move_prompt` (yes/no: delete a move?) → `learn_move_select` (pick move to forget) → `learn_move_confirm` (abandon learning?). Uses `forceLearnMove()` in `experience.ts` to replace a specific slot. Text from `data/text/text_7.asm`; B / NO loops back to the full TryingToLearn text.
 
 ## Evolution
 
-Post-battle evolution is handled by `evolution.ts`. `checkEvolutions()` finds level-based candidates (item evolutions are skipped post-battle, naturally excluding Pikachu). `applyEvolution()` changes species, recalculates stats, preserves HP delta, auto-renames if nickname matched old species. The `'evolution'` game state in `main.ts` handles the animation (sprite alternation) and B-button cancel.
+Post-battle evolution is handled by `evolution.ts`. `checkEvolutions()` finds level-based candidates (item evolutions are skipped post-battle, naturally excluding Pikachu). `applyEvolution()` changes species, recalculates stats, preserves HP delta, auto-renames if nickname matched old species, and updates the Pokédex. The `'evolution'` game state in `main.ts` handles the animation (the 8-cycle accelerating sprite alternation of `engine/movie/evolution.asm`) and B-button cancel.
 
 ## Whiteout/Blackout
 
-When all party Pokemon faint: money halved, party fully healed, warp to `lastBlackoutMap` (default: PalletTown, updated on Pokecenter heal via `onPokecenterHeal` callback). Positions defined in `BLACKOUT_POSITIONS` in `main.ts`.
+When all party Pokemon faint: the `SET_PAL_BATTLE_BLACK` filter, "out of useable POKéMON!" / "blacked out!", money halved, party fully healed. `handleBlackoutWarp()` in `main.ts` warps to the last Pokécenter door and steps the player out below it. The destination is `lastBlackoutWarp` (saved; default PalletTown, updated on Pokecenter heal via the `onPokecenterHeal` callback).
 
 ## Trainer Battles
 
 No catching/running. Trainer AI uses 3 modifier functions per class. Money = baseMoney x last enemy level.
+
+**Two ways in** (`home/trainers.asm`): talking to an unbeaten trainer (V1c), or its sight
+(A1c: the map script, "!", the walk-up; `src/overworld/ARCHITECTURE.md` → *Trainer sight*).
+Both end in `engageTrainer` → the before-battle text → `startTrainerBattle`.
+Since A5a the map text uses DisplayTextID / nested PrintText; talk meet music runs
+when the string returns, then a silent fresh A/B wait and A release precede battle.
+Battle text itself awaits A5c. `battleTextPages()` strips the map extractor's
+`<PROMPT>` / `<DONE>` and converts cursor tokens to newlines for the old renderer.
 
 **Since V1c the end of a trainer battle follows the ASM** (`trainer_flow.ts`, unit-tested;
 `Battle` runs its steps in the `trainer_end` state):
@@ -93,7 +109,7 @@ No catching/running. Trainer AI uses 3 modifier functions per class. Money = bas
 `BATTLE_TYPE_OLD_MAN` (the Viridian old man) and `BATTLE_TYPE_PIKACHU` (Oak's catch in Pallet
 Town) are one demo, run beside `Battle` rather than inside it (DECISIONS #32): `Battle`
 assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM sources:
-`notes/v1d-plan.md`.
+`notes/05-v1d-plan.md`.
 
 - `catch_demo.ts` — the rules as tested data: `catchDemoCaught` (PIKACHU always; OLD_MAN
   unless `INITIAL_CATCH_TRAINING` is set, `ItemUseBall`), `catchDemoBackPic`
@@ -117,7 +133,7 @@ assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM so
   it; map-trainer battles cut straight in until A5
 - Wild = 3 white flashes + horizontal stripes
 - The ASM picks one of 8 transitions (trainer / stronger enemy / dungeon map); A5
-  implements them (DECISIONS #31, `notes/v1c-plan.md` §1.6)
+  implements them (DECISIONS #31, `notes/04-v1c-plan.md` §1.6)
 
 ## Wild Intro Phases
 

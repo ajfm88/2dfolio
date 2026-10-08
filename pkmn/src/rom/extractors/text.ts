@@ -11,6 +11,8 @@ import {
 
 /** Reverse charmap: ROM byte value → Unicode character */
 const CHARMAP: Record<number, string> = {
+  0x4A: '\uE001\uE002', // PlacePKMN
+  0x4B: '<CONT>', 0x4C: '<SCROLL>',
   // Control characters
   0x4E: '\n',       // NEXT / scroll to next line
   0x4F: '\n',       // LINE / newline
@@ -20,8 +22,12 @@ const CHARMAP: Record<number, string> = {
   0x53: '<RIVAL>',  // rival name placeholder
   0x54: 'POKé',      // # = POKé (expanded from single-char "#")
   0x55: '\n',       // CONT
+  0x56: '……',
   0x57: '',         // DONE
   0x58: '',         // PROMPT
+  0x59: '<TARGET>', 0x5A: '<USER>', 0x5B: 'PC', 0x5C: 'TM',
+  0x5D: 'TRAINER', 0x5E: 'ROCKET', 0x5F: '.',
+  0x70: '‘', 0x71: '’', 0x72: '“', 0x73: '”', 0x74: '·', 0x75: '…',
 
   // Box drawing / special
   0x7F: ' ',        // space
@@ -45,8 +51,8 @@ const CHARMAP: Record<number, string> = {
 
   // More special characters
   0xE0: "'",   // apostrophe
-  0xE1: 'PK',  // <PK> glyph (first half of POKé)
-  0xE2: 'MN',  // <MN> glyph (second half of POKéMON)
+  0xE1: '\uE001', // <PK> tile
+  0xE2: '\uE002', // <MN> tile
   0xE3: '-',   // dash
   0xE4: "'r", 0xE5: "'m",
   0xE6: '?', 0xE7: '!', 0xE8: '.',
@@ -71,11 +77,7 @@ export function decodeText(rom: BinaryReader, offset: number, maxLen = 255): str
   for (let i = 0; i < maxLen; i++) {
     const byte = rom.readByte(offset + i);
     if (byte === 0x50) break; // string terminator
-    const ch = CHARMAP[byte];
-    if (ch !== undefined) {
-      result += ch;
-    }
-    // Unknown bytes are silently skipped
+    result += decodeTextByte(byte, offset + i);
   }
   return result;
 }
@@ -90,18 +92,71 @@ export function decodeFixedString(rom: BinaryReader, offset: number, len: number
  * Same as decodeText but also stops at 0x57 (DONE) and 0x58 (PROMPT),
  * which are the text script terminators used for NPC dialogue and sign text.
  */
-export function decodeMapText(rom: BinaryReader, offset: number, maxLen = 500): string {
+export function decodeMapText(rom: BinaryReader, offset: number, maxLen = 500,
+  opts: { terminators?: boolean; trim?: boolean } = {}): string {
   let result = '';
+  let row = 1;
   for (let i = 0; i < maxLen; i++) {
     const byte = rom.readByte(offset + i);
-    if (byte === 0x50 || byte === 0x57 || byte === 0x58) break;
-    const ch = CHARMAP[byte];
-    if (ch !== undefined) {
-      result += ch;
+    // Map offsets and text_far target the text script's TX_START prefix.
+    // It is a command, not a printable unknown byte.
+    if (i === 0 && byte === 0) continue;
+    if (byte === 0x58) { if (opts.terminators !== false) result += '<PROMPT>'; break; }
+    if (byte === 0x50 || byte === 0x57) break;
+    if (byte === 0x4F) { result += row === 1 ? '\n' : '<LINE>'; row = 2; }
+    else if (byte === 0x4E) { result += row === 1 ? '\n' : '<NEXT>'; row++; }
+    else if (byte === 0x55 || byte === 0x4B) { result += row === 2 ? '\n' : '<CONT>'; row = 2; }
+    else {
+      result += decodeTextByte(byte, offset + i);
+      if (byte === 0x51) row = 1;
+      else if (byte === 0x4C) row = 2;
     }
   }
   // Trim trailing/pre-newline spaces (ROM text is sometimes padded with 0x7F=space)
-  return result.replace(/ +$/gm, '');
+  return opts.trim === false ? result : result.replace(/ +(?=<PROMPT>$|$)/gm, '');
+}
+
+/** The text row a program's cursor is on: 1 = (1,14), 2 = (1,16), null = elsewhere. */
+export type TextRow = 1 | 2 | null;
+
+/** How a TX_START string returned: `@`, or a `<DONE>`/`<PROMPT>` that ends its program. */
+export type TextStringEnd = 'string' | 'done' | 'prompt';
+
+/**
+ * Decode one TX_START string of a text program (A5b, text_programs.ts), starting just
+ * after the opcode. The encoding is A5a's: `\n` where `\n`'s rule ("line from the first
+ * row, scroll from the second") gives what the ROM does, else `<LINE>`/`<CONT>`/`<NEXT>`;
+ * `\f` for `para`; a `<PROMPT>` ending is kept, a `<DONE>` ending is written out (the
+ * program ends there either way). With the row unknown, every newline is a token.
+ * Nothing is trimmed: a space is a tile.
+ */
+export function decodeProgramString(rom: BinaryReader, offset: number, startRow: TextRow, maxLen = 1000):
+  { text: string; length: number; endRow: TextRow; end: TextStringEnd } {
+  let text = '';
+  let row = startRow;
+  for (let i = 0; i < maxLen; i++) {
+    const byte = rom.readByte(offset + i);
+    if (byte === 0x50) return { text, length: i + 1, endRow: row, end: 'string' };
+    if (byte === 0x57) return { text: text + '<DONE>', length: i + 1, endRow: row, end: 'done' };
+    if (byte === 0x58) return { text: text + '<PROMPT>', length: i + 1, endRow: row, end: 'prompt' };
+    if (byte === 0x4F) { text += row === 1 ? '\n' : '<LINE>'; row = 2; }
+    else if (byte === 0x4E) { text += row === 1 ? '\n' : '<NEXT>'; row = row === 1 ? 2 : null; }
+    else if (byte === 0x55 || byte === 0x4B) { text += row === 2 ? '\n' : '<CONT>'; row = 2; }
+    else if (byte === 0x4C) { text += '<SCROLL>'; row = 2; }
+    else if (byte === 0x49) throw new Error(`<PAGE> in a text program at ROM $${(offset + i).toString(16)}`);
+    else {
+      text += decodeTextByte(byte, offset + i);
+      if (byte === 0x51) row = 1;
+    }
+  }
+  throw new Error(`Unterminated text string at ROM $${offset.toString(16)}`);
+}
+
+/** All text consumers share this charmap; unmapped bytes identify bad offsets early. */
+function decodeTextByte(byte: number, offset: number): string {
+  const glyph = CHARMAP[byte];
+  if (glyph === undefined) throw new Error(`Unmapped text byte $${byte.toString(16)} at ROM $${offset.toString(16)}`);
+  return glyph;
 }
 
 /**
