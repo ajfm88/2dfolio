@@ -216,6 +216,10 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
 - **App shell**: `#app` is a fixed-position flex container filling the viewport.
   `#game` (the canvas) fills it; `#ui` is a sibling layer at `z-index: 1` with
   `pointer-events: none`, and each mounted panel re-enables pointer events on itself.
+- **`?perf` readout**: only when the URL has `?perf`. A fixed top-centre line on
+  `#app` (not inside `#ui`), above the HUD, `pointer-events: none`, paper
+  background and ink text in the code font. It shows average work, max work and
+  fps, rewritten every 30 frames. Absent without the flag.
 - **Safe areas**: every edge-anchored element pads with
   `env(safe-area-inset-*)`. Notches and home indicators must never cover a control.
 - **Title** (Unit 18): a centred column on `--sky`. The wordmark "Coral Corsairs"
@@ -281,7 +285,10 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   The status slot is one line of `--fs-sm` text with a square
   `--danger` pip, naming the first reason the level cannot be played (Play is
   disabled while there is one); it is empty when the level is playable. The palette bar is
-  a row of category tabs above a horizontally scrolling strip of tool buttons. The
+  a row of category tabs above a horizontally scrolling strip of tool buttons.
+  Category tabs are at least 44 × 44 CSS pixels: the tab row is 44px at
+  `--ui-scale` 1 (it was 28). That adds 16 CSS px to `--palette-height` and takes
+  the same 16px out of the clear canvas. The
   canvas keeps the full viewport behind both bars; the left and right edges stay
   clear so a thumb can pan without hitting chrome.
 - **Dialogs**: centred `.panel--board`, `max-inline-size: 480px`, over a `--scrim`
@@ -304,6 +311,9 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
 ## Icons
 
 - No icon font, no SVG icon library.
+- The app icon — manifest, apple-touch icon and favicon — is Captain Clown
+  Nose's idle frame, cropped to its opaque bounds (x20 y4 w24 h28) and centred
+  on `--sky`. The asset pipeline generates it. It is not drawn by hand.
 - Directional and action glyphs come from `Wood and Paper UI/Mobile Buttons`
   (8 frames at 28 × 28), packed by the asset build into `/assets/ui/icons.png`.
 - Small inline glyphs come from `Small Text/Small Icons` (25 frames at 8 × 6).

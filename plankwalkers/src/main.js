@@ -6,6 +6,7 @@ import { loadAtlas } from './core/atlas.js';
 import { createCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
 import { createLoop } from './core/loop.js';
+import { registerServiceWorker } from './core/service-worker.js';
 import { createTransition } from './core/transition.js';
 import { createViewport } from './core/viewport.js';
 
@@ -19,6 +20,7 @@ import { createPlayScene } from './game/play-scene.js';
 import { createMakerScene } from './maker/maker-scene.js';
 import { findProblems } from './maker/validate.js';
 import { createLevelStore } from './storage/levels.js';
+import { createPersistRequest } from './storage/persist.js';
 import { createProgressStore } from './storage/progress.js';
 import { createSafeStorage } from './storage/safe-storage.js';
 import { createSettingsStore } from './storage/settings-store.js';
@@ -33,6 +35,7 @@ import { createPlayHud } from './ui/hud.js';
 import { createMakerPalette } from './ui/maker-palette.js';
 import { createMakerToolbar } from './ui/maker-toolbar.js';
 import { createPaintPanToggle } from './ui/maker-toggle.js';
+import { createPerfReadout, perfRequested } from './ui/perf-readout.js';
 import { createRotatePrompt } from './ui/rotate-prompt.js';
 import { createTouchControls } from './ui/touch-controls.js';
 import { openDialog } from './ui/components/dialog.js';
@@ -77,6 +80,7 @@ const uiRoot = /** @type {HTMLElement} */ (document.getElementById('ui'));
 // Portrait is not a supported canvas orientation (2026-09-23): the game is held
 // behind a rotate prompt until the display is wider than it is tall.
 const rotatePrompt = createRotatePrompt(appRoot);
+const perfReadout = perfRequested() ? createPerfReadout(appRoot) : null;
 let portrait = false;
 
 const viewport = createViewport(canvas, ctx, {
@@ -91,6 +95,7 @@ const viewport = createViewport(canvas, ctx, {
 });
 
 const storage = createSafeStorage(() => window.localStorage);
+const persistence = createPersistRequest(() => navigator.storage);
 const levels = createLevelStore(storage);
 const settings = createSettingsStore(storage);
 const progress = createProgressStore(storage);
@@ -276,7 +281,10 @@ function openSettings(root) {
 function saveLevel(level, opts) {
   // An immediate save is uncompressed: it waits on no stream, so it lands in this
   // task, before a hidden page can be frozen. The next autosave compresses it.
-  levels.save(level, { compress: !opts?.immediate }).then((r) => report(r, level));
+  levels.save(level, { compress: !opts?.immediate }).then((r) => {
+    report(r, level);
+    if (r.ok) persistence.request();
+  });
 }
 
 /**
@@ -657,7 +665,11 @@ function render() {
   }
 }
 
-const loop = createLoop({ update, render });
+const loop = createLoop({
+  update,
+  render,
+  onFrame: perfReadout ? perfReadout.sample : undefined,
+});
 loop.start();
 
 Promise.all([
@@ -667,6 +679,9 @@ Promise.all([
   atlas = loaded;
   mode = 'title';
   enterTitle();
+  // After boot, so the worker's precache download never competes with it.
+  // The dev server never registers a worker.
+  if (import.meta.env.PROD) registerServiceWorker('/sw.js');
 }).catch((err) => {
   console.error('Failed to load:', err);
 });

@@ -1,9 +1,10 @@
 import { AUTOSAVE_IDLE, AUTOSAVE_MAX, TILE, VIEW_H } from '../settings.js';
 import { deserialise, encodeShare, serialise } from '../level/codec.js';
+import { createDecorVisual } from '../level/decor.js';
 import { createParallax } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
-import { ENTITIES_MAX, LevelError, validateLevel } from '../level/schema.js';
+import { DECOR_MAX, ENTITIES_MAX, LevelError, validateLevel } from '../level/schema.js';
 import { byId } from '../data/palette.js';
 import { getTheme, themeList } from '../data/themes.js';
 import { CommandStack, ThemeCommand, createResizeCommand } from './commands.js';
@@ -156,6 +157,63 @@ export function createMakerScene() {
   let idleTime = 0;
   let dirtyTime = 0;
 
+  const spawnEntry = byId('spawn');
+  const goalEntry = byId('goal');
+
+  /**
+   * Palette lookup stays in the maker. The visual is created once per scene.
+   * @param {string} k
+   * @returns {{ z: number, clip: import('../core/sprite.js').AtlasClip } | null}
+   */
+  function resolveDecor(k) {
+    if (!params) return null;
+    const entry = byId(k);
+    if (!entry || entry.placement !== 'decor') return null;
+    return { z: entry.z, clip: params.atlas.get(entry.icon) };
+  }
+  const decorVisual = createDecorVisual(resolveDecor);
+  // Set on a decor edit, undo, redo or resize. Rebuilt in update, never in render.
+  let decorDirty = false;
+
+  // The layer callback is created once. These point at the frame being drawn.
+  /** @type {CanvasRenderingContext2D | null} */
+  let paintCtx = null;
+  /** @type {{ x: number, y: number } | null} */
+  let paintCam = null;
+  let paintViewW = 0;
+  let paintViewH = 0;
+
+  /**
+   * Entity previews and markers whose palette `z` matches. Grid, cursor and ghost
+   * stay outside `drawLevel`, so water cannot cover the editing overlays.
+   * @param {number} z
+   */
+  function drawMakerObjects(z) {
+    const ctx = paintCtx;
+    const cam = paintCam;
+    if (!ctx || !cam || !level || !params) return;
+    const atlas = params.atlas;
+    decorVisual.draw(ctx, cam, paintViewW, paintViewH, z);
+    for (let i = 0; i < level.entities.length; i++) {
+      const rec = level.entities[i];
+      const entry = byId(rec.k);
+      if (!entry || entry.z !== z) continue;
+      drawPreviewIcon(ctx, cam, rec.c, rec.r, atlas.get(entry.icon), 'entity');
+    }
+    if (spawnEntry && spawnEntry.z === z) {
+      drawPreviewIcon(
+        ctx, cam, level.spawn.c, level.spawn.r,
+        atlas.get(spawnEntry.icon), 'marker',
+      );
+    }
+    if (level.goal && goalEntry && goalEntry.z === z) {
+      drawPreviewIcon(
+        ctx, cam, level.goal.c, level.goal.r,
+        atlas.get(goalEntry.icon), 'marker',
+      );
+    }
+  }
+
   function dims() {
     const viewW = params.viewport.viewW;
     return {
@@ -261,7 +319,8 @@ export function createMakerScene() {
   /**
    * Why the level cannot be written to storage, or null when it can. Storage holds
    * only what loads (invariant 2): a level needs its flag to serialise, and the
-   * schema refuses more than ENTITIES_MAX objects. Serialises, so it runs when a
+   * schema refuses more than ENTITIES_MAX objects or DECOR_MAX decorations.
+   * Serialises, so it runs when a
    * save is due, never per frame.
    *
    * @returns {string | null} a phrase that completes "can't be saved: …"
@@ -270,6 +329,7 @@ export function createMakerScene() {
     if (!level) return 'there is no level';
     if (level.goal === null) return 'it has no finish flag';
     if (level.entities.length > ENTITIES_MAX) return `it has more than ${ENTITIES_MAX} objects`;
+    if (level.decor.length > DECOR_MAX) return `it has more than ${DECOR_MAX} decorations`;
     try {
       validateLevel(serialise(level));
     } catch (err) {
@@ -371,6 +431,10 @@ export function createMakerScene() {
     scratchCell.c = c;
     scratchCell.r = r;
     applyCell(level, dragState.command, dragState.action, activeTool, scratchCell);
+    const action = dragState.action;
+    if (action === 'place-decor' || action === 'remove-decor' || action === 'erase-all') {
+      decorDirty = true;
+    }
   }
 
   /**
@@ -465,6 +529,18 @@ export function createMakerScene() {
     if (ptr.released) panning = false;
   }
 
+  function undoLevel() {
+    if (!stack || !level || !stack.canUndo()) return;
+    stack.undo(level);
+    decorDirty = true;
+  }
+
+  function redoLevel() {
+    if (!stack || !level || !stack.canRedo()) return;
+    stack.redo(level);
+    decorDirty = true;
+  }
+
   function syncTheme() {
     if (!params || !level || themeId === level.theme) return;
     themeId = level.theme;
@@ -501,6 +577,8 @@ export function createMakerScene() {
       dirtyTime = 0;
       themeId = null;
       syncTheme();
+      decorVisual.sync(level.decor);
+      decorDirty = false;
       dragState = null;
       panning = false;
       // Checked now, not on the first update: a frame can render before the first
@@ -578,8 +656,8 @@ export function createMakerScene() {
           },
           onBack: () => { if (params.onBack) params.onBack(); },
           onPlay: () => { requestPlay(); },
-          onUndo: () => { if (!dragState && stack && level && stack.canUndo()) stack.undo(level); },
-          onRedo: () => { if (!dragState && stack && level && stack.canRedo()) stack.redo(level); },
+          onUndo: () => { if (!dragState) undoLevel(); },
+          onRedo: () => { if (!dragState) redoLevel(); },
           onShare: () => {
             if (!params || !params.openShareDialog || !level) return;
             const blocker = saveBlocker();
@@ -602,6 +680,7 @@ export function createMakerScene() {
                 const cmd = createResizeCommand(level, newCols, newRows, () => {
                   if (!level || !params) return;
                   parallax = createParallax(level, theme, params.atlas);
+                  decorDirty = true;
                   const d = dims();
                   params.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
                 });
@@ -653,8 +732,8 @@ export function createMakerScene() {
       gestures.update(dt, zoom);
 
       if (!dragState) {
-        if (params.input.keys.undo.pressed) stack.undo(level);
-        if (params.input.keys.redo.pressed) stack.redo(level);
+        if (params.input.keys.undo.pressed) undoLevel();
+        if (params.input.keys.redo.pressed) redoLevel();
       }
       syncTheme();
 
@@ -703,6 +782,12 @@ export function createMakerScene() {
 
       parallax.update(dt, params.camera.x, d.eW);
 
+      if (decorDirty) {
+        decorVisual.sync(level.decor);
+        decorDirty = false;
+      }
+      decorVisual.update(dt);
+
       // Last, so a drag that closed this frame is reflected in this frame's render.
       refreshProblems();
       tickAutosave(dt);
@@ -737,37 +822,11 @@ export function createMakerScene() {
       const atlas = params.atlas;
       ctx.scale(zoom, zoom);
 
-      drawLevel(ctx, cam, d.eW, d.eH, level, theme, atlas, parallax);
-
-      for (let i = 0; i < level.entities.length; i++) {
-        const rec = level.entities[i];
-        const entry = byId(rec.k);
-        if (!entry) continue;
-        drawPreviewIcon(ctx, cam, rec.c, rec.r, atlas.get(entry.icon), 'entity');
-      }
-      for (let i = 0; i < level.decor.length; i++) {
-        const rec = level.decor[i];
-        const entry = byId(rec.k);
-        if (!entry) continue;
-        drawPreviewIcon(ctx, cam, rec.c, rec.r, atlas.get(entry.icon), 'decor');
-      }
-
-      const spawnEntry = byId('spawn');
-      if (spawnEntry) {
-        drawPreviewIcon(
-          ctx, cam, level.spawn.c, level.spawn.r,
-          atlas.get(spawnEntry.icon), 'marker',
-        );
-      }
-      if (level.goal) {
-        const goalEntry = byId('goal');
-        if (goalEntry) {
-          drawPreviewIcon(
-            ctx, cam, level.goal.c, level.goal.r,
-            atlas.get(goalEntry.icon), 'marker',
-          );
-        }
-      }
+      paintCtx = ctx;
+      paintCam = cam;
+      paintViewW = d.eW;
+      paintViewH = d.eH;
+      drawLevel(ctx, cam, d.eW, d.eH, level, theme, atlas, parallax, drawMakerObjects);
 
       drawGrid(
         ctx, cam, d.eW, d.eH, level.cols, level.rows,

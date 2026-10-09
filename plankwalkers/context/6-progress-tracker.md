@@ -6,6 +6,77 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 
 ## Current Phase
 
+- **2026-10-07: Unit 22 (PWA and Performance) is complete. Units 00–22 are
+  complete: every unit in the v1 build plan is done.**
+  - The player installed the app from the production build
+    (`npx vite preview`, `http://localhost:4173`), uninstalled it, and signed
+    the unit off: "it all works well".
+  - Claude's review passed every part after the issue 46/47 fix (`8a306f1`):
+    399 tests, and a real offline run with the server process killed.
+  - Not done, by decision: the Netlify deploy and the real-phone checks (install,
+    offline, frame time under `?perf`).
+  - Work ends for today, at the player's request.
+- **2026-10-07: Issues 46 and 47 fixed.** The worker matches a precached URL with `ignoreVary: true`, and `renderServiceWorker` inserts the version and the file list through replacer functions. Both new tests were written first and failed, then the suite passed: 399 tests in 34 files. The build logged `pwa: sw.js caches 104 files (version 558a819acf4c)`. A fresh Chrome profile loaded `/`, the worker took control, and the preview server process was stopped before reload. The title, Settings, Castaway Beach with all six sounds, the maker (palm, Pirate Ship, test play) and `/?perf` (`0.0 ms avg · 0.1 max · 58 fps`) worked from cache `cc-558a819acf4c`. The page network log recorded no failed request. The player has not signed Unit 22 off.
+- **2026-10-07: Unit 22 Part E complete.** Desktop Chrome 154 allocation samples
+  (S1–S4, two runs), rebuild timings, and production `?perf` frame times are in
+  the spec's As Built. `cellRangeX` / `cellRangeY` never appeared in the samples;
+  the scratch-range fix stays. A 2000-palm rebuild median was 8.68 ms at no
+  throttle (issue 45, not fixed). Idle samples still land on `frame` (issue 44,
+  not fixed). Frame time on this PC, 1536 × 720: stress play 0.7 ms avg / 60 fps,
+  stress maker 0.9, Castaway 0.3; at 6× CPU, 3.1, 3.2 and 1.7. These are not
+  phone numbers. Issues 28, 33 and 39 are resolved. 397 tests in 34 files. The
+  player has not signed the unit off.
+- **2026-10-07: Unit 22 issue 33 fix.** `cellRangeX` and `cellRangeY` write into two module scratch objects, and each caller copies the values out before the next call. The arithmetic is unchanged. `physics.test.js` passed without edits. 397 tests in 34 files. The before and after allocation traces are written up with the Part E record.
+- **2026-10-07: Unit 22 Part D complete.** `?perf` mounts a top-centre readout
+  that rewrites about twice a second and takes no taps. Without the flag there
+  is no element. Perf Stress (2000 palms, 20 entities, a full tile screen)
+  imports from a file, plays, and the untouched player still had 5 hearts after
+  60 s, with the wall between them and the enemies. The readout showed over
+  the title, level select, play and the maker, clear of the pause button.
+  397 tests in 34 files, build clean. Part E has not started.
+- **2026-10-07: Unit 22 Part C complete.** After a level save succeeds, the app
+  asks `navigator.storage.persist()` once per page session and shows nothing.
+  Six new tests; 388 tests in 32 files. In the maker, placing the flag
+  autosaved, `persist()` ran once and a second save did not ask again. Chrome
+  showed no prompt. `navigator.storage.persisted()` was `false` (denied on
+  localhost). No console errors. Parts D and E have not started.
+- **2026-10-07: Unit 22 Part B complete.** The production build writes
+  `dist/sw.js`, which precaches 104 files under `cc-b9893ba1ba4c`. A second
+  build of the same tree produced the same version. 382 tests in 31 files.
+  In Chrome, the manifest had no errors, the worker activated, and Cache
+  Storage held that one cache. Offline, an uncached request failed and the
+  cached app still showed the title, Settings slider sprites, Castaway Beach
+  (music and the jump effect), a maker palm on the Pirate Ship theme, and
+  test-play; `/?perf` loaded. No console errors. The offline `sw.js` recheck
+  did not log an error. Installing opened a normal standalone window
+  (display-mode `standalone`, not fullscreen). After a title change and
+  rebuild, the next settled open had one new cache and the new title; the
+  title was reverted and the version returned to `b9893ba1ba4c`. `npm run dev`
+  registers no worker and no longer 404s `favicon.ico`. Parts C–E have not
+  started. Issue 28 stays open until Part E.
+- **2026-10-07: Unit 22 Part A complete.** Five app icons are generated from the
+  Captain's idle frame, centred on `--sky`. Two `npm run assets` runs are
+  byte-identical. Coverage stays 430 / 1195 and `atlas.json` is unchanged.
+  376 tests and the production build pass. Parts B–E have not started.
+- **2026-10-07: Issue 42 fixed as a standalone rendering correction.** Water
+  reflections clip to live open cells, so they no longer shimmer on rock or
+  platforms. Eleven new tests failed before the source changes and now pass;
+  376 tests in 30 files and the production build pass. Chrome pixel checks and
+  a real maker paint/undo check passed. The existing favicon 404 (issue 28)
+  remains. Issue 43 is unchanged; Unit 22 has not started.
+- **2026-10-07: Issue 40 fixed as a standalone Unit 05 rendering correction.**
+  The island BG Image's painted row 86 now lands on `horizonY`; the cloud bank
+  keeps its original position. Three new regression tests bring the suite to
+  365 passing, and the production build passes. Chrome checks covered Castaway
+  Beach, a saved no-water level in play and maker, and the unchanged ship wall.
+  The browser still reports the existing favicon 404 (issue 28). Issue 41 stays
+  open. Unit 22 remains unstarted.
+- **2026-10-07: Unit 21 (Island Decor) is complete.** The player placed the three
+  palms, played them, and signed off ("zero bugs") after asking about the pale
+  background look and the visible trunks. 362 tests, build clean. Unit 22 waits
+  until they ask for it. The player also explicitly approved closeout and visual
+  sign-off after the independent review. **Units 00–21 are complete.** Work ends
+  for today after these context updates, at the player's request.
 - **Units 00–16 complete.** Unit 16 (Test-Play Round Trip) was implemented
   2026-09-23, verified in Chrome 2026-09-24 and **marked complete by the player
   2026-09-24**. Issues 16 (rotate prompt), 18 (tap to place) and 20 (nine-slice
@@ -60,6 +131,27 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 - **2026-10-03: Unit 19 complete.** The player checked the dust, the screen shake,
   the pause menu and Settings. **Units 00–20 are complete.** Next is Open Question 8
   (decor before Unit 21?).
+
+- **2026-10-07:** the player requested sequential numbering for the decor draft.
+  Island Decor is now **Unit 21**; PWA and Performance is **Unit 22**.
+  Implementation was requested later the same day. See the Unit 21 bullet above.
+
+- **2026-10-07: Independent Unit 21 review.** No functional regression found.
+  362 tests and the production build pass. An outside-repo Node harness checked
+  144 baseline/current background and tile drawing-command comparisons across
+  all six campaigns and both themes; maker/play/ghost bounds and actual layer
+  calls; live painting, replacement, toolbar undo/redo, resize undo/redo, theme
+  switching, sharing, ten test-play session returns, and the 2000/2001 boundary.
+  Decorated and undecorated worlds produced identical player positions, stats,
+  outcomes and terrain over 600 fixed steps per theme. These are scene and draw
+  command checks, not browser pixel or DOM checks. Automatic approval review
+  blocked the separate Chrome launch without a specific reason. The player's
+  screenshot shows the three palms in play; explicit sign-off followed the review.
+  Review follow-ups are issues 38 (stale actionable tracker text) and 39 (checked
+  allocation profiling without a recorded trace). Issue 38 is corrected. The
+  allocation checklist is now unchecked and the missing trace remains tracked
+  in issue 39 for Unit 22. The player approved Unit 21 closeout after this review;
+  Unit 22 has not started.
 
 ## Completed
 
@@ -851,29 +943,160 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
     motion through the real OS setting, and the phone run (which waits for the
     Netlify deploy).
 
+- **2026-10-07 — Unit 21 planning history:** the next-slice plan was drafted
+  at the player's request:
+  `specs/21-island-decor.md` recommends three complete island palm animations
+  before PWA, with issue 34's draw-order fix, shared maker/play anchoring, the
+  decor cap and issue 17's tab hit areas in separately verified increments.
+  The player then requested sequential numbering: Island Decor became Unit 21
+  (`specs/21-island-decor.md`) and PWA and Performance became Unit 22.
+  Implementation and sign-off followed that day.
+
+- **2026-10-07 — Unit 21 complete.** The player placed the three palms, played
+  them and signed off ("zero bugs"), then explicitly approved the independent
+  review's closeout and visual sign-off: "i approve the closeout the visual
+  sign off too". The three-tree roster, anchoring, depth and taller category
+  tabs are accepted. Units 00–21 are complete.
+  - Last code verification: 362 tests in 29 files and the production build pass;
+    the independent review found no functional regression.
+  - Issue 38 is closed. Issue 39 remains open for allocation profiling in
+    Unit 22; the spec's trace checkbox is unchecked, with measured costs and
+    verification limits preserved. No trace or phone performance result is claimed.
+  - Real-phone verification still waits for the Netlify deployment.
+  - Work ends for today after these context updates, at the player's request.
+    Unit 22 has not started and waits until the player asks.
+
+- **2026-10-07 — Issue 40 fixed.** Added `bgImageHorizonRow: 86` to the island
+  theme and anchored that sprite row at the derived horizon. The new position
+  tests first failed against the old renderer, then passed after the one-line
+  change; all 365 tests and the build pass. In Chrome, the saved no-water level
+  showed no sea strip behind the cloud bank in play, and the maker view showed
+  sea below the level bottom. Castaway Beach loaded, and the ship wall branch
+  remained unchanged. Screenshot checks used a temporary harness outside the
+  repo. The known `/favicon.ico` 404 (issue 28) was the only console error.
+  Issue 41's hidden horizon bands are unchanged.
+
+- **2026-10-07 — Issue 42 fixed.** Added the engine's unflipped `drawSpan` and
+  clipped reflection sprites per cell against the live terrain/platform layers.
+  Adjacent open cells merge into a span; the source spans use the tiles' rounded
+  screen edges. Positions, parallax, animation and layer order are unchanged.
+  - All eleven new tests were observed failing before changing the source;
+    376 tests in 30 files and the production build then passed.
+  - Chrome: Castaway Beach launched through Play with no shimmer on the first
+    rock block. Fixed-camera renders of Castaway and Crabby Shallows compared
+    all four reflection frames with a reflection-free rendering: zero changed
+    terrain/platform pixels, while the open pools retained shimmer. Fractional
+    cameras showed matching clip/tile edges; Crabby's big slot kept four source
+    columns over its pool, and its medium slot kept all 53.
+  - In the actual maker at 844 × 390, an editable Castaway copy showed the small
+    reflection in the pool at x1333. A pointer drag painted terrain over both
+    pool cells: reflection draws disappeared immediately. One Undo restored
+    them. Switching to Ship produced no reflection draws. Screenshots and pixel
+    evidence are in a temporary harness directory outside the repo.
+  - The known `/favicon.ico` 404 (issue 28) was the only console error. Issue 43
+    was not changed, and Unit 22 remains unstarted.
+
+- **2026-10-07 — Unit 22 Part E.** Issue 33 reuses scratch cell ranges
+  (`f37f43f`). Desktop allocation samples, the 20-rebuild timing, and `?perf`
+  frame times are in the spec's As Built. Issues 28, 33 and 39 are resolved.
+  Issues 44 and 45 are the findings that were logged and not fixed. 397 tests.
+  No phone numbers. The player has not signed the unit off.
+
+- **2026-10-07 — Unit 22 Part A.** Five icons in `public/assets/icons/`, generated
+  by `npm run assets` from the Captain's idle frame on `--sky`. Coverage 430 / 1195,
+  `atlas.json` unchanged, two runs byte-identical. 376 tests, build clean.
+
+- **2026-10-07 — Unit 22 Part D.** `?perf` readout and `tools/fixtures/perf-stress.json`.
+  Chrome: no element on `/`; on `/?perf` the line updated 3 times in 1.6 s,
+  `pointer-events` was `none`, and it sat clear of the pause button on the
+  title, level select, Castaway Beach and the maker. Importing the fixture and
+  playing it left the captain with 5 hearts after 60 s untouched. 397 tests,
+  build clean.
+
+- **2026-10-07 — Unit 22 Part C.** `persist.js` asks the browser once per page
+  session, after a successful level save, and never throws. A maker autosave
+  called `persist()` once; the next save did not. Chrome denied it on
+  localhost (`navigator.storage.persisted()` is `false`) and showed no prompt.
+  388 tests. No console errors.
+
+- **2026-10-07 — Unit 22 Part B.** Hand-written manifest and service worker.
+  `npm run build` logs `pwa: sw.js caches 104 files (version b9893ba1ba4c)`,
+  and a second build matched. Chrome confirmed one `cc-b9893ba1ba4c` cache
+  with 104 entries. Offline play, the maker, and `/?perf` worked from that
+  cache; the only failed request in that check was an intentional uncached
+  URL. Desktop install opened a standalone window and did not enter
+  fullscreen. The dev server registered no worker, and the favicon 404 is
+  gone. 382 tests. Issue 28 is not closed until Part E.
+
+- **2026-10-07 — Issues 46 and 47 fixed.** The worker matches precached files
+  with `ignoreVary: true`, and `renderServiceWorker` inserts its two values
+  through replacer functions. Both tests failed first (the template had no
+  `ignoreVary`, and `/a$&b.png` was written as `/a__CC_PRECACHE__b.png`), then
+  399 tests in 34 files passed. The build still caches 104 files, version
+  `558a819acf4c`. Fresh Chrome profile, `vite preview`, worker in control, then
+  the preview process was stopped and the page reloaded. Title, Settings,
+  Castaway Beach (six sounds at 200, audio running), the maker (palm, Pirate
+  Ship, test play) and `/?perf` all worked. The page network log recorded no
+  failed request. Unit 22 is not signed off.
+
+- **2026-10-07 — Unit 22 complete.**
+  - Claude reviewed `8a306f1`: the tests fail on the old code, and a headless
+    run with the server killed played from the cache. That passed every part.
+  - The player installed the app from `npx vite preview` at
+    `http://localhost:4173`, uninstalled it, and signed off: "it all works well".
+  - Units 00–22 are complete, which finishes the v1 build plan apart from
+    deployment.
+  - Open from this unit: issues 44 (allocations recorded against the loop's
+    `frame`) and 45 (the 8.68 ms rebuild of 2000 palms).
+  - The phone checks wait for the deploy step.
+
 ## Current Goal
 
-- **Open Question 8:** decide whether the decor unit comes before Unit 21, then
-  write that unit's spec.
+- Units 00–22 are complete (Unit 22 signed off on 2026-10-07). No work is in
+  progress. Work ends for today.
+- Next session, when the player asks: decide the deploy step (Next Up 1).
 
 ## In Progress
 
-- Nothing. Units 00–20 are complete.
+- Nothing.
 
 ## Next Up
 
-1. **Open Question 8:** decide whether the decor unit comes before Unit 21.
-2. **The next spec:** Unit 21 or the decor unit, written and approved before
-   implementation. Phone verification remains deferred until the Netlify deploy.
-3. Standalone changes: 31 (side boundaries, needs a decision), 21, 24, 25–28,
-   33–36. Issue 35 (ship water) is the player's "later".
+0. ~~Unit 22 (PWA and Performance).~~ **Complete 2026-10-07**, signed off by the
+   player. The spec is `specs/22-pwa-and-performance.md`. Its decisions, kept
+   for reference (see Open Questions 2 and 7):
+   - **Deployment is not in Unit 22.** Unit 22 is verified on this PC (a
+     production build served on localhost, the preview server stopped for the
+     offline check, desktop install). Phone install and phone frame time wait
+     for a later deploy step.
+   - **The app icon** (manifest, apple-touch-icon and favicon, which closes
+     issue 28) is Captain Clown Nose's idle frame 0, cropped to its opaque bounds
+     (x20 y4 w24 h28), scaled up by a whole number with nearest-neighbour, on
+     `--sky`. It is generated by the asset pipeline, not drawn by hand.
+   - **Frame time** is measured with a `?perf` URL flag: a small DOM readout of
+     average and worst update + render time. It costs nothing without the flag.
+   - Issue 39's desktop traces and issue 33's scratch ranges are recorded in the
+     spec's As Built. Issues 44 and 45 were logged and not fixed.
+     `navigator.storage.persist()` comes from watchlist 13.
+1. **Deploy to Netlify.** This is next. It has no unit or spec yet, and the
+   method (Netlify CLI from this PC, GitHub + Netlify, or Netlify Drop) is
+   still open (Open Question 7). The real-phone checks follow it: install,
+   offline with the network off, and frame time under `?perf` on the stress
+   level. A host rule should send `sw.js` with `Cache-Control: no-cache`.
+   Claude's review showed that a server's `Vary` header affects matching in the
+   cache; that is now handled by `ignoreVary`, but recheck offline on the real
+   host.
+2. Standalone open issues: 4–6, 8, 9, 21, 24, 25, 27, 31, 35, 36, 41, 43, 44
+   and 45. Issues 28, 33, 39, 46 and 47 are resolved.
+   Issue 31 needs a side-boundary decision; issue 35 is the player's "later".
 
 ## Open Questions
 
 1. ~~**Campaign length.**~~ **Resolved 2026-09-26** — six levels, one per mechanic
    (Unit 18 spec), inside the five-to-eight target.
-2. **PWA scope.** Offline play is a goal, but whether the service worker precaches
-   every theme's assets or only the first is undecided. Revisit at Unit 21.
+2. ~~**PWA scope.**~~ **Resolved 2026-10-07:** precache everything, both themes.
+   The whole build is about 1.9 MB, and boot already loads every sprite and
+   sound (player decision; Unit 22 spec, Decision 2).
 3. ~~**Second theme timing.**~~ **Resolved 2026-09-05** — Pirate Ship is now its
    own Unit 20, after the campaign. Unit 04 only has to shape `data/themes.js` to
    accept more than one theme.
@@ -895,24 +1118,17 @@ Build order lives in `specs/00-build-plan.md`. This file tracks where we actuall
 7. **Deployment.** The player means to deploy the finished game on **Netlify**
    (2026-09-26), and will do the real-phone checks there. No unit in
    `specs/00-build-plan.md` covers deploying yet: static hosting fits the
-   no-backend rule, but the build output, the service worker (Unit 21) and the
-   host config need a home. Decide where it goes (likely with or after Unit 21).
+   no-backend rule, but the build output, the service worker (Unit 22) and the
+   host config need a home. Decide where it goes (likely with or after Unit 22).
+   **Partly resolved 2026-10-07:** the player chose to keep deployment out of
+   Unit 22. It comes after Unit 22; the method (CLI, Git-connected or Drop) is
+   still open.
 
-8. **Decor has no unit (2026-10-02).**
-   - **What is promised.** The overview promises palm trees in play and a Decor tab
-     in the maker.
-   - **What exists.** Format 1 and the maker already carry decor: `level.decor`,
-     `DecorCommand`, decor previews. But play never draws it, and the palette has no
-     decor entries, so the tab stays hidden. The four island palm clips are packed
-     and unused.
-   - **The conflict.** The Pirate Ship's props (barrels and bottles, candle, chains,
-     window) are a Beyond-v1 row, while the build plan gave Unit 20 "matching
-     decor".
-   - **Player decision.** Decor is its own unit, not part of Unit 20.
-   - **Still open:**
-     - where that unit goes (before Unit 21, or after it)
-     - whether the ship's props move out of Beyond v1
-     - how decor is layered against entities (issue 34)
+8. ~~**Decor has no unit (2026-10-02).**~~ **Resolved 2026-10-07** — Island Decor
+   is Unit 21, explicitly closed with visual sign-off on 2026-10-07. The roster
+   is the three packed background palms. They draw
+   at `Z.bgDecor`, behind actors and under water. Ship props (barrels, bottles,
+   candle, chains, window) stay Beyond v1.
 
 ## Architecture Decisions
 
@@ -1440,8 +1656,8 @@ the pause menu and Settings). **Units 00–20 are complete.** Only Unit 21 (PWA 
 performance) remains in the build plan, plus the unscheduled decor unit.
 
 **Next:**
-1. Open Question 8: does the decor unit come before Unit 21?
-2. Then that unit's spec.
+1. Unit 22 (PWA and Performance) when the player asks. Its spec is still unwritten.
+   Unit 21 was signed off on 2026-10-07.
 
 The testing driver is a scratch DevTools-protocol script on a throwaway headless
 Chrome. Keep it muted (`--mute-audio`), or the player hears the game through their
@@ -1453,7 +1669,6 @@ speakers.
 - 25–28
 - 31 (side boundaries; needs a player decision)
 - 33 (cell-range allocations)
-- 34 (`z` is not read)
 - 35 (ship water reads flat; the player confirmed it looks off and wants it fixed
   later)
 - 36 (the HUD level name is faint; decide with 21)
@@ -1470,7 +1685,7 @@ of set sizes for viewport checks, since resizing the window did not change it.
   (ArcGIS). `--port 5174 --strictPort`. On 2026-09-22 another project's Vite was
   also bound to `127.0.0.1:5174` alongside ours — if a page looks wrong or stale,
   check what owns the port, or use 5175.
-- `npm test` — 338 tests.
+- `npm test` — 362 tests.
 - `npm run build` — passes.
 - `npm run assets` — needs `reference/treasure-hunters` and the `ffmpeg-static`
   binary (fetched by `npm install`; its install script is approved in
@@ -1484,7 +1699,7 @@ of set sizes for viewport checks, since resizing the window did not change it.
 - Pack sword clips or Pixel Adventure leftovers.
   - The two Pirate Ship tilesheets are packed by Unit 20 Part A1, and by nothing
     earlier.
-  - The ship's decorations wait for the decor unit (Open Question 8).
+  - The three island palms ship in Unit 21. The ship's own props stay Beyond v1.
   - Enemy `Jump`/`Fall`/`Ground` stay unpacked too: packing is its own unit.
   - Shooter `Hit`/`Destroyed`/`Opening`/`Bite` and the `Totems` tree stay unpacked
     (Beyond v1).
@@ -1549,6 +1764,9 @@ Re-measure if any look wrong.
 - Unit 18, complete 2026-09-26
 - Unit 19, complete 2026-10-03
 - Unit 20, complete 2026-10-03
-- Unit 21 is not yet written.
+- `21-island-decor.md`: complete 2026-10-07. The player signed off ("zero bugs").
+- `22-pwa-and-performance.md`: complete 2026-10-07. The player signed off ("it
+  all works well"). Desktop measurements are in its As Built.
+- There is no deploy spec yet.
 
 Playbook: `context/README.md` Part 3.

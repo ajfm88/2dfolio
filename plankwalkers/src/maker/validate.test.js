@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ENTITIES_MAX } from '../level/schema.js';
+import { DECOR_MAX, ENTITIES_MAX } from '../level/schema.js';
 import { createEmptyModel } from '../level/model.js';
 import { findProblems } from './validate.js';
 
@@ -76,6 +76,34 @@ describe('findProblems', () => {
     const level = validLevel();
     for (let i = 0; i < ENTITIES_MAX; i++) level.entities.push({ k: 'coin_gold', c: 0, r: 0 });
     expect(findProblems(level)).toEqual([]);
+  });
+
+  it('exactly 2000 decorations is fine', () => {
+    const level = validLevel();
+    for (let i = 0; i < DECOR_MAX; i++) level.decor.push({ k: 'palm_back', c: 0, r: 0 });
+    expect(findProblems(level)).toEqual([]);
+  });
+
+  it('one decoration past the cap is a problem', () => {
+    const level = validLevel();
+    for (let i = 0; i <= DECOR_MAX; i++) level.decor.push({ k: 'palm_back', c: 0, r: 0 });
+    const problems = findProblems(level);
+    expect(codes(problems)).toEqual(['too-many-decor']);
+    expect(problems[0].message).toBe(`Too much decoration: ${DECOR_MAX + 1} of ${DECOR_MAX}.`);
+    level.decor.pop();
+    expect(findProblems(level)).toEqual([]);
+  });
+
+  it('reports the decor cap after the entity cap and before unknown kinds', () => {
+    const level = validLevel();
+    for (let i = 0; i <= ENTITIES_MAX; i++) level.entities.push({ k: 'coin_gold', c: 0, r: 0 });
+    for (let i = 0; i <= DECOR_MAX; i++) level.decor.push({ k: 'palm_back', c: 1, r: 1 });
+    level.entities.push({ k: 'kraken', c: 2, r: 2 });
+    expect(codes(findProblems(level))).toEqual([
+      'too-many-entities',
+      'too-many-decor',
+      'unknown-kind',
+    ]);
   });
 
   it('unknown kinds, once per kind, including a kind in the wrong list', () => {

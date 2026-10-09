@@ -103,6 +103,18 @@ describe('JSON serialise', () => {
     }
   });
 
+  it('round-trips the three palm kinds through JSON and a share code', async () => {
+    const model = deserialise(createBlankLevel({ cols: 40, rows: 12 }));
+    model.decor.push(
+      { k: 'palm_back', c: 4, r: 10 },
+      { k: 'palm_back_left', c: 5, r: 10 },
+      { k: 'palm_back_right', c: 6, r: 10 },
+    );
+    expect(fromJsonString(toJsonString(model)).decor).toEqual(model.decor);
+    const shared = await decodeShare(await encodeShare(model));
+    expect(shared.decor).toEqual(model.decor);
+  });
+
   it('toJsonString is the only stringify path and round-trips', () => {
     const model = deserialise(createBlankLevel({ cols: 40, rows: 12 }));
     model.set('water', 0, 11, 1);

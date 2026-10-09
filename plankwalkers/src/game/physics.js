@@ -11,28 +11,29 @@ import { TILE } from '../settings.js';
  * @typedef {import('../level/model.js').LevelModel} LevelModel
  */
 
+const rangeX = { c0: 0, c1: 0 };
+const rangeY = { r0: 0, r1: 0 };
+
 /**
  * @param {number} x
  * @param {number} w
  * @param {number} cols
- * @returns {[number, number]}
+ * @param {{ c0: number, c1: number }} out
  */
-function cellRangeX(x, w, cols) {
-  const c0 = Math.max(0, Math.floor(x / TILE));
-  const c1 = Math.min(cols - 1, Math.ceil((x + w) / TILE) - 1);
-  return [c0, c1];
+function cellRangeX(x, w, cols, out) {
+  out.c0 = Math.max(0, Math.floor(x / TILE));
+  out.c1 = Math.min(cols - 1, Math.ceil((x + w) / TILE) - 1);
 }
 
 /**
  * @param {number} y
  * @param {number} h
  * @param {number} rows
- * @returns {[number, number]}
+ * @param {{ r0: number, r1: number }} out
  */
-function cellRangeY(y, h, rows) {
-  const r0 = Math.max(0, Math.floor(y / TILE));
-  const r1 = Math.min(rows - 1, Math.ceil((y + h) / TILE) - 1);
-  return [r0, r1];
+function cellRangeY(y, h, rows, out) {
+  out.r0 = Math.max(0, Math.floor(y / TILE));
+  out.r1 = Math.min(rows - 1, Math.ceil((y + h) / TILE) - 1);
 }
 
 /**
@@ -44,8 +45,14 @@ function cellRangeY(y, h, rows) {
 export function resolveH(hitbox, oldRect, level) {
   const terrain = level.layers.terrain;
   const cols = level.cols;
-  const [c0, c1] = cellRangeX(hitbox.x, hitbox.w, cols);
-  const [r0, r1] = cellRangeY(hitbox.y, hitbox.h, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeX(hitbox.x, hitbox.w, cols, rangeX);
+  const c0 = rangeX.c0;
+  const c1 = rangeX.c1;
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(hitbox.y, hitbox.h, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
 
   for (let r = r0; r <= r1; r++) {
     const rowOff = r * cols;
@@ -75,8 +82,14 @@ export function resolveH(hitbox, oldRect, level) {
 export function resolveV(hitbox, oldRect, level) {
   const terrain = level.layers.terrain;
   const cols = level.cols;
-  const [c0, c1] = cellRangeX(hitbox.x, hitbox.w, cols);
-  const [r0, r1] = cellRangeY(hitbox.y, hitbox.h, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeX(hitbox.x, hitbox.w, cols, rangeX);
+  const c0 = rangeX.c0;
+  const c1 = rangeX.c1;
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(hitbox.y, hitbox.h, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
   let pushed = false;
 
   for (let r = r0; r <= r1; r++) {
@@ -114,8 +127,14 @@ export function resolveSemiSolid(hitbox, oldRect, level, dropping) {
 
   const platform = level.layers.platform;
   const cols = level.cols;
-  const [c0, c1] = cellRangeX(hitbox.x, hitbox.w, cols);
-  const [r0, r1] = cellRangeY(hitbox.y, hitbox.h, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeX(hitbox.x, hitbox.w, cols, rangeX);
+  const c0 = rangeX.c0;
+  const c1 = rangeX.c1;
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(hitbox.y, hitbox.h, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
   let landed = false;
 
   for (let r = r0; r <= r1; r++) {
@@ -147,8 +166,14 @@ export function resolveSemiSolid(hitbox, oldRect, level, dropping) {
 export function checkSolid(rect, level) {
   const terrain = level.layers.terrain;
   const cols = level.cols;
-  const [c0, c1] = cellRangeX(rect.x, rect.w, cols);
-  const [r0, r1] = cellRangeY(rect.y, rect.h, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeX(rect.x, rect.w, cols, rangeX);
+  const c0 = rangeX.c0;
+  const c1 = rangeX.c1;
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(rect.y, rect.h, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
 
   for (let r = r0; r <= r1; r++) {
     const rowOff = r * cols;
@@ -172,7 +197,10 @@ export function checkFloor(hitbox, level) {
   const r = Math.floor(sensorY / TILE);
   if (r < 0 || r >= level.rows) return false;
 
-  const [c0, c1] = cellRangeX(hitbox.x, hitbox.w, cols);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeX(hitbox.x, hitbox.w, cols, rangeX);
+  const c0 = rangeX.c0;
+  const c1 = rangeX.c1;
   const rowOff = r * cols;
   const terrain = level.layers.terrain;
   const platform = level.layers.platform;
@@ -198,7 +226,10 @@ export function checkWallLeft(hitbox, level) {
   if (c < 0 || c >= cols) return false;
 
   const quarterH = hitbox.h / 4;
-  const [r0, r1] = cellRangeY(hitbox.y + quarterH, hitbox.h / 2, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(hitbox.y + quarterH, hitbox.h / 2, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
   const terrain = level.layers.terrain;
 
   for (let r = r0; r <= r1; r++) {
@@ -220,7 +251,10 @@ export function checkWallRight(hitbox, level) {
   if (c < 0 || c >= cols) return false;
 
   const quarterH = hitbox.h / 4;
-  const [r0, r1] = cellRangeY(hitbox.y + quarterH, hitbox.h / 2, level.rows);
+  // Sharing the scratch is safe: these locals are copied before the next call.
+  cellRangeY(hitbox.y + quarterH, hitbox.h / 2, level.rows, rangeY);
+  const r0 = rangeY.r0;
+  const r1 = rangeY.r1;
   const terrain = level.layers.terrain;
 
   for (let r = r0; r <= r1; r++) {

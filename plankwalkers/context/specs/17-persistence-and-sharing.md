@@ -85,7 +85,7 @@ This unit does **not** cover:
 - the settings screen or pause-menu settings (Unit 19)
 - level thumbnails, search, sorting options, multi-select, or a storage usage meter
 - persisting undo history, or renaming from inside the maker
-- `navigator.storage.persist()`, service workers or offline work (Unit 21)
+- `navigator.storage.persist()`, service workers or offline work (now Unit 22)
 - restyling the sliders with the kit's Sliders sprites. That needs an
   asset-pipeline change, so it is logged as an issue.
 - migrating the resize dialog onto the new dialog helper (logged, not folded in)
@@ -638,7 +638,7 @@ Each step is verified before the next starts.
 - Persisted undo history, renaming from the maker, a name prompt for new levels.
 - Thumbnails, search, sorting options, a storage meter, bulk delete.
 - Share links or `?code=` URLs. Sharing stays copy-paste text.
-- `navigator.storage.persist()` and offline work (Unit 21).
+- `navigator.storage.persist()` and offline work (now Unit 22).
 - Kit-sprite slider thumbs, and moving the resize dialog onto `openDialog` (both
   logged).
 
@@ -647,7 +647,7 @@ Each step is verified before the next starts.
 - **iOS Safari evicts script-written storage** after 7 days without a visit
   (unless the site is installed to the home screen), so levels can vanish. Share
   codes and export are the user's backup. `storage.persist()` and the PWA are
-  Unit 21. Add this to the known-risk watchlist.
+  Unit 22 (PWA, renumbered 2026-10-07). Add this to the known-risk watchlist.
 - **Testing a phone over the LAN** (`http://192.168…`) is not a secure context, so
   `navigator.clipboard` is missing there and the Copy fallback runs. It is also a
   different origin from `localhost`, so levels do not carry between the two.

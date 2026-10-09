@@ -14,7 +14,7 @@
 | Asset build    | `sharp` (devDependency)             | Packs 1204 loose frame PNGs into per-clip strips and UI nine-slices    |
 | Audio build    | `ffmpeg-static` (devDependency)     | Re-encodes the music track to 96 kbps so the game fits Goal 4's 3 MB   |
 | Tests          | `vitest` (devDependency)            | Pure modules: codec, autotiler, collision resolver, schema validation  |
-| Offline        | Vite PWA manifest + service worker  | Installable, playable offline after first load                         |
+| Offline        | Hand-written manifest + service worker | Installable, playable offline after first load                      |
 
 No game engine, no physics library, no UI framework. Every dependency above is either
 build-time or a browser API.
@@ -46,7 +46,7 @@ coral-corsairs/
     └── storage/
 ```
 
-- `src/core/` — the engine. Fixed-timestep loop, viewport and scaling, camera
+- `src/core/` — the engine. Fixed-timestep loop (an optional `onFrame` records work and interval for `?perf` and is not gameplay), `frame-stats.js`, viewport and scaling, camera
   (`follow` plus `panBy` with a 2-tile maker margin, and x/y setters),
   pointer/keyboard input (including `pointer.button`, a double-buffered
   `touches` array of at most two touch pointers, Ctrl+Z undo, Ctrl+Shift+Z /
@@ -55,7 +55,9 @@ coral-corsairs/
   never mapped to an action or preventDefaulted, while key releases are always
   honoured so nothing sticks down), atlas loading, sprite and
   animation playback, audio (one `AudioContext`, decoded buffers, fire-and-forget
-  SFX, looping music with fade, master volume controls), the mode-switch
+  SFX, looping music with fade, master volume controls), service-worker
+  registration (`registerServiceWorker`, a no-op when the browser has no worker
+  or the page is not a secure context), the mode-switch
   transition (circle wipe or reduced-motion fade, advanced in fixed steps), rect
   math. **Knows nothing about pirates, levels, enemies or the maker.** Nothing in `core/` may
   import from `game/`, `maker/`, `level/`, `data/` or `ui/`.
@@ -98,10 +100,14 @@ coral-corsairs/
 - `src/storage/` — the only place that touches `localStorage`. `safe-storage.js`
   wraps every access and falls back to an in-memory map; `levels.js` (the index,
   levels as share codes, the maker resume point), `progress.js` (campaign
-  progress) and `settings-store.js` sit on it. May import `level/` (the codec is the only serialiser); never imports
+  progress), `settings-store.js` and `persist.js` (one `navigator.storage.persist()`
+  request per page session) sit on it. May import `level/` (the codec is the only serialiser); never imports
   `game/`, `maker/` or `ui/`.
 - `tools/` — Node scripts run by npm scripts. Reads the read-only reference art,
-  writes `public/assets/` and `src/data/atlas.json`. Never imported by `src/`.
+  writes `public/assets/` and `src/data/atlas.json`. `pwa-plugin.mjs` writes
+  `dist/sw.js` from `service-worker.template.js` at the end of a production
+  build. `make-perf-level.mjs` writes `tools/fixtures/perf-stress.json`.
+  Never imported by `src/`.
 
 ### Read-only reference sources
 
@@ -137,12 +143,20 @@ only `npm run assets` needs it restored.
 - All draw destinations are rounded to whole world pixels before `drawImage`.
 - Draw order is by `z` from `settings.js`:
   `bg(0) · clouds(1) · bgTiles(2) · bgDecor(3) · main(5) · water(6) · fg(7) · fx(8)`.
+  `drawLevel` walks those layers in that order and calls a synchronous callback
+  after each layer's own content. Actors on one layer keep their existing order
+  (entities, then the player). Effects stay on `fx`. Nothing sorts the simulation
+  arrays. Water and reflections are the water pass, so they cover `Z.main` actors
+  where they overlap. A reflection draws only over horizon-row cells with no
+  terrain or platform, clipped per cell at draw time. The maker's grid, cursor
+  and ghost are drawn after the passes.
 - Only tiles intersecting the camera rect are drawn — iterate the visible cell
   range, never the whole grid.
 - **Horizon Y** is derived, not stored: the top of the topmost row that contains
   any water cell, or `rows * TILE` if the water layer is empty. Format 1 has no
-  `horizon` field. Sky, sea, horizon bands, `BG Image` and the cloud band all
-  sit on that line. Cloud positions wrap; they are never spawned or killed per
+  `horizon` field. Sky and sea meet there. The `BG Image`'s painted horizon
+  (row 86, `theme.bgImageHorizonRow`) and the bottom of the cloud band sit on
+  that line. Cloud positions wrap; they are never spawned or killed per
   frame.
 
 - A theme with a non-null `wallTile` is below decks. Its opaque sheet cell repeats
@@ -404,7 +418,10 @@ The maker palette, the maker preview, the play-mode spawner and the level valida
 all read this one array. **Adding an enemy is one entry plus one class.** Facing
 entities carry `defaultProps: { dir: -1 }` so a fresh placement is a valid record.
 `PALETTE_ORDER` is the maker tab order: terrain, platforms, water, treasure,
-enemies, hazards, decor, markers. Groups with no entries (decor in v1) are hidden.
+enemies, hazards, decor, markers. Groups with no entries are hidden. Decor is
+registered: three background palms (`palm_back`, `palm_back_left`,
+`palm_back_right`), all `Z.bgDecor`, animated by `level/decor.js`. They are not
+entities and they have no collision.
 
 ## Storage Model
 
@@ -422,6 +439,11 @@ so private browsing degrades instead of throwing.
 
 Levels are stored compressed so the ~5 MB quota holds hundreds of them. Quota
 exhaustion surfaces as a user-visible message, never a silent failure.
+
+After a level save succeeds, `persist.js` asks the browser once per page
+session to keep the site's storage (`navigator.storage.persist()`). Nothing is
+shown, and the answer is not stored. A browser without the API, or one that
+throws, leaves the levels where they were.
 
 - **A level is written only if it would load**: it has a flag and passes
   `validateLevel` (so no more than 400 objects). Autosave cannot store a level that
@@ -498,6 +520,29 @@ assets: 341 / 1195 source files packed (28.5%)
 - The report is informational. It never fails the build, and coverage is never a
   reason to pack an asset the game does not yet use.
 
+## Offline
+
+`public/manifest.webmanifest` is hand-written (anything under `public/` outside
+`assets/` is not generated). It asks for `fullscreen` and `landscape`, names the
+app Coral Corsairs (`short_name` Corsairs), and points at the generated Captain
+icons. `index.html` links the manifest, the 32 px favicon and the apple-touch
+icon. The two colours in both files mirror `--ink` and `--sky`, which HTML and
+JSON cannot read.
+
+A production build's `closeBundle` hook walks `dist/` and writes `dist/sw.js`
+from `tools/service-worker.template.js`. The worker precaches every built file
+except itself and source maps. Its cache is named `cc-` plus the first 12 hex
+characters of a SHA-256 over each precached path and its bytes, so identical
+builds produce identical workers and any changed byte or renamed file gets a new
+cache. On activate it deletes every other `cc-` cache. Updates are silent:
+`skipWaiting` plus `clients.claim()` means the first launch after a deploy
+installs the new version, and the launch after that runs it. There is no
+"update available" prompt. Navigations, including `?perf`, are served from the
+cached `/index.html`. Anything that was not precached is fetched from the
+network and is not stored. The dev server never registers a worker. `main.js`
+registers `/sw.js` only when `import.meta.env.PROD`, and only after the title
+appears, so the precache download does not compete with boot.
+
 ## Scene and Mode Model
 
 `App` owns the canvas, the loop, input, audio, the atlas, storage and the transition
@@ -545,7 +590,10 @@ Rules the codebase must never violate. A violation is a bug even if the screen l
 correct.
 
 1. **Simulation runs on a fixed 1/60 s timestep.** No gameplay logic reads
-   wall-clock time or a raw `requestAnimationFrame` delta.
+   wall-clock time or a raw `requestAnimationFrame` delta. The loop's optional
+   `onFrame` callback times the frame for the `?perf` readout. That is
+   measurement, not gameplay: the simulation does not read it, and without the
+   flag the loop does not time itself.
 2. **Play mode and Maker mode consume the same schema through the same loader.**
    Campaign levels are exported maker levels. If the maker can produce it, play must
    load it, and vice versa.
