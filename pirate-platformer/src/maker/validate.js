@@ -1,4 +1,4 @@
-import { ENTITIES_MAX } from '../level/schema.js';
+import { DECOR_MAX, ENTITIES_MAX } from '../level/schema.js';
 import { byId } from '../data/palette.js';
 
 /** @typedef {import('../level/model.js').LevelModel} LevelModel */
@@ -10,6 +10,7 @@ import { byId } from '../data/palette.js';
  *   | 'goal-in-terrain'
  *   | 'spawn-on-goal'
  *   | 'too-many-entities'
+ *   | 'too-many-decor'
  *   | 'unknown-kind'} ProblemCode
  *
  * `k` names the offending kind on an `unknown-kind` problem, so an importer can list them.
@@ -68,6 +69,12 @@ export function findProblems(level) {
     problems.push({
       code: 'too-many-entities',
       message: `Too many objects: ${level.entities.length} of ${ENTITIES_MAX}.`,
+    });
+  }
+  if (level.decor.length > DECOR_MAX) {
+    problems.push({
+      code: 'too-many-decor',
+      message: `Too much decoration: ${level.decor.length} of ${DECOR_MAX}.`,
     });
   }
 

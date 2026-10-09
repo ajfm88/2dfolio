@@ -437,6 +437,33 @@ export const palette = [
     defaultProps: { dir: -1 },
     spawn(world, rec) { return new Shooter(world, rec, this); },
   },
+  {
+    id: 'palm_back',
+    group: 'decor',
+    label: 'Palm Tree',
+    icon: 'palm/back',
+    placement: 'decor',
+    layer: null,
+    z: Z.bgDecor,
+  },
+  {
+    id: 'palm_back_left',
+    group: 'decor',
+    label: 'Palm Tree, Left',
+    icon: 'palm/back-left',
+    placement: 'decor',
+    layer: null,
+    z: Z.bgDecor,
+  },
+  {
+    id: 'palm_back_right',
+    group: 'decor',
+    label: 'Palm Tree, Right',
+    icon: 'palm/back-right',
+    placement: 'decor',
+    layer: null,
+    z: Z.bgDecor,
+  },
 ];
 
 /** @type {Map<string, PaletteEntry>} */

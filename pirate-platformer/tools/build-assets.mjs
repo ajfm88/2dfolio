@@ -11,10 +11,14 @@ import ffmpegPath from 'ffmpeg-static';
 import sharp from 'sharp';
 import {
   AUDIO_ROOT,
+  ICON_BACKGROUND,
+  ICON_CROP,
+  ICON_SOURCE,
   PACK_ROOT,
   audio,
   clips,
   coverageExcludes,
+  icons,
 } from './asset-manifest.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -66,6 +70,47 @@ async function listFrames(dirAbs, match) {
 async function emptyDir(dir) {
   await rm(dir, { recursive: true, force: true });
   await mkdir(dir, { recursive: true });
+}
+
+/**
+ * Crop the Captain's idle frame, scale it with nearest-neighbour, and centre it
+ * on an opaque sky canvas. Offsets must be whole pixels or the icon is rejected.
+ *
+ * @param {string} srcAbs
+ * @param {{ x: number, y: number, w: number, h: number }} crop
+ * @param {number} size
+ * @param {number} scale
+ * @param {string} background
+ * @param {string} outAbs
+ */
+async function writeIcon(srcAbs, crop, size, scale, background, outAbs) {
+  const w = crop.w * scale;
+  const h = crop.h * scale;
+  const left = (size - w) / 2;
+  const top = (size - h) / 2;
+  if (!Number.isInteger(left) || !Number.isInteger(top)) {
+    throw new Error(`offset is not a whole number (${left}, ${top})`);
+  }
+  if (left < 0 || top < 0 || w > size || h > size) {
+    throw new Error(`art ${w}x${h} does not fit a ${size} canvas`);
+  }
+  const art = await sharp(srcAbs)
+    .extract({ left: crop.x, top: crop.y, width: crop.w, height: crop.h })
+    .resize(w, h, { kernel: 'nearest' })
+    .png()
+    .toBuffer();
+  await mkdir(path.dirname(outAbs), { recursive: true });
+  await sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background,
+    },
+  })
+    .composite([{ input: art, left, top }])
+    .png(PNG)
+    .toFile(outAbs);
 }
 
 const run = promisify(execFile);
@@ -204,6 +249,7 @@ async function main() {
   await emptyDir(path.join(OUT, 'tiles'));
   await emptyDir(path.join(OUT, 'ui'));
   await emptyDir(path.join(OUT, 'audio'));
+  await emptyDir(path.join(OUT, 'icons'));
 
   /** @type {Set<string>} */
   const consumed = new Set();
@@ -254,6 +300,33 @@ async function main() {
       }
     } catch (err) {
       throw new Error(`clip ${clip.id}: ${err.message}`);
+    }
+  }
+
+  const iconSrc = fromPack(ICON_SOURCE);
+  try {
+    await access(iconSrc);
+  } catch {
+    throw new Error(`icon source missing: ${ICON_SOURCE}`);
+  }
+  const iconMeta = await sharp(iconSrc).metadata();
+  if (iconMeta.width !== 64 || iconMeta.height !== 40) {
+    throw new Error(
+      `icon source is ${iconMeta.width}x${iconMeta.height}, expected 64x40`,
+    );
+  }
+  for (const item of icons) {
+    try {
+      await writeIcon(
+        iconSrc,
+        ICON_CROP,
+        item.size,
+        item.scale,
+        ICON_BACKGROUND,
+        path.join(OUT, ...item.dest.split('/')),
+      );
+    } catch (err) {
+      throw new Error(`icon ${item.dest}: ${err.message}`);
     }
   }
 

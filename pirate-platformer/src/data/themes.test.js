@@ -57,4 +57,11 @@ describe('theme registry', () => {
     expect(shipTheme.smallCloudCount).toBe(0);
     expect(shipTheme.reflects).toEqual([]);
   });
+
+  it('keeps the island image horizon inside the sprite, with 41 sea rows below', () => {
+    const row = islandTheme.bgImageHorizonRow;
+    expect(row).toBeGreaterThanOrEqual(0);
+    expect(row).toBeLessThan(atlas['bg/image'].fh);
+    expect(atlas['bg/image'].fh - row - 1).toBe(41);
+  });
 });

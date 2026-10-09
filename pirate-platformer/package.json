@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "assets": "node tools/build-assets.mjs",
+    "perf-level": "node tools/make-perf-level.mjs",
     "test": "vitest run"
   },
   "devDependencies": {

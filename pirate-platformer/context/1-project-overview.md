@@ -90,7 +90,10 @@ platformer and, ten minutes later, want to build one.
 - Hearts-based health with invulnerability flicker after a hit. Any death —
   running out of hearts, a pit or water — returns the player to level select
   (decision 2026-09-26). A test-play from the maker still restarts at the spawn.
-- Parallax sky, drifting clouds, animated water and palm trees.
+- Parallax sky, drifting clouds, animated water and palm trees. The maker's
+  Decor tab places three background palms (regular, left-leaning, right-leaning).
+  They stand on the cell bottom, draw behind actors, animate at 10 FPS, and have
+  no collision. Both themes draw those same palms.
 - Level complete on touching the flag, with a treasure and time summary.
 - A pause menu: resume, restart, settings, and the way back (level select, or the
   editor in a test-play).
@@ -130,6 +133,8 @@ platformer and, ten minutes later, want to build one.
 ### Persistence and sharing
 
 - Levels, campaign progress and settings saved to the device with `localStorage`.
+  After a level save succeeds, the app asks the browser to keep saved levels,
+  once per page session.
 - Autosave while editing; explicit save on leaving the maker, before test-play
   and when the page is hidden. Reopening the last-edited level restores its camera,
   zoom and tool.

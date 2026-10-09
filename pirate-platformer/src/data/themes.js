@@ -39,6 +39,7 @@
  *   smallCloudCount: number,
  *   reflectGap: number,
  *   bgImage: string,
+ *   bgImageHorizonRow: number,
  *   bigClouds: string,
  *   smallClouds: ReadonlyArray<string>,
  *   reflects: ReadonlyArray<string>,
@@ -80,6 +81,8 @@ export const islandTheme = {
   smallCloudCount: 20,
   reflectGap: 2,
   bgImage: 'bg/image',
+  // bg/image row 86 is its painted white horizon line; drawn on horizonY.
+  bgImageHorizonRow: 86,
   bigClouds: 'bg/clouds-big',
   smallClouds: ['bg/cloud-1', 'bg/cloud-2', 'bg/cloud-3'],
   reflects: ['fx/reflect-big', 'fx/reflect-mid', 'fx/reflect-small'],

@@ -44,5 +44,24 @@ export function createSprite(clip) {
         ctx.drawImage(clip.image, sx, 0, fw, fh, dx, dy, fw, fh);
       }
     },
+    /**
+     * Draw unflipped whole source columns [k0, k1) of the current frame.
+     * Requires 0 ≤ k0 ≤ k1 ≤ fw.
+     *
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {{ x: number, y: number }} cam
+     * @param {number} x world px, sprite top-left
+     * @param {number} y world px
+     * @param {number} k0 first source column, inclusive
+     * @param {number} k1 last source column, exclusive
+     */
+    drawSpan(ctx, cam, x, y, k0, k1) {
+      if (k1 <= k0) return;
+      const frame = n > 0 ? Math.floor(frameIndex) % n : 0;
+      const dx = Math.round(x - cam.x);
+      const dy = Math.round(y - cam.y);
+      ctx.drawImage(clip.image, frame * clip.fw + k0, 0, k1 - k0, clip.fh,
+        dx + k0, dy, k1 - k0, clip.fh);
+    },
   };
 }

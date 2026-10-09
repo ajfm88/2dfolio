@@ -69,6 +69,25 @@ describe('readLevelText', () => {
     );
   });
 
+  it('refuses decoration this version does not have', async () => {
+    const data = serialise(level());
+    data.decor.push({ k: 'chandelier', c: 2, r: 2 });
+    expect(await refusal(JSON.stringify(data))).toBe(
+      'This level uses objects this version doesn\'t have: chandelier.',
+    );
+  });
+
+  it('imports the three palm kinds', async () => {
+    const model = level();
+    model.decor.push(
+      { k: 'palm_back', c: 4, r: 10 },
+      { k: 'palm_back_left', c: 5, r: 10 },
+      { k: 'palm_back_right', c: 6, r: 10 },
+    );
+    const got = await readLevelText(toJsonString(model));
+    expect(got.decor).toEqual(model.decor);
+  });
+
   it('refuses objects this version does not have', async () => {
     const data = serialise(level());
     data.entities.push({ k: 'kraken', c: 1, r: 1 }, { k: 'ghost_ship', c: 2, r: 1 });

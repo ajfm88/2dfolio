@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { DECOR_MAX } from '../level/schema.js';
 import { createEmptyModel } from '../level/model.js';
+import { findProblems } from './validate.js';
 import { serialise } from '../level/codec.js';
 import {
   CommandStack,
@@ -75,6 +77,28 @@ const GOAL = {
   placement: 'marker',
   layer: null,
   z: 5,
+};
+
+/** @type {import('../data/palette.js').PaletteEntry} */
+const PALM = {
+  id: 'palm_back',
+  group: 'decor',
+  label: 'Palm Tree',
+  icon: 'palm/back',
+  placement: 'decor',
+  layer: null,
+  z: 3,
+};
+
+/** @type {import('../data/palette.js').PaletteEntry} */
+const PALM_LEFT = {
+  id: 'palm_back_left',
+  group: 'decor',
+  label: 'Palm Tree, Left',
+  icon: 'palm/back-left',
+  placement: 'decor',
+  layer: null,
+  z: 3,
 };
 
 /** @type {import('../data/palette.js').PaletteEntry} */
@@ -259,6 +283,60 @@ describe('MarkerMoveCommand', () => {
   });
 });
 
+describe('DecorCommand', () => {
+  it('places several cells as one command and restores them', () => {
+    const model = empty();
+    const cmd = drag(model, PALM, 'place-decor', [{ c: 4, r: 10 }, { c: 5, r: 10 }]);
+    expect(model.decor).toEqual([
+      { k: 'palm_back', c: 4, r: 10 },
+      { k: 'palm_back', c: 5, r: 10 },
+    ]);
+    const stack = new CommandStack();
+    stack.push(cmd);
+    stack.undo(model);
+    expect(model.decor).toEqual([]);
+    stack.redo(model);
+    expect(model.decor).toEqual([
+      { k: 'palm_back', c: 4, r: 10 },
+      { k: 'palm_back', c: 5, r: 10 },
+    ]);
+  });
+
+  it('replaces a kind in place and undo puts the old kind back', () => {
+    const model = empty();
+    model.decor.push({ k: 'palm_back', c: 4, r: 4 });
+    const cmd = drag(model, PALM_LEFT, 'place-decor', [{ c: 4, r: 4 }]);
+    expect(model.decor).toEqual([{ k: 'palm_back_left', c: 4, r: 4 }]);
+    const stack = new CommandStack();
+    stack.push(cmd);
+    stack.undo(model);
+    expect(model.decor).toEqual([{ k: 'palm_back', c: 4, r: 4 }]);
+  });
+
+  it('the same kind on the same cell is not a change', () => {
+    const model = empty();
+    model.decor.push({ k: 'palm_back', c: 4, r: 4 });
+    const before = model.decor.slice();
+    const cmd = drag(model, PALM, 'place-decor', [{ c: 4, r: 4 }]);
+    expect(cmd.hasChanges()).toBe(false);
+    expect(model.decor).toEqual(before);
+  });
+
+  it('undo drops a level back to the decor cap', () => {
+    const model = empty();
+    model.goal = { c: 30, r: 6 };
+    for (let i = 0; i < DECOR_MAX; i++) model.decor.push({ k: 'palm_back', c: 0, r: 0 });
+    const cmd = drag(model, PALM_LEFT, 'place-decor', [{ c: 3, r: 3 }]);
+    expect(model.decor).toHaveLength(DECOR_MAX + 1);
+    expect(findProblems(model).map((p) => p.code)).toEqual(['too-many-decor']);
+    const stack = new CommandStack();
+    stack.push(cmd);
+    stack.undo(model);
+    expect(model.decor).toHaveLength(DECOR_MAX);
+    expect(findProblems(model)).toEqual([]);
+  });
+});
+
 describe('EraseAllCommand', () => {
   it('clears tiles and entities but not markers', () => {
     const model = empty();
@@ -277,6 +355,25 @@ describe('EraseAllCommand', () => {
     expect(model.get('terrain', 6, 6)).toBe(1);
     expect(model.get('platform', 6, 6)).toBe(1);
     expect(model.entities[0].k).toBe('crabby');
+  });
+
+  it('clears decor with the terrain and entity, then undo restores all three', () => {
+    const model = empty();
+    model.set('terrain', 6, 6, 1);
+    model.entities.push({ k: 'crabby', c: 6, r: 6, p: { dir: -1 } });
+    model.decor.push({ k: 'palm_back', c: 6, r: 6 });
+    const spawn = { ...model.spawn };
+    const cmd = drag(model, TERRAIN, 'erase-all', [{ c: 6, r: 6 }]);
+    expect(model.get('terrain', 6, 6)).toBe(0);
+    expect(model.entities).toEqual([]);
+    expect(model.decor).toEqual([]);
+    expect(model.spawn).toEqual(spawn);
+    const stack = new CommandStack();
+    stack.push(cmd);
+    stack.undo(model);
+    expect(model.get('terrain', 6, 6)).toBe(1);
+    expect(model.entities[0].k).toBe('crabby');
+    expect(model.decor).toEqual([{ k: 'palm_back', c: 6, r: 6 }]);
   });
 });
 
@@ -328,6 +425,23 @@ describe('ResizeCommand', () => {
     expect(model.entities[0].k).toBe('crabby');
     expect(model.goal).toEqual({ c: 70, r: 10 });
     expect(resized).toBe(2);
+  });
+
+  it('clips decor past the new edge and undo restores it exactly', () => {
+    const model = createEmptyModel({ cols: 80, rows: 24 });
+    model.decor.push({ k: 'palm_back', c: 10, r: 10 });
+    model.decor.push({ k: 'palm_back_left', c: 50, r: 10 });
+    model.decor.push({ k: 'palm_back_right', c: 10, r: 20 });
+    const stack = new CommandStack();
+    const cmd = createResizeCommand(model, 40, 12, () => {});
+    stack.execute(cmd, model);
+    expect(model.decor).toEqual([{ k: 'palm_back', c: 10, r: 10 }]);
+    stack.undo(model);
+    expect(model.decor).toEqual([
+      { k: 'palm_back', c: 10, r: 10 },
+      { k: 'palm_back_left', c: 50, r: 10 },
+      { k: 'palm_back_right', c: 10, r: 20 },
+    ]);
   });
 
   it('redo re-applies the resize', () => {

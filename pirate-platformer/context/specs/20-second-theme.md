@@ -632,7 +632,7 @@ Commit: `Unit 20 part B: the theme picker`.
 - **Backdrop cost.** One `drawImage` per visible cell: about 300 at 1×, and about
   1,150 in the maker at 0.5×.
   - Measure frame time at 768 wide, maker at 0.5×, on a ship level.
-  - If it is a problem, log it for Unit 21's profiling pass. Do not add a pattern
+  - If it is a problem, log it for Unit 22's profiling pass. Do not add a pattern
     cache here.
 - **Island regression.** The island must draw exactly as before. See the A2 checks.
 - **A switch mid-drag.** The `dragState` guard covers it; check that a pick during a
@@ -794,7 +794,8 @@ measured over 120 requestAnimationFrame-paced update/render calls: **median
 0.8 ms, p95 4.2 ms, maximum 6.0 ms**. This measures desktop headless Chrome
 submission, not compositor presentation or phone performance. An unpaced
 readback-canvas stress loop was slower (median 4.7 ms, p95 30.7 ms); it is not
-the maker frame measurement. Recheck on the target phone during Unit 21 profiling.
+the maker frame measurement. Recheck on the target phone during Unit 22 profiling
+(PWA and Performance, renumbered 2026-10-07).
 
 Still for the player: ship art and plank feet at 2× by eye, water/readability
 judgment, and the phone run after Netlify deployment. No visual approval has

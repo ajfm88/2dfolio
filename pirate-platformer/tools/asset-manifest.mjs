@@ -204,6 +204,31 @@ export const clips = [
 ];
 
 /**
+ * App icons: the Captain's idle frame 1, cropped to its opaque art (measured
+ * x20 y4 w24 h28 in the 64x40 frame), scaled by a whole number with
+ * nearest-neighbour and centred on --sky. The source frame is already packed by
+ * player/idle, so icons never count toward coverage.
+ */
+export const ICON_SOURCE = `${CAPTAIN}/01-Idle/Idle 01.png`;
+export const ICON_CROP = { x: 20, y: 4, w: 24, h: 28 };
+export const ICON_BACKGROUND = '#ddc6a1'; // --sky
+
+/** @param {string} dest @param {number} size @param {number} scale */
+function icon(dest, size, scale) {
+  return { dest, size, scale };
+}
+
+export const icons = [
+  icon('icons/icon-32.png', 32, 1),
+  icon('icons/apple-touch-icon.png', 180, 5),
+  icon('icons/icon-192.png', 192, 5),
+  icon('icons/icon-512.png', 512, 14),
+  // Maskable: the art's half-diagonal (sqrt(120² + 140²) ≈ 184 px) stays inside
+  // the 0.4 × 512 = 204.8 px safe-zone circle.
+  icon('icons/icon-maskable-512.png', 512, 10),
+];
+
+/**
  * attack.wav is not listed: sword combat is out of scope, and nothing ships that
  * the game does not use. `bitrate` re-encodes an MP3 through ffmpeg-static instead
  * of copying it — the source music is 192 kbps (2.44 MB), most of Goal 4's 3 MB.

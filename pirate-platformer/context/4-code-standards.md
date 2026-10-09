@@ -178,7 +178,8 @@ z                      // draw layer from settings.Z
 
 ## Testing
 
-- `vitest`, with tests colocated as `<module>.test.js`.
+- `vitest`, with tests colocated as `<module>.test.js`. `vite.config.js`
+  includes `src/**/*.test.js` and `tools/**/*.test.js`.
 - **Tested**: `level/codec.js` (round-trip fidelity, malformed input),
   `level/autotile.js` (the 16 base masks, the 31 inner corners, all 256 neighbour
   combinations, grid edges), `level/schema.js` (every
@@ -200,17 +201,17 @@ deliberately not ported:
 | A long `match`/`case` over integer ids in `level.py build_level`            | Registry lookup in `data/palette.js`                             |
 | Animation frames ordered by OS directory walk                               | Explicit frame counts in the generated atlas manifest            |
 | Free-floating objects with pixel offsets (`CanvasObject.distance_to_origin`) | Everything grid-snapped                                          |
-| `pygame.sprite.Group` implicit iteration order                              | Explicit `z` sort, stable and declared in `settings.Z`           |
+| `pygame.sprite.Group` implicit iteration order                              | Stable traversal by `z`, in the order declared in `settings.Z`   |
 | Module-level mutable globals                                                | Dependencies passed into constructors                            |
 | Canvas-drawn menus and buttons (`PirateMaker/28_finish/menu.py`)            | DOM UI                                                           |
 
 ## File Organization
 
 - `src/core/` — loop, viewport, camera, input, atlas, sprite, audio, transition,
-  rect.
+  rect, frame-stats, service-worker registration.
   Engine only; no game knowledge.
 - `src/level/` — `model.js`, `codec.js`, `autotile.js`, `schema.js`,
-  `parallax.js`, `render.js`. Shared by both modes.
+  `parallax.js`, `render.js`, `decor.js`. Shared by both modes.
 - `src/data/` — `palette.js`, `themes.js`, `tuning.js`, `sounds.js`,
   `atlas.json` (generated), `campaign.js`, `campaign/*.json`. Declarative; no
   logic beyond factory references.
@@ -221,14 +222,17 @@ deliberately not ported:
 - `src/maker/` — `maker-scene.js`, `commands.js`, `tools.js`, `grid-overlay.js`,
   `gestures.js`, `validate.js`, `import-level.js`.
 - `src/ui/` — `dom.js`, `hud.js`, `touch-controls.js`, `maker-palette.js`,
-  `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `files.js`,
+  `maker-toggle.js`, `maker-toolbar.js`, `rotate-prompt.js`, `perf-readout.js`, `files.js`,
   `format.js`, `screens/` (`title.js`, `level-select.js`, `campaign-tab.js`,
   `my-levels-tab.js`), `components/` (`dialog.js`, `rename-dialog.js`,
   `share-dialog.js`, `import-dialog.js`, `settings-dialog.js`, `toast.js`,
   `resize-dialog.js`), `styles/`.
 - `src/storage/` — `safe-storage.js`, `levels.js`, `progress.js`,
-  `settings-store.js`.
-- `tools/` — Node-only build scripts. Never imported by `src/`.
+  `settings-store.js`, `persist.js`.
+- `tools/` — Node-only build scripts, including `pwa-plugin.mjs`,
+  `service-worker.template.js` and `make-perf-level.mjs`. `tools/fixtures/`
+  holds generated levels the tests pin, including `perf-stress.json`. Never
+  imported by `src/`.
 - `public/assets/` — generated. **Never hand-edited.**
 
 ## Formatting

@@ -106,9 +106,12 @@ schema/codec/autotile changes, inner corners (issue 2 stays open).
 - [x] Sky above the water line, sea below; horizon sits on the water row at
       every camera Y
 - [x] `BG Image` sits on the horizon and lags the camera
+      Corrected 2026-10-07 by issue 40: its painted row 86 sits on the horizon,
+      not its bottom edge.
 - [x] Big cloud band tiles without a seam, drifts, lags tiles
 - [x] Small clouds drift and wrap instead of popping at either end
 - [x] Water reflects animate at 10 FPS on the sea near the horizon
+      Corrected 2026-10-07 by issue 42: clipped to open horizon-row cells.
 - [x] Unit 04 autotile fixture still looks correct
 - [x] Captain idle still walks; no gravity
 - [x] `/atlas.html` unchanged
