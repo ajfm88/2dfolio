@@ -4,7 +4,7 @@
   --palette-height: calc(
     16px * var(--ui-scale) +
     4px * var(--ui-scale) +
-    28px * var(--ui-scale) +
+    44px * var(--ui-scale) +
     2px * var(--ui-scale) +
     48px * var(--ui-scale) +
     4px * var(--ui-scale) +
@@ -51,7 +51,7 @@
 .maker-palette__tab {
   flex: 0 0 auto;
   min-width: calc(44px * var(--ui-scale));
-  min-height: calc(28px * var(--ui-scale));
+  min-height: calc(44px * var(--ui-scale));
   padding: calc(4px * var(--ui-scale)) calc(8px * var(--ui-scale));
   background: var(--wood);
   border: 0;

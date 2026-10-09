@@ -111,16 +111,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 17. Maker palette category tabs are 28 px tall — under the 44 × 44 hit area [OPEN]
-
-**Where:** `src/ui/styles/maker-palette.css` (`.maker-palette__tab`), Unit 15
-**Symptom:** Measured in Chrome at `--ui-scale: 1`, all seven tabs are 50–70 × 28 CSS px. Every other toolbar and palette button meets 44 × 44.
-**Expected:** `3-ui-context.md`: "Minimum hit area is 44 × 44 CSS pixels on every interactive element … regardless of visual size."
-**Repro:** Phone-landscape (844 × 390) or portrait: measure `.maker-palette__tab` bounding boxes.
-**Notes:** Found 2026-09-22 while verifying Unit 15. Not fixed in the sweep because the fix has a layout cost worth choosing deliberately: at 844 × 390 the clear canvas between the bars is already only 220 px, and 16 px more tab height comes straight out of it. Options: taller tabs; or a hit area that extends past the visual tab (the tab row sits directly on the tool strip, so any extension has to go upward into the canvas edge).
-
----
-
 ### 21. Secondary text on the wood board is hard to read [OPEN]
 
 **Where:** `src/ui/components/resize-dialog.js` + its CSS (Unit 15); any `--text-muted` or `--text-display` text on `.panel--board`
@@ -163,16 +153,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 28. `/favicon.ico` 404 on every fresh load [OPEN]
-
-**Where:** `index.html` (Unit 00)
-**Symptom:** Chrome requests `/favicon.ico` on first load and logs "Failed to load resource: 404". It is the only console error in a full Unit 17 run.
-**Expected:** No console errors in a normal run (workflow rule 6).
-**Repro:** Open `/` in a fresh profile and read the console.
-**Notes:** Found 2026-09-25 while verifying Unit 17. This existed before the unit. Unit 21 (PWA) brings real icons; until then, an icon link in `index.html` would silence it. Do not hand-add an icon under `public/assets/`, which is generated.
-
----
-
 ### 31. Nothing stops the player at a level's left and right edges [OPEN]
 
 **Where:** `src/game/world.js` / `src/game/player.js` (Unit 07)
@@ -180,29 +160,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 **Expected:** Undefined today. Unit 07 specified the bottom death border and said nothing about the sides.
 **Repro:** Maker → New Level → a floor across the whole width → play and walk left from the spawn.
 **Notes:** Every Unit 18 campaign level has a full-height terrain wall in its first and last column, so the campaign is not affected. A maker user's level is. Options: clamp the hitbox to `0..worldW` in `world.js` (a behaviour decision: an invisible wall), or leave it to level design. Needs a player decision. Not folded into Unit 18.
-
----
-
-### 33. The collision cell ranges allocate on every call [OPEN]
-
-**Where:** `src/game/physics.js` `cellRangeX` / `cellRangeY` (Unit 06)
-**Symptom:** Both return a new two-element array. Every fixed step, `resolveH`, `resolveV`, `resolveSemiSolid`, `checkSolid`, `checkFloor` and the wall checks call them for the player and for every walker and projectile. So play makes dozens of short-lived arrays a frame.
-**Expected:** `4-code-standards.md` Rendering: "No allocation in the per-frame path … Use module-level scratch objects."
-**Repro:** `physics.js` lines 20–36 and their callers.
-**Notes:** Found 2026-10-02 while planning issue 30's fix, which edits the same two lines. Not folded into it. No behaviour change is wanted, and `physics.test.js` covers every caller. Natural home: Unit 21's profiling pass, or its own small change. Measure first, in the Chrome profiler's allocation view, so the fix has a number.
-
----
-
-### 34. Draw order follows the code, not `z` [OPEN]
-
-**Where:** `src/game/world.js` `draw`, `src/level/render.js` `drawLevel`; `2-architecture.md` Rendering Model; `4-code-standards.md` Patterns Rejected
-**Symptom:** The architecture says "Draw order is by `z` from `settings.js`". The code standards name "explicit `z` sort, stable and declared in `settings.Z`" as what replaces pygame's group order. Every entity sets `this.z`, but nothing reads it.
-- `drawLevel` draws the background, the tiles and the water.
-- Then `world.draw` draws the entities in spawn order, then the player, then fx.
-- So water (`Z.water` 6) is drawn under the entities (`Z.main` 5).
-**Expected:** Either draw order honours `z`, or the docs describe the fixed order.
-**Repro:** `grep -rn "\.z\b" src` finds assignments only.
-**Notes:** Found 2026-10-02 while planning Unit 20. No visible effect today: every entity is `Z.main`, and nothing is drawn behind the tiles or in front of the player. It starts to matter with decor (`Z.bgDecor` behind entities, `Z.fg` in front), so decide it in the decor unit's spec (Open Question 8). Not folded into Unit 20, which adds no entity.
 
 ---
 
@@ -230,7 +187,391 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
+### 41. Horizon bands and line are drawn but never seen [OPEN]
+
+**Where:** `src/level/render.js` `drawBackdrop`; `src/data/themes.js` `horizonBands`, `horizon`, `horizonLine`, `horizonBand` (Unit 05)
+**Symptom:** `drawBackdrop` fills three horizon bands (`hy-10` to `hy`) and then the BG Image is drawn over them. The image is opaque and tiled across the full width, so the bands are never visible. Today the renderer's 2 px horizon line at `hy` is the only part that shows. After issue 40, the image's rows 86–87 cover that line as well.
+**Expected:** No dead overdraw. Either delete the band and line drawing (and decide whether the theme fields and the `--horizon` / `--horizon-band` CSS mirrors in `3-ui-context.md` stay), or keep them deliberately as a fallback and record why.
+**Repro:** Read `drawBackdrop` after issue 40. Every band row lies inside `[hy - 86, hy + 41]`, which the image covers whenever `0 < hy < viewH`.
+**Notes:** Found 2026-10-07 while planning issue 40. Kept out of that fix so it stays one draw position plus tests. It has no visible effect, and the cost is four `fillRect` calls a frame. It needs a small decision, not urgency.
+
+---
+
+### 43. The maker keeps a stale horizon after water is painted or erased [OPEN]
+
+**Where:** `src/maker/maker-scene.js` (`parallax` is created in `syncTheme` and on resize only); `src/level/parallax.js` `createParallax` captures `horizonY` once (Unit 13 / Unit 05)
+**Symptom:** From the code (2026-10-07): `horizonY` is derived from the water layer when the parallax is created. The maker recreates the parallax only on entering the maker, on a theme change and on resize. Painting the level's first water, painting water higher up, or erasing the top water row leaves the sea, the horizon, the BG Image, the clouds and the reflections at the old line until one of those events happens. Play is unaffected, because it creates a fresh parallax on every enter.
+**Expected:** The maker's backdrop follows the derived horizon after every edit, as play does. Invariant 2 means the editor should show what play will show.
+**Repro:** Maker → New Level → paint a row of water halfway up. Expected: the horizon moves to it. Then test-play and come back: the horizon is now correct.
+**Notes:** Found 2026-10-07 while planning issue 42. Not yet seen in a browser; confirm by eye first. A likely fix:
+- recompute the horizon (or recreate the parallax) when a command changes the water layer, including undo/redo;
+- or make `horizonY` a getter over the live layer, with a cached row that is invalidated by edits.
+
+Recreating the parallax resets the cloud positions and drift, so the choice affects the look. That needs a small decision. Keep it out of issue 42.
+
+---
+
+### 44. Idle samples attribute allocations to the loop's `frame` [OPEN]
+
+**Where:** `src/core/loop.js` `frame` (Unit 02). Seen in Unit 22 Part E.
+**Symptom:** Chrome allocation sampling (`HeapProfiler.startSampling`, `samplingInterval` 1024, 10 s, dev server, no `?perf`) attributes sampled bytes to `frame` with no callee frames. `cellRangeX` and `cellRangeY` never appear, before or after issue 33, and the `frame` totals did not drop after that fix, so this is not those tuples. `frame` itself does not allocate when `onFrame` is absent; the samples are inlined callees collapsed onto it.
+**Expected:** No allocation in the per-frame path. This is logged, not fixed. Issue 33 was the only performance fix in Unit 22.
+**Repro:** The Part E desktop traces in `specs/22-pwa-and-performance.md`, As Built. Sampled `/src/` bytes on `frame` per 10 s: Perf Stress play 30628 and 34052 before, 35948 and 25276 after; maker idle 20124 and 13684; Castaway Beach 17176 and 0 before, 20200 and 0 after.
+**Notes:** Desktop Chrome 154 only. One further sample in a single run, not repeated in that scenario's other run, also landed on the per-frame path. Each is about one sample at this interval. The named functions do not construct objects. Not fixed.
+
+| Function | File | Bytes | Scenario |
+| --- | --- | --- | --- |
+| `get x` | `src/core/camera.js` | 2296 | S1 before, run 1, draw |
+| `autotileAt` | `src/level/autotile.js` | 2092 | S1 before, run 1, draw |
+| `drawMakerObjects` | `src/maker/maker-scene.js` | 1080 | S2 before, run 1, draw |
+| `get y` | `src/core/camera.js` | 2212 | S1 after, run 1, draw |
+| `update` | `src/game/hazards/projectile.js` | 1040 | S1 after, run 2, update |
+
+---
+
+### 45. A 2000-palm decor rebuild takes more than a quarter of a frame [OPEN]
+
+**Where:** `src/level/decor.js` `sync` / `buildDecorDrawList` (Unit 21). Measured in Unit 22 Part E.
+**Symptom:** On Perf Stress, erasing one palm and then undoing and redoing it (20 rebuilds, records stored descending) takes a median **8.68 ms** total at no CPU throttle. That is over the 4 ms flag proposed for Unit 22. At 6× CPU slowdown the median total is 25.93 ms. Self time of both functions is about 0, because the samples land in the insertion sort those functions call.
+**Expected:** Logged, not fixed. Unit 22's only performance code change is issue 33.
+**Repro:** Desktop Chrome 154, dev server, Perf Stress in the maker, CPU profiler at 100 µs. Numbers are in the Unit 22 As Built. Max total was 11.59 ms at no throttle and 34.03 ms at 6×.
+**Notes:** These are desktop numbers. They do not establish the phone target. The earlier Node sample (about 4.1 ms descending) was not a browser measurement.
+
+---
+
 ## Resolved
+
+### 46. Offline, the cached game never starts: its JS and CSS miss the cache [FIXED]
+
+**Where:** `tools/service-worker.template.js`, fetch handler (Unit 22 Part B, `9e39283`).
+**Symptom:** Found in Claude's review on 2026-10-07, with headless Chrome 154, a fresh profile, `vite preview` and the current build (cache `cc-558a819acf4c`, 104 entries).
+- Online, the worker activates and controls the page, and the cache holds all 104 files.
+- Stop the preview server and reload:
+  - the cached `index.html` loads;
+  - `/assets/index-CUfwtrz7.js` and `/assets/index-gA8T7xDn.css` fail with `net::ERR_FAILED`;
+  - the page stays blank, with no title buttons.
+- The manifest and the icon, which are requested without `crossorigin`, are served from the cache with status 200.
+
+**Cause:**
+- `vite preview` answers with `Vary: Origin`, and `cache.addAll` stores that header with each response.
+- Vite emits the bundle tags with `crossorigin`. The browser's real request for them carries an `Origin` header, which `addAll`'s request did not.
+- So `caches.match(request)` honours `Vary` and misses. The worker falls back to `fetch`, and with no network that fetch fails.
+- Proof:
+  - From a page script, a request to the same URL with `mode: 'cors'` matches. Scripts cannot set `Origin`, which is a forbidden header.
+  - A scratch copy of the same build, changed only to `caches.match(key, { ignoreVary: true })`, worked fully offline in the same test: title, level select, Castaway Beach (screenshot), all six sounds from the cache with 200, and `/?perf` with its readout. The only error was the expected `sw.js` update check.
+- Whether Netlify sends `Vary: Origin` is unknown; the fix must not depend on it.
+
+**Why Part B's check missed it:** the Part B record says the server was still running while it tested "offline". Emulating offline for the page alone (the DevTools-protocol way) leaves the worker's own `fetch` fallback with real network access, so the misses were quietly served by the server.
+
+**Expected:** With the server stopped, the game boots and plays from the cache.
+
+**Repro:**
+1. `npm run build`, then `npx vite preview`.
+2. Open `/` once, and wait for the worker to control the page.
+3. Stop the preview server and reload: the page is blank.
+
+**Fix plan (2026-10-07, Claude, for the implementer).**
+
+*Before you start:* the tree must be clean. This is one commit, with nothing else in it.
+
+1. **`tools/service-worker.template.js`:** in the fetch handler, change `caches.match(key)` to `caches.match(key, { ignoreVary: true })`. Add a one-line comment: the precache holds one response per URL, and a server's `Vary: Origin` must not hide it from a `crossorigin` request. Change nothing else.
+2. **`tools/pwa-plugin.test.js`:** add a test that the real template's fetch handler calls `caches.match` with `ignoreVary: true`. Assert that the template text contains `caches.match(key, { ignoreVary: true })`. Write it first and watch it fail.
+2b. **Issue 47, in the same commit (player decision, 2026-10-07).**
+   - **`tools/pwa-plugin.mjs` `renderServiceWorker`:** pass replacer functions, `.replace(VERSION_TOKEN, () => JSON.stringify(version))` and `.replace(PRECACHE_TOKEN, () => JSON.stringify(urls))`, so `$` patterns in the inserted text are never interpreted.
+   - **Test, written first:** render the real template with urls `['/a$&b.png', "/c$'d.png"]`. The output must contain `const PRECACHE = ["/a$&b.png","/c$'d.png"];` exactly, and `__CC_PRECACHE__` must not appear. Today it fails, because the path comes out as `/a__CC_PRECACHE__b.png`, as Claude confirmed.
+3. **Verification. It must really be offline; DevTools' Offline switch is not enough:**
+   1. `npm run build`, then `npx vite preview`.
+   2. In a fresh Chrome profile, open `/` and wait until the worker controls the page.
+   3. **Stop the preview server process**, then reload. The title, Castaway Beach with sound, the maker, Settings and `/?perf` all work.
+   4. Record the failed requests: the only one allowed is `sw.js`.
+4. **Docs:**
+   - Move this issue and issue 47 to Resolved.
+   - Correct Part B's "Verify B" step 3 in `specs/22-pwa-and-performance.md` to say "stop the preview server", and add a line to its As Built about this fix.
+   - Add a tracker entry.
+5. **Commit:** `Fix issues 46 and 47: match precached files regardless of Vary; insert worker values literally (#46 #47)`.
+**Closed:** 2026-10-07. The fetch handler calls `caches.match(key, { ignoreVary: true })`. The precache holds one response per URL, and a server's `Vary: Origin` must not hide it from a crossorigin request. The template test was written first and failed, then passed. Verification used a fresh Chrome profile and `npx vite preview` on port 4173. The worker activated and controlled the page (cache `cc-558a819acf4c`, 104 entries). The preview server process was then stopped — a fetch from Node got status 0 — and the page was reloaded. DevTools' Offline switch was not used. The title showed Play, Make and Settings, from `/assets/index-CUfwtrz7.js` and `/assets/index-gA8T7xDn.css`. Settings opened with both slider sprites. Castaway Beach ran with 5 hearts and the pause control; `jump.wav`, `coin.wav`, `damage.wav`, `pearl.wav`, `hit.wav` and `starlight_city.mp3` each returned status 200, and the audio context was `running`. In the maker, a palm enabled Undo, Pirate Ship reported `aria-pressed` true, and test play started. `/?perf` read `0.0 ms avg · 0.1 max · 58 fps`. The page network log recorded no failed request. 399 tests in 34 files. The build logged `pwa: sw.js caches 104 files (version 558a819acf4c)`.
+
+---
+
+### 47. A `$` in a built file name would corrupt the generated worker [FIXED]
+
+**Where:** `tools/pwa-plugin.mjs` `renderServiceWorker` (Unit 22 Part B).
+**Symptom:** From the code (Claude's review, 2026-10-07). The function calls `String.prototype.replace` with a plain replacement string. JavaScript treats `$&`, `` $` ``, `$'` and `$n` in a replacement string as special patterns. So a precached path containing `$` would splice the wrong text into `sw.js`.
+**Expected:** The URLs are inserted literally.
+**Repro:** `renderServiceWorker(template, 'v', ["/a$&b.png"])` produces `PRECACHE` with `__CC_PRECACHE__` text in it.
+**Notes:** Latent. Vite's hashed names and every current asset name use only `[A-Za-z0-9._-]`, so no build today is affected. The fix is a replacer function (`() => JSON.stringify(urls)`), with a regression test using `$&`. **Scheduled 2026-10-07:** the player chose to fix this together with issue 46; see step 2b of that plan.
+**Closed:** 2026-10-07, in the same commit as issue 46. `renderServiceWorker` passes replacer functions, so `$&`, `` $` ``, `$'` and `$n` in the inserted text are not patterns. The test renders the real template with `['/a$&b.png', "/c$'d.png"]` and requires `const PRECACHE = ["/a$&b.png","/c$'d.png"];`, with no `__CC_PRECACHE__` left. It was written first and failed — the path came out as `/a__CC_PRECACHE__b.png` — then passed.
+
+---
+
+### 28. `/favicon.ico` 404 on every fresh load [FIXED]
+
+**Where:** `index.html` (Unit 00); closed by Unit 22 Part B.
+**Symptom:** Chrome requests `/favicon.ico` on first load and logs "Failed to load resource: 404". It is the only console error in a full Unit 17 run.
+**Expected:** No console errors in a normal run (workflow rule 6).
+**Repro:** Open `/` in a fresh profile and read the console.
+**Notes:** Found 2026-09-25 while verifying Unit 17. This existed before the unit. The icon is generated, not hand-added under `public/assets/`.
+**Closed:** 2026-10-07. Part B links the generated 32 px icon from `index.html`. On the dev server, a fresh profile loaded with no favicon 404 and no service worker. Commit `9e39283`. Moved here in Part E, once the traces were recorded.
+
+---
+
+### 33. The collision cell ranges allocate on every call [FIXED]
+
+**Where:** `src/game/physics.js` `cellRangeX` / `cellRangeY` (Unit 06)
+**Symptom:** Both returned a new two-element array. Every fixed step, `resolveH`, `resolveV`, `resolveSemiSolid`, `checkSolid`, `checkFloor` and the wall checks call them for the player and for every walker and projectile.
+**Expected:** `4-code-standards.md` Rendering: "No allocation in the per-frame path … Use module-level scratch objects."
+**Repro:** Was `physics.js` returning `[c0, c1]` and `[r0, r1]`.
+**Notes:** Found 2026-10-02 while planning issue 30's fix. Not folded into it.
+**Closed:** 2026-10-07. The two helpers write into module scratch objects `rangeX` and `rangeY`, and each of the 11 callers copies the values out before the next call. The arithmetic is unchanged. `physics.test.js` passed without edits (32 tests); the suite stayed 397 tests in 34 files. In the Part E samples, `cellRangeX` and `cellRangeY` never appeared before or after the change, so V8 had already kept them off the sampled stacks. The `frame` totals did not drop. The fix stays, because the standard forbids the allocation either way. Commit `f37f43f`. The remaining `frame` samples are issue 44.
+
+---
+
+### 39. Unit 21 allocation profiling remains pending for Unit 22 [FIXED]
+
+**Where:** `context/specs/21-island-decor.md`, Verification checklist / As Built, Cost.
+**Symptom:** The allocation-trace checkbox was originally checked without a recorded trace. That documentation claim was corrected and the measurement deferred to Unit 22. A stable heap can include allocations followed by garbage collection. The 2000-palm browser sample stacked almost all records on one cell, so the costly list-rebuild order was unmeasured.
+**Expected:** Record allocation profiles of idle maker/play and an edit-time rebuild with 2000 distributed records. Keep desktop and real-phone results distinct.
+**Repro:** The Unit 21 As Built had interval and heap samples, and no allocation trace.
+**Notes:** Found in the independent Unit 21 review on 2026-10-07. An outside-repo Node harness had measured about 0.11 ms ascending and 4.1 ms descending. Those were not browser numbers.
+**Closed:** 2026-10-07. Unit 22 Part E recorded every requested desktop trace: S1–S4 allocation samples (two runs each), the 20-rebuild timing at no throttle and at 6×, and production `?perf` frame times at both rates. The numbers are in the Unit 22 As Built. No phone measurement was made, and none is claimed. Issues 44 and 45 are the findings that were logged and not fixed.
+
+---
+
+### 42. Water reflections shimmer on top of solid rock [FIXED]
+
+**Where:** `src/level/parallax.js` (reflection slots) and `src/level/render.js` `drawReflections` (Unit 05)
+**Symptom:** In Castaway Beach, the white water-reflection shimmer (`fx/reflect-big`, 170 × 10, 4 frames) is drawn across the middle of the solid terrain block, about 2 px below the horizon row. Seen in Chrome 2026-10-07 while reviewing issue 40 (the camera is at the level's start).
+**Expected:** Reflections appear only on open water: the sea backdrop or water cells. Never over terrain or platforms.
+**Repro:** Play Castaway Beach and look at the dark rock under the first floor. There is a thin white shimmer at the horizon row (row 14).
+**Notes:**
+- `createParallax` places 6 reflections at fixed x `((slot + 0.5) / 6) * worldW` and y `horizonY + reflectGap`, with no check of the cells there.
+- `drawLevel` draws them in the water pass, after `Z.bgTiles`, so they cover terrain.
+- This has been the case since Unit 05: before Unit 21 they were also drawn after the tiles. Issue 40 did not change their position.
+- A fix needs a decision:
+  - skip a reflection whose cells at the horizon row are terrain or platform (a parallax-time or draw-time check);
+  - or draw reflections before the tiles (but then water cells, which are opaque, would cover them);
+  - or place them only over runs of water and empty cells.
+- It does not affect collision or the level format.
+
+**Measured 2026-10-07** across the six campaign levels. Each cell under each reflection on the horizon row is classed as **T**errain, **P**latform, **w**ater or empty (**.**):
+- 31 of the 36 reflections lie entirely over terrain. 3 are partly over water (`TTTTTTw`, `wwTTTT`, `TTTwwT`), and only 2 are entirely over water (`ww`, `www`).
+- Every campaign horizon row is solid rock with pools cut into it, 2–3 cells wide (two of them are 8). Open cells per row: 10/100, 21/130, 9/140, 11/150, 7/150 and 22/180.
+- So moving reflections onto open water has almost nowhere to put a 170 px shimmer. Clipping is the fix.
+
+**Decision.** The player chose (2026-10-07) to fix this before Unit 22, as its own change planned for Sol. The approach is Claude's proposal, **draw-time clipping per cell**. The player approves it by handing this plan to Sol:
+- Each reflection draws only the columns of its sprite that lie over cells of its row with no terrain and no platform. Water cells and empty cells are open, and so are cells outside the grid (the maker margins, and levels with no water, whose horizon is `rows * TILE`).
+- Why at draw time:
+  - It reads the live layers, so maker edits are honoured on the next frame.
+  - Reflection positions do not change.
+  - It allocates nothing.
+  - A reflection over open cells draws exactly as today.
+- **Visible consequence:** most campaign shimmers disappear, because they sat on rock. A pool under a slot keeps a slice of shimmer.
+- Rejected:
+  - Skipping a whole reflection when any cell is blocked would also drop the pool slices.
+  - Drawing reflections before the tiles would hide them under opaque water cells.
+  - Re-placing them over open runs would make them jump while the maker paints, and they would not fit the 2-cell pools.
+
+**Fix plan (2026-10-07, for Sol).**
+
+*Before you start.* `git status` must be clean. This is one commit, with nothing else in it.
+
+*The change. Only these files.*
+1. **`src/core/sprite.js`.** Add a `drawSpan(ctx, cam, x, y, k0, k1)` method to the object `createSprite` returns. It draws source columns `[k0, k1)` of the current frame, unflipped:
+   ```js
+   drawSpan(ctx, cam, x, y, k0, k1) {
+     if (k1 <= k0) return;
+     const frame = n > 0 ? Math.floor(frameIndex) % n : 0;
+     const dx = Math.round(x - cam.x);
+     const dy = Math.round(y - cam.y);
+     ctx.drawImage(clip.image, frame * clip.fw + k0, 0, k1 - k0, clip.fh,
+       dx + k0, dy, k1 - k0, clip.fh);
+   },
+   ```
+   - JSDoc it like `draw`: `k0` and `k1` are whole source columns, `0 ≤ k0 ≤ k1 ≤ fw`.
+   - `drawSpan(…, 0, fw)` must issue exactly the call that `draw(…)` issues unflipped.
+   - It knows nothing about levels; `core/` stays game-free.
+2. **`src/level/render.js`.**
+   - Pass `level` into `drawReflections` (`drawLevel` already has it). `drawLevel`'s own signature does not change.
+   - Replace each of the three `refl.sprite.draw(ctx, cam, xN, y)` calls with a call to a new module-private helper, `drawReflectionClipped(ctx, cam, refl, xN, y, level)`. Keep each copy's existing on-screen test.
+   - **Helper algorithm.** No allocation, plain loops. `w = refl.w` and `h = refl.h`:
+     - `dx = Math.round(x - cam.x)`, the same rounding as `drawSpan`.
+     - `r0 = Math.floor(y / TILE)` and `r1 = Math.floor((y + h - 1) / TILE)`.
+     - For each column `c` from `Math.floor(x / TILE)` to `Math.floor((x + w - 1) / TILE)`:
+       - Source columns: `left = clamp(Math.round(c * TILE - cam.x) - dx, 0, w)` and `right = clamp(Math.round((c + 1) * TILE - cam.x) - dx, 0, w)`. These are the screen edges the tiles are drawn at, so the clip meets the drawn tiles exactly, even at a fractional camera or `x`.
+       - The cell is **blocked** if, for any `r` in `r0..r1`, `isPresent(level.layers.terrain, cols, rows, c, r)` or `isPresent(level.layers.platform, …)`. `isPresent` treats out-of-grid cells as absent, which makes them open.
+       - Merge consecutive open columns into one span, and call `refl.sprite.drawSpan(ctx, cam, x, y, spanStart, spanEnd)` once per span. A fully open reflection is therefore a single `drawSpan(…, 0, w)` call.
+     - Write the clamp inline with `Math.min`/`Math.max`. `0` and `TILE` are the only constants; no other raw numbers (code standards).
+     - Import `isPresent` from `./autotile.js`. It is already imported there.
+   - Update the `drawReflections` doc comment: "drawn only over horizon-row cells with no terrain or platform, clipped per cell".
+   - Do not change `parallax.js`, the reflection positions, `reflectGap`, the draw order or the water pass.
+3. **Tests. Write each first and see it fail on today's code** (today a blocked reflection still draws in full).
+   - **`src/core/sprite.test.js` (new):**
+     - **(a)** A fake clip `{ image: {id:'s'}, fw: 10, fh: 3, n: 4, fps: 10 }`, after `update(0.25)` (frame 2). `drawSpan(ctx, {x:0,y:0}, 5, 7, 2, 6)` records `drawImage({id:'s'}, 22, 0, 4, 3, 7, 7, 4, 3)`.
+     - **(b)** `drawSpan(…, 0, 10)` records the same arguments as `draw(…)`.
+     - **(c)** `k1 <= k0` records nothing.
+   - **`src/level/render.test.js`, new `describe('reflections', …)`.** Drive the real `drawLevel`:
+     - Level: `createEmptyModel({ cols: 40, rows: 12 })`.
+     - Fake atlas: as in the issue 40 tests, with `fw`/`fh` from `atlas.json`. `tiles/island` and `bg/water-tile` are in it.
+     - Fake parallax: `{ horizonY: 320, worldW: 1280, bigCloudX: 0, period: 1, small: [], reflects: [refl] }`, where `refl = { x: 100, w: 170, h: 10, sprite }`.
+     - `sprite` is a fake with `drawSpan(ctx, cam, x, y, k0, k1)`, which records `[x, k0, k1]`, and a `draw` that throws, so a missed call site fails loudly.
+     - `islandTheme`; `reflectGap` is 2, so `y` is 322, row 10.
+     - `cam {x:0, y:0}`, `viewW 768`, `viewH 360`.
+     - Set cells with `level.layers.<name>[r * 40 + c] = 1`.
+     - The reflection at `x = 100`, `w = 170` covers columns 3–8.
+     - Cases:
+       1. Row 10 empty → exactly `[[100, 0, 170]]`.
+       2. Terrain at columns 3–8 of row 10 → no calls.
+       3. Terrain at column 5 only → `[[100, 0, 60], [100, 92, 170]]`.
+       4. Platform at column 5 only → the same as case 3.
+       5. Water at columns 3–8 → `[[100, 0, 170]]`.
+       6. Terrain at column 5, `refl.x = 100.5` → `dx` is `Math.round(100.5)` = 101, so `[[100.5, 0, 59], [100.5, 91, 170]]`.
+       7. Terrain in row 9 or row 11 only → `[[100, 0, 170]]`: only the reflection's own row matters.
+       8. `horizonY: 384` (= `rows * TILE`, out of the grid), with terrain filling row 11, and `cam {x:0, y:64}` → `[[100, 0, 170]]`, the full span. The camera offset keeps the reflection on screen: at `cam.y` 0 its `sy` would be 386, which is past `viewH` and skipped.
+     - Filter to the reflection's recorded calls. Other layers draw through the fake context, not the fake sprite.
+
+*Docs, in the same commit.*
+- `2-architecture.md`, Rendering Model, the bullet "Water and reflections are the water pass…": add that a reflection draws only over horizon-row cells with no terrain or platform, clipped per cell at draw time.
+- `specs/05-parallax-background.md`, under the checklist item "Water reflects animate…", add: "Corrected 2026-10-07 by issue 42: clipped to open horizon-row cells."
+- Move this entry to Resolved with the date, test count and commit.
+- Add a Completed entry to `6-progress-tracker.md`.
+
+*Verification.*
+- `npm test`. Expect 365 + 3 + 8 = 376; report the real count. `npm run build` passes.
+- In the browser:
+  1. **Castaway Beach.** No shimmer anywhere on the rock under the first floor (the issue 42 screenshot spot, about x 267–437, row 14). The 2-cell pool around x 1333 still shimmers.
+  2. **Crabby Shallows.** The `www` pool near x 1040 shows a full `reflect-mid`. The big slot at x 347 shows a slice only over its one water cell.
+  3. **Maker.** Edit a copy of Castaway Beach. Paint terrain over the x 1333 pool: its shimmer disappears at once. Undo: it comes back.
+  4. **Ship theme.** No reflections, as before.
+  5. **No console errors.**
+- Commit message: `Fix issue 42: clip water reflections to open horizon cells (#42)`.
+
+*Stop and ask if* the clipped edges do not meet the tile edges in the browser, or if any test outside `sprite.test.js`/`render.test.js` changes. Do not touch issue 43 (the maker's stale horizon); it changes which row is checked, but it is a separate fix.
+
+**Closed:** 2026-10-07. Added unflipped `createSprite.drawSpan` and per-cell draw-time clipping against live terrain/platform cells, merging adjacent open columns and matching the tiles' rounded screen edges. All eleven new tests failed before the source changes; `npm test` then passed 376 tests in 30 files, and `npm run build` passed. Chrome launched Castaway Beach with no shimmer on its first rock block. Fixed-camera campaign renders compared all four reflection frames with reflections omitted: zero changed pixels over terrain/platforms, with shimmer retained in Castaway's pool and Crabby Shallows' full medium slot and four-column big-slot slice. In the actual maker at 844 × 390, a pointer drag over both Castaway pool cells hid the shimmer immediately; one Undo restored it. Switching to Ship drew no reflections. Screenshot/pixel evidence was kept outside the repo. The only console error was the existing favicon 404 (issue 28). Commit: `ee2ce42`. Issue 43 is unchanged.
+**Reviewed 2026-10-07 (Claude):**
+- The code matches the plan.
+- With the pre-fix `render.js` and `sprite.js` restored, all 11 new tests fail; with the fix they pass. 376 tests and the build pass.
+- An independent Node sweep ran the real `drawLevel` and `createParallax` over all six campaign levels, with the camera stepped every 7.3 px. It recorded every reflection pixel column and the cell under it at the tiles' rounded edges:
+  - **before the fix,** 248,707 of 271,828 columns (91%) were over terrain or platform;
+  - **after it,** none of 23,121 were.
+  - Starfall Cliffs now draws no shimmer, because all six of its slots are over rock.
+- No review fixes were needed.
+
+---
+
+
+### 40. The island cloud bank sits in the sea, below a second horizon [FIXED]
+
+**Where:** `src/level/render.js` `drawBackdrop`, the BG Image `drawTiledX` call (Unit 05); `src/data/themes.js`
+**Symptom:** The player's screenshot (2026-10-07, a level with no water) shows the big cloud band covering a strip of blue sea, with a white horizon line and pink band above the clouds. Every campaign level has water, and in each of them the island backdrop shows **two** horizon lines 42 px apart: the BG Image's painted one, and the renderer's own 2 px line at `horizonY`. The cloud bank's bottom sits on the lower one, so the clouds cover the painted sea.
+**Expected:** One horizon, at `horizonY`. The cloud bank rests on it. Below it there is plain sea, and the top row of water cells meets it.
+**Repro:** Play Castaway Beach and look at the horizon; or play any island level without water (horizon at the level bottom) and look at the bottom of the screen.
+**Cause (measured from `public/assets/sprites/bg-image.png`, 384 × 128, every pixel opaque):**
+- Rows 0–41 are sky `#ddc6a1`. Rows 42 and 44–45 are thin `#d1aa9d` lines, and rows 48–85 are the pink `#d1aa9d` band.
+- **Row 86 is a painted white `#ffffff` horizon line**, across the full width.
+- Rows 87–127 (41 rows) are sea `#92a9ce`, the same colour as `theme.sea` and as every pixel of `bg/water-tile`.
+- `drawBackdrop` draws the image at `horizonY - bg.fh` (bottom on the horizon). That puts the painted line at `horizonY - 42` and 41 rows of painted sea above the real horizon.
+- `drawClouds` draws `bg/clouds-big` (448 × 101; rows 98–100 opaque across the full width) at `horizonY - 101`, bottom on the real horizon. That matches Super Pirate World `groups.py:95` (`top = horizon_line - large_cloud_height`). So the clouds are right and the BG Image is 42 px too high.
+- The Unit 05 spec's "`BG Image` sits on the horizon" was implemented as "its bottom edge sits on the horizon". The image's own horizon is its row 86, not its bottom. This has been the case since Unit 05 (baseline commit `965dcf8`). It is not a Unit 21 regression.
+
+**Decision (player, 2026-10-07).** Claude offered two options. The player asked for a fix plan for Sol to implement, which accepts the recommended one: **move the BG Image down so its painted line is on `horizonY`**. The rejected alternative was lifting the clouds 42 px. That would keep two horizons (the renderer's own line would still show below the image), and the water cells would still start 41 px below the visible horizon.
+
+**Fix plan (2026-10-07, for Sol).**
+
+*Before you start.*
+- `git status` must show a clean tree, apart from untracked scratch files outside `src/` and `context/`. The Unit 21 work (`render.js`, `render.test.js`, `decor.js` and others) was uncommitted on 2026-10-07. If it still is, **stop and ask** rather than committing it with this fix.
+- This fix touches `render.js`, so it must be a commit of its own.
+
+*The change. Exactly these three edits; touch no other code.*
+1. **`src/data/themes.js`:**
+   - Add `bgImageHorizonRow: number` to the `Theme` typedef, after `bgImage`.
+   - Add `bgImageHorizonRow: 86` to `islandTheme`, right after `bgImage: 'bg/image'`, with a comment that names the measurement, e.g. `// bg/image row 86 is its painted white horizon line; drawn on horizonY`.
+   - `shipTheme` inherits it through the spread and never reads it (its `wallTile` returns first). Do not add it to `shipTheme`.
+2. **`src/level/render.js` `drawBackdrop`.** In the BG Image `drawTiledX` call, replace
+   `Math.round(parallax.horizonY - bg.fh - cam.y),`
+   with
+   `Math.round(parallax.horizonY - theme.bgImageHorizonRow - cam.y),`
+   - Update the `drawBackdrop` doc comment to say that the image's painted horizon row, not its bottom, is drawn on `horizonY`.
+   - Leave unchanged:
+     - the sky and sea fills, the horizon bands and the horizon line;
+     - `drawClouds`, the reflections and `parallax.js`;
+     - the parallax factor;
+     - the ship branch.
+3. **`src/level/render.test.js`.** Add a `describe('drawBackground', …)` with the tests below. **Write them first and watch them fail on today's code** (today the BG Image's `dy` is 168, not 210).
+   - **Fakes, all local to the test:**
+     - a context recording `drawImage` calls and ignoring `fillStyle` and `fillRect`;
+     - `atlas.get(id)` returning `{ image: { id }, fw, fh }`, with `fw`/`fh` from `src/data/atlas.json`;
+     - a parallax `{ horizonY: 448, bigCloudX: 0, small: [], period: 1 }`.
+     - Cast the fakes with JSDoc `@type` imports, as `decor.test.js` does. No `any`.
+   - **Test 1, the painted horizon is on `horizonY` and the cloud bank rests on it.**
+     - Setup: `islandTheme`, `cam = { x: 0, y: 152 }`, `viewW 768`, `viewH 360` (Castaway Beach: 16 rows, water from row 14, camera at its bottom clamp).
+     - Every `bg/image` call has `dy === 210` (448 − 86 − 152).
+     - Every `bg/clouds-big` call has `dy === 195` (448 − 101 − 152).
+     - For one call of each: `bgDy + islandTheme.bgImageHorizonRow === cloudsDy + 101`, i.e. both equal `horizonY - cam.y` (296).
+     - The `bg/image` calls cover `x` from ≤ 0 to ≥ 768.
+   - **Test 2, rounding at a fractional camera.**
+     - Same setup with `cam.y = 216.4`: the maker panned into its 2-tile margin below a 16-row level, at a fractional position.
+     - `bg/image` `dy === 146`, which is `Math.round(448 - 86 - 216.4)` = `Math.round(145.6)`.
+     - At least one `bg/image` call happens. A `dy` at or beyond `viewH` makes `drawTiledX` return early, so a test that checks only the calls it finds would pass vacuously.
+   - **Test 3, `bgImageHorizonRow` lies inside the image.**
+     - `0 ≤ islandTheme.bgImageHorizonRow < atlas['bg/image'].fh`.
+     - `atlas['bg/image'].fh - islandTheme.bgImageHorizonRow - 1 === 41`, the painted sea below the line.
+     - Put this test in `themes.test.js`, next to the other theme-shape tests.
+
+*Docs, in the same commit.*
+- `2-architecture.md`, Rendering Model, the Horizon Y bullet: change "Sky, sea, horizon bands, `BG Image` and the cloud band all sit on that line" so that the `BG Image`'s painted horizon (its row 86, `theme.bgImageHorizonRow`) and the bottom of the cloud band sit on that line.
+- `specs/05-parallax-background.md`, under the checklist item "`BG Image` sits on the horizon", add one line: "Corrected 2026-10-07 by issue 40: its painted row 86 sits on the horizon, not its bottom edge."
+- Move this entry to **Resolved** with the date, what changed, the test count and the commit.
+- Add a Completed entry to `6-progress-tracker.md`, and refresh its Current Phase.
+
+*Verification.*
+- `npm test` (362 + 3 = 365 expected) and `npm run build`, both clean.
+- Run the dev server and check by eye, with a screenshot of each:
+  1. **Castaway Beach.** One horizon line. The cloud bank's flat bottom rests on it. Pink shows only in the gaps between the clouds; no blue strip sits above or behind the clouds. Below the line, sea and the water cells are one colour, with no seam.
+  2. **An island maker level with no water.** In play at the bottom camera clamp, the cloud bank sits on the bottom edge of the screen. In the maker, pan into the margin below the level: the horizon is on the level's bottom edge, with sea below.
+  3. **Switch the level to Pirate Ship:** the wall backdrop is unchanged.
+  4. **No console errors.**
+- Commit message: `Fix issue 40: put the BG Image's painted horizon on the horizon (#40)`.
+
+*Stop and ask if* any other draw position looks wrong after the change, or if a test outside `render.test.js`/`themes.test.js` fails. Do not adjust the clouds, the bands or `horizonY` to compensate.
+
+*Not in this fix:* issue 41.
+
+**Closed:** 2026-10-07. `theme.bgImageHorizonRow` anchors the painted row 86 on `horizonY`; the clouds, bands and ship branch are unchanged. Three new tests failed on the old code, then passed after the correction. `npm test` passed 365 tests in 29 files and `npm run build` passed. Chrome screenshots checked Castaway Beach, a saved no-water level in play and maker, and the ship wall; the maker screenshot temporarily hid the UI to expose the sea below the level edge. The only console error was the existing `/favicon.ico` 404 (issue 28). Commit: `9015741`. Issue 41 remains open.
+**Reviewed 2026-10-07 (Claude):**
+- The code matches the plan line for line.
+- With the old `drawTiledX` line restored, both `render.test.js` tests fail; with the fix they pass. 365 tests and the build pass.
+- In Chrome, Castaway Beach shows the cloud bank resting on the sea line, and there are no console errors.
+- Review slips fixed: a doubled separator here, and an uneven comment wrap in `drawBackdrop`.
+- The same screenshot showed issue 42.
+
+---
+
+### 38. Unit 21 tracker still says implementation has not started [FIXED]
+
+**Where:** `context/6-progress-tracker.md`, Current Goal / In Progress / Next Up.
+**Symptom:** Current Phase said Unit 21 was built, while Current Goal and Next Up still said to review the draft and that implementation had not started.
+**Closed:** 2026-10-07, with the player's explicit closeout and visual sign-off. Current Phase, Current Goal, In Progress, Next Up and Open Question 8 agree that Units 00–21 are complete. The morning drafting notes are preserved in Completed as history. Unit 22 waits until the player asks. Issue 39 stays open for profiling in Unit 22; today's session ends after the context updates.
+
+---
+
+### 34. Draw order follows the code, not `z` [FIXED]
+
+**Where:** `src/level/render.js` `drawLevel`, `src/game/world.js`, `src/maker/maker-scene.js`
+**Symptom:** Every entity set `this.z`, and nothing read it. `drawLevel` drew the background, the tiles and the water, then the world drew entities, the player and fx. Water (`Z.water` 6) sat under actors (`Z.main` 5).
+**Expected:** Draw order follows `settings.Z`.
+**Closed:** 2026-10-07, Unit 21. `drawLevel` walks the numeric layers and calls a once-built callback after each layer's own content. Actors on a layer keep their old order. Effects stay on `fx`. In the running maker, a crabby in water matched the neighbouring water-only cell, and a crabby on dry ground did not, on both Palm Tree Island and Pirate Ship. Reflections are part of the water pass, so they cover actors where they overlap. The grid, cursor and ghost stay after the passes.
+
+---
+
+### 17. Maker palette category tabs are 28 px tall — under the 44 × 44 hit area [FIXED]
+
+**Where:** `src/ui/styles/maker-palette.css` (`.maker-palette__tab` and `--palette-height`)
+**Symptom:** At `--ui-scale: 1` the category tabs were 50–70 × 28 CSS px. Every other toolbar and palette button already met 44 × 44.
+**Expected:** Minimum hit area 44 × 44 CSS pixels.
+**Closed:** 2026-10-07, Unit 21. The tab's min-height and the tab term of `--palette-height` went from 28px to 44px. That is 16 CSS px at scale 1, taken from the clear canvas. Headless Chrome measured all eight tabs at 44px tall on 844×390 and 1000×360 (palette height 118) and 88px tall on 1280×720 (palette height 236, `--ui-scale` 2). Markers stayed inside the tab row at all three widths.
+
+---
 
 ### 37. A solid block of ship terrain reads as a hollow room [FIXED — by design]
 
@@ -664,10 +1005,11 @@ that changes the size of its container, or the title screen will jump.
 
 ### 13. iOS Safari evicts script-written storage
 
-**Bites in:** Unit 17 onward; Unit 21 is the countermeasure.
+**Bites in:** Unit 17 onward; Unit 22 (PWA) is the countermeasure.
 Safari deletes a site's script-written storage (`localStorage` included) after
 seven days without a visit, unless the site is installed to the home screen. A
 player's levels can simply vanish. Share codes and `.json` export are the backup
-today. Unit 21 should request `navigator.storage.persist()` and make install to
-the home screen easy. Consider a gentle "back up your levels" hint then, and not
-before.
+today. Unit 22 Part B makes the app installable. Unit 22 Part C asks
+`navigator.storage.persist()` once per page session, after a level save
+succeeds; the browser may still deny it, and nothing is shown to the player.
+A gentle "back up your levels" hint is still not built.

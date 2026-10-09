@@ -1,0 +1,16 @@
+/* ?perf only. Above #ui so the pause button cannot cover it, and it takes no taps. */
+
+.perf-readout {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+  background: var(--paper-light);
+  color: var(--ink);
+  border: calc(1px * var(--ui-scale)) solid var(--ink);
+  padding: calc(2px * var(--ui-scale)) calc(6px * var(--ui-scale));
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+}

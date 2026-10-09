@@ -1,4 +1,5 @@
 import { TILE } from '../settings.js';
+import { decorFrameRect } from '../level/decor.js';
 
 /** @typedef {import('../core/sprite.js').AtlasClip} AtlasClip */
 /** @typedef {import('../data/palette.js').PaletteEntry} PaletteEntry */
@@ -61,9 +62,12 @@ export function drawCursor(ctx, cam, c, r, color) {
   ctx.fillRect(dx, dy, TILE, TILE);
 }
 
+/** Reused by the decor ghost. Round only after the camera is subtracted. */
+const previewRect = { x: 0, y: 0, w: 0, h: 0 };
+
 /**
- * Centre horizontally. Bottom-align for entities and markers; centre vertically
- * for decor.
+ * Centre horizontally. Entities and markers sit on the cell bottom. Decor uses
+ * the shared frame rectangle, so the ghost matches a placed palm.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {{ x: number, y: number }} cam
@@ -73,10 +77,23 @@ export function drawCursor(ctx, cam, c, r, color) {
  * @param {PaletteEntry['placement']} placement
  */
 export function drawPreviewIcon(ctx, cam, c, r, clip, placement) {
+  if (placement === 'decor') {
+    decorFrameRect(c, r, clip.fw, clip.fh, previewRect);
+    ctx.drawImage(
+      clip.image,
+      0,
+      0,
+      clip.fw,
+      clip.fh,
+      Math.round(previewRect.x - cam.x),
+      Math.round(previewRect.y - cam.y),
+      clip.fw,
+      clip.fh,
+    );
+    return;
+  }
   const dx = Math.round(c * TILE - cam.x + (TILE - clip.fw) / 2);
-  const dy = placement === 'decor'
-    ? Math.round(r * TILE - cam.y + (TILE - clip.fh) / 2)
-    : Math.round((r + 1) * TILE - cam.y - clip.fh);
+  const dy = Math.round((r + 1) * TILE - cam.y - clip.fh);
   ctx.drawImage(clip.image, 0, 0, clip.fw, clip.fh, dx, dy, clip.fw, clip.fh);
 }
 

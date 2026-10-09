@@ -1,6 +1,6 @@
 # Build Plan
 
-Twenty-two units in dependency order. Each produces **one** visible, verifiable
+Twenty-three units in dependency order. Each produces **one** visible, verifiable
 result and stays inside one system boundary. Do not work out of order. Each unit gets
 its own spec at `specs/NN-<name>.md` before implementation starts.
 
@@ -283,16 +283,54 @@ its own (Open Question 8).
 untouched; a level authored in one theme renders correctly in the other; and the
 switch is undoable and survives autosave, share codes and the test-play round trip.
 
-## Unit 21 — PWA and Performance
+## Unit 21 — Island Decor
+
+**Spec:** `specs/21-island-decor.md`. Complete 2026-10-07. The player signed off
+("zero bugs") after placing the three palms and playing them, then explicitly
+approved closeout and visual sign-off after the independent review. Units 00–21
+are complete. Unit 22 stays unstarted until they ask.
+
+**Builds:** three already-packed animated background palms, shared maker/play
+placement and rendering, draw order by `z` (issue 34), the decor cap in
+`findProblems`, and 44px palette tabs (issue 17). Ship props remain Beyond v1.
+
+**Depends on:** 20. **Installs:** none.
+**Done when:** met 2026-10-07. The player approved the trees by eye.
+Allocation profiling remains deferred to Unit 22 (issue 39).
+
+## Unit 22 — PWA and Performance
 
 **Builds:** the web app manifest, a service worker precaching the shell and assets,
 an offline check, and a profiling pass over the render and update loops.
+Include issue 39: allocation traces for idle maker/play and edit-time rebuilds
+with 2000 distributed decorations. Existing desktop interval and Node samples
+do not establish the phone performance target.
 
-**Depends on:** 20. **Installs:** PWA plugin only if a hand-written service worker
-proves insufficient.
-**Done when:** the game installs and plays offline, and frame time stays under 16 ms
-on a mid-range phone with a full screen of tiles, twenty entities and active
-parallax.
+**Spec:** `specs/22-pwa-and-performance.md`, drafted 2026-10-07. Parts A–E were
+implemented the same day. A is the icons; B is the manifest and offline worker;
+C is storage persistence; D is the `?perf` readout and a stress level; E is the
+measurements and issue 33. The player also decided that the worker precaches
+everything, the app is fullscreen landscape, persistence is requested after the
+first save, and issue 33 is the only performance fix in this unit. Desktop
+numbers are in the spec's As Built. Claude's review found that offline boot
+failed with a real server stop (issue 46, plus the latent issue 47); both were
+fixed in `8a306f1`. **Complete 2026-10-07:** the player installed and
+uninstalled the app from the production build and signed the unit off. Units
+00–22 are complete; that is v1's build plan finished. The phone checks remain
+for the deploy step.
+Phone install and phone frame time stay in the deploy step.
+
+Player decisions 2026-10-07: deployment is not part of this unit. The app icon
+is the Captain's idle frame on `--sky` (it also closes issue 28). Frame time is
+read through a `?perf` readout. Issue 42 is fixed first, as its own change.
+
+**Depends on:** 21, and issue 42. **Installs:** PWA plugin only if a hand-written
+service worker proves insufficient.
+**Done when:** on this PC, a production build installs and plays offline, and
+`?perf` reports frame time and allocation results for a full screen of tiles,
+twenty entities and active parallax. The phone target (frame time under 16 ms on
+a mid-range phone) and phone install are checked in the deploy step that follows,
+because a service worker needs HTTPS off localhost.
 
 ---
 
@@ -306,7 +344,7 @@ parallax.
                                                                  │        └── 10 walkers ── 11 shooters ── 12 audio
                                                                  └── 13 maker core ── 14 gestures ── 15 maker UI
                                                                           └── 16 round trip ── 17 storage ── 18 campaign
-                                                                                   └── 19 polish ── 20 theme ── 21 PWA
+                                                                                   └── 19 polish ── 20 theme ── 21 decor ── 22 PWA
 ```
 
 Playable milestones, for sanity checks along the way:
@@ -321,9 +359,9 @@ Playable milestones, for sanity checks along the way:
 
 ---
 
-## After Unit 21
+## After Unit 22
 
-Unit 21 completes v1, which is scoped to what PirateMaker and Super Pirate World
+Unit 22 completes v1, which is scoped to what PirateMaker and Super Pirate World
 between them prove out. It is not the end of the game.
 
 The **Beyond v1** table in `1-project-overview.md` lists every Treasure Hunters asset

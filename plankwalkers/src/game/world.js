@@ -1,5 +1,6 @@
-import { TILE } from '../settings.js';
+import { TILE, Z } from '../settings.js';
 import { intersects } from '../core/rect.js';
+import { createDecorVisual } from '../level/decor.js';
 import { createParallax } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { byId } from '../data/palette.js';
@@ -98,12 +99,26 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
   }
 
   /**
+   * Palette lookup stays here. `level/decor.js` must not import the palette.
+   * @param {string} k
+   * @returns {{ z: number, clip: import('../core/sprite.js').AtlasClip } | null}
+   */
+  function resolveDecor(k) {
+    const entry = byId(k);
+    if (!entry || entry.placement !== 'decor') return null;
+    return { z: entry.z, clip: atlas.get(entry.icon) };
+  }
+  const decorVisual = createDecorVisual(resolveDecor);
+  decorVisual.sync(level.decor);
+
+  /**
    * @param {number} dt
    * @param {number} camX
    * @param {number} viewW
    * @returns {'playing' | 'dead' | 'complete'}
    */
   function update(dt, camX, viewW) {
+    decorVisual.update(dt);
     player.update(dt);
     stats.tick(dt);
 
@@ -138,6 +153,36 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
     return 'playing';
   }
 
+  // Assigned at the start of draw. The layer callback closes over them and is
+  // created once, so a frame does not allocate a callback or a camera copy.
+  /** @type {CanvasRenderingContext2D | null} */
+  let paintCtx = null;
+  /** @type {{ x: number, y: number } | null} */
+  let paintCam = null;
+  let paintViewW = 0;
+  let paintViewH = 0;
+
+  /**
+   * Objects at one `z`, in the order the architecture requires: flag and entities
+   * as they already stand, then the player, then effects. The entity array is not
+   * sorted.
+   * @param {number} z
+   */
+  function drawObjects(z) {
+    const ctx = paintCtx;
+    const cam = paintCam;
+    if (!ctx || !cam) return;
+    decorVisual.draw(ctx, cam, paintViewW, paintViewH, z);
+    for (let i = 0; i < entities.length; i++) {
+      const ent = entities[i];
+      if (ent.z === z) ent.draw(ctx, cam);
+    }
+    if (player.z === z) player.draw(ctx, cam);
+    if (z === Z.fx) {
+      for (let i = 0; i < fx.length; i++) fx[i].draw(ctx, cam);
+    }
+  }
+
   /**
    * @param {CanvasRenderingContext2D} ctx
    * @param {{ x: number, y: number }} cam
@@ -145,17 +190,11 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
    * @param {number} viewH
    */
   function draw(ctx, cam, viewW, viewH) {
-    drawLevel(ctx, cam, viewW, viewH, level, theme, atlas, parallax);
-
-    for (let i = 0; i < entities.length; i++) {
-      entities[i].draw(ctx, cam);
-    }
-
-    player.draw(ctx, cam);
-
-    for (let i = 0; i < fx.length; i++) {
-      fx[i].draw(ctx, cam);
-    }
+    paintCtx = ctx;
+    paintCam = cam;
+    paintViewW = viewW;
+    paintViewH = viewH;
+    drawLevel(ctx, cam, viewW, viewH, level, theme, atlas, parallax, drawObjects);
   }
 
   return {
