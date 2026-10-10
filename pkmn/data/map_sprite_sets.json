@@ -1,0 +1,692 @@
+{
+  "firstIndoorMapId": 37,
+  "firstStillPictureId": 71,
+  "pikachuPictureId": 61,
+  "mapIds": {
+    "PalletTown": 0,
+    "ViridianCity": 1,
+    "Route1": 12,
+    "Route22": 33,
+    "RedsHouse1F": 37,
+    "RedsHouse2F": 38,
+    "BluesHouse": 39,
+    "OaksLab": 40,
+    "ViridianPokecenter": 41,
+    "ViridianMart": 42,
+    "ViridianSchoolHouse": 43,
+    "ViridianNicknameHouse": 44,
+    "Route2": 13,
+    "DiglettsCaveRoute2": 46,
+    "ViridianForestNorthGate": 47,
+    "Route2TradeHouse": 48,
+    "Route2Gate": 49,
+    "ViridianForestSouthGate": 50,
+    "ViridianForest": 51
+  },
+  "pictureIdsBySprite": {
+    "red": 1,
+    "blue": 2,
+    "prof": 3,
+    "youngster": 4,
+    "monster": 5,
+    "cooltrainer_f": 6,
+    "cooltrainer_m": 7,
+    "little_girl": 8,
+    "bird": 9,
+    "middle_aged_man": 10,
+    "gambler": 11,
+    "super_nerd": 12,
+    "girl": 13,
+    "hiker": 14,
+    "beauty": 15,
+    "gentleman": 16,
+    "daisy": 17,
+    "biker": 18,
+    "sailor": 19,
+    "cook": 20,
+    "bike_shop_clerk": 21,
+    "mr_fuji": 22,
+    "giovanni": 23,
+    "rocket": 24,
+    "channeler": 25,
+    "waiter": 26,
+    "silph_worker_f": 27,
+    "middle_aged_woman": 28,
+    "brunette_girl": 29,
+    "lance": 30,
+    "scientist": 32,
+    "rocker": 33,
+    "swimmer": 34,
+    "safari_zone_worker": 35,
+    "gym_guide": 36,
+    "gramps": 37,
+    "clerk": 38,
+    "fishing_guru": 39,
+    "granny": 40,
+    "nurse": 41,
+    "link_receptionist": 42,
+    "silph_president": 43,
+    "silph_worker_m": 44,
+    "warden": 45,
+    "captain": 46,
+    "fisher": 47,
+    "koga": 48,
+    "guard": 49,
+    "mom": 51,
+    "balding_guy": 52,
+    "little_boy": 53,
+    "gameboy_kid": 55,
+    "fairy": 56,
+    "agatha": 57,
+    "bruno": 58,
+    "lorelei": 59,
+    "seel": 60,
+    "pikachu": 61,
+    "officer_jenny": 62,
+    "sandshrew": 63,
+    "oddish": 64,
+    "bulbasaur": 65,
+    "jigglypuff": 66,
+    "clefairy": 67,
+    "chansey": 68,
+    "jessie": 69,
+    "james": 70,
+    "poke_ball": 71,
+    "fossil": 72,
+    "boulder": 73,
+    "paper": 74,
+    "pokedex": 75,
+    "clipboard": 76,
+    "snorlax": 77,
+    "gambler_asleep": 82
+  },
+  "outdoorSetIds": [
+    1,
+    1,
+    2,
+    2,
+    3,
+    4,
+    5,
+    10,
+    1,
+    6,
+    7,
+    1,
+    1,
+    241,
+    2,
+    2,
+    249,
+    250,
+    251,
+    252,
+    2,
+    242,
+    243,
+    244,
+    8,
+    8,
+    245,
+    246,
+    9,
+    247,
+    10,
+    248,
+    1,
+    1,
+    6,
+    2,
+    2
+  ],
+  "splitSets": {
+    "241": {
+      "axis": "y",
+      "divider": 37,
+      "belowSetId": 2,
+      "atOrAboveSetId": 1
+    },
+    "242": {
+      "axis": "y",
+      "divider": 50,
+      "belowSetId": 2,
+      "atOrAboveSetId": 3
+    },
+    "243": {
+      "axis": "x",
+      "divider": 57,
+      "belowSetId": 4,
+      "atOrAboveSetId": 8
+    },
+    "244": {
+      "axis": "y",
+      "divider": 21,
+      "belowSetId": 3,
+      "atOrAboveSetId": 8
+    },
+    "245": {
+      "axis": "x",
+      "divider": 8,
+      "belowSetId": 10,
+      "atOrAboveSetId": 8
+    },
+    "246": {
+      "axis": "x",
+      "divider": 24,
+      "belowSetId": 9,
+      "atOrAboveSetId": 5
+    },
+    "247": {
+      "axis": "x",
+      "divider": 34,
+      "belowSetId": 9,
+      "atOrAboveSetId": 10
+    },
+    "248": {
+      "axis": "x",
+      "divider": 53,
+      "belowSetId": 1,
+      "atOrAboveSetId": 10
+    },
+    "249": {
+      "axis": "y",
+      "divider": 33,
+      "belowSetId": 2,
+      "atOrAboveSetId": 7
+    },
+    "250": {
+      "axis": "y",
+      "divider": 2,
+      "belowSetId": 7,
+      "atOrAboveSetId": 4
+    },
+    "251": {
+      "axis": "x",
+      "divider": 17,
+      "belowSetId": 5,
+      "atOrAboveSetId": 7
+    },
+    "252": {
+      "axis": "x",
+      "divider": 3,
+      "belowSetId": 7,
+      "atOrAboveSetId": 3
+    }
+  },
+  "spriteSets": {
+    "1": [
+      61,
+      2,
+      4,
+      13,
+      47,
+      7,
+      11,
+      3,
+      34,
+      71,
+      82
+    ],
+    "2": [
+      61,
+      4,
+      24,
+      12,
+      14,
+      2,
+      62,
+      6,
+      7,
+      71,
+      81
+    ],
+    "3": [
+      61,
+      8,
+      13,
+      12,
+      14,
+      11,
+      5,
+      6,
+      7,
+      71,
+      81
+    ],
+    "4": [
+      61,
+      62,
+      12,
+      4,
+      11,
+      5,
+      19,
+      6,
+      7,
+      71,
+      81
+    ],
+    "5": [
+      61,
+      8,
+      53,
+      13,
+      47,
+      10,
+      37,
+      5,
+      24,
+      71,
+      77
+    ],
+    "6": [
+      61,
+      36,
+      5,
+      2,
+      6,
+      7,
+      34,
+      49,
+      11,
+      71,
+      81
+    ],
+    "7": [
+      61,
+      24,
+      32,
+      44,
+      27,
+      16,
+      9,
+      33,
+      7,
+      71,
+      81
+    ],
+    "8": [
+      61,
+      18,
+      12,
+      10,
+      6,
+      7,
+      15,
+      47,
+      33,
+      71,
+      77
+    ],
+    "9": [
+      61,
+      18,
+      7,
+      44,
+      47,
+      33,
+      14,
+      11,
+      10,
+      71,
+      77
+    ],
+    "10": [
+      61,
+      7,
+      68,
+      47,
+      11,
+      5,
+      60,
+      34,
+      4,
+      71,
+      72
+    ]
+  },
+  "pictures": {
+    "1": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "2": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "3": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "4": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "5": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "6": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "7": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "8": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "9": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "10": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "11": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "12": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "13": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "14": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "15": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "16": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "17": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "18": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "19": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "20": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "21": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "22": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "23": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "24": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "25": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "26": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "27": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "28": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "29": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "30": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "31": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "32": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "33": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "34": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "35": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "36": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "37": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "38": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "39": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "40": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "41": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "42": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "43": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "44": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "45": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "46": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "47": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "48": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "49": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "50": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "51": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "52": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "53": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "54": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "55": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "56": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "57": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "58": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "59": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "60": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "61": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "62": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "63": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "64": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "65": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "66": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "67": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "68": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "69": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "70": {
+      "kind": "walking",
+      "tileCount": 12
+    },
+    "71": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "72": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "73": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "74": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "75": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "76": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "77": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "78": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "79": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "80": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "81": {
+      "kind": "still",
+      "tileCount": 4
+    },
+    "82": {
+      "kind": "still",
+      "tileCount": 4
+    }
+  },
+  "route20": {
+    "splitSetId": 248,
+    "xCuts": [
+      43,
+      55,
+      62
+    ],
+    "yCuts": [
+      13,
+      8
+    ],
+    "westSetId": 1,
+    "eastSetId": 10
+  }
+}

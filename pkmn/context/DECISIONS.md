@@ -479,6 +479,20 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       playback and wait are logged as a gap.
     - **Who:** Claude implements, Sol reviews, then the user play-tests.
 
+46. **A5b2: Codex plans, Grok implements, Codex reviews afterward** (2026-10-09).
+    *The user asked Codex to "devise a plan for the next slice" and said it will
+    be handed to Grok to implement, then Codex will check the work.*
+
+    - The next slice is **A5b2**, map sprite-set extraction, within #45's already
+      approved data-before-wiring sequence. Detailed plan: `notes/26-a5b2-plan.md`.
+    - **Grok implements this increment; Codex reviews it in a later session.**
+      This supersedes #45's Claude assignment for A5b2 only; it does not assign
+      later increments or mark A5b2 implemented/reviewed.
+    - Deliver the new data/static JSON, strict extractor schema and independent
+      verification. Runtime selection/allocation and exact text-close execution
+      remain A5b4. Grok stops after A5b2 and records it awaiting Codex review.
+    - Commits remain local; no push.
+
 ## Open — not decided, needs the user
 
 

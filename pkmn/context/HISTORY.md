@@ -11,6 +11,97 @@
 
 Newest first.
 
+## Recent session archive
+
+### 2026-10-06 (A5a reviewed) — Claude Opus 5.5
+
+Reviewed Sol's A5a (`7897e8e`…`4565e67`): `notes/22-a5a-review.md`. Re-ran typecheck, 963/963, no-ROM 878/85, and the build. Checked the printer, the openings and endings, and the BG transfer against the ASM. No blocking findings; two notes with homes (V5, A5b). **Next:** the user's play-test (plan §7).
+
+### 2026-10-06 (A5a implementation) — Codex/Sol
+
+The user accepted all nine A5 decisions and assigned Sol implementation (DECISIONS #44).
+Baseline independently verified: 910/910 with ROM; typecheck clean; started from `f8907b5`.
+
+Checkpoint 1: generator-based PlaceString, place-then-delay letters, printer-owned joypad
+reads, protected prompts, sound wait, 5+5 cont scrolling, 20-frame paragraphs, contractions
+and extra-font glyphs. TextBox legacy callers share the core; bottom-third visibility persists
+between boxes and advances during retained script waits. Removed script text's unconditional
+joypad synchronization. Existing prompt tests now drive held buttons at actual reads and
+wait for display transfer; the protected wait accepts at +3 (no extra dispatch frame).
+The 73/181-update jingle regressions are unchanged and pass. Added 27 printer/transfer tests.
+**937/937** with ROM, typecheck clean. Next: checkpoint 2, the map-text decoder and data.
+
+Checkpoint 2 (`7897e8e` is checkpoint 1): one strict decoder, row-aware newline tokens,
+preserved prompt endings and missing glyphs. The shared decoder explicitly consumes a
+leading TX_START command; unknown string bytes throw with their ROM address.
+Generated diff: eight strings gain `<PROMPT>` across Route1, ViridianCity,
+ViridianPokecenter and the Forest, mirrored in static/. No other data or image changes.
+`game_text.json` retains its pre-A5a SHA256; all 857 generated files are byte-identical
+across two setup runs. Eleven decoder/data regressions include all extracted map texts
+against pret's text macros, eighteen-glyph widths and unchanged game_text output.
+The old Forest header assertion now retains its ASM prompt. Battle page helpers strip
+the new tokens until A5c. **948/948** with ROM, typecheck clean.
+Next: checkpoint 3, DisplayTextID modes and map/trainer callers.
+
+Checkpoint 3 (`9cebc1e` is checkpoint 2): main.ts uses the tested MapDialogue wrapper
+for NPC, sign, bookshelf and hidden-event texts, plus the trainer's nested PrintText.
+Meet music runs once at text completion, before the silent wait; sight starts none here.
+The box appears at render +3 (scanout +4), first letter at +20 (+23 for trainers), and
+closing waits for a new A/B and A release plus the window's DelayFrame.
+Main and script paths no longer synchronize the joypad over printer-owned reads.
+Retained script text advances the BG transfer once per frame across recursive commands.
+Fifteen mode/render/trainer regressions pass; full suite **963/963**, typecheck clean.
+Checkpoint 3 committed as `94625a0`.
+
+Checkpoint 4: browser smoke passed on isolated :5183 (hooks outside the repository):
+sign paragraph/scroll/silent-end/A-release, NPC contraction/B close, trainer talk music
+before fresh-A/release/battle, sight youngster2's "!"/three-step approach/cont/battle,
+item-ball automatic close, Route1 sample and old-man script text/push. Screenshots
+inspected; no runtime errors. Temporary server stopped; :5183 storage cleared;
+the user's :5173 save/server untouched. Docs updated with the printer/data contracts,
+test baseline, six-slice order and accepted deferred work. Final verification:
+**963/963** with ROM, **878 pass / 85 skip** without, typecheck/build clean,
+`git diff --check` clean. All 857 generated files were checked for setup idempotence
+at checkpoint 2; no later extractor edits.
+
+**Next: Claude reviews A5a against `notes/21-a5-plan.md` and the ASM, then the user
+play-tests §7 (A = Z, B = X). A5a is implemented, not yet marked completed.**
+Review should cover actual Joypad reads, prior-write VBlank ordering, the two prompt
+waits, trainer completion/music and recursive script display transfer. Limits are
+the approved 30/30 blink, approximate phase until menu/battle integration, and
+CloseTextDisplay sprite reload / trailing UpdateSprites in A5b. Do not start A5b here.
+
+### 2026-10-06 (A5 plan) — Claude Opus 5.5
+
+Planning only, no code. I read the ASM's text engine:
+- `PlaceString` and the control characters;
+- `PrintLetterDelay`, `ManualTextScroll`, `WaitForTextScrollButtonPress` and the ▼ blink;
+- `ScrollTextUpOneLine`, `Paragraph`, `PromptText`;
+- `DisplayTextID`, `DisplayTextIDInit`, `CloseTextDisplay`, the auto BG transfer.
+
+I also read our text box and extractors, scanned all 2,565 pret text blocks, and probed the
+battle transitions, intros and texts for sizing. The plan is `notes/21-a5-plan.md`: A5 splits
+into A5a–A5f, and A5a is planned in full.
+
+Facts new since the earlier notes:
+- **Map texts open slowly:** the box appears 4 frames after A, and the first letter about 20
+  frames after A (the font loads first).
+- **Letters show every third frame.** The bottom-third transfer makes them arrive in threes
+  with A held.
+- **Contractions are single tiles.** We draw two, in 71 of 196 texts.
+- **The blink is CPU-bound:** about 30–50 frames a phase, so 30 is the default.
+- **The newline rule (`
+`) is wrong only once** outside battle: Route 22's rival.
+- **Closing a text costs** sprite-reload frames plus a trailing `UpdateSprites` → A5b.
+
+**Next:** the user answers O-16; record DECISIONS #44; the implementer starts A5a at checkpoint 1.
+
+### 2026-10-06 (A1c user-verified → A1 done) — Claude Opus 5.5
+
+The user play-tested A1c (plan §7): "i checked and it all works well". A1c and milestone A1 are
+marked done in STATUS, PLAN, PROJECT, CLAUDE.md and the plan note. No code changes.
+**Next:** A5 (battle and text presentation). Plan it first.
+
 ## Prior work — code lost (discovered 2026-09-22)
 
 The sessions below (2026-07-27 → 2026-08-04) built this list on a modified copy

@@ -10,6 +10,31 @@ Maps are JSON files in `data/maps/`. A map references a tileset (e.g., `"OVERWOR
 
 Walkability check: `isWalkable(tileX, tileY)` checks tile at `(tileX, tileY + 1)` — the bottom-left tile of the player's 2x2 sprite area.
 
+## Map sprite sets (A5b2)
+
+`data/map_sprite_sets.json` (mirrored in `static/`) is the cartridge's sprite-set
+tables. Nothing in the overworld reads it yet. A5b4 loads it and runs the close.
+
+Outdoor maps (id below `$25`) use `MapSpriteSets`: a value 1–10 is that set, and
+`$f1`–`$fc` is a `SplitMapSpriteSets` row. A coordinate below the divider takes
+the first set; equality takes the second. Route 20's selector is `$f8`, and that
+linear row stays in the file, but `GetSplitMapSpriteSetID` does not use it. Its
+branch cuts X at 43, 55 and 62. Between 43 and 54 the Y cut is 13; between 55
+and 61 it is 8. Below the cut is set 10, at or above it is set 1. West of 43 is
+set 1; at or east of 62 is set 10.
+
+Indoor maps do not use those rows. `LoadSpriteSetFromMapHeader` fills 11 slots
+from the live picture ids: Pikachu (`$3d`) is reserved in slot 0 and stays a
+walking picture, slots 0–8 are walking, slots 9–10 are still (picture id ≥ `$47`).
+The scan is 14 NPC slots. The same picture id occupies one slot. Overflow is
+dropped. A walking picture is 12 tiles per copy; a still picture is 4. The size
+comes from the sheet table's length byte with its nibbles swapped, not from a PNG.
+
+`pictureIdsBySprite` is the canonical engine-name registry (`prof` is Oak).
+Alias ids stay separate pictures. One copy of N tiles costs floor(N / 8) + 1
+frames. On a normal walking close only slots 0–8 copy, so the close is
+5 + 2 × W frames. Those formulas live in the A5b2 tests as a reference for A5b4.
+
 ## Bookshelf Interaction
 
 `getBookshelfText(tileX, tileY)` checks tiles against `BOOKSHELF_TILES` table (from `bookshelf_tile_ids.asm`). Player checks both 1-tile-ahead (adjacent) and 2-tiles-ahead (facing). Each tileset maps specific tile IDs to text categories (BOOKS, TOWN_MAP, POKEMON_STUFF, etc.).

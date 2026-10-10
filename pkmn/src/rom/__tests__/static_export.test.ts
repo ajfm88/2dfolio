@@ -73,6 +73,18 @@ describe('static/ export: PNG encoding', () => {
 });
 
 describe('static/ export: JSON', () => {
+  it('registers map_sprite_sets.json in extractRom, data/ and the static mirror', () => {
+    expect(extracted.jsonData).toHaveProperty('map_sprite_sets.json');
+    const dataPath = resolve(DATA_DIR, 'map_sprite_sets.json');
+    const staticPath = resolve(STATIC_DIR, 'map_sprite_sets.json');
+    expect(existsSync(dataPath)).toBe(true);
+    expect(existsSync(staticPath)).toBe(true);
+    const dataBytes = readFileSync(dataPath);
+    expect(readFileSync(staticPath).equals(dataBytes)).toBe(true);
+    const rendered = JSON.stringify(extracted.jsonData['map_sprite_sets.json'], null, 2) + '\n';
+    expect(dataBytes.toString('utf8')).toBe(rendered);
+  });
+
   it('extractRom() JSON is byte-identical to data/ (what static/ mirrors)', () => {
     // The browser used to get extractRom()'s JSON; after R1b it gets the data/
     // mirror. They must be the same bytes.

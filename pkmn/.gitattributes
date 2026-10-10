@@ -1,0 +1,16 @@
+# Line endings: this machine has core.autocrlf=true, which would check text out
+# as CRLF. The extracted data (game/data, game/static) must stay byte-identical to
+# what `npm run setup` writes, and bash scripts break on CRLF — so keep every
+# text file LF in the working copy, on every checkout.
+* text=auto eol=lf
+
+# Binary assets — never touch their bytes. Two of the three title .tilemap files
+# contain no NUL byte, so git would otherwise guess they are text.
+*.png     binary
+*.tilemap binary
+*.gbc     binary
+*.gb      binary
+
+# GitHub language stats — count TypeScript as JavaScript
+*.ts  linguist-language=JavaScript
+*.tsx linguist-language=JavaScript

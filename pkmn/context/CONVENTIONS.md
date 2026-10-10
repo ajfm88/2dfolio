@@ -220,8 +220,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 970/970** as of 2026-10-07
-   (A5a implementation). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 988/988** as of 2026-10-09
+   (A5b2 implementation). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -242,7 +242,7 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-970 tests in 45 files (vitest, `environment: 'node'`); without ROM, 878 pass / 92 skip.
+988 tests in 46 files (vitest, `environment: 'node'`); without ROM, 888 pass / 100 skip.
 
 **How it runs**
 
@@ -265,8 +265,9 @@ the new baseline.
   trainer headers, NPC ids and facing parsed from `data/maps/objects/*.asm`,
   item balls, and the leaving-sign bug.
 
-- **Static export** — 6 in `src/rom/__tests__/static_export.test.ts` (R1a): key
-  shape, the four grays, lossless PNG round-trip of all 520 images, extracted JSON
+- **Static export** — 7 in `src/rom/__tests__/static_export.test.ts` (R1a, plus A5b2's
+  explicit `map_sprite_sets.json` registration check): key shape, the four grays,
+  lossless PNG round-trip of all 520 images, extracted JSON
   == `data/`, and **`static/` not stale**. If that last one fails after an
   extractor edit, re-run `npm run setup pokeyellow.gbc`. Needs `ROM_PATH`.
 
@@ -299,6 +300,14 @@ the new baseline.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+- **A5b2** adds 18: `rom/__tests__/map_sprite_sets.test.ts` (17; 7 need `ROM_PATH`
+  and throw if `refs/pokeyellow` is missing) and one registration check in
+  `static_export.test.ts`. Without ROM the file checks the committed ids, picture
+  classes, split selection, slot allocation and the 19 current walking-half counts.
+  With ROM it compares the three tables, all 82 sheet sizes and the current object
+  lists to pret. Selection, allocation and close-frame counts are test references
+  for A5b4, not shipped runtime. ROM mutations stay in memory.
 
 - **A5a** adds 53:
   - `text/text_printer.test.ts` (24): place-then-delay and final delay, held input,

@@ -71,8 +71,8 @@ const TILESET_NAMES: Record<number, string> = {
   24: 'BEACH_HOUSE',
 };
 
-/** Sprite byte ID → JSON sprite name string */
-const SPRITE_NAMES: Record<number, string> = {
+/** Sprite byte ID → JSON sprite name string. Canonical engine asset names. */
+export const SPRITE_NAMES: Record<number, string> = {
   0x01: 'red',
   0x02: 'blue',
   0x03: 'prof',
@@ -554,7 +554,7 @@ const MAP_METADATA: Record<string, MapMeta> = {
 
 // ── Map names that we extract ──────────────────────────────────
 
-const EXTRACTABLE_MAPS: Record<string, number> = {
+export const EXTRACTABLE_MAPS: Record<string, number> = {
   PalletTown: 0x00,
   ViridianCity: 0x01,
   Route1: 0x0C,

@@ -65,6 +65,31 @@ export const NUM_TILESETS       = 25;
 export const FONT_GRAPHICS      = symToOffset(0x04, 0x4600);  // 1bpp font tiles
 export const SPRITE_SHEET_PTRS  = symToOffset(0x05, 0x42a9);  // overworld sprite pointers
 
+// Map sprite sets (bank $05). Each address is the referring instruction, confirmed
+// against its operand (notes/26-a5b2-plan.md). The tables themselves follow.
+export const MAP_SPRITE_SETS_LD       = symToOffset(0x05, 0x4196); // ld hl, MapSpriteSets
+export const MAP_SPRITE_SETS          = symToOffset(0x05, 0x41e6); // 37 × 1
+export const SPLIT_MAP_SPRITE_SETS_LD = symToOffset(0x05, 0x41a2); // ld hl, SplitMapSpriteSets
+export const SPLIT_MAP_SPRITE_SETS    = symToOffset(0x05, 0x420b); // 12 × 4
+export const SPRITE_SETS_LD           = symToOffset(0x05, 0x404a); // ld hl, SpriteSets
+export const SPRITE_SETS              = symToOffset(0x05, 0x423b); // 10 × 11
+export const SPRITE_SHEET_PTRS_LD     = symToOffset(0x05, 0x4140); // ld de, SpriteSheetPointerTable
+export const FIRST_INDOOR_MAP_CP      = symToOffset(0x05, 0x402c); // cp FIRST_INDOOR_MAP
+export const PIKACHU_PICTURE_LD       = symToOffset(0x05, 0x406b); // ld a, SPRITE_PIKACHU
+export const PIKACHU_PICTURE_CP       = symToOffset(0x05, 0x40ac); // cp SPRITE_PIKACHU
+export const FIRST_STILL_PICTURE_CP   = symToOffset(0x05, 0x40af); // cp FIRST_STILL_SPRITE
+export const SPLIT_SET_THRESHOLD_CP   = symToOffset(0x05, 0x419b); // cp FIRST_SPLIT_SET - 1
+export const ROUTE20_SPLIT_CP         = symToOffset(0x05, 0x419e); // cp SPLITSET_ROUTE_20
+export const ROUTE20_X_WEST_CP        = symToOffset(0x05, 0x41c8); // cp 43
+export const ROUTE20_WEST_SET_LD      = symToOffset(0x05, 0x41ca); // ld a, west set
+export const ROUTE20_X_EAST_CP        = symToOffset(0x05, 0x41ce); // cp 62
+export const ROUTE20_EAST_SET_LD      = symToOffset(0x05, 0x41d0); // ld a, east set
+export const ROUTE20_X_MIDDLE_CP      = symToOffset(0x05, 0x41d4); // cp 55
+export const ROUTE20_Y_HIGH_LD        = symToOffset(0x05, 0x41d6); // ld b, 8 (X 55–61)
+export const ROUTE20_Y_LOW_LD         = symToOffset(0x05, 0x41da); // ld b, 13 (X 43–54)
+export const ROUTE20_EAST_SET_REPEAT  = symToOffset(0x05, 0x41e0); // ld a, east set again
+export const ROUTE20_WEST_SET_REPEAT  = symToOffset(0x05, 0x41e3); // ld a, west set again
+
 // Font & battle UI
 export const TEXT_BOX_GRAPHICS  = symToOffset(0x04, 0x4e18);  // TextBoxGraphics — 2bpp, 32 tiles (font_extra)
 export const HP_BAR_AND_STATUS  = symToOffset(0x04, 0x4a20);  // HpBarAndStatusGraphics — 2bpp, 30 tiles (font_battle_extra)
