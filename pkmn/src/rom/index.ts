@@ -19,6 +19,7 @@ import { extractAllPokemonSprites } from './extractors/sprites';
 import { readMoveNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from './extractors/text';
 import { extractGameText } from './extractors/game_text';
 import { extractTextPrograms } from './extractors/text_programs';
+import { extractMapSpriteSets } from './extractors/map_sprite_sets';
 import type { ExtractedData } from './data_provider';
 
 export { installRomData } from './data_provider';
@@ -108,6 +109,7 @@ export async function extractRom(
   data.jsonData['game_text.json'] = extractGameText(rom);
   // ── Text programs: the A5b callers' TextCommandProcessor streams ──
   data.jsonData['text_programs.json'] = extractTextPrograms(rom);
+  data.jsonData['map_sprite_sets.json'] = extractMapSpriteSets(rom);
 
   // ── JSON data extractors ──
 
