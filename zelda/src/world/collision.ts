@@ -15,17 +15,76 @@ import type { OverworldData, OverworldScreen } from '../data/overworld-types.js'
  */
 export const noclip = { enabled: false };
 
+/** Grid index (row * 16 + col) → replacement square index, for one screen. */
+export type SquareOverrideLookup = (screenId: number) => ReadonlyMap<number, number> | undefined;
+
+// Z_05.asm:7345 HandleWarpOW — the 8×8 tiles that send Link underground when he
+// stands on them: $24 (black cave opening), $88 (waterfall cave), $70-$73 (stairs).
+const WARP_TILE_CAVE = 0x24;
+const WARP_TILE_WATERFALL = 0x88;
+const WARP_TILE_STAIRS_MIN = 0x70;
+const WARP_TILE_STAIRS_END = 0x74;
+
+export function isWarpTile(tile: number): boolean {
+  return tile === WARP_TILE_CAVE || tile === WARP_TILE_WATERFALL ||
+    (tile >= WARP_TILE_STAIRS_MIN && tile < WARP_TILE_STAIRS_END);
+}
+
+/** Quadrant index into a square's 4 tiles, NES order: TL, BL, TR, BR. */
+function quadrantAt(px: number, py: number): number {
+  const right = (px % TILE_SIZE) >= TILE_SIZE / 2 ? 2 : 0;
+  const bottom = (py % TILE_SIZE) >= TILE_SIZE / 2 ? 1 : 0;
+  return right + bottom;
+}
+
 export class TileCollisionMap {
   private readonly walkable: readonly boolean[];
   private readonly primaryValues: readonly number[];
+  // The four 8×8 tiles of each square. The NES tests collision against a single
+  // 8×8 tile (Z_07.asm:2191 GetCollidableTile), so a square can be half solid:
+  // the cave mouth (square 12) is rock on top and walkable black underneath.
+  private readonly squareTiles: readonly (readonly number[])[];
+  private readonly quadrantWalkable: readonly (readonly boolean[])[];
   private readonly _walkableOverrides = new Set<string>();
+  private _squareOverrides: SquareOverrideLookup | null = null;
 
+  /**
+   * `secondarySquares` is the OW SecondarySquaresOW table. When given, squares are
+   * expanded like Z_05.asm WriteSquareOW: index < $10 takes its 4 tiles from that
+   * table; any other square is primary+0..3. Without it every quadrant is the
+   * primary tile (synthetic test maps).
+   */
   constructor(
     metatileValues: readonly number[],
     threshold: number = DEFAULT_WALKABILITY_THRESHOLD,
+    secondarySquares?: readonly (readonly number[])[],
   ) {
     this.primaryValues = metatileValues;
     this.walkable = metatileValues.map((v) => v < threshold);
+    this.squareTiles = metatileValues.map((p, i) => {
+      if (!secondarySquares) return [p, p, p, p];
+      return secondarySquares[i] ?? [p, p + 1, p + 2, p + 3];
+    });
+    this.quadrantWalkable = this.squareTiles.map((q) => q.map((t) => t < threshold));
+  }
+
+  /** Revealed secrets (cave openings, stairs, moved rocks) change a screen's squares. */
+  setSquareOverrides(lookup: SquareOverrideLookup | null): void {
+    this._squareOverrides = lookup;
+  }
+
+  private squareAt(screen: OverworldScreen, row: number, col: number): number | undefined {
+    const override = this._squareOverrides?.(screen.id)?.get(row * 16 + col);
+    if (override !== undefined) return override;
+    return screen.tiles[row]?.[col];
+  }
+
+  /** The 8×8 NES tile under a play-area pixel, after square overrides. */
+  getTileAt(screen: OverworldScreen, px: number, py: number): number | undefined {
+    if (px < 0 || px >= SCREEN_WIDTH || py < 0 || py >= PLAY_AREA_HEIGHT) return undefined;
+    const square = this.squareAt(screen, Math.floor(py / TILE_SIZE), Math.floor(px / TILE_SIZE));
+    if (square === undefined) return undefined;
+    return this.squareTiles[square]?.[quadrantAt(px, py)];
   }
 
   isTileWalkable(tileIndex: number): boolean {
@@ -44,9 +103,9 @@ export class TileCollisionMap {
     // Check per-position walkable overrides (stepladder bridge)
     if (this._walkableOverrides.has(`${row},${col}`)) return true;
 
-    const tileIndex = screen.tiles[row]?.[col];
-    if (tileIndex === undefined) return false;
-    return this.walkable[tileIndex] ?? false;
+    const square = this.squareAt(screen, row, col);
+    if (square === undefined) return false;
+    return this.quadrantWalkable[square]?.[quadrantAt(px, py)] ?? false;
   }
 
   isRectWalkable(
@@ -91,7 +150,11 @@ export class TileCollisionMap {
 }
 
 export function createCollisionMap(data: OverworldData): TileCollisionMap {
-  return new TileCollisionMap(data.squareTable.primary);
+  return new TileCollisionMap(
+    data.squareTable.primary,
+    DEFAULT_WALKABILITY_THRESHOLD,
+    data.squareTable.secondary,
+  );
 }
 
 /** Duck-typed so dungeon collision (always dry) and test mocks both work. */

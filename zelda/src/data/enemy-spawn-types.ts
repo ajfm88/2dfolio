@@ -11,4 +11,6 @@ export interface EnemySpawnData {
   readonly spawnPositions: readonly (readonly number[])[];
   readonly overworldSpawns: readonly EnemySpawnScreen[];
   readonly overworldFoeCounts: readonly number[];
+  /** Q1 AttrsA bit $08, Z_04.asm:1757 CheckZora; Q2 overrides belong to L2a4. */
+  readonly overworldZoraScreens: readonly number[];
 }

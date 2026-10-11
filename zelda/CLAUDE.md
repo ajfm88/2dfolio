@@ -28,7 +28,7 @@ game. Localhost only, permanently. No emulation, no ROM loading, no WASM.
 
 ## The context folder
 
-One level, ten files. Each fact has exactly one home.
+One level, nine files. Each fact has exactly one home.
 
 | File | Holds |
 |---|---|
@@ -36,18 +36,17 @@ One level, ten files. Each fact has exactly one home.
 | `PROJECT.md` | what and why — goals, non-goals, success criteria, reference repos |
 | `ARCHITECTURE.md` | stack, data flow, layers, invariants, rendering/audio/input |
 | `IMPLEMENTATION.md` | what is built and which file owns it |
-| `PLAN.md` | the 54 slices, A1 → M2, with status |
+| `PLAN.md` | the 58 slices, A1 → M2, with status |
 | `CONVENTIONS.md` | session contract, code standards, verification, honesty rules |
 | `DECISIONS.md` | numbered settled choices + open questions for the user |
 | `HISTORY.md` | session archive, oldest first |
 | `ENEMY-ROSTER.md` | every NES object type → implemented or parked, and why |
-| `JS-MIGRATION.md` | parked plan: strip TypeScript → vanilla JS, after Phase L |
 
 ## The folders
 
 | Path | Role | Rule |
 |---|---|---|
-| `zelda-nes-ts/` | **what we are building** | the only place you write code |
+| `zelda-nes-ts/` | **what we are building** | the living game; write game slices here |
 | `context/` | the knowledge base | keep it current |
 | `zelda1-disassembly-master/` | **THE spec** — 39,600 lines of 6502 asm | read-only |
 | `zelda1-disasm-labels-master/` | Mesen `.mlb` — RAM variable dictionary | read-only |

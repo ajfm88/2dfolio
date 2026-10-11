@@ -50,8 +50,22 @@ import { createPatra } from './patra.js';
 import { Ganon } from './ganon.js';
 import { GuardFire, StandingFire } from './guard-fire.js';
 import { createZeldaGroup } from './zelda-npc.js';
+import { createMoldorm, MOLDORM } from './moldorm.js';
+import { createRupeeStash, RUPEE_STASH } from './rupee-stash.js';
+import { Grumble, GRUMBLE } from './grumble.js';
+import {
+  UnderworldPerson,
+  UnderworldPersonLifeOrMoney,
+  LIFE_OR_MONEY_MAN,
+  UNDERWORLD_PERSON_FIRST,
+  UNDERWORLD_PERSON_LAST,
+} from './underworld-person.js';
+import { BONFIRE_XS, PERSON_Y, type RoomPerson } from './room-person.js';
+import { PondFairy, POND_FAIRY } from './pond-fairy.js';
+import { Boulder, BoulderSet, BOULDER, BOULDER_SET } from './boulder.js';
 
 const PATRA1 = 0x47;
+const STANDING_FIRE = 0x40;
 const PATRA2 = 0x48;
 
 // Dungeon rooms have a 2-tile wall border; the walkable inner area is grid rows
@@ -145,6 +159,7 @@ export class SpawnManager {
     this._frozen = false;
     this._frozenTimer = 0;
     Leever.resetRedCount();
+    Boulder.resetActiveCount();
 
     const screenId = screen.id;
     const spawnEntry = this._spawnData.overworldSpawns[screenId];
@@ -174,7 +189,9 @@ export class SpawnManager {
           const enemyType = enemyTypes[i % enemyTypes.length]!;
           if (enemyType === 0) continue;
 
-          if (collision) {
+          // Z_04.asm:1901 InitPondFairy has fixed pond coordinates; :2167
+          // UpdateBoulderSet is an invisible spawner. Neither is a land walker.
+          if (collision && enemyType !== POND_FAIRY && enemyType !== BOULDER_SET) {
             if (enemyType === ZORA) {
               const water = pickRandomWaterPosition(collision, screen);
               if (!water) continue;
@@ -217,6 +234,7 @@ export class SpawnManager {
     this._frozen = false;
     this._frozenTimer = 0;
     Leever.resetRedCount();
+    Boulder.resetActiveCount();
 
     if (monsterListId === 0) return;
 
@@ -260,6 +278,8 @@ export class SpawnManager {
 
   // Z_04.asm:1757 CheckZora — one zora on a water tile if none is already active.
   private trySpawnZora(screen: OverworldScreen, collision: TileCollisionMap): void {
+    // Z_04.asm:1757 CheckZora: AttrsA bit $08, NOT merely the presence of water.
+    if (!this._spawnData.overworldZoraScreens.includes(screen.id)) return;
     if (this._enemies.some(e => e.objectType === ZORA)) return;
     if (this._enemies.length >= MAX_ENEMY_SLOTS) return;
     const water = pickRandomWaterPosition(collision, screen);
@@ -314,6 +334,28 @@ export class SpawnManager {
       this._enemies.push(zelda, ...fires);
       return;
     }
+    // InitMoldorm: one object fills slots 1-10 with two five-segment worms.
+    if (enemyType === MOLDORM) {
+      this._enemies.push(...createMoldorm(hp, spawnDelay));
+      return;
+    }
+    // InitRupeeStash_Full: one object becomes ten rupees.
+    if (enemyType === RUPEE_STASH) {
+      this._enemies.push(...createRupeeStash(hp));
+      return;
+    }
+    // SetUpCommonCaveObjects: dungeon people and Grumble stand between two
+    // bonfires (StandingFire $40) at X $48 / $A8 on the person's row. The person
+    // reads its room context later — main.ts calls setup() right after spawning.
+    const person = createRoomPerson(enemyType);
+    if (person) {
+      const fireHp = getEnemyHp(STANDING_FIRE, this._hpPairs);
+      this._enemies.push(
+        person,
+        ...BONFIRE_XS.map((fx) => new StandingFire(fx, PERSON_Y, STANDING_FIRE, fireHp, 0)),
+      );
+      return;
+    }
     this._enemies.push(createEnemyByType(x, y, enemyType, hp, spawnDelay));
   }
 
@@ -330,6 +372,17 @@ export class SpawnManager {
       if (this._frozenTimer <= 0) {
         this._frozen = false;
       }
+      // Z_04.asm:2268: Clock stops boulder motion but not animation/contact.
+      // UpdateBoulderSet and UpdatePondFairy have no Clock check at all.
+      this.drainChildSpawns(true);
+      const ctx: EnemyUpdateContext = {
+        collision, screen, linkX, linkY, bombs, fluteActive, clockActive: true,
+        freeMonsterSlots: MAX_ENEMY_SLOTS - this._enemies.length,
+      };
+      for (const enemy of this._enemies) {
+        if (enemy instanceof Boulder || enemy instanceof BoulderSet || enemy instanceof PondFairy) enemy.update(ctx);
+      }
+      this._enemies = this._enemies.filter(e => !(e instanceof Boulder && e.isDead));
       // Still update projectiles during freeze
       this.updateProjectiles();
       return;
@@ -338,7 +391,10 @@ export class SpawnManager {
     // Drain child spawns requested last frame (e.g. Zol → 2 Gels) before updating.
     this.drainChildSpawns();
 
-    const ctx: EnemyUpdateContext = { collision, screen, linkX, linkY, bombs, fluteActive };
+    const ctx: EnemyUpdateContext = {
+      collision, screen, linkX, linkY, bombs, fluteActive,
+      freeMonsterSlots: MAX_ENEMY_SLOTS - this._enemies.length,
+    };
     for (const enemy of this._enemies) {
       enemy.update(ctx);
       // Collect any projectiles spawned this frame
@@ -357,13 +413,16 @@ export class SpawnManager {
   }
 
   // Create monsters that existing enemies requested (Zol split → child Gels).
-  private drainChildSpawns(): void {
+  private drainChildSpawns(onlyBoulderSets = false): void {
     const newborns: Enemy[] = [];
     for (const enemy of this._enemies) {
+      // Clock's exception is scoped to the new spawner. Keep other enemies'
+      // queued children (and their old frozen lifecycle) untouched.
+      if (onlyBoulderSets && !(enemy instanceof BoulderSet)) continue;
       for (const spec of enemy.collectChildSpawns()) {
         if (newborns.length + this._enemies.length >= MAX_ENEMY_SLOTS) break;
         const hp = getEnemyHp(spec.objectType, this._hpPairs);
-        newborns.push(createEnemyByType(spec.x, spec.y, spec.objectType, hp, SPAWN_CLOUD_FRAMES));
+        newborns.push(createEnemyByType(spec.x, spec.y, spec.objectType, hp, spec.spawnCloudFrames ?? SPAWN_CLOUD_FRAMES));
       }
     }
     if (newborns.length > 0) {
@@ -393,6 +452,7 @@ export class SpawnManager {
     this._frozen = false;
     this._frozenTimer = 0;
     Leever.resetRedCount();
+    Boulder.resetActiveCount();
   }
 }
 
@@ -401,6 +461,12 @@ function createEnemyByType(
   objectType: number, hp: number, spawnDelay: number,
 ): Enemy {
   switch (objectType) {
+    case POND_FAIRY:
+      return new PondFairy();
+    case BOULDER_SET:
+      return new BoulderSet();
+    case BOULDER:
+      return new Boulder(x, y);
     // Octoroks
     case 7: case 8: case 9: case 10:
       return createOctorok(x, y, objectType, hp, spawnDelay);
@@ -487,6 +553,9 @@ function createEnemyByType(
     case 0x3d:
       return new Aquamentus(x, y, objectType, hp, spawnDelay);
     // Dodongo — Level 2 dino: immune to all weapons; bomb-feed / stun-and-sword
+    // $31 is the same monster, but its list ID is below the $32 boss clamp, so the
+    // room spawns its full foe count — the three-Dodongo rooms of Levels 5 and 7.
+    case 0x31:
     case 0x32:
       return new Dodongo(x, y, objectType, hp, spawnDelay);
     // Gohma — Level 6 crab: arrow-only when eye half-open
@@ -518,6 +587,16 @@ function createEnemyByType(
     default:
       return new Enemy(x, y, objectType, hp, spawnDelay);
   }
+}
+
+/** Dungeon people ($4B-$52) and Grumble ($36), or null for any other type. */
+function createRoomPerson(objectType: number): RoomPerson | null {
+  if (objectType === GRUMBLE) return new Grumble();
+  if (objectType === LIFE_OR_MONEY_MAN) return new UnderworldPersonLifeOrMoney();
+  if (objectType >= UNDERWORLD_PERSON_FIRST && objectType <= UNDERWORLD_PERSON_LAST) {
+    return new UnderworldPerson(objectType);
+  }
+  return null;
 }
 
 function directionToSpawnList(entryDirection: Direction): number {

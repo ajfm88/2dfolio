@@ -6,6 +6,11 @@ import { SpriteSheet } from '../render/sprite-renderer.js';
 const CELL_WIDTH = 9;
 const CELL_HEIGHT = 7;
 const CHAR_ADVANCE = 8;
+// font.png has no comma. Its apostrophe (rows 0-2: head, then a tail curling
+// down-left) is the comma's shape; dropped 5 rows its head sits on the period's
+// baseline (rows 5-6) and the tail hangs 1px below, like the ROM's comma.
+const COMMA_SOURCE = "'";
+const COMMA_DROP = 5;
 
 export class BitmapFont {
   private readonly sheet: SpriteSheet;
@@ -25,11 +30,17 @@ export class BitmapFont {
     const str = String(text);
     let dx = x;
     for (let i = 0; i < str.length; i++) {
-      const ch = str[i]!;
-      this.sheet.drawFrame(renderer, charToIndex(ch, this.sheet.columns), dx, y);
+      const glyph = glyphFor(str[i]!, this.sheet.columns);
+      this.sheet.drawFrame(renderer, glyph.index, dx, y + glyph.dy);
       dx += CHAR_ADVANCE;
     }
   }
+}
+
+/** Sheet cell and vertical offset used to draw a character. */
+export function glyphFor(ch: string, columns: number): { index: number; dy: number } {
+  if (ch === ',') return { index: charToIndex(COMMA_SOURCE, columns), dy: COMMA_DROP };
+  return { index: charToIndex(ch, columns), dy: 0 };
 }
 
 /**

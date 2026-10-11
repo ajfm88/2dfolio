@@ -1,6 +1,8 @@
 // Dungeon room renderer — samples room tiles from dungeons-map.png
 // Layout: 16 columns × 16 rows, each room 256×176px.
-// Top 8 rows = uw1q1 (rooms 0-127), bottom 8 rows = uw2q1 (rooms 0-127).
+// Top 8 rows = uw1q1 (rooms 0-127), bottom 8 rows = uw2q1 (rooms 0-127) — but the
+// uw2q1 half is painted with its left and right 8-room halves swapped; see
+// roomMapCell.
 
 import { PLAY_AREA_HEIGHT, SCREEN_WIDTH, TILE_SIZE } from '../core/constants.js';
 import type { DungeonRoomDoors, UniqueRoom } from '../data/dungeon-types.js';
@@ -16,6 +18,47 @@ const INNER_OFFSET_ROW = 2;
 // dungeons-map.png often paints the item one tile off the NES slot
 // (L1 boss heart is at tile 13,5 while GetShortcutOrItemXY is 12,5).
 const ITEM_MASK_PAD = TILE_SIZE;
+
+const HALF_MAP_COLS = MAP_COLS / 2;
+
+/**
+ * Map cell (column, row) holding a room's painting on dungeons-map.png.
+ *
+ * The uw2q1 rows are laid out with the two 8-column halves swapped relative to
+ * the ROM room ids: Levels 7-8 (ids in columns 8-15) are painted in columns 0-7
+ * and Level 9 (columns 0-7) in columns 8-15. The baked-in people prove it —
+ * L7 Grumble room 40 is painted at cell 32, the L7 bomb seller (72) at 64, the
+ * L8 Spectacle Rock man (61) at 53 and the L9 Triforce gatekeeper (102) at 110 —
+ * and every empty cell lands on an id no level uses. uw1q1 is laid out as-is.
+ */
+export function roomMapCell(roomId: number, levelBlock: string): { col: number; row: number } {
+  const col = roomId % MAP_COLS;
+  const row = Math.floor(roomId / MAP_COLS);
+  if (levelBlock === 'uw2q1') {
+    return { col: (col + HALF_MAP_COLS) % MAP_COLS, row: row + 8 };
+  }
+  return { col, row };
+}
+
+/** Pixel origin of a room's painting on dungeons-map.png. */
+function roomMapOrigin(roomId: number, levelBlock: string): { x: number; y: number } {
+  const cell = roomMapCell(roomId, levelBlock);
+  return { x: cell.col * ROOM_WIDTH, y: cell.row * ROOM_HEIGHT };
+}
+
+// Square table value $24 is the blank tile: the dungeon floor shows the black
+// background colour.
+const BLANK_TILE = 0x24;
+
+/**
+ * True when every inner square of the room is the blank $24 floor — the layout
+ * the people, Grumble and money rooms use (unique room 38). Their paintings on
+ * dungeons-map.png carry the old man, bonfires, text and rupees baked in, which
+ * must not stay on screen once those objects are gone.
+ */
+export function isBlankFloorRoom(uniqueRoom: UniqueRoom, squareTable: readonly number[]): boolean {
+  return uniqueRoom.tiles.every((row) => row.every((sq) => squareTable[sq] === BLANK_TILE));
+}
 
 /** Play-area tile range covered when masking a baked-in room item. */
 export function itemMaskTileRange(
@@ -106,17 +149,20 @@ export class DungeonRenderer {
     roomId: number,
     levelBlock: string,
   ): void {
-    const blockRowOffset = levelBlock === 'uw2q1' ? 8 : 0;
-    const mapCol = roomId % MAP_COLS;
-    const mapRow = Math.floor(roomId / MAP_COLS) + blockRowOffset;
-
-    const srcX = mapCol * ROOM_WIDTH;
-    const srcY = mapRow * ROOM_HEIGHT;
+    const { x: srcX, y: srcY } = roomMapOrigin(roomId, levelBlock);
 
     renderer.drawImage(
       this._mapImage,
       srcX, srcY, ROOM_WIDTH, ROOM_HEIGHT,
       0, 0, SCREEN_WIDTH, PLAY_AREA_HEIGHT,
+    );
+  }
+
+  /** Repaint the 12×7 inner floor of a blank-floor room from its room data (black). */
+  clearInnerFloor(renderer: Renderer): void {
+    renderer.fillRect(
+      INNER_OFFSET_COL * TILE_SIZE, INNER_OFFSET_ROW * TILE_SIZE,
+      INNER_COLS * TILE_SIZE, INNER_ROWS * TILE_SIZE, '#000000',
     );
   }
 
@@ -128,11 +174,7 @@ export class DungeonRenderer {
     itemX: number,
     itemY: number,
   ): void {
-    const blockRowOffset = levelBlock === 'uw2q1' ? 8 : 0;
-    const mapCol = roomId % MAP_COLS;
-    const mapRow = Math.floor(roomId / MAP_COLS) + blockRowOffset;
-    const roomSrcX = mapCol * ROOM_WIDTH;
-    const roomSrcY = mapRow * ROOM_HEIGHT;
+    const { x: roomSrcX, y: roomSrcY } = roomMapOrigin(roomId, levelBlock);
 
     // NES slot plus one tile of padding — the map artist often paints the
     // item one tile off (L1 boss heart at 210,84 vs slot 192,80).
@@ -177,9 +219,9 @@ export class DungeonRenderer {
     dir: DoorDir,
   ): void {
     const slot = DOOR_SLOTS[dir];
-    const blockRowOffset = levelBlock === 'uw2q1' ? 8 : 0;
-    const srcX = (srcRoomId % MAP_COLS) * ROOM_WIDTH + slot.x;
-    const srcY = (Math.floor(srcRoomId / MAP_COLS) + blockRowOffset) * ROOM_HEIGHT + slot.y;
+    const origin = roomMapOrigin(srcRoomId, levelBlock);
+    const srcX = origin.x + slot.x;
+    const srcY = origin.y + slot.y;
     renderer.drawImage(
       this._mapImage,
       srcX, srcY, slot.w, slot.h,

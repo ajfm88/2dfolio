@@ -49,12 +49,12 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
 **Scope agreed with the user (2026-08-02):** ~45 atomic slices, one per session,
 each independently verifiable. The count is a target, not a contract — slices
-that proved too big were split with a letter suffix. The plan now runs to 53
+that proved too big were split with a letter suffix. The plan now runs to 58
 slots across phases A–M (`PLAN.md`).
 
 ## Reference material, ranked
 
-Seven repos sit alongside `zelda-nes-ts/` in this folder. **All of them are
+Eight repos sit alongside `zelda-nes-ts/` in this folder. **All of them are
 read-only** — never edit, never delete, never write into them.
 
 1. **`zelda1-disassembly-master/`** — byte-accurate NES disassembly, 8 banks of
@@ -76,6 +76,9 @@ read-only** — never edit, never delete, never write into them.
    overworld map + collision map as PNGs.
 6. **`Legend-Of-Zelda-Javascript-main/`** (jdr81394, ~5–10%) — vanilla JS. Clean
    ECS pattern, Dijkstra pathfinding for enemy AI.
+7. **`zelda30tribute-master/`** (Scott Lininger, 2015) — HTML5/WebGL 3D remake of
+   the first three dungeons. Source of the touch-control art (`controller2.png`,
+   `dpad.png`) and individual sprite PNGs. MIT licence.
 
 Completeness percentages are from the 2026-08-02 survey. They are why the
 disassembly wins every dispute: the reference repos are all partial and may have

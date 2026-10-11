@@ -1,4 +1,4 @@
-# PLAN — 54 slices to a playable browser build
+# PLAN — 58 slices to a playable browser build
 
 Status legend: ✅ done · 🔨 in progress · ⬜ pending
 
@@ -12,8 +12,8 @@ finish it, log it, stop.
 
 **Budget: 45 slices** (user estimate, 2026-08-02) — the count was always a
 target, not a contract. Splitting oversized slices with a letter suffix (`G4a`,
-`G4b`) grew it to the 54 rows below. L2a split L2a1–L2a5; **L2a1 done, L2a2 next.**
-L2b blocked. M1–M2 in tree (STATUS).
+`G4b`) grew it to the 58 rows below (54 done). L2a split L2a1–L2a5; **L2a1–L2a2
+done, L2a3 next.** L2b blocked. M1–M2 done.
 
 ---
 

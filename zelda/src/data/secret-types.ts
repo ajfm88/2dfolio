@@ -30,3 +30,6 @@ export const TILE_OBJ_SQUARE_INDICES: Readonly<Record<number, number>> = {
 // Square indices used for revealed secrets
 export const SQUARE_INDEX_CAVE_ENTRANCE = 12;
 export const SQUARE_INDEX_STAIRS = 18;
+// OW square 14 = four $26 floor tiles; a pushed rock/gravestone leaves this behind
+// (Z_04.asm:3638 UpdateRockOrGravestone writes the $26 "gray floor tile").
+export const SQUARE_INDEX_FLOOR = 14;

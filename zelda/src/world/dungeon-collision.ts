@@ -4,7 +4,7 @@
 // (the screen parameter is accepted but ignored — collision is per-room).
 
 import {
-  DEFAULT_WALKABILITY_THRESHOLD,
+  UW_WALKABILITY_THRESHOLD,
   PLAY_AREA_HEIGHT,
   SCREEN_WIDTH,
   TILE_SIZE,
@@ -54,7 +54,7 @@ export class DungeonCollisionMap {
         const tileIdx = row[c];
         if (tileIdx === undefined) continue;
         const value = squareTable[tileIdx];
-        if (value !== undefined && value < DEFAULT_WALKABILITY_THRESHOLD) {
+        if (value !== undefined && value < UW_WALKABILITY_THRESHOLD) {
           this._walkable[r + INNER_OFFSET_ROW]![c + INNER_OFFSET_COL] = true;
         }
       }
@@ -194,7 +194,7 @@ export class DungeonCollisionMap {
         const tileIdx = row[c];
         if (tileIdx === undefined) continue;
         const value = squareTable[tileIdx];
-        if (tileIdx === 0 || (value !== undefined && value < DEFAULT_WALKABILITY_THRESHOLD)) {
+        if (tileIdx === 0 || (value !== undefined && value < UW_WALKABILITY_THRESHOLD)) {
           walkable[r + INNER_OFFSET_ROW]![c] = true;
         }
       }

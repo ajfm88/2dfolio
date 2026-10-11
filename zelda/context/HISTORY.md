@@ -1278,4 +1278,345 @@ Playtest session. User-confirmed: title waterfall (mint channel under foam, orig
 
 Still open at stop: none logged. (Inventory top-row cursor was listed in error; user confirmed it works.)
 
+## 2026-09-08 — Production build for temporary Netlify (Grok 4.6)
 
+User overrode #1 for a short-lived preview (#16). Applied only in
+`zelda-nes-ts/`. (1) Unused `BTN_FRAME_PRESSED`. (2) tsconfig `include:
+["src"]` + `noEmit`. (3) Game JSON imported in `main.ts` instead of
+`fetch('/src/data/...')`. (4) `netlify.toml`: `npm run build` → `dist`,
+Node 22. Verified `vite preview` on :4173 (HTML/JS/title/map/music 200;
+bundle contains uniqueRoomId; no `/src/data/` fetch). 1282 tests pass;
+recorder TeleportY still stale.
+
+## 2026-09-08 — Second Quest code audit (Grok 4.6)
+
+PLAN L2a claimed full Q2 wiring. The tree has Q2 **data** (`uw1q2`/`uw2q2`
+rooms, `questSecretByScreen`, save `quest` flag, `switchToSecondQuest` after
+the ending) but **no runtime read of quest**. DungeonManager always
+`dungeons[level-1]` (9 Q1 LevelInfos). `saveManager.register(slot, name)` never
+passes quest 2 for "ZELDA". Tile-object `if (questSecret === 2) return`.
+Stalfos constructed with `canShoot=false`. File-select draws name + deaths
+only. Corrected PLAN/STATUS.
+
+## 2026-09-08 — L2a1 Quest flag / ZELDA / ending wipe (Grok 4.6)
+
+`nameStartsSecondQuest` (5-char `ZELDA`, `Z_02.asm:1683`). File-select draws a
+small sword left of Q2 names. `switchToSecondQuest` now wipes inventory, world
+flags, hearts, bombs (`Z_02.asm:4037`) so a beaten Q1 file does not keep the
+Magical Sword. `currentQuest` set in `startGameFromSlot`. Not yet used by
+dungeons/overworld. Next: L2a2 data extract.
+
+## 2026-09-09 — L2a2 Q2 LevelInfo overlay + OW attr patches (Claude Opus 5)
+
+Data only; nothing at runtime reads it yet. `extract-dungeons.ts` now also parses
+`Z_06.asm` and emits **`dungeonsQ2`** — Q1's LevelInfo with
+`LevelInfoUWQ2ReplacementsN` overlaid from offset `$29`/41 (`Z_06.asm:203`).
+Verified the overlay is real: an earlier reading of `Z_06.asm:15-52` suggested Q2
+shares LevelInfo wholesale, but that only describes the *load*, which
+`UpdateMode2Load_Full` then patches in place. Display levels come out
+`1,3,2,5,4,6,8,7,9` as predicted. `foeCounts`/`startY` sit below offset 41 and are
+correctly inherited from Q1.
+
+Two things the next agent should not re-derive:
+
+- The NES copy loop writes `size+1` bytes and so reads one byte past each table.
+  It only ever lands in `StatusBarMapTransferBuf`, which we don't model — ignored
+  deliberately, commented in the script.
+- `extractLevelInfo` used to pick the level block via the *displayed* level number.
+  Harmless in Q1, a trap under the Q2 swap; it is now keyed on CurLevel for both.
+
+New `scripts/extract-q2-overworld.ts` → **`src/data/q2-overworld.json`**
+(`@PatchQ2Rooms`, `Z_06.asm:239`): 15 writes over 8 screens, emitted both raw and
+decoded. Dungeon entrances move to screens 52/60/69 (CurLevel 3/2/4). The `$8B`
+offset overruns AttrsB into AttrsC — preserved, see DECISIONS #17.
+
+Q1 output is byte-identical apart from the added `dungeonsQ2` key (diffed before/
+after). Typecheck clean, title screen renders, no console errors.
+
+## 2026-09-09 — M1 responsive layout, core fix (Claude Opus 5)
+
+User reported the game rendering as a small island mid-screen on a Galaxy Note 10+
+in Samsung Internet, with the bottom hidden behind the touch pads.
+
+Root cause was **integer CSS scaling**: `floor(innerWidth / 256)` is 1 for any
+viewport under 512 CSS px, i.e. every phone in portrait. `devicePixelRatio` was not
+consulted anywhere in the project. Second cause: the canvas was flex-centred in a
+`min-height: 100vh` box, which Samsung Internet measures against the collapsed-
+toolbar height.
+
+Fix: new `src/render/canvas-layout.ts` with a pure `computeCanvasLayout()` (DOM-free
+so it tests under the `node` vitest env — same reasoning as `transparency.ts`).
+Scales in whole **device** pixels, canvas positioned absolutely and centred in the
+band above the pads. `index.html` moves to `100dvh` + `viewport-fit=cover` + safe-area
+vars + `touch-action: none`. Renderer now also listens on `visualViewport` and
+`orientationchange`, rAF-debounced. 11 new tests; 1313 passing.
+
+**The touch pads were deliberately left alone** (user instruction). Their negative
+`left`/`right` offsets are intentional art bleed, not a bug. `touch-controls.ts` got
+only an additive `TOUCH_PAD_RESERVE_PX` export and a `reservedBottomPx()` method.
+
+Two things the next agent must not assume are finished:
+
+- I told the user this fills "~95% of the width". **That was wrong** — it was true
+  only for the dpr I assumed. Measured, it ranges 83–95% and drops to 68% at
+  375px/dpr 2. The user then approved a **hybrid** policy (integer when it fills
+  ≥ 90%, else fractional fill) — **that is approved but NOT implemented.**
+- **Never tested on a real phone.** Desktop (verified: 3× at 1920×855, centred, no
+  horizontal scroll) and DevTools emulation at 375×667/dpr 2 only.
+
+`tests/render/canvas-layout.test.ts` uses dpr 2.625 as a representative phone; the
+reporter's actual Note 10+ is more likely dpr 3.5 at a 412px viewport. The tests
+exercise the maths, not that device profile.
+
+## 2026-09-09 — HUD ghost fix + AJFM88 cheat code + Netlify npm fix (Claude Opus 4.6)
+
+**HUD counter ghost:** `hud.png` had "X0" baked into the key/bomb counter areas.
+When `BitmapFont` drew a new digit on top, the narrower glyph (e.g. "1") didn't
+fully cover the baked "0". Fixed by blacking out all three counter areas
+(rupees/keys/bombs) in `processHudImage` at init time. User confirmed fix.
+
+**AJFM88 cheat code:** Registering the name "AJFM88" grants a full loadout on
+game start: magic sword, all items (both boomerangs, silver arrows, red candle,
+red ring, magic key, etc.), 999 rupees, 99 bombs (max raised to 99), 16 hearts,
+all maps/compasses/triforce, letter delivered, red potion, 9 keys. Keys refill
+to 9 on every dungeon entry. `nameIsCheatCode()` in `save-manager.ts`,
+`applyCheatLoadout()` in `main.ts`, `Link.setMaxBombs()` added,
+`restoreStats` bomb clamp raised to 99. User confirmed working.
+
+**Netlify deploy fix:** `npm install` failed because lockfile was generated with
+npm 11 (Node 24) but Netlify's Node 22 ships npm 10. Added `NPM_VERSION = "11"`
+to `netlify.toml`.
+
+**M1 hybrid fill parked:** User prefers whole device-pixel scaling as-is.
+
+**M2 button press visuals:** Attempted sprite-sheet-cropped pressed overlays
+from Frame 1 of controller2.png (matching zelda30tribute). User rejected the
+look — reverted to the dark circle/rect overlays. M2 button visuals remain a
+future polish item.
+
+## 2026-09-11 — Playtest bugfixes: minimap, raft, stairs masking (Claude Opus 4.6)
+
+User playtested dungeons and overworld; found and fixed four bugs:
+
+1. **Dungeon minimap solid blue grid.** `validRoomIds` iterated all 128 rooms in
+   the shared level block instead of only the current dungeon's rooms. Replaced
+   with BFS via `roomsInThisDungeon()`. Also added bounding-box centering
+   (horizontal center, bottom-align) using NES `StatusBarMapXOffset` logic.
+   `DMAP_BASE_Y` tuned from 22 → 25. Files: `dungeon-manager.ts`, `hud.ts`.
+
+2. **Raft going south / stuck at sea.** Three sub-issues: (a) Y constants were
+   raw NES screen-Y, needed subtracting `$3D` HUD offset for play-area coords;
+   (b) sub-pixel movement skipped exact Y match — changed to ±1 range checks;
+   (c) raft re-triggered on arrival screen — added `suppressArrival()` flag,
+   set after raft-scroll transition completes. Files: `constants.ts`,
+   `raft.ts`, `main.ts`.
+
+3. **Dungeon stairs not working.** Hardcoded stairs position didn't match actual
+   tile data. Added `findStairsPosition()` to scan unique room tiles for square
+   index 0 (stairs). Also checks cellar connections and room secret trigger
+   flags to determine which rooms have functional stairs. Files:
+   `dungeon-manager.ts`, `main.ts`.
+
+4. **Baked-in stairs visual artifacts.** Rooms without cellar connections showed
+   phantom stairs from the shared `dungeons-map.png` (same root cause as the
+   baked-in keys issue logged in DECISIONS). Added masking in
+   `renderDungeonEntities()` — draws floor tile over baked stairs when
+   `dungeonStairsPos` is null. Files: `main.ts`.
+
+Clock + Vire child spawn investigated: Vires split into Keese that must also be
+killed before the door opens — correct NES behavior, not a bug.
+
+## 2026-10-09 — Repo cleanup, `.gitattributes` (Claude Opus 5.5)
+
+User-requested housekeeping; no game code touched. Added
+`zelda-nes-ts/.gitattributes` so GitHub linguist counts `*.ts`/`*.tsx` as
+JavaScript. `zelda-nes-ts/` is the only game folder.
+
+Verified after `npm install`: typecheck clean; 1313 pass, 1 fail (the known
+stale `recorder.test.ts` TeleportY case). Found: Q2
+uniqueRoomIds 11, 16, 32 have no Q1 donor room anywhere — L2a3's donor blit
+needs a fallback for them.
+
+## 2026-10-09 — Cave entry fixed: NES CheckWarps + per-8×8 OW collision (Claude Opus 5.5)
+
+User couldn't enter the screen-100 cave (row 6, col 4). Root cause: OW collision
+judged each 16×16 square by its top-left tile, so the cave mouth (square 12 =
+`F3,24,F3,24`: rock on top, walkable `$24` below) was solid; entry relied on
+"facing Up + `isMoving` + tile above", and `Link.update` clears `_moving` on the
+first blocked pixel, so entry was a coin flip on the sub-pixel phase.
+
+Fixed to match the disassembly:
+- `TileCollisionMap` expands squares like `Z_05.asm WriteSquareOW` (index < `$10`
+  → SecondarySquaresOW, else primary+0..3) and tests the 8×8 quadrant under each
+  pixel. Only squares 12 and 15 actually change. It also honours revealed-secret
+  square overrides (screen-scoped via `TileObjectManager.overridesForScreen`).
+- OW first unwalkable tile is **`$89`** (`Z_05.asm:6439 ObjectRoomBoundsOW`), not
+  `$8D` — the waterfall (squares 15/54, `$89–$8C`) was walkable. UW is `$78`
+  (no change for any real dungeon square). DECISIONS #21.
+- `OverworldManager.isOnWarpTile` = `Z_05.asm:7246 CheckWarps`: X on a 16-px
+  column (8 in room `$22`), Y on a square row, 8×8 tile at (x, y+8) ∈
+  {`$24`,`$88`,`$70–$73`}. Replaces `checkCaveEntry` and the separate dungeon
+  check in `main.ts`. Warps disarm on cave/dungeon exit until Link moves 8 px
+  (NES `UndergroundExitType`, `Z_07.asm:3248`).
+- Pushed rock now leaves floor square 14 (`$26`, `Z_04.asm:3638`), not square 0
+  (all `$24` = a warp tile).
+- Side effect: the **waterfall cave (screen 26) was unreachable** before (only
+  square 12 counted as an entrance) and now works.
+
+Verified in Chrome via `__zelda.step`: screen 100 cave → medicine shop; exit,
+no re-entry while idle, re-entry after stepping away; L1 (55), L6 wide entrance
+(34), waterfall cave (26), pre-revealed L9 bomb wall (5) all enter. New
+`tests/world/cave-warp.test.ts` (11 cases on real data). Typecheck clean;
+1322 pass, 1 known stale recorder failure. Lint: 4 pre-existing errors in
+untouched files (`ghini.ts`, `link.ts:520`, `dungeon-collision.ts` ×2).
+
+Not done: NES exit animation (Link rises out of the mouth); pushed-rock visuals
+(generic overrides re-blit the original map tile, so a moved rock still looks
+unmoved — now with matching collision at the destination).
+
+Also diagnosed (user screenshot 2): the orange box at the fairy pond is the
+unimplemented Pond Fairy — see Known open bugs.
+
+## 2026-10-09 — Dungeon placeholders replaced: Moldorm, Dodongo ×3, rupees, people, Grumble (Claude Opus 5.5)
+
+User asked for every Q1 dungeon object still drawn as the placeholder box. All
+done, each from the disassembly, verified in Chrome room by room (all 23 rooms:
+right objects, right text, no console errors):
+
+- **Moldorm `$41`** (`moldorm.ts`): `InitMoldorm` → two 5-segment worms at
+  ($80,$70). Only heads steer (flyer states 2/3, 8 turns, $10 frames per turn,
+  `TurnTowardsPlayer8` incl. its "never pulled toward Up" quirk); every $10 frames
+  `Moldorm_PropagateDirs` hands each segment the old direction of the one above,
+  so the body trails 8px apart. Head wall bounces are deferred (`DeferBounce`).
+  Hits never knock back; a lethal hit kills the *tail* at the struck spot and
+  revives the struck segment with $20 HP; heads die last. Red orb sprite at
+  `dungeon-enemies.png` (249,62) 8×10.
+- **Dodongo `$31`**: same `Dodongo` class; list ID < $32 skips the boss clamp, so
+  the room spawns its foe count (3) — L5:86, L7:88, L7:12.
+- **Rupee Stash `$35`** (`rupee-stash.ts`): ten rupees at `RupeeStashXs/Ys`, +1
+  each within 8px; first pickup marks the room cleared (NES `RoomObjCount = 0`).
+- **Dungeon people `$4B–$52`** (`underworld-person.ts`, `room-person.ts`,
+  `person-textbox.ts`): old man at ($78,$80) between two StandingFires; text by
+  level group (A L1/2/5/7, B L3/4/6/8, C L9) via the ROM selector tables; NES
+  typewriter (6 frames/char, Link halted until done); `CheckPersonBlocking` keeps
+  Link below NES Y $8E; striking a person turns on statue pattern 2 (bonfire
+  fireballs). `$4F` in table-A levels sells +4 bomb capacity for 100 rupees
+  (exact X $78, |dy|<6 at Y $98) then flickers away; L9 `$4B` with all 8
+  pieces opens the shutters and vanishes. `$51` life-or-money implemented
+  (Q2-only, unit-tested, not seen in play).
+- **Grumble `$36`** (`grumble.ts`): blocks the north door; any bait in the room
+  → secret tune, room item flag, $40-frame flicker, bait removed from inventory,
+  gone for good. His bonfires stay on revisits (ROM sets them up before the
+  fed check).
+- Also: `DAMAGE_TABLE` gets the NES zeros for $35–$37 and $4B–$52 (touching
+  Zelda used to deal $80); `Enemy.touchesLink`; halted Link can't use B items.
+
+Tests: +63 (`moldorm`, `dungeon-people`, `room-object-spawns`). Typecheck clean;
+1385 pass, 1 known stale recorder failure. Lint: only the pre-existing errors.
+
+Found while verifying (logged above): L7 room art mismatch, missing comma glyph.
+
+## 2026-10-09 — L7–L9 room art fixed; comma glyph (Claude Opus 5.5)
+
+**All of Levels 7–9 were drawn with the wrong backgrounds.** `dungeons-map.png`
+paints the `uw2q1` block with its two 8-column halves swapped relative to the
+ROM room ids (L7/L8 painted in columns 0–7, L9 in 8–15; the data has them the
+other way round). Proven by the baked-in people: L7 Grumble room 40 is painted at
+cell 32, bomb seller 72 at 64, L8 Spectacle Rock man 61 at 53, L9 gatekeeper 102 at
+110, and every empty cell lands on an unused id. `roomMapCell()` in
+`dungeon-renderer.ts` now applies the swap for `uw2q1` (room paint, item mask,
+open-door donors). `uw1q1` was already right. Verified in Chrome: L7/L8/L9
+entrances and person rooms now match their door data and palettes (L7 green).
+
+**Baked people/rupees:** the paintings of person, Grumble and rupee rooms include
+the old man, bonfires, text, prices and rupees. Unique room 38 is all `$24` black
+floor, so `DungeonManager.renderRoom` repaints its inner 12×7 black
+(`isBlankFloorRoom` + `clearInnerFloor`) — nothing baked lingers after a person
+leaves or a rupee is taken. Also affects L9 rooms 18/53/98 (same layout, items
+drawn live).
+
+**Comma:** `font.png` has none; `glyphFor()` draws ',' as the apostrophe dropped
+5px (its shape is the comma's), so "GRUMBLE, GRUMBLE!!!" and cave text read right.
+
+Tests +7. Typecheck clean; 1392 pass, 1 known stale recorder failure; build OK.
+
+## 2026-10-09 — Pond Fairy, Boulders, Zora gating (Codex / GPT Sol)
+
+Completed **Parts 0/A/B/C** of `plan-overworld-fairy-boulders.md`, with cited
+disassembly checked and code comments added. Extracted shared Patra orbit math
+and Moldorm 8-way steering; added configurable child spawn clouds. Pond Fairy
+owns Link's halt, live-world healing, eight orbiting hearts and an 80-frame
+release tail. Invisible BoulderSet emits at most three instant-spawn Boulders;
+rocks jump, bounce, ignore weapons and depart without drops. Extracted the 37
+Q1 AttrsA `$08` screens; extra Zoras now respect that list.
+
+**Verification:** 67 new tests; 1459 pass, only the known recorder failure above.
+Typecheck/build pass; lint has the same four pre-existing errors and no errors
+in touched source files. Existing Moldorm tests unchanged; both Patra types
+match the original implementation frame-for-frame over 1500 frames.
+Browser checked all eight screens (fairies 57/67; rocks 3/8/22/23/24/25), including
+4→32 healing, blocked movement/items, moving hearts, release/revisit/reset,
+700-frame rock population/replacement checks and actual sword overlap immunity.
+Screenshots visually reviewed; no gameplay JS errors. Existing favicon 404
+remains. Test browser muted with M, then closed; Vite stopped (ports 5173/9222 free).
+Evidence lives outside the repo in temporary directory
+`C:/Users/ajfm88/AppData/Local/Temp/zelda-overworld-e9448b2b2899479a848920d9be804dbe`.
+
+**Clarifications/skips:** no required part skipped. `Z_04.asm:3405` stores the
+post-fill timer in `ObjTimer+1` (fairy's slot), not Link's slot as the plan's
+wording suggests. Grounded Boulders retain their random initial direction until
+jump setup forces Down. Clock exceptions are limited to these new objects;
+ordinary pending enemy children remain frozen. Healing uses the plan's
+half-heart quantization. Q2 AttrsA patches remain deferred to L2a4 as planned;
+unrelated recorder/lint/snowy-mountain issues untouched. No new architectural
+decision; `DECISIONS.md` unchanged.
+
+**Files changed** (paths below relative to `zelda-nes-ts/` unless prefixed):
+`src/data/{enemy-spawn-types.ts,enemy-spawns.json}`, `src/main.ts`,
+`src/objects/enemies/{boulder.ts,dir8.ts,enemy.ts,moldorm.ts,orbit-math.ts,patra.ts,pond-fairy.ts,spawn-manager.ts}`,
+`src/render/{boss-sprite-data.ts,enemy-sprite-data.ts}`,
+`tests/objects/enemies/{boss-spawn-count.test.ts,boulder.test.ts,orbit-math.test.ts,overworld-special-spawns.test.ts,pond-fairy.test.ts,spawn-manager.test.ts}`,
+`scripts/extract-enemy-spawns.ts`, and repo-root
+`context/{IMPLEMENTATION.md,ENEMY-ROSTER.md,STATUS.md}`. Build regenerated
+`dist/index.html` and `dist/assets/index-pM0TJVpm.js`. No new art or reference
+changes. Concurrent Claude edits to `context/CONVENTIONS.md` preserved, not ours.
+
+## 2026-10-09 — Review of the Pond Fairy / Boulders / Zora work (Claude Opus 5.5)
+
+Reviewed Sol's Parts 0/A/B/C against `plan-overworld-fairy-boulders.md` and the
+cited ASM: **accepted, no changes needed.** Read every touched source file;
+orbit-math/dir8 are faithful moves; fairy matches `UpdatePondFairy` /
+`PondFairy_MoveHearts` (one-frame difference: the NES still draws hearts on the
+frame the `$50` tail expires — invisible); boulders match `UpdateTektiteOrBoulder`
+(`+$20` landing hard-coded, safe because dirs are always 5/6 after
+`PointBoulderDownward`). Sol's `ObjTimer+1` correction is right (slot 1 = the
+fairy). `enemy-spawns.json`: extractor re-run is byte-identical; old keys
+unchanged. Re-ran: typecheck clean, 1458 pass + known recorder failure + flaky
+Digdogger, 4 pre-existing lint errors (`ghini.ts`, `link.ts`, two in
+`dungeon-collision.ts` — earlier entries wrongly said `recorder.ts`), build OK.
+Browser (own run): fairies 57/67 trigger on row 112, hearts orbit, refill
+21.2 f/half-heart (NES 21.33), release after 80 frames, no retrigger, no Zora;
+boulders on 3/8/22–25 cap at 3, fall off at y 176 and respawn, sword passes
+through, contact = half a heart; Zoras still on 23–25 (zora-bit screens). No
+console errors.
+
+## 2026-10-09 — Context refresh; empty `bosses`/`npcs` folders removed (Claude Opus 5.5)
+
+User asked to bring `context/` up to date. Moved every finished session out of
+`STATUS.md` into this file (2026-09-08 → 2026-10-09; the short 2026-09-06 STATUS
+notes were already summarised in the 2026-09-06 entry above), and cut STATUS back
+to live state: next action (L2a3, plus the facts L2a3/L2a4 need from today —
+Q2 unique rooms 11/16/32 without a Q1 donor, `roomMapCell` for donors, Q2 AttrsA
+patches for the zora list), known gaps (pushed rocks don't visibly move, potion
+refill ~5× NES speed, no cave-exit rise animation, unexplained snowy-mountain
+report), testing notes. ARCHITECTURE gains the 8×8 collision row and two asset
+traps (`dungeons-map.png` half-swap/baked sprites; `overworld-enemies-alt.png` is
+the sheet the OW helper reads). PROJECT lists `zelda30tribute-master/` as the
+eighth reference repo. ENEMY-ROSTER re-audited. IMPLEMENTATION's stale
+"placeholder" and dungeon-entry wording corrected.
+
+Earlier the same evening: deleted the empty, never-referenced
+`src/objects/bosses/` and `src/objects/npcs/` (A1 scaffold leftovers — bosses and
+NPCs live in `src/objects/enemies/`, like the NES object table); CONVENTIONS no
+longer points at `objects/bosses/`. `plan-overworld-fairy-boulders.md` (root) is
+complete and kept as the hand-off record for Sol's work.

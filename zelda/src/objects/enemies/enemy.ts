@@ -59,6 +59,9 @@ export interface EnemyUpdateContext {
   readonly bombs?: readonly BombLike[];
   // True while the Recorder/Flute tune is playing (Digdogger reacts to this).
   readonly fluteActive?: boolean;
+  // Z_04.asm:2167 FindEmptyMonsterSlot / :2268 Clock bypass for boulder motion.
+  readonly freeMonsterSlots?: number;
+  readonly clockActive?: boolean;
 }
 
 // A monster this enemy wants the SpawnManager to create (e.g. Zol → 2 Gels).
@@ -66,6 +69,8 @@ export interface ChildSpawn {
   readonly x: number;
   readonly y: number;
   readonly objectType: number;
+  // Z_04.asm:1836 InitBoulder resets metastate: no appearance cloud.
+  readonly spawnCloudFrames?: number;
 }
 
 export class Enemy {
@@ -94,6 +99,9 @@ export class Enemy {
   protected _childSpawns: ChildSpawn[] = [];
   // Whether this enemy can be damaged by weapons (overridden by Peahat/Armos etc.)
   protected _vulnerable = true;
+  // False for room objects Link can overlap without a collision (rupee stash,
+  // dungeon people): checkEnemyLinkCollisions skips them entirely.
+  protected _touchesLink = true;
 
   constructor(
     x: number,
@@ -125,6 +133,7 @@ export class Enemy {
   get isStunned(): boolean { return this._state === EnemyState.Stunned; }
   get deathTimer(): number { return this._deathTimer; }
   get vulnerable(): boolean { return this._vulnerable; }
+  get touchesLink(): boolean { return this._touchesLink; }
 
   consumeProjectile(): EnemyProjectile | null {
     const p = this._pendingProjectile;

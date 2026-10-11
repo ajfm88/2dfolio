@@ -7,9 +7,20 @@
 > owns it*. Cross-checked against `spawn-manager.ts createEnemyByType`,
 > `SpikeTrap.createTraps`, and `dungeon-statues.ts`.
 
-**Last audited:** 2026-08-26 (G5). **Result:** every non-boss combat enemy is
-implemented. All remaining types are bosses (→ Phase I) or non-combat
-NPCs/specials (→ later content slices), each parked below.
+**Last audited:** 2026-10-09. **Result:** every object type that any Q1 overworld
+screen or dungeon room spawns is implemented — combat enemies, bosses, the
+dungeon people, Grumble, the rupee stash, the Pond Fairy and boulders. Only the
+Whirlwind `$2E` remains outside the roster (the recorder effect draws it). First
+audit 2026-08-26 (G5).
+
+**Correction 2026-10-09:** Phase I had finished without Moldorm `$41` or the
+triple Dodongo `$31`, and the non-combat room objects below were still spawning as
+the base `Enemy` placeholder (coloured box, contact damage, counted for kill-all
+rooms). All of them were implemented the same day — see the tables. The
+overworld Boulders `$1F/$20` and Pond Fairy `$2F` were also implemented and
+browser-verified on all eight affected screens on 2026-10-09. Supplemental
+Zoras now require the Q1 AttrsA `$08` bit. The "Deferred → Phase I" table below
+is the original plan, not a current boss audit.
 
 ## Implemented (combat enemies)
 
@@ -39,14 +50,27 @@ NPCs/specials (→ later content slices), each parked below.
 | $2B–$2D | Bubble (sword-jinx) | `bubble.ts` (G4a) |
 | $30 | Gibdo | `gibdo.ts` (G4a) |
 | $3A/$3B | Lanmola (red/blue) | `lanmola.ts` (G4b) |
+| $41 | Moldorm (2 worms × 5 segments) | `moldorm.ts` (2026-10-09) |
+| $31 | Dodongo (unclamped — 3 per room) | `dodongo.ts` (2026-10-09) |
 
 ## Implemented (hazards / non-Enemy combat objects)
 
 | ID(s) | NES type | File / owner |
 |---|---|---|
 | $49/$4A | Spike Trap (6/4 traps) | `spike-trap.ts` (H1b) — invulnerable, no HP |
+| $1F/$20 | BoulderSet / Boulder | `boulder.ts` (2026-10-09) — invisible ≤3-rock spawner; instant downward hops, horizontal bounce, invulnerable, $80 Link contact, no kill/drop |
 | — (room $23/$24) | Statue fireballs | `dungeon-statues.ts` (G5) — feeds EnemyProjectile pipeline |
 | $53–$5C | Monster shots / arrow / boomerang / fireball | `enemy-projectile.ts`, `goriya-boomerang.ts` — per-type visuals + shield rules (G5) |
+
+## Implemented (non-combat room objects)
+
+| ID(s) | NES type | File / owner |
+|---|---|---|
+| $35 | Rupee Stash (10 rupees) | `rupee-stash.ts` (2026-10-09) |
+| $2F | Pond Fairy | `pond-fairy.ts` + `main.ts` (2026-10-09) — harmless fixed NPC, owned Link halt, live-world healing, eight orbiting hearts, $50-frame release tail |
+| $36 | Grumble Goriya (eats bait) | `grumble.ts` (2026-10-09) |
+| $4B–$50, $52 | Underworld Person (dungeon old men) | `underworld-person.ts` (2026-10-09) |
+| $51 | Underworld Person life-or-money (Q2) | `underworld-person.ts` (2026-10-09) |
 
 ## Deferred → Phase I (bosses)
 
@@ -72,13 +96,8 @@ enemy roster. Sprite layouts for all seven already exist in `sprites.json` (B5).
 
 | ID(s) | Type | Why deferred / owner |
 |---|---|---|
-| $1F/$20 | BoulderSet / Boulder | Overworld mountain hazard near Lynels. Not a boss — **named G5 stretch, cut for scope**; owner: a future overworld-hazard slice. |
 | $2E | Whirlwind | Transport that warps Link between levels — a travel mechanic, not combat. Owner: warp/travel slice. |
-| $2F | Pond Fairy | Heals Link — NPC. Owner: NPC/heal slice. |
-| $35 | Rupee Stash | Money room contents. Owner: dungeon-content slice. |
-| $36 | Grumble | Hungry Goriya NPC (eats bait to pass). Owner: NPC slice. |
 | $37 | Zelda | Rescue NPC (endgame). Owner: endgame slice. |
-| $4B–$52 | Underworld Person | Old Man / Old Woman / Moblin NPCs. Owner: dungeon-NPC slice. |
 
 ## How to re-verify
 
