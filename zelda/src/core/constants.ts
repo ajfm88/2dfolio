@@ -32,8 +32,11 @@ export const SCREEN_EDGE_BOTTOM = PLAY_AREA_HEIGHT - TILE_SIZE;
 export const LINK_START_X = 120;
 export const LINK_START_Y = 80;
 
-// NES overworld default — tiles with NES metatile value < this are walkable
-export const DEFAULT_WALKABILITY_THRESHOLD = 0x8D;
+// Z_05.asm:6439 ObjectRoomBoundsOW / ObjectRoomBoundsUW — ObjectFirstUnwalkableTile.
+// An 8×8 tile below this value is walkable. OW is $89: $89-$8C are the waterfall
+// (squares 15/54), which must block. (Was $8D, which let Link climb the waterfall.)
+export const DEFAULT_WALKABILITY_THRESHOLD = 0x89;
+export const UW_WALKABILITY_THRESHOLD = 0x78;
 
 // Sword swing — Z_07.asm:4390 UpdateSwordOrRod
 export const SWORD_WINDUP_FRAMES = 5;
@@ -147,9 +150,10 @@ export const RAFT_ROOM_A = 0x3F;                       // 63 decimal
 export const RAFT_ROOM_B = 0x55;                       // 85 decimal
 export const RAFT_DOCK_X_A = 0x60;                     // dock X for room $3F
 export const RAFT_DOCK_X_B = 0x80;                     // dock X for room $55
-export const RAFT_ARRIVAL_Y = 0x3D;                    // 61 — Link arriving from scroll
-export const RAFT_DEPARTURE_Y = 0x7D;                  // 125 — Link at dock
-export const RAFT_MIDPOINT_Y = 0x7F;                   // 127 — state 1 stop point
+// NES screen Y values converted to play-area coords (subtract $3D).
+export const RAFT_ARRIVAL_Y = 0x3D - 0x3D;             // 0 — Link arriving from scroll (top edge)
+export const RAFT_DEPARTURE_Y = 0x7D - 0x3D;           // 64 — Link at dock
+export const RAFT_MIDPOINT_Y = 0x7F - 0x3D;            // 66 — state 1 stop point
 export const RAFT_SPRITE_OFFSET_Y = 6;                 // raft drawn 6px below Link
 
 // Recorder/Flute — Z_07.asm:2500 WieldFlute, Z_01.asm:1893 SummonWhirlwind

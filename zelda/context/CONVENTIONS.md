@@ -98,7 +98,8 @@ JSON is committed, generated once by the extraction scripts in `scripts/`
   rename it `SnakeBoss`. `Octorok`, not `Octopus`. `Darknut`, not
   `ArmoredKnight`. If the community calls it a Darknut, use `Darknut`.
 - Enemy files: `src/objects/enemies/octorok.ts`, `darknut.ts`, `gleeok.ts`.
-  Boss files: `src/objects/bosses/aquamentus.ts`, `ganon.ts`.
+  Bosses and NPCs live there too: `aquamentus.ts`, `ganon.ts`, `zelda-npc.ts`,
+  `underworld-person.ts` (they are all monster objects in the NES object table).
   Item files: `src/objects/items/boomerang.ts`, `bomb.ts`.
 - Keep names greppable across the disassembly and the reference repos.
 
@@ -145,7 +146,7 @@ enemy spawn timing, damage interactions — not just the happy path.
 ## Repo hygiene and scope guards
 
 - **Reference repos are read-only.** Never edit, never delete, never write into
-  them. `zelda-nes-ts/` is the only place you write code.
+  them. Game slices are written in `zelda-nes-ts/`.
 - **Localhost only, permanently** (`DECISIONS.md` #1). No deploy step, no
   hosting, no public origin, no CDN, no analytics endpoint.
 - **No emulation.** If a task seems to call for CPU/PPU emulation, stop and ask.

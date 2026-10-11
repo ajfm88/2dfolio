@@ -196,6 +196,7 @@ export function checkEnemyLinkCollisions(
 ): Enemy | null {
   for (const enemy of enemies) {
     if (!enemy.isActive || enemy.isSpawning || enemy.isDying) continue;
+    if (!enemy.touchesLink) continue;
     if (rectsOverlap(enemy.getHitbox(), linkRect)) {
       return enemy;
     }

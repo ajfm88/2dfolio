@@ -100,7 +100,7 @@ const MAP_DOT_COLOR = '#83d313';
 
 // Dungeon minimap area
 const DMAP_BASE_X = 16;
-const DMAP_BASE_Y = 22;
+const DMAP_BASE_Y = 25;
 const DMAP_CELL_W = 8;
 const DMAP_CELL_H = 4;
 const DMAP_COLS = 8;
@@ -199,12 +199,34 @@ export class HudRenderer {
     // "LEVEL-N" text
     this.font.drawString(renderer, LEVEL_TEXT_X, LEVEL_TEXT_Y, `LEVEL-${state.levelNumber}`);
 
+    // Compute bounding box of this dungeon's rooms so the minimap is
+    // centred in the 8×8 display area (Z_01.asm:4164 StatusBarMapXOffset).
+    let minCol = 15;
+    let minRow = 7;
+    let maxCol = 0;
+    let maxRow = 0;
+    const validRooms = state.dungeonValidRooms;
+    if (validRooms) {
+      for (const roomId of validRooms) {
+        const c = roomId % 16;
+        const r = Math.floor(roomId / 16);
+        if (c < minCol) minCol = c;
+        if (c > maxCol) maxCol = c;
+        if (r < minRow) minRow = r;
+        if (r > maxRow) maxRow = r;
+      }
+    }
+    const dungeonW = maxCol - minCol + 1;
+    const dungeonH = maxRow - minRow + 1;
+    const offsetCol = Math.floor((DMAP_COLS - dungeonW) / 2);
+    const offsetRow = DMAP_ROWS - dungeonH;
+
     // If player has Map, show all valid rooms as dim squares
-    if (state.hasMap && state.dungeonValidRooms) {
-      for (const roomId of state.dungeonValidRooms) {
-        const col = roomId % 16;
-        const row = Math.floor(roomId / 16);
-        if (col >= DMAP_COLS || row >= DMAP_ROWS) continue;
+    if (state.hasMap && validRooms) {
+      for (const roomId of validRooms) {
+        const col = roomId % 16 - minCol + offsetCol;
+        const row = Math.floor(roomId / 16) - minRow + offsetRow;
+        if (col < 0 || col >= DMAP_COLS || row < 0 || row >= DMAP_ROWS) continue;
         const rx = DMAP_BASE_X + col * DMAP_CELL_W;
         const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
         ctx.fillStyle = DMAP_MAP_ROOM_COLOR;
@@ -216,9 +238,9 @@ export class HudRenderer {
     const visited = state.dungeonVisitedRooms;
     if (visited) {
       for (const roomId of visited) {
-        const col = roomId % 16;
-        const row = Math.floor(roomId / 16);
-        if (col >= DMAP_COLS || row >= DMAP_ROWS) continue;
+        const col = roomId % 16 - minCol + offsetCol;
+        const row = Math.floor(roomId / 16) - minRow + offsetRow;
+        if (col < 0 || col >= DMAP_COLS || row < 0 || row >= DMAP_ROWS) continue;
         const rx = DMAP_BASE_X + col * DMAP_CELL_W;
         const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
         ctx.fillStyle = DMAP_ROOM_COLOR;
@@ -230,9 +252,9 @@ export class HudRenderer {
     if (state.hasCompass && state.triforceRoomId !== undefined) {
       const blink = (this._blinkTimer >> 4) & 1;
       if (blink) {
-        const col = state.triforceRoomId % 16;
-        const row = Math.floor(state.triforceRoomId / 16);
-        if (col < DMAP_COLS && row < DMAP_ROWS) {
+        const col = state.triforceRoomId % 16 - minCol + offsetCol;
+        const row = Math.floor(state.triforceRoomId / 16) - minRow + offsetRow;
+        if (col >= 0 && col < DMAP_COLS && row >= 0 && row < DMAP_ROWS) {
           const rx = DMAP_BASE_X + col * DMAP_CELL_W;
           const ry = DMAP_BASE_Y + row * DMAP_CELL_H;
           ctx.fillStyle = DMAP_TRIFORCE_COLOR;
@@ -245,8 +267,10 @@ export class HudRenderer {
     if (state.dungeonRoomCol !== undefined && state.dungeonRoomRow !== undefined) {
       const blink = (this._blinkTimer >> 3) & 1;
       if (blink) {
-        const cx = DMAP_BASE_X + state.dungeonRoomCol * DMAP_CELL_W;
-        const cy = DMAP_BASE_Y + state.dungeonRoomRow * DMAP_CELL_H;
+        const col = state.dungeonRoomCol - minCol + offsetCol;
+        const row = state.dungeonRoomRow - minRow + offsetRow;
+        const cx = DMAP_BASE_X + col * DMAP_CELL_W;
+        const cy = DMAP_BASE_Y + row * DMAP_CELL_H;
         ctx.fillStyle = DMAP_CURRENT_COLOR;
         ctx.fillRect(cx, cy, DMAP_CELL_W - 1, DMAP_CELL_H - 1);
       }

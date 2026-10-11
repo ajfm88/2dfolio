@@ -29,9 +29,18 @@ export class Raft {
   private readonly _dockX: number;
   private _state = RaftState.Idle;
   private _raftY = 0;
+  // When true, the arrival check (Y=$3D → MovingDown) is suppressed once.
+  // Set by main.ts when the raft itself triggered the screen scroll, so the
+  // destination raft room doesn't immediately re-trigger southward.
+  private _skipArrivalOnce = false;
 
   constructor(dockX: number) {
     this._dockX = dockX;
+  }
+
+  /** Suppress the next arrival-Y check (call after a raft-triggered scroll). */
+  suppressArrival(): void {
+    this._skipArrivalOnce = true;
   }
 
   get state(): RaftState { return this._state; }
@@ -42,15 +51,18 @@ export class Raft {
     if (this._state === RaftState.Idle) {
       if (link.posX !== this._dockX) return NO_TRANSITION;
 
-      if (link.posY === RAFT_ARRIVAL_Y) {
+      // Range checks: Link's sub-pixel movement (QSpeed $60) alternates
+      // 1px and 2px per frame, so an exact Y match can be skipped.
+      if (link.posY <= RAFT_ARRIVAL_Y + 1 && !this._skipArrivalOnce) {
         this._state = RaftState.MovingDown;
         this._raftY = link.posY + RAFT_SPRITE_OFFSET_Y;
         link.halted = true;
         link.setDirection(Direction.Down);
         return NO_TRANSITION;
       }
+      this._skipArrivalOnce = false;
 
-      if (link.posY === RAFT_DEPARTURE_Y) {
+      if (link.posY <= RAFT_DEPARTURE_Y + 1 && link.posY >= RAFT_DEPARTURE_Y - 1) {
         this._state = RaftState.MovingUp;
         this._raftY = link.posY + RAFT_SPRITE_OFFSET_Y;
         link.halted = true;

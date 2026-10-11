@@ -22,7 +22,7 @@ import { DeathAnimation } from './death/death-animation.js';
 import { GameOverScreen, GameOverOption } from './death/game-over-screen.js';
 import { computeRespawnParams } from './death/respawn.js';
 import { Renderer } from './render/renderer.js';
-import { SpriteSheet } from './render/sprite-renderer.js';
+import { SpriteSheet, directionToSpriteCol } from './render/sprite-renderer.js';
 import { TileRenderer } from './render/tile-renderer.js';
 import { initDungeonEnemySprites, initOverworldEnemySprites, initDeathSprites, initSpawnSprites } from './render/enemy-sprite-data.js';
 import { initBossSprites, initNpcSprites, initLinkEndingSprite } from './render/boss-sprite-data.js';
@@ -61,6 +61,7 @@ import { Stepladder } from './objects/items/stepladder.js';
 import { MagicRod } from './objects/weapons/magic-rod.js';
 import { MagicShot } from './objects/weapons/magic-shot.js';
 import { SpawnManager } from './objects/enemies/spawn-manager.js';
+import { PondFairy, advanceFairyRefill } from './objects/enemies/pond-fairy.js';
 import { checkWeaponEnemyCollisions, checkEnemyLinkCollisions, checkEnemyProjectileCollisions } from './objects/enemies/enemy-collision.js';
 import { DropEngine } from './objects/enemies/drop-engine.js';
 import { DAMAGE_TABLE } from './core/damage-tables.js';
@@ -71,8 +72,7 @@ import {
   getDungeonEntranceScreenId,
   findDungeonEntranceStandingPos,
 } from './data/dungeon-entrance-data.js';
-import { isCaveEntranceTile } from './data/cave-data.js';
-import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from './data/secret-types.js';
+import { getScreenCaveIndex } from './data/cave-data.js';
 import { DungeonManager } from './world/dungeon-manager.js';
 import { DungeonRenderer } from './render/dungeon-renderer.js';
 import { noclip, type TileCollisionMap } from './world/collision.js';
@@ -86,6 +86,18 @@ import { Wallmaster } from './objects/enemies/wallmaster.js';
 import { PushBlock, PushBlockState } from './world/push-block.js';
 import { Ganon } from './objects/enemies/ganon.js';
 import { ZeldaNpc } from './objects/enemies/zelda-npc.js';
+import { RoomPerson, PERSON_BLOCK_LINK_Y, type PersonRoomContext } from './objects/enemies/room-person.js';
+import {
+  UnderworldPerson,
+  UnderworldPersonLifeOrMoney,
+  BOMB_CAPACITY,
+  LIFE_OR_MONEY,
+  PRICE_TEXT_Y,
+  payWithHeartContainer,
+} from './objects/enemies/underworld-person.js';
+import { Grumble } from './objects/enemies/grumble.js';
+import { RupeeStash } from './objects/enemies/rupee-stash.js';
+import { TEXTBOX_LINE_HEIGHT, TEXTBOX_TOP_Y, textboxLineX } from './objects/enemies/person-textbox.js';
 import {
   SaveManager,
   WORLD_FLAG_BLOCKS,
@@ -172,6 +184,11 @@ let savedSlotBeforeChord = 0;
 // Potion heart refill — Z_05.asm:3019 WieldPotion
 let heartRefillActive = false;
 let heartRefillTimer = 0;
+// Fairy healing keeps the world running (Z_07.asm:2072 / Z_05.asm:6763).
+let pondFairy: PondFairy | null = null;
+let pondFairyHalt = false;
+let pondFairyRefilling = false;
+let pondFairyRefillFraction = 0;
 
 // SFX state tracking (detect transitions each frame)
 let sfxPrevSwordActive = false;
@@ -187,6 +204,7 @@ let linkSheetRed: SpriteSheet | null = null;
 // Auto-activation items
 let stepladder: Stepladder | null = null;
 let raft: Raft | null = null;
+let raftTriggeredScroll = false;
 
 // Weapon sprite sheets (initialized in init)
 let cloudSheet: SpriteSheet | null = null;
@@ -259,6 +277,11 @@ let dungeonStairsPos: { x: number; y: number } | null = null;
 let cellarWalkInFrames = 0;
 // True while a Like-Like is holding Link captured (paralyzed).
 let dungeonLinkCaptured = false;
+// The current room's people (old men, Grumble), captured at spawn so main.ts still
+// sees them on the frame they remove themselves from the SpawnManager list.
+let dungeonPeople: RoomPerson[] = [];
+// True while a person's textbox (or Grumble eating) holds Link halted.
+let dungeonPersonHalt = false;
 // Triforce-get completion sequence (H2). Frames left to hold the display before
 // warping Link out of the dungeon. NES sets GameMode $12 on triforce pickup.
 let triforceGetTimer = 0;
@@ -485,7 +508,7 @@ document.addEventListener('keydown', (e) => {
     overworld.setScreen(row, col);
     usedCandleThisScreen = false;
     spawnManager.clear();
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
+    spawnOverworldEnemies(Direction.Down);
     return `screen (${row},${col}) id ${overworld.currentScreen.id}`;
   },
   // Jump to a dungeon room by ID, ignoring doors.
@@ -601,6 +624,7 @@ function restoreGameState(state: SavedGameState): void {
 // (7,7); so does a loaded one, matching the NES.
 function startGameFromSlot(index: number): void {
   if (!overworldDataModule || !enemySpawnData || !itemsDataForDrops || !moduleLevelSecretsData) return;
+  releasePondFairy();
   activeSaveSlot = index;
   currentQuest = saveManager.getSlot(index)?.quest === 2 ? 2 : 1;
   link = new Link();
@@ -617,7 +641,7 @@ function startGameFromSlot(index: number): void {
   const slot = saveManager.getSlot(index);
   if (slot && nameIsCheatCode(slot.name)) applyCheatLoadout();
 
-  spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
+  spawnOverworldEnemies(Direction.Down);
   gameMode = GameMode.Gameplay;
   void audio.playMusic('overworld');
 }
@@ -692,6 +716,7 @@ function enterCave(caveIndex: number): void {
   caveWalkIntoFrames = 8;
   link.setDirection(Direction.Up);
   gameMode = GameMode.CaveTransition;
+  releasePondFairy();
   if (spawnManager) spawnManager.clear();
 }
 
@@ -720,6 +745,7 @@ function enterDungeon(level: number): void {
   caveWalkIntoFrames = 8;
   link.setDirection(Direction.Up);
   gameMode = GameMode.DungeonTransition;
+  releasePondFairy();
   if (spawnManager) spawnManager.clear();
 }
 
@@ -758,6 +784,7 @@ function exitDungeon(): void {
 
   currentLevel = 0;
   dungeonManager = null;
+  releaseDungeonPeople();
   dungeonSpikeTraps = [];
   dungeonStatues = null;
   dungeonPushBlock = null;
@@ -769,12 +796,13 @@ function exitDungeon(): void {
   overworld.setScreen(dungeonEntryScreenRow, dungeonEntryScreenCol);
   link.setPosition(dungeonEntryX, dungeonEntryY);
   link.setDirection(Direction.Down);
+  overworld.disarmWarpsUntilMoved(link);
 
   curtainEffect = new CurtainEffect('open');
   gameMode = GameMode.DungeonTransition;
 
   if (spawnManager && overworld) {
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
+    spawnOverworldEnemies(Direction.Down);
   }
 }
 
@@ -806,6 +834,7 @@ function beginTriforceGet(): void {
 }
 
 function spawnDungeonRoomEnemies(): void {
+  releaseDungeonPeople();
   if (!spawnManager || !dungeonManager || !enemySpawnData) return;
 
   spawnManager.clear();
@@ -821,7 +850,134 @@ function spawnDungeonRoomEnemies(): void {
     maxCount,
     Direction.Down,
   );
+  setupDungeonPeople();
+}
 
+/** Forget the previous room's people and let Link go if one was holding him. */
+function releaseDungeonPeople(): void {
+  dungeonPeople = [];
+  if (dungeonPersonHalt && link) link.halted = false;
+  dungeonPersonHalt = false;
+}
+
+// Run each person's Init routine checks (InitUnderworldPerson_Full / InitGrumble_Full).
+function setupDungeonPeople(): void {
+  if (!spawnManager || !dungeonManager || !link) return;
+  const ctx: PersonRoomContext = {
+    level: currentLevel,
+    itemTaken: dungeonManager.isItemTaken(),
+    triforce: link.inventory.triforce,
+  };
+  for (const enemy of spawnManager.enemies) {
+    if (!(enemy instanceof RoomPerson)) continue;
+    enemy.setup(ctx);
+    dungeonPeople.push(enemy);
+    // InitUnderworldPersonC: the Level 9 gatekeeper sets ShutterTrigger.
+    if (enemy instanceof UnderworldPerson && enemy.opensShutters) {
+      dungeonManager.triggerShutters();
+    }
+  }
+}
+
+// SetUpCommonCaveObjects halts Link; UnhaltLink runs when the text is done.
+function applyDungeonPersonHalt(): void {
+  if (!link) return;
+  if (dungeonPeople.some((p) => p.haltsLink)) {
+    link.halted = true;
+    dungeonPersonHalt = true;
+  } else if (dungeonPersonHalt) {
+    link.halted = false;
+    dungeonPersonHalt = false;
+  }
+}
+
+// Text blips, bonfire fireballs, the bomb-capacity sale, life-or-money, Grumble's
+// bait, and the rupee stash — everything people and money rooms ask of the game.
+function updateDungeonPeople(): void {
+  if (!link || !dungeonManager || !spawnManager) return;
+
+  for (const person of dungeonPeople) {
+    if (person.consumeTypedChar()) audio.play('text');
+
+    // Person_CheckCollisions → PersonFireballsEnabled: the bonfires shoot.
+    if (person.consumeStruck()) {
+      if (!dungeonStatues) dungeonStatues = new DungeonStatues(dungeonManager.currentRoom.uniqueRoomId);
+      dungeonStatues.enablePersonFireballs();
+    }
+
+    if (person instanceof UnderworldPerson &&
+        person.tryBombCapacitySale(link.posX, link.posY, link.rupees)) {
+      link.spendRupees(BOMB_CAPACITY.price);
+      const max = link.maxBombs + BOMB_CAPACITY.step;
+      link.setMaxBombs(max);
+      link.addBombs(max);
+      dungeonManager.setItemTaken();
+      audio.play('key');
+    }
+
+    if (person instanceof UnderworldPersonLifeOrMoney) {
+      const choice = person.tryChoice(link.posX, link.posY, link.rupees);
+      if (choice === 'life') {
+        const paid = payWithHeartContainer(link.health, link.maxHealth);
+        link.setHealth(paid.health, paid.maxHealth);
+      } else if (choice === 'money') {
+        link.spendRupees(LIFE_OR_MONEY.moneyPrice);
+      }
+      if (choice) {
+        dungeonManager.triggerShutters();
+        dungeonManager.setItemTaken();
+        audio.play('key');
+      }
+    }
+
+    if (person instanceof Grumble) {
+      if (person.offerFood(food !== null && food.isActive)) {
+        audio.play('secret');
+        dungeonManager.setItemTaken();
+      }
+      // UpdateGrumble3: the bait is eaten and leaves the inventory.
+      if (person.consumeFinished()) {
+        food = null;
+        link.inventory.food = false;
+      }
+    }
+  }
+
+  // UpdateRupeeStash_Full: one rupee per touch; taking any empties the room.
+  for (const enemy of spawnManager.enemies) {
+    if (enemy instanceof RupeeStash && enemy.isTouchedBy(link.posX, link.posY)) {
+      enemy.collect();
+      link.addRupees(1);
+      audio.play('getRupee');
+      dungeonManager.roomFlags.setRoomCleared(dungeonManager.currentRoomId);
+    }
+  }
+}
+
+// The textbox and prices are nametable tiles in the NES — black-backed characters
+// that sit under every sprite.
+function renderDungeonPeopleText(): void {
+  if (!font || dungeonPeople.length === 0) return;
+  const ctx = renderer.ctx;
+  const drawBacked = (x: number, y: number, text: string): void => {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x, y, text.length * 8, 8);
+    font!.drawString(renderer, x, y, text);
+  };
+  for (const person of dungeonPeople) {
+    if (!person.isActive) continue;
+    const box = person.textbox;
+    if (box) {
+      const visible = box.visibleLines();
+      visible.forEach((text, i) => {
+        const full = box.lines[i] ?? text;
+        drawBacked(textboxLineX(full), TEXTBOX_TOP_Y + i * TEXTBOX_LINE_HEIGHT, text);
+      });
+    }
+    if (person instanceof UnderworldPerson || person instanceof UnderworldPersonLifeOrMoney) {
+      for (const price of person.priceTexts) drawBacked(price.x, PRICE_TEXT_Y, price.text);
+    }
+  }
 }
 
 // Bubble contact jinxes Link's sword instead of dealing damage.
@@ -851,8 +1007,21 @@ function initDungeonRoomObjects(): void {
   dungeonPushBlock = null;
   dungeonRoomItem = null;
   dungeonRoomItemActive = false;
+  dungeonStairsPos = null;
 
   const room = dungeonManager.currentRoom;
+
+  // Pre-existing stairs: if this room connects to a cellar and the stairs
+  // are already in the tile layout (not behind a push-block trigger 5), detect them.
+  const cellar = dungeonManager.getCellarForRoom(room.id);
+  if (cellar) {
+    if (room.secretTrigger !== 5) {
+      dungeonStairsPos = dungeonManager.findStairsPosition() ?? { x: 0xD0, y: 0x60 };
+    } else if (dungeonManager.roomFlags.isSecretFound(room.id)) {
+      // Trigger-5 stairs were revealed in a previous visit — re-show them.
+      dungeonStairsPos = { x: 0xD0, y: 0x60 };
+    }
+  }
 
   // Spike traps: monsterListId $49 or $4A
   if (room.monsterListId === 0x49 || room.monsterListId === 0x4A) {
@@ -945,6 +1114,7 @@ function returnToOverworld(): void {
   // Restore Link to where they were when they entered the cave, facing down
   link.setPosition(caveEntryX, caveEntryY);
   link.setDirection(Direction.Down);
+  overworld.disarmWarpsUntilMoved(link);
 
   caveRoom = null;
   curtainEffect = new CurtainEffect('open');
@@ -952,7 +1122,7 @@ function returnToOverworld(): void {
   pendingCaveIndex = -2; // sentinel: opening curtain on overworld
   // Respawn enemies when returning to overworld
   if (spawnManager && overworld) {
-    spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
+    spawnOverworldEnemies(Direction.Down);
   }
 }
 
@@ -1105,6 +1275,53 @@ function updateRecorderEffect(): void {
   }
 }
 
+/** Screen-owned fairy halt: release only the halt this service acquired. */
+function releasePondFairy(): void {
+  if (pondFairyHalt && link) link.halted = false;
+  pondFairyHalt = false;
+  pondFairy = null;
+  pondFairyRefilling = false;
+  pondFairyRefillFraction = 0;
+  if (sfxRefillPlaying && !heartRefillActive) {
+    audio.stopLoop('refillLoop');
+    sfxRefillPlaying = false;
+  }
+}
+
+function spawnOverworldEnemies(entryDirection: Direction): void {
+  releasePondFairy();
+  if (!spawnManager || !overworld) return;
+  spawnManager.spawnForScreen(overworld.currentScreen, entryDirection, overworld.collisionMap);
+  pondFairy = spawnManager.enemies.find((e): e is PondFairy => e instanceof PondFairy) ?? null;
+  // Z_04.asm:1901 InitPondFairy requests Tune1 $08 on each room entry.
+  if (pondFairy) audio.play('getItem');
+}
+
+function applyPondFairyHalt(): void {
+  if (!link) return;
+  if (pondFairy?.haltsLink) {
+    link.halted = true;
+    pondFairyHalt = true;
+  } else if (pondFairyHalt) {
+    link.halted = false;
+    pondFairyHalt = false;
+  }
+}
+
+function updatePondFairy(): void {
+  if (!link || !pondFairy) return;
+  if (pondFairy.fillingHearts) {
+    // Z_05.asm:6763 World_FillHearts: +6 fractional units/frame, NOT potion's
+    // gameplay-freezing early return. Link stores integer half hearts.
+    const refill = advanceFairyRefill(pondFairyRefillFraction);
+    pondFairyRefillFraction = refill.fraction;
+    if (refill.halfHearts > 0) link.heal(refill.halfHearts);
+    if (link.health >= link.maxHealth) pondFairy.finishFilling();
+  }
+  pondFairyRefilling = pondFairy.fillingHearts;
+  applyPondFairyHalt();
+}
+
 function updateGameplay(): void {
   if (!link || !overworld || !inventorySlide) return;
 
@@ -1140,6 +1357,7 @@ function updateGameplay(): void {
   }
 
   if (overworld.isTransitioning) {
+    releasePondFairy();
     overworld.updateTransition(link);
     // Clear weapons, pickups, enemies, and auto-activation items on screen transition
     bombs = [];
@@ -1159,7 +1377,7 @@ function updateGameplay(): void {
     // Spawn enemies for the new screen after transition completes
     if (!overworld.isTransitioning && spawnManager) {
       const entryDir = link.facing;
-      spawnManager.spawnForScreen(overworld.currentScreen, entryDir, overworld.collisionMap);
+      spawnOverworldEnemies(entryDir);
     }
 
     // Check for raft room after transition completes
@@ -1170,6 +1388,12 @@ function updateGameplay(): void {
       } else if (sid === RAFT_ROOM_B) {
         raft = new Raft(RAFT_DOCK_X_B);
       }
+      // If the raft itself triggered this scroll, suppress the arrival check
+      // so the destination raft doesn't immediately send Link back south.
+      if (raft && raftTriggeredScroll) {
+        raft.suppressArrival();
+      }
+      raftTriggeredScroll = false;
     }
     return;
   }
@@ -1178,6 +1402,7 @@ function updateGameplay(): void {
   if (raft) {
     const raftResult = raft.update(link);
     if (raftResult.shouldTransitionUp) {
+      raftTriggeredScroll = true;
       overworld.tryTransition(Direction.Up, link);
     }
   }
@@ -1187,9 +1412,9 @@ function updateGameplay(): void {
     overworld.collisionMap.setWalkableOverride(stepladder.tileRow, stepladder.tileCol);
   }
 
+  applyPondFairyHalt();
   link.blockSwordAttack = magicRod !== null && magicRod.isActive();
   const result = link.update(input, overworld.collisionMap, overworld.currentScreen);
-  updateSfxTracking();
 
   // Clear walkable overrides after Link update
   overworld.collisionMap.clearWalkableOverrides();
@@ -1223,7 +1448,7 @@ function updateGameplay(): void {
 
   // Item button (Z key) — use equipped B-item (rod and sword share animation slot)
   const rodActive = magicRod !== null && magicRod.isActive();
-  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive) {
+  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive && !link.halted) {
     useBItem(link);
   }
 
@@ -1297,6 +1522,7 @@ function updateGameplay(): void {
   // Update enemies
   if (spawnManager) {
     spawnManager.update(overworld.collisionMap, overworld.currentScreen, link.posX, link.posY, bombs);
+    updatePondFairy();
 
     // Check weapon→enemy collisions
     const hitResults = checkWeaponEnemyCollisions(spawnManager.activeEnemies, {
@@ -1367,6 +1593,8 @@ function updateGameplay(): void {
     }
   }
 
+  updateSfxTracking();
+
   // Update pickups — collision with Link
   for (const pickup of pickups) {
     pickup.update();
@@ -1377,33 +1605,21 @@ function updateGameplay(): void {
   }
   pickups = pickups.filter(p => p.isActive);
 
-  // Check dungeon entrance first, then cave entry
-  const dungeonLevel = getDungeonLevel(overworld.currentScreen.id);
-  if (dungeonLevel !== null && link.facing === Direction.Up && link.isMoving) {
-    const checkX = link.posX + 8;
-    const checkY = link.posY - 1;
-    if (checkY >= 0) {
-      const col = Math.floor(checkX / 16);
-      const row = Math.floor(checkY / 16);
-      const tileIndex = overworld.currentScreen.tiles[row]?.[col];
-      if (tileIndex !== undefined && isCaveEntranceTile(tileIndex)) {
-        enterDungeon(dungeonLevel);
-        return;
-      }
-      // Check tile overrides for secret-revealed entrances (L7-9)
-      const gridIdx = row * 16 + col;
-      const override = overworld.tileObjectManager.tileOverrides.get(gridIdx);
-      if (override === SQUARE_INDEX_CAVE_ENTRANCE || override === SQUARE_INDEX_STAIRS) {
-        enterDungeon(dungeonLevel);
-        return;
-      }
+  // Z_05.asm:7246 CheckWarps → HandleWarpOW: Link standing on an entrance tile.
+  // NES picks the destination from the screen's AttrsB cave index (< $40 is a
+  // level, else a cave); our tables split the same data.
+  if (overworld.isOnWarpTile(link)) {
+    const screenId = overworld.currentScreen.id;
+    const dungeonLevel = getDungeonLevel(screenId);
+    if (dungeonLevel !== null) {
+      enterDungeon(dungeonLevel);
+      return;
     }
-  }
-
-  const caveIndex = overworld.checkCaveEntry(link);
-  if (caveIndex !== null) {
-    enterCave(caveIndex);
-    return;
+    const caveIndex = getScreenCaveIndex(screenId);
+    if (caveIndex !== null) {
+      enterCave(caveIndex);
+      return;
+    }
   }
 
   if (link.isDead && gameMode === GameMode.Gameplay) {
@@ -1468,7 +1684,13 @@ function updateDungeonGameplay(): void {
   const screen = dungeonManager.dummyScreen;
 
   link.blockSwordAttack = magicRod !== null && magicRod.isActive();
+  applyDungeonPersonHalt();
+  // Z_01.asm:3144 CheckPersonBlocking: with a person in the room, Link may not move
+  // up while above NES Y $8E — it keeps him below the old man (and Grumble's door).
+  const linkYBefore = link.posY;
+  const personBlocksUp = linkYBefore < PERSON_BLOCK_LINK_Y && dungeonPeople.some((p) => p.blocksLink);
   const result = link.update(input, collision, screen);
+  if (personBlocksUp && link.posY < linkYBefore) link.setPosition(link.posX, linkYBefore);
   updateSfxTracking();
 
   // Ignore screen edge results in dungeons — door transitions handled differently
@@ -1543,6 +1765,7 @@ function updateDungeonGameplay(): void {
         pickups = [];
         dungeonStairsPos = null;
         if (spawnManager) spawnManager.clear();
+        releaseDungeonPeople();
         return;
       }
     }
@@ -1567,9 +1790,9 @@ function updateDungeonGameplay(): void {
     return;
   }
 
-  // Item button
+  // Item button — a halted Link (ObjState $40) can't use items either.
   const rodActive = magicRod !== null && magicRod.isActive();
-  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive) {
+  if (input.isJustPressed(Action.Item) && !link.isSwordActive && !rodActive && !link.halted) {
     useBItem(link);
   }
 
@@ -1650,6 +1873,8 @@ function updateDungeonGameplay(): void {
         audio.play(boss ? 'bossScream1' : 'enemyHit');
       }
     }
+
+    updateDungeonPeople();
 
     // Ganon custom collision — _vulnerable=false bypasses normal pipeline
     const ganon = spawnManager.activeEnemies.find(
@@ -1914,8 +2139,11 @@ function isGridAligned(x: number, y: number): boolean {
   return x % 8 === 0 && y % 8 === 0;
 }
 
+// Boss-scream hit sounds: Dodongo ($31/$32) through Ganon, minus the non-combat
+// rupee stash / Grumble / Zelda ($35-$37); Moldorm through Patra.
 function isBossEnemy(type: number): boolean {
-  return (type >= 0x32 && type <= 0x3E) || (type >= 0x41 && type <= 0x48);
+  if (type >= 0x35 && type <= 0x37) return false;
+  return (type >= 0x31 && type <= 0x3E) || (type >= 0x41 && type <= 0x48);
 }
 
 function playPickupSfx(itemId: number): void {
@@ -1953,10 +2181,11 @@ function updateSfxTracking(): void {
     sfxLowHealthPlaying = false;
   }
 
-  if (heartRefillActive && !sfxRefillPlaying) {
+  const refilling = heartRefillActive || pondFairyRefilling;
+  if (refilling && !sfxRefillPlaying) {
     audio.playLoop('refillLoop');
     sfxRefillPlaying = true;
-  } else if (!heartRefillActive && sfxRefillPlaying) {
+  } else if (!refilling && sfxRefillPlaying) {
     audio.stopLoop('refillLoop');
     sfxRefillPlaying = false;
   }
@@ -2306,7 +2535,7 @@ function handleRespawn(countDeath = true): void {
     void audio.playMusic('overworld');
 
     if (spawnManager && overworld) {
-      spawnManager.spawnForScreen(overworld.currentScreen, Direction.Down, overworld.collisionMap);
+      spawnOverworldEnemies(Direction.Down);
     }
   }
 }
@@ -2328,6 +2557,16 @@ function renderDungeonEntities(): void {
     }
   }
 
+  // Mask baked-in stairs from dungeons-map.png when they shouldn't be visible.
+  // Stairs should only show when dungeonStairsPos is set (trigger fired or
+  // pre-existing). Otherwise they're artifacts from the shared level block image.
+  if (!dungeonStairsPos && dungeonManager && !dungeonManager.inCellar) {
+    const bakedStairs = dungeonManager.findStairsPosition();
+    if (bakedStairs) {
+      dungeonManager.maskBakedRoomItem(renderer, bakedStairs.x, bakedStairs.y);
+    }
+  }
+
   if (dungeonStairsPos) {
     ctx.fillStyle = '#000000';
     ctx.fillRect(dungeonStairsPos.x, dungeonStairsPos.y, 16, 16);
@@ -2340,6 +2579,7 @@ function renderDungeonEntities(): void {
   if (!dungeonManager?.inCellar) {
     if (dungeonPushBlock) dungeonPushBlock.render(renderer);
     for (const trap of dungeonSpikeTraps) trap.render(renderer);
+    renderDungeonPeopleText();
   }
 
   // Render room item
@@ -2791,7 +3031,14 @@ const loop = new GameLoop({
       const activeLinkSheet = getActiveLinkSheet();
       const linkHiddenByWhirlwind = recorderEffect !== null && recorderEffect.linkCaught;
       if (activeLinkSheet && link && !linkHiddenByWhirlwind) {
-        link.render(renderer, activeLinkSheet);
+        if (pondFairy?.haltsLink && link.isVisible) {
+          // Z_04.asm:3444-3460 @DrawLinkAndHearts clears ObjInputDir and draws
+          // standing Link, not the attack/walk frame left over from triggering.
+          activeLinkSheet.drawFrame(renderer, directionToSpriteCol(link.facing), link.posX, link.posY);
+          link.activeSwordBeam?.render(renderer, activeLinkSheet);
+        } else {
+          link.render(renderer, activeLinkSheet);
+        }
       }
     }
 

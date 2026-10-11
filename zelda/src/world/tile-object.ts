@@ -13,6 +13,7 @@ import {
   TILE_OBJ_GRAVESTONE,
   TILE_OBJ_SQUARE_INDICES,
   SQUARE_INDEX_CAVE_ENTRANCE,
+  SQUARE_INDEX_FLOOR,
   SQUARE_INDEX_STAIRS,
 } from '../data/secret-types.js';
 import type { Bomb } from '../objects/weapons/bomb.js';
@@ -69,10 +70,16 @@ export class TileObjectManager {
 
   // Tile overrides for this screen (grid index → replacement square index)
   private readonly _tileOverrides = new Map<number, number>();
+  private _screenId = -1;
 
   get tileObject(): TileObject | null { return this._tileObject; }
   get secretRevealed(): boolean { return this._secretRevealed; }
   get tileOverrides(): ReadonlyMap<number, number> { return this._tileOverrides; }
+
+  /** Overrides apply only to the screen they were built for (not mid-scroll neighbours). */
+  overridesForScreen(screenId: number): ReadonlyMap<number, number> | undefined {
+    return screenId === this._screenId ? this._tileOverrides : undefined;
+  }
 
   consumePendingReveal(): SecretRevealEvent | null {
     const ev = this._pendingReveal;
@@ -92,6 +99,7 @@ export class TileObjectManager {
     this._pushOffset = 0;
     this._pendingReveal = null;
     this._tileOverrides.clear();
+    this._screenId = screen.id;
 
     // Check quest mismatch — if this screen's secret doesn't apply to Q1, skip
     const questSecret = secretsData.questSecretByScreen[screen.id];
@@ -301,8 +309,8 @@ export class TileObjectManager {
 
       // Replace the original position with a floor tile
       const gridIdx = obj.row * 16 + obj.col;
-      // Square index 0 = ground ($24) — use the base walkable tile
-      this._tileOverrides.set(gridIdx, 0);
+      // Square 0 is four $24 tiles — the black cave-opening warp tile, not floor.
+      this._tileOverrides.set(gridIdx, SQUARE_INDEX_FLOOR);
     }
   }
 

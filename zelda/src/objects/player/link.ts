@@ -252,6 +252,10 @@ export class Link {
     return this._bombs;
   }
 
+  get maxBombs(): number {
+    return this._maxBombs;
+  }
+
   addRupees(amount: number): void {
     this._rupees = Math.min(999, Math.max(0, this._rupees + amount));
   }

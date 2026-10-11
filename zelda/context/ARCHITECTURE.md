@@ -1,6 +1,6 @@
 # ARCHITECTURE — how the pieces fit
 
-Seven reference repos, one direction of flow. **Nothing ever writes into the
+Eight reference repos, one direction of flow. **Nothing ever writes into the
 reference repos.**
 
 What is actually built and which file owns it: `IMPLEMENTATION.md`.
@@ -90,6 +90,7 @@ Dependencies point **downward only**. An enemy importing from `ui/` is a bug.
 |---|---|
 | Resolution | 256×240 (NTSC); HUD 256×64 top, play area 256×176 bottom |
 | Tile size | 16×16 pixels (metatiles; NES hardware uses 8×8) |
+| Collision | per **8×8** tile inside each square (OW squares < `$10` have four distinct tiles); walkable if tile < `$89` OW / `$78` UW (`Z_05.asm:6439`, DECISIONS #21) |
 | Play area | 16 tiles wide × 11 tiles tall |
 | Overworld | 16×8 grid = 128 screens |
 | Dungeons | 9, each a grid of rooms (varies per dungeon) |
@@ -142,7 +143,7 @@ repos or are produced during data extraction.
 **Sprites are committed, not generated.** No build-time asset pipeline — curated
 once in slice A3, used directly.
 
-Two sprite-sheet traps, both found the hard way (`HISTORY.md`, 2026-09-04):
+Asset traps, all found the hard way (`HISTORY.md`, 2026-09-04 and 2026-10-09):
 
 - **Sheet grids are not uniform.** `projectiles.png` is 6×4 cells of 40×40, not
   15 columns of 16×16. Check the source repo's own code for a sheet's layout
@@ -150,6 +151,14 @@ Two sprite-sheet traps, both found the hard way (`HISTORY.md`, 2026-09-04):
 - **Some sheets carry a second background colour** — a grey `#747474` backing
   box behind each sprite. `src/render/transparency.ts` edge-flood-fills it away
   while preserving grey *inside* sprites.
+- **`dungeons-map.png` is screenshots of the real game.** Its `uw2q1` half (L7–9)
+  has its two 8-column halves swapped relative to ROM room ids — always go through
+  `roomMapCell()` (DECISIONS #23). Paintings also carry baked-in sprites (items,
+  stairs, old men, text, rupees); room items and stairs are masked, blank-floor
+  rooms (unique room 38) are repainted black.
+- **Two overworld enemy sheets.** `drawOverworldEnemySprite` reads
+  `overworld-enemies-alt.png`, not `overworld-enemies.png` — coordinates from the
+  other sheet are wrong.
 
 ---
 

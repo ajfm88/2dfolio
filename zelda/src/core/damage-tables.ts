@@ -51,6 +51,9 @@ export const DAMAGE_TABLE: Readonly<Record<number, number>> = {
   0x32: 0x01, // Red Dodongo — 2 half-hearts
   0x33: 0x02, // Blue Gohma — 4 half-hearts
   0x34: 0x02, // Red Gohma — 4 half-hearts
+  0x35: 0x00, // Rupee Stash (no damage)
+  0x36: 0x00, // Grumble Goriya (no damage)
+  0x37: 0x00, // Zelda (no damage)
   0x38: 0x02, // Digdogger 1 — 4 half-hearts
   0x39: 0x02, // Digdogger 2 — 4 half-hearts
   0x3a: 0x02, // Lanmola — 4 half-hearts
@@ -70,6 +73,14 @@ export const DAMAGE_TABLE: Readonly<Record<number, number>> = {
   0x48: 0x02, // Patra — 4 half-hearts
   0x49: 0x01, // Trap — 2 half-hearts
   0x4a: 0x01, // Trap — 2 half-hearts
+  0x4b: 0x00, // Underworld Person 1 (no damage)
+  0x4c: 0x00, // Underworld Person 2
+  0x4d: 0x00, // Underworld Person 3
+  0x4e: 0x00, // Underworld Person 4
+  0x4f: 0x00, // Underworld Person 5
+  0x50: 0x00, // Underworld Person 6
+  0x51: 0x00, // Underworld Person Life-or-Money
+  0x52: 0x00, // Underworld Person 8
   0x53: 0x80, // Flying Rock (Octorok shot) — 1 half-heart
   0x54: 0x80, // Monster Shot — 1 half-heart
   0x55: 0x80, // Fireball 1 — 1 half-heart

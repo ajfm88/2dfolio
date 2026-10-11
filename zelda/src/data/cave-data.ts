@@ -15,15 +15,7 @@ export const SCREEN_CAVE_INDEX: Readonly<Record<number, number>> = {
   119: 0, 120: 10, 121: 4, 123: 1, 124: 6, 125: 7,
 };
 
-// Square indices that visually represent cave/stair entrances on the overworld.
-// These are non-walkable "dark opening" tiles that Link walks UP into.
-export const CAVE_ENTRANCE_TILES = new Set([12]);
-
 export function getScreenCaveIndex(screenId: number): number | null {
   const idx = SCREEN_CAVE_INDEX[screenId];
   return idx !== undefined ? idx : null;
-}
-
-export function isCaveEntranceTile(tileIndex: number): boolean {
-  return CAVE_ENTRANCE_TILES.has(tileIndex);
 }

@@ -17,7 +17,7 @@ import type {
 } from '../data/dungeon-types.js';
 import type { OverworldScreen } from '../data/overworld-types.js';
 import type { Renderer } from '../render/renderer.js';
-import { DungeonRenderer, type DoorDir } from '../render/dungeon-renderer.js';
+import { DungeonRenderer, isBlankFloorRoom, type DoorDir } from '../render/dungeon-renderer.js';
 import { DungeonCollisionMap } from './dungeon-collision.js';
 import { RoomFlags, DOOR_BIT_N, DOOR_BIT_S, DOOR_BIT_W, DOOR_BIT_E } from './room-flags.js';
 import type { Link } from '../objects/player/link.js';
@@ -170,16 +170,12 @@ export class DungeonManager {
     };
   }
 
-  // All rooms in this level block that have at least one passable door
+  // Rooms reachable from the start room of THIS dungeon (BFS).
+  // The level block is shared across multiple dungeons (e.g. L1-6 share uw1q1),
+  // so we cannot just filter by "has a non-wall door" — that returns rooms from
+  // every dungeon in the block and fills the minimap with a solid grid.
   get validRoomIds(): readonly number[] {
-    const ids: number[] = [];
-    for (const room of this._levelBlock.rooms) {
-      const d = room.doors;
-      if (d.north !== 1 || d.south !== 1 || d.east !== 1 || d.west !== 1) {
-        ids.push(room.id);
-      }
-    }
-    return ids;
+    return [...this.roomsInThisDungeon()];
   }
 
   getRoom(roomId: number): DungeonRoom {
@@ -503,6 +499,22 @@ export class DungeonManager {
     return null;
   }
 
+  findStairsPosition(): { x: number; y: number } | null {
+    const uniqueRoom = this.getUniqueRoom(this._currentRoom.uniqueRoomId);
+    for (let r = 0; r < uniqueRoom.tiles.length; r++) {
+      const row = uniqueRoom.tiles[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        if (row[c] === 0) { // square index 0 = stairs
+          const x = (c + 2) * TILE_SIZE;
+          const y = (r + 2) * TILE_SIZE;
+          return { x, y };
+        }
+      }
+    }
+    return null;
+  }
+
   findPushBlockPosition(): { x: number; y: number } | null {
     if (!this._currentRoom.hasPushBlock) return null;
     const uniqueRoom = this.getUniqueRoom(this._currentRoom.uniqueRoomId);
@@ -633,6 +645,10 @@ export class DungeonManager {
       this._currentRoomId,
       this._dungeonInfo.levelBlock,
     );
+    const uniqueRoom = this.getUniqueRoom(this._currentRoom.uniqueRoomId);
+    if (isBlankFloorRoom(uniqueRoom, this._dungeonData.squareTable)) {
+      this._renderer.clearInnerFloor(renderer);
+    }
     this._renderer.renderDoorOverlays(
       renderer,
       this._currentRoomId,

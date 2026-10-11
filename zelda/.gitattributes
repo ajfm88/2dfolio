@@ -1,0 +1,3 @@
+# GitHub language stats — count TypeScript as JavaScript
+*.ts  linguist-language=JavaScript
+*.tsx linguist-language=JavaScript

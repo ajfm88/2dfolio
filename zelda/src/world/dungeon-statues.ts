@@ -10,8 +10,9 @@
 // Behavior is keyed off the room's unique-room id:
 //   layout $24 → pattern 0 (4 statues)
 //   layout $23 → pattern 1 (2 statues)
-// (Pattern 2, the two-fire "PersonFireballsEnabled" boss variant, is deferred to
-// Phase I with the boss-room GuardFire.)
+// Pattern 2 is the two bonfires flanking a dungeon person or Grumble: hitting the
+// person sets PersonFireballsEnabled, which UpdateStatues checks first, so the
+// fires start shooting for the rest of the visit (see enablePersonFireballs).
 //
 // Simplification (documented): the NES fireball tracks Link with fractional X/Y
 // speeds (diagonal). Our EnemyProjectile is cardinal-only, so we aim each shot
@@ -35,22 +36,37 @@ const PATTERN_BASE = [0x00, 0x04, 0x06] as const;
 const STATUE_XS = [0x24, 0xc8, 0x24, 0xc8, 0x64, 0x88, 0x48, 0xa8] as const;
 const STATUE_YS = [0xc0, 0xbc, 0x64, 0x5c, 0x94, 0x8c, 0x82, 0x86] as const;
 
+const PERSON_FIREBALL_PATTERN = 2;
+
 export class DungeonStatues {
-  private readonly _pattern: number;
-  private readonly _base: number;
-  private readonly _count: number;
-  private readonly _timers: number[];
+  private _pattern: number;
+  private _base = 0;
+  private _count = 0;
+  private _timers: number[] = [];
 
   constructor(uniqueRoomId: number) {
     this._pattern = STATUE_ROOM_LAYOUTS.indexOf(uniqueRoomId as (typeof STATUE_ROOM_LAYOUTS)[number]);
-    if (this._pattern < 0) {
-      this._base = 0;
-      this._count = 0;
-      this._timers = [];
-      return;
-    }
-    this._base = PATTERN_BASE[this._pattern]!;
-    this._count = FIREBALL_COUNTS[this._pattern]! + 1;
+    if (this._pattern >= 0) this.usePattern(this._pattern);
+  }
+
+  get pattern(): number {
+    return this._pattern;
+  }
+
+  /**
+   * Z_04.asm:1593 UpdateStatues — PersonFireballsEnabled is tested before the
+   * room layout, so once a person is struck the bonfires at ($48,$82)/($A8,$86)
+   * shoot instead of any layout statues.
+   */
+  enablePersonFireballs(): void {
+    if (this._pattern === PERSON_FIREBALL_PATTERN) return;
+    this.usePattern(PERSON_FIREBALL_PATTERN);
+  }
+
+  private usePattern(pattern: number): void {
+    this._pattern = pattern;
+    this._base = PATTERN_BASE[pattern]!;
+    this._count = FIREBALL_COUNTS[pattern]! + 1;
     // Stagger initial reloads so all statues don't fire on the same frame.
     this._timers = Array.from({ length: this._count }, (_, i) => START_TIMES[i % START_TIMES.length]!);
   }

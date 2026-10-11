@@ -270,6 +270,13 @@ export const GANON_SPRITES = {
 // sprite-pickers/sprite-picker.png at the repo root.
 // ═══════════════════════════════════════════════════════════════════
 
+// Z_04.asm:11479 DrawFairy / :3468 PondFairy_MoveHearts, red NPC palette row.
+export const POND_FAIRY_SPRITES = [
+  { sx: 186, sy: 11, sw: 8, sh: 16 },
+  { sx: 195, sy: 11, sw: 8, sh: 16 },
+] as const;
+export const POND_HEART_SPRITE = { sx: 204, sy: 11, sw: 8, sh: 8 } as const;
+
 export const FIRE_SPRITES = {
   frames: [
     { sx: 52, sy: 11, sw: 16, sh: 16 },

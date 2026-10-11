@@ -14,12 +14,9 @@ import { Direction } from '../../core/types.js';
 import type { Renderer } from '../../render/renderer.js';
 import { drawBossSprite, PATRA_SPRITES } from '../../render/boss-sprite-data.js';
 import { Enemy, EnemyState, type EnemyUpdateContext } from './enemy.js';
+import { decreaseObjectAngle, rotateObjectLocation, type OrbitState } from './orbit-math.js';
 
 // --- NES data from sprites.json / Z_04.asm ---
-
-const PATRA_SINES: readonly number[] = [
-  0, 24, 48, 71, 90, 106, 118, 125, 128, 125, 118, 106, 90, 71, 48, 24,
-];
 
 const CHILD_START_ANGLES: readonly number[] = [20, 16, 12, 8, 4, 0, 28];
 
@@ -49,22 +46,6 @@ enum PatraFlyingState {
   Decide,
   Chase,
   Wander,
-}
-
-// --- ShiftMultiply: NES fixed-point multiplication ---
-// Multiplies A * [00] using Y high bits of [00], returning a 16-bit result.
-function shiftMultiply(a: number, multiplier: number, bitCount: number): number {
-  let product = 0;
-  let mult = multiplier;
-  for (let i = 0; i < bitCount; i++) {
-    product <<= 1;
-    mult <<= 1;
-    if (mult & 0x100) {
-      product += a;
-      mult &= 0xff;
-    }
-  }
-  return product;
 }
 
 // --- PatraCenter ---
@@ -228,11 +209,10 @@ export class PatraChild extends Enemy {
   private readonly _childIndex: number; // 0-7
   private readonly _isType25: boolean;
   private _orbitState = 0; // 0 = waiting to appear, 1 = orbiting
-  private _angleWhole = 0x18; // starts at North
-  private _angleFrac = 0;
-  private _qSpeedFrac = 0x20;
-  private _xFrac = 0;
-  private _yFrac = 0;
+  private readonly _orbit: OrbitState = {
+    x: 0, y: 0, xFrac: 0, yFrac: 0,
+    angleWhole: 0x18, angleFrac: 0, qSpeedFrac: 0x20,
+  };
 
   constructor(
     x: number, y: number,
@@ -255,7 +235,7 @@ export class PatraChild extends Enemy {
     }
   }
 
-  get angleWhole(): number { return this._angleWhole; }
+  get angleWhole(): number { return this._orbit.angleWhole; }
 
   override stun(): void {} // never stunnable
 
@@ -287,7 +267,7 @@ export class PatraChild extends Enemy {
 
     // Decrease angle
     const decrement = this._isType25 ? CHILD1_ANGLE_DECREMENT : CHILD2_ANGLE_DECREMENT;
-    this.decreaseAngle(decrement);
+    decreaseObjectAngle(this._orbit, decrement);
 
     // Rotate position around parent
     const mi = this._parent.maneuverIndex;
@@ -301,7 +281,11 @@ export class PatraChild extends Enemy {
       cosBits = bits;
       sinBits = bits;
     }
-    this.rotatePosition(cosBits, sinBits);
+    this._orbit.x = this._x;
+    this._orbit.y = this._y;
+    rotateObjectLocation(this._orbit, cosBits, sinBits);
+    this._x = this._orbit.x;
+    this._y = this._orbit.y;
   }
 
   // Called by the center each frame to check sequential appearance
@@ -317,7 +301,7 @@ export class PatraChild extends Enemy {
     if (firstChildAngle === requiredAngle) {
       this._orbitState = 1;
       this._state = EnemyState.Active;
-      this._angleWhole = 0x18;
+      this._orbit.angleWhole = 0x18;
       // Position at top of parent
       const radius = this._isType25 ? CHILD1_RADIUS : CHILD2_RADIUS;
       this._x = this._parent.x;
@@ -332,62 +316,9 @@ export class PatraChild extends Enemy {
     }
   }
 
-  // Z_04.asm DecreaseObjectAngle:12025
-  private decreaseAngle(amount: number): void {
-    const oldFrac = this._angleFrac;
-    this._angleFrac = (oldFrac - amount) & 0xff;
-    // Borrow if frac wrapped
-    const borrow = oldFrac < amount ? 1 : 0;
-    this._angleWhole = (this._angleWhole - borrow) & 0x1f;
-  }
-
-  // Z_04.asm RotateObjectLocation:11880
-  private rotatePosition(cosBitsCount: number, sinBitsCount: number): void {
-    // X rotation (sine)
-    const sinIdx = this._angleWhole & 0x0f;
-    const sinVal = PATRA_SINES[sinIdx] ?? 0;
-    const xProduct = shiftMultiply(this._qSpeedFrac, sinVal, sinBitsCount);
-    const xProductFrac = xProduct & 0xff;
-    const xProductWhole = (xProduct >> 8) & 0xff;
-
-    const inTopHalf = (this._angleWhole & 0x18) >= 0x10;
-    if (inTopHalf) {
-      const newFrac = (this._xFrac - xProductFrac) & 0xff;
-      const borrow = this._xFrac < xProductFrac ? 1 : 0;
-      this._xFrac = newFrac;
-      this._x = this._x - xProductWhole - borrow;
-    } else {
-      const newFrac = (this._xFrac + xProductFrac) & 0xff;
-      const carry = (this._xFrac + xProductFrac) > 0xff ? 1 : 0;
-      this._xFrac = newFrac;
-      this._x = this._x + xProductWhole + carry;
-    }
-
-    // Y rotation (cosine = sine offset by 8)
-    const cosIdx = ((this._angleWhole + 8) & 0x0f);
-    const cosVal = PATRA_SINES[cosIdx] ?? 0;
-    const yProduct = shiftMultiply(this._qSpeedFrac, cosVal, cosBitsCount);
-    const yProductFrac = yProduct & 0xff;
-    const yProductWhole = (yProduct >> 8) & 0xff;
-
-    const shiftedAngle = (this._angleWhole - 8) & 0x1f;
-    const inRightHalf = (shiftedAngle & 0x18) >= 0x10;
-    if (inRightHalf) {
-      const newFrac = (this._yFrac - yProductFrac) & 0xff;
-      const borrow = this._yFrac < yProductFrac ? 1 : 0;
-      this._yFrac = newFrac;
-      this._y = this._y - yProductWhole - borrow;
-    } else {
-      const newFrac = (this._yFrac + yProductFrac) & 0xff;
-      const carry = (this._yFrac + yProductFrac) > 0xff ? 1 : 0;
-      this._yFrac = newFrac;
-      this._y = this._y + yProductWhole + carry;
-    }
-  }
-
   protected override renderEnemy(renderer: Renderer): void {
     if (this._orbitState === 0) return;
-    const frameIdx = this._angleWhole & 1;
+    const frameIdx = this._orbit.angleWhole & 1;
     const frame = PATRA_SPRITES.child[frameIdx] ?? PATRA_SPRITES.child[0];
     if (frame) drawBossSprite(renderer, frame, this._x + 4, this._y);
   }

@@ -178,6 +178,11 @@ export const SPIKE_TRAP_SPRITES = [
   { sx: 126, sy: 59, sw: 16, sh: 16 },
 ] as const;
 
+// Moldorm segment — the "Projectile/Moldorm" orbs are four 8×10 palette swaps at
+// y=62 (x 231 orange, 240 white, 249 red, 258 cyan). UpdateMoldorm draws tile $44
+// with sprite palette row 2 (red), so the red orb is used.
+export const MOLDORM_SPRITE = { sx: 249, sy: 62, sw: 8, sh: 10 } as const;
+
 // Lanmola body segments (8×8 or 8×16)
 export const LANMOLA_SPRITES = {
   head: [
@@ -331,6 +336,12 @@ export const LEEVER_SPRITES = {
 export const PEAHAT_SPRITES = [
   { sx: 162, sy: 59, sw: 16, sh: 16 },
   { sx: 179, sy: 59, sw: 16, sh: 16 },
+] as const;
+
+// Z_04.asm:2499 @DrawBoulder: two unmirrored Rock frames, six frames each.
+export const BOULDER_SPRITES = [
+  { sx: 210, sy: 59, sw: 16, sh: 16 },
+  { sx: 227, sy: 59, sw: 16, sh: 16 },
 ] as const;
 
 // Ghini: 2 frames

@@ -218,6 +218,31 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     when ≥ 90% fill, else fractional) is no longer planned. Pure integer
     device-pixel scaling stays.
 
+21. **OW collision is per 8×8 tile with threshold $89; caves enter by CheckWarps**
+    (2026-10-09). New evidence against the old `$8D` + whole-square model:
+    `Z_05.asm:6439 ObjectRoomBoundsOW` sets ObjectFirstUnwalkableTile = `$89`
+    (UW `$78`), and `Z_07.asm:2191 GetCollidableTile` tests one 8×8 tile, so a
+    square can be half solid (cave mouth square 12, waterfall cave square 15).
+    Entry is `Z_05.asm:7246 CheckWarps` — Link standing aligned in the mouth —
+    not "facing up against a wall", which raced `Link._moving`. Only squares 12,
+    15 and 54 change walkability on the real map. Synthetic test maps built
+    without `secondarySquares` keep whole-square behaviour.
+
+22. **Dungeon people: coordinate frame and text layout** (2026-10-09). People,
+    their bonfires and the rupee stash use Link's play-area frame (NES ObjY − $3D),
+    not the −$40 used by spawned monsters, because every ROM test on them is
+    against Link's position (`CheckPersonBlocking` $8E, the ±6/±9 touches) and the
+    NES draws Link and them with the same transform. The textbox is centred on
+    the ROM's 24-column line (cols 4–27) because `cave-text.json` strings are
+    trimmed; the ROM's own padding is lost. Grumble's bonfires remain after he is
+    fed — `InitGrumble_Full` calls `SetUpCommonCaveObjects` before the fed check.
+
+23. **dungeons-map.png uw2q1 half-swap is corrected at lookup, not in the PNG**
+    (2026-10-09). The asset is third-party art; editing it would hide the fact
+    that it disagrees with ROM ids. `roomMapCell()` documents and applies the
+    swap in one place. Blank-floor rooms (unique room 38) are repainted from data
+    rather than masked tile-by-tile, because every tile in them is baked over.
+
 ## Open questions for the user
 
 The one home for these. Answer cheaply, unblock later work. Known *bugs* are not

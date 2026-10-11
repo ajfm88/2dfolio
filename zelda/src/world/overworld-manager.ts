@@ -3,26 +3,21 @@ import {
   LINK_ENTRY_LEFT,
   LINK_ENTRY_RIGHT,
   LINK_ENTRY_TOP,
-  LINK_HITBOX_OFFSET_X,
-  LINK_HITBOX_WIDTH,
   OVERWORLD_COLS,
   OVERWORLD_ROWS,
   PLAY_AREA_HEIGHT,
   SCREEN_WIDTH,
-  TILE_SIZE,
 } from '../core/constants.js';
 import { Direction } from '../core/types.js';
-import { getScreenCaveIndex, isCaveEntranceTile } from '../data/cave-data.js';
 import type { OverworldData, OverworldScreen } from '../data/overworld-types.js';
 import type { SecretsData } from '../data/secret-types.js';
-import { SQUARE_INDEX_CAVE_ENTRANCE, SQUARE_INDEX_STAIRS } from '../data/secret-types.js';
 import type { Renderer } from '../render/renderer.js';
 import { TileRenderer, getScreenByCoord } from '../render/tile-renderer.js';
 import type { Link } from '../objects/player/link.js';
 import type { Bomb } from '../objects/weapons/bomb.js';
 import type { CandleFire } from '../objects/weapons/candle-fire.js';
 import { ScreenTransition } from './screen-transition.js';
-import { TileCollisionMap, createCollisionMap } from './collision.js';
+import { TileCollisionMap, createCollisionMap, isWarpTile } from './collision.js';
 import { RoomFlags } from './room-flags.js';
 import { TileObjectManager, type SecretRevealEvent } from './tile-object.js';
 
@@ -38,6 +33,10 @@ export class OverworldManager {
   private readonly _roomFlags: RoomFlags;
   private readonly _tileObjectManager: TileObjectManager;
   private readonly _secretsData: SecretsData;
+  // NES UndergroundExitType: set when Link comes back out of a cave or dungeon,
+  // cleared once he has stepped a whole 8-px tile (Z_07.asm:3248). While set,
+  // CheckWarps returns early so he doesn't drop straight back in.
+  private _warpDisarmedAt: { x: number; y: number } | null = null;
 
   constructor(
     overworldData: OverworldData,
@@ -53,6 +52,7 @@ export class OverworldManager {
     this._collisionMap = createCollisionMap(overworldData);
     this._roomFlags = new RoomFlags();
     this._tileObjectManager = new TileObjectManager();
+    this._collisionMap.setSquareOverrides((id) => this._tileObjectManager.overridesForScreen(id));
     this._secretsData = secretsData;
 
     const screen = getScreenByCoord(overworldData, startRow, startCol);
@@ -120,6 +120,7 @@ export class OverworldManager {
     this._screenCol = newCol;
     this._currentScreen = newScreen;
     this._visitedScreens.add(newScreen.id);
+    this._warpDisarmedAt = null;
 
     // Z_07.asm:2831 PlayerScreenEdgeBounds — place Link at the opposite entry edge
     switch (direction) {
@@ -172,6 +173,7 @@ export class OverworldManager {
       this._tileObjectManager.initForScreen(screen, this._roomFlags, this._secretsData);
     }
     this._transition = null;
+    this._warpDisarmedAt = null;
   }
 
   renderScreen(renderer: Renderer): void {
@@ -237,34 +239,33 @@ export class OverworldManager {
     this._tileObjectManager.render(ctx);
   }
 
-  checkCaveEntry(link: Link): number | null {
-    if (link.facing !== Direction.Up) return null;
-    if (!link.isMoving) return null;
+  /** Call after placing Link back at the entrance he came out of. */
+  disarmWarpsUntilMoved(link: Link): void {
+    this._warpDisarmedAt = { x: link.posX, y: link.posY };
+  }
 
-    const caveIndex = getScreenCaveIndex(this._currentScreen.id);
-    if (caveIndex === null) return null;
-
-    // Check the tile just above Link's hitbox center
-    const checkX = link.posX + LINK_HITBOX_OFFSET_X + LINK_HITBOX_WIDTH / 2;
-    const checkY = link.posY - 1;
-    if (checkY < 0) return null;
-
-    const col = Math.floor(checkX / TILE_SIZE);
-    const row = Math.floor(checkY / TILE_SIZE);
-    const tileIndex = this._currentScreen.tiles[row]?.[col];
-    if (tileIndex === undefined) return null;
-
-    if (isCaveEntranceTile(tileIndex)) {
-      return caveIndex;
+  /**
+   * Z_05.asm:7246 CheckWarps + HandleWarpOW. True when Link stands on an
+   * underground entrance: X on a 16-px column, Y on a square row, and the 8×8
+   * tile at his feet is a warp tile. Facing and movement don't matter — on the
+   * NES the cave mouth's lower half is walkable and Link warps once he is in it.
+   * The caller picks dungeon vs cave from the screen (NES: AttrsB cave index).
+   */
+  isOnWarpTile(link: Link): boolean {
+    const x = link.posX;
+    const y = link.posY;
+    if (this._warpDisarmedAt) {
+      const moved = Math.abs(x - this._warpDisarmedAt.x) + Math.abs(y - this._warpDisarmedAt.y);
+      if (moved < 8) return false;
+      this._warpDisarmedAt = null;
     }
-
-    // Also check tile overrides for revealed cave entrances
-    const gridIdx = row * 16 + col;
-    const override = this._tileObjectManager.tileOverrides.get(gridIdx);
-    if (override === SQUARE_INDEX_CAVE_ENTRANCE || override === SQUARE_INDEX_STAIRS) {
-      return caveIndex;
-    }
-
-    return null;
+    // Room $22's Level 6 entrance is two squares wide, so there X only needs to
+    // be a multiple of 8 (Z_05.asm:7254).
+    const xMask = this._currentScreen.id === 0x22 ? 0x07 : 0x0F;
+    // NES ObjY & $0F == $0D is a play-area Y that is a multiple of 16.
+    if ((x & xMask) !== 0 || (y & 0x0F) !== 0) return false;
+    // GetCollidableTileStill hotspot: (ObjX, ObjY + $0B) = play-area (x, y + 8).
+    const tile = this._collisionMap.getTileAt(this._currentScreen, x, y + 8);
+    return tile !== undefined && isWarpTile(tile);
   }
 }
