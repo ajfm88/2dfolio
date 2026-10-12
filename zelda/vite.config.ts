@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
@@ -6,6 +6,6 @@ export default defineConfig({
     strictPort: true,
   },
   build: {
-    target: 'ES2022',
+    target: "es2022",
   },
 });
