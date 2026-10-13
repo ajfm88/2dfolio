@@ -222,7 +222,7 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
   fps, rewritten every 30 frames. Absent without the flag.
 - **Safe areas**: every edge-anchored element pads with
   `env(safe-area-inset-*)`. Notches and home indicators must never cover a control.
-- **Title** (Unit 18): a centred column on `--sky`. The wordmark "Coral Corsairs"
+- **Title** (Unit 18): a centred column on `--sky`. The wordmark "Plankwalkers"
   is at `--fs-xl` in `--text` on a `.panel--paper` (display text on wood is too
   faint, issue 21). Below it are **Play** (`.btn--primary`, focused), **Make** and
   **Settings** (`.btn`), stacked at equal width.
@@ -261,9 +261,10 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
     every dialog (issue 21).
   - Escape and a backdrop tap resume from the pause menu, but only when it is the
     top panel. With Settings open over it, Escape closes Settings alone.
-- **Touch controls**: a directional cluster bottom-left and a jump button
-  bottom-right, both at least 64px at `--ui-scale: 1`, `touch-action: none`,
-  `user-select: none`. When they show follows the **Touch** setting (Unit 19):
+- **Touch controls**: ◀ ▶ bottom-left; ▼ and Jump bottom-right, Jump in the
+  corner; 64px buttons, an 80px Jump, 16px apart, bottom-aligned, all ×
+  `--ui-scale`, `touch-action: none`, `user-select: none`. When they show
+  follows the **Touch** setting (Unit 19):
   **Auto** (the default) once a touch pointer has been seen, **On** always, **Off**
   never. The play scene reconciles it every frame, so a change made from the pause
   menu applies at once.
@@ -311,9 +312,13 @@ kit glyph, so it draws two `--ink` bars in CSS. Touch control glyphs come from
 ## Icons
 
 - No icon font, no SVG icon library.
-- The app icon — manifest, apple-touch icon and favicon — is Captain Clown
-  Nose's idle frame, cropped to its opaque bounds (x20 y4 w24 h28) and centred
-  on `--sky`. The asset pipeline generates it. It is not drawn by hand.
+- The app icon (manifest and apple-touch icon) is Captain Clown Nose's idle
+  frame, cropped to its opaque bounds (x20 y4 w24 h28) and centred on `--sky`.
+- The favicon is the same frame's head and shoulders seen through a brass
+  porthole: an `--ink` outline, a `--board-light` / `--board` ring, an `--ink`
+  rim and `--sea` glass, 1:1 at 32 px. The link-preview card is that favicon at
+  12× on `--sky`, 1200 × 630.
+- The asset pipeline generates all of them. None is drawn by hand.
 - Directional and action glyphs come from `Wood and Paper UI/Mobile Buttons`
   (8 frames at 28 × 28), packed by the asset build into `/assets/ui/icons.png`.
 - Small inline glyphs come from `Small Text/Small Icons` (25 frames at 8 × 6).

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Scaffold the Coral Corsairs project so that `npm run dev` serves a page whose canvas
+Scaffold the Plankwalkers project so that `npm run dev` serves a page whose canvas
 fills the viewport with no letterboxing at any window size, clears to the sky colour,
 and logs a stable tick count. `npm run build` passes. Every folder boundary from
 `2-architecture.md` exists and is tracked by git.
@@ -66,7 +66,7 @@ Minimal config, vanilla JS. No special plugins.
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coral Corsairs</title>
+  <title>Plankwalkers</title>
 </head>
 <body>
   <div id="app">

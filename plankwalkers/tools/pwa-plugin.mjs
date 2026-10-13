@@ -100,7 +100,7 @@ export function pwaPlugin() {
   /** @type {string} */
   let outDir = '';
   return {
-    name: 'coral-corsairs-pwa',
+    name: 'plankwalkers-pwa',
     apply: 'build',
     /** @param {import('vite').ResolvedConfig} config */
     configResolved(config) {

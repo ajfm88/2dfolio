@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGestures } from './gestures.js';
+import { createGestures, neighbourZoom, wheelZoomStep } from './gestures.js';
 
 function fakeInput() {
   /** @type {Array<{ id: number, x: number, y: number }>} */
@@ -12,6 +12,46 @@ function fakeInput() {
     },
   };
 }
+
+describe('neighbourZoom', () => {
+  it('steps between 0.5, 1 and 2 and stays put at the ends', () => {
+    expect(neighbourZoom(1, 1)).toBe(2);
+    expect(neighbourZoom(2, 1)).toBe(2);
+    expect(neighbourZoom(1, -1)).toBe(0.5);
+    expect(neighbourZoom(0.5, -1)).toBe(0.5);
+    expect(neighbourZoom(0.5, 1)).toBe(1);
+  });
+});
+
+describe('wheelZoomStep', () => {
+  const rearm = 0.2;
+  const dt = 1 / 60;
+  const fresh = () => ({ armed: true, quiet: 0 });
+
+  it('steps in once per burst on a negative wheelY', () => {
+    const state = fresh();
+    expect(state).toEqual({ armed: true, quiet: 0 });
+    expect(wheelZoomStep(state, -1, dt, rearm)).toBe(1);
+    expect(wheelZoomStep(state, -1, dt, rearm)).toBe(0);
+  });
+
+  it('steps out on a positive wheelY', () => {
+    expect(wheelZoomStep(fresh(), 1, dt, rearm)).toBe(-1);
+  });
+
+  it('re-arms only after the wheel has been quiet long enough', () => {
+    const state = fresh();
+    expect(wheelZoomStep(state, -1, dt, rearm)).toBe(1);
+    for (let i = 0; i < 6; i++) expect(wheelZoomStep(state, 0, dt, rearm)).toBe(0);
+    expect(wheelZoomStep(state, -1, dt, rearm)).toBe(0);
+    for (let i = 0; i < 13; i++) expect(wheelZoomStep(state, 0, dt, rearm)).toBe(0);
+    expect(wheelZoomStep(state, -1, dt, rearm)).toBe(1);
+  });
+
+  it('returns 0 when wheelY is 0 on a fresh state', () => {
+    expect(wheelZoomStep(fresh(), 0, dt, rearm)).toBe(0);
+  });
+});
 
 describe('createGestures', () => {
   it('stays idle with no fingers', () => {

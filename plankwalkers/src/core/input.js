@@ -1,4 +1,4 @@
-/** @typedef {'left' | 'right' | 'up' | 'down' | 'jump' | 'pause' | 'undo' | 'redo' | 'modeSwitch'} Action */
+/** @typedef {'left' | 'right' | 'up' | 'down' | 'jump' | 'pause' | 'undo' | 'redo' | 'modeSwitch' | 'zoomIn' | 'zoomOut'} Action */
 
 /** @type {Record<string, Action>} */
 const KEY_TO_DIR = {
@@ -13,11 +13,16 @@ const KEY_TO_DIR = {
   Space: 'jump',
   Enter: 'pause',
   KeyM: 'modeSwitch',
+  Equal: 'zoomIn',
+  NumpadAdd: 'zoomIn',
+  Minus: 'zoomOut',
+  NumpadSubtract: 'zoomOut',
 };
 
 /** @type {Action[]} */
 const ACTIONS = [
   'left', 'right', 'up', 'down', 'jump', 'pause', 'undo', 'redo', 'modeSwitch',
+  'zoomIn', 'zoomOut',
 ];
 
 /**
@@ -58,6 +63,17 @@ export function isFormField(target) {
 }
 
 /**
+ * True while Ctrl, Cmd or Alt is held. With one of them, + and − belong to the
+ * browser (page zoom), never to the game.
+ *
+ * @param {{ ctrlKey: boolean, metaKey: boolean, altKey: boolean }} e
+ * @returns {boolean}
+ */
+export function hasCommandModifier(e) {
+  return e.ctrlKey || e.metaKey || e.altKey;
+}
+
+/**
  * True when a keydown should activate the focused button rather than become a game
  * action: Enter or Space aimed at a `<button>`. Without this, a keyboard user who
  * tabs to Back to editor and presses Enter gets the pause action (Resume) instead.
@@ -81,19 +97,19 @@ export function createInput(canvas, viewport) {
   /** @type {Record<string, boolean>} */
   const want = {
     left: false, right: false, up: false, down: false, jump: false, pause: false,
-    undo: false, redo: false, modeSwitch: false,
+    undo: false, redo: false, modeSwitch: false, zoomIn: false, zoomOut: false,
   };
   // On-screen (touch) buttons OR keyboard: advance() merges want[dir] || virtual[dir].
   /** @type {Record<string, boolean>} */
   const virtual = {
     left: false, right: false, up: false, down: false, jump: false, pause: false,
-    undo: false, redo: false, modeSwitch: false,
+    undo: false, redo: false, modeSwitch: false, zoomIn: false, zoomOut: false,
   };
   // A press seen since the last advance(), kept even if it has already been released.
   /** @type {Record<string, boolean>} */
   const latched = {
     left: false, right: false, up: false, down: false, jump: false, pause: false,
-    undo: false, redo: false, modeSwitch: false,
+    undo: false, redo: false, modeSwitch: false, zoomIn: false, zoomOut: false,
   };
   /** @type {Record<string, Button>} */
   const keys = {
@@ -106,7 +122,14 @@ export function createInput(canvas, viewport) {
     undo: { held: false, pressed: false, released: false },
     redo: { held: false, pressed: false, released: false },
     modeSwitch: { held: false, pressed: false, released: false },
+    zoomIn: { held: false, pressed: false, released: false },
+    zoomOut: { held: false, pressed: false, released: false },
   };
+
+  // Summed deltaY of wheel events aimed at the canvas since the last advance().
+  let wheelRaw = 0;
+  /** Per-frame wheel: `y` is the summed deltaY (negative = away from the user). */
+  const wheel = { y: 0 };
 
   const pointer = {
     down: false,
@@ -159,6 +182,8 @@ export function createInput(canvas, viewport) {
     if (k === ' ') return 'jump';
     if (k === 'enter') return 'pause';
     if (k === 'm') return 'modeSwitch';
+    if (k === '+' || k === '=') return 'zoomIn';
+    if (k === '-') return 'zoomOut';
     return undefined;
   }
 
@@ -218,6 +243,7 @@ export function createInput(canvas, viewport) {
     }
     const dir = dirFromEvent(e);
     if (!dir) return;
+    if ((dir === 'zoomIn' || dir === 'zoomOut') && hasCommandModifier(e)) return;
     press(dir);
     e.preventDefault();
   }
@@ -338,6 +364,18 @@ export function createInput(canvas, viewport) {
     pointerWantButton = 0;
     pointerWantId = null;
     rawTouches.length = 0;
+    wheelRaw = 0;
+  }
+
+  /**
+   * Only a wheel over the canvas is the game's. Over the DOM (the palette strip
+   * scrolls sideways) it keeps its default.
+   * @param {WheelEvent} e
+   */
+  function onWheel(e) {
+    if (e.target !== canvas || e.deltaY === 0) return;
+    wheelRaw += e.deltaY;
+    e.preventDefault();
   }
 
   canvas.tabIndex = 0;
@@ -349,6 +387,7 @@ export function createInput(canvas, viewport) {
   window.addEventListener('pointerup', onPointerUp, cap);
   window.addEventListener('pointercancel', onPointerUp, cap);
   window.addEventListener('blur', onBlur);
+  window.addEventListener('wheel', onWheel, { capture: true, passive: false });
   canvas.addEventListener('contextmenu', onContextMenu);
 
   /**
@@ -431,6 +470,7 @@ export function createInput(canvas, viewport) {
   return {
     keys,
     pointer,
+    wheel,
     touches,
     setVirtual,
     bindVirtualButton,
@@ -472,6 +512,9 @@ export function createInput(canvas, viewport) {
       pointer.y = pointerWantY;
       pointer.button = tapped ? pointerLatchedButton : pointerWantButton;
       pointer.id = tapped ? pointerLatchedId : pointerWantId;
+
+      wheel.y = wheelRaw;
+      wheelRaw = 0;
 
       touches.length = rawTouches.length;
       for (let i = 0; i < rawTouches.length; i++) {

@@ -39,7 +39,7 @@ export async function readLevelText(text) {
     if (!(err instanceof LevelError)) throw err;
     const version = /unsupported version (\d+)/.exec(err.message);
     if (err.field === 'format' && version && Number(version[1]) > FORMAT) {
-      throw new ImportError('This level was made with a newer version of Coral Corsairs.');
+      throw new ImportError('This level was made with a newer version of Plankwalkers.');
     }
     throw new ImportError(`That isn't a valid level (${err.message}).`);
   }

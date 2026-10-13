@@ -65,7 +65,7 @@ describe('readLevelText', () => {
   it('says so when the level comes from a newer version', async () => {
     const data = { ...serialise(level()), format: 2 };
     expect(await refusal(JSON.stringify(data))).toBe(
-      'This level was made with a newer version of Coral Corsairs.',
+      'This level was made with a newer version of Plankwalkers.',
     );
   });
 

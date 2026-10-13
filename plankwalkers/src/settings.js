@@ -20,6 +20,11 @@ export const WIPE_COLOR = '#33323d';
 export const AUTOSAVE_IDLE = 1;
 export const AUTOSAVE_MAX = 5;
 
+// Maker wheel zoom, in seconds: the wheel must be quiet this long before its
+// next burst can step the zoom again, so one mouse notch or one trackpad swipe
+// (inertia included) is one step.
+export const WHEEL_ZOOM_REARM = 0.2;
+
 export const Z = {
   bg: 0,
   clouds: 1,

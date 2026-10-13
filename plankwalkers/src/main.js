@@ -241,7 +241,7 @@ function report(result, level) {
     title: 'Storage is full',
     body: [el('p', {
       class: 'dialog__text',
-      text: "Coral Corsairs couldn't save because this browser's storage for it is full. "
+      text: "Plankwalkers couldn't save because this browser's storage for it is full. "
         + "Delete levels you don't need in My Levels, or copy this level's share code to "
         + 'keep it safe.',
     })],

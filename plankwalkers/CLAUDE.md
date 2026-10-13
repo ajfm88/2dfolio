@@ -1,4 +1,4 @@
-# Coral Corsairs
+# Plankwalkers
 
 A vanilla JavaScript + Vite pirate platformer with two modes: a campaign to play,
 and a Mario-Maker-style level editor that works with mouse and touch on desktop,

@@ -11,10 +11,12 @@ import ffmpegPath from 'ffmpeg-static';
 import sharp from 'sharp';
 import {
   AUDIO_ROOT,
+  FAVICON,
   ICON_BACKGROUND,
   ICON_CROP,
   ICON_SOURCE,
   PACK_ROOT,
+  SOCIAL_CARD,
   audio,
   clips,
   coverageExcludes,
@@ -109,6 +111,80 @@ async function writeIcon(srcAbs, crop, size, scale, background, outAbs) {
     },
   })
     .composite([{ input: art, left, top }])
+    .png(PNG)
+    .toFile(outAbs);
+}
+
+/**
+ * Draw the porthole favicon pixel by pixel (see FAVICON). Returns the PNG.
+ *
+ * @param {string} srcAbs
+ * @param {typeof FAVICON} spec
+ * @returns {Promise<Buffer>}
+ */
+async function renderFavicon(srcAbs, spec) {
+  const { size, crop, at } = spec;
+  if (at.x < 0 || at.y < 0 || at.x + crop.w > size || at.y + crop.h > size) {
+    throw new Error(`art ${crop.w}x${crop.h} at ${at.x},${at.y} does not fit a ${size} canvas`);
+  }
+  const art = await sharp(srcAbs)
+    .extract({ left: crop.x, top: crop.y, width: crop.w, height: crop.h })
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  /** @param {string} hex */
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const px = Buffer.alloc(size * size * 4);
+  const c = (size - 1) / 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = Math.hypot(x - c, y - c);
+      let fill = null;
+      for (const ring of spec.rings) if (d <= ring.r) fill = ring.fill;
+      if (fill === null) continue;
+      /** @type {number[]} */
+      let colour;
+      if (fill === 'brass') {
+        colour = rgb(x + y < size - 1 ? spec.brassLight : spec.brass);
+      } else if (fill === 'glass') {
+        colour = rgb(spec.glass);
+        const ax = x - at.x;
+        const ay = y - at.y;
+        if (ax >= 0 && ax < crop.w && ay >= 0 && ay < crop.h) {
+          const i = (ay * crop.w + ax) * 4;
+          if (art[i + 3] > 0) colour = [art[i], art[i + 1], art[i + 2]];
+        }
+      } else {
+        colour = rgb(fill);
+      }
+      const o = (y * size + x) * 4;
+      px[o] = colour[0];
+      px[o + 1] = colour[1];
+      px[o + 2] = colour[2];
+      px[o + 3] = 255;
+    }
+  }
+  return sharp(px, { raw: { width: size, height: size, channels: 4 } }).png(PNG).toBuffer();
+}
+
+/**
+ * @param {Buffer} favicon
+ * @param {number} faviconSize
+ * @param {typeof SOCIAL_CARD} spec
+ * @param {string} outAbs
+ */
+async function writeSocialCard(favicon, faviconSize, spec, outAbs) {
+  const art = spec.scale * faviconSize;
+  const left = (spec.width - art) / 2;
+  const top = (spec.height - art) / 2;
+  if (!Number.isInteger(left) || !Number.isInteger(top)) {
+    throw new Error(`offset is not a whole number (${left}, ${top})`);
+  }
+  const scaled = await sharp(favicon).resize(art, art, { kernel: 'nearest' }).png().toBuffer();
+  await sharp({
+    create: { width: spec.width, height: spec.height, channels: 4, background: spec.background },
+  })
+    .composite([{ input: scaled, left, top }])
     .png(PNG)
     .toFile(outAbs);
 }
@@ -328,6 +404,19 @@ async function main() {
     } catch (err) {
       throw new Error(`icon ${item.dest}: ${err.message}`);
     }
+  }
+
+  try {
+    const favicon = await renderFavicon(iconSrc, FAVICON);
+    await writeFile(path.join(OUT, ...FAVICON.dest.split('/')), favicon);
+    await writeSocialCard(
+      favicon,
+      FAVICON.size,
+      SOCIAL_CARD,
+      path.join(OUT, ...SOCIAL_CARD.dest.split('/')),
+    );
+  } catch (err) {
+    throw new Error(`favicon: ${err.message}`);
   }
 
   for (const item of audio) {

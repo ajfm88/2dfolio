@@ -1,8 +1,8 @@
-# Coral Corsairs
+# Plankwalkers
 
 ## Overview
 
-Coral Corsairs is a browser-based pirate platformer with two modes that share one
+Plankwalkers is a browser-based pirate platformer with two modes that share one
 engine and one level format. **Play mode** is a hand-crafted campaign in the style
 of Super Pirate World: run, jump, wall-jump, stomp enemies, collect treasure, reach
 the flag. **Maker mode** is a Mario-Maker-style level editor that works with a mouse
@@ -84,7 +84,8 @@ platformer and, ten minutes later, want to build one.
 - Enemies: Crabby, Fierce Tooth and Pink Star — patrolling walkers that turn at
   ledges and walls and lunge when the player is close.
 - Hazards: spikes, Seashell and Cannon shooters whose projectiles die on terrain,
-  water that drowns, and a bottom death border.
+  water that drowns, and a bottom death border. The level's left and right
+  edges hold the player.
 - Treasure: gold and silver coins, three diamond colours, golden skull, potions
   that restore a heart.
 - Hearts-based health with invulnerability flicker after a hit. Any death —
@@ -110,7 +111,8 @@ platformer and, ten minutes later, want to build one.
   inner corners. Island platforms use the same blob; ship platforms use thin
   planks with left, middle, right and single caps.
 - Theme: Palm Tree Island or Pirate Ship, from the Menu, undoable.
-- Pan and zoom at 0.5×, 1× and 2×, with a paint/pan toggle for one-finger use.
+- Pan and zoom at 0.5×, 1× and 2×: pinch on touch, the mouse wheel or `+` / `−`
+  on desktop, with a paint/pan toggle for one-finger use.
 - Full undo and redo over every edit, including multi-cell drags as single steps.
 - Eyedropper: long-press or middle-click a placed thing to select its tool.
 - Live validation — a level needs a finish flag, and a spawn and flag in cells the
@@ -149,7 +151,7 @@ platformer and, ten minutes later, want to build one.
 ### Input and platform
 
 - Keyboard: arrows or WASD to move, Space or Up to jump, Down to drop through.
-- Touch: on-screen directional pad and jump button, sized for thumbs.
+- Touch: left and right under the left thumb; jump and drop-through under the right.
 - Mouse, touch and pen unified through pointer events.
 - Landscape only. In portrait, a prompt covers the screen and asks the player to
   rotate the device (decision 2026-09-23 — a 360-tall view cannot fill a portrait

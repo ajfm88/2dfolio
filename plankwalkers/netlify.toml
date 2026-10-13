@@ -1,0 +1,23 @@
+# Netlify reads this from the site's base directory: the repo root, or this
+# project's folder when it lives inside a larger repo. Only `vite build` runs
+# here: `npm run assets` needs reference/, which is never committed, and its
+# output is.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # The version the game is built and tested on. Vite 8 needs 20.19 or 22.12+.
+  NODE_VERSION = "24"
+  # ffmpeg-static's install script downloads an ffmpeg binary from GitHub and
+  # fails the whole install on a network error. Only `npm run assets` uses it,
+  # and no other dependency has an install script.
+  NPM_FLAGS = "--ignore-scripts"
+
+# The browser must check for a new worker on every visit, or players can stay
+# on an old build. No SPA redirect: the game is one page, and a catch-all would
+# answer a missing sprite or sound with index.html instead of a 404.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"

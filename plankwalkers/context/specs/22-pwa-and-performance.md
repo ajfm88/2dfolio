@@ -12,7 +12,7 @@
 
 ## Goal
 
-Coral Corsairs becomes an installable web app:
+Plankwalkers becomes an installable web app:
 - It has its own icon. It opens fullscreen in landscape and plays with no
   network after the first visit.
 - It asks the browser once to keep the player's saved levels.
@@ -54,7 +54,7 @@ Do not touch issues 31, 35, 41 or 43, or anything else this spec does not name.
 | 7 | Performance fixes in this unit | Issue 33 only. Everything else the measurements find is logged with its numbers, and Claude plans it | Player, 2026-10-07 |
 | 8 | Service worker | Hand-written, generated at build time by a small local Vite plugin. No PWA package | Build plan |
 | 9 | Update behaviour | Silent. The first launch after a deploy installs the new version, and the launch after that runs it. No "update available" prompt | **Proposed** |
-| 10 | `short_name` | `Corsairs` (the full name is 14 characters and gets cut off under home-screen icons) | **Proposed** |
+| 10 | `short_name` | `Plankwalkers` (the full name is 12 characters and gets cut off under home-screen icons) | **Proposed** |
 
 Proposed items 9 and 10 are approved when the player hands this spec to the
 implementer.
@@ -186,8 +186,8 @@ line must still read `430 / 1195`, and `atlas.json` must be unchanged.
 
 ```json
 {
-  "name": "Coral Corsairs",
-  "short_name": "Corsairs",
+  "name": "Plankwalkers",
+  "short_name": "Plankwalkers",
   "description": "A pirate platformer with a level maker.",
   "id": "/",
   "start_url": "/",
@@ -213,7 +213,7 @@ line must still read `430 / 1195`, and `atlas.json` must be unchanged.
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Corsairs">
+  <meta name="apple-mobile-web-app-title" content="Plankwalkers">
 ```
 
 The two hex values mirror `--ink` and `--sky`, which HTML and manifest JSON
@@ -223,7 +223,7 @@ cannot read. That is the same reason `themes.js` mirrors them.
 wording:
 
 ```js
-// Coral Corsairs service worker. tools/pwa-plugin.mjs copies this into
+// Plankwalkers service worker. tools/pwa-plugin.mjs copies this into
 // dist/sw.js at build time and replaces the two placeholders. Not imported by src/.
 const VERSION = '__CC_VERSION__';
 const PRECACHE = __CC_PRECACHE__;
@@ -308,7 +308,7 @@ export function pwaPlugin() { … }
   - replaces `'__CC_VERSION__'` (with its quotes) with `JSON.stringify(version)`;
   - replaces `__CC_PRECACHE__` with `JSON.stringify(urls)`.
 - `pwaPlugin()`:
-  - `name: 'coral-corsairs-pwa'`, `apply: 'build'`;
+  - `name: 'plankwalkers-pwa'`, `apply: 'build'`;
   - `configResolved(config)` stores `path.resolve(config.root,
     config.build.outDir)`;
   - `closeBundle()`:
