@@ -39,26 +39,6 @@ move to Resolved.
 
 ## Open Issues
 
-### 4. Touch-control layout looks off at phone width [OPEN]
-
-**Where:** `src/ui/styles/touch-controls.css` (Unit 09)
-**Symptom:** At a narrow phone viewport the on-screen controls sit awkwardly — the D-pad cluster (left/right with `down` spanning below) and the jump button do not feel well balanced for thumbs. Seen in device emulation during the Unit 09 check.
-**Expected:** A comfortable, thumb-reachable control layout at phone widths in both orientations.
-**Repro:** Open `/` in device emulation (phone), tap once to reveal controls.
-**Notes:** Deferred by the player during Unit 09 ("we can worry about that once the game is completed"). Functionality is correct (movement, jump, drop-through, multi-touch all work); this is layout/ergonomics only. Handle in the responsive pass (around Unit 15 maker UI / a later polish unit), not inside an unrelated unit. Do not change the input wiring — CSS/layout only.
-
----
-
-### 5. Throwaway atlas debug page still in the tree [OPEN]
-
-**Where:** `atlas.html`, `src/debug-atlas.js`, `src/ui/styles/debug-atlas.css` (Unit 01)
-**Symptom:** The Unit 01 clip-verification page is still in the source tree with no decision recorded either way. Unit 01's tracker entry says "`/atlas.html` is removable" once `core/atlas.js` landed; Unit 02's says "`/atlas.html` kept" without saying why or for how long. Nothing since has revisited it, so it reads as an oversight rather than a choice.
-**Expected:** Either deleted — its job, proving every clip packs with the right frame count, is done and `core/atlas.js` now covers the runtime path — or explicitly kept as a dev-only tool with that decision recorded here and in the tracker.
-**Repro:** `ls atlas.html src/debug-atlas.js src/ui/styles/debug-atlas.css`; run `npm run dev` and open `/atlas.html`.
-**Notes:** Found during a context review on 2026-09-16, not during a unit. **It does not ship:** `vite.config.js` declares no extra Rollup input, so the production build has `index.html` only — `dist/` was checked and contains no `atlas.html`. Nothing in `src/main.js` imports `debug-atlas.js`; the page is reachable only through the dev server. So the cost is three unreferenced files, not bundle weight. Useful again whenever `tools/asset-manifest.mjs` gains clips (Units 10, 11, 20), which is an argument for keeping it — decide then, and do not fold the deletion into an unrelated unit.
-
----
-
 ### 6. `jsconfig.json` `baseUrl` is deprecated and now reports as an error [OPEN]
 
 **Where:** `jsconfig.json` line 9 (Unit 00)
@@ -123,16 +103,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 24. Desktop has no way to zoom the maker [OPEN]
-
-**Where:** `src/maker/maker-scene.js` / `src/maker/gestures.js` (Unit 14)
-**Symptom:** Maker zoom (0.5× / 1× / 2×) is reachable only through a two-finger pinch. There is no mouse-wheel, key or button path, so a mouse-and-keyboard user is stuck at 1×.
-**Expected:** `1-project-overview.md` Maker features: "Pan and zoom at 0.5×, 1× and 2×". Nothing restricts it to touch.
-**Repro:** From the code (2026-09-24): `zoom` changes only through `gestures.js` `zoomSnap`, which only a two-touch pinch sets. `input.js` has no wheel listener and no zoom keys, and the toolbar has no zoom control.
-**Notes:** Found 2026-09-24 while running the Unit 16 checklist (its "zoom to 2×" step had to use synthesized touch). Needs a small spec decision first (wheel snaps between the three levels about the pointer, and/or `+`/`-` keys through `input.js`), so it is not folded into Unit 16.
-
----
-
 ### 25. `main.js` touches `document`, against the code standards [OPEN]
 
 **Where:** `src/main.js` (Unit 00, grown through Unit 16)
@@ -150,16 +120,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 **Expected:** One dialog implementation.
 **Repro:** Compare `resize-dialog.js` with `dialog.js`.
 **Notes:** Not folded into Unit 17 (no refactoring of code the unit was not asked to touch). A small change, best done together with issue 21's decision.
-
----
-
-### 31. Nothing stops the player at a level's left and right edges [OPEN]
-
-**Where:** `src/game/world.js` / `src/game/player.js` (Unit 07)
-**Symptom:** Past column 0 or the last column there is no terrain, so the player walks off the side of the level and falls to the bottom death border. Seen 2026-09-26: the campaign bot jumped over Cannon Cove's flag and walked off the right edge.
-**Expected:** Undefined today. Unit 07 specified the bottom death border and said nothing about the sides.
-**Repro:** Maker → New Level → a floor across the whole width → play and walk left from the spawn.
-**Notes:** Every Unit 18 campaign level has a full-height terrain wall in its first and last column, so the campaign is not affected. A maker user's level is. Options: clamp the hitbox to `0..worldW` in `world.js` (a behaviour decision: an invisible wall), or leave it to level design. Needs a player decision. Not folded into Unit 18.
 
 ---
 
@@ -197,20 +157,6 @@ fix is one connect target plus dropping `_sfxVolume` from the per-play gain.
 
 ---
 
-### 43. The maker keeps a stale horizon after water is painted or erased [OPEN]
-
-**Where:** `src/maker/maker-scene.js` (`parallax` is created in `syncTheme` and on resize only); `src/level/parallax.js` `createParallax` captures `horizonY` once (Unit 13 / Unit 05)
-**Symptom:** From the code (2026-10-07): `horizonY` is derived from the water layer when the parallax is created. The maker recreates the parallax only on entering the maker, on a theme change and on resize. Painting the level's first water, painting water higher up, or erasing the top water row leaves the sea, the horizon, the BG Image, the clouds and the reflections at the old line until one of those events happens. Play is unaffected, because it creates a fresh parallax on every enter.
-**Expected:** The maker's backdrop follows the derived horizon after every edit, as play does. Invariant 2 means the editor should show what play will show.
-**Repro:** Maker → New Level → paint a row of water halfway up. Expected: the horizon moves to it. Then test-play and come back: the horizon is now correct.
-**Notes:** Found 2026-10-07 while planning issue 42. Not yet seen in a browser; confirm by eye first. A likely fix:
-- recompute the horizon (or recreate the parallax) when a command changes the water layer, including undo/redo;
-- or make `horizonY` a getter over the live layer, with a cached row that is invalidated by edits.
-
-Recreating the parallax resets the cloud positions and drift, so the choice affects the look. That needs a small decision. Keep it out of issue 42.
-
----
-
 ### 44. Idle samples attribute allocations to the loop's `frame` [OPEN]
 
 **Where:** `src/core/loop.js` `frame` (Unit 02). Seen in Unit 22 Part E.
@@ -240,6 +186,63 @@ Recreating the parallax resets the cloud positions and drift, so the choice affe
 ---
 
 ## Resolved
+
+### 5. Throwaway atlas debug page still in the tree [FIXED]
+
+**Where:** `atlas.html`, `src/debug-atlas.js`, `src/ui/styles/debug-atlas.css` (Unit 01)
+**Symptom:** The Unit 01 clip-verification page is still in the source tree with no decision recorded either way. Unit 01's tracker entry says "`/atlas.html` is removable" once `core/atlas.js` landed; Unit 02's says "`/atlas.html` kept" without saying why or for how long. Nothing since has revisited it, so it reads as an oversight rather than a choice.
+**Expected:** Either deleted — its job, proving every clip packs with the right frame count, is done and `core/atlas.js` now covers the runtime path — or explicitly kept as a dev-only tool with that decision recorded here and in the tracker.
+**Repro:** `ls atlas.html src/debug-atlas.js src/ui/styles/debug-atlas.css`; run `npm run dev` and open `/atlas.html`.
+**Notes:** Found during a context review on 2026-09-16, not during a unit. **It does not ship:** `vite.config.js` declares no extra Rollup input, so the production build has `index.html` only — `dist/` was checked and contains no `atlas.html`. Nothing in `src/main.js` imports `debug-atlas.js`; the page is reachable only through the dev server. So the cost is three unreferenced files, not bundle weight. Useful again whenever `tools/asset-manifest.mjs` gains clips (Units 10, 11, 20), which is an argument for keeping it — decide then, and do not fold the deletion into an unrelated unit.
+**Closed:** 2026-10-11. The player chose to delete it. `atlas.html`, `src/debug-atlas.js` and `src/ui/styles/debug-atlas.css` are removed; nothing else referenced them. `core/atlas.js` and the game cover the runtime path.
+
+---
+
+### 4. Touch-control layout looks off at phone width [FIXED]
+
+**Where:** `src/ui/touch-controls.js`, `src/ui/styles/touch-controls.css` (Unit 23 Part D).
+**Symptom:** At a narrow phone viewport the on-screen controls sit awkwardly — the D-pad cluster (left/right with `down` spanning below) and the jump button do not feel well balanced for thumbs. Seen in device emulation during the Unit 09 check.
+**Expected:** A comfortable, thumb-reachable control layout at phone widths in both orientations.
+**Repro:** Open `/` in device emulation (phone), tap once to reveal controls.
+**Notes:** Deferred by the player during Unit 09 ("we can worry about that once the game is completed"). Functionality is correct (movement, jump, drop-through, multi-touch all work); this is layout/ergonomics only. Handle in the responsive pass (around Unit 15 maker UI / a later polish unit), not inside an unrelated unit. Do not change the input wiring — CSS/layout only.
+**Scheduled 2026-10-11:** Unit 23 Part D (`specs/23-second-polish.md`). The player chose the split layout: ◀ ▶ bottom-left; ▼ and a larger Jump bottom-right.
+**Closed:** 2026-10-11. ◀ ▶ sit in `.touch__pad` on the bottom-left; ▼ and Jump sit in `.touch__actions` on the bottom-right, bottom-aligned, 16px apart (× `--ui-scale`). Jump is 80px and in the corner; the others stay 64px. `bindVirtualButton` actions are unchanged. No new tests; this is DOM. 408 tests in 34 files. In Chrome, landscape: at 844×390 and 667×375 (`--ui-scale` 1) the boxes measured 64 and 80, the gaps 16, the bottoms even, and the clusters sat 12px in from the screen edges. Nothing overlapped the hearts, the coin counter or the pause button. At 1280×720 with Settings → Touch: On, the same layout was double (128 / 160, gap 32, inset 24). Touch: Off hid both clusters. Auto hid them until a touch, then showed them. With safe-area insets of 47 left, 47 right and 21 bottom, the clusters moved in by those insets (left edge 59, jump's right edge 785, bottoms 357 on an 844×390 screen). On Castaway Beach, ▶ moved the captain right, ◀ moved him back, and Jump lifted him. ▼ dropped him through a platform (a maker level: a platform under a raised spawn, ground below; his hat fell 64 world pixels). The 64px buttons needed `padding: 0` and `flex-shrink: 0` on the glyph, or the button's default padding squeezed the 56px glyph to 48px wide; Jump already had room. Holding ▶ and Jump together was not tried: emulation cannot do that two-thumb hold. No console exceptions. Commit: Unit 23 part D.
+
+---
+
+### 24. Desktop has no way to zoom the maker [FIXED]
+
+**Where:** `src/settings.js` `WHEEL_ZOOM_REARM`, `src/core/input.js` (`zoomIn` / `zoomOut`, `wheel.y`), `src/maker/gestures.js` `wheelZoomStep`, `src/maker/maker-scene.js` (Unit 23 Part C).
+**Symptom:** Maker zoom (0.5× / 1× / 2×) is reachable only through a two-finger pinch. There is no mouse-wheel, key or button path, so a mouse-and-keyboard user is stuck at 1×.
+**Expected:** `1-project-overview.md` Maker features: "Pan and zoom at 0.5×, 1× and 2×". Nothing restricts it to touch.
+**Repro:** From the code (2026-09-24): `zoom` changes only through `gestures.js` `zoomSnap`, which only a two-touch pinch sets. `input.js` has no wheel listener and no zoom keys, and the toolbar has no zoom control.
+**Notes:** Found 2026-09-24 while running the Unit 16 checklist (its "zoom to 2×" step had to use synthesized touch). Needs a small spec decision first (wheel snaps between the three levels about the pointer, and/or `+`/`-` keys through `input.js`), so it is not folded into Unit 16.
+**Scheduled 2026-10-11:** Unit 23 Part C. The player chose a plain wheel (one step per burst, about the pointer) plus the `+` / `−` keys (about the centre).
+**Closed:** 2026-10-11. The wheel over the canvas is one step per burst (`WHEEL_ZOOM_REARM` 0.2 s) about the pointer; `=` / `+` / numpad `+` zoom in and `-` / numpad `-` zoom out, about the view centre. Ctrl, Cmd and Alt are not taken, so they stay with the browser. A wheel whose target is not the canvas is not preventDefaulted. An open stroke ignores the step. Seven tests in `input.test.js` and `gestures.test.js` were written first and failed, then passed. 408 tests in 34 files. In Chrome: wheeling over a water cell scaled the point under the pointer by 2 (the sprite's blue sits above the click, and that offset doubled); further wheels in the same burst stayed at 2×, and a wheel up at 2× after a pause stayed; after pauses the wheel stepped 2× → 1× → 0.5× and a further wheel down at 0.5× stayed. `=` moved the cell (about the view centre) and doubled it; `-` restored it; Shift + `=` and the numpad `+` / `-` did the same. An empty eraser stroke ignored `=`; after release, `=` doubled the cell (width 62 → 122). That 2× survived test-play and Back → Edit. The rename field, focused, received `a-b=c`. In play, the wheel and `+` / `−` left the page scale at 1. Ctrl + `=` left the maker zoom unchanged. The DevTools protocol cannot fire Chrome's browser page-zoom shortcut, so the page zoom itself was not shown; Ctrl + wheel doubled the maker zoom and left the page scale at 1. At desktop width the tool strip does not overflow; with it forced narrower, a wheel over a palette button was not captured, and a horizontal wheel scrolled the strip without zooming. No console exceptions. Commit: Unit 23 part C.
+
+---
+
+### 43. The maker keeps a stale horizon after water is painted or erased [FIXED]
+
+**Where:** `src/maker/maker-scene.js` `syncHorizon` (Unit 23 Part B). `createParallax` still captures `horizonY` once.
+**Symptom:** From the code (2026-10-07): `horizonY` is derived from the water layer when the parallax is created. The maker recreates the parallax only on entering the maker, on a theme change and on resize. Painting the level's first water, painting water higher up, or erasing the top water row leaves the sea, the horizon, the BG Image, the clouds and the reflections at the old line until one of those events happens. Play is unaffected, because it creates a fresh parallax on every enter.
+**Expected:** The maker's backdrop follows the derived horizon after every edit, as play does. Invariant 2 means the editor should show what play will show.
+**Repro:** Maker → New Level → paint a row of water halfway up. Expected: the horizon moves to it. Then test-play and come back: the horizon is now correct.
+**Notes:** Found 2026-10-07 while planning issue 42. Recreating the parallax resets the cloud positions and drift; Unit 23 accepts that.
+**Closed:** 2026-10-11. Step 0, before the change, in Chrome: a fresh level, camera panned up, one water row about halfway up. On release the tiles sat in the sky and the sea stayed at the bottom of the level (a canvas sample found sea-coloured pixels only in the two bands of that tile row). Test-play, then M back to the maker: the sea filled from that row to the bottom of the view and the cloud bank sat on it. `syncHorizon` now checks the horizon when the command stack's revision changes, and recreates the parallax only if `horizonY` moved. A stroke still waits for release, because the revision changes in `finalizeDrag`. No new tests; scenes are verified by running the game. `npm test` stayed 401 tests in 34 files. After the change, in Chrome: on release the sea, cloud bank and reflections sit on the water row; Undo clears them back to the bottom of the level; Redo restores the row; a second, higher row leaves the horizon put until mouse-up, then the horizon rises to it; erasing that row drops the horizon back; Pirate Ship draws its back wall and accepts a water stroke with no console error; test-play of the island level is entirely sea because the camera sits below the water line, and returning to the maker keeps the same horizon. Commit: Unit 23 part B.
+
+---
+
+### 31. Nothing stops the player at a level's left and right edges [FIXED]
+
+**Where:** `src/game/world.js` (Unit 23 Part A). The clamp runs in `createWorld`'s `update`, immediately after `player.update`.
+**Symptom:** Past column 0 or the last column there is no terrain, so the player walks off the side of the level and falls to the bottom death border. Seen 2026-09-26: the campaign bot jumped over Cannon Cove's flag and walked off the right edge.
+**Expected:** The level's sides hold the player. The bottom stays open.
+**Repro:** Maker → New Level → a floor across the whole width → play and walk left from the spawn.
+**Notes:** Every Unit 18 campaign level has a full-height terrain wall in its first and last column, so the campaign is not affected. A maker user's level is. The player chose an invisible wall at both side edges, ported from SPW `check_constraint` (2026-10-11). It is not terrain: no wall slide and no wall jump.
+**Closed:** 2026-10-11. After the player moves, the hitbox is clamped to `0 .. worldW`. Two tests in `world.test.js` were written first and failed, then passed. 401 tests in 34 files. In Chrome, a 40-column level with a floor across the width: the captain stops on the grass at the left edge, jumps straight up there and lands back on that edge (no slide, no push away), then stops on the grass at the right edge. Castaway Beach still plays: a jump, a coin, five hearts, and its own terrain wall. Commit: Unit 23 part A.
+
+---
 
 ### 46. Offline, the cached game never starts: its JS and CSS miss the cache [FIXED]
 
@@ -757,7 +760,7 @@ with an aspect between 1 and 512 / 360 ≈ 1.42 still stretch — 6.7% on a 4:3
 tablet, up to 42% on a square desktop window. Revisit if it shows up in play.
 **What changed (2026-09-23):** new `src/ui/rotate-prompt.js` +
 `styles/rotate-prompt.css` — an opaque `--ink` cover (z-index 10) with a centred
-`.panel` ("Turn your device", "Coral Corsairs plays in landscape.") and a CSS phone
+`.panel` ("Turn your device", "Plankwalkers plays in landscape.") and a CSS phone
 outline that turns to landscape (static under reduced motion). It is mounted on
 `#app`, not `#ui`, so Unit 16's veiled UI layer can never hide it. `main.js`
 computes `portrait = innerWidth < innerHeight` in the viewport's `onResize` and
@@ -765,7 +768,7 @@ shows or hides the prompt there; while it is up, `update` only calls
 `input.advance()`, so nothing simulates and a press made behind it is dropped, not
 replayed. `core/viewport.js` and `VIEW_H` are unchanged.
 **Verified 2026-09-24 (Claude in Chrome, a 390 × 844 iframe of the app):** the
-prompt shows (mounted on `#app`, "Turn your device" / "Coral Corsairs plays in
+prompt shows (mounted on `#app`, "Turn your device" / "Plankwalkers plays in
 landscape."), the game is held (a 400 ms ArrowRight leaves the maker camera
 unmoved), resizing the frame to 844 × 390 hides it and the same key then pans.
 Still worth a look on a real phone. The title shares issue 21's contrast problem.

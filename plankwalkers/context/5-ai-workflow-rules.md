@@ -4,7 +4,7 @@ These are rules, not guidelines. Follow them literally.
 
 ## Approach
 
-Build Coral Corsairs incrementally, one unit at a time, against a spec file.
+Build Plankwalkers incrementally, one unit at a time, against a spec file.
 
 - The build order is `context/specs/00-build-plan.md`. Do not work out of order.
 - Each unit has a spec at `context/specs/NN-<name>.md`. Read it before writing

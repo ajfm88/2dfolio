@@ -120,6 +120,11 @@ export function createWorld(level, theme, atlas, keys, playSfx = () => {}) {
   function update(dt, camX, viewW) {
     decorVisual.update(dt);
     player.update(dt);
+    // The side edges hold the player like a wall; the bottom stays open (the pit).
+    // Ported from Super-Pirate-World code_complete/level.py check_constraint.
+    const hb = player.hitbox;
+    if (hb.x < 0) hb.x = 0;
+    if (hb.x + hb.w > worldW) hb.x = worldW - hb.w;
     stats.tick(dt);
 
     // Snapshot the count so an entity spawned mid-loop (a projectile) is updated

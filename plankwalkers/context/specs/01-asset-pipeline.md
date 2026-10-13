@@ -68,7 +68,7 @@ way a file under `Sprites/` leaves the 1195 denominator.
 
 ### Clip list (v1)
 
-Pack what Coral Corsairs v1 uses, not what the Python games imported. Unarmed
+Pack what Plankwalkers v1 uses, not what the Python games imported. Unarmed
 Captain, three walkers, Cannon + Seashell, three diamond colours, Wood and Paper
 UI. Skip sword, totems, maps, merchant hull, ship interior, dialogue, inventory,
 Pirate Ship tilesheets, Green Bottle, enemy jump/fall/ground.

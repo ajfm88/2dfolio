@@ -17,7 +17,7 @@ export function createTouchControls(root, input) {
   const unbinds = [];
 
   /**
-   * @param {string} cls modifier class for grid placement
+   * @param {string} cls modifier class
    * @param {number} frame icon index in /assets/ui/icons.png
    * @param {'left' | 'right' | 'up' | 'down' | 'jump'} action
    * @param {string} label accessible name
@@ -40,13 +40,13 @@ export function createTouchControls(root, input) {
   const pad = el('div', { class: 'touch__pad' }, [
     btn('touch-btn--left', 2, 'left', 'Left'),
     btn('touch-btn--right', 3, 'right', 'Right'),
-    btn('touch-btn--down', 0, 'down', 'Drop through'),
   ]);
-  const jump = el('div', { class: 'touch__jump' }, [
+  const actions = el('div', { class: 'touch__actions' }, [
+    btn('touch-btn--down', 0, 'down', 'Drop through'),
     btn('touch-btn--jump', 1, 'jump', 'Jump'),
   ]);
 
-  const container = el('div', { class: 'touch' }, [pad, jump]);
+  const container = el('div', { class: 'touch' }, [pad, actions]);
   container.hidden = true;
   root.append(container);
   let shown = false;

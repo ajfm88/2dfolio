@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isButtonActivation, isFormField, stepButton } from './input.js';
+import { hasCommandModifier, isButtonActivation, isFormField, stepButton } from './input.js';
 
 describe('isFormField', () => {
   it('claims keys for inputs, textareas and selects', () => {
@@ -47,6 +47,20 @@ describe('isButtonActivation', () => {
     expect(isButtonActivation(canvas, 'Enter')).toBe(false);
     expect(isButtonActivation(body, 'Space')).toBe(false);
     expect(isButtonActivation(null, 'Enter')).toBe(false);
+  });
+});
+
+describe('hasCommandModifier', () => {
+  it('is true for Ctrl, Cmd or Alt', () => {
+    expect(hasCommandModifier({ ctrlKey: true, metaKey: false, altKey: false })).toBe(true);
+    expect(hasCommandModifier({ ctrlKey: false, metaKey: true, altKey: false })).toBe(true);
+    expect(hasCommandModifier({ ctrlKey: false, metaKey: false, altKey: true })).toBe(true);
+  });
+
+  it('is false when none of them is held, and Shift does not count', () => {
+    expect(hasCommandModifier({ ctrlKey: false, metaKey: false, altKey: false })).toBe(false);
+    const shiftOnly = { ctrlKey: false, metaKey: false, altKey: false, shiftKey: true };
+    expect(hasCommandModifier(shiftOnly)).toBe(false);
   });
 });
 

@@ -3,8 +3,9 @@ export const ZOOM_LEVELS = [0.5, 1, 2];
 /**
  * @param {number} current
  * @param {1 | -1} dir
+ * @returns {number}
  */
-function neighbourZoom(current, dir) {
+export function neighbourZoom(current, dir) {
   let idx = 0;
   let best = Infinity;
   for (let i = 0; i < ZOOM_LEVELS.length; i++) {
@@ -18,6 +19,29 @@ function neighbourZoom(current, dir) {
   if (next < 0) return ZOOM_LEVELS[0];
   if (next >= ZOOM_LEVELS.length) return ZOOM_LEVELS[ZOOM_LEVELS.length - 1];
   return ZOOM_LEVELS[next];
+}
+
+/**
+ * One zoom step per wheel burst. The first event of a burst steps; the wheel
+ * must then be quiet for `rearm` seconds before it can step again. Mutates
+ * `state`, allocates nothing.
+ *
+ * @param {{ armed: boolean, quiet: number }} state  start as { armed: true, quiet: 0 }
+ * @param {number} wheelY  this frame's summed deltaY; negative zooms in
+ * @param {number} dt
+ * @param {number} rearm  seconds
+ * @returns {1 | -1 | 0}  1 zooms in, -1 out
+ */
+export function wheelZoomStep(state, wheelY, dt, rearm) {
+  if (wheelY === 0) {
+    state.quiet += dt;
+    if (state.quiet >= rearm) state.armed = true;
+    return 0;
+  }
+  state.quiet = 0;
+  if (!state.armed) return 0;
+  state.armed = false;
+  return wheelY < 0 ? 1 : -1;
 }
 
 /**

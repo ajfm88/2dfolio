@@ -62,7 +62,7 @@ change. **Installs:** none.
 | 10 | Pause panel | **Resume**, plus **Level select** in the campaign and My Levels (in place of Back to editor). |
 | 11 | What progress records | `{ done, bestTreasure, bestTimeMs }` per campaign id. Best treasure and best time are each the best across finished runs, not necessarily from the same run. Only finished runs count. **My Levels play records nothing.** This renames the architecture's planned `bestCoins`; nothing has been stored under it yet. |
 | 12 | Next level | A wipe from play to play. Music keeps playing, because only leaving play for another mode stops it. Hearts and coins start fresh, as they do on every `enter`. |
-| 13 | Title screen | **Proposed:** a centred column over the sky fill. The wordmark "Coral Corsairs" sits on a `.panel--paper` (issue 21: text goes on paper), with **Play** (`.btn--primary`, focused) and **Make** (`.btn`) below it. There is **no settings button**, because the settings screen is Unit 19, and Sound stays in the level-select header. There is **no animated level backdrop**: that is canvas work, and the workflow splits canvas and DOM changes. |
+| 13 | Title screen | **Proposed:** a centred column over the sky fill. The wordmark "Plankwalkers" sits on a `.panel--paper` (issue 21: text goes on paper), with **Play** (`.btn--primary`, focused) and **Make** (`.btn`) below it. There is **no settings button**, because the settings screen is Unit 19, and Sound stays in the level-select header. There is **no animated level backdrop**: that is canvas work, and the workflow splits canvas and DOM changes. |
 | 14 | Level-select header | **Back** (to the title), the two tabs, then **Sound**. The My Levels tab adds **Import** and **New Level** (the one primary). The Campaign tab adds nothing. |
 | 15 | Playing a stored level that has problems | Play from a My Levels card runs `findProblems` after loading. If there are any, it shows a toast "Can't play yet: `<first message>`" and stays on the list. (Unit 17 lets such levels be saved and imported.) |
 | 16 | `M` in the campaign and My Levels play | Nothing, as decided in Unit 16. `M` needs `onEdit`, which only test-play has. |
@@ -301,7 +301,7 @@ export function createTitleScreen(root, { onPlay, onMake }) {}
 
 - A full-viewport `section.title` with `pointer-events: auto`, over the canvas's
   sky fill, and a centred column with safe-area padding.
-- The wordmark "Coral Corsairs" is at `--fs-xl`, in `--text` on a `.panel--paper`.
+- The wordmark "Plankwalkers" is at `--fs-xl`, in `--text` on a `.panel--paper`.
 - **Play** is `.btn--primary` and focused on mount, so Enter or Space starts it.
   **Make** is a `.btn`. Both are the same width and at least 44 × 44.
 - It uses no canvas, no scene and no timers.

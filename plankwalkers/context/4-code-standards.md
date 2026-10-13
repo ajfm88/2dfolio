@@ -65,8 +65,8 @@ One entity class per file; the file name is the class name in kebab-case.
 
 - Engine and layout constants — `TILE`, `VIEW_H`, `VIEW_W_MIN`, `VIEW_W_MAX`,
   `ANIM_FPS`, `FIXED_DT`, `Z`, the mode-switch wipe's `WIPE_*` durations and
-  colour, and the maker's `AUTOSAVE_*` timings — live in `src/settings.js` and
-  nowhere else.
+  colour, the maker's `AUTOSAVE_*` timings and `WHEEL_ZOOM_REARM` — live in
+  `src/settings.js` and nowhere else.
 - Gameplay numbers — speeds, gravity, jump height, timers, damage, coin values —
   live in `src/data/tuning.js` and nowhere else.
 - Per-entity numbers — hitbox size, sprite offset, clip names — live in that
@@ -125,7 +125,8 @@ z                      // draw layer from settings.Z
 - All keyboard, mouse, touch and pen input goes through `src/core/input.js`.
   **No `addEventListener` anywhere in `game/`, `maker/` or scene code.**
 - Use **Pointer Events** only. No separate mouse and touch paths, no
-  `TouchEvent` handlers.
+  `TouchEvent` handlers. A `wheel` listener in `input.js` is the one non-pointer
+  mouse input. There is no pointer-event equivalent.
 - Elements that receive drags set `touch-action: none` in CSS, not by calling
   `preventDefault` on every move.
 - The input module exposes edge-triggered state (`pressed`, `released`) as well as

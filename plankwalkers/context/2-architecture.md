@@ -15,6 +15,7 @@
 | Audio build    | `ffmpeg-static` (devDependency)     | Re-encodes the music track to 96 kbps so the game fits Goal 4's 3 MB   |
 | Tests          | `vitest` (devDependency)            | Pure modules: codec, autotiler, collision resolver, schema validation  |
 | Offline        | Hand-written manifest + service worker | Installable, playable offline after first load                      |
+| Hosting        | Netlify (static), `netlify.toml`    | Builds `dist/` and serves it; no server code                           |
 
 No game engine, no physics library, no UI framework. Every dependency above is either
 build-time or a browser API.
@@ -27,6 +28,7 @@ coral-corsairs/
 ├── index.html                 single page, canvas + #ui root
 ├── jsconfig.json              checkJs
 ├── vite.config.js
+├── netlify.toml               static hosting: build, Node version, sw.js header
 ├── context/                   this context system, plus specs/
 ├── reference/                 READ-ONLY source material, gitignored
 │   ├── treasure-hunters/      the Pixelfrog art pack
@@ -49,7 +51,9 @@ coral-corsairs/
 - `src/core/` — the engine. Fixed-timestep loop (an optional `onFrame` records work and interval for `?perf` and is not gameplay), `frame-stats.js`, viewport and scaling, camera
   (`follow` plus `panBy` with a 2-tile maker margin, and x/y setters),
   pointer/keyboard input (including `pointer.button`, a double-buffered
-  `touches` array of at most two touch pointers, Ctrl+Z undo, Ctrl+Shift+Z /
+  `touches` array of at most two touch pointers, `wheel.y` — the per-frame summed
+  deltaY of wheel events aimed at the canvas, which are preventDefaulted —
+  `zoomIn` / `zoomOut`, never with Ctrl, Cmd or Alt, Ctrl+Z undo, Ctrl+Shift+Z /
   Ctrl+Y redo, and `M`, the test-play shortcut; a keydown aimed at a form
   field — input, textarea, select, contenteditable — is left to that field,
   never mapped to an action or preventDefaulted, while key releases are always
@@ -85,9 +89,11 @@ coral-corsairs/
   two-finger pan+pinch), `import-level.js` (`readLevelText`: a pasted share code
   or JSON to a level, refusing unknown kinds). The maker autosaves through an
   injected `onSave` and never imports `storage/`. Maker zoom is 0.5× / 1× / 2×,
-  applied as `ctx.scale` after `viewport.apply` — it does not change
-  `core/viewport.js`. The maker resolves visuals from `level.theme`, synchronizes
-  after undo/redo and recreates parallax on changes. Theme edits use the same stack
+  reached by pinch, by the wheel (one step per burst, about the pointer) and by
+  `+` / `−` (about the centre), applied as `ctx.scale` after `viewport.apply` —
+  it does not change `core/viewport.js`. The maker resolves visuals from `level.theme`, synchronizes
+  after undo/redo and recreates parallax on changes and whenever the derived
+  horizon moves (checked on each stack revision). Theme edits use the same stack
   and revision as paint edits. Owns nothing play mode needs.
 - `src/ui/` — every DOM screen and component, plus CSS. The only place that
   touches `document` outside of `core/input.js` and `core/viewport.js`. Includes
@@ -307,6 +313,10 @@ PirateMaker (whose gravity is frame-rate dependent and whose
 - Wall slide when airborne and touching a wall; wall jump pushes away from it and
   locks horizontal input for a short window.
 - Terminal fall speed is clamped so nothing tunnels through a one-tile floor.
+- The level's left and right edges clamp the player's hitbox after it moves,
+  ported from Super Pirate World `code_complete/level.py` `check_constraint`.
+  They are not terrain, so there is no wall slide or wall jump from them. The
+  bottom stays open (the pit).
 - Coyote time and jump buffering are added; neither Python reference has them.
 
 Starting values live in `src/data/tuning.js`, derived by halving Super Pirate World's
@@ -524,9 +534,13 @@ assets: 341 / 1195 source files packed (28.5%)
 
 `public/manifest.webmanifest` is hand-written (anything under `public/` outside
 `assets/` is not generated). It asks for `fullscreen` and `landscape`, names the
-app Coral Corsairs (`short_name` Corsairs), and points at the generated Captain
-icons. `index.html` links the manifest, the 32 px favicon and the apple-touch
-icon. The two colours in both files mirror `--ink` and `--sky`, which HTML and
+app Plankwalkers (`short_name` Plankwalkers), and points at the generated Captain
+icons. `index.html` links the manifest, the 32 px porthole favicon and the
+apple-touch icon. It also carries the description, the canonical URL and the
+Open Graph and Twitter tags, whose image is the generated
+`assets/icons/social-card.png`. Link previews need absolute URLs, so those four
+URLs name the Netlify site `plankwalkers-ajfm88.netlify.app` and must change if
+the site is named differently. The two colours in both files mirror `--ink` and `--sky`, which HTML and
 JSON cannot read.
 
 A production build's `closeBundle` hook walks `dist/` and writes `dist/sw.js`
@@ -542,6 +556,30 @@ cached `/index.html`. Anything that was not precached is fetched from the
 network and is not stored. The dev server never registers a worker. `main.js`
 registers `/sw.js` only when `import.meta.env.PROD`, and only after the title
 appears, so the precache download does not compete with boot.
+
+### Hosting
+
+The game is a static site on Netlify, configured by `netlify.toml` at the
+project root (the site's base directory).
+
+- Netlify runs `npm run build` and publishes `dist/`. It never runs
+  `npm run assets`: that needs `reference/`, and its output is committed.
+- `NODE_VERSION` is 24, the version the game is built and tested on.
+- `NPM_FLAGS = "--ignore-scripts"`: the only dependency with an install script
+  is `ffmpeg-static`, which downloads an ffmpeg binary from GitHub and fails the
+  install on a network error. Only the asset build uses it.
+- `/sw.js` is sent with `Cache-Control: no-cache`, so a new deploy is always
+  found. Netlify's default for every file is
+  `public,max-age=0,must-revalidate`, which already revalidates; the header
+  states the rule rather than relying on that default.
+- There is no SPA redirect. The game is one page, and a catch-all would answer a
+  missing sprite or sound with `index.html` and a 200 instead of a 404.
+- Measured on an existing Netlify site (2026-10-11): `/index.html` is served
+  with a 200, not redirected to `/`, so the worker's `/index.html` precache key
+  holds. `Vary` is only `Accept-Encoding`; `ignoreVary` (issue 46) covers any
+  other host.
+- Netlify builds on Linux, which is case-sensitive. Every asset URL and import
+  was checked on 2026-10-11 to match a tracked file exactly.
 
 ## Scene and Mode Model
 

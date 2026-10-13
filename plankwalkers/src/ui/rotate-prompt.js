@@ -26,7 +26,7 @@ export function createRotatePrompt(root) {
         text: 'Turn your device',
         attrs: { id: 'rotate-prompt-title' },
       }),
-      el('p', { class: 'rotate-prompt__text', text: 'Coral Corsairs plays in landscape.' }),
+      el('p', { class: 'rotate-prompt__text', text: 'Plankwalkers plays in landscape.' }),
     ]),
   ]);
   root.append(cover);

@@ -1,6 +1,6 @@
 # Build Plan
 
-Twenty-three units in dependency order. Each produces **one** visible, verifiable
+Twenty-four units in dependency order. Each produces **one** visible, verifiable
 result and stays inside one system boundary. Do not work out of order. Each unit gets
 its own spec at `specs/NN-<name>.md` before implementation starts.
 
@@ -332,6 +332,25 @@ twenty entities and active parallax. The phone target (frame time under 16 ms on
 a mid-range phone) and phone install are checked in the deploy step that follows,
 because a service worker needs HTTPS off localhost.
 
+## Unit 23 — Second Polish Pass
+
+**Spec:** `specs/23-second-polish.md`, written 2026-10-11 for Grok to implement
+and Claude to review. Four open issues, one part each: A the level's side edges
+hold the player (issue 31), B the maker's horizon follows the water (issue 43),
+C the maker zooms with the mouse wheel and `+` / `−` (issue 24), D the touch
+controls split between the thumbs (issue 4). Player decisions 2026-10-11: an
+invisible side wall ported from Super Pirate World, plain-wheel zoom, and the
+split layout.
+
+Grok implemented parts A–D (`091dee6`–`5e9ade6`) and Claude reviewed them; the
+review moved one misplaced JSDoc block (`b89af43`). **Complete 2026-10-11:** the
+player signed the unit off. Units 00–23 are complete. The two-thumb hold is
+checked on a phone in the deploy step.
+
+**Depends on:** 22. **Installs:** none.
+**Done when:** all four issues are resolved and verified in the browser, each
+part is its own local commit, and the player signs the unit off.
+
 ---
 
 ## Dependency Summary
@@ -344,7 +363,7 @@ because a service worker needs HTTPS off localhost.
                                                                  │        └── 10 walkers ── 11 shooters ── 12 audio
                                                                  └── 13 maker core ── 14 gestures ── 15 maker UI
                                                                           └── 16 round trip ── 17 storage ── 18 campaign
-                                                                                   └── 19 polish ── 20 theme ── 21 decor ── 22 PWA
+                                                                                   └── 19 polish ── 20 theme ── 21 decor ── 22 PWA ── 23 polish II
 ```
 
 Playable milestones, for sanity checks along the way:
@@ -362,7 +381,8 @@ Playable milestones, for sanity checks along the way:
 ## After Unit 22
 
 Unit 22 completes v1, which is scoped to what PirateMaker and Super Pirate World
-between them prove out. It is not the end of the game.
+between them prove out. It is not the end of the game. Unit 23 is a polish
+pass over v1's open issues, not new scope.
 
 The **Beyond v1** table in `1-project-overview.md` lists every Treasure Hunters asset
 group the two reference projects never touch, and the mechanic each one's frames

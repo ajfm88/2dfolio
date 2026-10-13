@@ -42,8 +42,8 @@ export function createTitleScreen(root, opts) {
       },
     },
   });
-  const screen = el('section', { class: 'title', attrs: { 'aria-label': 'Coral Corsairs' } }, [
-    el('h1', { class: 'panel panel--paper title__wordmark', text: 'Coral Corsairs' }),
+  const screen = el('section', { class: 'title', attrs: { 'aria-label': 'Plankwalkers' } }, [
+    el('h1', { class: 'panel panel--paper title__wordmark', text: 'Plankwalkers' }),
     el('div', { class: 'title__buttons' }, [play, make, settingsButton]),
   ]);
   root.append(screen);

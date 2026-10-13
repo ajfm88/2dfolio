@@ -1,14 +1,14 @@
-import { AUTOSAVE_IDLE, AUTOSAVE_MAX, TILE, VIEW_H } from '../settings.js';
+import { AUTOSAVE_IDLE, AUTOSAVE_MAX, TILE, VIEW_H, WHEEL_ZOOM_REARM } from '../settings.js';
 import { deserialise, encodeShare, serialise } from '../level/codec.js';
 import { createDecorVisual } from '../level/decor.js';
-import { createParallax } from '../level/parallax.js';
+import { createParallax, horizonY } from '../level/parallax.js';
 import { drawLevel } from '../level/render.js';
 import { createEmptyModel } from '../level/model.js';
 import { DECOR_MAX, ENTITIES_MAX, LevelError, validateLevel } from '../level/schema.js';
 import { byId } from '../data/palette.js';
 import { getTheme, themeList } from '../data/themes.js';
 import { CommandStack, ThemeCommand, createResizeCommand } from './commands.js';
-import { ZOOM_LEVELS, createGestures } from './gestures.js';
+import { ZOOM_LEVELS, createGestures, neighbourZoom, wheelZoomStep } from './gestures.js';
 import { findProblems } from './validate.js';
 import {
   applyCell,
@@ -133,6 +133,7 @@ export function createMakerScene() {
   let activeTool = null;
   let erasing = false;
   let zoom = 1;
+  const wheelZoom = { armed: true, quiet: 0 };
 
   /**
    * `lastC` / `lastR` is the cell under the pointer on the previous frame of the drag.
@@ -149,6 +150,8 @@ export function createMakerScene() {
   /** @type {string | null} */
   let loadError = null;
   let lastRevision = -1;
+  // The stack revision whose horizon the parallax was last checked against.
+  let horizonRevision = -1;
 
   // Autosave. `savedRevision` is the stack revision last handed to onSave; the
   // timers run in fixed-timestep seconds while the level differs from it.
@@ -255,6 +258,17 @@ export function createMakerScene() {
     params.camera.y = worldY - centerVy / zoom;
     const d = dims();
     params.camera.panBy(0, 0, d.worldW, d.worldH, d.eW, d.eH);
+  }
+
+  /**
+   * One step along ZOOM_LEVELS about a virtual screen point. Nothing at the ends.
+   * @param {1 | -1} dir
+   * @param {number} centerVx
+   * @param {number} centerVy
+   */
+  function zoomBy(dir, centerVx, centerVy) {
+    const next = neighbourZoom(zoom, dir);
+    if (next !== zoom) applyZoom(next, centerVx, centerVy);
   }
 
   function syncToolFromPalette() {
@@ -548,6 +562,20 @@ export function createMakerScene() {
     parallax = createParallax(level, theme, params.atlas);
   }
 
+  /**
+   * The horizon is derived from the water layer, and the parallax captures it
+   * when created. Re-check it when the stack says the level may have changed,
+   * and rebuild only if it moved (issue 43).
+   */
+  function syncHorizon() {
+    if (!params || !level || !stack || !parallax) return;
+    if (stack.revision === horizonRevision) return;
+    horizonRevision = stack.revision;
+    if (horizonY(level) !== parallax.horizonY) {
+      parallax = createParallax(level, theme, params.atlas);
+    }
+  }
+
   return {
     /**
      * @param {MakerSceneParams} p
@@ -577,9 +605,12 @@ export function createMakerScene() {
       dirtyTime = 0;
       themeId = null;
       syncTheme();
+      horizonRevision = stack.revision;
       decorVisual.sync(level.decor);
       decorDirty = false;
       dragState = null;
+      wheelZoom.armed = true;
+      wheelZoom.quiet = 0;
       panning = false;
       // Checked now, not on the first update: a frame can render before the first
       // fixed step, and Play must never show enabled on an unplayable level.
@@ -752,6 +783,17 @@ export function createMakerScene() {
         applyZoom(gestures.zoomSnap, gestures.zoomCenterX, gestures.zoomCenterY);
       }
 
+      // Desktop zoom (issue 24): + and − about the view centre, the wheel about the
+      // pointer. Not mid-stroke, like undo. The wheel is always stepped, so its burst
+      // state stays true while a stroke is open.
+      const wheelStep = wheelZoomStep(wheelZoom, params.input.wheel.y, dt, WHEEL_ZOOM_REARM);
+      if (!dragState) {
+        const keys = params.input.keys;
+        const keyStep = keys.zoomIn.pressed ? 1 : keys.zoomOut.pressed ? -1 : 0;
+        if (keyStep !== 0) zoomBy(keyStep, d.viewW / 2, VIEW_H / 2);
+        else if (wheelStep !== 0) zoomBy(wheelStep, params.input.pointer.x, params.input.pointer.y);
+      }
+
       panKeyboard(dt);
       if (!gestures.active) panMiddleMouse();
 
@@ -780,6 +822,7 @@ export function createMakerScene() {
         eyedropAt(gestures.eyedropX, gestures.eyedropY);
       }
 
+      syncHorizon();
       parallax.update(dt, params.camera.x, d.eW);
 
       if (decorDirty) {

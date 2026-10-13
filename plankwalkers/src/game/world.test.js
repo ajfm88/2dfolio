@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { TILE } from '../settings.js';
 import { getTheme } from '../data/themes.js';
 import { createPlayFixture } from '../data/fixtures/play-demo.js';
+import { deserialise } from '../level/codec.js';
+import { createBlankLevel } from '../level/schema.js';
 import { createWorld } from './world.js';
 import { tuning } from '../data/tuning.js';
 
@@ -104,5 +106,38 @@ describe('createWorld collectibles and hazards', () => {
     const world = createWorld(level, getTheme(level.theme), mockAtlas(), idleKeys());
     expect(() => world.update(1 / 60, 0, 640)).not.toThrow();
     expect(world.stats.coins).toBe(0);
+  });
+});
+
+describe('level side edges', () => {
+  /** @param {'left' | 'right'} held */
+  function floorWorld(held) {
+    const level = deserialise(createBlankLevel({ cols: 40, rows: 12 }));
+    level.layers.terrain.fill(1, 11 * 40, 12 * 40);
+    const keys = idleKeys();
+    keys[held].held = true;
+    const world = createWorld(level, getTheme(level.theme), mockAtlas(), keys);
+    return world;
+  }
+
+  it('holds the player at the left edge', () => {
+    const world = floorWorld('left');
+    for (let i = 0; i < 300; i++) {
+      const status = world.update(1 / 60, 0, 768);
+      expect(world.player.hitbox.x).toBeGreaterThanOrEqual(0);
+      expect(status).toBe('playing');
+    }
+    expect(world.player.hitbox.x).toBe(0);
+  });
+
+  it('holds the player at the right edge', () => {
+    const world = floorWorld('right');
+    const limit = 40 * TILE;
+    for (let i = 0; i < 900; i++) {
+      const status = world.update(1 / 60, 0, 768);
+      expect(world.player.hitbox.x + world.player.hitbox.w).toBeLessThanOrEqual(limit);
+      expect(status).toBe('playing');
+    }
+    expect(world.player.hitbox.x).toBe(limit - world.player.hitbox.w);
   });
 });

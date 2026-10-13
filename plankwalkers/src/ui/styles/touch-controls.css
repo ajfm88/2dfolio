@@ -1,6 +1,8 @@
-/* On-screen controls. Hidden until a touch pointer is seen. Buttons are at least
-   64px at --ui-scale 1; glyphs are cropped from /assets/ui/icons.png (8 frames,
-   28x28), shown at 2x native and scaled by --ui-scale. */
+/* On-screen controls. Hidden until a touch pointer is seen. ◀ ▶ bottom-left;
+   ▼ and a larger Jump bottom-right, Jump in the corner. Buttons are 64px and
+   Jump is 80px at --ui-scale 1, 16px apart, bottom-aligned. Glyphs are cropped
+   from /assets/ui/icons.png (8 frames, 28x28), shown at 2x native and scaled
+   by --ui-scale. */
 
 .touch {
   position: absolute;
@@ -8,23 +10,17 @@
   pointer-events: none;
 }
 
-.touch__pad {
+.touch__pad,
+.touch__actions {
   position: absolute;
   bottom: calc(env(safe-area-inset-bottom) + 12px * var(--ui-scale));
-  left: calc(env(safe-area-inset-left) + 12px * var(--ui-scale));
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-template-areas:
-    'left right'
-    'down down';
-  gap: calc(8px * var(--ui-scale));
+  display: flex;
+  align-items: flex-end;
+  gap: calc(16px * var(--ui-scale));
 }
 
-.touch__jump {
-  position: absolute;
-  bottom: calc(env(safe-area-inset-bottom) + 12px * var(--ui-scale));
-  right: calc(env(safe-area-inset-right) + 12px * var(--ui-scale));
-}
+.touch__pad { left: calc(env(safe-area-inset-left) + 12px * var(--ui-scale)); }
+.touch__actions { right: calc(env(safe-area-inset-right) + 12px * var(--ui-scale)); }
 
 .touch-btn {
   width: calc(64px * var(--ui-scale));
@@ -34,6 +30,7 @@
   justify-content: center;
   background: var(--stone);
   border: calc(2px * var(--ui-scale)) solid var(--ink);
+  padding: 0;
   pointer-events: auto;
   touch-action: none;
   user-select: none;
@@ -42,19 +39,22 @@
   cursor: pointer;
 }
 
+/* The primary action, under the right thumb in the corner. */
+.touch-btn--jump {
+  width: calc(80px * var(--ui-scale));
+  height: calc(80px * var(--ui-scale));
+}
+
 .touch-btn:active { background: var(--stone-light); }
 .touch-btn:focus-visible {
   outline: calc(2px * var(--ui-scale)) solid var(--paper-light);
   outline-offset: calc(2px * var(--ui-scale));
 }
 
-.touch-btn--left { grid-area: left; }
-.touch-btn--right { grid-area: right; }
-.touch-btn--down { grid-area: down; justify-self: center; }
-
 .touch-btn__glyph {
   width: calc(28px * 2 * var(--ui-scale));
   height: calc(28px * 2 * var(--ui-scale));
+  flex-shrink: 0;
   background-image: url('/assets/ui/icons.png');
   background-repeat: no-repeat;
   background-size: calc(224px * 2 * var(--ui-scale)) calc(28px * 2 * var(--ui-scale));

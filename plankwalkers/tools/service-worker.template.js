@@ -1,4 +1,4 @@
-// Coral Corsairs service worker. tools/pwa-plugin.mjs copies this into
+// Plankwalkers service worker. tools/pwa-plugin.mjs copies this into
 // dist/sw.js at build time and replaces the two placeholders. Not imported by src/.
 const VERSION = '__CC_VERSION__';
 const PRECACHE = __CC_PRECACHE__;

@@ -302,7 +302,7 @@ export async function readLevelText(text) {}
 2. If it starts with `{`, use `fromJsonString(text)`. Otherwise use
    `decodeShare(text.replace(/\s+/g, ''))`.
 3. A `LevelError` on `format` becomes "This level was made with a newer version of
-   Coral Corsairs." Any other `LevelError` becomes "That isn't a valid level
+   Plankwalkers." Any other `LevelError` becomes "That isn't a valid level
    (`<err.message>`)." The message names the field, as the code standards require.
 4. Run `findProblems` and collect the `unknown-kind` problems. If there are any,
    throw "This level uses objects this version doesn't have: `<k, k>`."
@@ -439,7 +439,7 @@ and the settings store. Apply `settings.load()` to `audio.musicVolume` and
     `request = 'list'`.
 - **`report(result, level)`:**
   - On `quota`, when `storageFullShown` is not set: open the storage-full dialog.
-    Its text is "Coral Corsairs couldn't save because this browser's storage for it
+    Its text is "Plankwalkers couldn't save because this browser's storage for it
     is full. Delete levels you don't need in My Levels, or copy this level's share
     code to keep it safe." Its actions are **Copy share code** (opens the share
     dialog) and **OK**.

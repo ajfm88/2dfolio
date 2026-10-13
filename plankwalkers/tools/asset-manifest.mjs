@@ -219,7 +219,6 @@ function icon(dest, size, scale) {
 }
 
 export const icons = [
-  icon('icons/icon-32.png', 32, 1),
   icon('icons/apple-touch-icon.png', 180, 5),
   icon('icons/icon-192.png', 192, 5),
   icon('icons/icon-512.png', 512, 14),
@@ -227,6 +226,42 @@ export const icons = [
   // the 0.4 × 512 = 204.8 px safe-zone circle.
   icon('icons/icon-maskable-512.png', 512, 10),
 ];
+
+/**
+ * Favicon: the Captain's head and shoulders (ICON_SOURCE, x21 y4 w24 h24) seen
+ * through a brass porthole, drawn 1:1 on a 32 px canvas. A pixel takes the
+ * innermost ring whose radius reaches its centre: an ink outline, a brass ring
+ * lit from the top left (--board-light over --board), an ink rim, and the glass
+ * (--sea), where the Captain shows. Outside the outline is transparent.
+ */
+export const FAVICON = {
+  dest: 'icons/favicon-32.png',
+  size: 32,
+  crop: { x: 21, y: 4, w: 24, h: 24 },
+  at: { x: 4, y: 5 },
+  rings: [
+    { r: 15.7, fill: '#33323d' },
+    { r: 14.7, fill: 'brass' },
+    { r: 13.4, fill: '#33323d' },
+    { r: 12.5, fill: 'glass' },
+  ],
+  brass: '#daab76',
+  brassLight: '#e7cd8d',
+  glass: '#92a9ce',
+};
+
+/**
+ * Link-preview image (og:image / twitter:image): the favicon scaled by a whole
+ * number with nearest-neighbour, centred on --sky at the 1200 × 630 size that
+ * link previews expect.
+ */
+export const SOCIAL_CARD = {
+  dest: 'icons/social-card.png',
+  width: 1200,
+  height: 630,
+  scale: 12,
+  background: '#ddc6a1', // --sky
+};
 
 /**
  * attack.wav is not listed: sword combat is out of scope, and nothing ships that
