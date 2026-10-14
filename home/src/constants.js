@@ -18,6 +18,7 @@ export const dialogueData = {
   <a href="https://zelda-ajfm88.netlify.app" target="_blank">Legend of Zelda</a>,
   <a href="https://pac-man-ajfm88.netlify.app" target="_blank">Pac-Man</a>,
   <a href="https://pizza-legends-ajfm88.netlify.app" target="_blank">Pizza Legends</a>,
+  <a href="https://plankwalkers-ajfm88.netlify.app" target="_blank">Plankwalkers</a>,
   <a href="https://sonic-runner-ajfm88.netlify.app" target="_blank">Sonic Runner</a>,
   <a href="https://tetris-attack-ajfm88.netlify.app" target="_blank">Tetris Attack</a>.`,
   nightstand: `This is my nightstand, where I keep my cellphone. I occasionally like writing restaurant reviews, please check out 
