@@ -22,6 +22,9 @@ import { GameMap, Player, Npc, loadNpcs } from "./overworld";
 import type { Direction } from "./core";
 import { UiEntry, overworldUiOpen, openOverworldUi, fontLoadedUpdateSprites } from "./overworld/ui_entry";
 import { spriteDrawOrder } from "./overworld/sprites";
+import { loadMapSpriteSets, currentMapCloseFrames } from './overworld/sprite_sets';
+import { CloseSequence } from './text/close_sequence';
+import { textBgTransfer } from './text/bg_transfer';
 import { uiTiles } from "./renderer/ui_tiles";
 import {
   applyDefeatedTrainers, applyStoryNpcState, recordDefeated,
@@ -48,6 +51,7 @@ import {
   TextBox,
   getFontCanvas,
   loadGameText,
+  loadTextPrograms,
 } from "./text";
 import { updateDebugPanel, consumeDebugWarp } from "./debug";
 import {
@@ -79,8 +83,6 @@ import {
   ShopMenu,
   ItemMenu,
   TownMap,
-  BlackboardMenu,
-  getSchoolBlackboardConfig,
   PcMenu,
   PokecenterPcMenu,
   NUM_BOXES,
@@ -106,7 +108,7 @@ import {
   initScript, updateScript as runScript, getActiveScript,
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript, setLastBattleWon,
   getScriptNpcs, getScriptFadeAlpha, lookupNpc,
-  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo,
+  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu,
 } from "./script";
 import type { ScriptDeps } from "./script";
 import {
@@ -121,7 +123,10 @@ import {
 
 const gameMap = new GameMap();
 const player = new Player();
-const textBox = new TextBox();
+const textBox = new TextBox({
+  closeFrames: reload => currentMapCloseFrames(getMapName(), { x: player.mapStepX, y: player.mapStepY }, reload),
+  updateSprites: () => updateSprites([...npcs, ...getScriptNpcs()], gameMap, player, pikachuFollower),
+});
 const mapDialogue = new MapDialogue(textBox);
 const pikachuFollower = new PikachuFollower();
 let npcs: Npc[] = [];
@@ -139,12 +144,12 @@ type GameState =
   | "battle_transition"
   | "emotion_bubble"
   | "start_menu"
+  | "menu_closing"
   | "party_menu"
   | "shop"
   | "item_menu"
   | "script"
   | "town_map"
-  | "blackboard"
   | "pc"
   | "pokecenter_pc"
   | "trainer_card"
@@ -156,8 +161,8 @@ type GameState =
   | "evolution";
 let state: GameState = "title_screen";
 let stateBeforeMenu: GameState = "overworld"; // where to return after start_menu/textbox
-let pendingTownMap = false; // open town map after textbox dismissal
 let paused = false;
+let menuClose: CloseSequence | null = null;
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "p") {
@@ -177,8 +182,6 @@ const namingScreen = new NamingScreen();
 // Pokedex
 const pokedexMenu = new PokedexMenu();
 
-// Blackboard interactive menu
-const blackboardMenu = new BlackboardMenu();
 
 // Overworld state (mutable, passed to overworld controller)
 const ow = createOverworldState();
@@ -256,6 +259,7 @@ const pcMenu = new PcMenu();
 const pokecenterPcMenu = new PokecenterPcMenu();
 const trainerCard = new TrainerCard();
 const townMap = new TownMap();
+let townMapFromScript = false; // the Town Map sign's handler waits for DisplayTownMap to return
 const optionMenu = new OptionMenu();
 const saveMenu = new SaveMenu();
 
@@ -349,6 +353,8 @@ async function init(): Promise<void> {
     titleScreen.load(),
     fetch('item_names.json').then(r => r.ok ? r.json() : {}).then(names => initItemNames(names)),
     loadGameText(),
+    loadTextPrograms(),
+    loadMapSpriteSets(),
   ]);
 
   const font = getFontCanvas();
@@ -437,7 +443,7 @@ async function loadSavedGame(): Promise<void> {
   applyDefeated();
   applyStory();
 
-  pikachuFollower.visible = shouldPikachuFollow(playerParty);
+  pikachuFollower.visible = followerCanDraw();
   if (pikachuFollower.visible) {
     pikachuFollower.spawn(player.x, player.y, player.direction);
   }
@@ -1011,6 +1017,12 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+/** The Lab gift disables drawing until Pikachu's post-rival escape scene. */
+function followerCanDraw(): boolean {
+  return shouldPikachuFollow(playerParty) &&
+    !(currentMapName === 'OaksLab' && hasFlag('GOT_STARTER') && !hasFlag('BATTLED_RIVAL_IN_OAKS_LAB'));
+}
+
 function overworldDeps(): OverworldDeps {
   return {
     player, gameMap, npcs, pikachuFollower, playerParty, playerBag, currentMapName, findNpc,
@@ -1077,7 +1089,7 @@ function gameTick(): void {
   prevTickInPassState = inPassState;
   const isPass = inPassState && !movementBlocking && passClock.tick();
   // EmotionBubble's DelayFrames read nothing: the spotting pass's own Joypad comes after it.
-  if (!inPassState && state !== "emotion_bubble" && !textBox.active) syncJoypadRead();
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1151,6 +1163,7 @@ function gameTick(): void {
         fadeDir = "out";
         fadeAlpha = 1;
         fadeCallback = () => {
+          oakSpeech.clearScreen();
           startNewGame().then(() => {
             updateMapMusic('RedsHouse2F');
             state = "overworld";
@@ -1226,8 +1239,16 @@ function gameTick(): void {
       stateBeforeMenu = "start_menu";
       state = "option_menu";
     } else if (action === "exit") {
-      state = "overworld";
+      // CloseStartMenu's own Joypad read, then CloseTextDisplay (no reads during copies).
+      readJoypad();
+      menuClose = new CloseSequence(currentMapCloseFrames(getMapName(), { x: player.mapStepX, y: player.mapStepY }),
+        () => updateSprites([...npcs, ...getScriptNpcs()], gameMap, player, pikachuFollower));
+      state = 'menu_closing';
     }
+  } else if (state === 'menu_closing') {
+    if (menuClose!.firstFrame) textBgTransfer.tick();
+    menuClose!.advance();
+    if (menuClose!.complete) { menuClose = null; state = 'overworld'; }
   } else if (state === "party_menu") {
     if (partyMenu.update() === "close") {
       state = "start_menu";
@@ -1253,14 +1274,10 @@ function gameTick(): void {
     if (pokecenterPcMenu.update() === "closed") {
       currentPcBox = pokecenterPcMenu.getCurrentBox();
       const wasVis = pikachuFollower.visible;
-      pikachuFollower.visible = shouldPikachuFollow(playerParty);
+      pikachuFollower.visible = followerCanDraw();
       if (pikachuFollower.visible && !wasVis) {
         pikachuFollower.spawn(player.x, player.y, player.direction);
       }
-      state = "overworld";
-    }
-  } else if (state === "blackboard") {
-    if (blackboardMenu.update() === "closed") {
       state = "overworld";
     }
   } else if (state === "trainer_card") {
@@ -1308,12 +1325,22 @@ function gameTick(): void {
       state = "start_menu";
     }
   } else if (state === "town_map") {
-    if (townMap.update() === "closed") {
+    if (townMap.update() !== "closed") {
+      // still open
+    } else if (townMapFromScript) {
+      // DisplayTownMap returns into TownMapText's handler, whose display is still open. That
+      // is no new DisplayTextIDInit: keep the UI-entry edge from firing an opening UpdateSprites.
+      townMapFromScript = false;
+      uiEntry.opened(true);
+      state = "script";
+      advanceActiveScript();
+    } else {
       state = "overworld";
     }
   } else if (state === "script") {
     const scriptDeps: ScriptDeps = {
       textBox, player, gameMap, npcs, playerParty, playerBag,
+      restoreMapMusic: () => { currentMapMusic = null; updateMapMusic(currentMapName); },
       pikachuTile: pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined,
       pikachuFollower,
     };
@@ -1333,7 +1360,7 @@ function gameTick(): void {
           state = 'overworld';
           applyStory();
           const wasVis = pikachuFollower.visible;
-          pikachuFollower.visible = shouldPikachuFollow(playerParty);
+          pikachuFollower.visible = followerCanDraw();
           if (pikachuFollower.visible && !wasVis) {
             pikachuFollower.spawn(player.x, player.y, player.direction);
           }
@@ -1377,6 +1404,12 @@ function gameTick(): void {
           stateBeforeMenu = "script";
           state = "start_menu";
           break;
+        case 'townMap':
+          // TownMapText's farcall DisplayTownMap, inside its retained display
+          townMapFromScript = true;
+          state = "town_map";
+          townMap.show(currentMapName);
+          break;
       }
     }
     const sfa = getScriptFadeAlpha();
@@ -1413,12 +1446,6 @@ function gameTick(): void {
           endBattleText: npc.data.endBattleText,
           engaged: npc,
         });
-        return;
-      }
-      if (pendingTownMap) {
-        pendingTownMap = false;
-        state = "town_map";
-        townMap.show(currentMapName);
         return;
       }
       state = stateBeforeMenu;
@@ -1519,7 +1546,7 @@ function gameTick(): void {
         } else {
           // Victory fanfare is already playing (triggered by battle.onVictory callback)
           // Re-evaluate Pikachu visibility (Pikachu may have fainted)
-          pikachuFollower.visible = shouldPikachuFollow(playerParty);
+          pikachuFollower.visible = followerCanDraw();
           // EnterMap's UpdateSprites (after any evolutions on the cartridge; nothing on the
           // map moves while they run)
           enterMapAfterBattle();
@@ -1591,14 +1618,18 @@ function drawUiLayer(): void {
     case 'shop': shopMenu.render(); break;
     case 'pc': pcMenu.render(); break;
     case 'pokecenter_pc': pokecenterPcMenu.render(); break;
-    case 'blackboard': blackboardMenu.render(); textBox.render(); break;
     case 'save_menu': startMenu.render(); saveMenu.render(); break;
     case 'pikachu_emotion': renderPikachuEmotionBox(); break;
     case 'start_menu': startMenu.render(); break;
+    case 'menu_closing':
+      // Retain the image latch's old coverage until the final UpdateSprites.
+      if (menuClose?.firstFrame) startMenu.render();
+      else uiTiles.cover(80, 0, 80, hasFlag('GOT_POKEDEX') ? 128 : 112);
+      break;
     case 'overworld':
     case 'script':
     case 'emotion_bubble':
-    case 'textbox': textBox.render(); renderScriptYesNo(); break;
+    case 'textbox': renderScriptMenu(); textBox.render(); renderScriptYesNo(); break;
   }
 }
 
@@ -1608,8 +1639,12 @@ function drawUiLayer(): void {
  * in the tick, so the result never depends on rendering.
  */
 const uiEntry = new UiEntry();
+let lastDisplayRevision = 0;
 function checkUiEntry(): void {
-  if (!uiEntry.opened(overworldUiOpen(state, textBox.active))) return;
+  const rising = uiEntry.opened(overworldUiOpen(state, textBox.active));
+  const newDisplay = textBox.active && textBox.displaySession && textBox.displayRevision !== lastDisplayRevision;
+  lastDisplayRevision = textBox.displayRevision;
+  if (!rising && !newDisplay) return;
   openOverworldUi(state, player, gameMap, pikachuFollower, () => { captureUi(drawUiLayer); });
 }
 
@@ -1713,14 +1748,6 @@ function gameLoop(now = 0): void {
     pikachuFollower.render(camX, camY);
     player.render(camX, camY);
   } else if (state === "pokecenter_pc") {
-    const camX = player.getCameraX();
-    const camY = player.getCameraY();
-    clear();
-    gameMap.render(camX, camY);
-    for (const npc of npcs) npc.render(camX, camY);
-    pikachuFollower.render(camX, camY);
-    player.render(camX, camY);
-  } else if (state === "blackboard") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
     clear();
@@ -1834,8 +1861,7 @@ function handleOverworldAction(action: OverworldAction): void {
       state = 'pikachu_emotion';
       break;
     case 'textbox':
-      mapDialogue.show(action.text);
-      if (action.pendingTownMap) pendingTownMap = true;
+      mapDialogue.show(action.text, { kind: action.call, autoBox: action.autoBox, program: action.program });
       stateBeforeMenu = 'overworld';
       state = 'textbox';
       break;
@@ -1862,10 +1888,6 @@ function handleOverworldAction(action: OverworldAction): void {
           state = 'pokecenter_pc';
         } },
       ]);
-      break;
-    case 'openBlackboard':
-      blackboardMenu.show(textBox, getSchoolBlackboardConfig());
-      state = 'blackboard';
       break;
     case 'startBattle':
       startBattle(action.pokemon);
@@ -1909,6 +1931,18 @@ function startScript(commands: ScriptCommand[]): void {
   initScript(commands);
   ow.doorExitStep = false; // prevent stale auto-step after script ends
   state = "script";
+  // Migrated pickups/handlers enter DisplayTextIDInit in the dispatch CPU tick.
+  // Scripts that begin with movement retain their verified dispatch frame.
+  if (commands[0]?.type === 'displayOpen' ||
+      (commands[0]?.type === 'callback' && commands.some(cmd => cmd.type === 'displayOpen'))) {
+    // Run an instantaneous migrated map-script prefix into its opening in this CPU tick.
+    // A movement/async/wait command keeps its index and ends the dispatch here.
+    let index: number;
+    do {
+      index = getActiveScript()!.index;
+      runScript({ textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower }, false);
+    } while (getActiveScript() && getActiveScript()!.index !== index);
+  }
 }
 
 /** Find an NPC by ID (checks both map NPCs and script-created NPCs). */
@@ -1924,7 +1958,7 @@ function checkMapEntryScripts(): void {
       startScript(buildOaksLabAwaitBallScript());
     } else if (hasFlag("FOLLOWED_OAK_INTO_LAB")) {
       // Player just entered lab — run full intro cutscene
-      startScript(buildOaksLabIntroScript(findNpc));
+      startScript(buildOaksLabIntroScript());
     }
   }
 
@@ -1936,6 +1970,8 @@ function checkMapEntryScripts(): void {
 
   // Viridian Mart: parcel quest on first visit
   if (currentMapName === "ViridianMart" && !hasFlag("GOT_OAKS_PARCEL")) {
+    // ViridianMartDefaultScript's UpdateSprites precedes DisplayTextIDInit.
+    updateSprites([...npcs, ...getScriptNpcs()], gameMap, player, pikachuFollower);
     startScript(buildViridianMartParcelScript());
   }
 }

@@ -3,7 +3,20 @@
 import type { ScriptCommand } from '../script';
 import type { Direction } from '../core';
 import { stopMusic, playMusic } from '../audio';
-import { getText } from '../text';
+import { displayTextID, registerTextHandler } from './text_handlers';
+import { setJoyIgnore } from '../input/joy_ignore';
+
+let oakWalkedToPlayer: 0 | 1 | 2 = 0;
+/** PalletTownOakText selects its body from wOakWalkedToPlayer. */
+export function palletOakText(stage: 0 | 1 | 2): ScriptCommand[] {
+  const program = `PalletTownOakText.${stage === 0 ? 'HeyWaitDontGoOutText' : stage === 1 ? 'ThatWasCloseText' : 'WhewText'}`;
+  return displayTextID([{ type: 'printText', program }, ...(stage === 0 ? [
+    { type: 'wait', frames: 10 } as ScriptCommand,
+    { type: 'facePlayer', direction: 'down' } as ScriptCommand,
+    { type: 'emotionBubble', target: 'player' } as ScriptCommand,
+  ] : [])], { outerWait: stage !== 0 });
+}
+registerTextHandler('PalletTown', 1, () => palletOakText(oakWalkedToPlayer));
 
 /**
  * Build the Oak grass cutscene script.
@@ -58,29 +71,26 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
 
   return [
     // Assembly: StopAllMusic → PlayMusic MUSIC_MEET_PROF_OAK
-    { type: 'callback', fn: () => { stopMusic(); playMusic('meetprofoak'); } },
+    { type: 'callback', fn: () => { oakWalkedToPlayer = 0; setJoyIgnore('dpad'); stopMusic(); playMusic('meetprofoak'); } },
+    { type: 'setFlag', flag: 'OAK_APPEARED_IN_PALLET' },
 
     // "Hey! Wait! Don't go out!" (text/PalletTown.asm _PalletTownOakHeyWaitDontGoOutText)
-    { type: 'text', message: getText('PALLET_OAK_HEY_WAIT') },
-
-    // Player faces down, then exclamation bubble (assembly: EmotionBubble on player sprite)
-    { type: 'facePlayer', direction: 'down' },
-    { type: 'exclamation', target: 'player', frames: 40 },
+    ...palletOakText(0),
+    { type: 'callback', fn: () => setJoyIgnore('all') },
 
     // Oak appears south of player and walks up
     { type: 'showNpc', npcId: 'prof_script', x: playerStepX, y: oakSpawnY, sprite: 'prof', direction: 'up' },
-    { type: 'setFlag', flag: 'OAK_APPEARED_IN_PALLET' },
+    { type: 'wait', frames: 3 }, // PalletTownOakWalksToPlayerScript Delay3
     { type: 'moveNpc', npcId: 'prof_script', path: oakWalkUp },
     { type: 'faceNpc', npcId: 'prof_script', direction: 'up' },
-    { type: 'wait', frames: 15 },
 
     // "That was close!" + para "Wild POKéMON live in tall grass!"
     // (text/PalletTown.asm _PalletTownOakThatWasCloseText)
-    { type: 'text', message: getText('PALLET_OAK_CLOSE_CALL') },
+    { type: 'callback', fn: () => { oakWalkedToPlayer = 1; setJoyIgnore('dpad'); } },
+    ...palletOakText(1),
 
     // Oak faces the adjacent grass patch before Pikachu battle
     { type: 'faceNpc', npcId: 'prof_script', direction: oakFacesGrass },
-    { type: 'wait', frames: 15 },
 
     // Wild Pikachu battle — the catch demo, Oak catches it
     // (scripts/PalletTown.asm PalletTownPikachuBattleScript: BATTLE_TYPE_PIKACHU,
@@ -88,12 +98,13 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
     { type: 'catchDemo', battleType: 'PIKACHU', species: 'PIKACHU', level: 5 },
 
     // After battle (text/PalletTown.asm _PalletTownOakWhewText)
-    { type: 'text', message: getText('PALLET_OAK_WHEW') },
+    { type: 'callback', fn: () => { oakWalkedToPlayer = 2; setJoyIgnore('dpad'); } },
+    ...palletOakText(2),
     { type: 'faceNpc', npcId: 'prof_script', direction: 'up' },
-    { type: 'wait', frames: 15 },
 
     // "A POKéMON can appear anytime..." (text/PalletTown.asm _PalletTownOakComeWithMe)
-    { type: 'text', message: getText('PALLET_OAK_COME_WITH_ME') },
+    ...displayTextID([{ type: 'printText', program: 'PalletTownOakComeWithMe', box: 'keep' }]),
+    { type: 'callback', fn: () => setJoyIgnore('all') },
 
     // Phase 1+2: If player was on right exit, Oak moves LEFT then player follows
     // (assembly: PalletMovementScript_OakMoveLeft + PalletMovementScript_PlayerMoveLeft)
@@ -111,6 +122,7 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
 
     // Warp to lab
     { type: 'setFlag', flag: 'FOLLOWED_OAK_INTO_LAB' },
+    { type: 'callback', fn: () => setJoyIgnore('none') },
     { type: 'warp', map: 'OaksLab', warpId: 1 },
   ];
 }

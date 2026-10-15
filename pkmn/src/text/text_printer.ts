@@ -30,23 +30,22 @@ export function tokenizeText(text: string): string[] {
  * Construction is the initial CPU work; advance resumes after the next VBlank.
  * The buffer is wTileMap rows 12–17. Out-of-box writes are deliberately clipped.
  */
-export class TextPrinter {
+export class TextScreen {
   readonly buffer: string[] = Array<string>(TEXT_BUFFER_SIZE).fill(' ');
-  complete = false;
   waiting = false;
   hasMore = false;
   private row = 2;
   private column = 1;
   private joyLast: number;
-  private readonly run: Generator<void>;
-
-  constructor(text: string, private readonly ports: PrinterPorts, initialJoy = 0) {
+  constructor(protected readonly ports: PrinterPorts, initialJoy = 0) {
     this.joyLast = initialJoy;
-    this.run = this.print(tokenizeText(text));
-    this.advance();
   }
-  advance(): void { if (!this.complete) this.run.next(); }
-  private read(): number {
+  get held(): number { return this.joyLast; }
+  resetCursor(): void { this.row = 2; this.column = 1; }
+  clearInterior(): void {
+    for (let row = 1; row <= 4; row++) this.buffer.fill(' ', row * 20 + 1, row * 20 + 19);
+  }
+  read(): number {
     const down = this.ports.buttons();
     const pressed = down & ~this.joyLast;
     this.joyLast = down;
@@ -58,7 +57,7 @@ export class TextPrinter {
       this.buffer[this.row * 20 + this.column] = glyph;
     this.column++;
   }
-  private *delay(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
+  *delay(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
   private *letterDelay(): Generator<void> {
     let remaining = this.ports.speed();
     while (true) {
@@ -87,17 +86,18 @@ export class TextPrinter {
       yield;
     }
   }
-  private *manual(): Generator<void> {
-    this.buffer[98] = '▼';
+  *manual(protection = 3, arrow = true): Generator<void> {
+    if (arrow) this.buffer[98] = '▼';
     this.waiting = true;
-    yield* this.delay(3);
-    yield* this.waitButton(true);
+    yield* this.delay(protection);
+    yield* this.waitButton(arrow);
     // WaitForSoundToFinish is a CPU loop, not a Joypad reader.
     while (!this.ports.soundFinished()) yield;
     this.ports.beep();
-    this.buffer[98] = ' ';
+    // TextCommand_WAIT_BUTTON never writes (18,16); only the arrow's callers clear it.
+    if (arrow) this.buffer[98] = ' ';
   }
-  private *scroll(): Generator<void> {
+  *scroll(): Generator<void> {
     for (let step = 0; step < 2; step++) {
       this.buffer.copyWithin(20, 40, 100);
       this.buffer.fill(' ', 81, 99);
@@ -105,15 +105,17 @@ export class TextPrinter {
     }
     this.row = 4; this.column = 1;
   }
-  private *print(tokens: string[]): Generator<void> {
+  /** Returns true for DoneText/PromptText: only the current processor level returns. */
+  *placeString(text: string, noDelay = false): Generator<void, boolean> {
+    const tokens = tokenizeText(text);
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       this.hasMore = i < tokens.length - 1;
-      if (token === '<DONE>') break;
-      if (token === '<PROMPT>') { this.hasMore = false; yield* this.manual(); break; }
+      if (token === '<DONE>') { this.hasMore = false; return true; }
+      if (token === '<PROMPT>') { this.hasMore = false; yield* this.manual(); return true; }
       if (token === '\f') {
         yield* this.manual();
-        for (let row = 1; row <= 4; row++) this.buffer.fill(' ', row * 20 + 1, row * 20 + 19);
+        this.clearInterior();
         yield* this.delay(20);
         this.row = 2; this.column = 1;
       } else if (token === '<SCROLL>') yield* this.scroll();
@@ -121,9 +123,25 @@ export class TextPrinter {
         yield* this.manual(); yield* this.scroll();
       } else if (token === '\n' || token === '<LINE>') { this.row = 4; this.column = 1; }
       else if (token === '<NEXT>') { this.row += 2; this.column = 1; }
-      else { this.put(token); yield* this.letterDelay(); }
+      else { this.put(token); if (!noDelay) yield* this.letterDelay(); }
     }
     this.hasMore = false;
+    return false;
+  }
+}
+
+/** Backwards-compatible one-string PlaceString wrapper, including initial CPU work. */
+export class TextPrinter extends TextScreen {
+  complete = false;
+  private readonly run: Generator<void>;
+  constructor(text: string, ports: PrinterPorts, initialJoy = 0) {
+    super(ports, initialJoy);
+    this.run = this.print(text);
+    this.advance();
+  }
+  advance(): void { if (!this.complete) this.run.next(); }
+  private *print(text: string): Generator<void> {
+    yield* this.placeString(text);
     this.complete = true;
   }
 }

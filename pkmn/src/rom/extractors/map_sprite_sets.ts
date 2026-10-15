@@ -9,7 +9,7 @@
 // consulted at runtime yet.
 
 import { BinaryReader } from '../binary_reader';
-import { EXTRACTABLE_MAPS, SPRITE_NAMES } from './maps';
+import { EXTRACTABLE_MAPS, SPRITE_NAMES, extractMapObjectPictures } from './maps';
 import {
   FIRST_INDOOR_MAP_CP,
   FIRST_STILL_PICTURE_CP,
@@ -64,6 +64,7 @@ export interface MapSpriteSetsFile {
   firstStillPictureId: number;
   pikachuPictureId: number;
   mapIds: Record<string, number>;
+  mapObjects: Record<string, number[]>;
   pictureIdsBySprite: Record<string, number>;
   outdoorSetIds: number[];
   splitSets: Record<number, LinearSpriteSplit>;
@@ -137,6 +138,25 @@ function pictureKind(id: number, pikachu: number, firstStill: number): 'walking'
   if (id === pikachu) return 'walking';
   if (id >= firstStill) return 'still';
   return 'walking';
+}
+
+/** Shared SpriteSheetPointerTable size/class check (map sets and PNG extraction). */
+export function readSpritePictureMetadata(rom: BinaryReader, id: number,
+  pikachu = readImm(rom, PIKACHU_PICTURE_CP, OP_CP, 'SPRITE_PIKACHU cp'),
+  firstStill = readImm(rom, FIRST_STILL_PICTURE_CP, OP_CP, 'FIRST_STILL_SPRITE')): SpritePictureMetadata {
+  const entry = SPRITE_SHEET_PTRS + (id - 1) * PICTURE_ENTRY_BYTES;
+  requireRange(rom, entry, PICTURE_ENTRY_BYTES, `picture $${hex(id)}`);
+  const sizeByte = rom.readByte(entry + 2);
+  const swapped = swapNibbles(sizeByte);
+  if (swapped !== 12 && swapped !== 4) {
+    fail(`picture $${hex(id)}`, `size byte $${hex(sizeByte)} swaps to ${swapped} tiles, expected 12 or 4`);
+  }
+  const tileCount: 12 | 4 = swapped === 12 ? 12 : 4;
+  const kind = pictureKind(id, pikachu, firstStill);
+  if ((kind === 'walking' && tileCount !== 12) || (kind === 'still' && tileCount !== 4)) {
+    fail(`picture $${hex(id)}`, `${kind} picture has ${tileCount} tiles`);
+  }
+  return { kind, tileCount };
 }
 
 function requireSetId(id: number, where: string): number {
@@ -241,18 +261,7 @@ export function extractMapSpriteSets(rom: BinaryReader): MapSpriteSetsFile {
 
   const pictures: Record<number, SpritePictureMetadata> = {};
   for (let id = 1; id <= PICTURE_COUNT; id++) {
-    const entry = SPRITE_SHEET_PTRS + (id - 1) * PICTURE_ENTRY_BYTES;
-    const sizeByte = rom.readByte(entry + 2);
-    const swapped = swapNibbles(sizeByte);
-    if (swapped !== 12 && swapped !== 4) {
-      fail(`picture $${hex(id)}`, `size byte $${hex(sizeByte)} swaps to ${swapped} tiles, expected 12 or 4`);
-    }
-    const tileCount: 12 | 4 = swapped === 12 ? 12 : 4;
-    const kind = pictureKind(id, constants.pikachu, constants.firstStill);
-    if ((kind === 'walking' && tileCount !== 12) || (kind === 'still' && tileCount !== 4)) {
-      fail(`picture $${hex(id)}`, `${kind} picture has ${tileCount} tiles`);
-    }
-    pictures[id] = { kind, tileCount };
+    pictures[id] = readSpritePictureMetadata(rom, id, constants.pikachu, constants.firstStill);
   }
 
   const spriteSets: Record<number, number[]> = {};
@@ -310,6 +319,7 @@ export function extractMapSpriteSets(rom: BinaryReader): MapSpriteSetsFile {
   }
 
   const mapIds: Record<string, number> = {};
+  const mapObjects: Record<string, number[]> = {};
   const seenMapIds = new Set<number>();
   for (const [name, id] of Object.entries(EXTRACTABLE_MAPS)) {
     if (!Number.isInteger(id) || id < 0 || id > 0xff || seenMapIds.has(id)) {
@@ -317,6 +327,7 @@ export function extractMapSpriteSets(rom: BinaryReader): MapSpriteSetsFile {
     }
     seenMapIds.add(id);
     mapIds[name] = id;
+    mapObjects[name] = extractMapObjectPictures(rom, name).map(id => requirePictureId(id, `${name} object`));
   }
 
   return {
@@ -324,6 +335,7 @@ export function extractMapSpriteSets(rom: BinaryReader): MapSpriteSetsFile {
     firstStillPictureId: constants.firstStill,
     pikachuPictureId: constants.pikachu,
     mapIds,
+    mapObjects,
     pictureIdsBySprite: invertSpriteNames(SPRITE_NAMES),
     outdoorSetIds,
     splitSets,

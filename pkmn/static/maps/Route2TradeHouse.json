@@ -40,6 +40,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
       "id": "scientist",
       "sprite": "scientist",
       "x": 2,
@@ -49,6 +50,7 @@
       "direction": "right"
     },
     {
+      "textId": 2,
       "id": "gameboy_kid",
       "sprite": "gameboy_kid",
       "x": 4,

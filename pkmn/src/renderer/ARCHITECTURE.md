@@ -22,6 +22,11 @@ Canvas is GB resolution (160x144) scaled to fit window. All drawing uses `* scal
 ## Sprite Formats
 
 - **NPC/player sprites**: 16x96 PNG, 6 frames of 16x16. Layout: y=0 stand-down, y=16 stand-up, y=32 stand-left, y=48 walk-down, y=64 walk-up, y=80 walk-left. Right = left flipped. Rendered with -4px Y offset (`screenY = y - cameraY - 4`) matching original GB sprite positioning.
+- **Still NPC pictures**: 16x16 PNG, row 0 and no flip for every facing/animation
+  (PrepareOAMData entry 0). Since A5b5c the extractor reads four tiles for these
+  and 24 for walkers, using the shared A5b2 class/size check. NPC loading rejects
+  heights other than 16/96; nurse bow rows are retained. Party BALL/HELIX icons
+  use row 0 and stay unchanged.
 - **Heal machine sprite**: `gfx/overworld/heal_machine.png` — 8x16 PNG, 2 tiles: monitor at y=0, pokeball at y=8
 - **Pokemon front sprites**: variable size (40x40 to 56x56), grayscale 2-bit
 - **Pokemon back sprites**: 32x32, rendered at 2x in battle UI

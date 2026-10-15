@@ -15,6 +15,7 @@ import { MusicEngine } from './music_engine';
 import { SfxEngine } from './sfx_engine';
 import { EXTRACTED_SFX } from './sfx_names';
 import { audioUpdate, soundFinished } from './sound_wait';
+import { rivalAlternateStart } from './rival_start';
 import type { MusicData, NoiseInstrument } from './music_engine';
 import type { SfxData } from './sfx_engine';
 
@@ -75,7 +76,7 @@ export async function resumeAudio(): Promise<void> {
 /**
  * Play a music track by name (e.g. "titlescreen", "yellowintro").
  */
-export async function playMusic(name: string): Promise<void> {
+export async function playMusic(name: string, start?: 'rivalAlternate'): Promise<void> {
   if (!engine || !audioReady) return;
 
   let data = musicCache.get(name);
@@ -93,7 +94,7 @@ export async function playMusic(name: string): Promise<void> {
   // Reset audio timing accumulator for fresh playback
   audioAccumulatorMs = 0;
   lastAudioTime = performance.now();
-  engine.play(data);
+  engine.play(start === 'rivalAlternate' ? rivalAlternateStart(data) : data);
 }
 
 /**
@@ -187,6 +188,11 @@ export function tickAudio(): void {
  */
 export function isMusicPlaying(): boolean {
   return engine?.isPlaying() ?? false;
+}
+
+/** Mom polls wChannelSoundIDs (CHAN1), not the engine's track-enabled latch. */
+export function isMusicChannelActive(id: number): boolean {
+  return engine?.getChannel(id)?.active ?? false;
 }
 
 /**

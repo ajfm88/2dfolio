@@ -15,7 +15,7 @@ import { extractBlockset, extractAllBlocksets } from '../extractors/blocksets';
 import { extractCollisionTiles } from '../extractors/collision';
 import { extractPokedex } from '../extractors/pokedex';
 import { decompressSprite } from '../sprite_decompress';
-import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from '../extractors/audio';
+import { extractMusic, extractSfx, extractSfxAt, SFX_HEADERS, extractWaveSamples, extractNoiseInstruments } from '../extractors/audio';
 import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
 import { OLD_MAN_PIC_BACK } from '../rom_offsets';
@@ -23,6 +23,8 @@ import { extractGameText } from '../extractors/game_text';
 import { extractLedgeHoppingShadow } from '../extractors/graphics';
 import { extractPikachuMovement } from '../extractors/pikachu_movement';
 import { installNodeImageData } from '../node_image_data';
+import { rig } from '../../test/audio_rig';
+import { soundFinished } from '../../audio/sound_wait';
 
 const ROM_PATH = process.env.ROM_PATH;
 const DATA_DIR = resolve(__dirname, '../../../data');
@@ -32,6 +34,37 @@ const describe = _describe.skipIf(!ROM_PATH);
 
 function loadJson<T>(filename: string): T {
   return JSON.parse(readFileSync(resolve(DATA_DIR, filename), 'utf-8'));
+}
+
+const PITCHES = ['C_', 'C#', 'D_', 'D#', 'E_', 'F_', 'F#', 'G_', 'G#', 'A_', 'A#', 'B_'];
+
+/** The jingle/PC macros (macros/scripts/audio.asm), independently parsed from source. */
+function parseAsmChannels(asm: string): Record<string, unknown>[][] {
+  const channels: Record<string, unknown>[][] = [];
+  for (const raw of asm.split(/\r?\n/)) {
+    const line = raw.split(';')[0].trim();
+    if (!line) continue;
+    if (line.endsWith(':')) { channels.push([]); continue; }
+    const [op, ...rest] = line.split(/\s+/);
+    const args = rest.join('').split(',').filter(Boolean);
+    const n = (i: number): number => Number(args[i]);
+    const cur = channels[channels.length - 1];
+    switch (op) {
+      case 'execute_music': case 'toggle_perfect_pitch': case 'sound_ret': cur.push({ cmd: op }); break;
+      case 'tempo': cur.push({ cmd: op, value: n(0) }); break;
+      case 'volume': cur.push({ cmd: op, left: n(0), right: n(1) }); break;
+      case 'vibrato': cur.push({ cmd: op, delay: n(0), depth: n(1), rate: n(2) }); break;
+      case 'duty_cycle': cur.push({ cmd: op, value: n(0) }); break;
+      // Negative fades set bit 3; keep the raw nibble, including negative zero (8).
+      case 'note_type': cur.push({ cmd: op, speed: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2) }); break;
+      case 'square_note': cur.push({ cmd: op, length: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2), frequency: n(3) }); break;
+      case 'octave': cur.push({ cmd: op, value: n(0) }); break;
+      case 'note': cur.push({ cmd: op, pitch: PITCHES.indexOf(args[0]), length: n(1) }); break;
+      case 'rest': cur.push({ cmd: op, length: n(0) }); break;
+      default: throw new Error(`unexpected macro ${op}`);
+    }
+  }
+  return channels;
 }
 
 let rom: BinaryReader;
@@ -555,36 +588,6 @@ describe('Audio: the item jingles, music-mode SFX (A1a)', () => {
     // SFX_Get_Item2_1 02:419b → _Ch5 02:71e9, _Ch6 02:7208, _Ch7 02:7220
     get_item2: { header: 0x419b, channels: [0x71e9, 0x7208, 0x7220], asm: 'get_item2_1.asm' },
   } as const;
-  const PITCHES = ['C_', 'C#', 'D_', 'D#', 'E_', 'F_', 'F#', 'G_', 'G#', 'A_', 'A#', 'B_'];
-
-  /** The macros the jingles use (macros/scripts/audio.asm), as the decoder emits them. */
-  function parseAsmChannels(asm: string): Record<string, unknown>[][] {
-    const channels: Record<string, unknown>[][] = [];
-    for (const raw of asm.split(/\r?\n/)) {
-      const line = raw.split(';')[0].trim();
-      if (!line) continue;
-      if (line.endsWith(':')) { channels.push([]); continue; }
-      const [op, ...rest] = line.split(/\s+/);
-      const args = rest.join('').split(',').filter(Boolean);
-      const n = (i: number): number => Number(args[i]);
-      const cur = channels[channels.length - 1];
-      switch (op) {
-        case 'execute_music': case 'toggle_perfect_pitch': case 'sound_ret': cur.push({ cmd: op }); break;
-        case 'tempo': cur.push({ cmd: op, value: n(0) }); break;
-        case 'volume': cur.push({ cmd: op, left: n(0), right: n(1) }); break;
-        case 'vibrato': cur.push({ cmd: op, delay: n(0), depth: n(1), rate: n(2) }); break;
-        case 'duty_cycle': cur.push({ cmd: op, value: n(0) }); break;
-        // The fade nibble is stored raw: a negative fade sets bit 3
-        case 'note_type': cur.push({ cmd: op, speed: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2) }); break;
-        case 'octave': cur.push({ cmd: op, value: n(0) }); break;
-        case 'note': cur.push({ cmd: op, pitch: PITCHES.indexOf(args[0]), length: n(1) }); break;
-        case 'rest': cur.push({ cmd: op, length: n(0) }); break;
-        default: throw new Error(`unexpected macro ${op}`);
-      }
-    }
-    return channels;
-  }
-
   for (const [name, j] of Object.entries(JINGLES)) {
     it(`${name}: its header points at channels 5, 6 and 7 as pret's sym file says`, () => {
       const at = 0x02 * 0x4000 + (j.header & 0x3fff);
@@ -613,6 +616,89 @@ describe('Audio: the item jingles, music-mode SFX (A1a)', () => {
     expect(ch5.some(c => c.cmd === 'square_note' || c.cmd === 'pitch_sweep')).toBe(false);
     expect(ch5.filter(c => c.cmd === 'note' && c.pitch === 2)).toHaveLength(2);
   });
+});
+
+describe('Audio: the key-item jingle and the PC sounds (A5b3)', () => {
+  // Header and channel addresses are pret's symbol values, checked against the owner's ROM.
+  const SOUNDS = {
+    // SFX_Get_Key_Item_1 / _Ch5 / _Ch6 / _Ch7
+    get_key_item: { header: 0x41bc, channels: [0x7235, 0x7254, 0x7270] },
+    // SFX_Turn_On_PC_1 / _Ch5
+    turn_on_pc: { header: 0x41cb, channels: [0x449b] },
+    // SFX_Turn_Off_PC_1 / _Ch5
+    turn_off_pc: { header: 0x41ce, channels: [0x44c6] },
+    // SFX_Enter_PC_1 / _Ch5
+    enter_pc: { header: 0x41d1, channels: [0x44d9] },
+  } as const;
+
+  for (const [name, fixture] of Object.entries(SOUNDS)) {
+    it(`${name}: header bytes and channel pointers match pret's symbols`, () => {
+      expect(SFX_HEADERS[name]).toEqual({ bank: 0x02, addr: fixture.header });
+      const at = 0x02 * 0x4000 + (fixture.header & 0x3fff);
+      for (let i = 0; i < fixture.channels.length; i++) {
+        expect(rom.readByte(at + 3 * i)).toBe((i === 0 ? (fixture.channels.length - 1) << 6 : 0) | (4 + i));
+        expect(rom.readWord(at + 3 * i + 1)).toBe(fixture.channels[i]);
+      }
+    });
+
+    it(`${name}: extraction matches the committed JSON`, () => {
+      expect(extractSfx(rom, name)).toEqual(loadJson(`audio/sfx/${name}.json`));
+    });
+
+    it(`${name}: every decoded command matches its disassembly`, () => {
+      const path = resolve(__dirname, `../../../../refs/pokeyellow/audio/sfx/${name}_1.asm`);
+      if (!existsSync(path)) return;
+      const extracted = extractSfx(rom, name)!;
+      expect(extracted.channels.map(c => c.id)).toEqual(fixture.channels.map((_, i) => 5 + i));
+      expect(extracted.channels.map(c => c.commands)).toEqual(parseAsmChannels(readFileSync(path, 'utf8')));
+    });
+  }
+
+  it('the key-item channels use music mode and ch5 enables perfect pitch', () => {
+    const sound = extractSfx(rom, 'get_key_item')!;
+    for (const channel of sound.channels) {
+      expect(channel.commands[0]).toEqual({ cmd: 'execute_music' });
+      expect(channel.commands.some(c => c.cmd === 'square_note' || c.cmd === 'pitch_sweep')).toBe(false);
+    }
+    expect(sound.channels[0].commands).toContainEqual({ cmd: 'toggle_perfect_pitch' });
+  });
+
+  it('all three PC sounds stay in SFX mode', () => {
+    for (const name of ['turn_on_pc', 'turn_off_pc', 'enter_pc']) {
+      const commands = extractSfx(rom, name)!.channels[0].commands;
+      expect(commands.some(c => c.cmd === 'execute_music' || c.cmd === 'note')).toBe(false);
+      expect(commands.some(c => c.cmd === 'square_note')).toBe(true);
+    }
+  });
+
+  it('only save, turn_on_pc and enter_pc differ between audio banks $02 and $1f', () => {
+    // All 16 header addresses are shared by SFX_Headers_1 and SFX_Headers_3.
+    // The decoder normalizes sound_call/sound_loop pointers to command indices.
+    const different = Object.entries(SFX_HEADERS).filter(([, header]) => {
+      expect(header.bank).toBe(0x02);
+      return JSON.stringify(extractSfxAt(rom, 0x02, header.addr)) !==
+        JSON.stringify(extractSfxAt(rom, 0x1f, header.addr));
+    }).map(([name]) => name).sort();
+    expect(different).toEqual(['enter_pc', 'save', 'turn_on_pc']);
+  });
+
+  for (const [bank, endings] of [
+    [0x02, { save: 40, turn_on_pc: 70, enter_pc: 22 }],
+    [0x1f, { save: 37, turn_on_pc: 81, enter_pc: 18 }],
+  ] as const) {
+    it(`bank $${bank.toString(16)}: the differing sounds return on their source-derived updates`, () => {
+      for (const [name, end] of Object.entries(endings)) {
+        const r = rig();
+        r.sfx.play(extractSfxAt(rom, bank, SFX_HEADERS[name].addr));
+        r.run(end - 1);
+        expect(r.sfx.isPlaying(), name).toBe(true);
+        expect(soundFinished(r.sfx, r.music, 0), name).toBe(false);
+        r.update();
+        expect(r.sfx.isPlaying(), name).toBe(false);
+        expect(soundFinished(r.sfx, r.music, 0), name).toBe(true);
+      }
+    });
+  }
 });
 
 describe('Map extraction', () => {

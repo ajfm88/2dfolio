@@ -238,6 +238,7 @@ export interface MapWarp {
 }
 
 export interface MapSign {
+  textId?: number;
   x: number;
   y: number;
   text: string;
@@ -255,6 +256,7 @@ export interface MapHiddenEvent {
 }
 
 export interface MapNpc {
+  textId?: number;
   id: string;
   sprite: string;
   x: number;
@@ -832,6 +834,14 @@ function readTrainerHeader(rom: BinaryReader, mapName: string, textId: number): 
 
 // ── Public API ─────────────────────────────────────────────────
 
+/** Every object picture in cartridge order, before the demo's NPC_INDEX_FILTER. */
+export function extractMapObjectPictures(rom: BinaryReader, mapName: string): number[] {
+  const mapId = EXTRACTABLE_MAPS[mapName];
+  if (mapId === undefined) throw new Error(`unknown map ${mapName}`);
+  const header = parseMapHeader(rom, mapId);
+  return parseMapObjects(rom, header.objectPtr, header.bank).npcs.map(npc => npc.sprite);
+}
+
 /** Extract a single map by name, producing output matching data/maps/<name>.json.
  *  itemNames / trainerClassNames: from readItemNames() / readTrainerClassNames(). */
 export function extractMap(
@@ -911,6 +921,7 @@ export function extractMap(
   for (let i = 0; i < objects.signs.length && i < meta.signTextOffsets.length; i++) {
     const text = decodeMapText(rom, meta.signTextOffsets[i]);
     signs.push({
+      textId: objects.signs[i].textId,
       x: objects.signs[i].x,
       y: objects.signs[i].y,
       text,
@@ -960,6 +971,7 @@ export function extractMap(
     }
 
     const npc: MapNpc = {
+      textId: romNpc.textId,
       id: npcMeta.id,
       sprite: spriteName,
       x: npcX,

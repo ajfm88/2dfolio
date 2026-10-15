@@ -6,8 +6,6 @@
 import type { Npc } from './npc';
 import { hasFlag, isObjectHidden } from '../events';
 import { viridianOldMenVisible } from '../story/viridian_city';
-import { substituteNames } from '../core/player_state';
-import { getText } from '../text';
 
 /** Mark trainer NPCs as defeated based on the global tracking set. */
 export function applyDefeatedTrainers(
@@ -54,24 +52,6 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
       npc.hidden = true;
     }
 
-    // RedsHouse1F: Mom's dialogue changes after getting starter
-    if (mapName === "RedsHouse1F" && npc.data.id === "mom") {
-      if (hasFlag("GOT_STARTER")) {
-        // Post-starter: Mom heals your party (handled via script in interaction)
-        npc.data.dialogue = "__MOM_HEAL__";
-      }
-      // else: default dialogue from map JSON ("All boys leave home...")
-    }
-
-    // Route 1: Mart employee dialogue changes after giving potion sample
-    if (
-      mapName === "Route1" &&
-      npc.data.id === "youngster1" &&
-      hasFlag("GOT_POTION_SAMPLE")
-    ) {
-      npc.data.dialogue = getText('ROUTE1_POTION_FOLLOWUP');
-    }
-
     // ViridianCity: the three old men, from the events that toggle them
     // (story/viridian_city.ts viridianOldMenVisible)
     if (mapName === "ViridianCity") {
@@ -79,36 +59,27 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
       if (npc.data.id === "oldman_blocking" || npc.data.id === "oldman2" || npc.data.id === "oldman1") {
         npc.hidden = !visible[npc.data.id];
       }
-      // Girl changes dialogue to talk about Pewter City shopping
-      // (scripts/ViridianCity_2.asm ViridianCityPrintGirlText)
-      if (npc.data.id === "girl1" && hasFlag("GOT_POKEDEX")) {
-        npc.data.dialogue = getText('VIRIDIAN_GIRL_PEWTER');
-      }
     }
 
-    // ViridianMart: clerk dialogue depends on parcel quest state
+    // ViridianMart: only shop availability is swapped; text comes from its call table.
     if (mapName === "ViridianMart" && npc.data.id === "clerk") {
       if (!hasFlag("GOT_OAKS_PARCEL")) {
         // Before parcel quest: no shop, dialogue handled by entry script
-        npc.data.dialogue = getText('MART_CLERK_PALLET_TOWN');
         npc.data.shopItems = undefined;
       } else if (!hasFlag("OAK_GOT_PARCEL")) {
         // Got parcel, not delivered yet — clerk reminds you
         // (text/ViridianMart.asm _ViridianMartClerkSayHiToOakText)
-        npc.data.dialogue = getText('MART_CLERK_SAY_HI');
         npc.data.shopItems = undefined;
       }
       // After OAK_GOT_PARCEL: default shop dialogue from JSON
     }
 
-    // OaksLab: state-dependent NPC visibility and dialogue
+    // OaksLab: state-dependent NPC visibility; handlers select text at talk time.
     if (mapName === "OaksLab") {
       if (hasFlag("GOT_POKEDEX")) {
-        // Post-pokédex: Oak talks about Pokédex progress, rival gone, pokedex items gone
+        // Post-Pokédex: Oak visible, rival and Pokédex objects gone.
         if (npc.data.id === "prof") {
           npc.hidden = false;
-          // (text/OaksLab.asm _OaksLabOak1PokemonAroundTheWorldText)
-          npc.data.dialogue = substituteNames(getText('LAB_OAK_POKEMON_AROUND_WORLD'));
         }
         if (npc.data.id === "item_ball") npc.hidden = true;
         if (npc.data.id === "rival") npc.hidden = true;
@@ -118,8 +89,6 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
         // Post-rival-battle: rival has left, waiting for parcel delivery
         if (npc.data.id === "prof") {
           npc.hidden = false;
-          // (text/OaksLab.asm _OaksLabOak1YouShouldTalkToIt)
-          npc.data.dialogue = getText('LAB_OAK_TALK_TO_IT');
         }
         if (npc.data.id === "item_ball") npc.hidden = true;
         if (npc.data.id === "rival") npc.hidden = true;
@@ -127,24 +96,18 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
         // Post-starter but pre-battle: rival still in lab near ball position
         if (npc.data.id === "prof") {
           npc.hidden = false;
-          npc.data.dialogue = getText('LAB_OAK_ADVICE');
         }
         if (npc.data.id === "item_ball") npc.hidden = true;
         if (npc.data.id === "rival") {
-          npc.data.dialogue = getText('LAB_RIVAL_MON_STRONGER');
           // After cutscene, rival ended up at step (7,4) facing up (post ball-snatch position)
           npc.x = 7 * 16;
           npc.y = 4 * 16;
           npc.direction = "up";
         }
       } else if (hasFlag("OAK_ASKED_TO_CHOOSE_MON")) {
-        // Mid-scene: Oak asked player to choose — Oak visible, correct dialogue
+        // Mid-scene: Oak asked player to choose; show Oak on a resumed map.
         if (npc.data.id === "prof") {
           npc.hidden = false;
-          npc.data.dialogue = getText('LAB_OAK_GO_AHEAD');
-        }
-        if (npc.data.id === "rival") {
-          npc.data.dialogue = substituteNames(getText('LAB_RIVAL_ILL_GET_BETTER'));
         }
       } else {
         // Before intro cutscene: Oak not in lab yet
@@ -152,20 +115,9 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
       }
     }
 
-    // BluesHouse: Daisy's dialogue depends on Pokédex/Town Map state
-    // Town map object is hidden after receiving it
+    // BluesHouse: Daisy's handler selects text at talk time; keep object visibility here.
     // (scripts/BluesHouse.asm BluesHouseDaisySittingText)
     if (mapName === "BluesHouse") {
-      if (npc.data.id === "daisy") {
-        if (hasFlag("GOT_TOWN_MAP")) {
-          // (text/BluesHouse.asm _BluesHouseDaisyUseMapText)
-          npc.data.dialogue = getText('BLUES_HOUSE_USE_MAP');
-        } else if (hasFlag("GOT_POKEDEX")) {
-          // Will be handled by interaction script — set placeholder
-          npc.data.dialogue = "__DAISY_TOWN_MAP__";
-        }
-        // else: default dialogue from JSON ("Hi RED! BLUE is out at Grandpa's lab.")
-      }
       if (npc.data.id === "town_map" && hasFlag("GOT_TOWN_MAP")) {
         npc.hidden = true;
       }

@@ -208,6 +208,7 @@
   ],
   "signs": [
     {
+      "textId": 3,
       "x": 7,
       "y": 11,
       "text": "POKéMON LEAGUE\nFront Gate"

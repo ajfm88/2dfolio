@@ -97,6 +97,9 @@ export class Npc {
 
   async load(): Promise<void> {
     this.spriteSheet = await loadSprite(`/gfx/sprites/${this.data.sprite}.png`);
+    if (this.spriteSheet.height !== 16 && this.spriteSheet.height !== 96) {
+      throw new Error(`NPC ${this.data.id}: invalid sprite sheet height ${this.spriteSheet.height}; expected 16 or 96`);
+    }
   }
 
   /** The facing the sprite shows. */
@@ -224,7 +227,7 @@ export class Npc {
     const frame = FRAMES[this.imageDirection];
 
     // Static sprites (e.g. gambler_asleep) are 16×16 with only one frame
-    const isStatic = this.spriteSheet.height < 32;
+    const isStatic = this.spriteSheet.height === 16;
 
     let frameY: number;
     let flipX = this.imageDirection === 'right';

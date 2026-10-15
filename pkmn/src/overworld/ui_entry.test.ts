@@ -63,7 +63,7 @@ function openStart(s: ReturnType<typeof scene>): void {
 
 describe('which states open UI over the map', () => {
   it('text boxes, START and the boxes reached through text; not full-screen menus', () => {
-    for (const st of ['textbox', 'start_menu', 'pikachu_emotion', 'shop', 'pc', 'pokecenter_pc', 'blackboard', 'item_menu', 'save_menu']) {
+    for (const st of ['textbox', 'start_menu', 'pikachu_emotion', 'shop', 'pc', 'pokecenter_pc', 'item_menu', 'save_menu']) {
       expect(overworldUiOpen(st, false)).toBe(true);
     }
     for (const st of ['party_menu', 'dex', 'trainer_card', 'option_menu', 'town_map', 'battle', 'transition']) {

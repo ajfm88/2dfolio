@@ -1,12 +1,12 @@
 // A5b2: map sprite sets (rom/extractors/map_sprite_sets.ts) against pret's source.
-// Expected tables are parsed from the ASM. The selection and allocation helpers
-// below are test references for A5b4; the game does not call them.
+// Expected tables are parsed from the ASM; selection/allocation now use the A5b4 runtime.
 import { describe as _describe, it, expect, beforeAll } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { BinaryReader } from '../binary_reader';
 import { extractMapSpriteSets, invertSpriteNames } from '../extractors/map_sprite_sets';
 import type { LinearSpriteSplit, MapSpriteSetsFile } from '../extractors/map_sprite_sets';
+import { copyFrames, closeFrames, walkingCopies, allocateSlots, selectOutdoor, mapCloseFrames } from '../../overworld/sprite_sets';
 
 const ROM_PATH = process.env.ROM_PATH;
 const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
@@ -106,63 +106,6 @@ const EXPECTED_W: Record<(typeof CURRENT_MAPS)[number], number> = {
 
 function fileOff(bank: number, addr: number): number {
   return bank * 0x4000 + (addr & 0x3fff);
-}
-
-function copyFrames(tiles: number): number {
-  return Math.floor(tiles / 8) + 1;
-}
-
-/** 1 window-hide frame + two frames per walking half + 4 player frames. */
-function closeFrames(w: number): number {
-  return 1 + 2 * w + 4;
-}
-
-function walkingCopies(slots: readonly number[]): number {
-  let count = 0;
-  for (let i = 0; i < 9; i++) if (slots[i] !== 0) count++;
-  return count;
-}
-
-function allocateSlots(
-  pikachuId: number,
-  kindOf: (id: number) => 'walking' | 'still',
-  live: readonly number[],
-): number[] {
-  const slots = Array.from({ length: 11 }, () => 0);
-  slots[0] = pikachuId;
-  const scan = live.slice(0, 14);
-  while (scan.length < 14) scan.push(0);
-  for (const id of scan) {
-    if (id === 0) continue;
-    const still = kindOf(id) === 'still';
-    const start = still ? 9 : 0;
-    const region = still ? 2 : 9;
-    for (let i = 0; i < region; i++) {
-      const slot = start + i;
-      if (slots[slot] === id || slots[slot] === 0) {
-        slots[slot] = id;
-        break;
-      }
-    }
-  }
-  return slots;
-}
-
-function selectOutdoor(file: MapSpriteSetsFile, mapId: number, x: number, y: number): number {
-  if (mapId >= file.firstIndoorMapId) throw new Error(`map ${mapId} is indoor`);
-  const selector = file.outdoorSetIds[mapId];
-  if (selector < 0xf1) return selector;
-  if (selector === file.route20.splitSetId) {
-    const [west, middle, east] = file.route20.xCuts;
-    const [lowBand, highBand] = file.route20.yCuts;
-    if (x < west) return file.route20.westSetId;
-    if (x >= east) return file.route20.eastSetId;
-    const yCut = x < middle ? lowBand : highBand;
-    return y < yCut ? file.route20.eastSetId : file.route20.westSetId;
-  }
-  const split = file.splitSets[selector];
-  const coord = split.axis === 'x' ? x : y;
-  return coord < split.divider ? split.belowSetId : split.atOrAboveSetId;
 }
 
 /** CamelCase engine map → pret constant. `2F` stays one token; `Route2TradeHouse` splits after the digit. */
@@ -425,6 +368,8 @@ describe('A5b2 committed map sprite sets', () => {
       const w = walkingCopies(slots);
       expect(w, name).toBe(EXPECTED_W[name]);
       expect(closeFrames(w), name).toBe(5 + 2 * EXPECTED_W[name]);
+      expect(mapCloseFrames(file, name, { x: 0, y: 36 }), name).toBe(5 + 2 * EXPECTED_W[name]);
+      if (name === 'Route2') expect(mapCloseFrames(file, name, { x: 0, y: 37 })).toBe(23);
     }
     expect(file.pictures[file.pictureIdsBySprite.poke_ball].kind).toBe('still');
     expect(file.pictures[file.pictureIdsBySprite.pokedex].kind).toBe('still');
@@ -540,8 +485,9 @@ describeRom('A5b2 map sprite sets from the ROM', () => {
     expect(romAt(splitAddr, 48)).toEqual(splits.flat());
     expect(romAt(setAddr, 110)).toEqual(sets);
     expect(extracted.outdoorSetIds).toEqual(selectors);
-    expect(extracted.spriteSets[1]).toEqual(sets.slice(0, 11));
-    expect(extracted.spriteSets[10]).toEqual(sets.slice(99, 110));
+    for (let id = 1; id <= 10; id++) {
+      expect(extracted.spriteSets[id], `set ${id}`).toEqual(sets.slice((id - 1) * 11, id * 11));
+    }
     splits.forEach((row, index) => {
       const id = 0xf1 + index;
       expect(extracted.splitSets[id]).toEqual({
@@ -630,6 +576,57 @@ describeRom('A5b2 map sprite sets from the ROM', () => {
     expect(blueLines).toHaveLength(3);
     expect(EXPECTED_W.OaksLab).not.toBe(oakLines.length);
     expect(EXPECTED_W.BluesHouse).not.toBe(blueLines.length);
+  });
+
+  it('preserves every cartridge object picture before engine filtering', () => {
+    const pictures = parseConsts('constants/sprite_constants.asm');
+    for (const name of CURRENT_MAPS) {
+      const ids = sourceLines(`data/maps/objects/${name}.asm`)
+        .filter(line => line.startsWith('object_event '))
+        .map(line => pictures[line.split(',')[2].trim()]);
+      expect(extracted.mapObjects[name], name).toEqual(ids);
+    }
+    expect(extracted.mapObjects.Route22).toHaveLength(2); // both hidden rivals, absent from engine NPCs
+    expect(extracted.mapObjects.OaksLab).toHaveLength(9); // dropped second Oak still counts
+    expect(extracted.mapObjects.BluesHouse).toHaveLength(3); // dropped walking Daisy still counts
+  });
+
+  it('preserves NPC/sign text IDs from the source object and text-pointer declarations', () => {
+    const filters: Record<string, number[]> = {
+      OaksLab: [2, 0, 1, 3, 4, 6, 7, 8], ViridianCity: [0, 1, 2, 3, 5, 6, 4, 7], BluesHouse: [0, 2],
+      Route22: [],
+    };
+    for (const name of CURRENT_MAPS) {
+      const textIds: Record<string, number> = {};
+      let index = 0;
+      for (const line of sourceLines(`scripts/${name}.asm`)) {
+        if (line === 'def_text_pointers') index = 0;
+        const match = /^dw_const\s+[^,]+,\s*(TEXT_\w+)/.exec(line);
+        if (match) textIds[match[1]] = ++index;
+      }
+      const lines = sourceLines(`data/maps/objects/${name}.asm`);
+      const objects = lines.filter(line => line.startsWith('object_event '))
+        .map(line => textIds[line.split(',')[5].trim()]);
+      const signs = lines.filter(line => line.startsWith('bg_event '))
+        .map(line => textIds[line.split(',')[2].trim()]);
+      const map = JSON.parse(readFileSync(resolve(MAPS_DIR, `${name}.json`), 'utf8')) as {
+        npcs: { textId?: number }[]; signs: { textId?: number }[];
+      };
+      const selected = filters[name] ?? objects.map((_, i) => i);
+      expect(map.npcs.map(npc => npc.textId), name).toEqual(selected.slice(0, map.npcs.length).map(i => objects[i]));
+      expect(map.signs.map(sign => sign.textId), name).toEqual(signs.slice(0, map.signs.length));
+      expect([...map.npcs, ...map.signs].every(object => Number.isInteger(object.textId) && object.textId! > 0), name).toBe(true);
+    }
+  });
+
+  it('detects an in-memory mutation of middle sprite set 3 against its independent source row', () => {
+    const consts = { ...parseConsts('constants/sprite_set_constants.asm'), ...parseConsts('constants/sprite_constants.asm') };
+    const sets = dbRows(labelBody(sourceLines('data/maps/sprite_sets.asm'), 'SpriteSets'), 1, consts).map(row => row[0]);
+    const copy = Buffer.from(romBytes);
+    const at = fileOff(5, 0x423b) + 2 * 11 + 1;
+    copy[at] = copy[at] === 4 ? 5 : 4; // valid walking id: schema validation alone cannot catch this
+    const mutated = extractMapSpriteSets(readerOf(copy));
+    expect(() => expect(mutated.spriteSets[3]).toEqual(sets.slice(22, 33))).toThrow();
   });
 
   it('equals the committed data and static mirror', () => {

@@ -15,7 +15,7 @@ import { uiTiles } from '../renderer/ui_tiles';
  *  trainer card, options, town map) are not here: returning from one redraws the START
  *  menu, which runs UpdateSprites again (start_menu.asm RedisplayStartMenu). */
 const UI_STATES: ReadonlySet<string> = new Set([
-  'textbox', 'start_menu', 'pikachu_emotion', 'shop', 'pc', 'pokecenter_pc', 'blackboard',
+  'textbox', 'start_menu', 'menu_closing', 'pikachu_emotion', 'shop', 'pc', 'pokecenter_pc',
   'item_menu', 'save_menu',
 ]);
 
@@ -62,9 +62,8 @@ export function fontLoadedUpdateSprites(
 let openingSpriteUpdates = true;
 
 /**
- * Whether a box opening runs DisplayTextIDInit's UpdateSprites. A script that prints
- * several texts inside one DisplayTextID (the Pokécenter's PrintText calls) turns it off
- * after its first box, and on again at its end. The boxes are still captured.
+ * Whether a box opening runs DisplayTextIDInit's UpdateSprites. Set by displayOpen's
+ * spriteUpdate option and reset in initScript. The boxes are still captured.
  */
 export function setOpeningSpriteUpdates(enabled: boolean): void {
   openingSpriteUpdates = enabled;

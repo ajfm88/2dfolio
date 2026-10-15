@@ -88,10 +88,10 @@ maps extractor's dialogue lookup and give ViridianMart 2.
 
 | `game_text.json` key | Canonical program | Moves in |
 |---|---|---|
-| `LAB_OAK_CHOOSE_MON_1` / `_2` | `OaksLabOakChooseMonText.Text` | A5b5 |
-| `LAB_DELIVERED_PARCEL` | `OaksLabOak1Text.DeliverParcelText` | A5b5 |
-| `MART_GOT_PARCEL` | `ViridianMartClerkParcelQuestText` | A5b5 |
-| `SCHOOL_NOTEBOOK_LOOKED` | `ViridianSchoolNotebookText1` | A5b6 |
+| `LAB_OAK_CHOOSE_MON_1` / `_2` | `OaksLabOakChooseMonText.Text` | Done A5b5b |
+| `LAB_DELIVERED_PARCEL` | `OaksLabOak1Text.DeliverParcelText` | Done A5b5b |
+| `MART_GOT_PARCEL` | `ViridianMartClerkParcelQuestText` | Done A5b5a |
+| `SCHOOL_NOTEBOOK_LOOKED` | `ViridianSchoolNotebookText1` | Done A5b6 |
 | `PC_ACCESSED_STORAGE` | `AccessedBillsPCText` | A5b7 |
 | `PC_CANT_TAKE_MORE` | `CantTakeMonText` | A5b7 |
 | `ITEM_USE_ON_WHICH_MON` | `PartyMenuItemUseText` | A5b7 |
@@ -101,20 +101,21 @@ Retire an alias only after its last caller has moved, in its own data checkpoint
 
 ## 5. Consumer inventory
 
-**`getText()` callers** (22 files, 99 keys). Every one gets its string without the trailing
-terminator, as before A5b1.
+**`getText()` callers at the A5b1 baseline** (22 files, 99 keys). Done rows
+now execute source programs; compatibility keys remain in JSON. Other callers
+get strings without trailing terminators, as before A5b1.
 
 | Caller | Keys | Increment |
 |---|---|---|
-| `story/pallet_town.ts` | `PALLET_OAK_*` (4) | A5b5 |
-| `story/oaks_lab.ts`, `overworld/story_state.ts` | `LAB_*` (31), `MART_CLERK_*`, `ROUTE1_POTION_FOLLOWUP`, `VIRIDIAN_GIRL_PEWTER`, `BLUES_HOUSE_USE_MAP` | A5b5 |
-| `story/viridian_mart.ts` | `MART_CLERK_PALLET_TOWN`, `MART_CLERK_PARCEL_QUEST`, `MART_GOT_PARCEL` | A5b5 |
-| `story/viridian_city.ts` | `VIRIDIAN_OLDMAN_*` (7), `VIRIDIAN_GYM_LOCKED` | A5b5 |
-| `overworld/overworld_controller.ts` | `MOM_*`, `POKECENTER_*` (4), `BLUES_HOUSE_USE_MAP`, `VIRIDIAN_CATERPILLAR_ASK` | A5b5 |
-| `overworld/item_pickup.ts` | `ROUTE1_MART_SAMPLE` | A5b5 |
-| `story/hidden_events.ts` | `SCHOOL_*` (7) | A5b6 |
-| `menus/blackboard_menu.ts` | `BLACKBOARD_*` (5) | A5b6 |
-| `menus/oak_speech.ts` | `OAK_SPEECH_*` (7) | A5b6 |
+| `story/pallet_town.ts` | `PALLET_OAK_*` (4) | Done A5b5b |
+| `story/oaks_lab.ts`, `overworld/story_state.ts` | `LAB_*` (31), `MART_CLERK_*`, `ROUTE1_POTION_FOLLOWUP`, `VIRIDIAN_GIRL_PEWTER`, `BLUES_HOUSE_USE_MAP` | Done A5b5a/b |
+| `story/viridian_mart.ts` | `MART_CLERK_PALLET_TOWN`, `MART_CLERK_PARCEL_QUEST`, `MART_GOT_PARCEL` | Done A5b5a |
+| `story/viridian_city.ts` | `VIRIDIAN_OLDMAN_*` (7), `VIRIDIAN_GYM_LOCKED` | Done A5b5a |
+| `overworld/overworld_controller.ts` | `MOM_*`, `POKECENTER_*` (4), `BLUES_HOUSE_USE_MAP`, `VIRIDIAN_CATERPILLAR_ASK` | Done A5b5a/c (nurse now story/pokecenter.ts) |
+| `overworld/item_pickup.ts` | `ROUTE1_MART_SAMPLE` | Done A5b5a |
+| `story/hidden_events.ts` | `SCHOOL_*` (7) | Done A5b6 |
+| `menus/blackboard_menu.ts` | `BLACKBOARD_*` (5) | Done A5b6 |
+| `menus/oak_speech.ts` | `OAK_SPEECH_*` (7) | Done A5b6 |
 | `overworld/map.ts` | `BOOKSHELF_*` (3): static bookshelf texts | A5b4 (MapDialogue) |
 | `menus/bills_pc_menu.ts`, `menus/pokecenter_pc_menu.ts` | `PC_*` (7) | A5b7 |
 | `menus/item_menu.ts`, `menus/party_menu.ts` | `ITEM_USE_ON_WHICH_MON`, `PARTY_CHOOSE` | A5b7 |
@@ -126,8 +127,8 @@ terminator, as before A5b1.
 
 | Caller | Literals | Program(s) | Increment |
 |---|---|---|---|
-| `overworld/overworld_controller.ts` | Caterpie answer, "Oh, OK then!", "You have no more room for items." | `ViridianCityPrintYoungster2Text.*`, `BluesHouseDaisyBagFullText` | A5b5 |
-| `menus/blackboard_menu.ts` | "Which heading do you want to read?" | `ViridianSchoolBlackboardText2` | A5b6 |
+| `overworld/overworld_controller.ts` | Caterpie answer, "Oh, OK then!", "You have no more room for items." | `ViridianCityPrintYoungster2Text.*`, `BluesHouseDaisyBagFullText` | Done A5b5a |
+| `menus/blackboard_menu.ts` | "Which heading do you want to read?" | `ViridianSchoolBlackboardText2` | Done A5b6 |
 | `menus/shop_menu.ts` | greeting, take your time, sell, not enough money, bag full, here you are, anything else, thank you, nothing to sell | `PokemartGreetingText`, `Pokemart*Text`, `PokemonSellingGreetingText` | A5b7 |
 | `menus/pc_menu.ts` | what do you want, withdraw/deposit/toss questions and results, no room | `players_pc.asm` programs (`WhatDoYouWantText` …) | A5b7 |
 | `menus/pokecenter_pc_menu.ts` | accessed someone's PC / my PC / item storage | `AccessedSomeonesPCText`, `AccessedMyPCText`, `TurnedOnPC*Text` | A5b7 |

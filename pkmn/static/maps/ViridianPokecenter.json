@@ -52,6 +52,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
       "id": "nurse",
       "sprite": "nurse",
       "x": 3,
@@ -61,6 +62,7 @@
       "direction": "down"
     },
     {
+      "textId": 2,
       "id": "gentleman1",
       "sprite": "gentleman",
       "x": 10,
@@ -69,6 +71,7 @@
       "dialogue": "You can use that\nPC in the corner.\fThe receptionist\ntold me. So kind!"
     },
     {
+      "textId": 3,
       "id": "cooltrainer1",
       "sprite": "cooltrainer_m",
       "x": 4,
@@ -78,6 +81,7 @@
       "direction": "up"
     },
     {
+      "textId": 4,
       "id": "receptionist1",
       "sprite": "link_receptionist",
       "x": 11,
@@ -87,6 +91,7 @@
       "direction": "down"
     },
     {
+      "textId": 5,
       "id": "chansey1",
       "sprite": "chansey",
       "x": 4,

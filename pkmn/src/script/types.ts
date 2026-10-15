@@ -4,8 +4,37 @@ import type { Direction } from '../core';
 import type { CatchDemoBattleType } from '../battle/catch_demo';
 import type { NpcWalkMode } from '../overworld/walk_pace';
 import type { TextBoxEnd } from '../text/textbox';
+import type { TextBindings } from '../text/text_runner';
+import type { GameButton } from '../core';
+import type { MenuInputConfig } from '../menus/menu_input';
+import type { CloseReload } from '../overworld/sprite_sets';
+
+/** A box drawn over the map with fixed labels, in tiles; the size includes the border. */
+export interface MenuBoxLayout {
+  x: number; y: number; width: number; height: number;
+  labels: { x: number; y: number; text: string }[];
+}
 
 export type ScriptCommand =
+  | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean }
+  | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
+  // TextBoxBorder + PlaceString into wTileMap, kept until redrawn; null: LoadScreenTilesFromBuffer1 removed it
+  | { type: 'menuBox'; layout: MenuBoxLayout | null }
+  // HandleMenuInput_ (menus/menu_input.ts); `then` returns the commands for the keys it read
+  | { type: 'menuInput'; menu: MenuInputConfig; then: (keys: GameButton[], item: number) => ScriptCommand[] }
+  // LoadScreenTilesFromBuffer1 back to the empty box saved after DisplayTextIDInit: no menu box, blank interior
+  | { type: 'restoreSavedScreen' }
+  | { type: 'displayClose'; outerWait: boolean; reload?: CloseReload }
+  // CloseTextDisplay from inside a handler (TownMapText): the session stays open for Hold
+  | { type: 'displayCloseInPlace' }
+  // GBPalWhiteOut (on) until the palette is loaded again (off)
+  | { type: 'whiteOut'; on: boolean }
+  // farcall DisplayTownMap: main.ts runs the Town Map screen, then returns into the script
+  | { type: 'townMap' }
+  | { type: 'displayHide' } // LoadCurrentMapView, retaining the DisplayTextID session.
+  | { type: 'yesNoChoice'; yes: ScriptCommand[]; no: ScriptCommand[]; pokeCenter?: boolean }
+  | { type: 'emotionBubble'; target: 'player' | string }
+  | { type: 'healJingle' }
   | { type: 'text'; message: string; end?: TextBoxEnd }
   // TextCommand_SOUND (home/text.asm), optionally PlaySoundWaitForCurrent first.
   | { type: 'sound'; name: string; waitForCurrent?: boolean }
@@ -35,11 +64,10 @@ export type ScriptCommand =
   // picks its program and side by the player's Y (OaksLabPikachuMovementScript).
   | { type: 'tryPikachuMovement'; caller: 'viridianStepAside' | 'oaksLab' }
   | { type: 'addPokemon'; species: string | number; level: number }
-  | { type: 'showNpc'; npcId: string; x: number; y: number; sprite: string; direction?: Direction }
+  | { type: 'showNpc'; npcId: string; x: number; y: number; sprite: string; direction?: Direction; textId?: number }
   | { type: 'hideNpc'; npcId: string }
   | { type: 'callback'; fn: () => void }
   | { type: 'warp'; map: string; warpId: number }
-  | { type: 'exclamation'; target: 'player' | string; frames: number }
   // The catch demo (battle/catch_demo.ts): the script sets wBattleType, wCurOpponent and
   // wCurEnemyLevel (PalletTownPikachuBattleScript, ViridianCity...SetupBattle)
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
@@ -51,9 +79,10 @@ export type ScriptCommand =
       npcInStep?: boolean; npcModes?: NpcWalkMode[]; playerFromNpcStep?: number;
     }
   | { type: 'unhideNpc'; npcId: string }
-  | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardText: string }
-  | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
+  | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardText?: string; guardProgram?: string }
+  | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
   | { type: 'healParty' }
+  | { type: 'restoreMapMusic' }
   | { type: 'pokecenterHeal' }
   // DisplayPokemonCenterDialogue_'s Pikachu calls (engine/events/pokecenter.asm):
   // LoadCurrentMapView, Delay3, UpdateSprites, then PikachuWalksToNurseJoy's program
@@ -66,8 +95,6 @@ export type ScriptCommand =
   | { type: 'pikachuStandDown' }
   // An explicit UpdateSprites with the font loaded (Pikachu: TrySpawnPikachu, then Func_fc76a)
   | { type: 'updateSprites' }
-  // PrintText inside one DisplayTextID runs no DisplayTextIDInit: no sprite update on open
-  | { type: 'uiEntryUpdates'; enabled: boolean }
   // DisplayTextIDInit saves sprite facings, CloseTextDisplay restores them (Pikachu's)
   | { type: 'pikachuFacing'; action: 'save' | 'restore' }
   // A branch on the starter at the moment it runs: IsStarterPikachuAliveInOurParty, and
@@ -75,7 +102,6 @@ export type ScriptCommand =
   | { type: 'ifStarterPikachu'; then: ScriptCommand[] }
   | { type: 'fadeOut'; frames?: number }
   | { type: 'fadeIn'; frames?: number }
-  | { type: 'yesNo'; message: string; yesBranch: ScriptCommand[]; noBranch: ScriptCommand[] }
   | { type: 'giveItem'; itemId: string; count?: number; successCommands?: ScriptCommand[]; failCommands?: ScriptCommand[] }
   | { type: 'removeItem'; itemId: string; count?: number };
 

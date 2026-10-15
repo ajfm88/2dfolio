@@ -14,12 +14,14 @@ export interface WarpData {
 }
 
 export interface SignData {
+  textId?: number;     // 1-based cartridge TextPointers index; absent on synthetic data
   x: number;
   y: number;
   text: string;
 }
 
 export interface NpcData {
+  textId?: number;     // 1-based cartridge TextPointers index; absent on scripted-only NPCs
   id: string;
   sprite: string;      // filename without extension, e.g. "oak" → /gfx/sprites/oak.png
   x: number;           // tile x (in 2-tile units, same as map object coords)

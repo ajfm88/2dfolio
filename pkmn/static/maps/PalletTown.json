@@ -125,21 +125,25 @@
   ],
   "signs": [
     {
+      "textId": 4,
       "x": 13,
       "y": 13,
       "text": "OAK POKéMON\nRESEARCH LAB"
     },
     {
+      "textId": 5,
       "x": 7,
       "y": 9,
       "text": "PALLET TOWN\nShades of your\njourney await!"
     },
     {
+      "textId": 6,
       "x": 3,
       "y": 5,
       "text": "<PLAYER>'s house"
     },
     {
+      "textId": 7,
       "x": 11,
       "y": 5,
       "text": "<RIVAL>'s house"
@@ -147,6 +151,7 @@
   ],
   "npcs": [
     {
+      "textId": 1,
       "id": "prof",
       "sprite": "prof",
       "x": 10,
@@ -155,6 +160,7 @@
       "dialogue": "OAK: Hey! Wait!\nDon't go out!"
     },
     {
+      "textId": 2,
       "id": "girl",
       "sprite": "girl",
       "x": 3,
@@ -163,6 +169,7 @@
       "dialogue": "I'm raising\nPOKéMON too!\fWhen they get\nstrong, they can\nprotect me!"
     },
     {
+      "textId": 3,
       "id": "fisher",
       "sprite": "fisher",
       "x": 11,

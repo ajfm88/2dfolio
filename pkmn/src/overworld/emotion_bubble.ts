@@ -8,20 +8,22 @@ import type { Npc } from './npc';
 /** 60 frames of DelayFrames, then the DelayFrame. */
 export const EMOTION_BUBBLE_FRAMES = 61;
 
-export class EmotionBubble {
-  private target: Npc | null = null;
+export class EmotionBubble<T = Npc> {
+  private target: T | null = null;
   private frames = 0;
 
   /** Put the bubble over this sprite; the hold starts with the next frame. */
-  start(target: Npc): void {
+  start(target: T): void {
     this.target = target;
     this.frames = 0;
   }
 
   /** The sprite the bubble is over, while it is on screen (renders T … T+60). */
-  get showing(): Npc | null {
+  get showing(): T | null {
     return this.target;
   }
+
+  clear(): void { this.target = null; }
 
   /** One frame of the hold. True on the frame it ends (T+61), when the caller runs
    *  EmotionBubble's UpdateSprites and the rest of the pass; the bubble is gone then. */

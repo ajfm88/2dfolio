@@ -40,6 +40,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
       "id": "balding_guy",
       "sprite": "balding_guy",
       "x": 5,
@@ -48,6 +49,7 @@
       "dialogue": "Coming up with\nnicknames is fun,\nbut hard.\fSimple names are\nthe easiest to\nremember."
     },
     {
+      "textId": 2,
       "id": "little_girl",
       "sprite": "little_girl",
       "x": 1,
@@ -57,6 +59,7 @@
       "walkDir": "up_down"
     },
     {
+      "textId": 3,
       "id": "spearow",
       "sprite": "bird",
       "x": 5,
@@ -66,6 +69,7 @@
       "walkDir": "left_right"
     },
     {
+      "textId": 4,
       "id": "speary_sign",
       "sprite": "clipboard",
       "x": 4,

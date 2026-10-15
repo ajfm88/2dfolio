@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **963** passing (2026-10-06, A5a implementation) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **1242** passing (2026-10-13, A5b6) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (169 files, 9.4 MB; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2).
+- **`data/`** — JSON only, produced by `npm run setup` (173 files; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
   (since R1a), which deletes and rebuilds it every run. It holds 520 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 169 JSON files. That lets
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 173 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -328,12 +328,16 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
   backs are 32×32. Decompressed from the ROM (`extractors/sprites.ts`); pret's
   `gfx/pokemon/front/<name>.png` is the visual reference.
 - **Overworld sprites**: `/gfx/sprites/<sprite_name>.png`, 16 px wide vertical
-  strips. ⚠ Upstream's `extractOverworldSprites` produces **16×768** sheets: pret's
-  table byte is already a byte count (`db \2 tiles` = tiles × 16,
-  `data/sprites/sprites.asm`), but the extractor multiplies it by 16 again. The
-  real 24-tile sheet sits in the top 96 px, pixel-identical to pret's 16×96. The
-  rest is ROM data that no frame ever indexes. Harmless; trimming it is a V5
-  candidate (`notes/01-r1a-graphics-export.md`).
+  strips: **16×96 walking**, **16×16 still** since A5b5c CP2. The shared A5b2
+  size/class validator reads the table byte as bytes (`db \2 tiles` = tiles × 16).
+  Walkers read 24 contiguous tiles: the standing half plus the walking half at
+  +$c0, including the following ROM bytes when pret's file is only 48/64 tall.
+  Still pictures read four tiles and always draw row 0 without flipping.
+  Npc.load rejects any other height. All 76 retained pixel prefixes and available
+  pret rows match. Upstream multiplied the byte count by 16 again, producing
+  16×768/16×256 sheets; turning balls then drew the following fossil/boulder.
+  That BUG-1 is fixed, rather than the previously proposed harmless V5 trim
+  (`notes/35-a5b5c-plan.md` §3.2, DECISIONS #50).
 - **Padded reads**: tilesets read a fixed 0x600 bytes (or up to the next tileset),
   and `move_anim_0` / `pokemon_logo` read up to the next label, so their last tile
   row can hold ROM data past the real tiles (15 images differ from pret there
@@ -461,7 +465,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
-| `menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `BlackboardMenu`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
+| `menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |
@@ -588,8 +592,8 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
   blocksets, collision, pokedex, maps (**19** since V1a: upstream's 12 + the Route 2 /
   Viridian Forest set; NPCs can carry `item` and trainer fields), music (47 listed, all 47
-  extract since V1c fixed the `meeteviltrainer` typo), SFX (**12** extract since A1a, the
-  item jingles included: only names with an entry in `audio.ts` `SFX_HEADERS` —
+  extract since V1c fixed the `meeteviltrainer` typo), SFX (**16** extract since A5b3,
+  including the item/key-item jingles and PC sounds: only names with an entry in `audio.ts` `SFX_HEADERS` —
   `index.ts` lists 36 unique names, the setup script 46, and `extractSfx()` returns null
   for the rest; V5 expands `SFX_HEADERS`),
   wave samples, noise instruments, font / font_extra / font_battle_extra,

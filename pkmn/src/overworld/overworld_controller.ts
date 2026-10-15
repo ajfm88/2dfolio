@@ -4,9 +4,11 @@
 // transition, battle start, etc.), or null when no action is needed.
 
 import type { Direction } from '../core';
+
 import type { Player, Interaction } from './player';
 import type { GameMap } from './map';
 import type { Npc } from './npc';
+import { mapTextKind, mapTextCall } from '../text/map_text_calls';
 import type { PikachuFollower } from '../pikachu/pikachu_follower';
 import type { BattlePokemon } from '../battle';
 import type { Bag } from '../items';
@@ -14,27 +16,28 @@ import type { ScriptCommand } from '../script';
 import { isPassPressed } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from './sprites';
 import { hasFlag, setFlag, getMapScript } from '../events';
-import { itemBallScript, hiddenItemScript, potionSampleScript } from './item_pickup';
+import { itemBallScript, hiddenItemScript } from './item_pickup';
 import { tryWildEncounter } from '../battle';
 import { isNoEncounters } from '../debug';
 import { shouldPikachuFollow } from '../pikachu';
 import { updatePikachuWalking } from '../pikachu/pikachu_happiness';
 import { countStep, runStepEnd } from './step_end';
 import type { StepCounters } from './step_end';
-import { getPlayerName, substituteNames } from '../core/player_state';
+import '../story/small_text_handlers';
+import '../story/lab_text_handlers';
+import '../story/pokecenter';
+import { getTextHandler, getTextScript, displayTextID } from '../story/text_handlers';
+import { getOwnedCount } from '../pokedex_state';
 import { getHiddenEventScript } from '../story/hidden_events';
-import { getText } from '../text/game_text';
 import { buildOakGrassScript } from '../story/pallet_town';
 import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
-  buildOldMan2Script, buildOldMan1Script,
+  buildOldMan2Script,
 } from '../story/viridian_city';
 import { TRAINER_MAPS, trainerMapScript, trainerTalkedTo, startTrainerWalkUp } from './map_trainers';
 import type { TrainerSightState, TrainerScriptAction } from './map_trainers';
 import {
-  buildOaksLabBallScript,
   buildOaksLabRivalBattleScript,
-  buildOaksLabPokedexScript,
 } from '../story/oaks_lab';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -65,12 +68,11 @@ export interface OverworldDeps {
 /** Actions returned to main.ts for state transitions. */
 export type OverworldAction =
   | { type: 'pikachuEmotion' }
-  | { type: 'textbox'; text: string; pendingTownMap?: boolean }
+  | { type: 'textbox'; text: string; call?: 'text' | 'printText'; autoBox?: boolean; program?: string }
   | { type: 'script'; commands: ScriptCommand[] }
   | { type: 'openShop'; shopItems: string[] }
   | { type: 'openPc' }
   | { type: 'openPokecenterPc' }
-  | { type: 'openBlackboard' }
 
   | { type: 'startBattle'; pokemon: BattlePokemon }
   | { type: 'talkToTrainer'; npc: Npc }
@@ -239,9 +241,21 @@ export function finishTrainerEngage(
 
 // ── Interaction handling ──────────────────────────────────────────────
 
+function handlerAction(textId: number | undefined, deps: OverworldDeps): OverworldAction | null {
+  const alternate = deps.currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2')
+    : deps.currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL');
+  const call = mapTextCall(deps.currentMapName, textId, undefined, alternate);
+  const handler = call?.call === 'handler' ? getTextHandler(deps.currentMapName, textId)
+    : call?.call === 'script' ? getTextScript(call.script) : undefined;
+  if (!handler) return null; // unmigrated/excluded callers retain their existing path
+  return { type: 'script', commands: handler({ hasFlag, bag: deps.playerBag, ownedCount: getOwnedCount(),
+    party: deps.playerParty, facing: deps.player.direction, findNpc: deps.findNpc,
+    step: { x: deps.player.mapStepX, y: deps.player.mapStepY }, onHeal: deps.onPokecenterHeal }) };
+}
+
 /** Handle a player interaction (NPC talk, sign read, item pickup, script trigger). */
 function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
-  const { player, playerBag, currentMapName, findNpc } = deps;
+  const { currentMapName } = deps;
 
   if ('npc' in interaction) {
     ow.interactedNpc = interaction.npc;
@@ -259,92 +273,11 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
       return { type: 'talkToTrainer', npc: interaction.npc };
     }
 
-    // Nurse Joy heals the party (full pokecenter sequence)
-    if (npcData.id === 'nurse') {
-      return { type: 'script', commands: buildNurseScript(findNpc, deps.onPokecenterHeal) };
-    }
-
-    // RedsHouse1F: Mom heals party after player has starter
-    if (npcData.id === 'mom' && npcData.dialogue === '__MOM_HEAL__') {
-      return { type: 'script', commands: buildMomHealScript(deps.onPokecenterHeal) };
-    }
-
-    // Route 1: Mart employee gives free Potion sample (one-time)
-    if (currentMapName === 'Route1' && npcData.id === 'youngster1' && !hasFlag('GOT_POTION_SAMPLE')) {
-      return {
-        type: 'script',
-        commands: potionSampleScript(),
-      };
-    }
-
-    // BluesHouse: Daisy gives Town Map after player has Pokédex
-    // (scripts/BluesHouse.asm BluesHouseDaisySittingText .give_town_map)
-    if (npcData.id === 'daisy' && npcData.dialogue === '__DAISY_TOWN_MAP__') {
-      return {
-        type: 'script',
-        commands: [
-          // (text/BluesHouse.asm _BluesHouseDaisyOfferMapText)
-          { type: 'text', message: "Grandpa asked you\nto run an errand?\nHere, this will\nhelp you!" },
-          { type: 'giveItem', itemId: 'TOWN_MAP',
-            successCommands: [
-              // (text/BluesHouse.asm _GotMapText)
-              { type: 'text', message: `${getPlayerName()} got a\nTOWN MAP!` },
-              { type: 'setFlag', flag: 'GOT_TOWN_MAP' },
-              { type: 'hideNpc', npcId: 'town_map' },
-              { type: 'callback', fn: () => { npcData.dialogue = getText('BLUES_HOUSE_USE_MAP'); } },
-            ],
-            failCommands: [
-              { type: 'text', message: "You have no more\nroom for items." },
-            ],
-          },
-        ],
-      };
-    }
-
-    // OaksLab: interacting with Eevee ball triggers rival snatching script
-    if (npcData.id === 'item_ball' && hasFlag('OAK_ASKED_TO_CHOOSE_MON') && !hasFlag('GOT_STARTER')) {
-      return { type: 'script', commands: buildOaksLabBallScript() };
-    }
-
-    // OaksLab: talking to Oak with parcel triggers delivery + Pokédex scene
-    if (
-      currentMapName === 'OaksLab' &&
-      npcData.id === 'prof' &&
-      hasFlag('BATTLED_RIVAL_IN_OAKS_LAB') &&
-      !hasFlag('GOT_POKEDEX') &&
-      playerBag.getCount('OAKS_PARCEL') > 0
-    ) {
-      const playerStepX = Math.round(player.x / 16);
-      const playerStepY = Math.round(player.y / 16);
-      return { type: 'script', commands: buildOaksLabPokedexScript(playerStepX, playerStepY, findNpc) };
-    }
-
-    // ViridianCity: the three old men (story/viridian_city.ts)
-    if (currentMapName === VIRIDIAN_CITY) {
-      if (npcData.id === 'oldman_blocking') {
-        return { type: 'script', commands: buildSleepingOldManScript(false) };
-      }
-      if (npcData.id === 'oldman2' && !hasFlag('COMPLETED_CATCH_TRAINING')) {
-        const playerStep = { x: Math.round(player.x / 16), y: Math.round(player.y / 16) };
-        return { type: 'script', commands: buildOldMan2Script(false, playerStep) };
-      }
-      if (npcData.id === 'oldman1') {
-        return { type: 'script', commands: buildOldMan1Script() };
-      }
-    }
-
-    // ViridianCity: Youngster asks about caterpillar POKéMON (YES/NO choice)
-    if (currentMapName === 'ViridianCity' && npcData.id === 'youngster2') {
-      return {
-        type: 'script',
-        commands: [{
-          type: 'yesNo',
-          message: getText('VIRIDIAN_CATERPILLAR_ASK'),
-          yesBranch: [{ type: 'text', message: "CATERPIE has no\npoison, but\nWEEDLE does.\fWatch out for its\nPOISON STING!" }],
-          noBranch: [{ type: 'text', message: 'Oh, OK then!' }],
-        }],
-      };
-    }
+    const handler = handlerAction(npcData.textId, deps);
+    if (handler) return handler;
+    // The Mart's first table gives a direct reminder; table 2 remains the shop.
+    if (currentMapName === 'ViridianMart' && npcData.textId === 1 && !hasFlag('OAK_GOT_PARCEL'))
+      return { type: 'script', commands: displayTextID([{ type: 'printText', program: 'ViridianMartClerkSayHiToOakText', box: 'keep' }]) };
 
     // Mart clerk opens shop
     if (npcData.shopItems && npcData.shopItems.length > 0) {
@@ -359,10 +292,17 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
       ow.interactedNpc = null;
       return null;
     }
-    return { type: 'textbox', text };
+    const call = mapTextKind(currentMapName, npcData.textId, undefined,
+      currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2') : currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL'));
+    const labCall = currentMapName === 'OaksLab' ? mapTextCall(currentMapName, npcData.textId) : undefined;
+    return { type: 'textbox', text, ...(call ? { call } : {}), ...(currentMapName === 'OaksLab' ? {
+      autoBox: false, ...(labCall?.call === 'text' || labCall?.call === 'printText' ? { program: labCall.program } : {}),
+    } : {}) };
   }
 
   if ('scriptId' in interaction) {
+    if (interaction.scriptId === 'REDSHOUSE1F_TV') return handlerAction(2, deps);
+
     // Player's PC (assembly: engine/menus/players_pc.asm)
     if (interaction.scriptId === 'RED_PC') {
       return { type: 'openPc' };
@@ -372,11 +312,7 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
       return { type: 'openPokecenterPc' };
     }
 
-    // Blackboard interactive menu
-    if (interaction.scriptId === 'VIRIDIAN_SCHOOL_BLACKBOARD') {
-      return { type: 'openBlackboard' };
-    }
-    // Scripted hidden event (multi-page notebook, etc.)
+    // Scripted hidden events: the school's notebook and blackboard (story/hidden_events.ts)
     const script = getHiddenEventScript(interaction.scriptId);
     if (script) {
       return { type: 'script', commands: script };
@@ -389,8 +325,10 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
   }
 
   // Sign or bookshelf text
-  const pendingTownMap = interaction.text === 'A TOWN MAP.' || undefined;
-  return { type: 'textbox', text: interaction.text, pendingTownMap };
+  const handler = handlerAction(interaction.textId, deps);
+  if (handler) return handler;
+  const call = mapTextKind(currentMapName, interaction.textId);
+  return { type: 'textbox', text: interaction.text, ...(call ? { call } : {}) };
 }
 
 // ── Step-complete checks ──────────────────────────────────────────────
@@ -538,97 +476,4 @@ function checkConnection({ player, gameMap }: OverworldDeps): OverworldAction | 
 
 // ── Helper functions for building inline scripts ──────────────────────
 
-/**
- * The nurse: DisplayPokemonCenterDialogue_ (engine/events/pokecenter.asm), one
- * DisplayTextID. Its PrintText calls open no new DisplayTextIDInit, so only the first box
- * updates sprites; CloseTextDisplay restores Pikachu's saved facing at the end. Pikachu's
- * branches are checked as they run: the heal can make a fainted starter eligible.
- * The healing machine keeps its present animation (its timing is not A6e's claim).
- */
-export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHeal?: () => void): ScriptCommand[] {
-  // Func_6eaa: the nurse's image $04 (facing up), then 64 frames
-  const nurseUp: ScriptCommand[] = [
-    { type: 'faceNpc', npcId: 'nurse', direction: 'up' },
-    { type: 'wait', frames: 64 },
-  ];
-  // Func_6ebb(1, c): her facing, 6 frames (SetSpriteFacingDirectionAndDelay), her image
-  const nurseFace = (direction: Direction): ScriptCommand[] => [
-    { type: 'wait', frames: 6 },
-    { type: 'faceNpc', npcId: 'nurse', direction },
-  ];
-  return [
-    // (data/text/text_7.asm _PokemonCenterWelcomeText)
-    { type: 'text', message: getText('POKECENTER_WELCOME') },
-    { type: 'pikachuFacing', action: 'save' },
-    { type: 'uiEntryUpdates', enabled: false },
-    // (data/text/text_7.asm _ShallWeHealYourPokemonText)
-    {
-      type: 'yesNo',
-      message: getText('POKECENTER_HEAL_ASK'),
-      yesBranch: [
-        // UpdateSprites after YesNoChoicePokeCenter, then SetLastBlackoutMap
-        { type: 'updateSprites' },
-        ...(onHeal ? [{ type: 'callback' as const, fn: onHeal }] : []),
-        // The starter alive and following: LoadCurrentMapView, Delay3, UpdateSprites,
-        // PikachuWalksToNurseJoy (no refresh after it)
-        { type: 'ifStarterPikachu', then: [
-          { type: 'wait', frames: 3 },
-          { type: 'updateSprites' },
-          { type: 'pikachuToNurse' },
-        ] },
-        // (data/text/text_7.asm _NeedYourPokemonText), then 64 frames
-        { type: 'text', message: getText('POKECENTER_NEED_MON') },
-        { type: 'wait', frames: 64 },
-        // DisablePikachuOverworldSpriteDrawing; Func_6eaa for a living starter
-        { type: 'hidePikachu' },
-        { type: 'ifStarterPikachu', then: nurseUp },
-        // Func_6ebb(1, 8): left, toward the machine; 30 frames
-        ...nurseFace('left'),
-        { type: 'wait', frames: 30 },
-        // AnimateHealingMachine (ends in UpdateSprites, Pikachu still undrawn), HealParty
-        { type: 'pokecenterHeal' },
-        // Func_6eaa for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
-        { type: 'ifStarterPikachu', then: nurseUp },
-        { type: 'showPikachu' },
-        // Func_6ebb(1, 0): back down
-        ...nurseFace('down'),
-        // (data/text/text_7.asm _PokemonFightingFitText)
-        { type: 'text', message: getText('POKECENTER_FIGHTING_FIT') },
-        // Func_6ebb(15, 0): Pikachu faces down and its image is written — visible again
-        // here, before the bow
-        { type: 'ifStarterPikachu', then: [{ type: 'pikachuStandDown' }] },
-        // LoadCurrentMapView, Delay3, UpdateSprites
-        { type: 'wait', frames: 3 },
-        { type: 'updateSprites' },
-        // The bow: the nurse's image $01 for 40 frames, then UpdateSprites
-        { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = true; } },
-        { type: 'wait', frames: 40 },
-        { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = false; } },
-        { type: 'updateSprites' },
-      ],
-      noBranch: [],
-    },
-    // .done: (data/text/text_7.asm _PokemonCenterFarewellText), UpdateSprites
-    { type: 'text', message: 'We hope to see\nyou again!' },
-    { type: 'updateSprites' },
-    // CloseTextDisplay
-    { type: 'uiEntryUpdates', enabled: true },
-    { type: 'pikachuFacing', action: 'restore' },
-  ];
-}
-
-function buildMomHealScript(onHeal?: () => void): ScriptCommand[] {
-  return [
-    // (text/RedsHouse1F.asm _RedsHouse1FMomYouShouldRestText)
-    { type: 'text', message: substituteNames(getText('MOM_REST')) },
-    // Assembly: GBFadeOutToWhite → HealParty → GBFadeInFromWhite
-    { type: 'fadeOut' },
-    { type: 'healParty' },
-    // Record blackout destination (Mom's house door → PalletTown)
-    ...(onHeal ? [{ type: 'callback' as const, fn: onHeal }] : []),
-    { type: 'wait', frames: 30 },
-    { type: 'fadeIn' },
-    // (text/RedsHouse1F.asm _RedsHouse1FMomLookingGreatText)
-    { type: 'text', message: getText('MOM_LOOKING_GREAT') },
-  ];
-}
+export { buildNurseScript } from '../story/pokecenter';

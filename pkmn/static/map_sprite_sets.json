@@ -23,6 +23,109 @@
     "ViridianForestSouthGate": 50,
     "ViridianForest": 51
   },
+  "mapObjects": {
+    "PalletTown": [
+      3,
+      13,
+      47
+    ],
+    "ViridianCity": [
+      4,
+      11,
+      4,
+      13,
+      82,
+      47,
+      11,
+      11
+    ],
+    "Route1": [
+      4,
+      4
+    ],
+    "Route22": [
+      2,
+      2
+    ],
+    "RedsHouse1F": [
+      51
+    ],
+    "RedsHouse2F": [],
+    "BluesHouse": [
+      17,
+      17,
+      75
+    ],
+    "OaksLab": [
+      2,
+      71,
+      3,
+      75,
+      75,
+      3,
+      13,
+      32,
+      32
+    ],
+    "ViridianPokecenter": [
+      41,
+      16,
+      7,
+      42,
+      68
+    ],
+    "ViridianMart": [
+      38,
+      4,
+      7
+    ],
+    "ViridianSchoolHouse": [
+      29,
+      6,
+      8
+    ],
+    "ViridianNicknameHouse": [
+      52,
+      8,
+      9,
+      76
+    ],
+    "Route2": [
+      71,
+      71
+    ],
+    "DiglettsCaveRoute2": [
+      39
+    ],
+    "ViridianForestNorthGate": [
+      12,
+      37
+    ],
+    "Route2TradeHouse": [
+      32,
+      55
+    ],
+    "Route2Gate": [
+      32,
+      4
+    ],
+    "ViridianForestSouthGate": [
+      13,
+      8
+    ],
+    "ViridianForest": [
+      4,
+      4,
+      4,
+      4,
+      6,
+      4,
+      71,
+      71,
+      71,
+      4
+    ]
+  },
   "pictureIdsBySprite": {
     "red": 1,
     "blue": 2,

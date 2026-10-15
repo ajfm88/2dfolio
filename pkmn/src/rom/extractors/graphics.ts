@@ -25,6 +25,7 @@ import {
 } from '../rom_offsets';
 import { decode1bpp, decode2bpp } from '../tile_decoder';
 import { decompressSprite } from '../sprite_decompress';
+import { readSpritePictureMetadata } from './map_sprite_sets';
 
 /** Tileset info extracted from tileset headers */
 interface TilesetGfxInfo {
@@ -376,14 +377,15 @@ export function extractOverworldSprites(rom: BinaryReader): Record<string, Image
   for (const entry of OVERWORLD_SPRITE_ENTRIES) {
     if (entry.index < 1) continue; // Skip special cases
 
-    // Each table entry is 4 bytes: 2-byte address, 1-byte tile count (in units of 16 bytes), 1-byte bank
+    // Each table entry: address, byte count for one standing half, bank.
     const tableOffset = SPRITE_SHEET_PTRS + (entry.index - 1) * 4;
     const addr = rom.readWord(tableOffset);
-    const tileCountRaw = rom.readByte(tableOffset + 2);
     const bank = rom.readByte(tableOffset + 3);
 
-    // tileCountRaw is in units of 16 bytes (tile size in 2bpp)
-    const tileCount = tileCountRaw;
+    const picture = readSpritePictureMetadata(rom, entry.index);
+    // LoadWalkingTilePattern reads the contiguous half at +$c0, even when
+    // pret's standing-only PNG ends there. Still pictures have just four tiles.
+    const tileCount = picture.tileCount * (picture.kind === 'walking' ? 2 : 1);
     const dataSize = tileCount * 16; // 2bpp: 16 bytes per tile
     const romOffset = bank * 0x4000 + (addr & 0x3FFF);
 
