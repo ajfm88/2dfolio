@@ -112,21 +112,25 @@ describe('blocking text script routines', () => {
     expect(getActiveScript()?.index).toBe(0);
     vi.mocked(isSoundFinished).mockReturnValue(true);
     expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' });
-    expect(moved).not.toHaveBeenCalled(); expect(syncJoypadRead).toHaveBeenCalled();
+    expect(moved).not.toHaveBeenCalled(); expect(syncJoypadRead).not.toHaveBeenCalled(); // sound waits own no reads
   });
   it.each(['a', 'b'])('silent textButtonWait accepts %s without an arrow or beep', button => {
     const deps = scene(); deps.textBox.show('No room', { end: 'none' }); type(deps.textBox);
     initScript([{ type: 'textButtonWait' }, { type: 'closeText' }]);
     updateScript(deps, true); expect(deps.textBox.active).toBe(true); expect(arrow(deps.textBox)).toBe(false);
     vi.mocked(isPressed).mockImplementation(key => key === button);
-    expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' });
+    expect(updateScript(deps, false)).toBeNull();
+    for (let frame = 0; frame < 6; frame++) expect(updateScript(deps, false)).toBeNull();
+    expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' }); // detached W=1, seven close frames
     expect(playSFX).not.toHaveBeenCalled(); expect(syncJoypadRead).toHaveBeenCalled();
   });
-  it('HoldTextDisplayOpen stays while A is held and closes on the first released frame', () => {
+  it('HoldTextDisplayOpen stays while A is held, then waits the full seven-frame reload', () => {
     const deps = scene(); deps.textBox.show('found', { end: 'none' }); type(deps.textBox);
     initScript([{ type: 'closeText' }]); vi.mocked(isHeld).mockImplementation(key => key === 'a');
     updateScript(deps, true); updateScript(deps, false); expect(deps.textBox.active).toBe(true);
     vi.mocked(isHeld).mockReturnValue(false);
+    expect(updateScript(deps, false)).toBeNull();
+    for (let frame = 0; frame < 6; frame++) expect(updateScript(deps, false)).toBeNull();
     expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' }); expect(deps.textBox.active).toBe(false);
   });
   it('HideObject saves its key, hides the live object and removes its collision availability', () => {

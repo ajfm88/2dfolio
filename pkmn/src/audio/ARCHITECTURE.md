@@ -6,6 +6,7 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
 | File | Purpose |
 |---|---|
 | `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), the SFX preload, the `_playSFX(name)` console helper |
+| `rival_start.ts` | A5b5b's `playMusic('meetrival', 'rivalAlternate')` adapter: selects the committed alternate channel entries without changing the engine or cached data |
 | `sound_channel.ts` | **(A1a)** `SoundChannel`: one software channel of `Audio1_UpdateMusic`, the interpreter the music and music-mode SFX share (DECISIONS #40) |
 | `music_engine.ts` | The track's channels (CHAN1–4) and `wMusicTempo`; suppression while SFX play; `releaseChannel`; channel 8's drum occupancy |
 | `sfx_engine.ts` | SFX on channels 5–8 overriding music channels 1–4: SFX-mode `square_note` / `noise_note` / `pitch_sweep`, or, after `execute_music`, a `SoundChannel` at tempo $0100 |
@@ -22,9 +23,31 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   `pitch_sweep`, `duty_cycle`, `sound_loop`, `sound_ret`; a music-mode channel starts with
   `execute_music` and then uses the music commands (the item jingles `get_item1` /
   `get_item2`, A1a).
+- **A5b3** adds `get_key_item` (music mode, channels 5–7, return on update 121)
+  and `turn_on_pc` / `turn_off_pc` / `enter_pc` (SFX mode, channel 5, return on
+  70 / 18 / 22). They are extracted and preloaded; their game call sites await
+  A5b4–A5b7. `sfx_key_item_pc.test.ts` pins pitch, timing, waits and music hand-off.
+- **Audio-bank rule:** the cartridge's PlaySound selects the current music's
+  `wAudioROMBank`. Our 16 SFX use bank `$02`; the ROM guard in
+  `extraction.test.ts` compares every SFX_HEADERS entry with bank `$1f` and
+  pins exactly three differences: save (return 40/37), turn_on_pc (70/81),
+  enter_pc (22/18). Key-item/turn-off copies are identical. Bank-aware lookup
+  stays V5; the current PCs use `$02`, while Silph Co. 11F (G1) needs `$1f`.
+  Evidence and scope: `notes/28-a5b3-plan.md` §3.3, §8.
 - **Map music**: `MAP_MUSIC` in `main.ts` (from `data/maps/songs.asm`);
   `updateMapMusic()` only restarts when the track changes. Every new map needs an
   entry — and outdoor maps need adding to `OUTDOOR_MAPS` (door SFX choice).
+  Story `restoreMapMusic` uses the live map callback; the Lab restores `oakslab`
+  (A5b5c F-2), and the nurse restores her current map after the existing machine.
+  The machine's missing fade-out, healing sounds/jingle, flashes and heal order
+  remain the separate slice after A5b7 and before V2 (DECISIONS #50).
+- **Alternate rival start:** `audio/alternate_tempo.asm` overwrites three channel
+  pointers. The decoded committed track already contains those entries; the
+  facade locates their source-matched prefixes, clones the stream, shifts jump
+  targets, and prepends an instantaneous interpreter jump. Normal starts and
+  cached data stay unchanged. The Lab's rival arrival/exit scenes use it; the
+  battle challenge uses the normal entry. Tests compare all three prefixes with
+  independently parsed ASM and run the real interpreter through the loop.
 - Audio ticks at a fixed 59.7275 Hz off `performance.now()`, independent of game FPS.
   Each update runs the music channels, then the SFX channels (`audioUpdate`).
 - **The interpreter's rules (A1a, `engine_1.asm`; detail in `sound_channel.ts` and
@@ -70,5 +93,8 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   - the pitch-slide algorithm differs;
   - `.wave5` isn't extracted;
   - noise-channel rests don't silence it.
+  - SFX use the bank-$02 copy; save timing in Oak's Lab, the Forest and
+    DiglettsCaveRoute2 inherits a three-update difference until V5 (A5b7 records
+    this limitation when it wires save). Silph Co. 11F's PC variants remain G1.
 - Upstream's own to-do: remaining music tracks, music fade in/out, Pokemon cries,
   Pikachu PCM cries.

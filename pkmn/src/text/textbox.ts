@@ -3,10 +3,16 @@ import { substituteNames } from '../core/player_state';
 import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
 import { isPressed, isHeld, syncJoypadRead } from '../input';
 import { charToTile, extraCharToTile } from './charmap';
-import { TextPrinter, TEXT_A, TEXT_B } from './text_printer';
+import { TextScreen, TEXT_A, TEXT_B } from './text_printer';
+import { TextProgramRunner } from './text_runner';
+import type { TextBindings, TextReturn } from './text_runner';
+import { getTextPrograms } from './program_data';
+import { CloseSequence } from './close_sequence';
+import { setOpeningSpriteUpdates } from '../overworld/ui_entry';
 import { textBgTransfer } from './bg_transfer';
 import { playSFX, isSoundFinished } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
+import type { CloseReload } from '../overworld/sprite_sets';
 
 // Text box dimensions (in tiles)
 // Original Game Boy: TextBoxBorder with b=4 (inner height) + 2 border rows = 6 tiles total
@@ -101,86 +107,217 @@ export interface TextBoxOptions {
   mode?: TextBoxMode;
   /** TalkToTrainer calls PrintText inside the DisplayTextID opening. */
   printText?: boolean;
+  autoBox?: boolean;
+  program?: string;
 }
+
+export interface TextDisplayHost {
+  /** CloseTextDisplay's cost on the current map; 'full' once BIT_FONT_LOADED is clear. */
+  closeFrames(reload?: CloseReload): number;
+  updateSprites(): void;
+  /** Hook only: PrintText's own font-loaded UpdateSprites remains J2. */
+  printTextSprites?(): void;
+  cry?(species: string): void;
+}
+export type DisplayPhase = 'opening' | 'printing' | 'waiting' | 'holding' | 'closing' | 'closed';
+export type TextSource = { text: string } | { program: string };
 
 export class TextBox {
   private _active = false;
   private complete = false;
   private textComplete = false;
   private finalWait = false;
-  private printer: TextPrinter | null = null;
+  private screen: TextScreen | null = null;
   private run: Generator<void> | null = null;
   private frame = 0;
   private mode: TextBoxMode = 'legacy';
+  private revision = 0;
   private visible = Array<string>(20 * 6).fill(' ');
+  private _phase: DisplayPhase = 'closed';
+  private border = true;
+  private closeSequence: CloseSequence | null = null;
+  /** After an in-place CloseTextDisplay: no window, no AutoBgMapTransfer (TownMapText). */
+  private windowOff = false;
+  private host: TextDisplayHost;
+  private closeStart: (() => void) | null = null;
+  textReturn: TextReturn = 'returned';
+
+  constructor(host: TextDisplayHost = { closeFrames: () => 7, updateSprites: () => {} }) {
+    // Detached boxes default to the minimal walking set (Pikachu + player).
+    // main.ts supplies the actual current-map host for every in-game display.
+    this.host = host;
+  }
 
   get active(): boolean { return this._active; }
+  get phase(): DisplayPhase { return this._phase; }
+  get closing(): boolean { return this._phase === 'closing'; }
+  get displaySession(): boolean { return this.mode === 'displayTextID'; }
+  /** A new DisplayTextID can begin in the same tick that the prior display closes. */
+  get displayRevision(): number { return this.revision; }
   /** The text's own terminator returned, before DisplayTextID's outer wait. */
   get isTextComplete(): boolean { return this.textComplete; }
   get isComplete(): boolean { return this.complete; }
-  get isWaitingForInput(): boolean { return this.finalWait || !!this.printer?.waiting; }
-  get hasMorePages(): boolean { return !this.finalWait && !!this.printer?.hasMore; }
-  dismiss(): void { this._active = false; this.run = null; }
+  get isWaitingForInput(): boolean { return this.finalWait || !!this.screen?.waiting; }
+  get hasMorePages(): boolean { return !this.finalWait && !!this.screen?.hasMore; }
+  /** The actual retained rectangle, independent of the previous rendered UI snapshot. */
+  uiTileAt(x: number, y: number): number {
+    return this.active && this.border && x >= 0 && x < BOX_WIDTH && y >= BOX_Y / TILE_SIZE && y < GB_HEIGHT / TILE_SIZE ? 0x60 : 0;
+  }
+  hideDisplay(): void {
+    if (!this.active || !this.displaySession) throw new Error('LoadCurrentMapView requires an open display');
+    this.border = false;
+  }
+  /** LoadScreenTilesFromBuffer1 back to the empty box saved after DisplayTextIDInit; the
+   *  BG transfer shows it as it shows any write. */
+  clearInterior(): void {
+    if (!this.active || !this.screen) throw new Error('restoring the saved box requires an open display');
+    this.screen.clearInterior(); this.screen.resetCursor();
+  }
+  restoreFacingAtClose(fn: () => void): void { this.closeStart = fn; }
+  dismiss(): void { this._active = false; this.run = null; this._phase = 'closed'; this.closeSequence = null; }
+
+  private reset(mode: TextBoxMode): void {
+    this.mode = mode;
+    if (mode === 'displayTextID') this.revision++;
+    this._active = true; this.complete = false; this.textComplete = false;
+    this.finalWait = false; this.frame = 0; this.border = true; this.closeSequence = null; this.windowOff = false;
+    this.closeStart = null;
+    this.visible.fill(' ');
+    this.screen = new TextScreen(this.ports(), this.buttons());
+  }
+  private ports() {
+    return { buttons: () => this.buttons(), speed: () => textSpeed,
+      soundFinished: () => isSoundFinished(), beep: () => { playSFX('press_ab'); }, joypadRead: syncJoypadRead,
+      playSound: (name: string) => { playSFX(name); }, cry: (species: string) => { this.host.cry?.(species); } };
+  }
+  private start(run: Generator<void>): void {
+    this.complete = false; this.run = run; this.advance();
+  }
+  private advance(): void {
+    if (this.run?.next().done) { this.complete = true; if (this.active) this._phase = 'waiting'; }
+  }
+  open(opts: { autoBox?: boolean; spriteUpdate?: boolean } = {}): void {
+    this.reset('displayTextID');
+    this.start(this.opening(opts));
+  }
+  private *opening(opts: { autoBox?: boolean; spriteUpdate?: boolean }): Generator<void> {
+    this._phase = 'opening'; this.border = opts.autoBox ?? true;
+    setOpeningSpriteUpdates(opts.spriteUpdate ?? true);
+    yield* this.screen!.delay(20);
+  }
+  print(source: TextSource, opts: { box?: 'new' | 'keep'; bindings?: TextBindings; noDelay?: boolean } = {}): void {
+    if (!this.active || !this.screen) throw new Error('PrintText requires an open display');
+    this.textComplete = false;
+    this.start(this.printing(source, opts));
+  }
+  /** Standalone PrintText: border at T, Delay3, then the program; retain its box on return. */
+  printStandalone(source: TextSource, opts: { bindings?: TextBindings } = {}): void {
+    if (!this.active || this.mode !== 'printText') this.reset('printText');
+    this.textComplete = false;
+    this.start(this.printing(source, { box: 'new', ...opts }));
+  }
+  private *printing(source: TextSource, opts: { box?: 'new' | 'keep'; bindings?: TextBindings; noDelay?: boolean }): Generator<void> {
+    const screen = this.screen!;
+    this._phase = 'printing';
+    if ((opts.box ?? 'new') === 'new') {
+      this.border = true; screen.clearInterior();
+      this.host.printTextSprites?.(); // explicitly deferred, no sprite update unless a future caller supplies it
+      yield* screen.delay(3);
+    }
+    screen.resetCursor();
+    this.textReturn = 'program' in source
+      ? yield* new TextProgramRunner(screen, getTextPrograms(), this.ports()).run(source.program, opts.bindings, opts.noDelay)
+      : (yield* screen.placeString(substituteNames(source.text), opts.noDelay), 'returned');
+    this.textComplete = true;
+  }
+  waitSilent(): void { this.start(this.silentWait()); }
+  private *silentWait(): Generator<void> {
+    this._phase = 'waiting'; this.finalWait = true;
+    yield* this.screen!.waitButton(false);
+    this.finalWait = false;
+  }
+  finish(opts: { outerWait: boolean; reload?: CloseReload }): void {
+    if (!this.active) { this.complete = true; return; }
+    this.start(this.finishing(opts.outerWait, opts.reload));
+  }
+  private *finishing(outerWait: boolean, reload?: CloseReload): Generator<void> {
+    if (outerWait) yield* this.silentWait();
+    this._phase = 'holding';
+    yield* this.screen!.holdA();
+    yield* this.runClose(reload);
+    this.dismiss();
+  }
+  private *runClose(reload?: CloseReload): Generator<void> {
+    this._phase = 'closing'; this.finalWait = false;
+    this.closeStart?.(); this.closeStart = null;
+    this.closeSequence = new CloseSequence(this.host.closeFrames(reload), () => this.host.updateSprites());
+    while (!this.closeSequence.complete) { yield; this.closeSequence.advance(); }
+  }
+  /**
+   * CloseTextDisplay reached from inside the handler (TownMapText's `jp CloseTextDisplay`): the
+   * whole close and its trailing UpdateSprites, after which DisplayTextID still runs Hold and
+   * closes again. The window stays off ($90) and AutoBgMapTransfer stays disabled until then.
+   */
+  closeInPlace(): void {
+    if (!this.active || !this.displaySession) throw new Error('CloseTextDisplay requires an open display');
+    this.start(this.closingInPlace());
+  }
+  private *closingInPlace(): Generator<void> {
+    yield* this.runClose();
+    this.closeSequence = null; this.border = false; this.windowOff = true; this._phase = 'waiting';
+  }
 
   show(text: string, opts: TextBoxOptions = {}): void {
-    this.mode = opts.mode ?? 'legacy';
-    this._active = true; this.complete = false; this.textComplete = false;
-    this.finalWait = false; this.frame = 0; this.printer = null;
-    this.visible.fill(' ');
+    this.reset(opts.mode ?? 'legacy');
     let message = substituteNames(text);
     // Explicit A1b endings take precedence; legacy battle/script strings cannot
     // acquire new waits from the map extractor's terminator.
     if (opts.end || this.mode === 'legacy') message = message.replace(/<(PROMPT|DONE)>$/, '');
     if (opts.end === 'prompt') message += '<PROMPT>';
-    const joy = this.buttons();
-    this.run = this.display(message, opts, joy);
-    this.run.next();
+    this.start(this.display(message, opts));
   }
   private buttons(): number { return (isHeld('a') ? TEXT_A : 0) | (isHeld('b') ? TEXT_B : 0); }
-  private *delay(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
-  private *display(text: string, opts: TextBoxOptions, joy: number): Generator<void> {
-    if (this.mode === 'displayTextID') yield* this.delay(20);
-    else if (this.mode === 'printText') yield* this.delay(3);
-    else yield;
-    if (opts.printText) yield* this.delay(3);
-    this.printer = new TextPrinter(text, {
-      buttons: () => this.buttons(), speed: () => textSpeed,
-      soundFinished: isSoundFinished, beep: () => { playSFX('press_ab'); },
-      joypadRead: syncJoypadRead,
-    }, joy);
-    while (!this.printer.complete) { yield; this.printer.advance(); }
-    this.textComplete = true;
+  private *display(text: string, opts: TextBoxOptions): Generator<void> {
+    if (this.mode === 'displayTextID') {
+      yield* this.opening({ autoBox: opts.autoBox });
+      yield* this.printing(opts.program ? { program: opts.program } : { text }, { box: opts.printText ? 'new' : 'keep' });
+    } else {
+      if (this.mode === 'printText') yield* this.screen!.delay(3); else yield;
+      if (opts.printText) yield* this.screen!.delay(3);
+      this._phase = 'printing';
+      yield* this.screen!.placeString(text);
+      this.textComplete = true;
+    }
     if (opts.end || this.mode === 'printText') { this.complete = true; return; }
     this.finalWait = true;
     if (this.mode === 'displayTextID') {
-      yield* this.printer.waitButton(false);
-      yield* this.printer.holdA();
-      // CloseTextDisplay's hWY write is visible after its DelayFrame.
-      yield;
+      yield* this.finishing(true); return;
     } else {
       // The legacy caller's dismissal remains its existing press/beep behavior.
       while (!isPressed('a') && !isPressed('b')) yield;
       playSFX('press_ab');
     }
-    this.finalWait = false; this._active = false;
+    this.finalWait = false; this.dismiss();
   }
   /** One VBlank. Also called during retained script text's sound/button waits. */
   updateDisplay(): void {
-    if (!this._active) return;
-    if ((this.mode !== 'displayTextID' || this.frame >= 20) && textBgTransfer.tick() && this.printer)
-      this.visible = this.printer.buffer.slice();
+    if (!this._active || this.windowOff) return;
+    if (this.closing && !this.closeSequence!.firstFrame) return;
+    if ((this.mode !== 'displayTextID' || this.frame >= 20) && textBgTransfer.tick() && this.screen)
+      this.visible = this.screen.buffer.slice();
   }
   update(): void {
     if (!this._active) return;
     this.updateDisplay();
     this.frame++;
-    if (!this.complete) this.run?.next();
+    if (!this.complete) this.advance();
   }
   render(): void {
-    if (!this._active || !fontCanvas) return;
+    if (!this._active || !fontCanvas || !this.border) return;
     // DisplayTextIDInit's font-loaded UpdateSprites sees the logical border at T,
     // even though the window does not become visible until render T+3 (scanout T+4).
     uiTiles.cover(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE);
+    if (this.closing && !this.closeSequence!.firstFrame) return;
     if (this.mode === 'displayTextID' && this.frame < 3) return;
     fillRect(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE, 0);
     drawTileBorder(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT);

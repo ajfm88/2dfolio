@@ -201,6 +201,7 @@
   "warps": [],
   "signs": [
     {
+      "textId": 3,
       "x": 9,
       "y": 27,
       "text": "ROUTE 1\nPALLET TOWN -\nVIRIDIAN CITY"
@@ -208,6 +209,7 @@
   ],
   "npcs": [
     {
+      "textId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 5,
@@ -216,6 +218,7 @@
       "dialogue": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!<PROMPT>"
     },
     {
+      "textId": 2,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 15,

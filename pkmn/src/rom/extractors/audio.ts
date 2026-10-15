@@ -119,9 +119,10 @@ const MUSIC_HEADERS: Record<string, { bank: number; addr: number }> = {
 };
 
 // SFX headers: map SFX names to their symbol addresses
-// All SFX headers exist in multiple banks (1-4), we use bank 2 by default
-// (SFX_Headers_1) since it's the most complete
-const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
+// These are the bank-$02 copies (SFX_Headers_1). The cartridge uses the current
+// music's audio bank; save, turn_on_pc and enter_pc differ in bank $1f.
+// Bank-aware lookup remains V5; A5b3 pins those differences (notes/28-a5b3-plan.md).
+export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   press_ab:         { bank: 0x02, addr: 0x41b0 },
   start_menu:       { bank: 0x02, addr: 0x41ad },
   collision:        { bank: 0x02, addr: 0x421c },
@@ -136,6 +137,11 @@ const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   // SFX_Get_Item2_1). Banks $1f and $20 hold byte-identical copies.
   get_item1:        { bank: 0x02, addr: 0x4192 },
   get_item2:        { bank: 0x02, addr: 0x419b },
+  // A5b3: required key-item and PC sounds, from pret's sym file.
+  get_key_item:     { bank: 0x02, addr: 0x41bc }, // SFX_Get_Key_Item_1
+  turn_on_pc:       { bank: 0x02, addr: 0x41cb }, // SFX_Turn_On_PC_1
+  turn_off_pc:      { bank: 0x02, addr: 0x41ce }, // SFX_Turn_Off_PC_1
+  enter_pc:         { bank: 0x02, addr: 0x41d1 }, // SFX_Enter_PC_1
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -593,14 +599,18 @@ export function extractMusic(rom: BinaryReader, trackName: string): MusicData | 
 export function extractSfx(rom: BinaryReader, sfxName: string): MusicData | null {
   const header = SFX_HEADERS[sfxName.toLowerCase()];
   if (!header) return null;
+  return extractSfxAt(rom, header.bank, header.addr);
+}
 
-  const channelInfos = parseMusicHeader(rom, header.bank, header.addr);
+/** Decode an SFX at an explicit header, also used to verify audio-bank variants. */
+export function extractSfxAt(rom: BinaryReader, bank: number, addr: number): MusicData {
+  const channelInfos = parseMusicHeader(rom, bank, addr);
   const channels: ChannelData[] = [];
 
   for (const info of channelInfos) {
     // SFX channels are 5-8. Channel 8 = noise
     const isNoiseChannel = info.id === 8;
-    const commands = decodeChannelCommands(rom, header.bank, info.dataAddr, isNoiseChannel, true);
+    const commands = decodeChannelCommands(rom, bank, info.dataAddr, isNoiseChannel, true);
     channels.push({ id: info.id, commands });
   }
 

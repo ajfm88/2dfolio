@@ -455,31 +455,37 @@
   ],
   "signs": [
     {
+      "textId": 11,
       "x": 24,
       "y": 40,
       "text": "TRAINER TIPS\fIf you want to\navoid battles,\nstay away from\ngrassy areas!"
     },
     {
+      "textId": 12,
       "x": 16,
       "y": 32,
       "text": "For poison, use\nANTIDOTE! Get it\nat POKéMON MARTs!"
     },
     {
+      "textId": 13,
       "x": 26,
       "y": 17,
       "text": "TRAINER TIPS\fContact PROF.OAK\nvia PC to get\nyour POKéDEX\nevaluated!"
     },
     {
+      "textId": 14,
       "x": 4,
       "y": 24,
       "text": "TRAINER TIPS\fNo stealing of\nPOKéMON from\nother trainers!\nCatch only wild\nPOKéMON!"
     },
     {
+      "textId": 15,
       "x": 18,
       "y": 45,
       "text": "TRAINER TIPS\fWeaken POKéMON\nbefore attempting\ncapture!\fWhen healthy,\nthey may escape!"
     },
     {
+      "textId": 16,
       "x": 2,
       "y": 1,
       "text": "TRAINER TIPS\fIf you want to\navoid battles,\nstay away from\ngrassy areas!"
@@ -487,6 +493,7 @@
   ],
   "npcs": [
     {
+      "textId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 16,
@@ -495,6 +502,7 @@
       "dialogue": "I came here with\nsome friends!\fThey're out for\nPOKéMON fights!"
     },
     {
+      "textId": 2,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 30,
@@ -509,6 +517,7 @@
       "afterBattleText": "Ssh! You'll scare\nthe bugs away!"
     },
     {
+      "textId": 3,
       "id": "youngster3",
       "sprite": "youngster",
       "x": 30,
@@ -523,6 +532,7 @@
       "afterBattleText": "Darn! I'm going\nto catch some\nstronger ones!"
     },
     {
+      "textId": 4,
       "id": "youngster4",
       "sprite": "youngster",
       "x": 2,
@@ -537,6 +547,7 @@
       "afterBattleText": "Sometimes, you\ncan find stuff on\nthe ground!\fI'm looking for\nthe stuff I\ndropped!"
     },
     {
+      "textId": 5,
       "id": "cooltrainer_f",
       "sprite": "cooltrainer_f",
       "x": 2,
@@ -550,6 +561,7 @@
       "afterBattleText": "I looked forever,\nbut I never found\na PIKACHU here!"
     },
     {
+      "textId": 6,
       "id": "youngster5",
       "sprite": "youngster",
       "x": 13,
@@ -564,6 +576,7 @@
       "afterBattleText": "A METAPOD is cool\nbecause its\nattack is its\ndefense!"
     },
     {
+      "textId": 7,
       "id": "potion1",
       "sprite": "poke_ball",
       "x": 25,
@@ -574,6 +587,7 @@
       "item": "POTION"
     },
     {
+      "textId": 8,
       "id": "potion2",
       "sprite": "poke_ball",
       "x": 12,
@@ -584,6 +598,7 @@
       "item": "POTION"
     },
     {
+      "textId": 9,
       "id": "poke_ball",
       "sprite": "poke_ball",
       "x": 1,
@@ -594,6 +609,7 @@
       "item": "POKE_BALL"
     },
     {
+      "textId": 10,
       "id": "youngster6",
       "sprite": "youngster",
       "x": 27,

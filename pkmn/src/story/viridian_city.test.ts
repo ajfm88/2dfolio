@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadGameText, getText } from '../text/game_text';
+import { loadGameText } from '../text/game_text';
+import { loadTextPrograms, getTextProgramData } from '../text/program_data';
 import type { ScriptCommand } from '../script';
 import {
   ViridianScript, viridianCityStep, initialViridianScript, viridianOldMenVisible,
@@ -19,7 +20,7 @@ function endState(commands: ScriptCommand[]): number | undefined {
 }
 
 beforeAll(async () => {
-  await loadGameText();
+  await loadGameText(); await loadTextPrograms();
 });
 
 describe('Viridian City map script — which check fires (scripts/ViridianCity.asm)', () => {
@@ -62,8 +63,8 @@ describe('Viridian City map script — which check fires (scripts/ViridianCity.a
 describe('Viridian City — resting states each script leaves behind', () => {
   it('the Gym push-back ends in POST_CATCH_TRAINING, which turns the old-man checks off (Gen 1 quirk)', () => {
     const gym = buildGymLockedScript();
-    expect(gym.map(c => c.type)).toEqual(['text', 'facePlayer', 'pushPlayer', 'wait', 'setMapScript']);
-    expect(gym[0]).toEqual({ type: 'text', message: getText('VIRIDIAN_GYM_LOCKED') });
+    expect(gym.map(c => c.type)).toEqual(['displayOpen', 'printText', 'displayClose', 'facePlayer', 'pushPlayer', 'wait', 'setMapScript']);
+    expect(gym[1]).toEqual({ type: 'printText', program: 'ViridianCityPrintGymLockedText.text' });
     expect(endState(gym)).toBe(POST_CATCH_TRAINING);
     // …so before the Pokédex, (19,9) no longer stops the player
     expect(viridianCityStep(endState(gym)!, 19, 9, flags()).trigger).toBeNull();
@@ -76,9 +77,9 @@ describe('Viridian City — resting states each script leaves behind', () => {
 
   it('the sleeping old man: the trigger faces the player down first, talking does not', () => {
     const trigger = buildSleepingOldManScript(true);
-    expect(trigger[0]).toEqual({ type: 'text', message: getText('VIRIDIAN_OLDMAN_PRIVATE_PROPERTY') });
-    expect(trigger.map(c => c.type)).toEqual(['text', 'facePlayer', 'pushPlayer', 'wait', 'setMapScript']);
-    expect(buildSleepingOldManScript(false).map(c => c.type)).toEqual(['text', 'pushPlayer', 'wait', 'setMapScript']);
+    expect(trigger[1]).toEqual({ type: 'printText', program: 'ViridianCityPrintOldManSleepyText.PrivatePropertyText' });
+    expect(trigger.map(c => c.type)).toEqual(['displayOpen', 'printText', 'displayClose', 'facePlayer', 'pushPlayer', 'wait', 'setMapScript']);
+    expect(buildSleepingOldManScript(false).map(c => c.type)).toEqual(['displayOpen', 'printText', 'displayClose', 'pushPlayer', 'wait', 'setMapScript']);
   });
 
   it('saves from before V1e get their state from the events', () => {
@@ -98,11 +99,11 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
     ]);
     expect(script.map(c => c.type)).toEqual([
       'faceNpc', 'wait', 'facePlayer',
-      'text', 'wait', 'setFlag', 'catchDemo', 'wait', 'setFlag', 'text',
+      'displayOpen', 'printText', 'wait', 'displayClose', 'setFlag', 'catchDemo', 'wait', 'setFlag', 'displayOpen', 'printText', 'displayClose',
       'moveNpc', 'hideNpc', 'setMapScript',
     ]);
-    const texts = script.filter(c => c.type === 'text').map(c => c.type === 'text' && c.message);
-    expect(texts).toEqual([getText('VIRIDIAN_OLDMAN_COFFEE'), getText('VIRIDIAN_OLDMAN_LOSING_TOUCH')]);
+    const texts = script.filter(c => c.type === 'printText').map(c => c.program);
+    expect(texts).toEqual(['ViridianCityOldMan2Text.HadMyCoffeeNowText', 'ViridianCityOldMan2Text.LosingMyTouchText']);
     // EVENT_INITIAL_CATCH_TRAINING before the battle: the ball fails; it is never cleared here
     expect(script.filter(c => c.type === 'setFlag')).toEqual([
       { type: 'setFlag', flag: 'INITIAL_CATCH_TRAINING' },
@@ -122,7 +123,7 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
 
   it('elsewhere he walks right, then down 6 (MovementData1 falls through)', () => {
     const script = buildOldMan2Script(false, { x: 18, y: 10 });
-    expect(script.map(c => c.type).slice(0, 2)).toEqual(['text', 'wait']); // no turn when talked to
+    expect(script.map(c => c.type).slice(0, 2)).toEqual(['displayOpen', 'printText']); // no turn when talked to
     expect(script.find(c => c.type === 'moveNpc')).toEqual(
       { type: 'moveNpc', npcId: 'oldman2', path: ['right', 'down', 'down', 'down', 'down', 'down', 'down'] });
   });
@@ -154,31 +155,35 @@ describe('Viridian City — the old men\'s visibility and the Mart', () => {
 
 describe('Viridian City — the repeat demo (OLD_MAN)', () => {
   it('YES: "Dandy!", clears INITIAL_CATCH_TRAINING (caught), then "weaken the target"', () => {
-    const [ask] = buildOldMan1Script();
-    expect(ask.type).toBe('yesNo');
-    if (ask.type !== 'yesNo') return;
-    expect(ask.message).toBe(getText('VIRIDIAN_OLDMAN_SHOW_AGAIN'));
-    expect(ask.yesBranch.map(c => c.type)).toEqual(['text', 'clearFlag', 'catchDemo', 'wait', 'setFlag', 'text', 'setMapScript']);
-    expect(ask.yesBranch[0]).toEqual({ type: 'text', message: getText('VIRIDIAN_OLDMAN_WATCH_CLOSELY') });
-    expect(ask.yesBranch[1]).toEqual({ type: 'clearFlag', flag: 'INITIAL_CATCH_TRAINING' });
-    expect(ask.yesBranch[4]).toEqual({ type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING_AGAIN' });
-    expect(ask.yesBranch[5]).toEqual({ type: 'text', message: getText('VIRIDIAN_OLDMAN_WEAKEN_TARGET') });
-    expect(endState(ask.yesBranch)).toBe(POST_CATCH_TRAINING);
+    const script = buildOldMan1Script();
+    expect(script[1]).toEqual({ type: 'printText', program: 'ViridianCityPrintOldManText.WantMeToShowYouAgainText' });
+    expect(script[2]).toEqual({ type: 'wait', frames: 2 });
+    const ask = script[3]; expect(ask.type).toBe('yesNoChoice');
+    if (ask.type !== 'yesNoChoice') throw new Error('Expected choice');
+    expect(ask.yes.map(c => c.type)).toEqual(['printText', 'displayClose', 'clearFlag', 'catchDemo', 'wait', 'setFlag', 'displayOpen', 'printText', 'displayClose', 'setMapScript']);
+    expect(ask.yes[0]).toEqual({ type: 'printText', program: 'ViridianCityPrintOldManText.WatchCloselyText' });
+    expect(ask.yes[2]).toEqual({ type: 'clearFlag', flag: 'INITIAL_CATCH_TRAINING' });
+    expect(ask.yes[5]).toEqual({ type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING_AGAIN' });
+    expect(ask.yes[7]).toEqual({ type: 'printText', program: 'ViridianCityOldManYouNeedToWeakenTheTargetText', box: 'keep' });
+    expect(endState(ask.yes)).toBe(POST_CATCH_TRAINING);
   });
 
   it('NO: "not good enough", state unchanged', () => {
-    const [ask] = buildOldMan1Script();
-    if (ask.type !== 'yesNo') return;
-    expect(ask.noBranch).toEqual([{ type: 'text', message: getText('VIRIDIAN_OLDMAN_NOT_GOOD_ENOUGH') }]);
+    const ask = buildOldMan1Script()[3];
+    if (ask.type !== 'yesNoChoice') throw new Error('Expected choice');
+    expect(ask.no).toEqual([{ type: 'printText', program: 'ViridianCityPrintOldManText.NotGoodEnoughForYouText' },
+      { type: 'displayClose', outerWait: true }]);
+    expect(endState(ask.no)).toBeUndefined();
   });
 
   it('every text is real ROM text, not a missing-key placeholder', () => {
     const all = [...buildOldMan2Script(true, { x: 19, y: 9 }), ...buildGymLockedScript(), ...buildSleepingOldManScript(true)];
-    const [ask] = buildOldMan1Script();
-    if (ask.type === 'yesNo') all.push(...ask.yesBranch, ...ask.noBranch, { type: 'text', message: ask.message });
-    for (const c of all) {
-      if (c.type === 'text') expect(c.message).not.toMatch(/^\[/);
-    }
+    const ask = buildOldMan1Script()[3];
+    if (ask.type !== 'yesNoChoice') throw new Error('Expected choice');
+    all.push(...ask.yes, ...ask.no, buildOldMan1Script()[1]);
+    const programs = all.filter(c => c.type === 'printText');
+    expect(programs.length).toBeGreaterThan(0);
+    for (const c of programs) expect(getTextProgramData().programs[c.program], c.program).toBeDefined();
   });
 });
 

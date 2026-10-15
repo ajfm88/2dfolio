@@ -26,12 +26,35 @@ Each menu is a class with `update()` and `render()` methods. State transitions a
 | `option_menu.ts` | 159 | Settings: text speed, animation, battle style, sound |
 | `save_menu.ts` | 135 | Save confirmation + saving animation |
 | `yes_no_menu.ts` | 53 | Yes/No prompt |
-| `blackboard_menu.ts` | 174 | Interactive menus (school blackboard, link cable help) |
+| `menu_input.ts` | 67 | HandleMenuInput_ shared by the school blackboard and intro name menu |
 | `menu_render.ts` | 56 | Shared: drawBox, drawText utilities |
 
-## BlackboardMenu
+## Retained yes/no choices (A5b5c)
 
-Reusable interactive menu board with configurable columns, descriptions, and cursor navigation. Uses `BlackboardConfig` interface — designed to support ViridianSchoolHouse (status ailments) and ViridianNicknameHouse (Link Cable Help).
+`YesNoMenu` with `actualRead` uses HandleMenuInput's Delay3: first Joypad read
+at opening +3, then one per frame until a new key. Any non-A/B key re-arms
+three frames. A/B plays the sound and keeps the menu/cursor visible for 15
+frames without reads; B chooses the second answer even with A pressed too,
+while the drawn cursor stays where it was throughout the tail.
+The 15th tick returns into the selected script branch. HEAL/CANCEL uses
+the Pokécenter layout. The legacy script `yesNo` command is retired (A5b6).
+The menu's own sprite update remains J2.
+
+## HandleMenuInput and Oak speech (A5b6)
+
+`MenuInput` waits Delay3, then reads once each frame. Up/Down do not wrap;
+any unwatched key re-arms Delay3 silently. A suppresses Up/Down; a watched
+A/B returns with press_ab, with no yes/no tail. The blackboard is now a script
+handler using this port; its old menu class/state are gone. LinkCableHelp is
+deferred pending a link-features decision.
+
+`OakSpeech` executes seven standalone source programs: box at T, first glyph
+at +3, retained through fades, menus, preset slides and shrink until ClearScreen.
+OakSpeechText2 includes 2A, the declared PIKACHU cry cue (playback/wait J2), and 2B.
+Text3's done starts shrink in its return tick without another press or beep.
+Custom names return through ClearScreen's 3 frames plus Delay3: box +6, glyph +9.
+The name menu watches A only, max 3, cursor at (1,2); B re-arms silently.
+Animation timings, sounds and picture positioning await the approved intro slice.
 
 ## Assembly Layout References
 

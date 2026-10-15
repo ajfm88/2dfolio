@@ -842,10 +842,22 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
    *  covered elsewhere). */
   function healScript(): ScriptCommand[] {
     const all = buildNurseScript(() => undefined);
-    const ask = all.findIndex(c => c.type === 'yesNo');
+    const ask = all.findIndex(c => c.type === 'yesNoChoice');
     const yesNo = all[ask];
-    if (yesNo.type !== 'yesNo') throw new Error('no yes/no');
-    return [...all.slice(0, ask), ...yesNo.yesBranch, ...all.slice(ask + 1)];
+    if (yesNo.type !== 'yesNoChoice') throw new Error('no yes/no');
+    // Keep the old quick-text movement fixture: the real session/text/menu timing
+    // is covered in story/pokecenter.test.ts. All A6e assertions below stay intact.
+    const keys: Record<string, string> = { PokemonCenterWelcomeText: 'POKECENTER_WELCOME',
+      ShallWeHealYourPokemonText: 'POKECENTER_HEAL_ASK', NeedYourPokemonText: 'POKECENTER_NEED_MON',
+      PokemonFightingFitText: 'POKECENTER_FIGHTING_FIT' };
+    const fixture = (commands: ScriptCommand[]): ScriptCommand[] => commands.flatMap((command): ScriptCommand[] => {
+      if (command.type === 'displayOpen' || command.type === 'displayClose' || command.type === 'displayHide') return [];
+      if (command.type === 'printText') return [{ type: 'text' as const,
+        message: command.program === 'PokemonCenterFarewellText' ? 'We hope to see\nyou again!' : getText(keys[command.program]) }];
+      if (command.type === 'ifStarterPikachu') return [{ ...command, then: fixture(command.then) }];
+      return [command];
+    });
+    return fixture([...all.slice(0, ask), ...yesNo.yes, ...all.slice(ask + 1)]);
   }
 
   it('traces the healthy starter: walk, hidden through the heal, its image written before the bow', () => {

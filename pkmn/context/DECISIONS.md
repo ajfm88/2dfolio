@@ -493,6 +493,96 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       remain A5b4. Grok stops after A5b2 and records it awaiting Codex review.
     - Commits remain local; no push.
 
+47. **A5b3: Claude plans, Sol (GPT-6.1) implements, Claude reviews** (2026-10-11).
+    *The user asked Claude to "make a plan for the next slice", said Sol will implement it
+    from the plan's `.md` file, and that Claude will then check its work.*
+
+    - The slice is **A5b3**, the required audio extraction already approved in #45: the
+      key-item jingle and the three PC sounds, headers only. Detailed plan:
+      `notes/28-a5b3-plan.md`. This sets the assignment for A5b3 only; it supersedes
+      neither #45's wider split nor #46, and assigns nothing for A5b4 onward.
+    - **The plan's own decisions (O-18) are settled.** The user: "go and take both of the
+      plan's recommendations". (1) Scope exactly as #45 limits it: the four bank-`$02`
+      sounds, extractor headers only. (2) **Defer** the bank-`$1f` variants of `save`,
+      `turn_on_pc` and `enter_pc`; the guard test that pins the difference stays in the
+      slice.
+    - **Finding recorded:** the cartridge plays an SFX from the audio bank of the current
+      map's music (`wAudioROMBank`), and banks `$02` and `$1f` are not identical for those
+      three sounds. Our extractor has always taken bank `$02`. That is exact for every A5b
+      case (Silph Co. 11F's PC is the first exception, milestone G1) but already
+      approximate for `save` in Oak's Lab and the Forest. A bank-aware lookup belongs to
+      V5; A5b3 adds a guard test so the difference cannot be forgotten.
+    - Commits remain local; no push.
+
+48. **A5b4 takes all seven plan decisions; Sol implements, Claude reviews** (2026-10-11). *The user's
+    answer to `notes/30-a5b4-plan.md` §10 (O-19): "go".*
+
+    - **One slice, four checkpoints, one review at the end:** CP1 data, CP2 the pure runner, CP3 the
+      display session and the exact `CloseTextDisplay`, CP4 the pickups and the NPC/sign call kinds.
+      Each is a local commit; extractor edits never share a commit with engine wiring.
+    - **Generated, not hand-keyed:** `textId` on map NPCs and signs, and `mapObjects` (the cartridge's
+      object pictures per map) in `map_sprite_sets.json`. Additive; 40 modified files, none new. A5b2's
+      N-1 test gap is fixed in CP1.
+    - **`bcd` and `decimal` wait for A5b7;** the runner fails loudly on them until then.
+      `PrintText`'s own font-loaded `UpdateSprites` stays J2.
+    - **START's exit uses the shared close** (23 frames outdoors), as `23-a5b-plan.md` §4.2 says.
+      **The Town Map sign keeps its present ending** until A5b6.
+    - **Who:** Sol (GPT-6.1) implements, Claude reviews (`notes/31-a5b4-review.md`), then the user
+      play-tests. Nothing for A5b5 onward is assigned.
+    - Commits remain local; no push.
+
+49. **A5b5 takes all six plan decisions; Sol implements, Claude reviews each sub-slice** (2026-10-11).
+    *The user's answer to `notes/32-a5b5-plan.md` §10 (O-20): "go".*
+
+    - **Three sub-slices, in order:** A5b5a (handler foundation + the small handlers), A5b5b (Pallet's Oak scene
+      and all of Oak's Lab), A5b5c (the nurse + cleanup). Each is implemented, committed and reviewed before the
+      next starts; the user play-tests after b and c.
+    - **A handler registry** keyed by `(map, textId)` replaces `story_state.ts`'s dialogue swaps and the
+      `__MOM_HEAL__` / `__DAISY_TOWN_MAP__` sentinels for migrated NPCs.
+    - **The plan's §5 departures are fixed** (project rule: nothing invented): Oak's post-gift "advice" text is
+      removed, the Mart walk becomes LEFT ×1, UP ×2, Mom gets the healing jingle, the give/hide/text orders and
+      the 61-frame in-display bubbles follow the ASM, hand-typed strings become programs, and Oak's Lab opens
+      its displays without the automatic box.
+    - **Exclusions:** the Fisher's TM42 (A2), the Chansey/Spearow cries (J2), the receptionist/PC, shop, menus and
+      save (A5b7), the school and Town Map (A5b6), the Pokédex rating screen, Oak's Poké Ball gift (Route 22).
+      Oak's two-Pokémon branch prints "How is your POKéDEX coming?" and closes, logged as a gap.
+    - Commits remain local; no push.
+
+50. **A5b5c is one slice; BUG-1 is fixed in the extractor; the healing machine gets its own slice** (2026-10-12).
+    *The user's answer to `notes/35-a5b5c-plan.md` §10 (O-21): "one slice, let's go with your recommendations for
+    [BUG-]1, and we can fix the healing machine in its own slice. Sol implements, u review after i tell u that it is
+    done, and then i play test."*
+
+    - **One slice, five checkpoints, one review:** the A5b5b review fixes F-1/F-2, BUG-1, the two-option menu's
+      timing (`Delay3` before reads, 15 frames after the choice), the nurse on the display session, cleanup.
+    - **BUG-1 is fixed in the extractor:** a walker is read as 24 tiles (16×96), a still sprite as 4 (16×16), and
+      `static/` is regenerated. This retires R1a's "16×768 sheets are harmless, trim in V5"
+      (`notes/01-r1a-graphics-export.md`): it was not harmless, because a turning still sprite indexes the rows
+      past its 16×16 picture. The V5 trim item now covers only the padded tileset reads.
+    - **The Pokécenter healing machine** (`AnimateHealingMachine`: music fade-out, `SFX_HEALING_MACHINE`, the healed
+      jingle, the OBP1 flashes, the heal order) leaves J2 for **its own slice**. Proposed placement: after A5b7,
+      before V2, which adds the second Pokécenter. It needs the music fade-out the engine lacks.
+    - **Workflow:** Sol implements; when the user says it is done, Claude reviews (`notes/36-a5b5c-review.md`);
+      then the user play-tests.
+
+51. **A5b6 takes all five plan decisions; Claude implements it** (2026-10-13). *The user's answer to
+    `notes/37-a5b6-plan.md` §10 (O-22): "go", and, because Codex could not be reached that day, "ultrathink and
+    implement yourself".*
+
+    - **One slice, five checkpoints, one review, one play-test:** the notebook (+ A5b4 N-1), the `HandleMenuInput`
+      port and the blackboard, the Town Map sign, Oak's speech, cleanup.
+    - **The `HandleMenuInput` port drives the blackboard and the intro's name menu.** This amends #45's J2 placement
+      for that one menu. `YesNoMenu` stays as it is.
+    - **The Town Map:** everything in `TownMapText` now (the ▼ and beep, the handoff, the cartridge's double close);
+      `DisplayTownMap`'s internals wait for a Town Map audit that also covers the bag's Town Map.
+    - **The intro's animation** (fades, slides, shrink, music fade-out) becomes its own slice right after the
+      healing-machine slice, instead of J2.
+    - **Who:** Claude implements (supersedes the plan's "Sol implements" for A5b6 only); the user picks the reviewer;
+      then the user play-tests. *Same day: Claude finished CP1–CP3, then the user asked for OpenAI Codex to finish
+      CP4–CP5 (`notes/37-a5b6-plan.md` → Progress and handoff).* Reviewed 2026-10-13 by Grok,
+      standing in for Claude (`notes/38-a5b6-review.md`, passed, no required fix). The user play-test is still open.
+    - Commits remain local; no push.
+
 ## Open — not decided, needs the user
 
 

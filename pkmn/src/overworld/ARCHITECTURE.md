@@ -10,10 +10,13 @@ Maps are JSON files in `data/maps/`. A map references a tileset (e.g., `"OVERWOR
 
 Walkability check: `isWalkable(tileX, tileY)` checks tile at `(tileX, tileY + 1)` — the bottom-left tile of the player's 2x2 sprite area.
 
-## Map sprite sets (A5b2)
+## Map sprite sets (A5b2 data, A5b4 runtime)
 
 `data/map_sprite_sets.json` (mirrored in `static/`) is the cartridge's sprite-set
-tables. Nothing in the overworld reads it yet. A5b4 loads it and runs the close.
+tables. `sprite_sets.ts` loads it once at startup and computes text/START close
+costs from the current map and player step position. Additive `mapObjects` lists
+all cartridge object pictures before NPC filtering, including hidden, dropped
+and duplicate objects; Red's 2F correctly has an empty list.
 
 Outdoor maps (id below `$25`) use `MapSpriteSets`: a value 1–10 is that set, and
 `$f1`–`$fc` is a `SplitMapSpriteSets` row. A coordinate below the divider takes
@@ -33,7 +36,11 @@ comes from the sheet table's length byte with its nibbles swapped, not from a PN
 `pictureIdsBySprite` is the canonical engine-name registry (`prof` is Oak).
 Alias ids stay separate pictures. One copy of N tiles costs floor(N / 8) + 1
 frames. On a normal walking close only slots 0–8 copy, so the close is
-5 + 2 × W frames. Those formulas live in the A5b2 tests as a reference for A5b4.
+5 + 2 × W frames. The runtime helpers are tested against independently parsed
+ASM and all 19 map fixtures. Biking/surfing assert until those mechanics exist.
+Text/START closing freezes the world, hides the window after its first frame,
+retains UI coverage, and ends with one real UpdateSprites. START uses the
+`menu_closing` state and does not synchronize Joypad during the copies.
 
 ## Bookshelf Interaction
 
@@ -49,10 +56,12 @@ signs/NPCs. The existing counter check still finds an NPC two steps away.
 `item_pickup.ts` builds pure command lists from `PickUpItem`, `HiddenItems` and
 `Route1PrintYoungster1Text` (`notes/18-a1b-plan.md`):
 
-- NPCs with extracted `item`: give first, hide the ball and open the found-text box
-  in the same frame, play `get_item1`, then close after the sound and A's release.
+- NPCs with extracted `item`: open DisplayTextID at T, give and hide at T+20,
+  then PrintText `FoundItemText` begins writing at T+23. Its program plays
+  `get_item1`; Hold and the map's close follow its return.
   A full bag prints the no-room text and waits silently for A/B; the ball stays.
-- Hidden items: print found text before giving; success sets the event flag and
+- Hidden items: open at T, print `FoundHiddenItemText` directly at T+20 with
+  `nameBuffer`, then give; success sets the event flag and
   waits for current SFX before `get_item2`. A full bag keeps the flag clear, waits
   silently, then replaces the text with its `cont` failure and a final silent wait.
 - Route 1's sample: set the flag first, show the sample with a protected `prompt`,
@@ -308,7 +317,18 @@ Visual transitions before battles start (`battle_transitions.ts`):
 - Returns `OverworldAction` union for state transitions (script, battle, warp, shop, etc.) — main.ts handles the action
 - `OverworldState`: mutable state tracked across frames (doorExitStep, justWarped, standingOnWarp, etc.)
 - `OverworldDeps`: read-only references passed each frame (player, gameMap, npcs, etc.)
-- Inline script builders: `buildNurseScript()`, `buildMomHealScript()` for NPC interaction scripts
+- Text handlers/scripts live in `story/`: Mom/TV and small handlers, Lab handlers,
+  and `pokecenter.ts`'s nurse. The controller dispatches generated call kinds;
+  it re-exports buildNurseScript for the A6e compatibility fixture.
+
+ROM-backed NPC/sign JSON carries optional `textId`. `map_text_calls.ts` resolves
+its generated TextPointers entry: direct `text` starts at T+20, `printText` at
+T+23. Registered handlers/scripts run their source programs on retained displays;
+excluded entries keep their existing paths. Lab and Mart alternate
+tables follow their cartridge event flags; bookshelves stay direct. The Town Map
+sign dispatches TOWN_MAP_TEXT with its prompt/beep, white-out and double close (A5b6). Pickup commands
+use named programs and RAM bindings; Route 1's sample and current story handlers
+are migrated. Main dispatches `displayOpen` in the interaction's own tick.
 
 ### Trainer encounters (V1c, `home/trainers.asm`)
 
@@ -318,8 +338,8 @@ Visual transitions before battles start (`battle_transitions.ts`):
   nested three-frame PrintText delay. When talked to, `meetMusicFor(class)` starts
   from the text-completion callback after the last letter's delay — the ASM text
   ends with `done`, so `EngageMapTrainer` runs before the silent fresh A/B wait.
-  A release and the close's one-frame delay precede the battle. Exact sprite reload
-  costs and the trailing UpdateSprites await A5b.
+  A release and the full map-dependent close precede battle (11 frames in the
+  Forest), with one trailing UpdateSprites. Both talk and sight use this path.
 - The sight path (*Trainer sight* below) calls `engageTrainer(npc, true)`: the same text, no
   music there, because it started at spotting.
 - `main.ts` keeps the engaged trainer and flags it beaten in the battle-finish handler

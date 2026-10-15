@@ -69,7 +69,12 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   (`notes/23-a5b-plan.md`): text, sprite-set and audio extraction, then execution/close,
   story, school/intro and menu texts. **A5b1 done 2026-10-07** (Claude implemented, Sol
   reviewed and signed off): `text_programs.json` holds the cartridge's text programs and each
-  map text's call; the runtime is unchanged until A5b4. Next: A5b2. A5c–f follow in order;
+  map text's call; the runtime is unchanged until A5b4. **A5b2–A5b4 done** (sprite sets, key-item/PC
+  SFX, the text runner and exact close; A5b4 user-verified). **A5b5a/b done 2026-10-11** (DECISIONS #49: a
+  `(map, textId)` handler registry on the display session; Mom, TV, Daisy, Route 1, Mart, Viridian's
+  talkers, Pallet's Oak scene and Oak's Lab; A5b5b user-verified). **A5b5c implemented and reviewed
+  2026-10-12** (`notes/36-a5b5c-review.md`: the A5b5b fixes, BUG-1, yes/no timing, the nurse on one
+  display; tests 1195/1195; user-verified; F-1 fixed). **A5b6 is implemented and reviewed** (`notes/38-a5b6-review.md`, passed), awaiting the user play-test; next is A5b7. A5c–f follow in order;
   species display names belong to V5.
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are

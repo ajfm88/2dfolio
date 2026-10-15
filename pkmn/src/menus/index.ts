@@ -5,8 +5,6 @@ export { ShopMenu } from './shop_menu';
 export { ItemMenu } from './item_menu';
 export { YesNoMenu } from './yes_no_menu';
 export { TownMap } from './town_map';
-export { BlackboardMenu, getSchoolBlackboardConfig } from './blackboard_menu';
-export type { BlackboardConfig } from './blackboard_menu';
 export { PcMenu } from './pc_menu';
 export { PokecenterPcMenu } from './pokecenter_pc_menu';
 export { BillsPcMenu, NUM_BOXES, pokemonToBoxed } from './bills_pc_menu';

@@ -417,31 +417,37 @@
   ],
   "signs": [
     {
+      "textId": 9,
       "x": 17,
       "y": 17,
       "text": "VIRIDIAN CITY\nThe Eternally\nGreen Paradise"
     },
     {
+      "textId": 10,
       "x": 19,
       "y": 1,
       "text": "TRAINER TIPS\fCatch POKéMON\nand expand your\ncollection!\fThe more you have,\nthe easier it is\nto fight!"
     },
     {
+      "textId": 11,
       "x": 21,
       "y": 29,
       "text": "TRAINER TIPS\fThe battle moves\nof POKéMON are\nlimited by their\nPOWER POINTs, PP.\fTo replenish PP,\nrest your tired\nPOKéMON at a\nPOKéMON CENTER!"
     },
     {
+      "textId": 12,
       "x": 30,
       "y": 19,
       "text": "All your item\nneeds fulfilled!\nPOKéMON MART"
     },
     {
+      "textId": 13,
       "x": 24,
       "y": 25,
       "text": "Heal Your POKéMON!\nPOKéMON CENTER"
     },
     {
+      "textId": 14,
       "x": 27,
       "y": 7,
       "text": "VIRIDIAN CITY\nPOKéMON GYM"
@@ -449,6 +455,7 @@
   ],
   "npcs": [
     {
+      "textId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 13,
@@ -457,6 +464,7 @@
       "dialogue": "Those POKé BALLs\nat your waist!\nYou have POKéMON!\fIt's great that\nyou can carry and\nuse POKéMON any-\ntime, anywhere!"
     },
     {
+      "textId": 2,
       "id": "gambler1",
       "sprite": "gambler",
       "x": 30,
@@ -465,6 +473,7 @@
       "dialogue": "This POKéMON GYM\nis always closed.\fI wonder who the\nLEADER is?"
     },
     {
+      "textId": 3,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 30,
@@ -473,6 +482,7 @@
       "dialogue": "You want to know\nabout the 2 kinds\nof caterpillar\nPOKéMON?"
     },
     {
+      "textId": 4,
       "id": "girl1",
       "sprite": "girl",
       "x": 17,
@@ -482,6 +492,7 @@
       "direction": "right"
     },
     {
+      "textId": 6,
       "id": "fisher1",
       "sprite": "fisher",
       "x": 6,
@@ -491,6 +502,7 @@
       "direction": "down"
     },
     {
+      "textId": 7,
       "id": "oldman1",
       "sprite": "gambler",
       "x": 17,
@@ -500,6 +512,7 @@
       "walkDir": "left_right"
     },
     {
+      "textId": 5,
       "id": "oldman_blocking",
       "sprite": "gambler_asleep",
       "x": 18,
@@ -509,6 +522,7 @@
       "direction": "down"
     },
     {
+      "textId": 8,
       "id": "oldman2",
       "sprite": "gambler",
       "x": 18,

@@ -40,6 +40,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
       "id": "brunette_girl",
       "sprite": "brunette_girl",
       "x": 3,
@@ -49,6 +50,7 @@
       "direction": "up"
     },
     {
+      "textId": 2,
       "id": "cooltrainer_f",
       "sprite": "cooltrainer_f",
       "x": 4,
@@ -58,6 +60,7 @@
       "direction": "down"
     },
     {
+      "textId": 3,
       "id": "little_girl",
       "sprite": "little_girl",
       "x": 4,

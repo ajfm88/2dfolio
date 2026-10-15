@@ -1,7 +1,11 @@
 // Script controller — owns all script execution state extracted from main.ts.
 // updateScript() returns actions for state transitions that main.ts processes.
 
-import type { ScriptCommand, ScriptRunner } from './types';
+import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
+import { TILE_SIZE } from '../core';
+import type { GameButton } from '../core';
+import { MenuInput } from '../menus/menu_input';
+import { drawBox, drawText } from '../menus/menu_render';
 import { createScript, currentCommand, advanceScript } from './engine';
 import type { TextBox } from '../text';
 import type { Player } from '../overworld/player';
@@ -17,7 +21,7 @@ import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
 import type { Bag } from '../items';
 import { loadSprite, getCtx, getScale, drawExclamationBubble } from '../renderer';
-import { isPassPressed, isPressed, isHeld, readJoypad, syncJoypadRead } from '../input';
+import { isPassPressed, isPressed, readJoypad, syncJoypadRead } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
 import { setFlag, hasFlag, clearFlag, setMapScript, hideObject } from '../events';
@@ -26,6 +30,13 @@ import type { Direction } from '../core';
 import { getPlayerName } from '../core/player_state';
 import { markOwned } from '../pokedex_state';
 import { YesNoMenu } from '../menus';
+import { EmotionBubble } from '../overworld/emotion_bubble';
+import { playMusic, isMusicChannelActive } from '../audio';
+import { uiTiles } from '../renderer/ui_tiles';
+import { getTextPrograms } from '../text/program_data';
+import { displayTextID, getTextHandler } from '../story/text_handlers';
+import { getOwnedCount } from '../pokedex_state';
+import { mapTextCall } from '../text/map_text_calls';
 
 // ── Dependencies passed by main.ts each frame ──────────────────────────
 
@@ -38,6 +49,7 @@ export interface ScriptDeps {
   playerBag: Bag;
   pikachuTile?: { x: number; y: number };
   pikachuFollower?: PikachuFollower;
+  restoreMapMusic?: () => void;
 }
 
 // ── Actions returned to main.ts ────────────────────────────────────────
@@ -47,34 +59,42 @@ export type ScriptAction =
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
   | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
-  | { type: 'openStartMenu' };
+  | { type: 'openStartMenu' }
+  | { type: 'townMap' };
 
 // ── Module-level script state ──────────────────────────────────────────
 
 let activeScript: ScriptRunner | null = null;
 let scriptTextWaiting = false;
 let scriptSound: { name: string; played: boolean; waitForCurrent: boolean } | null = null;
+let scriptDisplayWaiting = false;
+let scriptDisplayStarted = false;
 let scriptButtonWaiting = false;
 let scriptClosingText = false;
 let scriptMoveTarget: 'npc' | 'player' | 'parallel' | null = null;
 let scriptMoveNpcId: string | null = null;
 let scriptWaitFrames = 0;
-let scriptExclamation: { target: 'player' | string; frames: number } | null = null;
 let scriptFade: { direction: 'out' | 'in'; frames: number; elapsed: number } | null = null;
 let scriptAsyncPending = false;
 let scriptBattlePending = false;
 let lastBattleWon = true; // wBattleResult == 0 for the most recent battle
 
 const yesNoMenu = new YesNoMenu();
-let scriptYesNoPending: { yes: ScriptCommand[]; no: ScriptCommand[] } | null = null;
-let scriptYesNoActive = false;
+let scriptChoice: { yes: ScriptCommand[]; no: ScriptCommand[] } | null = null;
+// A menu box a handler drew over the map (TextBoxBorder + PlaceString), and the ▶
+// PlaceMenuCursor left in it; HandleMenuInput_ while it reads
+let scriptMenuBox: { layout: MenuBoxLayout; cursor: { x: number; y: number } | null } | null = null;
+let scriptMenu: { input: MenuInput; then: (keys: GameButton[], item: number) => ScriptCommand[] } | null = null;
+const scriptBubble = new EmotionBubble<'player' | string>();
+let scriptHealingMusic: { ready: boolean } | null = null;
 
 let scriptAwaitInteraction: {
   npcId: string;
   guardStepY: number;
-  guardText: string;
+  guardText?: string;
+  guardProgram?: string;
 } | null = null;
-let scriptFreeSub: 'move' | 'text' | 'target' | 'guard_text' | 'guard_step' = 'move';
+let scriptFreeSub: 'move' | 'text' | 'target' | 'guard_text' | 'guard_step' | 'guard_delay' | 'handler' = 'move';
 
 // Pokecenter heal animation state (pokeball machine animation)
 // Offsets from nurse position — derived from original OAM PokeCenterOAMData
@@ -118,6 +138,9 @@ const DEFAULT_FADE_FRAMES = 8;
 
 // Computed fade alpha for the current frame (set during updateScript, read by main.ts)
 let scriptFadeAlpha: number | null = null;
+// GBPalWhiteOut held by a script (TownMapText's handoff and its close)
+let scriptWhite = false;
+let scriptWhiteCleared = false;
 
 // Dynamic NPCs created by scripts (separate from map NPCs)
 const scriptNpcs: Npc[] = [];
@@ -160,6 +183,9 @@ export function clearScriptNpcs(): void {
 
 /** Returns computed fade alpha for the current frame, or null if no script fade active. */
 export function getScriptFadeAlpha(): number | null {
+  if (scriptWhite) return 1;
+  // The tick a white-out ends: main's retained fade alpha goes back to 0 once.
+  if (scriptWhiteCleared) { scriptWhiteCleared = false; return 0; }
   return scriptFadeAlpha;
 }
 
@@ -175,18 +201,25 @@ export function initScript(commands: ScriptCommand[]): void {
   activeScript = createScript(commands);
   scriptTextWaiting = false;
   scriptSound = null;
+  scriptDisplayWaiting = false;
+  scriptDisplayStarted = false;
   scriptButtonWaiting = false;
   scriptClosingText = false;
   scriptMoveTarget = null;
   scriptMoveNpcId = null;
   scriptWaitFrames = 0;
   scriptAsyncPending = false;
-  scriptExclamation = null;
   scriptFade = null;
+  scriptWhiteCleared = scriptWhite; // a replaced script must not leave the screen white
+  scriptWhite = false;
   scriptAwaitInteraction = null;
   scriptFreeSub = 'move';
-  scriptYesNoPending = null;
-  scriptYesNoActive = false;
+  scriptChoice = null;
+  scriptMenuBox = null;
+  scriptMenu = null;
+  scriptHealingMusic = null;
+  // A replaced script must not leave a bubble on screen.
+  scriptBubble.clear();
   pokecenterHealAnim = null;
   scriptPikachuRun = null;
   pendingPikachuSpawnState = null;
@@ -214,14 +247,58 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // VBlank continues during retained text, even when several commands return in one frame.
-  if (!displayAdvanced && textBox.active && !scriptTextWaiting) {
+  if (!displayAdvanced && textBox.active && !scriptTextWaiting && !scriptClosingText && !scriptDisplayWaiting &&
+      !(scriptAwaitInteraction?.guardProgram && scriptFreeSub === 'text')) {
     textBox.updateDisplay();
     displayAdvanced = true;
   }
 
-  // These are blocking text routines, read each FRAME, with no overworld passes.
+  // DisplayTextIDInit / PrintText / a retained silent wait owns its VBlank and input.
+  if (scriptChoice) {
+    const result = yesNoMenu.update(readJoypad);
+    if (result === null) return null;
+    const chosen = result === 'yes' ? scriptChoice.yes : scriptChoice.no;
+    scriptChoice = null;
+    activeScript.commands.splice(activeScript.index + 1, 0, ...chosen);
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
+  }
+  if (scriptMenu) {
+    const keys = scriptMenu.input.update(readJoypad, () => playSFX('press_ab'));
+    if (scriptMenuBox) scriptMenuBox.cursor = scriptMenu.input.cursor;
+    if (keys === null) return null;
+    // A watched key returns into the handler in this frame; the ▶ stays where it was drawn.
+    const next = scriptMenu.then(keys, scriptMenu.input.item);
+    scriptMenu = null;
+    activeScript.commands.splice(activeScript.index + 1, 0, ...next);
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
+  }
+  if (scriptBubble.showing !== null) {
+    if (!scriptBubble.tick()) return null;
+    // EmotionBubble returns to UpdateSprites with the display's font still loaded.
+    fontLoadedUpdateSprites(player, deps.gameMap, (x, y) => uiTiles.tileAt(x, y), pikachuFollower);
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
+  }
+  if (scriptHealingMusic) {
+    if (!scriptHealingMusic.ready || isMusicChannelActive(1)) return null;
+    scriptHealingMusic = null;
+    deps.restoreMapMusic?.();
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
+  }
+  if (scriptDisplayWaiting) {
+    textBox.update();
+    displayAdvanced = true;
+    if (!textBox.isComplete) return null;
+    scriptDisplayWaiting = false;
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
+  }
+
+  // Only the button wait and Hold read Joypad. Sound/copy waits freeze the world without reads.
   if (scriptSound || scriptButtonWaiting || scriptClosingText) {
-    syncJoypadRead();
     if (scriptSound) {
       if (!scriptSound.played) {
         if (scriptSound.waitForCurrent && !isSoundFinished()) return null;
@@ -231,19 +308,21 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       if (!isSoundFinished()) return null;
       scriptSound = null;
     } else if (scriptButtonWaiting) {
+      syncJoypadRead();
       if (!isPressed('a') && !isPressed('b')) return null;
       scriptButtonWaiting = false;
     } else {
-      if (isHeld('a')) return null;
+      textBox.update();
+      displayAdvanced = true;
+      if (textBox.active) return null;
       scriptClosingText = false;
-      textBox.dismiss();
     }
     advanceScript(activeScript);
     return updateScript(deps, isPass, displayAdvanced); // routine returns in this frame, not a frame later
   }
 
   // Handle awaitInteraction: player has free movement until they interact with target
-  if (scriptAwaitInteraction) {
+  if (scriptAwaitInteraction && scriptFreeSub !== 'handler') {
     return updateScriptFreeMove(deps, isPass);
   }
 
@@ -260,36 +339,15 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     pikachuFollower.cancelMovement(); // left behind by a replaced script
   }
 
-  // Text, menus, DelayFrames and fades: the joypad is read every frame
-  if (scriptWaitFrames > 0 || scriptFade || pokecenterHealAnim || scriptExclamation) {
+  // Preserve legacy wait/fade input ownership; migrated DelayFrames owns no reads.
+  if ((!scriptDisplayStarted && (scriptWaitFrames > 0 || pokecenterHealAnim)) || scriptFade) {
     syncJoypadRead();
   }
 
   // Handle waiting states
   if (scriptTextWaiting) {
-    if (scriptYesNoActive) {
-      const result = yesNoMenu.update();
-      if (result !== null) {
-        scriptYesNoActive = false;
-        scriptTextWaiting = false;
-        textBox.dismiss();
-        const branches = scriptYesNoPending!;
-        scriptYesNoPending = null;
-        const chosen = result === 'yes' ? branches.yes : branches.no;
-        activeScript!.commands.splice(activeScript!.index + 1, 0, ...chosen);
-        advanceScript(activeScript!);
-      }
-      return null;
-    }
-
     textBox.update();
     displayAdvanced = true;
-
-    if (scriptYesNoPending && textBox.isWaitingForInput && !textBox.hasMorePages) {
-      yesNoMenu.show();
-      scriptYesNoActive = true;
-      return null;
-    }
 
     const command = currentCommand(activeScript);
     if (command?.type === 'text' && command.end && textBox.isComplete) {
@@ -309,6 +367,9 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     scriptWaitFrames--;
     if (scriptWaitFrames <= 0) {
       advanceScript(activeScript);
+      // Migrated DelayFrames returns into the next command in its final CPU tick.
+      // Pre-display/legacy movement waits retain their existing dispatch timing.
+      if (scriptDisplayStarted) return updateScript(deps, isPass, displayAdvanced);
     }
     return null;
   }
@@ -364,15 +425,6 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
           anim.timer = HEAL_FLASH_FRAMES;
         }
       }
-    }
-    return null;
-  }
-
-  if (scriptExclamation) {
-    scriptExclamation.frames--;
-    if (scriptExclamation.frames <= 0) {
-      scriptExclamation = null;
-      advanceScript(activeScript);
     }
     return null;
   }
@@ -463,7 +515,78 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     return { type: 'scriptEnded' };
   }
 
+  const commandIndex = activeScript.index;
   switch (cmd.type) {
+    case 'yesNoChoice':
+      yesNoMenu.show({ pokeCenter: cmd.pokeCenter, actualRead: true });
+      scriptChoice = { yes: cmd.yes, no: cmd.no };
+      return null; // menu draws in the same tick that PrintText returns
+
+    case 'emotionBubble':
+      scriptBubble.start(cmd.target);
+      return null;
+
+    case 'healJingle': {
+      const music = { ready: false };
+      scriptHealingMusic = music;
+      // Await loading as well as playback; a first-use fetch must not end the wait.
+      void playMusic('pkmnhealed').then(() => { music.ready = true; });
+      return null;
+    }
+    case 'displayOpen':
+      scriptDisplayStarted = true;
+      textBox.open({ autoBox: cmd.autoBox, spriteUpdate: cmd.spriteUpdate });
+      scriptDisplayWaiting = true;
+      return null;
+
+    case 'menuBox':
+      // TextBoxBorder clears the box's interior, the old ▶ with it.
+      scriptMenuBox = cmd.layout ? { layout: cmd.layout, cursor: null } : null;
+      advanceScript(activeScript);
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'menuInput':
+      scriptMenu = { input: new MenuInput(cmd.menu), then: cmd.then };
+      if (scriptMenuBox) scriptMenuBox.cursor = scriptMenu.input.cursor; // PlaceMenuCursor, then Delay3
+      return null;
+
+    case 'restoreSavedScreen':
+      scriptMenuBox = null;
+      textBox.clearInterior();
+      advanceScript(activeScript);
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'printText':
+      textBox.print({ program: cmd.program }, { box: cmd.box, bindings: cmd.bindings, noDelay: cmd.noDelay });
+      if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
+      scriptDisplayWaiting = true;
+      return null;
+
+    case 'displayClose':
+      textBox.finish({ outerWait: cmd.outerWait, reload: cmd.reload });
+      scriptClosingText = true;
+      return null;
+
+    case 'displayCloseInPlace':
+      textBox.closeInPlace();
+      scriptDisplayWaiting = true;
+      return null;
+
+    case 'whiteOut':
+      scriptWhite = cmd.on;
+      scriptWhiteCleared = !cmd.on;
+      advanceScript(activeScript);
+      return updateScript(deps, isPass, displayAdvanced);
+
+    case 'townMap':
+      return { type: 'townMap' }; // main.ts advances the script when the Town Map returns
+
+    case 'displayHide':
+      textBox.hideDisplay();
+      scriptChoice = null;
+      advanceScript(activeScript);
+      return updateScript(deps, isPass, displayAdvanced);
+
     case 'text':
       textBox.show(cmd.message, { end: cmd.end });
       scriptTextWaiting = true;
@@ -474,12 +597,23 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       return updateScript(deps, isPass, displayAdvanced);
 
     case 'textButtonWait':
+      if (textBox.displaySession && textBox.active) {
+        textBox.waitSilent();
+        if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
+        scriptDisplayWaiting = true;
+        return null;
+      }
       scriptButtonWaiting = true;
       return updateScript(deps, isPass, displayAdvanced);
 
     case 'closeText':
+      if (!textBox.active) {
+        advanceScript(activeScript);
+        return updateScript(deps, isPass, displayAdvanced);
+      }
+      textBox.finish({ outerWait: false });
       scriptClosingText = true;
-      return updateScript(deps, isPass, displayAdvanced);
+      return null;
 
     case 'hideObject': {
       hideObject(cmd.map, cmd.npcId);
@@ -520,6 +654,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'facePlayer':
       player.direction = cmd.direction;
       advanceScript(activeScript);
+      if (scriptDisplayStarted && textBox.active) return updateScript(deps, isPass, displayAdvanced);
       break;
 
     case 'wait':
@@ -590,6 +725,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         movement: 'stay' as const,
         direction: cmd.direction,
         dialogue: '',
+        textId: cmd.textId,
       };
       const newNpc = new Npc(npcData);
       scriptAsyncPending = true;
@@ -622,12 +758,9 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         npcId: cmd.npcId,
         guardStepY: cmd.guardStepY,
         guardText: cmd.guardText,
+        guardProgram: cmd.guardProgram,
       };
       scriptFreeSub = 'move';
-      break;
-
-    case 'exclamation':
-      scriptExclamation = { target: cmd.target, frames: cmd.frames };
       break;
 
     case 'catchDemo':
@@ -648,6 +781,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'callback':
       cmd.fn();
       advanceScript(activeScript);
+      if (scriptDisplayStarted && (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return updateScript(deps, isPass, displayAdvanced);
       break;
 
     case 'startBattle': {
@@ -657,9 +791,14 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         trainerClass: cmd.trainerClass,
         partyIndex: cmd.partyIndex,
         trainerName: cmd.trainerName,
-        endBattleText: cmd.endBattleText,
+        endBattleText: cmd.endBattleProgram ? legacyBattleProgram(cmd.endBattleProgram) : cmd.endBattleText,
       };
     }
+
+    case 'restoreMapMusic':
+      deps.restoreMapMusic?.();
+      advanceScript(activeScript);
+      break;
 
     case 'healParty':
       for (const mon of playerParty) {
@@ -730,20 +869,15 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
 
     case 'updateSprites':
       // TrySpawnPikachu for a starter that wasn't out (status 0), at the pending spawn
-      // state; then SpawnPikachu_ with the font loaded (Func_fc76a). The boxes are gone
-      // (LoadCurrentMapView) wherever the scripts call this.
+      // state; then SpawnPikachu_ with the font loaded (Func_fc76a).
       if (pikachuFollower && !pikachuFollower.visible && !pokecenterHealHidPikachu
           && pendingPikachuSpawnState !== null && shouldPikachuFollow(playerParty)) {
         pikachuFollower.visible = true;
         pikachuFollower.spawnAtState(player.x, player.y, player.direction, pendingPikachuSpawnState);
         pendingPikachuSpawnState = null;
       }
-      fontLoadedUpdateSprites(player, deps.gameMap, () => 0, pikachuFollower);
-      advanceScript(activeScript);
-      break;
-
-    case 'uiEntryUpdates':
-      setOpeningSpriteUpdates(cmd.enabled);
+      fontLoadedUpdateSprites(player, deps.gameMap,
+        textBox.displaySession ? (x, y) => textBox.uiTileAt(x, y) : () => 0, pikachuFollower);
       advanceScript(activeScript);
       break;
 
@@ -754,7 +888,9 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       if (cmd.action === 'save') {
         savedPikachuFacing = pikachuFollower ? pikachuFollower.direction : null;
       } else if (savedPikachuFacing && pikachuFollower) {
-        pikachuFollower.setLiveFacing(savedPikachuFacing);
+        const facing = savedPikachuFacing; const follower = pikachuFollower;
+        if (textBox.displaySession) textBox.restoreFacingAtClose(() => follower.setLiveFacing(facing));
+        else follower.setLiveFacing(facing);
       }
       advanceScript(activeScript);
       break;
@@ -802,18 +938,25 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       };
       break;
 
-    case 'yesNo':
-      textBox.show(cmd.message);
-      scriptTextWaiting = true;
-      scriptYesNoPending = { yes: cmd.yesBranch, no: cmd.noBranch };
-      break;
-
     case 'warp':
       activeScript = null;
       return { type: 'warp', map: cmd.map, warpId: cmd.warpId };
   }
 
+  if (scriptDisplayStarted && activeScript.index !== commandIndex &&
+      (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return updateScript(deps, isPass, displayAdvanced);
   return null;
+}
+
+/** Battle still consumes its existing flattened string until A5c; the builder names source data. */
+function legacyBattleProgram(label: string): string {
+  const program = getTextPrograms()[label];
+  if (!program) throw new Error(`missing battle text program ${label}`);
+  return program.map(op => {
+    if (op.op === 'far') return legacyBattleProgram(op.program);
+    if (op.op === 'text') return op.text.replace(/<(DONE|PROMPT)>$/, '');
+    throw new Error(`unsupported legacy battle text op ${op.op} in ${label}`);
+  }).join('');
 }
 
 // ── Pikachu's scripted movement (pikachu_movement.ts) ──────────────────
@@ -864,9 +1007,14 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
 
   if (!scriptAwaitInteraction || !activeScript) return null;
 
+  if (scriptFreeSub === 'guard_delay') {
+    if (--scriptWaitFrames <= 0) scriptFreeSub = 'move';
+    return null; // OaksLabPlayerForcedToWalkBackScript Delay3 owns no Joypad.
+  }
+
   // Sub-state: showing regular NPC text (return to free move when dismissed)
   if (scriptFreeSub === 'text') {
-    syncJoypadRead();
+    if (!textBox.displaySession) syncJoypadRead();
     textBox.update();
     if (!textBox.active) scriptFreeSub = 'move';
     return null;
@@ -900,7 +1048,8 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
   // Sub-state: player being forced 1 step up after guard
   if (scriptFreeSub === 'guard_step') {
     if (player.scriptedMoveDone) {
-      scriptFreeSub = 'move';
+      if (scriptAwaitInteraction.guardProgram) { scriptWaitFrames = 3; scriptFreeSub = 'guard_delay'; }
+      else scriptFreeSub = 'move';
       return null;
     }
     player.updateScriptedMove(sprites);
@@ -920,19 +1069,40 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
   if (interaction) {
     if ('npc' in interaction) {
       if (interaction.npc.data.id === scriptAwaitInteraction.npcId) {
+        if (scriptAwaitInteraction.guardProgram) {
+          scriptAwaitInteraction = null;
+          advanceScript(activeScript);
+          return updateScript(deps, isPass); // ball DisplayTextID starts on the A press
+        }
         scriptFreeSub = 'target';
         return null;
+      }
+      if (scriptAwaitInteraction.guardProgram) {
+        const textId = interaction.npc.data.textId;
+        const name = gameMap.mapData!.name;
+        const handler = getTextHandler(name, textId);
+        const call = mapTextCall(name, textId);
+        const plain = call?.call === 'text' || call?.call === 'printText' ? call : undefined;
+        if (handler || plain) {
+          const body = handler ? handler({ hasFlag, bag: deps.playerBag, party: deps.playerParty,
+            ownedCount: getOwnedCount(), facing: player.direction, step: mapStep(player),
+            findNpc: id => lookupNpc(id, npcs) }) : displayTextID([
+              { type: 'printText', program: plain!.program, box: plain!.call === 'printText' ? 'new' : 'keep' },
+            ], { autoBox: false });
+          return startFreeDisplay(body, deps, isPass);
+        }
       }
       textBox.show(
         interaction.npc.data.defeated
           ? (interaction.npc.data.afterBattleText ?? interaction.npc.data.dialogue)
-          : interaction.npc.data.dialogue
+          : interaction.npc.data.dialogue,
+        scriptAwaitInteraction.guardProgram ? { mode: 'displayTextID', autoBox: false } : {},
       );
       scriptFreeSub = 'text';
     } else if ('scriptId' in interaction) {
       // Scripted hidden event during free-movement script — ignore
     } else if ('text' in interaction) {
-      textBox.show(interaction.text);
+      textBox.show(interaction.text, scriptAwaitInteraction.guardProgram ? { mode: 'displayTextID', autoBox: false } : {});
       scriptFreeSub = 'text';
     }
     return null;
@@ -951,13 +1121,28 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       if (oakDesk) oakDesk.faceDirection('down');
       const rival = lookupNpc('rival', npcs);
       if (rival) rival.faceDirection('down');
-      textBox.show(scriptAwaitInteraction.guardText);
+      if (scriptAwaitInteraction.guardProgram) {
+        sprites(); // OaksLabPlayerDontGoAwayScript's UpdateSprites before the display
+        const body = displayTextID([{ type: 'printText', program: scriptAwaitInteraction.guardProgram }], { autoBox: false });
+        return startFreeDisplay(body, deps, isPass, true);
+      }
+      textBox.show(scriptAwaitInteraction.guardText ?? '');
       scriptFreeSub = 'guard_text';
       return null;
     }
   }
 
   return null;
+}
+
+/** Temporarily insert a handler before the retained await command, then return to free movement. */
+function startFreeDisplay(body: ScriptCommand[], deps: ScriptDeps, isPass: boolean, stepBack = false): ScriptAction | null {
+  scriptFreeSub = 'handler';
+  activeScript!.commands.splice(activeScript!.index, 0, ...body, { type: 'callback', fn: () => {
+    if (stepBack) deps.player.startScriptedMove(['up']);
+    scriptFreeSub = stepBack ? 'guard_step' : 'move';
+  } });
+  return updateScript(deps, isPass);
 }
 
 // ── Render helpers ─────────────────────────────────────────────────────
@@ -1005,13 +1190,14 @@ export function renderScriptExclamation(
   player: Player,
   mapNpcs: Npc[]
 ): void {
-  if (!scriptExclamation) return;
+  const target = scriptBubble.showing;
+  if (target === undefined || target === null) return;
   let exScreenX: number, exScreenY: number;
-  if (scriptExclamation.target === 'player') {
+  if (target === 'player') {
     exScreenX = player.x - camX;
     exScreenY = player.y - camY;
   } else {
-    const npc = lookupNpc(scriptExclamation.target, mapNpcs);
+    const npc = lookupNpc(target, mapNpcs);
     exScreenX = npc ? npc.x - camX : 0;
     exScreenY = npc ? npc.y - camY : 0;
   }
@@ -1020,5 +1206,14 @@ export function renderScriptExclamation(
 
 /** Render YES/NO menu if active during a script. */
 export function renderScriptYesNo(): void {
-  if (scriptYesNoActive) yesNoMenu.render();
+  if (scriptChoice) yesNoMenu.render();
+}
+
+/** Render a handler's menu box (the blackboard), its labels and the ▶ PlaceMenuCursor left. */
+export function renderScriptMenu(): void {
+  if (!scriptMenuBox) return;
+  const { layout, cursor } = scriptMenuBox; const T = TILE_SIZE;
+  drawBox(layout.x * T, layout.y * T, layout.width * T, layout.height * T);
+  for (const label of layout.labels) drawText(label.text, label.x * T, label.y * T);
+  if (cursor) drawText('▶', cursor.x * T, cursor.y * T);
 }

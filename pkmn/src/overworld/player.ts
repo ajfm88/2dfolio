@@ -40,7 +40,7 @@ const noSprites = (): void => {};
  * CheckForHiddenEventOrBookshelfOrCardKeyDoor before `.displayDialogue` — the gate that
  * BIT_SEEN_BY_TRAINER closes (A1c). Hidden items and hidden-event scripts come from there too.
  */
-export type Interaction = { npc: Npc } | { text: string; preDialogue?: true } | { item: string; flag: string } | { scriptId: string };
+export type Interaction = { npc: Npc } | { text: string; preDialogue?: true; textId?: number } | { item: string; flag: string } | { scriptId: string };
 
 /**
  * The player. Movement runs once per overworld pass (two frames) through PlayerWalk,
@@ -166,16 +166,27 @@ export class Player {
       if (hiddenEvent.scriptId) return { scriptId: hiddenEvent.scriptId };
       if (hiddenEvent.item && hiddenEvent.flag) {
         if (!hiddenItemFound(hiddenEvent.flag)) return { item: hiddenEvent.item, flag: hiddenEvent.flag };
-      } else if (hiddenEvent.text) return { text: hiddenEvent.text, preDialogue: true };
+      } else if (hiddenEvent.text) {
+        // RedsHouse1FTVText reads the player's facing, not a flattened hidden-event string.
+        if (gameMap.mapData?.name === 'RedsHouse1F' && hiddenEvent.x === 3 && hiddenEvent.y === 1)
+          return { scriptId: 'REDSHOUSE1F_TV' };
+        return { text: hiddenEvent.text, preDialogue: true };
+      }
     } else {
       const adjTx = this.tileX + (this.direction === 'left' ? -1 : this.direction === 'right' ? 1 : 0);
       const adjTy = this.tileY + (this.direction === 'up' ? -1 : this.direction === 'down' ? 1 : 0);
-      const bookshelfText = gameMap.getBookshelfText(adjTx, adjTy)
-        ?? gameMap.getBookshelfText(facing.tx, facing.ty);
-      if (bookshelfText) return { text: bookshelfText, preDialogue: true };
+      for (const [tx, ty] of [[adjTx, adjTy], [facing.tx, facing.ty]]) {
+        const bookshelfScript = gameMap.getBookshelfScript(tx, ty);
+        if (bookshelfScript) return { scriptId: bookshelfScript };
+        const bookshelfText = gameMap.getBookshelfText(tx, ty);
+        if (bookshelfText) return { text: bookshelfText, preDialogue: true };
+      }
     }
     const signText = gameMap.getSignAt(stepX, stepY);
-    if (signText) return { text: signText };
+    if (signText) {
+      const textId = gameMap.mapData?.signs.find(sign => sign.x === stepX && sign.y === stepY)?.textId;
+      return { text: signText, ...(textId === undefined ? {} : { textId }) };
+    }
 
     // Check NPCs (16x16 sprites occupy 2x2 tiles)
     const npcAt = (tx: number, ty: number): Npc | null => {

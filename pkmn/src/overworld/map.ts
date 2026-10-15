@@ -109,10 +109,14 @@ const BOOKSHELF_TILES: Record<string, [number, string][]> = {
 
 const BOOKSHELF_TEXT: Record<string, string | (() => string)> = {
   BOOKS: () => getText('BOOKSHELF_BOOKS'),
-  TOWN_MAP: 'A TOWN MAP.',
   POKEMON_STUFF: () => getText('BOOKSHELF_POKEMON_STUFF'),
   ELEVATOR: 'This is an\nelevator.',
   STATUES: () => getText('BOOKSHELF_STATUES'),
+};
+
+/** Bookshelf predefs that are text_asm handlers, by script id (story/hidden_events.ts). */
+const BOOKSHELF_SCRIPTS: Record<string, string> = {
+  TOWN_MAP: 'TOWN_MAP_TEXT',
 };
 
 const COLLISION_NAMES: Record<string, string> = {
@@ -363,16 +367,25 @@ export class GameMap {
   /** Check if the tile at (tileX, tileY) is a bookshelf tile for the current tileset.
    *  Returns the text to display, or null if not a bookshelf. */
   getBookshelfText(tileX: number, tileY: number): string | null {
+    const textKey = this.bookshelfKey(tileX, tileY);
+    const entry = textKey ? BOOKSHELF_TEXT[textKey] : undefined;
+    if (!entry) return null;
+    return typeof entry === 'function' ? entry() : entry;
+  }
+
+  /** A bookshelf whose predef is a handler (the Town Map), as its script id. */
+  getBookshelfScript(tileX: number, tileY: number): string | null {
+    const textKey = this.bookshelfKey(tileX, tileY);
+    return textKey ? BOOKSHELF_SCRIPTS[textKey] ?? null : null;
+  }
+
+  private bookshelfKey(tileX: number, tileY: number): string | null {
     if (!this.mapData) return null;
     const entries = BOOKSHELF_TILES[this.mapData.tileset];
     if (!entries) return null;
     const tile = this.getTileAt(tileX, tileY);
     for (const [tileId, textKey] of entries) {
-      if (tile === tileId) {
-        const entry = BOOKSHELF_TEXT[textKey];
-        if (!entry) return null;
-        return typeof entry === 'function' ? entry() : entry;
-      }
+      if (tile === tileId) return textKey;
     }
     return null;
   }

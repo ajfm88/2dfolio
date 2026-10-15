@@ -419,11 +419,13 @@
   ],
   "signs": [
     {
+      "textId": 3,
       "x": 5,
       "y": 65,
       "text": "ROUTE 2\nVIRIDIAN CITY -\nPEWTER CITY"
     },
     {
+      "textId": 4,
       "x": 11,
       "y": 11,
       "text": "DIGLETT's CAVE"
@@ -431,6 +433,7 @@
   ],
   "npcs": [
     {
+      "textId": 1,
       "id": "moon_stone",
       "sprite": "poke_ball",
       "x": 13,
@@ -441,6 +444,7 @@
       "item": "MOON_STONE"
     },
     {
+      "textId": 2,
       "id": "hp_up",
       "sprite": "poke_ball",
       "x": 13,

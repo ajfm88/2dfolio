@@ -54,6 +54,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 3,
       "id": "prof",
       "sprite": "prof",
       "x": 5,
@@ -63,6 +64,7 @@
       "direction": "down"
     },
     {
+      "textId": 1,
       "id": "rival",
       "sprite": "blue",
       "x": 4,
@@ -71,6 +73,7 @@
       "dialogue": "<RIVAL>: Yo\n<PLAYER>! Gramps\nisn't around!\fI ran here 'cos\nhe said he had a\nPOKéMON for me."
     },
     {
+      "textId": 2,
       "id": "item_ball",
       "sprite": "poke_ball",
       "x": 7,
@@ -81,6 +84,7 @@
       "object": true
     },
     {
+      "textId": 4,
       "id": "pokedex1",
       "sprite": "pokedex",
       "x": 2,
@@ -91,6 +95,7 @@
       "object": true
     },
     {
+      "textId": 5,
       "id": "pokedex2",
       "sprite": "pokedex",
       "x": 3,
@@ -101,6 +106,7 @@
       "object": true
     },
     {
+      "textId": 7,
       "id": "girl",
       "sprite": "girl",
       "x": 1,
@@ -110,6 +116,7 @@
       "walkDir": "up_down"
     },
     {
+      "textId": 8,
       "id": "scientist1",
       "sprite": "scientist",
       "x": 2,
@@ -118,6 +125,7 @@
       "dialogue": "I study POKéMON as\nPROF.OAK's AIDE."
     },
     {
+      "textId": 9,
       "id": "scientist2",
       "sprite": "scientist",
       "x": 8,

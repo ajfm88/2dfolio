@@ -46,6 +46,7 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
       "id": "mom",
       "sprite": "mom",
       "x": 5,

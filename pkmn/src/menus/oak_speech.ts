@@ -3,15 +3,16 @@
 // Shows Oak, Pikachu, asks player/rival names, shrink animation
 
 import { GB_WIDTH, TILE_SIZE } from '../core';
-import { setPlayerName, setRivalName, substituteNames } from '../core/player_state';
-import { getText } from '../text';
+import { setPlayerName, setRivalName } from '../core/player_state';
 import {
   loadTileset, getCtx, getScale, drawFadeOverlay,
   setActivePalette, clear, fillRect,
 } from '../renderer';
-import { isPressed } from '../input';
+import { readJoypad } from '../input';
+import { playSFX } from '../audio';
 import { TextBox, reloadBorderTiles } from '../text';
 import { drawText, drawChar, drawBox } from './menu_render';
+import { MenuInput } from './menu_input';
 
 // Portrait positions (from assembly hlcoord coordinates)
 const PIC_CENTER_X = 48;  // tile 6 × 8
@@ -44,24 +45,6 @@ const MENU_CURSOR_X = 1; // tile col for cursor
 const PLAYER_NAMES = ['NEW NAME', 'YELLOW', 'ASH', 'JACK'];
 const RIVAL_NAMES = ['NEW NAME', 'BLUE', 'GARY', 'JOHN'];
 
-// Text strings (from data/text/text_3.asm)
-function textOak1(): string { return getText('OAK_SPEECH_1'); }
-function textPikachu(): string { return getText('OAK_SPEECH_PIKACHU'); }
-function textPlayerAsk(): string { return getText('OAK_SPEECH_PLAYER_ASK'); }
-function textRivalAsk(): string { return getText('OAK_SPEECH_RIVAL_ASK'); }
-
-function textPlayerConfirm(): string {
-  return substituteNames(getText('OAK_SPEECH_PLAYER_CONFIRM'));
-}
-
-function textRivalConfirm(): string {
-  return substituteNames(getText('OAK_SPEECH_RIVAL_CONFIRM'));
-}
-
-function textFinal(): string {
-  return substituteNames(getText('OAK_SPEECH_FINAL'));
-}
-
 type Phase =
   // Oak portrait
   | 'oak_fadein' | 'oak_text' | 'fadeout1'
@@ -73,10 +56,14 @@ type Phase =
   // Rival naming
   | 'fadeout3' | 'rival_fadein' | 'rival_ask' | 'rival_menu'
   | 'rival_slide_back' | 'rival_confirm'
+  | 'custom_name_return'
   // Final
   | 'fadeout4' | 'final_fadein' | 'final_text'
   | 'shrink' | 'post_shrink' | 'final_fadeout'
   | 'done';
+
+const TEXT_PHASES: readonly Phase[] = ['oak_text', 'pikachu_text', 'player_ask',
+  'player_confirm', 'rival_ask', 'rival_confirm', 'final_text'];
 
 export type OakSpeechAction =
   | null
@@ -95,7 +82,7 @@ export class OakSpeech {
   // Phase state
   private phase: Phase = 'oak_fadein';
   private frame = 0;
-  private textBox = new TextBox();
+  private textBox = this.createTextBox();
 
   // Fade overlay
   private fadeAlpha = 1;
@@ -112,12 +99,19 @@ export class OakSpeech {
 
   // Name menu
   private menuVisible = false;
-  private menuCursor = 0;
+  private nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: MENU_CURSOR_X, topY: MENU_ITEM_Y });
   private menuItems: string[] = [];
   private namingTarget: 'player' | 'rival' = 'player';
 
   // Shrink stage
   private shrinkStage = 0;
+
+  /** The program declares the Pikachu cry; playback and its wait remain J2. */
+  constructor(private readonly cryCue: (species: string) => void = () => {}) {}
+
+  private createTextBox(): TextBox {
+    return new TextBox({ closeFrames: () => 0, updateSprites: () => {}, cry: species => this.cryCue(species) });
+  }
 
   async load(): Promise<void> {
     setActivePalette('MEWMON');
@@ -143,7 +137,7 @@ export class OakSpeech {
     this.frame = 0;
     this.fadeAlpha = 1;
     this.menuVisible = false;
-    this.textBox = new TextBox();
+    this.textBox = this.createTextBox();
 
     // Show Oak portrait centered
     this.currentPic = this.oakPic;
@@ -155,28 +149,23 @@ export class OakSpeech {
   /** Called by main.ts after naming screen returns with the chosen name. */
   continueAfterNaming(name: string): void {
     this.menuVisible = false;
-    if (this.namingTarget === 'player') {
-      setPlayerName(name);
-      this.currentPic = this.redPic;
-      this.picX = PIC_CENTER_X;
-      this.picY = PIC_CENTER_Y;
-      this.picFlipX = false;
-      this.textBox.show(textPlayerConfirm());
-      this.phase = 'player_confirm';
-    } else {
-      setRivalName(name);
-      this.currentPic = this.rivalPic;
-      this.picX = PIC_CENTER_X;
-      this.picY = PIC_CENTER_Y;
-      this.picFlipX = false;
-      this.textBox.show(textRivalConfirm());
-      this.phase = 'rival_confirm';
-    }
-    this.frame = 0;
+    if (this.namingTarget === 'player') setPlayerName(name); else setRivalName(name);
+    // ClearScreen's Delay3, then Delay3: no portrait or box for six frames.
+    this.clearScreen();
+    this.setPhase('custom_name_return');
+  }
+
+  /** ClearScreen, reached after a fade or on the custom-name return. */
+  clearScreen(): void {
+    this.textBox.dismiss();
+    this.currentPic = null;
   }
 
   update(): OakSpeechAction {
     this.frame++;
+    // TextBox.update owns this in printing phases. Retained boxes still transfer
+    // one BG portion each VBlank during fades, slides, menus and the shrink.
+    if (!TEXT_PHASES.includes(this.phase)) this.textBox.updateDisplay();
 
     switch (this.phase) {
       // ── Oak portrait fade-in ──
@@ -184,7 +173,7 @@ export class OakSpeech {
         this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
         if (this.frame >= FADEIN_FRAMES) {
           this.fadeAlpha = 0;
-          this.textBox.show(textOak1());
+          this.textBox.printStandalone({ program: 'OakSpeechText1' });
           this.setPhase('oak_text');
         }
         break;
@@ -192,7 +181,7 @@ export class OakSpeech {
 
       case 'oak_text': {
         this.textBox.update();
-        if (!this.textBox.active) {
+        if (this.textBox.isComplete) {
           this.startFadeOut('fadeout1');
         }
         break;
@@ -219,7 +208,7 @@ export class OakSpeech {
         if (this.slideX <= this.slideTarget) {
           this.slideX = this.slideTarget;
           this.picX = this.slideTarget;
-          this.textBox.show(textPikachu());
+          this.textBox.printStandalone({ program: 'OakSpeechText2' });
           this.setPhase('pikachu_text');
         } else {
           this.picX = this.slideX;
@@ -229,7 +218,7 @@ export class OakSpeech {
 
       case 'pikachu_text': {
         this.textBox.update();
-        if (!this.textBox.active) {
+        if (this.textBox.isComplete) {
           this.startFadeOut('fadeout2');
         }
         break;
@@ -256,7 +245,7 @@ export class OakSpeech {
         if (this.slideX <= this.slideTarget) {
           this.slideX = this.slideTarget;
           this.picX = this.slideTarget;
-          this.textBox.show(textPlayerAsk());
+          this.textBox.printStandalone({ program: 'IntroducePlayerText' });
           this.setPhase('player_ask');
         } else {
           this.picX = this.slideX;
@@ -265,15 +254,10 @@ export class OakSpeech {
       }
 
       case 'player_ask': {
-        // Keep textbox visible when transitioning to menu
-        // (assembly: PrintText stays on VRAM, then ChoosePlayerName overlays the menu)
-        if (this.textBox.isWaitingForInput && !this.textBox.hasMorePages) {
-          if (isPressed('a') || isPressed('b')) {
-            this.openNameMenu('player');
-            this.setPhase('player_menu');
-          }
-        } else {
-          this.textBox.update();
+        this.textBox.update();
+        if (this.textBox.isComplete) {
+          this.openNameMenu('player');
+          this.setPhase('player_menu');
         }
         break;
       }
@@ -285,13 +269,12 @@ export class OakSpeech {
           return { type: 'openNamingScreen', target: 'player' };
         }
         if (result === 'preset') {
-          const name = this.menuItems[this.menuCursor];
+          const name = this.menuItems[this.nameMenu.item];
           setPlayerName(name);
           // Slide portrait back to center
           this.slideX = PIC_RIGHT_X;
           this.slideTarget = PIC_CENTER_X;
           this.menuVisible = false;
-          this.textBox.dismiss();
           this.setPhase('player_slide_back');
         }
         break;
@@ -301,7 +284,7 @@ export class OakSpeech {
         this.slideX -= SLIDE_SPEED;
         if (this.slideX <= this.slideTarget) {
           this.picX = this.slideTarget;
-          this.textBox.show(textPlayerConfirm());
+          this.textBox.printStandalone({ program: 'YourNameIsText' });
           this.setPhase('player_confirm');
         } else {
           this.picX = this.slideX;
@@ -311,7 +294,7 @@ export class OakSpeech {
 
       case 'player_confirm': {
         this.textBox.update();
-        if (!this.textBox.active) {
+        if (this.textBox.isComplete) {
           this.startFadeOut('fadeout3');
         }
         break;
@@ -334,21 +317,17 @@ export class OakSpeech {
         this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
         if (this.frame >= FADEIN_FRAMES) {
           this.fadeAlpha = 0;
-          this.textBox.show(textRivalAsk());
+          this.textBox.printStandalone({ program: 'IntroduceRivalText' });
           this.setPhase('rival_ask');
         }
         break;
       }
 
       case 'rival_ask': {
-        // Keep textbox visible when transitioning to menu
-        if (this.textBox.isWaitingForInput && !this.textBox.hasMorePages) {
-          if (isPressed('a') || isPressed('b')) {
-            this.openNameMenu('rival');
-            this.setPhase('rival_menu');
-          }
-        } else {
-          this.textBox.update();
+        this.textBox.update();
+        if (this.textBox.isComplete) {
+          this.openNameMenu('rival');
+          this.setPhase('rival_menu');
         }
         break;
       }
@@ -360,12 +339,11 @@ export class OakSpeech {
           return { type: 'openNamingScreen', target: 'rival' };
         }
         if (result === 'preset') {
-          const name = this.menuItems[this.menuCursor];
+          const name = this.menuItems[this.nameMenu.item];
           setRivalName(name);
           this.slideX = PIC_RIGHT_X;
           this.slideTarget = PIC_CENTER_X;
           this.menuVisible = false;
-          this.textBox.dismiss();
           this.setPhase('rival_slide_back');
         }
         break;
@@ -375,7 +353,7 @@ export class OakSpeech {
         this.slideX -= SLIDE_SPEED;
         if (this.slideX <= this.slideTarget) {
           this.picX = this.slideTarget;
-          this.textBox.show(textRivalConfirm());
+          this.textBox.printStandalone({ program: 'HisNameIsText' });
           this.setPhase('rival_confirm');
         } else {
           this.picX = this.slideX;
@@ -385,8 +363,21 @@ export class OakSpeech {
 
       case 'rival_confirm': {
         this.textBox.update();
-        if (!this.textBox.active) {
+        if (this.textBox.isComplete) {
           this.startFadeOut('fadeout4');
+        }
+        break;
+      }
+
+      case 'custom_name_return': {
+        if (this.frame >= 6) {
+          const player = this.namingTarget === 'player';
+          this.currentPic = player ? this.redPic : this.rivalPic;
+          this.picX = PIC_CENTER_X;
+          this.picY = PIC_CENTER_Y;
+          this.picFlipX = false;
+          this.textBox.printStandalone({ program: player ? 'YourNameIsText' : 'HisNameIsText' });
+          this.setPhase(player ? 'player_confirm' : 'rival_confirm');
         }
         break;
       }
@@ -408,7 +399,7 @@ export class OakSpeech {
         this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
         if (this.frame >= FADEIN_FRAMES) {
           this.fadeAlpha = 0;
-          this.textBox.show(textFinal());
+          this.textBox.printStandalone({ program: 'OakSpeechText3' });
           this.setPhase('final_text');
         }
         break;
@@ -416,7 +407,7 @@ export class OakSpeech {
 
       case 'final_text': {
         this.textBox.update();
-        if (!this.textBox.active) {
+        if (this.textBox.isComplete) {
           this.shrinkStage = 0;
           this.setPhase('shrink');
         }
@@ -501,7 +492,9 @@ export class OakSpeech {
   /** Advance fade-out. Returns true when fully faded. */
   private updateFadeOut(): boolean {
     this.fadeAlpha = Math.min(1, this.frame / FADEOUT_FRAMES);
-    return this.frame >= FADEOUT_FRAMES;
+    if (this.frame < FADEOUT_FRAMES) return false;
+    this.clearScreen();
+    return true;
   }
 
   /** Draw a portrait canvas at a pixel position. */
@@ -531,7 +524,7 @@ export class OakSpeech {
   private openNameMenu(target: 'player' | 'rival'): void {
     this.namingTarget = target;
     this.menuItems = target === 'player' ? PLAYER_NAMES : RIVAL_NAMES;
-    this.menuCursor = 0;
+    this.nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: MENU_CURSOR_X, topY: MENU_ITEM_Y });
     this.menuVisible = true;
     // Move portrait to the right (Y stays the same — assembly slides horizontally only)
     this.picX = PIC_RIGHT_X;
@@ -540,14 +533,8 @@ export class OakSpeech {
 
   /** Returns 'custom' (NEW NAME), 'preset' (named selected), or null (still browsing). */
   private updateNameMenu(): 'custom' | 'preset' | null {
-    if (isPressed('up')) {
-      this.menuCursor = (this.menuCursor - 1 + this.menuItems.length) % this.menuItems.length;
-    } else if (isPressed('down')) {
-      this.menuCursor = (this.menuCursor + 1) % this.menuItems.length;
-    }
-
-    if (isPressed('a')) {
-      if (this.menuCursor === 0) return 'custom';
+    if (this.nameMenu.update(readJoypad, () => playSFX('press_ab'))) {
+      if (this.nameMenu.item === 0) return 'custom';
       return 'preset';
     }
 
@@ -572,7 +559,7 @@ export class OakSpeech {
     }
 
     // Cursor
-    const cursorRow = MENU_ITEM_Y + this.menuCursor * MENU_ITEM_SPACING;
-    drawChar('\u25B6', MENU_CURSOR_X * T, cursorRow * T);
+    const cursor = this.nameMenu.cursor;
+    drawChar('\u25B6', cursor.x * T, cursor.y * T);
   }
 }

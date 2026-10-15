@@ -11,7 +11,7 @@
 
 import type { ScriptCommand } from '../script';
 import type { Direction } from '../core';
-import { getText } from '../text/game_text';
+import { displayTextID } from './text_handlers';
 
 export const VIRIDIAN_CITY = 'ViridianCity';
 
@@ -109,7 +109,7 @@ export function martSpawnsOldMan(hasFlag: (flag: string) => boolean): boolean {
 export function buildSleepingOldManScript(fromTrigger: boolean): ScriptCommand[] {
   return [
     // (text/ViridianCity.asm _ViridianCityOldManSleepyPrivatePropertyText)
-    { type: 'text', message: getText('VIRIDIAN_OLDMAN_PRIVATE_PROPERTY') },
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintOldManSleepyText.PrivatePropertyText' }]),
     ...(fromTrigger ? [{ type: 'facePlayer', direction: 'down' } as ScriptCommand] : []),
     { type: 'pushPlayer', direction: 'down' },
     { type: 'wait', frames: 3 },
@@ -121,7 +121,7 @@ export function buildSleepingOldManScript(fromTrigger: boolean): ScriptCommand[]
 export function buildGymLockedScript(): ScriptCommand[] {
   return [
     // (text/ViridianCity.asm _ViridianCityGymLockedText)
-    { type: 'text', message: getText('VIRIDIAN_GYM_LOCKED') },
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintGymLockedText.text' }]),
     { type: 'facePlayer', direction: 'down' },
     { type: 'pushPlayer', direction: 'down' },
     { type: 'wait', frames: 3 },
@@ -150,8 +150,8 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
   }
   commands.push(
     // (text/ViridianCity.asm _ViridianCityOldManHadMyCoffeeNowText), then DelayFrames 2
-    { type: 'text', message: getText('VIRIDIAN_OLDMAN_COFFEE') },
-    { type: 'wait', frames: 2 },
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.HadMyCoffeeNowText' },
+      { type: 'wait', frames: 2 }]),
     // ViridianCityOldManInitialCatchTrainingScript: the ball fails (ItemUseBall $63)
     { type: 'setFlag', flag: 'INITIAL_CATCH_TRAINING' },
     { type: 'catchDemo', battleType: 'OLD_MAN', species: 'RATTATA', level: 5 },
@@ -160,7 +160,7 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
     { type: 'wait', frames: 3 },
     { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING' },
     // (text/ViridianCity.asm _ViridianCityOldManLosingMyTouchText)
-    { type: 'text', message: getText('VIRIDIAN_OLDMAN_LOSING_TOUCH') },
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.LosingMyTouchText' }]),
   );
   // ViridianCityPostInitialCatchTraining: at x = 19 he walks down 6 (MovementData2);
   // elsewhere Pikachu steps aside and he walks right, then down 6 — MovementData1's
@@ -188,13 +188,13 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
  * caught this time (states 3 → 4 → 2); NO ends it.
  */
 export function buildOldMan1Script(): ScriptCommand[] {
-  return [{
-    type: 'yesNo',
-    // (text/ViridianCity.asm _ViridianCityOldManWantMeToShowYouAgainText)
-    message: getText('VIRIDIAN_OLDMAN_SHOW_AGAIN'),
-    yesBranch: [
-      // (text/ViridianCity.asm _ViridianCityOldManWatchCloselyText)
-      { type: 'text', message: getText('VIRIDIAN_OLDMAN_WATCH_CLOSELY') },
+  return [{ type: 'displayOpen', autoBox: true },
+    { type: 'printText', program: 'ViridianCityPrintOldManText.WantMeToShowYouAgainText' },
+    { type: 'wait', frames: 2 }, {
+    type: 'yesNoChoice',
+    yes: [
+      { type: 'printText', program: 'ViridianCityPrintOldManText.WatchCloselyText' },
+      { type: 'displayClose', outerWait: true },
       // ViridianCityOldManStartCatchTrainingScript: ResetEvent EVENT_INITIAL_CATCH_TRAINING
       { type: 'clearFlag', flag: 'INITIAL_CATCH_TRAINING' },
       { type: 'catchDemo', battleType: 'OLD_MAN', species: 'RATTATA', level: 5 },
@@ -202,10 +202,11 @@ export function buildOldMan1Script(): ScriptCommand[] {
       { type: 'wait', frames: 3 },
       { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING_AGAIN' },
       // (text/ViridianCity.asm _ViridianCityOldManYouNeedToWeakenTheTargetText)
-      { type: 'text', message: getText('VIRIDIAN_OLDMAN_WEAKEN_TARGET') },
+      ...displayTextID([{ type: 'printText', program: 'ViridianCityOldManYouNeedToWeakenTheTargetText', box: 'keep' }]),
       { type: 'setMapScript', map: VIRIDIAN_CITY, state: ViridianScript.POST_CATCH_TRAINING },
     ],
     // (text/ViridianCity.asm _ViridianCityOldManNotGoodEnoughForYouText)
-    noBranch: [{ type: 'text', message: getText('VIRIDIAN_OLDMAN_NOT_GOOD_ENOUGH') }],
+    no: [{ type: 'printText', program: 'ViridianCityPrintOldManText.NotGoodEnoughForYouText' },
+      { type: 'displayClose', outerWait: true }],
   }];
 }

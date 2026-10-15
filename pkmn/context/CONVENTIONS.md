@@ -220,8 +220,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 988/988** as of 2026-10-09
-   (A5b2 implementation). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1242/1242** as of 2026-10-13
+   (A5b6). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -242,7 +242,7 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-988 tests in 46 files (vitest, `environment: 'node'`); without ROM, 888 pass / 100 skip.
+1242 tests in 64 files (vitest, `environment: 'node'`); without ROM, 1119 pass / 123 skip.
 
 **How it runs**
 
@@ -257,7 +257,7 @@ the new baseline.
 
 **By area**
 
-- **Extraction** — 76 in `src/rom/__tests__/extraction.test.ts`; compares each
+- **Extraction** — 93 in `src/rom/__tests__/extraction.test.ts`; compares each
   extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
   Its Pikachu and old-man pixel tests compare against pret's PNGs in
   `refs/pokeyellow/gfx/` and return early if `refs/` isn't cloned. The V1 block
@@ -301,13 +301,69 @@ the new baseline.
 
 **Added per slice (newest first)**
 
+- **A5b6** adds 47: notebook/N-1 +10; menu input and blackboard +10; Town Map double-close +10; Oak standalone programs, cue/2B, retained boxes, naming returns and input +17. `school.test.ts` (13), `menu_input.test.ts` (5), `town_map_sign.test.ts` (10), `oak_speech.test.ts` (17), and two text-runner regressions. The old transitional textbox case was replaced. The implementer's production mutations are in note 37; the review passed in `notes/38-a5b6-review.md`. Neither committed self-mutating tests.
+
+- **A5b5c** adds 43: two Lab review regressions; `rom/__tests__/overworld_sprites.test.ts`
+  (3 ROM-dependent), `overworld/npc_sheets.test.ts` (6), `menus/yes_no_menu.test.ts`
+  (12), `story/choice_timing.test.ts` (4), `story/pokecenter.test.ts` (16).
+  Tests cover all sprite sizes/pret pixels, every still-sprite facing, invalid
+  sheets, menu +3 reads/+15 answer tails, real caterpillar/old-man branch timing,
+  first/repeat/CANCEL nurse programs, saved first-use flag, coverage/box hides,
+  69-frame Pikachu walk, 40-frame bow, fainted slot facings, pause/held-input
+  behavior, actual-script dispatch, 17-frame close and Pewter tripwire.
+  Five in-memory mutations cover old sprite decoding, still classification,
+  both menu delays and NO's blackout callback. Only the old A6e quick-text
+  fixture adapts its command vocabulary; its original assertions are unchanged.
+
+- **A5b5b** adds 39: `story/pallet_town.test.ts` (7),
+  `story/oaks_lab.test.ts` (30), `audio/rival_start.test.ts` (2).
+  Coverage includes source programs and grouped displays, live Lab branches,
+  borderless opening, +20/+23 glyphs, 23/15 closes, both 61-frame bubbles,
+  real gift jingle before party/flag changes, nested free-movement handlers,
+  the guard, successive display revisions, unchanged movement arrays and
+  battle metadata, the I1 gift-flag tripwire, and five in-memory mutations.
+  The alternate rival music entry matches independently parsed ASM and retains
+  the committed track unchanged. Existing small-handler tests now require
+  Mom to preserve the blackout destination and classify Pallet/Lab as migrated;
+  all A6/controller/nurse timing tests remain unchanged.
+
+- **A5b5a** adds 49: `story/text_handlers.test.ts` (2),
+  `script/display_commands.test.ts` (7), `story/small_text_handlers.test.ts` (40).
+  Coverage includes live dispatch, envelope options, retained YES/NO and
+  HEAL/CANCEL positions, 61-frame bubble, asynchronous healing music and the
+  real CHAN1 return at update 136, migrated DelayFrames input ownership,
+  all small-handler branches, exact first-write/close costs, give/hide/flag
+  order, full bags, TV hidden-event routing, no-legacy-text and 30-object census
+  tripwires, plus three in-memory mutations. Existing Route 1 and Viridian
+  builder tests now assert source programs and display envelopes; the A6/nurse
+  timing tests remain unchanged.
+
+- **A5b4** adds 49: three ROM data/ASM tests in `map_sprite_sets.test.ts`
+  (now 20, ten ROM-dependent), 21 pure runner tests in `text_runner.test.ts`,
+  15 session/close tests in `textbox.test.ts` (now 30), eight pickup/controller
+  tests in `item_pickup.test.ts` (now 24), and two `map_text_calls.test.ts` tests.
+  All emitted sprite sets compare against ASM, including an in-memory set-3
+  mutation. Runtime selection/allocation shares the independent 19-map fixtures.
+  Session mutations check close +1, missing UI coverage, and keep gaining +3.
+  Existing printer/BG tests remain unchanged; existing close/pickup assertions
+  now include cartridge reload costs, opening order and sound input ownership.
+
+- **A5b3** adds 27: 17 ROM-dependent tests in `rom/__tests__/extraction.test.ts`
+  (four SFX headers, committed JSON, independently parsed ASM commands, music/SFX
+  kind, all-header bank comparison, and both banks' differing return updates),
+  plus 10 no-ROM tests in `audio/sfx_key_item_pc.test.ts` (key-item note starts,
+  perfect-pitch/wave registers, three PC traces, 121/70/18/22-update waits and
+  the actual Forest track's silent hand-off/tempo preservation). The existing
+  preload-list test covers the four added names. ASM comparisons return early
+  when refs are absent, matching A1a; bank/ROM assertions still run with ROM_PATH.
+
 - **A5b2** adds 18: `rom/__tests__/map_sprite_sets.test.ts` (17; 7 need `ROM_PATH`
   and throw if `refs/pokeyellow` is missing) and one registration check in
   `static_export.test.ts`. Without ROM the file checks the committed ids, picture
   classes, split selection, slot allocation and the 19 current walking-half counts.
   With ROM it compares the three tables, all 82 sheet sizes and the current object
-  lists to pret. Selection, allocation and close-frame counts are test references
-  for A5b4, not shipped runtime. ROM mutations stay in memory.
+  lists to pret. Since A5b4, selection, allocation and close-frame counts are imported from
+  the runtime `overworld/sprite_sets.ts`. ROM mutations stay in memory.
 
 - **A5a** adds 53:
   - `text/text_printer.test.ts` (24): place-then-delay and final delay, held input,

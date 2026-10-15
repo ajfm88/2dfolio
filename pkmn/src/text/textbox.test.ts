@@ -6,6 +6,8 @@ import { drawTile, fillRect } from '../renderer';
 import { playSFX } from '../audio';
 import { charToTile } from './charmap';
 import { uiTiles } from '../renderer/ui_tiles';
+import { textBgTransfer } from './bg_transfer';
+import { CloseSequence } from './close_sequence';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: vi.fn(() => false), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true) }));
@@ -37,11 +39,12 @@ describe('DisplayTextID and PrintText integration', () => {
     expect(tiles(box, 128)).not.toContain(charToTile('▼')); expect(playSFX).not.toHaveBeenCalled();
     down(null); tick(box, 1); expect(box.active).toBe(true);
     down('a'); tick(box, 5); expect(box.active).toBe(true);
-    down(null); tick(box, 1); expect(box.active).toBe(true); tick(box, 1); expect(box.active).toBe(false);
+    down(null); tick(box, 1); expect(box.active).toBe(true); tick(box, 6); expect(box.active).toBe(true);
+    tick(box, 1); expect(box.active).toBe(false); // 5 + 2W, detached minimal walking set W=1
   });
-  it('B bypasses the A hold and closes after CloseTextDisplay DelayFrame', () => {
+  it('B bypasses the A hold and closes after the full walking reload', () => {
     const box = new TextBox(); box.show('A', { mode: 'displayTextID' }); tick(box, 21);
-    down('b'); tick(box, 1); tick(box, 1); expect(box.active).toBe(false);
+    down('b'); tick(box, 1); tick(box, 7); expect(box.active).toBe(false);
     expect(playSFX).not.toHaveBeenCalled();
   });
   it('prompt uses its beeping wait and then a separate silent DisplayTextID wait', () => {
@@ -49,13 +52,13 @@ describe('DisplayTextID and PrintText integration', () => {
     down('a'); box.update(); expect(playSFX).toHaveBeenCalledExactlyOnceWith('press_ab');
     expect(box.isTextComplete).toBe(true); tick(box, 4); expect(box.active).toBe(true);
     down(null); box.update(); expect(box.active).toBe(true);
-    down('b'); box.update(); box.update(); expect(box.active).toBe(false);
+    down('b'); box.update(); tick(box, 7); expect(box.active).toBe(false);
     expect(playSFX).toHaveBeenCalledTimes(1);
   });
   it('a press held during the opening is consumed by letter delay, not mistaken for close', () => {
     const box = new TextBox(); box.show('A', { mode: 'displayTextID' }); tick(box, 10);
     down('b'); tick(box, 30); expect(box.active).toBe(true);
-    down(null); box.update(); down('b'); tick(box, 2); expect(box.active).toBe(false);
+    down(null); box.update(); down('b'); tick(box, 8); expect(box.active).toBe(false);
   });
   it('PrintText alone waits three frames and returns while retaining the box', () => {
     const box = new TextBox(); box.show('A', { mode: 'printText' }); tick(box, 2);
@@ -104,7 +107,9 @@ describe('map trainer dialogue used by main.ts', () => {
     expect(dialogue.update()).toBe(false); expect(music).toHaveBeenCalledTimes(seen ? 0 : 1);
     expect(box.isTextComplete).toBe(true);
     down('a'); for (let frame = 0; frame < 4; frame++) expect(dialogue.update()).toBe(false);
-    down(null); expect(dialogue.update()).toBe(false); expect(dialogue.update()).toBe(true);
+    down(null); expect(dialogue.update()).toBe(false);
+    for (let frame = 0; frame < 6; frame++) expect(dialogue.update()).toBe(false);
+    expect(dialogue.update()).toBe(true);
     expect(music).toHaveBeenCalledTimes(seen ? 0 : 1); expect(playSFX).not.toHaveBeenCalled();
   });
   it('an ordinary map dialogue omits the nested PrintText delay', () => {
@@ -112,5 +117,108 @@ describe('map trainer dialogue used by main.ts', () => {
     dialogue.show('A', { onTextComplete: completed });
     for (let i = 0; i < 20; i++) dialogue.update(); expect(completed).not.toHaveBeenCalled();
     dialogue.update(); expect(completed).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('retained DisplayTextID session and exact close (A5b4)', () => {
+  it.each([7, 9, 11, 13, 15, 17, 23])('closes in exactly %i frames, with coverage and one final sprite update', cost => {
+    const sprites = vi.fn();
+    const box = new TextBox({ closeFrames: () => cost, updateSprites: sprites });
+    box.open(); expect(box.phase).toBe('opening'); tick(box, 20); expect(box.isComplete).toBe(true);
+    box.print({ text: 'A' }, { box: 'keep' }); tick(box, 1);
+    const transfer = vi.spyOn(textBgTransfer, 'tick');
+    const reads = vi.mocked(syncJoypadRead).mock.calls.length;
+    box.finish({ outerWait: false }); expect(box.closing).toBe(true);
+    const afterHold = vi.mocked(syncJoypadRead).mock.calls.length;
+    expect(afterHold).toBe(reads + 1);
+    for (let frame = 1; frame <= cost; frame++) {
+      box.update(); uiTiles.clear(); vi.mocked(fillRect).mockClear(); box.render();
+      expect(box.active).toBe(frame < cost);
+      expect(uiTiles.tileAt(18, 16)).toBe(frame < cost ? 0x60 : 0);
+      expect(fillRect).not.toHaveBeenCalled();
+      expect(sprites).toHaveBeenCalledTimes(frame === cost ? 1 : 0);
+    }
+    expect(transfer).toHaveBeenCalledTimes(1);
+    expect(syncJoypadRead).toHaveBeenCalledTimes(afterHold);
+    tick(box, 10); expect(sprites).toHaveBeenCalledTimes(1);
+    expect(box.phase).toBe('closed'); transfer.mockRestore();
+  });
+
+  it('new clears the four rows and waits three frames; keep preserves the buffer and writes immediately', () => {
+    const box = new TextBox(); box.open(); tick(box, 20);
+    box.print({ text: 'ABCDE' }, { box: 'keep' }); tick(box, 5); tick(box, 3);
+    expect(tiles(box, 112)).toHaveLength(5);
+    box.print({ text: 'Z' }, { box: 'keep' }); tick(box, 3);
+    expect(tiles(box, 112)).toEqual(['Z', 'B', 'C', 'D', 'E'].map(charToTile));
+    box.print({ text: 'Q' }, { box: 'new' }); tick(box, 2);
+    expect(box.isTextComplete).toBe(false);
+    tick(box, 1); expect(box.isTextComplete).toBe(false);
+    tick(box, 3); expect(tiles(box, 112)).toEqual([charToTile('Q')]);
+  });
+
+  it('show equals open, keep-print and finish for the same input/frame trace', () => {
+    const a = new TextBox(), b = new TextBox();
+    a.show('A', { mode: 'displayTextID' }); b.open();
+    tick(a, 20); tick(b, 20); b.print({ text: 'A' }, { box: 'keep' });
+    a.update(); b.update(); b.finish({ outerWait: true });
+    expect(a.isTextComplete).toBe(true); expect(b.isTextComplete).toBe(true);
+    down('b'); a.update(); b.update();
+    expect(a.closing).toBe(true); expect(b.closing).toBe(true);
+    for (let frame = 0; frame < 7; frame++) { a.update(); b.update(); expect(a.active).toBe(b.active); }
+  });
+
+  it('autoBox=false creates a borderless opening; spriteUpdate/PrintText hooks stay explicit', () => {
+    const hook = vi.fn(); const box = new TextBox({ closeFrames: () => 11, updateSprites: vi.fn(), printTextSprites: hook });
+    box.open({ autoBox: false, spriteUpdate: false }); box.render();
+    expect(uiTiles.tileAt(18, 16)).toBe(0); tick(box, 20);
+    box.print({ text: 'A' }, { box: 'keep' }); expect(hook).not.toHaveBeenCalled(); tick(box, 1);
+    box.print({ text: 'B' }, { box: 'new' }); expect(hook).toHaveBeenCalledTimes(1);
+    box.render(); expect(uiTiles.tileAt(18, 16)).toBe(0x60);
+  });
+
+  it('an in-place CloseTextDisplay (TownMapText) keeps the session for Hold and a full-reload close', () => {
+    const sprites = vi.fn(); const reloads: (string | undefined)[] = [];
+    const box = new TextBox({ closeFrames: reload => { reloads.push(reload); return reload === 'full' ? 14 : 9; }, updateSprites: sprites });
+    box.open(); tick(box, 20); box.print({ text: 'A' }, { box: 'keep' }); tick(box, 3);
+    box.closeInPlace(); expect(box.closing).toBe(true);
+    tick(box, 8); expect(sprites).not.toHaveBeenCalled(); tick(box, 1);
+    expect(sprites).toHaveBeenCalledOnce(); expect(box.isComplete).toBe(true);
+    expect(box.active).toBe(true); expect(box.closing).toBe(false); expect(box.uiTileAt(0, 12)).toBe(0);
+    uiTiles.clear(); box.render(); expect(uiTiles.tileAt(0, 12)).toBe(0); // the window stays off
+    box.finish({ outerWait: false, reload: 'full' }); // Hold: A is up
+    tick(box, 13); expect(box.active).toBe(true); tick(box, 1);
+    expect(box.active).toBe(false); expect(sprites).toHaveBeenCalledTimes(2);
+    expect(reloads).toEqual([undefined, 'full']);
+  });
+
+  it('the pure close counter has no extra terminal frame or repeated callback', () => {
+    const sprites = vi.fn(); const close = new CloseSequence(23, sprites);
+    expect(close.firstFrame).toBe(true);
+    for (let frame = 1; frame < 23; frame++) { close.advance(); expect(close.complete).toBe(false); }
+    expect(sprites).not.toHaveBeenCalled(); close.advance(); expect(close.complete).toBe(true);
+    close.advance(); expect(sprites).toHaveBeenCalledTimes(1);
+  });
+
+  it('the source 23-frame assertion catches an in-memory off-by-one close mutation', () => {
+    const sprites = vi.fn(); const mutated = new CloseSequence(24, sprites);
+    for (let i = 0; i < 23; i++) mutated.advance();
+    expect(() => expect(sprites).toHaveBeenCalledTimes(1)).toThrow();
+  });
+
+  it('the closing coverage assertion catches a dropped cover call in memory', () => {
+    const box = new TextBox(); box.open(); tick(box, 20); box.finish({ outerWait: false }); box.update();
+    const cover = vi.spyOn(uiTiles, 'cover').mockImplementation(() => {});
+    try { uiTiles.clear(); box.render(); expect(() => expect(uiTiles.tileAt(18, 16)).toBe(0x60)).toThrow(); }
+    finally { cover.mockRestore(); }
+  });
+
+  it('the immediate keep-print assertion catches an in-memory extra PrintText Delay3', () => {
+    const box = new TextBox(); box.open(); tick(box, 20); vi.mocked(syncJoypadRead).mockClear();
+    const print = box.print.bind(box);
+    const mutation = vi.spyOn(box, 'print').mockImplementation((source, opts) => print(source, { ...opts, box: 'new' }));
+    try {
+      box.print({ text: 'A' }, { box: 'keep' });
+      expect(() => expect(syncJoypadRead).toHaveBeenCalledTimes(1)).toThrow();
+    } finally { mutation.mockRestore(); }
   });
 });
