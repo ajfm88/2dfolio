@@ -5,9 +5,12 @@ import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
 import { TILE_SIZE } from '../core';
 import type { GameButton } from '../core';
 import { MenuInput } from '../menus/menu_input';
-import { drawBox, drawText } from '../menus/menu_render';
+import { PokemartSession } from '../menus/pokemart';
+import { ScreenTiles } from '../menus/screen_tiles';
+import { drawBox, drawChar, drawText } from '../menus/menu_render';
 import { createScript, currentCommand, advanceScript } from './engine';
 import type { TextBox } from '../text';
+import { textBgTransfer } from '../text/bg_transfer';
 import type { Player } from '../overworld/player';
 import type { GameMap } from '../overworld/map';
 import { Npc } from '../overworld/npc';
@@ -47,6 +50,9 @@ export interface ScriptDeps {
   npcs: Npc[];
   playerParty: BattlePokemon[];
   playerBag: Bag;
+  /** wPlayerMoney. The Mart reads it when it draws the MONEY box and writes it on a sale or purchase. */
+  getMoney?: () => number;
+  setMoney?: (amount: number) => void;
   pikachuTile?: { x: number; y: number };
   pikachuFollower?: PikachuFollower;
   restoreMapMusic?: () => void;
@@ -85,6 +91,8 @@ let scriptChoice: { yes: ScriptCommand[]; no: ScriptCommand[] } | null = null;
 // PlaceMenuCursor left in it; HandleMenuInput_ while it reads
 let scriptMenuBox: { layout: MenuBoxLayout; cursor: { x: number; y: number } | null } | null = null;
 let scriptMenu: { input: MenuInput; then: (keys: GameButton[], item: number) => ScriptCommand[] } | null = null;
+let scriptMart: PokemartSession | null = null;
+let martTiles: ScreenTiles | null = null;
 const scriptBubble = new EmotionBubble<'player' | string>();
 let scriptHealingMusic: { ready: boolean } | null = null;
 
@@ -149,6 +157,11 @@ const scriptNpcs: Npc[] = [];
 
 export function getActiveScript(): ScriptRunner | null {
   return activeScript;
+}
+
+/** The Mart's wTileMap while a display still holds it. Null once the message box hides. */
+export function getMartTiles(): ScreenTiles | null {
+  return martTiles;
 }
 
 export function isScriptBattlePending(): boolean {
@@ -217,6 +230,8 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptChoice = null;
   scriptMenuBox = null;
   scriptMenu = null;
+  scriptMart = null;
+  martTiles = null;
   scriptHealingMusic = null;
   // A replaced script must not leave a bubble on screen.
   scriptBubble.clear();
@@ -247,10 +262,28 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // VBlank continues during retained text, even when several commands return in one frame.
-  if (!displayAdvanced && textBox.active && !scriptTextWaiting && !scriptClosingText && !scriptDisplayWaiting &&
+  // The Mart and the text box share that one tick. A PrintText the Mart started advances here.
+  const martAdvances = scriptMart?.advanceText === true;
+  if (martAdvances && scriptMart) {
+    const enabled = textBgTransfer.enabled;
+    const third = textBgTransfer.nextPortion;
+    textBox.update();
+    displayAdvanced = true;
+    if (enabled) scriptMart.copyThird(third);
+  } else if (!displayAdvanced && textBox.active && !scriptTextWaiting && !scriptClosingText && !scriptDisplayWaiting &&
       !(scriptAwaitInteraction?.guardProgram && scriptFreeSub === 'text')) {
+    const enabled = !!scriptMart && textBgTransfer.enabled;
+    const third = textBgTransfer.nextPortion;
     textBox.updateDisplay();
     displayAdvanced = true;
+    if (scriptMart && enabled) scriptMart.copyThird(third);
+  }
+  if (scriptMart) {
+    const done = scriptMart.frame(readJoypad, () => playSFX('press_ab'));
+    if (!done) return null;
+    scriptMart = null;
+    advanceScript(activeScript);
+    return updateScript(deps, isPass, displayAdvanced);
   }
 
   // DisplayTextIDInit / PrintText / a retained silent wait owns its VBlank and input.
@@ -314,6 +347,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     } else {
       textBox.update();
       displayAdvanced = true;
+      if (textBox.hidesWindow || !textBox.active) martTiles = null;
       if (textBox.active) return null;
       scriptClosingText = false;
     }
@@ -555,6 +589,18 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       textBox.clearInterior();
       advanceScript(activeScript);
       return updateScript(deps, isPass, displayAdvanced);
+
+    case 'pokemart': {
+      martTiles = new ScreenTiles();
+      const tiles = martTiles;
+      scriptMart = new PokemartSession(tiles, textBox, textBgTransfer, playerBag, {
+        get: () => deps.getMoney?.() ?? 0,
+        set: amount => deps.setMoney?.(amount),
+      }, cmd.items, () => fontLoadedUpdateSprites(player, deps.gameMap,
+        (x, y) => tiles.at(x, y) ? 0x60 : textBox.uiTileAt(x, y), pikachuFollower));
+      scriptMart.enter();
+      return null;
+    }
 
     case 'printText':
       textBox.print({ program: cmd.program }, { box: cmd.box, bindings: cmd.bindings, noDelay: cmd.noDelay });
@@ -1202,6 +1248,21 @@ export function renderScriptExclamation(
     exScreenY = npc ? npc.y - camY : 0;
   }
   drawExclamationBubble(exScreenX, exScreenY);
+}
+
+/** The Mart's transferred tiles, after the message box so row 12 can cover its top border. */
+export function renderMart(): void {
+  if (!martTiles) return;
+  const T = TILE_SIZE;
+  for (let y = 0; y < 18; y++) {
+    for (let x = 0; x < 20; x++) {
+      const logical = martTiles.at(x, y);
+      if (logical) uiTiles.cover(x * T, y * T, T, T);
+      const shown = martTiles.visibleAt(x, y);
+      if (shown) drawChar(shown, x * T, y * T);
+    }
+  }
+  scriptMart?.renderOverlay();
 }
 
 /** Render YES/NO menu if active during a script. */

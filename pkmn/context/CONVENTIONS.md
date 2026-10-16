@@ -242,7 +242,7 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-1242 tests in 64 files (vitest, `environment: 'node'`); without ROM, 1119 pass / 123 skip.
+1331 tests in 70 files (vitest, `environment: 'node'`); without ROM, 1208 pass / 123 skip.
 
 **How it runs**
 
@@ -300,6 +300,15 @@ the new baseline.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+- **A5b7b** adds 31, all no-ROM: `menus/screen_tiles.test.ts` (5), `menus/quantity_menu.test.ts` (3), `menus/list_menu.test.ts` (6), `story/mart.test.ts` (16), two more `menu_input` cases (now 7), and one `bg_transfer` case (now 4). Two ShopMenu cases left `items.test.ts`. CP6's six mutations were caught and reverted: the repeat counter skipping Delay3, a scroll off by one, halving each price instead of the total, the MONEY box changing before YES, subtracting before the bag add, and `press_ab` in the quantity box. ROM **1330/1330** in 70 files, no-ROM **1207/123**. The review's F-1 fix adds one `story/mart.test.ts` case (A+B together on BUY takes A): **1331/1331**, no-ROM **1208/123**.
+
+- **A5b7a** adds 57 net: 49 in `text/text_numbers.test.ts` (BCD flags/cursor/
+  frames, immediate decimals, typed bindings and committed programs), four
+  standalone no-delay integration cases in `text/textbox.test.ts` (now 34), six
+  Canvas glyph/spacing/sheet/scale cases in `menus/menu_render.test.ts`.
+  Removes two obsolete unsupported-number cases from `text_runner.test.ts`
+  (now 21). All 57 are no-ROM. ROM **1299/1299**, no-ROM **1176/123**.
 
 - **A5b6** adds 47: notebook/N-1 +10; menu input and blackboard +10; Town Map double-close +10; Oak standalone programs, cue/2B, retained boxes, naming returns and input +17. `school.test.ts` (13), `menu_input.test.ts` (5), `town_map_sign.test.ts` (10), `oak_speech.test.ts` (17), and two text-runner regressions. The old transitional textbox case was replaced. The implementer's production mutations are in note 37; the review passed in `notes/38-a5b6-review.md`. Neither committed self-mutating tests.
 

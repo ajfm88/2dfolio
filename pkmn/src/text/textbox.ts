@@ -3,7 +3,7 @@ import { substituteNames } from '../core/player_state';
 import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
 import { isPressed, isHeld, syncJoypadRead } from '../input';
 import { charToTile, extraCharToTile } from './charmap';
-import { TextScreen, TEXT_A, TEXT_B } from './text_printer';
+import { TextScreen, TEXT_A, TEXT_B, TEXT_BUFFER_SIZE } from './text_printer';
 import { TextProgramRunner } from './text_runner';
 import type { TextBindings, TextReturn } from './text_runner';
 import { getTextPrograms } from './program_data';
@@ -120,6 +120,11 @@ export interface TextDisplayHost {
   cry?(species: string): void;
 }
 export type DisplayPhase = 'opening' | 'printing' | 'waiting' | 'holding' | 'closing' | 'closed';
+/** Retained message-box tiles (wTileMap rows 12–17) and whether the border is up. */
+export interface TextBoxScreen {
+  buffer: string[];
+  border: boolean;
+}
 export type TextSource = { text: string } | { program: string };
 
 export class TextBox {
@@ -151,6 +156,10 @@ export class TextBox {
   get active(): boolean { return this._active; }
   get phase(): DisplayPhase { return this._phase; }
   get closing(): boolean { return this._phase === 'closing'; }
+  /** CloseTextDisplay has left the first frame: the window is no longer drawn. */
+  get hidesWindow(): boolean {
+    return this._phase === 'closing' && !!this.closeSequence && !this.closeSequence.firstFrame;
+  }
   get displaySession(): boolean { return this.mode === 'displayTextID'; }
   /** A new DisplayTextID can begin in the same tick that the prior display closes. */
   get displayRevision(): number { return this.revision; }
@@ -172,6 +181,18 @@ export class TextBox {
   clearInterior(): void {
     if (!this.active || !this.screen) throw new Error('restoring the saved box requires an open display');
     this.screen.clearInterior(); this.screen.resetCursor();
+  }
+  /** wTileMap rows 12–17 and the border flag. Tiles only: the program, cursor and phase stay. */
+  saveScreen(): TextBoxScreen {
+    if (!this.active || !this.screen) throw new Error('saving the screen requires an open display');
+    return { buffer: this.screen.buffer.slice(), border: this.border };
+  }
+  /** Writes a saved message box back. Does not restart a finished program or replay a prompt. */
+  restoreScreen(saved: TextBoxScreen): void {
+    if (!this.active || !this.screen) throw new Error('restoring the screen requires an open display');
+    if (saved.buffer.length !== TEXT_BUFFER_SIZE) throw new Error('screen snapshot has the wrong size');
+    for (let i = 0; i < TEXT_BUFFER_SIZE; i++) this.screen.buffer[i] = saved.buffer[i];
+    this.border = saved.border;
   }
   restoreFacingAtClose(fn: () => void): void { this.closeStart = fn; }
   dismiss(): void { this._active = false; this.run = null; this._phase = 'closed'; this.closeSequence = null; }
@@ -210,8 +231,9 @@ export class TextBox {
     this.textComplete = false;
     this.start(this.printing(source, opts));
   }
-  /** Standalone PrintText: border at T, Delay3, then the program; retain its box on return. */
-  printStandalone(source: TextSource, opts: { bindings?: TextBindings } = {}): void {
+  /** Standalone PrintText: border at T, Delay3, then the program; retain its box on return.
+   * BIT_NO_TEXT_DELAY skips letter delays only, never Delay3 or native waits. */
+  printStandalone(source: TextSource, opts: { bindings?: TextBindings; noDelay?: boolean } = {}): void {
     if (!this.active || this.mode !== 'printText') this.reset('printText');
     this.textComplete = false;
     this.start(this.printing(source, { box: 'new', ...opts }));

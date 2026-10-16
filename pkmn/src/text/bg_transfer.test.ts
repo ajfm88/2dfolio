@@ -9,6 +9,18 @@ describe('AutoBgMapTransfer bottom third', () => {
     expect(transfer.tick()).toBe(false); expect(transfer.tick()).toBe(true);
     expect([transfer.tick(), transfer.tick(), transfer.tick()]).toEqual([false, false, true]);
   });
+  it('disabling copies nothing and holds the portion', () => {
+    const transfer = new BgTransfer();
+    transfer.tick();
+    expect(transfer.nextPortion).toBe(1);
+    transfer.enabled = false;
+    for (let frame = 0; frame < 10; frame++) expect(transfer.tick()).toBe(false);
+    expect(transfer.nextPortion).toBe(1);
+    transfer.enabled = true;
+    expect(transfer.tick()).toBe(false);
+    expect(transfer.nextPortion).toBe(2);
+    expect(transfer.tick()).toBe(true);
+  });
   it.each([1, 3])('at speed %i, visible writes match the cartridge transfer cadence', speed => {
     const transfer = new BgTransfer();
     const printer = new TextPrinter('ABCDEFGHI', { buttons: () => speed === 1 ? 1 : 0,

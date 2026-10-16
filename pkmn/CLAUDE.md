@@ -144,7 +144,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the 123 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-10-13 (A5b6): 1242/1242.**
+  tests. **Baseline 2026-10-14 (A5b7b F-1): 1331/1331.**
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -161,15 +161,15 @@ item balls, hidden items and the inventory rules (A1b), and trainer sight (A1c),
 user-verified. The game runs with no ROM, from committed `data/` + `static/` (Phase R).
 It has 19 maps, upstream's 12 plus Route 2 and Viridian Forest (V1). It ticks at the
 Game Boy's 59.7275 Hz, and the overworld moves on the ASM's 2-frame pass (DECISIONS #33,
-#36). **1242/1242** tests; no-ROM 1119 pass, 123 skip; typecheck/build clean.
+#36). **1331/1331** tests; no-ROM 1208 pass, 123 skip; typecheck/build clean.
 A5 is under way: A5a (the text printer) is done and user-verified. A5b (script and menu texts)
 runs as seven increments (DECISIONS #45): A5b1–A5b4 are done, A5b5a/b (the story handlers on the
 display session: small handlers, Pallet, Oak's Lab) are reviewed and A5b5b is user-verified.
 A5b5c (review fixes, BUG-1, yes/no timing, the nurse) is implemented and reviewed
 (`notes/36-a5b5c-review.md`) and user-verified; its fix F-1 is checked.
-A5b6 (notebook, blackboard, Town Map sign, Oak's speech) is implemented and reviewed
-(`notes/38-a5b6-review.md`, passed); stop for the user play-test. Then A5b7, the healing-machine
-slice, the intro-animation slice (#51), A5c–A5f, V2.
+A5b6 (notebook, blackboard, Town Map sign, Oak's speech) is done (`notes/38-a5b6-review.md`;
+user-approved 2026-10-14). A5b7 is approved as seven slices (`notes/39-a5b7-plan.md`); A5b7a is done and user-verified, A5b7b (the Mart) is done and user-verified (`notes/42-a5b7b-review.md`); A5b7c is planned and approved as c1/c2 (`notes/43-a5b7c-plan.md`).
+Then the healing-machine slice, **V2 (Pewter, moved up by DECISIONS #55)**, the intro-animation slice (#51), A5c–A5f, V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

@@ -3,7 +3,6 @@ import { Bag, addToInventory, removeFromInventoryAt, BAG_ITEM_CAPACITY, PC_ITEM_
 import type { ItemStack } from './items';
 import { restoreBag } from './save';
 import type { SaveData } from './save';
-import { ShopMenu } from './menus/shop_menu';
 import { PcMenu } from './menus/pc_menu';
 import { isPressed } from './input';
 import { drawText } from './menus/menu_render';
@@ -100,28 +99,6 @@ function press(menu: { update: () => unknown }, button = 'a'): void {
 }
 
 describe('inventory callers through menu input', () => {
-  it('a failed buy leaves both the bag and money unchanged', () => {
-    const bag = new Bag(); bag.items = full();
-    const before = structuredClone(bag.items);
-    const money = vi.fn();
-    const menu = new ShopMenu(); menu.show(['POTION'], bag, 1000, money);
-    press(menu); press(menu); press(menu);
-    expect(bag.items).toEqual(before);
-    expect(money).not.toHaveBeenCalled();
-    menu.render();
-    expect(drawText).toHaveBeenCalledWith("You can't carry", expect.any(Number), expect.any(Number));
-    // Free a slot, dismiss the refusal, and repeat: money is charged once.
-    bag.items.pop(); press(menu); press(menu); press(menu);
-    expect(money).toHaveBeenCalledExactlyOnceWith(-300);
-    expect(bag.items[19]).toEqual({ id: 'POTION', count: 1 });
-  });
-  it('selling a later duplicate removes that filtered bag slot', () => {
-    const bag = new Bag();
-    bag.items = [{ id: 'TOWN_MAP', count: 1 }, { id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const menu = new ShopMenu(); menu.show([], bag, 1000, vi.fn());
-    press(menu, 'down'); press(menu); press(menu, 'down'); press(menu); press(menu);
-    expect(bag.items).toEqual([{ id: 'TOWN_MAP', count: 1 }, { id: 'POTION', count: 99 }]);
-  });
   it('failed withdrawal changes neither inventory; retry removes the selected PC slot', () => {
     const bag = new Bag(); bag.items = full();
     const pc = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];

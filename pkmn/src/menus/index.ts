@@ -1,7 +1,6 @@
 export { StartMenu } from './start_menu';
 export type { StartMenuAction } from './start_menu';
 export { PartyMenu } from './party_menu';
-export { ShopMenu } from './shop_menu';
 export { ItemMenu } from './item_menu';
 export { YesNoMenu } from './yes_no_menu';
 export { TownMap } from './town_map';

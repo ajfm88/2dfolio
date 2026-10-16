@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MenuInput } from './menu_input';
-import { isPassPressed } from '../input';
+import { isHeld, isPassPressed } from '../input';
 import type { GameButton } from '../core';
-vi.mock('../input', () => ({ isPassPressed: vi.fn(() => false) }));
+vi.mock('../input', () => ({ isPassPressed: vi.fn(() => false), isHeld: vi.fn(() => false) }));
 
 /** Frame driver: `press` is what the next actual read sees; reads are counted. */
 function rig(config: ConstructorParameters<typeof MenuInput>[0]) {
@@ -54,6 +54,50 @@ describe('HandleMenuInput_ (home/window.asm)', () => {
       const r = rig(blackboard); r.frame(); r.frame(); r.press(key);
       expect(r.frame()).toEqual([key]); expect(r.sound).toHaveBeenCalledTimes(sound);
     }
+  });
+
+  it('out-of-bounds returns Up or Down with no sound, and only when asked', () => {
+    const watched = rig({ ...blackboard, item: 0, watchOutOfBounds: true });
+    watched.frame(); watched.frame(); watched.press('up');
+    expect(watched.frame()).toEqual(['up']);
+    expect(watched.menu.item).toBe(0);
+    expect(watched.sound).not.toHaveBeenCalled();
+    const bottom = rig({ ...blackboard, item: 2, watchOutOfBounds: true });
+    bottom.frame(); bottom.frame(); bottom.press('down');
+    expect(bottom.frame()).toEqual(['down']);
+    expect(bottom.menu.item).toBe(2);
+  });
+
+  it('repeat reports the new press, waits 30, then every 5, and a held A or B suppresses it', () => {
+    let pressed: GameButton[] = [];
+    let held: GameButton[] = [];
+    const read = vi.fn(() => {
+      const seen = pressed;
+      const down = held;
+      pressed = [];
+      vi.mocked(isPassPressed).mockImplementation(key => seen.includes(key));
+      vi.mocked(isHeld).mockImplementation(key => down.includes(key));
+    });
+    const sound = vi.fn();
+    const menu = new MenuInput({ ...blackboard, item: 2, repeat: true, watchOutOfBounds: true });
+    const frame = () => menu.update(read, sound);
+    frame(); frame();
+    pressed = ['down']; held = ['down'];
+    expect(frame()).toEqual(['down']);
+    expect(menu.item).toBe(2); // already at the bottom: the press is returned, not wrapped
+    for (let i = 0; i < 29; i++) expect(frame()).toBeNull();
+    held = ['down'];
+    expect(frame()).toEqual(['down']);
+    for (let i = 0; i < 4; i++) expect(frame()).toBeNull();
+    expect(frame()).toEqual(['down']);
+    held = ['a', 'down'];
+    for (let i = 0; i < 4; i++) expect(frame()).toBeNull();
+    expect(frame()).toBeNull();
+    expect(sound).not.toHaveBeenCalled();
+    pressed = ['down']; held = ['a', 'down'];
+    expect(frame()).toEqual(['a', 'down']);
+    expect(menu.item).toBe(2);
+    expect(sound).toHaveBeenCalledOnce();
   });
 
   it('A with Up skips the move (bit B_PAD_A jumps to .checkOtherKeys); B with Up still moves', () => {

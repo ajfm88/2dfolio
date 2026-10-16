@@ -15,6 +15,8 @@ export interface TextHandlerContext {
   findNpc?: (id: string) => Npc | undefined;
   /** SetLastBlackoutMap belongs to the Pokécenter nurse only; Mom must not call this. */
   onHeal?: () => void;
+  /** The talked-to clerk's inventory. DisplayPokemartDialogue's LoadItemList. */
+  shopItems?: string[];
 }
 export type TextHandler = (ctx: TextHandlerContext) => ScriptCommand[];
 const handlers = new Map<string, TextHandler>();

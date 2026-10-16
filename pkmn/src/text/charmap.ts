@@ -26,6 +26,22 @@ export const textGlyphs = new Set(["'d", "'l", "'s", "'t", "'v", "'r", "'m"]);
 for (const [glyph, tile] of [["'d", 59], ["'l", 60], ["'s", 61], ["'t", 62],
   ["'v", 63], ["'r", 100], ["'m", 101]] as const) CHAR_TO_TILE[glyph] = tile;
 
+/** A contraction is one cartridge glyph, even though represented by two characters. */
+export function textGlyphAt(text: string, index: number): string {
+  const pair = text.slice(index, index + 2);
+  return textGlyphs.has(pair) ? pair : text[index];
+}
+
+/** Static PlaceString labels: glyphs only, with no interpretation of text controls. */
+export function tokenizeGlyphs(text: string): string[] {
+  const glyphs: string[] = [];
+  for (let index = 0; index < text.length;) {
+    const glyph = textGlyphAt(text, index);
+    glyphs.push(glyph); index += glyph.length;
+  }
+  return glyphs;
+}
+
 /** Tiles in font_extra.png, whose VRAM range starts at $60. */
 export function extraCharToTile(glyph: string): number {
   return ({ '‘': 16, '’': 17, '“': 18, '”': 19, '·': 20, '…': 21 } as Record<string, number>)[glyph] ?? -1;

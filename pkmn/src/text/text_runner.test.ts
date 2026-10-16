@@ -99,8 +99,6 @@ describe('TextCommandProcessor source contracts (A5b4)', () => {
   });
 
   it.each<TextOp>([
-    { op: 'bcd', binding: 'money', bytes: 3, leadingZeroes: false, leftAlign: false, moneySign: true },
-    { op: 'decimal', binding: 'hpDifference', bytes: 2, digits: 3 },
     { op: 'move', row: 1, col: 1 }, { op: 'box', row: 1, col: 1, width: 1, height: 1 },
     { op: 'low' }, { op: 'scroll' }, { op: 'dots', count: 1 },
   ])('unsupported $op fails with its program label and audit home', op => {
@@ -118,7 +116,7 @@ describe('TextCommandProcessor source contracts (A5b4)', () => {
 const file = JSON.parse(readFileSync(resolve(__dirname, '../../data/text_programs.json'), 'utf8')) as TextProgramsFile;
 
 describe('committed program contracts (A5b4)', () => {
-  it('pins the exact op census; numeric ops alone are deferred among extracted programs', () => {
+  it('pins the exact extracted op census, including the numeric menu operands', () => {
     const kinds = [...new Set(Object.values(file.programs).flat().map(op => op.op))].sort();
     expect(kinds).toEqual(['asm', 'bcd', 'cry', 'decimal', 'far', 'pause', 'promptButton', 'ram', 'sound', 'text', 'waitButton']);
   });

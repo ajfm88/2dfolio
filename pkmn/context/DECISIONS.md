@@ -580,7 +580,74 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **Who:** Claude implements (supersedes the plan's "Sol implements" for A5b6 only); the user picks the reviewer;
       then the user play-tests. *Same day: Claude finished CP1–CP3, then the user asked for OpenAI Codex to finish
       CP4–CP5 (`notes/37-a5b6-plan.md` → Progress and handoff).* Reviewed 2026-10-13 by Grok,
-      standing in for Claude (`notes/38-a5b6-review.md`, passed, no required fix). The user play-test is still open.
+      standing in for Claude (`notes/38-a5b6-review.md`, passed, no required fix). **The user approved the A5b6
+      gate on 2026-10-14** ("mark everything as approved"; see #52). A5b6 is done.
+    - Commits remain local; no push.
+
+52. **A5b7 takes all three plan decisions; A5b6's gate is approved** (2026-10-14). *The user's answer to
+    `notes/39-a5b7-plan.md` §8 (O-23), after Claude's spot-check of the plan against the disassembly: "yes, please
+    mark everything as approved".*
+
+    - **Seven slices, A5b7a–g, in order:** shared number printing/standalone no-delay calls/glyphs; Mart; field
+      items and party; item and Pokécenter PCs; Bill's PC; save; legacy cleanup with the A6e fixture migration
+      (note 36 N-3). One slice at a time, each committed locally and reviewed. A5b7a runs as its three checkpoints
+      (note 39 §4). Its CP3 changes how existing menus draw contractions, so the user glances at it too.
+    - **Workflow:** Sol (Codex) implements; Claude reviews; the user play-tests each visible slice.
+    - **Scope limits as in note 39 §6:** existing SFX (bank $02) and existing localStorage save; no new medicine
+      SFX/cries, no Change Box autosave, no save-identity check. The Full Restore branch bug and full Bill's PC
+      mechanics (action/STATS/PRINT, starter-Pikachu rules) stay with their later audits (J2/E2).
+    - **A5b6's user gate is approved** by the same answer, which closes #51.
+    - Commits remain local; no push.
+
+53. **`game/.gitattributes` is tracked** (2026-10-14). *User: "mark the new git file (.gitattributes) as part of
+    the repo moving forward". The user added it.* It repeats the root `.gitattributes` rules for `game/` (LF text,
+    binary PNG/tilemap/ROM) and adds `linguist-language` hints for TypeScript. Adding it changed no working-copy
+    file. Agents keep it; it is not a stray file.
+
+54. **A5b7b takes all five plan decisions** (2026-10-14). *The user's answer to `notes/41-a5b7b-plan.md` §9
+    (O-24): "yes to all". Claude planned it at the user's request.*
+
+    - **The cartridge list and quantity menus are built now** as shared modules (`DisplayListMenuID` for
+      `ITEMLISTMENU`/`PRICEDITEMLISTMENU`, `DisplayChooseQuantityMenu` in both layouts). This amends #52's J2
+      placement of list scrolling and repeat input, for this list menu only. A5b7c/d move the bag and PCs onto them.
+    - **SELECT item swapping** (`HandleItemListSwapping`, with its merge/split quirks) is part of the list module.
+    - **A screen tile model** for menus: wTileMap writes in source order, Buffer1 save/restore including the
+      message box, and the `hAutoBGTransferEnabled` switch on the shared BG transfer thirds. YES/NO keeps its
+      existing immediate drawing.
+    - **The list's ▼ is drawn steady;** its CPU-loop-paced blink is a documented J2 departure.
+    - **One slice, six checkpoints, one review, one play-test.** Sol or Grok implements (the user picks at
+      handoff); Claude reviews; the user play-tests (note 41 §7).
+    - Commits remain local; no push.
+
+55. **V2 (Pewter) moves up: right after A5b7 and the healing-machine slice** (2026-10-14). *The user, after
+    the A5b7b play-test found the road north of Route 2 closed: "let's move pewter up", then chose "After A5b7 +
+    healing machine" from the options.*
+
+    - **New order:** A5b7c → A5b7d → A5b7e → A5b7f → A5b7g → the healing-machine slice (#50) → **V2** →
+      the intro-animation slice (#51) → A5c → A5d → A5e → A5f → V3 → V4 → V5 → A2–A4 → B.
+    - This amends #44's "A5 runs before V2" for A5c–A5f and #51's placement of the intro animation. A5c–A5f
+      still land before V3, so Brock's gym is built on the finished battle presentation. Until then, V2's
+      battles (Route 2 north, none new in Pewter itself) keep the current battle presentation.
+    - Pewter's Mart, PCs, bag and save arrive already cartridge-faithful (A5b7), and its Pokécenter heals with the
+      healing machine. V2 must extract the `script_mart` inventories instead of hard-coding Pewter's
+      (`notes/41-a5b7b-plan.md` §6).
+    - Commits remain local; no push.
+
+56. **A5b7c takes all five plan decisions** (2026-10-14). *The user's answer to `notes/43-a5b7c-plan.md` §8
+    (O-25): "yes to all". Claude planned it at the user's request.*
+
+    - **Two slices:** A5b7c1 (START → ITEM on the shared list menu with the saved cursor and shared
+      `wListScrollOffset`, USE/TOSS, the toss flow, ItemUseNotTime, the Town Map returning to the bag, note 42
+      N-1–N-3), then A5b7c2 (party-menu prompts as no-delay PrintText incl. START → POKéMON, ItemUseMedicine
+      for the items that exist, through the shared party menu). c2 begins with a trace-only CP1 that writes
+      its frame anchors into note 43.
+    - **SFX_HEAL_HP and SFX_HEAL_AILMENT are extracted in c2** (a data checkpoint with the bank $02/$1f guard,
+      the A5b3 precedent). This amends #52's exclusion (note 39 §6) for these two sounds only; cries stay out.
+    - **`UpdateHPBar2` is ported now** as a shared module (2 frames per bar pixel); battle adopts it in A5c.
+    - **The TypeScript Full Restore branch is fixed in c2** (full HP + a status → cures it, as the cartridge).
+    - **Who:** Sol implements c1, then c2; Claude reviews each; the user play-tests each. *Amended
+      2026-10-15 by the user: **Grok** implements A5b7c1* (Claude made note 43 §3 implementation-ready
+      first, §3.6, adding F-2: emptying a slot resets the shared list state, a fix to A5b7b's Mart).
     - Commits remain local; no push.
 
 ## Open — not decided, needs the user
