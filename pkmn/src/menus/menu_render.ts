@@ -1,13 +1,15 @@
 // Shared menu rendering helpers
 import { TILE_SIZE } from '../core';
 import { fillRect, getCtx, getScale, paletteToHex, getActivePalette } from '../renderer';
-import { getFontCanvas, charToTile, drawTileBorder } from '../text';
+import { getFontCanvas, getBorderCanvas, charToTile, drawTileBorder } from '../text';
+import { extraCharToTile, tokenizeGlyphs } from '../text/charmap';
 import { uiTiles } from '../renderer/ui_tiles';
 
 export function drawChar(ch: string, x: number, y: number): void {
-  const fontCanvas = getFontCanvas();
+  const extra = extraCharToTile(ch);
+  const fontCanvas = extra >= 0 ? getBorderCanvas() : getFontCanvas();
   if (!fontCanvas) return;
-  const tileId = charToTile(ch);
+  const tileId = extra >= 0 ? extra : charToTile(ch);
   if (tileId < 0) return;
   const s = getScale();
   const tilesPerRow = Math.floor(fontCanvas.width / TILE_SIZE);
@@ -22,10 +24,14 @@ export function drawChar(ch: string, x: number, y: number): void {
 }
 
 export function drawText(text: string, x: number, y: number): void {
-  for (let i = 0; i < text.length; i++) {
-    drawChar(text[i], x + i * TILE_SIZE, y);
+  const glyphs = tokenizeGlyphs(text);
+  for (let i = 0; i < glyphs.length; i++) {
+    drawChar(glyphs[i], x + i * TILE_SIZE, y);
   }
 }
+
+/** Width in unscaled game pixels; labels use the same glyphs as drawText. */
+export function textWidth(text: string): number { return tokenizeGlyphs(text).length * TILE_SIZE; }
 
 export function drawBox(x: number, y: number, w: number, h: number): void {
   uiTiles.cover(x, y, w, h);

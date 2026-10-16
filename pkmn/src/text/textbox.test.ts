@@ -3,19 +3,20 @@ import { TextBox, initTextSystem, setTextSpeed } from './textbox';
 import { MapDialogue } from './map_dialogue';
 import { isHeld, isPressed, syncJoypadRead } from '../input';
 import { drawTile, fillRect } from '../renderer';
-import { playSFX } from '../audio';
+import { playSFX, isSoundFinished } from '../audio';
 import { charToTile } from './charmap';
 import { uiTiles } from '../renderer/ui_tiles';
 import { textBgTransfer } from './bg_transfer';
 import { CloseSequence } from './close_sequence';
+import { loadTextPrograms } from './program_data';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: vi.fn(() => false), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true) }));
 const font = { width: 128 }; const extra = { width: 128 };
 vi.mock('../renderer', () => ({ drawTile: vi.fn(), fillRect: vi.fn(),
   loadFont: vi.fn(async () => font), loadTileset: vi.fn(async () => extra) }));
-beforeAll(initTextSystem);
-beforeEach(() => { vi.clearAllMocks(); vi.mocked(isHeld).mockReturnValue(false);
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); });
+beforeEach(() => { vi.clearAllMocks(); vi.mocked(isSoundFinished).mockReturnValue(true); vi.mocked(isHeld).mockReturnValue(false);
   vi.mocked(isPressed).mockReturnValue(false); setTextSpeed('fast'); uiTiles.clear(); });
 function down(button: 'a' | 'b' | null): void { vi.mocked(isHeld).mockImplementation(key => key === button); }
 function tick(box: TextBox, frames: number): void { for (let i = 0; i < frames; i++) box.update(); }
@@ -96,6 +97,73 @@ describe('DisplayTextID and PrintText integration', () => {
     const box = new TextBox(); box.show('ABCDE', { end: 'none' }); tick(box, 2);
     const expected = tiles(box, 112); for (let i = 0; i < 10; i++) expect(tiles(box, 112)).toEqual(expected);
     expect(box.isComplete).toBe(false);
+  });
+});
+
+describe('standalone no-text-delay PrintText (A5b7a)', () => {
+  it('keeps Delay3 but places the entire program without letter reads, then retains its transfer', () => {
+    const box = new TextBox();
+    const transfer = vi.spyOn(textBgTransfer, 'tick');
+    try {
+      box.printStandalone({ program: 'PotionText' }, { noDelay: true,
+        bindings: { nameBuffer: 'PIKACHU', hpDifference: 123 } });
+      expect(box.active).toBe(true); expect(box.isComplete).toBe(false);
+      tick(box, 2);
+      expect(box.isComplete).toBe(false); expect(syncJoypadRead).not.toHaveBeenCalled();
+      box.update();
+      expect(box.isComplete).toBe(true); expect(box.isTextComplete).toBe(true);
+      expect(syncJoypadRead).not.toHaveBeenCalled();
+      tick(box, 3);
+      expect(tiles(box, 112)).toEqual('PIKACHU'.split('').map(charToTile));
+      expect(tiles(box, 128)).toEqual('recovered by 123!'.split('').filter(ch => ch !== ' ').map(charToTile));
+      expect(transfer).toHaveBeenCalledTimes(6);
+      const beforeRender = transfer.mock.calls.length;
+      box.render(); box.render(); expect(transfer).toHaveBeenCalledTimes(beforeRender);
+      expect(box.active).toBe(true); expect(playSFX).not.toHaveBeenCalled();
+    } finally { transfer.mockRestore(); }
+  });
+
+  it('preserves the default standalone letter delay used by Oak speech', () => {
+    setTextSpeed('medium');
+    const box = new TextBox(); box.printStandalone({ text: 'AB<DONE>' });
+    tick(box, 2); expect(syncJoypadRead).not.toHaveBeenCalled();
+    box.update(); expect(syncJoypadRead).toHaveBeenCalledTimes(1);
+    expect(box.isComplete).toBe(false);
+    tick(box, 5); expect(box.isComplete).toBe(false);
+    box.update(); expect(box.isComplete).toBe(true);
+  });
+
+  it('no-delay still waits for a committed program sound, without Joypad reads or an extra return frame', () => {
+    const box = new TextBox(); vi.mocked(isSoundFinished).mockReturnValue(false);
+    box.printStandalone({ program: 'OaksLabReceivedText' }, { noDelay: true, bindings: { nameBuffer: 'PIKACHU' } });
+    tick(box, 2); expect(playSFX).not.toHaveBeenCalled();
+    box.update(); expect(playSFX).toHaveBeenCalledExactlyOnceWith('get_key_item');
+    expect(box.isComplete).toBe(false);
+    down('a'); tick(box, 8); expect(box.isComplete).toBe(false);
+    expect(syncJoypadRead).not.toHaveBeenCalled();
+    vi.mocked(isSoundFinished).mockReturnValue(true); box.update();
+    expect(box.isComplete).toBe(true); expect(box.active).toBe(true);
+    expect(playSFX).toHaveBeenCalledTimes(1); expect(syncJoypadRead).not.toHaveBeenCalled();
+  });
+
+  it('reuses the screen and actual-read history across repeated calls, including a release during Delay3', () => {
+    const box = new TextBox(); down('b');
+    box.printStandalone({ text: 'A<PROMPT>' }, { noDelay: true });
+    tick(box, 6); // held at construction cannot accept the first prompt
+    expect(box.isComplete).toBe(false); expect(playSFX).not.toHaveBeenCalled();
+    down(null); box.update(); down('b'); box.update();
+    expect(box.isComplete).toBe(true); expect(playSFX).toHaveBeenCalledTimes(1);
+    const screen = Reflect.get(box, 'screen') as object;
+    const reads = vi.mocked(syncJoypadRead).mock.calls.length;
+    box.printStandalone({ text: 'B<PROMPT>' }, { noDelay: true });
+    down(null); tick(box, 2); down('b'); box.update();
+    expect(syncJoypadRead).toHaveBeenCalledTimes(reads); // no read during the second Delay3
+    expect(Reflect.get(box, 'screen')).toBe(screen);
+    tick(box, 5); // the intervening release was never read; B is still held in history
+    expect(box.isComplete).toBe(false); expect(playSFX).toHaveBeenCalledTimes(1);
+    down(null); box.update(); down('b'); box.update();
+    expect(box.isComplete).toBe(true); expect(playSFX).toHaveBeenCalledTimes(2);
+    expect(box.active).toBe(true);
   });
 });
 

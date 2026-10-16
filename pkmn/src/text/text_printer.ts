@@ -1,4 +1,4 @@
-import { textGlyphs } from './charmap';
+import { textGlyphAt } from './charmap';
 
 export const TEXT_BUFFER_SIZE = 20 * 6;
 export const TEXT_A = 1;
@@ -19,9 +19,8 @@ export function tokenizeText(text: string): string[] {
   for (let i = 0; i < text.length;) {
     const control = CONTROLS.find(token => text.startsWith(token, i));
     if (control) { result.push(control); i += control.length; continue; }
-    const pair = text.slice(i, i + 2);
-    if (textGlyphs.has(pair)) { result.push(pair); i += 2; }
-    else result.push(text[i++]);
+    const glyph = textGlyphAt(text, i);
+    result.push(glyph); i += glyph.length;
   }
   return result;
 }
@@ -56,6 +55,14 @@ export class TextScreen {
     if (this.row >= 1 && this.row <= 4 && this.column >= 1 && this.column <= 18)
       this.buffer[this.row * 20 + this.column] = glyph;
     this.column++;
+  }
+  /** PrintBCDNumber advances over suppressed cells without changing their tiles;
+   * its all-zero fallback backs up one cell for right-aligned numbers. */
+  moveCursor(columns: number): void { this.column += columns; }
+  /** A numeric digit uses PrintLetterDelay; currency and PrintNumber do not. */
+  *writeGlyph(glyph: string, noDelay = false): Generator<void> {
+    this.put(glyph);
+    if (!noDelay) yield* this.letterDelay();
   }
   *delay(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
   private *letterDelay(): Generator<void> {

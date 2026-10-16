@@ -26,6 +26,7 @@ import type { StepCounters } from './step_end';
 import '../story/small_text_handlers';
 import '../story/lab_text_handlers';
 import '../story/pokecenter';
+import '../story/mart';
 import { getTextHandler, getTextScript, displayTextID } from '../story/text_handlers';
 import { getOwnedCount } from '../pokedex_state';
 import { getHiddenEventScript } from '../story/hidden_events';
@@ -70,7 +71,6 @@ export type OverworldAction =
   | { type: 'pikachuEmotion' }
   | { type: 'textbox'; text: string; call?: 'text' | 'printText'; autoBox?: boolean; program?: string }
   | { type: 'script'; commands: ScriptCommand[] }
-  | { type: 'openShop'; shopItems: string[] }
   | { type: 'openPc' }
   | { type: 'openPokecenterPc' }
 
@@ -241,7 +241,7 @@ export function finishTrainerEngage(
 
 // ── Interaction handling ──────────────────────────────────────────────
 
-function handlerAction(textId: number | undefined, deps: OverworldDeps): OverworldAction | null {
+function handlerAction(textId: number | undefined, deps: OverworldDeps, shopItems?: string[]): OverworldAction | null {
   const alternate = deps.currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2')
     : deps.currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL');
   const call = mapTextCall(deps.currentMapName, textId, undefined, alternate);
@@ -250,7 +250,7 @@ function handlerAction(textId: number | undefined, deps: OverworldDeps): Overwor
   if (!handler) return null; // unmigrated/excluded callers retain their existing path
   return { type: 'script', commands: handler({ hasFlag, bag: deps.playerBag, ownedCount: getOwnedCount(),
     party: deps.playerParty, facing: deps.player.direction, findNpc: deps.findNpc,
-    step: { x: deps.player.mapStepX, y: deps.player.mapStepY }, onHeal: deps.onPokecenterHeal }) };
+    step: { x: deps.player.mapStepX, y: deps.player.mapStepY }, onHeal: deps.onPokecenterHeal, shopItems }) };
 }
 
 /** Handle a player interaction (NPC talk, sign read, item pickup, script trigger). */
@@ -273,16 +273,11 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
       return { type: 'talkToTrainer', npc: interaction.npc };
     }
 
-    const handler = handlerAction(npcData.textId, deps);
+    const handler = handlerAction(npcData.textId, deps, npcData.shopItems);
     if (handler) return handler;
-    // The Mart's first table gives a direct reminder; table 2 remains the shop.
+    // Table 1's clerk still says the parcel reminder. Table 2 is the mart script.
     if (currentMapName === 'ViridianMart' && npcData.textId === 1 && !hasFlag('OAK_GOT_PARCEL'))
       return { type: 'script', commands: displayTextID([{ type: 'printText', program: 'ViridianMartClerkSayHiToOakText', box: 'keep' }]) };
-
-    // Mart clerk opens shop
-    if (npcData.shopItems && npcData.shopItems.length > 0) {
-      return { type: 'openShop', shopItems: npcData.shopItems };
-    }
 
     // A beaten trainer says their after-battle text (TalkToTrainer, flag set).
     const text = npcData.defeated ? (npcData.afterBattleText ?? npcData.dialogue) : npcData.dialogue;

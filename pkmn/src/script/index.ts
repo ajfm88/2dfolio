@@ -5,6 +5,6 @@ export {
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript,
   setLastBattleWon, wasLastBattleWon,
   getScriptNpcs, clearScriptNpcs, getScriptFadeAlpha, lookupNpc,
-  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu,
+  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMart,
 } from './script_controller';
 export type { ScriptDeps, ScriptAction } from './script_controller';

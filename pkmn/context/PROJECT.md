@@ -74,7 +74,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   `(map, textId)` handler registry on the display session; Mom, TV, Daisy, Route 1, Mart, Viridian's
   talkers, Pallet's Oak scene and Oak's Lab; A5b5b user-verified). **A5b5c implemented and reviewed
   2026-10-12** (`notes/36-a5b5c-review.md`: the A5b5b fixes, BUG-1, yes/no timing, the nurse on one
-  display; tests 1195/1195; user-verified; F-1 fixed). **A5b6 is implemented and reviewed** (`notes/38-a5b6-review.md`, passed), awaiting the user play-test; next is A5b7. A5c–f follow in order;
+  display; tests 1195/1195; user-verified; F-1 fixed). **A5b6 is done** (`notes/38-a5b6-review.md`, passed; user-approved 2026-10-14). A5b7 is approved as seven slices A5b7a–g (`notes/39-a5b7-plan.md`, DECISIONS #52); **A5b7a is done** (`notes/40-a5b7a-review.md`, user-verified 2026-10-14), with 1299/1299 tests and clean typecheck/build; A5b7b (the Mart) is done (`notes/42-a5b7b-review.md`, user-verified 2026-10-14); A5b7c is next. A5c–f follow in order;
   species display names belong to V5.
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are

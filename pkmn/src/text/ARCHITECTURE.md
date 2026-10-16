@@ -35,11 +35,15 @@ Manual wait: place ▼ at (18,16), protect three frames, wait for fresh A/B, wai
 current sound, play `press_ab`, clear ▼. `cont` then copies rows 14–16 to 13–15 twice,
 holding five frames after each copy. ▼ defaults to 30 frames on / 30 off (DECISIONS #44).
 
-`bg_transfer.ts` keeps a shared 0/1/2 VBlank phase across boxes. Every third transfer
-copies the logical buffer to TextBox's visible buffer, **before** that frame's CPU
-work. Held-button letters therefore arrive in groups. `render()` only draws; it
-does not advance the phase or printer. Absolute phase remains approximate until
-menus and battles participate in their later audits.
+`bg_transfer.ts` keeps a shared 0/1/2 VBlank phase across boxes. Thirds are rows
+0–5, 6–11 and 12–17. Every third transfer copies the logical buffer to TextBox's
+visible buffer, **before** that frame's CPU work. Held-button letters therefore
+arrive in groups. Disabling the transfer copies nothing and holds the portion;
+the next enable continues the same cycle. The Mart and the message box share
+that one tick. `render()` only draws; it does not advance the phase or printer.
+
+`saveScreen` / `restoreScreen` copy the message-box buffer and its border only.
+A restore does not restart a program or replay a prompt.
 
 ## TextBox wrappers
 
@@ -68,7 +72,7 @@ the final glyph can reach the screen. Battle text remains on its old renderer un
 | API | Meaning |
 |---|---|
 | `show(text, opts?)` | Substitute names and start the chosen wrapper |
-| `printStandalone(source, {bindings}?)` | Standalone PrintText program/string: border at T, clear, Delay3, retain on return |
+| `printStandalone(source, {bindings, noDelay}?)` | Standalone PrintText program/string: border at T, clear, Delay3, retain on return; noDelay skips letter waits only |
 | `update()` | Transfer prior writes, then resume one frame of CPU work |
 | `updateDisplay()` | Transfer only, for retained script text |
 | `render()` / `dismiss()` | Draw / immediately close |
@@ -87,8 +91,33 @@ DONE/PROMPT, RAM strings require named bindings, and ASM returns control to the
 caller with the display retained. Sound plays once and waits without input reads.
 Pause reads once and skips its 30-frame wait on held A/B. Command waits have no
 ProtectedDelay3; string controls retain A5a timing. Cry emits a cue only (J2).
-Numeric and unused operations throw with the program label and their A5b7 home.
+Numeric operations are implemented in A5b7a (below). Unused operations still throw
+with the program label and their audit home.
 `program_data.ts` loads the committed programs once at startup; no ROM is read.
+
+### Numeric operands (A5b7a)
+
+`TextBindings` keeps stringBuffer/nameBuffer/boxNumString as strings, and
+money/coins/hpDifference as numbers. Values are semantic nonnegative safe integers,
+not packed bytes or formatted text. Missing/wrong-kind/range-invalid operands
+throw with the source label and binding. BCD values must fit their byte count;
+decimal values must fit both their byte count and displayed digits (TX_NUM uses
+1–3 bytes and 2–7 digits). This is a caller contract, not an emulated RAM interface.
+
+`home/print_bcd.asm`: the extracted `leadingZeroes` field is the raw bit-7 flag,
+so true **suppresses** leading zeroes. Suppressed right-aligned cells advance
+without overwriting their old tiles. Zero backs up one cell and writes its final
+0; an optional ¥ has no separate delay. Each emitted digit calls PrintLetterDelay
+unless noDelay is set. `home/print_num.asm`: TX_NUM is left-aligned and writes all
+decimal digits immediately, without letter delays or Joypad reads. Both preserve
+the shared FAR cursor and existing clipping. `TextScreen.moveCursor` and
+`writeGlyph` are the small numeric primitives; no new wrapping or tile-map VM.
+
+Standalone noDelay calls still clear and wait Delay3. Prompts, pauses, manual
+button waits and sound waits remain native operations; the flag bypasses only
+letter delays. Repeated standalone calls retain the same screen and actual-read
+history, including unread releases during protected waits. Default Oak typing
+is unchanged. Numeric menu callers are not migrated until the later A5b7 slices.
 
 `TextBox.open()` primes DisplayTextIDInit's 20-frame opening. `print(source,
 {box})` accepts a string or program: `new` clears the interior and waits three
@@ -171,7 +200,7 @@ expose loaded canvases. `setTextSpeed()` / `getTextSpeed()` control the 1/3/5 de
 `game_text.ts` loads `game_text.json`. `getText()` strips a trailing `<PROMPT>`/`<DONE>`
 for the callers A5b4–A5b7 haven't moved to programs yet; `getRawText()` keeps it.
 
-Tests: `text_printer.test.ts` (24), `bg_transfer.test.ts` (3), `textbox.test.ts` (30), `text_runner.test.ts` (23), `map_text_calls.test.ts` (2),
+Tests: `text_printer.test.ts` (24), `bg_transfer.test.ts` (4), `textbox.test.ts` (34), `text_runner.test.ts` (21), `text_numbers.test.ts` (49), `map_text_calls.test.ts` (2),
 `rom/__tests__/text_decoder.test.ts` (11, three ROM-dependent),
 `rom/__tests__/text_programs.test.ts` (7, ROM-dependent; ASM comparisons need `refs/`). Integration tests
 remain in `script/text_commands.test.ts` and `overworld/item_pickup.test.ts`.

@@ -80,7 +80,6 @@ import type { ItemStack } from "./items";
 import {
   StartMenu,
   PartyMenu,
-  ShopMenu,
   ItemMenu,
   TownMap,
   PcMenu,
@@ -108,7 +107,7 @@ import {
   initScript, updateScript as runScript, getActiveScript,
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript, setLastBattleWon,
   getScriptNpcs, getScriptFadeAlpha, lookupNpc,
-  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu,
+  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMart,
 } from "./script";
 import type { ScriptDeps } from "./script";
 import {
@@ -146,7 +145,6 @@ type GameState =
   | "start_menu"
   | "menu_closing"
   | "party_menu"
-  | "shop"
   | "item_menu"
   | "script"
   | "town_map"
@@ -253,7 +251,6 @@ let evolutionReturnState: GameState = 'overworld';
 // Menus
 const startMenu = new StartMenu();
 const partyMenu = new PartyMenu();
-const shopMenu = new ShopMenu();
 const itemMenu = new ItemMenu();
 const pcMenu = new PcMenu();
 const pokecenterPcMenu = new PokecenterPcMenu();
@@ -1262,10 +1259,6 @@ function gameTick(): void {
       state = "town_map";
       townMap.show(currentMapName);
     }
-  } else if (state === "shop") {
-    if (shopMenu.update() === "closed") {
-      state = "overworld";
-    }
   } else if (state === "pc") {
     if (pcMenu.update() === "closed") {
       state = "overworld";
@@ -1340,6 +1333,8 @@ function gameTick(): void {
   } else if (state === "script") {
     const scriptDeps: ScriptDeps = {
       textBox, player, gameMap, npcs, playerParty, playerBag,
+      getMoney: () => playerMoney,
+      setMoney: amount => { playerMoney = amount; },
       restoreMapMusic: () => { currentMapMusic = null; updateMapMusic(currentMapName); },
       pikachuTile: pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined,
       pikachuFollower,
@@ -1615,7 +1610,6 @@ function gameTick(): void {
 function drawUiLayer(): void {
   switch (state) {
     case 'item_menu': startMenu.render(); itemMenu.render(); break;
-    case 'shop': shopMenu.render(); break;
     case 'pc': pcMenu.render(); break;
     case 'pokecenter_pc': pokecenterPcMenu.render(); break;
     case 'save_menu': startMenu.render(); saveMenu.render(); break;
@@ -1629,7 +1623,7 @@ function drawUiLayer(): void {
     case 'overworld':
     case 'script':
     case 'emotion_bubble':
-    case 'textbox': renderScriptMenu(); textBox.render(); renderScriptYesNo(); break;
+    case 'textbox': renderScriptMenu(); textBox.render(); renderMart(); renderScriptYesNo(); break;
   }
 }
 
@@ -1724,14 +1718,6 @@ function gameLoop(now = 0): void {
   } else if (state === "party_menu") {
     partyMenu.render();
   } else if (state === "item_menu") {
-    const camX = player.getCameraX();
-    const camY = player.getCameraY();
-    clear();
-    gameMap.render(camX, camY);
-    for (const npc of npcs) npc.render(camX, camY);
-    pikachuFollower.render(camX, camY);
-    player.render(camX, camY);
-  } else if (state === "shop") {
     const camX = player.getCameraX();
     const camY = player.getCameraY();
     clear();
@@ -1868,12 +1854,6 @@ function handleOverworldAction(action: OverworldAction): void {
     case 'script':
       startScript(action.commands);
       break;
-    case 'openShop':
-      shopMenu.show(action.shopItems, playerBag, playerMoney, (delta) => {
-        playerMoney += delta;
-      });
-      state = 'shop';
-      break;
     case 'openPc':
       startScript([
         { type: 'text', message: `${getPlayerName()} turned on\nthe PC.` },
@@ -1940,7 +1920,10 @@ function startScript(commands: ScriptCommand[]): void {
     let index: number;
     do {
       index = getActiveScript()!.index;
-      runScript({ textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower }, false);
+      runScript({
+        textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower,
+        getMoney: () => playerMoney, setMoney: amount => { playerMoney = amount; },
+      }, false);
     } while (getActiveScript() && getActiveScript()!.index !== index);
   }
 }

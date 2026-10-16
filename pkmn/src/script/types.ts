@@ -18,6 +18,8 @@ export interface MenuBoxLayout {
 export type ScriptCommand =
   | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean }
   | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
+  // DisplayPokemartDialogue_ (engine/events/pokemart.asm), after the greeting PrintText.
+  | { type: 'pokemart'; items: string[] }
   // TextBoxBorder + PlaceString into wTileMap, kept until redrawn; null: LoadScreenTilesFromBuffer1 removed it
   | { type: 'menuBox'; layout: MenuBoxLayout | null }
   // HandleMenuInput_ (menus/menu_input.ts); `then` returns the commands for the keys it read

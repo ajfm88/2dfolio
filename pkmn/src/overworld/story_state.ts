@@ -61,19 +61,6 @@ export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
       }
     }
 
-    // ViridianMart: only shop availability is swapped; text comes from its call table.
-    if (mapName === "ViridianMart" && npc.data.id === "clerk") {
-      if (!hasFlag("GOT_OAKS_PARCEL")) {
-        // Before parcel quest: no shop, dialogue handled by entry script
-        npc.data.shopItems = undefined;
-      } else if (!hasFlag("OAK_GOT_PARCEL")) {
-        // Got parcel, not delivered yet — clerk reminds you
-        // (text/ViridianMart.asm _ViridianMartClerkSayHiToOakText)
-        npc.data.shopItems = undefined;
-      }
-      // After OAK_GOT_PARCEL: default shop dialogue from JSON
-    }
-
     // OaksLab: state-dependent NPC visibility; handlers select text at talk time.
     if (mapName === "OaksLab") {
       if (hasFlag("GOT_POKEDEX")) {
