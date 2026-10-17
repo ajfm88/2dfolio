@@ -17,7 +17,9 @@ ASM: `engine/events/pikachu_happiness.asm`, `engine/pikachu/pikachu_emotions.asm
 
 - **State**: `pikachuHappiness` (0-255, default 90) and `pikachuMood` (0-255, default 128)
 - **Face selection**: mood x happiness matrix maps to 1 of 20 animation scripts. Status overrides: SLP->sleeping face, other status->sick face
-- **Modifiers**: the tables below. Each nudges mood toward a target value. **Bug reproduced:**
+- **Modifiers**: the tables below. Older events nudge mood toward a target value
+  (known audit gap); WALKING leaves it unchanged. DEPOSITED follows the ASM's
+  direct decrease to $62, leaving lower moods alone. **Bug reproduced:**
   USEDITEM happiness fires *before* checking whether the item has any effect
   (`item_effects.asm:941`) — a Potion on full-HP Pikachu still counts.
 
@@ -29,8 +31,9 @@ Implemented (effect tiers are happiness <100 / <200 / 200+):
 | FAINTED | −1/−1/−1 | 0x6C | `main.ts`, player mon faints (level gap < 30) |
 | WALKING | +2/+1/+1 | 0x80 | `overworld_controller.ts`, every 256 steps |
 | GYMLEADER | +3/+2/+1 | 0x80 | `main.ts:startTrainerBattle`, before gym leaders |
-| USEDITEM | +5/+3/+2 | 0x83 | `battle.ts:usePotion/useStatusHeal`, `item_menu.ts:useItemOnMon` — Pikachu only |
+| USEDITEM | +5/+3/+2 | 0x83 | `battle.ts` and `field_medicine.ts` — starter Pikachu only, before the effect check |
 | CARELESSTRAINER | −5/−5/−10 | 0x6C | `battle.ts:checkFaint` + `main.ts`, enemy 30+ levels higher |
+| DEPOSITED | −3/−3/−5 | 0x62 | `menus/bills_pc.ts`, selected starter only, before append-to-box/remove-from-party |
 
 **Not yet implemented — add when the system is built:**
 
@@ -38,7 +41,6 @@ Implemented (effect tiers are happiness <100 / <200 / 200+):
 |---|---|---|---|---|
 | USEDXITEM | +1/+1/+0 | 0x80 | `engine/items/item_effects.asm` (X items, Dire Hit, Guard Spec) | `battle.ts:handleItemUse` when X items land, if target is Pikachu (data ready, no trigger) |
 | USEDTMHM | +1/+1/+0 | 0x94 | `item_effects.asm` ~l.2468 | after a successful TM/HM teach on Pikachu (**A2**) |
-| DEPOSITED | −3/−3/−5 | 0x62 | `engine/pokemon/bills_pc.asm` | Bill's PC deposit of Pikachu (**E2**) |
 | PSNFNT | −5/−5/−10 | 0x62 | `engine/events/poison.asm` | Pikachu faints from overworld poison (**A3**) |
 | TRADE | −10/−10/−20 | 0x00 | `engine/link/cable_club.asm` | trading Pikachu away |
 | `wd49b` emotion override | — | varies | `pikachu_emotions.asm:346` | item reactions: stone refusal (1), healing (2), item refusal (4), Thunder/Thunderbolt learning (5); skips mood update when set |
@@ -59,6 +61,30 @@ Since V1d it is the catch demo shared with the Viridian old man (`BATTLE_TYPE_PI
 `battle/ARCHITECTURE.md` → *Catch demo*.
 
 ## Follower Movement
+
+### PC eligibility and status 0 (A5b7e)
+
+The PC's sprite callback calls `reconcileStorageParty` before its font-loaded
+update. This runs at source menu/list/PrintText updates, including the result
+PrintText before its Delay3/glyphs. Failing party membership/living HP clears
+eligibility/image and leaves status-0 initialization pending. It preserves the
+slot's old pixels and antic offset for the later screen test. Covered images
+and absent party membership are separate states.
+
+A healthy withdrawal makes the slot eligible. Pending initialization computes
+map coordinates/facing and consumes the spawn state, but leaves pixels/offset
+unchanged until `WillPikachuSpawnOnTheScreen` permits initialization. Normal
+spawns consume their state to 0, so a settled PC withdrawal uses player position
+and facing, rather than the behind-player or nurse placements. Font-loaded
+initialization hides an overlap; ordinary status-0 initialization also hides
+its first image. Covered updates retain the pending state. Subsequent top-level
+menus and close use that same lifecycle; following resumes via the existing
+command buffer when the player walks away. Fainted withdrawals remain absent.
+The adapter does not change the movement algorithms or nurse's direct state 5.
+`pc_follower.test.ts` has six cases; production PC dispatch also checks immediate
+result reconciliation, parent returns and final close.
+
+### Follow commands
 
 - `PikachuFollowBuffer` ports `wPikachuFollowCommandBuffer`: size is the newest index,
   $ff empty. Pop refuses zero/one entries; the newest command stays retained for idle.

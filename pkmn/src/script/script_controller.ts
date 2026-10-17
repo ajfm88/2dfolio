@@ -5,9 +5,12 @@ import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
 import { TILE_SIZE } from '../core';
 import type { GameButton } from '../core';
 import { MenuInput } from '../menus/menu_input';
+import type { MenuSession } from '../menus/menu_session';
+import { PcSession } from '../menus/pc';
+import type { PcStorage } from '../menus/pc';
 import { PokemartSession } from '../menus/pokemart';
 import { ScreenTiles } from '../menus/screen_tiles';
-import { drawBox, drawChar, drawText } from '../menus/menu_render';
+import { drawBox, drawScreenTile, drawText } from '../menus/menu_render';
 import { createScript, currentCommand, advanceScript } from './engine';
 import type { TextBox } from '../text';
 import { textBgTransfer } from '../text/bg_transfer';
@@ -22,9 +25,9 @@ import { getPikachuMovementData, pikachuMovementProgram } from '../pikachu/pikac
 import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movement';
 import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
-import type { Bag } from '../items';
+import type { Bag, ItemStack } from '../items';
 import { loadSprite, getCtx, getScale, drawExclamationBubble } from '../renderer';
-import { isPassPressed, isPressed, readJoypad, syncJoypadRead } from '../input';
+import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
 import { setFlag, hasFlag, clearFlag, setMapScript, hideObject } from '../events';
@@ -38,6 +41,7 @@ import { playMusic, isMusicChannelActive } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
 import { getTextPrograms } from '../text/program_data';
 import { displayTextID, getTextHandler } from '../story/text_handlers';
+import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { getOwnedCount } from '../pokedex_state';
 import { mapTextCall } from '../text/map_text_calls';
 
@@ -50,6 +54,8 @@ export interface ScriptDeps {
   npcs: Npc[];
   playerParty: BattlePokemon[];
   playerBag: Bag;
+  pcItems?: ItemStack[];
+  pcStorage?: PcStorage;
   /** wPlayerMoney. The Mart reads it when it draws the MONEY box and writes it on a sale or purchase. */
   getMoney?: () => number;
   setMoney?: (amount: number) => void;
@@ -71,11 +77,9 @@ export type ScriptAction =
 // ── Module-level script state ──────────────────────────────────────────
 
 let activeScript: ScriptRunner | null = null;
-let scriptTextWaiting = false;
 let scriptSound: { name: string; played: boolean; waitForCurrent: boolean } | null = null;
 let scriptDisplayWaiting = false;
 let scriptDisplayStarted = false;
-let scriptButtonWaiting = false;
 let scriptClosingText = false;
 let scriptMoveTarget: 'npc' | 'player' | 'parallel' | null = null;
 let scriptMoveNpcId: string | null = null;
@@ -91,18 +95,17 @@ let scriptChoice: { yes: ScriptCommand[]; no: ScriptCommand[] } | null = null;
 // PlaceMenuCursor left in it; HandleMenuInput_ while it reads
 let scriptMenuBox: { layout: MenuBoxLayout; cursor: { x: number; y: number } | null } | null = null;
 let scriptMenu: { input: MenuInput; then: (keys: GameButton[], item: number) => ScriptCommand[] } | null = null;
-let scriptMart: PokemartSession | null = null;
-let martTiles: ScreenTiles | null = null;
+let scriptMenuSession: MenuSession | null = null;
+let menuSessionTiles: ScreenTiles | null = null;
 const scriptBubble = new EmotionBubble<'player' | string>();
 let scriptHealingMusic: { ready: boolean } | null = null;
 
 let scriptAwaitInteraction: {
   npcId: string;
   guardStepY: number;
-  guardText?: string;
-  guardProgram?: string;
+  guardProgram: string;
 } | null = null;
-let scriptFreeSub: 'move' | 'text' | 'target' | 'guard_text' | 'guard_step' | 'guard_delay' | 'handler' = 'move';
+let scriptFreeSub: 'move' | 'guard_step' | 'guard_delay' | 'handler' = 'move';
 
 // Pokecenter heal animation state (pokeball machine animation)
 // Offsets from nurse position — derived from original OAM PokeCenterOAMData
@@ -159,10 +162,14 @@ export function getActiveScript(): ScriptRunner | null {
   return activeScript;
 }
 
-/** The Mart's wTileMap while a display still holds it. Null once the message box hides. */
+/** The active menu wTileMap, retained until CloseTextDisplay hides it. */
 export function getMartTiles(): ScreenTiles | null {
-  return martTiles;
+  return menuSessionTiles;
 }
+
+export function getMenuSessionTiles(): ScreenTiles | null { return menuSessionTiles; }
+
+export function isScriptMenuFullScreen(): boolean { return scriptMenuSession?.fullScreen === true; }
 
 export function isScriptBattlePending(): boolean {
   return scriptBattlePending;
@@ -212,11 +219,9 @@ export function lookupNpc(id: string, mapNpcs: Npc[]): Npc | undefined {
 /** Initialize a scripted cutscene. Caller must set game state to 'script'. */
 export function initScript(commands: ScriptCommand[]): void {
   activeScript = createScript(commands);
-  scriptTextWaiting = false;
   scriptSound = null;
   scriptDisplayWaiting = false;
   scriptDisplayStarted = false;
-  scriptButtonWaiting = false;
   scriptClosingText = false;
   scriptMoveTarget = null;
   scriptMoveNpcId = null;
@@ -230,8 +235,8 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptChoice = null;
   scriptMenuBox = null;
   scriptMenu = null;
-  scriptMart = null;
-  martTiles = null;
+  scriptMenuSession = null;
+  menuSessionTiles = null;
   scriptHealingMusic = null;
   // A replaced script must not leave a bubble on screen.
   scriptBubble.clear();
@@ -262,26 +267,25 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // VBlank continues during retained text, even when several commands return in one frame.
-  // The Mart and the text box share that one tick. A PrintText the Mart started advances here.
-  const martAdvances = scriptMart?.advanceText === true;
-  if (martAdvances && scriptMart) {
+  // The active menu and the text box share one tick; the menu's PrintText advances here.
+  const menuAdvances = scriptMenuSession?.advanceText === true;
+  if (menuAdvances && scriptMenuSession) {
     const enabled = textBgTransfer.enabled;
     const third = textBgTransfer.nextPortion;
     textBox.update();
     displayAdvanced = true;
-    if (enabled) scriptMart.copyThird(third);
-  } else if (!displayAdvanced && textBox.active && !scriptTextWaiting && !scriptClosingText && !scriptDisplayWaiting &&
-      !(scriptAwaitInteraction?.guardProgram && scriptFreeSub === 'text')) {
-    const enabled = !!scriptMart && textBgTransfer.enabled;
+    if (enabled) scriptMenuSession.copyThird(third);
+  } else if (!displayAdvanced && textBox.active && !scriptClosingText && !scriptDisplayWaiting) {
+    const enabled = !!scriptMenuSession && textBgTransfer.enabled;
     const third = textBgTransfer.nextPortion;
     textBox.updateDisplay();
     displayAdvanced = true;
-    if (scriptMart && enabled) scriptMart.copyThird(third);
+    if (scriptMenuSession && enabled) scriptMenuSession.copyThird(third);
   }
-  if (scriptMart) {
-    const done = scriptMart.frame(readJoypad, () => playSFX('press_ab'));
+  if (scriptMenuSession) {
+    const done = scriptMenuSession.frame(readJoypad, () => playSFX('press_ab'));
     if (!done) return null;
-    scriptMart = null;
+    scriptMenuSession = null;
     advanceScript(activeScript);
     return updateScript(deps, isPass, displayAdvanced);
   }
@@ -331,7 +335,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // Only the button wait and Hold read Joypad. Sound/copy waits freeze the world without reads.
-  if (scriptSound || scriptButtonWaiting || scriptClosingText) {
+  if (scriptSound || scriptClosingText) {
     if (scriptSound) {
       if (!scriptSound.played) {
         if (scriptSound.waitForCurrent && !isSoundFinished()) return null;
@@ -340,14 +344,10 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       }
       if (!isSoundFinished()) return null;
       scriptSound = null;
-    } else if (scriptButtonWaiting) {
-      syncJoypadRead();
-      if (!isPressed('a') && !isPressed('b')) return null;
-      scriptButtonWaiting = false;
     } else {
       textBox.update();
       displayAdvanced = true;
-      if (textBox.hidesWindow || !textBox.active) martTiles = null;
+      if (textBox.hidesWindow || !textBox.active) menuSessionTiles = null;
       if (textBox.active) return null;
       scriptClosingText = false;
     }
@@ -379,24 +379,6 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // Handle waiting states
-  if (scriptTextWaiting) {
-    textBox.update();
-    displayAdvanced = true;
-
-    const command = currentCommand(activeScript);
-    if (command?.type === 'text' && command.end && textBox.isComplete) {
-      scriptTextWaiting = false;
-      advanceScript(activeScript);
-      // text_end returns directly into GiveItem / TextCommand_SOUND in this frame.
-    } else if (!textBox.active) {
-      scriptTextWaiting = false;
-      advanceScript(activeScript!);
-      return null;
-    } else {
-      return null;
-    }
-  }
-
   if (scriptWaitFrames > 0) {
     scriptWaitFrames--;
     if (scriptWaitFrames <= 0) {
@@ -591,14 +573,28 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       return updateScript(deps, isPass, displayAdvanced);
 
     case 'pokemart': {
-      martTiles = new ScreenTiles();
-      const tiles = martTiles;
-      scriptMart = new PokemartSession(tiles, textBox, textBgTransfer, playerBag, {
+      menuSessionTiles = new ScreenTiles();
+      const tiles = menuSessionTiles;
+      scriptMenuSession = new PokemartSession(tiles, textBox, textBgTransfer, playerBag, {
         get: () => deps.getMoney?.() ?? 0,
         set: amount => deps.setMoney?.(amount),
       }, cmd.items, () => fontLoadedUpdateSprites(player, deps.gameMap,
         (x, y) => tiles.at(x, y) ? 0x60 : textBox.uiTileAt(x, y), pikachuFollower));
-      scriptMart.enter();
+      scriptMenuSession.enter();
+      return null;
+    }
+
+    case 'pc': {
+      if (!deps.pcItems) throw new Error('PC requires item storage');
+      menuSessionTiles = new ScreenTiles();
+      const tiles = menuSessionTiles;
+      scriptMenuSession = new PcSession(tiles, textBox, textBgTransfer, playerBag, deps.pcItems,
+        () => {
+          pikachuFollower?.reconcileStorageParty(playerParty);
+          fontLoadedUpdateSprites(player, deps.gameMap,
+            (x, y) => tiles.at(x, y) ? 0x60 : textBox.uiTileAt(x, y), pikachuFollower);
+        }, cmd.mode, deps.pcStorage);
+      scriptMenuSession.enter();
       return null;
     }
 
@@ -633,32 +629,15 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       advanceScript(activeScript);
       return updateScript(deps, isPass, displayAdvanced);
 
-    case 'text':
-      textBox.show(cmd.message, { end: cmd.end });
-      scriptTextWaiting = true;
-      break;
-
     case 'sound':
       scriptSound = { name: cmd.name, played: false, waitForCurrent: cmd.waitForCurrent ?? false };
       return updateScript(deps, isPass, displayAdvanced);
 
     case 'textButtonWait':
-      if (textBox.displaySession && textBox.active) {
-        textBox.waitSilent();
-        if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
-        scriptDisplayWaiting = true;
-        return null;
-      }
-      scriptButtonWaiting = true;
-      return updateScript(deps, isPass, displayAdvanced);
-
-    case 'closeText':
-      if (!textBox.active) {
-        advanceScript(activeScript);
-        return updateScript(deps, isPass, displayAdvanced);
-      }
-      textBox.finish({ outerWait: false });
-      scriptClosingText = true;
+      if (!textBox.displaySession || !textBox.active) throw new Error('textButtonWait requires an open display');
+      textBox.waitSilent();
+      if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
+      scriptDisplayWaiting = true;
       return null;
 
     case 'hideObject': {
@@ -803,7 +782,6 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       scriptAwaitInteraction = {
         npcId: cmd.npcId,
         guardStepY: cmd.guardStepY,
-        guardText: cmd.guardText,
         guardProgram: cmd.guardProgram,
       };
       scriptFreeSub = 'move';
@@ -935,7 +913,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         savedPikachuFacing = pikachuFollower ? pikachuFollower.direction : null;
       } else if (savedPikachuFacing && pikachuFollower) {
         const facing = savedPikachuFacing; const follower = pikachuFollower;
-        if (textBox.displaySession) textBox.restoreFacingAtClose(() => follower.setLiveFacing(facing));
+        if (textBox.active && textBox.displaySession) textBox.restoreFacingAtClose(() => follower.setLiveFacing(facing));
         else follower.setLiveFacing(facing);
       }
       advanceScript(activeScript);
@@ -1049,40 +1027,13 @@ function nurseProgram(pikachuFollower: PikachuFollower, player: Player): Pikachu
 // ── Free-movement sub-state (awaitInteraction) ─────────────────────────
 
 function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction | null {
-  const { textBox, player, gameMap, npcs, pikachuFollower } = deps;
+  const { player, gameMap, npcs, pikachuFollower } = deps;
 
   if (!scriptAwaitInteraction || !activeScript) return null;
 
   if (scriptFreeSub === 'guard_delay') {
     if (--scriptWaitFrames <= 0) scriptFreeSub = 'move';
     return null; // OaksLabPlayerForcedToWalkBackScript Delay3 owns no Joypad.
-  }
-
-  // Sub-state: showing regular NPC text (return to free move when dismissed)
-  if (scriptFreeSub === 'text') {
-    if (!textBox.displaySession) syncJoypadRead();
-    textBox.update();
-    if (!textBox.active) scriptFreeSub = 'move';
-    return null;
-  }
-
-  // Sub-state: target interacted, showing nothing — advance script
-  if (scriptFreeSub === 'target') {
-    scriptAwaitInteraction = null;
-    scriptFreeSub = 'move';
-    advanceScript(activeScript);
-    return null;
-  }
-
-  // Sub-state: showing guard text ("Don't go away yet!")
-  if (scriptFreeSub === 'guard_text') {
-    syncJoypadRead();
-    textBox.update();
-    if (!textBox.active) {
-      player.startScriptedMove(['up']);
-      scriptFreeSub = 'guard_step';
-    }
-    return null;
   }
 
   // The rest moves: once per overworld pass
@@ -1094,8 +1045,7 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
   // Sub-state: player being forced 1 step up after guard
   if (scriptFreeSub === 'guard_step') {
     if (player.scriptedMoveDone) {
-      if (scriptAwaitInteraction.guardProgram) { scriptWaitFrames = 3; scriptFreeSub = 'guard_delay'; }
-      else scriptFreeSub = 'move';
+      scriptWaitFrames = 3; scriptFreeSub = 'guard_delay';
       return null;
     }
     player.updateScriptedMove(sprites);
@@ -1115,41 +1065,29 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
   if (interaction) {
     if ('npc' in interaction) {
       if (interaction.npc.data.id === scriptAwaitInteraction.npcId) {
-        if (scriptAwaitInteraction.guardProgram) {
-          scriptAwaitInteraction = null;
-          advanceScript(activeScript);
-          return updateScript(deps, isPass); // ball DisplayTextID starts on the A press
-        }
-        scriptFreeSub = 'target';
-        return null;
+        scriptAwaitInteraction = null;
+        advanceScript(activeScript);
+        return updateScript(deps, isPass); // ball DisplayTextID starts on the A press
       }
-      if (scriptAwaitInteraction.guardProgram) {
-        const textId = interaction.npc.data.textId;
-        const name = gameMap.mapData!.name;
-        const handler = getTextHandler(name, textId);
-        const call = mapTextCall(name, textId);
-        const plain = call?.call === 'text' || call?.call === 'printText' ? call : undefined;
-        if (handler || plain) {
-          const body = handler ? handler({ hasFlag, bag: deps.playerBag, party: deps.playerParty,
-            ownedCount: getOwnedCount(), facing: player.direction, step: mapStep(player),
-            findNpc: id => lookupNpc(id, npcs) }) : displayTextID([
-              { type: 'printText', program: plain!.program, box: plain!.call === 'printText' ? 'new' : 'keep' },
-            ], { autoBox: false });
-          return startFreeDisplay(body, deps, isPass);
-        }
-      }
-      textBox.show(
-        interaction.npc.data.defeated
-          ? (interaction.npc.data.afterBattleText ?? interaction.npc.data.dialogue)
-          : interaction.npc.data.dialogue,
-        scriptAwaitInteraction.guardProgram ? { mode: 'displayTextID', autoBox: false } : {},
-      );
-      scriptFreeSub = 'text';
-    } else if ('scriptId' in interaction) {
-      // Scripted hidden event during free-movement script — ignore
-    } else if ('text' in interaction) {
-      textBox.show(interaction.text, scriptAwaitInteraction.guardProgram ? { mode: 'displayTextID', autoBox: false } : {});
-      scriptFreeSub = 'text';
+      const textId = interaction.npc.data.textId;
+      const name = gameMap.mapData!.name;
+      const handler = getTextHandler(name, textId);
+      const call = mapTextCall(name, textId);
+      const plain = call?.call === 'text' || call?.call === 'printText' ? call : undefined;
+      if (!handler && !plain) throw new Error(`unresolved free-move NPC ${name}:${interaction.npc.data.id}`);
+      const body = handler ? handler({ hasFlag, bag: deps.playerBag, party: deps.playerParty,
+        ownedCount: getOwnedCount(), facing: player.direction, step: mapStep(player),
+        findNpc: id => lookupNpc(id, npcs) }) : displayTextID([
+          { type: 'printText', program: plain!.program, box: plain!.call === 'printText' ? 'new' : 'keep' },
+        ], { autoBox: false });
+      return startFreeDisplay(body, deps, isPass);
+    }
+    if ('scriptId' in interaction || 'program' in interaction) {
+      const display = interactionDisplay(interaction, {
+        hasFlag, bag: deps.playerBag, party: deps.playerParty, ownedCount: getOwnedCount(),
+        facing: player.direction, step: mapStep(player), findNpc: id => lookupNpc(id, npcs),
+      }, bookshelfContext(player, gameMap));
+      if (display) return startFreeDisplay(display, deps, isPass);
     }
     return null;
   }
@@ -1167,14 +1105,9 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       if (oakDesk) oakDesk.faceDirection('down');
       const rival = lookupNpc('rival', npcs);
       if (rival) rival.faceDirection('down');
-      if (scriptAwaitInteraction.guardProgram) {
-        sprites(); // OaksLabPlayerDontGoAwayScript's UpdateSprites before the display
-        const body = displayTextID([{ type: 'printText', program: scriptAwaitInteraction.guardProgram }], { autoBox: false });
-        return startFreeDisplay(body, deps, isPass, true);
-      }
-      textBox.show(scriptAwaitInteraction.guardText ?? '');
-      scriptFreeSub = 'guard_text';
-      return null;
+      sprites(); // OaksLabPlayerDontGoAwayScript's UpdateSprites before the display
+      const body = displayTextID([{ type: 'printText', program: scriptAwaitInteraction.guardProgram }], { autoBox: false });
+      return startFreeDisplay(body, deps, isPass, true);
     }
   }
 
@@ -1250,19 +1183,20 @@ export function renderScriptExclamation(
   drawExclamationBubble(exScreenX, exScreenY);
 }
 
-/** The Mart's transferred tiles, after the message box so row 12 can cover its top border. */
-export function renderMart(): void {
-  if (!martTiles) return;
+/** Transferred menu tiles paint after text so the list can cover its row-12 border. */
+export function renderMenuSession(): void {
+  if (scriptMenuSession?.fullScreen) { scriptMenuSession.renderOverlay(); return; }
+  if (!menuSessionTiles) return;
   const T = TILE_SIZE;
   for (let y = 0; y < 18; y++) {
     for (let x = 0; x < 20; x++) {
-      const logical = martTiles.at(x, y);
+      const logical = menuSessionTiles.at(x, y);
       if (logical) uiTiles.cover(x * T, y * T, T, T);
-      const shown = martTiles.visibleAt(x, y);
-      if (shown) drawChar(shown, x * T, y * T);
+      const shown = menuSessionTiles.visibleAt(x, y);
+      if (shown !== null) drawScreenTile(shown, x * T, y * T);
     }
   }
-  scriptMart?.renderOverlay();
+  scriptMenuSession?.renderOverlay();
 }
 
 /** Render YES/NO menu if active during a script. */

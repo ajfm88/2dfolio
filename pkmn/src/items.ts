@@ -1,5 +1,7 @@
 // Simple item inventory system
 
+import { resetListStateForEmptySlot } from './list_state';
+
 export interface ItemStack {
   id: string;
   count: number;
@@ -73,6 +75,46 @@ export function isTossable(id: string): boolean {
   return !isKeyItem(id);
 }
 
+/** UsableItems_PartyMenu (data/items/use_party.asm), for items that exist here. */
+export const PARTY_MENU_ITEMS = new Set([
+  'ANTIDOTE', 'BURN_HEAL', 'ICE_HEAL', 'AWAKENING', 'PARALYZE_HEAL', 'FULL_RESTORE',
+  'MAX_POTION', 'HYPER_POTION', 'SUPER_POTION', 'POTION', 'FULL_HEAL', 'REVIVE',
+]);
+
+/** UsableItems_CloseMenu (data/items/use_overworld.asm). Escape Rope is the one sold later. */
+export const CLOSE_MENU_ITEMS = new Set([
+  'ESCAPE_ROPE', 'ITEMFINDER', 'POKE_FLUTE', 'OLD_ROD', 'GOOD_ROD', 'SUPER_ROD',
+]);
+
+/**
+ * ItemUsePtrTable routine names for the items defined today.
+ * OAK'S PARCEL is ItemUseOaksParcel, which jumps to ItemUseNotYoursToUse.
+ */
+export const ITEM_USE_ROUTINE: Record<string, string> = {
+  MASTER_BALL: 'ItemUseBall',
+  ULTRA_BALL: 'ItemUseBall',
+  GREAT_BALL: 'ItemUseBall',
+  POKE_BALL: 'ItemUseBall',
+  TOWN_MAP: 'ItemUseTownMap',
+  POTION: 'ItemUseMedicine',
+  SUPER_POTION: 'ItemUseMedicine',
+  HYPER_POTION: 'ItemUseMedicine',
+  MAX_POTION: 'ItemUseMedicine',
+  FULL_RESTORE: 'ItemUseMedicine',
+  ANTIDOTE: 'ItemUseMedicine',
+  PARALYZE_HEAL: 'ItemUseMedicine',
+  BURN_HEAL: 'ItemUseMedicine',
+  ICE_HEAL: 'ItemUseMedicine',
+  AWAKENING: 'ItemUseMedicine',
+  FULL_HEAL: 'ItemUseMedicine',
+  REVIVE: 'ItemUseMedicine',
+  ESCAPE_ROPE: 'ItemUseEscapeRope',
+  REPEL: 'ItemUseRepel',
+  SUPER_REPEL: 'ItemUseSuperRepel',
+  MAX_REPEL: 'ItemUseMaxRepel',
+  OAKS_PARCEL: 'ItemUseOaksParcel',
+};
+
 // Assembly: constants/menu_constants.asm
 export const BAG_ITEM_CAPACITY = 20;
 export const PC_ITEM_CAPACITY = 50;
@@ -111,7 +153,11 @@ export function removeFromInventoryAt(items: ItemStack[], index: number, count: 
   const item = items[index];
   if (!item || count < 0 || item.count < count) return false;
   item.count -= count;
-  if (item.count === 0) items.splice(index, 1);
+  if (item.count === 0) {
+    items.splice(index, 1);
+    // A partial removal changes none of the list cursors.
+    resetListStateForEmptySlot();
+  }
   return true;
 }
 

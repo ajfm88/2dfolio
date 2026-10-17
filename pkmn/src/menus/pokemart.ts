@@ -3,6 +3,7 @@
 
 import { playSFX, isSoundFinished } from '../audio';
 import { isKeyItem, type Bag } from '../items';
+import { getListScrollOffset, getSavedListScrollOffset, setListScrollOffset, setSavedListScrollOffset } from '../list_state';
 import type { BgTransfer } from '../text/bg_transfer';
 import type { TextBox } from '../text/textbox';
 import type { TextBindings } from '../text/text_runner';
@@ -10,17 +11,12 @@ import { ListMenu } from './list_menu';
 import { MenuInput } from './menu_input';
 import { QuantityMenu } from './quantity_menu';
 import { addBcd, type ScreenSnapshot, type ScreenTiles } from './screen_tiles';
+import type { MenuSession } from './menu_session';
 import { YesNoMenu } from './yes_no_menu';
 
 const MONEY = { bytes: 3, suppressZero: true, leftAlign: false, moneySign: true } as const;
 /** IsItemHM: HM01–HM05. None of them are in the item table yet. */
 const HM_ITEMS = new Set(['HM01', 'HM02', 'HM03', 'HM04', 'HM05']);
-
-let listScrollOffset = 0;
-
-/** wListScrollOffset. The Mart saves it on entry and restores it at .done. */
-export function getListScrollOffset(): number { return listScrollOffset; }
-export function setListScrollOffset(value: number): void { listScrollOffset = value; }
 
 type AfterPrint = 'thankYou' | 'saveAndReturn' | 'back' | 'loop' | 'buyList' | 'sellList' | 'yesno' | 'buyLoop';
 
@@ -32,8 +28,7 @@ interface Purchase {
   total: number;
 }
 
-export class PokemartSession {
-  private savedOffset = 0;
+export class PokemartSession implements MenuSession {
   private snapshot: ScreenSnapshot | null = null;
   private menu: MenuInput | null = null;
   private list: ListMenu | null = null;
@@ -64,7 +59,7 @@ export class PokemartSession {
 
   /** The greeting's PrintText has returned. This frame's VBlank already ran. */
   enter(): void {
-    this.savedOffset = listScrollOffset;
+    setSavedListScrollOffset(getListScrollOffset());
     this.onSprites();
     this.loop();
   }
@@ -132,7 +127,7 @@ export class PokemartSession {
   private afterPrint(next: AfterPrint | null): void {
     if (next === 'thankYou') {
       this.onSprites();
-      listScrollOffset = this.savedOffset;
+      setListScrollOffset(getSavedListScrollOffset());
       this.finished = true;
       return;
     }
@@ -203,7 +198,7 @@ export class PokemartSession {
 
   private advanceList(readJoypad: () => void, pressSound: () => void): void {
     const choice = this.list?.update(readJoypad, pressSound);
-    if (this.list) listScrollOffset = this.list.offset;
+    if (this.list) setListScrollOffset(this.list.offset);
     if (!choice) return;
     this.list = null;
     if (choice.type === 'cancelled') {
@@ -255,7 +250,7 @@ export class PokemartSession {
   }
 
   private loop(): void {
-    listScrollOffset = 0;
+    setListScrollOffset(0);
     this.list = null;
     this.quantity = null;
     this.yesNo = null;
@@ -288,7 +283,7 @@ export class PokemartSession {
     this.list = new ListMenu(this.tiles, {
       kind: 'priced',
       entries: this.stock.map(id => ({ id })),
-      offset: listScrollOffset,
+      offset: getListScrollOffset(),
       item: 0,
     }, this.transfer);
   }
@@ -322,7 +317,7 @@ export class PokemartSession {
     this.list = new ListMenu(this.tiles, {
       kind: 'items',
       entries: this.bag.items,
-      offset: listScrollOffset,
+      offset: getListScrollOffset(),
       item: 0,
     }, this.transfer);
   }

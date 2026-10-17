@@ -1,7 +1,7 @@
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { substituteNames } from '../core/player_state';
 import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
-import { isPressed, isHeld, syncJoypadRead } from '../input';
+import { isHeld, syncJoypadRead } from '../input';
 import { charToTile, extraCharToTile } from './charmap';
 import { TextScreen, TEXT_A, TEXT_B, TEXT_BUFFER_SIZE } from './text_printer';
 import { TextProgramRunner } from './text_runner';
@@ -10,6 +10,7 @@ import { getTextPrograms } from './program_data';
 import { CloseSequence } from './close_sequence';
 import { setOpeningSpriteUpdates } from '../overworld/ui_entry';
 import { textBgTransfer } from './bg_transfer';
+import { loadMenuGlyphs } from '../menus/menu_glyphs';
 import { playSFX, isSoundFinished } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
 import type { CloseReload } from '../overworld/sprite_sets';
@@ -61,11 +62,13 @@ export async function initTextSystem(): Promise<void> {
   // Border tiles use the current area palette (like map tiles) — not the 1-bit font loader.
   // loadTileset remaps the 2bpp grayscale to palette colors, matching the original Game Boy.
   borderCanvas = await loadTileset('/gfx/font/font_extra.png');
+  await loadMenuGlyphs();
 }
 
 /** Reload the border tileset for the current palette (call after palette changes). */
 export async function reloadBorderTiles(): Promise<void> {
   borderCanvas = await loadTileset('/gfx/font/font_extra.png');
+  await loadMenuGlyphs();
 }
 
 /** Draw a tile-based border box at any position (reusable for battle text, menus, etc.).
@@ -99,12 +102,8 @@ export function getBorderCanvas(): HTMLCanvasElement | null {
   return borderCanvas;
 }
 
-/** text_end inside text_asm, or PromptText (home/text.asm). */
-export type TextBoxEnd = 'none' | 'prompt';
-export type TextBoxMode = 'legacy' | 'displayTextID' | 'printText';
+type TextBoxMode = 'displayTextID' | 'printText';
 export interface TextBoxOptions {
-  end?: TextBoxEnd;
-  mode?: TextBoxMode;
   /** TalkToTrainer calls PrintText inside the DisplayTextID opening. */
   printText?: boolean;
   autoBox?: boolean;
@@ -135,7 +134,7 @@ export class TextBox {
   private screen: TextScreen | null = null;
   private run: Generator<void> | null = null;
   private frame = 0;
-  private mode: TextBoxMode = 'legacy';
+  private mode: TextBoxMode = 'displayTextID';
   private revision = 0;
   private visible = Array<string>(20 * 6).fill(' ');
   private _phase: DisplayPhase = 'closed';
@@ -289,37 +288,17 @@ export class TextBox {
     this.closeSequence = null; this.border = false; this.windowOff = true; this._phase = 'waiting';
   }
 
+  /** DisplayTextID: preserve source terminators, then outer wait/Hold/CloseTextDisplay. */
   show(text: string, opts: TextBoxOptions = {}): void {
-    this.reset(opts.mode ?? 'legacy');
-    let message = substituteNames(text);
-    // Explicit A1b endings take precedence; legacy battle/script strings cannot
-    // acquire new waits from the map extractor's terminator.
-    if (opts.end || this.mode === 'legacy') message = message.replace(/<(PROMPT|DONE)>$/, '');
-    if (opts.end === 'prompt') message += '<PROMPT>';
-    this.start(this.display(message, opts));
+    this.reset('displayTextID');
+    this.start(this.display(text, opts));
   }
   private buttons(): number { return (isHeld('a') ? TEXT_A : 0) | (isHeld('b') ? TEXT_B : 0); }
   private *display(text: string, opts: TextBoxOptions): Generator<void> {
-    if (this.mode === 'displayTextID') {
-      yield* this.opening({ autoBox: opts.autoBox });
-      yield* this.printing(opts.program ? { program: opts.program } : { text }, { box: opts.printText ? 'new' : 'keep' });
-    } else {
-      if (this.mode === 'printText') yield* this.screen!.delay(3); else yield;
-      if (opts.printText) yield* this.screen!.delay(3);
-      this._phase = 'printing';
-      yield* this.screen!.placeString(text);
-      this.textComplete = true;
-    }
-    if (opts.end || this.mode === 'printText') { this.complete = true; return; }
+    yield* this.opening({ autoBox: opts.autoBox });
+    yield* this.printing(opts.program ? { program: opts.program } : { text }, { box: opts.printText ? 'new' : 'keep' });
     this.finalWait = true;
-    if (this.mode === 'displayTextID') {
-      yield* this.finishing(true); return;
-    } else {
-      // The legacy caller's dismissal remains its existing press/beep behavior.
-      while (!isPressed('a') && !isPressed('b')) yield;
-      playSFX('press_ab');
-    }
-    this.finalWait = false; this.dismiss();
+    yield* this.finishing(true);
   }
   /** One VBlank. Also called during retained script text's sound/button waits. */
   updateDisplay(): void {

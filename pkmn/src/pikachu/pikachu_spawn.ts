@@ -14,6 +14,11 @@ import type { Direction } from '../core';
 /** wPikachuSpawnState */
 export type PikachuSpawnState = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
+/** The live wPikachuSpawnState. RespawnOverworldPikachu writes 3. */
+let pikachuSpawnState: PikachuSpawnState = 0;
+export function getPikachuSpawnState(): PikachuSpawnState { return pikachuSpawnState; }
+export function setPikachuSpawnState(state: PikachuSpawnState): void { pikachuSpawnState = state; }
+
 /** home/overworld.asm CheckIfInOutsideMap: towns and routes */
 export function isOutsideTileset(tileset: string): boolean {
   return tileset === 'OVERWORLD' || tileset === 'PLATEAU';

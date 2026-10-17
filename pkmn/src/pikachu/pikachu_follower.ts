@@ -4,7 +4,7 @@ import { drawSprite, loadSprite, drawShadowUnderSprites } from '../renderer';
 import type { SpriteDraw } from '../renderer';
 import { hasFlag } from '../events';
 import type { BattlePokemon } from '../battle';
-import { spawnPlacement, type PikachuSpawnState } from './pikachu_spawn';
+import { spawnPlacement, getPikachuSpawnState, setPikachuSpawnState, type PikachuSpawnState } from './pikachu_spawn';
 import { getPikachuHappiness } from './pikachu_happiness';
 import { WalkAnim, walkFrame, pikachuAnimPeriod } from '../overworld/walk_pace';
 import { inSpriteWindow, pikachuCovered } from '../overworld/sprite_visibility';
@@ -108,6 +108,8 @@ export class PikachuFollower {
   private readonly anim = new WalkAnim();
   private readonly idle = new PikachuIdle();
   private shown = false;
+  /** TrySpawnPikachu status 0, distinct from an eligible sprite hidden by a box. */
+  private storageSpawnPending = false;
 
   /** The live facing (wSpritePikachuStateData1FacingDirection). */
   private facing: Direction = 'down';
@@ -201,7 +203,14 @@ export class PikachuFollower {
    * idles in the same call (Func_fc803).
    */
   updateSprite(ctx: PikachuSpriteContext): void {
+    this.prepareStorageSpawn(ctx);
     if (!this.onScreen(ctx)) return;
+    if (this.storageSpawnPending) {
+      // Func_fc793: initialize pixels only after the screen check, seed and hide.
+      this.finishStorageSpawn(ctx);
+      this.imageShown = false;
+      return;
+    }
     if (this.facePlayerPending) {
       this.facePlayer(ctx, false);
       return;
@@ -245,7 +254,9 @@ export class PikachuFollower {
    * and finishes a move), the countdown at zero, and the follow command refreshed.
    */
   fontLoadedUpdate(ctx: PikachuFontLoadedContext): void {
+    this.prepareStorageSpawn(ctx);
     if (!this.onScreen(ctx)) return;
+    if (this.storageSpawnPending) this.finishStorageSpawn(ctx);
     if (this.facePlayerPending) {
       this.facePlayer(ctx, true);
       return;
@@ -342,6 +353,7 @@ export class PikachuFollower {
     this.y = playerY + dy;
     this.direction = playerDir;
     this.refresh(playerX, playerY);
+    setPikachuSpawnState(0);
   }
 
   /** Place Pikachu after a warp, for a Yellow spawn state (pikachu_spawn.ts). On the
@@ -352,6 +364,35 @@ export class PikachuFollower {
     this.y = playerY + dy * STEP_SIZE;
     this.direction = facing;
     this.refresh(playerX, playerY);
+    setPikachuSpawnState(0);
+  }
+
+  /** PC UpdateSprites rechecks live party eligibility before any screen/UI test. */
+  reconcileStorageParty(party: BattlePokemon[]): void {
+    const eligible = shouldPikachuFollow(party);
+    if (!eligible || !this.visible) this.storageSpawnPending = true;
+    // .dont_spawn writes IMAGEINDEX/status only. Retain the slot's old pixels,
+    // including an antic's offset, until the later successful screen check.
+    this.shown = eligible;
+    if (!eligible) this.hideImage();
+  }
+
+  private prepareStorageSpawn(ctx: PikachuSpriteContext): void {
+    if (!this.storageSpawnPending) return;
+    const placement = spawnPlacement(getPikachuSpawnState(), ctx.playerFacing);
+    this.mapX = ctx.playerMapStep.x + placement.dx;
+    this.mapY = ctx.playerMapStep.y + placement.dy;
+    this.facing = placement.facing;
+    setPikachuSpawnState(0);
+    // Deliberately retain old pixels: WillPikachuSpawnOnTheScreen reads them.
+  }
+
+  private finishStorageSpawn(ctx: PikachuSpriteContext): void {
+    this.x = this.mapX * STEP_SIZE; this.y = this.mapY * STEP_SIZE;
+    this.moving = false; this.hopping = false; this.moveUpdates = 0;
+    this.vx = 0; this.vy = 0; this.idle.reset();
+    this.facePlayerPending = false; this.storageSpawnPending = false;
+    this.refreshFollow(ctx.playerMapStep);
   }
 
   /** ClearPikachuFollowCommandBuffer. */
@@ -421,6 +462,7 @@ export class PikachuFollower {
   /** Func_fc793 after a spawn: the buffer refreshed with the command toward the player,
    *  ready, the countdown at zero, the image hidden until the next update. */
   private refresh(playerX: number, playerY: number): void {
+    this.storageSpawnPending = false;
     this.mapX = Math.round(this.x / STEP_SIZE);
     this.mapY = Math.round(this.y / STEP_SIZE);
     this.movement = null;
@@ -536,9 +578,18 @@ export class PikachuFollower {
   }
 }
 
+/**
+ * IsThisPartyMonStarterPikachu. Species 25 is the stand-in: Yellow's only
+ * Pikachu is the starter until trades exist (A4). The same check as
+ * shouldPikachuFollow's species test.
+ */
+export function isStarterPikachu(mon: { species: { id: number } }): boolean {
+  return mon.species.id === 25;
+}
+
 /** Check if Pikachu should be following the player. */
 export function shouldPikachuFollow(party: BattlePokemon[]): boolean {
   if (!hasFlag('BATTLED_RIVAL_IN_OAKS_LAB')) return false;
   // Assembly: IsStarterPikachuAliveInOurParty — searches entire party
-  return party.some(mon => mon.species.id === 25 && mon.currentHp > 0);
+  return party.some(mon => isStarterPikachu(mon) && mon.currentHp > 0);
 }

@@ -28,11 +28,13 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   70 / 18 / 22). They are extracted and preloaded; their game call sites await
   A5b4–A5b7. `sfx_key_item_pc.test.ts` pins pitch, timing, waits and music hand-off.
 - **Audio-bank rule:** the cartridge's PlaySound selects the current music's
-  `wAudioROMBank`. Our 16 SFX use bank `$02`; the ROM guard in
+  `wAudioROMBank`. Our 18 SFX use bank `$02`; the ROM guard in
   `extraction.test.ts` compares every SFX_HEADERS entry with bank `$1f` and
   pins exactly three differences: save (return 40/37), turn_on_pc (70/81),
-  enter_pc (22/18). Key-item/turn-off copies are identical. Bank-aware lookup
-  stays V5; the current PCs use `$02`, while Silph Co. 11F (G1) needs `$1f`.
+  enter_pc (22/18). Key-item, turn-off, `heal_hp` and `heal_ailment` copies
+  are identical. A5b7c2 plays `heal_hp` and `heal_ailment` from field medicine.
+  Bank-aware lookup stays V5; the current PCs use `$02`, while
+  Silph Co. 11F (G1) needs `$1f`.
   Evidence and scope: `notes/28-a5b3-plan.md` §3.3, §8.
 - **Map music**: `MAP_MUSIC` in `main.ts` (from `data/maps/songs.asm`);
   `updateMapMusic()` only restarts when the track changes. Every new map needs an
@@ -81,7 +83,7 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   Sight encounters start this music at spotting, before the "!" (A1c).
   `meetprofoak` plays in the Oak grass
   cutscene (`pallet_town.ts` `callback`).
-- SFX wired upstream: `press_ab` on A/B in menus and legacy textboxes, `collision` on
+- SFX wired upstream: `press_ab` on A/B in menus and source text prompts (display closes are silent), `collision` on
   wall bumps, `start_menu`, `go_inside` / `go_outside` on door warps. Since A1b,
   balls and Route 1's sample play `get_item1`; hidden items play `get_item2` after
   waiting for current SFX. Pickup final button waits and A-release closes are silent.

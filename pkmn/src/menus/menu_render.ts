@@ -1,9 +1,10 @@
 // Shared menu rendering helpers
 import { TILE_SIZE } from '../core';
-import { fillRect, getCtx, getScale, paletteToHex, getActivePalette } from '../renderer';
+import { fillRect, drawTile, getCtx, getScale, paletteToHex, getActivePalette } from '../renderer';
 import { getFontCanvas, getBorderCanvas, charToTile, drawTileBorder } from '../text';
 import { extraCharToTile, tokenizeGlyphs } from '../text/charmap';
 import { uiTiles } from '../renderer/ui_tiles';
+import { menuGlyph, TIME_COLON_GLYPH } from './menu_glyphs';
 
 export function drawChar(ch: string, x: number, y: number): void {
   const extra = extraCharToTile(ch);
@@ -21,6 +22,25 @@ export function drawChar(ch: string, x: number, y: number): void {
     srcX, srcY, TILE_SIZE, TILE_SIZE,
     x * s, y * s, TILE_SIZE * s, TILE_SIZE * s,
   );
+}
+
+// A wTileMap cell replaces the background, including spaces. Static drawText's
+// transparent glyphs are unsuitable here (the map could otherwise show through).
+const BORDER_TILES: Record<string, number> = { '┌': 25, '─': 26, '┐': 27, '│': 28, '└': 29, '┘': 30 };
+export function drawScreenTile(glyph: string, x: number, y: number): void {
+  fillRect(x, y, TILE_SIZE, TILE_SIZE, 0);
+  if (glyph === TIME_COLON_GLYPH) {
+    const sheet = getBorderCanvas();
+    if (sheet) drawTile(sheet, 13, x, y);
+    return;
+  }
+  const special = menuGlyph(glyph);
+  if (special) { drawTile(special.sheet, special.tile, x, y); return; }
+  const border = BORDER_TILES[glyph];
+  if (border !== undefined) {
+    const sheet = getBorderCanvas();
+    if (sheet) drawTile(sheet, border, x, y);
+  } else drawChar(glyph, x, y);
 }
 
 export function drawText(text: string, x: number, y: number): void {

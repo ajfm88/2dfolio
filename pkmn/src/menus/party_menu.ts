@@ -1,15 +1,23 @@
 // Party menu — view and manage the player's Pokemon party
 // Full-screen display with Pokemon list, stats page, and switch functionality
 
-import { GB_WIDTH, GB_HEIGHT, TILE_SIZE, getPlayerName } from '../core';
-import { fillRect, loadTileset, loadFont, drawTile, getCtx, getScale } from '../renderer';
+import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
+import { fillRect } from '../renderer';
 import { isPressed } from '../input';
 import { drawText, drawBox } from './menu_render';
 import { drawPartyIcon, loadPartyIcons } from './party_icons';
-import { loadPokemonSprites, expToNextLevel } from '../battle';
 import { playSFX } from '../audio';
 import type { BattlePokemon } from '../battle';
+import type { StatusCondition } from '../battle/types';
+import type { GameButton } from '../core';
 import { getText } from '../text';
+import { getTextPrograms } from '../text/program_data';
+import { formatHpFraction, PARTY_HP_FRACTION_COL } from './hp_bar';
+import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
+import { monDisplayName } from '../pokemon_names';
+import { StatsScreen } from './stats_screen';
+import { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
+export { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 
 type PartyState = 'list' | 'submenu' | 'switch_target' | 'stats';
 
@@ -31,110 +39,25 @@ const SUBMENU_W = 9 * TILE_SIZE;    // 72px (columns 11-19)
 const SUBMENU_H = 7 * TILE_SIZE;    // 56px (rows 11-17)
 
 // ──── Tile-based HP bar (same approach as battle_ui.ts) ────
-// Tile indices in font_battle_extra.png
-const HP_LEFT_BRACKET = 0;  // VRAM $62
-const HP_EMPTY = 1;          // VRAM $63
-const HP_FULL = 9;           // VRAM $6B (8 pixels filled)
-const HP_RIGHT_BRACKET = 10; // VRAM $6C (right bracket for party menu)
-const HP_LABEL = 15;         // VRAM $71 ("HP:" label)
-const NARROW_TO = 14;        // VRAM $70 — narrow "to" character (single tile)
-// Tile indices in battle_hud_1.png
-const HUD1_LEVEL = 1;         // VRAM $6E (":L" combined glyph)
-// DrawLineBox tiles — loaded from separate 1bpp assets (NOT font_battle_extra)
-// Status screen loads: battle_hud_2 tile 0 → $78 (│), battle_hud_3 tiles 0-1 → $76-$77 (─ ┘)
-const LINE_V_IDX = 0;         // │ tile 0 in battle_hud_2.png
-const LINE_H_IDX = 0;         // ─ tile 0 in battle_hud_3.png
-const LINE_BR_IDX = 1;        // ┘ tile 1 in battle_hud_3.png
-const LINE_HALFARROW_IDX = 2; // ← tile 2 in battle_hud_1.png
-
-// Loaded tilesets (shared across instances, loaded once)
-let hpBarGreen: HTMLCanvasElement | null = null;
-let hpBarYellow: HTMLCanvasElement | null = null;
-let hpBarRed: HTMLCanvasElement | null = null;
-let hudTiles1: HTMLCanvasElement | null = null;
-let hudTiles2: HTMLCanvasElement | null = null; // battle_hud_2: │ vertical line
-let hudTiles3: HTMLCanvasElement | null = null; // battle_hud_3: ─ horizontal + ┘ corner
-let fontBattleExtra: HTMLCanvasElement | null = null; // font_battle_extra as font (for narrow "to" etc.)
-let tilesLoading = false;
-
-export async function loadPartyTiles(): Promise<void> {
-  if (tilesLoading || hpBarGreen) return;
-  tilesLoading = true;
-  [hpBarGreen, hpBarYellow, hpBarRed, hudTiles1, hudTiles2, hudTiles3, fontBattleExtra] = await Promise.all([
-    loadTileset('/gfx/font/font_battle_extra.png', 'GREENBAR'),
-    loadTileset('/gfx/font/font_battle_extra.png', 'YELLOWBAR'),
-    loadTileset('/gfx/font/font_battle_extra.png', 'REDBAR'),
-    loadFont('/gfx/battle/battle_hud_1.png'),
-    loadFont('/gfx/battle/battle_hud_2.png'), // 1bpp: │
-    loadFont('/gfx/battle/battle_hud_3.png'), // 1bpp: ─ ┘
-    loadFont('/gfx/font/font_battle_extra.png'), // for text tiles: narrow "to", etc.
-  ]);
+/** A no-delay party prompt: the root far-calls its text, and `<DONE>` is not drawn. */
+function linesOfProgram(program: string): string[] {
+  const programs = getTextPrograms();
+  let ops = programs[program] ?? [];
+  const first = ops[0];
+  if (ops.length === 1 && first?.op === 'far') ops = programs[first.program] ?? [];
+  const text = ops.find(op => op.op === 'text');
+  const raw = text?.op === 'text' ? text.text : '';
+  return raw.replace(/<(?:DONE|PROMPT)>$/, '').split('\n');
 }
 
-function getHpBarTileset(ratio: number): HTMLCanvasElement | null {
-  if (ratio > 0.5) return hpBarGreen;
-  if (ratio > 0.25) return hpBarYellow;
-  return hpBarRed;
-}
-
-/** Draw tile-based HP bar: [HP: label] [bracket] [6 fills] [bracket] */
-export function drawTileHpBar(x: number, y: number, currentHp: number, maxHp: number): void {
-  const ratio = maxHp > 0 ? currentHp / maxHp : 0;
-  const barTiles = 6;
-  const pixels = maxHp > 0 ? Math.ceil(currentHp * (barTiles * 8) / maxHp) : 0;
-  const tileset = getHpBarTileset(ratio);
-  if (!tileset) return;
-
-  // HP: label tile
-  drawTile(tileset, HP_LABEL, x, y);
-  // Left bracket
-  drawTile(tileset, HP_LEFT_BRACKET, x + TILE_SIZE, y);
-  // Fill segments
-  let remaining = pixels;
-  for (let i = 0; i < barTiles; i++) {
-    let tileIdx: number;
-    if (remaining >= 8) {
-      tileIdx = HP_FULL;
-      remaining -= 8;
-    } else if (remaining > 0) {
-      tileIdx = HP_EMPTY + remaining; // partial fill tiles 2-8
-      remaining = 0;
-    } else {
-      tileIdx = HP_EMPTY;
-    }
-    drawTile(tileset, tileIdx, x + (2 + i) * TILE_SIZE, y);
-  }
-  // Right bracket (font_battle_extra tile 10 = VRAM $6C, party menu variant)
-  drawTile(tileset, HP_RIGHT_BRACKET, x + (2 + barTiles) * TILE_SIZE, y);
-}
-
-/** Assembly DrawLineBox: vertical │ down from (col, row) for height tiles,
- *  then ┘ corner, then horizontal ─ going left for width tiles, then ← halfarrow. */
-function drawLineBox(col: number, row: number, height: number, width: number): void {
-  if (!hudTiles2 || !hudTiles3) return;
-  const T = TILE_SIZE;
-  // Vertical line going down (│ from battle_hud_2)
-  for (let r = 0; r < height; r++) {
-    drawTile(hudTiles2, LINE_V_IDX, col * T, (row + r) * T);
-  }
-  // Bottom-right corner (┘ from battle_hud_3)
-  drawTile(hudTiles3, LINE_BR_IDX, col * T, (row + height) * T);
-  // Horizontal line going left (─ from battle_hud_3)
-  for (let c = 1; c <= width; c++) {
-    drawTile(hudTiles3, LINE_H_IDX, (col - c) * T, (row + height) * T);
-  }
-  // Halfarrow ending (← from battle_hud_1)
-  if (hudTiles1) {
-    drawTile(hudTiles1, LINE_HALFARROW_IDX, (col - width - 1) * T, (row + height) * T);
-  }
-}
-
-/** Draw the :L level indicator using the special combined tile + digits. */
-export function drawLevel(level: number, x: number, y: number): void {
-  if (hudTiles1) {
-    drawTile(hudTiles1, HUD1_LEVEL, x, y);
-  }
-  drawText(String(level), x + TILE_SIZE, y);
+/** A party row drawn from an earlier picture than the party data (see PartyMenu.hpOverride). */
+export interface PartyRowOverride {
+  pixels: number;
+  shownHp: number;
+  /** The bar's color comes from this length (the last static draw). Defaults to `pixels`. */
+  colorPixels?: number;
+  /** The status text of the last static draw. Undefined keeps the party data's. */
+  status?: StatusCondition;
 }
 
 export class PartyMenu {
@@ -144,46 +67,95 @@ export class PartyMenu {
   private subCursor = 0;
   private switchFrom = -1; // index of Pokemon being switched
   private frameCounter = 0;
-  private statsPage = 1; // 1 or 2
-  private frontSprite: HTMLCanvasElement | null = null;
-  private spriteLoadingFor = ''; // species name currently loading
+  private readonly stats = new StatsScreen();
 
-  // Battle mode support
-  private mode: 'overworld' | 'battle' | 'battle_forced' = 'overworld';
+  // Battle mode support. useItem is the bag's medicine menu: A picks, B cancels, no submenu.
+  private mode: 'overworld' | 'battle' | 'battle_forced' | 'useItem' = 'overworld';
   private battleActiveIndex = 0; // index of Pokemon currently in battle
   /** After close, >= 0 means a Pokemon was selected for battle switch, -1 means cancelled. */
   selectedSwitchIndex = -1;
+  /** useItem: the chosen slot, or -1 when B cancelled. */
+  chosenIndex = -1;
+  /** False while a result or no-effect PrintText owns the bottom box. */
+  promptVisible = true;
+  /**
+   * One row's picture while the screen still shows the pre-use draw: UpdateHPBar2 writes
+   * only the bar tiles and the HP number, and the palette (bar color) and the status text
+   * change only at the next RedrawPartyMenu_. The party data already holds the new values.
+   */
+  private hpOverride: (PartyRowOverride | null)[] = [];
+  /** PlaceUnfilledArrowMenuCursor after a choice; ErasePartyMenuCursors on the result redraw. */
+  cursorGlyph: '▶' | '▷' = '▶';
+  cursorVisible = true;
 
   show(party: BattlePokemon[]): void {
     this.party = party;
-    this.cursor = 0;
     this.state = 'list';
     this.subCursor = 0;
     this.switchFrom = -1;
     this.frameCounter = 0;
-    this.statsPage = 1;
-    this.frontSprite = null;
     this.mode = 'overworld';
     this.selectedSwitchIndex = -1;
+    this.chosenIndex = -1;
+    this.hpOverride = [];
+    this.cursorGlyph = '▶';
+    this.cursorVisible = true;
+    this.cursor = party.length === 0 ? 0 : Math.min(getPartyAndBillsSavedMenuItem(), party.length - 1);
     loadPartyIcons();
     loadPartyTiles();
   }
 
-  /** Show party menu in battle context. */
+  /** Show party menu in battle context. Battle still starts on the first row (A5c). */
   showForBattle(party: BattlePokemon[], activeIndex: number, forced: boolean): void {
     this.show(party);
     this.mode = forced ? 'battle_forced' : 'battle';
     this.battleActiveIndex = activeIndex;
+    this.cursor = 0;
   }
 
-  /** Returns 'close' when the menu should be dismissed. */
-  update(): 'close' | null {
+  /** DisplayPartyMenu for USE_ITEM. A returns the slot; B cancels. */
+  showForItem(party: BattlePokemon[]): void {
+    this.show(party);
+    this.mode = 'useItem';
+  }
+
+  /** One row's frozen picture (see hpOverride); null returns it to the party data. */
+  setHpOverride(slot: number, override: PartyRowOverride | null): void {
+    this.hpOverride[slot] = override;
+  }
+
+  /**
+   * Returns 'close' when the menu should be dismissed. `pressed` is the read the caller made:
+   * the item-use menu passes its own Joypad read (isPassPressed); the others keep isPressed.
+   */
+  update(pressed: (button: GameButton) => boolean = isPressed): 'close' | null {
     switch (this.state) {
-      case 'list': return this.updateList();
+      case 'list': return this.mode === 'useItem' ? this.updateItemUse(pressed) : this.updateList();
       case 'submenu': return this.updateSubmenu();
       case 'switch_target': return this.updateSwitchTarget();
       case 'stats': return this.updateStats();
     }
+  }
+
+  /**
+   * HandleMenuInput_ then HandlePartyMenuInput, for USE_ITEM: A suppresses Up/Down, which
+   * wrap (wMenuWrappingEnabled); A or B plays press_ab; B is tested first, so A+B cancels.
+   * The cursor is saved on either key. The chosen row gets ▷.
+   */
+  private updateItemUse(pressed: (button: GameButton) => boolean): 'close' | null {
+    const a = pressed('a');
+    const b = pressed('b');
+    const count = this.party.length;
+    if (!a && count > 0) {
+      if (pressed('up')) this.cursor = (this.cursor - 1 + count) % count;
+      else if (pressed('down')) this.cursor = (this.cursor + 1) % count;
+    }
+    if (!a && !b) return null;
+    playSFX('press_ab');
+    this.rememberCursor();
+    this.cursorGlyph = '▷';
+    this.chosenIndex = b ? -1 : this.cursor;
+    return 'close';
   }
 
   private updateList(): 'close' | null {
@@ -193,13 +165,20 @@ export class PartyMenu {
       this.cursor = (this.cursor + 1) % this.party.length;
     } else if (isPressed('a')) {
       playSFX('press_ab');
-      // Open sub-menu for selected Pokemon
+      if (this.mode === 'useItem') {
+        this.rememberCursor();
+        this.chosenIndex = this.cursor;
+        return 'close';
+      }
+      this.rememberCursor();
       this.subCursor = 0;
       this.state = 'submenu';
     } else if (isPressed('b')) {
       playSFX('press_ab');
       if (this.mode === 'battle_forced') return null; // can't cancel forced switch
+      this.rememberCursor();
       this.selectedSwitchIndex = -1;
+      if (this.mode === 'useItem') this.chosenIndex = -1;
       return 'close';
     }
     return null;
@@ -220,8 +199,7 @@ export class PartyMenu {
       playSFX('press_ab');
       const action = items[this.subCursor];
       if (action === 'STATS') {
-        this.statsPage = 1;
-        this.loadFrontSprite();
+        this.stats.show(this.party[this.cursor]);
         this.state = 'stats';
       } else if (action === 'SWITCH') {
         if (this.mode === 'battle' || this.mode === 'battle_forced') {
@@ -284,38 +262,14 @@ export class PartyMenu {
   }
 
   private updateStats(): 'close' | null {
-    if (isPressed('a')) {
-      playSFX('press_ab');
-      if (this.statsPage === 1) {
-        this.statsPage = 2;
-      } else {
-        this.state = 'list';
-      }
-    } else if (isPressed('b')) {
-      playSFX('press_ab');
-      this.state = 'list';
-    }
+    if (this.stats.update()) this.state = 'list';
     return null;
-  }
-
-  private loadFrontSprite(): void {
-    const mon = this.party[this.cursor];
-    if (!mon) return;
-    const name = mon.species.name;
-    if (this.spriteLoadingFor === name && this.frontSprite) return;
-    this.frontSprite = null;
-    this.spriteLoadingFor = name;
-    loadPokemonSprites(name, mon.species.id).then(sprites => {
-      if (this.spriteLoadingFor === name) {
-        this.frontSprite = sprites.front;
-      }
-    }).catch(() => { /* sprite not available */ });
   }
 
   render(): void {
     this.frameCounter++;
     if (this.state === 'stats') {
-      this.renderStats();
+      this.stats.render();
       return;
     }
     this.renderList();
@@ -341,42 +295,54 @@ export class PartyMenu {
       if (this.state === 'switch_target' && i === this.switchFrom) {
         drawText('\u25B7', 0, y); // unfilled arrow for switch source
       }
-      if (i === this.cursor) {
-        drawText('\u25B6', 0, y);
+      if (i === this.cursor && this.cursorVisible) {
+        drawText(this.mode === 'useItem' ? this.cursorGlyph : '\u25B6', 0, y);
       }
 
       // Name at column 3
-      drawText(mon.nickname.toUpperCase(), NAME_X, y);
+      drawText(monDisplayName(mon), NAME_X, y);
 
       // Level at column 13 using special :L tile
       drawLevel(mon.level, LEVEL_X, y);
 
       // Status condition at column 17 (assembly: name start + 14)
-      if (mon.status) {
-        drawText(mon.status, 17 * TILE_SIZE, y);
+      const override = this.hpOverride[i] ?? null;
+      const status = override && override.status !== undefined ? override.status : mon.status;
+      if (status) {
+        drawText(status, 17 * TILE_SIZE, y);
       }
 
       // Tile-based HP bar on second line (row N+1, column 4)
       const hpY = y + TILE_SIZE;
-      drawTileHpBar(HP_X, hpY, mon.currentHp, mon.maxHp);
-
-      // HP numbers right-aligned, padded to 3 digits each (e.g. " 20/ 20")
-      const hpCurrent = String(mon.currentHp).padStart(3, ' ');
-      const hpMax = String(mon.maxHp).padStart(3, ' ');
-      const hpText = `${hpCurrent}/${hpMax}`;
-      drawText(hpText, GB_WIDTH - (hpText.length + 1) * TILE_SIZE, hpY);
+      const shownHp = override?.shownHp ?? mon.currentHp;
+      drawTileHpBar(HP_X, hpY, shownHp, mon.maxHp, override?.pixels, override?.colorPixels ?? override?.pixels);
+      // Fraction at column 13: 3-digit current, '/', 3-digit max (DrawHP2).
+      drawText(formatHpFraction(shownHp, mon.maxHp), PARTY_HP_FRACTION_COL * TILE_SIZE, hpY);
     }
 
     // Bottom text box (rows 12-17, standard Game Boy text box)
     drawBox(0, TEXTBOX_Y, GB_WIDTH, GB_HEIGHT - TEXTBOX_Y);
     // Text inside box at row 14, column 1 (matching PrintText placement)
-    const titleX = TILE_SIZE;
-    const titleY = 14 * TILE_SIZE;
-    if (this.state === 'switch_target') {
-      drawText('Move to where?', titleX, titleY);
-    } else {
-      drawText(getText('PARTY_CHOOSE'), titleX, titleY);
+    if (!this.promptVisible) return;
+    const lines = this.promptLines();
+    for (let i = 0; i < lines.length; i++) {
+      drawText(lines[i], TILE_SIZE, (14 + i * 2) * TILE_SIZE);
     }
+  }
+
+  /** Battle keeps its current line. Overworld and item use read the programs. */
+  private promptLines(): string[] {
+    if (this.mode === 'battle' || this.mode === 'battle_forced') return [getText('PARTY_CHOOSE')];
+    const program = this.state === 'switch_target' ? 'PartyMenuSwapMonText'
+      : this.mode === 'useItem' ? 'PartyMenuItemUseText'
+      : 'PartyMenuNormalText';
+    return linesOfProgram(program);
+  }
+
+  /** Overworld and item use share the cursor. Battle does not write it (A5c). */
+  private rememberCursor(): void {
+    if (this.mode === 'battle' || this.mode === 'battle_forced') return;
+    setPartyAndBillsSavedMenuItem(this.cursor);
   }
 
   private renderSubmenu(): void {
@@ -396,189 +362,4 @@ export class PartyMenu {
     }
   }
 
-  /** Draw the front sprite (flipped, matching assembly LoadFlippedFrontSpriteByMonIndex). */
-  private drawFrontSprite(): void {
-    if (!this.frontSprite) return;
-    const ctx = getCtx();
-    const s = getScale();
-    const spriteW = this.frontSprite.width;
-    const spriteH = this.frontSprite.height;
-    // Assembly: hlcoord 1, 0 → sprite area is 7×7 tiles (56×56px) at pixel (8, 0)
-    // Sprite is bottom-right aligned within the 56×56 area, and horizontally flipped
-    const areaX = TILE_SIZE; // column 1
-    const areaSize = 7 * TILE_SIZE; // 56px
-    const x = areaX + (areaSize - spriteW);
-    const y = areaSize - spriteH;
-    // Draw flipped (mirrored horizontally, matching original status screen)
-    ctx.save();
-    ctx.translate((x + spriteW) * s, y * s);
-    ctx.scale(-1, 1);
-    ctx.drawImage(this.frontSprite, 0, 0, spriteW, spriteH, 0, 0, spriteW * s, spriteH * s);
-    ctx.restore();
-  }
-
-  /** Render stats page 1: sprite, name, level, HP, status, stats, type, ID, OT */
-  private renderStatsPage1(): void {
-    const mon = this.party[this.cursor];
-    if (!mon) return;
-    const T = TILE_SIZE;
-
-    fillRect(0, 0, GB_WIDTH, GB_HEIGHT, 0);
-
-    // Front sprite (top-left area, 7×7 tiles)
-    this.drawFrontSprite();
-
-    // "No.XXX" below sprite — assembly: number at hlcoord 3, 7, label before it
-    const dexNum = String(mon.species.id).padStart(3, '0');
-    drawText('No.' + dexNum, 1 * T, 7 * T);
-
-    // Name — assembly: hlcoord 9, 1
-    drawText(mon.nickname.toUpperCase(), 9 * T, 1 * T);
-
-    // Level — assembly: hlcoord 14, 2
-    drawLevel(mon.level, 14 * T, 2 * T);
-
-    // HP bar — assembly: hlcoord 11, 3
-    drawTileHpBar(11 * T, 3 * T, mon.currentHp, mon.maxHp);
-
-    // HP numbers — assembly: below HP bar, right-aligned
-    const hpCurrent = String(mon.currentHp).padStart(3, ' ');
-    const hpMax = String(mon.maxHp).padStart(3, ' ');
-    drawText(`${hpCurrent}/${hpMax}`, 12 * T, 4 * T);
-
-    // "STATUS/" + condition — assembly: hlcoord 9, 6 and hlcoord 16, 6
-    drawText('STATUS/', 9 * T, 6 * T);
-    drawText(mon.status ?? 'OK', 16 * T, 6 * T);
-
-    // Bottom-left box: stats — assembly: hlcoord 0, 8, rows 8-17 (10 tiles tall)
-    drawBox(0, 8 * T, 10 * T, 10 * T);
-
-    // DrawLineBox: top-right info area — assembly: hlcoord 19, 1; lb bc, 6, 10
-    // Vertical │ at col 19 rows 1-6, ┘ at (19,7), ─ from col 18 to 9 at row 7
-    drawLineBox(19, 1, 6, 10);
-
-    // DrawLineBox: bottom-right type/ID/OT — assembly: hlcoord 19, 9; lb bc, 8, 6
-    // Vertical │ at col 19 rows 9-16, ┘ at (19,17), ─ from col 18 to 13 at row 17
-    drawLineBox(19, 9, 8, 6);
-
-    const stats = [
-      ['ATTACK', mon.attack],
-      ['DEFENSE', mon.defense],
-      ['SPEED', mon.speed],
-      ['SPECIAL', mon.special],
-    ] as const;
-
-    for (let i = 0; i < stats.length; i++) {
-      // Label on first row, value right-aligned on second row
-      const labelY = (9 + i * 2) * T;
-      const valY = (10 + i * 2) * T;
-      drawText(stats[i][0], 1 * T, labelY);
-      const valText = String(stats[i][1]);
-      // Right-align value within left box (column ~7)
-      drawText(valText, (8 - valText.length) * T, valY);
-    }
-
-    // Right section: type, ID, OT — no border (assembly uses DrawLineBox, not TextBoxBorder)
-
-    // TYPE1/ — assembly: hlcoord 10, 9
-    drawText('TYPE1/', 10 * T, 9 * T);
-    // Type value — assembly: hlcoord 11, 10
-    drawText(mon.species.type1, 11 * T, 10 * T);
-
-    // TYPE2 (if dual-type)
-    if (mon.species.type2 && mon.species.type2 !== mon.species.type1) {
-      drawText('TYPE2/', 10 * T, 11 * T);
-      drawText(mon.species.type2, 11 * T, 12 * T);
-    }
-
-    // IDNo/ — assembly: approximate position
-    drawText('IDNo/', 10 * T, 13 * T);
-    // ID value — assembly: hlcoord 12, 14
-    const idText = String(mon.species.id).padStart(5, '0');
-    drawText(idText, 12 * T, 14 * T);
-
-    // OT/ — assembly: approximate position
-    drawText('OT/', 10 * T, 15 * T);
-    // OT value — assembly: hlcoord 12, 16
-    drawText(mon.otName || getPlayerName(), 12 * T, 16 * T);
-  }
-
-  /** Render stats page 2: sprite, name, EXP, level up, moves + PP */
-  private renderStatsPage2(): void {
-    const mon = this.party[this.cursor];
-    if (!mon) return;
-    const T = TILE_SIZE;
-
-    fillRect(0, 0, GB_WIDTH, GB_HEIGHT, 0);
-
-    // Front sprite (same position as page 1)
-    this.drawFrontSprite();
-
-    // "No.XXX" below sprite — assembly: hlcoord 3, 7
-    const dexNum = String(mon.species.id).padStart(3, '0');
-    drawText('No.' + dexNum, 1 * T, 7 * T);
-
-    // Name — assembly: hlcoord 9, 1
-    drawText(mon.nickname.toUpperCase(), 9 * T, 1 * T);
-
-    // Top DrawLineBox persists from page 1 — assembly: hlcoord 19, 1; lb bc, 6, 10
-    drawLineBox(19, 1, 6, 10);
-
-    // "EXP POINTS" — assembly: hlcoord 9, 3
-    drawText('EXP POINTS', 9 * T, 3 * T);
-
-    // Current EXP value — assembly: hlcoord 12, 4; lb bc, 3, 7 (right-aligned in 7 chars)
-    const expText = String(mon.exp).padStart(7, ' ');
-    drawText(expText, 12 * T, 4 * T);
-
-    // "LEVEL UP" — assembly: hlcoord 9, 5
-    drawText('LEVEL UP', 9 * T, 5 * T);
-
-    // EXP to next level — assembly: hlcoord 7, 6; lb bc, 3, 7 (right-aligned in 7 chars)
-    const nextLevel = Math.min(mon.level + 1, 100);
-    const toNext = expToNextLevel(mon.species.growthRate, mon.level, mon.exp);
-    const toNextText = String(toNext).padStart(7, ' ');
-    drawText(toNextText, 7 * T, 6 * T);
-
-    // Narrow "to" at col 14 — assembly: hlcoord 14, 6; ld [hl], '<to>' (single tile $70)
-    if (fontBattleExtra) {
-      drawTile(fontBattleExtra, NARROW_TO, 14 * T, 6 * T);
-    }
-
-    // Target level via PrintLevel at col 16 — assembly: hlcoord 16, 6
-    drawLevel(nextLevel, 16 * T, 6 * T);
-
-    // Moves box — assembly: hlcoord 0, 8; lb bc, 8, 18 (TextBoxBorder = 10 rows total)
-    drawBox(0, 8 * T, GB_WIDTH, 10 * T);
-
-    // 4 moves: name at col 2, PP label at col 11-12, PP values at col 14
-    for (let i = 0; i < 4; i++) {
-      const nameY = (9 + i * 2) * T;
-      const ppY = (10 + i * 2) * T;
-
-      if (i < mon.moves.length) {
-        const move = mon.moves[i];
-        // Move name at column 2 — assembly: hlcoord 2, 9
-        const name = move.id.replace(/_/g, ' ');
-        drawText(name, 2 * T, nameY);
-        // "PP" at cols 11-12 — assembly: hlcoord 11, 10; StatusScreen_PrintPP
-        drawText('PP', 11 * T, ppY);
-        // PP values at col 14 — assembly: decoord 14, 10; PrintNumber bc(1,2)
-        const ppCur = String(move.pp).padStart(2, ' ');
-        const ppMax = String(move.maxPp).padStart(2, ' ');
-        drawText(`${ppCur}/${ppMax}`, 14 * T, ppY);
-      } else {
-        drawText('-', 2 * T, nameY);
-        drawText('--', 11 * T, ppY);
-      }
-    }
-  }
-
-  private renderStats(): void {
-    if (this.statsPage === 1) {
-      this.renderStatsPage1();
-    } else {
-      this.renderStatsPage2();
-    }
-  }
 }

@@ -15,7 +15,7 @@ import { uiTiles } from '../renderer/ui_tiles';
  *  trainer card, options, town map) are not here: returning from one redraws the START
  *  menu, which runs UpdateSprites again (start_menu.asm RedisplayStartMenu). */
 const UI_STATES: ReadonlySet<string> = new Set([
-  'textbox', 'start_menu', 'menu_closing', 'pikachu_emotion', 'pc', 'pokecenter_pc',
+  'textbox', 'start_menu', 'menu_closing', 'pikachu_emotion',
   'item_menu', 'save_menu',
 ]);
 

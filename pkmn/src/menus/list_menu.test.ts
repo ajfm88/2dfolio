@@ -2,8 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ListMenu, type ListEntry } from './list_menu';
 import { ScreenTiles } from './screen_tiles';
 import { BgTransfer } from '../text/bg_transfer';
+import { removeFromInventoryAt, type ItemStack } from '../items';
+import {
+  getBagSavedMenuItem, getCurrentMenuItem, getListScrollOffset, getSavedListScrollOffset,
+  setBagSavedMenuItem, setCurrentMenuItem, setListScrollOffset, setSavedListScrollOffset,
+} from '../list_state';
 import { isHeld, isPassPressed } from '../input';
 import type { GameButton } from '../core';
+import { LEVEL_GLYPH } from './menu_glyphs';
+import { getNoTextDelay, setNoTextDelay } from '../text/text_flags';
 
 vi.mock('../input', () => ({ isPassPressed: vi.fn(() => false), isHeld: vi.fn(() => false) }));
 
@@ -40,6 +47,7 @@ function rig(config: ConstructorParameters<typeof ListMenu>[1]) {
 }
 
 beforeEach(() => {
+  setNoTextDelay(false);
   vi.mocked(isPassPressed).mockReset();
   vi.mocked(isHeld).mockReset();
   vi.mocked(isPassPressed).mockReturnValue(false);
@@ -47,6 +55,44 @@ beforeEach(() => {
 });
 
 describe('DisplayListMenuID', () => {
+  it.each([1, 9, 10, 99, 100])('prints a mon name and source LV/digits for level %i', level => {
+    const menu = rig({ kind: 'mons', entries: [{ name: 'Sparky', level }] });
+    expect(getNoTextDelay()).toBe(true);
+    menu.frames(15);
+    expect(row(menu.tiles, 4, 6, 12)).toBe('SPARKY');
+    expect(row(menu.tiles, 5, 14, 18)).toBe(level < 100 ? `${LEVEL_GLYPH}${level}`.padEnd(4) : '100 ');
+    expect(row(menu.tiles, 6, 6, 12)).toBe('CANCEL');
+    menu.press('a');
+    expect(menu.frame()).toEqual({ type: 'chosen', index: 0, name: 'SPARKY' });
+    expect(getNoTextDelay()).toBe(false);
+  });
+
+  it('SELECT redraws mons without swapping; scrolling and cancel clear the shared delay flag', () => {
+    const entries = ['One', 'Two', 'Three', 'Four'].map((name, i) => ({ name, level: i + 1 }));
+    const original = structuredClone(entries);
+    const menu = rig({ kind: 'mons', entries, item: 2 });
+    menu.frames(15); menu.press('select'); menu.frame();
+    expect(getNoTextDelay()).toBe(true);
+    menu.frames(6); menu.press('down'); menu.frame();
+    expect(menu.menu.offset).toBe(1);
+    menu.frames(6);
+    expect(row(menu.tiles, 4, 6, 9)).toBe('TWO');
+    expect(entries).toEqual(original);
+    menu.press('b');
+    expect(menu.frame()).toEqual({ type: 'cancelled' });
+    expect(getNoTextDelay()).toBe(false);
+  });
+
+  it.each(['items', 'priced'] as const)('%s clears no-text-delay on selection and the CANCEL row', kind => {
+    for (const item of [0, 1]) {
+      const menu = rig({ kind, entries: [{ id: 'POTION', count: 1 }], item });
+      expect(getNoTextDelay()).toBe(true);
+      menu.frames(15); menu.press('a');
+      expect(menu.frame()?.type).toBe(item === 0 ? 'chosen' : 'cancelled');
+      expect(getNoTextDelay()).toBe(false);
+    }
+  });
+
   it('lays out priced and bag lists, with ▼ only when CANCEL is off screen', () => {
     const priced = rig({ kind: 'priced', entries: [{ id: 'POTION' }, { id: 'ANTIDOTE' }] });
     expect(priced.transfer.enabled).toBe(false);
@@ -136,6 +182,35 @@ describe('DisplayListMenuID', () => {
     expect(scrolls.slice(0, 4)).toEqual([1, 31, 37, 43]);
   });
 
+  it('a held A or B at the repeat point re-arms 5, so the next Down is not immediate', () => {
+    const nextDown = (extra: 'a' | 'b') => {
+      const menu = rig({ kind: 'priced', entries: potions(10), item: 2 });
+      menu.frames(15);
+      menu.press('down');
+      const scrolls: number[] = [];
+      for (let frame = 1; frame <= 30; frame++) {
+        const before = menu.menu.offset;
+        menu.frame();
+        if (menu.menu.offset !== before) scrolls.push(frame);
+      }
+      expect(scrolls).toEqual([1]);
+      menu.hold('down', extra);
+      const frozen = menu.menu.offset;
+      menu.frame();
+      expect(menu.menu.offset).toBe(frozen);
+      menu.hold('down');
+      const next: number[] = [];
+      for (let frame = 32; frame <= 40; frame++) {
+        const before = menu.menu.offset;
+        menu.frame();
+        if (menu.menu.offset !== before) next.push(frame);
+      }
+      return next[0] ?? -1;
+    };
+    expect(nextDown('a')).toBe(36);
+    expect(nextDown('b')).toBe(36);
+  });
+
   it('A draws ▷ and chooses, CANCEL and an empty list and B exit, with no select on CANCEL', () => {
     const buy = rig({ kind: 'priced', entries: [{ id: 'POTION' }] });
     buy.frames(15);
@@ -206,6 +281,34 @@ describe('DisplayListMenuID', () => {
     expect(merge.menu.item).toBe(0);
     expect(merge.menu.maxItem).toBe(1);
 
+    // Mark the top visible row, move to the next row of the same item, and merge while scrolled.
+    const scrolled: ListEntry[] = [
+      { id: 'ANTIDOTE', count: 1 },
+      { id: 'POTION', count: 40 },
+      { id: 'POTION', count: 50 },
+      { id: 'BURN_HEAL', count: 1 },
+    ];
+    const scrolledMerge = rig({ kind: 'items', entries: scrolled, offset: 1, item: 0 });
+    scrolledMerge.frames(15);
+    scrolledMerge.press('select');
+    scrolledMerge.frame();
+    scrolledMerge.frames(26);
+    scrolledMerge.press('down');
+    scrolledMerge.frame();
+    scrolledMerge.frames(2);
+    scrolledMerge.press('select');
+    expect(scrolledMerge.menu.offset).toBe(1);
+    expect(scrolledMerge.menu.item).toBe(1);
+    scrolledMerge.frame();
+    scrolledMerge.frames(20);
+    expect(scrolled).toEqual([
+      { id: 'ANTIDOTE', count: 1 },
+      { id: 'POTION', count: 90 },
+      { id: 'BURN_HEAL', count: 1 },
+    ]);
+    expect(scrolledMerge.menu.offset).toBe(0);
+    expect(scrolledMerge.menu.item).toBe(0);
+
     const heavy: ListEntry[] = [{ id: 'POTION', count: 60 }, { id: 'POTION', count: 50 }];
     const split = rig({ kind: 'items', entries: heavy });
     split.frames(15);
@@ -228,5 +331,43 @@ describe('DisplayListMenuID', () => {
     cancel.frames(6);
     expect(cancel.menu.item).toBe(1);
     expect(cancel.read).toHaveBeenCalledTimes(2);
+  });
+
+  it('an emptied slot resets the open list cursor and the shared scroll', () => {
+    const entries: ItemStack[] = [
+      { id: 'POTION', count: 1 },
+      { id: 'ANTIDOTE', count: 2 },
+      { id: 'BURN_HEAL', count: 1 },
+      { id: 'AWAKENING', count: 1 },
+    ];
+    setListScrollOffset(1);
+    setCurrentMenuItem(1);
+    setBagSavedMenuItem(2);
+    setSavedListScrollOffset(4);
+    const menu = rig({ kind: 'items', entries, offset: 1, item: 1 });
+    removeFromInventoryAt(entries, 0, 1);
+    expect(getListScrollOffset()).toBe(0);
+    expect(getCurrentMenuItem()).toBe(0);
+    expect(getBagSavedMenuItem()).toBe(0);
+    expect(getSavedListScrollOffset()).toBe(0);
+    menu.frame();
+    expect(menu.menu.offset).toBe(0);
+    expect(menu.menu.item).toBe(0);
+
+    const partial: ItemStack[] = [{ id: 'POTION', count: 3 }, { id: 'ANTIDOTE', count: 1 }];
+    setListScrollOffset(1);
+    setCurrentMenuItem(1);
+    setBagSavedMenuItem(2);
+    setSavedListScrollOffset(4);
+    const staying = rig({ kind: 'items', entries: partial, offset: 1, item: 1 });
+    removeFromInventoryAt(partial, 0, 1);
+    staying.frame();
+    expect(partial[0]?.count).toBe(2);
+    expect(staying.menu.offset).toBe(1);
+    expect(staying.menu.item).toBe(1);
+    expect(getListScrollOffset()).toBe(1);
+    expect(getSavedListScrollOffset()).toBe(4);
+    expect(getBagSavedMenuItem()).toBe(2);
+    expect(getCurrentMenuItem()).toBe(1);
   });
 });

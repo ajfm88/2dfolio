@@ -43,6 +43,7 @@
     {
       "x": 3,
       "y": 5,
+      "program": "RedBedroomSNESText",
       "text": "<PLAYER> is\nplaying the SNES!\n...Okay!\nIt's time to go!"
     }
   ]

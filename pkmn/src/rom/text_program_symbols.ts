@@ -13,6 +13,12 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  ["AccessedOaksPCText", 0x07, 0x62DF, true],
+  ["GetDexRatedText", 0x07, 0x62D4, true],
+  ["ClosedOaksPCText", 0x07, 0x62D9, true],
+  ["_AccessedOaksPCText", 0x28, 0x4741, false],
+  ["_GetDexRatedText", 0x28, 0x4704, false],
+  ["_ClosedOaksPCText", 0x28, 0x4722, false],
   ["AccessedBillsPCText", 0x05, 0x7DAC, true], // engine/menus/pc.asm
   ["AccessedMyPCText", 0x05, 0x7DB6, true], // engine/menus/pc.asm
   ["AccessedSomeonesPCText", 0x05, 0x7DB1, true], // engine/menus/pc.asm
@@ -51,6 +57,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["IsItOKToTossItemText", 0x03, 0x669E, true], // engine/items/item_effects.asm
   ["ItemUseNoEffectText", 0x03, 0x6509, true], // engine/items/item_effects.asm
   ["ItemUseNotTimeText", 0x03, 0x64FF, true], // engine/items/item_effects.asm
+  ["ItemUseNotYoursToUseText", 0x03, 0x6504, true], // engine/items/item_effects.asm
   ["ItemWasStoredText", 0x01, 0x79DD, true], // engine/menus/players_pc.asm
   ["JustAMomentText", 0x08, 0x58A7, true], // engine/pokemon/bills_pc.asm
   ["LinkCableHelpText1", 0x17, 0x5D02, true], // engine/events/hidden_events/school_blackboard.asm
@@ -66,6 +73,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["MonWasStoredText", 0x08, 0x5835, true], // engine/pokemon/bills_pc.asm
   ["NeedYourPokemonText", 0x01, 0x6EDB, true], // engine/events/pokecenter.asm
   ["NoMonText", 0x08, 0x5849, true], // engine/pokemon/bills_pc.asm
+  ["NoPokemonText", 0x3A, 0x4E1F, true], // engine/printer/printer.asm (A5b7e CP1)
   ["NoMoreRoomForItemText", 0x01, 0x4DA0, true], // engine/events/pick_up_item.asm
   ["NoRoomToStoreText", 0x01, 0x79E7, true], // engine/menus/players_pc.asm
   ["NothingStoredText", 0x01, 0x79FB, true], // engine/menus/players_pc.asm
@@ -327,6 +335,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_IsItOKToTossItemText", 0x2D, 0x6EBD, false], // data/text/text_9.asm
   ["_ItemUseNoEffectText", 0x2D, 0x6DAB, false], // data/text/text_9.asm
   ["_ItemUseNotTimeText", 0x2D, 0x6D68, false], // data/text/text_9.asm
+  ["_ItemUseNotYoursToUseText", 0x2D, 0x6D92, false], // data/text/text_9.asm
   ["_ItemWasStoredText", 0x28, 0x436E, false], // data/text/text_3.asm
   ["_JustAMomentText", 0x27, 0x6A9E, false], // data/text/text_2.asm
   ["_LinkCableHelpText1", 0x27, 0x6ED9, false], // data/text/text_2.asm
@@ -342,6 +351,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_NeedYourPokemonText", 0x2C, 0x77D3, false], // data/text/text_7.asm
   ["_NewBadgeRequiredText", 0x2D, 0x412E, false], // data/text/text_8.asm
   ["_NoMonText", 0x28, 0x4561, false], // data/text/text_3.asm
+  ["_NoPokemonText", 0x28, 0x4C77, false], // data/text/text_3.asm (A5b7e CP1)
   ["_NoMoreRoomForItemText", 0x26, 0x412A, false], // data/text/text_1.asm
   ["_NoRoomToStoreText", 0x28, 0x43A4, false], // data/text/text_3.asm
   ["_NotHealthyEnoughText", 0x2D, 0x4119, false], // data/text/text_8.asm
@@ -552,6 +562,37 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_WithdrewItemText", 0x28, 0x43EC, false], // data/text/text_3.asm
   ["_WouldYouLikeToSaveText", 0x29, 0x7630, false], // data/text/text_4.asm
   ["_YourNameIsText", 0x28, 0x49C4, false], // data/text/text_3.asm
+  // A5b7g2 CP1 (notes/54-a5b7g-plan.md §5.2): hidden-event and bookshelf texts. Roots are
+  // TextPredefs entries (data/text_predef_pointers.asm, checked against 00:3f67 in the ROM)
+  // and the `ld hl` operands of the two text_asm bookshelf routines, which aren't listed.
+  ["PushStartText", 0x07, 0x62F9, true], // engine/events/hidden_events/oaks_lab_posters.asm
+  ["SaveOptionText", 0x07, 0x6317, true], // engine/events/hidden_events/oaks_lab_posters.asm
+  ["StrengthsAndWeaknessesText", 0x07, 0x631C, true], // engine/events/hidden_events/oaks_lab_posters.asm
+  ["OakLabEmailText", 0x07, 0x6693, true], // engine/events/hidden_events/oaks_lab_email.asm
+  ["RedBedroomSNESText", 0x17, 0x5BB6, true], // engine/events/hidden_events/reds_room.asm
+  ["ViridianCityPokecenterBenchGuyText", 0x18, 0x667B, true], // engine/events/hidden_events/bench_guys.asm
+  ["BookcaseText", 0x18, 0x66E9, true], // engine/events/hidden_events/blues_room.asm
+  ["IndigoPlateauStatuesText1", 0x03, 0x7A67, true], // engine/events/hidden_events/indigo_plateau_statues.asm
+  ["IndigoPlateauStatuesText2", 0x03, 0x7A6C, true], // engine/events/hidden_events/indigo_plateau_statues.asm
+  ["IndigoPlateauStatuesText3", 0x03, 0x7A71, true], // engine/events/hidden_events/indigo_plateau_statues.asm
+  ["PokemonBooksText", 0x03, 0x7A91, true], // engine/events/hidden_events/book_or_sculpture.asm
+  ["DiglettSculptureText", 0x03, 0x7A96, true], // engine/events/hidden_events/book_or_sculpture.asm
+  ["ElevatorText", 0x03, 0x7A9B, true], // engine/events/hidden_events/elevator.asm
+  ["PokemonStuffText", 0x03, 0x7AD3, true], // engine/events/hidden_events/pokemon_stuff.asm
+  ["_ViridianCityPokecenterGuyText", 0x27, 0x60A0, false], // data/text/text_2.asm
+  ["_BookcaseText", 0x27, 0x6492, false], // data/text/text_2.asm
+  ["_PushStartText", 0x27, 0x64C5, false], // data/text/text_2.asm
+  ["_SaveOptionText", 0x27, 0x64E3, false], // data/text/text_2.asm
+  ["_StrengthsAndWeaknessesText", 0x27, 0x650B, false], // data/text/text_2.asm
+  ["_OakLabEmailText", 0x27, 0x6911, false], // data/text/text_2.asm
+  ["_RedBedroomSNESText", 0x27, 0x6DD8, false], // data/text/text_2.asm
+  ["_IndigoPlateauStatuesText1", 0x27, 0x742F, false], // data/text/text_2.asm
+  ["_IndigoPlateauStatuesText2", 0x27, 0x743F, false], // data/text/text_2.asm
+  ["_IndigoPlateauStatuesText3", 0x27, 0x746E, false], // data/text/text_2.asm
+  ["_PokemonBooksText", 0x27, 0x7499, false], // data/text/text_2.asm
+  ["_DiglettSculptureText", 0x27, 0x74B6, false], // data/text/text_2.asm
+  ["_ElevatorText", 0x27, 0x74D3, false], // data/text/text_2.asm
+  ["_PokemonStuffText", 0x27, 0x74F7, false], // data/text/text_2.asm
 ];
 
 // Every TextPointers table of the in-scope maps: [label, bank, address, entries], the count

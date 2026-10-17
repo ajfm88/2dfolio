@@ -8,7 +8,26 @@ are single tiles (59–63, 100–101); `tokenizeText()` matches them before sing
 PK/MN use private Unicode U+E001/U+E002, tiles 97/98. `font_extra.png` supplies curly
 quotes, middle dot and ellipsis (`extraCharToTile()`, tiles 16–21), plus the border.
 
+## Party prompts and medicine results (A5b7c2)
+
+START → POKéMON draws `PartyMenuNormalText` and, after SWITCH, `PartyMenuSwapMonText`.
+Field medicine draws `PartyMenuItemUseText`, then the result program (`PotionText`,
+`AntidoteText`, `FullHealText`, `ReviveText`, and the other status lines) with no
+letter delay. `ItemUseNoEffectText` is typed, with a prompt. `ItemUseNotYoursToUseText`
+is OAK'S PARCEL. Battle's "Bring out which POKéMON?" stays A5c.
+
 ## Text data and printer (A5a)
+
+`text_flags.ts` holds the shared BIT_NO_TEXT_DELAY stand-in (A5b7e CP2).
+ListMenu sets it on entry and clears it on all exits; YesNoMenu clears it before
+HandleMenuInput. The shared `PcDisplay` reads it when starting each PrintText;
+PcSession sets it on each PlayerPCMenu pass and clears it on ExitPlayerPC.
+BillsPc sets it once per visit and clears it on exit. PC PrintText invokes its
+font-loaded sprite callback after the border opens and before Delay3/glyphs.
+Other callers retain their
+explicit `noDelay` options until their migrations; the printer's global defaults
+are unchanged. `pokemon_names.ts:monDisplayName` supplies uppercase medicine names
+without mutating saved nicknames.
 
 `text_printer.ts` ports PlaceString, PrintLetterDelay and ManualTextScroll as a frame
 generator. Its 20×6 logical buffer represents wTileMap rows 12–17. Text begins at
@@ -47,11 +66,10 @@ A restore does not restart a program or replay a prompt.
 
 ## TextBox wrappers
 
-| Mode | Opening and ending |
+| Entry | Opening and ending |
 |---|---|
-| `legacy` (default) | One frame before first glyph; strips trailing map endings; retains existing final press/beep close |
-| `displayTextID` | Border scanout T+4 (render T+3), first glyph CPU write T+20; outer silent fresh A/B wait, hold while A is down, close after `5 + 2W` frames and one trailing UpdateSprites |
-| `printText` | Three-frame opening; retains the box when the text returns |
+| `show()` / `open()` (DisplayTextID) | Border scanout T+4 (render T+3), first glyph CPU write T+20; outer silent fresh A/B wait, hold while A is down, close after `5 + 2W` frames and one trailing UpdateSprites |
+| `printStandalone()` (internal PrintText mode) | Three-frame opening; retains the box when the text returns |
 
 `printText: true` adds TalkToTrainer's nested PrintText delay: first glyph T+23.
 DisplayTextID's opening does not advance AutoBgMapTransfer during its first 20 frames.
@@ -64,21 +82,23 @@ callback runs when the text terminator returns; talked-to trainers start meet mu
 then, before the outer dismissal. Sight trainers already started music at spotting.
 A `<PROMPT>` has its own beep wait **and** DisplayTextID's outer silent wait.
 
-Explicit `end: 'none' | 'prompt'` takes precedence over extracted endings and retains
-the box when complete. A1b script callers keep their existing endings until A5b;
-script sound/button waits continue `updateDisplay()` once per simulation frame so
-the final glyph can reach the screen. Battle text remains on its old renderer until A5c.
+`show()` always uses DisplayTextID, preserving extracted endings. A5b7g1 removed
+legacy mode, the `end` override and the invented press/beep dismissal. Retained
+`print()`/`printStandalone()` return when their source terminator returns; their
+owner chooses subsequent waits/close. Script sound/button waits continue
+`updateDisplay()` once per simulation frame so the final glyph can reach the
+screen. Battle text remains on its separate renderer until A5c.
 
 | API | Meaning |
 |---|---|
-| `show(text, opts?)` | Substitute names and start the chosen wrapper |
+| `show(text, opts?)` | Start DisplayTextID; names are substituted by its printer/runner |
 | `printStandalone(source, {bindings, noDelay}?)` | Standalone PrintText program/string: border at T, clear, Delay3, retain on return; noDelay skips letter waits only |
 | `update()` | Transfer prior writes, then resume one frame of CPU work |
 | `updateDisplay()` | Transfer only, for retained script text |
 | `render()` / `dismiss()` | Draw / immediately close |
 | `active` | Wrapper has not closed |
 | `isTextComplete` | The string's terminator returned; outer wait may still be active |
-| `isComplete` | Explicit-ending or standalone PrintText returned and retains the box |
+| `isComplete` | The current retained opening/program/wait returned; the box remains active |
 | `isWaitingForInput` | Manual/protected wait or final outer wait |
 | `hasMorePages` | More printer tokens remain before the final outer wait |
 
@@ -139,8 +159,9 @@ Printer/wait/Hold reads use the shared screen history. Sound waits and reload
 copies do not synchronize input. Main excludes active text and `menu_closing`
 from its idle synchronization; scripts tick retained BG once per frame.
 Mom/TV, Daisy, Route 1, Mart, Viridian's small handlers, Pallet and the Lab use
-source programs inside retained sessions (A5b5a–b). The remaining story/menu callers retain legacy
-commands until A5b7, and battle text until A5c. Retained yesNoChoice owns its
+source programs inside retained sessions (A5b5a–b). A5b7g1 retires the remaining
+legacy script/TextBox paths; battle text remains separate until A5c. Hidden-event
+and bookshelf strings keep DisplayTextID until g2. Retained yesNoChoice owns its
 menu reads; migrated DelayFrames and the healing-music wait do not read input.
 
 `TextBoxOptions` and `MapDialogue.show` accept `program` and `autoBox`, so ordinary
@@ -200,7 +221,9 @@ expose loaded canvases. `setTextSpeed()` / `getTextSpeed()` control the 1/3/5 de
 `game_text.ts` loads `game_text.json`. `getText()` strips a trailing `<PROMPT>`/`<DONE>`
 for the callers A5b4–A5b7 haven't moved to programs yet; `getRawText()` keeps it.
 
-Tests: `text_printer.test.ts` (24), `bg_transfer.test.ts` (4), `textbox.test.ts` (34), `text_runner.test.ts` (21), `text_numbers.test.ts` (49), `map_text_calls.test.ts` (2),
+Tests: `text_printer.test.ts` (24), `bg_transfer.test.ts` (4), `textbox.test.ts` (31), `text_runner.test.ts` (21), `text_numbers.test.ts` (49), `map_text_calls.test.ts` (2),
 `rom/__tests__/text_decoder.test.ts` (11, three ROM-dependent),
 `rom/__tests__/text_programs.test.ts` (7, ROM-dependent; ASM comparisons need `refs/`). Integration tests
-remain in `script/text_commands.test.ts` and `overworld/item_pickup.test.ts`.
+remain in `script/text_commands.test.ts` (9) and `overworld/item_pickup.test.ts`.
+`text_census.test.ts` adds three no-ROM tripwires for reachable plain calls,
+free-move object resolution and approved `getText` consumers (A5b7g1).

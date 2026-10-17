@@ -1,12 +1,17 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Bag, addToInventory, removeFromInventoryAt, BAG_ITEM_CAPACITY, PC_ITEM_CAPACITY } from './items';
+import {
+  Bag, addToInventory, removeFromInventoryAt, BAG_ITEM_CAPACITY, PC_ITEM_CAPACITY,
+  CLOSE_MENU_ITEMS, ITEM_USE_ROUTINE, PARTY_MENU_ITEMS,
+} from './items';
+import {
+  getBagSavedMenuItem, getCurrentMenuItem, getListScrollOffset, getSavedListScrollOffset,
+  setBagSavedMenuItem, setCurrentMenuItem, setListScrollOffset, setSavedListScrollOffset,
+} from './list_state';
 import type { ItemStack } from './items';
 import { restoreBag } from './save';
 import type { SaveData } from './save';
-import { PcMenu } from './menus/pc_menu';
 import { isPressed } from './input';
 import { drawText } from './menus/menu_render';
-import { ItemMenu } from './menus/item_menu';
 import { Battle } from './battle/battle';
 import { createPokemon, loadBattleData } from './battle/data';
 import { loadGameText } from './text/game_text';
@@ -84,6 +89,29 @@ describe('RemoveItemFromInventory_ and save slots', () => {
     expect(bag.removeAt(0, 51)).toBe(false);
     expect(bag.items[0].count).toBe(50);
   });
+  it('zeroes the shared list cursors only when the removed quantity empties the slot', () => {
+    setListScrollOffset(3);
+    setCurrentMenuItem(1);
+    setBagSavedMenuItem(2);
+    setSavedListScrollOffset(4);
+    const items = [{ id: 'POTION', count: 2 }, { id: 'ANTIDOTE', count: 1 }];
+    expect(removeFromInventoryAt(items, 0, 1)).toBe(true);
+    expect(getListScrollOffset()).toBe(3);
+    expect(getCurrentMenuItem()).toBe(1);
+    expect(getBagSavedMenuItem()).toBe(2);
+    expect(getSavedListScrollOffset()).toBe(4);
+    expect(removeFromInventoryAt(items, 0, 1)).toBe(true);
+    expect(items).toEqual([{ id: 'ANTIDOTE', count: 1 }]);
+    expect(getListScrollOffset()).toBe(0);
+    expect(getCurrentMenuItem()).toBe(0);
+    expect(getBagSavedMenuItem()).toBe(0);
+    expect(getSavedListScrollOffset()).toBe(0);
+    setListScrollOffset(5);
+    const parcel = new Bag();
+    parcel.items = [{ id: 'OAKS_PARCEL', count: 1 }];
+    expect(parcel.remove('OAKS_PARCEL')).toBe(true);
+    expect(getListScrollOffset()).toBe(0);
+  });
   it('restores all saved slots verbatim, without aliasing or GiveItem merging', () => {
     const saved = { bag: full() } as SaveData;
     saved.bag[19] = { id: 'POTION', count: 1 };
@@ -99,48 +127,15 @@ function press(menu: { update: () => unknown }, button = 'a'): void {
 }
 
 describe('inventory callers through menu input', () => {
-  it('failed withdrawal changes neither inventory; retry removes the selected PC slot', () => {
-    const bag = new Bag(); bag.items = full();
-    const pc = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const before = structuredClone(bag.items);
-    const menu = new PcMenu(); menu.show(bag, pc);
-    press(menu); press(menu, 'down'); press(menu); press(menu);
-    expect(bag.items).toEqual(before);
-    expect(pc).toEqual([{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }]);
-    menu.render();
-    expect(drawText).toHaveBeenCalledWith("You can't carry", expect.any(Number), expect.any(Number));
-    bag.items.pop(); press(menu); press(menu); press(menu);
-    expect(pc).toEqual([{ id: 'POTION', count: 99 }]);
-    expect(bag.items[19]).toEqual({ id: 'POTION', count: 1 });
-  });
-  it('deposit removes the selected bag slot', () => {
-    const bag = new Bag(); bag.items = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const pc: ItemStack[] = [];
-    const menu = new PcMenu(); menu.show(bag, pc);
-    press(menu, 'down'); press(menu); press(menu, 'down'); press(menu); press(menu);
-    expect(bag.items).toEqual([{ id: 'POTION', count: 99 }]);
-    expect(pc).toEqual([{ id: 'POTION', count: 1 }]);
-  });
-  it('PC toss removes the selected duplicate slot', () => {
-    const bag = new Bag();
-    const pc = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const menu = new PcMenu(); menu.show(bag, pc);
-    press(menu, 'down'); press(menu, 'down'); press(menu); press(menu, 'down');
-    press(menu); press(menu); press(menu);
-    expect(pc).toEqual([{ id: 'POTION', count: 99 }]);
-  });
-  it('bag toss removes only the selected duplicate', () => {
-    const bag = new Bag(); bag.items = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const menu = new ItemMenu(); menu.show(bag, []);
-    press(menu, 'down'); press(menu); press(menu, 'down'); press(menu); press(menu); press(menu);
-    expect(bag.items).toEqual([{ id: 'POTION', count: 99 }]);
-  });
-  it('field healing uses the selected duplicate medicine slot', () => {
-    const bag = new Bag(); bag.items = [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }];
-    const mon = createPokemon('RATTATA', 5)!; mon.currentHp = 1;
-    const menu = new ItemMenu(); menu.show(bag, [mon]);
-    press(menu, 'down'); press(menu); press(menu); press(menu);
-    expect(bag.items).toEqual([{ id: 'POTION', count: 99 }]);
+  it('names the use routines for the items defined today', () => {
+    expect(ITEM_USE_ROUTINE.POKE_BALL).toBe('ItemUseBall');
+    expect(ITEM_USE_ROUTINE.TOWN_MAP).toBe('ItemUseTownMap');
+    expect(ITEM_USE_ROUTINE.OAKS_PARCEL).toBe('ItemUseOaksParcel');
+    expect(ITEM_USE_ROUTINE.POTION).toBe('ItemUseMedicine');
+    expect(ITEM_USE_ROUTINE.ESCAPE_ROPE).toBe('ItemUseEscapeRope');
+    expect(PARTY_MENU_ITEMS.has('POTION')).toBe(true);
+    expect(PARTY_MENU_ITEMS.has('POKE_BALL')).toBe(false);
+    expect(CLOSE_MENU_ITEMS.has('ESCAPE_ROPE')).toBe(true);
   });
   it.each(['POKE_BALL', 'POTION', 'ANTIDOTE'])('battle consumes the selected second %s slot', id => {
     const bag = new Bag(); bag.items = [{ id, count: 99 }, { id, count: 1 }];

@@ -108,7 +108,7 @@ describe('small handlers from the cartridge branches', () => {
       potionSampleScript(false), potionSampleScript(true), gamblerText(ctx()), girlText(ctx()), caterpillarText(),
       buildViridianMartParcelScript(), buildSleepingOldManScript(true), buildGymLockedScript(), buildOldMan1Script(), buildOldMan2Script(true, ctx().step)];
     for (const flow of flows) {
-      expect(all(flow).some(c => c.type === 'text')).toBe(false);
+      expect(all(flow).map(c => c.type)).not.toContain('text');
       for (const label of programs(flow)) expect(getTextProgramData().programs[label], label).toBeDefined();
     }
   });

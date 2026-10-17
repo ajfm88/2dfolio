@@ -249,6 +249,8 @@ export interface MapHiddenEvent {
   y: number;
   text?: string;
   textOffset?: number;  // ROM offset for text reading (numbers, not copyrightable)
+  /** The routine's predef text program (text_programs.json); A5b7g2 runs it instead of `text`. */
+  program?: string;
   facing?: string;
   scriptId?: string;
   item?: string;
@@ -392,16 +394,16 @@ const MAP_METADATA: Record<string, MapMeta> = {
     signTextOffsets: [],
     hiddenEvents: [
       { x: 0, y: 1, scriptId: 'RED_PC', facing: 'up' },
-      { x: 3, y: 5, textOffset: symToOffset(0x27, 0x6dd8) },  // SNES text
+      { x: 3, y: 5, program: 'RedBedroomSNESText', textOffset: symToOffset(0x27, 0x6dd8) },  // PrintRedSNESText
     ],
     npcs: [],
   },
   BluesHouse: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 0, y: 1, facing: 'up', textOffset: symToOffset(0x27, 0x7499) },  // bookshelf
-      { x: 1, y: 1, facing: 'up', textOffset: symToOffset(0x27, 0x7499) },  // same bookshelf text
-      { x: 7, y: 1, facing: 'up', textOffset: symToOffset(0x27, 0x7499) },  // same bookshelf text
+      { x: 0, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
+      { x: 1, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
+      { x: 7, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
     ],
     npcs: [
       { id: 'daisy', direction: 'right' },
@@ -411,10 +413,10 @@ const MAP_METADATA: Record<string, MapMeta> = {
   OaksLab: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 4, y: 0, facing: 'up', textOffset: symToOffset(0x27, 0x64c5) },  // push START
-      { x: 5, y: 0, facing: 'up', textOffset: symToOffset(0x27, 0x64e3) },  // SAVE option
-      { x: 0, y: 1, facing: 'up', textOffset: symToOffset(0x27, 0x6911) },  // email
-      { x: 1, y: 1, facing: 'up', textOffset: symToOffset(0x27, 0x6911) },  // same email
+      { x: 4, y: 0, facing: 'up', program: 'PushStartText', textOffset: symToOffset(0x27, 0x64c5) },  // DisplayOakLabLeftPoster
+      { x: 5, y: 0, facing: 'up', scriptId: 'OAKS_LAB_RIGHT_POSTER', textOffset: symToOffset(0x27, 0x64e3) },  // DisplayOakLabRightPoster
+      { x: 0, y: 1, facing: 'up', program: 'OakLabEmailText', textOffset: symToOffset(0x27, 0x6911) },  // DisplayOakLabEmailText
+      { x: 1, y: 1, facing: 'up', program: 'OakLabEmailText', textOffset: symToOffset(0x27, 0x6911) },  // DisplayOakLabEmailText
     ],
     npcs: [
       { id: 'prof', direction: 'down', textOffset: symToOffset(0x2a, 0x476f) },
@@ -430,7 +432,7 @@ const MAP_METADATA: Record<string, MapMeta> = {
   ViridianPokecenter: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 0, y: 4, facing: 'left', textOffset: symToOffset(0x27, 0x60a0) },  // pokecenter sign
+      { x: 0, y: 4, facing: 'left', program: 'ViridianCityPokecenterBenchGuyText', textOffset: symToOffset(0x27, 0x60a0) },  // PrintBenchGuyText
       { x: 13, y: 3, scriptId: 'POKECENTER_PC', facing: 'up' },
     ],
     npcs: [

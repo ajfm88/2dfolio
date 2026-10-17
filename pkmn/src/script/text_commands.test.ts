@@ -1,3 +1,17 @@
+// A5b7g1 CP1: coverage replacing the retired explicit-ending/legacy cases:
+// - "none returns ... no input": textbox.test.ts "PrintText alone waits three frames and
+//   returns while retaining the box" and "keeps Delay3 but places the entire program ...".
+// - "prompt ... protects three frames ... accepts a/b once": text_printer.test.ts
+//   "cont protects three frames, accepts the pending press and scrolls 5 + 5";
+//   textbox.test.ts "prompt uses its beeping wait and then a separate silent DisplayTextID wait".
+// - "prompt remembers the button ... sound": text_printer.test.ts
+//   "sound wait retains the accepted button and performs no joypad reads".
+// - "none retains intermediate cont/para paging": text_printer.test.ts "para clears all four
+//   inside rows, holds 20 frames, then starts row 14" and the cont case above;
+//   text_runner.test.ts "FAR resumes its parent after child %s, with the same cursor".
+// - "legacy text still beeps and dismisses": the invented legacy close is removed;
+//   its source prompt/beep is covered by the textbox prompt case above and its silent
+//   close by "HoldTextDisplayOpen stays while A is held ..." below.
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
 import { isPressed, isHeld, syncJoypadRead } from '../input';
@@ -13,6 +27,7 @@ import { spriteTable } from '../overworld/sprites';
 import { Bag } from '../items';
 import { getAllHiddenObjects, restoreHiddenObjects } from '../events';
 import { UiEntry } from '../overworld/ui_entry';
+import { loadTextPrograms } from '../text/program_data';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: vi.fn(() => false),
   isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn(), readJoypad: vi.fn() }));
@@ -22,7 +37,7 @@ vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(),
   loadFont: vi.fn(async () => ({ width: 128 })), loadTileset: vi.fn(async () => ({ width: 128 })),
   loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn() }));
 
-beforeAll(initTextSystem);
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); });
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(isHeld).mockReturnValue(false);
@@ -39,8 +54,12 @@ function scene(): ScriptDeps {
   return { textBox: new TextBox(), player: new Player(), gameMap, npcs: [], playerBag: new Bag(), playerParty: [] };
 }
 
-function type(box: TextBox): void {
-  for (let frame = 0; frame < 200 && !box.isWaitingForInput && !box.isComplete; frame++) box.update();
+function openPrinted(deps: ScriptDeps): void {
+  deps.textBox.open();
+  for (let frame = 0; frame < 20; frame++) deps.textBox.update();
+  deps.textBox.print({ program: 'WhatText' }, { noDelay: true });
+  for (let frame = 0; frame < 3; frame++) deps.textBox.update();
+  expect(deps.textBox.isComplete).toBe(true);
 }
 
 function arrow(box: TextBox): boolean {
@@ -50,83 +69,48 @@ function arrow(box: TextBox): boolean {
   return vi.mocked(drawTile).mock.calls.some(call => call[1] === charToTile('▼') && call[2] === 144 && call[3] === 128);
 }
 
-describe('TextBox text_end and PromptText', () => {
-  it('none returns with a drawn box and reads no input after the final character', () => {
-    const box = new TextBox(); box.show('YELLOW found\nPOTION!', { end: 'none' }); type(box);
-    expect(box.isComplete).toBe(true); expect(box.active).toBe(true);
-    vi.mocked(isHeld).mockClear(); vi.mocked(isPressed).mockClear();
-    box.update(); expect(isHeld).not.toHaveBeenCalled(); expect(isPressed).not.toHaveBeenCalled();
-    expect(playSFX).not.toHaveBeenCalled(); expect(arrow(box)).toBe(false);
-    box.show('Next'); expect(box.isComplete).toBe(false);
-  });
-  it.each(['a', 'b'])('prompt draws the final arrow, protects three frames, then accepts %s once', button => {
-    const box = new TextBox(); box.show('Here you go!', { end: 'prompt' }); type(box);
-    expect(arrow(box)).toBe(true);
-    vi.mocked(isHeld).mockImplementation(key => key === button);
-    for (let i = 0; i < 2; i++) { box.update(); expect(box.isComplete).toBe(false); }
-    box.update(); box.update();
-    expect(playSFX).toHaveBeenCalledExactlyOnceWith('press_ab');
-    expect(box.isComplete).toBe(true); expect(box.active).toBe(true); expect(arrow(box)).toBe(false);
-  });
-  it('prompt remembers the button while waiting for current sound', () => {
-    const box = new TextBox(); box.show('Here you go!', { end: 'prompt' }); type(box);
-    for (let i = 0; i < 3; i++) box.update();
-    vi.mocked(isSoundFinished).mockReturnValue(false); vi.mocked(isHeld).mockImplementation(key => key === 'a');
-    box.update(); vi.mocked(isHeld).mockReturnValue(false); box.update();
-    expect(box.isComplete).toBe(false); expect(playSFX).not.toHaveBeenCalled();
-    vi.mocked(isSoundFinished).mockReturnValue(true); box.update();
-    expect(box.isComplete).toBe(true); expect(playSFX).toHaveBeenCalledExactlyOnceWith('press_ab');
-  });
-  it('none retains intermediate cont/para paging and only completes on the final page', () => {
-    const box = new TextBox(); box.show('one\ntwo\nthree\ffour\nfive', { end: 'none' }); type(box);
-    expect(box.isComplete).toBe(false); expect(arrow(box)).toBe(true);
-    vi.mocked(isHeld).mockImplementation(key => key === 'a');
-    for (let frame = 0; frame < 3; frame++) box.update();
-    vi.mocked(isHeld).mockReturnValue(false); type(box);
-    expect(box.isComplete).toBe(false);
-    vi.mocked(isHeld).mockImplementation(key => key === 'b');
-    for (let frame = 0; frame < 3; frame++) box.update();
-    vi.mocked(isHeld).mockReturnValue(false); type(box);
-    expect(box.isComplete).toBe(true); expect(box.active).toBe(true);
-    expect(vi.mocked(playSFX).mock.calls).toEqual([['press_ab'], ['press_ab']]);
-  });
-  it('legacy text still beeps and dismisses on the press', () => {
-    const box = new TextBox(); box.show('Hello'); type(box);
-    expect(box.isWaitingForInput).toBe(true); expect(arrow(box)).toBe(false);
-    vi.mocked(isPressed).mockImplementation(key => key === 'a'); box.update();
-    expect(box.active).toBe(false); expect(playSFX).toHaveBeenCalledExactlyOnceWith('press_ab');
-  });
-});
-
 describe('blocking text script routines', () => {
+  it.each(['closed', 'standalone'] as const)('textButtonWait rejects a %s box without synchronizing input', state => {
+    const deps = scene();
+    if (state === 'standalone') deps.textBox.printStandalone({ program: 'WhatText' });
+    initScript([{ type: 'textButtonWait' }]); vi.mocked(syncJoypadRead).mockClear();
+    expect(() => updateScript(deps, false)).toThrow('textButtonWait requires an open display');
+    expect(syncJoypadRead).not.toHaveBeenCalled();
+  });
   it.each([false, true])('sound plays once and returns on the sound-finished frame (waitForCurrent=%s)', waitForCurrent => {
     const deps = scene(); const moved = vi.spyOn(deps.player, 'update');
-    initScript([{ type: 'sound', name: 'get_item1', waitForCurrent }, { type: 'closeText' }]);
+    const after = vi.fn();
+    initScript([{ type: 'displayOpen' }, { type: 'sound', name: 'get_item1', waitForCurrent },
+      { type: 'callback', fn: after }]);
     vi.mocked(isSoundFinished).mockReturnValue(false);
+    updateScript(deps, false);
+    for (let frame = 0; frame < 20; frame++) updateScript(deps, false);
     updateScript(deps, true); updateScript(deps, false);
     expect(playSFX).toHaveBeenCalledTimes(waitForCurrent ? 0 : 1);
     if (waitForCurrent) {
       vi.mocked(isSoundFinished).mockReturnValueOnce(true); updateScript(deps, true);
       expect(playSFX).toHaveBeenCalledExactlyOnceWith('get_item1');
     }
-    expect(getActiveScript()?.index).toBe(0);
+    expect(getActiveScript()?.index).toBe(1); expect(after).not.toHaveBeenCalled();
     vi.mocked(isSoundFinished).mockReturnValue(true);
     expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' });
+    expect(after).toHaveBeenCalledOnce();
     expect(moved).not.toHaveBeenCalled(); expect(syncJoypadRead).not.toHaveBeenCalled(); // sound waits own no reads
   });
   it.each(['a', 'b'])('silent textButtonWait accepts %s without an arrow or beep', button => {
-    const deps = scene(); deps.textBox.show('No room', { end: 'none' }); type(deps.textBox);
-    initScript([{ type: 'textButtonWait' }, { type: 'closeText' }]);
+    const deps = scene(); openPrinted(deps);
+    initScript([{ type: 'textButtonWait' }, { type: 'displayClose', outerWait: false }]);
     updateScript(deps, true); expect(deps.textBox.active).toBe(true); expect(arrow(deps.textBox)).toBe(false);
-    vi.mocked(isPressed).mockImplementation(key => key === button);
+    vi.mocked(isHeld).mockImplementation(key => key === button);
     expect(updateScript(deps, false)).toBeNull();
+    if (button === 'a') { vi.mocked(isHeld).mockReturnValue(false); updateScript(deps, false); }
     for (let frame = 0; frame < 6; frame++) expect(updateScript(deps, false)).toBeNull();
     expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' }); // detached W=1, seven close frames
     expect(playSFX).not.toHaveBeenCalled(); expect(syncJoypadRead).toHaveBeenCalled();
   });
   it('HoldTextDisplayOpen stays while A is held, then waits the full seven-frame reload', () => {
-    const deps = scene(); deps.textBox.show('found', { end: 'none' }); type(deps.textBox);
-    initScript([{ type: 'closeText' }]); vi.mocked(isHeld).mockImplementation(key => key === 'a');
+    const deps = scene(); openPrinted(deps);
+    initScript([{ type: 'displayClose', outerWait: false }]); vi.mocked(isHeld).mockImplementation(key => key === 'a');
     updateScript(deps, true); updateScript(deps, false); expect(deps.textBox.active).toBe(true);
     vi.mocked(isHeld).mockReturnValue(false);
     expect(updateScript(deps, false)).toBeNull();
@@ -135,7 +119,10 @@ describe('blocking text script routines', () => {
   });
   it('HideObject saves its key, hides the live object and removes its collision availability', () => {
     const deps = scene(); deps.npcs.push(new Npc({ id: 'potion1', sprite: 'poke_ball', x: 0, y: 1, movement: 'stay', dialogue: '', object: true }));
-    initScript([{ type: 'hideObject', map: 'ViridianForest', npcId: 'potion1' }, { type: 'text', message: 'found', end: 'none' }]);
+    initScript([{ type: 'displayOpen' }, { type: 'hideObject', map: 'ViridianForest', npcId: 'potion1' },
+      { type: 'printText', program: 'WhatText' }]);
+    updateScript(deps, false);
+    for (let frame = 0; frame < 19; frame++) updateScript(deps, false);
     updateScript(deps, true);
     expect(getAllHiddenObjects()).toEqual(['ViridianForest:potion1']); expect(deps.npcs[0].hidden).toBe(true);
     expect(spriteTable(deps.player, deps.npcs)[1].available).toBe(false);
@@ -143,9 +130,17 @@ describe('blocking text script routines', () => {
   });
   it('retained text keeps UiEntry open across commands; an unterminated script dismisses it', () => {
     const deps = scene(); const ui = new UiEntry();
-    initScript([{ type: 'text', message: 'A', end: 'none' }, { type: 'text', message: 'B', end: 'none' }]);
+    initScript([{ type: 'displayOpen' }, { type: 'printText', program: 'WhatText', noDelay: true },
+      { type: 'printText', program: 'WhatText', noDelay: true }]);
     updateScript(deps, true); expect(ui.opened(deps.textBox.active)).toBe(true);
-    for (let frame = 0; frame < 3; frame++) { updateScript(deps, false); expect(ui.opened(deps.textBox.active)).toBe(false); }
-    expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' }); expect(deps.textBox.active).toBe(false);
+    const print = vi.spyOn(deps.textBox, 'print');
+    let ended = false;
+    for (let frame = 1; frame < 100 && !ended; frame++) {
+      ended = updateScript(deps, false)?.type === 'scriptEnded';
+      expect(ui.opened(deps.textBox.active)).toBe(false);
+      if (!ended) expect(deps.textBox.active).toBe(true);
+    }
+    expect(print).toHaveBeenCalledTimes(2);
+    expect(ended).toBe(true); expect(deps.textBox.active).toBe(false);
   });
 });

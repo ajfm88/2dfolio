@@ -16,7 +16,7 @@ import { loadPikachuMovementData } from '../pikachu/pikachu_movement_data';
 import type { BattlePokemon } from '../battle';
 import { captureUi, initRenderer } from '../renderer/renderer';
 import { uiTiles } from '../renderer/ui_tiles';
-import { StartMenu } from '../menus/start_menu';
+import { StartMenuSession } from '../menus/start_menu';
 import { loadGameText } from '../text/game_text';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false) }));
@@ -55,15 +55,16 @@ function scene(facing: Direction) {
 
 /** Open START as the game does: draw it into the UI layer, then UpdateSprites. */
 function openStart(s: ReturnType<typeof scene>): void {
-  const menu = new StartMenu();
-  menu.show(false, 'RED'); // six items: the box is 80 × 112 at the right edge
-  captureUi(() => menu.render());
-  fontLoadedUpdateSprites(s.player, s.gameMap, uiTiles.tileAt, s.pikachu);
+  const menu = new StartMenuSession(() => {
+    captureUi(() => menu.paint());
+    fontLoadedUpdateSprites(s.player, s.gameMap, uiTiles.tileAt, s.pikachu);
+  });
+  menu.open(false, 'RED'); // logical border exists before the first visible scanout
 }
 
 describe('which states open UI over the map', () => {
   it('text boxes, START and the boxes reached through text; not full-screen menus', () => {
-    for (const st of ['textbox', 'start_menu', 'pikachu_emotion', 'pc', 'pokecenter_pc', 'item_menu', 'save_menu']) {
+    for (const st of ['textbox', 'start_menu', 'pikachu_emotion', 'item_menu', 'save_menu']) {
       expect(overworldUiOpen(st, false)).toBe(true);
     }
     for (const st of ['party_menu', 'dex', 'trainer_card', 'option_menu', 'town_map', 'battle', 'transition']) {

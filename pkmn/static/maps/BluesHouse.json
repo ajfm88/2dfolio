@@ -66,18 +66,21 @@
       "x": 0,
       "y": 1,
       "facing": "up",
+      "program": "BookcaseText",
       "text": "Crammed full of\nPOKéMON books!"
     },
     {
       "x": 1,
       "y": 1,
       "facing": "up",
+      "program": "BookcaseText",
       "text": "Crammed full of\nPOKéMON books!"
     },
     {
       "x": 7,
       "y": 1,
       "facing": "up",
+      "program": "BookcaseText",
       "text": "Crammed full of\nPOKéMON books!"
     }
   ]

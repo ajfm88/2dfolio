@@ -5,11 +5,11 @@ import type { NpcUpdateContext } from './npc';
 import { GameMap } from './map';
 import { PikachuFollower } from '../pikachu/pikachu_follower';
 import { Bag } from '../items';
-import { createOverworldState, runMapScript, updateOverworld, handleStepComplete, buildNurseScript } from './overworld_controller';
+import { createOverworldState, runMapScript, updateOverworld, handleStepComplete } from './overworld_controller';
 import type { OverworldDeps } from './overworld_controller';
 import { isHeld, isPassPressed } from '../input';
 import { loadBattleData, loadWildEncounters, createPokemon } from '../battle';
-import { loadGameText, getText } from '../text/game_text';
+import { loadGameText } from '../text/game_text';
 import { loadPikachuMovementData } from '../pikachu/pikachu_movement_data';
 import { restoreFlags, restoreMapScripts, setFlag } from '../events';
 import { getPikachuMood, restorePikachuHappiness } from '../pikachu/pikachu_happiness';
@@ -18,8 +18,9 @@ import { uiTiles } from '../renderer/ui_tiles';
 import { UiEntry, overworldUiOpen, fontLoadedUpdateSprites } from './ui_entry';
 import { initScript, updateScript } from '../script/script_controller';
 import type { ScriptDeps } from '../script/script_controller';
-import type { ScriptCommand } from '../script';
-import { TextBox } from '../text/textbox';
+import { buildNurseScript } from '../story/pokecenter';
+import { loadTextPrograms } from '../text/program_data';
+import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
 import type { Direction } from '../core';
 import { createHash } from 'node:crypto';
 import { PassClock } from './walk_pace';
@@ -28,15 +29,15 @@ import { readJoypad } from '../input';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false), readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => false }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false }));
-vi.mock('../renderer', () => ({ loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawExclamationBubble: vi.fn(), drawShadowUnderSprites: vi.fn() }));
+vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false, isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: () => false }));
+vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawExclamationBubble: vi.fn(), drawShadowUnderSprites: vi.fn() }));
 
-beforeAll(async () => { await loadBattleData(); await loadGameText(); await loadWildEncounters('Route1'); await loadPikachuMovementData(); });
+beforeAll(async () => { await loadBattleData(); await loadGameText(); await loadWildEncounters('Route1'); await loadPikachuMovementData(); await initTextSystem(); await loadTextPrograms(); });
 beforeEach(() => {
   restoreFlags([]);
   restoreMapScripts({});
   restorePikachuHappiness(90, 200);
-  uiTiles.clear();
+  uiTiles.clear(); setTextSpeed('fast');
   vi.mocked(isHeld).mockReturnValue(false);
   vi.mocked(isPassPressed).mockReturnValue(false);
   vi.mocked(drawSprite).mockClear();
@@ -825,39 +826,36 @@ describe('A6e: Pikachu\'s scripted movement through the script controller', () =
 });
 
 describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)', () => {
-  /** A text box that closes on the frame after it opens, recording when each opens. */
-  function quickText(opened: { message: string; frame: number }[], frameOf: () => number): TextBox {
-    let active = false;
-    return {
-      get active() { return active; },
-      get isWaitingForInput() { return active; },
-      get hasMorePages() { return false; },
-      show(message: string) { active = true; opened.push({ message, frame: frameOf() }); },
-      update() { active = false; },
-      dismiss() { active = false; },
-    } as unknown as TextBox;
-  }
-
-  /** The yes branch and the shared tail of the nurse's script (the yes/no menu itself is
-   *  covered elsewhere). */
-  function healScript(): ScriptCommand[] {
-    const all = buildNurseScript(() => undefined);
-    const ask = all.findIndex(c => c.type === 'yesNoChoice');
-    const yesNo = all[ask];
-    if (yesNo.type !== 'yesNoChoice') throw new Error('no yes/no');
-    // Keep the old quick-text movement fixture: the real session/text/menu timing
-    // is covered in story/pokecenter.test.ts. All A6e assertions below stay intact.
-    const keys: Record<string, string> = { PokemonCenterWelcomeText: 'POKECENTER_WELCOME',
-      ShallWeHealYourPokemonText: 'POKECENTER_HEAL_ASK', NeedYourPokemonText: 'POKECENTER_NEED_MON',
-      PokemonFightingFitText: 'POKECENTER_FIGHTING_FIT' };
-    const fixture = (commands: ScriptCommand[]): ScriptCommand[] => commands.flatMap((command): ScriptCommand[] => {
-      if (command.type === 'displayOpen' || command.type === 'displayClose' || command.type === 'displayHide') return [];
-      if (command.type === 'printText') return [{ type: 'text' as const,
-        message: command.program === 'PokemonCenterFarewellText' ? 'We hope to see\nyou again!' : getText(keys[command.program]) }];
-      if (command.type === 'ifStarterPikachu') return [{ ...command, then: fixture(command.then) }];
-      return [command];
+  /** The real nurse display/menu and yes branch; program spy matches pokecenter.test.ts trace(). */
+  function nurseTrace(deps: OverworldDeps) {
+    const p = deps.pikachuFollower;
+    const textBox = new TextBox({ closeFrames: () => 17,
+      updateSprites: () => updateSprites(deps.npcs, deps.gameMap, deps.player, p) });
+    const scriptDeps = { ...deps, textBox };
+    let frame = 0;
+    const opened: { program: string; frame: number }[] = [];
+    const trace: { frame: number; visible: boolean; image: boolean; walking: boolean; y: number;
+      program: string | undefined; printing: boolean }[] = [];
+    const print = textBox.print.bind(textBox);
+    vi.spyOn(textBox, 'print').mockImplementation((source, options) => {
+      if ('program' in source) opened.push({ program: source.program, frame });
+      print(source, options);
     });
-    return fixture([...all.slice(0, ask), ...yesNo.yes, ...all.slice(ask + 1)]);
+    initScript(buildNurseScript(deps.findNpc));
+    for (; frame < 6000; frame++) {
+      // As in the nurse trace: fresh B edges serve text, while menu reads choose YES.
+      vi.mocked(isHeld).mockImplementation(k => k === 'b' && frame % 2 === 0 && textBox.isWaitingForInput);
+      vi.mocked(isPassPressed).mockImplementation(k => k === 'a');
+      const action = updateScript(scriptDeps, frame % 2 === 0);
+      trace.push({ frame, visible: p.visible, image: p.imageVisible, walking: p.movementActive, y: p.y,
+        program: opened[opened.length - 1]?.program, printing: !textBox.isComplete });
+      if (action?.type === 'scriptEnded') break;
+    }
+    expect(frame).toBeLessThan(6000);
+    expect(textBox.active).toBe(false);
+    expect(opened.map(o => o.program)).toEqual(['PokemonCenterWelcomeText', 'ShallWeHealYourPokemonText',
+      'NeedYourPokemonText', 'PokemonFightingFitText', 'PokemonCenterFarewellText']);
+    return { opened, trace, frame };
   }
 
   it('traces the healthy starter: walk, hidden through the heal, its image written before the bow', () => {
@@ -866,27 +864,22 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
     const p = deps.pikachuFollower;
     p.visible = true;
     p.spawn(deps.player.x, deps.player.y, 'up'); // below the player, facing up
-    let frame = 0;
-    const opened: { message: string; frame: number }[] = [];
-    const scriptDeps = { ...deps, textBox: quickText(opened, () => frame) };
-    const trace: { frame: number; visible: boolean; image: boolean; walking: boolean; y: number }[] = [];
-    initScript(healScript());
-    while (updateScript(scriptDeps, frame % 2 === 0)?.type !== 'scriptEnded' && frame < 3000) {
-      trace.push({ frame, visible: p.visible, image: p.imageVisible, walking: p.movementActive, y: p.y });
-      frame++;
-    }
-    const textAt = (key: string): number => opened.find(o => o.message === getText(key))!.frame;
+    const { opened, trace } = nurseTrace(deps);
+    const textAt = (program: string): number => opened.find(o => o.program === program)!.frame;
     const walk = trace.filter(t => t.walking);
     // PikachuWalksToNurseJoy (69 frames) runs before NeedYourPokemon, ending on the counter
     expect(walk.length).toBe(69);
-    expect(walk[walk.length - 1].frame).toBeLessThan(textAt('POKECENTER_NEED_MON'));
+    expect(walk[walk.length - 1].frame).toBeLessThan(textAt('NeedYourPokemonText'));
     // DisablePikachuOverworldSpriteDrawing after NeedYourPokemon; still not drawn while
     // the fighting-fit text shows (EnablePikachuOverworldSpriteDrawing draws nothing)
-    const fit = textAt('POKECENTER_FIGHTING_FIT');
+    const fit = textAt('PokemonFightingFitText');
     expect(trace.find(t => t.frame === fit)!.image).toBe(false);
+    const fitPrinting = trace.filter(t => t.program === 'PokemonFightingFitText' && t.printing);
+    expect(fitPrinting.length).toBeGreaterThan(0);
+    expect(fitPrinting.every(t => !t.image)).toBe(true);
     // Func_6ebb(15, 0) writes its image: drawn again within the bow's first frames
     const shown = trace.find(t => t.frame > fit && t.image)!;
-    const farewell = opened.find(o => o.message.startsWith('We hope'))!.frame;
+    const farewell = textAt('PokemonCenterFarewellText');
     expect(shown.frame).toBeLessThan(farewell - 40);
     expect(shown.y).toBe(deps.player.y - 16);
     // CloseTextDisplay restores the facing saved at the start; following refreshed (down)
@@ -903,10 +896,7 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
       await p.loadSprite();
       p.visible = false;
       p.direction = facing; // the hidden slot still has a facing (DisplayTextIDInit saves it)
-      let frame = 0;
-      const scriptDeps = { ...deps, textBox: quickText([], () => frame) };
-      initScript(healScript());
-      while (updateScript(scriptDeps, frame % 2 === 0)?.type !== 'scriptEnded' && frame < 3000) frame++;
+      nurseTrace(deps);
       expect(deps.playerParty[0].currentHp).toBeGreaterThan(0);
       // spawn state 5 placed it facing down; CloseTextDisplay restored the saved facing
       expect([p.visible, p.imageVisible, p.x, p.y, p.direction]).toEqual([true, true, deps.player.x, deps.player.y - 16, facing]);
@@ -923,10 +913,7 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
     setFlag('BATTLED_RIVAL_IN_OAKS_LAB');
     deps.playerParty.length = 0;
     deps.playerParty.push(createPokemon('RATTATA', 3)!);
-    let frame = 0;
-    const scriptDeps = { ...deps, textBox: quickText([], () => frame) };
-    initScript(healScript());
-    while (updateScript(scriptDeps, frame % 2 === 0)?.type !== 'scriptEnded' && frame < 3000) frame++;
+    const { frame } = nurseTrace(deps);
     expect(frame).toBeLessThan(3000);
     expect(deps.pikachuFollower.visible).toBe(false);
   });
@@ -937,8 +924,9 @@ describe('A6d pushed hop', () => {
     const deps = world();
     vi.mocked(deps.gameMap.isWalkable).mockReturnValue(false);
     vi.spyOn(deps.gameMap, 'isLedge').mockReturnValue(true);
-    initScript([{ type: 'pushPlayer', direction: 'down' }, { type: 'text', message: 'Landed.' }]);
+    initScript([{ type: 'pushPlayer', direction: 'down' }, { type: 'displayOpen' }, { type: 'printText', program: 'WhatText' }]);
     const scriptDeps = { ...deps, textBox: new TextBox() };
+    const print = vi.spyOn(scriptDeps.textBox, 'print');
     updateScript(scriptDeps, true); // initializes push
     for (let i = 0; i < 17; i++) updateScript(scriptDeps, true); // arm + move
     expect(deps.player.isLanding).toBe(true);
@@ -951,5 +939,7 @@ describe('A6d pushed hop', () => {
     expect(deps.player.ledgeHopFlag).toBe(false);
     updateScript(scriptDeps, true); // text
     expect(scriptDeps.textBox.active).toBe(true);
+    for (let frame = 0; frame < 20; frame++) updateScript(scriptDeps, false);
+    expect(print).toHaveBeenCalledWith({ program: 'WhatText' }, expect.any(Object));
   });
 });

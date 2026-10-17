@@ -28,8 +28,9 @@ import '../story/lab_text_handlers';
 import '../story/pokecenter';
 import '../story/mart';
 import { getTextHandler, getTextScript, displayTextID } from '../story/text_handlers';
+import type { TextHandlerContext } from '../story/text_handlers';
 import { getOwnedCount } from '../pokedex_state';
-import { getHiddenEventScript } from '../story/hidden_events';
+import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { buildOakGrassScript } from '../story/pallet_town';
 import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
@@ -71,8 +72,6 @@ export type OverworldAction =
   | { type: 'pikachuEmotion' }
   | { type: 'textbox'; text: string; call?: 'text' | 'printText'; autoBox?: boolean; program?: string }
   | { type: 'script'; commands: ScriptCommand[] }
-  | { type: 'openPc' }
-  | { type: 'openPokecenterPc' }
 
   | { type: 'startBattle'; pokemon: BattlePokemon }
   | { type: 'talkToTrainer'; npc: Npc }
@@ -215,7 +214,8 @@ export function updateOverworld(
 
 /** CheckForHiddenEventOrBookshelfOrCardKeyDoor's finds, which come before `.displayDialogue`. */
 function foundBeforeDialogue(interaction: Interaction): boolean {
-  return 'item' in interaction || 'scriptId' in interaction || ('text' in interaction && interaction.preDialogue === true);
+  return 'item' in interaction || 'scriptId' in interaction || 'program' in interaction
+    || ('text' in interaction && interaction.preDialogue === true);
 }
 
 /**
@@ -241,6 +241,12 @@ export function finishTrainerEngage(
 
 // ── Interaction handling ──────────────────────────────────────────────
 
+function textContext(deps: OverworldDeps, shopItems?: string[]): TextHandlerContext {
+  return { hasFlag, bag: deps.playerBag, ownedCount: getOwnedCount(),
+    party: deps.playerParty, facing: deps.player.direction, findNpc: deps.findNpc,
+    step: { x: deps.player.mapStepX, y: deps.player.mapStepY }, onHeal: deps.onPokecenterHeal, shopItems };
+}
+
 function handlerAction(textId: number | undefined, deps: OverworldDeps, shopItems?: string[]): OverworldAction | null {
   const alternate = deps.currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2')
     : deps.currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL');
@@ -248,9 +254,7 @@ function handlerAction(textId: number | undefined, deps: OverworldDeps, shopItem
   const handler = call?.call === 'handler' ? getTextHandler(deps.currentMapName, textId)
     : call?.call === 'script' ? getTextScript(call.script) : undefined;
   if (!handler) return null; // unmigrated/excluded callers retain their existing path
-  return { type: 'script', commands: handler({ hasFlag, bag: deps.playerBag, ownedCount: getOwnedCount(),
-    party: deps.playerParty, facing: deps.player.direction, findNpc: deps.findNpc,
-    step: { x: deps.player.mapStepX, y: deps.player.mapStepY }, onHeal: deps.onPokecenterHeal, shopItems }) };
+  return { type: 'script', commands: handler(textContext(deps, shopItems)) };
 }
 
 /** Handle a player interaction (NPC talk, sign read, item pickup, script trigger). */
@@ -295,24 +299,9 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
     } : {}) };
   }
 
-  if ('scriptId' in interaction) {
-    if (interaction.scriptId === 'REDSHOUSE1F_TV') return handlerAction(2, deps);
-
-    // Player's PC (assembly: engine/menus/players_pc.asm)
-    if (interaction.scriptId === 'RED_PC') {
-      return { type: 'openPc' };
-    }
-    // Pokecenter PC (assembly: engine/menus/pokecenters/pokecenter_pc.asm)
-    if (interaction.scriptId === 'POKECENTER_PC') {
-      return { type: 'openPokecenterPc' };
-    }
-
-    // Scripted hidden events: the school's notebook and blackboard (story/hidden_events.ts)
-    const script = getHiddenEventScript(interaction.scriptId);
-    if (script) {
-      return { type: 'script', commands: script };
-    }
-    return null;
+  if ('scriptId' in interaction || 'program' in interaction) {
+    const commands = interactionDisplay(interaction, textContext(deps), bookshelfContext(deps.player, deps.gameMap));
+    return commands ? { type: 'script', commands } : null;
   }
 
   if ('item' in interaction) {
@@ -468,7 +457,3 @@ function checkConnection({ player, gameMap }: OverworldDeps): OverworldAction | 
 
   return null;
 }
-
-// ── Helper functions for building inline scripts ──────────────────────
-
-export { buildNurseScript } from '../story/pokecenter';

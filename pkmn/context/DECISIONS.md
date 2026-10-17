@@ -650,6 +650,103 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       first, §3.6, adding F-2: emptying a slot resets the shared list state, a fix to A5b7b's Mart).
     - Commits remain local; no push.
 
+57. **A5b7d takes all four plan decisions** (2026-10-15). *The user's answer to `notes/47-a5b7d-plan.md` §8
+    (O-26): "yes to all". Claude planned it at the user's request.*
+
+    - **PROF.OAK's PC is shown now** (once GOT_POKEDEX): the main menu has the cartridge's four entries, and
+      Oak's PC runs its "Want to get your POKéDEX rated?" YES/NO. `DisplayDexRating` stays the existing approved
+      gap (shared with Oak in the Lab); a later dex-rating slice fills both. Its three texts are extracted here.
+    - **Bill's PC stays a bridge** to today's `BillsPcMenu` until A5b7e, behind the cartridge's real preamble
+      (`enter_pc`, "Accessed someone's PC").
+    - **The Mart's session slot is generalized** into one menu-session interface shared by the Mart and both
+      PCs, so one transfer tick and one Joypad owner per frame stay in one place.
+    - **One slice, five checkpoints.** **Sol implements** (the user, 2026-10-15: "sol will implement"; Claude had
+      first defaulted to Grok). Claude reviews; the user play-tests (§7).
+    - Commits remain local; no push.
+
+58. **A5b7e takes all five plan decisions** (2026-10-15). *The user's answer to `notes/49-a5b7e-plan.md` §9
+    (O-27): "1 yes, 2 yes, it should save the game, 3 yes, 4 yes, 5 sol". Claude planned it at the user's
+    request.*
+
+    - **The cartridge's Bill's PC is built now:**
+      - the six-entry menu with the BOX No. box;
+      - the list and the DEPOSIT/WITHDRAW–STATS–CANCEL menu;
+      - the starter-Pikachu rules and DEPOSITED happiness;
+      - Change Box;
+      - PRINT BOX's empty-box branch.
+
+      Only note 49 §7's gaps stay: cries/clips (J2), the stats pages, the printer screen (J2), the
+      follow-disabled state (V2), direct `BillsPC_`, the box data model, and the OT part of the starter test
+      (A4). This amends #52's "messages only" limit and its exclusion of full Bill's PC mechanics. PLAN's E2
+      drops Bill's PC and DEPOSITED happiness.
+    - **Change Box saves the game** through the same save write as START → SAVE (`SaveGameData`). This amends
+      #52's "no Change Box autosave".
+    - **STATS shows the existing stats pages,** moved into a shared module, until a StatusScreen/StatusScreen2
+      port. **That port is its own slice right after A5b7g,** before the healing machine. Claude plans it then.
+    - **F-1** (lists and YES/NO clear the no-text-delay flag, so A5b7d's item PC types after a list) and **F-2**
+      (capitalized Pokémon names in bound texts, A5b7c2) are fixed in this slice. The party cursor clamp stays
+      as a documented guard, and note 46 N-4 / note 48 N-3 are closed by tests (§5.6).
+    - **One slice, five checkpoints. Sol implements;** Claude reviews; the user play-tests (§8).
+    - Commits remain local; no push.
+
+59. **A5b7f takes all four plan decisions** (2026-10-15). *The user's answer to `notes/52-a5b7f-plan.md` §9
+    (O-28): "yes to all". Claude planned it at the user's request; the user had already named Sol.*
+
+    - **Two sub-slices:**
+      - **A5b7f1, the START menu:** `DisplayTextID(0)` opening, DrawStartMenu, the input loop with its wrap
+        rules, the saved cursor and ▷, `CloseStartMenu`'s 4 copy frames, and RedisplayStartMenu with each
+        submenu's START-side tail.
+      - **A5b7f2, SAVE:** the info box, the typed question, the left YES/NO, the write before "Saving...",
+        128/10/the real `save` sound/30, then Buffer2 → Hold → close.
+
+      Each is reviewed and play-tested. This settles note 43's "START menu wrap, ▷, Delay3 → A5b7f/J2" in
+      favour of A5b7f.
+    - **The older-file question stays out** until a player ID exists. A4 adds `InitPlayerData`'s ID (trades
+      need OT IDs) and the question with it. #52's "no save-identity check" holds until then.
+    - **START gets `wBattleAndStartSavedMenuItem` now** (WRAM, not saved). Battle zeroes it at its start and
+      stores its menu choice there in **A5c**.
+    - **Sol implements:** f1 in three checkpoints (CP1 is a trace, no code), then f2 in two. Claude reviews
+      each; the user play-tests each.
+    - Commits remain local; no push.
+
+60. **A5b7g takes all four plan decisions** (2026-10-15). *The user's answer to `notes/54-a5b7g-plan.md` §9
+    (O-29): "yea to all". Claude planned it at the user's request.*
+
+    - **Two sub-slices, before the StatusScreen port:**
+      - **A5b7g1:** retire script `text`/`closeText`, the non-display `textButtonWait` fallback, the Lab
+        guard's `guardText` paths, TextBox's `legacy` mode and `end` option, and `commandState`. First
+        migrate the A6e fixture onto the real session (note 36 N-3) and the legacy tests. Add notes 51/53
+        N-1's seven assertions and the census tripwires, fix F-1 (Lab hidden texts invisible during the
+        starter choice), then run the final A5b regression.
+      - **A5b7g2:** hidden events and bookshelves run their extracted programs through one shared
+        interaction builder, used by the overworld and the Lab's free movement.
+      - `textButtonWait` stays (`WaitForTextScrollButtonPress`, real caller).
+    - **g2's data:** additive `program` on hidden events, `scriptId: 'OAKS_LAB_RIGHT_POSTER'` for the
+      branching poster, and all four bookshelf predefs extracted (elevator, statues and Diglett included).
+      The hand-written elevator line and the `getText('BOOKSHELF_*')` keys go. `text`/`textOffset` stay (no
+      alias cleanup). This amends note 39 §6's "no extractor edits" for this data checkpoint only.
+    - **`PrintBookshelfText`'s gate in g2:** facing up, and only the tile at (8,7). This includes the Town
+      Map shelf. The hidden-event facing filter stays V5 (note 19 N-2).
+    - **Sol implements** g1 (two checkpoints), then g2 (two). Claude reviews each; the user glances at F-1
+      after g1 and play-tests g2 (note 54 §8).
+    - Commits remain local; no push.
+
+61. **STATUS.md stays short** (2026-10-16). *The user, after seeing agents' context fill quickly: "please do what we
+    agreed about the massive status file". STATUS.md had grown to ~201 KB (~50k tokens), most of every agent's
+    startup cost.*
+
+    - STATUS.md holds **state only:** phase, a one-line-per-milestone *Completed* table, *In progress*, the queue,
+      open questions, and the session log. Target **under ~40 KB**.
+    - **The session log keeps about the last 10–15 entries.** Older ones move verbatim to the top of
+      `HISTORY.md` → *Recent session archive* (newest first). Do it when the file passes ~40 KB, at a slice
+      boundary, in a docs-only commit.
+    - Finished slices' detail stays in their `notes/` plan/review files, not in STATUS. Resolved open questions
+      leave STATUS once DECISIONS records them.
+    - Findings that wait for a future slice live in `notes/57-findings-backlog.md`. Search it for a slice's id
+      when planning that slice.
+    - Briefs ask agents to read STATUS's top sections and the newest few log entries, not the whole archive.
+    - First trim 2026-10-16: 201 KB → ~33 KB. Nothing deleted (line-by-line check).
+
 ## Open — not decided, needs the user
 
 

@@ -3,7 +3,7 @@
 **2026-10-14 · Claude Opus 5.5 · Approved by the user 2026-10-14 ("yes to all", DECISIONS #56).
 2026-10-15: made implementation-ready for Grok (§3.6, CP1 gains F-2). Next: Grok implements A5b7c1.**
 Implementer: **Grok** (the user, 2026-10-15; was Sol). Claude reviews; the user play-tests.
-**Grok: read §3 including §3.6 before writing code. Claude reviews, not the user; stop after CP5.**
+**Grok implemented c1 on 2026-10-15 and stopped after CP5. Claude reviews; the user play-tests §3.5.**
 
 Parent: `notes/39-a5b7-plan.md` §1 (A5b7c row) and §5 (field bag / party contract), DECISIONS
 #52, #54 (the bag moves onto the shared list and quantity menus), #55 (order). Baseline:
@@ -214,6 +214,8 @@ don't fake it.
 
 ## 4. A5b7c2: party-menu prompts and field medicine (contract level)
 
+**Superseded 2026-10-15 by `notes/45-a5b7c2-plan.md`** (the trace below was done there; its §4.2 HP-bar timing was corrected).
+
 Sources: `home/pokemon.asm` (DisplayPartyMenu, PartyMenuInit, HandlePartyMenuInput),
 `engine/menus/party_menu.asm` (RedrawPartyMenu_, `.printMessage`, the message tables),
 `engine/items/item_effects.asm` (ItemUseMedicine, ItemUseNoEffect, RemoveUsedItem),
@@ -284,3 +286,29 @@ Claude, then the user play-test.
 4. **Fix the Full Restore branch in c2** as part of porting ItemUseMedicine. *Recommended:*
    it's a TypeScript bug, not a cartridge quirk; the cartridge cures the status.
 5. **Who:** Sol implements c1 (then c2), Claude reviews each, the user play-tests each.
+   Amended 2026-10-15: Grok implements c1. Done; see §9.
+
+## 9. A5b7c1 result (Grok, 2026-10-15)
+
+Stopped for review. Do not start c2.
+
+| Checkpoint | Commit | What landed |
+|---|---|---|
+| CP1 | `bb1846b` | Shared `wListScrollOffset` / `wCurrentMenuItem` / `wBagSavedMenuItem` / `wSavedListScrollOffset`. Emptying a slot zeroes all four, including an open list's cursor (F-2). The Mart reopens a sold-out stack at the top and QUIT restores 0. `writeNumber` writes a lone 0. The merge reset and the A/B re-arm of 5 are observable. |
+| CP2 | `ef24017` | Bag list on the saved row and shared scroll. USE/TOSS at (14,11); B is tested before A. B/CANCEL returns to START with the transfer on. `ItemMenuLoop` hides the new list for 10 frames. |
+| CP3 and CP4 | `aecdc3d` | Toss (quantity, IsItOK, YES/NO, ThrewAway, TooImportant, the selected slot) and field USE (NotTime for a ball and the parcel, Town Map back to the bag, the old field screen for party-menu items). One commit: both edit `bag.ts`. |
+
+ROM **1348/1348** (71 files). No-ROM **1225 pass / 123 skip**. Typecheck and build clean. The frame anchors in §3.6.9 are pinned in `menus/bag.test.ts`. `http://127.0.0.1:5197/` served the dev page (200). The bag, toss, and Town Map were not driven in a browser; that is the user's §3.5 play-test.
+
+**Parcel.** `ItemUseOaksParcel` jumps to `ItemUseNotYoursToUse` ("This isn't yours / to use!"). That program is not in `text_programs.json`. c1 prints `ItemUseNotTimeText`, which is what §3.6.7 specified. A later text-data touch can add the real program.
+
+**Gaps**
+
+| Gap | Home |
+|---|---|
+| START menu wrap, ▷, Delay3 | A5b7f / J2 |
+| Town Map exit is blank until the list's transfer at +11 | A5b6 Town Map audit |
+| `UsableItems_CloseMenu`, including ESCAPE_ROPE (Pewter's Mart sells it) | A3; V2's plan must route it |
+| Repel, Super Repel, Max Repel | A3 |
+| Party-menu prompts, real `ItemUseMedicine`, `UpdateHPBar2`, heal sounds | A5b7c2 |
+| YES/NO still draws immediately, not by its transfer third | N-4, unchanged |

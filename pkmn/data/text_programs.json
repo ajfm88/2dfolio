@@ -12,6 +12,12 @@
         "program": "_AccessedMyPCText"
       }
     ],
+    "AccessedOaksPCText": [
+      {
+        "op": "far",
+        "program": "_AccessedOaksPCText"
+      }
+    ],
     "AccessedSomeonesPCText": [
       {
         "op": "far",
@@ -66,6 +72,12 @@
         "program": "_BluesHouseTownMapText"
       }
     ],
+    "BookcaseText": [
+      {
+        "op": "far",
+        "program": "_BookcaseText"
+      }
+    ],
     "BoxFullText": [
       {
         "op": "far",
@@ -114,6 +126,15 @@
         "program": "_ChooseABoxText"
       }
     ],
+    "ClosedOaksPCText": [
+      {
+        "op": "far",
+        "program": "_ClosedOaksPCText"
+      },
+      {
+        "op": "waitButton"
+      }
+    ],
     "DepositHowManyText": [
       {
         "op": "far",
@@ -124,6 +145,12 @@
       {
         "op": "far",
         "program": "_DepositWhichMonText"
+      }
+    ],
+    "DiglettSculptureText": [
+      {
+        "op": "far",
+        "program": "_DiglettSculptureText"
       }
     ],
     "DiglettsCaveRoute2FishingGuruText": [
@@ -144,6 +171,12 @@
       {
         "op": "far",
         "program": "_DroppedHiddenCoinsText"
+      }
+    ],
+    "ElevatorText": [
+      {
+        "op": "far",
+        "program": "_ElevatorText"
       }
     ],
     "FileDataDestroyedText": [
@@ -193,6 +226,12 @@
         "program": "_GameSavedText"
       }
     ],
+    "GetDexRatedText": [
+      {
+        "op": "far",
+        "program": "_GetDexRatedText"
+      }
+    ],
     "GotMapText": [
       {
         "op": "far",
@@ -219,6 +258,24 @@
       {
         "op": "far",
         "program": "_IceHealText"
+      }
+    ],
+    "IndigoPlateauStatuesText1": [
+      {
+        "op": "far",
+        "program": "_IndigoPlateauStatuesText1"
+      }
+    ],
+    "IndigoPlateauStatuesText2": [
+      {
+        "op": "far",
+        "program": "_IndigoPlateauStatuesText2"
+      }
+    ],
+    "IndigoPlateauStatuesText3": [
+      {
+        "op": "far",
+        "program": "_IndigoPlateauStatuesText3"
       }
     ],
     "IntroducePlayerText": [
@@ -249,6 +306,12 @@
       {
         "op": "far",
         "program": "_ItemUseNotTimeText"
+      }
+    ],
+    "ItemUseNotYoursToUseText": [
+      {
+        "op": "far",
+        "program": "_ItemUseNotYoursToUseText"
       }
     ],
     "ItemWasStoredText": [
@@ -342,6 +405,12 @@
         "program": "_NoMoreRoomForItemText"
       }
     ],
+    "NoPokemonText": [
+      {
+        "op": "far",
+        "program": "_NoPokemonText"
+      }
+    ],
     "NoRoomToStoreText": [
       {
         "op": "far",
@@ -358,6 +427,12 @@
       {
         "op": "far",
         "program": "_NothingToDepositText"
+      }
+    ],
+    "OakLabEmailText": [
+      {
+        "op": "far",
+        "program": "_OakLabEmailText"
       }
     ],
     "OakSpeechText1": [
@@ -843,6 +918,12 @@
         "program": "_PokemartUnsellableItemText"
       }
     ],
+    "PokemonBooksText": [
+      {
+        "op": "far",
+        "program": "_PokemonBooksText"
+      }
+    ],
     "PokemonCenterFarewellText": [
       {
         "op": "pause"
@@ -870,10 +951,28 @@
         "program": "_PokemonSellingGreetingText"
       }
     ],
+    "PokemonStuffText": [
+      {
+        "op": "far",
+        "program": "_PokemonStuffText"
+      }
+    ],
     "PotionText": [
       {
         "op": "far",
         "program": "_PotionText"
+      }
+    ],
+    "PushStartText": [
+      {
+        "op": "far",
+        "program": "_PushStartText"
+      }
+    ],
+    "RedBedroomSNESText": [
+      {
+        "op": "far",
+        "program": "_RedBedroomSNESText"
       }
     ],
     "RedsHouse1FMomLookingGreatText": [
@@ -1042,6 +1141,12 @@
         "program": "_Route2TradeHouseScientistText"
       }
     ],
+    "SaveOptionText": [
+      {
+        "op": "far",
+        "program": "_SaveOptionText"
+      }
+    ],
     "SavingText": [
       {
         "op": "far",
@@ -1097,6 +1202,12 @@
       {
         "op": "far",
         "program": "_WarpToLastPokemonCenterText"
+      }
+    ],
+    "StrengthsAndWeaknessesText": [
+      {
+        "op": "far",
+        "program": "_StrengthsAndWeaknessesText"
       }
     ],
     "SwitchOnText": [
@@ -1220,6 +1331,12 @@
       {
         "op": "far",
         "program": "_ViridianCityOldManYouNeedToWeakenTheTargetText"
+      }
+    ],
+    "ViridianCityPokecenterBenchGuyText": [
+      {
+        "op": "far",
+        "program": "_ViridianCityPokecenterGuyText"
       }
     ],
     "ViridianCityPrintFisherText.ReceivedTM42Text": [
@@ -1731,6 +1848,12 @@
         "text": "Accessed my PC.\fAccessed Item\nStorage System.<PROMPT>"
       }
     ],
+    "_AccessedOaksPCText": [
+      {
+        "op": "text",
+        "text": "Accessed PROF.\nOAK's PC.\fAccessed POKéDEX\nRating System.<PROMPT>"
+      }
+    ],
     "_AccessedSomeonesPCText": [
       {
         "op": "text",
@@ -1791,6 +1914,12 @@
       {
         "op": "text",
         "text": "It's a big map!\nThis is useful!<DONE>"
+      }
+    ],
+    "_BookcaseText": [
+      {
+        "op": "text",
+        "text": "Crammed full of\nPOKéMON books!<DONE>"
       }
     ],
     "_BoxFullText": [
@@ -1865,6 +1994,12 @@
         "text": "Choose a\n BOX."
       }
     ],
+    "_ClosedOaksPCText": [
+      {
+        "op": "text",
+        "text": "Closed link to\nPROF.OAK's PC."
+      }
+    ],
     "_DepositHowManyText": [
       {
         "op": "text",
@@ -1877,6 +2012,12 @@
         "text": "Deposit which\nPOKéMON?<DONE>"
       }
     ],
+    "_DiglettSculptureText": [
+      {
+        "op": "text",
+        "text": "It's a sculpture\nof DIGLETT.<DONE>"
+      }
+    ],
     "_DiglettsCaveRoute2FishingGuruText": [
       {
         "op": "text",
@@ -1887,6 +2028,12 @@
       {
         "op": "text",
         "text": "\fOops! Dropped\nsome coins!<DONE>"
+      }
+    ],
+    "_ElevatorText": [
+      {
+        "op": "text",
+        "text": "This is an\nelevator.<DONE>"
       }
     ],
     "_FileDataDestroyedText": [
@@ -1981,6 +2128,12 @@
         "text": "<PLAYER> saved\nthe game!<DONE>"
       }
     ],
+    "_GetDexRatedText": [
+      {
+        "op": "text",
+        "text": "Want to get your\nPOKéDEX rated?<DONE>"
+      }
+    ],
     "_GotMapText": [
       {
         "op": "text",
@@ -2015,6 +2168,24 @@
       {
         "op": "text",
         "text": " was\ndefrosted!<DONE>"
+      }
+    ],
+    "_IndigoPlateauStatuesText1": [
+      {
+        "op": "text",
+        "text": "INDIGO PLATEAU<PROMPT>"
+      }
+    ],
+    "_IndigoPlateauStatuesText2": [
+      {
+        "op": "text",
+        "text": "The ultimate goal\nof trainers!\nPOKéMON LEAGUE HQ<DONE>"
+      }
+    ],
+    "_IndigoPlateauStatuesText3": [
+      {
+        "op": "text",
+        "text": "The highest\nPOKéMON authority\nPOKéMON LEAGUE HQ<DONE>"
       }
     ],
     "_IntroducePlayerText": [
@@ -2053,6 +2224,12 @@
       {
         "op": "text",
         "text": "OAK: <PLAYER>!\nThis isn't the\ntime to use that! <PROMPT>"
+      }
+    ],
+    "_ItemUseNotYoursToUseText": [
+      {
+        "op": "text",
+        "text": "This isn't yours\nto use!<PROMPT>"
       }
     ],
     "_ItemWasStoredText": [
@@ -2191,6 +2368,12 @@
         "text": "No more room for\nitems!<DONE>"
       }
     ],
+    "_NoPokemonText": [
+      {
+        "op": "text",
+        "text": "There are no\nPOKéMON here!<PROMPT>"
+      }
+    ],
     "_NoRoomToStoreText": [
       {
         "op": "text",
@@ -2213,6 +2396,12 @@
       {
         "op": "text",
         "text": "You have nothing\nto deposit.<PROMPT>"
+      }
+    ],
+    "_OakLabEmailText": [
+      {
+        "op": "text",
+        "text": "There's an e-mail\nmessage here!\f...\fCalling all\nPOKéMON trainers!\fThe elite trainers\nof POKéMON LEAGUE\nare ready to take\non all comers!\fBring your best\nPOKéMON and see\nhow you rate as a\ntrainer!\fPOKéMON LEAGUE HQ\nINDIGO PLATEAU\fPS: PROF.OAK,\nplease visit us!\n...<DONE>"
       }
     ],
     "_OakSpeechText1": [
@@ -2729,6 +2918,12 @@
         "text": "I can't put a\nprice on that.<PROMPT>"
       }
     ],
+    "_PokemonBooksText": [
+      {
+        "op": "text",
+        "text": "Crammed full of\nPOKéMON books!<DONE>"
+      }
+    ],
     "_PokemonCenterFarewellText": [
       {
         "op": "text",
@@ -2753,6 +2948,12 @@
         "text": "What would you\nlike to sell?<DONE>"
       }
     ],
+    "_PokemonStuffText": [
+      {
+        "op": "text",
+        "text": "Wow! Tons of\nPOKéMON stuff!<DONE>"
+      }
+    ],
     "_PotionText": [
       {
         "op": "ram",
@@ -2771,6 +2972,18 @@
       {
         "op": "text",
         "text": "!<DONE>"
+      }
+    ],
+    "_PushStartText": [
+      {
+        "op": "text",
+        "text": "Push START to\nopen the MENU!<DONE>"
+      }
+    ],
+    "_RedBedroomSNESText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> is\nplaying the SNES!\n...Okay!\nIt's time to go!<DONE>"
       }
     ],
     "_RedsHouse1FMomLookingGreatText": [
@@ -2947,6 +3160,12 @@
         "text": "A fainted POKéMON\ncan't fight. But, \nit can still use \nmoves like CUT!<DONE>"
       }
     ],
+    "_SaveOptionText": [
+      {
+        "op": "text",
+        "text": "The SAVE option is\non the MENU\nscreen.<DONE>"
+      }
+    ],
     "_SavingText": [
       {
         "op": "text",
@@ -2963,6 +3182,12 @@
       {
         "op": "text",
         "text": "There isn't any\nresponse...<PROMPT>"
+      }
+    ],
+    "_StrengthsAndWeaknessesText": [
+      {
+        "op": "text",
+        "text": "All POKéMON types\nhave strong and\nweak points\nagainst others.<DONE>"
       }
     ],
     "_SwitchOnText": [
@@ -3145,6 +3370,12 @@
       {
         "op": "text",
         "text": "First, you need\nto weaken the\ntarget POKéMON.<DONE>"
+      }
+    ],
+    "_ViridianCityPokecenterGuyText": [
+      {
+        "op": "text",
+        "text": "POKéMON CENTERs\nheal your tired,\nhurt or fainted\nPOKéMON!<DONE>"
       }
     ],
     "_ViridianCitySignText": [

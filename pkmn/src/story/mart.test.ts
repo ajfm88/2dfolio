@@ -16,7 +16,10 @@ import { restoreFlags, setFlag } from '../events';
 import { isHeld, isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { createOverworldState, updateOverworld } from '../overworld/overworld_controller';
 import type { OverworldDeps } from '../overworld/overworld_controller';
-import { getListScrollOffset, setListScrollOffset } from '../menus/pokemart';
+import {
+  getBagSavedMenuItem, getListScrollOffset, getSavedListScrollOffset,
+  setBagSavedMenuItem, setCurrentMenuItem, setListScrollOffset, setSavedListScrollOffset,
+} from '../list_state';
 import { isSoundFinished, playSFX } from '../audio';
 import { YesNoMenu } from '../menus/yes_no_menu';
 
@@ -36,6 +39,9 @@ beforeEach(() => {
   restoreFlags([]);
   setTextSpeed('fast');
   setListScrollOffset(0);
+  setCurrentMenuItem(0);
+  setBagSavedMenuItem(0);
+  setSavedListScrollOffset(0);
   vi.mocked(isHeld).mockReturnValue(false);
   vi.mocked(isPassPressed).mockReturnValue(false);
   vi.mocked(isSoundFinished).mockImplementation(() => true);
@@ -833,6 +839,74 @@ describe('DisplayPokemartDialogue on one retained display', () => {
     expect(second.money()).toBe(3000);
     expect(secondBag.items).toEqual([{ id: 'POTION', count: 2 }]);
     expect(playSFX).not.toHaveBeenCalledWith('purchase');
+    expect(getListScrollOffset()).toBe(0);
+  });
+
+  it('selling a whole stack reopens the list at the top and leaves the saved offset at 0', () => {
+    setListScrollOffset(4);
+    setBagSavedMenuItem(2);
+    setCurrentMenuItem(1);
+    const bag = new Bag();
+    bag.items = [
+      { id: 'POTION', count: 1 },
+      { id: 'ANTIDOTE', count: 1 },
+      { id: 'BURN_HEAL', count: 1 },
+      { id: 'AWAKENING', count: 1 },
+    ];
+    const { deps, money } = world(3000, bag);
+    const run = openSell(deps);
+    const list = run.list;
+    for (let frame = list + 1; frame < list + 16; frame++) run.step(frame);
+    run.step(list + 16, 'down');
+    run.step(list + 17);
+    run.step(list + 18);
+    run.step(list + 19, 'down');
+    run.step(list + 20);
+    run.step(list + 21);
+    run.step(list + 22, 'down');
+    expect(getListScrollOffset()).toBe(1);
+
+    let decided = -1;
+    let removed = -1;
+    for (let frame = list + 23; removed < 0 && frame < list + 900; frame++) {
+      let button: 'a' | undefined;
+      if (frame === list + 28 || frame === list + 29) button = 'a';
+      else if (decided >= 0 && frame === decided + 3) button = 'a';
+      else if (run.printed.includes('PokemartTellSellPriceText') && deps.textBox.isWaitingForInput
+          && money() === 3000) button = 'a';
+      run.step(frame, button);
+      if (decided < 0 && run.printed.includes('PokemartTellSellPriceText') && deps.textBox.isComplete) decided = frame;
+      if (bag.items.length === 3) removed = frame;
+    }
+    expect(removed).toBeGreaterThan(0);
+    expect(money()).toBe(3100);
+    expect(getListScrollOffset()).toBe(0);
+    expect(getSavedListScrollOffset()).toBe(0);
+    expect(getBagSavedMenuItem()).toBe(0);
+    for (let frame = removed + 1; frame <= removed + 10; frame++) run.step(frame);
+    expect(getMartTiles()?.at(6, 4)).toBe('P');
+    for (let frame = removed + 11; frame <= removed + 13; frame++) run.step(frame);
+    expect(getMartTiles()?.at(5, 4)).toBe('▶');
+
+    let menu = -1;
+    for (let frame = removed + 14; menu < 0 && frame < removed + 900; frame++) {
+      const button = frame === removed + 16 ? 'b' as const
+        : run.printed.includes('PokemartAnythingElseText') && deps.textBox.isWaitingForInput
+          && getMartTiles()?.at(1, 1) !== '▶' ? 'a' as const
+        : undefined;
+      run.step(frame, button);
+      if (run.printed.includes('PokemartAnythingElseText') && getMartTiles()?.at(1, 1) === '▶') menu = frame;
+    }
+    expect(menu).toBeGreaterThan(removed);
+    let done = -1;
+    for (let frame = menu + 1; done < 0 && frame < menu + 800; frame++) {
+      const button = frame === menu + 3 ? 'b' as const
+        : run.printed.includes('PokemartThankYouText') && deps.textBox.isWaitingForInput ? 'b' as const
+        : undefined;
+      run.step(frame, button);
+      if (!getActiveScript()) done = frame;
+    }
+    expect(done).toBeGreaterThan(menu);
     expect(getListScrollOffset()).toBe(0);
   });
 

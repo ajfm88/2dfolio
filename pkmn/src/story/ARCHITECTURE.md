@@ -13,25 +13,35 @@
 
 ## Script Engine Commands
 
-Commands available in `ScriptCommand` union (from `src/script/types.ts`):
-`displayOpen`, `printText`, `displayHide`, `displayClose`, `displayCloseInPlace`, `whiteOut`, `townMap`, `menuBox`, `menuInput`, `restoreSavedScreen`, `yesNoChoice`, `emotionBubble`, `healJingle`, `restoreMapMusic`, `text`, `moveNpc`, `movePlayer`, `pushPlayer` (one simulated joypad step: collides, hops ledges), `movePikachu`, `faceNpc`, `facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`, `hideNpc`, `unhideNpc`, `callback`, `warp`, `catchDemo`, `moveParallel`, `awaitInteraction`, `startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`, `fadeOut`, `fadeIn`, `giveItem`, `removeItem`
+Commands available in `ScriptCommand` (from `src/script/types.ts`):
+`displayOpen`, `printText`, `displayHide`, `displayClose`, `displayCloseInPlace`,
+`whiteOut`, `townMap`, `pokemart`, `pc`, `menuBox`, `menuInput`, `restoreSavedScreen`,
+`yesNoChoice`, `emotionBubble`, `healJingle`, `restoreMapMusic`, `sound`, `textButtonWait`,
+`hideObject`, `moveNpc`, `movePlayer`, `pushPlayer`, `tryPikachuMovement`, `faceNpc`,
+`facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`,
+`hideNpc`, `unhideNpc`, `callback`, `warp`, `catchDemo`, `moveParallel`, `awaitInteraction`,
+`startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`,
+`pikachuStandDown`, `updateSprites`, `pikachuFacing`, `ifStarterPikachu`, `fadeOut`,
+`fadeIn`, `giveItem`, `removeItem`. `pushPlayer` simulates one joypad step, with collision/ledges.
 
-A1b adds the blocking text routines pickups need (`notes/18-a1b-plan.md` §4):
+Retained blocking routines used by pickups (A1b, migrated in A5b4; legacy retirement A5b7g1):
 
 | Command | Behavior |
 |---|---|
-| `text` with `end: 'none'` / `'prompt'` | Advances on `TextBox.isComplete`, keeping the box open; the next text replaces its contents |
+| `printText` | Runs a named program and returns on `TextBox.isComplete`, retaining the display |
 | `sound` | Plays once, waits for `isSoundFinished()`; `waitForCurrent` waits before playing too |
-| `textButtonWait` | Silent A/B wait, without an arrow |
-| `closeText` | Holds while A is down, then runs the map's `5 + 2W` close and trailing UpdateSprites |
+| `textButtonWait` | Silent A/B wait, no arrow; requires an active DisplayTextID session, otherwise throws without reading input |
+| `displayClose` | Optional outer silent wait, Hold while A is down, then the map's `5 + 2W` close and trailing UpdateSprites |
 | `hideObject` | Saves a `Map:npcId` key and hides the live NPC/collision slot immediately |
 
 Button waits and Hold read Joypad; sound waits and close copies do not. They freeze
-the world. Returning
-from these routines runs the next command in the same frame. Retained text likewise
-continues through `giveItem`/`setFlag` immediately, preserving the 73/181-update
-jingle traces. A script ending with retained text dismisses it as a guard. Legacy
-`text` behavior remains for unmigrated callers; terminators/paging use A5a's printer.
+the world. Returning from these routines runs the next command in the same frame.
+Retained text continues through `giveItem`/`setFlag` immediately, preserving the
+73/181-update jingle traces. A script ending with a retained display dismisses it
+as a guard. Script `text`/`closeText`, the non-display button-wait fallback and
+unused `commandState`/`isCommandDone` scaffolding were retired in A5b7g1.
+Terminators and paging belong to the source program/printer; battle text is a
+separate union and remains A5c.
 
 ## Handler dispatch and retained displays (A5b5a–c)
 
@@ -79,8 +89,7 @@ update retains the existing map-entry timing (note 33 N-3).
 Daisy gives/hides/prints/flags
 in source order; Route 1 sets its sample flag before give even if full; Mart has
 two direct displays, LEFT/UP/UP, Delay3, then gives after the parcel program and
-close. Viridian's Gen 1 state quirks and movement paths remain. School/Town Map
-await A5b6, shop/PCs A5b7.
+close. Viridian's Gen 1 state quirks and movement paths remain. School/Town Map and shop/PCs now use their A5b6/A5b7 retained paths.
 
 `pokecenter.ts` owns the nurse's one display and five source programs. Welcome
 returns before setting saved `USED_POKECENTER` (wStatusFlags4 BIT_USED_POKECENTER);
@@ -97,10 +106,15 @@ waits, fainted-slot behavior and the existing machine internals remain.
 The machine's fade-out, sounds/jingle/flashes and heal ordering are a separate
 approved slice after A5b7 and before V2 (DECISIONS #50). The Pewter LooksContent
 branch is deliberately absent, guarded by a map-existence tripwire. Cable club
-receptionist/link features need a user decision. Legacy `text` remains for
-main's PC startup (A5b7), `textButtonWait` for
-the hidden-item full-bag path, and `closeText` for retained compatibility/tests.
+receptionist/link features need a user decision. `textButtonWait` remains for
+the hidden-item full-bag path; `closeText` has been retired.
 `exclamation` and `uiEntryUpdates` commands have been removed.
+
+A5b7d moves RED_PC/POKECENTER_PC hidden events onto retained display scripts.
+`pc` enters the same MenuSession slot as `pokemart`; ScriptDeps supplies item
+storage plus party/boxes/current-box bridge callbacks. Both entries close without
+an outer wait. The PC host selects today's Bill screen while its `fullScreen`
+flag is set; returning resumes this display. See menus/ARCHITECTURE.md for timing.
 
 ## School and Town Map handlers (A5b6)
 
@@ -136,10 +150,15 @@ the Lab until the existing post-rival escape callback at the first dislike-text
 close. Battle strings still use the legacy renderer; source program names are
 flattened only at that boundary until A5c.
 
-During the Lab's retained `awaitInteraction`, other NPCs run nested registered
+During the Lab's retained `awaitInteraction`, `guardProgram` is required. Other NPCs run nested registered
 handlers or source-program displays and return to the same await. The guard
 prints, closes, forces one UP, and waits three frames. The target's A press
-starts the ball display in that tick. The temporary prof_desk uses text ID 3.
+starts the ball display in that tick. Every current free-move NPC resolves to a
+handler/plain call (tripwired); an unresolved NPC throws instead of falling back
+to legacy text. The guard always follows its step with Delay3. Hidden-event and
+bookshelf strings still use DisplayTextID until g2, with automatic borders enabled
+as their cartridge routines request (A5b7g1 F-1). They return to the same await;
+script-id hidden events remain g2's shared-builder work. The temporary prof_desk uses text ID 3.
 The parcel's grouped program removes the parcel before its outer wait; the
 subsequent seven direct Pokédex displays explicitly enable automatic borders,
 first write at +20, and retain the source DelayFrame/Delay3 calls. Flags and

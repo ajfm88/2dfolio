@@ -3,7 +3,6 @@
 import type { Direction } from '../core';
 import type { CatchDemoBattleType } from '../battle/catch_demo';
 import type { NpcWalkMode } from '../overworld/walk_pace';
-import type { TextBoxEnd } from '../text/textbox';
 import type { TextBindings } from '../text/text_runner';
 import type { GameButton } from '../core';
 import type { MenuInputConfig } from '../menus/menu_input';
@@ -20,6 +19,7 @@ export type ScriptCommand =
   | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
   // DisplayPokemartDialogue_ (engine/events/pokemart.asm), after the greeting PrintText.
   | { type: 'pokemart'; items: string[] }
+  | { type: 'pc'; mode: 'direct' | 'generic' }
   // TextBoxBorder + PlaceString into wTileMap, kept until redrawn; null: LoadScreenTilesFromBuffer1 removed it
   | { type: 'menuBox'; layout: MenuBoxLayout | null }
   // HandleMenuInput_ (menus/menu_input.ts); `then` returns the commands for the keys it read
@@ -37,13 +37,10 @@ export type ScriptCommand =
   | { type: 'yesNoChoice'; yes: ScriptCommand[]; no: ScriptCommand[]; pokeCenter?: boolean }
   | { type: 'emotionBubble'; target: 'player' | string }
   | { type: 'healJingle' }
-  | { type: 'text'; message: string; end?: TextBoxEnd }
   // TextCommand_SOUND (home/text.asm), optionally PlaySoundWaitForCurrent first.
   | { type: 'sound'; name: string; waitForCurrent?: boolean }
   // WaitForTextScrollButtonPress (home/joypad2.asm): silent, no arrow.
   | { type: 'textButtonWait' }
-  // HoldTextDisplayOpen + CloseTextDisplay (home/text_script.asm): wait for A up.
-  | { type: 'closeText' }
   // HideObject (engine/overworld/toggleable_objects.asm): persistent map-object toggle.
   | { type: 'hideObject'; map: string; npcId: string }
   // MoveSprite: each step normal (1 px a pass) or fast (Yellow's $04–$07, 2 px a pass);
@@ -81,7 +78,7 @@ export type ScriptCommand =
       npcInStep?: boolean; npcModes?: NpcWalkMode[]; playerFromNpcStep?: number;
     }
   | { type: 'unhideNpc'; npcId: string }
-  | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardText?: string; guardProgram?: string }
+  | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardProgram: string }
   | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
   | { type: 'healParty' }
   | { type: 'restoreMapMusic' }
@@ -114,11 +111,4 @@ export interface ScriptRunner {
   index: number;
   /** Whether this script is actively running. */
   active: boolean;
-  /** Per-command state for multi-frame commands. */
-  commandState: CommandState | null;
 }
-
-export type CommandState =
-  | { type: 'text'; done: boolean }
-  | { type: 'move'; pathIndex: number; moveProgress: number; target: 'npc' | 'player'; npcId?: string; path: Direction[]; speed: number }
-  | { type: 'wait'; remaining: number };

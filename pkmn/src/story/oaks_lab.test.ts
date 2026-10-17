@@ -17,9 +17,9 @@ import { Player } from '../overworld/player';
 import { Npc } from '../overworld/npc';
 import { Bag } from '../items';
 import { loadBattleData } from '../battle';
-import { isHeld, isPassPressed, syncJoypadRead } from '../input';
+import { isHeld, isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { playSFX, isSoundFinished, playMusic } from '../audio';
-import { fillRect } from '../renderer';
+import { fillRect, drawTile } from '../renderer';
 import { uiTiles } from '../renderer/ui_tiles';
 import { rig, sfxData } from '../test/audio_rig';
 import type { Rig } from '../test/audio_rig';
@@ -246,6 +246,31 @@ describe('Lab runtime timing and side effects', () => {
     expect(deps.textBox.active).toBe(false); interact.mockReturnValue({ npc: ball });
     updateScript(deps, true); expect(deps.textBox.phase).toBe('opening'); expect(deps.textBox.displayRevision).toBe(2);
   });
+  it.each([[4, 0], [5, 0], [0, 1]])('free-movement hidden text at (%i,%i) draws its border and glyphs, then returns to the await (F-1)', (x, y) => {
+    const deps = scene(); setFlag('OAK_ASKED_TO_CHOOSE_MON');
+    const event = deps.gameMap.mapData!.hiddenEvents!.find(e => e.x === x && e.y === y)!;
+    deps.player.setTilePosition(x * 2, (y + 1) * 2); deps.player.direction = 'up';
+    initScript(buildOaksLabAwaitBallScript()); updateScript(deps, false);
+    vi.mocked(isPassPressed).mockImplementation(key => key === 'a');
+    updateScript(deps, true); vi.mocked(isPassPressed).mockReturnValue(false);
+    expect(deps.textBox.phase).toBe('opening'); expect(deps.textBox.uiTileAt(0, 12)).toBe(0x60);
+    for (let t = 1; t <= 3; t++) tick(deps, t, false);
+    vi.mocked(fillRect).mockClear(); deps.textBox.render();
+    expect(fillRect).toHaveBeenCalledWith(0, 96, 160, 48, 0);
+    for (let t = 4; t <= 23; t++) tick(deps, t, false);
+    const glyph = deps.textBox.saveScreen().buffer[41];
+    expect(glyph).not.toBe(' ');
+    if (event.text) expect(glyph).toBe(event.text[0]);
+    vi.mocked(drawTile).mockClear(); deps.textBox.render();
+    expect(vi.mocked(drawTile).mock.calls.some(call => call[2] === 8 && call[3] === 112)).toBe(true);
+    for (let t = 24; t < 4000 && deps.textBox.active; t++) tick(deps, t);
+    expect(deps.textBox.active).toBe(false);
+    const script = getActiveScript()!; expect(script.commands[script.index].type).toBe('awaitInteraction');
+    const ball = deps.npcs.find(n => n.data.id === 'item_ball')!;
+    vi.spyOn(deps.player, 'checkInteraction').mockReturnValue({ npc: ball });
+    updateScript(deps, true); expect(deps.textBox.phase).toBe('opening');
+    expect(deps.textBox.displayRevision).toBe(2);
+  });
   it('the real guard path prints its source program before forcing the one-step return', () => {
     const deps = scene(); deps.player.setTilePosition(8, 12);
     vi.spyOn(deps.player, 'checkInteraction').mockReturnValue(null); vi.spyOn(deps.player, 'update').mockImplementation(() => {});
@@ -255,6 +280,35 @@ describe('Lab runtime timing and side effects', () => {
     expect(opening(getActiveScript()!.commands)).toEqual({ type: 'displayOpen', autoBox: false });
     for (let t = 1; t < 4000 && deps.textBox.active; t++) tick(deps, t);
     expect(deps.textBox.active).toBe(false); expect(deps.player.scriptedMoveDone).toBe(false);
+  });
+  it('the guard step is followed by Delay3: three frames with no joypad read (N-2)', () => {
+    const deps = scene(); deps.player.setTilePosition(8, 12);
+    vi.spyOn(deps.player, 'checkInteraction').mockReturnValue(null);
+    const update = vi.spyOn(deps.player, 'update').mockImplementation(() => {});
+    const finished = vi.spyOn(deps.player, 'justFinishedStep', 'get').mockReturnValue(true);
+    initScript(buildOaksLabAwaitBallScript()); updateScript(deps, false); updateScript(deps, true);
+    finished.mockRestore(); update.mockRestore();
+    for (let t = 1; t < 4000 && deps.textBox.active; t++) tick(deps, t);
+    expect(deps.player.scriptedMoveDone).toBe(false);
+    for (let i = 0; i < 40 && !deps.player.scriptedMoveDone; i++) updateScript(deps, i % 2 === 0);
+    expect(deps.player.scriptedMoveDone).toBe(true);
+    vi.mocked(readJoypad).mockClear();
+    updateScript(deps, true); // the pass that notices the step and starts Delay3
+    expect(readJoypad).not.toHaveBeenCalled();
+    for (let i = 0; i < 3; i++) updateScript(deps, true);
+    expect(readJoypad).not.toHaveBeenCalled();
+    updateScript(deps, true);
+    expect(readJoypad).toHaveBeenCalled();
+  });
+  it('a free-movement Lab NPC opens borderless through the first 20 frames (N-3)', () => {
+    const deps = scene(); setFlag('OAK_ASKED_TO_CHOOSE_MON');
+    const girl = deps.npcs.find(n => n.data.id === 'girl')!;
+    vi.spyOn(deps.player, 'checkInteraction').mockReturnValue({ npc: girl });
+    initScript(buildOaksLabAwaitBallScript()); updateScript(deps, false); updateScript(deps, true);
+    expect(getActiveScript()!.commands.find(c => c.type === 'displayOpen')).toEqual({ type: 'displayOpen', autoBox: false });
+    for (let t = 1; t <= 18; t++) tick(deps, t, false);
+    vi.mocked(fillRect).mockClear(); deps.textBox.render();
+    expect(fillRect).not.toHaveBeenCalled();
   });
   it('battle metadata resolves its source program to the same legacy string until A5c', () => {
     const deps = scene(); initScript(buildOaksLabRivalBattleScript(4, 5, 4, 6)); updateScript(deps, false);

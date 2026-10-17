@@ -30,6 +30,10 @@ already knew.
    no remote exists and none may be added (Hard rule #9). If a slice is split
    mid-way, commit what is verified and say so in the log.
 
+**Keep STATUS.md short (DECISIONS #61).** Log a session in a few lines; put the detail in the slice's `notes/`
+file. If STATUS.md passes ~40 KB, move the oldest session entries verbatim to `HISTORY.md` → *Recent session
+archive* in a docs-only commit. Findings for later slices go in `notes/57-findings-backlog.md`.
+
 An unlogged session is a lost session. Treat the log and the commit as part of
 the slice, not as optional paperwork. (The July–August code was never committed
 to this repo, and none of it survived — DECISIONS #26.)
@@ -220,8 +224,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1242/1242** as of 2026-10-13
-   (A5b6). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1604/1604** as of 2026-10-15
+   (A5b7g2 CP2). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -242,7 +246,66 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-1331 tests in 70 files (vitest, `environment: 'node'`); without ROM, 1208 pass / 123 skip.
+1604 tests in 89 files (vitest, `environment: 'node'`); without ROM, 1474 pass / 130 skip.
+
+**A5b7g1 CP1 (tests only)** migrates the A6e nurse fixture to the real nurse YES
+branch/hosted TextBox and program spy, preserving all movement, image, facing,
+follow-buffer and rendering assertions. The A6d pushed hop now dispatches a real
+display/program. `script/text_commands.test.ts` (7) uses displays for sound,
+silent A/B waits, Hold/direct close, HideObject and end-of-script dismissal;
+`text/textbox.test.ts` (31) uses standalone PrintText instead of legacy endings.
+Their headers map nine removed test instances to existing source-path coverage.
+Sixteen new cases: `main.test.ts` +6 (first SAVE-close picture, retained ITEM
+scanout, each at three offsets), `menus/save_menu.test.ts` +4 (unmasked R2+10
+sound delay, bottom-third message removal at three offsets), `menus/bills_pc.test.ts`
++3 (both submenu labels and the empty bottom box), `text/text_census.test.ts` +3
+(reachable plain calls are text/FAR-only; awaitInteraction objects resolve;
+approved getText consumers, AST-based and no ROM). Existing main YES tests also
+assert final TextBox dismissal. All seven reviewer mutations caught and restored
+byte-for-byte (notes 51 M2/M10 and 53 M1/V9/M6/V8/M5). Net **+7**; two fresh
+ROM runs **1570/1570**, no-ROM **1440/130**, typecheck/diff clean. Note 54 §10.
+CP2 retirement/F-1 and its verification are recorded in the following entry.
+
+**A5b7g1 CP2** adds five source-path cases: `script/text_commands.test.ts` +2
+(now 9), requiring `textButtonWait` to reject both a closed box and standalone
+PrintText without reading input; `story/oaks_lab.test.ts` +3 (now 35), opening
+both posters and e-mail through real hidden-event lookup during the starter await,
+checking logical coverage, visible border/glyphs, dismissal and return to the same
+await/ball interaction. Pickup text inspection drops its unreachable legacy
+branch, the small-handler census retains its negative command assertion without
+narrowing to a deleted union case, and TextBox fixtures use the default
+DisplayTextID wrapper. All CP1 coverage remains. Three fresh ROM processes pass
+**1575/1575**; three no-ROM processes pass **1445/130**; typecheck/build clean.
+Ten temporary production mutations caught/restored (the seven CP1 reviewer
+lines plus close beep, invalid non-display input fallback and F-1). Browser
+results and final handoff: note 54 ?11. No extractor/generated-data change.
+
+A5b7f2 CP5 adds 6 main SAVE integration cases: YES taps at three idle offsets,
+actual localStorage save/reload, NO/B without writes and held-A release/direct
+seven-frame close. All nine SAVE production mutations were caught/restored:
+early/duplicate write, redisplay, right chooser, early question, short 128,
+outer acknowledgement, ASCII colon, short final 30. Final ROM **1563/1563**,
+no-ROM **1433/130**, build clean. Muted browser verified actual save sound,
+YES/reload/title/CONTINUE at saved coordinates, NO and walking (note 52 §14).
+
+A5b7f2 CP4 adds 10: `menus/save_menu.test.ts` (8, actual input/typed text,
+opening/write anchors, info cells, no-save answers, all waits and held-A
+release), left YES/NO placement and narrow-colon rendering. ROM **1557/1557**,
+no-ROM **1427/130**. Shared chooser defaults remain unchanged.
+
+A5b7f1 CP3 adds 31: `main.test.ts` (25, actual main dispatch and input,
+three idle offsets on every return, close counts, sprites, WRAM resets,
+legacy SAVE bridge), `menus/start_menu.test.ts` (+5 tail/transfer cases),
+`menus/screen_tiles.test.ts` (+1 retained overlay scanout). Vitest alone
+exposes main's lexical bindings and omits automatic startup; the production
+entry has no test controls. Four production mutations caught and restored.
+ROM **1547/1547**, no-ROM **1417/130**; muted browser passed (note 52 §12).
+
+A5b7f1 CP2 adds 17: `menus/start_menu.test.ts` (15 real-input cases for
+opening +20/+23, both layouts, idle taps, source wrap/Delay3, arrows/sound,
+five-frame closes, raw saved row, Buffer2 and immediate redisplay) and
+`menus/menu_input.test.ts` (+2 last-placed-row cases). Main integration and
+browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
 
 **How it runs**
 
@@ -257,7 +320,7 @@ the new baseline.
 
 **By area**
 
-- **Extraction** — 93 in `src/rom/__tests__/extraction.test.ts`; compares each
+- **Extraction** — 100 in `src/rom/__tests__/extraction.test.ts`; compares each
   extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.
   Its Pikachu and old-man pixel tests compare against pret's PNGs in
   `refs/pokeyellow/gfx/` and return early if `refs/` isn't cloned. The V1 block
@@ -300,6 +363,20 @@ the new baseline.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+- **A5b7g2 CP2** adds 27: `story/bookshelf_display.test.ts` (25: plain predefs at +20, books/Diglett/statues at +23, closes, owned 1 vs 2 through the controller, facing-up one tile, Town Map, hidden-event priority, Lab free-move poster/e-mail/shelf) and `oaks_lab.test.ts` N-2 (guard Delay3) plus N-3 (borderless free-move NPC). Five mutations were caught and restored: facing gate, second tile, book box keep, owned threshold 1, free-move script ids ignored. ROM **1604/1604** (89 files), no-ROM **1474/130**.
+
+- **A5b7g2 CP1** adds 2, no ROM: `rom/__tests__/hidden_event_programs.test.ts` derives each current map's hidden-event predef from refs' table, routines and `bench_guys.asm` (8 checked; the right poster pinned as a branch for CP2), and checks every hidden-event program and `BookshelfTileIDs` target is extracted. The ROM program test covers the 28 new labels op for op. ROM **1577/1577** (88 files), no-ROM **1447/130**.
+
+- **A5b7e CP3–CP5** adds 37: `menus/bills_pc.test.ts` (25, retained layout/timing, text flags, source checks, add-before-remove, happiness/release, stats/chooser/save); `pikachu/pc_follower.test.ts` (6, eligibility vs coverage/status 0, old pixels/antic offsets, healthy/fainted withdrawal, consumed spawn states); `menus/stats_screen.test.ts` (2, shared pages and silence/render input); `story/pc.test.ts` +4 real-input controller flows (now 13, per-tick taps, follower before glyphs/through close, Change Box save). Prior bridge cases now check retained entry/return. Final ROM **1499/1499**, no-ROM **1369/130**, 83 files. Eleven temporary production mutations were caught and restored: menu beep, instant post-list text, release-NO reset, starter release, remove-before-add, missing save, B saves, lost offset, nonstarter happiness, eager covered initialization, missing result sprite update. Browser evidence/result: note 49 §14.
+
+- **A5b7e CP2** adds 26: mon-list LV/100 layout, choice/cancel flag clears and SELECT redraw (+8); single-spaced menu input (+1); YES/NO flag timing (+1); LV/ball opaque rendering (+1); medicine species/custom-name capitals (+2); storage serialization/starter stand-in (new `pokemon_storage.test.ts`, 2); DEPOSITED tier/clamp/direct mood behavior (new `pikachu/pikachu_happiness.test.ts`, 11). Existing PC/controller tests now require typed post-list questions/results/retries, fast quantity draw +12/read +13, and no-delay reset on parent reentry/exit. ROM **1462/1462**, no-ROM **1332/130**, 80 files.
+
+- **A5b7d** adds 43 net (incl. review F-1's 3 cursor tests): `menus/pc.test.ts` (30, real input and PC source flows), `story/pc.test.ts` (9, actual hidden-event/controller dispatch, +20/+23 anchors, transfer/input ownership and bridge/close), `menus/toss_item.test.ts` (5), one silent-choice timing regression and one opaque tile-rendering regression. Three legacy PcMenu caller tests moved from `items.test.ts` into the PC suite. ROM **1433/1433**, no-ROM **1303/130**, 78 files. The existing ROM text-program fixture independently source-matches the six added Oak-PC records.
+
+- **A5b7c2** adds 38 net. No-ROM: `menus/hp_bar.test.ts` (16), `menus/party_menu.test.ts` (6), `menus/field_medicine.test.ts` (8), and 3 `menus/bag.test.ts` cases (the saved cursor, a toss of 2, and the parcel's NotYours line). `items.test.ts` drops its two `ItemMenu` field-use cases (the selected-slot check moved into field medicine). ROM: 7 heal-SFX cases in `extraction.test.ts` (now 100). ROM **1386/1386** in 74 files, no-ROM **1256/130**. The review fixes (note 46 F-1–F-3, by Claude) add 7: `menus/field_medicine_input.test.ts` (4, the real input module with per-tick edges, not the mocked "pressed until read" rig) and 3 result-screen cases in `field_medicine.test.ts` (now 11). ROM **1393/1393** in 75 files, no-ROM **1263/130**.
+
+- **A5b7c1** adds 17, all no-ROM: `menus/bag.test.ts` (12), one `list_menu` re-arm case, one emptied-slot list case, one `items.test.ts` empty-slot case, one field-use case, one use-routine case, and one `story/mart.test.ts` whole-stack sale. `writeNumber` and the merge reset are extra assertions on existing tests. ROM **1348/1348** in 71 files, no-ROM **1225/123**.
 
 - **A5b7b** adds 31, all no-ROM: `menus/screen_tiles.test.ts` (5), `menus/quantity_menu.test.ts` (3), `menus/list_menu.test.ts` (6), `story/mart.test.ts` (16), two more `menu_input` cases (now 7), and one `bg_transfer` case (now 4). Two ShopMenu cases left `items.test.ts`. CP6's six mutations were caught and reverted: the repeat counter skipping Delay3, a scroll off by one, halving each price instead of the total, the MONEY box changing before YES, subtracting before the bag add, and `press_ab` in the quantity box. ROM **1330/1330** in 70 files, no-ROM **1207/123**. The review's F-1 fix adds one `story/mart.test.ts` case (A+B together on BUY takes A): **1331/1331**, no-ROM **1208/123**.
 
@@ -380,7 +457,7 @@ the new baseline.
     30/30 blink, contraction tiles, clipping and no word wrap.
   - `text/bg_transfer.test.ts` (3): persistent third-frame phase and fast/medium traces.
   - `text/textbox.test.ts` (15): DisplayTextID / PrintText openings, silent ending,
-    fresh A/B and A release, prompt's two waits, legacy overrides, retained transfer,
+    fresh A/B and A release, prompt's two waits, retained transfer,
     font-extra rendering, render independence and trainer music callback timing.
   - `rom/__tests__/text_decoder.test.ts` (11, three require ROM): strict byte decoding,
     cursor controls, glyphs, the game_text SHA256 (with A5b1's trailing `<PROMPT>`s
@@ -414,9 +491,10 @@ the new baseline.
   - `items.test.ts` (23): slot-order/99/byte rules for bag and PC, selected-stack
     removal, verbatim save restoration, failed buys/transfers, and duplicate-stack
     consumption through field and battle menu input.
-  - `script/text_commands.test.ts` (13): retained text, the protected prompt,
-    sound waits, silent A/B waits, held-A close, saved HideObject/collision state,
-    UI opening and legacy text behavior.
+  - `script/text_commands.test.ts` (originally 13; 7 after A5b7g1 CP1): retained
+    displays, sound waits, silent A/B waits, held-A close, saved HideObject/collision
+    state and UI lifetime. Printer/runner/TextBox tests own prompt/paging coverage;
+    the header maps the deleted legacy fixtures to those source-path cases.
   - `overworld/item_pickup.test.ts` (16): builder branches and ASM strings,
     interaction priority/found-item fallthrough, Route 1's flag-first quirk,
     save/reload/freed tiles, held A and full bags. The real audio rig checks

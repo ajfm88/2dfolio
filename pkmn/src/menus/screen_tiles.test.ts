@@ -50,6 +50,11 @@ describe('menu screen tiles', () => {
     tiles.writeNumber(9, 10, 1, { digits: 2, leadingZeroes: false });
     expect(tiles.at(9, 10)).toBe('X');
     expect(tiles.at(10, 10)).toBe('1');
+    tiles.put(9, 11, 'X');
+    tiles.put(10, 11, 'Y');
+    tiles.writeNumber(9, 11, 0, { digits: 2, leadingZeroes: false });
+    expect(tiles.at(9, 11)).toBe('X');
+    expect(tiles.at(10, 11)).toBe('0');
     tiles.writeNumber(9, 10, 1, { digits: 2, leadingZeroes: true });
     expect(row(tiles, 10, 9, 11)).toBe('01');
     expect(addBcd(999999, 1)).toBe(999999);
@@ -90,6 +95,18 @@ describe('menu screen tiles', () => {
     again.enabled = false;
     tiles.restore(saved, box, again);
     expect(again.enabled).toBe(true);
+  });
+
+  it('retains a departed overlay scanout without changing logical cells or the BG portion', () => {
+    const start = new ScreenTiles(), bag = new ScreenTiles(), transfer = new BgTransfer();
+    start.put(11, 2, '▶'); start.present(transfer);
+    bag.put(4, 4, 'B'); bag.present(new BgTransfer());
+    const shown = bag.saveVisibleTiles(); bag.reset();
+    start.restoreVisibleTiles(shown);
+    expect(start.at(4, 4)).toBeNull(); expect(start.visibleAt(4, 4)).toBe('B');
+    expect(start.visibleAt(11, 2)).toBe('▶'); expect(transfer.nextPortion).toBe(1);
+    start.present(transfer); start.present(transfer); start.present(transfer);
+    expect(start.visibleAt(4, 4)).toBeNull();
   });
 
   it('a disabled transfer shows nothing new and does not advance, then thirds run in order', () => {
