@@ -47,7 +47,7 @@ function forest(x: number, y: number, facing: Direction = 'down'): OverworldDeps
   vi.spyOn(gameMap, 'getTileAt').mockReturnValue(0x01);
   vi.spyOn(gameMap, 'getSignAt').mockReturnValue(null);
   vi.spyOn(gameMap, 'getHiddenEventAt').mockReturnValue(null);
-  vi.spyOn(gameMap, 'getBookshelfText').mockReturnValue(null);
+  vi.spyOn(gameMap, 'getBookshelfPredef').mockReturnValue(null);
   return {
     player, gameMap, npcs: [], pikachuFollower: new PikachuFollower(), playerBag: new Bag(),
     playerParty: [createPokemon('PIKACHU', 5)!], currentMapName: FOREST, findNpc: () => undefined,

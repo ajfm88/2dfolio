@@ -44,7 +44,7 @@ retains UI coverage, and ends with one real UpdateSprites. START uses the
 
 ## Bookshelf Interaction
 
-`getBookshelfText(tileX, tileY)` checks tiles against `BOOKSHELF_TILES` table (from `bookshelf_tile_ids.asm`). Player checks both 1-tile-ahead (adjacent) and 2-tiles-ahead (facing). Each tileset maps specific tile IDs to text categories (BOOKS, TOWN_MAP, POKEMON_STUFF, etc.).
+`getBookshelfPredef(tileX, tileY)` matches `BookshelfTileIDs` (tileset, tile, predef). `PrintBookshelfText` runs only when the player faces up, and only on the one tile directly above the player's step (screen (8,7)). The Town Map shelf uses that same gate.
 
 `Player.checkInteraction` uses `OverworldLoop`'s order (A1b): hidden events →
 bookshelf only when no hidden event matched → signs → NPCs. The caller supplies the
@@ -318,8 +318,9 @@ Visual transitions before battles start (`battle_transitions.ts`):
 - `OverworldState`: mutable state tracked across frames (doorExitStep, justWarped, standingOnWarp, etc.)
 - `OverworldDeps`: read-only references passed each frame (player, gameMap, npcs, etc.)
 - Text handlers/scripts live in `story/`: Mom/TV and small handlers, Lab handlers,
-  and `pokecenter.ts`'s nurse. The controller dispatches generated call kinds;
-  it re-exports buildNurseScript for the A6e compatibility fixture.
+  and `pokecenter.ts`'s nurse. The controller dispatches generated call kinds. A6e tests import
+  buildNurseScript directly from story/pokecenter and run its real retained session
+  (A5b7g1); the compatibility re-export has been removed.
 
 ROM-backed NPC/sign JSON carries optional `textId`. `map_text_calls.ts` resolves
 its generated TextPointers entry: direct `text` starts at T+20, `printText` at
@@ -406,7 +407,7 @@ Beyond `load()`, `render()`, `isWalkable()`, and the getters (`width`, `height`,
 - `getBlock(bx, by)` — get block ID at block coordinates (border block for out-of-bounds)
 - `getTileAt(tx, ty)` — get tile ID at tile coordinates (checks connected maps for OOB)
 - `getSignAt(stepX, stepY)` — find sign text at step position
-- `getBookshelfText(tileX, tileY)` — check if tile is a bookshelf, return text or null
+- `getBookshelfPredef(tileX, tileY)` — bookshelf predef label for this tile, or null
 - `getHiddenEventAt(stepX, stepY, facing)` — find hidden event at position, filtered by direction
 - `getWarpAt(tileX, tileY)` — find warp at tile position (converts to step coords internally)
 - `getWarpByIndex(index)` — get warp by its array index

@@ -14,6 +14,9 @@ export interface ScreenSnapshot {
   text: TextBoxScreen;
 }
 
+/** A menu layer without an active TextBox (the START display's Buffer2). */
+export type ScreenTileSnapshot = readonly (string | null)[];
+
 export interface BcdWrite {
   bytes: number;
   /** BIT_LEADING_ZEROES: suppressed cells are skipped, not blanked. */
@@ -116,13 +119,16 @@ export class ScreenTiles {
     }
   }
 
-  /** PrintNumber, one byte. A leading zero is written or skipped; it is never blanked. */
+  /** PrintNumber, one byte. A leading zero is skipped, never blanked. The ones digit is always written. */
   writeNumber(x: number, y: number, value: number, flags: NumberWrite): void {
     let col = x;
     let past = false;
-    for (const digit of String(value).padStart(flags.digits, '0').slice(-flags.digits)) {
+    const digits = String(value).padStart(flags.digits, '0').slice(-flags.digits);
+    for (let i = 0; i < digits.length; i++) {
+      const digit = digits[i] ?? '0';
+      const ones = i === digits.length - 1;
       const zero = digit === '0' && !past;
-      if (zero && !flags.leadingZeroes) {
+      if (zero && !flags.leadingZeroes && !ones) {
         col++;
         continue;
       }
@@ -165,10 +171,25 @@ export class ScreenTiles {
     return { logical: this.logical.slice(), text: textBox.saveScreen() };
   }
 
+  saveTiles(): ScreenTileSnapshot { return this.logical.slice(); }
+
+  /** Retain scanout across a caller switch while tile copies stop automatic transfer. */
+  saveVisibleTiles(): ScreenTileSnapshot { return this.shown.slice(); }
+  restoreVisibleTiles(saved: ScreenTileSnapshot): void {
+    if (saved.length !== this.shown.length) throw new Error('invalid visible tile snapshot');
+    for (let i = 0; i < saved.length; i++) if (saved[i] !== null) this.shown[i] = saved[i];
+  }
+
+  /** Logical copy only; visible thirds still belong to the caller's transfer. */
+  restoreTiles(saved: ScreenTileSnapshot): void {
+    if (saved.length !== this.logical.length) throw new Error('invalid screen tile snapshot');
+    for (let i = 0; i < this.logical.length; i++) this.logical[i] = saved[i];
+  }
+
   /** LoadScreenTilesFromBuffer1: transfer off, copy both, transfer on. The portion does not move. */
   restore(saved: ScreenSnapshot, textBox: TextBox, transfer: BgTransfer): void {
     transfer.enabled = false;
-    for (let i = 0; i < this.logical.length; i++) this.logical[i] = saved.logical[i];
+    this.restoreTiles(saved.logical);
     textBox.restoreScreen(saved.text);
     transfer.enabled = true;
   }

@@ -1,16 +1,20 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { drawText, drawChar, textWidth } from './menu_render';
+import { drawText, drawChar, drawScreenTile, textWidth } from './menu_render';
 import { initTextSystem } from '../text';
+import { fillRect, drawTile } from '../renderer';
+import { LEVEL_GLYPH, POKEBALL_GLYPH, TIME_COLON_GLYPH } from './menu_glyphs';
 
-const { font, extra, ctx, display } = vi.hoisted(() => ({
-  font: { width: 128 }, extra: { width: 128 }, ctx: { drawImage: vi.fn() }, display: { scale: 1 },
+const { font, extra, level, ball, ctx, display } = vi.hoisted(() => ({
+  font: { width: 128 }, extra: { width: 128 }, level: { width: 128 }, ball: { width: 128 },
+  ctx: { drawImage: vi.fn() }, display: { scale: 1 },
 }));
 vi.mock('../input', () => ({ isHeld: () => false, isPressed: () => false, syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true }));
 vi.mock('../renderer', () => ({
   getCtx: () => ctx, getScale: () => display.scale, fillRect: vi.fn(), drawTile: vi.fn(),
   getActivePalette: () => [0, 0, 0, 0], paletteToHex: () => '#000000',
-  loadFont: async () => font, loadTileset: async () => extra,
+  loadFont: async (url: string) => url.endsWith('battle_hud_1.png') ? level : font,
+  loadTileset: async (url: string) => url.endsWith('balls.png') ? ball : extra,
 }));
 beforeAll(initTextSystem);
 beforeEach(() => { vi.clearAllMocks(); display.scale = 1; });
@@ -25,6 +29,30 @@ function drawn() {
 }
 
 describe('static menu PlaceString glyphs (A5b7a)', () => {
+  it('SAVE time draws the narrow $6d colon from font_extra tile 13', () => {
+    drawScreenTile(TIME_COLON_GLYPH, 128, 64);
+    expect(drawTile).toHaveBeenLastCalledWith(extra, 13, 128, 64);
+    expect(fillRect).toHaveBeenCalledWith(128, 64, 8, 8, 0);
+  });
+  it('draws the LV and ball tiles from their source sheets over an opaque cell', () => {
+    drawScreenTile(LEVEL_GLYPH, 112, 40);
+    expect(drawTile).toHaveBeenLastCalledWith(level, 1, 112, 40);
+    drawScreenTile(POKEBALL_GLYPH, 24, 32);
+    expect(drawTile).toHaveBeenLastCalledWith(ball, 0, 24, 32);
+    expect(vi.mocked(fillRect).mock.calls).toEqual([[112, 40, 8, 8, 0], [24, 32, 8, 8, 0]]);
+  });
+  it('opaque tile-map cells erase the map and draw all six source border tiles', () => {
+    drawScreenTile(' ', 16, 24);
+    expect(fillRect).toHaveBeenCalledWith(16, 24, 8, 8, 0);
+    expect(drawn()).toEqual([]);
+    for (const [index, glyph] of [...'┌─┐│└┘'].entries()) {
+      drawScreenTile(glyph, index * 8, 0);
+      expect(drawTile).toHaveBeenLastCalledWith(extra, 25 + index, index * 8, 0);
+    }
+    drawScreenTile('A', 8, 8);
+    expect(drawn()).toEqual([['font', 0, 8, 8]]);
+    expect(fillRect).toHaveBeenCalledTimes(8);
+  });
   it("draws SOMEONE's PC with the contraction in one tile, preserving the blank cell", () => {
     drawText("SOMEONE's PC", 8, 16);
     expect(drawn()).toEqual([

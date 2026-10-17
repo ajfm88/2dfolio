@@ -125,6 +125,9 @@ const MUSIC_HEADERS: Record<string, { bank: number; addr: number }> = {
 export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   press_ab:         { bank: 0x02, addr: 0x41b0 },
   start_menu:       { bank: 0x02, addr: 0x41ad },
+  // A5b7c2: SFX_Heal_HP_1 / SFX_Heal_Ailment_1, just before SFX_Start_Menu_1.
+  heal_hp:          { bank: 0x02, addr: 0x41a7 },
+  heal_ailment:     { bank: 0x02, addr: 0x41aa },
   collision:        { bank: 0x02, addr: 0x421c },
   go_inside:        { bank: 0x02, addr: 0x4207 },
   go_outside:       { bank: 0x02, addr: 0x421f },

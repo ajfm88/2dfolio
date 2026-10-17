@@ -8,7 +8,8 @@
 import type { ScriptCommand } from '../script';
 import type { MenuBoxLayout } from '../script/types';
 import { copyFrames } from '../overworld/sprite_sets';
-import { displayTextID } from './text_handlers';
+import { displayTextID, getTextHandler } from './text_handlers';
+import type { TextHandlerContext } from './text_handlers';
 
 const print = (program: string): ScriptCommand => ({ type: 'printText', program });
 
@@ -115,8 +116,64 @@ export function buildTownMapSignScript(): ScriptCommand[] {
 
 /** Build script commands for scripted hidden events. Returns null if no script. */
 export function getHiddenEventScript(scriptId: string): ScriptCommand[] | null {
+  if (scriptId === 'RED_PC') return displayTextID([{ type: 'pc', mode: 'direct' }], { outerWait: false });
+  if (scriptId === 'POKECENTER_PC') return displayTextID([{ type: 'pc', mode: 'generic' }], { autoBox: false, outerWait: false });
   if (scriptId === 'VIRIDIAN_SCHOOL_NOTEBOOK') return buildSchoolNotebookScript();
   if (scriptId === 'VIRIDIAN_SCHOOL_BLACKBOARD') return buildSchoolBlackboardScript();
   if (scriptId === 'TOWN_MAP_TEXT') return buildTownMapSignScript();
   return null;
+}
+
+/** Screen (8,6): the background tile two above the player's step. */
+export interface BookshelfContext {
+  tileset: string;
+  tileTwoAbove: number;
+}
+
+export function bookshelfContext(
+  player: { tileX: number; tileY: number },
+  gameMap: { mapData: { tileset: string } | null; getTileAt(tx: number, ty: number): number },
+): BookshelfContext {
+  return {
+    tileset: gameMap.mapData?.tileset ?? '',
+    tileTwoAbove: gameMap.getTileAt(player.tileX, player.tileY - 2),
+  };
+}
+
+/**
+ * One DisplayTextID for a hidden event or a bookshelf. Plain predefs keep the
+ * automatic border (first glyph +20). BookOrSculptureText and IndigoPlateauStatues
+ * are text_asm and PrintText into a new box (first glyph +23).
+ */
+export function interactionDisplay(
+  interaction: { scriptId: string } | { program: string },
+  ctx: TextHandlerContext,
+  shelf: BookshelfContext,
+): ScriptCommand[] | null {
+  if ('program' in interaction) {
+    return displayTextID([{ type: 'printText', program: interaction.program, box: 'keep' }]);
+  }
+  switch (interaction.scriptId) {
+    case 'OAKS_LAB_RIGHT_POSTER':
+      // CountSetBits(wPokedexOwned); cp 2; jr c keeps SaveOptionText.
+      return displayTextID([{ type: 'printText', box: 'keep',
+        program: ctx.ownedCount < 2 ? 'SaveOptionText' : 'StrengthsAndWeaknessesText' }]);
+    case 'BOOK_OR_SCULPTURE':
+      return displayTextID([{ type: 'printText', box: 'new',
+        program: shelf.tileset === 'MANSION' && shelf.tileTwoAbove === 0x38
+          ? 'DiglettSculptureText' : 'PokemonBooksText' }]);
+    case 'INDIGO_PLATEAU_STATUES':
+      // bit 0 of wXCoord: odd prints Text2, even prints Text3.
+      return displayTextID([
+        { type: 'printText', program: 'IndigoPlateauStatuesText1', box: 'new' },
+        { type: 'printText', box: 'new',
+          program: (ctx.step.x & 1) === 1 ? 'IndigoPlateauStatuesText2' : 'IndigoPlateauStatuesText3' },
+      ]);
+    case 'REDSHOUSE1F_TV': {
+      const handler = getTextHandler('RedsHouse1F', 2);
+      return handler ? handler(ctx) : null;
+    }
+    default:
+      return getHiddenEventScript(interaction.scriptId);
+  }
 }

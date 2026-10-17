@@ -5,7 +5,7 @@ import type { BattlePokemon } from './battle';
 import type { StatusCondition } from './battle/types';
 import { createPokemon, initExperience } from './battle';
 import { Bag } from './items';
-import type { BoxedPokemon } from './menus';
+import type { BoxedPokemon } from './pokemon_storage';
 
 const SAVE_KEY = 'p151-s';
 const SAVE_VERSION = 1;

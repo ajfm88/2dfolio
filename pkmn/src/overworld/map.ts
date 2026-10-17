@@ -1,8 +1,6 @@
 import type { MapData, MapConnection, Blockset, CollisionData, HiddenEvent } from '../core';
 import { TILE_SIZE, BLOCK_SIZE, BLOCK_PX, GB_WIDTH, GB_HEIGHT } from '../core';
 import { drawTile, loadTileset, loadTilesetTransparent } from '../renderer';
-import { getText } from '../text';
-
 const TILESET_FILES: Record<string, string> = {
   OVERWORLD: 'overworld', REDS_HOUSE_1: 'reds_house', REDS_HOUSE_2: 'reds_house',
   HOUSE: 'house', LAB: 'lab', MART: 'pokecenter', POKECENTER: 'pokecenter',
@@ -90,33 +88,20 @@ const LEDGE_TILES: [LedgeDirection, number, number][] = [
   ['right', 0x39, 0x0D],
 ];
 
-// Bookshelf tile IDs per tileset (from data/tilesets/bookshelf_tile_ids.asm)
-// Maps tileset name → array of [tileId, textKey]
+// BookshelfTileIDs (data/tilesets/bookshelf_tile_ids.asm): tileset, tile, predef label.
 const BOOKSHELF_TILES: Record<string, [number, string][]> = {
-  PLATEAU:    [[0x30, 'STATUES']],
-  HOUSE:      [[0x3D, 'TOWN_MAP'], [0x1E, 'BOOKS']],
-  MANSION:    [[0x32, 'BOOKS']],
-  REDS_HOUSE_1: [[0x32, 'BOOKS']],
-  LAB:        [[0x28, 'BOOKS']],
-  LOBBY:      [[0x16, 'ELEVATOR'], [0x50, 'POKEMON_STUFF'], [0x52, 'POKEMON_STUFF']],
-  GYM:        [[0x1D, 'BOOKS']],
-  DOJO:       [[0x1D, 'BOOKS']],
-  GATE:       [[0x22, 'BOOKS']],
-  MART:       [[0x54, 'POKEMON_STUFF'], [0x55, 'POKEMON_STUFF']],
-  POKECENTER: [[0x54, 'POKEMON_STUFF'], [0x55, 'POKEMON_STUFF']],
-  SHIP:       [[0x36, 'BOOKS']],
-};
-
-const BOOKSHELF_TEXT: Record<string, string | (() => string)> = {
-  BOOKS: () => getText('BOOKSHELF_BOOKS'),
-  POKEMON_STUFF: () => getText('BOOKSHELF_POKEMON_STUFF'),
-  ELEVATOR: 'This is an\nelevator.',
-  STATUES: () => getText('BOOKSHELF_STATUES'),
-};
-
-/** Bookshelf predefs that are text_asm handlers, by script id (story/hidden_events.ts). */
-const BOOKSHELF_SCRIPTS: Record<string, string> = {
-  TOWN_MAP: 'TOWN_MAP_TEXT',
+  PLATEAU:    [[0x30, 'IndigoPlateauStatues']],
+  HOUSE:      [[0x3D, 'TownMapText'], [0x1E, 'BookOrSculptureText']],
+  MANSION:    [[0x32, 'BookOrSculptureText']],
+  REDS_HOUSE_1: [[0x32, 'BookOrSculptureText']],
+  LAB:        [[0x28, 'BookOrSculptureText']],
+  LOBBY:      [[0x16, 'ElevatorText'], [0x50, 'PokemonStuffText'], [0x52, 'PokemonStuffText']],
+  GYM:        [[0x1D, 'BookOrSculptureText']],
+  DOJO:       [[0x1D, 'BookOrSculptureText']],
+  GATE:       [[0x22, 'BookOrSculptureText']],
+  MART:       [[0x54, 'PokemonStuffText'], [0x55, 'PokemonStuffText']],
+  POKECENTER: [[0x54, 'PokemonStuffText'], [0x55, 'PokemonStuffText']],
+  SHIP:       [[0x36, 'BookOrSculptureText']],
 };
 
 const COLLISION_NAMES: Record<string, string> = {
@@ -364,28 +349,14 @@ export class GameMap {
     return sign?.text ?? null;
   }
 
-  /** Check if the tile at (tileX, tileY) is a bookshelf tile for the current tileset.
-   *  Returns the text to display, or null if not a bookshelf. */
-  getBookshelfText(tileX: number, tileY: number): string | null {
-    const textKey = this.bookshelfKey(tileX, tileY);
-    const entry = textKey ? BOOKSHELF_TEXT[textKey] : undefined;
-    if (!entry) return null;
-    return typeof entry === 'function' ? entry() : entry;
-  }
-
-  /** A bookshelf whose predef is a handler (the Town Map), as its script id. */
-  getBookshelfScript(tileX: number, tileY: number): string | null {
-    const textKey = this.bookshelfKey(tileX, tileY);
-    return textKey ? BOOKSHELF_SCRIPTS[textKey] ?? null : null;
-  }
-
-  private bookshelfKey(tileX: number, tileY: number): string | null {
+  /** BookshelfTileIDs predef for this tile on the current tileset, or null. */
+  getBookshelfPredef(tileX: number, tileY: number): string | null {
     if (!this.mapData) return null;
     const entries = BOOKSHELF_TILES[this.mapData.tileset];
     if (!entries) return null;
     const tile = this.getTileAt(tileX, tileY);
-    for (const [tileId, textKey] of entries) {
-      if (tile === tileId) return textKey;
+    for (const [tileId, predef] of entries) {
+      if (tile === tileId) return predef;
     }
     return null;
   }

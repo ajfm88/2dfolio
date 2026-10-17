@@ -1,10 +1,14 @@
-// DisplayListMenuID for ITEMLISTMENU and PRICEDITEMLISTMENU (home/list_menu.asm,
+// DisplayListMenuID for item, priced and PC Pokemon lists (home/list_menu.asm,
 // engine/menus/swap_items.asm). The ▼ is drawn steady; its CPU-paced blink is J2.
 
 import { getItemName, getItemPrice, isKeyItem } from '../items';
+import { getCurrentMenuItem, getEmptySlotGeneration, getListScrollOffset } from '../list_state';
 import type { BgTransfer } from '../text/bg_transfer';
 import { MenuInput } from './menu_input';
 import type { ScreenTiles } from './screen_tiles';
+import { LEVEL_GLYPH } from './menu_glyphs';
+import { monDisplayName } from '../pokemon_names';
+import { setNoTextDelay } from '../text/text_flags';
 
 const MONEY = { bytes: 3, suppressZero: true, leftAlign: false, moneySign: true } as const;
 
@@ -14,22 +18,25 @@ export interface ListEntry {
   count?: number;
 }
 
-export interface ListMenuConfig {
-  kind: 'items' | 'priced';
-  /** Mutated by SELECT. The $ff CANCEL entry is not stored. */
-  entries: ListEntry[];
+export interface MonListEntry { name: string; level: number; }
+type ListKind = 'items' | 'priced' | 'mons';
+/** The $ff CANCEL entry is not stored. SELECT only mutates item lists. */
+export type ListMenuConfig = ({ kind: 'items' | 'priced'; entries: ListEntry[] }
+  | { kind: 'mons'; entries: MonListEntry[] }) & {
   /** wListScrollOffset. The caller owns it across list visits. */
   offset?: number;
   item?: number;
-}
+};
 
 export type ListChoice =
   | { type: 'chosen'; id: string; index: number; name: string; price: number; maxQuantity?: number }
   | { type: 'cancelled' };
+export type MonListChoice = { type: 'chosen'; index: number; name: string } | { type: 'cancelled' };
+type ListResult<K extends ListKind> = K extends 'mons' ? MonListChoice : ListChoice;
 
 type Phase = 'waitOpen' | 'waitLoop' | 'waitHold' | 'input';
 
-export class ListMenu {
+export class ListMenu<K extends ListKind = 'items' | 'priced'> {
   offset: number;
   private readonly menu: MenuInput;
   private phase: Phase = 'waitOpen';
@@ -38,10 +45,11 @@ export class ListMenu {
   private pendingSwap = false;
   private cursorAt: { x: number; y: number } | null = null;
   private cursorTile: string | null = ' ';
+  private seenEmptySlot = getEmptySlotGeneration();
 
   constructor(
     private readonly tiles: ScreenTiles,
-    private readonly config: ListMenuConfig,
+    private readonly config: ListMenuConfig & { kind: K },
     private readonly transfer: BgTransfer,
   ) {
     this.offset = config.offset ?? 0;
@@ -56,6 +64,7 @@ export class ListMenu {
       repeat: true,
     });
     this.transfer.enabled = false;
+    setNoTextDelay(true); // DisplayListMenuID, before drawing the list
     this.tiles.textBoxBorder(4, 2, 9, 14);
   }
 
@@ -63,7 +72,14 @@ export class ListMenu {
   get maxItem(): number { return this.menu.config.maxItem; }
 
   /** One frame. Null until A chooses or B/CANCEL exits. */
-  update(readJoypad: () => void, pressSound: () => void): ListChoice | null {
+  update(readJoypad: () => void, pressSound: () => void): ListResult<K> | null {
+    // RemoveItemFromInventory_ zeroes the shared cursor while this list is open.
+    const generation = getEmptySlotGeneration();
+    if (generation !== this.seenEmptySlot) {
+      this.seenEmptySlot = generation;
+      this.offset = getListScrollOffset();
+      this.menu.item = getCurrentMenuItem();
+    }
     if (this.phase !== 'input') {
       this.menu.elapse();
       this.wait--;
@@ -81,8 +97,11 @@ export class ListMenu {
     const hit = this.menu.update(readJoypad, pressSound);
     this.drawCursor();
     if (!hit) return null;
-    if (hit.includes('a')) return this.choose();
-    if (hit.includes('b')) return { type: 'cancelled' };
+    if (hit.includes('a')) return this.choose() as ListResult<K>;
+    if (hit.includes('b')) {
+      setNoTextDelay(false); // ExitListMenu
+      return { type: 'cancelled' } as ListResult<K>;
+    }
     if (hit.includes('select')) {
       this.select();
       return null;
@@ -117,6 +136,13 @@ export class ListMenu {
         break;
       }
       const entry = entries[index];
+      if ('level' in entry) {
+        this.tiles.placeString(6, y, monDisplayName({ nickname: entry.name }));
+        // PrintLevel overwrites <LV> for level 100; all numbers are left-aligned.
+        if (entry.level < 100) this.tiles.put(14, y + 1, LEVEL_GLYPH);
+        this.tiles.placeString(entry.level < 100 ? 15 : 14, y + 1, String(entry.level));
+        continue;
+      }
       this.tiles.placeString(6, y, getItemName(entry.id));
       if (this.config.kind === 'priced') {
         this.tiles.writeBcd(11, y + 1, getItemPrice(entry.id), MONEY);
@@ -141,12 +167,14 @@ export class ListMenu {
     this.tiles.put(cursor.x, cursor.y, '▶');
   }
 
-  private choose(): ListChoice {
+  private choose(): ListChoice | MonListChoice {
+    setNoTextDelay(false); // .storeChosenEntry and A on CANCEL -> ExitListMenu
     const cursor = this.menu.cursor;
     this.tiles.put(cursor.x, cursor.y, '▷');
     const index = this.offset + this.menu.item;
     const entry = this.config.entries[index];
     if (!entry) return { type: 'cancelled' };
+    if ('level' in entry) return { type: 'chosen', index, name: monDisplayName({ nickname: entry.name }) };
     const choice: ListChoice = {
       type: 'chosen', id: entry.id, index, name: getItemName(entry.id), price: getItemPrice(entry.id),
     };
@@ -190,6 +218,7 @@ export class ListMenu {
   }
 
   private applySwap(): void {
+    if (this.config.kind !== 'items') return;
     const entries = this.config.entries;
     const first = this.mark - 1;
     const second = this.offset + this.menu.item;
@@ -197,7 +226,7 @@ export class ListMenu {
     const b = entries[second];
     this.mark = 0;
     this.pendingSwap = false;
-    if (!a || !b) return;
+    if (!a || !b || !('id' in a) || !('id' in b)) return;
     if (a.id !== b.id) {
       entries[first] = b;
       entries[second] = a;

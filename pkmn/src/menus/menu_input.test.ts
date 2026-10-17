@@ -21,6 +21,35 @@ const blackboard = { watched: ['left', 'right', 'a', 'b'] as GameButton[], maxIt
 beforeEach(() => { vi.mocked(isPassPressed).mockReset(); vi.mocked(isPassPressed).mockReturnValue(false); });
 
 describe('HandleMenuInput_ (home/window.asm)', () => {
+  it('retains the last placed row across a watched move until the caller restarts', () => {
+    const r = rig({ ...blackboard, watched: ['up', 'down'], item: 1 });
+    r.frame(); r.frame(); r.press('up');
+    expect(r.frame()).toEqual(['up']);
+    expect(r.menu.item).toBe(0); expect(r.menu.lastItem).toBe(1);
+    r.menu.restart(); expect(r.menu.lastItem).toBe(0);
+    r.frame(); r.frame(); expect(r.read).toHaveBeenCalledOnce();
+    r.press('up'); expect(r.frame()).toEqual(['up']);
+    expect(r.menu.item).toBe(0); expect(r.menu.lastItem).toBe(0);
+  });
+
+  it('places the moved cursor again on an unwatched arrow', () => {
+    const r = rig(blackboard); r.frame(); r.frame(); r.press('down');
+    expect(r.frame()).toBeNull();
+    expect(r.menu.item).toBe(1); expect(r.menu.lastItem).toBe(1);
+  });
+
+  it('single-spaced rows retain Delay3, bounds, and silent cursor movement', () => {
+    const r = rig({ ...blackboard, rowStep: 1 });
+    r.frame(); r.frame(); expect(r.read).not.toHaveBeenCalled();
+    r.press('down'); r.frame();
+    expect(r.menu.cursor).toEqual({ x: 1, y: 3 });
+    r.frame(); r.frame(); r.press('down'); r.frame();
+    expect(r.menu.cursor).toEqual({ x: 1, y: 4 });
+    r.frame(); r.frame(); r.press('down'); r.frame();
+    expect(r.menu.item).toBe(2);
+    expect(r.sound).not.toHaveBeenCalled();
+  });
+
   it('Delay3 first: the first Joypad read is on the third frame, then one read a frame', () => {
     const r = rig(blackboard);
     expect(r.frame()).toBeNull(); expect(r.frame()).toBeNull(); expect(r.read).not.toHaveBeenCalled();

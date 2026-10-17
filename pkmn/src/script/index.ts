@@ -1,10 +1,11 @@
-export type { ScriptCommand, ScriptRunner, CommandState } from './types';
-export { createScript, isCommandDone, currentCommand, advanceScript } from './engine';
+export type { ScriptCommand, ScriptRunner } from './types';
+export { createScript, currentCommand, advanceScript } from './engine';
 export {
   initScript, updateScript, getActiveScript,
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript,
   setLastBattleWon, wasLastBattleWon,
   getScriptNpcs, clearScriptNpcs, getScriptFadeAlpha, lookupNpc,
-  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMart,
+  isScriptMenuFullScreen,
+  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMenuSession,
 } from './script_controller';
 export type { ScriptDeps, ScriptAction } from './script_controller';

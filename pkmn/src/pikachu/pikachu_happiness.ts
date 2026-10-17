@@ -257,7 +257,7 @@ export function updatePikachuWalking(stepCounter: number, randomByte: () => numb
 }
 
 // --- Happiness modifiers ---
-type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'CARELESSTRAINER';
+type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'CARELESSTRAINER' | 'DEPOSITED';
 
 interface HappinessMod {
   tiers: [number, number, number];
@@ -272,6 +272,7 @@ const HAPPINESS_MODS: Record<HappinessEvent, HappinessMod> = {
   USEDITEM:        { tiers: [5, 3, 2],       moodTarget: 0x83 },
   USEDXITEM:       { tiers: [1, 1, 0],       moodTarget: 0x80 },
   CARELESSTRAINER: { tiers: [-5, -5, -10],   moodTarget: 0x6C },
+  DEPOSITED:       { tiers: [-3, -3, -5],    moodTarget: 0x62 },
 };
 
 export function modifyPikachuHappiness(event: HappinessEvent): void {
@@ -286,6 +287,13 @@ export function modifyPikachuHappiness(event: HappinessEvent): void {
   // PikachuMoods[$06]=$80: ModifyPikachuHappiness returns without changing mood.
   // The walking path's one-unit drift happens in UpdatePikachuHappinessAndMood.
   if (event === 'WALKING') return;
+  // ModifyPikachuHappiness .decreased writes the table target directly, but
+  // never raises a mood already below it. Preserve other events' existing
+  // behavior for their later Pikachu audit. CP3 owns the selected-starter gate.
+  if (event === 'DEPOSITED') {
+    pikachuMood = Math.min(pikachuMood, mod.moodTarget);
+    return;
+  }
 
   if (pikachuMood < mod.moodTarget) {
     pikachuMood = Math.min(255, pikachuMood + 1);

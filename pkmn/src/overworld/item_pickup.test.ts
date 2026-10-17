@@ -98,8 +98,7 @@ function asmText(path: string, label: string): string {
 
 /** Inspect the programs/bindings the builders pass; do not re-spell pickup strings. */
 function commandText(command: ScriptCommand | undefined): string {
-  if (command?.type === 'text') return command.message;
-  if (command?.type !== 'printText') throw new Error('Expected text or PrintText');
+  if (command?.type !== 'printText') throw new Error('Expected PrintText');
   const programs = getTextProgramData().programs;
   const flatten = (label: string): string => programs[label].map(op => {
     if (op.op === 'far') return flatten(op.program);
@@ -298,7 +297,7 @@ describe('ASM interaction priority', () => {
   it('hidden event beats bookshelf, sign and NPC; a found item skips the bookshelf', () => {
     const deps = scene(); const map = deps.gameMap.mapData!;
     map.hiddenEvents = [{ x: 25, y: 11, item: 'POTION', flag }]; map.signs = [{ x: 25, y: 11, text: 'Sign' }];
-    const shelf = vi.spyOn(deps.gameMap, 'getBookshelfText').mockReturnValue('Bookshelf');
+    const shelf = vi.spyOn(deps.gameMap, 'getBookshelfPredef').mockReturnValue('PokemonStuffText');
     vi.mocked(isPassPressed).mockImplementation(key => key === 'a');
     expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ item: 'POTION', flag });
     setFlag(flag); expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Sign' });
@@ -307,10 +306,10 @@ describe('ASM interaction priority', () => {
   });
   it('bookshelf precedes signs, and signs precede NPCs without turning them', () => {
     const deps = scene(); deps.gameMap.mapData!.signs = [{ x: 25, y: 11, text: 'Sign' }];
-    const shelf = vi.spyOn(deps.gameMap, 'getBookshelfText').mockReturnValue('Bookshelf');
+    const shelf = vi.spyOn(deps.gameMap, 'getBookshelfPredef').mockReturnValue('PokemonStuffText');
     const face = vi.spyOn(deps.npcs.find(npc => npc.data.id === 'potion1')!, 'faceDirection');
     vi.mocked(isPassPressed).mockImplementation(key => key === 'a');
-    expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Bookshelf', preDialogue: true });
+    expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ program: 'PokemonStuffText', preDialogue: true });
     shelf.mockReturnValue(null); expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Sign' });
     expect(face).not.toHaveBeenCalled();
   });

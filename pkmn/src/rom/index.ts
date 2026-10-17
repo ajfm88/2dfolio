@@ -66,7 +66,7 @@ const SFX_NAMES = [
   'press_ab', 'start_menu', 'collision', 'go_inside', 'go_outside',
   'save', 'purchase', 'swap', 'withdraw_deposit', 'cut',
   'denied', 'enter_pc', 'fly', 'get_item1', 'get_item2', 'get_key_item',
-  'go_inside', 'go_outside', 'heal_hp', 'heal_machine', 'intro_hip',
+  'go_inside', 'go_outside', 'heal_ailment', 'heal_hp', 'heal_machine', 'intro_hip',
   'intro_lunge', 'intro_whoosh', 'ledge', 'level_up', 'mon_faint',
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
   'press_ab', 'push_boulder', 'switch', 'super_effective', 'tink',

@@ -106,6 +106,7 @@
       "x": 0,
       "y": 4,
       "facing": "left",
+      "program": "ViridianCityPokecenterBenchGuyText",
       "text": "POKéMON CENTERs\nheal your tired,\nhurt or fainted\nPOKéMON!"
     },
     {

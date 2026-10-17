@@ -1,0 +1,40 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle",
+          "value": 2
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 1,
+          "shift": 7
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 0,
+          "frequency": 1264
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 2,
+          "frequency": 1616
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 0,
+          "shift": 8
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

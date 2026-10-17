@@ -212,7 +212,7 @@ Summary of path → shape → source:
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |
-| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
+| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header. Since A5b7g2 a hidden event can carry `program`, its routine's predef text program (`text` stays for compatibility) | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
 | `blockset_<name>.json` | `number[][]` 16 tile-ids per block (`blocksets.ts`) | ROM via extractor |
 | `collision_tiles.json` | `Record<collGroup, number[]>` (`collision.ts`) | ROM via extractor |
 | `town_map.json` | already static TS (`src/rom/town_map_data.ts`) | nothing to do |
@@ -465,7 +465,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
-| `menus/` | All menus, title/intro screens | `StartMenu`, `PartyMenu`, `ShopMenu`, `ItemMenu`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcMenu`, `PokecenterPcMenu`, `BillsPcMenu`, `TrainerCard`, `OptionMenu`, `SaveMenu`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
+| `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatsScreen`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |
@@ -500,8 +500,6 @@ trainer_card      player card
 party_menu        party list (STATS, SWITCH, CANCEL)
 shop              Poké Mart BUY/SELL/QUIT
 item_menu         bag
-pc                Red's house item PC
-pokecenter_pc     SOMEONE's PC / YELLOW's PC / LOG OFF → BillsPcMenu / PcMenu
 blackboard        interactive board menu
 dex               Pokédex list/data/area
 town_map          map overlay

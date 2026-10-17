@@ -35,6 +35,8 @@ slices, open questions, and the session log. This project is built a little at a
 time by whichever agent is available (Claude, Grok, GPT), so:
 
 - **Read it first, every session.** It tells you what actually happened last time.
+  Its top sections (phase, *In progress*, *Next up*, *Open questions*) and the newest few
+  session-log entries are enough; it stays short by moving old entries to `HISTORY.md` (DECISIONS #61).
 - **Claim one slice** from its _Next up_ table. One slice per session — don't batch.
 - **Update it, then commit locally, before you stop.** An unlogged session is a
   lost session: the next agent restarts from zero and the user pays twice for the
@@ -54,7 +56,7 @@ Read in this order. Skim what your slice needs; don't re-explore what
 | `PLAN.md` | the phased roadmap — 36 milestones (R1, V1–V5, A1–A6, B1–X2; R1 ran as slices R1a–c, V1 runs as V1a–e) | when picking or sizing work |
 | `CONVENTIONS.md` | session contract (incl. the per-slice local commit), code standards, naming traps, verification workflow, the test suite | before writing code |
 | `DECISIONS.md` | settled choices and rationale (#1–#43), plus open questions that need the user | before proposing a change to a settled choice |
-| `HISTORY.md` | archived session entries + the table of lost prior work | rarely — background only |
+| `HISTORY.md` | archived session entries, archived STATUS sections, and the table of lost prior work | rarely — background only |
 
 `context/_reference-article.md` is a third-party article (JavaScript Mastery's
 context-engineering playbook) that the original template came from — human
@@ -141,10 +143,10 @@ Everything else runs inside `game/`:
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
   `data/`, then rebuild `static/` (520 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 123 ROM tests skip
+  `ROM_PATH` the 130 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-10-14 (A5b7b F-1): 1331/1331.**
+  tests. **Baseline 2026-10-15 (A5b7g2 CP2): 1604/1604.**
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -156,20 +158,13 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-10-06:** milestones **R1, V1, A6 and A1 are done**: A1 covers the item jingles and the music engine (A1a),
-item balls, hidden items and the inventory rules (A1b), and trainer sight (A1c), all
-user-verified. The game runs with no ROM, from committed `data/` + `static/` (Phase R).
-It has 19 maps, upstream's 12 plus Route 2 and Viridian Forest (V1). It ticks at the
-Game Boy's 59.7275 Hz, and the overworld moves on the ASM's 2-frame pass (DECISIONS #33,
-#36). **1331/1331** tests; no-ROM 1208 pass, 123 skip; typecheck/build clean.
-A5 is under way: A5a (the text printer) is done and user-verified. A5b (script and menu texts)
-runs as seven increments (DECISIONS #45): A5b1–A5b4 are done, A5b5a/b (the story handlers on the
-display session: small handlers, Pallet, Oak's Lab) are reviewed and A5b5b is user-verified.
-A5b5c (review fixes, BUG-1, yes/no timing, the nurse) is implemented and reviewed
-(`notes/36-a5b5c-review.md`) and user-verified; its fix F-1 is checked.
-A5b6 (notebook, blackboard, Town Map sign, Oak's speech) is done (`notes/38-a5b6-review.md`;
-user-approved 2026-10-14). A5b7 is approved as seven slices (`notes/39-a5b7-plan.md`); A5b7a is done and user-verified, A5b7b (the Mart) is done and user-verified (`notes/42-a5b7b-review.md`); A5b7c is planned and approved as c1/c2 (`notes/43-a5b7c-plan.md`).
-Then the healing-machine slice, **V2 (Pewter, moved up by DECISIONS #55)**, the intro-animation slice (#51), A5c–A5f, V3.
+**2026-10-16:** milestones **R1, V1, A6 and A1 are done**, and A5 is half done: **A5a** (the text printer)
+and **A5b** (every script and menu text on the cartridge's programs, A5b1–A5b7) are user-verified. The game runs
+with no ROM, from committed `data/` + `static/` (Phase R). It has 19 maps (upstream's 12 plus Route 2 and
+Viridian Forest, V1), ticks at the Game Boy's 59.7275 Hz, and moves on the ASM's 2-frame pass (DECISIONS #33,
+#36). **1604/1604** tests; no-ROM 1474 pass, 130 skip; typecheck/build clean.
+Next: the StatusScreen port (#58), the healing-machine slice (#50), **V2 (Pewter, moved up by DECISIONS #55)**,
+the intro-animation slice (#51), A5c–A5f, V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

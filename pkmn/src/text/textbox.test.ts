@@ -1,3 +1,10 @@
+// A5b7g1 CP1 replacements for deleted wrapper-only cases:
+// "explicit text_end overrides an extracted prompt": standalone PrintText's real DONE
+// return/no-read contract is covered by "keeps Delay3 but places the entire program ...".
+// "explicit prompt wins once ... PROMPT": "prompt uses its beeping wait and then a
+// separate silent DisplayTextID wait" covers the source prompt exactly once.
+// "legacy strips the map terminator ...": stripping/invented dismissal is retired;
+// that same prompt test preserves the terminator and verifies one beep and silent close.
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TextBox, initTextSystem, setTextSpeed } from './textbox';
 import { MapDialogue } from './map_dialogue';
@@ -26,7 +33,7 @@ function tiles(box: TextBox, y: number): number[] {
 }
 describe('DisplayTextID and PrintText integration', () => {
   it('registers the logical border at T, renders it at T+3 and places text at T+20', () => {
-    const box = new TextBox(); down('a'); box.show('AB', { mode: 'displayTextID' }); box.render();
+    const box = new TextBox(); down('a'); box.show('AB'); box.render();
     expect(uiTiles.tileAt(18, 16)).toBe(0x60); expect(fillRect).not.toHaveBeenCalled();
     tick(box, 2); box.render(); expect(fillRect).not.toHaveBeenCalled();
     tick(box, 1); box.render(); expect(fillRect).toHaveBeenCalled();
@@ -35,7 +42,7 @@ describe('DisplayTextID and PrintText integration', () => {
     for (let frame = 21; frame <= 23; frame++) { box.update(); if (frame === 23) expect(tiles(box, 112)).toContain(charToTile('A')); }
   });
   it('done is silent, has no arrow, and a held opening A requires release and new press', () => {
-    const box = new TextBox(); down('a'); box.show('A', { mode: 'displayTextID' }); tick(box, 40);
+    const box = new TextBox(); down('a'); box.show('A'); tick(box, 40);
     expect(box.isTextComplete).toBe(true); expect(box.isWaitingForInput).toBe(true);
     expect(tiles(box, 128)).not.toContain(charToTile('▼')); expect(playSFX).not.toHaveBeenCalled();
     down(null); tick(box, 1); expect(box.active).toBe(true);
@@ -44,12 +51,12 @@ describe('DisplayTextID and PrintText integration', () => {
     tick(box, 1); expect(box.active).toBe(false); // 5 + 2W, detached minimal walking set W=1
   });
   it('B bypasses the A hold and closes after the full walking reload', () => {
-    const box = new TextBox(); box.show('A', { mode: 'displayTextID' }); tick(box, 21);
+    const box = new TextBox(); box.show('A'); tick(box, 21);
     down('b'); tick(box, 1); tick(box, 7); expect(box.active).toBe(false);
     expect(playSFX).not.toHaveBeenCalled();
   });
   it('prompt uses its beeping wait and then a separate silent DisplayTextID wait', () => {
-    const box = new TextBox(); box.show('A<PROMPT>', { mode: 'displayTextID' }); tick(box, 24);
+    const box = new TextBox(); box.show('A<PROMPT>'); tick(box, 24);
     down('a'); box.update(); expect(playSFX).toHaveBeenCalledExactlyOnceWith('press_ab');
     expect(box.isTextComplete).toBe(true); tick(box, 4); expect(box.active).toBe(true);
     down(null); box.update(); expect(box.active).toBe(true);
@@ -57,44 +64,29 @@ describe('DisplayTextID and PrintText integration', () => {
     expect(playSFX).toHaveBeenCalledTimes(1);
   });
   it('a press held during the opening is consumed by letter delay, not mistaken for close', () => {
-    const box = new TextBox(); box.show('A', { mode: 'displayTextID' }); tick(box, 10);
+    const box = new TextBox(); box.show('A'); tick(box, 10);
     down('b'); tick(box, 30); expect(box.active).toBe(true);
     down(null); box.update(); down('b'); tick(box, 8); expect(box.active).toBe(false);
   });
   it('PrintText alone waits three frames and returns while retaining the box', () => {
-    const box = new TextBox(); box.show('A', { mode: 'printText' }); tick(box, 2);
+    const box = new TextBox(); box.printStandalone({ text: 'A' }); tick(box, 2);
     expect(syncJoypadRead).not.toHaveBeenCalled(); box.update(); expect(syncJoypadRead).toHaveBeenCalledTimes(1);
     box.update(); expect(box.isComplete).toBe(true); expect(box.active).toBe(true);
   });
-  it('explicit text_end overrides an extracted prompt, and reads no input after return', () => {
-    const box = new TextBox(); box.show('A<PROMPT>', { end: 'none' }); tick(box, 2);
-    expect(box.isComplete).toBe(true); expect(playSFX).not.toHaveBeenCalled();
-    vi.mocked(isHeld).mockClear(); tick(box, 5); expect(isHeld).not.toHaveBeenCalled();
-  });
-  it('explicit prompt wins once, even when the string already has PROMPT', () => {
-    const box = new TextBox(); box.show('A<PROMPT>', { end: 'prompt' }); tick(box, 5);
-    down('b'); box.update(); expect(box.isComplete).toBe(true); expect(playSFX).toHaveBeenCalledTimes(1);
-  });
-  it('legacy strips the map terminator and preserves dismissal on the pressed edge', () => {
-    const box = new TextBox(); box.show('A<PROMPT>'); tick(box, 2);
-    expect(box.isWaitingForInput).toBe(true); expect(playSFX).not.toHaveBeenCalled();
-    vi.mocked(isPressed).mockImplementation(key => key === 'a'); box.update();
-    expect(box.active).toBe(false); expect(playSFX).toHaveBeenCalledTimes(1);
-  });
   it('retained text keeps transferring its final glyph, including contractions', () => {
-    const box = new TextBox(); box.show("It's", { end: 'none' }); tick(box, 4);
+    const box = new TextBox(); box.printStandalone({ text: "It's" }); tick(box, 6);
     expect(box.isComplete).toBe(true); tick(box, 3);
     expect(tiles(box, 112)).toEqual([charToTile('I'), charToTile('t'), charToTile("'s")]);
   });
   it('extra-font glyphs draw from the extra sheet at consecutive tile positions', () => {
-    const box = new TextBox(); box.show('…“”\uE001\uE002', { end: 'none' }); tick(box, 10);
+    const box = new TextBox(); box.printStandalone({ text: '…“”\uE001\uE002' }); tick(box, 10);
     vi.mocked(drawTile).mockClear(); box.render();
     const glyphs = vi.mocked(drawTile).mock.calls.filter(call => call[3] === 112 && call[2] > 0 && call[2] < 152);
     expect(glyphs.map(call => [call[0] === extra ? 'extra' : 'font', call[1], call[2]]))
       .toEqual([['extra', 21, 8], ['extra', 18, 16], ['extra', 19, 24], ['font', 97, 32], ['font', 98, 40]]);
   });
   it('rendering never advances the printer or transfer phase', () => {
-    const box = new TextBox(); box.show('ABCDE', { end: 'none' }); tick(box, 2);
+    const box = new TextBox(); box.printStandalone({ text: 'ABCDE' }); tick(box, 4);
     const expected = tiles(box, 112); for (let i = 0; i < 10; i++) expect(tiles(box, 112)).toEqual(expected);
     expect(box.isComplete).toBe(false);
   });
@@ -226,7 +218,7 @@ describe('retained DisplayTextID session and exact close (A5b4)', () => {
 
   it('show equals open, keep-print and finish for the same input/frame trace', () => {
     const a = new TextBox(), b = new TextBox();
-    a.show('A', { mode: 'displayTextID' }); b.open();
+    a.show('A'); b.open();
     tick(a, 20); tick(b, 20); b.print({ text: 'A' }, { box: 'keep' });
     a.update(); b.update(); b.finish({ outerWait: true });
     expect(a.isTextComplete).toBe(true); expect(b.isTextComplete).toBe(true);

@@ -19,9 +19,11 @@ export interface MenuInputConfig {
   watched: readonly GameButton[];
   /** wMaxMenuItem */
   maxItem: number;
-  /** wTopMenuItemX / wTopMenuItemY, in tiles; items are two rows apart (PlaceMenuCursor) */
+  /** wTopMenuItemX / wTopMenuItemY, in tiles (PlaceMenuCursor). */
   topX: number;
   topY: number;
+  /** BIT_DOUBLE_SPACED_MENU is set for a single-spaced chooser. */
+  rowStep?: 1 | 2;
   /** wCurrentMenuItem on entry */
   item?: number;
   /** wMenuWatchMovingOutOfBounds. Default off: Up at 0 and Down at the end re-arm Delay3. */
@@ -34,13 +36,18 @@ export class MenuInput {
   item: number;
   private delay = 3;
   private repeatCounter = 0;
+  private placedItem: number;
 
   constructor(readonly config: MenuInputConfig) {
     this.item = config.item ?? 0;
+    this.placedItem = this.item;
   }
 
+  /** wLastMenuItem, written by PlaceMenuCursor before input moves wCurrentMenuItem. */
+  get lastItem(): number { return this.placedItem; }
+
   /** The list loop calls HandleMenuInput again. Delay3 restarts; hFrameCounter does not. */
-  restart(): void { this.delay = 3; }
+  restart(): void { this.placedItem = this.item; this.delay = 3; }
 
   /** One VBlank of hFrameCounter, including frames spent inside Delay3. */
   elapse(): void {
@@ -49,7 +56,7 @@ export class MenuInput {
 
   /** The ▶ written by PlaceMenuCursor, in tiles. */
   get cursor(): { x: number; y: number } {
-    return { x: this.config.topX, y: this.config.topY + 2 * this.item };
+    return { x: this.config.topX, y: this.config.topY + (this.config.rowStep ?? 2) * this.item };
   }
 
   /**
@@ -92,7 +99,7 @@ export class MenuInput {
     }
     const watched = pressed.some(key => this.config.watched.includes(key));
     if (!watched && !(pastEnd && this.config.watchOutOfBounds)) {
-      this.delay = 3; // .loop1: PlaceMenuCursor, Delay3
+      this.restart(); // .loop1: PlaceMenuCursor, Delay3
       return null;
     }
     if (pressed.includes('a') || pressed.includes('b')) pressSound();

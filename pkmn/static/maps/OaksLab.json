@@ -139,24 +139,27 @@
       "x": 4,
       "y": 0,
       "facing": "up",
+      "program": "PushStartText",
       "text": "Push START to\nopen the MENU!"
     },
     {
       "x": 5,
       "y": 0,
       "facing": "up",
-      "text": "The SAVE option is\non the MENU\nscreen."
+      "scriptId": "OAKS_LAB_RIGHT_POSTER"
     },
     {
       "x": 0,
       "y": 1,
       "facing": "up",
+      "program": "OakLabEmailText",
       "text": "There's an e-mail\nmessage here!\f...\fCalling all\nPOKéMON trainers!\fThe elite trainers\nof POKéMON LEAGUE\nare ready to take\non all comers!\fBring your best\nPOKéMON and see\nhow you rate as a\ntrainer!\fPOKéMON LEAGUE HQ\nINDIGO PLATEAU\fPS: PROF.OAK,\nplease visit us!\n..."
     },
     {
       "x": 1,
       "y": 1,
       "facing": "up",
+      "program": "OakLabEmailText",
       "text": "There's an e-mail\nmessage here!\f...\fCalling all\nPOKéMON trainers!\fThe elite trainers\nof POKéMON LEAGUE\nare ready to take\non all comers!\fBring your best\nPOKéMON and see\nhow you rate as a\ntrainer!\fPOKéMON LEAGUE HQ\nINDIGO PLATEAU\fPS: PROF.OAK,\nplease visit us!\n..."
     }
   ]

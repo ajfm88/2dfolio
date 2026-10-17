@@ -2,13 +2,42 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { YesNoMenu } from './yes_no_menu';
 import { isPassPressed, isPressed } from '../input';
 import { playSFX } from '../audio';
-import { drawText } from './menu_render';
+import { drawText, drawBox } from './menu_render';
+import { getNoTextDelay, setNoTextDelay } from '../text/text_flags';
 vi.mock('../input', () => ({ isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false) }));
 vi.mock('../audio', () => ({ playSFX: vi.fn() }));
 vi.mock('./menu_render', () => ({ drawText: vi.fn(), drawBox: vi.fn() }));
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(isPassPressed).mockReturnValue(false); vi.mocked(isPressed).mockReturnValue(false); });
 const press = (key: string) => vi.mocked(isPassPressed).mockImplementation(k => k === key);
 describe('DisplayTwoOptionMenu / HandleMenuInput cartridge delays', () => {
+  it('left YES/NO uses SAVE coordinates and leaves the default chooser unchanged', () => {
+    const menu = new YesNoMenu(); menu.show({ actualRead: true, position: 'left' }); menu.render();
+    expect(drawBox).toHaveBeenLastCalledWith(0, 56, 48, 40); expect(drawText).toHaveBeenLastCalledWith('▶', 8, 64);
+    menu.show({ actualRead: true }); menu.render(); expect(drawBox).toHaveBeenLastCalledWith(112, 56, 48, 40);
+  });
+  it('clears shared no-text-delay before the first input delay', () => {
+    setNoTextDelay(true);
+    const menu = new YesNoMenu();
+    menu.show({ actualRead: true });
+    expect(getNoTextDelay()).toBe(false);
+    const read = vi.fn();
+    menu.update(read); menu.update(read);
+    expect(read).not.toHaveBeenCalled();
+  });
+  it('PC silence suppresses only the answer sound, retaining Delay3 and the 15-frame tail', () => {
+    const menu = new YesNoMenu(); const read = vi.fn();
+    menu.show({ actualRead: true, silent: true });
+    menu.update(read); menu.update(read); press('b');
+    expect(menu.update(read)).toBeNull();
+    expect(read).toHaveBeenCalledTimes(1);
+    for (let i = 0; i < 14; i++) expect(menu.update(read)).toBeNull();
+    expect(menu.update(read)).toBe('no');
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(playSFX).not.toHaveBeenCalled();
+    menu.show({ actualRead: true });
+    menu.update(read); menu.update(read); menu.update(read);
+    expect(playSFX).toHaveBeenCalledWith('press_ab');
+  });
   it.each(['up', 'down', 'left', 'right', 'start', 'select'])('%s re-arms Delay3; idle polls once per frame', key => {
     const menu = new YesNoMenu(); const read = vi.fn(); menu.show({ actualRead: true });
     menu.update(read); menu.update(read); expect(read).not.toHaveBeenCalled();

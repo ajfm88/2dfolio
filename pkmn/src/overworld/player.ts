@@ -36,11 +36,25 @@ const OPPOSITE: Record<Direction, Direction> = {
 const noSprites = (): void => {};
 
 /**
- * What A finds (OverworldLoop). `preDialogue`: a hidden event's text or a bookshelf, found by
+ * What A finds (OverworldLoop). `preDialogue`: a hidden event or a bookshelf, found by
  * CheckForHiddenEventOrBookshelfOrCardKeyDoor before `.displayDialogue` — the gate that
  * BIT_SEEN_BY_TRAINER closes (A1c). Hidden items and hidden-event scripts come from there too.
+ * `program` is a plain predef (`text_far` + `text_end`).
  */
-export type Interaction = { npc: Npc } | { text: string; preDialogue?: true; textId?: number } | { item: string; flag: string } | { scriptId: string };
+export type Interaction = { npc: Npc }
+  | { text: string; preDialogue?: true; textId?: number }
+  | { item: string; flag: string }
+  | { scriptId: string }
+  | { program: string; preDialogue: true };
+
+/** PrintBookshelfText's predef, as the interaction the shared display builder runs. */
+function bookshelfInteraction(predef: string | null): Interaction | null {
+  if (predef === 'TownMapText') return { scriptId: 'TOWN_MAP_TEXT' };
+  if (predef === 'BookOrSculptureText') return { scriptId: 'BOOK_OR_SCULPTURE' };
+  if (predef === 'IndigoPlateauStatues') return { scriptId: 'INDIGO_PLATEAU_STATUES' };
+  if (predef) return { program: predef, preDialogue: true };
+  return null;
+}
 
 /**
  * The player. Movement runs once per overworld pass (two frames) through PlayerWalk,
@@ -166,21 +180,19 @@ export class Player {
       if (hiddenEvent.scriptId) return { scriptId: hiddenEvent.scriptId };
       if (hiddenEvent.item && hiddenEvent.flag) {
         if (!hiddenItemFound(hiddenEvent.flag)) return { item: hiddenEvent.item, flag: hiddenEvent.flag };
+      } else if (hiddenEvent.program) {
+        return { program: hiddenEvent.program, preDialogue: true };
       } else if (hiddenEvent.text) {
         // RedsHouse1FTVText reads the player's facing, not a flattened hidden-event string.
         if (gameMap.mapData?.name === 'RedsHouse1F' && hiddenEvent.x === 3 && hiddenEvent.y === 1)
           return { scriptId: 'REDSHOUSE1F_TV' };
         return { text: hiddenEvent.text, preDialogue: true };
       }
-    } else {
-      const adjTx = this.tileX + (this.direction === 'left' ? -1 : this.direction === 'right' ? 1 : 0);
-      const adjTy = this.tileY + (this.direction === 'up' ? -1 : this.direction === 'down' ? 1 : 0);
-      for (const [tx, ty] of [[adjTx, adjTy], [facing.tx, facing.ty]]) {
-        const bookshelfScript = gameMap.getBookshelfScript(tx, ty);
-        if (bookshelfScript) return { scriptId: bookshelfScript };
-        const bookshelfText = gameMap.getBookshelfText(tx, ty);
-        if (bookshelfText) return { text: bookshelfText, preDialogue: true };
-      }
+    } else if (this.direction === 'up') {
+      // PrintBookshelfText: facing up only, the one tile at screen (8,7) — directly above
+      // the player's step. The second tile up is screen (8,6), BookOrSculptureText's Diglett check.
+      const shelf = bookshelfInteraction(gameMap.getBookshelfPredef(this.tileX, this.tileY - 1));
+      if (shelf) return shelf;
     }
     const signText = gameMap.getSignAt(stepX, stepY);
     if (signText) {
