@@ -97,6 +97,7 @@ export const BATTLE_HUD_TILES_1 = symToOffset(0x04, 0x4c00);  // BattleHudTiles1
 export const BATTLE_HUD_TILES_2 = symToOffset(0x04, 0x4c18);  // BattleHudTiles2 — 1bpp, 3 tiles
 export const BATTLE_HUD_TILES_3 = symToOffset(0x04, 0x4c30);  // BattleHudTiles3 — 1bpp, 3 tiles
 export const ED_TILE            = symToOffset(0x01, 0x64e5);  // ED_Tile — 1bpp, 1 tile
+export const P_TILE             = symToOffset(0x04, 0x5682);  // PTile — 1bpp, 1 bold P tile (StatusScreen)
 export const POKEBALL_TILES     = symToOffset(0x0e, 0x6a28);  // PokeballTileGraphics — 2bpp, 4 tiles (balls.png)
 export const MOVE_ANIM_TILES_0  = symToOffset(0x1e, 0x4237);  // MoveAnimationTiles0 — 2bpp, 80 tiles (move_anim_0)
 
@@ -295,6 +296,12 @@ export const MAP_TEXT_PTRS: Record<string, { offset: number; bank: number; count
   ViridianForest:      { offset: symToOffset(0x18, 0x5112), bank: 0x18, count: 16 },
   ViridianForestSouthGate: { offset: symToOffset(0x17, 0x556a), bank: 0x17, count: 2 },
   ViridianForestNorthGate: { offset: symToOffset(0x17, 0x5494), bank: 0x17, count: 2 },
+  // V2 Pewter — note 60 §13.1, pret symbols.
+  PewterCity:          { offset: symToOffset(0x06, 0x5448), bank: 0x06, count: 14 },
+  PewterPokecenter:    { offset: symToOffset(0x17, 0x4486), bank: 0x17, count: 6 },
+  PewterMart:          { offset: symToOffset(0x1d, 0x44f3), bank: 0x1d, count: 3 },
+  PewterNidoranHouse:  { offset: symToOffset(0x07, 0x4e40), bank: 0x07, count: 3 },
+  PewterSpeechHouse:   { offset: symToOffset(0x07, 0x4e95), bank: 0x07, count: 2 },
 };
 
 // ── Palette Data ──────────────────────────────────────────────

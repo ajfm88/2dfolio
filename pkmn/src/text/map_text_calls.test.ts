@@ -6,9 +6,9 @@ import type { TextProgramsFile } from '../rom/extractors/text_programs';
 const data = JSON.parse(readFileSync(resolve(__dirname, '../../data/text_programs.json'), 'utf8')) as TextProgramsFile;
 
 describe('current map text-pointer bridge (A5b4)', () => {
-  it('resolves all 19 current maps, plus both source-selected alternate tables', () => {
+  it('resolves all 24 current maps, plus both source-selected alternate tables', () => {
     const maps = readdirSync(resolve(__dirname, '../../data/maps')).map(name => name.replace(/\.json$/, ''));
-    expect(maps).toHaveLength(19);
+    expect(maps).toHaveLength(24);
     for (const map of maps) expect(data.textPointers[mapTextTable(map)], map).toBeDefined();
     for (const map of ['OaksLab', 'ViridianMart']) expect(data.textPointers[mapTextTable(map, true)]).toBeDefined();
   });

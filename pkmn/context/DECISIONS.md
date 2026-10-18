@@ -747,6 +747,52 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - Briefs ask agents to read STATUS's top sections and the newest few log entries, not the whole archive.
     - First trim 2026-10-16: 201 KB → ~33 KB. Nothing deleted (line-by-line check).
 
+62. **The StatusScreen port takes all four plan decisions** (2026-10-16). *The user's answer to
+    `notes/58-statusscreen-plan.md` §11 (O-30): "yes to all". Claude planned it; the user had already named Sol.*
+
+    - **One slice, five checkpoints, one review, one play-test:** CP1 trace (no code), CP2 data, CP3 the
+      `StatusScreenSession` for all three callers (party menu, Bill's PC, battle party menu) with `stats_screen.ts`
+      deleted, CP4 the shared `DisplayPartyMenu` opening, CP5 verification.
+    - **F-1 and F-2 are fixed in CP4** (note 58 §2). Field medicine's party opening gains 7 frames and its result
+      redraw 3 (`PartyMenuInit`'s 30-tile copy, `SET_PAL_PARTY_MENU`'s CGB Delay3). Its return to the bag becomes
+      `RestoreScreenTilesAndReloadTilePatterns`' full tail. CP1 corrected the count to **+32** (38 frames before the bag list: medicine's own taken `call z, RunDefaultPaletteCommand` adds 3 to START's 35; note 58 §12.4). These amend A5b7c2's anchors (note 45). START →
+      POKéMON and the return from STATS open through the same module. The party list, submenu and SWITCH stay
+      upstream's (J2 party-menu audit).
+    - **CP2 extracts `move_names.json`** (`MoveNames`, keyed like `moves.json`) and **`gfx/font/P.png`** (`PTile`).
+      This is additive data; A5c reuses the move names. `TypeNames` is not extracted; a no-ROM tripwire pins every
+      species type string to it.
+    - **Battle's STATS uses the new pages now.** Its surrounding return (enemy pic reload, party menu) stays as it is
+      until A5c.
+    - **Sol implements;** Claude reviews; the user play-tests (note 58 §10).
+    - Commits remain local; no push.
+
+63. **The healing-machine slice takes all four plan decisions** (2026-10-16). *The user's answer to
+    `notes/59-healing-machine-plan.md` §11 (O-31): "yes".*
+
+    - **One slice, four checkpoints, one review, one play-test:** CP1 trace (no code), CP2 audio (the
+      `wAudioFadeOutControl` fade-out, NR50, `SFX_HEALING_MACHINE` extracted), CP3 the machine session + the
+      nurse's order (`HealParty` and the map-music restart after the machine) + note 56 N-2, CP4 verification.
+    - **NR50's output level becomes (n+1)/8** in this slice. It also corrects StatusScreen's $33 level (4/8, not 3/7).
+    - **Map-transition fade-out** (`PlayDefaultMusicFadeOutCurrent` on doors, warps and after battle) is **its own
+      slice right after V2**; it reuses this slice's fade engine. V2 keeps its place (#55).
+    - **Sol implements;** Claude checks each CP and reviews; the user play-tests (note 59 §8).
+    - Commits remain local; no push.
+
+64. **V2 is three parts, V2a → V2b → V2c; Sol implements** (2026-10-16). *The user's answer to
+    `notes/60-v2-plan.md` §12 (O-32): "yes pls split it and yes to codex ompelmenting".*
+
+    - **V2a — Pewter on the map:** the five maps, the Route 2 ↔ Pewter connection, texts, both Marts' lists from
+      the `script_mart` bytes (#55), the bench guy, the Super Nerd's yes/no, Pewter Mart's no-auto-box.
+      Until V2b/V2c, the two guides and Jigglypuff do nothing when talked to.
+    - **V2b — the museum and gym guides** (literal ASM move lists, `PewterGuys`, the `$40` placement bug) and the
+      east block.
+    - **V2c — Jigglypuff and the sleeping Pikachu** (the not-following state, `LooksContentText`, emotion 26).
+    - Each part has its own trace-first checkpoints (note 60 §5–§7). Claude checks each CP; the user play-tests
+      each part (§10).
+    - **Sol implements.** Settled before and unchanged: cries and emotion bubbles in J2 (#45, #39); V3/V4 own the
+      gym, museum and Route 3; the map-music fade-out stays its own slice (#63).
+    - Commits remain local; no push.
+
 ## Open — not decided, needs the user
 
 

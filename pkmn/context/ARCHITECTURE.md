@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **1331** passing (2026-10-14, A5b7b F-1) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **1687** passing in 95 files (2026-10-16, healing machine closed; no-ROM 1550 pass / 137 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (173 files; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3).
+- **`data/`** — JSON only, produced by `npm run setup` (177 files; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. It holds 520 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 173 JSON files. That lets
+  (since R1a), which deletes and rebuilds it every run. It holds 521 PNGs + 3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 177 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -209,6 +209,7 @@ Summary of path → shape → source:
 | `wild/<Map>.json` | `{grassRate,grass[],waterRate,water[]}` (`wild.ts`) | ROM via extractor |
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
 | `item_names.json` | `Record<CONSTANT, display>` (`text.ts:readItemDisplayNames`) | ROM via extractor |
+| `move_names.json` | `Record<MOVE_CONSTANT, display>` (`text.ts:readMoveDisplayNames`), all 165 moves in ID order, no NO_MOVE entry; shares the constant-name reader's table walk (StatusScreen CP2) | ROM MoveNames, 2F:4000 |
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |
@@ -344,6 +345,9 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
   only). Partial last rows have alpha-0 slots (`reds_house`, `move_anim_0`).
   Blocksets never reference those tiles.
 - **Fonts**: 1bpp PNGs, loaded through `loadFont()` (black on transparent).
+  `gfx/font/P.png` is the bold P for the status screen, one 8×8 tile from PTile
+  (04:5682), extracted since StatusScreen CP2. `loadStatusScreenAssets()` loads it
+  at startup; `BOLD_P_GLYPH` paints it twice in each known move's PP label.
 - **Tilemaps**: raw binary `.tilemap` files (`extractTitleTilemaps`), byte-identical
   to pret's. Marked `binary` in the root `.gitattributes` (R1c) — 2 of the 3 have
   no NUL byte, so git would otherwise treat them as text.
@@ -460,18 +464,18 @@ Entry point: `index.html` → `src/main.ts`.
 | Module | Purpose | Key exports |
 |---|---|---|
 | `core/` | Shared types, constants, player state | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()` |
-| `renderer/` | Canvas 2D rendering | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()` |
+| `renderer/` | Canvas 2D rendering; OBJ art through any OBP register (`obpMapping`, healing machine) | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()`, `loadSpriteMapped()`, `obpMapping()` |
 | `input/` | Keyboard + touch (arrows/WASD, Z=A, X=B, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
-| `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble` |
+| `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
-| `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatsScreen`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
+| `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |
 | `story/` | Per-map story scripts & hidden events; Viridian City's map script (V1e) | `buildOakGrassScript()`, `buildOaksLabIntroScript()`, `buildOaksLabPokedexScript()`, `buildViridianMartParcelScript()`, `viridianCityStep()`, `buildOldMan2Script()` |
 | `script/` | Cutscene script engine & controller | `initScript()`, `updateScript()`, `ScriptCommand` |
-| `audio/` | GB audio engine (2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `isSoundFinished()` (A1a), `suspendAudio()`, `resumeAudioOutput()`; `SoundChannel` (`sound_channel.ts`, the shared interpreter) |
+| `audio/` | GB audio engine (2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `isSoundFinished()` (A1a), `suspendAudio()`, `resumeAudioOutput()`, `preloadMusic()`, `setMasterVolume()`; the `wAudioFadeOutControl` fade-out (`fade_audio.ts`: `fadeOutAndStopMusic()`, `isAudioFadingOut()`, note 59); `SoundChannel` (`sound_channel.ts`, the shared interpreter) |
 | `rom/` | Extraction system — see below | `validateRom()`, `extractRom()`, `installRomData()`, `showUploadScreen()` |
 | `items.ts` | Bag & PC item storage | `Bag`, `ItemStack`, `addToInventory()`, `initItemNames()`, `getItemName()` |
 | `save.ts` | Save/load via localStorage | `saveGame()`, `loadGame()` |

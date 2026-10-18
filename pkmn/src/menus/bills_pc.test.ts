@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => { (globalThis as unknown as { window: unknown }).window = { addEventListener() {} }; });
+import { loadStatusScreenAssets } from './status_screen';
 import { BillsPc } from './bills_pc';
 import type { PcStorage } from './pc';
 import { ScreenTiles } from './screen_tiles';
@@ -19,10 +20,10 @@ import { getPikachuHappiness, getPikachuMood, restorePikachuHappiness } from '..
 import { PartyMenu } from './party_menu';
 import { POKEBALL_GLYPH } from './menu_glyphs';
 
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true) }));
-vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({}), loadTileset: async () => ({}) }));
+vi.mock('../audio', () => ({ playSFX: vi.fn(), setMasterVolume: vi.fn(), isSoundFinished: vi.fn(() => true) }));
+vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), loadBattleSprite: async () => ({ width: 40, height: 40 }), getMonsterPalette: () => 'YELLOWMON', fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({}), loadTileset: async () => ({}) }));
 const KEYS: GameButton[] = ['a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'];
-beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); });
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadStatusScreenAssets(); });
 beforeEach(() => {
   vi.clearAllMocks(); vi.mocked(isSoundFinished).mockReturnValue(true);
   vi.mocked(playSFX).mockImplementation(() => Promise.resolve());
@@ -59,8 +60,10 @@ function rig(party: BattlePokemon[] = [mon('PIKACHU'), mon()], box: BoxedPokemon
     frame++;
     for (const key of KEYS) setKey(key, keys.includes(key)); updateInput();
     const third = textBgTransfer.nextPortion; const enabled = textBgTransfer.enabled;
-    if (pc.advanceText) textBox.update(); else textBox.updateDisplay();
-    if (enabled) tiles.copyShownThird(third);
+    if (!pc.ownsBgTransfer) {
+      if (pc.advanceText) textBox.update(); else textBox.updateDisplay();
+      if (enabled) tiles.copyShownThird(third);
+    }
     return pc.frame(reads);
   };
   const frames = (n: number) => { for (let i = 0; i < n; i++) tick(); };
@@ -104,17 +107,35 @@ describe('BillsPC_ on the retained display', () => {
     border.mockRestore();
   });
 
-  it.each([0, 1])('STATS from branch %i shares both pages and restores Buffer1 on STATS, first read E+6', branch => {
+  it.each([0, 1])('STATS branch %i: Buffer1 Q+3, white until Q+6, first read Q+9; one tick owner', branch => {
     const r = rig(undefined, [boxed()]); const original = structuredClone(r.box);
     r.branch(branch); r.frames(16); r.tick('a'); r.frames(3); r.tick('down'); r.frames(3);
-    const before = r.tiles.save(r.textBox); r.tick('a'); expect(r.pc.fullScreen).toBe(true);
-    const stats = Reflect.get(r.pc, 'stats'); expect(Reflect.get(stats, 'statsPage')).toBe(1);
-    r.tick(); r.tick('a'); expect(Reflect.get(stats, 'statsPage')).toBe(2);
-    r.tick(); const e = r.time() + 1; r.tick('a'); expect(r.pc.fullScreen).toBe(false);
+    const before = r.tiles.save(r.textBox); r.tick('a'); const s = r.time();
+    expect(r.pc.fullScreen).toBe(true); expect(r.pc.paletteWhite).toBe(true);
+    const transfer = vi.spyOn(textBgTransfer, 'tick');
+    const display = vi.spyOn(r.textBox, 'updateDisplay');
+    const frame = (...keys: GameButton[]) => {
+      const n = transfer.mock.calls.length; r.tick(...keys);
+      expect(transfer.mock.calls.length - n).toBe(1);
+    };
+    const reads = r.reads.mock.calls.length;
+    for (let i = 1; i <= 26; i++) { frame(); expect(r.reads).toHaveBeenCalledTimes(reads); }
+    frame(); expect(r.time()).toBe(s + 27); expect(r.reads).toHaveBeenCalledTimes(reads + 1);
+    frame('b'); const p = r.time();
+    frame(); frame(); expect(r.reads).toHaveBeenCalledTimes(reads + 2);
+    frame(); expect(r.time()).toBe(p + 3); expect(r.reads).toHaveBeenCalledTimes(reads + 3);
+    frame('b'); const q = r.time(); expect(r.pc.paletteWhite).toBe(true);
+    frame(); frame(); expect(r.pc.ownsBgTransfer).toBe(true);
+    frame(); expect(r.time()).toBe(q + 3); expect(r.pc.ownsBgTransfer).toBe(false);
+    expect(display).not.toHaveBeenCalled(); // host skipped every session VBlank, including Q+3
     expect(r.tiles.save(r.textBox)).toEqual(before); expect(r.box).toEqual(original);
-    const reads = r.reads.mock.calls.length; r.frames(5); expect(r.reads.mock.calls.length).toBe(reads);
-    r.tick(); expect(r.time()).toBe(e + 6); expect(r.reads.mock.calls.length).toBe(reads + 1);
+    const count = r.reads.mock.calls.length;
+    for (let i = 4; i <= 5; i++) { frame(); expect(r.pc.paletteWhite).toBe(true); expect(r.pc.fullScreen).toBe(true); }
+    frame(); expect(r.time()).toBe(q + 6); expect(r.pc.paletteWhite).toBe(false); expect(r.pc.fullScreen).toBe(false);
+    frame(); frame(); expect(r.reads).toHaveBeenCalledTimes(count);
+    frame(); expect(r.time()).toBe(q + 9); expect(r.reads).toHaveBeenCalledTimes(count + 1);
     expect(r.menu()!.item).toBe(1); expect(playSFX).not.toHaveBeenCalled();
+    transfer.mockRestore(); display.mockRestore();
   });
 
   it('prints the empty PRINT BOX program and returns directly for a nonempty printer gap', () => {

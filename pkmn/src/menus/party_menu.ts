@@ -2,8 +2,11 @@
 // Full-screen display with Pokemon list, stats page, and switch functionality
 
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
-import { fillRect } from '../renderer';
-import { isPressed } from '../input';
+import { fillRect, drawFadeOverlay } from '../renderer';
+import { isPressed, isPassPressed, readJoypad } from '../input';
+import { TextBox } from '../text/textbox';
+import { textBgTransfer } from '../text/bg_transfer';
+import { PartyMenuOpening } from './party_menu_opening';
 import { drawText, drawBox } from './menu_render';
 import { drawPartyIcon, loadPartyIcons } from './party_icons';
 import { playSFX } from '../audio';
@@ -15,7 +18,7 @@ import { getTextPrograms } from '../text/program_data';
 import { formatHpFraction, PARTY_HP_FRACTION_COL } from './hp_bar';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
 import { monDisplayName } from '../pokemon_names';
-import { StatsScreen } from './stats_screen';
+import { StatusScreenSession } from './status_screen';
 import { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 export { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 
@@ -67,7 +70,13 @@ export class PartyMenu {
   private subCursor = 0;
   private switchFrom = -1; // index of Pokemon being switched
   private frameCounter = 0;
-  private readonly stats = new StatsScreen();
+  private stats: StatusScreenSession | null = null;
+  private opening: PartyMenuOpening | null = null;
+  private readonly openingTextBox = new TextBox();
+  /** The stats session owns actual reads and its one BG-transfer tick. */
+  get statusScreenActive(): boolean { return this.stats !== null; }
+  get ownsInput(): boolean { return this.statusScreenActive || this.opening !== null; }
+  get paletteWhite(): boolean { return this.opening?.paletteWhite ?? this.stats?.paletteWhite ?? false; }
 
   // Battle mode support. useItem is the bag's medicine menu: A picks, B cancels, no submenu.
   private mode: 'overworld' | 'battle' | 'battle_forced' | 'useItem' = 'overworld';
@@ -91,6 +100,9 @@ export class PartyMenu {
   show(party: BattlePokemon[]): void {
     this.party = party;
     this.state = 'list';
+    this.stats = null;
+    this.opening = null;
+    this.promptVisible = true;
     this.subCursor = 0;
     this.switchFrom = -1;
     this.frameCounter = 0;
@@ -103,6 +115,17 @@ export class PartyMenu {
     this.cursor = party.length === 0 ? 0 : Math.min(getPartyAndBillsSavedMenuItem(), party.length - 1);
     loadPartyIcons();
     loadPartyTiles();
+  }
+
+  /** START → POKéMON uses DisplayPartyMenu; battle and item-use keep their own hosts. */
+  open(party: BattlePokemon[]): void {
+    this.show(party);
+    this.beginOpening();
+  }
+
+  private beginOpening(): void {
+    this.promptVisible = false;
+    this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, 'PartyMenuNormalText');
   }
 
   /** Show party menu in battle context. Battle still starts on the first row (A5c). */
@@ -129,6 +152,15 @@ export class PartyMenu {
    * the item-use menu passes its own Joypad read (isPassPressed); the others keep isPressed.
    */
   update(pressed: (button: GameButton) => boolean = isPressed): 'close' | null {
+    if (this.opening) {
+      this.opening.present();
+      const ready = this.opening.frame();
+      this.promptVisible = !this.opening.paletteWhite;
+      if (!ready) return null;
+      this.opening = null;
+      readJoypad();
+      return this.updateList(isPassPressed);
+    }
     switch (this.state) {
       case 'list': return this.mode === 'useItem' ? this.updateItemUse(pressed) : this.updateList();
       case 'submenu': return this.updateSubmenu();
@@ -158,12 +190,12 @@ export class PartyMenu {
     return 'close';
   }
 
-  private updateList(): 'close' | null {
-    if (isPressed('up')) {
+  private updateList(pressed: (button: GameButton) => boolean = isPressed): 'close' | null {
+    if (pressed('up')) {
       this.cursor = (this.cursor - 1 + this.party.length) % this.party.length;
-    } else if (isPressed('down')) {
+    } else if (pressed('down')) {
       this.cursor = (this.cursor + 1) % this.party.length;
-    } else if (isPressed('a')) {
+    } else if (pressed('a')) {
       playSFX('press_ab');
       if (this.mode === 'useItem') {
         this.rememberCursor();
@@ -173,7 +205,7 @@ export class PartyMenu {
       this.rememberCursor();
       this.subCursor = 0;
       this.state = 'submenu';
-    } else if (isPressed('b')) {
+    } else if (pressed('b')) {
       playSFX('press_ab');
       if (this.mode === 'battle_forced') return null; // can't cancel forced switch
       this.rememberCursor();
@@ -199,7 +231,7 @@ export class PartyMenu {
       playSFX('press_ab');
       const action = items[this.subCursor];
       if (action === 'STATS') {
-        this.stats.show(this.party[this.cursor]);
+        this.stats = new StatusScreenSession(this.party[this.cursor], { syncRead: true });
         this.state = 'stats';
       } else if (action === 'SWITCH') {
         if (this.mode === 'battle' || this.mode === 'battle_forced') {
@@ -262,16 +294,20 @@ export class PartyMenu {
   }
 
   private updateStats(): 'close' | null {
-    if (this.stats.update()) this.state = 'list';
+    if (this.stats!.frame(readJoypad) === 'done') {
+      this.stats = null; this.state = 'list';
+      if (this.mode === 'overworld') this.beginOpening();
+    }
     return null;
   }
 
   render(): void {
-    this.frameCounter++;
+    if (this.opening?.paletteWhite) { drawFadeOverlay(1); return; }
     if (this.state === 'stats') {
-      this.stats.render();
+      this.stats!.render();
       return;
     }
+    this.frameCounter++;
     this.renderList();
     if (this.state === 'submenu') {
       this.renderSubmenu();

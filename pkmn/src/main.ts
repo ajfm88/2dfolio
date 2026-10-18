@@ -25,6 +25,7 @@ import { spriteDrawOrder } from "./overworld/sprites";
 import { loadMapSpriteSets, currentMapCloseFrames } from './overworld/sprite_sets';
 import { CloseSequence } from './text/close_sequence';
 import { textBgTransfer } from './text/bg_transfer';
+import { mapAutoTextBox } from './text/auto_text_box';
 import { uiTiles } from "./renderer/ui_tiles";
 import {
   applyDefeatedTrainers, applyStoryNpcState, recordDefeated,
@@ -72,6 +73,7 @@ import {
   renderCatchDemo,
   clearCatchDemo,
 } from "./battle";
+import { loadStatusScreenAssets } from './menus/status_screen';
 import { createSilhouette } from "./battle/battle_ui";
 import { meetMusicFor, victoryMusicFor } from "./battle/trainer_flow";
 import type { BattlePokemon, TrainerPartyMember, EvolutionCandidate } from "./battle";
@@ -106,7 +108,7 @@ import {
   isScriptBattlePending, clearScriptBattlePending, advanceActiveScript, setLastBattleWon,
   getScriptNpcs, getScriptFadeAlpha, lookupNpc,
   isScriptMenuFullScreen,
-  renderPokecenterHeal, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMenuSession,
+  renderHealingMachine, renderScriptExclamation, renderScriptYesNo, renderScriptMenu, renderMenuSession,
 } from "./script";
 import type { ScriptDeps } from "./script";
 import {
@@ -354,6 +356,7 @@ async function init(): Promise<void> {
     fetch('item_names.json').then(r => r.ok ? r.json() : {}).then(names => initItemNames(names)),
     loadGameText(),
     loadTextPrograms(),
+    loadStatusScreenAssets(),
     loadMapSpriteSets(),
   ]);
 
@@ -835,7 +838,7 @@ function renderEvolution(): void {
 /** Outdoor maps have map connections; indoor maps are buildings/caves/etc.
  *  Uses explicit set rather than patterns for build-time obfuscation compatibility. */
 const OUTDOOR_MAPS = new Set([
-  'PalletTown', 'ViridianCity', 'ViridianForest',
+  'PalletTown', 'ViridianCity', 'PewterCity', 'ViridianForest',
   'Route1', 'Route2', 'Route3', 'Route4', 'Route5', 'Route6', 'Route7', 'Route8',
   'Route9', 'Route10', 'Route11', 'Route12', 'Route13', 'Route14', 'Route15',
   'Route16', 'Route17', 'Route18', 'Route19', 'Route20', 'Route21', 'Route22',
@@ -853,6 +856,7 @@ const MAP_MUSIC: Record<string, string> = {
   // Towns & cities
   PalletTown: 'pallettown',
   ViridianCity: 'cities1',
+  PewterCity: 'cities1',
   // Routes
   Route1: 'routes1',
   Route22: 'routes1',
@@ -875,6 +879,11 @@ const MAP_MUSIC: Record<string, string> = {
   ViridianForest: 'dungeon2',
   ViridianForestSouthGate: 'cities1',
   ViridianForestNorthGate: 'cities1',
+  // Pewter (data/maps/songs.asm)
+  PewterNidoranHouse: 'cities1',
+  PewterMart: 'pokecenter',
+  PewterSpeechHouse: 'cities1',
+  PewterPokecenter: 'pokecenter',
 };
 
 /** Get the music track for a map, or null if unknown. */
@@ -1073,7 +1082,7 @@ let pendingEngage: { npc: Npc; steps: number; facing: Direction } | null = null;
 /** DisplayTextID(0), shared by the overworld and script free-movement dispatch. */
 function openStartMenu(): void {
   state = 'start_menu';
-  startMenu.open(hasFlag('GOT_POKEDEX'), getPlayerName());
+  startMenu.open(hasFlag('GOT_POKEDEX'), getPlayerName(), mapAutoTextBox(currentMapName));
 }
 
 function returnToStart(kind: StartReturn): void {
@@ -1126,7 +1135,9 @@ function gameTick(): void {
   prevTickInPassState = inPassState;
   const isPass = inPassState && !movementBlocking && passClock.tick();
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
-  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !textBox.active) syncJoypadRead();
+  const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
+    || (state === 'battle' && currentBattle?.statusScreenActive);
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !sessionOwnInput && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1259,7 +1270,7 @@ function gameTick(): void {
       state = "dex";
     } else if (action === "party") {
       if (playerParty.length === 0) { startMenu.redisplay(); return; }
-      partyMenu.show(playerParty);
+      partyMenu.open(playerParty);
       state = "party_menu";
     } else if (action === "save") {
       const badgeCount = BADGE_FLAGS.filter(f => hasFlag(f)).length;
@@ -1292,10 +1303,10 @@ function gameTick(): void {
       returnToStart('party');
     }
   } else if (state === "item_menu") {
-    fadeAlpha = bagMenu.paletteWhite ? 1 : 0;
     const third = textBgTransfer.enabled ? textBgTransfer.nextPortion : null;
     const bagShown = bagMenu.tiles.saveVisibleTiles();
     const itemResult = bagMenu.frame(readJoypad, () => { playSFX('press_ab'); });
+    fadeAlpha = bagMenu.paletteWhite ? 1 : 0;
     if (third !== null) startMenu.tiles.copyShownThird(third); // same VBlank, retained START beneath ITEM
     if (itemResult === "closed") {
       startMenu.tiles.restoreVisibleTiles(bagShown);
@@ -1787,7 +1798,7 @@ function gameLoop(now = 0): void {
 
     clear();
     renderOverworldScene(camX, camY);
-    renderPokecenterHeal(camX, camY, npcs);
+    renderHealingMachine();
     renderScriptExclamation(camX, camY, player, npcs);
     // EmotionBubble's OAM entries come first: over every sprite
     const bubble = state === 'emotion_bubble' ? emotionBubble.showing : null;

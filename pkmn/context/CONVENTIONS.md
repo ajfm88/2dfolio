@@ -224,8 +224,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1604/1604** as of 2026-10-15
-   (A5b7g2 CP2). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1722/1722** as of 2026-10-16 (V2a CP3)
+   (V2a CP2). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -246,7 +246,15 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-1604 tests in 89 files (vitest, `environment: 'node'`); without ROM, 1474 pass / 130 skip.
+1722 tests in 96 files (vitest, `environment: 'node'`); without ROM, 1569 pass / 153 skip.
+
+Healing-machine CP4 (2026-10-16, note 59 §15) re-ran typecheck, production build,
+the full ROM suite and the no-ROM suite **twice each**: both ROM runs **1687/1687**,
+both no-ROM runs **1550 pass / 137 skip**, both typechecks/builds clean. No timeout,
+rerun or test edit was needed. Muted Chromium on spare port 5194 verified the actual
+Viridian nurse with parties 1 and 6, screenshots through J+170 and audio-call traces;
+normal RAF/audio-clock runs matched too. No runtime/test/data changes or shipped hooks.
+The user separately play-tested the machine successfully; Claude checked CP4 and closed the slice (2026-10-16).
 
 **A5b7g1 CP1 (tests only)** migrates the A6e nurse fixture to the real nurse YES
 branch/hosted TextBox and program spy, preserving all movement, image, facing,
@@ -328,9 +336,9 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   trainer headers, NPC ids and facing parsed from `data/maps/objects/*.asm`,
   item balls, and the leaving-sign bug.
 
-- **Static export** — 7 in `src/rom/__tests__/static_export.test.ts` (R1a, plus A5b2's
-  explicit `map_sprite_sets.json` registration check): key shape, the four grays,
-  lossless PNG round-trip of all 520 images, extracted JSON
+- **Static export** — 8 in `src/rom/__tests__/static_export.test.ts` (R1a, plus A5b2's
+  explicit `map_sprite_sets.json` and StatusScreen CP2's `move_names.json` registration checks): key shape, the four grays,
+  lossless PNG round-trip of all 521 images, extracted JSON
   == `data/`, and **`static/` not stale**. If that last one fails after an
   extractor edit, re-run `npm run setup pokeyellow.gbc`. Needs `ROM_PATH`.
 
@@ -364,7 +372,26 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
 
 **Added per slice (newest first)**
 
+- **V2a CP2** adds 16 ROM extraction tests: five full-map comparisons and eleven source/structure,
+  stock and malformed-payload checks. ROM **1703/1703**, no-ROM **1550 pass / 153 skip**, 95 files;
+  typecheck/build clean. The user approved four omitted fixtures' new Pewter rows/counts and the
+  generated map_sprite_sets additions; all existing assertions retained (note 60 §14). Setup twice:
+  all 888 files identical, 872 prior files unchanged; no runtime wiring. Initial unchanged text-source
+  timeout passed on unchanged rerun; final gates passed without a timeout. Stop for review before CP3.
+
+- **Healing-machine CP3** adds 14: `overworld/healing_machine.test.ts` (9: every one/six-member render/call/return anchor, positions/flips, channel-driven wait, late/unready audio, zero-party guard, saved OBP1, awaited map art); `renderer/obj_palette.test.ts` (2: register mappings, real RGBA/cache/transparency); nurse +2 (same-tick update/heal/restart, no reads, one BG tick, retained OAM); bookshelf display +1 (real TV routing, note 56 N-2). The old A5b5c/A6e nurse assertions remain, on the real audio rig. The facade test now pins preloading/cached synchronous start. Eleven mutations caught/restored byte for byte. ROM **1687/1687**, no-ROM **1550/137**, typecheck/build clean; no timeout. No generated changes. Note 59 §14; browser remains CP4.
+
+- **Healing-machine CP2** adds 17: `audio/fade_audio.test.ts` (12: fade steps, exact update-40 stop/restore, completion before SFX interpretation on all four channels, immediate/no-music/second stops, NR50 reads/reload/underflow, idle StatusScreen ownership, track latch, real gain write, machine SFX commands and update 11); `audio/index.test.ts` (1: public API, pre-unlock safety, real clock and synchronous preload); extraction +3 (header/pointer, source/data, bank-$1f equivalence); static export +1 (177 JSON and the SFX). Six mutations caught/restored byte for byte. Setup twice: all 878 outputs identical, all 876 prior files unchanged. ROM **1673/1673**, no-ROM **1536/137**, typecheck/build clean. One unchanged text-source comparison timed out on the first full ROM run, then passed on rerun; note 59 §13. Nurse wiring remains CP3.
+
+- **StatusScreen CP5 (verification only)** adds no tests or runtime hooks. All four gates ran twice: ROM **1656/1656**, no-ROM **1523 pass / 133 skip** (91 files), clean typecheck and build. Fresh muted Chromium on **127.0.0.1:5193** exercised three party pictures (Pikachu 5×5, Ivysaur 6×6, Charizard 7×7), both Bill branches, both battle party modes, and Potion's result/return. Visual inspection of both pages and the contact sheet found no seams/clipping; independent full-PNG mirror/remap comparisons matched every pixel of the padded picture region on both pages. NR50 and native master-gain automation dip/restore were recorded without audible output. No page errors, failed assets or save writes. Source/data unchanged; evidence and fixture limits in note 58 §16.
+
+- **StatusScreen CP4** adds 12: `menus/party_menu_opening.test.ts` (6: both hosts/prompts at all three BG phases), `menus/field_medicine.test.ts` +1 (exact result palette/PrintText/hold and return phases), `menus/field_medicine_input.test.ts` +1 (real no-effect prompt/return), `main.test.ts` +4 (START opening at three offsets and actual medicine white/reveal). The existing overworld STATS test also enforces Q+22 reveal / Q+25 read. Every prior medicine assertion is preserved, with +7/+3/+32 timing changes. Eleven temporary mutations caught/restored byte for byte; note 58 §15. ROM **1656/1656**, no-ROM **1523/133**, typecheck/build clean. CP5 browser verification remains pending.
+
+- **StatusScreen CP3** adds a net 35: `menus/status_screen.test.ts` (30, replacing the two legacy stats tests), `menus/screen_tiles.test.ts` +1 (multi-byte numbers and shared PrintLevel), `main.test.ts` +3 (actual overworld/voluntary/forced battle dispatch), `story/pc.test.ts` +3 (actual host timing/ownership at three offsets). Both Bill STATS tests now require white through Q+6, Buffer1 at Q+3 and first read Q+9. Ten temporary production mutations caught and restored byte for byte; note 58 §14. ROM **1644/1644**, no-ROM **1511/133**, typecheck/build clean. CP4 and CP5 remain pending.
+
 - **A5b7g2 CP2** adds 27: `story/bookshelf_display.test.ts` (25: plain predefs at +20, books/Diglett/statues at +23, closes, owned 1 vs 2 through the controller, facing-up one tile, Town Map, hidden-event priority, Lab free-move poster/e-mail/shelf) and `oaks_lab.test.ts` N-2 (guard Delay3) plus N-3 (borderless free-move NPC). Five mutations were caught and restored: facing gate, second tile, book box keep, owned threshold 1, free-move script ids ignored. ROM **1604/1604** (89 files), no-ROM **1474/130**.
+
+- **StatusScreen CP2** adds 5: `rom/__tests__/status_screen_data.test.ts` (4: all 165 display-name keys/spellings and the static mirror, independent ASM move IDs/names without ROM, unchanged ROM constant-name IDs plus display strings, bold P at 04:5682 against independent 1bpp expansion and committed/pret PNG pixels); `static_export.test.ts` +1 (move-name JSON registration; the existing image guard/round-trip/staleness checks include the new P tile). Two new cases need ROM; the three new skips include registration. Setup twice is byte-identical, all 873 prior generated files unchanged. ROM **1609/1609** (90 files), no-ROM **1476/133**; typecheck/build clean.
 
 - **A5b7g2 CP1** adds 2, no ROM: `rom/__tests__/hidden_event_programs.test.ts` derives each current map's hidden-event predef from refs' table, routines and `bench_guys.asm` (8 checked; the right poster pinned as a branch for CP2), and checks every hidden-event program and `BookshelfTileIDs` target is extracted. The ROM program test covers the 28 new labels op for op. ROM **1577/1577** (88 files), no-ROM **1447/130**.
 

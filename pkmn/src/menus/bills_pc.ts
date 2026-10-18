@@ -9,7 +9,6 @@ import {
 import { MONS_PER_BOX, pokemonToBoxed, isStarterPikachuBoxed } from '../pokemon_storage';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { modifyPikachuHappiness } from '../pikachu/pikachu_happiness';
-import { isPassPressed } from '../input';
 import { monDisplayName } from '../pokemon_names';
 import type { PcStorage } from './pc';
 import { PcDisplay } from './pc_display';
@@ -17,7 +16,8 @@ import { MenuInput } from './menu_input';
 import { ListMenu, type MonListChoice } from './list_menu';
 import { YesNoMenu } from './yes_no_menu';
 import type { ScreenSnapshot, ScreenTiles } from './screen_tiles';
-import { StatsScreen } from './stats_screen';
+import { StatusScreenSession } from './status_screen';
+import { drawFadeOverlay } from '../renderer';
 import { POKEBALL_GLYPH } from './menu_glyphs';
 import { NUM_BOXES } from '../pokemon_storage';
 
@@ -33,7 +33,8 @@ export class BillsPc extends PcDisplay {
   private selected: Extract<MonListChoice, { type: 'chosen' }> | null = null;
   private submenu = false;
   private finished = false;
-  private stats: StatsScreen | null = null;
+  private stats: StatusScreenSession | null = null;
+  private returnWhite = false;
   private buffer1: ScreenSnapshot | null = null;
   private changingBox = false;
   private boxChooser = false;
@@ -46,8 +47,14 @@ export class BillsPc extends PcDisplay {
     this.savedOffset = getListScrollOffset();
   }
 
-  get fullScreen(): boolean { return this.stats !== null; }
-  renderOverlay(): void { if (this.stats) this.stats.render(); else this.yesNo?.render(); }
+  get ownsBgTransfer(): boolean { return this.stats !== null; }
+  get paletteWhite(): boolean { return this.stats?.paletteWhite ?? this.returnWhite; }
+  get fullScreen(): boolean { return this.stats !== null || this.returnWhite; }
+  renderOverlay(): void {
+    if (this.stats) this.stats.render();
+    else if (this.returnWhite) drawFadeOverlay(1);
+    else this.yesNo?.render();
+  }
 
   enter(): void {
     setNoTextDelay(true);
@@ -59,12 +66,12 @@ export class BillsPc extends PcDisplay {
   frame(readJoypad: () => void): boolean {
     if (this.finished) return true;
     if (this.stats) {
-      readJoypad();
-      if (this.stats.update(isPassPressed)) {
+      if (this.stats.frame(readJoypad) === 'done') {
         this.stats = null;
+        this.returnWhite = true;
         this.tiles.restore(this.buffer1!, this.textBox, this.transfer);
         // RunDefaultPaletteCommand (CGB) Delay3, then HandleMenuInput Delay3.
-        this.delayed = { remaining: 3, then: () => this.submenuInput(1) };
+        this.delayed = { remaining: 3, then: () => { this.returnWhite = false; this.submenuInput(1); } };
       }
       return false;
     }
@@ -190,7 +197,7 @@ export class BillsPc extends PcDisplay {
     const mon = this.parentItem === 1 ? this.storage.party[this.selected!.index]
       : this.storage.deserialize(this.box()[this.selected!.index]);
     if (!mon) throw new Error('Cannot display stored Pokemon stats');
-    this.stats = new StatsScreen(true); this.stats.show(mon);
+    this.stats = new StatusScreenSession(mon, { syncRead: false });
   }
 
   private chooseBox(): void {

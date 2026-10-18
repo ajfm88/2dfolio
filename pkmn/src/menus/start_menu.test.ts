@@ -12,6 +12,7 @@ import { setKey, updateInput, readJoypad, syncJoypadRead } from '../input';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem, resetListStateForEmptySlot } from '../list_state';
 import { playSFX } from '../audio';
 import { drawScreenTile } from './menu_render';
+import { uiTiles } from '../renderer/ui_tiles';
 import type { GameButton } from '../core';
 
 const keys: GameButton[] = ['a', 'b', 'start', 'select', 'up', 'down', 'left', 'right'];
@@ -151,6 +152,20 @@ describe('START source session (home/start_menu.asm)', () => {
     const done = vi.fn(), core = new CloseSequence(7, done); // Red's Room: 1+2*1+4
     for (let i = 0; i < 6; i++) core.advance();
     expect(done).not.toHaveBeenCalled(); core.advance(); expect(done).toHaveBeenCalledOnce();
+  });
+
+  it('a no-auto-text-box map has no early border or coverage; the menu still draws at +20 and reads at +23', () => {
+    const r = rig(); r.session.open(false, 'RED', false);
+    expect(r.session.tiles.at(10, 0)).toBeNull();
+    r.session.paint(); expect(uiTiles.cover).not.toHaveBeenCalled();
+    r.wait(19); expect(r.session.tiles.at(10, 0)).toBeNull(); expect(r.read).not.toHaveBeenCalled();
+    r.frame(); expect(r.session.tiles.at(10, 0)).not.toBeNull(); expect(r.session.tiles.at(12, 2)).toBe('P');
+    expect(vi.mocked(playSFX).mock.calls.filter(([s]) => s === 'start_menu')).toHaveLength(1);
+    r.wait(2); expect(r.read).not.toHaveBeenCalled(); r.frame(); expect(r.read).toHaveBeenCalledTimes(1);
+  });
+  it('an automatic-border map draws the early border at open (Viridian Mart)', () => {
+    const r = rig(); r.session.open(false, 'RED', true);
+    expect(r.session.tiles.at(10, 0)).not.toBeNull();
   });
 
   it('keeps the raw saved row across reopen and Pokédex acquisition; bag slot resets leave it alone', () => {

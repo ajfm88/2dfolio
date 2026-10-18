@@ -18,6 +18,8 @@ import { uiTiles } from '../renderer/ui_tiles';
 import { UiEntry, overworldUiOpen, fontLoadedUpdateSprites } from './ui_entry';
 import { initScript, updateScript } from '../script/script_controller';
 import type { ScriptDeps } from '../script/script_controller';
+import { rig, musicData, sfxData } from '../test/audio_rig';
+import * as audioApi from '../audio';
 import { buildNurseScript } from '../story/pokecenter';
 import { loadTextPrograms } from '../text/program_data';
 import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
@@ -29,8 +31,8 @@ import { readJoypad } from '../input';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false), readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => false }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false, isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: () => false }));
-vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawExclamationBubble: vi.fn(), drawShadowUnderSprites: vi.fn() }));
+vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false, isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }));
+vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), getActivePalette: () => 'VIRIDIAN', obpMapping: (reg: number) => [0, 1, 2, 3].map(c => (reg >> (2 * c)) & 3), loadSpriteMapped: async () => ({ width: 8, height: 16 }), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawExclamationBubble: vi.fn(), drawShadowUnderSprites: vi.fn() }));
 
 beforeAll(async () => { await loadBattleData(); await loadGameText(); await loadWildEncounters('Route1'); await loadPikachuMovementData(); await initTextSystem(); await loadTextPrograms(); });
 beforeEach(() => {
@@ -828,6 +830,13 @@ describe('A6e: Pikachu\'s scripted movement through the script controller', () =
 describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)', () => {
   /** The real nurse display/menu and yes branch; program spy matches pokecenter.test.ts trace(). */
   function nurseTrace(deps: OverworldDeps) {
+    const audio = rig(musicData('pokecenter'));
+    vi.mocked(audioApi.preloadMusic).mockResolvedValue();
+    vi.mocked(audioApi.fadeOutAndStopMusic).mockImplementation(n => audio.fade.fadeOutAndStopMusic(n));
+    vi.mocked(audioApi.isAudioFadingOut).mockImplementation(() => audio.fade.isFadingOut());
+    vi.mocked(audioApi.playMusic).mockImplementation(async name => { audio.music.play(musicData(name)); });
+    vi.mocked(audioApi.playSFX).mockImplementation(async name => { audio.sfx.play(sfxData(name)); });
+    vi.mocked(audioApi.isMusicChannelActive).mockImplementation(id => audio.music.getChannel(id)?.active ?? false);
     const p = deps.pikachuFollower;
     const textBox = new TextBox({ closeFrames: () => 17,
       updateSprites: () => updateSprites(deps.npcs, deps.gameMap, deps.player, p) });
@@ -846,6 +855,7 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
       // As in the nurse trace: fresh B edges serve text, while menu reads choose YES.
       vi.mocked(isHeld).mockImplementation(k => k === 'b' && frame % 2 === 0 && textBox.isWaitingForInput);
       vi.mocked(isPassPressed).mockImplementation(k => k === 'a');
+      audio.update();
       const action = updateScript(scriptDeps, frame % 2 === 0);
       trace.push({ frame, visible: p.visible, image: p.imageVisible, walking: p.movementActive, y: p.y,
         program: opened[opened.length - 1]?.program, printing: !textBox.isComplete });

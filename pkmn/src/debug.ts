@@ -44,6 +44,7 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   // Fly destinations (outdoor — use assembly fly coordinates in step units)
   { label: 'Pallet Town',    map: 'PalletTown',    warpId: 0, stepPos: { x: 5, y: 6 } },
   { label: 'Viridian City',  map: 'ViridianCity',  warpId: 0, stepPos: { x: 23, y: 26 } },
+  { label: 'Pewter City',    map: 'PewterCity',    warpId: 0, stepPos: { x: 13, y: 26 } },
   // Routes
   { label: 'Route 1',        map: 'Route1',        warpId: 0, stepPos: { x: 5, y: 17 } },
   { label: 'Route 22',       map: 'Route22',       warpId: 0, stepPos: { x: 17, y: 4 } },
@@ -53,6 +54,10 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   { label: "House 2",             map: 'BluesHouse',           warpId: 0 },
   { label: 'Viridian Pokecenter', map: 'ViridianPokecenter',   warpId: 0 },
   { label: 'Viridian Mart',       map: 'ViridianMart',         warpId: 0 },
+  { label: 'Pewter Nidoran House', map: 'PewterNidoranHouse', warpId: 0 },
+  { label: 'Pewter Mart',         map: 'PewterMart',           warpId: 0 },
+  { label: 'Pewter Speech House', map: 'PewterSpeechHouse',    warpId: 0 },
+  { label: 'Pewter Pokecenter',   map: 'PewterPokecenter',     warpId: 0 },
   // Route 2 + Viridian Forest
   { label: 'Route 2',             map: 'Route2',               warpId: 5 },  // at the Forest South Gate door
   { label: 'Route 2 (north)',     map: 'Route2',               warpId: 1 },  // at the Forest North Gate exit

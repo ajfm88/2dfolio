@@ -1,5 +1,10 @@
 # Overworld Architecture
 
+Healing-machine CP3: `healing_machine.ts` owns the machine's OAM scanout, OBP1 palette swaps
+and blocking frame sequence (note 59). `GameMap.load` awaits both palette variants for POKECENTER
+tilesets before gameplay, ensuring the first monitor render does not wait on a cold image request.
+The nurse's script owns the following sprite update, healing and map-music restart.
+
 ## Map System
 
 Maps are JSON files in `data/maps/`. A map references a tileset (e.g., `"OVERWORLD"`) which determines:

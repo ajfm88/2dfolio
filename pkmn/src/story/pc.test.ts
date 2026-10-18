@@ -1,6 +1,8 @@
 // Actual hidden-event -> script-controller dispatch with the real input module.
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => { (globalThis as unknown as { window: unknown }).window = { addEventListener() {} }; });
+import { loadStatusScreenAssets } from '../menus/status_screen';
+import { drawFadeOverlay } from '../renderer';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
@@ -24,13 +26,13 @@ import { createPokemon, loadBattleData } from '../battle/data';
 import { pokemonToBoxed } from '../pokemon_storage';
 import { updateSprites } from '../overworld/sprites';
 
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true), playMusic: vi.fn(), isMusicChannelActive: () => false }));
+vi.mock('../audio', () => ({ setMasterVolume: vi.fn(), playSFX: vi.fn(), isSoundFinished: vi.fn(() => true), playMusic: vi.fn(), isMusicChannelActive: () => false }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
-vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1, getCtx: () => ({ drawImage() {} }),
+vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), getMonsterPalette: () => 'YELLOWMON', loadBattleSprite: async () => ({ width: 40, height: 40 }), fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1, getCtx: () => ({ drawImage() {} }),
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));
 const BUTTONS: GameButton[] = ['a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'];
 let soundFrames = 0;
-beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); });
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadStatusScreenAssets(); });
 beforeEach(() => {
   setNoTextDelay(false);
   vi.restoreAllMocks(); vi.clearAllMocks(); soundFrames = 0;
@@ -92,6 +94,38 @@ function run(generic = false) {
 }
 
 describe('PC hidden events on the production script dispatch', () => {
+  it.each([0, 1, 2])('StatusScreen on the actual PC host: one BG tick and white until Q+6/read Q+9, offset %i', offset => {
+    const r = run(true);
+    r.deps.playerParty.push(createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!);
+    const tiles = () => getMenuSessionTiles()!;
+    r.until(() => tiles()?.at(1, 2) === '▶'); r.frames(3); r.step('a');
+    r.until(() => tiles()?.at(2, 2) === 'W' && tiles()?.at(1, 2) === '▶'); r.frames(3 + offset);
+    r.step('down'); r.frames(3); r.step('a'); r.frames(16); r.step('a'); r.frames(3);
+    r.step('down'); r.frames(3); const before = tiles().save(r.box); r.step('a');
+    expect(isScriptMenuFullScreen()).toBe(true);
+    const reads = r.read.mock.calls.length, syncs = r.sync.mock.calls.length;
+    const ticks = r.transfer.mock.calls.length;
+    r.frames(26); expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
+    expect(r.read).toHaveBeenCalledTimes(reads); expect(r.sync).toHaveBeenCalledTimes(syncs);
+    renderMenuSession(); expect(drawFadeOverlay).not.toHaveBeenCalled(); // S+26 page 1, picture still copying
+    r.step(); expect(r.read).toHaveBeenCalledTimes(reads + 1);
+    r.step('b'); r.frames(3); r.step('b'); const q = r.time();
+    expect(isScriptMenuFullScreen()).toBe(true);
+    vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession(); expect(drawFadeOverlay).toHaveBeenCalledWith(1);
+    r.frames(3); expect(tiles().save(r.box)).toEqual(before);
+    const n = r.read.mock.calls.length;
+    for (let i = 4; i < 6; i++) {
+      r.step(); vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession();
+      expect(drawFadeOverlay).toHaveBeenCalledWith(1); expect(isScriptMenuFullScreen()).toBe(true);
+    }
+    r.step(); expect(r.time()).toBe(q + 6); expect(isScriptMenuFullScreen()).toBe(false);
+    vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession(); expect(drawFadeOverlay).not.toHaveBeenCalled();
+    expect(tiles().at(10, 14)).toBe('▶');
+    r.frames(2); expect(r.read).toHaveBeenCalledTimes(n); r.step(); expect(r.time()).toBe(q + 9);
+    expect(r.read).toHaveBeenCalledTimes(n + 1);
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + r.time() - (q - 32));
+  });
+
   it.each([0, 1, 2])('Bill deposit/withdraw honors one-frame taps at idle offset %i and reconciles before result glyphs', offset => {
     const r = run(true);
     restoreFlags(['GOT_POKEDEX', 'BATTLED_RIVAL_IN_OAKS_LAB']);

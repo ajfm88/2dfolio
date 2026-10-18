@@ -166,6 +166,11 @@ menu reads; migrated DelayFrames and the healing-music wait do not read input.
 
 `TextBoxOptions` and `MapDialogue.show` accept `program` and `autoBox`, so ordinary
 Lab wrappers execute source programs with the automatic border disabled.
+`text/auto_text_box.ts` holds the map-level `BIT_NO_AUTO_TEXT_BOX` default ({OaksLab, PewterMart},
+each cited to its map script). `applyMapAutoTextBox` gives it to the first `displayOpen` of a registered
+handler/TX_SCRIPT (overworld and Lab free-move paths), the plain/`printText` NPC fallback sends `autoBox:false`
+with the program, the script controller resolves a bare `displayOpen` by the current map, and `StartMenuSession.open`
+takes it as `autoBox`. An explicit `autoBox: true` (`displayTextID`'s default, bookshelves) is never overridden.
 `displayRevision` increments at each DisplayTextID reset. Main checks it alongside
 the UI's rising edge: a close and new opening in the same CPU tick still run the
 new DisplayTextIDInit sprite update once. Grouped PrintTexts keep one revision.

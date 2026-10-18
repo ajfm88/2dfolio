@@ -199,6 +199,9 @@ export class Battle {
 
   // Pokemon switching
   private partyMenu = new PartyMenu();
+  get statusScreenActive(): boolean {
+    return (this.state === 'choose_pokemon' || this.state === 'forced_switch') && this.partyMenu.statusScreenActive;
+  }
   private switchingToIndex = -1;
   private forcedSwitch = false;
 

@@ -139,6 +139,20 @@ describe('plain predefs and bookshelf text_asm (A5b7g2 CP2)', () => {
   });
 });
 
+describe('TV hidden-event routing (note 56 N-2)', () => {
+  it('N-2: A at Red\'s House 1F (3,1), facing up, dispatches the actual TV handler', () => {
+    const deps = scene('RedsHouse1F');
+    // Hidden-event coordinates are 16px steps; the player stands below its (3,1) event.
+    deps.player.setTilePosition(6, 4); deps.player.direction = 'up'; pressA();
+    const action = updateOverworld({ ...deps, currentMapName: 'RedsHouse1F',
+      pikachuFollower: deps.pikachuFollower!, findNpc: () => undefined }, createOverworldState());
+    expect(action?.type).toBe('script');
+    if (action?.type !== 'script') throw new Error('TV did not dispatch');
+    expect(action.commands).toEqual(interactionDisplay({ scriptId: 'REDSHOUSE1F_TV' }, ctx(), shelf));
+    expect(programs(action.commands)).toEqual(['RedsHouse1FPrintTVText.StandByMeMovieText']);
+  });
+});
+
 describe('right poster owned count', () => {
   function poster(owned: number[]): string[] {
     restorePokedex([], owned);

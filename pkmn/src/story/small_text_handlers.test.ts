@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { momText, tvText, daisyText, gamblerText, caterpillarText, girlText } from './small_text_handlers';
+import { momText, tvText, daisyText, gamblerText, caterpillarText, girlText, pewterSuperNerdText } from './small_text_handlers';
 import { getTextHandler, getTextScript } from './text_handlers';
 import type { TextHandlerContext } from './text_handlers';
 import { buildViridianMartParcelScript } from './viridian_mart';
@@ -103,9 +103,21 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianCityPrintYoungster2Text.CaterpieAndWeedleDescriptionText', 'ViridianCityPrintYoungster2Text.OkThenText']);
     expect(caterpillarText().map(c => c.type)).toEqual(['displayOpen', 'printText', 'yesNoChoice', 'displayClose']);
   });
+  it('Pewter Super Nerd asks, then YES (cp 0 = item 0) is ThatsRight and NO is ImSprayingRepel', () => {
+    const commands = pewterSuperNerdText();
+    expect(commands.map(c => c.type)).toEqual(['displayOpen', 'printText', 'yesNoChoice', 'displayClose']);
+    const choice = commands.find(c => c.type === 'yesNoChoice');
+    if (choice?.type !== 'yesNoChoice') throw new Error('Expected the YES/NO menu');
+    expect(programs(commands)).toEqual(['PewterCitySuperNerd2Text.DoYouKnowWhatImDoingText',
+      'PewterCitySuperNerd2Text.ThatsRightText', 'PewterCitySuperNerd2Text.ImSprayingRepelText']);
+    expect(programs(choice.yes)).toEqual(['PewterCitySuperNerd2Text.ThatsRightText']);
+    expect(programs(choice.no)).toEqual(['PewterCitySuperNerd2Text.ImSprayingRepelText']);
+    expect(getTextHandler('PewterCity', 4)).toBe(pewterSuperNerdText);
+    for (const label of programs(commands)) expect(getTextProgramData().programs[label], label).toBeDefined();
+  });
   it('all migrated builders are free of legacy text and reference extracted programs', () => {
     const flows = [momText(ctx()), momText(ctx('GOT_STARTER')), tvText(ctx()), daisyText(ctx('GOT_POKEDEX')),
-      potionSampleScript(false), potionSampleScript(true), gamblerText(ctx()), girlText(ctx()), caterpillarText(),
+      potionSampleScript(false), potionSampleScript(true), gamblerText(ctx()), girlText(ctx()), caterpillarText(), pewterSuperNerdText(),
       buildViridianMartParcelScript(), buildSleepingOldManScript(true), buildGymLockedScript(), buildOldMan1Script(), buildOldMan2Script(true, ctx().step)];
     for (const flow of flows) {
       expect(all(flow).map(c => c.type)).not.toContain('text');
@@ -118,7 +130,9 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianCity:6': 'A2 TM42', 'ViridianForest:2': 'A5b4 trainer', 'ViridianForest:3': 'A5b4 trainer',
       'ViridianForest:4': 'A5b4 trainer', 'ViridianForest:5': 'A5b4 trainer', 'ViridianForest:6': 'A5b4 trainer',
       'ViridianForest:7': 'A5b4 pickup', 'ViridianForest:8': 'A5b4 pickup', 'ViridianForest:9': 'A5b4 pickup',
-      'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry' };
+      'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry',
+      'PewterCity:3': 'V2b museum guide', 'PewterCity:5': 'V2b gym guide',
+      'PewterPokecenter:3': 'V2c Jigglypuff', 'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry' };
     const seen: string[] = [];
     for (const file of readdirSync(resolve(dataDir, 'maps'))) {
       const m = map(file.replace(/\.json$/, '')); const calls = getTextProgramData().textPointers[`${m.name}_TextPointers`];
@@ -130,7 +144,7 @@ describe('small handlers from the cartridge branches', () => {
         expect(!!registered !== !!excluded[key], key).toBe(true);
       }
     }
-    expect(seen).toHaveLength(30); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
+    expect(seen).toHaveLength(38); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
     expect(getTextHandler('RedsHouse1F', 2)).toBeDefined(); // TV is a hidden event, not a map sign.
   });
   it.each(['branch', 'Mart give order', 'healing jingle'])('detects an in-memory %s mutation', mutation => {

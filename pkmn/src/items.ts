@@ -51,8 +51,12 @@ export function getAllItemIds(): string[] {
   return Object.keys(ITEM_DEFS);
 }
 
+// Runtime ids that differ from pret's constants, which key the extracted names
+// (constants/item_constants.asm: PARLYZ_HEAL, OAKs_PARCEL).
+const PRET_ITEM_KEYS: Record<string, string> = { PARALYZE_HEAL: 'PARLYZ_HEAL', OAKS_PARCEL: 'OAKs_PARCEL' };
+
 export function getItemName(id: string): string {
-  return itemDisplayNames[id] ?? id.replace(/_/g, " ");
+  return itemDisplayNames[PRET_ITEM_KEYS[id] ?? id] ?? id.replace(/_/g, " ");
 }
 
 export function getItemCategory(id: string): ItemCategory {

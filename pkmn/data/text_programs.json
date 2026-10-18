@@ -840,6 +840,171 @@
         "program": "_PartyMenuSwapMonText"
       }
     ],
+    "PewterCityCooltrainerFText": [
+      {
+        "op": "far",
+        "program": "_PewterCityCooltrainerFText"
+      }
+    ],
+    "PewterCityCooltrainerMText": [
+      {
+        "op": "far",
+        "program": "_PewterCityCooltrainerMText"
+      }
+    ],
+    "PewterCityGymSignText": [
+      {
+        "op": "far",
+        "program": "_PewterCityGymSignText"
+      }
+    ],
+    "PewterCityMuseumSignText": [
+      {
+        "op": "far",
+        "program": "_PewterCityMuseumSignText"
+      }
+    ],
+    "PewterCityPokecenterBenchGuyText": [
+      {
+        "op": "far",
+        "program": "_PewterCityPokecenterGuyText"
+      }
+    ],
+    "PewterCityPoliceNoticeSignText": [
+      {
+        "op": "far",
+        "program": "_PewterCityPoliceNoticeSignText"
+      }
+    ],
+    "PewterCitySignText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySignText"
+      }
+    ],
+    "PewterCitySuperNerd1ItsRightHereText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd1ItsRightHereText"
+      }
+    ],
+    "PewterCitySuperNerd1Text.DidYouCheckOutMuseumText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd1DidYouCheckOutMuseumText"
+      }
+    ],
+    "PewterCitySuperNerd1Text.WerentThoseFossilsAmazingText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd1WerentThoseFossilsAmazingText"
+      }
+    ],
+    "PewterCitySuperNerd1Text.YouHaveToGoText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd1YouHaveToGoText"
+      }
+    ],
+    "PewterCitySuperNerd2Text.DoYouKnowWhatImDoingText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd2DoYouKnowWhatImDoingText"
+      }
+    ],
+    "PewterCitySuperNerd2Text.ImSprayingRepelText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd2ImSprayingRepelText"
+      }
+    ],
+    "PewterCitySuperNerd2Text.ThatsRightText": [
+      {
+        "op": "far",
+        "program": "_PewterCitySuperNerd2ThatsRightText"
+      }
+    ],
+    "PewterCityTrainerTipsText": [
+      {
+        "op": "far",
+        "program": "_PewterCityTrainerTipsText"
+      }
+    ],
+    "PewterCityYoungsterGoTakeOnBrockText": [
+      {
+        "op": "far",
+        "program": "_PewterCityYoungsterGoTakeOnBrockText"
+      }
+    ],
+    "PewterCityYoungsterText.YoureATrainerFollowMeText": [
+      {
+        "op": "far",
+        "program": "_PewterCityYoungsterYoureATrainerFollowMeText"
+      }
+    ],
+    "PewterJigglypuff.Text": [
+      {
+        "op": "far",
+        "program": "_PewterPokecenterJigglypuffText"
+      }
+    ],
+    "PewterMartSuperNerdText.Text": [
+      {
+        "op": "far",
+        "program": "_PewterMartSuperNerdText"
+      }
+    ],
+    "PewterMartYoungsterText.Text": [
+      {
+        "op": "far",
+        "program": "_PewterMartYoungsterText"
+      }
+    ],
+    "PewterNidoranHouseLittleBoyText": [
+      {
+        "op": "far",
+        "program": "_PewterNidoranHouseLittleBoyText"
+      }
+    ],
+    "PewterNidoranHouseMiddleAgedManText": [
+      {
+        "op": "far",
+        "program": "_PewterNidoranHouseMiddleAgedManText"
+      }
+    ],
+    "PewterNidoranHouseNidoranText": [
+      {
+        "op": "far",
+        "program": "_PewterNidoranHouseNidoranText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "PewterPokecenterGentlemanText": [
+      {
+        "op": "far",
+        "program": "_PewterPokecenterGentlemanText"
+      }
+    ],
+    "PewterPokecenterPrintCooltrainerFText.text": [
+      {
+        "op": "far",
+        "program": "_PewterPokecenterText3"
+      }
+    ],
+    "PewterSpeechHouseGamblerText": [
+      {
+        "op": "far",
+        "program": "_PewterSpeechHouseGamblerText"
+      }
+    ],
+    "PewterSpeechHouseYoungsterText": [
+      {
+        "op": "far",
+        "program": "_PewterSpeechHouseYoungsterText"
+      }
+    ],
     "PikachuUnhappyText": [
       {
         "op": "far",
@@ -2808,6 +2973,168 @@
         "text": "Move POKéMON\nwhere?<DONE>"
       }
     ],
+    "_PewterCityCooltrainerFText": [
+      {
+        "op": "text",
+        "text": "It's rumored that\nCLEFAIRYs came\nfrom the moon!\fThey appeared \nafter MOON STONE\nfell on MT.MOON.<DONE>"
+      }
+    ],
+    "_PewterCityCooltrainerMText": [
+      {
+        "op": "text",
+        "text": "There aren't many\nserious POKéMON\ntrainers here!\fThey're all like\nBUG CATCHERs,\nbut PEWTER GYM's\nBROCK is totally\ninto it!<DONE>"
+      }
+    ],
+    "_PewterCityGymSignText": [
+      {
+        "op": "text",
+        "text": "PEWTER CITY\nPOKéMON GYM\nLEADER: BROCK\fThe Rock Solid\nPOKéMON Trainer!<DONE>"
+      }
+    ],
+    "_PewterCityMuseumSignText": [
+      {
+        "op": "text",
+        "text": "PEWTER MUSEUM\nOF SCIENCE<DONE>"
+      }
+    ],
+    "_PewterCityPokecenterGuyText": [
+      {
+        "op": "text",
+        "text": "Yawn!\fWhen JIGGLYPUFF\nsings, POKéMON\nget drowsy...\f...Me too...\nSnore...<DONE>"
+      }
+    ],
+    "_PewterCityPoliceNoticeSignText": [
+      {
+        "op": "text",
+        "text": "NOTICE!\fThieves have been\nstealing POKéMON\nfossils at MT.\nMOON! Please call\nPEWTER POLICE\nwith any info!<DONE>"
+      }
+    ],
+    "_PewterCitySignText": [
+      {
+        "op": "text",
+        "text": "PEWTER CITY\nA Stone Gray\nCity<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd1DidYouCheckOutMuseumText": [
+      {
+        "op": "text",
+        "text": "Did you check out\nthe MUSEUM?<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd1ItsRightHereText": [
+      {
+        "op": "text",
+        "text": "It's right here!\nYou have to pay\nto get in, but\nit's worth it!\nSee you around!<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd1WerentThoseFossilsAmazingText": [
+      {
+        "op": "text",
+        "text": "Weren't those\nfossils from MT.\nMOON amazing?<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd1YouHaveToGoText": [
+      {
+        "op": "text",
+        "text": "Really?\nYou absolutely\nhave to go!<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd2DoYouKnowWhatImDoingText": [
+      {
+        "op": "text",
+        "text": "Psssst!\nDo you know what\nI'm doing?<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd2ImSprayingRepelText": [
+      {
+        "op": "text",
+        "text": "I'm spraying REPEL\nto keep POKéMON\nout of my garden!<DONE>"
+      }
+    ],
+    "_PewterCitySuperNerd2ThatsRightText": [
+      {
+        "op": "text",
+        "text": "That's right!\nIt's hard work!<DONE>"
+      }
+    ],
+    "_PewterCityTrainerTipsText": [
+      {
+        "op": "text",
+        "text": "TRAINER TIPS\fAny POKéMON that\ntakes part in\nbattle, however\nshort, earns EXP!<DONE>"
+      }
+    ],
+    "_PewterCityYoungsterGoTakeOnBrockText": [
+      {
+        "op": "text",
+        "text": "If you have the\nright stuff, go\ntake on BROCK!<DONE>"
+      }
+    ],
+    "_PewterCityYoungsterYoureATrainerFollowMeText": [
+      {
+        "op": "text",
+        "text": "You're a trainer\nright? BROCK's\nlooking for new\nchallengers!\nFollow me!<DONE>"
+      }
+    ],
+    "_PewterMartSuperNerdText": [
+      {
+        "op": "text",
+        "text": "Good things can\nhappen if you\nraise POKéMON\ndiligently, even\nthe weak ones!<DONE>"
+      }
+    ],
+    "_PewterMartYoungsterText": [
+      {
+        "op": "text",
+        "text": "A shady old man\ngot me to buy\nthis really weird\nfish POKéMON!\fIt's totally weak\nand it cost ¥500!<DONE>"
+      }
+    ],
+    "_PewterNidoranHouseLittleBoyText": [
+      {
+        "op": "text",
+        "text": "NIDORAN sit!<DONE>"
+      }
+    ],
+    "_PewterNidoranHouseMiddleAgedManText": [
+      {
+        "op": "text",
+        "text": "Our POKéMON's an\noutsider, so it's\nhard to handle.\fAn outsider is a\nPOKéMON that you\nget in a trade.\fIt grows fast, but\nit may ignore an\nunskilled trainer\nin battle!\fIf only we had\nsome BADGEs...<DONE>"
+      }
+    ],
+    "_PewterNidoranHouseNidoranText": [
+      {
+        "op": "text",
+        "text": "NIDORAN: Bowbow!"
+      }
+    ],
+    "_PewterPokecenterGentlemanText": [
+      {
+        "op": "text",
+        "text": "What!?\fTEAM ROCKET is\nat MT.MOON? Huh?\nI'm on the phone!\fScram!<DONE>"
+      }
+    ],
+    "_PewterPokecenterJigglypuffText": [
+      {
+        "op": "text",
+        "text": "JIGGLYPUFF: Puu\npupuu!<DONE>"
+      }
+    ],
+    "_PewterPokecenterText3": [
+      {
+        "op": "text",
+        "text": "POKéMON CENTERS\nare wonderful!\fThey heal POKéMON\ncompletely.\fEven conditions\nlike sleep, burn,\npoison and others\nare cured.<DONE>"
+      }
+    ],
+    "_PewterSpeechHouseGamblerText": [
+      {
+        "op": "text",
+        "text": "POKéMON learn new\ntechniques as\nthey grow!\fBut, some moves\nmust be taught by\nthe trainer!<DONE>"
+      }
+    ],
+    "_PewterSpeechHouseYoungsterText": [
+      {
+        "op": "text",
+        "text": "POKéMON become\neasier to catch\nwhen they are\nhurt or asleep!\fBut, it's not a\nsure thing!<DONE>"
+      }
+    ],
     "_PikachuUnhappyText": [
       {
         "op": "ram",
@@ -4254,6 +4581,123 @@
       {
         "call": "printText",
         "program": "ViridianSchoolHousePrintLittleGirlText.text"
+      }
+    ],
+    "PewterCity_TextPointers": [
+      {
+        "call": "text",
+        "program": "PewterCityCooltrainerFText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityCooltrainerMText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityTrainerTipsText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityPoliceNoticeSignText"
+      },
+      {
+        "call": "text",
+        "program": "MartSignText"
+      },
+      {
+        "call": "text",
+        "program": "PokeCenterSignText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityMuseumSignText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityGymSignText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCitySignText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCitySuperNerd1ItsRightHereText"
+      },
+      {
+        "call": "text",
+        "program": "PewterCityYoungsterGoTakeOnBrockText"
+      }
+    ],
+    "PewterPokecenter_TextPointers": [
+      {
+        "call": "script",
+        "script": "pokecenterNurse"
+      },
+      {
+        "call": "text",
+        "program": "PewterPokecenterGentlemanText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "script",
+        "script": "cableClubReceptionist"
+      },
+      {
+        "call": "printText",
+        "program": "PewterPokecenterPrintCooltrainerFText.text"
+      },
+      {
+        "call": "handler"
+      }
+    ],
+    "PewterMart_TextPointers": [
+      {
+        "call": "script",
+        "script": "mart"
+      },
+      {
+        "call": "printText",
+        "program": "PewterMartYoungsterText.Text"
+      },
+      {
+        "call": "printText",
+        "program": "PewterMartSuperNerdText.Text"
+      }
+    ],
+    "PewterNidoranHouse_TextPointers": [
+      {
+        "call": "text",
+        "program": "PewterNidoranHouseNidoranText"
+      },
+      {
+        "call": "text",
+        "program": "PewterNidoranHouseLittleBoyText"
+      },
+      {
+        "call": "text",
+        "program": "PewterNidoranHouseMiddleAgedManText"
+      }
+    ],
+    "PewterSpeechHouse_TextPointers": [
+      {
+        "call": "text",
+        "program": "PewterSpeechHouseGamblerText"
+      },
+      {
+        "call": "text",
+        "program": "PewterSpeechHouseYoungsterText"
       }
     ]
   }

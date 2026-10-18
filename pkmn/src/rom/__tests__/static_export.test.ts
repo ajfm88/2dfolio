@@ -26,13 +26,25 @@ beforeAll(async () => {
 });
 
 describe('static/ export: asset keys', () => {
-  it('extracts 520 images and the 3 title tilemaps, all under gfx/', () => {
+  it('includes healing_machine and the five Pewter maps in the JSON mirror (182 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(182);
+    expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');
+    for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
+      expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
+    expect(extracted.jsonData).not.toHaveProperty('maps/Museum1F.json');
+    expect(extracted.jsonData).not.toHaveProperty('maps/PewterGym.json');
+    expect(extracted.jsonData).not.toHaveProperty('maps/Route3.json');
+  });
+
+  it('extracts 521 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
+    // StatusScreen CP2 adds font/P.png → 521.
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(520);
+    expect(imageKeys.length).toBe(521);
+    expect(imageKeys).toContain('/gfx/font/P.png');
     expect(binaryKeys).toEqual([
       'gfx/title/pika_bubble.tilemap',
       'gfx/title/pikachu.tilemap',
@@ -73,6 +85,14 @@ describe('static/ export: PNG encoding', () => {
 });
 
 describe('static/ export: JSON', () => {
+  it('registers move_names.json in extractRom, data/ and the static mirror', () => {
+    const extractedNames = extracted.jsonData['move_names.json'];
+    expect(extractedNames).toBeDefined();
+    const bytes = readFileSync(resolve(DATA_DIR, 'move_names.json'));
+    expect(bytes.toString('utf8')).toBe(JSON.stringify(extractedNames, null, 2) + '\n');
+    expect(readFileSync(resolve(STATIC_DIR, 'move_names.json'))).toEqual(bytes);
+  });
+
   it('registers map_sprite_sets.json in extractRom, data/ and the static mirror', () => {
     expect(extracted.jsonData).toHaveProperty('map_sprite_sets.json');
     const dataPath = resolve(DATA_DIR, 'map_sprite_sets.json');
@@ -115,7 +135,7 @@ describe('static/ export: files on disk', () => {
       if (!existsSync(path) || !readFileSync(path).equals(readFileSync(resolve(DATA_DIR, key)))) stale.push(key);
     }
     expect(stale).toEqual([]);
-    // It re-encodes ~520 PNGs and reads ~850 files: under 1 s warm, but a cold file cache
+    // It re-encodes ~521 PNGs and reads ~850 files: under 1 s warm, but a cold file cache
     // on the first run of a session went past vitest's default 5 s (2026-09-28, 2026-10-06).
   }, 30_000);
 });

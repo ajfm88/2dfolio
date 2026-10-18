@@ -1,0 +1,130 @@
+{
+  "name": "PewterPokecenter",
+  "width": 7,
+  "height": 4,
+  "tileset": "POKECENTER",
+  "connections": [],
+  "blocks": [
+    32,
+    16,
+    1,
+    2,
+    12,
+    13,
+    13,
+    39,
+    4,
+    5,
+    7,
+    7,
+    34,
+    35,
+    8,
+    15,
+    15,
+    15,
+    15,
+    15,
+    27,
+    14,
+    10,
+    11,
+    14,
+    15,
+    15,
+    14
+  ],
+  "borderBlock": 0,
+  "warps": [
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 6
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 6
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "textId": 1,
+      "id": "nurse",
+      "sprite": "nurse",
+      "x": 3,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!<PROMPT>",
+      "direction": "down"
+    },
+    {
+      "textId": 2,
+      "id": "gentleman",
+      "sprite": "gentleman",
+      "x": 11,
+      "y": 7,
+      "movement": "stay",
+      "dialogue": "What!?\fTEAM ROCKET is\nat MT.MOON? Huh?\nI'm on the phone!\fScram!",
+      "direction": "left"
+    },
+    {
+      "textId": 3,
+      "id": "jigglypuff",
+      "sprite": "jigglypuff",
+      "x": 1,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "",
+      "direction": "down"
+    },
+    {
+      "textId": 4,
+      "id": "link_receptionist",
+      "sprite": "link_receptionist",
+      "x": 11,
+      "y": 2,
+      "movement": "stay",
+      "dialogue": "Welcome to the\nCable Club!",
+      "direction": "down"
+    },
+    {
+      "textId": 5,
+      "id": "cooltrainer_f",
+      "sprite": "cooltrainer_f",
+      "x": 4,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "POKéMON CENTERS\nare wonderful!\fThey heal POKéMON\ncompletely.\fEven conditions\nlike sleep, burn,\npoison and others\nare cured.",
+      "direction": "up"
+    },
+    {
+      "textId": 6,
+      "id": "chansey",
+      "sprite": "chansey",
+      "x": 4,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "CHANSEY: Chaaan\nsey!",
+      "direction": "down"
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 0,
+      "y": 4,
+      "facing": "left",
+      "program": "PewterCityPokecenterBenchGuyText",
+      "text": "Yawn!\fWhen JIGGLYPUFF\nsings, POKéMON\nget drowsy...\f...Me too...\nSnore..."
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "scriptId": "POKECENTER_PC",
+      "facing": "up"
+    }
+  ]
+}

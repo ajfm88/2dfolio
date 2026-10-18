@@ -47,6 +47,15 @@ describe('A5b text caller census tripwires', () => {
         calls.forEach((call, index) => {
           if (!reachable.has(index + 1)) return;
           if (getTextHandler(map.name, index + 1) || (call.call !== 'text' && call.call !== 'printText')) return;
+          if (map.name === 'PewterNidoranHouse' && index === 0) {
+            // TX_FAR, then the NIDORAN_M cry continuation (J2); note 60 §13.2.
+            expect(call).toEqual({ call: 'text', program: 'PewterNidoranHouseNidoranText' });
+            expect(file.programs[call.program]).toEqual([
+              { op: 'far', program: '_PewterNidoranHouseNidoranText' }, { op: 'asm' },
+            ]);
+            textOnly('_PewterNidoranHouseNidoranText', `${table}:1 cry prelude`);
+            checked++; return;
+          }
           textOnly(call.program, `${table}:${index + 1}`); checked++;
         });
       }

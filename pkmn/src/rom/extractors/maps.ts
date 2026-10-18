@@ -6,13 +6,15 @@
 import { BinaryReader } from '../binary_reader';
 import { MAP_HEADER_PTRS, MAP_HEADER_BANKS, MAP_TEXT_PTRS, PICK_UP_ITEM_TEXT_ADDR, symToOffset } from '../rom_offsets';
 import { decodeMapText } from './text';
+import { TEXT_POINTER_TABLES } from '../text_program_symbols';
 
 // ── Constants ───────────────────────────────────────────────────
 
-/** Map constant ID → PascalCase name (only maps we extract) */
+/** Map constant ID → PascalCase name (extracted maps and named warp references). */
 const MAP_ID_TO_NAME: Record<number, string> = {
   0x00: 'PalletTown',
   0x01: 'ViridianCity',
+  0x02: 'PewterCity',
   0x0C: 'Route1',
   0x21: 'Route22',
   0x22: 'Route23',    // Referenced by Route22 connection
@@ -35,11 +37,15 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x32: 'ViridianForestSouthGate',
   0x33: 'ViridianForest',
   0xC5: 'DiglettsCave',     // Referenced by DiglettsCaveRoute2 warp (extracted in V4)
+  // V2 — Museum/Gym are referenced-only until V3. Route3 stays unnamed until V4.
+  0x34: 'Museum1F',
+  0x36: 'PewterGym',
+  0x37: 'PewterNidoranHouse',
+  0x38: 'PewterMart',
+  0x39: 'PewterSpeechHouse',
+  0x3A: 'PewterPokecenter',
   // Additional maps referenced by connections but not extracted
   0x20: 'Route21',
-  // PewterCity (0x02) stays out until V2 extracts it: a connection to a missing map
-  // would hang the game (performMapConnection doesn't catch), so Route 2's north
-  // connection is dropped and its north edge is a tree wall until then.
 };
 
 /** Tileset byte ID → JSON tileset name string */
@@ -305,7 +311,6 @@ interface NpcMeta {
   direction?: string;
   walkDir?: string;
   object?: boolean;
-  shopItems?: string[];
   x?: number;
   y?: number;
   sprite?: string;
@@ -446,7 +451,7 @@ const MAP_METADATA: Record<string, MapMeta> = {
   ViridianMart: {
     signTextOffsets: [],
     npcs: [
-      { id: 'clerk', direction: 'right', shopItems: ['POKE_BALL', 'POTION', 'ANTIDOTE', 'PARALYZE_HEAL', 'BURN_HEAL'], textOffset: symToOffset(0x2c, 0x74a1) },
+      { id: 'clerk', direction: 'right', textOffset: symToOffset(0x2c, 0x74a1) },
       { id: 'youngster1', walkDir: 'up_down', textOffset: symToOffset(0x2a, 0x57dd) },
       { id: 'cooltrainer_m', textOffset: symToOffset(0x2a, 0x5805) },
     ],
@@ -471,6 +476,57 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'spearow', walkDir: 'left_right' },
       { id: 'speary_sign' },
     ],
+  },
+
+  // V2a — object_const order and directions, data/maps/objects/Pewter*.asm; note 60 §13.
+  PewterCity: {
+    signTextOffsets: [
+      symToOffset(0x2d, 0x4d35), symToOffset(0x2d, 0x4d81),
+      symToOffset(0x26, 0x40d2), symToOffset(0x26, 0x40fc),
+      symToOffset(0x2d, 0x4de8), symToOffset(0x2d, 0x4e02), symToOffset(0x2d, 0x4e43),
+    ],
+    npcs: [
+      { id: 'cooltrainer_f' },
+      { id: 'cooltrainer_m' },
+      { id: 'super_nerd1', scripted: true }, // museum guide, V2b
+      { id: 'super_nerd2', walkDir: 'left_right', textOffset: symToOffset(0x2d, 0x4c4b) },
+      { id: 'youngster', direction: 'down', scripted: true }, // gym guide, V2b
+    ],
+  },
+  PewterPokecenter: {
+    signTextOffsets: [],
+    hiddenEvents: [
+      { x: 0, y: 4, facing: 'left', program: 'PewterCityPokecenterBenchGuyText', textOffset: symToOffset(0x27, 0x60d5) },
+      { x: 13, y: 3, scriptId: 'POKECENTER_PC', facing: 'up' },
+    ],
+    npcs: [
+      { id: 'nurse', direction: 'down', textOffset: symToOffset(0x2c, 0x7772) },
+      { id: 'gentleman', direction: 'left' },
+      { id: 'jigglypuff', direction: 'down', scripted: true }, // V2c
+      { id: 'link_receptionist', direction: 'down', textOffset: symToOffset(0x2c, 0x788d) },
+      { id: 'cooltrainer_f', direction: 'up', textOffset: symToOffset(0x2a, 0x6e34) },
+      { id: 'chansey', direction: 'down', textOffset: symToOffset(0x26, 0x431d) },
+    ],
+  },
+  PewterMart: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'clerk', direction: 'right', textOffset: symToOffset(0x2c, 0x74a1) },
+      { id: 'youngster', walkDir: 'up_down' },
+      { id: 'super_nerd' },
+    ],
+  },
+  PewterNidoranHouse: {
+    signTextOffsets: [],
+    npcs: [
+      { id: 'nidoran', direction: 'left' },
+      { id: 'little_boy', direction: 'right' },
+      { id: 'middle_aged_man' },
+    ],
+  },
+  PewterSpeechHouse: {
+    signTextOffsets: [],
+    npcs: [{ id: 'gambler', direction: 'right' }, { id: 'youngster' }],
   },
 
   // ── V1: Route 2 + Viridian Forest (notes/02-v1-plan.md) ──
@@ -578,6 +634,11 @@ export const EXTRACTABLE_MAPS: Record<string, number> = {
   Route2Gate: 0x31,
   ViridianForestSouthGate: 0x32,
   ViridianForest: 0x33,
+  PewterCity: 0x02,
+  PewterNidoranHouse: 0x37,
+  PewterMart: 0x38,
+  PewterSpeechHouse: 0x39,
+  PewterPokecenter: 0x3A,
 };
 
 // ── NPC index overrides (when ROM has more NPCs than JSON) ─────
@@ -785,6 +846,28 @@ function textPointerAddr(rom: BinaryReader, mapName: string, textId: number): nu
   const textPtrs = MAP_TEXT_PTRS[mapName];
   if (!textPtrs || textId < 1 || textId > textPtrs.count) return null;
   return rom.readWord(textPtrs.offset + (textId - 1) * 2);
+}
+
+/** script_mart: FE, count, items, FF (macros/scripts/text.asm; note 60 §13.4).
+ * Inspect both tables: Viridian's clerk becomes a shop only in TextPointers2. */
+function readMartItems(rom: BinaryReader, mapName: string, textId: number,
+  itemNames: Record<number, string>): string[] | undefined {
+  for (const [table, bank, addr, count] of TEXT_POINTER_TABLES) {
+    if (table !== `${mapName}_TextPointers` && table !== `${mapName}_TextPointers2`) continue;
+    if (textId < 1 || textId > count) continue;
+    const pointer = rom.readWord(symToOffset(bank, addr) + (textId - 1) * 2);
+    const p = pointer < 0x4000 ? pointer : symToOffset(bank, pointer);
+    if (rom.readByte(p) !== 0xfe) continue;
+    const length = rom.readByte(p + 1);
+    const at = `${table}:${textId} script_mart`;
+    if (p + 2 + length >= rom.length || rom.readByte(p + 2 + length) !== 0xff)
+      throw new Error(`${at}: count does not end at the $ff terminator`);
+    return Array.from(rom.readBytes(p + 2, length), id => {
+      if (id === 0xff || id === 0 || !itemNames[id]) throw new Error(`${at}: invalid item $${id.toString(16)}`);
+      return id === 0x0f ? 'PARALYZE_HEAL' : itemNames[id];
+    });
+  }
+  return undefined;
 }
 
 /** Decode the text behind a `text_far` handler, or null if it isn't one. */
@@ -995,10 +1078,8 @@ export function extractMap(
       npc.object = true;
     }
 
-    // Add shop items
-    if (npcMeta.shopItems) {
-      npc.shopItems = npcMeta.shopItems;
-    }
+    const shopItems = readMartItems(rom, mapName, romNpc.textId, itemNames);
+    if (shopItems) npc.shopItems = shopItems;
 
     // Item ball: the item it holds
     if (isItemBall && romNpc.itemId !== undefined) {
@@ -1068,6 +1149,10 @@ function resolveLastMap(mapName: string): string {
     ViridianMart: 'ViridianCity',
     ViridianSchoolHouse: 'ViridianCity',
     ViridianNicknameHouse: 'ViridianCity',
+    PewterNidoranHouse: 'PewterCity',
+    PewterMart: 'PewterCity',
+    PewterSpeechHouse: 'PewterCity',
+    PewterPokecenter: 'PewterCity',
     Route2Gate: 'Route2',
     Route2TradeHouse: 'Route2',
     DiglettsCaveRoute2: 'Route2',  // its map script also forces wLastMap = ROUTE_2

@@ -1,6 +1,7 @@
 import type { MapData, MapConnection, Blockset, CollisionData, HiddenEvent } from '../core';
 import { TILE_SIZE, BLOCK_SIZE, BLOCK_PX, GB_WIDTH, GB_HEIGHT } from '../core';
 import { drawTile, loadTileset, loadTilesetTransparent } from '../renderer';
+import { preloadHealingMachineGraphics } from './healing_machine';
 const TILESET_FILES: Record<string, string> = {
   OVERWORLD: 'overworld', REDS_HOUSE_1: 'reds_house', REDS_HOUSE_2: 'reds_house',
   HOUSE: 'house', LAB: 'lab', MART: 'pokecenter', POKECENTER: 'pokecenter',
@@ -171,6 +172,7 @@ export class GameMap {
     const tilesetFile = TILESET_FILES[tilesetId] ?? tilesetId.toLowerCase();
     this.tileset = await loadTileset(`/gfx/tilesets/${tilesetFile}.png`);
     this.tilesetTransparent = await loadTilesetTransparent(`/gfx/tilesets/${tilesetFile}.png`);
+    if (tilesetId === 'POKECENTER') await preloadHealingMachineGraphics();
 
     // Load blockset
     const blocksetFile = TILESET_BLOCKSET[tilesetId] ?? tilesetFile;

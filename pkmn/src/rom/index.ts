@@ -16,7 +16,7 @@ import { extractAllMaps } from './extractors/maps';
 import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from './extractors/audio';
 import { extractFontGraphics, extractTilesetGraphics, extractAllAdditionalGraphics } from './extractors/graphics';
 import { extractAllPokemonSprites } from './extractors/sprites';
-import { readMoveNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from './extractors/text';
+import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from './extractors/text';
 import { extractGameText } from './extractors/game_text';
 import { extractTextPrograms } from './extractors/text_programs';
 import { extractMapSpriteSets } from './extractors/map_sprite_sets';
@@ -66,7 +66,7 @@ const SFX_NAMES = [
   'press_ab', 'start_menu', 'collision', 'go_inside', 'go_outside',
   'save', 'purchase', 'swap', 'withdraw_deposit', 'cut',
   'denied', 'enter_pc', 'fly', 'get_item1', 'get_item2', 'get_key_item',
-  'go_inside', 'go_outside', 'heal_ailment', 'heal_hp', 'heal_machine', 'intro_hip',
+  'go_inside', 'go_outside', 'heal_ailment', 'heal_hp', 'healing_machine', 'intro_hip',
   'intro_lunge', 'intro_whoosh', 'ledge', 'level_up', 'mon_faint',
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
   'press_ab', 'push_boulder', 'switch', 'super_effective', 'tink',
@@ -102,8 +102,9 @@ export async function extractRom(
   const trainerClassNames = readTrainerClassNames(rom);
   const pokemonInternalNames = readPokemonInternalNames(rom);
 
-  // ── Item display names (for runtime use) ──
+  // ── Item and move display names (for runtime use) ──
   data.jsonData['item_names.json'] = readItemDisplayNames(rom);
+  data.jsonData['move_names.json'] = readMoveDisplayNames(rom);
 
   // ── Game text (dialogue & UI strings) ──
   data.jsonData['game_text.json'] = extractGameText(rom);

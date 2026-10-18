@@ -20,7 +20,7 @@ Commands available in `ScriptCommand` (from `src/script/types.ts`):
 `hideObject`, `moveNpc`, `movePlayer`, `pushPlayer`, `tryPikachuMovement`, `faceNpc`,
 `facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`,
 `hideNpc`, `unhideNpc`, `callback`, `warp`, `catchDemo`, `moveParallel`, `awaitInteraction`,
-`startBattle`, `healParty`, `pokecenterHeal`, `pikachuToNurse`, `hidePikachu`, `showPikachu`,
+`startBattle`, `healParty`, `healingMachine`, `pikachuToNurse`, `hidePikachu`, `showPikachu`,
 `pikachuStandDown`, `updateSprites`, `pikachuFacing`, `ifStarterPikachu`, `fadeOut`,
 `fadeIn`, `giveItem`, `removeItem`. `pushPlayer` simulates one joypad step, with collision/ledges.
 
@@ -101,10 +101,23 @@ Delay3. NeedYourPokemon stays up through the machine. The extracted pauses in
 ShallWeHeal/Farewell cost 30 frames unless A/B is held. Farewell then updates
 sprites and uses the outer wait/Hold/17-frame close. Saved Pikachu live facing
 is restored at close start; its image waits for the trailing update. A6e paths,
-waits, fainted-slot behavior and the existing machine internals remain.
+waits and fainted-slot behavior remain.
 
-The machine's fade-out, sounds/jingle/flashes and heal ordering are a separate
-approved slice after A5b7 and before V2 (DECISIONS #50). The Pewter LooksContent
+Healing-machine CP3 ports `AnimateHealingMachine` as `overworld/healing_machine.ts`: monitor H+2,
+balls/SFX H+41+30(k−1) (visible one frame later), jingle/four colour-swap flashes at J=H+41+30n,
+CHAN1 wait then 32, done J+168. The controller returns through updateSprites → healParty →
+restoreMapMusic in that tick. OAM remains drawn through J+169 and is gone at J+170; cleanup advances
+once per outer frame, never during same-frame command returns. Machine input consumes no Joypad.
+The old machine command, silent jingle timer, private heal copy and alpha dim are deleted.
+Note 56 N-2's TV routing is now tested through the actual overworld dispatch.
+CP4 verified the Viridian nurse through overworld A interaction and HEAL with one and six
+Pokémon (note 59 §15). Browser screenshots show the monitor alone, successive balls,
+the $c8/$e0 colour swap and the restored map at J+170; the retained NeedYourPokemon box
+stays up throughout the machine. Hurt/fainted/status/PP fixtures remain unhealed until
+J+168, then heal before the map-music restart; both nurse scripts return to the overworld.
+Normal browser clocks matched the controlled-frame anchors. The user independently
+play-tested the machine and reports that it all works well; Claude closed the slice 2026-10-16.
+The Pewter LooksContent
 branch is deliberately absent, guarded by a map-existence tripwire. Cable club
 receptionist/link features need a user decision. `textButtonWait` remains for
 the hidden-item full-bag path; `closeText` has been retired.

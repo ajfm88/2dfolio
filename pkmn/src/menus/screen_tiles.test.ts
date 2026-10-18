@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScreenTiles, addBcd } from './screen_tiles';
+import { LEVEL_GLYPH } from './menu_glyph_ids';
 import { BgTransfer } from '../text/bg_transfer';
 import { TextBox } from '../text/textbox';
 
@@ -16,6 +17,21 @@ function row(tiles: ScreenTiles, y: number, from = 0, to = 20): string {
 }
 
 describe('menu screen tiles', () => {
+  it('PrintNumber keeps skipped cells for 2/3-byte fields; PrintLevel overwrites LV at 100', () => {
+    const tiles = new ScreenTiles();
+    tiles.placeString(2, 1, 'ABCDEFG');
+    tiles.writeNumber(2, 1, 12345, { digits: 7, leadingZeroes: false });
+    expect(row(tiles, 1, 2, 9)).toBe('AB12345');
+    tiles.placeString(2, 2, 'XYZ');
+    tiles.writeNumber(2, 2, 0, { digits: 3, leadingZeroes: false });
+    expect(row(tiles, 2, 2, 5)).toBe('XY0');
+    tiles.writeNumber(2, 3, 65535, { digits: 5, leadingZeroes: true });
+    expect(row(tiles, 3, 2, 7)).toBe('65535');
+    tiles.writeNumber(2, 4, 0, { digits: 5, leadingZeroes: true });
+    expect(row(tiles, 4, 2, 7)).toBe('00000');
+    tiles.printLevel(14, 6, 99); expect(row(tiles, 6, 14, 17)).toBe(LEVEL_GLYPH + '99');
+    tiles.printLevel(14, 6, 100); expect(row(tiles, 6, 14, 17)).toBe('100');
+  });
   it('draws a text-box border and blanks its interior', () => {
     const tiles = new ScreenTiles();
     tiles.textBoxBorder(7, 9, 1, 11);

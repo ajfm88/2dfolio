@@ -7,7 +7,7 @@ import {
   FONT_GRAPHICS, TILESETS, TILESET_HEADER_SIZE, NUM_TILESETS,
   TEXT_BOX_GRAPHICS,
   HP_BAR_AND_STATUS, BATTLE_HUD_TILES_1, BATTLE_HUD_TILES_2, BATTLE_HUD_TILES_3,
-  ED_TILE, POKEBALL_TILES, MOVE_ANIM_TILES_0,
+  ED_TILE, P_TILE, POKEBALL_TILES, MOVE_ANIM_TILES_0,
   POKEMON_LOGO_GFX, POKEMON_LOGO_CORNER, TITLE_PIKACHU_BG, TITLE_PIKACHU_OB,
   GAMEFREAK_LOGO_GFX,
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
@@ -190,6 +190,11 @@ export function extractBattleHud3(rom: BinaryReader): ImageData {
 export function extractEdTile(rom: BinaryReader): ImageData {
   const data = rom.readBytes(ED_TILE, 8); // 1 tile × 8 bytes (1bpp)
   return decode1bpp(data, 1);
+}
+
+/** Extract PTile, the status screen's bold P: 8 bytes of 1bpp, one 8×8 tile. */
+export function extractPTile(rom: BinaryReader): ImageData {
+  return decode1bpp(rom.readBytes(P_TILE, 8), 1);
 }
 
 /**
@@ -674,6 +679,7 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/battle/battle_hud_2.png'] = extractBattleHud2(rom);
   images['/gfx/battle/battle_hud_3.png'] = extractBattleHud3(rom);
   images['/gfx/font/ED.png'] = extractEdTile(rom);
+  images['/gfx/font/P.png'] = extractPTile(rom);
   images['/gfx/battle/balls.png'] = extractBallTiles(rom);
   images['/gfx/battle/move_anim_0.png'] = extractMoveAnim0(rom);
 

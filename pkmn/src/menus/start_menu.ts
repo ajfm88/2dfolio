@@ -49,13 +49,14 @@ export class StartMenuSession {
   /** CloseStartMenu's private read/copy prefix, before main enters menu_closing. */
   get closing(): boolean { return this.phase === 'closeRead' || this.phase === 'closeCopy'; }
 
-  open(hasPokedex: boolean, playerName: string): void {
+  /** autoBox is the map's DisplayTextIDInit default (text/auto_text_box.ts): false skips the early border. */
+  open(hasPokedex: boolean, playerName: string, autoBox = true): void {
     this.hasPokedex = hasPokedex; this.playerName = playerName;
     this.tiles.reset(); this.savedScreen = null; this.cursor = null; this.input = null;
     this.age = 0; this.phase = 'opening';
     this.returning = null;
     this.transfer.enabled = false;
-    this.border();
+    if (autoBox) this.border();
     this.onSprites(); // DisplayTextIDInit, with the logical START border already up
   }
 

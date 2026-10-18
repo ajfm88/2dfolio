@@ -1,11 +1,15 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { rig, musicData, sfxData } from '../test/audio_rig';
+import * as audioApi from '../audio';
 import { buildNurseScript } from './pokecenter';
+import { getTextHandler } from './text_handlers';
 import { getTextScript } from './text_handlers';
 import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
 import { loadTextPrograms, getTextPrograms } from '../text/program_data';
-import { initScript, updateScript, getActiveScript } from '../script/script_controller';
+import { initScript, updateScript as controllerUpdate, getActiveScript, renderHealingMachine } from '../script/script_controller';
+import { textBgTransfer } from '../text/bg_transfer';
 import type { ScriptDeps } from '../script/script_controller';
 import type { ScriptCommand } from '../script/types';
 import { GameMap } from '../overworld/map';
@@ -25,15 +29,27 @@ import { createOverworldState, updateOverworld } from '../overworld/overworld_co
 import { loadPikachuMovementData } from '../pikachu/pikachu_movement_data';
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: () => false,
   readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: () => false }));
+vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
+const machineDraw = vi.hoisted(() => ({ save: vi.fn(), restore: vi.fn(), translate: vi.fn(), scale: vi.fn(), drawImage: vi.fn() }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
-  loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));
+  getCtx: () => machineDraw, getScale: () => 1,
+  getActivePalette: () => 'VIRIDIAN', obpMapping: (reg: number) => [0, 1, 2, 3].map(c => (reg >> (2 * c)) & 3),
+  loadSpriteMapped: async () => ({ width: 8, height: 16 }), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));
+let audio = rig();
+function updateScript(deps: ScriptDeps, isPass: boolean) { audio.update(); return controllerUpdate(deps, isPass); }
 const dataDir = resolve(__dirname, '../../data');
 const mapData = JSON.parse(readFileSync(resolve(dataDir, 'maps/ViridianPokecenter.json'), 'utf8'));
 beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadPikachuMovementData(); });
 beforeEach(() => { vi.restoreAllMocks(); vi.clearAllMocks(); restoreFlags([]); setFlag('BATTLED_RIVAL_IN_OAKS_LAB');
   setJoyIgnore('none'); setTextSpeed('fast'); uiTiles.clear();
+  audio = rig(musicData('pokecenter'));
+  vi.mocked(audioApi.preloadMusic).mockResolvedValue();
+  vi.mocked(audioApi.fadeOutAndStopMusic).mockImplementation(n => audio.fade.fadeOutAndStopMusic(n));
+  vi.mocked(audioApi.isAudioFadingOut).mockImplementation(() => audio.fade.isFadingOut());
+  vi.mocked(audioApi.playMusic).mockImplementation(async name => { audio.music.play(musicData(name)); });
+  vi.mocked(audioApi.playSFX).mockImplementation(async name => { audio.sfx.play(sfxData(name)); });
+  vi.mocked(audioApi.isMusicChannelActive).mockImplementation(id => audio.music.getChannel(id)?.active ?? false);
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false); });
 function scene(pikachu: 'none' | 'alive' | 'fainted' = 'none') {
   const gameMap = new GameMap(); gameMap.mapData = structuredClone(mapData);
@@ -106,6 +122,60 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
     expect(getTextPrograms().ShallWeHealYourPokemonText[0]).toEqual({ op: 'pause' });
     expect(getTextPrograms().PokemonCenterFarewellText[0]).toEqual({ op: 'pause' });
     expect(choice(commands).yes.filter(c => c.type === 'wait').map(c => c.frames)).toEqual([64, 6, 30, 6, 3, 40]);
+    const sequence = choice(commands).yes.map(c => c.type);
+    expect(sequence.slice(sequence.indexOf('healingMachine'), sequence.indexOf('healingMachine') + 4))
+      .toEqual(['healingMachine', 'updateSprites', 'healParty', 'restoreMapMusic']);
+  });
+  it.each([1, 6])('%i members: the return tick updates, heals and restarts in order, retaining OAM for two renders', async n => {
+    const s = scene();
+    s.deps.npcs = []; // machine placement must work without a nurse lookup
+    s.deps.playerParty = Array.from({ length: n }, (_, i) => {
+      const mon = createPokemon(19, 5)!;
+      mon.currentHp = i === n - 1 ? 0 : 1; mon.status = 'PSN'; mon.sleepTurns = 3;
+      mon.toxicCounter = 5; mon.badlyPoisoned = true;
+      for (const move of mon.moves) move.pp = 0;
+      return mon;
+    });
+    const damaged = s.deps.playerParty.map(mon => [mon.currentHp, mon.status, mon.sleepTurns,
+      mon.toxicCounter, mon.badlyPoisoned, ...mon.moves.map(move => move.pp)]);
+    initScript([{ type: 'displayOpen' }, { type: 'healingMachine' }, { type: 'updateSprites' },
+      { type: 'healParty' }, { type: 'restoreMapMusic' }, { type: 'wait', frames: 4 }]);
+    updateScript(s.deps, false);
+    for (let t = 1; t <= 20; t++) updateScript(s.deps, false); // H: command enters
+    await Promise.resolve();
+    const order: string[] = [];
+    vi.spyOn(uiEntry, 'fontLoadedUpdateSprites').mockImplementation((_p, _m, tileAt) => {
+      expect(tileAt(0, 12)).toBe(0x60);
+      expect(s.deps.playerParty.map(mon => [mon.currentHp, mon.status, mon.sleepTurns,
+        mon.toxicCounter, mon.badlyPoisoned, ...mon.moves.map(move => move.pp)])).toEqual(damaged);
+      order.push('update');
+    });
+    s.deps.restoreMapMusic = vi.fn(() => {
+      for (const mon of s.deps.playerParty) {
+        expect(mon.currentHp).toBe(mon.maxHp); expect(mon.status).toBeNull();
+        expect([mon.sleepTurns, mon.toxicCounter, mon.badlyPoisoned]).toEqual([0, 0, false]);
+        expect(mon.moves.every(move => move.pp === move.maxPp)).toBe(true);
+      }
+      order.push('restore');
+    });
+    const transfer = vi.spyOn(textBgTransfer, 'tick');
+    vi.mocked(syncJoypadRead).mockClear(); vi.mocked(readJoypad).mockClear();
+    const done = 209 + 30 * n;
+    for (let f = 1; f <= done + 2; f++) {
+      transfer.mockClear(); updateScript(s.deps, false);
+      expect(transfer, `one BG tick at H+${f}`).toHaveBeenCalledTimes(1);
+      expect(syncJoypadRead).not.toHaveBeenCalled(); expect(readJoypad).not.toHaveBeenCalled();
+      if (f < done) {
+        expect(s.deps.playerParty.map(mon => [mon.currentHp, mon.status, mon.sleepTurns,
+          mon.toxicCounter, mon.badlyPoisoned, ...mon.moves.map(move => move.pp)])).toEqual(damaged);
+        expect(order).toEqual([]);
+      } else {
+        expect(order).toEqual(['update', 'restore']);
+        machineDraw.drawImage.mockClear(); renderHealingMachine();
+        expect(machineDraw.drawImage).toHaveBeenCalledTimes(f === done + 2 ? 0 : n + 1);
+      }
+    }
+    expect(s.deps.restoreMapMusic).toHaveBeenCalledOnce();
   });
   it.each([false, true])('YES with no Pikachu: used=%s, one display, first write +23, close 17 and real healing', used => {
     const s = scene(); const t = trace(s, 'yes', used);
@@ -118,7 +188,7 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
     expect(t.printed.find(p => p.program === 'NeedYourPokemonText')!.frame - t.firstMenuRead).toBe(15);
     expect(t.onHeal).toHaveBeenCalledOnce(); expect(s.mon.currentHp).toBe(s.mon.maxHp);
     expect(t.hidden).toHaveLength(1); expect(s.deps.restoreMapMusic).toHaveBeenCalledOnce();
-    const machine = t.ticks.filter(tick => tick.command === 'pokecenterHeal');
+    const machine = t.ticks.filter(tick => tick.command === 'healingMachine');
     expect(machine.length).toBeGreaterThan(0); expect(machine.every(tick => tick.coverage === 0x60)).toBe(true);
     const bow = t.ticks.filter(tick => tick.bow); expect(bow).toHaveLength(40);
     expect(bow.every(tick => tick.coverage === 0)).toBe(true);
@@ -160,7 +230,7 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
     expect(glyph).toBe(held ? 3 : 33);
   });
   it('the machine consumes no Joypad reads; a held A survives to the next text', () => {
-    const s = scene(); initScript([{ type: 'displayOpen' }, { type: 'pokecenterHeal' },
+    const s = scene(); initScript([{ type: 'displayOpen' }, { type: 'healingMachine' },
       { type: 'printText', program: 'PokemonCenterFarewellText' }, { type: 'wait', frames: 1 }]);
     updateScript(s.deps, false); for (let t = 0; t < 20; t++) updateScript(s.deps, false);
     vi.mocked(syncJoypadRead).mockClear(); vi.mocked(isHeld).mockImplementation(k => k === 'a');
@@ -169,7 +239,7 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
       updateScript(s.deps, false); expect(syncJoypadRead).not.toHaveBeenCalled();
     }
     const screen = Reflect.get(s.deps.textBox, 'screen') as { held: number; buffer: string[] };
-    updateScript(s.deps, false); // dispatch PrintText after the unchanged machine boundary
+    updateScript(s.deps, false); // PrintText now dispatches in the cartridge machine return tick
     updateScript(s.deps, false); updateScript(s.deps, false); updateScript(s.deps, false);
     expect(screen.buffer[41]).toBe('W'); expect(screen.held).toBe(1); // TEXT_A, pause skipped
   });
@@ -193,8 +263,12 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
     expect(action?.type).toBe('script'); if (action?.type !== 'script') throw new Error('missing nurse dispatch');
     expect(action.commands[0].type).toBe('displayOpen'); expect(getTextScript('pokecenterNurse')).toBeDefined();
   });
-  it('Pewter expansion must add LooksContentText before extracting that map (V2)', () => {
-    expect(existsSync(resolve(dataDir, 'maps/PewterPokecenter.json')), 'add the LooksContentText branch (pokecenter.asm:2-9), V2').toBe(false);
+  it('Jigglypuff registration requires the nurse LooksContentText branch (V2c)', () => {
+    // V2a extracts Pewter before the following-disabled state can be set; note 60 §5.
+    if (getTextHandler('PewterPokecenter', 3)) {
+      expect(flattened(buildNurseScript(() => undefined)).some(c => c.type === 'printText' && c.program === 'LooksContentText'),
+        'add LooksContentText before enabling Jigglypuff').toBe(true);
+    }
   });
   it('detects a NO blackout callback inserted in memory', () => {
     const onHeal = vi.fn(); const commands = buildNurseScript(() => undefined, onHeal);

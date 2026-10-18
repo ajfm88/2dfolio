@@ -1,0 +1,72 @@
+{
+  "name": "PewterNidoranHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    4,
+    14,
+    5,
+    9,
+    15,
+    1,
+    2,
+    15,
+    15,
+    12,
+    13,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 3
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 3
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "textId": 1,
+      "id": "nidoran",
+      "sprite": "monster",
+      "x": 4,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "NIDORAN: Bowbow!",
+      "direction": "left"
+    },
+    {
+      "textId": 2,
+      "id": "little_boy",
+      "sprite": "little_boy",
+      "x": 3,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "NIDORAN sit!",
+      "direction": "right"
+    },
+    {
+      "textId": 3,
+      "id": "middle_aged_man",
+      "sprite": "middle_aged_man",
+      "x": 1,
+      "y": 2,
+      "movement": "stay",
+      "dialogue": "Our POKéMON's an\noutsider, so it's\nhard to handle.\fAn outsider is a\nPOKéMON that you\nget in a trade.\fIt grows fast, but\nit may ignore an\nunskilled trainer\nin battle!\fIf only we had\nsome BADGEs..."
+    }
+  ]
+}

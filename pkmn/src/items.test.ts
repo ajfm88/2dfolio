@@ -149,3 +149,17 @@ describe('inventory callers through menu input', () => {
     expect(bag.items).toEqual([{ id, count: 99 }]);
   });
 });
+
+describe('item display names come from the extracted ROM names', () => {
+  it('every runtime item id has a ROM name, including the two renamed constants', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const { initItemNames, getItemName, getAllItemIds } = await import('./items');
+    const names: Record<string, string> = JSON.parse(readFileSync(resolve(__dirname, '../data/item_names.json'), 'utf8'));
+    initItemNames(names);
+    expect(getItemName('PARALYZE_HEAL')).toBe('PARLYZ HEAL'); // 11 chars: fits the Mart list
+    expect(getItemName('OAKS_PARCEL')).toBe("OAK's PARCEL");
+    const rom = new Set(Object.values(names));
+    for (const id of getAllItemIds()) expect(rom.has(getItemName(id)), id).toBe(true);
+  });
+});

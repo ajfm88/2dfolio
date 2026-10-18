@@ -224,23 +224,28 @@ const TRAINER_CLASS_ID_OVERRIDES: Record<number, string> = {
   43: 'RIVAL3',
 };
 
-/**
- * Read all 165 move names from ROM. Returns array indexed by move ID (0 = "NO_MOVE").
- * Move names are variable-length, 0x50-terminated, stored sequentially.
- */
-export function readMoveNames(rom: BinaryReader): string[] {
-  const names: string[] = ['NO_MOVE']; // index 0
+/** Shared MoveNames walk: constant key and original display text, in move-ID order. */
+function* readMoveNameEntries(rom: BinaryReader): Generator<[string, string]> {
   let offset = MOVE_NAMES_OFFSET;
   for (let i = 1; i <= NUM_MOVES; i++) {
     const display = decodeText(rom, offset);
     const constant = MOVE_NAME_OVERRIDES[display] || displayToConstant(display);
-    names.push(constant);
+    yield [constant, display];
     // Advance past this name: walk bytes until 0x50 terminator
     let len = 0;
     while (rom.readByte(offset + len) !== 0x50) len++;
     offset += len + 1; // skip past terminator
   }
-  return names;
+}
+
+/** Read all 165 move constants, indexed by move ID (0 = "NO_MOVE"). */
+export function readMoveNames(rom: BinaryReader): string[] {
+  return ['NO_MOVE', ...Array.from(readMoveNameEntries(rom), ([constant]) => constant)];
+}
+
+/** Cartridge display names keyed like moves.json, e.g. PSYCHIC_M → PSYCHIC. */
+export function readMoveDisplayNames(rom: BinaryReader): Record<string, string> {
+  return Object.fromEntries(readMoveNameEntries(rom));
 }
 
 /**

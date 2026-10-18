@@ -96,6 +96,13 @@ const MAP_PALETTE: Record<string, string> = {
   ViridianSchoolHouse: 'VIRIDIAN',
   ViridianNicknameHouse: 'VIRIDIAN',
 
+  // Pewter City area
+  PewterCity: 'PEWTER',
+  PewterNidoranHouse: 'PEWTER',
+  PewterMart: 'PEWTER',
+  PewterSpeechHouse: 'PEWTER',
+  PewterPokecenter: 'PEWTER',
+
   // Route 2 + Viridian Forest. Gates, houses and the Forest take wLastMap's palette
   // (Route 2 → ROUTE); the CAVERN tileset forces PAL_CAVE
   // (engine/gfx/palettes.asm SetPal_Overworld)

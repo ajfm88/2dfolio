@@ -180,7 +180,7 @@ describe('FieldMedicine frames', () => {
     chooseUse(menu);
     expect(menu.session.paletteWhite).toBe(true);
     const reads = menu.read.mock.calls.length;
-    menu.frames(11);
+    menu.frames(18);
     expect(menu.session.paletteWhite).toBe(true);
     expect(menu.read).toHaveBeenCalledTimes(reads);
     menu.frame();
@@ -189,7 +189,7 @@ describe('FieldMedicine frames', () => {
     expect(menu.read).toHaveBeenCalledTimes(reads);
   }
 
-  it('whites out through R+12 and reads at R+15, one tick and no second joypad', () => {
+  it('whites out through R+19 and reads at R+22, one tick and no second joypad', () => {
     const menu = rig([{ id: 'POTION', count: 2 }], [mon('RATTATA', 13, 39)]);
     menu.session.open(menu.bag, menu.party);
     menu.frames(15);
@@ -201,7 +201,7 @@ describe('FieldMedicine frames', () => {
     const reads = menu.read.mock.calls.length;
     menu.frame();
     expect(menu.session.paletteWhite).toBe(true);
-    for (let frame = 1; frame <= 15; frame++) {
+    for (let frame = 1; frame <= 22; frame++) {
       const beforeTicks = menu.tick.mock.calls.length;
       const beforeReads = menu.read.mock.calls.length;
       const syncs = vi.mocked(syncJoypadRead).mock.calls.length;
@@ -210,16 +210,16 @@ describe('FieldMedicine frames', () => {
       expect(menu.tick.mock.calls.length - beforeTicks, `tick ${frame}`).toBe(1);
       const owners = (menu.read.mock.calls.length - beforeReads) + (vi.mocked(syncJoypadRead).mock.calls.length - syncs);
       expect(owners, `owners ${frame}`).toBeLessThanOrEqual(1);
-      if (frame < 15) expect(menu.read).toHaveBeenCalledTimes(beforeReads);
+      if (frame < 22) expect(menu.read).toHaveBeenCalledTimes(beforeReads);
       else expect(menu.read.mock.calls.length).toBe(beforeReads + 1);
-      if (frame < 12) expect(menu.session.paletteWhite).toBe(true);
-      if (frame === 12) expect(menu.session.paletteWhite).toBe(false);
+      if (frame < 19) expect(menu.session.paletteWhite).toBe(true);
+      if (frame === 19) expect(menu.session.paletteWhite).toBe(false);
     }
     expect(menu.tick.mock.calls.length).toBeGreaterThan(ticks);
     expect(menu.read.mock.calls.length).toBeGreaterThan(reads);
   });
 
-  it('B cancels and the bag is visible at P+19, first read P+22', () => {
+  it('B cancels and the bag is visible at P+51, first read P+54', () => {
     const menu = rig([{ id: 'POTION', count: 2 }], [mon('RATTATA', 13, 39)]);
     openToRead(menu);
     const hp = menu.party[0].currentHp;
@@ -228,7 +228,7 @@ describe('FieldMedicine frames', () => {
     expect(menu.session.paletteWhite).toBe(true);
     expect(menu.party[0].currentHp).toBe(hp);
     expect(menu.bag.items[0].count).toBe(2);
-    menu.frames(18);
+    menu.frames(50);
     expect(menu.session.paletteWhite).toBe(true);
     menu.frame();
     expect(menu.session.paletteWhite).toBe(false);
@@ -300,7 +300,7 @@ describe('the result screen (review note 46 F-2, F-3, N-1, N-2)', () => {
     menu.press('a');
     menu.frame();
     menu.release();
-    menu.frames(15);
+    menu.frames(22);
     menu.press('a');
     menu.frame();
     menu.release();
@@ -332,7 +332,7 @@ describe('the result screen (review note 46 F-2, F-3, N-1, N-2)', () => {
         expect(text).toContain('recovered by 20!');
       }
     }
-    expect(shown).toBeGreaterThan(70);
+    expect(shown).toBeGreaterThan(73);
     // 3 frames of thirds, 50 frames, then the silent wait: nothing returns without a press.
     menu.frames(120);
     expect(screenText(menu)).toContain('recovered by 20!');
@@ -354,6 +354,37 @@ describe('the result screen (review note 46 F-2, F-3, N-1, N-2)', () => {
     }
     expect(text).toContain('cured of poison!');
     expect(menu.party[0].status).toBeNull();
+  });
+
+  it('result palette E+4..E+6 precedes PrintText; read E+62, then 38 restore frames and bag P+51/P+54', () => {
+    const menu = rig([{ id: 'ANTIDOTE', count: 1 }], [mon('RATTATA', 20, 39, 'PSN')]);
+    chooseUse(menu); menu.release(); menu.frames(22); menu.press('a'); menu.frame();
+    menu.release(); menu.frame(); // status sound, then .showHealingItemMessage = E
+    const print = vi.spyOn(menu.textBox, 'printStandalone');
+    const reads = menu.read.mock.calls.length;
+    for (let frame = 1; frame <= 62; frame++) {
+      const ticks = menu.tick.mock.calls.length; menu.frame();
+      expect(menu.tick.mock.calls.length - ticks, `E+${frame} VBlank`).toBe(1);
+      expect(menu.read).toHaveBeenCalledTimes(reads + (frame === 62 ? 1 : 0));
+      expect(print).toHaveBeenCalledTimes(frame < 6 ? 0 : 1);
+      expect(textBgTransfer.enabled, `E+${frame} transfer`).toBe(frame >= 9);
+      if (frame >= 6 && frame < 9) expect(screenText(menu)).not.toMatch(/[A-Za-z]/);
+      if (frame >= 9) expect(screenText(menu)).toContain('cured of poison!');
+    }
+    expect(print).toHaveBeenCalledWith({ program: 'AntidoteText' }, expect.objectContaining({ noDelay: true }));
+    menu.press('b'); menu.frame(); menu.release(); // P: medicine's .done
+    const returningReads = menu.read.mock.calls.length;
+    for (let frame = 1; frame <= 54; frame++) {
+      const ticks = menu.tick.mock.calls.length, enabled = textBgTransfer.enabled, third = textBgTransfer.nextPortion;
+      menu.frame();
+      expect(menu.tick.mock.calls.length - ticks, `P+${frame} VBlank`).toBe(1);
+      expect(textBgTransfer.nextPortion).toBe(enabled ? (third + 1) % 3 : third);
+      expect(menu.session.paletteWhite, `P+${frame} white`).toBe(frame < 51);
+      expect(menu.session.medicineShowsParty, `P+${frame} list entry`).toBe(frame < 39);
+      expect(menu.read).toHaveBeenCalledTimes(returningReads + (frame === 54 ? 1 : 0));
+      expect(textBgTransfer.enabled, `P+${frame} transfer`).toBe(frame < 6 || (frame >= 32 && frame < 39) || frame >= 48);
+    }
+    expect(menu.party[0].status).toBeNull(); expect(menu.bag.items).toEqual([]);
   });
 
   it('the row keeps its pre-use color and status until the redraw; ▷ after the choice, no cursor after', () => {

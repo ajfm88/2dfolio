@@ -293,6 +293,42 @@ describe('plain NPC/sign call contracts through the controller (A5b4)', () => {
   });
 });
 
+describe('map no-auto-text-box default through the controller (V2a CP3)', () => {
+  const talk = (mapName: string, id: number) => {
+    const deps = scene(mapName);
+    deps.npcs = deps.npcs.filter(npc => npc.data.textId === id);
+    expect(deps.npcs).toHaveLength(1);
+    const npc = deps.npcs[0];
+    deps.player.x = npc.x; deps.player.y = npc.y + 16; deps.player.direction = 'up';
+    return interaction(deps);
+  };
+  it.each([[2, 'PewterMartYoungsterText.Text'], [3, 'PewterMartSuperNerdText.Text']] as const)(
+    'Pewter Mart talker %i is a borderless printText of its own program', (id, program) => {
+      expect(talk('PewterMart', id)).toMatchObject({ type: 'textbox', call: 'printText', autoBox: false, program });
+    });
+  it('Viridian Mart talkers keep the automatic border and carry no program', () => {
+    const action = talk('ViridianMart', 2);
+    expect(action?.type).toBe('textbox');
+    expect(action && 'autoBox' in action).toBe(false);
+  });
+  it('the Pewter clerk opens borderless, the Viridian one with the automatic border', () => {
+    const pewter = talk('PewterMart', 1);
+    if (pewter?.type !== 'script') throw new Error('Expected the mart script');
+    expect(pewter.commands[0]).toEqual({ type: 'displayOpen', autoBox: false });
+    expect(pewter.commands.find(c => c.type === 'pokemart')).toMatchObject({ items: [
+      'POKE_BALL', 'POTION', 'ESCAPE_ROPE', 'ANTIDOTE', 'BURN_HEAL', 'AWAKENING', 'PARALYZE_HEAL'] });
+    setFlag('OAK_GOT_PARCEL');
+    const viridian = talk('ViridianMart', 1);
+    if (viridian?.type !== 'script') throw new Error('Expected the mart script');
+    expect(viridian.commands[0]).toEqual({ type: 'displayOpen' });
+  });
+  it('the Pewter Super Nerd is a registered yes/no handler with the automatic border', () => {
+    const action = talk('PewterCity', 4);
+    if (action?.type !== 'script') throw new Error('Expected the Super Nerd handler');
+    expect(action.commands[0]).toEqual({ type: 'displayOpen', autoBox: true });
+  });
+});
+
 describe('ASM interaction priority', () => {
   it('hidden event beats bookshelf, sign and NPC; a found item skips the bookshelf', () => {
     const deps = scene(); const map = deps.gameMap.mapData!;
@@ -313,8 +349,8 @@ describe('ASM interaction priority', () => {
     shelf.mockReturnValue(null); expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Sign' });
     expect(face).not.toHaveBeenCalled();
   });
-  it('today’s 19 maps have no overlapping hidden events, signs and NPCs', () => {
-    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(19);
+  it('today’s 24 maps have no overlapping hidden events, signs and NPCs', () => {
+    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(24);
     for (const file of files) {
       const map = JSON.parse(readFileSync(resolve(DATA, 'maps', file), 'utf8')) as MapData;
       const groups = [map.hiddenEvents ?? [], map.signs, map.npcs];

@@ -68,21 +68,22 @@ sheet selection, spacing and scaling (6 tests).
 | File | LOC | Purpose |
 |------|-----|---------|
 | `start_menu.ts` | — | Retained START opening/input/wrap/close and submenu-return tails |
-| `party_menu.ts` | 583 | Party view, switch, stats pages (1 & 2), tile-based HP bars, DrawLineBox, battle mode switch |
+| `party_menu.ts` | — | Party list/switch and battle adapter; StatusScreen and shared-opening handoffs |
+| `party_menu_opening.ts` | — | Shared DisplayPartyMenu timing and prompt for START, STATS return and field medicine |
 | `party_icons.ts` | 142 | Party menu Pokemon icons: species-to-sprite mapping, 2-frame animation, HP-based speed |
 | `field_medicine.ts` | — | Field ItemUseMedicine: white party menu, heal effect, HP bar, return to the bag |
 | `pokemart.ts` | 359 | Viridian Mart: DisplayPokemartDialogue |
 | `list_menu.ts` | — | DisplayListMenuID: priced, item and Pokémon lists |
-| `menu_glyphs.ts` | — | LV and ball tiles for opaque menu cells |
+| `menu_glyphs.ts` | — | Palette-aware opaque menu glyphs; identifiers in `menu_glyph_ids.ts`, party/status sheets in `party_tile_sheets.ts` |
 | `quantity_menu.ts` | 74 | DisplayChooseQuantityMenu |
-| `screen_tiles.ts` | 180 | Borders, PlaceString, BCD cells, Buffer1 |
+| `screen_tiles.ts` | — | Borders, PlaceString, BCD/PrintNumber cells, shared PrintLevel, retained thirds and Buffer1 |
 | `pc.ts` | — | Retained Red/Pokécenter PC, item storage, Oak and Bill handoffs |
 | `menu_session.ts` | — | Shared retained-menu host contract (Mart and PC) |
 | `toss_item.ts` | — | Shared TossItem_ protection, confirmation and selected-slot removal |
 | `bills_pc.ts` | — | Source Bill's PC on the retained display: withdraw/deposit/release/stats/change box/print box |
 | `pc_display.ts` | — | Shared PC PrintText, sound waits, delays and cursor operations |
-| `stats_screen.ts` | — | Existing two stats pages shared by party and Bill's PC |
-| `party_tiles.ts` | — | Shared HP/LV/line-box graphic tiles |
+| `status_screen.ts` | — | StatusScreenSession: retained stats pages for party, battle and Bill's PC |
+| `party_tiles.ts` | — | Legacy party HP/LV drawing over shared `party_tile_sheets.ts` assets |
 | `pokedex.ts` | 614 | Pokedex list, data (height/weight/description), area screen (town map + nest icons) |
 | `trainer_card.ts` | 311 | Player card: name, money, time, badges, Red sprite |
 | `town_map.ts` | 151 | Map overlay |
@@ -165,6 +166,24 @@ until the result redraw, the target row is drawn from a frozen picture
 bar color (a palette, `SetPartyMenuHPBarColor`) and the status text change at the redraw (F-2).
 The chosen row shows ▷; the redraw erases the cursor. The bag's `present()` ticks the text
 box for every field-medicine PrintText; nothing else does (F-3).
+`PartyMenuOpening` shares DisplayPartyMenu's white Delay3, four HP/status-copy waits,
+ClearScreen Delay3, CGB palette Delay3, no-delay PrintText and final Delay3. Its
+host advances VBlank once before its CPU-only `frame()`: the bag during medicine,
+`present()` during standalone PartyMenu. START → POKéMON and medicine reveal C+19,
+then read C+22. Overworld STATS returns into it at Q+3, hence reveal Q+22/read Q+25.
+The prompt's standalone TextBox is created C+13, completes C+16, and is dismissed
+C+19 when the legacy party renderer retains those same program-derived lines.
+Main skips its generic input sync during the opening, and the accepting frame
+uses the real read's edges; later party-list/submenu input remains the J2 adapter.
+
+Medicine's result redraw adds CGB palette E+4..E+6 before PrintText at E+6;
+the complete result/transfer-on is E+9. Its 50-frame hold returns directly into
+the first silent read at E+62. Medicine's conditional default palette adds three
+frames before START's existing 35-frame restore: list entry P+39, bag visible
+P+51, first read P+54. Transfer is disabled for copy waits P+7..P+32, then again
+for the list's initial wait. Main copies the white flag after the bag update so
+the visible frame agrees with the session. Original medicine assertions remain;
+tests now include exact per-frame ownership/phase checks and a real no-effect return.
 `ItemMenuLoop` leaves the message up until the
 next bottom-third transfer. Leaving the bag turns the transfer back on.
 
@@ -257,11 +276,19 @@ YES removes after the answer's 15-frame tail and waits for actual sound before
 the result. Deposit/withdraw play no item-transfer SFX. Reconciliation of the
 follower occurs at result PrintText, before glyphs; see Pikachu architecture.
 
-STATS shares the former party pages through `StatsScreen`, with graphics in
-`party_tiles.ts`. Box STATS deserializes a temporary mon and never changes the
-box. Buffer1 restores STATS selected; CGB palette Delay3 plus menu Delay3 makes
-first input E+6 after leaving the pages. These are the approved existing pages;
-the full StatusScreen port is a separate slice after A5b7g.
+STATS uses `StatusScreenSession`, shared with overworld and battle party menus.
+Box STATS deserializes a temporary mon and never changes the box. The session
+owns one ScreenTiles and one BG-transfer tick per active frame. `PcSession`
+forwards `ownsBgTransfer` so the script host skips its text/display tick, including
+the session's last frame. Selection S starts white and reduces NR50 to (3,3).
+Page 1 reveals S+20; the mirrored, padded picture's seven copy waits end at S+27,
+the first read. Its marker cells reveal by transferred thirds, never by rendering.
+Fresh A or B silently advances; page 2 waits three frames before reading again.
+The last press Q restores NR50 (7,7), whites out and clears. Buffer1 restores at
+Q+3 with STATS selected; Bill remains full-screen white until LoadGBPal at Q+6,
+and first submenu input is Q+9. Since CP4, overworld party enters the shared
+opening at Q+3 and reveals Q+22/reads Q+25 on the same mon. Battle still returns
+to its existing list at Q+3; its enemy-picture reload belongs to A5c.
 
 Change Box warns, clears text delay at YES/NO, then types ChooseABoxText while
 BG transfer remains disabled. Its 15 glyphs finish before chooser layout and
@@ -274,9 +301,22 @@ the nonempty printer screen remains J2 and returns directly. B/SEE YA! restores
 Buffer2 and the saved list offset, clears text delay, and returns to top-level
 PC row 0 without a power-off sound.
 
-Tests: `bills_pc.test.ts` 25, `stats_screen.test.ts` 2, real-input production
-controller flows in `story/pc.test.ts` and six follower lifecycle cases. The
-host remains the sole BG-transfer owner; rendering does not tick or read input.
+Tests: `bills_pc.test.ts` 28, `status_screen.test.ts` 30, actual PC controller
+flows in `story/pc.test.ts` (16), actual party/battle dispatch in `main.test.ts`
+(44), and six follower lifecycle cases. The active session or its text host
+owns each BG-transfer tick; rendering does not tick or read input.
+
+CP5 verified the actual Canvas output in muted Chromium on a fresh spare-port
+origin (5193). Pikachu's 40 px picture mirrors at (16,16), Ivysaur's 48 px at
+(8,8), Charizard's 56 px at (8,0). Both pages were inspected visually and the
+full padded picture region matched an independent full-PNG mirror/palette remap
+pixel for pixel, including shade-0 padding. Bill's party and box paths, voluntary
+and forced battle party paths, and field Potion use/return passed with no page
+errors, failed asset requests or save writes. Browser-only response interception
+provided staging/frame controls; no fixture hooks exist in the production source.
+The NR50 dip/restore also reached the native master GainNode's automation.
+The muted check verifies those writes, not audible loudness. See note 58 §16
+for the screenshots, harness, fixture boundaries and two complete gate runs.
 
 ## Assembly Layout References
 

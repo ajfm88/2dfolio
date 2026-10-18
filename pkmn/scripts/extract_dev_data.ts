@@ -21,7 +21,7 @@ import { extractPikachuMovement } from '../src/rom/extractors/pikachu_movement';
 import { extractPokedex } from '../src/rom/extractors/pokedex';
 import { extractAllMaps } from '../src/rom/extractors/maps';
 import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
-import { readMoveNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from '../src/rom/extractors/text';
+import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from '../src/rom/extractors/text';
 import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
 import { extractMapSpriteSets } from '../src/rom/extractors/map_sprite_sets';
@@ -52,7 +52,7 @@ const SFX_NAMES = [
   'press_ab', 'start_menu', 'collision', 'go_inside', 'go_outside',
   'save', 'purchase', 'swap', 'withdraw_deposit', 'cut',
   'denied', 'enter_pc', 'fly', 'get_item1', 'get_item2', 'get_key_item',
-  'heal_hp', 'heal_machine', 'intro_hip',
+  'heal_hp', 'healing_machine', 'intro_hip',
   'intro_lunge', 'intro_whoosh', 'ledge', 'level_up', 'mon_faint',
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
   'push_boulder', 'switch', 'super_effective', 'tink',
@@ -108,6 +108,7 @@ mkdirSync(DATA_DIR, { recursive: true });
 let count = 0;
 
 writeJson('item_names.json', readItemDisplayNames(rom)); count++;
+writeJson('move_names.json', readMoveDisplayNames(rom)); count++;
 writeJson('game_text.json', extractGameText(rom)); count++;
 writeJson('text_programs.json', extractTextPrograms(rom)); count++;
 writeJson('map_sprite_sets.json', extractMapSpriteSets(rom)); count++;

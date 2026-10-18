@@ -13,9 +13,11 @@ export const mainTest = {
   gameTick, checkUiEntry, drawUiLayer, openStartMenu, restOfPass, overworldDeps,
   startNewGame, loadSavedGame, startMenu, partyMenu, bagMenu, optionMenu,
   pokedexMenu, trainerCard, saveMenu, textBox, playerParty, player, gameMap, pikachuFollower,
+  set battle(value: Battle | null) { currentBattle = value; state = 'battle'; },
   get state() { return state; }, get fade() { return fadeAlpha; },
+  get bag() { return playerBag; },
   reset() {
-    state = 'overworld'; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
+    state = 'overworld'; currentBattle = null; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
     fadeCallback = null; prevTickInPassState = false;
     playerParty.length = 0; playerBag = new Bag();
     npcs = []; currentMapName = 'RedsHouse2F';

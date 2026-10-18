@@ -26,7 +26,9 @@ import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movemen
 import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
 import type { Bag, ItemStack } from '../items';
-import { loadSprite, getCtx, getScale, drawExclamationBubble } from '../renderer';
+import { drawExclamationBubble } from '../renderer';
+import { HealingMachineSession } from '../overworld/healing_machine';
+import { fadeOutAndStopMusic, isAudioFadingOut, preloadMusic } from '../audio';
 import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
@@ -41,6 +43,7 @@ import { playMusic, isMusicChannelActive } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
 import { getTextPrograms } from '../text/program_data';
 import { displayTextID, getTextHandler } from '../story/text_handlers';
+import { mapAutoTextBox, applyMapAutoTextBox } from '../text/auto_text_box';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { getOwnedCount } from '../pokedex_state';
 import { mapTextCall } from '../text/map_text_calls';
@@ -107,30 +110,7 @@ let scriptAwaitInteraction: {
 } | null = null;
 let scriptFreeSub: 'move' | 'guard_step' | 'guard_delay' | 'handler' = 'move';
 
-// Pokecenter heal animation state (pokeball machine animation)
-// Offsets from nurse position — derived from original OAM PokeCenterOAMData
-const HEAL_MONITOR_OFFSET = { dx: -20, dy: -12 };
-const HEAL_BALL_OFFSETS = [
-  { dx: -24, dy: -5, flip: false },
-  { dx: -16, dy: -5, flip: true },
-  { dx: -24, dy: 0, flip: false },
-  { dx: -16, dy: 0, flip: true },
-  { dx: -24, dy: 5, flip: false },
-  { dx: -16, dy: 5, flip: true },
-];
-const HEAL_PLACE_FRAMES = 30;
-const HEAL_JINGLE_FRAMES = 60;
-const HEAL_FLASH_FRAMES = 10;
-const HEAL_FLASH_CYCLES = 16; // 8 on/off cycles
-let healMachineSprite: HTMLCanvasElement | null = null;
-let pokecenterHealAnim: {
-  phase: 'place' | 'jingle' | 'flash';
-  partyCount: number;
-  placed: number;
-  timer: number;
-  flashCount: number;
-  flashVisible: boolean;
-} | null = null;
+let healingMachine: HealingMachineSession | null = null;
 
 // ApplyPikachuMovementData under way (pikachu_movement.ts); `refresh` is TryApply's
 // RefreshPikachuFollow after the return frame (a direct call has none)
@@ -143,7 +123,7 @@ let savedPikachuFacing: Direction | null = null;
 let scriptPush: { dir: Direction; started: boolean } | null = null;
 // moveParallel: the player's presses, waiting for the NPC to begin its step `fromNpcStep`
 let scriptParallel: { playerPath: Direction[]; fromNpcStep: number; playerStarted: boolean } | null = null;
-let pokecenterHealHidPikachu = false; // track if we hid Pikachu during heal
+let pikachuDrawingDisabled = false; // DisablePikachuOverworldSpriteDrawing / Enable counterpart
 
 const DEFAULT_FADE_FRAMES = 8;
 
@@ -240,14 +220,14 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptHealingMusic = null;
   // A replaced script must not leave a bubble on screen.
   scriptBubble.clear();
-  pokecenterHealAnim = null;
+  healingMachine = null;
   scriptPikachuRun = null;
   pendingPikachuSpawnState = null;
   savedPikachuFacing = null;
   setOpeningSpriteUpdates(true);
   scriptPush = null;
   scriptParallel = null;
-  pokecenterHealHidPikachu = false;
+  pikachuDrawingDisabled = false;
 }
 
 /**
@@ -257,6 +237,15 @@ export function initScript(commands: ScriptCommand[]): void {
  * Returns an action when main.ts needs to handle a state transition.
  */
 export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): ScriptAction | null {
+  // Post-return PrepareOAMData/DMA cleanup advances once per outer frame, never in a CPU return.
+  if (healingMachine?.done) {
+    healingMachine.frame();
+    if (!healingMachine.visible) healingMachine = null;
+  }
+  return runScript(deps, isPass, displayAdvanced);
+}
+
+function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): ScriptAction | null {
   const { textBox, player, npcs, playerParty, playerBag, pikachuFollower } = deps;
   scriptFadeAlpha = null; // reset each frame; set below if fade active
 
@@ -269,7 +258,10 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   // VBlank continues during retained text, even when several commands return in one frame.
   // The active menu and the text box share one tick; the menu's PrintText advances here.
   const menuAdvances = scriptMenuSession?.advanceText === true;
-  if (menuAdvances && scriptMenuSession) {
+  if (scriptMenuSession?.ownsBgTransfer) {
+    // StatusScreen.frame owns the tick, including the frame it returns to Bill's PC.
+    displayAdvanced = true;
+  } else if (menuAdvances && scriptMenuSession) {
     const enabled = textBgTransfer.enabled;
     const third = textBgTransfer.nextPortion;
     textBox.update();
@@ -287,7 +279,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     if (!done) return null;
     scriptMenuSession = null;
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
   }
 
   // DisplayTextIDInit / PrintText / a retained silent wait owns its VBlank and input.
@@ -298,7 +290,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     scriptChoice = null;
     activeScript.commands.splice(activeScript.index + 1, 0, ...chosen);
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
   }
   if (scriptMenu) {
     const keys = scriptMenu.input.update(readJoypad, () => playSFX('press_ab'));
@@ -309,21 +301,26 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     scriptMenu = null;
     activeScript.commands.splice(activeScript.index + 1, 0, ...next);
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
   }
   if (scriptBubble.showing !== null) {
     if (!scriptBubble.tick()) return null;
     // EmotionBubble returns to UpdateSprites with the display's font still loaded.
     fontLoadedUpdateSprites(player, deps.gameMap, (x, y) => uiTiles.tileAt(x, y), pikachuFollower);
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
+  }
+  if (healingMachine && !healingMachine.done) {
+    if (healingMachine.frame() !== 'done') return null;
+    advanceScript(activeScript);
+    return runScript(deps, isPass, displayAdvanced);
   }
   if (scriptHealingMusic) {
     if (!scriptHealingMusic.ready || isMusicChannelActive(1)) return null;
     scriptHealingMusic = null;
     deps.restoreMapMusic?.();
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
   }
   if (scriptDisplayWaiting) {
     textBox.update();
@@ -331,7 +328,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     if (!textBox.isComplete) return null;
     scriptDisplayWaiting = false;
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced);
+    return runScript(deps, isPass, displayAdvanced);
   }
 
   // Only the button wait and Hold read Joypad. Sound/copy waits freeze the world without reads.
@@ -352,7 +349,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       scriptClosingText = false;
     }
     advanceScript(activeScript);
-    return updateScript(deps, isPass, displayAdvanced); // routine returns in this frame, not a frame later
+    return runScript(deps, isPass, displayAdvanced); // routine returns in this frame, not a frame later
   }
 
   // Handle awaitInteraction: player has free movement until they interact with target
@@ -374,7 +371,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   // Preserve legacy wait/fade input ownership; migrated DelayFrames owns no reads.
-  if ((!scriptDisplayStarted && (scriptWaitFrames > 0 || pokecenterHealAnim)) || scriptFade) {
+  if ((!scriptDisplayStarted && scriptWaitFrames > 0) || scriptFade) {
     syncJoypadRead();
   }
 
@@ -385,7 +382,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       advanceScript(activeScript);
       // Migrated DelayFrames returns into the next command in its final CPU tick.
       // Pre-display/legacy movement waits retain their existing dispatch timing.
-      if (scriptDisplayStarted) return updateScript(deps, isPass, displayAdvanced);
+      if (scriptDisplayStarted) return runScript(deps, isPass, displayAdvanced);
     }
     return null;
   }
@@ -397,50 +394,6 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     if (t >= 1) {
       scriptFade = null;
       advanceScript(activeScript);
-    }
-    return null;
-  }
-
-  if (pokecenterHealAnim) {
-    const anim = pokecenterHealAnim;
-    anim.timer--;
-    if (anim.phase === 'place') {
-      if (anim.timer <= 0) {
-        anim.placed++;
-        if (anim.placed >= anim.partyCount) {
-          anim.phase = 'jingle';
-          anim.timer = HEAL_JINGLE_FRAMES;
-        } else {
-          anim.timer = HEAL_PLACE_FRAMES;
-        }
-      }
-    } else if (anim.phase === 'jingle') {
-      if (anim.timer <= 0) {
-        anim.phase = 'flash';
-        anim.timer = HEAL_FLASH_FRAMES;
-      }
-    } else if (anim.phase === 'flash') {
-      if (anim.timer <= 0) {
-        anim.flashVisible = !anim.flashVisible;
-        anim.flashCount++;
-        if (anim.flashCount >= HEAL_FLASH_CYCLES) {
-          // Heal the party
-          for (const mon of playerParty) {
-            mon.currentHp = mon.maxHp;
-            mon.status = null;
-            mon.sleepTurns = 0;
-            mon.toxicCounter = 0;
-            mon.badlyPoisoned = false;
-            for (const move of mon.moves) {
-              move.pp = move.maxPp;
-            }
-          }
-          pokecenterHealAnim = null;
-          advanceScript(activeScript);
-        } else {
-          anim.timer = HEAL_FLASH_FRAMES;
-        }
-      }
     }
     return null;
   }
@@ -551,7 +504,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     }
     case 'displayOpen':
       scriptDisplayStarted = true;
-      textBox.open({ autoBox: cmd.autoBox, spriteUpdate: cmd.spriteUpdate });
+      textBox.open({ autoBox: cmd.autoBox ?? mapAutoTextBox(deps.gameMap.mapData?.name ?? ''), spriteUpdate: cmd.spriteUpdate });
       scriptDisplayWaiting = true;
       return null;
 
@@ -559,7 +512,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       // TextBoxBorder clears the box's interior, the old ▶ with it.
       scriptMenuBox = cmd.layout ? { layout: cmd.layout, cursor: null } : null;
       advanceScript(activeScript);
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'menuInput':
       scriptMenu = { input: new MenuInput(cmd.menu), then: cmd.then };
@@ -570,7 +523,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       scriptMenuBox = null;
       textBox.clearInterior();
       advanceScript(activeScript);
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'pokemart': {
       menuSessionTiles = new ScreenTiles();
@@ -600,7 +553,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
 
     case 'printText':
       textBox.print({ program: cmd.program }, { box: cmd.box, bindings: cmd.bindings, noDelay: cmd.noDelay });
-      if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
+      if (textBox.isComplete) { advanceScript(activeScript); return runScript(deps, isPass, displayAdvanced); }
       scriptDisplayWaiting = true;
       return null;
 
@@ -618,7 +571,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       scriptWhite = cmd.on;
       scriptWhiteCleared = !cmd.on;
       advanceScript(activeScript);
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'townMap':
       return { type: 'townMap' }; // main.ts advances the script when the Town Map returns
@@ -627,16 +580,16 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       textBox.hideDisplay();
       scriptChoice = null;
       advanceScript(activeScript);
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'sound':
       scriptSound = { name: cmd.name, played: false, waitForCurrent: cmd.waitForCurrent ?? false };
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'textButtonWait':
       if (!textBox.displaySession || !textBox.active) throw new Error('textButtonWait requires an open display');
       textBox.waitSilent();
-      if (textBox.isComplete) { advanceScript(activeScript); return updateScript(deps, isPass, displayAdvanced); }
+      if (textBox.isComplete) { advanceScript(activeScript); return runScript(deps, isPass, displayAdvanced); }
       scriptDisplayWaiting = true;
       return null;
 
@@ -649,7 +602,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         player.detectSpriteCollisions(spriteTable(player, [...npcs, ...scriptNpcs], pikachuFollower));
       }
       advanceScript(activeScript);
-      return updateScript(deps, isPass, displayAdvanced);
+      return runScript(deps, isPass, displayAdvanced);
     }
 
     case 'moveNpc': {
@@ -679,7 +632,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'facePlayer':
       player.direction = cmd.direction;
       advanceScript(activeScript);
-      if (scriptDisplayStarted && textBox.active) return updateScript(deps, isPass, displayAdvanced);
+      if (scriptDisplayStarted && textBox.active) return runScript(deps, isPass, displayAdvanced);
       break;
 
     case 'wait':
@@ -689,7 +642,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'setFlag':
       setFlag(cmd.flag);
       advanceScript(activeScript);
-      if (textBox.active && textBox.isComplete) return updateScript(deps, isPass, displayAdvanced);
+      if (textBox.active && textBox.isComplete) return runScript(deps, isPass, displayAdvanced);
       break;
 
     case 'clearFlag':
@@ -732,7 +685,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
         activeScript!.commands.splice(activeScript!.index + 1, 0, ...cmd.failCommands);
       }
       advanceScript(activeScript!);
-      if (textBox.active && textBox.isComplete) return updateScript(deps, isPass, displayAdvanced);
+      if (textBox.active && textBox.isComplete) return runScript(deps, isPass, displayAdvanced);
       break;
     }
 
@@ -805,7 +758,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'callback':
       cmd.fn();
       advanceScript(activeScript);
-      if (scriptDisplayStarted && (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return updateScript(deps, isPass, displayAdvanced);
+      if (scriptDisplayStarted && (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return runScript(deps, isPass, displayAdvanced);
       break;
 
     case 'startBattle': {
@@ -858,7 +811,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       if (pikachuFollower?.visible) {
         pikachuFollower.hideImage();
         pikachuFollower.visible = false;
-        pokecenterHealHidPikachu = true;
+        pikachuDrawingDisabled = true;
       }
       advanceScript(activeScript);
       break;
@@ -868,9 +821,9 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       // again, but nothing is drawn until an image is written (Func_6ebb or UpdateSprites).
       // Spawn state 5 is read only by a Pikachu that isn't out (TrySpawnPikachu).
       pendingPikachuSpawnState = 5;
-      if (pokecenterHealHidPikachu && pikachuFollower) {
+      if (pikachuDrawingDisabled && pikachuFollower) {
         pikachuFollower.visible = true;
-        pokecenterHealHidPikachu = false;
+        pikachuDrawingDisabled = false;
       }
       advanceScript(activeScript);
       break;
@@ -894,7 +847,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
     case 'updateSprites':
       // TrySpawnPikachu for a starter that wasn't out (status 0), at the pending spawn
       // state; then SpawnPikachu_ with the font loaded (Func_fc76a).
-      if (pikachuFollower && !pikachuFollower.visible && !pokecenterHealHidPikachu
+      if (pikachuFollower && !pikachuFollower.visible && !pikachuDrawingDisabled
           && pendingPikachuSpawnState !== null && shouldPikachuFollow(playerParty)) {
         pikachuFollower.visible = true;
         pikachuFollower.spawnAtState(player.x, player.y, player.direction, pendingPikachuSpawnState);
@@ -926,24 +879,11 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
       advanceScript(activeScript);
       break;
 
-    case 'pokecenterHeal':
-      if (!healMachineSprite) {
-        loadSprite('/gfx/overworld/heal_machine.png').then(s => {
-          healMachineSprite = s;
-        });
-      }
-      pokecenterHealAnim = {
-        phase: 'place',
-        partyCount: Math.min(playerParty.length, 6),
-        placed: 0,
-        timer: HEAL_PLACE_FRAMES,
-        flashCount: 0,
-        flashVisible: true,
-      };
-      if (playerParty.length === 0) {
-        pokecenterHealAnim = null;
-        advanceScript(activeScript);
-      }
+    case 'healingMachine':
+      healingMachine = new HealingMachineSession(playerParty.length, {
+        preloadMusic, fadeOutAndStopMusic, isAudioFadingOut, playSFX, playMusic, isMusicChannelActive,
+      });
+      if (healingMachine.done) advanceScript(activeScript);
       break;
 
     case 'fadeOut':
@@ -968,7 +908,7 @@ export function updateScript(deps: ScriptDeps, isPass: boolean, displayAdvanced 
   }
 
   if (scriptDisplayStarted && activeScript.index !== commandIndex &&
-      (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return updateScript(deps, isPass, displayAdvanced);
+      (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return runScript(deps, isPass, displayAdvanced);
   return null;
 }
 
@@ -1067,7 +1007,7 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       if (interaction.npc.data.id === scriptAwaitInteraction.npcId) {
         scriptAwaitInteraction = null;
         advanceScript(activeScript);
-        return updateScript(deps, isPass); // ball DisplayTextID starts on the A press
+        return runScript(deps, isPass); // ball DisplayTextID starts on the A press
       }
       const textId = interaction.npc.data.textId;
       const name = gameMap.mapData!.name;
@@ -1075,11 +1015,11 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       const call = mapTextCall(name, textId);
       const plain = call?.call === 'text' || call?.call === 'printText' ? call : undefined;
       if (!handler && !plain) throw new Error(`unresolved free-move NPC ${name}:${interaction.npc.data.id}`);
-      const body = handler ? handler({ hasFlag, bag: deps.playerBag, party: deps.playerParty,
+      const body = handler ? applyMapAutoTextBox(handler({ hasFlag, bag: deps.playerBag, party: deps.playerParty,
         ownedCount: getOwnedCount(), facing: player.direction, step: mapStep(player),
-        findNpc: id => lookupNpc(id, npcs) }) : displayTextID([
+        findNpc: id => lookupNpc(id, npcs) }), name) : displayTextID([
           { type: 'printText', program: plain!.program, box: plain!.call === 'printText' ? 'new' : 'keep' },
-        ], { autoBox: false });
+        ], { autoBox: mapAutoTextBox(name) });
       return startFreeDisplay(body, deps, isPass);
     }
     if ('scriptId' in interaction || 'program' in interaction) {
@@ -1121,46 +1061,13 @@ function startFreeDisplay(body: ScriptCommand[], deps: ScriptDeps, isPass: boole
     if (stepBack) deps.player.startScriptedMove(['up']);
     scriptFreeSub = stepBack ? 'guard_step' : 'move';
   } });
-  return updateScript(deps, isPass);
+  return runScript(deps, isPass);
 }
 
 // ── Render helpers ─────────────────────────────────────────────────────
 
-/** Render pokecenter heal animation sprites over the overworld. */
-export function renderPokecenterHeal(camX: number, camY: number, mapNpcs: Npc[]): void {
-  if (!pokecenterHealAnim || !healMachineSprite) return;
-  const nurse = lookupNpc('nurse', mapNpcs);
-  if (!nurse) return;
-
-  const anim = pokecenterHealAnim;
-  const count = anim.phase === 'place' ? anim.placed : anim.partyCount;
-  const ctx = getCtx();
-  const s = getScale();
-  const flashDim = anim.phase === 'flash' && !anim.flashVisible;
-  if (flashDim) ctx.globalAlpha = 0.3;
-
-  // Draw monitor sprite
-  const mx = nurse.x + HEAL_MONITOR_OFFSET.dx - camX;
-  const my = nurse.y + HEAL_MONITOR_OFFSET.dy - camY;
-  ctx.drawImage(healMachineSprite, 0, 0, 8, 8, mx * s, my * s, 8 * s, 8 * s);
-
-  // Draw pokeball sprites
-  for (let i = 0; i < count && i < HEAL_BALL_OFFSETS.length; i++) {
-    const off = HEAL_BALL_OFFSETS[i];
-    const bx = nurse.x + off.dx - camX;
-    const by = nurse.y + off.dy - camY;
-    if (off.flip) {
-      ctx.save();
-      ctx.translate((bx + 8) * s, by * s);
-      ctx.scale(-1, 1);
-      ctx.drawImage(healMachineSprite, 0, 8, 8, 8, 0, 0, 8 * s, 8 * s);
-      ctx.restore();
-    } else {
-      ctx.drawImage(healMachineSprite, 0, 8, 8, 8, bx * s, by * s, 8 * s, 8 * s);
-    }
-  }
-  if (flashDim) ctx.globalAlpha = 1;
-}
+/** Render the machine's retained OAM scanout, including its two post-return frames. */
+export function renderHealingMachine(): void { healingMachine?.render(); }
 
 /** Render script exclamation "!" bubble above target. */
 export function renderScriptExclamation(

@@ -61,6 +61,7 @@ CHAR_TO_TILE['▼'] = 110;  // down arrow $EE (prompt indicator)
 CHAR_TO_TILE['♂'] = 111;  // $EF
 CHAR_TO_TILE['¥'] = 112;  // $F0 — Pokémon currency symbol
 CHAR_TO_TILE['×'] = 113;  // $F1
+CHAR_TO_TILE['\uE006'] = 114; // <DOT> $F2 (StatusScreen dex label)
 CHAR_TO_TILE['/'] = 115;  // $F3
 CHAR_TO_TILE[','] = 116;  // $F4
 CHAR_TO_TILE['♀'] = 117;  // $F5

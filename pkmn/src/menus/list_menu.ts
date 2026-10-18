@@ -6,7 +6,6 @@ import { getCurrentMenuItem, getEmptySlotGeneration, getListScrollOffset } from 
 import type { BgTransfer } from '../text/bg_transfer';
 import { MenuInput } from './menu_input';
 import type { ScreenTiles } from './screen_tiles';
-import { LEVEL_GLYPH } from './menu_glyphs';
 import { monDisplayName } from '../pokemon_names';
 import { setNoTextDelay } from '../text/text_flags';
 
@@ -138,9 +137,7 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
       const entry = entries[index];
       if ('level' in entry) {
         this.tiles.placeString(6, y, monDisplayName({ nickname: entry.name }));
-        // PrintLevel overwrites <LV> for level 100; all numbers are left-aligned.
-        if (entry.level < 100) this.tiles.put(14, y + 1, LEVEL_GLYPH);
-        this.tiles.placeString(entry.level < 100 ? 15 : 14, y + 1, String(entry.level));
+        this.tiles.printLevel(14, y + 1, entry.level);
         continue;
       }
       this.tiles.placeString(6, y, getItemName(entry.id));

@@ -3,10 +3,10 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
 });
-vi.mock('./audio', () => ({ tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: () => true }));
+vi.mock('./audio', () => ({ setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: () => true }));
 vi.mock('./debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
 vi.mock('./renderer', () => ({
-  fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1,
+  getMonsterPalette: () => 'YELLOWMON', drawFadeOverlay: vi.fn(), fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1,
   getCtx: () => ({ drawImage() {} }), getActivePalette: () => 'PALLET',
   setActivePalette: vi.fn(), getMapPalette: () => 'PALLET',
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }),
@@ -14,6 +14,8 @@ vi.mock('./renderer', () => ({
   loadSprite: async () => ({ width: 16, height: 96 }), loadBattleSprite: async () => ({ width: 56 }),
   captureUi: (draw: () => void) => { uiTiles.clear(); draw(); return () => {}; },
 }));
+import { loadStatusScreenAssets } from './menus/status_screen';
+import { Battle } from './battle/battle';
 import * as main from './main';
 import * as input from './input';
 import { restoreFlags } from './events';
@@ -23,8 +25,9 @@ import { loadTextPrograms } from './text/program_data';
 import { textBgTransfer } from './text/bg_transfer';
 import { createPokemon, loadBattleData } from './battle';
 import { playSFX } from './audio';
+import { Bag } from './items';
 import { uiTiles } from './renderer/ui_tiles';
-import { drawTile, fillRect } from './renderer';
+import { drawTile, fillRect, drawFadeOverlay } from './renderer';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem } from './list_state';
 import * as saves from './save';
 import type { GameButton } from './core';
@@ -41,7 +44,7 @@ const host = (main as unknown as { mainTest: {
   gameTick(): void; checkUiEntry(): void; drawUiLayer(): void; openStartMenu(): void;
   restOfPass(deps: OverworldDeps): void; overworldDeps(): OverworldDeps;
   reset(): void; startNewGame(): Promise<void>; loadSavedGame(): Promise<void>;
-  readonly state: string; readonly fade: number;
+  readonly state: string; readonly fade: number; readonly bag: Bag; battle: Battle | null;
   startMenu: StartMenuSession; partyMenu: PartyMenu; bagMenu: BagSession;
   optionMenu: OptionMenu; pokedexMenu: PokedexMenu; trainerCard: TrainerCard; saveMenu: SaveSession;
   textBox: TextBox;
@@ -49,7 +52,7 @@ const host = (main as unknown as { mainTest: {
 } }).mainTest;
 const buttons: GameButton[] = ['a', 'b', 'start', 'select', 'up', 'down', 'left', 'right'];
 beforeAll(async () => {
-  await Promise.all([initTextSystem(), loadGameText(), loadTextPrograms(), loadMapSpriteSets(), loadBattleData()]);
+  await Promise.all([initTextSystem(), loadGameText(), loadTextPrograms(), loadMapSpriteSets(), loadBattleData(), loadStatusScreenAssets()]);
 });
 beforeEach(() => {
   vi.restoreAllMocks(); vi.clearAllMocks(); host.reset(); restoreFlags(['GOT_POKEDEX']);
@@ -61,6 +64,90 @@ beforeEach(() => {
   textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   for (const key of buttons) input.setKey(key, false);
   input.updateInput(); input.syncJoypadRead();
+});
+
+describe('StatusScreen through main party and battle dispatch', () => {
+  it.each([0, 1, 2])('START → POKéMON reveals R+19 and first reads R+22 with one owner, offset %i', offset => {
+    host.playerParty.push(createPokemon('PIKACHU', 5)!);
+    setBattleAndStartSavedMenuItem(1);
+    const r = driver(); host.openStartMenu(); r.wait(23 + offset); r.step('a');
+    const reads = r.read.mock.calls.length, syncs = r.sync.mock.calls.length, ticks = r.transfer.mock.calls.length;
+    expect(host.partyMenu.paletteWhite).toBe(true);
+    for (let frame = 1; frame <= 21; frame++) {
+      r.step(...(frame === 21 ? ['b'] as const : [])); expect(host.partyMenu.paletteWhite).toBe(frame < 19);
+      expect(r.read).toHaveBeenCalledTimes(reads); expect(r.sync).toHaveBeenCalledTimes(syncs);
+      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
+      if (frame < 19) {
+        vi.mocked(drawFadeOverlay).mockClear(); host.partyMenu.render();
+        expect(drawFadeOverlay).toHaveBeenCalledWith(1);
+        expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
+      }
+    }
+    // B held only since R+21 is accepted on the first actual read, R+22.
+    r.step('b'); expect(host.state).toBe('start_menu');
+    expect(r.read).toHaveBeenCalledTimes(reads + 1); expect(r.sync).toHaveBeenCalledTimes(syncs);
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + 22);
+  });
+
+  it('main presents medicine white/reveal on R+19 and P+51, with first reads R+22 and P+54', () => {
+    const mon = createPokemon('RATTATA', 5)!;
+    host.playerParty.push(mon); host.bag.items = [{ id: 'POTION', count: 2 }];
+    setBattleAndStartSavedMenuItem(2);
+    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a');
+    r.wait(16); r.step('a'); r.wait(3); r.step('a'); // USE = R
+    expect(host.bagMenu.medicineOpen).toBe(true); expect(host.fade).toBe(1);
+    const reads = r.read.mock.calls.length, ticks = r.transfer.mock.calls.length;
+    for (let frame = 1; frame <= 22; frame++) {
+      r.step(); expect(host.fade, `R+${frame}`).toBe(frame < 19 ? 1 : 0);
+      expect(r.read).toHaveBeenCalledTimes(reads + (frame === 22 ? 1 : 0));
+      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
+    }
+    r.step('b'); expect(host.fade).toBe(1); // P
+    const returningReads = r.read.mock.calls.length, returningTicks = r.transfer.mock.calls.length;
+    for (let frame = 1; frame <= 54; frame++) {
+      r.step(); expect(host.fade, `P+${frame}`).toBe(frame < 51 ? 1 : 0);
+      expect(r.read).toHaveBeenCalledTimes(returningReads + (frame === 54 ? 1 : 0));
+      expect(r.transfer).toHaveBeenCalledTimes(returningTicks + frame);
+    }
+    expect(host.bag.items).toEqual([{ id: 'POTION', count: 2 }]);
+    expect(mon.currentHp).toBe(mon.maxHp);
+  });
+  it.each(['overworld', 'battle', 'forced'] as const)('runs both pages and returns to the same mon in %s mode', mode => {
+    const party = [createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!];
+    host.playerParty.push(...party); const r = driver();
+    let menu = host.partyMenu;
+    if (mode === 'overworld') {
+      setBattleAndStartSavedMenuItem(1); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(23);
+      expect(host.state).toBe('party_menu');
+    } else {
+      const battle = new Battle(party[0], createPokemon('PIDGEY', 5)!, party, new Bag(), new Set(), 'ASH');
+      Reflect.set(battle, 'state', mode === 'forced' ? 'forced_switch' : 'choose_pokemon');
+      menu = Reflect.get(battle, 'partyMenu') as PartyMenu;
+      menu.showForBattle(party, 0, mode === 'forced'); host.battle = battle;
+    }
+    r.step('down'); r.step(); r.step('a'); r.step(); r.step('down'); r.step(); r.step('a');
+    expect(menu.statusScreenActive).toBe(true);
+    const selected = Reflect.get(menu, 'cursor'); expect(selected).toBe(1);
+    const read = r.read.mock.calls.length, sync = r.sync.mock.calls.length, ticks = r.transfer.mock.calls.length;
+    r.wait(26); expect(r.read).toHaveBeenCalledTimes(read); expect(r.sync).toHaveBeenCalledTimes(sync);
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
+    r.step(); expect(r.read).toHaveBeenCalledTimes(read + 1);
+    r.step('b'); r.wait(3); expect(menu.statusScreenActive).toBe(true);
+    r.step('b'); r.wait(2); expect(menu.statusScreenActive).toBe(true);
+    r.step(); expect(menu.statusScreenActive).toBe(false);
+    expect(Reflect.get(menu, 'state')).toBe('list'); expect(Reflect.get(menu, 'cursor')).toBe(selected);
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + 35);
+    if (mode === 'overworld') {
+      const before = r.read.mock.calls.length, synced = r.sync.mock.calls.length;
+      expect(menu.paletteWhite).toBe(true); r.wait(18); expect(menu.paletteWhite).toBe(true);
+      r.step(); expect(menu.paletteWhite).toBe(false); // Q+22 = C+19
+      r.wait(2); expect(r.read).toHaveBeenCalledTimes(before);
+      r.step(); expect(r.read).toHaveBeenCalledTimes(before + 1); // Q+25 = C+22
+      expect(r.sync).toHaveBeenCalledTimes(synced);
+      expect(Reflect.get(menu, 'cursor')).toBe(selected);
+      expect(r.transfer).toHaveBeenCalledTimes(ticks + 57);
+    }
+  });
 });
 
 describe('SAVE through main dispatch and real storage', () => {
@@ -217,7 +304,7 @@ describe('START through main dispatch', () => {
     // Each existing submenu's own flow is outside the START-side tail. Trigger its
     // actual return branch without conflating internal timing with this audit.
     if (kind === 'dex') vi.spyOn(host.pokedexMenu, 'update').mockReturnValue('closed');
-    if (kind === 'party') vi.spyOn(host.partyMenu, 'update').mockReturnValue('close');
+    if (kind === 'party') { r.wait(22); vi.spyOn(host.partyMenu, 'update').mockReturnValue('close'); }
     if (kind === 'trainer') vi.spyOn(host.trainerCard, 'update').mockReturnValue(true);
     if (kind === 'option') vi.spyOn(host.optionMenu, 'update').mockReturnValue(true);
     if (kind === 'item') { r.wait(16); } // actual retained list input, no mocked exit

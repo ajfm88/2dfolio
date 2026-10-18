@@ -1,5 +1,5 @@
 // DisplayPokemonCenterDialogue_ (engine/events/pokecenter.asm).
-// A6e Pikachu programs, nurse waits and existing healing-machine internals are retained.
+// A6e Pikachu programs/waits are retained; note 59 ports the machine and HealParty return order.
 import type { Direction } from '../core';
 import type { Npc } from '../overworld/npc';
 import type { ScriptCommand } from '../script/types';
@@ -50,7 +50,9 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         ...nurseFace('left'),
         { type: 'wait', frames: 30 },
         // AnimateHealingMachine (ends in UpdateSprites, Pikachu still undrawn), HealParty
-        { type: 'pokecenterHeal' },
+        { type: 'healingMachine' },
+        { type: 'updateSprites' },
+        { type: 'healParty' },
         { type: 'restoreMapMusic' },
         // Func_6eaa for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
         { type: 'ifStarterPikachu', then: nurseUp },

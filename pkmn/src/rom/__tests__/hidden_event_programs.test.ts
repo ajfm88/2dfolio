@@ -71,7 +71,7 @@ describe('hidden-event predef programs (A5b7g2 CP1)', () => {
         checked++;
       }
     }
-    expect(checked).toBe(8); // Blue's House ×3, Lab left poster and e-mail ×2, SNES, Viridian bench
+    expect(checked).toBe(9); // Blue's House ×3, Lab left poster and e-mail ×2, SNES, Viridian + Pewter benches
   });
 
   it('every committed hidden-event program and every bookshelf predef target is extracted', () => {

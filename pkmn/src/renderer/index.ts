@@ -2,3 +2,4 @@ export { initRenderer, resizeCanvas, clear, fillRect, drawFadeOverlay, drawTile,
 export { getMapPalette, getPaletteColors, paletteToHex, getMonsterPalette } from './palettes';
 export { captureUi, beginSpriteLog, endSpriteLog, drawShadowUnderSprites } from './renderer';
 export type { SpriteDraw } from './renderer';
+export { obpMapping, OBP0_MAPPING, loadSpriteMapped } from './renderer';

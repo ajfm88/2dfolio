@@ -745,6 +745,27 @@ describe('Audio: the heal sounds (A5b7c2)', () => {
   });
 });
 
+describe('Audio: healing-machine sound (note 59 CP2)', () => {
+  it('uses the traced bank-$02 header and CHAN5 pointer', () => {
+    expect(SFX_HEADERS.healing_machine).toEqual({ bank: 0x02, addr: 0x41da });
+    expect(rom.readByte(0x81da)).toBe(4); // channel_count 1, channel 5
+    expect(rom.readWord(0x81db)).toBe(0x451e);
+  });
+
+  it('matches committed data and every macro in the bank-$02 disassembly', () => {
+    const extracted = extractSfx(rom, 'healing_machine')!;
+    expect(extracted).toEqual(loadJson('audio/sfx/healing_machine.json'));
+    const path = resolve(__dirname, '../../../../refs/pokeyellow/audio/sfx/healing_machine_1.asm');
+    if (existsSync(path)) {
+      expect(extracted.channels.map(c => c.commands)).toEqual(parseAsmChannels(readFileSync(path, 'utf8')));
+    }
+  });
+
+  it('is byte-equivalent after decoding in bank $1f, keeping the three-difference guard intact', () => {
+    expect(extractSfxAt(rom, 0x1f, 0x41da)).toEqual(extractSfxAt(rom, 0x02, 0x41da));
+  });
+});
+
 describe('Map extraction', () => {
   it('should match PalletTown.json exactly', () => {
     const extracted = extractMap(rom, 'PalletTown', itemNames, trainerClassNames);
@@ -799,16 +820,17 @@ describe('Map extraction', () => {
     expect(extracted!.npcs).toEqual(expected.npcs);
   });
 
-  // Every extracted map (upstream's 12 + V1's 7)
+  // Every extracted map (upstream's 12 + V1's 7 + V2a's 5).
   const ALL_MAP_NAMES = [
     'PalletTown', 'ViridianCity', 'Route1', 'Route22',
     'RedsHouse1F', 'RedsHouse2F', 'BluesHouse', 'OaksLab',
     'ViridianPokecenter', 'ViridianMart', 'ViridianSchoolHouse', 'ViridianNicknameHouse',
     'Route2', 'Route2Gate', 'Route2TradeHouse', 'DiglettsCaveRoute2',
     'ViridianForest', 'ViridianForestSouthGate', 'ViridianForestNorthGate',
+    'PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse',
   ];
 
-  it('should extract all 19 maps', () => {
+  it('should extract all 24 maps', () => {
     const all = extractAllMaps(rom, itemNames, trainerClassNames);
     expect(Object.keys(all).sort()).toEqual([...ALL_MAP_NAMES].sort());
   });
@@ -826,6 +848,90 @@ describe('Map extraction', () => {
       expect(extractedJson).toEqual(expected);
     });
   }
+});
+
+// V2a (note 60 §13); expected values come from pret's headers/objects and marts.asm.
+describe('V2a Pewter extraction', () => {
+  const map = (name: string, source = rom) => extractMap(source, name, itemNames, trainerClassNames)!;
+  const stock = (name: string, source = rom) => map(name, source).npcs.find(n => n.id === 'clerk')!.shopItems;
+
+  it('keeps Museum/Gym referenced-only and Route 3 unnamed, with inverse Route 2 alignment', () => {
+    const city = map('PewterCity');
+    expect([city.width, city.height, city.tileset]).toEqual([20, 18, 'OVERWORLD']);
+    expect(city.connections).toEqual([{ direction: 'south', mapName: 'Route2', offset: 5 }]);
+    expect(city.warps.map(w => [w.x, w.y, w.destMap, w.destWarpId])).toEqual([
+      [14, 7, 'Museum1F', 0], [19, 5, 'Museum1F', 2], [16, 17, 'PewterGym', 0],
+      [29, 13, 'PewterNidoranHouse', 0], [23, 17, 'PewterMart', 0],
+      [7, 29, 'PewterSpeechHouse', 0], [13, 25, 'PewterPokecenter', 0],
+    ]);
+    const all = extractAllMaps(rom, itemNames, trainerClassNames);
+    for (const name of ['Museum1F', 'PewterGym', 'Route3']) expect(all).not.toHaveProperty(name);
+  });
+
+  it('reads object ids/positions/directions from the five Pewter ASM object lists', () => {
+    const objectsDir = resolve(__dirname, '../../../../refs/pokeyellow/data/maps/objects');
+    if (!existsSync(objectsDir)) return;
+    for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse']) {
+      const asm = readFileSync(resolve(objectsDir, `${name}.asm`), 'utf8');
+      const ids = [...asm.matchAll(/const_export (\w+)/g)].map(m => m[1].slice(name.length + 1).toLowerCase());
+      const rows = [...asm.matchAll(/object_event\s+(\d+),\s*(\d+),\s*SPRITE_\w+,\s*(\w+),\s*(\w+)/g)];
+      expect(map(name).npcs.map(n => n.id), name).toEqual(ids);
+      map(name).npcs.forEach((npc, i) => {
+        const [, x, y, move, direction] = rows[i];
+        expect([npc.x, npc.y, npc.movement]).toEqual([Number(x), Number(y), move.toLowerCase()]);
+        if (move === 'WALK') expect(npc.walkDir).toBe(direction.toLowerCase());
+        else if (direction !== 'NONE') expect(npc.direction).toBe(direction.toLowerCase());
+      });
+    }
+  });
+
+  it('resolves both exits of each interior to the correct Pewter city warp', () => {
+    for (const [name, width, tileset, warp] of [
+      ['PewterPokecenter', 7, 'POKECENTER', 6], ['PewterMart', 4, 'MART', 4],
+      ['PewterNidoranHouse', 4, 'HOUSE', 3], ['PewterSpeechHouse', 4, 'HOUSE', 5],
+    ] as const) {
+      const m = map(name);
+      expect([m.width, m.height, m.tileset]).toEqual([width, 4, tileset]);
+      expect(m.warps).toHaveLength(2);
+      expect(m.warps.every(w => w.destMap === 'PewterCity' && w.destWarpId === warp)).toBe(true);
+    }
+    expect(map('PewterPokecenter').hiddenEvents).toEqual([
+      { x: 0, y: 4, facing: 'left', program: 'PewterCityPokecenterBenchGuyText', text: 'Yawn!\fWhen JIGGLYPUFF\nsings, POKéMON\nget drowsy...\f...Me too...\nSnore...' },
+      { x: 13, y: 3, scriptId: 'POKECENTER_PC', facing: 'up' },
+    ]);
+    expect(map('PewterCity').signs.map(s => [s.x, s.y])).toEqual([
+      [19, 29], [33, 19], [24, 17], [14, 25], [15, 9], [11, 17], [25, 23],
+    ]);
+    expect(map('PewterCity').signs.every(s => s.text.length > 0)).toBe(true);
+    expect(map('PewterCity').npcs.filter(n => ['super_nerd1', 'youngster'].includes(n.id)).every(n => !n.dialogue)).toBe(true);
+    expect(map('PewterPokecenter').npcs.find(n => n.id === 'jigglypuff')!.dialogue).toBe('');
+  });
+
+  it.each([
+    ['ViridianMart', ['POKE_BALL', 'POTION', 'ANTIDOTE', 'PARALYZE_HEAL', 'BURN_HEAL']],
+    ['PewterMart', ['POKE_BALL', 'POTION', 'ESCAPE_ROPE', 'ANTIDOTE', 'BURN_HEAL', 'AWAKENING', 'PARALYZE_HEAL']],
+  ] as const)('extracts %s stock from the home-bank script_mart payload', (name, expected) => {
+    expect(stock(name)).toEqual(expected);
+  });
+
+  it('uses changed ROM stock rather than metadata, retaining the $0f runtime alias', () => {
+    const buffer = rom.readBytes(0, rom.length);
+    buffer[0x233b + 2] = 0x0e; // AWAKENING replaces POKE_BALL in Viridian's script_mart.
+    expect(stock('ViridianMart', new BinaryReader(new Uint8Array(buffer).buffer))).toEqual([
+      'AWAKENING', 'POTION', 'ANTIDOTE', 'PARALYZE_HEAL', 'BURN_HEAL',
+    ]);
+  });
+
+  it.each(['short count', 'long count', 'early terminator', 'missing terminator', 'unknown item'] as const)(
+    'rejects malformed script_mart: %s', problem => {
+      const buffer = rom.readBytes(0, rom.length), p = 0x2343;
+      if (problem === 'short count') buffer[p + 1] = 6;
+      if (problem === 'long count') buffer[p + 1] = 8;
+      if (problem === 'early terminator') buffer[p + 2] = 0xff;
+      if (problem === 'missing terminator') buffer[p + 9] = 0;
+      if (problem === 'unknown item') buffer[p + 2] = 0xfe;
+      expect(() => map('PewterMart', new BinaryReader(new Uint8Array(buffer).buffer))).toThrow(/script_mart/);
+    });
 });
 
 // V1 (notes/02-v1-plan.md). The expected values are transcribed from the pret ASM —
@@ -950,9 +1056,12 @@ describe('V1 maps: Route 2 + Viridian Forest', () => {
     expect(signs.every(s => s.text.length > 0)).toBe(true);
   });
 
-  it('connects Viridian north to Route 2, and Route 2 only south until Pewter exists', () => {
+  it('connects Route 2 north to Pewter and south to Viridian with the ASM offsets', () => {
     expect(map('ViridianCity').connections).toContainEqual({ direction: 'north', mapName: 'Route2', offset: 5 });
-    expect(map('Route2').connections).toEqual([{ direction: 'south', mapName: 'ViridianCity', offset: -5 }]);
+    expect(map('Route2').connections).toEqual([
+      { direction: 'north', mapName: 'PewterCity', offset: -5 },
+      { direction: 'south', mapName: 'ViridianCity', offset: -5 },
+    ]);
   });
 
   it('resolves gate and house exits (LAST_MAP) to Route 2, and no warp to an unknown map', () => {

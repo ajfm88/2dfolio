@@ -6,6 +6,7 @@ Canvas is GB resolution (160x144) scaled to fit window. All drawing uses `* scal
 
 - `loadTileset()`: remaps grayscale PNG -> 4-color CGB palette (color-corrected RGB555 from `sgb_palettes.asm` via `gbcCorrect()`)
 - `loadSprite()`: same palette + OBP0 shade mapping, lightest color (index 0) becomes transparent
+- `loadSpriteMapped()`: explicit `obpMapping(reg)`, cached by URL/palette/mapping; colour 0 stays transparent. Healing-machine OBP1 swaps $e0 `[0,0,2,3]` and $c8 `[0,2,0,3]` instead of dimming. Normal `loadSprite` retains $d0/OBP0.
 - `loadFont()`: 1-bit font — white->transparent, black->fixed `#181818` (palette-independent)
 - Gray thresholds: >=192->palette 0, >=128->1, >=64->2, else->3
 

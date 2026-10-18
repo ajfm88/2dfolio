@@ -121,7 +121,12 @@ function grayToColorIndex(gray: number): number {
 // Each maps a gray shade index (0-3) to a CGB base palette color index.
 // rBGP  = %11100100 → [0, 1, 2, 3] (identity)
 // rOBP0 = %11010000 → [0, 0, 1, 3] (sprites: shade 1→white, shade 2→accent)
-const OBP0_MAPPING = [0, 0, 1, 3];
+export const OBP0_MAPPING = [0, 0, 1, 3] as const;
+
+/** DMG OBP register: colour 0 is made transparent separately, regardless of its mapping. */
+export function obpMapping(reg: number): readonly number[] {
+  return [0, 1, 2, 3].map(c => (reg >> (2 * c)) & 3);
+}
 
 /** Remap grayscale image data to the given RGB palette.
  *  colorMap optionally remaps shade indices to palette indices (for OBP0/OBP1). */
@@ -129,7 +134,7 @@ function remapToPalette(
   data: Uint8ClampedArray,
   rgbPalette: Rgb[],
   transparent0: boolean,
-  colorMap?: number[]
+  colorMap?: readonly number[]
 ): void {
   for (let i = 0; i < data.length; i += 4) {
     const shade = grayToColorIndex(data[i]);
@@ -237,14 +242,23 @@ export async function loadSprite(
   url: string,
   palette?: string
 ): Promise<HTMLCanvasElement> {
+  return loadSpriteMapped(url, OBP0_MAPPING, palette);
+}
+
+/** OBJ art through a specific OBP mapping, cached independently from BG and other mappings. */
+export async function loadSpriteMapped(
+  url: string,
+  mapping: readonly number[],
+  palette?: string
+): Promise<HTMLCanvasElement> {
   const pal = palette ?? currentPaletteName;
-  const key = cacheKey(url, pal);
+  const key = cacheKey(url, pal) + '::obj:' + mapping.join(',');
   if (colorizedCache.has(key)) return colorizedCache.get(key)!;
 
   const rawData = await getRawImageData(url);
   const colorized = cloneImageData(rawData);
   const rgbPalette = getPaletteColors(pal) as unknown as Rgb[];
-  remapToPalette(colorized.data, rgbPalette, true, OBP0_MAPPING);
+  remapToPalette(colorized.data, rgbPalette, true, mapping);
 
   const tmp = document.createElement("canvas");
   tmp.width = rawData.width;

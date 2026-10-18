@@ -28,6 +28,7 @@ import '../story/lab_text_handlers';
 import '../story/pokecenter';
 import '../story/mart';
 import { getTextHandler, getTextScript, displayTextID } from '../story/text_handlers';
+import { mapAutoTextBox, applyMapAutoTextBox } from '../text/auto_text_box';
 import type { TextHandlerContext } from '../story/text_handlers';
 import { getOwnedCount } from '../pokedex_state';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
@@ -254,7 +255,7 @@ function handlerAction(textId: number | undefined, deps: OverworldDeps, shopItem
   const handler = call?.call === 'handler' ? getTextHandler(deps.currentMapName, textId)
     : call?.call === 'script' ? getTextScript(call.script) : undefined;
   if (!handler) return null; // unmigrated/excluded callers retain their existing path
-  return { type: 'script', commands: handler(textContext(deps, shopItems)) };
+  return { type: 'script', commands: applyMapAutoTextBox(handler(textContext(deps, shopItems)), deps.currentMapName) };
 }
 
 /** Handle a player interaction (NPC talk, sign read, item pickup, script trigger). */
@@ -293,8 +294,9 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
     }
     const call = mapTextKind(currentMapName, npcData.textId, undefined,
       currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2') : currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL'));
-    const labCall = currentMapName === 'OaksLab' ? mapTextCall(currentMapName, npcData.textId) : undefined;
-    return { type: 'textbox', text, ...(call ? { call } : {}), ...(currentMapName === 'OaksLab' ? {
+    const noAuto = !mapAutoTextBox(currentMapName);
+    const labCall = noAuto ? mapTextCall(currentMapName, npcData.textId) : undefined;
+    return { type: 'textbox', text, ...(call ? { call } : {}), ...(noAuto ? {
       autoBox: false, ...(labCall?.call === 'text' || labCall?.call === 'printText' ? { program: labCall.program } : {}),
     } : {}) };
   }

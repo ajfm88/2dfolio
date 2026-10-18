@@ -5,12 +5,13 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
 
 | File | Purpose |
 |---|---|
-| `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), the SFX preload, the `_playSFX(name)` console helper |
+| `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), `fadeOutAndStopMusic(control)` / `isAudioFadingOut()` (healing CP2), the SFX preload, the `_playSFX(name)` console helper |
+| `fade_audio.ts` | `AudioFade`: stop-after-fade control/counter/reload/queued ID; ticks before music/SFX; stops/restores NR50 in the completion update |
 | `rival_start.ts` | A5b5b's `playMusic('meetrival', 'rivalAlternate')` adapter: selects the committed alternate channel entries without changing the engine or cached data |
 | `sound_channel.ts` | **(A1a)** `SoundChannel`: one software channel of `Audio1_UpdateMusic`, the interpreter the music and music-mode SFX share (DECISIONS #40) |
 | `music_engine.ts` | The track's channels (CHAN1–4) and `wMusicTempo`; suppression while SFX play; `releaseChannel`; channel 8's drum occupancy |
 | `sfx_engine.ts` | SFX on channels 5–8 overriding music channels 1–4: SFX-mode `square_note` / `noise_note` / `pitch_sweep`, or, after `execute_music`, a `SoundChannel` at tempo $0100 |
-| `sound_wait.ts` | **(A1a)** `audioUpdate()` (music, then SFX, each update) and `soundFinished()` (`WaitForSoundToFinish`: channels 5, 6, 8) |
+| `sound_wait.ts` | **(A1a)** `audioUpdate()` (fade, music, then SFX, each update) and `soundFinished()` (`WaitForSoundToFinish`: channels 5, 6, 8) |
 | `sfx_names.ts` | **(A1a)** the extracted SFX, preloaded |
 | `synthesizer.ts` | Per-sample generation of all 4 channels: pulse (phase accumulator + duty table), wave (32-sample lookup), noise (LFSR + 64 Hz hardware envelope in the callback) |
 | `frequency_table.ts` | Note → Hz, matching `Audio1_CalculateFrequency` (SRA shift, octave 1 = highest); `waveRegisterToHz` (65536/(2048−x)) |
@@ -28,10 +29,10 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   70 / 18 / 22). They are extracted and preloaded; their game call sites await
   A5b4–A5b7. `sfx_key_item_pc.test.ts` pins pitch, timing, waits and music hand-off.
 - **Audio-bank rule:** the cartridge's PlaySound selects the current music's
-  `wAudioROMBank`. Our 18 SFX use bank `$02`; the ROM guard in
+  `wAudioROMBank`. Our 19 SFX use bank `$02`; the ROM guard in
   `extraction.test.ts` compares every SFX_HEADERS entry with bank `$1f` and
   pins exactly three differences: save (return 40/37), turn_on_pc (70/81),
-  enter_pc (22/18). Key-item, turn-off, `heal_hp` and `heal_ailment` copies
+  enter_pc (22/18). Key-item, turn-off, `heal_hp`, `heal_ailment` and `healing_machine` copies
   are identical. A5b7c2 plays `heal_hp` and `heal_ailment` from field medicine.
   Bank-aware lookup stays V5; the current PCs use `$02`, while
   Silph Co. 11F (G1) needs `$1f`.
@@ -41,8 +42,18 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   entry — and outdoor maps need adding to `OUTDOOR_MAPS` (door SFX choice).
   Story `restoreMapMusic` uses the live map callback; the Lab restores `oakslab`
   (A5b5c F-2), and the nurse restores her current map after the existing machine.
-  The machine's missing fade-out, healing sounds/jingle, flashes and heal order
-  remain the separate slice after A5b7 and before V2 (DECISIONS #50).
+  Healing CP3 wires the fade API, preloaded `healing_machine` SFX and actual `pkmnhealed`
+  jingle to the nurse (note 59, DECISIONS #50/#63). `preloadMusic` warms the jingle at H;
+  a cached `playMusic` starts synchronously before its first await. HealParty and the
+  map-track restart run in the machine's return tick; its CHAN1 wait does not use isPlaying.
+  CP4's muted Viridian nurse browser traces (parties 1 and 6, note 59 §15) confirm:
+  fade requested H+1; NR50 $66/$55/$44/$33/$22/$11/$00 at fade updates
+  5/10/15/20/25/30/35 (H+6…H+36), then $77 at update 40 (H+41).
+  The first ball's SFX starts in that restore tick; subsequent balls are 30 frames apart.
+  The actual `pkmnhealed` starts at J=H+41+30n, CHAN1 ends at J+136, and `pokecenter`
+  restarts at J+168 after healing. Both controlled-frame browser capture and normal
+  RAF/wall-clock runs matched these anchors. Output was muted; listening was the user's
+  separate successful play-test. The separate audio/game clocks retain note 59 §10's phase risk.
 - **Alternate rival start:** `audio/alternate_tempo.asm` overwrites three channel
   pointers. The decoded committed track already contains those entries; the
   facade locates their source-matched prefixes, clones the stream, shifts jump
@@ -51,7 +62,12 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   battle challenge uses the normal entry. Tests compare all three prefixes with
   independently parsed ASM and run the real interpreter through the loop.
 - Audio ticks at a fixed 59.7275 Hz off `performance.now()`, independent of game FPS.
-  Each update runs the music channels, then the SFX channels (`audioUpdate`).
+  Each update runs the fade, music channels, then SFX channels (`audioUpdate`).
+- **Healing CP2 fade:** control 4 lowers NR50 every 5 updates (5…35); update **40** stops all
+  channels and restores $77 through the cartridge's `Audio2_StopAllAudio` behavior. No-music,
+  zero-control and second-stop requests stop immediately. Idle ticks preserve StatusScreen's
+  explicit volume. `GBSynthesizer` retains NR50 and uses **(n+1)/8** per output level (base gain
+  0.5), so $00/$33/$77 yield 0.0625/0.25/0.5. Queued map tracks await the post-V2 fade slice.
 - **The interpreter's rules (A1a, `engine_1.asm`; detail in `sound_channel.ts` and
   `notes/16-a1a-plan.md`):**
   - **Channels:** the hardware channel comes from the id, `(id − 1) & 3`.
@@ -98,5 +114,5 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   - SFX use the bank-$02 copy; save timing in Oak's Lab, the Forest and
     DiglettsCaveRoute2 inherits a three-update difference until V5 (A5b7 records
     this limitation when it wires save). Silph Co. 11F's PC variants remain G1.
-- Upstream's own to-do: remaining music tracks, music fade in/out, Pokemon cries,
+- Upstream's own to-do: remaining music tracks, remaining music fade paths, Pokemon cries,
   Pikachu PCM cries.

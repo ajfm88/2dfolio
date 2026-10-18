@@ -16,6 +16,7 @@ import type { TextBox } from '../text/textbox';
 import type { GameButton } from '../core';
 import { HpBarAnimation, staticHpBarPixels } from './hp_bar';
 import { PartyMenu } from './party_menu';
+import { PartyMenuOpening } from './party_menu_opening';
 
 /** HandleMenuInput_ watches A and B here; any other new key goes back to .loop1 (Delay3). */
 const UNWATCHED: readonly GameButton[] = ['up', 'down', 'left', 'right', 'start', 'select'];
@@ -104,9 +105,9 @@ function starterWasFainted(mon: BattlePokemon, fainted: boolean): boolean {
 export type MedicineStep = 'busy' | 'start-list' | 'run-list' | 'done';
 
 type Phase =
-  | 'white' | 'clear' | 'prompt' | 'show' | 'input-delay' | 'choose'
+  | 'opening' | 'input-delay' | 'choose'
   | 'sound-wait' | 'animate' | 'after-anim'
-  | 'msg-clear' | 'msg-text' | 'msg-show' | 'msg-hold' | 'msg-wait'
+  | 'msg-clear' | 'msg-palette' | 'msg-text' | 'msg-show' | 'msg-hold' | 'msg-wait'
   | 'no-effect'
   | 'return-delay' | 'return-list';
 
@@ -120,13 +121,15 @@ export class FieldMedicine {
   get ownsTextBox(): boolean { return this.textBox.active; }
   paletteWhite = true;
   showsParty = true;
-  private phase: Phase = 'white';
+  private phase: Phase = 'opening';
+  private readonly opening: PartyMenuOpening;
   private wait = 3;
   private outcome: MedicineOutcome | null = null;
   private anim: HpBarAnimation | null = null;
   private slot = 0;
   private listFrames = 0;
   private frozen: FrozenRow | null = null;
+  private returnAge = 0;
 
   constructor(
     private readonly textBox: TextBox,
@@ -137,15 +140,19 @@ export class FieldMedicine {
   ) {
     this.partyMenu.showForItem(party);
     this.partyMenu.promptVisible = false;
+    this.opening = new PartyMenuOpening(textBox, transfer, 'PartyMenuItemUseText');
   }
 
   frame(readJoypad: () => void): MedicineStep {
     switch (this.phase) {
-      case 'white':
-      case 'clear':
-      case 'prompt':
-      case 'show':
-        return this.opening();
+      case 'opening': {
+        const ready = this.opening.frame(); // BagSession already owns this frame's text/BG tick.
+        this.paletteWhite = this.opening.paletteWhite;
+        this.partyMenu.promptVisible = !this.paletteWhite;
+        if (!ready) return 'busy';
+        this.phase = 'choose';
+        return this.choose(readJoypad);
+      }
       case 'input-delay':
         this.wait -= 1;
         if (this.wait <= 0) this.phase = 'choose';
@@ -167,20 +174,24 @@ export class FieldMedicine {
       case 'after-anim':
         return this.beginMessage();
       case 'msg-clear':
+      case 'msg-palette':
       case 'msg-text':
       case 'msg-show':
         return this.message();
       case 'msg-hold':
         this.wait -= 1;
-        if (this.wait <= 0) this.phase = 'msg-wait';
+        if (this.wait <= 0) { this.phase = 'msg-wait'; return this.waitPress(readJoypad); }
         return 'busy';
       case 'msg-wait':
         return this.waitPress(readJoypad);
       case 'no-effect':
         return this.noEffect();
       case 'return-delay':
-        this.wait -= 1;
-        if (this.wait <= 0) {
+        this.returnAge++;
+        // Two palette/white waits (6), then player/font/text-box copies (26).
+        if (this.returnAge === 6) this.transfer.enabled = false;
+        if (this.returnAge === 32) this.transfer.enabled = true;
+        if (this.returnAge === 39) {
           this.phase = 'return-list';
           this.showsParty = false;
           this.listFrames = 1;
@@ -198,20 +209,6 @@ export class FieldMedicine {
 
   render(): void {
     if (this.showsParty) this.partyMenu.render();
-  }
-
-  private opening(): MedicineStep {
-    this.wait -= 1;
-    if (this.wait > 0) return 'busy';
-    if (this.phase === 'white') { this.phase = 'clear'; this.wait = 3; this.transfer.enabled = false; }
-    else if (this.phase === 'clear') { this.phase = 'prompt'; this.wait = 3; this.partyMenu.promptVisible = true; }
-    else if (this.phase === 'prompt') { this.phase = 'show'; this.wait = 3; this.transfer.enabled = true; }
-    else {
-      this.paletteWhite = false;
-      this.phase = 'input-delay';
-      this.wait = 2;
-    }
-    return 'busy';
   }
 
   /**
@@ -280,6 +277,9 @@ export class FieldMedicine {
     this.wait -= 1;
     if (this.wait > 0) return 'busy';
     if (this.phase === 'msg-clear') {
+      this.phase = 'msg-palette';
+      this.wait = 3; // SET_PAL_PARTY_MENU: CGB Delay3, E+4..E+6, before PrintText.
+    } else if (this.phase === 'msg-palette') {
       this.phase = 'msg-text';
       this.wait = 3;
       // RedrawPartyMenu's PrintText: its box replaces the prompt.
@@ -327,8 +327,8 @@ export class FieldMedicine {
     this.showsParty = true;
     this.partyMenu.promptVisible = false;
     this.phase = 'return-delay';
-    // Six delay frames, then the next frame opens the list (P+7).
-    this.wait = 7;
+    // Conditional default-palette Delay3 + START's 35-frame restore, then list at P+39.
+    this.returnAge = 0;
     this.listFrames = 0;
     return 'busy';
   }

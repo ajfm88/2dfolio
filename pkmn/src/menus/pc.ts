@@ -61,6 +61,7 @@ export class PcSession extends PcDisplay implements MenuSession {
   override get advanceText(): boolean { return this.bills?.advanceText ?? super.advanceText; }
   copyThird(third: number): void { this.tiles.copyShownThird(third); }
   get fullScreen(): boolean { return this.bills?.fullScreen ?? false; }
+  get ownsBgTransfer(): boolean { return this.bills?.ownsBgTransfer ?? false; }
   renderOverlay(): void { if (this.bills) this.bills.renderOverlay(); else this.yesNo?.render(); }
 
   enter(): void {

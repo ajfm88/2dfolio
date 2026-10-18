@@ -72,6 +72,10 @@ export class GBSynthesizer {
   };
 
   private masterVolume = 0.5; // Overall output scaling
+  private nr50 = 0x77;
+
+  /** NR50, including writes from the music interpreter. VIN bits do not set the output level. */
+  get masterVolumeRegister(): number { return this.nr50; }
 
   init(): void {
     if (this.ctx) return;
@@ -292,7 +296,9 @@ export class GBSynthesizer {
   // ─── Master ────────────────────────────────────────────────────────────
 
   setMasterVolume(left: number, right: number): void {
-    this.masterVolume = 0.5 * ((left + right) / 2) / 7;
+    this.nr50 = (left << 4) | right;
+    // NR50 level 0 is 1/8 output, not mute. Preserve the existing 0.5 base gain.
+    this.masterVolume = 0.5 * (((left & 7) + 1) + ((right & 7) + 1)) / 16;
     if (this.masterGainNode && this.ctx) {
       this.masterGainNode.gain.setValueAtTime(this.masterVolume, this.ctx.currentTime);
     }

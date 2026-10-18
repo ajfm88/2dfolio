@@ -9,6 +9,7 @@ import { GBSynthesizer } from '../audio/synthesizer';
 import { MusicEngine } from '../audio/music_engine';
 import { SfxEngine } from '../audio/sfx_engine';
 import { audioUpdate } from '../audio/sound_wait';
+import { AudioFade } from '../audio/fade_audio';
 import type { MusicData, MusicCommand, NoiseInstrument } from '../audio/music_engine';
 import type { SfxData } from '../audio/sfx_engine';
 
@@ -41,6 +42,7 @@ export class LogSynth extends GBSynthesizer {
   setWaveVolume(level: number): void { this.rec('level2', [level]); super.setWaveVolume(level); }
   silenceWave(): void { this.rec('silence2', []); super.silenceWave(); }
   triggerNoise(param: number, volume: number, fade: number): void { this.rec('noise', [param, volume, fade]); super.triggerNoise(param, volume, fade); }
+  setMasterVolume(left: number, right: number): void { this.rec('master', [left, right]); super.setMasterVolume(left, right); }
 
   /** The updates on which method `m` was called. */
   at(m: string): number[] { return this.log.filter(w => w.m === m).map(w => w.u); }
@@ -52,7 +54,8 @@ export interface Rig {
   synth: LogSynth;
   music: MusicEngine;
   sfx: SfxEngine;
-  /** One audio update: Audio1_UpdateMusic's CHAN1–4, then CHAN5–8. */
+  fade: AudioFade;
+  /** One audio update: FadeOutAudio, then CHAN1–4 and CHAN5–8. */
   update(): void;
   run(n: number): void;
 }
@@ -61,6 +64,7 @@ export function rig(track?: MusicData): Rig {
   const synth = new LogSynth();
   const music = new MusicEngine(synth);
   const sfx = new SfxEngine(synth);
+  const fade = new AudioFade(synth, music, sfx);
   music.setWaveSamples(WAVES);
   music.setNoiseInstruments(NOISE);
   sfx.setWaveSamples(WAVES);
@@ -68,9 +72,9 @@ export function rig(track?: MusicData): Rig {
   if (track) music.play(track);
   const update = (): void => {
     synth.update++;
-    audioUpdate(music, sfx); // the game's own update order
+    audioUpdate(music, sfx, fade); // the game's own update order
   };
-  return { synth, music, sfx, update, run: (n: number) => { for (let i = 0; i < n; i++) update(); } };
+  return { synth, music, sfx, fade, update, run: (n: number) => { for (let i = 0; i < n; i++) update(); } };
 }
 
 export const sfxData = (name: string): SfxData => audioJson<SfxData>(`sfx/${name}.json`);

@@ -82,7 +82,7 @@ export type ScriptCommand =
   | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
   | { type: 'healParty' }
   | { type: 'restoreMapMusic' }
-  | { type: 'pokecenterHeal' }
+  | { type: 'healingMachine' }
   // DisplayPokemonCenterDialogue_'s Pikachu calls (engine/events/pokecenter.asm):
   // LoadCurrentMapView, Delay3, UpdateSprites, then PikachuWalksToNurseJoy's program
   | { type: 'pikachuToNurse' }

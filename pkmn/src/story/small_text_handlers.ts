@@ -36,6 +36,12 @@ export function caterpillarText(): ScriptCommand[] {
     { type: 'yesNoChoice', yes: [print('ViridianCityPrintYoungster2Text.CaterpieAndWeedleDescriptionText')],
       no: [print('ViridianCityPrintYoungster2Text.OkThenText')] }]);
 }
+/** PewterCitySuperNerd2Text: cp $0 after YesNoChoice, so YES (item 0) is the "That's right!" branch. */
+export function pewterSuperNerdText(): ScriptCommand[] {
+  return displayTextID([print('PewterCitySuperNerd2Text.DoYouKnowWhatImDoingText'),
+    { type: 'yesNoChoice', yes: [print('PewterCitySuperNerd2Text.ThatsRightText')],
+      no: [print('PewterCitySuperNerd2Text.ImSprayingRepelText')] }]);
+}
 export function girlText(ctx: TextHandlerContext): ScriptCommand[] {
   return displayTextID([print(`ViridianCityPrintGirlText.${ctx.hasFlag('GOT_POKEDEX') ? 'WhenIGoShopText' : 'HasntHadHisCoffeeYetText'}`)]);
 }
@@ -47,6 +53,7 @@ registerTextHandler('Route1', 1, ctx => potionSampleScript(ctx.hasFlag('GOT_POTI
 registerTextHandler('ViridianCity', 2, gamblerText);
 registerTextHandler('ViridianCity', 3, caterpillarText);
 registerTextHandler('ViridianCity', 4, girlText);
+registerTextHandler('PewterCity', 4, pewterSuperNerdText);
 registerTextHandler('ViridianCity', 5, () => buildSleepingOldManScript(false));
 registerTextHandler('ViridianCity', 7, buildOldMan1Script);
 registerTextHandler('ViridianCity', 8, ctx => ctx.hasFlag('COMPLETED_CATCH_TRAINING')

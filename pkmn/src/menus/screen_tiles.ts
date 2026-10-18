@@ -3,6 +3,7 @@
 // A visible copy changes only when a third is transferred (home/vcopy.asm).
 
 import { tokenizeGlyphs } from '../text/charmap';
+import { LEVEL_GLYPH } from './menu_glyph_ids';
 import type { BgTransfer } from '../text/bg_transfer';
 import type { TextBox, TextBoxScreen } from '../text/textbox';
 
@@ -119,7 +120,7 @@ export class ScreenTiles {
     }
   }
 
-  /** PrintNumber, one byte. A leading zero is skipped, never blanked. The ones digit is always written. */
+  /** PrintNumber (1–3 bytes). Suppressed leading cells are skipped; the ones digit is always written. */
   writeNumber(x: number, y: number, value: number, flags: NumberWrite): void {
     let col = x;
     let past = false;
@@ -136,6 +137,12 @@ export class ScreenTiles {
       col++;
       past = true;
     }
+  }
+
+  /** PrintLevel: left-aligned, with the hundreds digit overwriting <LV> at 100. */
+  printLevel(x: number, y: number, level: number): void {
+    if (level < 100) this.put(x, y, LEVEL_GLYPH);
+    this.placeString(level < 100 ? x + 1 : x, y, String(level));
   }
 
   /** Drop every cell. The map and the message box show through again. */

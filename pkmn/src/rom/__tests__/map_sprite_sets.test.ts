@@ -22,6 +22,7 @@ const CURRENT_MAPS = [
   'BluesHouse', 'OaksLab', 'ViridianPokecenter', 'ViridianMart', 'ViridianSchoolHouse',
   'ViridianNicknameHouse', 'Route2', 'DiglettsCaveRoute2', 'ViridianForestNorthGate',
   'Route2TradeHouse', 'Route2Gate', 'ViridianForestSouthGate', 'ViridianForest',
+  'PewterCity', 'PewterNidoranHouse', 'PewterMart', 'PewterSpeechHouse', 'PewterPokecenter',
 ] as const;
 
 /** Engine asset name → pret picture constant. Aliases without a canonical name are absent. */
@@ -77,6 +78,10 @@ const SPLIT_MAPS: { mapId: number; split: number }[] = [
 
 /** Cartridge object pictures, duplicates and still objects included. Indoor maps only. */
 const INDOOR_OBJECTS: Record<string, readonly string[]> = {
+  PewterNidoranHouse: ['monster', 'little_boy', 'middle_aged_man'],
+  PewterMart: ['clerk', 'youngster', 'super_nerd'],
+  PewterSpeechHouse: ['gambler', 'youngster'],
+  PewterPokecenter: ['nurse', 'gentleman', 'jigglypuff', 'link_receptionist', 'cooltrainer_f', 'chansey'],
   RedsHouse1F: ['mom'],
   RedsHouse2F: [],
   BluesHouse: ['daisy', 'daisy', 'pokedex'],
@@ -97,6 +102,7 @@ const INDOOR_OBJECTS: Record<string, readonly string[]> = {
 };
 
 const EXPECTED_W: Record<(typeof CURRENT_MAPS)[number], number> = {
+  PewterCity: 9, PewterNidoranHouse: 4, PewterMart: 4, PewterSpeechHouse: 3, PewterPokecenter: 7,
   PalletTown: 9, ViridianCity: 9, Route1: 9, Route22: 9, Route2: 9,
   OaksLab: 5, ViridianPokecenter: 6, ViridianMart: 4, ViridianSchoolHouse: 4,
   ViridianNicknameHouse: 4, ViridianForest: 3, ViridianForestNorthGate: 3,

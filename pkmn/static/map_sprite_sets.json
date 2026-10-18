@@ -21,7 +21,12 @@
     "Route2TradeHouse": 48,
     "Route2Gate": 49,
     "ViridianForestSouthGate": 50,
-    "ViridianForest": 51
+    "ViridianForest": 51,
+    "PewterCity": 2,
+    "PewterNidoranHouse": 55,
+    "PewterMart": 56,
+    "PewterSpeechHouse": 57,
+    "PewterPokecenter": 58
   },
   "mapObjects": {
     "PalletTown": [
@@ -124,6 +129,35 @@
       71,
       71,
       4
+    ],
+    "PewterCity": [
+      6,
+      7,
+      12,
+      12,
+      4
+    ],
+    "PewterNidoranHouse": [
+      5,
+      53,
+      10
+    ],
+    "PewterMart": [
+      38,
+      4,
+      12
+    ],
+    "PewterSpeechHouse": [
+      11,
+      4
+    ],
+    "PewterPokecenter": [
+      41,
+      16,
+      66,
+      42,
+      6,
+      68
     ]
   },
   "pictureIdsBySprite": {

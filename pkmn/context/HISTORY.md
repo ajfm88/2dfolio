@@ -15,6 +15,432 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-16 (healing-machine CP4 checked; slice closed) — Claude
+
+I checked Sol's CP4 (`ca6d38a`, note 59 §15): Markdown only, no runtime/test/data change. Re-ran typecheck (clean)
+and ROM **1687/1687**. Looked at the evidence in `%TEMP%/pkmn-healing-cp4/`: the six-ball frame at J and J+10
+differ in 90 pixels, all inside the machine (X 43–52, Y 18–39), so the $c8/$e0 swap is real, not a dim; J+170
+also differs at the nurse, who turns back down in the return tick (`Func_6ebb`). The audio trace matches CP1's
+anchors (NR50 steps H+6…H+36, $77 and ball 1 at H+41, jingle at J, map music at J+168). **Passes.** With the
+user's play-test ("it all works well") the **healing-machine slice is closed**: Done table, CLAUDE, PROJECT
+updated; queue renumbered. **Next: Claude plans V2 (Pewter).** Nothing pushed.
+
+### 2026-10-16 (healing-machine CP4 verification) — Codex/Sol
+
+After Claude's CP3 check `6029992`: all four gates **twice**, ROM **1687/1687**, no-ROM
+**1550 pass / 137 skip** (95 files), typecheck/build clean; no timeout or test edit.
+Muted Chromium on **5194**, Viridian nurse with parties **1 and 6**: screenshots through **J+170**,
+fade restored **$77 at update 40**, one SFX per ball, real jingle and map restart; normal browser
+clocks matched too. No page/asset errors, ROM requests or save writes. **The user already play-tested
+the machine in the browser and reports it all works well.** Evidence/helpers outside the repo;
+note 59 §15 has details. Audio/story ARCHITECTURE and CONVENTIONS updated; unchanged CLAUDE baseline.
+Docs only; oldest three STATUS entries archived verbatim in `1a6a616`. **Stop for Claude's final
+check; the slice remains open for Claude to close.** Local commit only, nothing pushed.
+
+### 2026-10-16 (healing-machine CP3 checked) — Claude
+
+I checked Sol's CP3 (`0529e66`, note 59 §14). **Passes, no required fix.** Re-ran typecheck (clean), ROM
+**1687/1687** (95 files), no-ROM **1550/137**. Walked `HealingMachineSession.frame()` tick by tick against
+`healing_machine.asm`: monitor write H+1 / drawn H+2; balls + SFX at H+41+30(k−1); jingle and first XOR at
+J; seven more XORs at J+10…J+70, loop out at J+80 with $e0; CHAN1 poll (`.waitLoop2` reads
+`wChannelSoundIDs`, so CHAN1, not the playing latch); tail 32 → done J+168; OAM kept at J+168/J+169, gone
+J+170. Saved OBP1 $e0 matches `FadePal4`. Seven OAM positions/flips match §3.4; `obpMapping` gives
+$e0 → 0,0,2,3 and $c8 → 0,2,0,3. Audio ticks before the script in `gameTick`, so fade-done and ball 1
+share a tick. The nurse order (machine → UpdateSprites → HealParty → map music, one tick) matches
+`pokecenter.asm:51–61`; the held-A path no longer syncs the joypad. My own mutations, beyond Sol's 11:
+first XOR skipped at J (2 fail), fade control 3 (5), no ball SFX (2), OBP1 not restored (1), nurse without
+`updateSprites` (1); all restored, tree clean. **Next: Sol runs CP4** (gates twice, muted browser check,
+final handoff), then the user play-tests. Nothing pushed.
+
+### 2026-10-16 (healing-machine CP3) — Codex/Sol
+
+Machine session/nurse integrated; old machine deleted; TV N-2 covered. Note 59 §14.
+Exact one/six-member timeline and drawing, same-tick heal/restart, OAM cleanup and BG ownership tested.
+11 mutations caught/restored. ROM **1687/1687**, no-ROM **1550/137**, typecheck/build clean; no timeout.
+No generated changes. **Stop for Claude's check. CP4 browser verification has not started.** Local only.
+
+### 2026-10-16 (healing-machine CP2 checked) — Claude
+
+I checked Sol's CP2 (`f1cbca1`). **Passes, no required fix.** Re-ran typecheck (clean) and ROM **1673/1673**
+(93 files, no timeout). Read `fade_audio.ts` against `home/fade_audio.asm` + `PlaySound`: counter/reload,
+the DEC/SWAP/OR step with its underflow, CHAN5–8 cleared on the request, `wLastMusicSoundID` = $ff making a
+second stop immediate, and $77 at completion through `StopAllAudio`. NR50 gain (n+1)/8 keeps $77 at 0.5.
+The SFX JSON matches `healing_machine_1.asm` command for command. Skipping the idle $77 write is safe:
+all 173 `volume` commands in our audio data are 7,7, and the fade reads the live register as the ASM does.
+Mutations: no $77 at completion (7 fail), counter off by one (6), old NR50 formula (1), no SFX stop on the
+request (1); all restored, tree clean. Nits, not required: `fade` is `| undefined` beside the module's
+`| null` siblings; `sound_wait.ts`'s doc comment has a stray line break. **Next: Sol runs CP3.** Nothing pushed.
+
+### 2026-10-16 (healing-machine CP2) — Codex/Sol
+
+Audio fade + public API, NR50 (n+1)/8, and preloaded/extracted `healing_machine`; note 59 §13.
+Setup twice: all 878 files identical, only SFX + mirror added. Six mutations caught/restored.
+ROM **1673/1673** on rerun after the known source-test timeout; no-ROM **1536/137**; typecheck/build clean.
+**Nurse unchanged; CP3 not started. Stop for Claude's check.** Local only; oldest STATUS entry archived
+verbatim in `8b9bdb6` before implementation.
+
+### 2026-10-16 (healing-machine CP1 checked) — Claude
+
+I checked Sol's CP1 (`4fd0399`, note 59 §12). **Passes, no required fix.** Verified all three corrections
+against the ASM myself: (1) the fade's completion goes `StopAllMusic` → `PlaySound` → `Audio1_PlaySound`
+`.stopAllAudio` → `Audio2_StopAllAudio`, which writes $77 to `rAUDVOL` (`engine_2.asm:376`), so the restore
+is at update **40**; (2) all five Viridian Pokécenter NPCs are below `FIRST_STILL_SPRITE` and
+`wSpriteSet[0]` is Pikachu's, so they're slots **1–5**; slot 10 ($7c–$7f) is empty and nothing draws $7e;
+(3) decoded the ball tile and computed the six OAM entries: exactly 8 coincident opaque pixels (X 44,45,50,51;
+Y 34,39), colour 3 on both. Re-measured the jingle in a throwaway rig test (deleted): CHAN1–3 all end at
+update **136**. The fade loop and VBlank order support H+41 and the timeline. Docs only.
+**Next: Sol runs CP2** (fade-out §4.1, NR50 §4.3, `healing_machine` SFX §4.2 + regenerated data; not
+wired to the nurse). Nothing pushed.
+
+### 2026-10-16 (healing-machine CP1) — Codex/Sol
+
+Trace only; note 59 §12. Jingle CHAN1 measured **136**; machine anchors and unused Viridian $7e
+confirmed. Corrected NR50 restore to fade update **40**, NPC slots to **1–5**, and ball overlap.
+Typecheck/build pass; no-ROM **1523/133**; ROM **1656/1656** on unchanged rerun after one source-test
+timeout (recorded in §12.6). No code/data changes. **CP2 not started; stop for Claude's check.** Local only.
+
+### 2026-10-16 (O-31 answered) — the user, recorded by Claude
+
+The user approved note 59 §11 ("yes") → DECISIONS #63: one slice, four CPs; NR50 (n+1)/8 here; map-transition
+fade-out as its own slice right after V2 (queue #3); Sol implements. **Next: Sol runs CP1 (trace only, no code).**
+Local commit only.
+
+### 2026-10-16 (healing-machine plan) — Claude
+
+At the user's request ("ultrathink and write the plan to tackle the next slice") I traced `AnimateHealingMachine`,
+`FadeOutAudio`, `PlaySound`'s fade path, the OBP1/CGB palette conversion, `PrepareOAMData`'s $ff and clear rules,
+`HealParty` and the nurse's tail, and wrote `notes/59-healing-machine-plan.md`. Key findings: the machine is
+41 + 30n frames to the jingle (40-VBlank fade from $77, reload 4), then 168 to done (flashes 80, CHAN1 at
+update 136, tail 32), drawn until J+169; the flash swaps OBP1 colours 1 and 2 ($e0 ⇄ $c8), it does not dim; the
+art draws through OBP1 ([0,0,2,3]), not OBP0; positions are screen-fixed; `SFX_HEALING_MACHINE` is bank $02
+header $41da; HealParty and the music restart come after the machine. Also proposed: NR50 (n+1)/8.
+**Next: the user answers O-31.** No code changed. Local commit only.
+
+### 2026-10-16 (StatusScreen final review) — Claude
+
+Reviewed CP5 (`183e2e4`) and the whole slice. **Passes.** Re-ran typecheck (clean), ROM **1656/1656**, no-ROM **1523/133**,
+build clean, tree clean. Looked at Sol's picture review (Pikachu 5×5, Ivysaur 6×6, Charizard 7×7): placement, mirroring,
+both pages, glyphs and FNT/status all look like the cartridge. **The user then play-tested it: all verified (2026-10-16). StatusScreen is closed.**
+
+### 2026-10-16 (StatusScreen CP5) — Codex/Sol
+
+All gates twice: ROM **1656/1656**, no-ROM **1523/133**, typecheck/build clean. Muted fresh Chromium on
+5193: three picture sizes visually inspected and pixel-identical to full-PNG mirror references on both
+pages; party/PC/battle, volume automation and medicine return pass. No errors, failed assets or save
+writes. Note 58 §16 has evidence paths. Docs only; server stopped. **Stop for final review/play-test.**
+
+### 2026-10-16 (StatusScreen CP4 check) — Claude
+
+Checked Sol's CP4 (`cbc4c86`). **Passes, no required fix.** Re-ran typecheck (clean), ROM **1656/1656**, no-ROM **1523/133**.
+Read `party_menu_opening.ts` (C+19 reveal, C+22 first read) and the medicine diff (+3 `msg-palette`, return at P+39
+list / bag visible P+51); every prior assertion kept with moved anchors. Mutations (first read 22→21, return 39→38,
+palette wait 3→2) failed 15 / 4 / 1 tests; restored, tree clean. Next: Sol runs CP5 (gates twice, muted browser check
+on a spare port, docs). Local only.
+
+### 2026-10-16 (StatusScreen CP4) — Codex/Sol
+
+Shared opening, +7/+3 medicine waits and 38-frame restore implemented; main presents the new white flag
+in the same frame. All prior medicine assertions retained. Note 58 §15: 12 added tests, 11 mutations
+caught/restored. ROM **1656/1656**, no-ROM **1523/133**, typecheck/build clean. Local only. **Stop before CP5.**
+
+### 2026-10-16 (StatusScreen CP3 check) — Claude
+
+I checked Sol's CP3 (`8f69174`). **Passes, no required fix.** Re-ran: typecheck clean, ROM **1644/1644** (90 files), no-ROM
+**1511 pass / 133 skip**. Read `status_screen.ts` against note 58 §5 and the ASM: the frame ages match §12.2 (clear at S+3,
+sprites S+6, labels S+14, page 1 at S+17, reveal S+20, picture cells and first read S+27, page-2 read P+3, done Q+3); page 1 and 2
+cells, FNT, the erased TYPE2/, species name and PP masking agree; one `present()` per frame is the only BG tick; Bill's PC returns
+white until Q+6. Three mutations of mine (stats column, no white on Bill's tail, A-only advance) each failed tests and were restored.
+Note for CP4/CP5: the browser has not seen this yet (pic drawn per tile through the canvas). Docs only. **Next: Sol runs CP4.**
+Nothing pushed.
+
+### 2026-10-16 (StatusScreen CP3) — Codex/Sol
+
+Implemented the session, party/battle/Bill callers, glyphs and volume; deleted legacy stats. Note 58 §14
+records timing, ownership and ten caught/restored mutations. ROM **1644/1644**, no-ROM **1511/133**;
+typecheck/build clean. No generated-data changes. **Stop for Claude's review; CP4 unstarted.** Local only.
+
+### 2026-10-16 (StatusScreen CP2 check) — Claude
+
+I checked Sol's CP2 (`367ef78`). **Passes.** Re-ran: typecheck clean, ROM **1609/1609** (90 files), no-ROM **1476 pass / 133 skip**,
+and `npm run setup` again left `git status` empty (176 JSON, 521 PNG). Read the diff: `readMoveNameEntries` shares one walk
+between `readMoveNames` and the new `readMoveDisplayNames`; `move_names.json` has SAND-ATTACK, DOUBLE-EDGE and PSYCHIC (PSYCHIC_M);
+`P.png` comes from `P_TILE` (04:5682, 8 bytes). The tests pair refs' constants with `names.asm` by id, and check P against ROM bits and
+pret's PNG. Docs only. **Next: Sol runs CP3 (the session and its callers).** Nothing pushed.
+
+### 2026-10-16 (Claude's CP1 handoff reconciled with completed CP2) — Codex/Sol
+
+Read the user's pasted handoff and checked commit `9aa0134`: it is the parent of CP2 `367ef78`, so the
+plan/decision corrections were preserved. Every requested CP2 change is already complete. Rechecked
+all 876 generated files against the verified setup manifest: only the same 3 additions, all 873 prior
+files unchanged. No further implementation needed; CP3 remains unstarted. Local docs commit only.
+
+### 2026-10-16 (StatusScreen CP2 — move names and bold P data) — Codex/Sol
+
+The user requested the next part after CP1. Completed only CP2; details in note 58 §13. Shared MoveNames
+walk supplies `readMoveDisplayNames`; both extraction paths write `move_names.json`. PTile 04:5682 exports
+the 8×8 `font/P.png`. Added 5 tests for all source names/IDs, ROM/display fidelity, P pixels and registration.
+Setup twice: all 876 files identical, exactly 3 additions, all 873 prior files unchanged. ROM **1609/1609**
+(90 files), no-ROM **1476/133**, typecheck/build/diff clean. No runtime caller change or browser check.
+Updated asset counts, schema and test docs. **Stop before CP3; wait for the user.** Local commit only;
+nothing pushed.
+
+### 2026-10-16 (StatusScreen CP1 check) — Claude
+
+I checked Sol's CP1 (`bd9bdfc`, note 58 §12). **Passes.** Verified the one correction against the ASM: `.done` runs
+`GBPalWhiteOut` (`xor a`, Z=1; every `UpdateCGBPal_*` saves/restores AF) then `call z, RunDefaultPaletteCommand`, so
+medicine's return is +32 (my +29 missed that Delay3). Fixed note 58 §2/§7/§8 and DECISIONS #62 to say so. Everything
+else in §12 (copy arithmetic, anchors, tiles, pic placement, OAM, hJoy7) agrees with my derivation and the ASM I
+read. Docs only. **Next: Sol runs CP2 (move names + bold P data).** Nothing pushed.
+
+### 2026-10-16 (StatusScreen CP1 — trace only) — Codex/Sol
+
+Completed only note 58 CP1 at the user's request; results and source evidence are in §12, committed alone
+as `bd9bdfc`. Confirmed §5.8–§5.10's anchors, §5.4's tiles, §5.3's placement, Bill's hidden OAM and hJoy7=0.
+Corrected F-2: an additional taken CGB palette call before START's 35-frame restore makes medicine's full
+return 38 frames before the bag list, visible P+51 / first read P+54 (+32 over today, not +29).
+Read-only ROM/PNG probes and typecheck/diff checks passed; runtime suites not re-run (baseline unchanged).
+No engine/data/assets changed. **Stop before CP2; wait for the user.** Separate handoff-log commit only;
+nothing pushed.
+
+### 2026-10-16 (O-30 answered) — the user, recorded by Claude
+
+The user approved all four StatusScreen decisions ("yes to all") → DECISIONS #62:
+- one slice in five checkpoints;
+- F-1/F-2 fixed in CP4 through the shared `DisplayPartyMenu` opening;
+- `move_names.json` and `P.png` extracted in CP2;
+- battle's STATS on the new pages now.
+
+Note 58 is marked approved. Docs only. **Next: Sol runs CP1, the trace (note 58 §7; results into §12).**
+Nothing pushed.
+
+### 2026-10-16 (StatusScreen plan) — Claude
+
+At the user's request ("ultrathink and prepare the plan. ChatGPT Sol will implement"), I traced `StatusScreen` /
+`StatusScreen2` and their three callers against the ASM and wrote `notes/58-statusscreen-plan.md`:
+- 17 departures in today's pages (§4). Among them: B leaves after page 1, stats sit one column left, the
+  pic is misplaced for 5×5/6×6 mons, page 2 shows the nickname, move names come from ids, and there's no
+  volume dip;
+- cell-exact layouts, glyph sources, the pic placement and a derived timeline (§5) for Sol's CP1 to confirm;
+- **F-1/F-2** (§2): A5b7c2's `DisplayPartyMenu` opening misses a 30-tile copy and the CGB palette Delay3 (+7),
+  its result redraw misses the palette (+3), and the return to the bag misses
+  `RestoreScreenTilesAndReloadTilePatterns`' 29 frames.
+
+Two battle findings went to the backlog (A5c). Docs only; gates not re-run (baseline 1604/1604, no-ROM 1474/130).
+**Next: the user answers O-30, then Sol implements CP1.** Nothing pushed.
+
+### 2026-10-16 (codebase and context study after A5b7) — Codex
+
+At the user's request, read the project guidance, live handoff, roadmap, architecture, relevant decisions,
+latest review and backlog; traced startup/static data, tick/pass/input ownership, interactions,
+retained text/menus, saves, shared stats pages and the nurse's existing machine. No implementation slice
+claimed. A5b remains user-verified complete; next is the StatusScreen plan (#58), then healing and V2.
+Fresh checks: ROM **1604/1604** (89 files), no-ROM **1474 pass / 130 skip**, build/typecheck clean;
+19 map files, 175 JSON and static 520 PNG/3 tilemaps confirmed. No ROM-gate markers in the built JS.
+Some older test counts and handoff wording in PROJECT/ARCHITECTURE/subsystem docs are stale; use this
+file's baseline. Note 56 N-1/N-2 and the backlog's proposed battle-mechanics audit remain carried forward.
+No browser play-test or runtime/data changes. Local docs commit only; nothing pushed.
+
+### 2026-10-16 (STATUS.md trimmed) — Claude
+
+At the user's request, STATUS.md went from ~201 KB to about a fifth of that. **Nothing was deleted;
+everything moved verbatim:**
+- session-log entries from before the A5b7g work → `HISTORY.md` → *Recent session archive*;
+- the full *Completed* table, the old *In progress* handoffs, the old A5 queue row and the resolved open
+  questions → `HISTORY.md` → *Archived STATUS sections*;
+- *Notes for later* → `notes/57-findings-backlog.md`.
+
+How to keep it short from now on: DECISIONS #61 and CONVENTIONS step 5. Docs only. Nothing pushed.
+
+### 2026-10-16 (A5b7g2 play-test → A5b7 done) — the user, recorded by Claude
+
+The user play-tested note 56 §5, which also covered g1's F-1: "i tested it, we can mark A5b7 as fully
+finished". **A5b7g is done, and so are A5b7 and A5b.** Context files updated (CLAUDE.md, PROJECT, PLAN,
+STATUS). **Next: Claude plans the StatusScreen port.** Nothing pushed.
+
+### 2026-10-16 (A5b7g2 review) — Claude
+
+I reviewed CP1 (`a6b609f`) and Grok's CP2 (`8fd0111`, `13fd2f6`, `269d8c2`, `09df736`) in
+`notes/56-a5b7g2-review.md`. **Passes, no required fix.** Gates re-run: ROM 1604/1604 twice, no-ROM
+1474/130, typecheck/build clean.
+
+What I checked against the ASM:
+- the facing-up one-tile shelf gate, and the shelf table row for row;
+- the +20 / +23 openings, Diglett, and the statues' parity;
+- the poster's `jr c`, the shared builder in both paths, and note 55's N-1–N-3.
+
+Grok's finding that Oak's Lab is on the DOJO tileset (shelf $1D) is confirmed in its map header.
+9 mutations: 7 caught; the seen-by-trainer gate for programs (unreachable today) and the TV routing
+survived as test gaps N-1/N-2. **Next: the user play-tests note 56 §5.** Nothing pushed.
+
+### 2026-10-15 (A5b7g2 CP2 — tests) — Grok
+
+`story/bookshelf_display.test.ts` (25) covers plain predefs at +20, books and the Diglett sculpture and the
+statues at +23, the 15-frame outer-wait close, the right poster at 1 and 2 owned (builder and overworld),
+the facing-up one-tile gate, the Blues House Town Map, a hidden event winning over a shelf, and Lab free
+movement for the poster, the e-mail, and a DOJO shelf (`$1D` on `blockset_gym`; the map header is DOJO).
+`oaks_lab.test.ts` adds N-2 (the guard's Delay3, three frames with no joypad read after the pass that
+starts it) and N-3 (a free-move NPC stays borderless through frame 18). Five mutations each failed a test
+and were restored: any-facing shelf, the second tile up, book `box: 'keep'`, owned threshold 1, and
+free-move script ids ignored. ROM 1604/1604 (89 files), no-ROM 1474 pass / 130 skip, typecheck and build
+clean. Not run in the browser (no browser tool in this session; :5173 was not touched). **Stop for Claude's
+review. CP2 is the end of this session.** Nothing pushed.
+
+### 2026-10-15 (A5b7g2 CP2 — bookshelves) — Grok
+
+`PrintBookshelfText` now runs only when the player faces up, and only on the one tile directly above the
+player's step (screen (8,7)). That includes the Town Map shelf. `GameMap.getBookshelfPredef` returns the
+`BookshelfTileIDs` label. Town Map, `BookOrSculptureText`, and `IndigoPlateauStatues` become script ids;
+`PokemonStuffText` and `ElevatorText` are plain programs (`box: 'keep'`). `BOOKSHELF_TEXT`, the hand-written
+"This is an elevator." line, and the three `getText('BOOKSHELF_*')` calls are gone. `overworld/map.ts` left
+the census allow-list. A found hidden item still skips the shelf. Typecheck clean. 135/135 across Lab, town
+map, census, item pickup, map trainers, and the TV handlers. Full suite and build not run.
+**Next: the CP2 timing tests, including N-2 and N-3.** Nothing pushed.
+
+### 2026-10-15 (A5b7g2 CP2 — builder) — Grok
+
+`interactionDisplay` (`story/hidden_events.ts`) builds one display for a hidden event that carries `program`
+or `scriptId`. The overworld and Lab free movement both call it. A plain predef is `printText` with
+`box: 'keep'` (auto border, outer wait, first glyph +20). `OAKS_LAB_RIGHT_POSTER` prints `SaveOptionText`
+when `ownedCount < 2`, otherwise `StrengthsAndWeaknessesText`. TV, notebook, blackboard, PCs, and the Town
+Map keep their current handlers. Free movement deletes the "ignore script ids" branch and the
+`textBox.show` fallback. N-1 restores Pikachu's facing only when `textBox.active && textBox.displaySession`.
+Book and statue cases live in the builder; nothing returns those script ids until the bookshelf sub-step.
+Bookshelves still use `getBookshelfText` / `getBookshelfScript` on two tiles at any facing.
+Typecheck clean. `oaks_lab.test.ts` 35/35 (F-1 accepts a program glyph when the right poster has no
+flattened string). Also passed: town map, school, PC, small text handlers, item pickup, map trainers.
+Full suite and build not run. **Next: the bookshelf gate.** Nothing pushed.
+
+### 2026-10-15 (A5b7g2 CP2 — data) — Grok
+
+Oaks Lab's right poster (step 5,0) is now `scriptId` `OAKS_LAB_RIGHT_POSTER` in the extractor.
+`textOffset` stays on that source entry; the resolver still strips it for a script id, so the committed
+map drops the flattened "SAVE option" string and does not gain `program`. Setup ran twice and was
+byte-identical (`OaksLab.json` SHA256 `EC145603212EEAD4…`). `git diff` on `data/` and `static/` is only
+`game/data/maps/OaksLab.json` and `game/static/maps/OaksLab.json`. `hidden_event_programs.test.ts` expects
+that script id and no program (2/2). Full suite, typecheck, and build were not run for this sub-step: the
+poster has no display handler until the builder commit, so F-1 would fail on this commit alone. Baseline
+stays 1577/1577. **Next: the shared interaction→display builder.** Nothing pushed.
+
+### 2026-10-15 (A5b7g2 CP1 — data) — Claude
+
+The user asked Claude to implement CP1, because Sol was out of usage. `rom/text_program_symbols.ts`
+now has 28 labels:
+- the predef roots, checked against `TextPredefs` (00:3F67) in the ROM;
+- the `ld hl` operands of the two `text_asm` shelf routines;
+- the Viridian row of `BenchGuyTextPointers` (3-byte rows: map, facing, predef ID).
+
+`extractors/maps.ts` adds `program` to the 8 plain hidden events. Setup was run twice: byte-identical,
+additions only (text_programs + 4 maps + mirrors). New no-ROM test `hidden_event_programs.test.ts` (2)
+derives each predef from refs' tables; a wrong-label mutation fails it.
+
+Deviation, recorded in note 54 §12: the right poster's `scriptId` waits for CP2, so the poster never
+goes dead in between. ROM 1577/1577 (×2), no-ROM 1447/130, typecheck/build clean. Not run in the browser
+(no visible change). **Next: CP2.** Nothing pushed.
+
+*Moved from STATUS.md on 2026-10-16 before healing-machine CP3; oldest entry, verbatim.*
+
+### 2026-10-15 (A5b7g1 review) — Claude
+
+I reviewed Sol's A5b7g1 (`4cb3f57`, `81f80ad`) in `notes/55-a5b7g1-review.md`. **Passes, no required
+fix.** Gates re-run: ROM 1575/1575 twice, no-ROM 1445/130, typecheck/build clean, working tree clean.
+
+What I checked:
+- the removals against note 54 §3's census;
+- F-1 against `EnableAutoTextBoxDrawing`;
+- the A6e fixture now on the real nurse script, with every assertion kept;
+- the coverage map for the deleted explicit-ending tests;
+- all seven review-gap assertions and the AST census tripwires.
+
+7 mutations: 5 caught, 2 survived (N-2 the guard's Delay3, N-3 the borderless free-movement NPC
+opening). Both predate g1, and both go to g2. N-1 (`pikachuFacing` restore without an `active` check) is
+latent.
+
+**Next: the user glances at F-1** (Lab posters and e-mail during the starter choice), **then Sol
+implements A5b7g2 CP1.** Nothing pushed.
+
+*Moved from STATUS.md on 2026-10-16 before healing-machine CP2; oldest entry, verbatim.*
+
+### 2026-10-15 (A5b7g1 CP2 — retirement, F-1 and regression) — Codex/Sol
+
+The user requested the next part after CP1. Implemented only g1 CP2 (note 54 §4, result §11).
+Retired script text/closeText, non-display button-wait fallback, guardText/dead free-move states,
+unused commandState/isCommandDone and the nurse re-export; TextBox.show is now DisplayTextID only.
+Standalone PrintText and live displayClose retain their existing input/transfer/close behavior.
+F-1 enables the border for Lab hidden-event/bookshelf text during the starter await, matching the
+poster/e-mail/bookshelf ASM. Guard programs are required; ordinary Lab NPC auto-box behavior stays.
+
+Five new tests: closed/standalone invalid wait rejection, both Lab posters and e-mail visibly returning
+to the await/ball. Updated two test-only legacy branches, TextBox callers, subsystem docs and baselines.
+No data/extractor/schema/battle-union change, no setup; refs and curated sprites untouched.
+
+Gates: focused **316/316**; three fresh ROM runs **1575/1575** each, three no-ROM runs **1445/130**;
+no intermittent failures. Typecheck/build/diff clean. Ten temporary production mutations all caught and
+restored byte-for-byte (seven CP1 review lines plus close beep, invalid wait fallback and F-1).
+Browser: 13 checks across core/tail fresh profiles at :5189, actual interactions/sound waits, zero page
+errors/unexpected failed resources. Includes hidden-item full bag, ball, Lab guard/girl/posters/e-mail,
+nurse/Pikachu, Mom, sign, trainer battle entry and SAVE/reload/CONTINUE. Harness reload/wrong-NPC
+corrections and exact smoke limits/evidence are in note 54 §11. Profiles cleared/closed, owned server
+stopped, :5173 saves untouched. No permanent debug hook. Local commit only; nothing pushed.
+**Next: Claude's g1 review, then the user's F-1 glance. No g2 implementation started.**
+
+*Moved from STATUS.md on 2026-10-16 during CP4: its three oldest entries, verbatim.*
+
+### 2026-10-15 (A5b7g1 CP1 — tests first, stopped at the user boundary) — Codex/Sol
+
+Implemented only note 54 §4 CP1 at the user's explicit request. The A6e nurse now runs the real
+buildNurseScript YES flow on a hosted TextBox with a program spy; every earlier motion/image/facing/
+follow-buffer/render assertion remains. The A6d pushed hop dispatches a real display/program.
+Script text routines use retained displays; nine obsolete legacy/explicit-ending test instances were
+removed with header mappings to existing source-path coverage. Sixteen new cases cover main ITEM/SAVE
+pictures, SAVE timing/restore, Bill's PC labels/bottom box and the three no-ROM census tripwires.
+Net **+7**. Production has no diff; nurse re-export and all CP2 retirement/F-1 work remain.
+
+Seven temporary reviewer mutations all failed in their intended assertions, then were restored
+byte-for-byte with SHA-256 checks: note 53 M1 (3 failures), V9 (1), M6 (3), V8 (3), M5 (3),
+note 51 M2 (2), M10 (1). Details and temporary log paths: `notes/54-a5b7g-plan.md` §10.
+
+Gates: typecheck clean; focused **185/185**; two separate full ROM processes **1570/1570** each
+(87 files); without ROM **1440 pass / 130 skip**. Both ROM runs passed without intermittent failures.
+Diff check clean. Tests and docs only; no build/browser/setup, no data/extractor change, no writes
+to refs or curated sprites. Baselines and CONVENTIONS test-suite descriptions updated.
+Local checkpoint commit only; nothing pushed. **Stop here and wait for the user. CP2 has not started.**
+
+### 2026-10-15 (O-29 answered) — the user, recorded by Claude
+
+The user approved all four A5b7g decisions ("yea to all") → DECISIONS #60:
+- A5b7g1 (retirement, test debt, F-1, final regression), then A5b7g2 (hidden events and bookshelves as
+  programs);
+- g2's additive data;
+- the bookshelf facing-up rule in g2;
+- Sol implements.
+
+Note 54 is marked approved. Docs only. **Next: Sol implements A5b7g1 CP1 (`notes/54-a5b7g-plan.md` §4).**
+Nothing pushed.
+
+### 2026-10-15 (A5b7g plan) — Claude
+
+At the user's request ("ultrathink and plan the next slice"), I ran A5b7g's caller census against the ASM
+and wrote `notes/54-a5b7g-plan.md`. Findings:
+- **Dead legacy, no production caller:** script `text` and `closeText`, the Lab guard's `guardText`
+  branch, the non-display `textButtonWait` fallback, TextBox's `legacy` mode and `end` option, and
+  upstream's never-set `commandState`.
+- **`textButtonWait` stays:** it is `WaitForTextScrollButtonPress` (silent with no arrow, because
+  `HandleDownArrowBlinkTiming` never draws ▼ from a zero count), and the hidden-item full-bag path uses it.
+- **F-1 (visible bug):** during the Lab's starter choice, posters, the e-mail and the Lab shelves open a
+  borderless display. `TextBox.render()` then draws nothing, but input is blocked. The fallback passes
+  `autoBox: false`, while each routine calls `EnableAutoTextBoxDrawing`.
+- **Not on programs:** bookshelves (three `getText` keys and a hand-written elevator line) and hidden-event
+  texts (flattened strings). None of their programs is extracted. Three visible departures on today's maps:
+  - the Lab's right poster never switches to StrengthsAndWeaknessesText at 2 owned;
+  - shelves read from any side, but `PrintBookshelfText` needs facing up and the one tile at (8,7);
+  - the books text starts at +20, not `BookOrSculptureText`'s inner-PrintText +23.
+- **Plain NPC and sign strings are equivalent today:** 78 of 80 plain map calls are text-only, and the two
+  with `sound` run as handlers. A tripwire is planned.
+
+Recommended split: **g1** (retirement, test debt, F-1, final regression), then **g2** (hidden events and
+bookshelves as programs, before V2 adds more). Docs only; gates not re-run (baseline 1563/1563, no-ROM
+1433/130). **Next: the user answers O-29.** Nothing pushed.
+
 *Moved from STATUS.md on 2026-10-16: the session log from 2026-10-06 to the A5b7g plan, newest first.*
 
 ### 2026-10-15 (context and codebase study, before A5b7g) — Claude

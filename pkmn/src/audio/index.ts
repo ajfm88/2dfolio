@@ -16,14 +16,28 @@ import { SfxEngine } from './sfx_engine';
 import { EXTRACTED_SFX } from './sfx_names';
 import { audioUpdate, soundFinished } from './sound_wait';
 import { rivalAlternateStart } from './rival_start';
+import { AudioFade } from './fade_audio';
 import type { MusicData, NoiseInstrument } from './music_engine';
 import type { SfxData } from './sfx_engine';
 
 let synth: GBSynthesizer | null = null;
 let engine: MusicEngine | null = null;
 let sfxEngine: SfxEngine | null = null;
+let fade: AudioFade | undefined;
 let initialized = false;
 let audioReady = false;
+
+/** rAUDVOL / NR50, as used by StatusScreen and StatusScreen2. */
+export function setMasterVolume(left: number, right: number): void {
+  synth?.setMasterVolume(left, right);
+}
+
+/** AnimateHealingMachine's wAudioFadeOutControl = control; StopAllMusic. */
+export function fadeOutAndStopMusic(control: number): void {
+  fade?.fadeOutAndStopMusic(control);
+}
+
+export function isAudioFadingOut(): boolean { return fade?.isFadingOut() ?? false; }
 
 // Audio runs at Game Boy VBlank rate (~59.7275 Hz), independent of game FPS
 const GB_VBLANK_HZ = 59.7275;
@@ -51,6 +65,7 @@ export function initAudio(): void {
   synth = new GBSynthesizer();
   engine = new MusicEngine(synth);
   sfxEngine = new SfxEngine(synth);
+  fade = new AudioFade(synth, engine, sfxEngine);
 
   // An SFX ending hands its hardware channel back: the music there stays silent until its
   // next note or rest (Audio1_sound_ret)
@@ -97,9 +112,19 @@ export async function playMusic(name: string, start?: 'rivalAlternate'): Promise
   engine.play(start === 'rivalAlternate' ? rivalAlternateStart(data) : data);
 }
 
-/**
- * Stop the currently playing music.
- */
+/** Warm a track without starting playback; a cached playMusic starts before its first await. */
+export async function preloadMusic(name: string): Promise<void> {
+  if (!engine || !audioReady || musicCache.has(name)) return;
+  try {
+    const resp = await fetch(`audio/music/${name}.json`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    musicCache.set(name, await resp.json() as MusicData);
+  } catch (e) {
+    console.warn(`Failed to preload music: ${name}`, e);
+  }
+}
+
+/** Stop the currently playing music. */
 export function stopMusic(): void {
   engine?.stop();
 }
@@ -179,7 +204,7 @@ export function tickAudio(): void {
 
   while (audioAccumulatorMs >= TICK_INTERVAL_MS) {
     audioAccumulatorMs -= TICK_INTERVAL_MS;
-    audioUpdate(engine, sfxEngine);
+    audioUpdate(engine, sfxEngine, fade);
   }
 }
 

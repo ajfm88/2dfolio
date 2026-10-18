@@ -1,0 +1,62 @@
+{
+  "name": "PewterSpeechHouse",
+  "width": 4,
+  "height": 4,
+  "tileset": "HOUSE",
+  "connections": [],
+  "blocks": [
+    4,
+    14,
+    5,
+    9,
+    15,
+    1,
+    2,
+    15,
+    15,
+    12,
+    13,
+    15,
+    6,
+    11,
+    15,
+    7
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 5
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "PewterCity",
+      "destWarpId": 5
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "textId": 1,
+      "id": "gambler",
+      "sprite": "gambler",
+      "x": 2,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "POKéMON learn new\ntechniques as\nthey grow!\fBut, some moves\nmust be taught by\nthe trainer!",
+      "direction": "right"
+    },
+    {
+      "textId": 2,
+      "id": "youngster",
+      "sprite": "youngster",
+      "x": 4,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "POKéMON become\neasier to catch\nwhen they are\nhurt or asleep!\fBut, it's not a\nsure thing!"
+    }
+  ]
+}
