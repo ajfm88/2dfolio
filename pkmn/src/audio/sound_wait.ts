@@ -10,6 +10,14 @@ export function audioUpdate(music: MusicEngine | null, sfx: SfxEngine | null, fa
   sfx?.tick();
 }
 
+/** UpdateMusic6Times calls Audio1_UpdateMusic directly: no FadeOutAudio or wall-clock tick. */
+export function updateMusic6Times(music: MusicEngine | null, sfx: SfxEngine | null): void {
+  for (let i = 0; i < 6; i++) {
+    music?.tick(sfx ?? undefined);
+    sfx?.tick();
+  }
+}
+
 /**
  * WaitForSoundToFinish's condition (home/delay.asm), as a pure function of the engines.
  *

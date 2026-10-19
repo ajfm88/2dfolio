@@ -11,8 +11,12 @@ import {
   beginSpriteLog,
   endSpriteLog,
   drawExclamationBubble,
+  drawZzzBubble,
 } from "./renderer";
-import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput } from "./audio";
+import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
+  playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
+  fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished } from "./audio";
+import { isNoMapMusic, setNoMapMusic } from "./audio/audio_flags";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
 import { MapDialogue } from './text/map_dialogue';
 import { PassClock } from "./overworld/walk_pace";
@@ -41,10 +45,12 @@ import { updateSprites } from "./overworld/sprites";
 import { setJoyIgnore } from "./input/joy_ignore";
 import type { OverworldAction, OverworldDeps } from "./overworld";
 import { PikachuFollower, shouldPikachuFollow, modifyPikachuHappiness, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
+import { enablePikachuFollowing, isPikachuFollowingDisabled } from "./pikachu/pikachu_following";
 import {
   startPikachuEmotion, updatePikachuEmotionAnim, renderPikachuEmotionBox,
   isPikachuEmotionActive, isPikachuEmotionExpired, clearPikachuEmotion,
   pikachuEmotionPhase, tickPikachuEmotionEntry,
+  pikachuEmotionNumber, pikachuEmotionBubble, beginPikachuEmotionExit, tickPikachuEmotionExit,
 } from "./pikachu";
 import {
   initTextSystem,
@@ -411,6 +417,7 @@ function writeSave(): void {
 async function loadSavedGame(): Promise<void> {
   const saved = loadGame();
   if (!saved) return;
+  setNoMapMusic(false); // transient WRAM bit, never saved
   setBattleAndStartSavedMenuItem(0); // WRAM, never restored from SRAM
 
   currentMapName = saved.mapName;
@@ -476,6 +483,7 @@ async function loadSavedGame(): Promise<void> {
   applyDefeated();
   applyStory();
 
+  enablePikachuFollowing(); // CONTINUE: LoadMapData always enables (no BIT_BATTLE_OVER_OR_BLACKOUT check)
   pikachuFollower.visible = followerCanDraw();
   if (pikachuFollower.visible) {
     pikachuFollower.spawn(player.x, player.y, player.direction);
@@ -486,6 +494,8 @@ async function loadSavedGame(): Promise<void> {
 
 /** Start a new game — place player in Red's bedroom. */
 async function startNewGame(): Promise<void> {
+  setNoMapMusic(false);
+  enablePikachuFollowing();
   setBattleAndStartSavedMenuItem(0);
   Object.assign(ow, createOverworldState());
   currentMapName = "RedsHouse2F";
@@ -526,8 +536,7 @@ function startBattle(wildPokemon: BattlePokemon): void {
   if (playerParty.length === 0) return;
   markSeen(wildPokemon.species.id);
 
-  stopMusic();
-  currentMapMusic = null;
+  cancelPendingMapMusic(); stopMusic();
   playMusic('wildbattle');
   startWildBattleTransition(() => {
     const battle = new Battle(
@@ -538,7 +547,7 @@ function startBattle(wildPokemon: BattlePokemon): void {
       getPlayerBadges(),
       getPlayerName()
     );
-    battle.onVictory = () => { stopMusic(); playMusic('defeatedwildmon'); };
+    battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic('defeatedwildmon'); };
     battle.init().then(() => {
       currentBattle = battle;
       state = "battle";
@@ -566,8 +575,7 @@ function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
   pendingTrainer = { npc, meetMusic: seenByTrainer ? null : meetMusicFor(trainerClass) };
   mapDialogue.show(dialogue, { trainer: true, onTextComplete: () => {
     if (pendingTrainer?.meetMusic) {
-      stopMusic();
-      currentMapMusic = null;
+      cancelPendingMapMusic(); stopMusic();
       playMusic(pendingTrainer.meetMusic);
       pendingTrainer.meetMusic = null;
     }
@@ -614,8 +622,7 @@ function startTrainerBattle(
     modifyPikachuHappiness('GYMLEADER');
   }
 
-  stopMusic();
-  currentMapMusic = null;
+  cancelPendingMapMusic(); stopMusic();
   playMusic('trainerbattle');
   const battle = new Battle(playerParty[0], dummyEnemy, playerParty, playerBag, getPlayerBadges(), getPlayerName());
   const displayName = trainerName ?? trainerClass.displayName;
@@ -627,7 +634,7 @@ function startTrainerBattle(
   // TrainerBattleVictory: the fanfare starts once the whole party is down.
   // Gym leaders (defeatedgymleader, wGymLeaderNo) arrive with their gyms in V3.
   const victoryMusic = victoryMusicFor(trainerClassName);
-  battle.onVictory = () => { stopMusic(); playMusic(victoryMusic); };
+  battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic(victoryMusic); };
   engagedTrainer = opts.engaged ?? null;
   battle.init().then(() => {
     currentBattle = battle;
@@ -654,8 +661,8 @@ function startNextEvolution(): void {
     } else {
       state = 'overworld';
     }
-    // Resume map music after evolution(s)
-    updateMapMusic(currentMapName);
+    // EndOfBattle's evolutions come first; the loader then requests the after-battle fade
+    loadMapMusic(currentMapName, true);
     return;
   }
 
@@ -891,16 +898,29 @@ function getMapMusic(mapName: string): string | null {
   return MAP_MUSIC[mapName] ?? null;
 }
 
-/** Current map music track name (to avoid restarting same track on indoor transitions). */
-let currentMapMusic: string | null = null;
-
-/** Start playing the music for a map, but only if it's different from current. */
-function updateMapMusic(mapName: string): void {
+/** PlayDefaultMusicFadeOutCurrent for the map: the cartridge's own same-song / bank rules decide
+ *  whether anything happens (wLastMusicSoundID lives in the audio request state). */
+function playMapMusic(mapName: string, afterBattle = false): void {
   const track = getMapMusic(mapName);
-  if (!track) return;
-  if (track === currentMapMusic) return; // same track, don't restart
-  currentMapMusic = track;
-  playMusic(track);
+  if (track) playDefaultMusicFadeOutCurrent(track, afterBattle);
+}
+
+/** DECISIONS #68: the warp's request waits until the door sound has finished, as on the cartridge, where the
+ *  loader runs after the sound has ended. Any later music request (battle, blackout, another load) supersedes it. */
+let pendingWarpMusic: string | null = null;
+function cancelPendingMapMusic(): void { pendingWarpMusic = null; }
+function tickPendingMapMusic(): void {
+  if (pendingWarpMusic === null || !isSoundFinished()) return;
+  const map = pendingWarpMusic;
+  pendingWarpMusic = null;
+  loadMapMusic(map);
+}
+
+/** LoadMapData's music: UpdateMusic6Times, then the fade request; both skipped by BIT_NO_MAP_MUSIC. */
+function loadMapMusic(mapName: string, afterBattle = false): void {
+  if (isNoMapMusic()) return;
+  updateMusic6Times();
+  playMapMusic(mapName, afterBattle);
 }
 
 /** Transition to a new map via warp (entering/exiting buildings).
@@ -924,6 +944,11 @@ function handleBlackoutWarp(): void {
   fadeAlpha = 0;
   fadeCallback = async () => {
     const { destMap, destWarpId } = lastBlackoutWarp;
+    // HandleBlackOut: StopMusic(8) waits out its fade, StopAllSounds, then the first
+    // PlayDefaultMusicFadeOutCurrent still reads the departed map's song (note 63 §10.5)
+    while (isAudioFadingOut()) await new Promise(resolve => setTimeout(resolve, 16));
+    stopAllSounds();
+    playMapMusic(currentMapName);
     const result = await performWarpLoad(
       destMap, destWarpId,
       gameMap, player, pikachuFollower, playerParty, defeatedTrainers,
@@ -952,7 +977,7 @@ function handleBlackoutWarp(): void {
     ow.pikachuDeferredSpawn = shouldPikachuFollow(playerParty);
 
     fadeDir = "in";
-    updateMapMusic(currentMapName);
+    loadMapMusic(currentMapName);
     fadeCallback = () => {
       state = "overworld";
       checkMapEntryScripts();
@@ -985,8 +1010,8 @@ async function handleWarpLoad(
   npcs = result.npcs;
   Object.assign(ow, enterMapCounters(ow));
   setJoyIgnore('none'); // EnterMap ends with wJoyIgnore = 0
-  // Play map music if it changed
-  updateMapMusic(destMapName);
+  enablePikachuFollowing(); // SchedulePikachuSpawnForAfterText: enable unless BIT_BATTLE_OVER_OR_BLACKOUT
+  pendingWarpMusic = destMapName; // after the door sound (DECISIONS #68)
   ow.justWarped = true;
   ow.doorExitStep = result.doorExitStep || forceStepDown;
   ow.standingOnWarp = result.standingOnWarp && !forceStepDown;
@@ -1016,7 +1041,7 @@ async function connectToMap(
     gameMap, player, pikachuFollower, playerParty, defeatedTrainers
   );
   currentMapName = destMapName;
-  updateMapMusic(destMapName);
+  playMapMusic(destMapName);
   state = "overworld";
 }
 
@@ -1124,6 +1149,7 @@ function gameTick(): void {
 
   // Tick the audio engine every frame
   tickAudio();
+  tickPendingMapMusic();
 
   // Is this frame an overworld pass? Entering the overworld from a menu, a text box or a
   // battle restarts the pair (jp OverworldLoop). Elsewhere the joypad is read every frame.
@@ -1136,7 +1162,8 @@ function gameTick(): void {
   const isPass = inPassState && !movementBlocking && passClock.tick();
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
   const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
-    || (state === 'battle' && currentBattle?.statusScreenActive);
+    || (state === 'battle' && currentBattle?.statusScreenActive)
+    || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
   if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !sessionOwnInput && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
@@ -1153,11 +1180,11 @@ function gameTick(): void {
     const action = mainMenu.update();
     if (action === 'continue') {
       // Fade out then load saved game
-      stopMusic(); currentMapMusic = null;
+      // MainMenu never stops TitleScreen: the loader's fade carries it into the map's song
       fadeDir = "out";
       fadeCallback = () => {
         loadSavedGame().then(() => {
-          updateMapMusic(currentMapName);
+          loadMapMusic(currentMapName);
           state = "overworld";
           lastPlayTimeUpdate = Date.now();
           fadeDir = "in";
@@ -1165,7 +1192,7 @@ function gameTick(): void {
       };
       state = "transition";
     } else if (action === 'new_game') {
-      stopMusic(); currentMapMusic = null;
+      cancelPendingMapMusic(); stopMusic();
       fadeDir = "out";
       fadeCallback = () => {
         Promise.all([oakSpeech.load(), loadEdTile()]).then(() => {
@@ -1179,13 +1206,15 @@ function gameTick(): void {
       };
       state = "transition";
     } else if (action === 'new_game_quick') {
-      stopMusic(); currentMapMusic = null;
+      cancelPendingMapMusic(); stopMusic();
       setPlayerName('YELLOW');
       setRivalName('BLUE');
       fadeDir = "out";
       fadeCallback = () => {
         startNewGame().then(() => {
-          updateMapMusic('RedsHouse2F');
+          // Non-vanilla shortcut keeps its immediate start
+          const track = getMapMusic('RedsHouse2F');
+          if (track) playDefaultMusic(track);
           state = "overworld";
           lastPlayTimeUpdate = Date.now();
           fadeDir = "in";
@@ -1207,13 +1236,13 @@ function gameTick(): void {
         state = "naming_screen";
       } else if (oakAction.type === 'done') {
         // Oak speech finished — start the actual game
-        stopMusic();
+        cancelPendingMapMusic(); stopMusic();
         fadeDir = "out";
         fadeAlpha = 1;
         fadeCallback = () => {
           oakSpeech.clearScreen();
           startNewGame().then(() => {
-            updateMapMusic('RedsHouse2F');
+            loadMapMusic('RedsHouse2F');
             state = "overworld";
             lastPlayTimeUpdate = Date.now();
             fadeDir = "in";
@@ -1362,17 +1391,24 @@ function gameTick(): void {
       pcItems,
       pcStorage: { party: playerParty, boxes: pcBoxes, getCurrentBox: () => currentPcBox,
         setCurrentBox: index => { currentPcBox = index; }, deserialize: deserializeBoxed, hasFlag,
-        saveGame: writeSave, isPikachuFollowingDisabled: () => false },
+        saveGame: writeSave, isPikachuFollowingDisabled },
       getMoney: () => playerMoney,
       setMoney: amount => { playerMoney = amount; },
-      restoreMapMusic: () => { currentMapMusic = null; updateMapMusic(currentMapName); },
+      restoreMapMusic: entry => {
+        const track = getMapMusic(currentMapName);
+        if (!track) return;
+        if (entry === 'nurse') restoreNurseMusic(track);
+        else if (entry === 'pn') void playMusicNew(track);
+        else playDefaultMusic(track);
+      },
+      resetPassClock: () => passClock.reset(),
       pikachuTile: pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined,
       pikachuFollower,
     };
     const stepsBefore = player.stepsCompleted;
     const scriptAction = runScript(scriptDeps, isPass);
     if (isPass) passClock.delay(player.takeFrameDelay()); // a pushed hop lands too
-    if (player.stepsCompleted !== stepsBefore && player.stepWasHop) {
+    if (player.stepsCompleted !== stepsBefore && player.stepWasHop && scriptAction?.type !== 'overworldStep') {
       const action = handleStepComplete(overworldDeps(), ow, true);
       if (action) {
         handleOverworldAction(action);
@@ -1381,6 +1417,11 @@ function gameTick(): void {
     }
     if (scriptAction) {
       switch (scriptAction.type) {
+        case 'overworldStep': {
+          const action = handleStepComplete(overworldDeps(), ow, true);
+          if (action) handleOverworldAction(action);
+          break;
+        }
         case 'scriptEnded': {
           state = 'overworld';
           applyStory();
@@ -1388,6 +1429,10 @@ function gameTick(): void {
           pikachuFollower.visible = followerCanDraw();
           if (pikachuFollower.visible && !wasVis) {
             pikachuFollower.spawn(player.x, player.y, player.direction);
+          }
+          if (scriptAction.resumePass) {
+            readJoypad();
+            restOfPass(overworldDeps());
           }
           break;
         }
@@ -1401,8 +1446,7 @@ function gameTick(): void {
             break;
           }
           markSeen(enemy.species.id); // LoadEnemyMonData marks it seen
-          stopMusic();
-          currentMapMusic = null;
+          cancelPendingMapMusic(); stopMusic();
           playMusic('wildbattle'); // PlayBattleMusic: a wild opponent
           startWildBattleTransition(() => {
             initCatchDemo({
@@ -1439,7 +1483,12 @@ function gameTick(): void {
     if (sfa !== null) fadeAlpha = sfa;
   } else if (state === "pikachu_emotion") {
     if (isPikachuEmotionActive()) {
-      if (pikachuEmotionPhase() !== 'portrait') {
+      if (pikachuEmotionPhase() === 'mapview' || pikachuEmotionPhase() === 'closing') {
+        if (tickPikachuEmotionExit(pikachuExitDeps())) {
+          clearPikachuEmotion();
+          state = 'overworld';
+        }
+      } else if (pikachuEmotionPhase() !== 'portrait') {
         // The movement prelude and the border: nothing reads input, nothing can close it
         tickPikachuEmotionEntry({
           follower: pikachuFollower,
@@ -1449,12 +1498,17 @@ function gameTick(): void {
           coveredUpdate: () => fontLoadedUpdateSprites(player, gameMap, uiTiles.tileAt, pikachuFollower),
         });
       } else if (isPressed('a') || isPressed('b') || isPikachuEmotionExpired()) {
+        if (pikachuEmotionNumber() === 26) {
+          beginPikachuEmotionExit(pikachuExitDeps());
+          return;
+        }
         // A press is an edge (input.ts): A or B held since the prelude closes nothing
         state = 'overworld';
         clearPikachuEmotion();
         pikachuFollower.cancelMovement();
       } else {
         updatePikachuEmotionAnim();
+        if (pikachuEmotionNumber() === 26 && isPikachuEmotionExpired()) beginPikachuEmotionExit(pikachuExitDeps());
       }
     }
   } else if (state === "textbox") {
@@ -1482,7 +1536,6 @@ function gameTick(): void {
       // EndOfBattle: GBPalWhiteOut (instant white), then the script carries on — as the
       // "battle" state's finish handler returns to a script. wBattleResult = 2 skips
       // evolution and the Pikachu mood update.
-      stopMusic();
       clearCatchDemo();
       setActivePalette(action.savedPalette);
       reloadBorderTiles();
@@ -1491,7 +1544,7 @@ function gameTick(): void {
       fadeDir = "in";
       state = "script";
       advanceActiveScript();
-      updateMapMusic(currentMapName);
+      loadMapMusic(currentMapName, true);
     }
   } else if (state === "evolution") {
     updateEvolution();
@@ -1553,7 +1606,7 @@ function gameTick(): void {
         currentBattle = null;
 
         if (blackout) {
-          stopMusic();
+          cancelPendingMapMusic(); fadeOutAndStopMusic(8); // StopMusic(8): the fade is waited out in the blackout loader
           // Blackout sequence: halve money, heal party, warp to last pokecenter town
           playerMoney = Math.floor(playerMoney / 2);
           for (const mon of playerParty) {
@@ -1598,9 +1651,8 @@ function gameTick(): void {
               clearScriptBattlePending();
               state = "overworld";
             }
-            // Stop victory fanfare and resume map music
-            stopMusic();
-            updateMapMusic(currentMapName);
+            // The loader's after-battle fade takes over from the battle / victory tune
+            loadMapMusic(currentMapName, true);
           }
         }
       }
@@ -1786,7 +1838,7 @@ function gameLoop(now = 0): void {
     townMap.render();
   } else if (state === "pikachu_emotion") {
     clear();
-    renderOverworldScene(player.getCameraX(), player.getCameraY());
+    renderPikachuEmotionScene();
   } else if (state === "transition" && fadeAlpha >= 1) {
     // Fully faded out — draw white screen while loading
     clear();
@@ -1862,11 +1914,19 @@ function renderOverworldScene(camX: number, camY: number): void {
   pikachuFollower.renderMovementShadow(camX, camY, sprites);
 }
 
+/** The bubble has OAM priority over the map sprites; the portrait UI follows it. */
+function renderPikachuEmotionScene(): void {
+  const camX = player.getCameraX(), camY = player.getCameraY();
+  renderOverworldScene(camX, camY);
+  const bubble = pikachuEmotionBubble();
+  if (bubble) drawZzzBubble(bubble.x - camX, bubble.y - camY - 4);
+}
+
 /** Handle an action returned by the overworld controller. */
 function handleOverworldAction(action: OverworldAction): void {
   switch (action.type) {
     case 'pikachuEmotion':
-      startPikachuEmotion(playerParty);
+      startPikachuEmotion(playerParty, currentMapName, pikachuFollower.direction);
       state = 'pikachu_emotion';
       break;
     case 'textbox':
@@ -1898,8 +1958,7 @@ function handleOverworldAction(action: OverworldAction): void {
       // TrainerEngage → EngageMapTrainer → PlayTrainerMusic, before the bubble
       const music = meetMusicFor(action.npc.data.trainerClass!);
       if (music) {
-        stopMusic();
-        currentMapMusic = null;
+        cancelPendingMapMusic(); stopMusic();
         playMusic(music);
       }
       pendingEngage = { npc: action.npc, steps: action.steps, facing: action.facing };
@@ -1914,6 +1973,18 @@ function handleOverworldAction(action: OverworldAction): void {
   }
 }
 
+/** Emotion 26's source exit commands; map/UI and sprite updates stay owned by main. */
+function pikachuExitDeps() {
+  return {
+    follower: pikachuFollower,
+    playerFacing: player.direction,
+    showMapView: () => { captureUi(drawUiLayer); },
+    fontLoadedUpdate: () => fontLoadedUpdateSprites(player, gameMap, uiTiles.tileAt, pikachuFollower),
+    closeFrames: () => currentMapCloseFrames(currentMapName, { x: player.mapStepX, y: player.mapStepY }),
+    updateSprites: () => updateSprites([...npcs, ...getScriptNpcs()], gameMap, player, pikachuFollower),
+  };
+}
+
 /** Start a scripted cutscene — thin wrapper around script controller. */
 function startScript(commands: ScriptCommand[]): void {
   initScript(commands);
@@ -1921,7 +1992,11 @@ function startScript(commands: ScriptCommand[]): void {
   state = "script";
   // Migrated pickups/handlers enter DisplayTextIDInit in the dispatch CPU tick.
   // Scripts that begin with movement retain their verified dispatch frame.
-  if (commands[0]?.type === 'displayOpen' ||
+  if (commands[0]?.type === 'npcMovementScript') {
+    // RunNPCMovementScript function 0 and JoypadOverworld consume entry 1 in this pass.
+    runScript({ textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower,
+      resetPassClock: () => passClock.reset() }, true);
+  } else if (commands[0]?.type === 'displayOpen' ||
       (commands[0]?.type === 'callback' && commands.some(cmd => cmd.type === 'displayOpen'))) {
     // Run an instantaneous migrated map-script prefix into its opening in this CPU tick.
     // A movement/async/wait command keeps its index and ends the dispatch here.
@@ -1932,6 +2007,7 @@ function startScript(commands: ScriptCommand[]): void {
         textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower,
         pcItems,
         getMoney: () => playerMoney, setMoney: amount => { playerMoney = amount; },
+        resetPassClock: () => passClock.reset(),
       }, false);
     } while (getActiveScript() && getActiveScript()!.index !== index);
   }

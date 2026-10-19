@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-10-16 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 4 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅); A5 in progress (A5a ✅, A5b ✅)
+**Last updated:** 2026-10-18 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
 
 ---
 
@@ -41,11 +41,11 @@ co-author line. **Never push** — there is no remote and there must never be on
 **Phase R is done** (2026-09-22): the game runs from committed files, no ROM, no setup. **Phase V** rebuilds
 the lost 30-map state (V1 ✅ → V2 Pewter → V3 Gym + Museum → V4 Diglett's Cave + Route 3 → V5 fixes), with
 Phase A slices placed in between (DECISIONS #29, #35, #55). Done so far: V1, A6, A1, A5a, A5b. **StatusScreen
-and the healing machine are user-verified complete. V2 (Pewter) is approved as V2a → V2b → V2c (note 60, DECISIONS #64); V2a is user-verified (2026-10-17). Next: V2b CP1 (trace)** (queue below).
+and the healing machine are user-verified complete.** **V2 (Pewter City) is user-verified complete (2026-10-17):** V2a → V2b → V2c (notes 60–62). **Map-music fade-out approved (#67); CP1 ✅ checked (§10.9); CP2 ✅ checked (note 63 §10.11); CP3 ✅ checked (§10.13); **CP4 (#68 built, gates twice, muted browser walk) done, awaiting Claude's check (§10.15).**
 
 ---
 
-## 📍 Where things stand — updated 2026-10-16 (*Setup* re-checked 2026-10-01; refs not refreshed since)
+## 📍 Where things stand — updated 2026-10-18 (*Setup* re-checked 2026-10-01; refs not refreshed since)
 
 ### Setup — done
 
@@ -60,7 +60,7 @@ and the healing machine are user-verified complete. V2 (Pewter) is approved as V
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 182 JSON → `data/`; also rebuilds `static/`: 521 PNG + 3 `.tilemap` + 182 JSON mirror. V2a CP2: all 888 files byte-identical across two runs; 872 prior files unchanged; only five map pairs, Route2/text_programs/map_sprite_sets pairs added/changed (§14) |
 | Typecheck | Clean |
-| Tests | **1722/1722** with `ROM_PATH=pokeyellow.gbc` across 96 files; without it **1569 pass / 153 skip**. V2a CP3: gates clean, no timeout (note 60 §15) |
+| Tests | **1913/1913** with `ROM_PATH=pokeyellow.gbc` across 111 files; without it **1756 pass / 157 skip**. Map-music CP4: typecheck/build and both suites pass, twice (2026-10-18). |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -69,7 +69,7 @@ and the healing machine are user-verified complete. V2 (Pewter) is approved as V
 | Runtime data path | ✅ **No ROM** (R1b): the browser loads only `static/` via plain `fetch()` / `<img>`. Upstream's upload gate is deleted; the bundle has no gate code |
 | Vite | `publicDir: 'static'`, `base: '/'`, `appType: 'mpa'` (missing file = real 404). Tab title **PKMN** |
 | Background tabs | ✅ keeps running unfocused — logic + music (worker ticker, DECISIONS #27). User-verified |
-| Maps | **12 playable**: PalletTown, RedsHouse1F/2F, BluesHouse, OaksLab, Route1, Route22, ViridianCity, ViridianPokecenter, ViridianMart, ViridianSchoolHouse, ViridianNicknameHouse. **+7 playable through the debug warps since V1b:** Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate, with music, palette and Pikachu. **Since V1e the walking path is open:** Viridian → Route 2 → the Forest, once the old man's demo is done |
+| Maps | **12 playable**: PalletTown, RedsHouse1F/2F, BluesHouse, OaksLab, Route1, Route22, ViridianCity, ViridianPokecenter, ViridianMart, ViridianSchoolHouse, ViridianNicknameHouse. **+7 playable through the debug warps since V1b:** Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate, with music, palette and Pikachu. **Since V1e the walking path is open:** Viridian → Route 2 → the Forest, once the old man's demo is done. **+5 since V2a:** PewterCity, PewterPokecenter, PewterMart, PewterNidoranHouse, PewterSpeechHouse, reached from Route 2's north edge (24 maps). The Museum and Gym doors fail gracefully until V3; the east road waits for V4 |
 | Warps | ✅ since V1b: the player keeps their facing through warps, as in the ASM; Pikachu appears where Yellow's spawn states put it (`pikachu/pikachu_spawn.ts`) |
 | Demo gates | ✅ **Gone since V1e**: the invented Viridian text and Route 22's fake Blue. A test fails if "demo" appears anywhere in `data/game_text.json` or `data/maps/*.json` |
 | Viridian old men | ✅ **since V1e, as `scripts/ViridianCity.asm` runs them** (`story/viridian_city.ts`): the sleeping man's push-back; the forced demo after the Pokédex (fails, walk-away, Pikachu steps aside); the Mart spawning the walking old man and his repeatable demo (caught); the locked Gym door (hop down the ledge). The city's `wViridianCityCurScript` is saved (`mapScripts`), which keeps the Gym-door quirk (DECISIONS #34). User-verified |
@@ -134,17 +134,12 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **A5a** ✅ | The text printer (2026-10-06) |
 | **A5b** (A5b1–A5b7) ✅ | Script and menu texts on the cartridge's programs: text data, sprite sets, SFX, the text runner and exact close (A5b1–4); story handlers and the nurse (A5b5); school, Town Map sign, Oak's speech (A5b6); number printing, the Mart, bag/medicine/HP bar, item and Pokécenter PCs, Bill's PC, START and SAVE (A5b7a–f); legacy retirement, hidden events and bookshelves as programs (A5b7g). **A5b7 user-verified complete 2026-10-16**; reviews `notes/40…56` |
 | **StatusScreen** ✅ | The stats pages (`StatusScreen`/`StatusScreen2`) for START, Bill's PC and battle, plus the shared `DisplayPartyMenu` opening and corrected medicine timing (F-1/F-2). CP1–CP5 by Sol, reviewed by Claude, **user-verified 2026-10-16**; note 58, DECISIONS #62 |
+| **V2** (V2a–c) ✅ | Pewter City: the five maps and the Route 2 connection, the Marts from the ROM (V2a); the museum and gym guides on the cartridge's simulated joypad, the east block (V2b); Jigglypuff's song and the sleeping Pikachu with its readers, emotion 26, the party-menu rules (V2c). **User-verified 2026-10-17**; notes 60–62, DECISIONS #64–#66 |
 | **Healing machine** ✅ | The Pokécenter's `AnimateHealingMachine`: the music fade-out engine, NR50 (n+1)/8, `SFX_HEALING_MACHINE`, the balls, OBP1 flashes and jingle wait, then `HealParty` and the map music in the return tick; note 56 N-2's TV test. CP1–CP4 by Sol, reviewed by Claude, **user-verified 2026-10-16**; note 59, DECISIONS #50/#63 |
 
 ## In progress
 
-**V2 planned and approved (O-32 → DECISIONS #64): V2a → V2b → V2c, Sol implements.** `notes/60-v2-plan.md` (Claude, 2026-10-16) proposes three parts:
-- **V2a:** the five maps, the Route 2 ↔ Pewter connection, texts, both Marts' lists from `script_mart`, the bench guy,
-  the Super Nerd's yes/no and Pewter Mart's no-auto-box;
-- **V2b:** the museum and gym guides (literal ASM move lists, `PewterGuys`, the `$40` placement bug) and the east block;
-- **V2c:** Jigglypuff's song and the sleeping Pikachu (the not-following state, the nurse's `LooksContentText`, emotion 26).
-
-Each part has trace-first checkpoints. **V2a ✅ user-verified 2026-10-17** (CP1–CP2 Sol, CP3–CP4 Sonnet standing in; each checked by Claude). **Next: V2b CP1, the trace (note 60 §6, plus the east-edge item); results → note 60's next free section.**
+Nothing. **The map-music fade-out is done** (note 63, DECISIONS #67/#68; user-verified 2026-10-18). **Next: the intro animation (#51)**, planned by Claude first.
 
 ## Next up — queue
 
@@ -152,13 +147,11 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **V2** Pewter City | V | **Note 60; approved (#64): V2a → V2b → V2c. V2a ✅ (user-verified 2026-10-17). Next: V2b CP1 (trace).** DECISIONS #55. City, Pokécenter, Mart, 2 houses, the Route 2 connection; Mart inventories and hidden-event rows extracted. Runtime tables, Super Nerd handler and no-auto-box wiring remain CP3 |
-| 2 | **Map-music fade-out** | A | DECISIONS #63: `PlayDefaultMusicFadeOutCurrent` on doors, warps and after battle (fade 10, or 8 after battle), on the fade engine from the healing machine (note 59 §9) |
-| 3 | **Intro animation** | A | DECISIONS #51: the intro's fades, slides, shrink and music fade-out |
-| 4 | **A5c–A5f** | A | Battle text (incl. the shared START/battle cursor, #59), transitions, intros/pic positions, the wild catch (`notes/21-a5-plan.md`) |
-| 5 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
-| 6 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
-| 7 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2) |
+| 1 | **Intro animation** | A | DECISIONS #51: the intro's fades, slides, shrink and music fade-out |
+| 2 | **A5c–A5f** | A | Battle text (incl. the shared START/battle cursor, #59), transitions, intros/pic positions, the wild catch (`notes/21-a5-plan.md`) |
+| 3 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
+| 4 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
+| 5 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2) |
 
 After that: A2, A3, A4 (in-game trades, plus the player ID and the older-save question, #59), then Phase B.
 Before planning any of these, search `notes/57-findings-backlog.md` for the slice id.
@@ -217,7 +210,7 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 - **O-2: Crystal animated GIFs in the randomizer pool?** Not blocking; decide when
   X1 starts. (`DECISIONS.md` → *Open*.)
 
-Resolved questions (O-5 … O-29; O-30, O-31, O-32 since) moved to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16; each
+Resolved questions (O-5 … O-29; O-30 … O-36 since) moved to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16; each
 outcome is a numbered entry in `DECISIONS.md`.
 
 ## Notes for later
@@ -230,131 +223,119 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-10-17 (V2a play-test → V2a done) — the user, recorded by Claude
+### 2026-10-18 (context update, day closed) — Claude
 
-The user play-tested note 60 §10 for V2a: "all passes". **V2a is done:** Pewter City, its Pokécenter, Mart and two
-houses, the Route 2 connection, the Mart lists from the ROM, the no-auto-text-box set, the PARLYZ HEAL name fix.
-Context updated (CLAUDE, PROJECT, PLAN, STATUS). Session closed for the day. **Next session: V2b CP1** (trace only;
-include the Pewter east-edge `CheckMapConnections` item). Nothing pushed.
+At the user's request: CLAUDE, PROJECT and PLAN mark the map-music fade-out done; V2-era session entries archived to HISTORY (DECISIONS #61). **Next session: Claude plans the intro animation (#51).** Nothing pushed.
 
-### 2026-10-17 (V2a CP4 checked) — Claude
+### 2026-10-18 (map-music done) — the user, recorded by Claude
 
-I checked Sonnet's V2a CP4 (`f089341`, note 60 §16). **Passes.** Re-ran ROM **1723/1723** after my fix below. Looked at the
-crossing (gray PEWTER palette) and the Mart list screenshots. The list showed **`PARALYZE HEAL`, overflowing the box**,
-a pre-existing bug (Viridian Mart and the bag too, plus `OAKS PARCEL`): those runtime ids differ from pret's
-`PARLYZ_HEAL`/`OAKs_PARCEL`, which key `item_names.json`. **Fixed** with a two-entry alias in `getItemName` and a test
-that every runtime item id resolves to a ROM name (alias removed → fails); no id or save change. No-ROM **1570/153**.
-Findings: the nurse's saved first-visit bit → J2 (as logged). Pewter's east edge: the SE corner is reachable without
-the east triggers, so V2b CP1 now traces the cartridge's `CheckMapConnections` there (no stopgap). **Next: the user
-play-tests V2a (note 60 §10).** Nothing pushed.
+CP4 (`a75ef25`) accepted on its gates and browser trace; the user play-tested: "all passess". **The map-music fade-out is done.** Next: the intro animation (#51). Nothing pushed.
 
-### 2026-10-17 (V2a CP4 — verification) — Sonnet 5.5, standing in for Sol
+### 2026-10-18 (map-music CP4 — #68 and verification) — Claude Sonnet
 
-Gates twice: typecheck/build clean, ROM **1722/1722**, no-ROM **1569/153**, no timeout; tree clean throughout. Muted browser walk on port
-5207 (never 5173): Forest north gate → Route 2 → Pewter (the `cities1` fetch only on crossing, PEWTER palette), every talker and
-sign, both Super Nerd answers, nurse heal (the machine, with a real party: ball + eight flashes in Pewter; blackout point =
-Pewter's door warp), bench guy, PC, Mart (seven items and prices, a purchase, START with **no early box**: first change ≈+22 ticks),
-both houses incl. the Nidoran line, SAVE → reload → CONTINUE, Museum/Gym doors fail gracefully. **Two findings, not fixed:**
-the player **does not stop at Pewter's east edge** (border block `$0a` is walkable; no Route 3 until V4), and the nurse's
-first-use text reappears after CONTINUE (`BIT_USED_POKECENTER` isn't saved). Both are in the backlog; note 60 §16 has the table,
-the screenshot index and the browser-testing traps. Evidence in `%TEMP%/pkmn-v2a-cp4/`. Docs only. **Stop for Claude's check.**
-Local commit only, nothing pushed.
+Built DECISIONS #68: `handleWarpLoad` sets `pendingWarpMusic`; `gameTick` makes the request (six passes, then DF) once
+`isSoundFinished()`; any later music start or the blackout supersedes it; the screen fade is untouched. New
+`main_door_audio.test.ts` drives main's real door path on the real audio engines: `go_inside` (20 updates) and
+`go_outside` (40) play in full before the fade's ID clear, and the song arrives 88 updates after the request. Four
+existing `main.test.ts` cases take one `gameTick` after their warp (reasons in §10.15). 6/6 production mutations caught (my
+first sweep missed one; test added). Gates twice: typecheck/build clean, ROM **1913/1913**, no-ROM **1756 pass / 157 skip**.
+Muted browser walk on port 5191 (never 5173; save cleared, server stopped): a door out (`go_outside` in full, then the fade,
+then the song) and in (`go_inside`), a same-music door (no change), a connection, a won and a fled battle, no sound during
+a fade, CONTINUE, the Pallet walk (MuseumGuy across the Lab door, then Oak's Lab music), a blackout, the healing machine and
+StatusScreen all behaved as the cartridge does. Route 2 → Pewter itself was not reachable from the debug spots (Viridian →
+Route 1 walked instead). Details and the trace table are in note 63 §10.15. Committed locally, never pushed. **Stop for
+Claude's CP4 check; then the user's play-test.**
 
-### 2026-10-16 (V2a CP3 checked) — Claude
+### 2026-10-18 (O-36 answered) — the user, recorded by Claude
 
-I checked Sonnet's V2a CP3 (`3ae8a88`, standing in for Sol). **Passes, no required fix.** Re-ran typecheck (clean) and
-ROM **1722/1722**. Read the diff: the tables match `songs.asm` and the plan; `pewterSuperNerdText` is YES → ThatsRight
-(`cp $0`); `text/auto_text_box.ts` holds {OaksLab, PewterMart} and is applied at the entry points (handlers/TX_SCRIPT
-via `applyMapAutoTextBox`, plain/printText NPCs, Lab free-move, `displayOpen`'s default, START's early border).
-`applyMapAutoTextBox` forces the first `displayOpen` to false on those maps, which is the cartridge's rule for every
-DisplayTextID there; no Lab or Pewter Mart handler opens with an explicit `true` (the only one is Viridian City's,
-an auto-box map). START's new test keeps labels at +20 and the first read at +23. **Next: CP4** (gates twice, muted
-browser walk, docs), then the user's V2a play-test. Nothing pushed.
+"i choose a" → DECISIONS #68: the warp's map-music request waits until the door sound has finished, keeping the
+cartridge's audible order. The warp's own timing goes to a backlog warp-timing slice. **Next: CP4.** Local commit only.
 
-### 2026-10-16 (V2a CP3 — runtime wiring) — Sonnet 5.5, standing in for Sol
+### 2026-10-18 (map-music CP3 checked) — Claude
 
-Read the ASM first (PewterMart/OaksLab scripts, `PewterCitySuperNerd2Text`, songs.asm). Five Pewter maps wired in
-`main.ts` (City outdoor; music per songs.asm), all `PEWTER`, six debug warps. `PewterCity:4` Super Nerd handler
-(YES → ThatsRight, NO → ImSprayingRepel), census exclusion removed. New `text/auto_text_box.ts` ({OaksLab,
-PewterMart}) replaces the Lab name check for plain/printText NPCs, handlers, TX_SCRIPT (`buildMartScript`), Lab
-free-move and START's early border (+20/+23 kept); explicit `true` (bookshelves) untouched. A first design that
-made `displayTextID` default to the map broke Lab shelves and was reverted. Guides and Jigglypuff still silent.
-+19 tests, 3 mutations caught. Typecheck/build clean, ROM **1722/1722**, no-ROM **1569/153** (96 files). Note 60 §15.
-No browser run. **Stop for Claude's check; CP4 has not started.** Local commit only, nothing pushed.
+I checked Sonnet's map-music CP3 (`c36928c`, note 63 §10.12). **Passes**, with one decision for the user (**O-36**).
+The wiring follows note 63 §10: loaders, connections, battle and evolution returns, the blackout's two requests,
+CONTINUE without the menu stop, the flags, and Pallet's MuseumGuy carried into the Lab. The existing-test edits only add
+mock entries, plus one assertion flipped to the cartridge's drop rule. Re-ran typecheck and ROM **1910/1910**; my
+mutation (no `NO_MAP_MUSIC` skip) failed 1. O-36: the port's short warp clips the door sound when the music changes;
+I recommend requesting the fade after the door sound ends. **Next: the user answers O-36, then CP4.** Nothing pushed.
 
-### 2026-10-16 (V2a CP2 checked) — Claude
+### 2026-10-18 (map-music CP3 — wiring) — Claude Sonnet
 
-I checked Sol's V2a CP2 (`e7f2902`, `50f6f90`). **Passes, no required fix.** Re-ran typecheck (clean), ROM **1703/1703**,
-and `npm run setup` again: tree unchanged. Read the extractor diff: `readMartItems` reads both pointer tables, resolves
-home-bank pointers, checks $FE, the count against the $FF terminator and every item id, and maps $0f to
-`PARALYZE_HEAL`; the hard-coded Viridian list is gone and its extracted list is unchanged. Test diffs only add Pewter
-rows/counts (24 maps, 182 JSON, census 38, bench check 9, Nidoran's exact FAR + asm guard) plus new extraction tests
-with malformed-`script_mart` rejections; the Pewter tripwire is re-keyed to Jigglypuff's registration as planned.
-The approved `map_sprite_sets.json` rows only add the five maps. Note for CP3: the census exclusion
-`PewterCity:4` ("V2a CP3 Super Nerd handler") must go when that handler lands. **Next: Sol runs V2a CP3.** Nothing pushed.
+CP3 only (note 63 §10.12). One shared `PlaySound` in `audio/index.ts` over the real engines with a real
+`determineAudioFunction`; the facade's `playMusic`/`playSFX`/`stopMusic` are PM/PS/SA, with new PN (`playMusicNew`), DM,
+the nurse restoration, DF, `updateMusic6Times` and `stopAllSounds`. `AudioFade`'s standalone shims are gone (they now
+live only in the engine-test rig); `BIT_NO_AUDIO_FADE_OUT` (StatusScreen) and `BIT_NO_MAP_MUSIC` are real flags in
+`audio/audio_flags.ts`. `main.ts`: six passes + DF at warps, CONTINUE, NEW GAME and every battle return (after-battle
+reason through the whole evolution queue and the catch demo); DF only at connections; the blackout waits out
+`StopMusic(8)`, calls `StopAllSounds`, requests the departed map's song, then the destination's; CONTINUE no longer stops
+the title music. The Pallet escort plays MuseumGuy and sets the bit; the Lab clears it and restores. `cancelDrum` checked
+on Routes3: it only frees channel 8. +34 tests; **36/36** production mutations caught (my first sweep missed nine, which
+I closed). Existing-test changes, each with its reason, are in §10.12. Typecheck and build clean; ROM **1910/1910**,
+no-ROM **1753 pass / 157 skip**; no generated data. **Disclosed departure: the port's 8-frame warp cuts a door sound**
+(§10.12 item 1), which the play-test will hear. Committed locally, never pushed. **Stop for Claude's CP3 check; CP4 not
+started.**
 
-### 2026-10-16 (V2a CP2 completed after scope approval) — Codex/Sol
+### 2026-10-18 (map-music CP2 checked) — Claude
 
-The user approved the two generated sprite-set files and four omitted fixture updates. Added only
-Pewter rows/counts and count labels/comments; every old assertion retained. Note 60 §14 records each
-cartridge reason before those edits; §8 includes all four files. All 888 setup outputs match byte for
-byte; 872 prior files unchanged. Final ROM **1703/1703**, no-ROM **1550 pass/153 skip** (95 files),
-typecheck/build clean; no final timeout. Earlier unchanged text-source timeout/rerun recorded in §13.8.
-CLAUDE/CONVENTIONS baselines updated. Completes WIP `e7f2902`; no runtime wiring or browser check.
-**Stop for the user's/Claude's check. CP3 has not started.** Committed locally; nothing pushed.
+I checked map-music CP2 (`374d8c4`: Codex implemented, Sonnet finished the handoff; note 63 §10.10). **Passes, no
+required fix.** `play_sound.ts` matches `home/audio.asm`, `fade_audio.asm` and `init.asm` branch for branch (SFX
+dropped during a fade; reload from control; PlayMusic cancels; the bank compare; completion → SA, bank restore,
+PN). Re-ran typecheck and ROM **1876/1876**; my mutation (no SFX drop) failed 2. Carry into CP3: one shared PlaySound
+over the real engines, retiring `AudioFade`'s standalone shims, a real `determineAudioFunction`, and the drum check.
+**Next: CP3.** Nothing pushed.
 
-### 2026-10-16 (V2a CP2 — implementation; scope answers pending) — Codex/Sol
+### 2026-10-18 (map-music CP2 handoff finished) — Claude
 
-Five maps/text tables, 54 sym-checked programs, parent/hidden-event rows and ROM-derived Mart stock
-implemented; Viridian stock bytes unchanged. Setup twice: **888 files identical** (182 JSON per tree).
-No runtime wiring. Note 60 §13.8 records two extra generated sprite-set files and four stale fixture
-counts/lists outside the user's allowlists; approval was requested, not assumed. Only §8's five test
-files edited so far. Typecheck/build clean; ROM **1698 pass/5 fail**, then unchanged timeout rerun
-**7/7**; no-ROM **1546 pass/4 fail/153 skip**. The remaining four failures are those omitted fixtures.
-**CP2 not complete; await the user's scope answers, then finish gates/commit before Claude's check.**
-Authorized changes saved in a local WIP commit; the two extra generated sprite-set files remain
-uncommitted pending the user's answer. No omitted fixture was edited. Nothing pushed.
+Codex stopped before committing CP2; I finished the handoff and changed no code. Reviewed the uncommitted tree against
+note 63 §4 CP2 and `home/audio.asm`, `home/fade_audio.asm`, `home/init.asm`: every item is covered, no existing test is
+edited, and there is no `main.ts` or `index.ts` wiring. Re-ran the gates: typecheck and build clean, ROM **1876/1876**,
+no-ROM **1719 pass / 157 skip**, matching Codex's logs. Wrote note 63 §10.10 (file by file, the tests, all 44
+mutations, the gates). CP2 is done and awaiting Claude's check. Three carry-overs for CP3 are in §10.10, chiefly that
+`AudioFade` is still built standalone, so the running game doesn't use the new entries until CP3 shares one
+`PlaySound`. Committed locally, never pushed. **Stop for Claude's CP2 check; CP3 not started.**
 
-### 2026-10-16 (V2a CP1 checked) — Claude
+### 2026-10-18 (map-music CP2 — audio state) — Codex
 
-I checked Sol's V2a CP1 (`0971786`, note 60 §13). **Passes, no required fix.** Verified against the ROM and source:
-both clerks' bytes (`00:233b` `FE 05 04 14 0B 0F 0C FF`, `00:2343` `FE 07 04 14 1D 0B 0C 0E 0F FF`); `printTextWrapper`
-already matches the inline `call PrintText` form, so my planned extractor rule is unneeded; Nidoran starts with
-TX_FAR while Viridian's Spearow starts with `text_asm`, so its call is `text` and the census grows by 8 (City 3/4/5,
-Pokécenter 1/3/4/6, Mart 1) to 38; `$0f` needs the `PARALYZE_HEAL` alias; START must take the map's no-auto-box
-default. All four corrections are already folded into §2–§8. Docs only. **Next: Sol runs V2a CP2.** Nothing pushed.
+Pure PlaySound state owns numeric IDs/banks and the fade queue; AudioFade delegates its tick. Distinct PM/PS/PN/
+PW/SA/DM/DF, source-checked 49-track/19-SFX table, ID-only SFX clear and six music/SFX passes without fade ticks.
+23 new real-rig/identity tests; all 54 existing audio tests unchanged. **44/44** actual one-line production
+mutations caught/restored (note 63 §10.10). Typecheck/build clean; ROM **1876/1876**, no-ROM **1719 pass / 157 skip**;
+no timeout or generated changes. index.ts/main.ts and caller routing untouched; CP3 wiring remains pending.
+Committed locally, never pushed. **Stop for Claude's CP2 check.**
 
-### 2026-10-16 (V2a CP1 — trace) — Codex/Sol
+### 2026-10-18 (map-music CP1 checked) — Claude
 
-Checked pret ASM/symbols and ROM: five text tables, 27 new root/FAR pairs, all calls, both Mart byte
-streams, connection offsets, four door spawn states, empty Pokécenter slot 10, and Mart/START openings.
-Note 60 §13 records the trace and corrections: inline PrintText already supported (no old kind changes);
-Nidoran is text + ASM, so future handler/script census **38**; $0f needs runtime **PARALYZE_HEAL**;
-no-auto-box must cover START, whose initial border is unconditional today. Viridian's mapped stock
-equals today's exactly. Gates: ROM **1687/1687**, no-ROM **1550/137** (95 files), typecheck/build clean;
-no timeout. Docs only; no code/data/test changes or setup/browser run. **Stop for Claude's check;
-CP2 has not started.** Local commit only, nothing pushed.
+I checked Codex's CP1 (`f0072f9`, note 63 §10). **Passes; its corrections stand.** The big one: an ordinary SFX leaves
+`wNewSoundID` = 0, so during a fade it is **dropped**, not queued. My plan's "silent-music glitch" was a misreading
+(note 63 and DECISIONS #67 corrected). The blackout first requests the departed map's song (`StopAllSounds` zeroes
+last; `PrepareForSpecialWarp` skips the music fields). The census covers 85 requests and 10 map-music callers. Carry
+into CP2: numeric IDs/banks for the reload-from-control case, distinct entry kinds, `UpdateMusic6Times` without a fade
+tick. Backlog: UI-beep and evolution-sound gaps. **Next: Codex runs CP2.** Nothing pushed.
 
-### 2026-10-16 (O-32 answered) — the user, recorded by Claude
+### 2026-10-18 (map-music fade-out CP1 — trace) — Codex
 
-The user approved note 60 §12 ("yes pls split it and yes to codex ompelmenting") → DECISIONS #64: V2 runs as
-V2a → V2b → V2c, each with its own CPs and play-test; Sol implements, Claude checks each CP. **Next: Sol runs V2a
-CP1 (trace only, no code).** Local commit only.
+Docs only; note 63 §10 covers all seven CP1 items and audits every §2 claim. Census: 85 music/SFX/stop
+request expressions + 10 updateMapMusic callers. audio_rig confirms fade 10/8 at 88/72, six Audio1-only passes
+do not tick the fade, door SFX end at 20/40. Corrected the plan: ordinary PlaySound SFX leave new ID=0 and
+are ignored during a fade, so the claimed bump-silence glitch does not follow from this ASM. Blackout resets
+last=0 and requests the departed song before loading the destination header; Mom/nurse/healing jingle use direct
+entries. Traced evolution, Lab loss, CONTINUE, real NEW GAME, and the exact Pallet/Lab command points.
+Typecheck/build clean; unchanged ROM **1853/1853**, no-ROM **1696 pass / 157 skip**; no timeout. No source/data/test
+edits, extraction or browser. Local commit only; nothing pushed. **Stop for Claude's CP1 check; CP2 not started.**
 
-### 2026-10-16 (V2 plan) — Claude
+### 2026-10-17 (O-35 answered) — the user, recorded by Claude
 
-At the user's request ("please update all context files then ultrathink and plan the next slice"):
-- **Context sweep** (`1468cc3`): the 19 session entries before the healing-machine plan moved verbatim to HISTORY
-  (DECISIONS #61; STATUS ~40 → ~28 KB). The machine is marked done in PLAN, note 59, the backlog and the story doc.
-  ARCHITECTURE's module map now has `fade_audio`, `healing_machine`, `loadSpriteMapped`/`obpMapping` and
-  `StatusScreenSession`, which replaces the stale `StatsScreen`.
-- **V2 plan:** wrote `notes/60-v2-plan.md` from the Pewter ASM.
-  - The Pokécenter, Mart and houses are byte-identical layouts to Viridian's, and Pewter Mart's prices already match.
-  - I simulated the guides' nine start variants from the ASM lists (reversed consumption, `PewterGuys`' overwrite):
-    each ends with the player one tile behind, at museum (14,8) and gym (11,18).
-  - Measured the Jigglypuff song on `audio_rig`: CHAN2 ends at update 392, CHAN1 at 397, so the spin runs 17 times.
-  - Found that Jigglypuff disables Pikachu's following, which the engine has no state for (V2c).
-  - Three findings went to the backlog (the Youngster's unterminated table → V3; connection music fades → #63's
-    slice; `wTownVisitedFlag` → Fly).
+The user approved note 63 §9: "yes to 1 and 2, and to 3 it's gonna be Codex" → DECISIONS #67. The full fade-out with
+the PlaySound-during-fade rules (incl. the silent-music glitch) and the Pallet/Lab music fix; Codex implements.
+**Next: Codex runs CP1** (trace only). Local commit only.
 
-**Next: the user answers O-32.** No code changed; the throwaway rig test was deleted. Local commit only.
+### 2026-10-17 (map-music fade-out plan) — Claude
+
+At the user's request, wrote `notes/63-map-music-fade-plan.md` from the ASM. It covers
+`PlayDefaultMusicFadeOutCurrent`'s rules: fade 10 → the new song at update 88, or 8 → 72 after a battle; a same song is
+a no-op. Its callers are warps (`LoadMapData`, with `UpdateMusic6Times`), connections, battle returns, the blackout and
+CONTINUE. Found: during a fade, `PlayMusic` cancels it, but a plain `PlaySound` SFX replaces the queued song, so the
+new music never starts (the Gen 1 silent-music glitch). The Pallet walk should play the "follow me" theme into the lab
+(`BIT_NO_MAP_MUSIC`); ours doesn't. Backlog adds the bike/surf music and RIVAL3's flag. **Next: the user answers O-35.**
+Docs only; nothing pushed.

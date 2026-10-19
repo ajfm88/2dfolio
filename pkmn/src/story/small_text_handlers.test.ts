@@ -28,8 +28,9 @@ import { PikachuFollower } from '../pikachu/pikachu_follower';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: () => false,
   isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn(), readJoypad: vi.fn() }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true,
-  playMusic: async () => {}, isMusicChannelActive: () => false }));
+// Map-music CP3: playMusicNew (PN) is the entry for the PkmnHealed jingle; the same mock keeps every playMusic assertion intact.
+vi.mock('../audio', () => { const playMusic = async () => {}; return { playSFX: vi.fn(), isSoundFinished: () => true,
+  playMusic, playMusicNew: playMusic, isMusicChannelActive: () => false }; });
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ height: 96 }) }));
@@ -131,8 +132,7 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianForest:4': 'A5b4 trainer', 'ViridianForest:5': 'A5b4 trainer', 'ViridianForest:6': 'A5b4 trainer',
       'ViridianForest:7': 'A5b4 pickup', 'ViridianForest:8': 'A5b4 pickup', 'ViridianForest:9': 'A5b4 pickup',
       'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry',
-      'PewterCity:3': 'V2b museum guide', 'PewterCity:5': 'V2b gym guide',
-      'PewterPokecenter:3': 'V2c Jigglypuff', 'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry' };
+      'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry' };
     const seen: string[] = [];
     for (const file of readdirSync(resolve(dataDir, 'maps'))) {
       const m = map(file.replace(/\.json$/, '')); const calls = getTextProgramData().textPointers[`${m.name}_TextPointers`];

@@ -224,8 +224,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1722/1722** as of 2026-10-16 (V2a CP3)
-   (V2a CP2). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1913/1913** as of 2026-10-18 (map-music CP4). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -246,7 +245,61 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-1722 tests in 96 files (vitest, `environment: 'node'`); without ROM, 1569 pass / 153 skip.
+1913 tests in 111 files (vitest, `environment: 'node'`); without ROM, 1756 pass / 157 skip.
+
+**Map-music CP4** adds 3: `main_door_audio.test.ts` (2: the real door path on the real audio, `go_inside` and `go_outside` in full before the fade's ID clear, song 88 updates after the request) and one `main.test.ts` case (a blackout supersedes a waiting warp request); 6/6 production mutations caught (note 63 §10.15).
+
+**Map-music CP3** adds 34: `audio/index_map_music.test.ts` (13: the real facade on the real synthesizer and engines —
+door 88, after-battle 72, dropped SFX, six passes, PM cancel, stop, blackout re-queue at +66, DM wait, nurse bank/last,
+Mom's re-queue, the burst around a completing fade, the door-sound departure); `audio/drum_clear.test.ts` (3: the production host's ID clear on
+Routes3); `main.test.ts` +12 (a door, BIT_NO_MAP_MUSIC, a connection, a battle return, the evolution queue, the catch-demo
+return, the blackout's two requests, CONTINUE, the script restore, Mom, the nurse); `pallet_town.test.ts` +2,
+`oaks_lab.test.ts` +1, `pokecenter.test.ts` +1, `display_commands.test.ts` +1, `status_screen.test.ts` +1.
+**36/36** one-line production mutations caught/restored (note 63 §10.12). Existing-test edits are listed there.
+
+**Map-music CP2** adds 23: `audio/play_sound.test.ts` (20: real-engine 88/72 starts, same-song/battle restart,
+PM cancel, re-queue, current/saved bank aliases, dropped PS, PN numeric reload/music or SFX, SA completion/second
+stop, DM/PW waits, ID-only clear, six music/SFX-only passes, both blackout outcomes, UI volume ownership);
+`audio/sound_ids.test.ts` (3: all 49 music and 19 SFX IDs against independent ASM header/layout counts,
+committed-track coverage/direct-Flute exclusion, bank-aware reverse lookup). New `test/audio_request_rig.ts`
+uses the existing real audio rig, unchanged. All 54 prior audio tests remain byte-identical; **44/44** one-line
+production mutations caught/restored (note 63 §10.10). Typecheck/build and both suites pass. Facade/caller/main
+wiring remains CP3; no generated-data changes.
+
+**V2c CP4** adds 17: 16 real main/controller cases for the map/flag/status selection, 61-frame frozen ZZZ,
+100-tick portrait/ASM data, map-view/wake/facing restore/19-frame close, resumed following, party text/cancel
+and SWITCH target, row-specific icon suppression, battle/awake negatives, medicine cancellation and Flute
+tripwire; one renderer case loads the committed emotes and checks the ZZZ sheet/rectangle. 34 one-line
+production mutations caught/restored (note 62 section 10.10). Typecheck/build clean, both suites pass; known
+text-program timeout passed alone and in the full ROM rerun with four workers. CP5 remains pending.
+
+**V2c CP3 revision** replaces the five flag-only path simulations with actual main new-game/CONTINUE/door/
+blackout/connection tests and Bill's deposit through main's live callback. Nurse tests run both maps and the
+skipped heal commands; song tests assert all frame anchors, wait-only restore, A-release Hold and script end;
+follower/overworld tests pin the frozen buffer, no idle/turn and B-held collision. Net +9 to CP3's 1827 baseline;
+23 one-line production mutations caught/restored (note 62 §10.8). CP4 remains pending.
+
+**V2b CP3** adds 28 in two new files: `story/pewter_city.test.ts` (27: default museum resets, four east triggers
+with Brock off/on, six nearby misses, registered source programs/YES/NO, nine complete talk/trigger flows through
+real input/text/controller/committed geometry, 185/329-pass routes, actor endpoints/facings, +2 handoffs,
+museumguy/cities1, direct +20 end text and late SFX, all four exit timelines, HIDE/RESET updates and restored
+STAY/NONE vs reloaded STAY/DOWN); `story/pewter_tripwire.test.ts` (1: new direct/command BEAT_BROCK setters require
+a named east Route3 connection). Removed only PewterCity:3/:5 from the old handler census exclusions; every
+other existing test is unchanged. All 35 temporary production mutations caught/restored (note 61 §10.16).
+ROM **1806/1806**, no-ROM **1652/154**, typecheck/build clean, no timeout. Claude checked CP3 (passes).
+
+**V2b CP2** adds 55 in six new files: `overworld/simulated_joypad.test.ts` (14, one ROM-gated: raw counts,
+overwrite, nine reverse lists, collision flag, independent ASM and symbol-addressed ROM bytes),
+`overworld/native_npc.test.ts` (9: frozen map, route release, retained status/delay/bytes, ready recompute,
+actual `$40` render and separate facing/image), `overworld/simulated_player.test.ts` (2: bypass/normal
+collision and simulated step policy), `input/joy_ignore_controls.test.ts` (1: real input/edges),
+`script/npc_movement_script.test.ts` (24: all nine paths/Done, NO_INPUT, three Pikachu reversal traces,
+opening/close/SFX handoffs, ShowObject persistence/updates and four exit timelines), and
+`native_dispatch.test.ts` (5: actual main dispatch, transitions and both pass-clock parities for initial
+and RESET continuations). Every existing test file is unchanged. The existing Vitest-only main transform
+adds two bindings; no production test hook or relaxed test limit. All 31 temporary production mutations
+were caught and restored byte-for-byte (note 61 §10.12). ROM **1778/1778**, no-ROM **1624/154**, typecheck/build
+clean; no timeout. Engine only; Claude's CP2 check is next, CP3 has not started.
 
 Healing-machine CP4 (2026-10-16, note 59 §15) re-ran typecheck, production build,
 the full ROM suite and the no-ROM suite **twice each**: both ROM runs **1687/1687**,

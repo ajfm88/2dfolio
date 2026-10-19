@@ -3,6 +3,7 @@
 import type { ScriptCommand } from '../script';
 import type { Direction } from '../core';
 import { stopMusic, playMusic } from '../audio';
+import { setNoMapMusic } from '../audio/audio_flags';
 import { displayTextID, registerTextHandler } from './text_handlers';
 import { setJoyIgnore } from '../input/joy_ignore';
 
@@ -105,6 +106,10 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
     // "A POKéMON can appear anytime..." (text/PalletTown.asm _PalletTownOakComeWithMe)
     ...displayTextID([{ type: 'printText', program: 'PalletTownOakComeWithMe', box: 'keep' }]),
     { type: 'callback', fn: () => setJoyIgnore('all') },
+
+    // PalletMovementScript_OakMoveLeft (auto_movement.asm:84–119), on both exits: PlayMusic(MuseumGuy),
+    // BIT_NO_MAP_MUSIC, then the input mask. The Lab clears the bit (OaksLabFollowedOakScript).
+    { type: 'callback', fn: () => { playMusic('museumguy'); setNoMapMusic(true); } },
 
     // Phase 1+2: If player was on right exit, Oak moves LEFT then player follows
     // (assembly: PalletMovementScript_OakMoveLeft + PalletMovementScript_PlayerMoveLeft)

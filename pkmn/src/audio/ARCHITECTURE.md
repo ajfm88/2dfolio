@@ -1,17 +1,21 @@
 # Audio Architecture
 
-Three layers: extraction (ROM → JSON), synthesizer (Web Audio
-`ScriptProcessorNode`), music engine (command interpreter).
+Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
+(Web Audio `ScriptProcessorNode`).
 
 | File | Purpose |
 |---|---|
 | `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), `fadeOutAndStopMusic(control)` / `isAudioFadingOut()` (healing CP2), the SFX preload, the `_playSFX(name)` console helper |
-| `fade_audio.ts` | `AudioFade`: stop-after-fade control/counter/reload/queued ID; ticks before music/SFX; stops/restores NR50 in the completion update |
+| `play_sound.ts` | Pure numeric WRAM/request state: distinct PM/PS/PN/PW/SA/DM/DF, banks, queued sound and FadeOutAudio; map-music CP2 |
+| `sound_ids.ts` | All 49 header-backed music IDs/banks and 19 extracted SFX IDs; refs-checked; the direct PokeFluteInBattle routine has no header ID |
+| `request_host.ts` | `engineHost`: the one `PlaySoundHost` over the synth and engines (volume, ID clear + `cancelDrum`, StopAllAudio, DetermineAudioFunction, sound-finished) |
+| `audio_flags.ts` | Transient WRAM bits as plain module state: `BIT_NO_AUDIO_FADE_OUT` (StatusScreen) and `BIT_NO_MAP_MUSIC` (the Pallet escort, cleared in the Lab) |
+| `fade_audio.ts` | `AudioFade` = `fadeOutAndStopMusic` (control + SA), `isFadingOut`, `tick`, over a `PlaySound`. No standalone shims since map-music CP3 |
 | `rival_start.ts` | A5b5b's `playMusic('meetrival', 'rivalAlternate')` adapter: selects the committed alternate channel entries without changing the engine or cached data |
 | `sound_channel.ts` | **(A1a)** `SoundChannel`: one software channel of `Audio1_UpdateMusic`, the interpreter the music and music-mode SFX share (DECISIONS #40) |
 | `music_engine.ts` | The track's channels (CHAN1–4) and `wMusicTempo`; suppression while SFX play; `releaseChannel`; channel 8's drum occupancy |
 | `sfx_engine.ts` | SFX on channels 5–8 overriding music channels 1–4: SFX-mode `square_note` / `noise_note` / `pitch_sweep`, or, after `execute_music`, a `SoundChannel` at tempo $0100 |
-| `sound_wait.ts` | **(A1a)** `audioUpdate()` (fade, music, then SFX, each update) and `soundFinished()` (`WaitForSoundToFinish`: channels 5, 6, 8) |
+| `sound_wait.ts` | **(A1a)** `audioUpdate()` (fade, music, then SFX), `soundFinished()` (channels 5, 6, 8); `updateMusic6Times()` advances music/SFX only |
 | `sfx_names.ts` | **(A1a)** the extracted SFX, preloaded |
 | `synthesizer.ts` | Per-sample generation of all 4 channels: pulse (phase accumulator + duty table), wave (32-sample lookup), noise (LFSR + 64 Hz hardware envelope in the callback) |
 | `frequency_table.ts` | Note → Hz, matching `Audio1_CalculateFrequency` (SRA shift, octave 1 = highest); `waveRegisterToHz` (65536/(2048−x)) |
@@ -63,11 +67,24 @@ Three layers: extraction (ROM → JSON), synthesizer (Web Audio
   independently parsed ASM and run the real interpreter through the loop.
 - Audio ticks at a fixed 59.7275 Hz off `performance.now()`, independent of game FPS.
   Each update runs the fade, music channels, then SFX channels (`audioUpdate`).
+- **Map-music CP2 request state:** `PlaySound` owns the numeric new/last/control/counter/reload and current/saved
+  banks. PM cancels without writing last; ordinary PS/PW during a fade drops the SFX without changing the queue;
+  PN/SA reload from the current control byte (a queued numeric ID); DM waits/forces a restart; DF compares bank/ID
+  and uses 10 or 8 after battle. Full-volume fade completion is update **88/72**, dispatching the queued sound
+  before that update's engine passes. `SfxEngine.clearSoundIds()` clears occupancy without sound_ret/mute callbacks.
+  The six immediate Audio1 passes never tick FadeOutAudio. Numeric bank aliases and both blackout requests are
+  covered on `test/audio_request_rig.ts`, which uses the existing real audio rig. **CP3 wiring:** `index.ts` owns one shared
+  `PlaySound` with a real `determineAudioFunction` (numeric ID + current bank → music or SFX). Facade entries: `playMusic` =
+  PM, `playSFX` = PS (dropped during a fade), `playMusicNew` = PN, `playDefaultMusic` = DM (retries on the audio clock),
+  `restoreNurseMusic`, `playDefaultMusicFadeOutCurrent` = DF, `stopMusic` = control 0 + SA, `fadeOutAndStopMusic(control)`,
+  `updateMusic6Times`, `stopAllSounds`. `main.ts` requests the map song with six passes + DF at warps, CONTINUE, NEW GAME
+  and battle returns (after-battle reason), DF only at connections, and the blackout's two requests. Known departure: the
+  port's 8-frame warp cuts a door sound (note 63 §10.12).
 - **Healing CP2 fade:** control 4 lowers NR50 every 5 updates (5…35); update **40** stops all
   channels and restores $77 through the cartridge's `Audio2_StopAllAudio` behavior. No-music,
   zero-control and second-stop requests stop immediately. Idle ticks preserve StatusScreen's
   explicit volume. `GBSynthesizer` retains NR50 and uses **(n+1)/8** per output level (base gain
-  0.5), so $00/$33/$77 yield 0.0625/0.25/0.5. Queued map tracks await the post-V2 fade slice.
+  0.5), so $00/$33/$77 yield 0.0625/0.25/0.5. Queued map-track state is implemented in map-music CP2; its callers await CP3.
 - **The interpreter's rules (A1a, `engine_1.asm`; detail in `sound_channel.ts` and
   `notes/16-a1a-plan.md`):**
   - **Channels:** the hardware channel comes from the id, `(id − 1) & 3`.

@@ -840,6 +840,12 @@
         "program": "_PartyMenuSwapMonText"
       }
     ],
+    "PartyMenuText_12cc": [
+      {
+        "op": "far",
+        "program": "_SleepingPikachuText1"
+      }
+    ],
     "PewterCityCooltrainerFText": [
       {
         "op": "far",
@@ -3503,6 +3509,12 @@
       {
         "op": "text",
         "text": "Shall we heal your\nPOKéMON?<DONE>"
+      }
+    ],
+    "_SleepingPikachuText1": [
+      {
+        "op": "text",
+        "text": "There isn't any\nresponse...<PROMPT>"
       }
     ],
     "_SleepingPikachuText2": [

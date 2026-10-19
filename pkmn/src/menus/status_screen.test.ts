@@ -21,6 +21,7 @@ import { textBgTransfer } from '../text/bg_transfer';
 import * as input from '../input';
 import type { GameButton } from '../core';
 import { playSFX, setMasterVolume } from '../audio';
+import { isNoAudioFadeOut, setNoAudioFadeOut } from '../audio/audio_flags';
 import { drawFadeOverlay, drawTile, loadBattleSprite, getMonsterPalette } from '../renderer';
 import { drawScreenTile } from './menu_render';
 import { charToTile } from '../text/charmap';
@@ -238,5 +239,17 @@ describe('StatusScreen pictures, source glyph sheets and palettes', () => {
     expect(charToTile(DOT)).toBe(114); expect(charToTile('.')).toBe(104);
     ctx.drawImage.mockClear(); drawScreenTile(DOT, 16, 56);
     expect(ctx.drawImage).toHaveBeenCalledWith(expect.anything(), 16, 56, 8, 8, 16, 56, 8, 8);
+  });
+});
+
+describe('Map-music CP3: StatusScreen owns BIT_NO_AUDIO_FADE_OUT', () => {
+  it('sets the flag with its own NR50 and clears it with the restore to $77', () => {
+    setNoAudioFadeOut(false);
+    const r = rig(); expect(isNoAudioFadeOut()).toBe(true);
+    for (let f = 1; f <= 26; f++) r.step();
+    r.step(); r.step('b'); for (let i = 0; i < 3; i++) r.step();
+    expect(isNoAudioFadeOut()).toBe(true); // page 2 still holds it
+    r.step('a'); expect(setMasterVolume).toHaveBeenLastCalledWith(7, 7);
+    expect(isNoAudioFadeOut()).toBe(false);
   });
 });

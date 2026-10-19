@@ -5,6 +5,7 @@ import type { SpriteDraw } from '../renderer';
 import { hasFlag } from '../events';
 import type { BattlePokemon } from '../battle';
 import { spawnPlacement, getPikachuSpawnState, setPikachuSpawnState, type PikachuSpawnState } from './pikachu_spawn';
+import { isPikachuFollowingDisabled } from './pikachu_following';
 import { getPikachuHappiness } from './pikachu_happiness';
 import { WalkAnim, walkFrame, pikachuAnimPeriod } from '../overworld/walk_pace';
 import { inSpriteWindow, pikachuCovered } from '../overworld/sprite_visibility';
@@ -215,6 +216,12 @@ export class PikachuFollower {
       this.facePlayer(ctx, false);
       return;
     }
+    // SpawnPikachu_ lines 369–370: while DisablePikachuFollowingPlayer is set,
+    // redirect to Func_fc76a (the font-loaded ready path) instead of following.
+    if (isPikachuFollowingDisabled()) {
+      this.func_fc76a(ctx);
+      return;
+    }
     const idleCtx = {
       playerWalking: ctx.playerWalking,
       overlapsPlayer: this.mapStepX === ctx.playerMapStep.x && this.mapStepY === ctx.playerMapStep.y,
@@ -261,25 +268,7 @@ export class PikachuFollower {
       this.facePlayer(ctx, true);
       return;
     }
-    const overlaps = this.mapStepX === ctx.playerMapStep.x && this.mapStepY === ctx.playerMapStep.y;
-    this.anim.intra = 0;
-    this.anim.frame = 0;
-    // Func_fc76a
-    this.applyImage(overlaps ? 'hidden' : 'refresh');
-    if (!ctx.playerWalking) {
-      // InitializeSpriteScreenPosition: pixels from the map position (ends a move)
-      this.x = this.mapX * STEP_SIZE;
-      this.y = this.mapY * STEP_SIZE;
-      this.moving = false;
-      this.hopping = false;
-      this.moveUpdates = 0;
-      this.idle.offsetX = 0;
-      this.idle.offsetY = 0;
-    }
-    this.idle.antic = null;
-    this.idle.counter = 0;
-    // RefreshPikachuFollow
-    this.refreshFollow(ctx.playerMapStep);
+    this.func_fc76a(ctx);
   }
 
   /**
@@ -485,8 +474,34 @@ export class PikachuFollower {
    * Pointer_fc8d6 with that countdown (and this engine's tile-based talk check can reach
    * a bouncing Pikachu, so the offset goes too).
    */
+  /** Func_fc76a: clear anim counters, apply image, optionally snap to map position,
+   *  clear idle, refresh follow buffer. Used by fontLoadedUpdate and the
+   *  DisablePikachuFollowingPlayer path in updateSprite. */
+  private func_fc76a(ctx: PikachuSpriteContext): void {
+    const overlaps = this.mapStepX === ctx.playerMapStep.x && this.mapStepY === ctx.playerMapStep.y;
+    this.anim.intra = 0;
+    this.anim.frame = 0;
+    this.applyImage(overlaps ? 'hidden' : 'refresh');
+    if (!ctx.playerWalking) {
+      // InitializeSpriteScreenPosition: pixels from the map position (ends a move)
+      this.x = this.mapX * STEP_SIZE;
+      this.y = this.mapY * STEP_SIZE;
+      this.moving = false;
+      this.hopping = false;
+      this.moveUpdates = 0;
+      this.idle.offsetX = 0;
+      this.idle.offsetY = 0;
+    }
+    this.idle.antic = null;
+    this.idle.counter = 0;
+    this.refreshFollow(ctx.playerMapStep);
+  }
+
   private facePlayer(ctx: PikachuSpriteContext, fontLoaded: boolean): void {
     this.facePlayerPending = false;
+    // Func_fc745 still runs .okay's image refresh in ASM; the next asleep
+    // Func_fc76a update refreshes that image here (no visible facing change).
+    if (isPikachuFollowingDisabled()) return;  // Func_fc745: skip turn while asleep
     this.idle.reset();
     this.idle.counter = ctx.inGrass ? 0x80 : 0;
     this.facing = OPPOSITE[ctx.playerFacing];

@@ -318,6 +318,14 @@ The NR50 dip/restore also reached the native master GainNode's automation.
 The muted check verifies those writes, not audible loudness. See note 58 §16
 for the screenshots, harness, fixture boundaries and two complete gate runs.
 
+V2c CP4 adds the sleeping-starter branch before ordinary and SWITCH-target selection:
+`PartyMenuText_12cc` runs as a standalone PrintText with its native prompt wait, then
+clears the swap source and returns cancellation. START's party menu owns that TextBox;
+field medicine supplies the bag's shared TextBox, whose VBlank/input reads stay with
+the bag. The selected item and Pokémon remain untouched. Only the sleeping starter's
+row skips its icon; other rows keep their positions. Battle selection/icons retain
+their existing behavior. The rest of the party-list audit remains J2.
+
 ## Assembly Layout References
 
 For pixel-precise layout specs from assembly source, see `pokeyellow/ARCHITECTURE.md` (Assembly UI Layout Specs section). Key references:

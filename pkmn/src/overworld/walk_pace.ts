@@ -451,6 +451,8 @@ export interface NpcPassContext {
   canWalk: (dir: Direction) => boolean;
 }
 
+export interface NpcScriptOptions { keepStatus?: boolean; bytesToFF?: boolean }
+
 /**
  * An NPC's movement as UpdateNPCSprite runs it, one call per UpdateSprites.
  *   - init: InitializeSpriteStatus (ready, displacement bytes 8 and 8), no try;
@@ -556,7 +558,9 @@ export class NpcWalk {
    * put to rest for one update first, which matches the cutscenes ported so far (Pallet's
    * Oak gets MovementStatus $2 after ShowObject); the other callers wait for the J2 audit.
    */
-  startScript(steps: NpcStepPlan[], keepStatus = false): void {
+  startScript(steps: NpcStepPlan[], options: boolean | NpcScriptOptions = false): void {
+    const { keepStatus, bytesToFF } = typeof options === 'boolean' ? { keepStatus: options, bytesToFF: false } : options;
+    if (bytesToFF) this.stayAndFaceAnyDirection();
     this.inStep = null;
     this.heldAfterInStep = false;
     this.script = steps;
@@ -574,6 +578,13 @@ export class NpcWalk {
     this.stepsStarted = 0;
     this.scriptDone = false;
     this.inStep = { steps, index: 0, counter: 8, started: false };
+  }
+
+  /** EndNPCMovementScript removes the special update route, leaving the old status/bytes/delay. */
+  endInStep(): void {
+    this.inStep = null;
+    this.heldAfterInStep = false;
+    this.scriptDone = true;
   }
 
   /** One UpdateSprites (after CheckSpriteAvailability, which the caller runs). */
@@ -597,6 +608,7 @@ export class NpcWalk {
         this.anim.frame = 0; // NotYetMoving
         // A scripted sprite's delay is forced to zero: ready on this update
         if (this.script) {
+          this.delay = 0;
           this.status = 'ready';
           return;
         }

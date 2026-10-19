@@ -3,7 +3,7 @@ import { TextBox, initTextSystem, setTextSpeed } from '../text/textbox';
 import { initScript, updateScript, renderScriptExclamation, renderScriptYesNo } from './script_controller';
 import type { ScriptDeps } from './script_controller';
 import { isPassPressed, syncJoypadRead, readJoypad } from '../input';
-import { playMusic, isMusicChannelActive } from '../audio';
+import { playMusic, playMusicNew, isMusicChannelActive } from '../audio';
 import { fontLoadedUpdateSprites } from '../overworld/ui_entry';
 import { drawExclamationBubble } from '../renderer';
 import { drawBox, drawText } from '../menus/menu_render';
@@ -14,8 +14,9 @@ import { rig, musicData } from '../test/audio_rig';
 
 vi.mock('../input', () => ({ isHeld: () => false, isPressed: () => false,
   isPassPressed: vi.fn(() => false), readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true,
-  playMusic: vi.fn(async () => {}), isMusicChannelActive: vi.fn(() => false) }));
+// Map-music CP3: playMusicNew (PN) is the entry for the PkmnHealed jingle; the same mock keeps every playMusic assertion intact.
+vi.mock('../audio', () => { const playMusic = vi.fn(async () => {}); return { playSFX: vi.fn(), isSoundFinished: () => true,
+  playMusic, playMusicNew: playMusic, isMusicChannelActive: vi.fn(() => false) }; });
 vi.mock('../debug', () => ({ isNoClip: () => false }));
 vi.mock('../overworld/ui_entry', () => ({ fontLoadedUpdateSprites: vi.fn(), setOpeningSpriteUpdates: vi.fn() }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
@@ -103,6 +104,13 @@ describe('retained handler commands', () => {
     vi.mocked(isMusicChannelActive).mockReturnValue(false); updateScript(deps, false);
     expect(done).toHaveBeenCalledOnce(); expect(deps.restoreMapMusic).toHaveBeenCalledOnce();
     expect(syncJoypadRead).not.toHaveBeenCalled();
+  });
+  it('Mom PkmnHealed is a wNewSoundID request and her map-song restoration is the PN entry', async () => {
+    const deps = scene(); retained(deps);
+    initScript([{ type: 'healJingle' }, { type: 'wait', frames: 1 }]);
+    updateScript(deps, false); await Promise.resolve(); updateScript(deps, false);
+    expect(playMusicNew).toHaveBeenCalledExactlyOnceWith('pkmnhealed');
+    expect(deps.restoreMapMusic).toHaveBeenCalledExactlyOnceWith('pn');
   });
   it('Mom returns on healing CHAN1 sound_ret even though the engine track latch stays enabled', async () => {
     const deps = scene(); retained(deps); const done = vi.fn(); const audio = rig();

@@ -20,7 +20,7 @@ import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
 import { OLD_MAN_PIC_BACK } from '../rom_offsets';
 import { extractGameText } from '../extractors/game_text';
-import { extractLedgeHoppingShadow } from '../extractors/graphics';
+import { extractLedgeHoppingShadow, extractPikachuEmotionSprites, extractEmotes } from '../extractors/graphics';
 import { extractPikachuMovement } from '../extractors/pikachu_movement';
 import { installNodeImageData } from '../node_image_data';
 import { rig } from '../../test/audio_rig';
@@ -1146,5 +1146,48 @@ describe('V1e: the Viridian old men and the demo gates', () => {
     const text = extractGameText(rom);
     expect(text['VIRIDIAN_OLDMAN_DEMO']).toBeUndefined();
     expect(Object.values(text).filter(t => /demo/i.test(t))).toEqual([]);
+  });
+});
+
+describe('V2c CP2: pikachu emotion gfx and emote pixel equality', () => {
+  const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
+
+  it('unknown_e7b83.png matches refs/pokeyellow pixel for pixel', () => {
+    installNodeImageData();
+    const sprites = extractPikachuEmotionSprites(rom);
+    const img = sprites['/gfx/pikachu/unknown_e7b83.png'];
+    expect(img).toBeDefined();
+    expect([img.width, img.height]).toEqual([40, 40]);
+    const path = resolve(REFS, 'gfx/pikachu/unknown_e7b83.png');
+    if (!existsSync(path)) return;
+    const png = PNG.sync.read(readFileSync(path));
+    expect([png.width, png.height]).toEqual([40, 40]);
+    expect(Array.from(img.data)).toEqual(Array.from(png.data));
+  });
+
+  it('unknown_e7d13.png matches refs/pokeyellow pixel for pixel', () => {
+    installNodeImageData();
+    const sprites = extractPikachuEmotionSprites(rom);
+    const img = sprites['/gfx/pikachu/unknown_e7d13.png'];
+    expect(img).toBeDefined();
+    expect([img.width, img.height]).toEqual([40, 40]);
+    const path = resolve(REFS, 'gfx/pikachu/unknown_e7d13.png');
+    if (!existsSync(path)) return;
+    const png = PNG.sync.read(readFileSync(path));
+    expect([png.width, png.height]).toEqual([40, 40]);
+    expect(Array.from(img.data)).toEqual(Array.from(png.data));
+  });
+
+  it('emotes/zzz.png matches refs/pokeyellow pixel for pixel', () => {
+    installNodeImageData();
+    const emotes = extractEmotes(rom);
+    const img = emotes['/gfx/emotes/zzz.png'];
+    expect(img).toBeDefined();
+    expect([img.width, img.height]).toEqual([16, 16]);
+    const path = resolve(REFS, 'gfx/emotes/zzz.png');
+    if (!existsSync(path)) return;
+    const png = PNG.sync.read(readFileSync(path));
+    expect([png.width, png.height]).toEqual([16, 16]);
+    expect(Array.from(img.data)).toEqual(Array.from(png.data));
   });
 });

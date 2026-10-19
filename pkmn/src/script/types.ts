@@ -2,7 +2,9 @@
 
 import type { Direction } from '../core';
 import type { CatchDemoBattleType } from '../battle/catch_demo';
-import type { NpcWalkMode } from '../overworld/walk_pace';
+import type { NpcWalkMode, NpcScriptOptions } from '../overworld/walk_pace';
+import type { SimulatedJoypadState } from '../overworld/simulated_joypad';
+import type { JoyIgnore } from '../input/joy_ignore';
 import type { TextBindings } from '../text/text_runner';
 import type { GameButton } from '../core';
 import type { MenuInputConfig } from '../menus/menu_input';
@@ -43,11 +45,18 @@ export type ScriptCommand =
   | { type: 'textButtonWait' }
   // HideObject (engine/overworld/toggleable_objects.asm): persistent map-object toggle.
   | { type: 'hideObject'; map: string; npcId: string }
+  | { type: 'showObject'; map: string; npcId: string }
+  /** jp OverworldLoop: two frames; optionally finish a no-input pass or end the script into ordinary input (RESET). */
+  | { type: 'overworldLoop'; updateSprites?: boolean; resumeInput?: boolean }
+  | { type: 'joyIgnore'; mask: JoyIgnore }
+  | { type: 'npcMovementScript'; npcId: string; guidePath: Direction[]; joypad: SimulatedJoypadState; music?: string }
+  | { type: 'setSpritePosition1'; npcId: string; mapStep: { x: number; y: number }; screenDx?: number; screenDy?: number }
+  | { type: 'restoreSpritePosition2'; npcId: string; saved: { x: number; y: number } }
   // MoveSprite: each step normal (1 px a pass) or fast (Yellow's $04–$07, 2 px a pass);
   // `modes` gives each step's mode, missing entries are normal (walk_pace.ts)
-  | { type: 'moveNpc'; npcId: string; path: Direction[]; modes?: NpcWalkMode[] }
+  | { type: 'moveNpc'; npcId: string; path: Direction[]; modes?: NpcWalkMode[]; options?: NpcScriptOptions; inPass?: boolean }
   | { type: 'movePlayer'; path: Direction[] }
-  | { type: 'faceNpc'; npcId: string; direction: Direction }
+  | { type: 'faceNpc'; npcId: string; direction: Direction; write?: 'live' | 'image'; restoreAtClose?: boolean }
   | { type: 'facePlayer'; direction: Direction }
   | { type: 'wait'; frames: number }
   | { type: 'setFlag'; flag: string }
@@ -81,7 +90,7 @@ export type ScriptCommand =
   | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardProgram: string }
   | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
   | { type: 'healParty' }
-  | { type: 'restoreMapMusic' }
+  | { type: 'restoreMapMusic'; waitForCurrent?: boolean }
   | { type: 'healingMachine' }
   // DisplayPokemonCenterDialogue_'s Pikachu calls (engine/events/pokecenter.asm):
   // LoadCurrentMapView, Delay3, UpdateSprites, then PikachuWalksToNurseJoy's program
@@ -93,12 +102,15 @@ export type ScriptCommand =
   // Func_6ebb(15, 0): Pikachu's facing down, 6 frames, then its standing image written
   | { type: 'pikachuStandDown' }
   // An explicit UpdateSprites with the font loaded (Pikachu: TrySpawnPikachu, then Func_fc76a)
-  | { type: 'updateSprites' }
+  | { type: 'updateSprites'; fontLoaded?: boolean }
   // DisplayTextIDInit saves sprite facings, CloseTextDisplay restores them (Pikachu's)
   | { type: 'pikachuFacing'; action: 'save' | 'restore' }
   // A branch on the starter at the moment it runs: IsStarterPikachuAliveInOurParty, and
-  // CheckPikachuFollowingPlayer (Pikachu's following is never disabled on today's maps)
-  | { type: 'ifStarterPikachu'; then: ScriptCommand[] }
+  // CheckPikachuFollowingPlayer. following: true = require enabled; false = require disabled.
+  | { type: 'ifStarterPikachu'; then: ScriptCommand[]; following?: boolean }
+  // DisplayPokemonCenterDialogue_: map + following bit only; returns before the heal path.
+  | { type: 'ifPewterPikachuAsleep'; then: ScriptCommand[] }
+  | { type: 'jigglypuffSpin'; npcId: string }
   | { type: 'fadeOut'; frames?: number }
   | { type: 'fadeIn'; frames?: number }
   | { type: 'giveItem'; itemId: string; count?: number; successCommands?: ScriptCommand[]; failCommands?: ScriptCommand[] }

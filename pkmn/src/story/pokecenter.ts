@@ -21,6 +21,12 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
     // (data/text/text_7.asm _PokemonCenterWelcomeText)
     { type: 'displayOpen' },
     { type: 'pikachuFacing', action: 'save' },
+    // pokecenter.asm:5 checks only the current map and CheckPikachuFollowingPlayer.
+    { type: 'ifPewterPikachuAsleep', then: [
+      { type: 'printText', program: 'LooksContentText' },
+      { type: 'pikachuFacing', action: 'restore' },
+      { type: 'displayClose', outerWait: true },
+    ] },
     { type: 'printText', program: 'PokemonCenterWelcomeText' },
     // wStatusFlags4 BIT_USED_POKECENTER: set even when this visit is declined.
     { type: 'setFlag', flag: 'USED_POKECENTER' },
@@ -34,7 +40,7 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         ...(onHeal ? [{ type: 'callback' as const, fn: onHeal }] : []),
         // The starter alive and following: LoadCurrentMapView, Delay3, UpdateSprites,
         // PikachuWalksToNurseJoy (no refresh after it)
-        { type: 'ifStarterPikachu', then: [
+        { type: 'ifStarterPikachu', following: true, then: [
           { type: 'displayHide' },
           { type: 'wait', frames: 3 },
           { type: 'updateSprites' },
@@ -44,8 +50,7 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         { type: 'printText', program: 'NeedYourPokemonText' },
         { type: 'wait', frames: 64 },
         // DisablePikachuOverworldSpriteDrawing; Func_6eaa for a living starter
-        { type: 'hidePikachu' },
-        { type: 'ifStarterPikachu', then: nurseUp },
+        { type: 'ifStarterPikachu', following: true, then: [{ type: 'hidePikachu' }, ...nurseUp] },
         // Func_6ebb(1, 8): left, toward the machine; 30 frames
         ...nurseFace('left'),
         { type: 'wait', frames: 30 },
@@ -55,15 +60,14 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         { type: 'healParty' },
         { type: 'restoreMapMusic' },
         // Func_6eaa for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
-        { type: 'ifStarterPikachu', then: nurseUp },
-        { type: 'showPikachu' },
+        { type: 'ifStarterPikachu', following: true, then: [...nurseUp, { type: 'showPikachu' }] },
         // Func_6ebb(1, 0): back down
         ...nurseFace('down'),
         // (data/text/text_7.asm _PokemonFightingFitText)
         { type: 'printText', program: 'PokemonFightingFitText' },
         // Func_6ebb(15, 0): Pikachu faces down and its image is written — visible again
         // here, before the bow
-        { type: 'ifStarterPikachu', then: [{ type: 'pikachuStandDown' }] },
+        { type: 'ifStarterPikachu', following: true, then: [{ type: 'pikachuStandDown' }] },
         // LoadCurrentMapView, Delay3, UpdateSprites
         { type: 'displayHide' },
         { type: 'wait', frames: 3 },

@@ -36,14 +36,15 @@ describe('static/ export: asset keys', () => {
     expect(extracted.jsonData).not.toHaveProperty('maps/Route3.json');
   });
 
-  it('extracts 521 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 524 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
     // StatusScreen CP2 adds font/P.png → 521.
+    // V2c CP2 adds pikachu/unknown_e7b83.png, unknown_e7d13.png, emotes/zzz.png → 524.
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(521);
+    expect(imageKeys.length).toBe(524);
     expect(imageKeys).toContain('/gfx/font/P.png');
     expect(binaryKeys).toEqual([
       'gfx/title/pika_bubble.tilemap',

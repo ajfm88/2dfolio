@@ -6,6 +6,7 @@ import { GameMap } from './map';
 import type { Npc } from './npc';
 import { playSFX, isSfxPlaying } from '../audio';
 import { isNoClip } from '../debug';
+import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
 import { PlayerWalk, HOP_LANDING_FRAMES, FRAMES_PER_PASS, walkFrame } from './walk_pace';
 import type { StepCheck } from './walk_pace';
 import {
@@ -253,6 +254,13 @@ export class Player {
     this.runPass(dir, true, () => 'walk', updateSprites);
   }
 
+  /** GetSimulatedInput: the remaining index gates the entire land-collision check. */
+  simulatedPass(entry: Direction | null, collide: boolean, updateSprites: () => void,
+    gameMap: GameMap, npcs: Npc[], sprites?: () => readonly CollisionSprite[]): void {
+    if (collide) this.update(gameMap, npcs, entry, updateSprites, sprites);
+    else this.runPass(entry, true, () => 'walk', updateSprites);
+  }
+
   /** One pass of a scripted walk. `scriptedMoveDone` is set once the last step has ended. */
   updateScriptedMove(updateSprites: () => void = noSprites): void {
     if (this.scriptedMoveDone) return;
@@ -320,9 +328,8 @@ export class Player {
     const front = spriteInFront(sprites(), dir);
     if (front) {
       if (front.slot !== PIKACHU_SLOT) return 'blocked';
-      // CheckPikachuFollowingPlayer: the engine has no state where a following Pikachu
-      // stops following without leaving the overworld, so it is always following here
-      const gate = pikachuInFront(this.walk.pikachuCollisionCounter, isHeld('b'), false);
+      // CheckPikachuFollowingPlayer: always blocks when following is disabled (no B-hold pass)
+      const gate = pikachuInFront(this.walk.pikachuCollisionCounter, isHeld('b'), isPikachuFollowingDisabled());
       this.walk.pikachuCollisionCounter = gate.counter;
       if (gate.blocked) return 'blocked';
     }

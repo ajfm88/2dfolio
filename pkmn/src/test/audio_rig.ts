@@ -65,6 +65,10 @@ export function rig(track?: MusicData): Rig {
   const music = new MusicEngine(synth);
   const sfx = new SfxEngine(synth);
   const fade = new AudioFade(synth, music, sfx);
+  // Engine tests model neither the idle NR50 write nor a map song: no NO_AUDIO_FADE_OUT-free idle
+  // writes, and a rig started without a track is the state after StopAllMusic (last = $ff).
+  fade.requests.noAudioFadeOut = true;
+  fade.requests.lastMusicSoundId = track ? 0 : 0xff;
   music.setWaveSamples(WAVES);
   music.setNoiseInstruments(NOISE);
   sfx.setWaveSamples(WAVES);

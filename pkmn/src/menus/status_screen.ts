@@ -3,6 +3,7 @@ import { getPlayerName } from '../core';
 import type { BattlePokemon } from '../battle/types';
 import { expToNextLevel } from '../battle/experience';
 import { setMasterVolume } from '../audio';
+import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { isPassPressed, syncJoypadRead } from '../input';
 import { fillRect, drawFadeOverlay, getCtx, getScale, loadBattleSprite, getMonsterPalette } from '../renderer';
 import { textBgTransfer } from '../text/bg_transfer';
@@ -41,6 +42,7 @@ export class StatusScreenSession {
     // Party's legacy input adapter has already read this selection. Bill's MenuInput
     // uses the real Joypad read and must retain its hJoyLast unchanged.
     if (options.syncRead) syncJoypadRead();
+    setNoAudioFadeOut(true); // set BIT_NO_AUDIO_FADE_OUT with its own volume
     setMasterVolume(3, 3);
     this.barColor = hpBarColor(staticHpBarPixels(mon.currentHp, mon.maxHp));
     loadBattleSprite(`/gfx/sprites/front/${mon.species.id}.png`, getMonsterPalette(mon.species.id))
@@ -84,6 +86,7 @@ export class StatusScreenSession {
       this.phase = 'page2Delay';
     } else {
       setMasterVolume(7, 7);
+      setNoAudioFadeOut(false);
       this.paletteWhite = true;
       this.tiles.clearArea(0, 0, 18, 20);
       this.phase = 'clear';

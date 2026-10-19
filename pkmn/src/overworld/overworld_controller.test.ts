@@ -28,10 +28,12 @@ import { createHash } from 'node:crypto';
 import { PassClock } from './walk_pace';
 import { recordStepForPikachu, updateSprites } from './sprites';
 import { readJoypad } from '../input';
+import { disablePikachuFollowing, enablePikachuFollowing } from '../pikachu/pikachu_following';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false), readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => false }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false, isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }));
+// Map-music CP3: playMusicNew (PN) is the entry for the PkmnHealed jingle; the same mock keeps every playMusic assertion intact.
+vi.mock('../audio', () => { const playMusic = vi.fn(); return { playSFX: vi.fn(), isSfxPlaying: () => false, isSoundFinished: () => true, playMusic, playMusicNew: playMusic, isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }; });
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), getActivePalette: () => 'VIRIDIAN', obpMapping: (reg: number) => [0, 1, 2, 3].map(c => (reg >> (2 * c)) & 3), loadSpriteMapped: async () => ({ width: 8, height: 16 }), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawExclamationBubble: vi.fn(), drawShadowUnderSprites: vi.fn() }));
 
 beforeAll(async () => { await loadBattleData(); await loadGameText(); await loadWildEncounters('Route1'); await loadPikachuMovementData(); await initTextSystem(); await loadTextPrograms(); });
@@ -44,7 +46,7 @@ beforeEach(() => {
   vi.mocked(isPassPressed).mockReturnValue(false);
   vi.mocked(drawSprite).mockClear();
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); enablePikachuFollowing(); });
 
 /** One UpdateSprites for a lone NPC, with the player standing at tile (px, py). */
 function npcCtx(px = 16, py = 16, over: Partial<NpcUpdateContext> = {}): NpcUpdateContext {
@@ -284,6 +286,36 @@ describe('NPC images', () => {
 });
 
 describe('walking into Pikachu (CollisionCheckOnLand, wPikachuCollisionCounter)', () => {
+  it('the real overworld walk leaves an asleep follower in place and refreshes its buffer', () => {
+    const { deps, ow } = behind(); const p = deps.pikachuFollower;
+    disablePikachuFollowing(); const position = [p.x, p.y];
+    const append = vi.spyOn(p, 'playerStepStarted'); const refresh = vi.spyOn(p, 'refreshFollow');
+    vi.mocked(isHeld).mockImplementation(k => k === 'right');
+    const x = deps.player.x;
+    for (let pass = 0; pass < 25; pass++) {
+      updateOverworld(deps, ow);
+      expect([p.x, p.y]).toEqual(position); expect(p.antic).toBeNull();
+    }
+    expect(deps.player.x).toBeGreaterThanOrEqual(x + 48); expect(append).toHaveBeenCalledTimes(3);
+    expect(refresh).toHaveBeenCalled();
+    vi.mocked(isHeld).mockReturnValue(false); updateOverworld(deps, ow);
+    expect(p.followBufferLength).toBe(1); expect(p.followCommand).toBe(1);
+    expect(p.isMoving).toBe(false);
+  });
+
+  it('asleep Pikachu blocks with B held, retaining the turn counter after repeated bumps', () => {
+    const { deps, ow } = behind(); disablePikachuFollowing(); updateOverworld(deps, ow);
+    const start = [deps.player.x, deps.player.y];
+    vi.mocked(isHeld).mockImplementation(k => k === 'up' || k === 'b');
+    updateOverworld(deps, ow); // turn arms the counter, skips UpdateSprites
+    expect(deps.player.justTurned).toBe(true);
+    for (let pass = 0; pass < 12; pass++) {
+      updateOverworld(deps, ow);
+      expect(deps.player.justCollided).toBe(true); expect(deps.player.justStartedStep).toBe(false);
+      expect([deps.player.x, deps.player.y]).toEqual(start);
+      expect(deps.player.pikachuCollisionCounter).toBe(8);
+    }
+  });
   /** The player facing down with Pikachu one step behind (above), holding UP. */
   function behind(): { deps: OverworldDeps; ow: ReturnType<typeof createOverworldState> } {
     const deps = world();

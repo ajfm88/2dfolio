@@ -129,7 +129,9 @@ the state machines; `Player`, `Npc` and `PikachuFollower` run them.
     lab): an init pass, then 2 px a pass.
   - **Starting a step** can't happen while the player is mid-step.
   - **Wanderers** rest 1–256 passes between steps.
-  - **A scripted walk** starts with one resting pass and ends one pass after its last pixel.
+  - **A scripted walk** defaults to one resting pass and ends one pass after its last pixel.
+    `startScript(..., { keepStatus: true, bytesToFF: true })` opts into MoveSprite's
+    preserved status/delay and STAY/NONE write. Existing callers retain their defaults.
 - **Walk animation** (`WalkAnim`, `Func_5274`): the frame advances every 4 updates. Frames
   0–3 are stand, walk, stand, walk, with the last one x-flipped facing up or down
   (`WalkingDown2`/`WalkingUp2`), so the feet alternate. Pikachu's frame advances every 2
@@ -147,7 +149,7 @@ the state machines; `Player`, `Npc` and `PikachuFollower` run them.
 ## Pass order, encounters and NPC visibility (A6b)
 
 `main.ts` calls `runMapScript` before reading the joypad on every standing overworld
-pass. Pallet, Viridian and the lab triggers run there, and since A1c trainer sight
+pass. Pallet, Viridian, Pewter (V2b CP3) and the lab triggers run there, and since A1c trainer sight
 (*Trainer sight* below). `step_end.ts` defines the pure check order: count → Pikachu happiness
 and mood → encounter → warp → connection. Turns roll without counting. Each ledge
 hop half and door exit is simulated and only checks transitions.
@@ -195,6 +197,26 @@ turn in place at random and fixed ones return to their facing.
 down/right add as bytes (255 → 0). Yellow dropped Red/Blue's limit, so there is no origin
 box. Scripted steps never touch them. A sprite that walked in step with the player
 (`DoScriptedNPCMovement`) holds afterwards, as `UpdateNonPlayerSprite` keeps routing it there.
+Its `mapStepX/Y` freeze at the initial map position while drawn/collision pixels move.
+`endInStep()` removes that route without changing the saved status, delay or movement bytes;
+Pallet's Oak retains his old route and never calls it.
+
+**Explicit placement** (V2b CP2): `setSpritePosition1(mapStep, screenDx, screenDy)` keeps
+map and drawn positions separate. A normal ready update with the player standing
+recomputes pixels from map coordinates before starting a step. Resting/moving updates
+do not recompute. This makes Pewter's gym offset last exactly one pass if resting,
+zero if ready. `restoreSpritePosition2(saved)` restores map-derived pixels: the saved
+position is off-window at RESET and cannot reveal stale screen bytes. `setLiveFacing`
+and `showStandingImage` write separate facing/image state; ordinary `faceDirection` writes both.
+
+**Simulated joypad** (`simulated_joypad.ts`, V2b CP2): DecodeRLEList includes/counts its
+sentinel; PewterGuys overwrites the last real byte after the caller's decrement.
+`SimulatedJoypad.next()` reads backwards and enables collision only after index reaches
+zero. `Player.simulatedPass` bypasses turning and, at a nonzero index, all land collision.
+Null consumes one standing pass and still updates sprites. The controller records
+Pikachu's command after those updates. Completed simulated steps reach main's ordinary
+warp/connection checks. The four literal RLE lists and both coordinate tables are
+checked independently against ASM and symbol-addressed ROM bytes.
 
 **Screen basis** (`sprite_collision.ts`): a sprite's `XPIXELS/YPIXELS` are its world pixels
 minus the player's plus ($40, $3c), as bytes. The camera is unchanged (A6b F-1 stays
@@ -430,6 +452,7 @@ Beyond `load()`, `render()`, `isWalkable()`, and the getters (`width`, `height`,
 |------|-----|---------|
 | `map.ts` | 478 | Map loading, tileset, collision, grass tiles, ledges, bookshelf |
 | `walk_pace.ts` | — | The pass, `PlayerWalk`, `NpcWalk`, `WalkAnim`, the jump table (A6a); the direction byte and displacement rules (A6c). Pure |
+| `simulated_joypad.ts` | — | Raw RLE decoding, PewterGuys prefix overwrite, backwards input and independent NPC encoding (V2b CP2). Pure |
 | `sprite_collision.ts` | — | Screen basis, collision mask, screen edge, sprite in front, the Pikachu counter rule (A6c, pure) |
 | `sprites.ts` | — | `spriteTable()`, `updateSprites()` in slot order, `recordStepForPikachu()` (A6a, A6c) |
 | `ui_entry.ts` | — | A text box or menu opening over the map: `overworldUiOpen()`, `UiEntry`, `fontLoadedUpdateSprites()` (DisplayTextIDInit's UpdateSprites; A6c review R-2) |

@@ -139,6 +139,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["PartyMenuItemUseText", 0x04, 0x5A3D, true], // engine/menus/party_menu.asm
   ["PartyMenuNormalText", 0x04, 0x5A38, true], // engine/menus/party_menu.asm
   ["PartyMenuSwapMonText", 0x04, 0x5A4C, true], // engine/menus/party_menu.asm
+  ["PartyMenuText_12cc", 0x00, 0x12cc, true], // home/pokemon.asm — sleeping Pikachu selection (V2c CP2)
   ["PikachuUnhappyText", 0x08, 0x5853, true], // engine/pokemon/bills_pc.asm
   ["PokeCenterSignText", 0x00, 0x23EA, true], // home/overworld_text.asm
   ["PokemartAnythingElseText", 0x01, 0x6BC3, true], // engine/events/pokemart.asm
@@ -468,6 +469,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_Route2TradeHouseScientistText", 0x28, 0x4DA1, false], // text/Route2TradeHouse.asm
   ["_SavingText", 0x29, 0x7652, false], // data/text/text_4.asm
   ["_ShallWeHealYourPokemonText", 0x2C, 0x77B9, false], // data/text/text_7.asm
+  ["_SleepingPikachuText1", 0x28, 0x411b, false], // data/text/text_3.asm (V2c CP2)
   ["_SleepingPikachuText2", 0x28, 0x449F, false], // data/text/text_3.asm
   ["_SwitchOnText", 0x28, 0x44BB, false], // data/text/text_3.asm
   ["_ThrewAwayItemText", 0x2D, 0x6EAA, false], // data/text/text_9.asm

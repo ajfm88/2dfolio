@@ -17,7 +17,8 @@ Commands available in `ScriptCommand` (from `src/script/types.ts`):
 `displayOpen`, `printText`, `displayHide`, `displayClose`, `displayCloseInPlace`,
 `whiteOut`, `townMap`, `pokemart`, `pc`, `menuBox`, `menuInput`, `restoreSavedScreen`,
 `yesNoChoice`, `emotionBubble`, `healJingle`, `restoreMapMusic`, `sound`, `textButtonWait`,
-`hideObject`, `moveNpc`, `movePlayer`, `pushPlayer`, `tryPikachuMovement`, `faceNpc`,
+`hideObject`, `showObject`, `overworldLoop`, `joyIgnore`, `npcMovementScript`,
+`setSpritePosition1`, `restoreSpritePosition2`, `moveNpc`, `movePlayer`, `pushPlayer`, `tryPikachuMovement`, `faceNpc`,
 `facePlayer`, `wait`, `setFlag`, `clearFlag`, `setMapScript`, `addPokemon`, `showNpc`,
 `hideNpc`, `unhideNpc`, `callback`, `warp`, `catchDemo`, `moveParallel`, `awaitInteraction`,
 `startBattle`, `healParty`, `healingMachine`, `pikachuToNurse`, `hidePikachu`, `showPikachu`,
@@ -184,6 +185,49 @@ flags becoming settable. PrintText's own sprite update remains J2.
 Saved object toggles are separate from event flags (`hiddenObjects` in `events.ts`).
 Only objects that start ON are modeled today. `hideNpc` remains transient.
 
+V2b CP2 provides the native movement primitives used by CP3's `pewter_city.ts`.
+`npcMovementScript` starts in step and consumes its first simulated entry in the
+dispatching pass; Done ends the route and continues on the pass after the last input.
+`overworldLoop` explicitly waits two frames and resets main's pass clock, optionally
+running the current no-input sprite update first (east-triggered text return).
+Its terminal `resumeInput:true` form ends the script into main's ordinary joypad/read
+and rest of the current pass (RESET); it does not replace held input with NO_INPUT.
+`moveNpc {inPass:true}` likewise starts its no-input update now and continues in the
+completion pass; its `options` select MoveSprite's preserved status and STAY/NONE bytes.
+These timing options leave existing Pallet/A6/A1c command paths unchanged.
+
+`showObject` removes the saved hidden key, unhides the live NPC and performs full
+UpdateSprites. Existing `hideObject` retains its pickup behavior; a native caller
+adds `updateSprites {fontLoaded:false}` explicitly. The default remains font-loaded.
+`joyIgnore {mask:'controls'}` masks SELECT, START and D-pad while retaining A/B.
+`restoreMapMusic {waitForCurrent:true}` polls only SFX completion, then restores and
+continues in that tick without playing a sound. `faceNpc {write:'live'|'image'}`
+separates facing from the standing image; `restoreAtClose:true` saves the live byte
+before the write and restores it without repainting before the close update.
+`displayOpen {spriteUpdate:false}` suppresses exactly one opening update.
+
+`pewter_city.ts` registers PewterCity:3 (museum YES/NO) and :5 (Youngster). Its DEFAULT
+map-script branch resets Museum1F's script and ticket event before checking BEAT_BROCK
+and the four east tiles. East sets SELECT|START|D-pad and enters the same Youngster
+display without a talk-facing/ordinary sprite update. The guide is saved and the
+transient SHOWS state is armed only after the initial program returns. Museum YES
+closes without arming an escort.
+
+The source's six locked states execute as one command chain after the initial close;
+the module tracks their cursor and saved map position, neither of which is serialized.
+`overworldLoop` keeps the two-frame initial handoff, with the east-only extra update.
+The museum's Done writes live UP, waits six frames, then writes its image; the gym
+writes image LEFT while retaining/restoring live RIGHT. Both wait for SFX before
+map-music restoration and suppress the end-display opening update. Their direct end
+program starts at +20. The native exit preserves status, writes STAY/NONE, then HIDE
+and RESET include their real sprite updates; RESET resumes ordinary input that tick.
+The Youngster turns randomly afterwards and reloads STAY/DOWN from object data.
+`pewter_tripwire.test.ts` blocks a new BEAT_BROCK setter until Pewter has an east Route3
+connection. CP4 verified all museum/gym/east approaches, walk-offs/guide returns, Pikachu,
+the east block, and the Youngster's random turns versus DOWN after a map reload. Viridian's
+walkers and the Forest's STAY turners/fixed trainer also passed the browser glance
+(note 61 §10.19–§10.21). Awaiting Claude's check and the user's play-test.
+
 ## Story Script Pattern
 
 Each map's story script is a builder function (e.g., `buildOaksLabIntroScript()`) that returns a `ScriptCommand[]` array. Scripts are started via `initScript(commands)` and executed frame-by-frame by the script controller (`src/script/script_controller.ts`).
@@ -212,6 +256,7 @@ Exported builder functions (from `story/index.ts`):
 | `pallet_town.ts` | 128 | Oak's grass encounter and phase-selected handler |
 | `viridian_mart.ts` | 45 | Parcel delivery event |
 | `viridian_city.ts` | 230 | Viridian City's map script: the three old men, the catch demos, the Gym door (V1e) |
+| `pewter_city.ts` | — | Pewter's default/east check, both guides and six transient native escort states (V2b CP3) |
 | `hidden_events.ts` | 64 | Scripted hidden events (school notebook, etc.) |
 | `../script/` | 880 | Script types, engine (createScript, advanceScript), controller (updateScript, render helpers) |
 | `../overworld/story_state.ts` | 126 | NPC visibility, shop availability and defeated tracking |

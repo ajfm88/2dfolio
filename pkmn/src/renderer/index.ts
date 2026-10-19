@@ -3,3 +3,4 @@ export { getMapPalette, getPaletteColors, paletteToHex, getMonsterPalette } from
 export { captureUi, beginSpriteLog, endSpriteLog, drawShadowUnderSprites } from './renderer';
 export type { SpriteDraw } from './renderer';
 export { obpMapping, OBP0_MAPPING, loadSpriteMapped } from './renderer';
+export { drawZzzBubble } from './renderer';

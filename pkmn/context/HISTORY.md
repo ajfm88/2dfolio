@@ -15,6 +15,387 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-17 (V2c play-test → V2 done) — the user, recorded by Claude
+
+The user play-tested note 62 §6. They asked whether one talk waking Pikachu is intended (yes: emotion 26 ends with
+CHECKPEWTERCENTER = `EnablePikachuFollowingPlayer`), then said "this slice passes". **V2c is done, and with it V2:**
+Pewter City, its buildings, both guides, Jigglypuff and the sleeping Pikachu. Milestones 5/36. Context updated
+(CLAUDE, PROJECT, PLAN, STATUS). **Next: the map-music fade-out (#63)**, planned by Claude first. Nothing pushed.
+
+### 2026-10-17 (V2c CP5 checked) — Claude
+
+I checked Codex's V2c CP5 (`a4d5b07`, note 62 §10.12). **Passes.** Docs only. Gates twice (1853/1853, 1696/157); the
+muted 5198 walk covered every §4 CP5 case, and the save was cleared with 5173 untouched. I looked at screenshots 023 (the
+song box), 028 (the nurse refusing), 029 (no Pikachu icon), 036 (ZZZ over Pikachu) and 039 (the waking portrait).
+**Next: the user play-tests V2c** (note 62 §6). Nothing pushed.
+
+### 2026-10-17 (V2c CP5 — verification and docs) — Codex
+
+No code changes. Typecheck/build passed **twice**; ROM **1853/1853 twice**, no-ROM **1696 pass / 157 skip twice**
+(four workers; no known text-program timeout). Muted browser walk on **5198** passed song/17 writes/auto-close,
+frozen Pikachu/B collision, nurse refusal, party icon/cancel, Bill's deposit, talk wake/portrait/saved facing,
+door wake, debug-panel PAR staying awake, and Viridian's wandering Youngsters. Note 62 §10.12 records results,
+method, limits and screenshot index. Spare-origin save cleared; own browser/server stopped; no 5173 or ROM
+requests. Docs committed locally; nothing pushed. **Stop for Claude's CP5 check, then the user's §6 play-test.**
+
+### 2026-10-17 (V2c CP4 checked) — Claude
+
+I checked Codex's V2c CP4 (`b3c0648`, note 62 §10.10). **Passes, no required fix.** Emotion 26 runs in the ASM's order:
+no turn, the 61-frame ZZZ bubble with updates off, border, portrait 26, SHOWMAPVIEW + Delay3, the wake and facing
+write, then a close that restores the saved facing. The party menu cancels the sleeping starter in START, SWITCH and
+field medicine (not battle) and draws no icon for it; the Flute tripwire is in place. Tests drive main's real dispatch.
+Re-ran typecheck and ROM **1853/1853**; my mutation (no facing restore at close) failed 3. **Next: V2c CP5**, then the
+user's play-test. Nothing pushed.
+
+### 2026-10-17 (V2c CP4 - waking and party menu) - Codex
+
+Implemented emotion 26's map/flag priority, frozen ZZZ bubble, exact portrait, SHOWMAPVIEW/Delay3, wake and
+saved-facing close; sleeping starter party selection (including SWITCH) now prints/cancels and has no icon.
+Real main talk/menu/medicine paths, the Flute tripwire and committed ZZZ rendering are covered; 34/34 one-line
+production mutations caught/restored (note 62 section 10.10). Typecheck/build clean; ROM **1853/1853** (+17),
+no-ROM **1696 pass / 157 skip**. Default ROM hit the known text-program timeout; it passed alone 7/7, then the
+full ROM suite passed with four workers. Committed locally; nothing pushed. **Stop for Claude's CP4 check;
+CP5/browser verification not started.**
+
+### 2026-10-17 (V2c CP3 revision checked) — Claude
+
+I re-checked Codex's CP3 revision (`8fcc482`, note 62 §10.8). **Passes.** The Jigglypuff box closes with no A/B wait
+(my mutation back failed 6 tests). The nurse branch checks map + flag. The wake and no-wake tests now drive main's
+real paths (new game, CONTINUE, the door, blackout, the connection). The song is pinned frame by frame, and the asleep
+follower, the B-held block and Bill's deposit are tested. Re-ran typecheck and ROM **1836/1836**. One non-blocking
+structural note (N-1 in §10.9). **Next: V2c CP4.** Nothing pushed.
+
+### 2026-10-17 (V2c CP3 revision F-1…F-7) — Codex
+
+Revised Sonnet's `d2e69d1` only: Jigglypuff closes with Hold/A-release only; the dedicated nurse condition
+checks Pewter + flag; hide/return commands now respect the heal path's follow checks. Replaced simulated clears
+with real main paths and added executed nurse, exact song-timeline, frozen follower, B-collision and real main
+Bill's deposit tests. **23/23** one-line production mutations caught/restored (note 62 §10.8).
+Typecheck/build **clean**; ROM **1836/1836**, no-ROM **1679 pass / 157 skip** (baseline 1827/1827, net +9).
+Both suites passed first final run; the known text-program timeout did not recur. Committed locally; nothing
+pushed. **Stop for Claude's CP3 re-check. CP4 not started.**
+
+### 2026-10-17 (V2c CP3 revision reassigned) — the user, recorded by Claude
+
+The user gives the V2c CP3 revision (note 62 §10.7, F-1…F-7) to **Codex** instead of Sonnet: "let me give it to codex
+instead". This changes who implements this revision only; DECISIONS #66's plan is unchanged. Local commit only.
+
+### 2026-10-17 (V2c CP3 checked: needs fixes) — Claude
+
+I checked Sonnet's V2c CP3 (`d2e69d1`, note 62 §10.6). **Needs fixes before CP4** (note 62 §10.7):
+- **F-1:** the Jigglypuff box waits for A/B. The cartridge's no-wait flag closes it on A's release only (`outerWait:false`).
+- **F-2:** the nurse's asleep branch must test map + flag, not "starter alive".
+- **F-3…F-6:** several tests only call the functions they claim to test (the warp, CONTINUE, blackout and connection
+  clears; the heal-path skips). The Jigglypuff timeline and the readers' tests are missing.
+- **F-7:** no real production-mutation list.
+
+The flag module, the frozen update, collision and the spin loop are right. Gates: typecheck clean, ROM 1827/1827 (the
+known timeout passes alone). **Next: Sonnet fixes F-1…F-7**, then Claude re-checks. Nothing pushed.
+
+### 2026-10-17 (V2c CP3 — state and song) — Claude Sonnet
+
+V2c CP3 (note 62 §3.1–§3.3, §4 CP3), following §10.3's F-1. New `pikachu/pikachu_following.ts`:
+`isPikachuFollowingDisabled` / `disablePikachuFollowing` / `enablePikachuFollowing`, module-level, not saved.
+Wired into: `pikachu_follower.ts` (extracted `func_fc76a`; disabled guards in `updateSprite` and `facePlayer`;
+`fontLoadedUpdate` calls `func_fc76a`); `overworld/player.ts:332` (`false` → real flag); `main.ts`
+(`enablePikachuFollowing` in `handleWarpLoad` only, not `handleBlackoutWarp` — F-1; also `loadSavedGame`,
+`startNewGame`; `isPikachuFollowingDisabled` wired at Bill's PC callback). New `story/pewter_pokecenter.ts`:
+`registerTextHandler('PewterPokecenter', 3, …)` with `jigglypuffSpin` command (spin loop, both-channels-dead
+exit, 17 writes). `story/pokecenter.ts`: Pewter sleeping branch (`ifStarterPikachu following:false →
+LooksContentText`, replaces rest of script); three heal-path sites → `following:true`. `script/types.ts`: 
+`following?: boolean` on `ifStarterPikachu`; new `jigglypuffSpin`. `script/script_controller.ts`:
+`scriptJigglypuffSpin` state, full `jigglypuffSpin` case, updated `ifStarterPikachu` case.
+`overworld/overworld_controller.ts` imports the handler. Tests: `pikachu_following.test.ts` (8), 
+`pewter_pokecenter.test.ts` (5), extended `pokecenter.test.ts` (4 branch tests), census exclusion removed.
+ROM **1827/1827** (+18), no-ROM **1670/157** (+18); typecheck and build clean. Committed locally, nothing pushed.
+**Stop for Claude's CP3 check; CP4 not started.**
+
+### 2026-10-17 (V2c CP2 checked) — Claude
+
+I checked Sonnet's V2c CP2 (`d38de78`, note 62 §10.4). **Passes, no required fix.** The four addresses match pret's sym;
+both portrait graphics are 25 tiles (400 bytes); the ZZZ emote is 16×16 like the shock emote. Re-ran typecheck (clean),
+ROM **1809/1809**, and setup a third time: the tree was unchanged. **Next: Sonnet runs V2c CP3** (note 62 §3.1–§3.3,
+with §10.3's F-1). Nothing pushed.
+
+### 2026-10-17 (V2c CP1 checked) — Claude
+
+I checked Sonnet's V2c CP1 (`29c3dab`, note 62 §10). **Passes, one correction (F-1).** Confirmed the 17 writes and the
+S+408 exit, `Func_fc82e`, the party menu's check order and the facing restore. I closed the open `$40` item:
+`GetSpriteImageBaseOffset` gives Jigglypuff base 5, so its image is `$40|facing`. F-1: a blackout or after-battle map
+load must **not** wake Pikachu (`LoadMapData` skips the schedule then); item 3 said otherwise and is corrected.
+**Next: Sonnet runs V2c CP2** (data). Nothing pushed.
+
+### 2026-10-17 (V2c CP2 — data) — Claude Sonnet
+
+Added three new graphics (e7b83, e7d13 from bank 39; zzz emote from bank 10) and `PartyMenuText_12cc`
+(with `_SleepingPikachuText1` far child) — all addresses from pret's sym file, no byte search. Three
+new pixel-equality tests against refs/pokeyellow. Setup ran twice; only `text_programs.json` modified,
+three PNGs newly untracked. ROM **1809/1809** (+3), no-ROM **1652/157** (+3 skip); typecheck and build
+clean. Committed locally, nothing pushed. Stop for Claude's CP2 check; CP3 not started.
+
+### 2026-10-17 (V2c CP1 — trace) — Claude Sonnet
+
+Ran the full CP1 trace from note 62 §4. Re-measured Jigglypuff's song on `audio_rig` (CHAN2=392, CHAN1=397, both dead by
+update 397 — matches note 60). Confirmed `$40` image base and wSprite03 from `PewterPokecenter.asm` objects +
+`map_sprite_sets.json`. Traced all 11 readers of the following-disabled flag against ASM and engine; two gaps in
+`pikachu_follower.ts` (no following-disabled guard in `updateSprite` and `facePlayer`). Wake points: `performWarpLoad`
+and `loadSavedGame` both need `enablePikachuFollowing()` in CP3; `performMapConnection` correct (no call). Emotion 26:
+ANIM_SCRIPTS and EMOTION_MOVEMENTS need CP2/CP4 additions; exit phase (SHOWMAPVIEW + CHECKPEWTERCENTER + facing restore)
+needed in CP4; net: Pikachu keeps its asleep facing. Party-menu sleeping check fires before swap check — both A-press and
+SWITCH target cancelled. Starter-status conditions confirmed. Full results in note 62 §10. Docs only, no code/data/test
+changes. No-ROM **1652 pass / 154 skip** (baseline). Typecheck clean. Committed locally, nothing pushed.
+**Stop for Claude's CP1 check; CP2 not started.**
+
+### 2026-10-17 (O-34 answered) — the user, recorded by Claude
+
+The user approved note 62 §9 ("yes") → DECISIONS #66: V2c as planned with Claude Sonnet implementing, emotion 26's
+ZZZ bubble and exit now (amends #39), the party menu's two sleeping-Pikachu rules now. **Next: Sonnet runs V2c CP1**
+(trace only). Local commit only.
+
+### 2026-10-17 (V2c plan) — Claude
+
+At the user's request ("plan the next slice, V2c"; Claude Sonnet will implement), wrote `notes/62-v2c-plan.md` from the
+ASM. It replaces note 60 §7:
+- `PewterJigglypuff`'s timeline (17 image writes, the channel poll);
+- every reader of the following flag (`wPikachuOverworldStateFlags` bit 1) reachable in Pewter's Pokécenter;
+- emotion 26 (ZZZ bubble, portrait 26 = e50af/e7b83/e7d13, SHOWMAPVIEW, CHECKPEWTERCENTER);
+- when it wakes (every warp's `LoadMapData` and CONTINUE; the flag can stay unsaved).
+
+New readers: the party menu's "There isn't any response..." and the missing icon. Correction: Pikachu doesn't visibly
+turn when it wakes (`CloseTextDisplay` restores its facing). Five CPs. Backlog adds the Poké Flute (D) and the Fan
+Club / Bill's house checks. **Next: the user answers O-34.** Docs only; nothing pushed.
+
+### 2026-10-17 (V2b play-test → V2b done) — the user, recorded by Claude
+
+The user play-tested note 61 §6: "all works perfect as tested on the browser". **V2b is done:** the museum and gym
+guides walk the player as the cartridge's simulated joypad does, the east road is closed before BEAT_BROCK, the walk-offs
+and resets match, and the Youngster turns at random until a reload. Context updated (CLAUDE, PROJECT, PLAN, STATUS).
+**Next: V2c** (Jigglypuff and the sleeping Pikachu, note 60 §7), starting with its CP1 trace. Nothing pushed.
+
+### 2026-10-17 (V2b CP4 checked) — Claude
+
+Codex wrote CP4 (note 61 §10.19–§10.21) but hit its usage limit before committing; I reviewed the docs-only diff and
+committed it (`d4aa2ed`). **Passes:** two unchanged gate rounds (1806/1806, 1652/154); the muted 5197 walk covered all
+nine approaches, museum YES, walk-offs, the Youngster's random turns and DOWN after reload, Pikachu, the east block,
+and Viridian/Forest NPCs. I looked at screenshots 008, 009, 051 and 099 myself. **Next: the user play-tests V2b** (note
+61 §6). Nothing pushed.
+
+### 2026-10-17 (V2b CP4 — verification/docs) — Codex
+
+Two unchanged rounds: typecheck/build clean, ROM **1806/1806**, no-ROM **1652 pass / 154 skip**, no timeout.
+Muted 5197 browser walk passed every museum/gym/east approach, walk-off/return, random turns/reload DOWN,
+Pikachu and east-block checks; Viridian/Forest NPC glance done. Note 61 §10.19–§10.21 records results and 117-shot
+index. Save cleared, browser/servers closed, 5173 untouched. Docs only, local commit, never pushed.
+**Stop for Claude's CP4 check**, then user's §6 play-test; no next slice started.
+
+### 2026-10-17 (V2b CP3 checked) — Claude
+
+I checked Codex's V2b CP3 (`1d5fcea`, note 61 §10.15–§10.17). **Passes, no required fix.** Re-ran typecheck (clean) and
+ROM **1806/1806** (104 files). Read `story/pewter_city.ts` against `scripts/PewterCity.asm` state by state: the default
+resets before the east check, `'controls'` mask, both handlers' branches, the two-frame continuation (extra update on
+the east path only), museum live UP / 6 frames / image UP, gym image LEFT with RIGHT restored at close, wait-only
+music, `$40` as `screenDx -16`, the walk-off options, HIDE and RESET. The nine-variant test runs the real controller
+on the committed map. My mutation (east-only update dropped) failed 8 tests. Notes in §10.18. **Next: Codex runs
+V2b CP4**, then the user play-tests. Nothing pushed.
+
+### 2026-10-17 (V2b CP3 — Pewter story wiring) — Codex
+
+Implemented `story/pewter_city.ts`: default museum resets/east check, :3/:5 handlers, both native escorts/end
+displays and HIDE/RESET; wired `runMapScript` and removed the two census exclusions. CP2 engine unchanged.
+28 new tests cover every planned CP3 item, all nine real-controller flows and the BEAT_BROCK/Route3 tripwire;
+35 production mutations caught/restored byte-for-byte. Typecheck/build clean; ROM **1806/1806**,
+no-ROM **1652 pass / 154 skip**, serial gates with no timeout. Note 61 §10.15–§10.17 has the evidence/list.
+No data/extractor/setup/browser work. Committed locally, nothing pushed. **Stop for Claude's CP3 check; do not
+start CP4.** N-2's other-map wanderer browser glance remains CP4.
+
+### 2026-10-17 (V2b CP2 checked) — Claude
+
+I checked Codex's V2b CP2 (`4cebf3f`, note 61 §10.11–§10.13). **Passes, no required fix.** Re-ran typecheck (clean) and
+ROM **1778/1778** (102 files). Read every production diff against the ASM: `SimulatedJoypad` (reversed read, index-0
+collision), the PAD/NPC_MOVEMENT encodings, the frozen in-step map position, the ready + standing recompute,
+`MoveSprite`'s opt-in STAY/NONE, `PassClock.reset` lining up with the two-frame `overworldLoop`, ShowObject's real
+update. My own two mutations (collision flag, recompute guard) were caught. `vitest.config.ts` only exposes two
+bindings; no limit loosened. Removed the checkpoint row Codex added to *Completed* (milestones only). Notes N-1/N-2
+in §10.14. **Next: Codex runs V2b CP3.** Nothing pushed.
+
+### 2026-10-17 (V2b CP2 — engine) — Codex
+
+Implemented note 61 §3.1–§3.4 and CP1 carry-overs, engine only: raw simulated input/player pass, frozen NPC map
+position and native exit options, controller commands, facing/image and SFX/opening handoffs, new input mask,
+explicit two-frame continuations and RESET's ordinary same-pass input. Note 61 §10.11–§10.13 has the evidence.
+55 new tests in six new files; **every existing test file unchanged**. All **31** temporary production mutations
+caught and restored byte-for-byte. Typecheck/build clean; ROM **1778/1778**, no-ROM **1624 pass / 154 skip**;
+serial gates, no timeout. No story/data/extractor changes, setup, browser run or push. Committed locally.
+**Stop for Claude's CP2 check. CP3 has not started.**
+
+### 2026-10-17 (V2b CP1 checked) — Claude
+
+I checked Codex's V2b CP1 (`efb0fbb`, note 61 §10). **Passes, no required fix.** Verified its corrections against the
+ASM and engine: HideObject/ShowObject end in `jp UpdateSprites`; the east-triggered close returns into the same
+`JoypadOverworld` (an extra `UpdateSprites` at T); the PassClock keeps parity across script → overworld
+(`main.ts:1134`), so the escort handoff needs an explicit two-frame continuation. Counts 185/329 and end positions
+agree with my simulation. Backlog: today's `hideObject` callers skip HideObject's sprite update → J2. §10.10 lists
+what CP2/CP3 must carry. **Next: Codex runs V2b CP2** (engine only). Docs only; nothing pushed.
+
+### 2026-10-17 (V2b CP1 — trace) — Codex
+
+Checked note 61 §2 against pret and the unchanged engine; §10 records all seven CP1 items. Engine step models
+confirm all nine 185/329-pass routes, endpoints and no path hazards. Corrections include the east-only close-return
+update, HideObject/ShowObject's full updates, initial-close pass-clock parity, and the idle-prefix/guide spacing.
+The fixed Youngster is essential to the east-edge reachability proof; the `$40` ready/resting distinction holds.
+Typecheck clean; no-ROM **1570/153**. First concurrent ROM run hit the existing text-source 5 s timeout (1722/1);
+full unchanged rerun alone **1723/1723**. No code/data/test edits, setup or browser run. Docs committed locally.
+**Stop for Claude's check; CP2 has not started.** Nothing pushed.
+
+### 2026-10-17 (O-33 answered) — the user, recorded by Claude
+
+The user approved note 61 §9 ("yes tp a;;", i.e. yes to all) → DECISIONS #65: V2b as planned, `MoveSprite`'s byte
+reset for Pewter's walks only, the post-BEAT_BROCK east edge left to V3. **Next: Codex runs V2b CP1** (trace only, no
+code; note 61 §4 → results in §10). Local commit only.
+
+### 2026-10-17 (V2b plan) — Claude
+
+At the user's request ("plan the next slice, Codex will implement"), wrote `notes/61-v2b-plan.md` from the Pewter ASM.
+It replaces note 60 §6 and corrects three readings:
+- **The east edge is closed by the four triggers.** A reachability search from every Route 2 entrance finds nothing
+  east of x 37 without them. The south-east corner from my CP4 check is walled off; CP4 reached it off-map (backlog
+  entry corrected).
+- **The `$40` placement lasts at most one pass:** `InitializeSpriteScreenPosition` re-derives it.
+- **`MoveSprite` resets the Youngster** to STAY/NONE until the map reloads.
+
+A scratch simulation gives 185/329 passes for all nine variants. Backlog adds three J2 items. Earlier today: two
+docs-only drift fixes (`12b73b4`, `2cc552d`). **Next: the user answers O-33; then Codex runs V2b CP1.** Docs only;
+nothing pushed.
+
+### 2026-10-17 (V2a play-test → V2a done) — the user, recorded by Claude
+
+The user play-tested note 60 §10 for V2a: "all passes". **V2a is done:** Pewter City, its Pokécenter, Mart and two
+houses, the Route 2 connection, the Mart lists from the ROM, the no-auto-text-box set, the PARLYZ HEAL name fix.
+Context updated (CLAUDE, PROJECT, PLAN, STATUS). Session closed for the day. **Next session: V2b CP1** (trace only;
+include the Pewter east-edge `CheckMapConnections` item). Nothing pushed.
+
+### 2026-10-17 (V2a CP4 checked) — Claude
+
+I checked Sonnet's V2a CP4 (`f089341`, note 60 §16). **Passes.** Re-ran ROM **1723/1723** after my fix below. Looked at the
+crossing (gray PEWTER palette) and the Mart list screenshots. The list showed **`PARALYZE HEAL`, overflowing the box**,
+a pre-existing bug (Viridian Mart and the bag too, plus `OAKS PARCEL`): those runtime ids differ from pret's
+`PARLYZ_HEAL`/`OAKs_PARCEL`, which key `item_names.json`. **Fixed** with a two-entry alias in `getItemName` and a test
+that every runtime item id resolves to a ROM name (alias removed → fails); no id or save change. No-ROM **1570/153**.
+Findings: the nurse's saved first-visit bit → J2 (as logged). Pewter's east edge: the SE corner is reachable without
+the east triggers, so V2b CP1 now traces the cartridge's `CheckMapConnections` there (no stopgap). **Next: the user
+play-tests V2a (note 60 §10).** Nothing pushed.
+
+### 2026-10-17 (V2a CP4 — verification) — Sonnet 5.5, standing in for Sol
+
+Gates twice: typecheck/build clean, ROM **1722/1722**, no-ROM **1569/153**, no timeout; tree clean throughout. Muted browser walk on port
+5207 (never 5173): Forest north gate → Route 2 → Pewter (the `cities1` fetch only on crossing, PEWTER palette), every talker and
+sign, both Super Nerd answers, nurse heal (the machine, with a real party: ball + eight flashes in Pewter; blackout point =
+Pewter's door warp), bench guy, PC, Mart (seven items and prices, a purchase, START with **no early box**: first change ≈+22 ticks),
+both houses incl. the Nidoran line, SAVE → reload → CONTINUE, Museum/Gym doors fail gracefully. **Two findings, not fixed:**
+the player **does not stop at Pewter's east edge** (border block `$0a` is walkable; no Route 3 until V4), and the nurse's
+first-use text reappears after CONTINUE (`BIT_USED_POKECENTER` isn't saved). Both are in the backlog; note 60 §16 has the table,
+the screenshot index and the browser-testing traps. Evidence in `%TEMP%/pkmn-v2a-cp4/`. Docs only. **Stop for Claude's check.**
+Local commit only, nothing pushed.
+
+### 2026-10-16 (V2a CP3 checked) — Claude
+
+I checked Sonnet's V2a CP3 (`3ae8a88`, standing in for Sol). **Passes, no required fix.** Re-ran typecheck (clean) and
+ROM **1722/1722**. Read the diff: the tables match `songs.asm` and the plan; `pewterSuperNerdText` is YES → ThatsRight
+(`cp $0`); `text/auto_text_box.ts` holds {OaksLab, PewterMart} and is applied at the entry points (handlers/TX_SCRIPT
+via `applyMapAutoTextBox`, plain/printText NPCs, Lab free-move, `displayOpen`'s default, START's early border).
+`applyMapAutoTextBox` forces the first `displayOpen` to false on those maps, which is the cartridge's rule for every
+DisplayTextID there; no Lab or Pewter Mart handler opens with an explicit `true` (the only one is Viridian City's,
+an auto-box map). START's new test keeps labels at +20 and the first read at +23. **Next: CP4** (gates twice, muted
+browser walk, docs), then the user's V2a play-test. Nothing pushed.
+
+### 2026-10-16 (V2a CP3 — runtime wiring) — Sonnet 5.5, standing in for Sol
+
+Read the ASM first (PewterMart/OaksLab scripts, `PewterCitySuperNerd2Text`, songs.asm). Five Pewter maps wired in
+`main.ts` (City outdoor; music per songs.asm), all `PEWTER`, six debug warps. `PewterCity:4` Super Nerd handler
+(YES → ThatsRight, NO → ImSprayingRepel), census exclusion removed. New `text/auto_text_box.ts` ({OaksLab,
+PewterMart}) replaces the Lab name check for plain/printText NPCs, handlers, TX_SCRIPT (`buildMartScript`), Lab
+free-move and START's early border (+20/+23 kept); explicit `true` (bookshelves) untouched. A first design that
+made `displayTextID` default to the map broke Lab shelves and was reverted. Guides and Jigglypuff still silent.
++19 tests, 3 mutations caught. Typecheck/build clean, ROM **1722/1722**, no-ROM **1569/153** (96 files). Note 60 §15.
+No browser run. **Stop for Claude's check; CP4 has not started.** Local commit only, nothing pushed.
+
+### 2026-10-16 (V2a CP2 checked) — Claude
+
+I checked Sol's V2a CP2 (`e7f2902`, `50f6f90`). **Passes, no required fix.** Re-ran typecheck (clean), ROM **1703/1703**,
+and `npm run setup` again: tree unchanged. Read the extractor diff: `readMartItems` reads both pointer tables, resolves
+home-bank pointers, checks $FE, the count against the $FF terminator and every item id, and maps $0f to
+`PARALYZE_HEAL`; the hard-coded Viridian list is gone and its extracted list is unchanged. Test diffs only add Pewter
+rows/counts (24 maps, 182 JSON, census 38, bench check 9, Nidoran's exact FAR + asm guard) plus new extraction tests
+with malformed-`script_mart` rejections; the Pewter tripwire is re-keyed to Jigglypuff's registration as planned.
+The approved `map_sprite_sets.json` rows only add the five maps. Note for CP3: the census exclusion
+`PewterCity:4` ("V2a CP3 Super Nerd handler") must go when that handler lands. **Next: Sol runs V2a CP3.** Nothing pushed.
+
+### 2026-10-16 (V2a CP2 completed after scope approval) — Codex/Sol
+
+The user approved the two generated sprite-set files and four omitted fixture updates. Added only
+Pewter rows/counts and count labels/comments; every old assertion retained. Note 60 §14 records each
+cartridge reason before those edits; §8 includes all four files. All 888 setup outputs match byte for
+byte; 872 prior files unchanged. Final ROM **1703/1703**, no-ROM **1550 pass/153 skip** (95 files),
+typecheck/build clean; no final timeout. Earlier unchanged text-source timeout/rerun recorded in §13.8.
+CLAUDE/CONVENTIONS baselines updated. Completes WIP `e7f2902`; no runtime wiring or browser check.
+**Stop for the user's/Claude's check. CP3 has not started.** Committed locally; nothing pushed.
+
+### 2026-10-16 (V2a CP2 — implementation; scope answers pending) — Codex/Sol
+
+Five maps/text tables, 54 sym-checked programs, parent/hidden-event rows and ROM-derived Mart stock
+implemented; Viridian stock bytes unchanged. Setup twice: **888 files identical** (182 JSON per tree).
+No runtime wiring. Note 60 §13.8 records two extra generated sprite-set files and four stale fixture
+counts/lists outside the user's allowlists; approval was requested, not assumed. Only §8's five test
+files edited so far. Typecheck/build clean; ROM **1698 pass/5 fail**, then unchanged timeout rerun
+**7/7**; no-ROM **1546 pass/4 fail/153 skip**. The remaining four failures are those omitted fixtures.
+**CP2 not complete; await the user's scope answers, then finish gates/commit before Claude's check.**
+Authorized changes saved in a local WIP commit; the two extra generated sprite-set files remain
+uncommitted pending the user's answer. No omitted fixture was edited. Nothing pushed.
+
+### 2026-10-16 (V2a CP1 checked) — Claude
+
+I checked Sol's V2a CP1 (`0971786`, note 60 §13). **Passes, no required fix.** Verified against the ROM and source:
+both clerks' bytes (`00:233b` `FE 05 04 14 0B 0F 0C FF`, `00:2343` `FE 07 04 14 1D 0B 0C 0E 0F FF`); `printTextWrapper`
+already matches the inline `call PrintText` form, so my planned extractor rule is unneeded; Nidoran starts with
+TX_FAR while Viridian's Spearow starts with `text_asm`, so its call is `text` and the census grows by 8 (City 3/4/5,
+Pokécenter 1/3/4/6, Mart 1) to 38; `$0f` needs the `PARALYZE_HEAL` alias; START must take the map's no-auto-box
+default. All four corrections are already folded into §2–§8. Docs only. **Next: Sol runs V2a CP2.** Nothing pushed.
+
+### 2026-10-16 (V2a CP1 — trace) — Codex/Sol
+
+Checked pret ASM/symbols and ROM: five text tables, 27 new root/FAR pairs, all calls, both Mart byte
+streams, connection offsets, four door spawn states, empty Pokécenter slot 10, and Mart/START openings.
+Note 60 §13 records the trace and corrections: inline PrintText already supported (no old kind changes);
+Nidoran is text + ASM, so future handler/script census **38**; $0f needs runtime **PARALYZE_HEAL**;
+no-auto-box must cover START, whose initial border is unconditional today. Viridian's mapped stock
+equals today's exactly. Gates: ROM **1687/1687**, no-ROM **1550/137** (95 files), typecheck/build clean;
+no timeout. Docs only; no code/data/test changes or setup/browser run. **Stop for Claude's check;
+CP2 has not started.** Local commit only, nothing pushed.
+
+### 2026-10-16 (O-32 answered) — the user, recorded by Claude
+
+The user approved note 60 §12 ("yes pls split it and yes to codex ompelmenting") → DECISIONS #64: V2 runs as
+V2a → V2b → V2c, each with its own CPs and play-test; Sol implements, Claude checks each CP. **Next: Sol runs V2a
+CP1 (trace only, no code).** Local commit only.
+
+### 2026-10-16 (V2 plan) — Claude
+
+At the user's request ("please update all context files then ultrathink and plan the next slice"):
+- **Context sweep** (`1468cc3`): the 19 session entries before the healing-machine plan moved verbatim to HISTORY
+  (DECISIONS #61; STATUS ~40 → ~28 KB). The machine is marked done in PLAN, note 59, the backlog and the story doc.
+  ARCHITECTURE's module map now has `fade_audio`, `healing_machine`, `loadSpriteMapped`/`obpMapping` and
+  `StatusScreenSession`, which replaces the stale `StatsScreen`.
+- **V2 plan:** wrote `notes/60-v2-plan.md` from the Pewter ASM.
+  - The Pokécenter, Mart and houses are byte-identical layouts to Viridian's, and Pewter Mart's prices already match.
+  - I simulated the guides' nine start variants from the ASM lists (reversed consumption, `PewterGuys`' overwrite):
+    each ends with the player one tile behind, at museum (14,8) and gym (11,18).
+  - Measured the Jigglypuff song on `audio_rig`: CHAN2 ends at update 392, CHAN1 at 397, so the spin runs 17 times.
+  - Found that Jigglypuff disables Pikachu's following, which the engine has no state for (V2c).
+  - Three findings went to the backlog (the Youngster's unterminated table → V3; connection music fades → #63's
+    slice; `wTownVisitedFlag` → Fly).
+
+**Next: the user answers O-32.** No code changed; the throwaway rig test was deleted. Local commit only.
+
 ### 2026-10-16 (healing-machine CP4 checked; slice closed) — Claude
 
 I checked Sol's CP4 (`ca6d38a`, note 59 §15): Markdown only, no runtime/test/data change. Re-ran typecheck (clean)

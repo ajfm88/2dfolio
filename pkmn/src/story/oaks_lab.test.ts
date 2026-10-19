@@ -20,6 +20,7 @@ import { loadBattleData } from '../battle';
 import { isHeld, isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { playSFX, isSoundFinished, playMusic } from '../audio';
 import { fillRect, drawTile } from '../renderer';
+import { isNoMapMusic, setNoMapMusic } from '../audio/audio_flags';
 import { uiTiles } from '../renderer/ui_tiles';
 import { rig, sfxData } from '../test/audio_rig';
 import type { Rig } from '../test/audio_rig';
@@ -327,5 +328,16 @@ describe('Lab runtime timing and side effects', () => {
     const deps = scene(); initScript(wrong); updateScript(deps, false);
     for (let t = 1; t <= 20; t++) tick(deps, t, false);
     expect(() => expect(deps.playerParty).toHaveLength(0)).toThrow();
+  });
+});
+
+describe('Map-music CP3: the Lab clears BIT_NO_MAP_MUSIC at OaksLabFollowedOakScript', () => {
+  it('a callback clears the bit immediately before the intro restoreMapMusic', () => {
+    const intro = buildOaksLabIntroScript();
+    const i = intro.findIndex(c => c.type === 'restoreMapMusic');
+    const before = intro[i - 1];
+    expect(before.type).toBe('callback');
+    setNoMapMusic(true); if (before.type === 'callback') before.fn();
+    expect(isNoMapMusic()).toBe(false);
   });
 });

@@ -60,6 +60,10 @@ export function hideObject(map: string, npcId: string): void {
   hiddenObjects.add(`${map}:${npcId}`);
 }
 
+export function showObject(map: string, npcId: string): void {
+  hiddenObjects.delete(`${map}:${npcId}`);
+}
+
 export function isObjectHidden(map: string, npcId: string): boolean {
   return hiddenObjects.has(`${map}:${npcId}`);
 }

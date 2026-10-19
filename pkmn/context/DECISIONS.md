@@ -793,6 +793,72 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       gym, museum and Route 3; the map-music fade-out stays its own slice (#63).
     - Commits remain local; no push.
 
+65. **V2b takes all three plan decisions; Codex implements** (2026-10-17). *The user's answer to
+    `notes/61-v2b-plan.md` §9 (O-33): "yes to all".*
+
+    - **V2b is planned in note 61,** which replaces note 60 §6. The escort is a literal port of the cartridge's
+      simulated joypad: `DecodeRLEList`, `PewterGuys`' overwrite and prefix, the reversed read, no collision while
+      the index is non-zero. The guide walks in step with a frozen map position. Then `SetSpritePosition1` (the
+      `$40` placement, at most one pass), the walk-off, HideObject/ShowObject (the first ShowObject), and the default
+      script's museum resets and east check.
+    - **`MoveSprite`'s `SetSpriteMovementBytesToFF` and its status rule apply to Pewter's two walk-offs only.** The
+      existing callers (Pallet's Oak, the Viridian old man, the nurse's walks) keep today's behavior until the J2
+      audit.
+    - **The east edge after BEAT_BROCK is V3's decision,** guarded by a tripwire. V2b adds no stopgap: before
+      BEAT_BROCK the four triggers already close it (note 61 §2.1).
+    - **Four checkpoints:** CP1 trace (no code), CP2 engine, CP3 `story/pewter_city.ts`, CP4 verification. **Codex
+      implements;** Claude checks each CP; the user play-tests (note 61 §6).
+    - Commits remain local; no push.
+
+66. **V2c takes all three plan decisions; Claude Sonnet implements** (2026-10-17). *The user's answer to
+    `notes/62-v2c-plan.md` §9 (O-34): "yes".*
+
+    - **V2c is planned in note 62,** which replaces note 60 §7.
+      - Jigglypuff's song (17 image writes, the CHAN1/CHAN2 poll), then the following-disabled state
+        (`wPikachuOverworldStateFlags` bit 1). The flag is not saved: every warp's `LoadMapData` and CONTINUE clear it.
+      - Its readers in Pewter's Pokécenter: Pikachu's frozen update, collision, no turn when talked to, the nurse's
+        `LooksContentText` plus the heal path's follow checks, emotion 26, Bill's PC.
+    - **This amends #39 for emotion 26 only.** Its exit subcommands (SHOWMAPVIEW, CHECKPEWTERCENTER: the wake) and
+      its **ZZZ bubble** are built now; `zzz.png` is extracted. Its cries stay J2.
+    - **The party menu's two sleeping-Pikachu rules are ported now:** choosing it prints "There isn't any
+      response..." and returns cancelled, and its row has no icon. The rest of the upstream party list stays in the
+      J2 audit (#62).
+    - **Five checkpoints:** CP1 trace, CP2 data (e7b83, e7d13, zzz, `PartyMenuText_12cc`), CP3 the state, song and
+      nurse, CP4 talking to Pikachu and the party menu, CP5 verification. **Claude Sonnet implements;** Claude checks
+      each CP; the user play-tests (note 62 §6).
+    - Commits remain local; no push.
+
+67. **The map-music fade-out takes all three plan decisions; Codex implements** (2026-10-17). *The user's answer to
+    `notes/63-map-music-fade-plan.md` §9 (O-35): "yes to 1 and 2, and to 3 it's gonna be Codex".*
+
+    - **Every `PlayDefaultMusicFadeOutCurrent` caller reachable today is ported:** warps and doors (`LoadMapData`, with
+      `UpdateMusic6Times`), map connections, battle returns (fade 8, forced restart), the blackout, and CONTINUE. The
+      same-song no-op is kept, and the fade starts the queued track at its end (88 / 72 updates).
+    - **The cartridge's PlaySound-during-fade behavior is ported in full.** `PlayMusic` cancels the fade, a second map
+      change re-queues it, and a plain `PlaySound` SFX replaces the queued song. That last rule is **the Gen 1
+      silent-music glitch, reproduced on purpose.**
+      *Corrected 2026-10-18 by CP1 (note 63 §10.1, checked §10.9): there is no such glitch.* An ordinary SFX leaves
+      `wNewSoundID` = 0, so during a fade it is **dropped** (no sound, queue untouched). Only an explicit new-ID
+      request re-queues. The approval stands for the cartridge's actual rule.
+    - **The Pallet walk / Lab entry music is fixed now.** The "follow me" theme (`MUSIC_MUSEUM_GUY`) plays from
+      OakMoveLeft, and `BIT_NO_MAP_MUSIC` carries it into the lab until `OaksLabFollowedOakScript`'s
+      `PlayDefaultMusic`. This changes a user-verified scene to match the cartridge.
+    - **Four checkpoints:** CP1 trace, CP2 audio, CP3 wiring, CP4 verification. **Codex implements;** Claude checks
+      each CP; the user play-tests with sound (note 63 §6).
+    - Commits remain local; no push.
+
+68. **The warp's map-music fade waits for the door sound** (2026-10-18). *The user's answer to O-36
+    (`notes/63-map-music-fade-plan.md` §10.13): "i choose a".*
+
+    - **The problem:** the port's warp is 8 frames, so its `PlayDefaultMusicFadeOutCurrent` (whose new-ID request clears
+      the SFX IDs) used to land while `go_inside` / `go_outside` was still playing. On the cartridge the loader runs ≥42
+      passes after the door sound starts, and that sound lasts at most 40, so it always finishes first (note 63 §10.4).
+    - **The fix:** the warp path requests its music (the six passes, then DF) once the door sound has finished
+      (`isSoundFinished`). That keeps the cartridge's audible order without changing the screen fade.
+    - **The warp's own timing** (`PlayMapChangeSound`'s `GBFadeOutToBlack`, the LCD-off load and the sprite-copy waits)
+      stays with a later warp-timing slice (backlog).
+    - Built in the map-music slice's CP4; commits remain local; no push.
+
 ## Open — not decided, needs the user
 
 

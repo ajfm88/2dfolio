@@ -3,6 +3,7 @@
 
 import type { BattlePokemon } from '../battle';
 import { moodTowardNeutral, walkingHappinessRoll } from '../overworld/step_end';
+import { isPikachuFollowingDisabled } from './pikachu_following';
 
 // --- State ---
 let pikachuHappiness = 90;   // assembly init_player_data default
@@ -213,6 +214,17 @@ const ANIM_SCRIPTS: Record<number, PikachuAnimScript> = {
     frames: [d(8), o(12), d(8), o(12)],
     duration: 50,
   },
+  // PikaPicAnimScript26 / PikaPicAnimBGFrames_32: sleeping, waking, awake.
+  26: {
+    baseFace: `${P}/unknown_e5000.png`,
+    overlays: [
+      { path: `${P}/unknown_e50af.png`, x: 0, y: 0 },
+      { path: `${P}/unknown_e7b83.png`, x: 0, y: 0 },
+      { path: `${P}/unknown_e7d13.png`, x: 0, y: 0 },
+    ],
+    frames: [d(20), o(8, 0), d(20), o(8, 0), o(8, 1), o(100, 2)],
+    duration: 100,
+  },
   // Script 28 — Sick (oscillation)
   28: {
     baseFace: `${P}/unknown_f0cf4.png`,
@@ -225,7 +237,8 @@ const ANIM_SCRIPTS: Record<number, PikachuAnimScript> = {
 /** The emotion (wExpressionNumber) talking to Pikachu shows: asleep 11, another status
  *  28, otherwise the happiness × mood matrix. The face and its movement prelude both
  *  follow this one number. */
-export function selectPikachuEmotion(party: BattlePokemon[]): number {
+export function selectPikachuEmotion(party: BattlePokemon[], mapName?: string): number {
+  if (mapName === 'PewterPokecenter' && isPikachuFollowingDisabled()) return 26;
   const pikachu = party.find(p => p.species.id === 25);
   if (pikachu) {
     if (pikachu.status === 'SLP') return 11;

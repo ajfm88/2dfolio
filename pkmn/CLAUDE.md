@@ -143,10 +143,10 @@ Everything else runs inside `game/`:
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
   `data/`, then rebuild `static/` (521 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 153 ROM tests skip
+  `ROM_PATH` the 154 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-10-17 (V2a done): 1723/1723.**
+  tests. **Baseline 2026-10-18 (map-music done): 1913/1913.**
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -158,13 +158,13 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-10-17:** milestones **R1, V1, A6 and A1 are done**, and A5 is half done: **A5a** (the text printer)
+**2026-10-17:** milestones **R1, V1, A6, A1 and V2 are done**, and A5 is half done: **A5a** (the text printer)
 and **A5b** (every script and menu text on the cartridge's programs, A5b1–A5b7) are user-verified. The game runs
 with no ROM, from committed `data/` + `static/` (Phase R). It has 24 maps (upstream's 12, Route 2 and
 Viridian Forest from V1, Pewter City and its four buildings from V2a), ticks at the Game Boy's 59.7275 Hz, and moves on the ASM's 2-frame pass (DECISIONS #33,
-#36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2a** (Pewter on the map, 2026-10-17). **1723/1723** tests; no-ROM 1570 pass, 153 skip; typecheck/build clean.
-Next: **V2b** (Pewter's two guides), then V2c (Jigglypuff, the sleeping Pikachu) (note 60, DECISIONS #64), the map-music fade-out (#63),
-the intro-animation slice (#51), A5c–A5f, V3.
+#36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2**, Pewter City (V2a maps, V2b the guides, V2c Jigglypuff and the sleeping Pikachu), 2026-10-17. **1913/1913** tests; no-ROM 1756 pass, 157 skip; typecheck/build clean.
+The map-music fade-out (#63, #67, #68) is done and user-verified (2026-10-18). Next: the
+intro-animation slice (#51), A5c–A5f, V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

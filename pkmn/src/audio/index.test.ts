@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { GBSynthesizer } from './synthesizer';
+import { setNoAudioFadeOut } from './audio_flags';
 
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
@@ -37,8 +38,10 @@ it('public fade API uses the real audio clock, works before unlock and preloads 
   expect(api.isAudioFadingOut()).toBe(true);
   expect(api.isMusicPlaying()).toBe(true);
   expect(synth.masterVolumeRegister).toBe(0);
+  // Map-music CP3 (note 63 §10.1): an ordinary PlaySound during a fade is ignored (new ID = 0), so the
+  // request neither starts nor counts as pending (completion's SFX stop stays pinned in fade_audio.test.ts).
   void api.playSFX('get_key_item');
-  expect(api.isSoundFinished()).toBe(false);
+  expect(api.isSoundFinished()).toBe(true);
   step(); // update 40: finish before any music/SFX commands, volume already full
   expect(api.isAudioFadingOut()).toBe(false);
   expect(api.isMusicPlaying()).toBe(false);
@@ -46,6 +49,7 @@ it('public fade API uses the real audio clock, works before unlock and preloads 
   expect(api.isSoundFinished()).toBe(true);
   expect(synth.masterVolumeRegister).toBe(0x77);
 
+  setNoAudioFadeOut(true); // BIT_NO_AUDIO_FADE_OUT is a real flag StatusScreen sets (note 63 CP3)
   api.setMasterVolume(3, 3); step();
   expect(synth.masterVolumeRegister).toBe(0x33); // idle audio cannot undo StatusScreen
   await api.preloadMusic('pkmnhealed');

@@ -119,6 +119,7 @@ export const TITLE_PIKACHU_TILEMAP      = symToOffset(0x3d, 0x468f);  // 108 byt
 
 // Emote sprites
 export const SHOCK_EMOTE    = symToOffset(0x10, 0x51e5);  // 2bpp, 4 tiles
+export const ZZZ_EMOTE      = symToOffset(0x10, 0x5365);  // ZzzEmote — 2bpp, 4 tiles (V2c CP2)
 
 // Player sprites (compressed .pic format)
 export const RED_PIC_FRONT    = symToOffset(0x04, 0x5a97);  // RedPicFront — compressed (gfx/player/red.pic)
@@ -219,6 +220,9 @@ export const PIKACHU_EMOTION_SPRITES: Record<string, PikachuEmotionEntry> = {
   'e4e70': { offset: symToOffset(0x39, 0x4e70), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e5000': { offset: symToOffset(0x39, 0x5000), type: 'pic', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e50af': { offset: symToOffset(0x39, 0x50af), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
+  // V2c CP2: waking-sequence overlays for emotion 26 (PikaPicAnimScript26)
+  'e7b83': { offset: symToOffset(0x39, 0x7b83), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
+  'e7d13': { offset: symToOffset(0x39, 0x7d13), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e523f': { offset: symToOffset(0x39, 0x523f), type: 'pic', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e52fe': { offset: symToOffset(0x39, 0x52fe), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e548e': { offset: symToOffset(0x39, 0x548e), type: 'pic', width: 40, height: 40, tilesWide: 5, dataSize: 400 },

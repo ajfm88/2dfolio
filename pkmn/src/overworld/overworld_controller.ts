@@ -26,6 +26,7 @@ import type { StepCounters } from './step_end';
 import '../story/small_text_handlers';
 import '../story/lab_text_handlers';
 import '../story/pokecenter';
+import '../story/pewter_pokecenter';
 import '../story/mart';
 import { getTextHandler, getTextScript, displayTextID } from '../story/text_handlers';
 import { mapAutoTextBox, applyMapAutoTextBox } from '../text/auto_text_box';
@@ -33,6 +34,7 @@ import type { TextHandlerContext } from '../story/text_handlers';
 import { getOwnedCount } from '../pokedex_state';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { buildOakGrassScript } from '../story/pallet_town';
+import { PEWTER_CITY, pewterCityScript } from '../story/pewter_city';
 import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
   buildOldMan2Script,
@@ -327,6 +329,11 @@ export function runMapScript(deps: OverworldDeps, ow: OverworldState): Overworld
   // The trainer trio: CheckFightingMapTrainers / DisplayEnemyTrainerTextAndStartBattle /
   // EndTrainerBattle (map_trainers.ts, A1c)
   if (TRAINER_MAPS.has(currentMapName)) return trainerMapScript(currentMapName, player, npcs, ow);
+
+  if (currentMapName === PEWTER_CITY) {
+    const commands = pewterCityScript(textContext(deps));
+    return commands ? { type: 'script', commands } : null;
+  }
 
   // Story trigger: Pallet Town north exit without Pokemon → Oak grass event
   if (

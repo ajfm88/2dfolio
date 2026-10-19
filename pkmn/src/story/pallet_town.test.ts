@@ -10,6 +10,8 @@ import { isHeld, syncJoypadRead } from '../input';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { drawExclamationBubble } from '../renderer';
 import { uiTiles } from '../renderer/ui_tiles';
+import { playMusic } from '../audio';
+import { isNoMapMusic, setNoMapMusic } from '../audio/audio_flags';
 import type { ScriptCommand } from '../script/types';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: () => false,
@@ -86,5 +88,21 @@ describe('PalletTownOakText displays (scripts/PalletTown.asm)', () => {
     const wrong = palletOakText(0); const print = wrong.find(c => c.type === 'printText')!;
     if (print.type === 'printText') print.box = 'keep';
     const result = trace(wrong); expect(() => expect(result.glyph).toBe(23)).toThrow();
+  });
+});
+
+describe('Map-music CP3: the escort MuseumGuy theme (auto_movement.asm:84–119)', () => {
+  it.each([10, 20])('plays MuseumGuy and sets BIT_NO_MAP_MUSIC once, after "Come with me" and before any escort move (exit x=%s)', x => {
+    setNoMapMusic(false);
+    const commands = buildOakGrassScript(x);
+    const comeWithMe = commands.findIndex(c => c.type === 'printText' && c.program === 'PalletTownOakComeWithMe');
+    const firstEscortMove = commands.findIndex((c, i) => i > comeWithMe && (c.type === 'moveNpc' || c.type === 'moveParallel'));
+    const hits = commands.flatMap((c, i) => {
+      if (c.type !== 'callback') return [];
+      vi.mocked(playMusic).mockClear(); setNoMapMusic(false); c.fn();
+      return vi.mocked(playMusic).mock.calls.some(call => call[0] === 'museumguy') && isNoMapMusic() ? [i] : [];
+    });
+    expect(hits).toHaveLength(1);
+    expect(hits[0]).toBeGreaterThan(comeWithMe); expect(hits[0]).toBeLessThan(firstEscortMove);
   });
 });

@@ -2,9 +2,31 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { injectRawImage, loadSpriteMapped, loadSprite, loadTileset, obpMapping, OBP0_MAPPING } from './renderer';
 import { getPaletteColors } from './palettes';
 import { installNodeImageData } from '../rom/node_image_data';
+import { initRenderer, loadEmoteSprite, drawZzzBubble, drawExclamationBubble } from './renderer';
+import { PNG } from 'pngjs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 afterEach(() => vi.unstubAllGlobals());
 describe('OBJ register mapping and asset cache', () => {
+  it('preloads the committed ZZZ and shock sprites and draws the correct 16x16 sheet above its target', async () => {
+    installNodeImageData();
+    const draw = vi.fn();
+    const screen = { width: 0, height: 0, style: {}, getContext: () => ({ drawImage: draw }) };
+    vi.stubGlobal('document', { getElementById: (id: string) => id === 'screen' ? screen : null,
+      createElement: () => ({ width: 0, height: 0, getContext: () => ({ putImageData() {} }) }) });
+    vi.stubGlobal('window', { innerWidth: 480, innerHeight: 432, addEventListener() {} });
+    for (const name of ['shock', 'zzz']) {
+      const png = PNG.sync.read(readFileSync(resolve(__dirname, `../../static/gfx/emotes/${name}.png`)));
+      injectRawImage(`/gfx/emotes/${name}.png`, new ImageData(new Uint8ClampedArray(png.data), png.width, png.height));
+    }
+    initRenderer(); await loadEmoteSprite();
+    drawExclamationBubble(40, 60); const shock = draw.mock.calls[0][0];
+    drawZzzBubble(72, 44); const zzz = draw.mock.calls[1][0];
+    expect(zzz).toBe(await loadSprite('/gfx/emotes/zzz.png'));
+    expect(zzz).not.toBe(shock); expect([zzz.width, zzz.height]).toEqual([16, 16]);
+    expect(draw.mock.calls[1].slice(1)).toEqual([0, 0, 16, 16, 72, 28, 16, 16]);
+  });
   it('decodes the three source registers, keeping the existing OBP0 mapping', () => {
     expect(obpMapping(0xd0)).toEqual(OBP0_MAPPING);
     expect(obpMapping(0xe0)).toEqual([0, 0, 2, 3]);

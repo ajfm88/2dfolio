@@ -20,6 +20,8 @@ import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '..
 import { monDisplayName } from '../pokemon_names';
 import { StatusScreenSession } from './status_screen';
 import { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
+import { isStarterPikachu } from '../pikachu/pikachu_follower';
+import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
 export { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 
 type PartyState = 'list' | 'submenu' | 'switch_target' | 'stats';
@@ -73,9 +75,11 @@ export class PartyMenu {
   private stats: StatusScreenSession | null = null;
   private opening: PartyMenuOpening | null = null;
   private readonly openingTextBox = new TextBox();
+  private sleepingText: TextBox | null = null;
+  private itemTextBox: TextBox | null = null;
   /** The stats session owns actual reads and its one BG-transfer tick. */
   get statusScreenActive(): boolean { return this.stats !== null; }
-  get ownsInput(): boolean { return this.statusScreenActive || this.opening !== null; }
+  get ownsInput(): boolean { return this.statusScreenActive || this.opening !== null || this.sleepingText !== null; }
   get paletteWhite(): boolean { return this.opening?.paletteWhite ?? this.stats?.paletteWhite ?? false; }
 
   // Battle mode support. useItem is the bag's medicine menu: A picks, B cancels, no submenu.
@@ -102,6 +106,8 @@ export class PartyMenu {
     this.state = 'list';
     this.stats = null;
     this.opening = null;
+    this.sleepingText = null;
+    this.itemTextBox = null;
     this.promptVisible = true;
     this.subCursor = 0;
     this.switchFrom = -1;
@@ -137,9 +143,10 @@ export class PartyMenu {
   }
 
   /** DisplayPartyMenu for USE_ITEM. A returns the slot; B cancels. */
-  showForItem(party: BattlePokemon[]): void {
+  showForItem(party: BattlePokemon[], textBox?: TextBox): void {
     this.show(party);
     this.mode = 'useItem';
+    this.itemTextBox = textBox ?? null;
   }
 
   /** One row's frozen picture (see hpOverride); null returns it to the party data. */
@@ -152,6 +159,16 @@ export class PartyMenu {
    * the item-use menu passes its own Joypad read (isPassPressed); the others keep isPressed.
    */
   update(pressed: (button: GameButton) => boolean = isPressed): 'close' | null {
+    if (this.sleepingText) {
+      // The bag owns its shared TextBox tick; START's party owns its standalone tick.
+      if (!this.itemTextBox) this.sleepingText.update();
+      if (!this.sleepingText.isComplete) return null;
+      this.sleepingText.dismiss();
+      this.sleepingText = null;
+      this.switchFrom = -1;
+      this.state = 'list';
+      return 'close'; // HandlePartyMenuInput returns carry, including SWITCH targets.
+    }
     if (this.opening) {
       this.opening.present();
       const ready = this.opening.frame();
@@ -186,6 +203,7 @@ export class PartyMenu {
     playSFX('press_ab');
     this.rememberCursor();
     this.cursorGlyph = '▷';
+    if (!b && this.rejectSleepingStarter()) return null;
     this.chosenIndex = b ? -1 : this.cursor;
     return 'close';
   }
@@ -197,6 +215,7 @@ export class PartyMenu {
       this.cursor = (this.cursor + 1) % this.party.length;
     } else if (pressed('a')) {
       playSFX('press_ab');
+      if (this.rejectSleepingStarter()) return null;
       if (this.mode === 'useItem') {
         this.rememberCursor();
         this.chosenIndex = this.cursor;
@@ -275,6 +294,7 @@ export class PartyMenu {
       this.cursor = (this.cursor + 1) % this.party.length;
     } else if (isPressed('a')) {
       playSFX('press_ab');
+      if (this.rejectSleepingStarter()) return null;
       if (this.cursor !== this.switchFrom) {
         // Swap the two Pokemon
         const temp = this.party[this.switchFrom];
@@ -301,6 +321,20 @@ export class PartyMenu {
     return null;
   }
 
+  /** .asm_128f runs before the swap branch; the prompt itself owns its A/B wait. */
+  private rejectSleepingStarter(): boolean {
+    const mon = this.party[this.cursor];
+    if (this.mode === 'battle' || this.mode === 'battle_forced'
+        || !mon || !isStarterPikachu(mon) || !isPikachuFollowingDisabled()) return false;
+    this.rememberCursor();
+    this.chosenIndex = -1;
+    this.selectedSwitchIndex = -1;
+    this.promptVisible = false;
+    this.sleepingText = this.itemTextBox ?? this.openingTextBox;
+    this.sleepingText.printStandalone({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    return true;
+  }
+
   render(): void {
     if (this.opening?.paletteWhite) { drawFadeOverlay(1); return; }
     if (this.state === 'stats') {
@@ -312,6 +346,7 @@ export class PartyMenu {
     if (this.state === 'submenu') {
       this.renderSubmenu();
     }
+    if (this.sleepingText && !this.itemTextBox) this.sleepingText.render();
   }
 
   private renderList(): void {
@@ -325,7 +360,8 @@ export class PartyMenu {
 
       // Party icon — only the cursor-selected Pokemon animates
       const frame = i === this.cursor ? this.frameCounter : 0;
-      drawPartyIcon(mon.species.id, ICON_X, y, frame, hpRatio);
+      const sleeping = this.mode !== 'battle' && this.mode !== 'battle_forced' && isStarterPikachu(mon) && isPikachuFollowingDisabled();
+      if (!sleeping) drawPartyIcon(mon.species.id, ICON_X, y, frame, hpRatio);
 
       // Cursor (or switch marker)
       if (this.state === 'switch_target' && i === this.switchFrom) {

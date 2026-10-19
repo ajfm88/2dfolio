@@ -19,6 +19,7 @@ import { PikachuFollower } from '../pikachu/pikachu_follower';
 import { Bag } from '../items';
 import { createPokemon, loadBattleData } from '../battle';
 import { hasFlag, restoreFlags, setFlag, getAllFlags } from '../events';
+import { enablePikachuFollowing, disablePikachuFollowing } from '../pikachu/pikachu_following';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { isHeld, isPassPressed, syncJoypadRead, readJoypad } from '../input';
 import { uiTiles } from '../renderer/ui_tiles';
@@ -29,7 +30,8 @@ import { createOverworldState, updateOverworld } from '../overworld/overworld_co
 import { loadPikachuMovementData } from '../pikachu/pikachu_movement_data';
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: () => false,
   readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
-vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }));
+// Map-music CP3: playMusicNew (PN) is the entry for the PkmnHealed jingle; the same mock keeps every playMusic assertion intact.
+vi.mock('../audio', () => { const playMusic = vi.fn(); return { playSFX: vi.fn(), isSoundFinished: () => true, playMusic, playMusicNew: playMusic, isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(), fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false) }; });
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
 const machineDraw = vi.hoisted(() => ({ save: vi.fn(), restore: vi.fn(), translate: vi.fn(), scale: vi.fn(), drawImage: vi.fn() }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
@@ -41,7 +43,7 @@ function updateScript(deps: ScriptDeps, isPass: boolean) { audio.update(); retur
 const dataDir = resolve(__dirname, '../../data');
 const mapData = JSON.parse(readFileSync(resolve(dataDir, 'maps/ViridianPokecenter.json'), 'utf8'));
 beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadPikachuMovementData(); });
-beforeEach(() => { vi.restoreAllMocks(); vi.clearAllMocks(); restoreFlags([]); setFlag('BATTLED_RIVAL_IN_OAKS_LAB');
+beforeEach(() => { vi.restoreAllMocks(); vi.clearAllMocks(); restoreFlags([]); setFlag('BATTLED_RIVAL_IN_OAKS_LAB'); enablePikachuFollowing();
   setJoyIgnore('none'); setTextSpeed('fast'); uiTiles.clear();
   audio = rig(musicData('pokecenter'));
   vi.mocked(audioApi.preloadMusic).mockResolvedValue();
@@ -71,9 +73,10 @@ function choice(commands: ScriptCommand[]) {
 }
 function flattened(commands: ScriptCommand[]): ScriptCommand[] {
   return commands.flatMap(c => [c, ...(c.type === 'yesNoChoice' ? [...flattened(c.yes), ...flattened(c.no)]
-    : c.type === 'ifStarterPikachu' ? flattened(c.then) : [])]);
+    : (c.type === 'ifStarterPikachu' || c.type === 'ifPewterPikachuAsleep') ? flattened(c.then) : [])]);
 }
-function trace(s: ReturnType<typeof scene>, answer: 'yes' | 'no' = 'yes', used = false) {
+function trace(s: ReturnType<typeof scene>, answer: 'yes' | 'no' = 'yes', used = false,
+  transform?: (commands: ScriptCommand[]) => ScriptCommand[]) {
   if (used) setFlag('USED_POKECENTER');
   let frame = 0, firstRead = -1, closing = -1, closeEnd = -1, menu = -1, firstMenuRead = -1;
   const printed: { program: string; frame: number; used: boolean }[] = [];
@@ -91,7 +94,8 @@ function trace(s: ReturnType<typeof scene>, answer: 'yes' | 'no' = 'yes', used =
   vi.spyOn(uiEntry, 'fontLoadedUpdateSprites').mockImplementation((p, m, tileAt, follower) => {
     updates.push({ frame, tile: tileAt(0, 12) }); update(p, m, tileAt, follower);
   });
-  initScript(buildNurseScript(s.find, onHeal)); updateScript(s.deps, false);
+  const commands = buildNurseScript(s.find, onHeal);
+  initScript(transform ? transform(commands) : commands); updateScript(s.deps, false);
   for (frame = 1; frame < 6000 && getActiveScript(); frame++) {
     const before = vi.mocked(syncJoypadRead).mock.calls.length;
     const oldMenuReads = vi.mocked(readJoypad).mock.calls.length;
@@ -114,7 +118,7 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
   it('source programs, pause ops and A6e waits stay ordered without legacy text', () => {
     const commands = buildNurseScript(() => undefined); const all = flattened(commands);
     expect(all.filter(c => c.type === 'printText').map(c => c.program)).toEqual([
-      'PokemonCenterWelcomeText', 'ShallWeHealYourPokemonText', 'NeedYourPokemonText', 'PokemonFightingFitText', 'PokemonCenterFarewellText']);
+      'LooksContentText', 'PokemonCenterWelcomeText', 'ShallWeHealYourPokemonText', 'NeedYourPokemonText', 'PokemonFightingFitText', 'PokemonCenterFarewellText']);
     expect(commands[0]).toEqual({ type: 'displayOpen' }); expect(commands[1]).toEqual({ type: 'pikachuFacing', action: 'save' });
     expect(last(commands)).toEqual({ type: 'displayClose', outerWait: true });
     expect(all.filter(c => c.type === 'displayHide')).toHaveLength(2);
@@ -274,5 +278,60 @@ describe('DisplayPokemonCenterDialogue_ on one retained display', () => {
     const onHeal = vi.fn(); const commands = buildNurseScript(() => undefined, onHeal);
     choice(commands).no.push({ type: 'callback', fn: onHeal });
     expect(() => expect(choice(commands).no.some(c => c.type === 'callback')).toBe(false)).toThrow();
+  });
+
+  describe('sleeping nurse paths on the real controller', () => {
+    it.each(['alive', 'fainted', 'none'] as const)('Pewter + disabled returns LooksContentText with %s starter eligibility', pikachu => {
+      disablePikachuFollowing();
+      const s = scene(pikachu); s.deps.gameMap.mapData!.name = 'PewterPokecenter';
+      const start = vi.spyOn(s.follower, 'startMovement');
+      const hide = vi.spyOn(s.follower, 'hideImage');
+      const stand = vi.spyOn(s.follower, 'showStandingImage');
+      const t = trace(s);
+      expect(t.printed.map(p => p.program)).toEqual(['LooksContentText']);
+      expect(t.onHeal).not.toHaveBeenCalled(); expect(t.hidden).toEqual([]);
+      expect(hasFlag('USED_POKECENTER')).toBe(false);
+      expect(start).not.toHaveBeenCalled(); expect(hide).not.toHaveBeenCalled(); expect(stand).not.toHaveBeenCalled();
+      expect(s.deps.textBox.active).toBe(false);
+    });
+
+    it('Pewter + enabled takes the regular welcome and heals', () => {
+      const s = scene(); s.deps.gameMap.mapData!.name = 'PewterPokecenter';
+      const t = trace(s);
+      expect(t.printed[0].program).toBe('PokemonCenterWelcomeText');
+      expect(t.printed.some(p => p.program === 'LooksContentText')).toBe(false);
+      expect(t.onHeal).toHaveBeenCalledOnce();
+    });
+
+    it('Viridian + disabled heals, skipping the actual Pikachu walk, hide, return and stand commands', () => {
+      disablePikachuFollowing(); const s = scene('alive');
+      const start = vi.spyOn(s.follower, 'startMovement');
+      const hide = vi.spyOn(s.follower, 'hideImage');
+      const stand = vi.spyOn(s.follower, 'showStandingImage');
+      // Observe command dispatch even for instantaneous commands that return in one tick.
+      const ran: string[] = [];
+      const mark = (commands: ScriptCommand[]): ScriptCommand[] => commands.flatMap(c => {
+        if (c.type === 'ifStarterPikachu' || c.type === 'ifPewterPikachuAsleep') c.then = mark(c.then);
+        if (c.type === 'yesNoChoice') { c.yes = mark(c.yes); c.no = mark(c.no); }
+        return (['pikachuToNurse', 'hidePikachu', 'showPikachu', 'pikachuStandDown'].includes(c.type) || (c.type === 'faceNpc' && c.direction === 'up'))
+          ? [{ type: 'callback' as const, fn: () => { ran.push(c.type); } }, c] : [c];
+      });
+      const t = trace(s, 'yes', false, mark);
+      expect(t.printed.map(p => p.program)).toEqual(['PokemonCenterWelcomeText', 'ShallWeHealYourPokemonText',
+        'NeedYourPokemonText', 'PokemonFightingFitText', 'PokemonCenterFarewellText']);
+      expect(t.onHeal).toHaveBeenCalledOnce();
+      expect(s.mon.currentHp).toBe(s.mon.maxHp);
+      expect(ran).toEqual([]); expect(start).not.toHaveBeenCalled(); expect(hide).not.toHaveBeenCalled();
+      expect(stand).not.toHaveBeenCalled(); expect(s.follower.visible).toBe(true);
+      // No 64-frame nurseUp blocks before/after the machine either.
+      expect(t.ticks.some(tick => tick.command === 'healingMachine')).toBe(true);
+    });
+  });
+});
+
+describe('Map-music CP3: the nurse own restoration entry', () => {
+  it('the post-heal restoreMapMusic is the nurse entry (control 0, saved bank, last = new = map song)', () => {
+    const s = scene(); trace(s);
+    expect(s.deps.restoreMapMusic).toHaveBeenCalledExactlyOnceWith('nurse');
   });
 });

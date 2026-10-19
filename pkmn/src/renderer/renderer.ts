@@ -335,20 +335,31 @@ export function fillRect(
 
 // Preloaded emote sprite (loaded on first use)
 let emoteSprite: HTMLCanvasElement | null = null;
+let zzzSprite: HTMLCanvasElement | null = null;
 let emoteLoading = false;
 
-/** Ensure the shock emote sprite is loaded. */
+/** Preload the shock and ZZZ emotes used by trainer and Pikachu interactions. */
 export async function loadEmoteSprite(): Promise<void> {
   if (emoteSprite || emoteLoading) return;
   emoteLoading = true;
-  emoteSprite = await loadSprite("/gfx/emotes/shock.png");
+  [emoteSprite, zzzSprite] = await Promise.all([
+    loadSprite("/gfx/emotes/shock.png"), loadSprite("/gfx/emotes/zzz.png"),
+  ]);
 }
 
 /** Draw the "!" emote bubble above a sprite at (screenX, screenY). */
 export function drawExclamationBubble(screenX: number, screenY: number): void {
   if (!emoteSprite) return;
+  drawEmote(emoteSprite, screenX, screenY);
+}
+
+export function drawZzzBubble(screenX: number, screenY: number): void {
+  if (zzzSprite) drawEmote(zzzSprite, screenX, screenY);
+}
+
+function drawEmote(sprite: HTMLCanvasElement, screenX: number, screenY: number): void {
   ctx.drawImage(
-    emoteSprite,
+    sprite,
     0,
     0,
     16,

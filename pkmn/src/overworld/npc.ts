@@ -2,7 +2,7 @@ import type { Direction, NpcData } from '../core';
 import { TILE_SIZE } from '../core';
 import { drawSprite, loadSprite } from '../renderer';
 import { NpcWalk, walkFrame } from './walk_pace';
-import type { NpcStepPlan, NpcWalkMode, NpcMovement1, NpcMovement2 } from './walk_pace';
+import type { NpcStepPlan, NpcWalkMode, NpcMovement1, NpcMovement2, NpcScriptOptions } from './walk_pace';
 import { inSpriteWindow, spriteCovered, SpriteVisibility } from './sprite_visibility';
 import { collisionMask, screenPixels, stepStaysOnScreen, DIRECTION_BIT } from './sprite_collision';
 import type { CollisionSprite } from './sprite_collision';
@@ -71,6 +71,8 @@ export class Npc {
   /** The map position the current step leads to (TryWalking moves it at the start). */
   private targetX = 0;
   private targetY = 0;
+  /** Explicit MAPX/MAPY: in-step movement only changes the drawn pixels. */
+  private mapPosition: { x: number; y: number } | null = null;
 
   hidden = false;             // if true, skip rendering and updates
   useWalkFrame = false;       // if true, show walk frame (used for nurse bow)
@@ -112,8 +114,8 @@ export class Npc {
   get tileX(): number { return Math.round(this.x / TILE_SIZE); }
   get tileY(): number { return Math.round(this.y / TILE_SIZE); }
   /** SPRITESTATEDATA2_MAPX/MAPY in steps: a step's destination from its start. */
-  get mapStepX(): number { return Math.round((this.walk.isMoving ? this.targetX : this.x) / STEP_SIZE); }
-  get mapStepY(): number { return Math.round((this.walk.isMoving ? this.targetY : this.y) / STEP_SIZE); }
+  get mapStepX(): number { return this.mapPosition?.x ?? Math.round((this.walk.isMoving ? this.targetX : this.x) / STEP_SIZE); }
+  get mapStepY(): number { return this.mapPosition?.y ?? Math.round((this.walk.isMoving ? this.targetY : this.y) / STEP_SIZE); }
 
   /** A scripted walk has read its terminator. */
   get scriptedMoveDone(): boolean { return this.walk.scriptDone; }
@@ -129,6 +131,25 @@ export class Npc {
     this.direction = dir;
     this.imageFrame = 0; // MakeNPCFacePlayer → NotYetMoving
   }
+
+  /** SetSpriteFacingDirection: live facing without repainting IMAGEINDEX. */
+  setLiveFacing(dir: Direction): void { this.walk.facing = dir; }
+  /** SpriteFunc_34a1: standing IMAGEINDEX, without changing the live facing. */
+  showStandingImage(dir: Direction): void {
+    this.imageDirection = dir;
+    this.imageFrame = 0;
+    this.visibility.update(true, false);
+  }
+
+  /** _SetSpritePosition1; offsets are drawn-pixel offsets from the supplied map position. */
+  setSpritePosition1(mapStep: { x: number; y: number }, screenDx = 0, screenDy = 0): void {
+    this.mapPosition = { ...mapStep };
+    this.x = mapStep.x * STEP_SIZE + screenDx;
+    this.y = mapStep.y * STEP_SIZE + screenDy;
+  }
+
+  /** The saved screen bytes are off-window at RESET; the first visible ready update recomputes them. */
+  restoreSpritePosition2(saved: { x: number; y: number }): void { this.setSpritePosition1(saved); }
 
   /**
    * PrintEndBattleText → SetEnemyTrainerToStayAndFaceAnyDirection: after the player beats
@@ -168,6 +189,13 @@ export class Npc {
     this.visibility.update(available, ctx.playerWalking && !inStepAnimation);
     if (!available) return; // invisible sprites don't advance movement or delay
 
+    // InitializeSpriteScreenPosition precedes a ready try, never a resting or moving update.
+    if (!inStepAnimation && this.walk.status === 'ready' && !ctx.playerWalking) {
+      const x = this.mapStepX, y = this.mapStepY;
+      this.x = x * STEP_SIZE;
+      this.y = y * STEP_SIZE;
+    }
+
     this.walk.pass({
       playerWalking: ctx.playerWalking,
       random,
@@ -177,6 +205,10 @@ export class Npc {
       const d = stepDelta(this.walk.facing);
       this.targetX = this.x + d.dx;
       this.targetY = this.y + d.dy;
+      if (this.mapPosition && !inStepAnimation) {
+        this.mapPosition.x += d.dx / STEP_SIZE;
+        this.mapPosition.y += d.dy / STEP_SIZE;
+      }
     }
     this.x += this.walk.dx;
     this.y += this.walk.dy;
@@ -190,15 +222,18 @@ export class Npc {
   /** MoveSprite: walk `path`, each step normal (1 px a pass) or fast (Yellow's $04–$07).
    *  `modes` gives each step's mode; missing entries are normal. `keepStatus`: see
    *  NpcWalk.startScript (the trainer walk-up). */
-  startScriptedMove(path: Direction[], modes?: NpcWalkMode[], keepStatus = false): void {
+  startScriptedMove(path: Direction[], modes?: NpcWalkMode[], options: boolean | NpcScriptOptions = false): void {
     const plan: NpcStepPlan[] = path.map((dir, i) => ({ dir, mode: modes?.[i] ?? 'normal' }));
-    this.walk.startScript(plan, keepStatus);
+    this.walk.startScript(plan, options);
   }
 
   /** DoScriptedNPCMovement: walk `path` in step with the player (2 px a pass). */
   startInStepMove(path: Direction[]): void {
+    this.mapPosition = { x: this.mapStepX, y: this.mapStepY };
     this.walk.startInStep(path);
   }
+
+  endInStep(): void { this.walk.endInStep(); }
 
   /**
    * CanWalkOntoTile after its STAY check, for a try whose facing and step vector are set:

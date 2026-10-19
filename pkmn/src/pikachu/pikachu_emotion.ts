@@ -7,9 +7,8 @@
 //   border   — PlacePikapicTextBoxBorder: the box, Delay3, UpdateSprites (Pikachu under the
 //              box), Delay3;
 //   portrait — the face animation (A or B, or its duration, closes it).
-// The emotion commands' cries (PCM) and emote bubbles are not played here: they have
-// their own homes (V5 audio, the J2 emotion audit), so the prelude's frames are the
-// movement's only, not the whole interaction's.
+// Emotion 26 adds its ZZZ bubble before the border and SHOWMAPVIEW/Delay3/wake/close
+// after the portrait. Cries and the other emotions' bubbles/exits remain J2.
 
 import { loadTileset, getCtx, getScale } from "../renderer";
 import { drawBox } from "../menus";
@@ -19,14 +18,21 @@ import { selectPikachuEmotion, pikachuAnimScriptFor } from "./pikachu_happiness"
 import type { PikachuFollower } from "./pikachu_follower";
 import type { PikachuMovementProgramId } from "../rom/extractors/pikachu_movement";
 import { getPikachuMovementData, pikachuMovementProgram } from "./pikachu_movement_data";
+import type { Direction } from '../core';
+import { EmotionBubble } from '../overworld/emotion_bubble';
+import { CloseSequence } from '../text/close_sequence';
+import { enablePikachuFollowing } from './pikachu_following';
 
 // --- Types ---
 
-export type PikachuEmotionPhase = 'entry' | 'prelude' | 'border' | 'portrait';
+export type PikachuEmotionPhase = 'entry' | 'bubble' | 'prelude' | 'border' | 'portrait' | 'mapview' | 'closing';
 
 interface PikachuEmotionAnim {
   /** wExpressionNumber */
   emotion: number;
+  savedFacing: Direction | null;
+  exitFrames: number;
+  close: CloseSequence | null;
   phase: PikachuEmotionPhase;
   /** The movement calls still to make. */
   calls: PikachuMovementProgramId[];
@@ -66,6 +72,10 @@ const ANIM_TICK_RATE = 3; // game frames per animation tick
 // --- Module state ---
 
 let emotionAnim: PikachuEmotionAnim | null = null;
+const sleepBubble = new EmotionBubble<PikachuFollower>();
+
+/** EmotionBubble owns the sprite while updates are disabled, including its trailing update. */
+export function pikachuEmotionBubble(): PikachuFollower | null { return sleepBubble.showing; }
 
 // --- Public API ---
 
@@ -111,7 +121,16 @@ export function tickPikachuEmotionEntry(deps: PikachuEmotionEntryDeps): void {
   if (!anim) return;
   switch (anim.phase) {
     case 'entry':
+      if (anim.emotion === 26) {
+        sleepBubble.start(deps.follower);
+        anim.phase = 'bubble';
+        return;
+      }
       nextEmotionCall(anim, deps);
+      return;
+    case 'bubble':
+      if (sleepBubble.tick()) nextEmotionCall(anim, deps);
+      // wUpdateSpritesEnabled=$ff suppresses EmotionBubble's trailing UpdateSprites too.
       return;
     case 'prelude':
       if (deps.follower.tickMovement()) nextEmotionCall(anim, deps);
@@ -139,12 +158,50 @@ function nextEmotionCall(anim: PikachuEmotionAnim, deps: PikachuEmotionEntryDeps
 }
 
 export function clearPikachuEmotion(): void {
+  sleepBubble.clear();
   emotionAnim = null;
 }
 
+export interface PikachuEmotionExitDeps {
+  follower: PikachuFollower;
+  playerFacing: Direction;
+  showMapView(): void;
+  fontLoadedUpdate(): void;
+  closeFrames(): number;
+  updateSprites(): void;
+}
+
+/** SHOWMAPVIEW: redraw before the still-asleep font-loaded update, then Delay3. */
+export function beginPikachuEmotionExit(deps: PikachuEmotionExitDeps): void {
+  if (!emotionAnim) return;
+  emotionAnim.phase = 'mapview';
+  emotionAnim.exitFrames = 0;
+  deps.showMapView();
+  deps.fontLoadedUpdate();
+}
+
+/** CHECKPEWTERCENTER, then CloseTextDisplay's DelayFrame/facing restore/map reload. */
+export function tickPikachuEmotionExit(deps: PikachuEmotionExitDeps): boolean {
+  const anim = emotionAnim;
+  if (!anim) return true;
+  if (anim.phase === 'mapview') {
+    if (++anim.exitFrames < 3) return false;
+    enablePikachuFollowing();
+    const opposite: Record<Direction, Direction> = { up: 'down', down: 'up', left: 'right', right: 'left' };
+    deps.follower.setLiveFacing(opposite[deps.playerFacing]);
+    anim.phase = 'closing';
+    anim.close = new CloseSequence(deps.closeFrames(), deps.updateSprites);
+    return false;
+  }
+  if (anim.phase !== 'closing' || !anim.close) return false;
+  if (anim.close.firstFrame && anim.savedFacing) deps.follower.setLiveFacing(anim.savedFacing);
+  anim.close.advance();
+  return anim.close.complete;
+}
+
 /** Start displaying Pikachu's emotion face with animation. */
-export function startPikachuEmotion(party: BattlePokemon[]): void {
-  const emotion = selectPikachuEmotion(party);
+export function startPikachuEmotion(party: BattlePokemon[], mapName?: string, savedFacing: Direction | null = null): void {
+  const emotion = selectPikachuEmotion(party, mapName);
   const script = pikachuAnimScriptFor(emotion);
 
   const composited = document.createElement("canvas");
@@ -153,6 +210,9 @@ export function startPikachuEmotion(party: BattlePokemon[]): void {
 
   emotionAnim = {
     emotion,
+    savedFacing,
+    exitFrames: 0,
+    close: null,
     phase: 'entry',
     calls: [...(EMOTION_MOVEMENTS[emotion] ?? [])],
     borderFrames: 0,

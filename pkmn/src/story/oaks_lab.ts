@@ -6,6 +6,7 @@ import { wasLastBattleWon } from '../script/script_controller';
 import { rivalStarterAfterLabBattle } from '../battle/trainer_flow';
 import { getSpeciesById } from '../battle/data';
 import { stopMusic, playMusic } from '../audio';
+import { setNoMapMusic } from '../audio/audio_flags';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { displayTextID } from './text_handlers';
 import { VIRIDIAN_CITY, ViridianScript } from './viridian_city';
@@ -16,6 +17,7 @@ export function labDisplay(program: string, direct = false, autoBox = false): Sc
 }
 const mask = (value: 'none' | 'dpad' | 'all'): ScriptCommand => ({ type: 'callback', fn: () => setJoyIgnore(value) });
 const mapMusic: ScriptCommand = { type: 'restoreMapMusic' };
+const clearNoMapMusic: ScriptCommand = { type: 'callback', fn: () => setNoMapMusic(false) };
 const rivalMusic: ScriptCommand = { type: 'callback', fn: () => { stopMusic(); playMusic('meetrival', 'rivalAlternate'); } };
 
 export function labChooseSpeech(): ScriptCommand[] {
@@ -76,7 +78,7 @@ export function buildOaksLabIntroScript(): ScriptCommand[] {
     { type: 'faceNpc', npcId: 'rival', direction: 'down' },
     { type: 'faceNpc', npcId: 'prof_desk', direction: 'down' },
     { type: 'movePlayer', path: Array<Direction>(8).fill('up') },
-    { type: 'faceNpc', npcId: 'rival', direction: 'up' }, mapMusic,
+    { type: 'faceNpc', npcId: 'rival', direction: 'up' }, clearNoMapMusic, mapMusic,
     ...labChooseSpeech(),
     { type: 'awaitInteraction', npcId: 'item_ball', guardStepY: 6, guardProgram: LAB_GUARD_PROGRAM },
     ...labBallDisplay(), mask('dpad'), ...ballContinuation('prof_desk'),

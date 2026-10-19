@@ -11,6 +11,8 @@ import { drawShadowUnderSprites } from '../renderer';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import type { PikachuMovementData } from '../rom/extractors/pikachu_movement';
+import { disablePikachuFollowing, enablePikachuFollowing } from './pikachu_following';
+import { PikachuIdle } from './pikachu_idle';
 
 vi.mock('../renderer', () => ({
   loadSprite: vi.fn(async () => ({ height: 96 })), drawSprite: vi.fn(), drawShadowUnderSprites: vi.fn(),
@@ -28,8 +30,41 @@ function runMovement(p: PikachuFollower): number {
 }
 
 beforeEach(() => {
+  enablePikachuFollowing();
   vi.mocked(drawSprite).mockClear();
   restorePikachuHappiness(90, 128);
+});
+
+afterEach(() => { enablePikachuFollowing(); vi.restoreAllMocks(); });
+
+describe('following disabled (Func_fc76a / Func_fc745)', () => {
+  it('refreshes the buffer and standing image on every asleep update without idling or antics', async () => {
+    const p = await follower(); p.spawn(160, 160, 'down'); disablePikachuFollowing();
+    const random = vi.fn(() => 0);
+    const idle = vi.spyOn(PikachuIdle.prototype, 'idle'); const antic = vi.spyOn(PikachuIdle.prototype, 'anticUpdate');
+    for (let pass = 0; pass < 600; pass++) {
+      p.appendFollowCommand(4); p.appendFollowCommand(2);
+      p.updateSprite(at(10, 12, { playerWalking: pass % 2 === 0, random }));
+      expect([p.x, p.y, p.mapStepX, p.mapStepY]).toEqual([160, 144, 10, 9]);
+      expect(p.followBufferLength).toBe(1); expect(p.followCommand).toBe(5); // two+ steps down
+      expect(p.antic).toBeNull(); expect(p.screenOffset).toEqual({ x: 0, y: 0 });
+      expect(p.isMoving).toBe(false); expect(p.direction).toBe('down');
+    }
+    expect(random).not.toHaveBeenCalled();
+    expect(idle).not.toHaveBeenCalled(); expect(antic).not.toHaveBeenCalled();
+    vi.mocked(drawSprite).mockClear(); p.render(0, 0); expect(lastDraw()[2]).toBe(0);
+  });
+
+  it.each([false, true])('talking consumes the face request without turning (font loaded=%s)', async fontLoaded => {
+    const p = await follower(); p.spawn(160, 160, 'left'); disablePikachuFollowing();
+    p.requestFacePlayer();
+    const ctx = { ...at(10, 10, { playerFacing: 'up' }),
+      ui: { playerX: 160, playerY: 160, tileAt: () => 0 } };
+    if (fontLoaded) p.fontLoadedUpdate(ctx); else p.updateSprite(ctx);
+    expect(p.direction).toBe('left');
+    // Enabling afterwards must not execute a stale request on the next update.
+    enablePikachuFollowing(); p.fontLoadedUpdate(ctx); expect(p.direction).toBe('left');
+  });
 });
 
 /** Player standing at step (sx, sy). */

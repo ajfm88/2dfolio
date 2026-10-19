@@ -8,7 +8,7 @@
 | `follow_buffer.ts` | — | Yellow's 16-byte follow buffer, retained newest command, pop and catch-up rules (A6d, pure) |
 | `pikachu_idle.ts` | — | Idle glances and the four antics (`Func_fc803`, statuses 6–9), follow-command bytes (A6c, pure) |
 | `pikachu_spawn.ts` | 129 | Where Pikachu appears after a warp: Yellow's spawn states and the per-map lists (see below) |
-| `pikachu_happiness.ts` | 274 | Happiness/mood state, emotion face selection (20 animation scripts), happiness modifiers |
+| `pikachu_happiness.ts` | — | Happiness/mood state, emotion face selection (21 animation scripts), happiness modifiers |
 | `pikachu_emotion.ts` | 145 | Emotion face display: bordered box with animated 40x40 face, frame compositing |
 
 ## Happiness & Mood
@@ -16,7 +16,7 @@
 ASM: `engine/events/pikachu_happiness.asm`, `engine/pikachu/pikachu_emotions.asm`.
 
 - **State**: `pikachuHappiness` (0-255, default 90) and `pikachuMood` (0-255, default 128)
-- **Face selection**: mood x happiness matrix maps to 1 of 20 animation scripts. Status overrides: SLP->sleeping face, other status->sick face
+- **Face selection**: PewterPokecenter + following disabled selects 26 before the status checks. Otherwise SLP selects 11, another status selects 28, then the mood x happiness matrix applies. Main passes its live map name.
 - **Modifiers**: the tables below. Older events nudge mood toward a target value
   (known audit gap); WALKING leaves it unchanged. DEPOSITED follows the ASM's
   direct decrease to $62, leaving lower moods alone. **Bug reproduced:**
@@ -120,7 +120,16 @@ result reconciliation, parent returns and final close.
   player (slot 0), its grass priority is the one latched at the call (zero under the
   shadow), and the shadow sits at the base position under every sprite pixel.
 - The emotion preludes (`pikachu_emotion.ts`): entry turn → movement calls → border
-  (Delay3, covered UpdateSprites, Delay3) → portrait. Cries and bubbles are not played.
+  (Delay3, covered UpdateSprites, Delay3) → portrait. Emotion 26 skips the entry turn while
+  asleep, then uses A1c's 61-frame `EmotionBubble` for ZZZ, suppressing sprite updates
+  including the bubble's trailing update. Main draws the bubble above the follower.
+- Emotion 26's portrait uses e5000/e50af/e7b83/e7d13, 100 animation ticks at three
+  game frames each. Its exit removes the portrait UI, runs a still-asleep font-loaded
+  update, waits three frames, enables following and writes player-facing xor 4 live.
+  The map's `CloseSequence` restores the entry facing after its first frame, then runs
+  the ordinary trailing sprite update. The temporary live turn never repaints the image.
+  Main owns map/UI updates and the close cost (19 frames in Pewter). Other emotions'
+  bubbles/exits and all cries remain for J2.
 - Door steps: the automatic step out of a door is an ordinary step for Pikachu
   (`PlayerStepOutFromDoor` just simulates a DOWN press), so it follows it like any other
 

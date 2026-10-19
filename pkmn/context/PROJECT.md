@@ -49,17 +49,17 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-10-06
+## State as of 2026-10-17
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
-- **12 playable maps**: Pallet Town, the two houses, Oak's Lab, Route 1, Route 22,
-  Viridian City + Pokécenter, Mart, School, Nickname House. The 7 Route 2 / Viridian
-  Forest maps are extracted (V1a) and playable through the debug warps (V1b); the Forest
+- **24 maps**: upstream's 12 (Pallet Town, the two houses, Oak's Lab, Route 1, Route 22,
+  Viridian City + Pokécenter, Mart, School, Nickname House), the 7 Route 2 / Viridian
+  Forest maps (V1), and Pewter City + Pokécenter, Mart and two houses (V2a). The Forest
   trainers battle as in the original (V1c); Oak's Pikachu catch runs the original's
   catch demo, which the old man shares (V1d); the real Viridian old men replace
   upstream's demo gates and the walk north is open (V1e) — **V1 done**.
-- **970/970** tests (375 upstream, then V1a–e, the tick clock, A6a–e, A1a–c, A5a and A5b1), typecheck/build clean; no-ROM 878 pass / 92 skip.
+- **1723/1723** tests (375 upstream, then every slice since), typecheck/build clean; no-ROM 1570 pass / 153 skip.
 - Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40).
 - **A1b done 2026-10-06** (implemented by Sol, reviewed by Claude, user-verified; DECISIONS #41): collectible item balls that stay gone in saves, hidden items and Route 1's sample per the ASM, the cartridge's text/sound waits, the slot-order/99 inventory rule and selected-stack removal.
 - **A1c done 2026-10-06** (Claude; DECISIONS #43; user-verified): Forest trainers spot the player as `TrainerEngage` does, with the meet music, the "!" and the walk-up. **Milestone A1 is done.** Next: A5, V2.
@@ -74,7 +74,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   `(map, textId)` handler registry on the display session; Mom, TV, Daisy, Route 1, Mart, Viridian's
   talkers, Pallet's Oak scene and Oak's Lab; A5b5b user-verified). **A5b5c implemented and reviewed
   2026-10-12** (`notes/36-a5b5c-review.md`: the A5b5b fixes, BUG-1, yes/no timing, the nurse on one
-  display; tests 1195/1195; user-verified; F-1 fixed). **A5b6 is done** (`notes/38-a5b6-review.md`, passed; user-approved 2026-10-14). A5b7 is approved as seven slices A5b7a–g (`notes/39-a5b7-plan.md`, DECISIONS #52); **A5b7a is done** (`notes/40-a5b7a-review.md`, user-verified 2026-10-14), with 1299/1299 tests and clean typecheck/build; A5b7b (the Mart) is done (`notes/42-a5b7b-review.md`, user-verified 2026-10-14); A5b7c (the bag, toss, field medicine, the HP bar) is done (`notes/44-a5b7c1-review.md`, `notes/46-a5b7c2-review.md`, user-verified 2026-10-15), with 1393/1393 tests; A5b7d (the item and Pokécenter PCs) is done (`notes/47-a5b7d-plan.md`, `notes/48-a5b7d-review.md`, user-verified 2026-10-15; 1436/1436 tests); A5b7e (Bill's PC) is done (`notes/49-a5b7e-plan.md`, `notes/51-a5b7e-review.md`, user-verified 2026-10-15; 1499/1499 tests); A5b7f (START and SAVE) is done (`notes/52-a5b7f-plan.md`, `notes/53-a5b7f-review.md`, user-verified 2026-10-15; 1563/1563 tests); A5b7g (legacy retirement; hidden events and bookshelves as programs) is done (`notes/54-a5b7g-plan.md`, reviews `55`/`56`, user-verified 2026-10-16; 1604/1604 tests). **A5b7, and so A5b, is complete.** The StatusScreen port is done (note 58, DECISIONS #62, user-verified 2026-10-16), and so is the Pokécenter healing machine (note 59, DECISIONS #63, user-verified 2026-10-16). V2 runs as V2a → V2b → V2c (note 60, DECISIONS #64): **V2a (Pewter City, its Pokécenter, Mart and two houses; Mart lists read from the ROM) is user-verified 2026-10-17.** Next: V2b, V2c, then the map-music fade-out. A5c–f follow in order;
+  display; tests 1195/1195; user-verified; F-1 fixed). **A5b6 is done** (`notes/38-a5b6-review.md`, passed; user-approved 2026-10-14). A5b7 is approved as seven slices A5b7a–g (`notes/39-a5b7-plan.md`, DECISIONS #52); **A5b7a is done** (`notes/40-a5b7a-review.md`, user-verified 2026-10-14), with 1299/1299 tests and clean typecheck/build; A5b7b (the Mart) is done (`notes/42-a5b7b-review.md`, user-verified 2026-10-14); A5b7c (the bag, toss, field medicine, the HP bar) is done (`notes/44-a5b7c1-review.md`, `notes/46-a5b7c2-review.md`, user-verified 2026-10-15), with 1393/1393 tests; A5b7d (the item and Pokécenter PCs) is done (`notes/47-a5b7d-plan.md`, `notes/48-a5b7d-review.md`, user-verified 2026-10-15; 1436/1436 tests); A5b7e (Bill's PC) is done (`notes/49-a5b7e-plan.md`, `notes/51-a5b7e-review.md`, user-verified 2026-10-15; 1499/1499 tests); A5b7f (START and SAVE) is done (`notes/52-a5b7f-plan.md`, `notes/53-a5b7f-review.md`, user-verified 2026-10-15; 1563/1563 tests); A5b7g (legacy retirement; hidden events and bookshelves as programs) is done (`notes/54-a5b7g-plan.md`, reviews `55`/`56`, user-verified 2026-10-16; 1604/1604 tests). **A5b7, and so A5b, is complete.** The StatusScreen port is done (note 58, DECISIONS #62, user-verified 2026-10-16), and so is the Pokécenter healing machine (note 59, DECISIONS #63, user-verified 2026-10-16). V2 runs as V2a → V2b → V2c (note 60, DECISIONS #64): **V2a (Pewter City, its Pokécenter, Mart and two houses; Mart lists read from the ROM) V2b (the museum and gym guides, the east block; note 61) and V2c (Jigglypuff and the sleeping Pikachu; note 62) are user-verified 2026-10-17: **V2 is done.** The map-music fade-out (note 63) is done and user-verified 2026-10-18. Next: the intro animation. A5c–f follow in order;
   species display names belong to V5.
 - **Runs with no ROM, from committed files** (Phase R done): the browser loads
   only `static/`, upstream's upload gate is deleted, and `data/` + `static/` are
@@ -90,7 +90,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**970**)
+4. Full test suite green against generated data. ✅ (**1723**)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -122,15 +122,16 @@ Today (vanilla upstream's content, running ROM-free since R1b):
 3. Pallet → Oak's Lab (Pikachu) → Route 1 → Viridian (Pokécenter, Mart parcel
    quest, school, nickname house) → back to Oak → Pokédex. Route 22 is walkable.
 4. North of Viridian: the old man's catch demo (Yellow's, since V1e), then Route 2 →
-   Viridian Forest → its north gate. Pewter (V2) isn't extracted yet, so Route 2's
-   north edge is a wall.
+   Viridian Forest → its north gate → Pewter City (V2a): Pokécenter, Mart, two houses.
+   The Museum and Gym doors fail gracefully until V3; the two guides and Jigglypuff do
+   nothing until V2b/V2c; Route 3 is V4.
 
 After Phase V: … → Route 2 / Forest → Pewter (Brock → BADGE_1, Museum) →
 Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (970)
+1. `npm run typecheck` + full `npm test` green. ✅ (1723)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

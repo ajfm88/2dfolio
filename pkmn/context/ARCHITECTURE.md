@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **1687** passing in 95 files (2026-10-16, healing machine closed; no-ROM 1550 pass / 137 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **1806** passing in 104 files (2026-10-17, V2b CP3; no-ROM 1652 pass / 154 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (177 files; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2).
+- **`data/`** — JSON only, produced by `npm run setup` (182 files; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
   (since R1a), which deletes and rebuilds it every run. It holds 521 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 177 JSON files. That lets
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 182 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -592,8 +592,8 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
   Convert dex → internal ID by scanning `PokedexOrder` in reverse. `PokedexToIndex`
   at `10:5086` is **machine code, not a data table** — never read bytes from it.
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
-  blocksets, collision, pokedex, maps (**19** since V1a: upstream's 12 + the Route 2 /
-  Viridian Forest set; NPCs can carry `item` and trainer fields), music (47 listed, all 47
+  blocksets, collision, pokedex, maps (**24**: upstream's 12 + the Route 2 /
+  Viridian Forest set from V1a + Pewter City and its four buildings from V2a; NPCs can carry `item` and trainer fields), music (47 listed, all 47
   extract since V1c fixed the `meeteviltrainer` typo), SFX (**16** extract since A5b3,
   including the item/key-item jingles and PC sounds: only names with an entry in `audio.ts` `SFX_HEADERS` —
   `index.ts` lists 36 unique names, the setup script 46, and `extractSfx()` returns null

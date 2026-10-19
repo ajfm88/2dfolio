@@ -12,6 +12,7 @@ import {
   GAMEFREAK_LOGO_GFX,
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
   SHOCK_EMOTE,
+  ZZZ_EMOTE,
   RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, SHRINK_PIC_1, SHRINK_PIC_2,
   HEAL_MACHINE_GFX, LEDGE_HOPPING_SHADOW,
   TOWN_MAP_TILES, TOWN_MAP_CURSOR, MON_NEST_ICON,
@@ -424,6 +425,7 @@ export function extractEmotes(rom: BinaryReader): Record<string, ImageData> {
   // Each emote is 4 tiles (2x2) = 64 bytes of 2bpp
   const emotes: { name: string; offset: number }[] = [
     { name: 'shock', offset: SHOCK_EMOTE },
+    { name: 'zzz',   offset: ZZZ_EMOTE },
   ];
   for (const e of emotes) {
     const data = rom.readBytes(e.offset, 4 * 16);

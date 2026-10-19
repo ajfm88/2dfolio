@@ -180,6 +180,12 @@ export class SfxEngine {
     return this._playing;
   }
 
+  /** PlaySound's CHAN5–8 ID clear: no sound_ret, hardware mute or release callback. */
+  clearSoundIds(): void {
+    this.channels = [];
+    this._playing = false;
+  }
+
   /**
    * Check if SFX is active on a specific hardware channel (0-3).
    */

@@ -138,7 +138,7 @@ export class FieldMedicine {
     private readonly party: BattlePokemon[],
     private readonly bagIndex: number,
   ) {
-    this.partyMenu.showForItem(party);
+    this.partyMenu.showForItem(party, textBox);
     this.partyMenu.promptVisible = false;
     this.opening = new PartyMenuOpening(textBox, transfer, 'PartyMenuItemUseText');
   }
@@ -216,7 +216,7 @@ export class FieldMedicine {
    * goes back to .loop1, whose Delay3 reads nothing (review note 46 F-1).
    */
   private choose(readJoypad: () => void): MedicineStep {
-    readJoypad();
+    if (!this.partyMenu.ownsInput) readJoypad(); // sleeping prompt owns its TextBox reads
     const closed = this.partyMenu.update(isPassPressed);
     if (!closed) {
       if (UNWATCHED.some(key => isPassPressed(key))) {

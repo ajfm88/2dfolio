@@ -20,6 +20,7 @@ import { Npc } from '../overworld/npc';
 import type { BattlePokemon, CatchDemoBattleType } from '../battle';
 import type { PikachuFollower } from '../pikachu/pikachu_follower';
 import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
+import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
 import { pikachuSide } from '../pikachu/pikachu_movement';
 import { getPikachuMovementData, pikachuMovementProgram } from '../pikachu/pikachu_movement_data';
 import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movement';
@@ -32,14 +33,16 @@ import { fadeOutAndStopMusic, isAudioFadingOut, preloadMusic } from '../audio';
 import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
-import { setFlag, hasFlag, clearFlag, setMapScript, hideObject } from '../events';
+import { setFlag, hasFlag, clearFlag, setMapScript, hideObject, showObject } from '../events';
+import { setJoyIgnore } from '../input/joy_ignore';
+import { SimulatedJoypad } from '../overworld/simulated_joypad';
 import { playSFX, isSoundFinished } from '../audio';
 import type { Direction } from '../core';
 import { getPlayerName } from '../core/player_state';
 import { markOwned } from '../pokedex_state';
 import { YesNoMenu } from '../menus';
 import { EmotionBubble } from '../overworld/emotion_bubble';
-import { playMusic, isMusicChannelActive } from '../audio';
+import { playMusic, playMusicNew, isMusicChannelActive } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
 import { getTextPrograms } from '../text/program_data';
 import { displayTextID, getTextHandler } from '../story/text_handlers';
@@ -64,18 +67,22 @@ export interface ScriptDeps {
   setMoney?: (amount: number) => void;
   pikachuTile?: { x: number; y: number };
   pikachuFollower?: PikachuFollower;
-  restoreMapMusic?: () => void;
+  /** dm: PlayDefaultMusic (Lab, guide, Jigglypuff); pn: Mom's wNewSoundID write; nurse: pokecenter.asm:53–60. */
+  restoreMapMusic?: (entry?: 'dm' | 'pn' | 'nurse') => void;
+  /** Only explicit OverworldLoop/native-pass commands reset the host's pair. */
+  resetPassClock?: () => void;
 }
 
 // ── Actions returned to main.ts ────────────────────────────────────────
 
 export type ScriptAction =
-  | { type: 'scriptEnded' }
+  | { type: 'scriptEnded'; resumePass?: boolean }
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
   | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
   | { type: 'openStartMenu' }
-  | { type: 'townMap' };
+  | { type: 'townMap' }
+  | { type: 'overworldStep' }; // native simulated steps still check warps/connections
 
 // ── Module-level script state ──────────────────────────────────────────
 
@@ -124,6 +131,13 @@ let scriptPush: { dir: Direction; started: boolean } | null = null;
 // moveParallel: the player's presses, waiting for the NPC to begin its step `fromNpcStep`
 let scriptParallel: { playerPath: Direction[]; fromNpcStep: number; playerStarted: boolean } | null = null;
 let pikachuDrawingDisabled = false; // DisablePikachuOverworldSpriteDrawing / Enable counterpart
+let scriptAfterHealingMachine = false;
+let scriptJigglypuffSpin: { npc: Npc; directions: Direction[]; slot: number; frameCount: number } | null = null;
+let scriptNativeTiming = false;
+let scriptPassDelay = 0;
+let scriptMoveInPass = false;
+let scriptNpcMovement: { npc: Npc; joypad: SimulatedJoypad } | null = null;
+const npcCloseFacings = new Map<Npc, Direction>();
 
 const DEFAULT_FADE_FRAMES = 8;
 
@@ -198,6 +212,12 @@ export function lookupNpc(id: string, mapNpcs: Npc[]): Npc | undefined {
 
 /** Initialize a scripted cutscene. Caller must set game state to 'script'. */
 export function initScript(commands: ScriptCommand[]): void {
+  scriptNpcMovement?.npc.endInStep();
+  scriptNpcMovement = null;
+  scriptNativeTiming = false;
+  scriptPassDelay = 0;
+  scriptMoveInPass = false;
+  npcCloseFacings.clear();
   activeScript = createScript(commands);
   scriptSound = null;
   scriptDisplayWaiting = false;
@@ -228,6 +248,8 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptPush = null;
   scriptParallel = null;
   pikachuDrawingDisabled = false;
+  scriptJigglypuffSpin = null;
+  scriptAfterHealingMachine = false;
 }
 
 /**
@@ -318,7 +340,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
   if (scriptHealingMusic) {
     if (!scriptHealingMusic.ready || isMusicChannelActive(1)) return null;
     scriptHealingMusic = null;
-    deps.restoreMapMusic?.();
+    deps.restoreMapMusic?.('pn');
     advanceScript(activeScript);
     return runScript(deps, isPass, displayAdvanced);
   }
@@ -371,7 +393,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
   }
 
   // Preserve legacy wait/fade input ownership; migrated DelayFrames owns no reads.
-  if ((!scriptDisplayStarted && scriptWaitFrames > 0) || scriptFade) {
+  if ((!scriptDisplayStarted && !scriptNativeTiming && scriptWaitFrames > 0) || scriptFade) {
     syncJoypadRead();
   }
 
@@ -382,7 +404,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       advanceScript(activeScript);
       // Migrated DelayFrames returns into the next command in its final CPU tick.
       // Pre-display/legacy movement waits retain their existing dispatch timing.
-      if (scriptDisplayStarted) return runScript(deps, isPass, displayAdvanced);
+      if (scriptDisplayStarted || scriptNativeTiming) return runScript(deps, isPass, displayAdvanced);
     }
     return null;
   }
@@ -400,6 +422,34 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
 
   // ── Moves: once per overworld pass. Each checks at the top of the pass whether it has
   // finished, as the map script does before the rest of the loop runs. ──
+  if (scriptPassDelay > 0) {
+    if (--scriptPassDelay > 0) return null;
+    advanceScript(activeScript);
+    return runScript(deps, true, displayAdvanced);
+  }
+  if (scriptNpcMovement) {
+    if (!isPass) return null;
+    const { npc, joypad } = scriptNpcMovement;
+    if (!player.isBusy && joypad.done) {
+      npc.endInStep();
+      scriptNpcMovement = null;
+      advanceScript(activeScript);
+      return runScript(deps, true, displayAdvanced);
+    }
+    let entry: Direction | null = null;
+    let collide = false;
+    if (!player.isBusy) {
+      readJoypad();
+      const next = joypad.next();
+      if (!next) throw new Error('empty NPC movement input');
+      ({ entry, collide } = next);
+    }
+    player.simulatedPass(entry, collide,
+      () => updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower),
+      deps.gameMap, npcs, () => spriteTable(player, [...npcs, ...scriptNpcs], pikachuFollower));
+    if (player.startedFollowStep && pikachuFollower?.visible) recordStepForPikachu(player, pikachuFollower);
+    return player.justFinishedStep ? { type: 'overworldStep' } : null;
+  }
   const moving = scriptPush || scriptMoveTarget;
   if (moving && !isPass) return null;
   if (moving && !player.isMoving && !player.isLanding) readJoypad(); // JoypadOverworld on standing passes
@@ -432,6 +482,10 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       scriptMoveTarget = null;
       scriptMoveNpcId = null;
       advanceScript(activeScript);
+      if (scriptMoveInPass) {
+        scriptMoveInPass = false;
+        return runScript(deps, true, displayAdvanced);
+      }
       return null;
     }
     player.update(deps.gameMap, npcs, null, sprites);
@@ -499,12 +553,17 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       const music = { ready: false };
       scriptHealingMusic = music;
       // Await loading as well as playback; a first-use fetch must not end the wait.
-      void playMusic('pkmnhealed').then(() => { music.ready = true; });
+      void playMusicNew('pkmnhealed').then(() => { music.ready = true; });
       return null;
     }
     case 'displayOpen':
       scriptDisplayStarted = true;
       textBox.open({ autoBox: cmd.autoBox ?? mapAutoTextBox(deps.gameMap.mapData?.name ?? ''), spriteUpdate: cmd.spriteUpdate });
+      if (npcCloseFacings.size) {
+        const saved = [...npcCloseFacings];
+        npcCloseFacings.clear();
+        textBox.restoreFacingAtClose(() => { for (const [npc, facing] of saved) npc.setLiveFacing(facing); });
+      }
       scriptDisplayWaiting = true;
       return null;
 
@@ -605,12 +664,70 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       return runScript(deps, isPass, displayAdvanced);
     }
 
+    case 'showObject': {
+      showObject(cmd.map, cmd.npcId);
+      if (deps.gameMap.mapData?.name === cmd.map) {
+        const npc = lookupNpc(cmd.npcId, npcs);
+        if (npc) npc.hidden = false;
+      }
+      updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+    }
+
+    case 'overworldLoop':
+      scriptNativeTiming = true;
+      if (cmd.resumeInput) {
+        deps.resetPassClock?.();
+        activeScript = null;
+        textBox.dismiss();
+        return { type: 'scriptEnded', resumePass: true };
+      }
+      if (cmd.updateSprites) player.simulatedPass(null, false,
+        () => updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower), deps.gameMap, npcs);
+      deps.resetPassClock?.();
+      scriptPassDelay = 2;
+      return null;
+
+    case 'joyIgnore':
+      setJoyIgnore(cmd.mask);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+
+    case 'npcMovementScript': {
+      if (!isPass) return null;
+      const npc = lookupNpc(cmd.npcId, npcs);
+      if (!npc) throw new Error(`missing movement-script NPC ${cmd.npcId}`);
+      scriptNativeTiming = true;
+      if (cmd.music) void playMusic(cmd.music);
+      npc.startInStepMove(cmd.guidePath);
+      scriptNpcMovement = { npc, joypad: new SimulatedJoypad(cmd.joypad) };
+      return runScript(deps, true, displayAdvanced);
+    }
+
+    case 'setSpritePosition1':
+    case 'restoreSpritePosition2': {
+      const npc = lookupNpc(cmd.npcId, npcs);
+      if (!npc) throw new Error(`missing positioned NPC ${cmd.npcId}`);
+      if (cmd.type === 'setSpritePosition1') npc.setSpritePosition1(cmd.mapStep, cmd.screenDx, cmd.screenDy);
+      else npc.restoreSpritePosition2(cmd.saved);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+    }
+
     case 'moveNpc': {
       const npc = lookupNpc(cmd.npcId, npcs);
       if (npc) {
-        npc.startScriptedMove(cmd.path, cmd.modes);
+        npc.startScriptedMove(cmd.path, cmd.modes, cmd.options);
         scriptMoveTarget = 'npc';
         scriptMoveNpcId = cmd.npcId;
+        scriptMoveInPass = cmd.inPass ?? false;
+        if (scriptMoveInPass) {
+          scriptNativeTiming = true;
+          deps.resetPassClock?.();
+          player.simulatedPass(null, false,
+            () => updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower), deps.gameMap, npcs);
+        }
       } else {
         advanceScript(activeScript);
       }
@@ -624,7 +741,12 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
 
     case 'faceNpc': {
       const npc = lookupNpc(cmd.npcId, npcs);
-      if (npc) npc.faceDirection(cmd.direction);
+      if (npc) {
+        if (cmd.restoreAtClose) npcCloseFacings.set(npc, npc.direction);
+        if (cmd.write === 'live') npc.setLiveFacing(cmd.direction);
+        else if (cmd.write === 'image') npc.showStandingImage(cmd.direction);
+        else npc.faceDirection(cmd.direction);
+      }
       advanceScript(activeScript);
       break;
     }
@@ -773,8 +895,12 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     }
 
     case 'restoreMapMusic':
-      deps.restoreMapMusic?.();
+      if (cmd.waitForCurrent && !isSoundFinished()) return null;
+      // The nurse's restoration follows her machine; every other script is PlayDefaultMusic
+      deps.restoreMapMusic?.(scriptAfterHealingMachine ? 'nurse' : 'dm');
+      scriptAfterHealingMachine = false;
       advanceScript(activeScript);
+      if (cmd.waitForCurrent) return runScript(deps, isPass, displayAdvanced);
       break;
 
     case 'healParty':
@@ -807,7 +933,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     }
 
     case 'hidePikachu':
-      // DisablePikachuOverworldSpriteDrawing (Pikachu always follows on today's maps)
+      // DisablePikachuOverworldSpriteDrawing; the nurse's branch checks following.
       if (pikachuFollower?.visible) {
         pikachuFollower.hideImage();
         pikachuFollower.visible = false;
@@ -845,6 +971,11 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       break;
 
     case 'updateSprites':
+      if (cmd.fontLoaded === false) {
+        updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower);
+        advanceScript(activeScript);
+        return runScript(deps, isPass, displayAdvanced);
+      }
       // TrySpawnPikachu for a starter that wasn't out (status 0), at the pending spawn
       // state; then SpawnPikachu_ with the font loaded (Func_fc76a).
       if (pikachuFollower && !pikachuFollower.visible && !pikachuDrawingDisabled
@@ -872,16 +1003,55 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       advanceScript(activeScript);
       break;
 
-    case 'ifStarterPikachu':
-      if (shouldPikachuFollow(playerParty)) {
-        activeScript.commands.splice(activeScript.index + 1, 0, ...cmd.then);
+    case 'ifPewterPikachuAsleep':
+      if (deps.gameMap.mapData?.name === 'PewterPokecenter' && isPikachuFollowingDisabled()) {
+        activeScript.commands.splice(activeScript.index + 1, Infinity, ...cmd.then);
       }
       advanceScript(activeScript);
       break;
 
+    case 'ifStarterPikachu': {
+      const alive = shouldPikachuFollow(playerParty);
+      const disabled = isPikachuFollowingDisabled();
+      const fires = cmd.following === true ? alive && !disabled
+        : cmd.following === false ? alive && disabled
+        : alive;
+      if (fires) {
+        activeScript.commands.splice(activeScript.index + 1, 0, ...cmd.then);
+      }
+      advanceScript(activeScript);
+      break;
+    }
+
+    case 'jigglypuffSpin': {
+      if (!scriptJigglypuffSpin) {
+        const npc = lookupNpc(cmd.npcId, npcs);
+        if (!npc) { advanceScript(activeScript); break; }
+        const DIRS: Direction[] = ['down', 'left', 'up', 'right'];
+        const startIdx = DIRS.indexOf(npc.direction);
+        const rotated = [...DIRS.slice(startIdx), ...DIRS.slice(0, startIdx)];
+        playMusic('jigglypuffsong');
+        scriptJigglypuffSpin = { npc, directions: rotated, slot: 0, frameCount: 0 };
+        npc.showStandingImage(rotated[0]);
+        return null;
+      }
+      scriptJigglypuffSpin.frameCount++;
+      if (scriptJigglypuffSpin.frameCount % 24 === 0) {
+        if (!isMusicChannelActive(1) && !isMusicChannelActive(2)) {
+          scriptJigglypuffSpin = null;
+          advanceScript(activeScript);
+          break;
+        }
+        scriptJigglypuffSpin.slot = (scriptJigglypuffSpin.slot + 1) % 4;
+        scriptJigglypuffSpin.npc.showStandingImage(scriptJigglypuffSpin.directions[scriptJigglypuffSpin.slot]);
+      }
+      return null;
+    }
+
     case 'healingMachine':
+      scriptAfterHealingMachine = true;
       healingMachine = new HealingMachineSession(playerParty.length, {
-        preloadMusic, fadeOutAndStopMusic, isAudioFadingOut, playSFX, playMusic, isMusicChannelActive,
+        preloadMusic, fadeOutAndStopMusic, isAudioFadingOut, playSFX, playMusic: playMusicNew, isMusicChannelActive,
       });
       if (healingMachine.done) advanceScript(activeScript);
       break;
@@ -907,7 +1077,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       return { type: 'warp', map: cmd.map, warpId: cmd.warpId };
   }
 
-  if (scriptDisplayStarted && activeScript.index !== commandIndex &&
+  if ((scriptDisplayStarted || scriptNativeTiming) && activeScript.index !== commandIndex &&
       (!scriptAwaitInteraction || scriptFreeSub === 'handler')) return runScript(deps, isPass, displayAdvanced);
   return null;
 }

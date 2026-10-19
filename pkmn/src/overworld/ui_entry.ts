@@ -87,8 +87,10 @@ export function openOverworldUi(
   pikachuFollower: PikachuFollower | undefined,
   captureLayer: () => void,
 ): void {
+  const updateOpeningSprites = openingSpriteUpdates;
+  openingSpriteUpdates = true; // DisplayTextIDInit tests and clears BIT_NO_SPRITE_UPDATES.
   if (!pikachuFollower?.visible) return;
-  if (!openingSpriteUpdates) {
+  if (!updateOpeningSprites) {
     captureLayer();
     return;
   }
