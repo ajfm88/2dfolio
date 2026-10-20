@@ -21,6 +21,8 @@ import { engineHost } from './request_host';
 import { SFX_IDS, musicIdentity, musicNameForSound, sfxNameForSound } from './sound_ids';
 import { rivalAlternateStart } from './rival_start';
 import { AudioFade } from './fade_audio';
+import { battleMusicFor } from './battle_music';
+import type { BattleMusicInput } from './battle_music';
 import type { MusicData, NoiseInstrument } from './music_engine';
 import type { SfxData } from './sfx_engine';
 
@@ -235,6 +237,17 @@ export function stopMusic(): void {
   if (!requests) { engine?.stop(); return; }
   requests.fadeControl = 0;
   requests.stopAllMusic();
+}
+
+/** PlayBattleMusic: control=0, SA at E; DelayFrame; PM at E+1.
+ * The caller primes this generator at E and resumes it on the next game frame.
+ * CP4 supplies the following DelayFrame before BattleTransition, and preloads the song.
+ * wLowHealthAlarm has no runtime counterpart yet (the alarm is not implemented).
+ */
+export function* playBattleMusic(input: BattleMusicInput): Generator<void, void> {
+  stopMusic();
+  yield;
+  void playMusic(battleMusicFor(input));
 }
 
 /**

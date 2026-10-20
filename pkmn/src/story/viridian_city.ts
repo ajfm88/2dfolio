@@ -109,7 +109,7 @@ export function martSpawnsOldMan(hasFlag: (flag: string) => boolean): boolean {
 export function buildSleepingOldManScript(fromTrigger: boolean): ScriptCommand[] {
   return [
     // (text/ViridianCity.asm _ViridianCityOldManSleepyPrivatePropertyText)
-    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintOldManSleepyText.PrivatePropertyText' }]),
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintOldManSleepyText.PrivatePropertyText' }], { textId: 5 }),
     ...(fromTrigger ? [{ type: 'facePlayer', direction: 'down' } as ScriptCommand] : []),
     { type: 'pushPlayer', direction: 'down' },
     { type: 'wait', frames: 3 },
@@ -121,7 +121,7 @@ export function buildSleepingOldManScript(fromTrigger: boolean): ScriptCommand[]
 export function buildGymLockedScript(): ScriptCommand[] {
   return [
     // (text/ViridianCity.asm _ViridianCityGymLockedText)
-    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintGymLockedText.text' }]),
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityPrintGymLockedText.text' }], { textId: 15 }),
     { type: 'facePlayer', direction: 'down' },
     { type: 'pushPlayer', direction: 'down' },
     { type: 'wait', frames: 3 },
@@ -143,7 +143,7 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
   if (fromTrigger) {
     commands.push(
       // SetSpriteFacingDirectionAndDelay: 6 frames
-      { type: 'faceNpc', npcId: 'oldman2', direction: 'right' },
+      { type: 'faceNpc', npcId: 'oldman2', direction: 'right', spriteIndex: 8 },
       { type: 'wait', frames: 6 },
       { type: 'facePlayer', direction: 'left' },
     );
@@ -151,7 +151,7 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
   commands.push(
     // (text/ViridianCity.asm _ViridianCityOldManHadMyCoffeeNowText), then DelayFrames 2
     ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.HadMyCoffeeNowText' },
-      { type: 'wait', frames: 2 }]),
+      { type: 'wait', frames: 2 }], { textId: 8 }),
     // ViridianCityOldManInitialCatchTrainingScript: the ball fails (ItemUseBall $63)
     { type: 'setFlag', flag: 'INITIAL_CATCH_TRAINING' },
     { type: 'catchDemo', battleType: 'OLD_MAN', species: 'RATTATA', level: 5 },
@@ -160,20 +160,20 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
     { type: 'wait', frames: 3 },
     { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING' },
     // (text/ViridianCity.asm _ViridianCityOldManLosingMyTouchText)
-    ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.LosingMyTouchText' }]),
+    ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.LosingMyTouchText' }], { textId: 8 }),
   );
   // ViridianCityPostInitialCatchTraining: at x = 19 he walks down 6 (MovementData2);
   // elsewhere Pikachu steps aside and he walks right, then down 6 — MovementData1's
   // single RIGHT falls through into MovementData2.
   const down6: Direction[] = ['down', 'down', 'down', 'down', 'down', 'down'];
   if (player.x === OLD_MAN_GAP.x) {
-    commands.push({ type: 'moveNpc', npcId: 'oldman2', path: down6 });
+    commands.push({ type: 'moveNpc', npcId: 'oldman2', path: down6, spriteIndex: 8 });
   } else {
     // ViridianCityMovePikachu: TryApplyPikachuMovementData with SPRITE_FACING_RIGHT, checked
     // when it runs (the demo and texts come between): $1d step down, $1f step left,
     // $38 look right (scripts/ViridianCity_2.asm)
     commands.push({ type: 'tryPikachuMovement', caller: 'viridianStepAside' });
-    commands.push({ type: 'moveNpc', npcId: 'oldman2', path: ['right', ...down6] });
+    commands.push({ type: 'moveNpc', npcId: 'oldman2', path: ['right', ...down6], spriteIndex: 8 });
   }
   commands.push(
     // ViridianCityOldManMovingDownScript: HideObject TOGGLE_OLD_MAN_2
@@ -202,7 +202,7 @@ export function buildOldMan1Script(): ScriptCommand[] {
       { type: 'wait', frames: 3 },
       { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING_AGAIN' },
       // (text/ViridianCity.asm _ViridianCityOldManYouNeedToWeakenTheTargetText)
-      ...displayTextID([{ type: 'printText', program: 'ViridianCityOldManYouNeedToWeakenTheTargetText', box: 'keep' }]),
+      ...displayTextID([{ type: 'printText', program: 'ViridianCityOldManYouNeedToWeakenTheTargetText', box: 'keep' }], { textId: 16 }),
       { type: 'setMapScript', map: VIRIDIAN_CITY, state: ViridianScript.POST_CATCH_TRAINING },
     ],
     // (text/ViridianCity.asm _ViridianCityOldManNotGoodEnoughForYouText)

@@ -4,6 +4,7 @@
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from "../core";
 import { getPaletteColors, paletteToHex } from "./palettes";
 import { uiTiles } from './ui_tiles';
+import { dmgShadeMapping } from './palette_shades';
 
 type Rgb = [number, number, number];
 
@@ -38,6 +39,18 @@ export function getCtx(): CanvasRenderingContext2D {
 }
 export function getScale(): number {
   return scale;
+}
+
+/** Offscreen native-resolution capture, with the renderer target restored even on error.
+ * The caller chooses the layer: this does not draw or capture the current screen/UI. */
+export function captureNative(draw: () => void): HTMLCanvasElement {
+  const target = document.createElement('canvas');
+  target.width = GB_WIDTH; target.height = GB_HEIGHT;
+  const savedCtx = ctx, savedScale = scale;
+  ctx = target.getContext('2d')!; scale = 1;
+  ctx.imageSmoothingEnabled = false;
+  try { draw(); } finally { ctx = savedCtx; scale = savedScale; }
+  return target;
 }
 
 /** Set the active color palette (call before loading map assets). */
@@ -122,10 +135,13 @@ function grayToColorIndex(gray: number): number {
 // rBGP  = %11100100 → [0, 1, 2, 3] (identity)
 // rOBP0 = %11010000 → [0, 0, 1, 3] (sprites: shade 1→white, shade 2→accent)
 export const OBP0_MAPPING = [0, 0, 1, 3] as const;
+// FadePal4's live overworld OBJ registers. Blocking intro/healing scenes own their
+// temporary registers and restore these before returning to the overworld.
+export const overworldObjectPalettes = { obp0: 0xd0, obp1: 0xe0 };
 
 /** DMG OBP register: colour 0 is made transparent separately, regardless of its mapping. */
 export function obpMapping(reg: number): readonly number[] {
-  return [0, 1, 2, 3].map(c => (reg >> (2 * c)) & 3);
+  return dmgShadeMapping(reg);
 }
 
 /** Remap grayscale image data to the given RGB palette.
@@ -160,7 +176,7 @@ export function injectRawImage(url: string, data: ImageData): void {
   rawImageCache.set(normalizeUrl(url), data);
 }
 
-async function getRawImageData(url: string): Promise<ImageData> {
+export async function getRawImageData(url: string): Promise<ImageData> {
   const key = normalizeUrl(url);
   if (rawImageCache.has(key)) return rawImageCache.get(key)!;
 
@@ -171,8 +187,15 @@ async function getRawImageData(url: string): Promise<ImageData> {
   const tctx = tmp.getContext("2d")!;
   tctx.drawImage(img, 0, 0);
   const imageData = tctx.getImageData(0, 0, tmp.width, tmp.height);
-  rawImageCache.set(url, imageData);
+  rawImageCache.set(key, imageData);
   return imageData;
+}
+
+/** loadSprite already awaits this raw cache. A battle capture must never start a fetch. */
+export function getLoadedRawImageData(url: string): ImageData {
+  const image = rawImageCache.get(normalizeUrl(url));
+  if (!image) throw new Error(`Sprite not preloaded for transition: ${url}`);
+  return image;
 }
 
 /** Clone an ImageData so we can modify it without affecting the cache. */
@@ -242,7 +265,7 @@ export async function loadSprite(
   url: string,
   palette?: string
 ): Promise<HTMLCanvasElement> {
-  return loadSpriteMapped(url, OBP0_MAPPING, palette);
+  return loadSpriteMapped(url, obpMapping(overworldObjectPalettes.obp0), palette);
 }
 
 /** OBJ art through a specific OBP mapping, cached independently from BG and other mappings. */
@@ -422,6 +445,13 @@ export interface SpriteDraw {
 }
 
 let spriteLog: SpriteDraw[] | null = null;
+
+/** Snapshot a layer's exact frames/positions without discarding an outer draw log. */
+export function captureSpriteDraws(draw: () => void): readonly SpriteDraw[] {
+  const previous = spriteLog;
+  spriteLog = [];
+  try { draw(); return spriteLog; } finally { spriteLog = previous; }
+}
 
 /** Start recording the sprites drawn, for a shadow that sits under all of them. */
 export function beginSpriteLog(): void {

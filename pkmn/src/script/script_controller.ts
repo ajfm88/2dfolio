@@ -2,6 +2,7 @@
 // updateScript() returns actions for state transitions that main.ts processes.
 
 import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
+import { setSpriteIndex } from '../overworld/sprite_index';
 import { TILE_SIZE } from '../core';
 import type { GameButton } from '../core';
 import { MenuInput } from '../menus/menu_input';
@@ -538,6 +539,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     return { type: 'scriptEnded' };
   }
 
+  if (cmd.spriteIndex !== undefined) setSpriteIndex(cmd.spriteIndex);
   const commandIndex = activeScript.index;
   switch (cmd.type) {
     case 'yesNoChoice':
@@ -1216,7 +1218,8 @@ function updateScriptFreeMove(deps: ScriptDeps, isPass: boolean): ScriptAction |
       const rival = lookupNpc('rival', npcs);
       if (rival) rival.faceDirection('down');
       sprites(); // OaksLabPlayerDontGoAwayScript's UpdateSprites before the display
-      const body = displayTextID([{ type: 'printText', program: scriptAwaitInteraction.guardProgram }], { autoBox: false });
+      const body = displayTextID([{ type: 'printText', program: scriptAwaitInteraction.guardProgram }],
+        { autoBox: false, textId: gameMap.mapData?.name === 'OaksLab' ? 10 : undefined });
       return startFreeDisplay(body, deps, isPass, true);
     }
   }

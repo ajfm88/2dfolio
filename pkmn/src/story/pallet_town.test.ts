@@ -67,7 +67,7 @@ describe('PalletTownOakText displays (scripts/PalletTown.asm)', () => {
       'PalletTownOakText.WhewText', 'PalletTownOakComeWithMe']);
     expect(commands.filter(c => c.type === 'displayClose').map(c => c.outerWait)).toEqual([false, true, true, true]);
     expect(commands.some(c => ['text', 'exclamation'].includes(c.type))).toBe(false);
-    expect(commands.find(c => c.type === 'moveNpc')).toEqual({ type: 'moveNpc', npcId: 'prof_script', path: ['up', 'up', 'up', 'up'] });
+    expect(commands.find(c => c.type === 'moveNpc')).toEqual({ type: 'moveNpc', npcId: 'prof_script', path: ['up', 'up', 'up', 'up'], spriteIndex: 1 });
     const parallel = commands.find(c => c.type === 'moveParallel'); expect(parallel?.npcInStep).toBe(true);
     expect(commands[commands.length - 1]).toEqual({ type: 'warp', map: 'OaksLab', warpId: 1 });
     const direct = commands.find(c => c.type === 'printText' && c.program === 'PalletTownOakComeWithMe');

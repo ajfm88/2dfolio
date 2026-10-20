@@ -1,0 +1,78 @@
+{
+  "dungeonMaps": [
+    51,
+    82,
+    192,
+    232
+  ],
+  "dungeonRanges": [
+    [
+      59,
+      61
+    ],
+    [
+      95,
+      118
+    ],
+    [
+      141,
+      151
+    ],
+    [
+      207,
+      228
+    ]
+  ],
+  "mapIds": {
+    "PalletTown": 0,
+    "ViridianCity": 1,
+    "Route1": 12,
+    "Route22": 33,
+    "RedsHouse1F": 37,
+    "RedsHouse2F": 38,
+    "BluesHouse": 39,
+    "OaksLab": 40,
+    "ViridianPokecenter": 41,
+    "ViridianMart": 42,
+    "ViridianSchoolHouse": 43,
+    "ViridianNicknameHouse": 44,
+    "Route2": 13,
+    "DiglettsCaveRoute2": 46,
+    "ViridianForestNorthGate": 47,
+    "Route2TradeHouse": 48,
+    "Route2Gate": 49,
+    "ViridianForestSouthGate": 50,
+    "ViridianForest": 51,
+    "PewterCity": 2,
+    "PewterNidoranHouse": 55,
+    "PewterMart": 56,
+    "PewterSpeechHouse": 57,
+    "PewterPokecenter": 58
+  },
+  "mapObjectCounts": {
+    "PalletTown": 3,
+    "ViridianCity": 8,
+    "Route1": 2,
+    "Route22": 2,
+    "RedsHouse1F": 1,
+    "RedsHouse2F": 0,
+    "BluesHouse": 3,
+    "OaksLab": 9,
+    "ViridianPokecenter": 5,
+    "ViridianMart": 3,
+    "ViridianSchoolHouse": 3,
+    "ViridianNicknameHouse": 4,
+    "Route2": 2,
+    "DiglettsCaveRoute2": 1,
+    "ViridianForestNorthGate": 2,
+    "Route2TradeHouse": 2,
+    "Route2Gate": 2,
+    "ViridianForestSouthGate": 2,
+    "ViridianForest": 10,
+    "PewterCity": 5,
+    "PewterNidoranHouse": 3,
+    "PewterMart": 3,
+    "PewterSpeechHouse": 2,
+    "PewterPokecenter": 6
+  }
+}

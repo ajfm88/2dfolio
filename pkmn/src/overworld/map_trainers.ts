@@ -10,6 +10,7 @@ import { getMapScript, setMapScript } from '../events';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { engagingTrainer, walkUpSteps } from './trainer_sight';
 import type { SightTrainer } from './trainer_sight';
+import { setSpriteIndex } from './sprite_index';
 
 /** The maps whose default script is CheckFightingMapTrainers (trainer_tripwires.test.ts
  *  keeps this in step with pret's scripts/*.asm). */
@@ -73,6 +74,7 @@ export function trainerMapScript(
       }
       // BIT_SCRIPTED_NPC_MOVEMENT: the walk-up hasn't read its terminator yet
       if (npc.movement.scripted) return null;
+      setSpriteIndex(npc.data.textId ?? npcs.indexOf(npc) + 1); // DisplayEnemyTrainerTextAndStartBattle
       setJoyIgnore('none');
       setMapScript(mapName, TRAINER_SCRIPT.END_BATTLE); // StartTrainerBattle, after the text
       return { type: 'trainerText', npc };

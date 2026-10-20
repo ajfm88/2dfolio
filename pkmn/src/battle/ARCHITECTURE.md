@@ -21,6 +21,11 @@ Types 0x00-0x08 are Physical (use Attack/Defense), types 0x14+ are Special (use 
 
 After each step, check `isGrassTile()` -> random vs grassRate -> select slot -> create wild Pokemon -> start battle.
 
+A5d CP4 sends wild steps/turns, map trainers, the Lab rival and catch demos through main's shared entry.
+Stop at E, PM at E+1, capture/prologue at E+2, selected transition and tail, then black until readiness.
+Battle.init stays unchanged. initCatchDemo returns its existing sprite-load promise so main can await the
+same readiness before entering catch_demo; its rules, animation and update timing are otherwise unchanged.
+
 ## Battle States
 
 Wild battle flow:
@@ -128,6 +133,11 @@ assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM so
   (`wBattleResult = 2`).
 
 ## Battle Transitions
+
+A5d CP2 prepares the new extracted dungeon/map-ID file, choice/level/name/OAM helpers, tracked sprite-index
+writes and audio-facade frame steps (note 65 §10.11). CP3 implements the screen, all eight frame animations,
+prologue/tail, capture/renderer and ROM slot/table guards (§10.13; awaiting check). CP4 wires the battle entries.
+Until then the runtime still uses the legacy transitions described below.
 
 - Trainer = clockwise spiral of black tiles — only scripted battles (Oak's Lab rival) use
   it; map-trainer battles cut straight in until A5

@@ -9,13 +9,13 @@ import { registerTextScript } from './text_handlers';
 export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHeal?: () => void, used = hasFlag('USED_POKECENTER')): ScriptCommand[] {
   // Func_6eaa: the nurse's image $04 (facing up), then 64 frames
   const nurseUp: ScriptCommand[] = [
-    { type: 'faceNpc', npcId: 'nurse', direction: 'up' },
+    { type: 'faceNpc', npcId: 'nurse', direction: 'up', spriteIndex: 1 },
     { type: 'wait', frames: 64 },
   ];
   // Func_6ebb(1, c): her facing, 6 frames (SetSpriteFacingDirectionAndDelay), her image
   const nurseFace = (direction: Direction): ScriptCommand[] => [
-    { type: 'wait', frames: 6 },
-    { type: 'faceNpc', npcId: 'nurse', direction },
+    { type: 'wait', frames: 6, spriteIndex: 1 },
+    { type: 'faceNpc', npcId: 'nurse', direction, spriteIndex: 1 },
   ];
   return [
     // (data/text/text_7.asm _PokemonCenterWelcomeText)
@@ -67,13 +67,13 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         { type: 'printText', program: 'PokemonFightingFitText' },
         // Func_6ebb(15, 0): Pikachu faces down and its image is written — visible again
         // here, before the bow
-        { type: 'ifStarterPikachu', following: true, then: [{ type: 'pikachuStandDown' }] },
+        { type: 'ifStarterPikachu', following: true, then: [{ type: 'pikachuStandDown', spriteIndex: 15 }] },
         // LoadCurrentMapView, Delay3, UpdateSprites
         { type: 'displayHide' },
         { type: 'wait', frames: 3 },
         { type: 'updateSprites' },
         // The bow: the nurse's image $01 for 40 frames, then UpdateSprites
-        { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = true; } },
+        { type: 'callback', spriteIndex: 1, fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = true; } },
         { type: 'wait', frames: 40 },
         { type: 'callback', fn: () => { const n = findNpc('nurse'); if (n) n.useWalkFrame = false; } },
         { type: 'updateSprites' },

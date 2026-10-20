@@ -4,3 +4,6 @@ export { captureUi, beginSpriteLog, endSpriteLog, drawShadowUnderSprites } from 
 export type { SpriteDraw } from './renderer';
 export { obpMapping, OBP0_MAPPING, loadSpriteMapped } from './renderer';
 export { drawZzzBubble } from './renderer';
+export { dmgShadeMapping, remapBgShades, applyBgShades } from './palette_shades';
+export { captureNative, captureSpriteDraws, getRawImageData } from './renderer';
+export { getLoadedRawImageData, overworldObjectPalettes } from './renderer';

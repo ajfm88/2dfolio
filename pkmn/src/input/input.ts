@@ -12,7 +12,7 @@ const prevKeys: Record<GameButton, boolean> = { ...keys };
 const keyMap: Record<string, GameButton> = {
   'ArrowUp': 'up', 'ArrowDown': 'down', 'ArrowLeft': 'left', 'ArrowRight': 'right',
   'w': 'up', 's': 'down', 'a': 'left', 'd': 'right',
-  'z': 'a', 'x': 'b', 'Enter': 'start', 'Shift': 'select',
+  'x': 'a', 'z': 'b', 'Enter': 'start', 'Shift': 'select', // the user's choice (DECISIONS #71)
 };
 
 window.addEventListener('keydown', (e) => {

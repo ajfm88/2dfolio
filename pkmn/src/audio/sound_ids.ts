@@ -75,6 +75,7 @@ export const SFX_IDS = {
   turn_on_pc: 0x99,
   turn_off_pc: 0x9a,
   enter_pc: 0x9b,
+  shrink: 0x9c,
 } as const;
 
 export function musicIdentity(name: string): SoundIdentity | undefined {

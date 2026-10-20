@@ -1,5 +1,16 @@
 # Renderer Architecture
 
+A5d CP3 adds `captureNative(draw)` (native 160×144 target with context/scale restored in finally) and
+`captureSpriteDraws(draw)` (scoped draw descriptors preserving an outer log). They do not capture the main
+surface or clear UI coverage. CP4's `getLoadedRawImageData` reads the raw cache synchronously and throws if
+the actor's awaited loadSprite has not preloaded it. No runtime ROM call. `overworldObjectPalettes` holds
+the normal FadePal4 OBJ registers ($d0/$e0); loadSprite uses its OBP0, and transition capture samples both
+at tick 0. Blocking intro/healing scenes retain their own temporary registers and restore before returning.
+`overworld/transition_screen_render.ts` captures only GameMap.render, freezes raw OBJ frame indices/offsets,
+then renders captured-cell crops -> exact BGP pass -> frozen OBJ through OBP0/1, with OAM priority and a black
+hold. Captured origin 255 is distinct from the FF tile sentinel. No clocks advance during rendering. A raw
+sheet is required: an already colourized OBP canvas cannot recover the original colour indices. Note 65 §10.13.
+
 ## Canvas Rendering
 
 Canvas is GB resolution (160x144) scaled to fit window. All drawing uses `* scale`.
@@ -9,6 +20,21 @@ Canvas is GB resolution (160x144) scaled to fit window. All drawing uses `* scal
 - `loadSpriteMapped()`: explicit `obpMapping(reg)`, cached by URL/palette/mapping; colour 0 stays transparent. Healing-machine OBP1 swaps $e0 `[0,0,2,3]` and $c8 `[0,2,0,3]` instead of dimming. Normal `loadSprite` retains $d0/OBP0.
 - `loadFont()`: 1-bit font — white->transparent, black->fixed `#181818` (palette-independent)
 - Gray thresholds: >=192->palette 0, >=128->1, >=64->2, else->3
+
+## Intro palette shades (note 64 CP3; speech wiring is CP4)
+
+`palette_shades.ts` shares `dmgShadeMapping(register)` with `obpMapping`. `remapBgShades` matches each already
+colourized pixel exactly to the active palette (and #181818 font ink as index 3), then selects the BGP shade.
+MEWMON's #191919 remains a separate exact input. Unknown or ambiguous colours throw; $E4 skips all reads/writes,
+preserving normal font pixels. `applyBgShades` applies this to the native canvas once, before OBJ drawing.
+Other fades keep their existing renderer paths.
+
+`menus/intro_screen_render.ts` clips/translates the entire window by WX−7, draws the intro model's visible cells
+and current picture slots, shades BG/window, then invokes its OBJ callback. Rendering advances no clocks.
+`prepareIntroPicture` pads to 56×56 with the ASM's center/bottom alignment and optionally flips pixels within
+each tile; `IntroScreen.placePicture(true)` reverses the columns separately. Together they mirror Pikachu once.
+`introPictureCanvas` wraps those already colourized pixels without mutating the source. CP4 owns asset preloading
+and the `loadSpriteMapped` variants for its stored OBP0 register.
 
 ## CGB Color Palettes
 

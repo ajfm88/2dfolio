@@ -15,6 +15,251 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-18 (intro animation done) — the user, recorded by Claude
+
+The user play-tested with sound: "everything checks perfectly". They asked whether the ~2.4 s of silence between the
+intro music fading and Pallet Town could be ~0.5 s shorter. I explained it is the cartridge's: the control-10
+fade-to-stop at R+24, then the 40-frame hold, then the room's DF(10) fading silence for 88 updates (note 63 §10.6).
+The user: "let's keep it then". **The intro animation is done.** Context files updated. Next: A5c–A5f, planned by
+Claude. Nothing pushed.
+
+### 2026-10-18 (intro animation CP5 checked) — Claude
+
+I checked Codex's CP5 (`a1bb38c`, note 64 §10.16). **Passes.** I viewed the screenshots: the red-ink silhouette (CGB
+MEWMON shade 2), mirrored Pikachu on the window, the torn frame, the shrink wipe, little Red, the white hold, the room.
+The audio trace matches (Routes2 at E2, `shrink` at R, the fade at R+24 / 88 updates, the room's DF at R+166). Zero
+console errors or failed requests. **Next: the user's play-test with sound (§6).** Nothing pushed.
+
+### 2026-10-18 (intro animation CP5 — verification) — Codex
+
+Both sequential gate rounds clean: typecheck/build, ROM **1970/1970**, no-ROM **1810 pass /160 skip**; no timeout.
+Browser5187: real NEW GAME → NO, YELLOW/BLUE and custom Ab/Ab; all16 requested canvas moments captured and reviewed.
+Actual audio: Routes2 after20, shrink atR, fadeR24/88 updates, roomDF R166 after white40; loads ready byR127.
+No page/console errors or failed requests (219 responses/path); FPS toast/debug panel exercised. Evidence/scripts
+in `notes/64-intro-cp5/`, detail in note64 §10.16. Both stores cleared, browser closed, server stopped/no5187
+listener. No game/data/static/test edits. **CP5 awaits Claude's check before user's sound-on play-test.**
+Committed locally; never pushed.
+
+### 2026-10-18 (intro animation CP4 checked) — Claude
+
+I checked Codex's CP4 (`7aab141`, note 64 §10.14). **Passes.** The frame program follows the ASM call for call:
+`MovePicLeft` 16, custom return 13, preset tail 31, the shrink tail and little Red at R+51. `main.ts` adds the
+20-frame entry and 40-frame white exit. No old test was dropped. Re-ran the gates one at a time: ROM **1970/1970**,
+no-ROM **1810 / 160 skip**. My 3 timing mutations were all caught. **Next: Codex runs CP5** (the browser walk), then
+the user's play-test. Nothing pushed.
+
+### 2026-10-18 (intro animation CP4 — speech and main) — Codex
+
+OakSpeech now runs the CP1 frame program on CP3's screen model. Main holds the menu 20 frames, then the speech owns
+Routes2/shrink/control10; done R126, white40, today's room load/music entry R166 (waits white if late). Menu snapshot
+preserves E3's clear thirds; cached MEWMON border/OBJ art avoids frame-time loading. Both name-path frame tables,
+all three custom-return phases and actual main dispatch tested; all 17 existing Oak tests migrated with reasons.
++12 no-ROM cases; **46/46** production mutations caught/restored. Sequential gates clean: ROM **1970/1970**,
+no-ROM **1810 pass /160 skip**, 115 files, no timeout. Detail/migrations/mutations in note 64 §10.14. No generated
+changes or browser walk; facing stays down. **CP4 awaits Claude's check; CP5 not started.** Committed locally;
+never pushed.
+
+### 2026-10-18 (intro animation CP3 checked) — Claude
+
+I checked Codex's CP3 (`67288c4`, note 64 §10.12). **Passes.** The slides match `OakSpeechSlidePicCommon` byte for byte,
+the copy batches and flag restore match `CopyVideoData`, there is one shared BG portion, and Pikachu is mirrored once.
+Re-ran the gates one at a time: ROM **1958/1958**, no-ROM **1798 / 160 skip**. My 3 extra mutations were all caught.
+CP4 carry-overs are in §10.13: `vblank` as the only tick, nothing unshaded drawn before the pass, little Red one DMA
+behind. **Next: Codex runs CP4.** Nothing pushed.
+
+### 2026-10-18 (intro animation CP3 — screen model) — Codex
+
+CP3 only: separate intro tilemap with numeric picture slots, literal slides and the single shared TextBox BG
+phase; exact palette pass, WX clipping and Pikachu's mirrored preparation. Choice/API, tests and 26/26 production
+mutations recorded in note 64 §10.12. +41 no-ROM tests. Sequential gates: typecheck/build clean, ROM **1958/1958**,
+no-ROM **1798 pass /160 skip** (114 files). OakSpeech, main.ts and generated assets unchanged. **CP3 awaits
+Claude's check; CP4 not started.** Committed locally; nothing pushed.
+
+### 2026-10-18 (intro animation CP2 checked) — Claude
+
+I checked Codex's CP2 (`5c1edda`, note 64 §10.10). **Passes.** `shrink.json` matches `shrink_1.asm`, and the generated
+diff is exactly its two files. Re-ran the gates one at a time: ROM **1917/1917**, no-ROM **1757 / 160 skip**,
+typecheck clean. My ID mutation failed 2 tests. Fixed the stale 521 → 524 PNG count in CLAUDE/ARCHITECTURE.
+**Next: Codex runs CP3.** Nothing pushed.
+
+### 2026-10-18 (intro animation CP2 — SFX_SHRINK data) — Codex
+
+CP2 only: bank-$02 shrink header `$41d4`, ID `$9c`, extraction/preload registrations, 4 new tests. Setup adds only
+`data/audio/sfx/shrink.json` and its static mirror; all 891 existing asset files hash-identical. 9/9 production
+mutations caught and restored. Gates ran sequentially: typecheck/build clean, ROM **1917/1917**, no-ROM **1757 pass /
+160 skip** (111 files). Details and carry-overs in note 64 §10.10. **CP2 awaits Claude's check; CP3 not started.**
+Committed locally; nothing pushed.
+
+### 2026-10-18 (intro animation CP1 checked) — Claude
+
+I checked Codex's CP1 (`149a369`, note 64 §10). **Passes, no required fix.** I re-derived the frame arithmetic
+(T1 = 95 … X2 = R + 166), every BGP/OBP byte, the window and slide frames, the shrink wipe and little Red's first render
+(R+51). I also checked the shrink header (02:41d4, ID $9c) and Routes2 (02:42cd, $EF) in the symbols branch, MEWMON's CGB
+colours, and the facing (`UpdatePlayerSprite` → up). The facing went to the backlog. CP2 carry-overs are in §10.9.
+Process note: the gates timed out when run concurrently, so run them sequentially. **Next: Codex runs CP2.** Nothing pushed.
+
+### 2026-10-18 (intro animation CP1 — trace only) — Codex
+
+CP1 only, DECISIONS #69: note 64 §10 records the source-derived E1–X2 tables for preset/preset and custom/custom,
+all wait costs, BG portions, palette/window writes, slide tears and real-art checks, shrink wipes/OAM and audio.
+Custom return: logical border/pic IDs +13, glyph +16; scanout follows the inherited third. Little Red first R+51;
+audio fade completes R+112. Room faces up on cartridge versus down in port, reported only. Typecheck clean;
+ROM **1913/1913**, no-ROM **1756 pass /157 skip**, unchanged tests/settings. Initial concurrent-suite runs timed out;
+sequential reruns passed (detail in §10.8). Only note 64 and STATUS changed. **CP1 awaits Claude's check; CP2 not
+started.** Committed locally; nothing pushed.
+
+### 2026-10-18 (O-37 answered) — the user, recorded by Claude
+
+"yes to 1", "yes to 2 decision a", and Codex "implements, and you test" → DECISIONS #69. The intro slice runs as note 64
+plans it. The opening and title screen get their own slice after V5. **Next: Codex runs CP1** (trace only). Local commit only.
+
+### 2026-10-18 (intro-animation plan) — Claude
+
+At the user's request, wrote `notes/64-intro-animation-plan.md` from `oak_speech.asm`, `oak_speech2.asm` and the fade, pic
+and VBlank routines. Nearly every step differs today:
+- the fades are BGP steps: a silhouette fade-in of 6 × 10, white fades of 3 × 8;
+- Pikachu and Red slide in on the window (`rWX` 119 → 7);
+- the name slides are tile copies with a one-frame BG-thirds tear;
+- each pic load is a 7-frame VRAM copy, which makes the shrink a column wipe;
+- after the shrink the music fades and the little overworld Red stands for 50 frames before the last fade;
+- `SFX_SHRINK` needs extracting, and Pikachu sits at window (56, 48).
+
+A5b6's custom-name anchor is probably 7 frames short (§2.6; CP1 checks). Backlog: the unported opening/title, and the
+shade model's other users. **O-37 open**; Codex runs CP1 after it. Docs only; nothing pushed.
+
+
+
+### 2026-10-18 (stale lines) — Claude
+
+At the user's request: PLAN's sequencing note now says done through the map-music fade-out. Codex's `c12a732` had
+already fixed STATUS's phase line and PROJECT's counts. Re-ran the ROM suite: **1913/1913** (the first, cold run timed
+out once in `text_programs.test.ts` at 5 s; it passes alone in 256 ms and on the re-run). Docs only; nothing pushed.
+
+### 2026-10-18 (context and codebase study) — Codex
+
+Read the entry point, live handoff, project, roadmap, conventions, architecture, relevant decisions and backlog;
+checked the latest map-music acceptance against the runtime and notes. Confirmed 24 maps, branch `master`, no remote,
+and an initially clean tree at `0c40f42`. Re-ran typecheck and the ROM-backed suite: **1913/1913 across 111 files**.
+Corrected stale context summaries only; no gameplay changes or slice claimed. **Next remains Claude's intro-animation
+plan (#51).** Committed locally; nothing pushed.
+
+### 2026-10-18 (context update, day closed) — Claude
+
+At the user's request: CLAUDE, PROJECT and PLAN mark the map-music fade-out done; V2-era session entries archived to HISTORY (DECISIONS #61). **Next session: Claude plans the intro animation (#51).** Nothing pushed.
+
+### 2026-10-18 (map-music done) — the user, recorded by Claude
+
+CP4 (`a75ef25`) accepted on its gates and browser trace; the user play-tested: "all passess". **The map-music fade-out is done.** Next: the intro animation (#51). Nothing pushed.
+
+### 2026-10-18 (map-music CP4 — #68 and verification) — Claude Sonnet
+
+Built DECISIONS #68: `handleWarpLoad` sets `pendingWarpMusic`; `gameTick` makes the request (six passes, then DF) once
+`isSoundFinished()`; any later music start or the blackout supersedes it; the screen fade is untouched. New
+`main_door_audio.test.ts` drives main's real door path on the real audio engines: `go_inside` (20 updates) and
+`go_outside` (40) play in full before the fade's ID clear, and the song arrives 88 updates after the request. Four
+existing `main.test.ts` cases take one `gameTick` after their warp (reasons in §10.15). 6/6 production mutations caught (my
+first sweep missed one; test added). Gates twice: typecheck/build clean, ROM **1913/1913**, no-ROM **1756 pass / 157 skip**.
+Muted browser walk on port 5191 (never 5173; save cleared, server stopped): a door out (`go_outside` in full, then the fade,
+then the song) and in (`go_inside`), a same-music door (no change), a connection, a won and a fled battle, no sound during
+a fade, CONTINUE, the Pallet walk (MuseumGuy across the Lab door, then Oak's Lab music), a blackout, the healing machine and
+StatusScreen all behaved as the cartridge does. Route 2 → Pewter itself was not reachable from the debug spots (Viridian →
+Route 1 walked instead). Details and the trace table are in note 63 §10.15. Committed locally, never pushed. **Stop for
+Claude's CP4 check; then the user's play-test.**
+
+### 2026-10-18 (O-36 answered) — the user, recorded by Claude
+
+"i choose a" → DECISIONS #68: the warp's map-music request waits until the door sound has finished, keeping the
+cartridge's audible order. The warp's own timing goes to a backlog warp-timing slice. **Next: CP4.** Local commit only.
+
+### 2026-10-18 (map-music CP3 checked) — Claude
+
+I checked Sonnet's map-music CP3 (`c36928c`, note 63 §10.12). **Passes**, with one decision for the user (**O-36**).
+The wiring follows note 63 §10: loaders, connections, battle and evolution returns, the blackout's two requests,
+CONTINUE without the menu stop, the flags, and Pallet's MuseumGuy carried into the Lab. The existing-test edits only add
+mock entries, plus one assertion flipped to the cartridge's drop rule. Re-ran typecheck and ROM **1910/1910**; my
+mutation (no `NO_MAP_MUSIC` skip) failed 1. O-36: the port's short warp clips the door sound when the music changes;
+I recommend requesting the fade after the door sound ends. **Next: the user answers O-36, then CP4.** Nothing pushed.
+
+### 2026-10-18 (map-music CP3 — wiring) — Claude Sonnet
+
+CP3 only (note 63 §10.12). One shared `PlaySound` in `audio/index.ts` over the real engines with a real
+`determineAudioFunction`; the facade's `playMusic`/`playSFX`/`stopMusic` are PM/PS/SA, with new PN (`playMusicNew`), DM,
+the nurse restoration, DF, `updateMusic6Times` and `stopAllSounds`. `AudioFade`'s standalone shims are gone (they now
+live only in the engine-test rig); `BIT_NO_AUDIO_FADE_OUT` (StatusScreen) and `BIT_NO_MAP_MUSIC` are real flags in
+`audio/audio_flags.ts`. `main.ts`: six passes + DF at warps, CONTINUE, NEW GAME and every battle return (after-battle
+reason through the whole evolution queue and the catch demo); DF only at connections; the blackout waits out
+`StopMusic(8)`, calls `StopAllSounds`, requests the departed map's song, then the destination's; CONTINUE no longer stops
+the title music. The Pallet escort plays MuseumGuy and sets the bit; the Lab clears it and restores. `cancelDrum` checked
+on Routes3: it only frees channel 8. +34 tests; **36/36** production mutations caught (my first sweep missed nine, which
+I closed). Existing-test changes, each with its reason, are in §10.12. Typecheck and build clean; ROM **1910/1910**,
+no-ROM **1753 pass / 157 skip**; no generated data. **Disclosed departure: the port's 8-frame warp cuts a door sound**
+(§10.12 item 1), which the play-test will hear. Committed locally, never pushed. **Stop for Claude's CP3 check; CP4 not
+started.**
+
+### 2026-10-18 (map-music CP2 checked) — Claude
+
+I checked map-music CP2 (`374d8c4`: Codex implemented, Sonnet finished the handoff; note 63 §10.10). **Passes, no
+required fix.** `play_sound.ts` matches `home/audio.asm`, `fade_audio.asm` and `init.asm` branch for branch (SFX
+dropped during a fade; reload from control; PlayMusic cancels; the bank compare; completion → SA, bank restore,
+PN). Re-ran typecheck and ROM **1876/1876**; my mutation (no SFX drop) failed 2. Carry into CP3: one shared PlaySound
+over the real engines, retiring `AudioFade`'s standalone shims, a real `determineAudioFunction`, and the drum check.
+**Next: CP3.** Nothing pushed.
+
+### 2026-10-18 (map-music CP2 handoff finished) — Claude
+
+Codex stopped before committing CP2; I finished the handoff and changed no code. Reviewed the uncommitted tree against
+note 63 §4 CP2 and `home/audio.asm`, `home/fade_audio.asm`, `home/init.asm`: every item is covered, no existing test is
+edited, and there is no `main.ts` or `index.ts` wiring. Re-ran the gates: typecheck and build clean, ROM **1876/1876**,
+no-ROM **1719 pass / 157 skip**, matching Codex's logs. Wrote note 63 §10.10 (file by file, the tests, all 44
+mutations, the gates). CP2 is done and awaiting Claude's check. Three carry-overs for CP3 are in §10.10, chiefly that
+`AudioFade` is still built standalone, so the running game doesn't use the new entries until CP3 shares one
+`PlaySound`. Committed locally, never pushed. **Stop for Claude's CP2 check; CP3 not started.**
+
+### 2026-10-18 (map-music CP2 — audio state) — Codex
+
+Pure PlaySound state owns numeric IDs/banks and the fade queue; AudioFade delegates its tick. Distinct PM/PS/PN/
+PW/SA/DM/DF, source-checked 49-track/19-SFX table, ID-only SFX clear and six music/SFX passes without fade ticks.
+23 new real-rig/identity tests; all 54 existing audio tests unchanged. **44/44** actual one-line production
+mutations caught/restored (note 63 §10.10). Typecheck/build clean; ROM **1876/1876**, no-ROM **1719 pass / 157 skip**;
+no timeout or generated changes. index.ts/main.ts and caller routing untouched; CP3 wiring remains pending.
+Committed locally, never pushed. **Stop for Claude's CP2 check.**
+
+### 2026-10-18 (map-music CP1 checked) — Claude
+
+I checked Codex's CP1 (`f0072f9`, note 63 §10). **Passes; its corrections stand.** The big one: an ordinary SFX leaves
+`wNewSoundID` = 0, so during a fade it is **dropped**, not queued. My plan's "silent-music glitch" was a misreading
+(note 63 and DECISIONS #67 corrected). The blackout first requests the departed map's song (`StopAllSounds` zeroes
+last; `PrepareForSpecialWarp` skips the music fields). The census covers 85 requests and 10 map-music callers. Carry
+into CP2: numeric IDs/banks for the reload-from-control case, distinct entry kinds, `UpdateMusic6Times` without a fade
+tick. Backlog: UI-beep and evolution-sound gaps. **Next: Codex runs CP2.** Nothing pushed.
+
+### 2026-10-18 (map-music fade-out CP1 — trace) — Codex
+
+Docs only; note 63 §10 covers all seven CP1 items and audits every §2 claim. Census: 85 music/SFX/stop
+request expressions + 10 updateMapMusic callers. audio_rig confirms fade 10/8 at 88/72, six Audio1-only passes
+do not tick the fade, door SFX end at 20/40. Corrected the plan: ordinary PlaySound SFX leave new ID=0 and
+are ignored during a fade, so the claimed bump-silence glitch does not follow from this ASM. Blackout resets
+last=0 and requests the departed song before loading the destination header; Mom/nurse/healing jingle use direct
+entries. Traced evolution, Lab loss, CONTINUE, real NEW GAME, and the exact Pallet/Lab command points.
+Typecheck/build clean; unchanged ROM **1853/1853**, no-ROM **1696 pass / 157 skip**; no timeout. No source/data/test
+edits, extraction or browser. Local commit only; nothing pushed. **Stop for Claude's CP1 check; CP2 not started.**
+
+### 2026-10-17 (O-35 answered) — the user, recorded by Claude
+
+The user approved note 63 §9: "yes to 1 and 2, and to 3 it's gonna be Codex" → DECISIONS #67. The full fade-out with
+the PlaySound-during-fade rules (incl. the silent-music glitch) and the Pallet/Lab music fix; Codex implements.
+**Next: Codex runs CP1** (trace only). Local commit only.
+
+### 2026-10-17 (map-music fade-out plan) — Claude
+
+At the user's request, wrote `notes/63-map-music-fade-plan.md` from the ASM. It covers
+`PlayDefaultMusicFadeOutCurrent`'s rules: fade 10 → the new song at update 88, or 8 → 72 after a battle; a same song is
+a no-op. Its callers are warps (`LoadMapData`, with `UpdateMusic6Times`), connections, battle returns, the blackout and
+CONTINUE. Found: during a fade, `PlayMusic` cancels it, but a plain `PlaySound` SFX replaces the queued song, so the
+new music never starts (the Gen 1 silent-music glitch). The Pallet walk should play the "follow me" theme into the lab
+(`BIT_NO_MAP_MUSIC`); ours doesn't. Backlog adds the bike/surf music and RIVAL3's flag. **Next: the user answers O-35.**
+Docs only; nothing pushed.
+
 ### 2026-10-17 (V2c play-test → V2 done) — the user, recorded by Claude
 
 The user play-tested note 62 §6. They asked whether one talk waking Pikachu is intended (yes: emotion 26 ends with

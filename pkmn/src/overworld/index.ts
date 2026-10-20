@@ -7,8 +7,6 @@ export { getPikachuFacePath, getPikachuAnimScript, modifyPikachuHappiness, reset
 export type { PikachuAnimScript, AnimFrame, OverlayInfo } from '../pikachu/pikachu_happiness';
 // Story state
 export { applyDefeatedTrainers, applyStoryNpcState, recordDefeated } from './story_state';
-// Battle transitions
-export { startSpiralTransition, startWildTransition, updateBattleTransition, renderBattleTransitionOverlay } from './battle_transitions';
 // Map transitions
 export { performWarpLoad, performMapConnection } from './map_transitions';
 export type { WarpLoadResult } from './map_transitions';

@@ -20,6 +20,7 @@ import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayName
 import { extractGameText } from './extractors/game_text';
 import { extractTextPrograms } from './extractors/text_programs';
 import { extractMapSpriteSets } from './extractors/map_sprite_sets';
+import { extractBattleTransitions } from './extractors/battle_transitions';
 import type { ExtractedData } from './data_provider';
 
 export { installRomData } from './data_provider';
@@ -69,7 +70,7 @@ const SFX_NAMES = [
   'go_inside', 'go_outside', 'heal_ailment', 'heal_hp', 'healing_machine', 'intro_hip',
   'intro_lunge', 'intro_whoosh', 'ledge', 'level_up', 'mon_faint',
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
-  'press_ab', 'push_boulder', 'switch', 'super_effective', 'tink',
+  'press_ab', 'push_boulder', 'shrink', 'switch', 'super_effective', 'tink',
   'turn_off_pc', 'turn_on_pc', '59', 'arrow_tiles',
 ];
 
@@ -111,6 +112,7 @@ export async function extractRom(
   // ── Text programs: the A5b callers' TextCommandProcessor streams ──
   data.jsonData['text_programs.json'] = extractTextPrograms(rom);
   data.jsonData['map_sprite_sets.json'] = extractMapSpriteSets(rom);
+  data.jsonData['battle_transitions.json'] = extractBattleTransitions(rom);
 
   // ── JSON data extractors ──
 

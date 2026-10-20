@@ -147,6 +147,7 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   turn_on_pc:       { bank: 0x02, addr: 0x41cb }, // SFX_Turn_On_PC_1
   turn_off_pc:      { bank: 0x02, addr: 0x41ce }, // SFX_Turn_Off_PC_1
   enter_pc:         { bank: 0x02, addr: 0x41d1 }, // SFX_Enter_PC_1
+  shrink:           { bank: 0x02, addr: 0x41d4 }, // SFX_Shrink_1 (note 64 CP1)
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

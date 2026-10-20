@@ -8,7 +8,7 @@ const read = (path: string) => readFileSync(resolve(refs, path), 'utf8');
 const normalize = (name: string) => name.replace(/_/g, '').toLowerCase();
 
 describe('numeric sound identity from cartridge header layout', () => {
-  it.skipIf(!existsSync(refs))('all 49 music identities and 19 SFX IDs match independent ASM header counts and banks', () => {
+  it.skipIf(!existsSync(refs))('all 49 music identities and 20 SFX IDs match independent ASM header counts and banks', () => {
     const layout = new Map<number, number>(); let bank = 0;
     for (const raw of read('layout.link').split('\n')) {
       const line = raw.split(';')[0].trim();
@@ -39,7 +39,7 @@ describe('numeric sound identity from cartridge header layout', () => {
     expect(read('constants/music_constants.asm')).toContain('((\\2 - SFX_Headers_1) / 3)');
     expect(MUSIC_IDS).toEqual(expectedMusic);
     for (const [name, id] of Object.entries(SFX_IDS)) expect(id, name).toBe(symbols.get(`sfx${normalize(name)}1`));
-    expect(Object.keys(SFX_IDS)).toHaveLength(19);
+    expect(Object.keys(SFX_IDS)).toHaveLength(20);
   });
 
   it('covers committed header-backed music and keeps the direct Flute routine separate', () => {
@@ -58,5 +58,14 @@ describe('numeric sound identity from cartridge header layout', () => {
     expect(musicNameForSound(0x99, 0x20)).toBe('surfingpikachu');
     expect(sfxNameForSound(0x99)).toBe('turn_on_pc');
     expect(sfxNameForSound(0)).toBeUndefined();
+  });
+
+  it('resolves shrink as SFX $9c independently of bank-$20 meetjessiejames music', () => {
+    expect(SFX_IDS.shrink).toBe(0x9c);
+    expect(sfxNameForSound(0x9c)).toBe('shrink');
+    expect(musicIdentity('meetjessiejames')).toEqual({ id: 0x9c, bank: 0x20 });
+    expect(musicNameForSound(0x9c, 0x20)).toBe('meetjessiejames');
+    expect(musicNameForSound(0x9c, 0x02)).toBeUndefined();
+    expect(new Set(Object.values(SFX_IDS)).size).toBe(Object.keys(SFX_IDS).length);
   });
 });

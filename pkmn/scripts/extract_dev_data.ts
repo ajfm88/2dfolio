@@ -25,6 +25,7 @@ import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayName
 import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
 import { extractMapSpriteSets } from '../src/rom/extractors/map_sprite_sets';
+import { extractBattleTransitions } from '../src/rom/extractors/battle_transitions';
 import townMapData from '../src/rom/town_map_data';
 import { extractRom } from '../src/rom/index';
 import { installNodeImageData } from '../src/rom/node_image_data';
@@ -112,6 +113,7 @@ writeJson('move_names.json', readMoveDisplayNames(rom)); count++;
 writeJson('game_text.json', extractGameText(rom)); count++;
 writeJson('text_programs.json', extractTextPrograms(rom)); count++;
 writeJson('map_sprite_sets.json', extractMapSpriteSets(rom)); count++;
+writeJson('battle_transitions.json', extractBattleTransitions(rom)); count++;
 writeJson('pokemon.json', extractPokemon(rom, moveNames, itemNames)); count++;
 writeJson('moves.json', extractMoves(rom, moveNames)); count++;
 writeJson('type_chart.json', extractTypeChart(rom)); count++;

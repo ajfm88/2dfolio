@@ -14,6 +14,7 @@ import {
   PLAYER_SCREEN_X, PLAYER_SCREEN_Y,
 } from './sprite_collision';
 import type { CollisionSprite } from './sprite_collision';
+import { setSpriteIndex } from './sprite_index';
 
 // Sprite frame layout in red.png (16x96):
 // y=0:  Standing Down    y=48: Walking Down
@@ -195,9 +196,11 @@ export class Player {
       const shelf = bookshelfInteraction(gameMap.getBookshelfPredef(this.tileX, this.tileY - 1));
       if (shelf) return shelf;
     }
+    setSpriteIndex(0); // IsSpriteOrSignInFrontOfPlayer, after hidden events/bookshelves
     const signText = gameMap.getSignAt(stepX, stepY);
     if (signText) {
       const textId = gameMap.mapData?.signs.find(sign => sign.x === stepX && sign.y === stepY)?.textId;
+      setSpriteIndex(textId ?? 0);
       return { text: signText, ...(textId === undefined ? {} : { textId }) };
     }
 
@@ -225,6 +228,7 @@ export class Player {
     }
 
     if (found) {
+      setSpriteIndex(found.data.textId ?? npcs.indexOf(found) + 1);
       if (!found.data.object) {
         found.faceDirection(OPPOSITE[this.direction]);
       }
@@ -325,8 +329,10 @@ export class Player {
     const targetTileY = Math.round((this.y + moveDy) / TILE_SIZE);
 
     if (this.spriteCollisions & DIRECTION_BIT[dir]) return 'blocked';
+    setSpriteIndex(0); // CollisionCheckOnLand, after the collision-mask early return
     const front = spriteInFront(sprites(), dir);
     if (front) {
+      setSpriteIndex(front.slot); // IsSpriteInFrontOfPlayer, including the Pikachu fallback
       if (front.slot !== PIKACHU_SLOT) return 'blocked';
       // CheckPikachuFollowingPlayer: always blocks when following is disabled (no B-hold pass)
       const gate = pikachuInFront(this.walk.pikachuCollisionCounter, isHeld('b'), isPikachuFollowingDisabled());

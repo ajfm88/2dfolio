@@ -123,9 +123,42 @@ LinkCableHelp is deferred pending a link-features decision.
 at +3, retained through fades, menus, preset slides and shrink until ClearScreen.
 OakSpeechText2 includes 2A, the declared PIKACHU cry cue (playback/wait J2), and 2B.
 Text3's done starts shrink in its return tick without another press or beep.
-Custom names return through ClearScreen's 3 frames plus Delay3: box +6, glyph +9.
+Custom names return through ClearScreen3 + Delay3 + picture-copy7: logical box/pic IDs +13, glyph/read +16;
+scanout follows the inherited third (+19/+18/+17 for the first glyph at p0/1/2).
 The name menu watches A only, max 3, cursor at (1,2); B re-arms silently.
-Animation timings, sounds and picture positioning await the approved intro slice.
+The note64 CP4 generator mirrors the ASM routines; each yield is one VBlank, followed by CPU work. Only
+`IntroScreen.vblank(box, printing)` advances display/text; PrintText captures its CPU border immediately.
+Inspection returns defensive snapshots of CPU/visible maps, slots, registers, shared phase, text/menu, OAM
+and speech audio requests. Its frame count pauses while the naming screen owns the clock.
+
+Main holds the menu20 before priming the speech at F20 (SA + PM Routes2). `MainMenu.saveTiles()` seeds the
+visible map so ClearScreen removes the menu in thirds. The speech owns register fades/window movement,
+shrink's two seven-batch wipes, its same-tick sound at R, and fade control10 at R24. Sprite preparation at R49
+produces shadow at R50 and first DMA-visible Red at R51, drawn after BG shading through cached OBP0 variants.
+It dismisses the box R123 and returns R126. Main loads during white40, then today's map entry/music at R166,
+or later if loading is not ready. Both holds read no input. The existing down-facing map entry is unchanged.
+Pictures/border/OBJ variants preload in MEWMON; `useBorderTiles` synchronously selects the cached border.
+Routes2 warms after audio unlock, before the title, so E2's request uses cached music. No async load is awaited
+inside the speech program.
+
+### Intro screen model (note 64 CP3–CP4)
+
+`intro_screen.ts` has a separate 20×18 logical/visible map: strings are glyphs, numbers are vFrontPic IDs.
+It reuses ScreenTiles' glyph writers via temporary write buffers, preserving the other menus' string/null
+snapshot contract. Its 49 slots hold picture names and column-major source tile IDs, so replacing eight slots
+per VBlank produces the shrink wipes. `copyVideoData` yields seven waits with transfer off and restores the
+caller's enable state on return/cancellation. `placePicture` writes IDs only after the caller finishes the copy.
+`slidePicture` performs the literal 125-byte move, including tile-zero quirks, resetting the shared portion for
+each of six three-frame steps. ClearScreen/clearArea are CPU writes; callers own their following waits.
+
+`vblank(box, advanceText)` uses the existing `textBgTransfer`: it copies the selected third and any VRAM batch
+before resuming CPU text. An active standalone TextBox owns that one tick via update/updateDisplay; otherwise
+the model ticks it. Never tick the box again in the caller. `captureText` imports logical text/border writes
+without a transfer (also call after starting PrintText in the CPU program). `clearScreen`'s caller dismisses
+the retained box. `cells`, `visibleCells`, `slots`, registers BGP/OBP0/WX and cell readers support inspection;
+rendering uses only scanout/current VRAM. No second portion counter exists. Optional constructor cells seed
+the menu handoff. `adoptBlankWindow()` represents the opaque naming exit's already cleared scanout without
+resetting front slots or phase; it consumes no speech VBlank.
 
 ## Poké Mart (A5b7b)
 

@@ -26,9 +26,11 @@ beforeAll(async () => {
 });
 
 describe('static/ export: asset keys', () => {
-  it('includes healing_machine and the five Pewter maps in the JSON mirror (182 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(182);
+  it('includes battle transitions, healing_machine, shrink and the five Pewter maps in the JSON mirror (184 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(184);
+    expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');
+    expect(extracted.jsonData).toHaveProperty('audio/sfx/shrink.json');
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).not.toHaveProperty('maps/Museum1F.json');
@@ -86,6 +88,14 @@ describe('static/ export: PNG encoding', () => {
 });
 
 describe('static/ export: JSON', () => {
+  it('round-trips shrink through extractRom, setup data and the static mirror byte for byte', () => {
+    const shrink = extracted.jsonData['audio/sfx/shrink.json'];
+    expect(shrink).toBeDefined();
+    const bytes = readFileSync(resolve(DATA_DIR, 'audio/sfx/shrink.json'));
+    expect(bytes.toString('utf8')).toBe(JSON.stringify(shrink, null, 2) + '\n');
+    expect(readFileSync(resolve(STATIC_DIR, 'audio/sfx/shrink.json'))).toEqual(bytes);
+  });
+
   it('registers move_names.json in extractRom, data/ and the static mirror', () => {
     const extractedNames = extracted.jsonData['move_names.json'];
     expect(extractedNames).toBeDefined();

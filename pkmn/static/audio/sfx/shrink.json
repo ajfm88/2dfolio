@@ -1,0 +1,61 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle",
+          "value": 1
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 1,
+          "shift": 7
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 13,
+          "fade": 7,
+          "frequency": 1536
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 11,
+          "fade": 7,
+          "frequency": 1408
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 8,
+          "fade": 7,
+          "frequency": 1280
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 4,
+          "fade": 7,
+          "frequency": 1152
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 1,
+          "fade": 7,
+          "frequency": 1024
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 0,
+          "shift": 8
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

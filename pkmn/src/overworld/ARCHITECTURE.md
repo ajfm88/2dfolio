@@ -1,5 +1,26 @@
 # Overworld Architecture
 
+A5d CP4 wires `transition_screen.ts`, `battle_transition.ts`, `battle_transition_tables.ts` and
+`transition_screen_render.ts` (note 65 §10.13). The logical/shown cells, window/OAM DMA, palette bytes and inherited
+BG thirds follow the checked CP1 frames. Captured origin IDs 0–359 are distinct from FF/blank sentinels.
+Prime at entry; thereafter call screen.vblank(), resume the CPU generator, then render. The prologue is 8 frames,
+the tail 9; all eight transitions are present, including both spiral bugs. Capture takes map-only pixels plus
+bound actor callbacks and preloaded raw sheets, using each NPC's cartridge textId as its slot. Raw frames and
+positions freeze; BGP shades only the map before independent OBJ mapping. Rendering never ticks. Main's shared
+battle entry stops at E, resumes PlayBattleMusic at E+1 and captures/primes at E+2. It owns the shared clock
+in this state, retains black through Battle.init or catch-demo asset readiness, then hands off. Raw sheets
+are already cached by awaited loadSprite; capture uses the synchronous getLoadedRawImageData accessor.
+The ROM object count fills missing/filtered slots as hidden, leaving only slots beyond the count unused.
+Script aliases use Pallet Oak slot 1, entering Lab Oak slot 6 and desk Oak slot 3. The old plural module is gone.
+
+A5d CP2 prepares `battle_transition_choice.ts`: standalone data loader, the three-bit choice,
+first-living-lead/last-trainer-member levels, the approved Oak empty-party name-byte model, and OAM rank/cap
+helpers. CP4 loads its data at startup and uses these helpers for every main battle entry.
+`sprite_index.ts` tracks the single hTextID/hSpriteIndex byte at actual writes: land collision after the mask,
+A after hidden events/bookshelves, START, sight-trainer display, Pikachu display/return, and explicit script
+metadata. Turns and no-collision scripted movement retain it. Metadata on ScriptCommand has no frame cost.
+Use cartridge IDs for the future capture; the Lab's runtime NPC array is reordered. Note 65 §10.11.
+
 Healing-machine CP3: `healing_machine.ts` owns the machine's OAM scanout, OBP1 palette swaps
 and blocking frame sequence (note 59). `GameMap.load` awaits both palette variants for POKECENTER
 tilesets before gameplay, ensuring the first monitor render does not wait on a cold image request.

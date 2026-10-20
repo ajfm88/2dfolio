@@ -93,7 +93,7 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
   it('stepping on (19,9): he turns right (6 frames), the player left, then the demo fails', () => {
     const script = buildOldMan2Script(true, { x: 19, y: 9 });
     expect(script.slice(0, 3)).toEqual([
-      { type: 'faceNpc', npcId: 'oldman2', direction: 'right' },
+      { type: 'faceNpc', npcId: 'oldman2', direction: 'right', spriteIndex: 8 },
       { type: 'wait', frames: 6 },
       { type: 'facePlayer', direction: 'left' },
     ]);
@@ -117,7 +117,7 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
   it('at x = 19 he walks down 6, and ViridianCityMovePikachu is skipped', () => {
     const script = buildOldMan2Script(true, { x: 19, y: 9 });
     expect(script.find(c => c.type === 'moveNpc')).toEqual(
-      { type: 'moveNpc', npcId: 'oldman2', path: ['down', 'down', 'down', 'down', 'down', 'down'] });
+      { type: 'moveNpc', npcId: 'oldman2', path: ['down', 'down', 'down', 'down', 'down', 'down'], spriteIndex: 8 });
     expect(script.some(c => c.type === 'tryPikachuMovement')).toBe(false);
   });
 
@@ -125,7 +125,7 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
     const script = buildOldMan2Script(false, { x: 18, y: 10 });
     expect(script.map(c => c.type).slice(0, 2)).toEqual(['displayOpen', 'printText']); // no turn when talked to
     expect(script.find(c => c.type === 'moveNpc')).toEqual(
-      { type: 'moveNpc', npcId: 'oldman2', path: ['right', 'down', 'down', 'down', 'down', 'down', 'down'] });
+      { type: 'moveNpc', npcId: 'oldman2', path: ['right', 'down', 'down', 'down', 'down', 'down', 'down'], spriteIndex: 8 });
   });
 
   it('elsewhere ViridianCityMovePikachu always comes first; its guard is checked when it runs', () => {

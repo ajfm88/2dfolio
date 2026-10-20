@@ -61,7 +61,7 @@ describe('Pewter default and registered source handlers', () => {
     expect(events.getAllMapScripts()).not.toHaveProperty('PewterCity');
   });
   it.each([[35, 17], [36, 17], [37, 18], [37, 19]])('east (%i,%i) uses the same handler under SELECT|START|D-pad, with no face/update prefix', (x, y) => {
-    const script = pewterCityScript(ctx(x, y)); expect(script?.[0]).toEqual({ type: 'displayOpen', autoBox: true });
+    const script = pewterCityScript(ctx(x, y)); expect(script?.[0]).toEqual({ type: 'displayOpen', autoBox: true, spriteIndex: 5 });
     expect(script?.[1]).toEqual({ type: 'printText', program: 'PewterCityYoungsterText.YoureATrainerFollowMeText' });
     expect(joyIgnore()).toBe('controls'); expect(pewterCityScriptState()).toBe(PewterScript.DEFAULT);
     expect(script?.find(c => c.type === 'overworldLoop')).toEqual({ type: 'overworldLoop', updateSprites: true });
@@ -89,7 +89,7 @@ describe('Pewter default and registered source handlers', () => {
     expect(flow[1]).toEqual({ type: 'printText', program: 'PewterCityYoungsterText.YoureATrainerFollowMeText' });
     expect(flow.find(c => c.type === 'overworldLoop')).toEqual({ type: 'overworldLoop', updateSprites: false });
     expect(flow.filter(c => c.type === 'wait')).toEqual([]);
-    expect(flow.find(c => c.type === 'faceNpc')).toEqual({ type: 'faceNpc', npcId: 'youngster', direction: 'left', write: 'image', restoreAtClose: true });
+    expect(flow.find(c => c.type === 'faceNpc')).toEqual({ type: 'faceNpc', npcId: 'youngster', direction: 'left', write: 'image', restoreAtClose: true, spriteIndex: 5 });
   });
   it('the handler and direct-display labels match pret’s text_far targets', () => {
     const path = resolve(__dirname, '../../../refs/pokeyellow/scripts/PewterCity.asm'); if (!existsSync(path)) return;

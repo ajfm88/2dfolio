@@ -745,6 +745,33 @@ describe('Audio: the heal sounds (A5b7c2)', () => {
   });
 });
 
+describe('Audio: shrink sound (note 64 CP2)', () => {
+  it('uses the bank-$02 shrink header, CHAN5 and the independently traced body pointer', () => {
+    expect(SFX_HEADERS.shrink).toEqual({ bank: 0x02, addr: 0x41d4 });
+    expect(rom.readByte(0x81d4)).toBe(0x04); // channel_count 1, channel 5
+    expect(rom.readWord(0x81d5)).toBe(0x44ec);
+  });
+
+  it('matches the committed shrink JSON and every command of the original SFX-mode body', () => {
+    const extracted = extractSfx(rom, 'shrink');
+    const commands = [
+      { cmd: 'duty_cycle', value: 1 },
+      { cmd: 'pitch_sweep', length: 1, shift: 7 },
+      { cmd: 'square_note', length: 15, volume: 13, fade: 7, frequency: 1536 },
+      { cmd: 'square_note', length: 15, volume: 11, fade: 7, frequency: 1408 },
+      { cmd: 'square_note', length: 15, volume: 8, fade: 7, frequency: 1280 },
+      { cmd: 'square_note', length: 15, volume: 4, fade: 7, frequency: 1152 },
+      { cmd: 'square_note', length: 15, volume: 1, fade: 7, frequency: 1024 },
+      { cmd: 'pitch_sweep', length: 0, shift: 8 },
+      { cmd: 'sound_ret' },
+    ]; // audio/sfx/shrink_1.asm, independently read in CP1; no execute_music.
+    expect(extracted).toEqual({ channels: [{ id: 5, commands }] });
+    expect(extracted).toEqual(loadJson('audio/sfx/shrink.json'));
+    const path = resolve(__dirname, '../../../../refs/pokeyellow/audio/sfx/shrink_1.asm');
+    if (existsSync(path)) expect([commands]).toEqual(parseAsmChannels(readFileSync(path, 'utf8')));
+  });
+});
+
 describe('Audio: healing-machine sound (note 59 CP2)', () => {
   it('uses the traced bank-$02 header and CHAN5 pointer', () => {
     expect(SFX_HEADERS.healing_machine).toEqual({ bank: 0x02, addr: 0x41da });

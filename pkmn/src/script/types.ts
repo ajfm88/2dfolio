@@ -16,7 +16,7 @@ export interface MenuBoxLayout {
   labels: { x: number; y: number; text: string }[];
 }
 
-export type ScriptCommand =
+export type ScriptCommand = (
   | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean }
   | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
   // DisplayPokemartDialogue_ (engine/events/pokemart.asm), after the greeting PrintText.
@@ -114,7 +114,11 @@ export type ScriptCommand =
   | { type: 'fadeOut'; frames?: number }
   | { type: 'fadeIn'; frames?: number }
   | { type: 'giveItem'; itemId: string; count?: number; successCommands?: ScriptCommand[]; failCommands?: ScriptCommand[] }
-  | { type: 'removeItem'; itemId: string; count?: number };
+  | { type: 'removeItem'; itemId: string; count?: number }
+) & {
+  /** An explicit hSpriteIndex/hTextID write immediately before this command, no frame cost. */
+  spriteIndex?: number;
+};
 
 export interface ScriptRunner {
   /** The command list. */

@@ -52,20 +52,20 @@ function escortCommands(ctx: TextHandlerContext, museum: boolean, east: boolean)
     { type: 'npcMovementScript', npcId, joypad,
       guidePath: npcDirections(decodeRle(museum ? PEWTER_MUSEUM_GUIDE : PEWTER_GYM_GUIDE).entries), music: 'museumguy' },
     ...(museum ? [
-      { type: 'faceNpc', npcId, direction: 'up', write: 'live' },
+      { type: 'faceNpc', npcId, direction: 'up', write: 'live', spriteIndex: 3 },
       { type: 'wait', frames: 6 },
       { type: 'faceNpc', npcId, direction: 'up', write: 'image' },
     ] satisfies ScriptCommand[] : [
-      { type: 'faceNpc', npcId, direction: 'left', write: 'image', restoreAtClose: true },
+      { type: 'faceNpc', npcId, direction: 'left', write: 'image', restoreAtClose: true, spriteIndex: 5 },
     ] satisfies ScriptCommand[]),
     { type: 'restoreMapMusic', waitForCurrent: true },
-    { type: 'displayOpen', spriteUpdate: false },
+    { type: 'displayOpen', spriteUpdate: false, spriteIndex: museum ? 13 : 14 },
     { type: 'printText', program: museum ? 'PewterCitySuperNerd1ItsRightHereText' : 'PewterCityYoungsterGoTakeOnBrockText', box: 'keep' },
     { type: 'displayClose', outerWait: true },
     { type: 'setSpritePosition1', npcId, mapStep: museum ? { x: 13, y: 8 } : { x: 12, y: 18 }, screenDx: museum ? 0 : -16 },
     { type: 'joyIgnore', mask: 'all' },
     state(museum ? PewterScript.HIDE_MUSEUM : PewterScript.HIDE_GYM),
-    { type: 'moveNpc', npcId, path: Array.from({ length: museum ? 4 : 5 }, () => museum ? 'down' : 'right'),
+    { type: 'moveNpc', npcId, spriteIndex: museum ? 3 : 5, path: Array.from({ length: museum ? 4 : 5 }, () => museum ? 'down' : 'right'),
       options: { keepStatus: true, bytesToFF: true }, inPass: true },
     { type: 'hideObject', map: PEWTER_CITY, npcId },
     { type: 'updateSprites', fontLoaded: false }, // HideObject's UpdateSprites; preserve earlier pickup callers.
@@ -91,7 +91,7 @@ export function pewterMuseumText(ctx: TextHandlerContext): ScriptCommand[] {
 
 export function pewterYoungsterText(ctx: TextHandlerContext, east = false): ScriptCommand[] {
   const walk = escortCommands(ctx, false, east);
-  return [...displayTextID([print('PewterCityYoungsterText.YoureATrainerFollowMeText'), walk.arm]), ...walk.afterClose];
+  return [...displayTextID([print('PewterCityYoungsterText.YoureATrainerFollowMeText'), walk.arm], { textId: 5 }), ...walk.afterClose];
 }
 
 registerTextHandler(PEWTER_CITY, 3, pewterMuseumText);

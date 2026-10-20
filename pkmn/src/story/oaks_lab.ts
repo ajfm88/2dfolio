@@ -12,8 +12,20 @@ import { displayTextID } from './text_handlers';
 import { VIRIDIAN_CITY, ViridianScript } from './viridian_city';
 
 export const LAB_GUARD_PROGRAM = 'OaksLabOakDontGoAwayYetText.Text';
+// The scripted DisplayTextID writers in OaksLab_TextPointers (not object slots).
+const LAB_SCRIPT_TEXT_IDS: Readonly<Record<string, number>> = {
+  OaksLabRivalIllTakeYouOnText: 11, OaksLabRivalSmellYouLaterText: 12,
+  OaksLabRivalFedUpWithWaitingText: 13, OaksLabOakChooseMonText: 14,
+  OaksLabRivalWhatAboutMeText: 15, OaksLabOakBePatientText: 16,
+  OaksLabRivalGrampsText: 19, OaksLabRivalMyPokemonHasGrownStrongerText: 20,
+  OaksLabOakIHaveARequestText: 21, OaksLabOakMyInventionPokedexText: 22,
+  OaksLabOakGotPokedexText: 23, OaksLabOakThatWasMyDreamText: 24,
+  OaksLabRivalLeaveItAllToMeText: 25, OaksLabPikachuDislikesPokeballsText1: 26,
+  OaksLabPikachuDislikesPokeballsText2: 27,
+};
 export function labDisplay(program: string, direct = false, autoBox = false): ScriptCommand[] {
-  return displayTextID([{ type: 'printText', program, ...(direct ? { box: 'keep' as const } : {}) }], { autoBox });
+  return displayTextID([{ type: 'printText', program, ...(direct ? { box: 'keep' as const } : {}) }],
+    { autoBox, textId: LAB_SCRIPT_TEXT_IDS[program.split('.')[0]] });
 }
 const mask = (value: 'none' | 'dpad' | 'all'): ScriptCommand => ({ type: 'callback', fn: () => setJoyIgnore(value) });
 const mapMusic: ScriptCommand = { type: 'restoreMapMusic' };
@@ -32,10 +44,10 @@ export function labChooseSpeech(): ScriptCommand[] {
   ];
 }
 export function labBallDisplay(): ScriptCommand[] {
-  return displayTextID([{ type: 'emotionBubble', target: 'rival' }], { autoBox: false, outerWait: false });
+  return displayTextID([{ type: 'emotionBubble', target: 'rival' }], { autoBox: false, outerWait: false, textId: 2 });
 }
 export function labSnatchDisplay(): ScriptCommand[] {
-  return displayTextID(Array.from({ length: 5 }, (_, i) => ({ type: 'printText' as const, program: `OaksLabRivalTakesText${i + 1}` })), { autoBox: false });
+  return displayTextID(Array.from({ length: 5 }, (_, i) => ({ type: 'printText' as const, program: `OaksLabRivalTakesText${i + 1}` })), { autoBox: false, textId: 17 });
 }
 export function labGiftDisplay(): ScriptCommand[] {
   return displayTextID([
@@ -43,11 +55,11 @@ export function labGiftDisplay(): ScriptCommand[] {
     { type: 'printText', program: 'OaksLabReceivedText', bindings: { nameBuffer: getSpeciesById(25)?.name.toUpperCase() ?? 'PIKACHU' } },
     { type: 'addPokemon', species: 25, level: 5 }, { type: 'hidePikachu' },
     { type: 'setFlag', flag: 'GOT_STARTER' },
-  ], { autoBox: false, outerWait: false });
+  ], { autoBox: false, outerWait: false, textId: 18 });
 }
 function ballContinuation(oak: string): ScriptCommand[] {
   return [
-    { type: 'moveParallel', npcId: 'rival', npcPath: ['down', 'right', 'right', 'right'],
+    { type: 'moveParallel', npcId: 'rival', spriteIndex: 1, npcPath: ['down', 'right', 'right', 'right'],
       npcModes: ['normal', 'fast', 'fast', 'fast'], playerPath: ['right', 'right'], playerFromNpcStep: 4 },
     { type: 'hideNpc', npcId: 'item_ball' },
     { type: 'faceNpc', npcId: 'rival', direction: 'up' },
@@ -70,8 +82,8 @@ export function buildOaksLabBallScript(): ScriptCommand[] {
 }
 export function buildOaksLabIntroScript(): ScriptCommand[] {
   return [
-    { type: 'showNpc', npcId: 'prof_enter', x: 5, y: 10, sprite: 'prof', direction: 'up' },
-    { type: 'moveNpc', npcId: 'prof_enter', path: ['up', 'up', 'up'] },
+    { type: 'showNpc', npcId: 'prof_enter', x: 5, y: 10, sprite: 'prof', direction: 'up', textId: 6 },
+    { type: 'moveNpc', npcId: 'prof_enter', path: ['up', 'up', 'up'], spriteIndex: 6 },
     { type: 'hideNpc', npcId: 'prof_enter' },
     { type: 'showNpc', npcId: 'prof_desk', x: 5, y: 2, sprite: 'prof', direction: 'down', textId: 3 },
     { type: 'wait', frames: 3 },
@@ -120,14 +132,16 @@ export function buildOaksLabRivalBattleScript(
   return [
     { type: 'callback', fn: () => { setJoyIgnore('dpad'); playMusic('meetrival'); } },
     ...labDisplay('OaksLabRivalIllTakeYouOnText.Text'),
-    ...(path.length ? [{ type: 'moveNpc' as const, npcId: 'rival', path }] : []),
-    { type: 'faceNpc', npcId: 'rival', direction: 'down' }, mask('none'),
+    ...(path.length ? [{ type: 'moveNpc' as const, npcId: 'rival', path, spriteIndex: 1 }] : []),
+    // MoveSprite writes this even when its path is empty (adjacent rival).
+    // Metadata costs no frames and keeps the port's existing movement timing.
+    { type: 'faceNpc', npcId: 'rival', direction: 'down', spriteIndex: 1 }, mask('none'),
     { type: 'startBattle', trainerClass: 'RIVAL1', partyIndex: 0, trainerName: getRivalName(),
       endBattleProgram: 'OaksLabRivalIPickedTheWrongPokemonText' },
     { type: 'callback', fn: () => { setJoyIgnore('dpad'); setRivalStarter(rivalStarterAfterLabBattle(wasLastBattleWon())); } },
     { type: 'healParty' }, { type: 'setFlag', flag: 'BATTLED_RIVAL_IN_OAKS_LAB' },
     { type: 'wait', frames: 20 }, ...labDisplay('OaksLabRivalSmellYouLaterText.Text'), rivalMusic,
-    { type: 'moveNpc', npcId: 'rival', path: exitPath, modes: exitPath.map((_, i) => i < 2 ? 'normal' : 'fast') },
+    { type: 'moveNpc', npcId: 'rival', path: exitPath, spriteIndex: 1, modes: exitPath.map((_, i) => i < 2 ? 'normal' : 'fast') },
     { type: 'hideNpc', npcId: 'rival' }, mapMusic,
     { type: 'facePlayer', direction: 'up' },
     ...labDisplay('OaksLabPikachuDislikesPokeballsText1.Text'),
@@ -172,7 +186,7 @@ export function buildOaksLabPokedexScript(
     { type: 'tryPikachuMovement', caller: 'oaksLab' },
     { type: 'callback', fn: () => { const rival = findNpc('rival'); if (rival) {
       rival.x = rivalX * 16; rival.y = rivalStartY * 16; rival.direction = 'up'; } } },
-    { type: 'unhideNpc', npcId: 'rival' }, { type: 'moveNpc', npcId: 'rival', path: rivalEnterPath },
+    { type: 'unhideNpc', npcId: 'rival' }, { type: 'moveNpc', npcId: 'rival', path: rivalEnterPath, spriteIndex: 1 },
     mapMusic, mask('dpad'), ...face,
     ...labDisplay('OaksLabRivalMyPokemonHasGrownStrongerText', true, true), { type: 'wait', frames: 1 }, ...face,
     ...labDisplay('OaksLabOakIHaveARequestText', true, true), { type: 'wait', frames: 1 }, ...face,
@@ -185,6 +199,6 @@ export function buildOaksLabPokedexScript(
     { type: 'setFlag', flag: 'GOT_POKEDEX' },
     { type: 'setMapScript', map: VIRIDIAN_CITY, state: ViridianScript.AFTER_POKEDEX },
     { type: 'setFlag', flag: 'OAK_GOT_PARCEL' }, rivalMusic,
-    { type: 'moveNpc', npcId: 'rival', path: rivalExitPath }, { type: 'hideNpc', npcId: 'rival' }, mapMusic, mask('none'),
+    { type: 'moveNpc', npcId: 'rival', path: rivalExitPath, spriteIndex: 1 }, { type: 'hideNpc', npcId: 'rival' }, mapMusic, mask('none'),
   ];
 }

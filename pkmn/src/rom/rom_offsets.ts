@@ -13,6 +13,11 @@ export function symToOffset(bank: number, addr: number): number {
   return bank * 0x4000 + (addr & 0x3FFF);
 }
 
+// Battle transitions (engine/battle/battle_transitions.asm, symbols branch).
+export const DUNGEON_MAPS_1 = symToOffset(0x1c, 0x4aa9);
+export const DUNGEON_MAPS_2 = symToOffset(0x1c, 0x4aae);
+export const BATTLE_TRANSITION_TILE = symToOffset(0x1c, 0x4ac3);
+
 // ── Pokemon Data ──────────────────────────────────────────────
 export const BASE_STATS          = symToOffset(0x0e, 0x43de);  // 151 entries × 0x1C bytes
 export const MONSTER_NAMES       = symToOffset(0x3a, 0x4000);  // 151 entries × 10 bytes

@@ -15,7 +15,7 @@ export function palletOakText(stage: 0 | 1 | 2): ScriptCommand[] {
     { type: 'wait', frames: 10 } as ScriptCommand,
     { type: 'facePlayer', direction: 'down' } as ScriptCommand,
     { type: 'emotionBubble', target: 'player' } as ScriptCommand,
-  ] : [])], { outerWait: stage !== 0 });
+  ] : [])], { outerWait: stage !== 0, textId: 1 });
 }
 registerTextHandler('PalletTown', 1, () => palletOakText(oakWalkedToPlayer));
 
@@ -80,9 +80,9 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
     { type: 'callback', fn: () => setJoyIgnore('all') },
 
     // Oak appears south of player and walks up
-    { type: 'showNpc', npcId: 'prof_script', x: playerStepX, y: oakSpawnY, sprite: 'prof', direction: 'up' },
+    { type: 'showNpc', npcId: 'prof_script', x: playerStepX, y: oakSpawnY, sprite: 'prof', direction: 'up', textId: 1 },
     { type: 'wait', frames: 3 }, // PalletTownOakWalksToPlayerScript Delay3
-    { type: 'moveNpc', npcId: 'prof_script', path: oakWalkUp },
+    { type: 'moveNpc', npcId: 'prof_script', path: oakWalkUp, spriteIndex: 1 },
     { type: 'faceNpc', npcId: 'prof_script', direction: 'up' },
 
     // "That was close!" + para "Wild POKéMON live in tall grass!"
@@ -104,7 +104,7 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
     { type: 'faceNpc', npcId: 'prof_script', direction: 'up' },
 
     // "A POKéMON can appear anytime..." (text/PalletTown.asm _PalletTownOakComeWithMe)
-    ...displayTextID([{ type: 'printText', program: 'PalletTownOakComeWithMe', box: 'keep' }]),
+    ...displayTextID([{ type: 'printText', program: 'PalletTownOakComeWithMe', box: 'keep' }], { textId: 8 }),
     { type: 'callback', fn: () => setJoyIgnore('all') },
 
     // PalletMovementScript_OakMoveLeft (auto_movement.asm:84–119), on both exits: PlayMusic(MuseumGuy),

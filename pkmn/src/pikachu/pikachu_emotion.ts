@@ -21,6 +21,7 @@ import { getPikachuMovementData, pikachuMovementProgram } from "./pikachu_moveme
 import type { Direction } from '../core';
 import { EmotionBubble } from '../overworld/emotion_bubble';
 import { CloseSequence } from '../text/close_sequence';
+import { setSpriteIndex } from '../overworld/sprite_index';
 import { enablePikachuFollowing } from './pikachu_following';
 
 // --- Types ---
@@ -158,6 +159,7 @@ function nextEmotionCall(anim: PikachuEmotionAnim, deps: PikachuEmotionEntryDeps
 }
 
 export function clearPikachuEmotion(): void {
+  if (emotionAnim) setSpriteIndex(0); // IsPlayerTalkingToPikachu, after DisplayTextID returns
   sleepBubble.clear();
   emotionAnim = null;
 }
@@ -201,6 +203,7 @@ export function tickPikachuEmotionExit(deps: PikachuEmotionExitDeps): boolean {
 
 /** Start displaying Pikachu's emotion face with animation. */
 export function startPikachuEmotion(party: BattlePokemon[], mapName?: string, savedFacing: Direction | null = null): void {
+  setSpriteIndex(0xd4); // InitializePikachuTextID: TEXT_PIKACHU_ANIM
   const emotion = selectPikachuEmotion(party, mapName);
   const script = pikachuAnimScriptFor(emotion);
 

@@ -1,3 +1,9 @@
+import { getSpriteIndex, setSpriteIndex } from './overworld/sprite_index';
+import { loadBattleTransitionData, getBattleTransitionData, chooseBattleTransition, battleTransitionLevels } from './overworld/battle_transition_choice';
+import { battleTransition } from './overworld/battle_transition';
+import { TransitionScreen } from './overworld/transition_screen';
+import { captureTransitionScene, renderTransitionScreen } from './overworld/transition_screen_render';
+import type { TransitionCapture } from './overworld/transition_screen_render';
 import {
   initRenderer,
   clear,
@@ -12,10 +18,12 @@ import {
   endSpriteLog,
   drawExclamationBubble,
   drawZzzBubble,
+  getLoadedRawImageData,
+  overworldObjectPalettes,
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
   playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
-  fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished } from "./audio";
+  fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished, preloadMusic, playBattleMusic } from "./audio";
 import { isNoMapMusic, setNoMapMusic } from "./audio/audio_flags";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
 import { MapDialogue } from './text/map_dialogue';
@@ -33,7 +41,6 @@ import { mapAutoTextBox } from './text/auto_text_box';
 import { uiTiles } from "./renderer/ui_tiles";
 import {
   applyDefeatedTrainers, applyStoryNpcState, recordDefeated,
-  startSpiralTransition, startWildTransition, updateBattleTransition, renderBattleTransitionOverlay,
   performWarpLoad, performMapConnection,
   updateOverworld as runOverworld, createOverworldState,
   runMapScript, handleStepComplete,
@@ -142,6 +149,8 @@ type GameState =
   | "title_screen"
   | "main_menu"
   | "oak_speech"
+  | "intro_entry"
+  | "intro_exit"
   | "naming_screen"
   | "overworld"
   | "textbox"
@@ -182,6 +191,8 @@ const mainMenu = new MainMenu();
 // Oak speech intro & naming screen
 const oakSpeech = new OakSpeech();
 const namingScreen = new NamingScreen();
+let introFrames = 0;
+let introMapReady = false;
 
 // Pokedex
 const pokedexMenu = new PokedexMenu();
@@ -291,16 +302,71 @@ let fadeAlpha = 0; // 0 = no overlay, 1 = fully white
 let fadeDir: "out" | "in" | null = null; // 'out' = fading to white, 'in' = fading from white
 let fadeCallback: (() => void) | null = null; // called when fade-out completes
 
-/** Start a spiral battle transition (trainer battles), then call cb when done. */
-function startBattleTransition(cb: () => void): void {
-  startSpiralTransition(cb);
-  state = "battle_transition";
+interface BattleEntry {
+  music: Generator<void, void>;
+  musicResumed: boolean;
+  screen: TransitionScreen | null;
+  capture: TransitionCapture | null;
+  program: Generator<void> | null;
+  choice: ReturnType<typeof chooseBattleTransition> | null;
+  levels: ReturnType<typeof battleTransitionLevels>;
+  opponentIsTrainer: boolean;
+  initialise(): Promise<void>;
+  initialising: boolean;
+}
+let battleEntry: BattleEntry | null = null;
+
+/** InitBattleCommon: E stops, E+1 requests music, E+2 enters BattleTransition. */
+function beginBattleEntry(
+  opponentIsTrainer: boolean, enemy: number | readonly TrainerPartyMember[],
+  curOpponent: number, gymLeaderNo: number, initialise: () => Promise<void>,
+): void {
+  cancelPendingMapMusic();
+  const music = playBattleMusic({ curOpponent, gymLeaderNo });
+  music.next();
+  battleEntry = { music, musicResumed: false, screen: null, capture: null, program: null, choice: null,
+    levels: battleTransitionLevels(playerParty, enemy, { player: getPlayerName(), rival: getRivalName() }),
+    opponentIsTrainer, initialise, initialising: false };
+  state = 'battle_transition';
 }
 
-/** Start a wild battle transition (flash + horizontal stripes), then call cb. */
-function startWildBattleTransition(cb: () => void): void {
-  startWildTransition(cb);
-  state = "battle_transition";
+function tickBattleEntry(): void {
+  const entry = battleEntry!;
+  if (!entry.musicResumed) {
+    textBgTransfer.tick();
+    entry.music.next(); entry.musicResumed = true;
+    return; // DoBattleTransitionAndInitBattleVariables's DelayFrame
+  }
+  if (!entry.screen) {
+    textBgTransfer.tick(); // tick 0's VBlank precedes the prologue's CPU writes
+    const data = getBattleTransitionData(), name = getMapName();
+    entry.choice = chooseBattleTransition({ ...entry.levels, opponentIsTrainer: entry.opponentIsTrainer, mapId: data.mapIds[name] });
+    const actor = (source: { render(x: number, y: number): void }, sprite: string) => ({
+      render: source.render.bind(source), rawSheet: getLoadedRawImageData(`/gfx/sprites/${sprite}.png`),
+    });
+    entry.capture = captureTransitionScene(gameMap, player.getCameraX(), player.getCameraY(), {
+      player: actor(player, 'red'),
+      npcs: [...npcs, ...getScriptNpcs()].map(npc => ({ ...actor(npc, npc.data.sprite), data: npc.data })),
+      pikachu: actor(pikachuFollower, 'pikachu'),
+    }, data.mapObjectCounts[name]);
+    entry.screen = new TransitionScreen(entry.capture.slots, getSpriteIndex());
+    entry.screen.obp0 = overworldObjectPalettes.obp0;
+    entry.screen.obp1 = overworldObjectPalettes.obp1;
+    entry.program = battleTransition(entry.screen, entry.choice);
+    entry.program.next(); // prime tick 0, with no extra VBlank
+    return;
+  }
+  entry.screen.vblank(); // sole owner of the shared BG transfer clock in this state
+  if (!entry.initialising && entry.program!.next().done) {
+    entry.initialising = true;
+    void entry.initialise().then(() => { battleEntry = null; });
+  }
+}
+
+function renderBattleEntry(): void {
+  const entry = battleEntry!;
+  if (entry.screen && entry.capture) renderTransitionScreen(entry.screen, entry.capture);
+  else renderOverworldScene(player.getCameraX(), player.getCameraY()); // E and E+1, before capture
 }
 
 // Current map name (for save/defeated tracking)
@@ -364,6 +430,9 @@ async function init(): Promise<void> {
     loadTextPrograms(),
     loadStatusScreenAssets(),
     loadMapSpriteSets(),
+    loadBattleTransitionData(),
+    oakSpeech.load(),
+    loadEdTile(),
   ]);
 
   const font = getFontCanvas();
@@ -375,6 +444,8 @@ async function init(): Promise<void> {
   const onSplashClick = async () => {
     document.removeEventListener('click', onSplashClick);
     await resumeAudio();
+    await preloadMusic('routes2'); // Audio cache is available after unlock; E2 must not wait for a fetch.
+    await Promise.all(['wildbattle', 'trainerbattle', 'gymleaderbattle', 'finalbattle'].map(track => preloadMusic(track)));
     state = "title_screen";
     playMusic("titlescreen");
   };
@@ -536,9 +607,7 @@ function startBattle(wildPokemon: BattlePokemon): void {
   if (playerParty.length === 0) return;
   markSeen(wildPokemon.species.id);
 
-  cancelPendingMapMusic(); stopMusic();
-  playMusic('wildbattle');
-  startWildBattleTransition(() => {
+  beginBattleEntry(false, wildPokemon.level, wildPokemon.species.id, 0, async () => {
     const battle = new Battle(
       playerParty[0],
       wildPokemon,
@@ -548,10 +617,9 @@ function startBattle(wildPokemon: BattlePokemon): void {
       getPlayerName()
     );
     battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic('defeatedwildmon'); };
-    battle.init().then(() => {
-      currentBattle = battle;
-      state = "battle";
-    });
+    await battle.init();
+    currentBattle = battle;
+    state = "battle";
   });
 }
 
@@ -600,7 +668,6 @@ function startTrainerBattle(
     return;
   }
 
-  state = "transition";
   const partyMembers = trainerClass.parties[partyIndex] as TrainerPartyMember[];
   // Create a dummy enemy for the constructor (will be replaced by setupTrainerBattle)
   const dummyEnemy = createPokemon(
@@ -622,21 +689,20 @@ function startTrainerBattle(
     modifyPikachuHappiness('GYMLEADER');
   }
 
-  cancelPendingMapMusic(); stopMusic();
-  playMusic('trainerbattle');
-  const battle = new Battle(playerParty[0], dummyEnemy, playerParty, playerBag, getPlayerBadges(), getPlayerName());
-  const displayName = trainerName ?? trainerClass.displayName;
-  battle.setupTrainerBattle(trainerClass, partyMembers, displayName, {
-    classKey: trainerClassName,
-    mapName: getMapName(),
-    endBattleText: opts.endBattleText ? substituteNames(opts.endBattleText) : undefined,
-  });
-  // TrainerBattleVictory: the fanfare starts once the whole party is down.
-  // Gym leaders (defeatedgymleader, wGymLeaderNo) arrive with their gyms in V3.
-  const victoryMusic = victoryMusicFor(trainerClassName);
-  battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic(victoryMusic); };
-  engagedTrainer = opts.engaged ?? null;
-  battle.init().then(() => {
+  beginBattleEntry(true, partyMembers, trainerClass.id + 200, GYM_LEADER_IDS.has(trainerClass.id) ? 1 : 0, async () => {
+    const battle = new Battle(playerParty[0], dummyEnemy, playerParty, playerBag, getPlayerBadges(), getPlayerName());
+    const displayName = trainerName ?? trainerClass.displayName;
+    battle.setupTrainerBattle(trainerClass, partyMembers, displayName, {
+      classKey: trainerClassName,
+      mapName: getMapName(),
+      endBattleText: opts.endBattleText ? substituteNames(opts.endBattleText) : undefined,
+    });
+    // TrainerBattleVictory: the fanfare starts once the whole party is down.
+    // Gym leaders (defeatedgymleader, wGymLeaderNo) arrive with their gyms in V3.
+    const victoryMusic = victoryMusicFor(trainerClassName);
+    battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic(victoryMusic); };
+    engagedTrainer = opts.engaged ?? null;
+    await battle.init();
     currentBattle = battle;
     state = "battle";
   });
@@ -1106,6 +1172,7 @@ let pendingEngage: { npc: Npc; steps: number; facing: Direction } | null = null;
 
 /** DisplayTextID(0), shared by the overworld and script free-movement dispatch. */
 function openStartMenu(): void {
+  setSpriteIndex(0); // OverworldLoop: TEXT_START_MENU aliases hSpriteIndex
   state = 'start_menu';
   startMenu.open(hasFlag('GOT_POKEDEX'), getPlayerName(), mapAutoTextBox(currentMapName));
 }
@@ -1142,7 +1209,7 @@ function enterMapAfterBattle(): void {
 function gameTick(): void {
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
-  if (state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen") {
+  if (state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit") {
     playTimeMs += now - lastPlayTimeUpdate;
   }
   lastPlayTimeUpdate = now;
@@ -1164,7 +1231,7 @@ function gameTick(): void {
   const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
     || (state === 'battle' && currentBattle?.statusScreenActive)
     || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
-  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !sessionOwnInput && !textBox.active) syncJoypadRead();
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !sessionOwnInput && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1192,19 +1259,8 @@ function gameTick(): void {
       };
       state = "transition";
     } else if (action === 'new_game') {
-      cancelPendingMapMusic(); stopMusic();
-      fadeDir = "out";
-      fadeCallback = () => {
-        Promise.all([oakSpeech.load(), loadEdTile()]).then(() => {
-          oakSpeech.start();
-          // Assembly: OakSpeech plays MUSIC_ROUTES2
-          playMusic('routes2');
-          fadeAlpha = 0;
-          fadeDir = null;
-          state = "oak_speech";
-        });
-      };
-      state = "transition";
+      cancelPendingMapMusic();
+      introFrames = 20; state = 'intro_entry';
     } else if (action === 'new_game_quick') {
       cancelPendingMapMusic(); stopMusic();
       setPlayerName('YELLOW');
@@ -1228,6 +1284,18 @@ function gameTick(): void {
     } else if (action === 'back') {
       state = "title_screen";
     }
+  } else if (state === 'intro_entry') {
+    textBgTransfer.tick();
+    if (--introFrames === 0) {
+      oakSpeech.start(mainMenu.saveTiles()); state = 'oak_speech';
+    }
+  } else if (state === 'intro_exit') {
+    textBgTransfer.tick();
+    if (introFrames > 0) introFrames--;
+    if (introFrames === 0 && introMapReady) {
+      loadMapMusic('RedsHouse2F'); state = 'overworld';
+      lastPlayTimeUpdate = Date.now(); fadeAlpha = 1; fadeDir = 'in';
+    }
   } else if (state === "oak_speech") {
     const oakAction = oakSpeech.update();
     if (oakAction) {
@@ -1235,20 +1303,9 @@ function gameTick(): void {
         namingScreen.show(oakAction.target);
         state = "naming_screen";
       } else if (oakAction.type === 'done') {
-        // Oak speech finished — start the actual game
-        cancelPendingMapMusic(); stopMusic();
-        fadeDir = "out";
-        fadeAlpha = 1;
-        fadeCallback = () => {
-          oakSpeech.clearScreen();
-          startNewGame().then(() => {
-            loadMapMusic('RedsHouse2F');
-            state = "overworld";
-            lastPlayTimeUpdate = Date.now();
-            fadeDir = "in";
-          });
-        };
-        state = "transition";
+        // Speech already faded and cleared. Load during the two 20-frame white holds.
+        introFrames = 40; introMapReady = false; state = 'intro_exit';
+        startNewGame().then(() => { introMapReady = true; });
       }
     }
   } else if (state === "naming_screen") {
@@ -1446,10 +1503,8 @@ function gameTick(): void {
             break;
           }
           markSeen(enemy.species.id); // LoadEnemyMonData marks it seen
-          cancelPendingMapMusic(); stopMusic();
-          playMusic('wildbattle'); // PlayBattleMusic: a wild opponent
-          startWildBattleTransition(() => {
-            initCatchDemo({
+          beginBattleEntry(false, enemy.level, enemy.species.id, 0, async () => {
+            await initCatchDemo({
               battleType: scriptAction.battleType,
               enemy,
               initialCatchTraining: hasFlag('INITIAL_CATCH_TRAINING'),
@@ -1459,10 +1514,8 @@ function gameTick(): void {
           break;
         }
         case 'startBattleTransition':
-          startBattleTransition(() => {
-            startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName, {
-              endBattleText: scriptAction.endBattleText,
-            });
+          startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName, {
+            endBattleText: scriptAction.endBattleText,
           });
           break;
         case 'warp':
@@ -1549,7 +1602,7 @@ function gameTick(): void {
   } else if (state === "evolution") {
     updateEvolution();
   } else if (state === "battle_transition") {
-    updateBattleTransition();
+    tickBattleEntry();
   } else if (state === "battle") {
     if (currentBattle) {
       currentBattle.update();
@@ -1782,24 +1835,18 @@ function gameLoop(now = 0): void {
     renderSplash();
   } else if (state === "title_screen") {
     titleScreen.render();
-  } else if (state === "main_menu") {
+  } else if (state === "main_menu" || state === "intro_entry") {
     clear();
     mainMenu.render();
   } else if (state === "oak_speech") {
     oakSpeech.render();
+  } else if (state === "intro_exit") {
+    clear(); drawFadeOverlay(1);
   } else if (state === "naming_screen") {
     namingScreen.render();
   } else if (state === "battle_transition") {
-    // Render overworld underneath, then transition overlay on top
-    const camX = player.getCameraX();
-    const camY = player.getCameraY();
     clear();
-    gameMap.render(camX, camY);
-    for (const npc of npcs) npc.render(camX, camY);
-    for (const npc of getScriptNpcs()) npc.render(camX, camY);
-    pikachuFollower.render(camX, camY);
-    player.render(camX, camY);
-    renderBattleTransitionOverlay();
+    renderBattleEntry();
   } else if (state === "battle") {
     currentBattle?.render();
   } else if (state === "catch_demo") {

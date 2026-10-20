@@ -12,10 +12,13 @@ export default defineConfig({
 export const mainTest = {
   gameTick, checkUiEntry, drawUiLayer, renderPikachuEmotionScene, openStartMenu, restOfPass, overworldDeps, startScript,
   startNewGame, loadSavedGame, handleWarpLoad, handleBlackoutWarp, connectToMap,
+  renderBattleEntry, get battleEntry() { return battleEntry; }, ow,
   async finishFade() { const callback = fadeCallback; fadeCallback = null; await callback?.(); },
   startMenu, partyMenu, bagMenu, optionMenu,
+  oakSpeech, namingScreen, get introMapReady() { return introMapReady; },
   pokedexMenu, trainerCard, saveMenu, textBox, playerParty, player, gameMap, pikachuFollower,
   set battle(value: Battle | null) { currentBattle = value; state = 'battle'; },
+  get battle() { return currentBattle; },
   get state() { return state; }, set state(value: GameState) { state = value; }, get fade() { return fadeAlpha; },
   get mapName() { return currentMapName; }, mainMenu,
   get bag() { return playerBag; },
@@ -23,6 +26,8 @@ export const mainTest = {
   reset() {
     state = 'overworld'; currentBattle = null; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
     fadeCallback = null; prevTickInPassState = false; pendingWarpMusic = null;
+    introFrames = 0; introMapReady = false;
+    battleEntry = null; pendingTrainer = null; engagedTrainer = null;
     playerParty.length = 0; playerBag = new Bag();
     npcs = []; currentMapName = 'RedsHouse2F';
     gameMap.mapData = null; player.cancelMovement();

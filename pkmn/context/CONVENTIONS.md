@@ -205,7 +205,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
   Nidoran hung the game and Route 22's wild Nidorans silently never appeared.
 - **Trainer pics are keyed by class key, not display name** (`trainerPicName()` in
   `battle/trainer_flow.ts`): `BUG_CATCHER` → `bugcatcher.png`, while "BUG CATCHER" has
-  no file. A failed pic load leaves `startTrainerBattle` stuck in `transition`
+  no file. A failed pic load leaves `startTrainerBattle` holding black in `battle_transition`
   forever — no error on screen, only in the console.
 
 ## File organization
@@ -224,14 +224,14 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 1913/1913** as of 2026-10-18 (map-music CP4). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 2124/2124** as of 2026-10-18 (A5d CP5 steps 1–2). Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
    origin) and play the path the slice touches. Today that is Pallet → Viridian →
    Route 2 → Viridian Forest (the north opens after the old man's demo, V1e). Debug
    overlay: backtick key, with warps to every extracted map — add one for each new
-   map. When the user play-tests, remind them the A button is **Z** (X is B).
+   map. When the user play-tests, remind them the A button is **X** (Z is B; DECISIONS #71).
 4. Spot-check hard entries when comparing generated JSON against expectations —
    Nidoran-F, Farfetch'd, Eevee's three item evolutions, Kadabra's trade
    evolution, a `$FF`-format trainer party — not just Bulbasaur.
@@ -245,7 +245,64 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-1913 tests in 111 files (vitest, `environment: 'node'`); without ROM, 1756 pass / 157 skip.
+2124 tests in 123 files (vitest, `environment: 'node'`); without ROM, 1950 pass / 174 skip.
+
+**A5d CP5 steps 1–2** adds one main_battle_transition.test.ts regression (now 17): a real wild turn during
+the door sound cancels the warp's pending map song. Removing only beginBattleEntry's cancellation fails;
+production restored byte-for-byte. Two sequential gate rounds pass: **2124/2124**, no-ROM **1950/174**,
+typecheck/build clean. No production change (note 65 §10.17 part 1). Steps 3–5, the browser walk (`notes/65-a5d-cp5/`, an observation-only
+Playwright harness, no tests added), are §10.17 part 2.
+
+**A5d CP4** adds 18: `main_battle_transition.test.ts` (16), one independent ROM object-count test and one
+hidden-vs-unused capture regression. Real main paths cover all requested entries and eight choices, E/PM/tick0,
+source-slot survivors, CP1 totals and black until readiness. Includes first-living/last-enemy fixtures and Oak aliases.
+Existing assertions change only for the exact schema key; the renderer fixture accepts objectCount.
+32/32 production mutations caught/restored; evidence/change reasons in note 65 §10.15. Sequential gates:
+ROM **2123/2123**, no-ROM **1949/174**, typecheck/build clean. Checked by Claude (note 65 §10.16); no CP5 walk yet.
+
+**A5d CP3** adds 62 without changing any existing case: `overworld/battle_transition.test.ts` (39),
+`overworld/transition_screen_render.test.ts` (14), `rom/__tests__/battle_transition_tables.test.ts` (9, all ROM).
+The checked CP1 cell oracle covers every tick at all three inherited portions; tests also read the original
+ticks_p0/frame_tables directly. The exporter accounts explicitly for CP1's pre-tail end() enable-flag snapshot
+and direct ClearScreen assignment (note 65 §10.13). Raster coverage uses committed Pallet art and checks map-only
+capture, frozen raw OBJ, BGP/OBP independence, source slots/aliases, overlap, black hold and render independence.
+ROM guards pin all table bytes/pointers and every retained NPC's 1-based original object slot without reading refs.
+59/59 production mutations caught/restored (`notes/65-a5d-cp3/`); one large-diff diagnostic was changed to exact
+Buffer equality, then that mutation rerun. Sequential gates: ROM **2105/2105**, no-ROM **1932/173**, typecheck/build
+clean. No main, legacy-transition, extractor or generated-asset change; checked by Claude (note 65 §10.14).
+
+**A5d CP2** adds 73: new `rom/__tests__/battle_transitions_data.test.ts` (6; four ROM-dependent),
+`overworld/battle_transition_choice.test.ts` (34), `overworld/sprite_index.test.ts` (16),
+`audio/battle_music.test.ts` (16), and one START-register case in `main_intro.test.ts` (now 7).
+Coverage: source/ROM lists, map IDs and tile, preset-name overreads, byte-wrapped choice, first-live/last-enemy
+levels, custom-name leftovers, OAM rank/cap/unused slots, real movement/interactions/script writers, and real
+audio-facade stop/wait/PM. Eleven old exact-command cases gain only the register metadata in their expected
+objects; no test or timing/path assertion removed. Static-export's count gains the new JSON key.
+46/46 temporary production mutations caught/restored (runner/evidence in `notes/65-a5d-cp2/`).
+Sequential typecheck/build, ROM **2043/2043**, no-ROM **1879/164** pass. Setup twice leaves all 895 files
+byte-identical; all 893 pre-existing generated files unchanged. Note 65 §10.11; CP2 awaits Claude's check.
+
+**Intro animation CP4** adds 12 no-ROM cases: `menus/oak_speech.test.ts` +6 (23 total: both complete CP1 frame
+tables, three custom-return phases, cached palette/OBJ rendering and OAM reset); new `main_intro.test.ts` (6:
+both full dispatch paths, 20/40 holds and real bedroom/music handoff, late loader, boot/overlay ordering, and
+with/without-save menu snapshots). The 17 existing Oak cases migrate only per note 64 §5/§10.6; reasons are in
+§10.14. Existing non-Oak tests unchanged. 46/46 actual production mutations caught/restored, including three
+initial survivors killed by new raw-tile assertions. Sequential gates: typecheck/build clean, ROM 1970/1970,
+no-ROM 1810/160, no timeout. No browser yet; CP4 awaits Claude's check.
+
+**Intro animation CP3** adds 41, all no-ROM: `renderer/palette_shades.test.ts` (16: twelve register values,
+exact colour/font matching, $E4 no-op, unknown/ambiguous colours and canvas pass); `menus/intro_screen.test.ts`
+(10: slot batches and all inherited portions, copy flag restore, numeric IDs, glyph/clear writes, both literal
+slide traces and actual TextBox sharing); `menus/intro_screen_render.test.ts` (15: WX placement/clipping, context
+restore, source tile order, read-only rendering, both shrink wipes, Pikachu's full mirrored pixels, all 24 real-art
+slide positions, BG-before-OBJ and picture-canvas preparation). **26/26 production mutations caught/restored**;
+all four gates pass sequentially (note 64 §10.12). Existing tests, OakSpeech and main.ts unchanged.
+
+**Intro animation CP2** adds 4: two ROM extraction cases (bank-$02 shrink header/CHAN5 pointer, all commands against
+the source and committed data), one ROM static-export case (extractRom/data/static byte-for-byte round-trip), and
+one no-ROM sound-ID case (shrink $9c stays separate from bank-$20 meetjessiejames). Existing asset-count and ASM-ID
+count guards become 183 JSON and 20 SFX. The preload-list and three-bank-difference guards remain unchanged.
+**9/9 production mutations caught/restored**; all four gates pass sequentially (note 64 §10.10). No intro caller yet.
 
 **Map-music CP4** adds 3: `main_door_audio.test.ts` (2: the real door path on the real audio, `go_inside` and `go_outside` in full before the fade's ID clear, song 88 updates after the request) and one `main.test.ts` case (a blackout supersedes a waiting warp request); 6/6 production mutations caught (note 63 §10.15).
 

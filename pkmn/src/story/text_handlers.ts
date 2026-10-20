@@ -37,7 +37,8 @@ export function getTextHandler(map: string, textId: number | undefined): TextHan
   return textId === undefined ? undefined : handlers.get(`${map}:${textId}`);
 }
 /** DisplayTextIDInit -> handler -> AfterDisplayingTextID/Hold -> CloseTextDisplay. */
-export function displayTextID(body: ScriptCommand[], opts: { autoBox?: boolean; outerWait?: boolean } = {}): ScriptCommand[] {
-  return [{ type: 'displayOpen', autoBox: opts.autoBox ?? true }, ...body,
+export function displayTextID(body: ScriptCommand[], opts: { autoBox?: boolean; outerWait?: boolean; textId?: number } = {}): ScriptCommand[] {
+  return [{ type: 'displayOpen', autoBox: opts.autoBox ?? true,
+    ...(opts.textId === undefined ? {} : { spriteIndex: opts.textId }) }, ...body,
     { type: 'displayClose', outerWait: opts.outerWait ?? true }];
 }

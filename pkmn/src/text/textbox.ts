@@ -71,6 +71,9 @@ export async function reloadBorderTiles(): Promise<void> {
   await loadMenuGlyphs();
 }
 
+/** Select a preloaded palette variant without asynchronous work in a frame program. */
+export function useBorderTiles(canvas: HTMLCanvasElement): void { borderCanvas = canvas; }
+
 /** Draw a tile-based border box at any position (reusable for battle text, menus, etc.).
  *  widthTiles and heightTiles include the border tiles themselves. */
 export function drawTileBorder(x: number, y: number, widthTiles: number, heightTiles: number): void {

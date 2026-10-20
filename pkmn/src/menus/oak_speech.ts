@@ -1,565 +1,188 @@
-// Oak Speech intro sequence — plays when starting a new game
-// Assembly ref: engine/movie/oak_speech/oak_speech.asm, oak_speech2.asm
-// Shows Oak, Pikachu, asks player/rival names, shrink animation
-
-import { GB_WIDTH, TILE_SIZE } from '../core';
+// engine/movie/oak_speech/{oak_speech,oak_speech2}.asm. Resume CPU work after each VBlank.
 import { setPlayerName, setRivalName } from '../core/player_state';
-import {
-  loadTileset, getCtx, getScale, drawFadeOverlay,
-  setActivePalette, clear, fillRect,
-} from '../renderer';
+import { loadTileset, loadSpriteMapped, obpMapping, drawSprite, setActivePalette } from '../renderer';
 import { readJoypad } from '../input';
-import { playSFX } from '../audio';
-import { TextBox, reloadBorderTiles } from '../text';
-import { drawText, drawChar, drawBox } from './menu_render';
+import { playSFX, playMusic, stopMusic, fadeOutAndStopMusic } from '../audio';
+import { TextBox, useBorderTiles } from '../text';
+import { textBgTransfer } from '../text/bg_transfer';
 import { MenuInput } from './menu_input';
+import { IntroScreen, type IntroCell } from './intro_screen';
+import { introPictureCanvas, renderIntroScreen } from './intro_screen_render';
 
-// Portrait positions (from assembly hlcoord coordinates)
-const PIC_CENTER_X = 48;  // tile 6 × 8
-const PIC_CENTER_Y = 32;  // tile 4 × 8
-const PIC_RIGHT_X = 96;   // shifted right when name menu is open
-
-const PIKA_CENTER_X = 60;  // centered: (160-40)/2
-const PIKA_CENTER_Y = 36;  // vertically centered in upper area
-
-// Animation timings
-const FADEIN_FRAMES = 60;  // total frames for portrait fade-in (~1 sec)
-const FADEOUT_FRAMES = 8;  // frames for fade to white
-const SLIDE_SPEED = 8;     // pixels per frame for slide animation
-const SHRINK_DELAY = 4;    // frames per shrink stage
-const POST_SHRINK_WAIT = 0; // no delay — go straight to fade-out
-
-// Name menu layout (from assembly DisplayIntroNameTextBox)
-// TextBoxBorder at (0,0), inner bc = 10, 9 → total 11×12 tiles
-const MENU_X = 0;
-const MENU_Y = 0;
-const MENU_W = 11; // tiles
-const MENU_H = 12; // tiles
-const MENU_TITLE_X = 3;  // tile col for "NAME" title
-const MENU_ITEM_X = 2;   // tile col for menu items
-const MENU_ITEM_Y = 2;   // starting tile row for items
-const MENU_ITEM_SPACING = 2; // tile rows between items
-const MENU_CURSOR_X = 1; // tile col for cursor
-
-// Preset names (from constants/player_constants.asm)
 const PLAYER_NAMES = ['NEW NAME', 'YELLOW', 'ASH', 'JACK'];
 const RIVAL_NAMES = ['NEW NAME', 'BLUE', 'GARY', 'JOHN'];
-
-type Phase =
-  // Oak portrait
-  | 'oak_fadein' | 'oak_text' | 'fadeout1'
-  // Pikachu
-  | 'pikachu_slide' | 'pikachu_text' | 'fadeout2'
-  // Player naming
-  | 'red_slide' | 'player_ask' | 'player_menu'
-  | 'player_slide_back' | 'player_confirm'
-  // Rival naming
-  | 'fadeout3' | 'rival_fadein' | 'rival_ask' | 'rival_menu'
-  | 'rival_slide_back' | 'rival_confirm'
-  | 'custom_name_return'
-  // Final
-  | 'fadeout4' | 'final_fadein' | 'final_text'
-  | 'shrink' | 'post_shrink' | 'final_fadeout'
-  | 'done';
-
-const TEXT_PHASES: readonly Phase[] = ['oak_text', 'pikachu_text', 'player_ask',
-  'player_confirm', 'rival_ask', 'rival_confirm', 'final_text'];
-
-export type OakSpeechAction =
-  | null
-  | { type: 'openNamingScreen'; target: 'player' | 'rival' }
-  | { type: 'done' };
+type Target = 'player' | 'rival';
+export type OakSpeechAction = null | { type: 'openNamingScreen'; target: Target } | { type: 'done' };
+interface AudioRequest { readonly frame: number; readonly kind: 'stop' | 'music' | 'sfx' | 'fade'; readonly value: string | number }
 
 export class OakSpeech {
-  // Loaded portrait canvases
-  private oakPic: HTMLCanvasElement | null = null;
-  private pikachuPic: HTMLCanvasElement | null = null;
-  private redPic: HTMLCanvasElement | null = null;
-  private rivalPic: HTMLCanvasElement | null = null;
-  private shrink1Pic: HTMLCanvasElement | null = null;
-  private shrink2Pic: HTMLCanvasElement | null = null;
-
-  // Phase state
-  private phase: Phase = 'oak_fadein';
-  private frame = 0;
+  private screen = new IntroScreen();
+  private readonly pictures = new Map<string, HTMLCanvasElement>();
+  private readonly sprites = new Map<number, HTMLCanvasElement>();
+  private border: HTMLCanvasElement | null = null;
   private textBox = this.createTextBox();
-
-  // Fade overlay
-  private fadeAlpha = 1;
-
-  // Portrait display
-  private currentPic: HTMLCanvasElement | null = null;
-  private picX = PIC_CENTER_X;
-  private picY = PIC_CENTER_Y;
-  private picFlipX = false;
-
-  // Slide animation
-  private slideX = 0;
-  private slideTarget = 0;
-
-  // Name menu
+  private program: Generator<void> | null = null;
+  private frame = 0;
+  private printing = false;
   private menuVisible = false;
-  private nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: MENU_CURSOR_X, topY: MENU_ITEM_Y });
-  private menuItems: string[] = [];
-  private namingTarget: 'player' | 'rival' = 'player';
+  private nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: 1, topY: 2 });
+  private namingTarget: Target = 'player';
+  private naming = false;
+  private action: OakSpeechAction = null;
+  private stage = 'idle';
+  private third: number | null = null;
+  private prepareSprites = false;
+  private shadowVisible = false;
+  private spriteVisible = false;
+  private requests: AudioRequest[] = [];
 
-  // Shrink stage
-  private shrinkStage = 0;
-
-  /** The program declares the Pikachu cry; playback and its wait remain J2. */
   constructor(private readonly cryCue: (species: string) => void = () => {}) {}
-
   private createTextBox(): TextBox {
     return new TextBox({ closeFrames: () => 0, updateSprites: () => {}, cry: species => this.cryCue(species) });
   }
-
+  /** CPU writes, transferred tiles, VRAM and DMA-visible OBJ are separate snapshots. No clocks here. */
+  get inspection() {
+    return { frame: this.frame, stage: this.stage, bgp: this.screen.bgp, obp0: this.screen.obp0,
+      wx: this.screen.wx, cells: this.screen.cells, visibleCells: this.screen.visibleCells, slots: this.screen.slots,
+      third: this.third, nextPortion: textBgTransfer.nextPortion, transferEnabled: textBgTransfer.enabled,
+      spriteVisible: this.spriteVisible, shadowVisible: this.shadowVisible,
+      sprite: { x: 64, y: 60, image: 0, direction: 'down' as const },
+      text: { active: this.textBox.active, complete: this.textBox.isComplete, waiting: this.textBox.isWaitingForInput },
+      menu: this.menuVisible ? { target: this.namingTarget, item: this.nameMenu.item, cursor: this.nameMenu.cursor } : null,
+      audioRequests: this.requests.map(request => ({ ...request })) } as const;
+  }
   async load(): Promise<void> {
-    setActivePalette('MEWMON');
-    await reloadBorderTiles();
-    const [oak, pikachu, red, rival, s1, s2] = await Promise.all([
-      loadTileset('/gfx/trainers/prof.oak.png'),
-      loadTileset('/gfx/sprites/front/25.png'),
-      loadTileset('/gfx/player/red.png'),
-      loadTileset('/gfx/trainers/rival1.png'),
-      loadTileset('/gfx/player/shrink1.png'),
-      loadTileset('/gfx/player/shrink2.png'),
-    ]);
-    this.oakPic = oak;
-    this.pikachuPic = pikachu;
-    this.redPic = red;
-    this.rivalPic = rival;
-    this.shrink1Pic = s1;
-    this.shrink2Pic = s2;
+    // Explicit palette: boot's other parallel loaders must not change these assets' colours.
+    const names = ['oak', 'pikachu', 'red', 'rival', 'shrink1', 'shrink2'];
+    const urls = ['/gfx/trainers/prof.oak.png', '/gfx/sprites/front/25.png', '/gfx/player/red.png',
+      '/gfx/trainers/rival1.png', '/gfx/player/shrink1.png', '/gfx/player/shrink2.png'];
+    await Promise.all(names.map(async (name, index) => {
+      const source = await loadTileset(urls[index], 'MEWMON');
+      this.pictures.set(name, introPictureCanvas(source, name === 'pikachu'));
+    }));
+    this.border = await loadTileset('/gfx/font/font_extra.png', 'MEWMON');
+    await Promise.all([0xd0, 0x80, 0x40, 0].map(async reg => {
+      this.sprites.set(reg, await loadSpriteMapped('/gfx/sprites/red.png', obpMapping(reg), 'MEWMON'));
+    }));
   }
-
-  start(): void {
-    this.phase = 'oak_fadein';
-    this.frame = 0;
-    this.fadeAlpha = 1;
-    this.menuVisible = false;
-    this.textBox = this.createTextBox();
-
-    // Show Oak portrait centered
-    this.currentPic = this.oakPic;
-    this.picX = PIC_CENTER_X;
-    this.picY = PIC_CENTER_Y;
-    this.picFlipX = false;
+  start(initial?: readonly IntroCell[]): void {
+    this.textBox = this.createTextBox(); this.screen = new IntroScreen(initial);
+    this.frame = 0; this.printing = false; this.menuVisible = false; this.naming = false;
+    this.action = null; this.prepareSprites = false; this.shadowVisible = false; this.spriteVisible = false;
+    this.requests = []; this.third = null; this.selectPalette();
+    this.program = this.run(); this.program.next();
   }
-
-  /** Called by main.ts after naming screen returns with the chosen name. */
+  private selectPalette(): void {
+    setActivePalette('MEWMON'); if (this.border) useBorderTiles(this.border);
+  }
   continueAfterNaming(name: string): void {
-    this.menuVisible = false;
-    if (this.namingTarget === 'player') setPlayerName(name); else setRivalName(name);
-    // ClearScreen's Delay3, then Delay3: no portrait or box for six frames.
-    this.clearScreen();
-    this.setPhase('custom_name_return');
+    if (!this.naming) return;
+    this.setName(name); this.naming = false;
+    // Naming's opaque exit has already cleared the displayed map and OAM.
+    this.screen.adoptBlankWindow(); this.screen.bgp = 0xe4; this.screen.obp0 = 0xd0; this.screen.wx = 7;
+    this.shadowVisible = false; this.spriteVisible = false; this.selectPalette();
+    this.program?.next();
   }
-
-  /** ClearScreen, reached after a fade or on the custom-name return. */
-  clearScreen(): void {
-    this.textBox.dismiss();
-    this.currentPic = null;
-  }
-
+  /** CPU ClearScreen; its three waits belong to the program. */
+  clearScreen(): void { this.textBox.dismiss(); this.screen.clearScreen(); }
   update(): OakSpeechAction {
-    this.frame++;
-    // TextBox.update owns this in printing phases. Retained boxes still transfer
-    // one BG portion each VBlank during fades, slides, menus and the shrink.
-    if (!TEXT_PHASES.includes(this.phase)) this.textBox.updateDisplay();
-
-    switch (this.phase) {
-      // ── Oak portrait fade-in ──
-      case 'oak_fadein': {
-        this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
-        if (this.frame >= FADEIN_FRAMES) {
-          this.fadeAlpha = 0;
-          this.textBox.printStandalone({ program: 'OakSpeechText1' });
-          this.setPhase('oak_text');
-        }
-        break;
-      }
-
-      case 'oak_text': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.startFadeOut('fadeout1');
-        }
-        break;
-      }
-
-      case 'fadeout1': {
-        if (this.updateFadeOut()) {
-          // Set up Pikachu slide
-          this.currentPic = this.pikachuPic;
-          this.picFlipX = true;
-          this.picY = PIKA_CENTER_Y;
-          this.slideX = GB_WIDTH;
-          this.picX = GB_WIDTH;
-          this.slideTarget = PIKA_CENTER_X;
-          this.fadeAlpha = 0;
-          this.setPhase('pikachu_slide');
-        }
-        break;
-      }
-
-      // ── Pikachu slide-in ──
-      case 'pikachu_slide': {
-        this.slideX -= SLIDE_SPEED;
-        if (this.slideX <= this.slideTarget) {
-          this.slideX = this.slideTarget;
-          this.picX = this.slideTarget;
-          this.textBox.printStandalone({ program: 'OakSpeechText2' });
-          this.setPhase('pikachu_text');
-        } else {
-          this.picX = this.slideX;
-        }
-        break;
-      }
-
-      case 'pikachu_text': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.startFadeOut('fadeout2');
-        }
-        break;
-      }
-
-      case 'fadeout2': {
-        if (this.updateFadeOut()) {
-          // Set up Red slide
-          this.currentPic = this.redPic;
-          this.picFlipX = false;
-          this.picY = PIC_CENTER_Y;
-          this.slideX = GB_WIDTH;
-          this.picX = GB_WIDTH;
-          this.slideTarget = PIC_CENTER_X;
-          this.fadeAlpha = 0;
-          this.setPhase('red_slide');
-        }
-        break;
-      }
-
-      // ── Player naming sequence ──
-      case 'red_slide': {
-        this.slideX -= SLIDE_SPEED;
-        if (this.slideX <= this.slideTarget) {
-          this.slideX = this.slideTarget;
-          this.picX = this.slideTarget;
-          this.textBox.printStandalone({ program: 'IntroducePlayerText' });
-          this.setPhase('player_ask');
-        } else {
-          this.picX = this.slideX;
-        }
-        break;
-      }
-
-      case 'player_ask': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.openNameMenu('player');
-          this.setPhase('player_menu');
-        }
-        break;
-      }
-
-      case 'player_menu': {
-        const result = this.updateNameMenu();
-        if (result === 'custom') {
-          this.namingTarget = 'player';
-          return { type: 'openNamingScreen', target: 'player' };
-        }
-        if (result === 'preset') {
-          const name = this.menuItems[this.nameMenu.item];
-          setPlayerName(name);
-          // Slide portrait back to center
-          this.slideX = PIC_RIGHT_X;
-          this.slideTarget = PIC_CENTER_X;
-          this.menuVisible = false;
-          this.setPhase('player_slide_back');
-        }
-        break;
-      }
-
-      case 'player_slide_back': {
-        this.slideX -= SLIDE_SPEED;
-        if (this.slideX <= this.slideTarget) {
-          this.picX = this.slideTarget;
-          this.textBox.printStandalone({ program: 'YourNameIsText' });
-          this.setPhase('player_confirm');
-        } else {
-          this.picX = this.slideX;
-        }
-        break;
-      }
-
-      case 'player_confirm': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.startFadeOut('fadeout3');
-        }
-        break;
-      }
-
-      // ── Rival naming sequence ──
-      case 'fadeout3': {
-        if (this.updateFadeOut()) {
-          this.currentPic = this.rivalPic;
-          this.picX = PIC_CENTER_X;
-          this.picY = PIC_CENTER_Y;
-          this.picFlipX = false;
-          this.fadeAlpha = 1;
-          this.setPhase('rival_fadein');
-        }
-        break;
-      }
-
-      case 'rival_fadein': {
-        this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
-        if (this.frame >= FADEIN_FRAMES) {
-          this.fadeAlpha = 0;
-          this.textBox.printStandalone({ program: 'IntroduceRivalText' });
-          this.setPhase('rival_ask');
-        }
-        break;
-      }
-
-      case 'rival_ask': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.openNameMenu('rival');
-          this.setPhase('rival_menu');
-        }
-        break;
-      }
-
-      case 'rival_menu': {
-        const result = this.updateNameMenu();
-        if (result === 'custom') {
-          this.namingTarget = 'rival';
-          return { type: 'openNamingScreen', target: 'rival' };
-        }
-        if (result === 'preset') {
-          const name = this.menuItems[this.nameMenu.item];
-          setRivalName(name);
-          this.slideX = PIC_RIGHT_X;
-          this.slideTarget = PIC_CENTER_X;
-          this.menuVisible = false;
-          this.setPhase('rival_slide_back');
-        }
-        break;
-      }
-
-      case 'rival_slide_back': {
-        this.slideX -= SLIDE_SPEED;
-        if (this.slideX <= this.slideTarget) {
-          this.picX = this.slideTarget;
-          this.textBox.printStandalone({ program: 'HisNameIsText' });
-          this.setPhase('rival_confirm');
-        } else {
-          this.picX = this.slideX;
-        }
-        break;
-      }
-
-      case 'rival_confirm': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.startFadeOut('fadeout4');
-        }
-        break;
-      }
-
-      case 'custom_name_return': {
-        if (this.frame >= 6) {
-          const player = this.namingTarget === 'player';
-          this.currentPic = player ? this.redPic : this.rivalPic;
-          this.picX = PIC_CENTER_X;
-          this.picY = PIC_CENTER_Y;
-          this.picFlipX = false;
-          this.textBox.printStandalone({ program: player ? 'YourNameIsText' : 'HisNameIsText' });
-          this.setPhase(player ? 'player_confirm' : 'rival_confirm');
-        }
-        break;
-      }
-
-      // ── Final sequence ──
-      case 'fadeout4': {
-        if (this.updateFadeOut()) {
-          this.currentPic = this.redPic;
-          this.picX = PIC_CENTER_X;
-          this.picY = PIC_CENTER_Y;
-          this.picFlipX = false;
-          this.fadeAlpha = 1;
-          this.setPhase('final_fadein');
-        }
-        break;
-      }
-
-      case 'final_fadein': {
-        this.fadeAlpha = Math.max(0, 1 - this.frame / FADEIN_FRAMES);
-        if (this.frame >= FADEIN_FRAMES) {
-          this.fadeAlpha = 0;
-          this.textBox.printStandalone({ program: 'OakSpeechText3' });
-          this.setPhase('final_text');
-        }
-        break;
-      }
-
-      case 'final_text': {
-        this.textBox.update();
-        if (this.textBox.isComplete) {
-          this.shrinkStage = 0;
-          this.setPhase('shrink');
-        }
-        break;
-      }
-
-      case 'shrink': {
-        // 3 stages: red.png → shrink1 → shrink2, each for SHRINK_DELAY frames
-        if (this.frame >= SHRINK_DELAY) {
-          this.shrinkStage++;
-          this.frame = 0;
-          if (this.shrinkStage === 1) {
-            this.currentPic = this.shrink1Pic;
-          } else if (this.shrinkStage === 2) {
-            this.currentPic = this.shrink2Pic;
-          } else {
-            this.currentPic = null;
-            this.phase = 'done';
-            return { type: 'done' };
-          }
-        }
-        break;
-      }
-
-      case 'post_shrink': {
-        if (this.frame >= POST_SHRINK_WAIT) {
-          this.startFadeOut('final_fadeout');
-        }
-        break;
-      }
-
-      case 'final_fadeout': {
-        if (this.updateFadeOut()) {
-          this.phase = 'done';
-          return { type: 'done' };
-        }
-        break;
-      }
-
-      case 'done':
-        return { type: 'done' };
-    }
-
-    return null;
+    if (this.naming) return null;
+    if (this.stage === 'done') return { type: 'done' };
+    this.frame++; this.third = this.screen.vblank(this.textBox, this.printing);
+    // DMA reads the previous shadow; UpdateSprites prepares the following frame.
+    this.spriteVisible = this.shadowVisible; if (this.prepareSprites) this.shadowVisible = true;
+    this.program?.next(); const action = this.action; this.action = null; return action;
   }
-
   render(): void {
-    // Clear screen to lightest palette color
-    clear();
-
-    // Draw current portrait
-    if (this.currentPic) {
-      this.drawPic(this.currentPic, this.picX, this.picY, this.picFlipX);
+    renderIntroScreen(this.screen, this.pictures, () => {
+      const sprite = this.sprites.get(this.screen.obp0);
+      if (this.spriteVisible && sprite) drawSprite(sprite, 0, 0, 64, 60);
+    });
+  }
+  private *delayFrames(frames: number): Generator<void> { for (let i = 0; i < frames; i++) yield; }
+  private *clear(): Generator<void> { this.clearScreen(); yield* this.delayFrames(3); }
+  private *copyOtherTiles(frames: number): Generator<void> {
+    const enabled = textBgTransfer.enabled; textBgTransfer.enabled = false;
+    try { yield* this.delayFrames(frames); } finally { textBgTransfer.enabled = enabled; }
+  }
+  private *picture(name: string, flipped = false): Generator<void> {
+    this.stage = `copy:${name}`; yield* this.screen.copyVideoData(name); this.screen.placePicture(flipped);
+  }
+  private *fadeInIntroPic(): Generator<void> {
+    this.stage = 'silhouette';
+    for (const bgp of [0x54, 0xa8, 0xfc, 0xf8, 0xf4, 0xe4]) {
+      this.screen.bgp = bgp; yield* this.delayFrames(10);
     }
-
-    // Draw name menu if visible
-    if (this.menuVisible) {
-      this.renderNameMenu();
-    }
-
-    // Draw textbox if active
-    this.textBox.render();
-
-    // Fade overlay
-    if (this.fadeAlpha > 0) {
-      drawFadeOverlay(this.fadeAlpha);
+  }
+  private *fade(inside: boolean): Generator<void> {
+    this.stage = inside ? 'fade:in' : 'fade:out';
+    const pairs = inside ? [[0x40, 0x40], [0x90, 0x80], [0xe4, 0xd0]] : [[0x90, 0x80], [0x40, 0x40], [0, 0]];
+    for (const [bgp, obp0] of pairs) {
+      this.screen.bgp = bgp; this.screen.obp0 = obp0; yield* this.delayFrames(8);
     }
   }
-
-  // ── Helpers ──
-
-  private setPhase(p: Phase): void {
-    this.phase = p;
-    this.frame = 0;
+  private *movePicLeft(): Generator<void> {
+    this.stage = 'window'; this.screen.wx = 119; yield; this.screen.bgp = 0xe4;
+    for (;;) { yield; if (this.screen.wx === 7) return; this.screen.wx -= 8; }
   }
-
-  private startFadeOut(nextPhase: Phase): void {
-    this.fadeAlpha = 0;
-    this.setPhase(nextPhase);
+  private *printText(program: string): Generator<void> {
+    this.stage = `text:${program}`; this.printing = true;
+    this.textBox.printStandalone({ program }); this.screen.captureText(this.textBox);
+    while (!this.textBox.isComplete) yield;
+    this.printing = false;
   }
-
-  /** Advance fade-out. Returns true when fully faded. */
-  private updateFadeOut(): boolean {
-    this.fadeAlpha = Math.min(1, this.frame / FADEOUT_FRAMES);
-    if (this.frame < FADEOUT_FRAMES) return false;
-    this.clearScreen();
-    return true;
+  private setName(name: string): void {
+    if (this.namingTarget === 'player') setPlayerName(name); else setRivalName(name);
   }
-
-  /** Draw a portrait canvas at a pixel position. */
-  private drawPic(
-    pic: HTMLCanvasElement,
-    x: number, y: number,
-    flipX = false,
-  ): void {
-    const ctx = getCtx();
-    const s = getScale();
-    const w = pic.width;
-    const h = pic.height;
-
-    if (flipX) {
-      ctx.save();
-      ctx.translate((x + w) * s, y * s);
-      ctx.scale(-1, 1);
-      ctx.drawImage(pic, 0, 0, w, h, 0, 0, w * s, h * s);
-      ctx.restore();
+  private drawCursor(): void {
+    for (let row = 2; row <= 8; row += 2) this.screen.put(1, row, ' ');
+    const cursor = this.nameMenu.cursor; this.screen.put(cursor.x, cursor.y, '▶');
+  }
+  private *chooseName(target: Target): Generator<void> {
+    this.namingTarget = target; this.stage = `${target}:right`; yield* this.screen.slidePicture('right');
+    const names = target === 'player' ? PLAYER_NAMES : RIVAL_NAMES;
+    this.stage = `${target}:menu`; this.menuVisible = true;
+    this.nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: 1, topY: 2 });
+    this.screen.textBoxBorder(0, 0, 10, 9); this.screen.placeString(3, 0, 'NAME');
+    names.forEach((name, i) => this.screen.placeString(2, 2 + i * 2, name)); this.drawCursor();
+    for (;;) {
+      yield; const selected = this.nameMenu.update(readJoypad, () => playSFX('press_ab'));
+      this.drawCursor(); if (selected) break;
+    }
+    this.menuVisible = false;
+    if (this.nameMenu.item === 0) {
+      this.stage = `${target}:naming`; this.naming = true; this.action = { type: 'openNamingScreen', target };
+      yield; // continueAfterNaming resumes this CPU, without another VBlank
+      this.stage = `${target}:return`; yield* this.clear(); yield* this.delayFrames(3);
+      yield* this.picture(target === 'player' ? 'red' : 'rival');
     } else {
-      ctx.drawImage(pic, 0, 0, w, h, x * s, y * s, w * s, h * s);
+      this.stage = `${target}:back`; this.screen.clearArea(0, 0, 12, 11); yield* this.delayFrames(10);
+      this.setName(names[this.nameMenu.item]); yield* this.delayFrames(3); yield* this.screen.slidePicture('left');
     }
+    yield* this.printText(target === 'player' ? 'YourNameIsText' : 'HisNameIsText');
   }
-
-  // ── Name menu ──
-
-  private openNameMenu(target: 'player' | 'rival'): void {
-    this.namingTarget = target;
-    this.menuItems = target === 'player' ? PLAYER_NAMES : RIVAL_NAMES;
-    this.nameMenu = new MenuInput({ watched: ['a'], maxItem: 3, topX: MENU_CURSOR_X, topY: MENU_ITEM_Y });
-    this.menuVisible = true;
-    // Move portrait to the right (Y stays the same — assembly slides horizontally only)
-    this.picX = PIC_RIGHT_X;
-    this.picY = PIC_CENTER_Y;
+  private request(kind: AudioRequest['kind'], value: string | number): void {
+    this.requests.push({ frame: this.frame, kind, value });
+    if (kind === 'stop') stopMusic(); else if (kind === 'music') playMusic(value as string);
+    else if (kind === 'sfx') playSFX(value as string); else fadeOutAndStopMusic(value as number);
   }
-
-  /** Returns 'custom' (NEW NAME), 'preset' (named selected), or null (still browsing). */
-  private updateNameMenu(): 'custom' | 'preset' | null {
-    if (this.nameMenu.update(readJoypad, () => playSFX('press_ab'))) {
-      if (this.nameMenu.item === 0) return 'custom';
-      return 'preset';
-    }
-
-    return null;
-  }
-
-  private renderNameMenu(): void {
-    const T = TILE_SIZE;
-
-    // Draw bordered box
-    drawBox(MENU_X, MENU_Y, MENU_W * T, MENU_H * T);
-
-    // Title "NAME" on top border — white background to clear border tiles beneath
-    // Assembly: PlaceString at hlcoord 3, 0 overwrites border tiles in VRAM
-    fillRect(MENU_TITLE_X * T, MENU_Y, 4 * T, T, 0);
-    drawText('NAME', MENU_TITLE_X * T, MENU_Y);
-
-    // Menu items
-    for (let i = 0; i < this.menuItems.length; i++) {
-      const row = MENU_ITEM_Y + i * MENU_ITEM_SPACING;
-      drawText(this.menuItems[i], MENU_ITEM_X * T, row * T);
-    }
-
-    // Cursor
-    const cursor = this.nameMenu.cursor;
-    drawChar('\u25B6', cursor.x * T, cursor.y * T);
+  private *run(): Generator<void> {
+    this.request('stop', 0); this.request('music', 'routes2');
+    this.stage = 'entry'; yield* this.clear(); yield* this.copyOtherTiles(5);
+    yield* this.picture('oak'); yield* this.fadeInIntroPic(); yield* this.printText('OakSpeechText1');
+    yield* this.fade(false); yield* this.clear(); yield* this.picture('pikachu', true); yield* this.movePicLeft();
+    yield* this.printText('OakSpeechText2');
+    yield* this.fade(false); yield* this.clear(); yield* this.picture('red'); yield* this.movePicLeft();
+    yield* this.printText('IntroducePlayerText'); yield* this.chooseName('player');
+    yield* this.fade(false); yield* this.clear(); yield* this.picture('rival'); yield* this.fadeInIntroPic();
+    yield* this.printText('IntroduceRivalText'); yield* this.chooseName('rival');
+    yield* this.fade(false); yield* this.clear(); yield* this.picture('red'); yield* this.fade(true);
+    yield* this.printText('OakSpeechText3');
+    this.stage = 'shrink'; this.request('sfx', 'shrink'); yield* this.delayFrames(4);
+    yield* this.copyOtherTiles(2); yield* this.picture('shrink1'); yield* this.delayFrames(4);
+    yield* this.picture('shrink2'); this.stage = 'shrink:hold'; this.request('fade', 10);
+    yield* this.delayFrames(20); this.screen.clearArea(6, 5, 7, 7); yield* this.copyOtherTiles(5);
+    this.prepareSprites = true; yield* this.delayFrames(50);
+    yield* this.fade(false); yield* this.clear(); this.stage = 'done'; this.action = { type: 'done' };
   }
 }

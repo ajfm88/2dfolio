@@ -114,7 +114,7 @@ describe('Lab source program/envelope order', () => {
     expect(commands[1]).toEqual({ type: 'emotionBubble', target: 'rival' });
     expect(commands.find(c => c.type === 'moveParallel')).toEqual({ type: 'moveParallel', npcId: 'rival',
       npcPath: ['down', 'right', 'right', 'right'], npcModes: ['normal', 'fast', 'fast', 'fast'],
-      playerPath: ['right', 'right'], playerFromNpcStep: 4 });
+      playerPath: ['right', 'right'], playerFromNpcStep: 4, spriteIndex: 1 });
     expect(commands.find(c => c.type === 'movePlayer')).toEqual({ type: 'movePlayer', path: ['left', 'down', 'left', 'left', 'left', 'up', 'up'] });
     expect(commands.find(c => c.type === 'hideNpc')).toEqual({ type: 'hideNpc', npcId: 'item_ball' });
   });
@@ -278,7 +278,7 @@ describe('Lab runtime timing and side effects', () => {
     const finished = vi.spyOn(deps.player, 'justFinishedStep', 'get').mockReturnValue(true);
     initScript(buildOaksLabAwaitBallScript()); updateScript(deps, false); updateScript(deps, true); finished.mockReturnValue(false);
     expect(getActiveScript()!.commands.some(c => c.type === 'printText' && c.program === LAB_GUARD_PROGRAM)).toBe(true);
-    expect(opening(getActiveScript()!.commands)).toEqual({ type: 'displayOpen', autoBox: false });
+    expect(opening(getActiveScript()!.commands)).toEqual({ type: 'displayOpen', autoBox: false, spriteIndex: 10 });
     for (let t = 1; t < 4000 && deps.textBox.active; t++) tick(deps, t);
     expect(deps.textBox.active).toBe(false); expect(deps.player.scriptedMoveDone).toBe(false);
   });

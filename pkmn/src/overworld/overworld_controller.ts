@@ -41,6 +41,7 @@ import {
 } from '../story/viridian_city';
 import { TRAINER_MAPS, trainerMapScript, trainerTalkedTo, startTrainerWalkUp } from './map_trainers';
 import type { TrainerSightState, TrainerScriptAction } from './map_trainers';
+import { setSpriteIndex } from './sprite_index';
 import {
   buildOaksLabRivalBattleScript,
 } from '../story/oaks_lab';
@@ -170,6 +171,7 @@ export function updateOverworld(
         return null;
       }
       // IsSpriteInFrontOfPlayer sets its BIT_FACE_PLAYER; the box's UpdateSprites turns it
+      setSpriteIndex(15);
       pikachuFollower.requestFacePlayer();
       return { type: 'pikachuEmotion' };
     }
@@ -226,6 +228,7 @@ function foundBeforeDialogue(interaction: Interaction): boolean {
  * bit and ends the pass (no menu). Only reachable with an adjacent trainer (A1c).
  */
 export function seenStartPressed(deps: OverworldDeps): void {
+  setSpriteIndex(0);
   updateSprites(deps.npcs, deps.gameMap, deps.player, deps.pikachuFollower);
 }
 

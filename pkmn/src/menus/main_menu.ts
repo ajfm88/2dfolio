@@ -6,6 +6,7 @@ import { TILE_SIZE } from '../core';
 import { isPressed } from '../input';
 import { drawText, drawBox } from './menu_render';
 import { playSFX } from '../audio';
+import { ScreenTiles } from './screen_tiles';
 
 export type MainMenuAction = 'continue' | 'new_game' | 'new_game_quick' | 'option' | 'back';
 
@@ -88,6 +89,15 @@ export class MainMenu {
     }
 
     return null;
+  }
+
+  /** The dismissed skip prompt leaves this menu for OakSpeech's three ClearScreen transfers. */
+  saveTiles(): readonly string[] {
+    const tiles = new ScreenTiles();
+    tiles.textBoxBorder(0, 0, this.hasSave ? 6 : 4, BOX_INNER_W);
+    this.items.forEach((item, index) => tiles.placeString(MENU_TEXT_COL, MENU_TEXT_ROW + index * ROW_SPACING, item));
+    tiles.put(CURSOR_COL, MENU_TEXT_ROW + this.cursor * ROW_SPACING, '▶');
+    return tiles.saveTiles().map(cell => cell ?? ' ');
   }
 
   render(): void {

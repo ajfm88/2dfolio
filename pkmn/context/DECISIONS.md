@@ -859,6 +859,49 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       stays with a later warp-timing slice (backlog).
     - Built in the map-music slice's CP4; commits remain local; no push.
 
+69. **The intro-animation slice takes all three plan decisions; Codex implements** (2026-10-18). *The user's answer to
+    O-37 (`notes/64-intro-animation-plan.md` §9): "yes to 1", "yes to 2 decision a", and on 3: "it implements, and you
+    test".*
+
+    - **Five checkpoints, as note 64 §4:** CP1 trace (no code), CP2 `SFX_SHRINK` data, CP3 the screen model (BGP/OBP0
+      shades, window X, vFrontPic slots, the tile slides on the shared BG thirds), CP4 `OakSpeech` as a frame program plus
+      `main.ts`, CP5 verification. Every frame from NEW GAME ("Skip intro?" NO) to `EnterMap`, both name paths.
+    - **The opening and title screen** (copyright, Game Freak star, Yellow's intro movie, the title's logo bounce and SFX,
+      Pikachu's PCM clips, the idle reset) become **their own slice after V5, before A2–A4**. They are not part of #51.
+    - **Codex implements;** Claude checks each CP; the user play-tests with sound (note 64 §6).
+    - Out of scope as note 64 §1 lists: the Text2 cry (J2), the naming screen's own frames (J2), `LoadMapData`'s timing
+      (the warp-timing slice), the main menu and its non-vanilla prompt (J2).
+    - **Done and user-verified 2026-10-18** ("everything checks perfectly"). The user asked about trimming ~0.5 s from
+      the silence before Pallet Town's music. Told that the silence is the cartridge's (the intro's fade-to-stop, the
+      40-frame hold, then the room's DF fading silence for 88 updates), they kept it: "let's keep it then". No deviation.
+    - Commits remain local; no push.
+
+70. **A5c–A5f is six sub-slices, A5d first; the battle becomes a frame program** (2026-10-18). *The user's answer to
+    O-38 (`notes/65-a5c-a5f-plan.md` §9): "yes to all".*
+
+    - **Order:** A5d (transitions) → A5c1 (battle text data, `BattleScreen`, the HUD) → A5c2 (the battle's menus) →
+      A5c3 (the battle program; switch-over) → A5e (the intro) → A5f (the wild catch, with the catch demo folded in).
+      This amends #44's A5c → A5d → A5e → A5f order. A5d is approved as note 65 §6 plans it (five CPs).
+    - **The battle is a frame program on a `BattleScreen`.** Its flow comes from `core.asm` routine by routine. The
+      math (damage, hit tests, effects, AI) stays upstream's, behind ports named for the ASM routines. No hand-written
+      battle string survives A5c3.
+    - **The battle-mechanics audit** (damage scaling and cap, effects, status, AI against `core.asm` / `effects.asm`,
+      `refs/engine` as the oracle) becomes **its own slice after V5, before Phase B**. It swaps the ports' bodies.
+    - **A small sub-animation player** (OAM frame blocks from `data/battle_anims`) for the ball and poof animations
+      A5e and A5f need. Move animations stay upstream's; PROJECT's non-goal is unchanged.
+    - **Codex implements;** Claude checks each CP; the user play-tests each visible slice.
+    - Commits remain local; no push.
+    - **A5d done and user-verified 2026-10-18** ("everything works as intended"; note 65 §10.18).
+
+71. **The A and B keys are swapped: A is X, B is Z** (2026-10-18). *The user, after the A5d play-test: "can we make A
+    to be the X key and B to be the Z one?"*
+
+    - Upstream mapped `z` → A and `x` → B. Now `x` → A and `z` → B (`src/input/input.ts` `keyMap`). Arrows/WASD, Enter
+      and Shift are unchanged.
+    - This is the keyboard binding only, not the game: the cartridge has no keyboard, so fidelity isn't affected.
+    - Browser-automation harnesses written before this change (e.g. `notes/64-intro-cp5/`, `notes/65-a5d-cp5/`) press
+      `z` for A; anything that reuses them must swap the keys.
+
 ## Open — not decided, needs the user
 
 

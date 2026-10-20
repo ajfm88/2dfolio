@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **1806** passing in 104 files (2026-10-17, V2b CP3; no-ROM 1652 pass / 154 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **2124** passing in 123 files (2026-10-18, A5d CP5 steps 1–2; no-ROM 1950 pass / 174 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (182 files; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2).
+- **`data/`** — JSON only, produced by `npm run setup` (184 files; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. It holds 521 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 182 JSON files. That lets
+  (since R1a), which deletes and rebuilds it every run. It holds 524 PNGs + 3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 184 JSON files. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -220,6 +220,13 @@ Summary of path → shape → source:
 | `audio/**` | `channels[].commands[]` (`audio.ts`) | ROM via extractor |
 
 ## Verified format findings (2026-07-29 — measured, not assumed)
+
+A5d CP2 adds `battle_transitions.json` (`rom/extractors/battle_transitions.ts`):
+`{ dungeonMaps: number[], dungeonRanges: [number, number][], mapIds: Record<string, number> }`.
+The lists are the ROM's literal equality list and inclusive ranges, including its missing-map bug;
+the IDs cover `EXTRACTABLE_MAPS`. Existing map files gain no ID field. The separate runtime loader in
+`overworld/battle_transition_choice.ts` is prepared/tested but **startup wiring waits for CP4**.
+The extractor also guards the sixteen `$ff` bytes of `BattleTransitionTile` at 1c:4ac3.
 
 These were checked directly against pret and the engine. Do not re-investigate
 them. (The lost copy's PNG dumper was built on them; R1a rebuilds it.)
@@ -465,7 +472,7 @@ Entry point: `index.html` → `src/main.ts`.
 |---|---|---|
 | `core/` | Shared types, constants, player state | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()` |
 | `renderer/` | Canvas 2D rendering; OBJ art through any OBP register (`obpMapping`, healing machine) | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()`, `loadSpriteMapped()`, `obpMapping()` |
-| `input/` | Keyboard + touch (arrows/WASD, Z=A, X=B, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
+| `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
@@ -489,7 +496,9 @@ Entry point: `index.html` → `src/main.ts`.
 splash            "Click to start" (unlocks browser audio)
 title_screen      animated title with Pikachu
 main_menu         NEW GAME / CONTINUE / OPTION
-oak_speech        Oak intro (portraits, text, naming)
+intro_entry       Hold main menu 20 frames, then prime OakSpeech
+oak_speech        Frame program on IntroScreen (portraits, text, naming, shrink, fades)
+intro_exit        White40 while loading, then today's room/music entry (wait white if late)
 naming_screen     keyboard for player/rival names
 overworld         walk, NPCs move, warps/connections/encounters
 textbox           dialogue box active
@@ -594,8 +603,8 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
   blocksets, collision, pokedex, maps (**24**: upstream's 12 + the Route 2 /
   Viridian Forest set from V1a + Pewter City and its four buildings from V2a; NPCs can carry `item` and trainer fields), music (47 listed, all 47
-  extract since V1c fixed the `meeteviltrainer` typo), SFX (**16** extract since A5b3,
-  including the item/key-item jingles and PC sounds: only names with an entry in `audio.ts` `SFX_HEADERS` —
+  extract since V1c fixed the `meeteviltrainer` typo), SFX (**20** extract: the item/key-item jingles and PC sounds since A5b3, the two
+  field-medicine sounds since A5b7c2, `healing_machine` and intro CP2's `shrink`; only names with an entry in `audio.ts` `SFX_HEADERS` —
   `index.ts` lists 36 unique names, the setup script 46, and `extractSfx()` returns null
   for the rest; V5 expands `SFX_HEADERS`),
   wave samples, noise instruments, font / font_extra / font_battle_extra,

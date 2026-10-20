@@ -1,5 +1,11 @@
 # Audio Architecture
 
+A5d CP2 adds `battle_music.ts`'s numeric song choice and the facade's `playBattleMusic` generator.
+Prime at E: clear fade control / SA, yield one frame; resume at E+1: PM of the chosen song, return.
+Gym-leader precedence, Lance and RIVAL3 are tested against source IDs. CP4 preloads all four battle tracks
+after audio unlock and drives this generator for every battle entry, followed by the second DelayFrame.
+The port has no low-health alarm state yet. Note 65 §10.11.
+
 Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
 (Web Audio `ScriptProcessorNode`).
 
@@ -7,7 +13,7 @@ Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, a
 |---|---|
 | `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), `fadeOutAndStopMusic(control)` / `isAudioFadingOut()` (healing CP2), the SFX preload, the `_playSFX(name)` console helper |
 | `play_sound.ts` | Pure numeric WRAM/request state: distinct PM/PS/PN/PW/SA/DM/DF, banks, queued sound and FadeOutAudio; map-music CP2 |
-| `sound_ids.ts` | All 49 header-backed music IDs/banks and 19 extracted SFX IDs; refs-checked; the direct PokeFluteInBattle routine has no header ID |
+| `sound_ids.ts` | All 49 header-backed music IDs/banks and 20 extracted SFX IDs; refs-checked; the direct PokeFluteInBattle routine has no header ID |
 | `request_host.ts` | `engineHost`: the one `PlaySoundHost` over the synth and engines (volume, ID clear + `cancelDrum`, StopAllAudio, DetermineAudioFunction, sound-finished) |
 | `audio_flags.ts` | Transient WRAM bits as plain module state: `BIT_NO_AUDIO_FADE_OUT` (StatusScreen) and `BIT_NO_MAP_MUSIC` (the Pallet escort, cleared in the Lab) |
 | `fade_audio.ts` | `AudioFade` = `fadeOutAndStopMusic` (control + SA), `isFadingOut`, `tick`, over a `PlaySound`. No standalone shims since map-music CP3 |
@@ -32,8 +38,11 @@ Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, a
   and `turn_on_pc` / `turn_off_pc` / `enter_pc` (SFX mode, channel 5, return on
   70 / 18 / 22). They are extracted and preloaded; their game call sites await
   A5b4–A5b7. `sfx_key_item_pc.test.ts` pins pitch, timing, waits and music hand-off.
+- **Intro animation CP2** adds preloaded `shrink`: bank `$02`, header `$41d4`, ID `$9c`, CHAN5 body `$44ec`.
+  The music table independently uses `$9c` for `meetjessiejames` in bank `$20`; reverse lookup keeps both.
+  The speech's SHRINK request is CP4; CP2 changes only extraction, registration and preload (note 64 §10.10).
 - **Audio-bank rule:** the cartridge's PlaySound selects the current music's
-  `wAudioROMBank`. Our 19 SFX use bank `$02`; the ROM guard in
+  `wAudioROMBank`. Our 20 SFX use bank `$02`; the ROM guard in
   `extraction.test.ts` compares every SFX_HEADERS entry with bank `$1f` and
   pins exactly three differences: save (return 40/37), turn_on_pc (70/81),
   enter_pc (22/18). Key-item, turn-off, `heal_hp`, `heal_ailment` and `healing_machine` copies
@@ -42,7 +51,7 @@ Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, a
   Silph Co. 11F (G1) needs `$1f`.
   Evidence and scope: `notes/28-a5b3-plan.md` §3.3, §8.
 - **Map music**: `MAP_MUSIC` in `main.ts` (from `data/maps/songs.asm`);
-  `updateMapMusic()` only restarts when the track changes. Every new map needs an
+  `playMapMusic()` routes through DF's song/bank comparison (battle returns force a restart). Every new map needs an
   entry — and outdoor maps need adding to `OUTDOOR_MAPS` (door SFX choice).
   Story `restoreMapMusic` uses the live map callback; the Lab restores `oakslab`
   (A5b5c F-2), and the nurse restores her current map after the existing machine.
@@ -78,13 +87,13 @@ Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, a
   PM, `playSFX` = PS (dropped during a fade), `playMusicNew` = PN, `playDefaultMusic` = DM (retries on the audio clock),
   `restoreNurseMusic`, `playDefaultMusicFadeOutCurrent` = DF, `stopMusic` = control 0 + SA, `fadeOutAndStopMusic(control)`,
   `updateMusic6Times`, `stopAllSounds`. `main.ts` requests the map song with six passes + DF at warps, CONTINUE, NEW GAME
-  and battle returns (after-battle reason), DF only at connections, and the blackout's two requests. Known departure: the
-  port's 8-frame warp cuts a door sound (note 63 §10.12).
+  and battle returns (after-battle reason), DF only at connections, and the blackout's two requests. CP4 makes the warp's
+  request wait for `isSoundFinished()` so its door sound finishes before the fade (#68; note 63 §10.16).
 - **Healing CP2 fade:** control 4 lowers NR50 every 5 updates (5…35); update **40** stops all
   channels and restores $77 through the cartridge's `Audio2_StopAllAudio` behavior. No-music,
   zero-control and second-stop requests stop immediately. Idle ticks preserve StatusScreen's
   explicit volume. `GBSynthesizer` retains NR50 and uses **(n+1)/8** per output level (base gain
-  0.5), so $00/$33/$77 yield 0.0625/0.25/0.5. Queued map-track state is implemented in map-music CP2; its callers await CP3.
+  0.5), so $00/$33/$77 yield 0.0625/0.25/0.5. Queued map-track state and its callers are complete (map-music CP2–CP4).
 - **The interpreter's rules (A1a, `engine_1.asm`; detail in `sound_channel.ts` and
   `notes/16-a1a-plan.md`):**
   - **Channels:** the hardware channel comes from the id, `(id − 1) & 3`.

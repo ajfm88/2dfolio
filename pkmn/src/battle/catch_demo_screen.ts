@@ -2,7 +2,7 @@
 // BATTLE_TYPE_PIKACHU (Oak catches Pikachu in Pallet Town). The rules and the step list
 // are in catch_demo.ts; this runs them. Upstream's pikachu/pikachu_battle.ts, moved and
 // generalized in V1d (DECISIONS #32, notes/05-v1d-plan.md).
-// The battle transition (startWildBattleTransition) runs before this is entered.
+// The shared battle transition runs before this is entered.
 
 import {
   setActivePalette,
@@ -243,7 +243,7 @@ let demo: CatchDemoState | null = null;
 // --- Public API ---
 
 /** Start the catch demo. Called AFTER the battle transition has completed. */
-export function initCatchDemo(opts: CatchDemoInit): void {
+export function initCatchDemo(opts: CatchDemoInit): Promise<void> {
   const savedPal = getActivePalette();
   setActivePalette("ROUTE");
   reloadBorderTiles();
@@ -288,7 +288,7 @@ export function initCatchDemo(opts: CatchDemoInit): void {
     caught,
     savedPalette: savedPal,
   };
-  spritePromise.then(([enemyFront, back, animTiles]) => {
+  return spritePromise.then(([enemyFront, back, animTiles]) => {
     if (demo) {
       demo.enemySprite = enemyFront;
       demo.backSprite = back;
