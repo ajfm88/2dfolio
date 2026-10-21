@@ -12,12 +12,26 @@ export interface PrinterPorts {
 }
 export type TextControl = '\n' | '\f' | '<LINE>' | '<NEXT>' | '<CONT>' | '<SCROLL>' | '<PROMPT>' | '<DONE>';
 const CONTROLS: readonly string[] = ['<LINE>', '<NEXT>', '<CONT>', '<SCROLL>', '<PROMPT>', '<DONE>'];
+/** Dictionary characters, not text commands (home/text.asm PlaceMoveUsersName). */
+const ACTORS: readonly string[] = ['<USER>', '<TARGET>'];
 
-/** Longest-match glyphs, as constants/charmap.asm; no automatic word wrapping. */
-export function tokenizeText(text: string): string[] {
+/** Whose name PlaceMoveUsersName / PlaceMoveTargetsName prints. Inputs, not WRAM. */
+export interface PlaceActors {
+  /** hWhoseTurn as read. Zero is the player. */
+  whoseTurn: number;
+  /** wBattleMonNick, without the terminator. */
+  battleMonNick: string;
+  /** wEnemyMonNick, without the terminator. */
+  enemyMonNick: string;
+}
+
+/** Longest-match glyphs, as constants/charmap.asm; no automatic word wrapping.
+ * Actor tokens stay glyphs unless a caller is placing them from hWhoseTurn. */
+export function tokenizeText(text: string, actors = false): string[] {
   const result: string[] = [];
   for (let i = 0; i < text.length;) {
-    const control = CONTROLS.find(token => text.startsWith(token, i));
+    const control = CONTROLS.find(token => text.startsWith(token, i))
+      ?? (actors ? ACTORS.find(token => text.startsWith(token, i)) : undefined);
     if (control) { result.push(control); i += control.length; continue; }
     const glyph = textGlyphAt(text, i);
     result.push(glyph); i += glyph.length;
@@ -41,6 +55,15 @@ export class TextScreen {
   }
   get held(): number { return this.joyLast; }
   resetCursor(): void { this.row = 2; this.column = 1; }
+  /** BC as bccoord. Screen row 14 is the first text line (buffer row 2). */
+  bc(): { column: number; row: number } {
+    return { column: this.column, row: this.row + 12 };
+  }
+  /** bccoord. TX_LOW uses (1, 16), the second line of the dialogue box. */
+  setBc(column: number, row: number): void {
+    this.column = column;
+    this.row = row - 12;
+  }
   clearInterior(): void {
     for (let row = 1; row <= 4; row++) this.buffer.fill(' ', row * 20 + 1, row * 20 + 19);
   }
@@ -112,14 +135,38 @@ export class TextScreen {
     }
     this.row = 4; this.column = 1;
   }
-  /** Returns true for DoneText/PromptText: only the current processor level returns. */
-  *placeString(text: string, noDelay = false): Generator<void, boolean> {
-    const tokens = tokenizeText(text);
+  /** $5A uses hWhoseTurn as read; $59 XORs it with 1. Zero places the battle nick.
+   * Nonzero places "Enemy " (EnemyText) and then the enemy nick (home/text.asm:147–185). */
+  private *placeActor(token: '<USER>' | '<TARGET>', actors: PlaceActors, noDelay: boolean): Generator<void> {
+    const turn = token === '<TARGET>' ? (actors.whoseTurn ^ 1) : actors.whoseTurn;
+    if (turn === 0) {
+      yield* this.placeString(actors.battleMonNick, noDelay);
+      return;
+    }
+    yield* this.placeString('Enemy ', noDelay);
+    yield* this.placeString(actors.enemyMonNick, noDelay);
+  }
+  /** Returns true for DoneText/PromptText: only the current processor level returns.
+   * DoneText pops PlaceString's saved HL and does not copy it into BC, so the cursor
+   * stays where this string began (home/text.asm:221–228). */
+  *placeString(text: string, noDelay = false, actors?: PlaceActors): Generator<void, boolean> {
+    const tokens = tokenizeText(text, actors !== undefined);
+    const originRow = this.row;
+    const originColumn = this.column;
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       this.hasMore = i < tokens.length - 1;
-      if (token === '<DONE>') { this.hasMore = false; return true; }
-      if (token === '<PROMPT>') { this.hasMore = false; yield* this.manual(); return true; }
+      if (token === '<DONE>' || token === '<PROMPT>') {
+        this.hasMore = false;
+        if (token === '<PROMPT>') yield* this.manual();
+        this.row = originRow;
+        this.column = originColumn;
+        return true;
+      }
+      if (token === '<USER>' || token === '<TARGET>') {
+        yield* this.placeActor(token, actors!, noDelay);
+        continue;
+      }
       if (token === '\f') {
         yield* this.manual();
         this.clearInterior();

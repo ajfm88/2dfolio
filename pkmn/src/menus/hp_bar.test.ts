@@ -1,11 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   HpBarAnimation, formatHpFraction, getHpBarLength, hpBarColor, hpBarFills,
   PARTY_HP_FRACTION_COL, staticHpBarPixels, type HpBarFrame,
 } from './hp_bar';
 
-function play(oldHp: number, newHp: number, maxHp: number): HpBarFrame[] {
-  const anim = new HpBarAnimation(oldHp, newHp, maxHp);
+function play(oldHp: number, newHp: number, maxHp: number, barType: 0 | 1 = 1): HpBarFrame[] {
+  const anim = new HpBarAnimation(oldHp, newHp, maxHp, barType);
   if (anim.done) return [];
   const frames: HpBarFrame[] = [];
   let frame: HpBarFrame;
@@ -110,7 +112,7 @@ describe('UpdateHPBar2, increase only', () => {
     const same = new HpBarAnimation(10, 10, 20);
     expect(same.done).toBe(true);
     expect(same.tick()).toEqual({ pixels: staticHpBarPixels(10, 20), shownHp: 10, done: true });
-    expect(new HpBarAnimation(10, 4, 20).done).toBe(true);
+    expect(new HpBarAnimation(10, 4, 20).done).toBe(false);
   });
 });
 
@@ -125,5 +127,49 @@ describe('the party HP row', () => {
     expect(hpBarColor(staticHpBarPixels(13, 39))).toBe('yellow');
     expect(hpBarFills(48)).toEqual([8, 8, 8, 8, 8, 8]);
     expect(hpBarColor(0)).toBe('red');
+  });
+});
+
+describe('UpdateHPBar, both directions and both bar types', () => {
+  const traces: { file: string; oldHp: number; newHp: number; maxHp: number; barType: 0 | 1 }[] = [
+    { file: 'hp_45_0_max45_type0', oldHp: 45, newHp: 0, maxHp: 45, barType: 0 },
+    { file: 'hp_45_0_max45_type1', oldHp: 45, newHp: 0, maxHp: 45, barType: 1 },
+    { file: 'hp_0_45_max45_type0', oldHp: 0, newHp: 45, maxHp: 45, barType: 0 },
+    { file: 'hp_0_45_max45_type1', oldHp: 0, newHp: 45, maxHp: 45, barType: 1 },
+    { file: 'hp_300_299_max300_type0', oldHp: 300, newHp: 299, maxHp: 300, barType: 0 },
+    { file: 'hp_300_299_max300_type1', oldHp: 300, newHp: 299, maxHp: 300, barType: 1 },
+    { file: 'hp_299_300_max300_type0', oldHp: 299, newHp: 300, maxHp: 300, barType: 0 },
+    { file: 'hp_299_300_max300_type1', oldHp: 299, newHp: 300, maxHp: 300, barType: 1 },
+    { file: 'hp_13_33_max39_type0', oldHp: 13, newHp: 33, maxHp: 39, barType: 0 },
+    { file: 'hp_13_33_max39_type1', oldHp: 13, newHp: 33, maxHp: 39, barType: 1 },
+    { file: 'hp_1_21_max300_type0', oldHp: 1, newHp: 21, maxHp: 300, barType: 0 },
+    { file: 'hp_1_21_max300_type1', oldHp: 1, newHp: 21, maxHp: 300, barType: 1 },
+    { file: 'hp_1_2_max300_type0', oldHp: 1, newHp: 2, maxHp: 300, barType: 0 },
+    { file: 'hp_1_2_max300_type1', oldHp: 1, newHp: 2, maxHp: 300, barType: 1 },
+    { file: 'hp_0_1_max20_type0', oldHp: 0, newHp: 1, maxHp: 20, barType: 0 },
+    { file: 'hp_0_1_max20_type1', oldHp: 0, newHp: 1, maxHp: 20, barType: 1 },
+  ];
+
+  for (const trace of traces) {
+    it(`${trace.file} matches the trace frame for frame`, () => {
+      const text = readFileSync(resolve(__dirname, `../../../notes/66-a5c1-cp1/${trace.file}.csv`), 'utf8');
+      const rows = text.trim().split(/\r?\n/).slice(1).map(line => {
+        const [tick, pixels, number] = line.split(',');
+        return { tick: Number(tick), pixels: Number(pixels), number: number === '' ? null : Number(number) };
+      });
+      const frames = play(trace.oldHp, trace.newHp, trace.maxHp, trace.barType);
+      expect(frames).toHaveLength(rows.length);
+      rows.forEach((row, index) => {
+        expect(frames[index].pixels, `tick ${row.tick} pixels`).toBe(row.pixels);
+        if (trace.barType === 1) expect(frames[index].shownHp, `tick ${row.tick} number`).toBe(row.number);
+        expect(frames[index].done).toBe(index === rows.length - 1);
+      });
+    });
+  }
+
+  it('stops a decrease when the next pixel would be 49 or more', () => {
+    // max 1, HP 2→1: lengths 96→48. The first downward pixel is 95, so the walk draws 96 once.
+    const frames = play(2, 1, 1);
+    expect(shown(frames)).toBe('2:96 2:96 2:96 1:96 1:48 1:48 1:48 1:48 1:48');
   });
 });

@@ -65,6 +65,9 @@ export const CGB_PALETTES: Record<string, Palette> = {
   YELLOWMON: pal(31,31,31, 31,31, 0, 28,14, 0,  3, 3, 3),
   GRAYMON:   pal(31,31,31, 20,23,10, 11,11, 5,  3, 3, 3),
 
+  // SetPal_BattleBlack (sgb_palettes.asm PAL_BLACK). Not one of the overworld names.
+  PAL_BLACK: pal(31,31,31,  3, 3, 3,  3, 3, 3,  3, 3, 3),
+
   // HP bar palettes (from CGBBasePalettes)
   GREENBAR:  pal(31,31,31, 31,31, 0,  0,31, 0,  3, 3, 3),
   YELLOWBAR: pal(31,31,31, 31,31, 0, 31,18, 0,  3, 3, 3),

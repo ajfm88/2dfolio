@@ -54,7 +54,7 @@ export const MUSIC_IDS = {
   gbprinter: { id: 0xa3, bank: 0x20 },
 } as const satisfies Record<string, SoundIdentity>;
 
-// The extracted bank-$02 SFX IDs. Playback data variants remain V5; request IDs do not change.
+// Extracted SFX IDs (bank $02 except battle-bank-only RUN). Playback variants remain V5.
 export const SFX_IDS = {
   press_ab: 0x90,
   start_menu: 0x8f,
@@ -76,6 +76,7 @@ export const SFX_IDS = {
   turn_off_pc: 0x9a,
   enter_pc: 0x9b,
   shrink: 0x9c,
+  run: 0x97, // SFX_Run, bank $08 only; no caller until A5c3.
 } as const;
 
 export function musicIdentity(name: string): SoundIdentity | undefined {

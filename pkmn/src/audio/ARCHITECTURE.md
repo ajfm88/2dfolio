@@ -4,7 +4,7 @@ A5d CP2 adds `battle_music.ts`'s numeric song choice and the facade's `playBattl
 Prime at E: clear fade control / SA, yield one frame; resume at E+1: PM of the chosen song, return.
 Gym-leader precedence, Lance and RIVAL3 are tested against source IDs. CP4 preloads all four battle tracks
 after audio unlock and drives this generator for every battle entry, followed by the second DelayFrame.
-The port has no low-health alarm state yet. Note 65 §10.11.
+A5c1 CP5 adds `low_health_alarm.ts`. The callback runs after the fade and before music. Nothing sets bit 7 until A5c3. Note 66 §10.19.
 
 Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
 (Web Audio `ScriptProcessorNode`).
@@ -21,9 +21,10 @@ Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, a
 | `sound_channel.ts` | **(A1a)** `SoundChannel`: one software channel of `Audio1_UpdateMusic`, the interpreter the music and music-mode SFX share (DECISIONS #40) |
 | `music_engine.ts` | The track's channels (CHAN1–4) and `wMusicTempo`; suppression while SFX play; `releaseChannel`; channel 8's drum occupancy |
 | `sfx_engine.ts` | SFX on channels 5–8 overriding music channels 1–4: SFX-mode `square_note` / `noise_note` / `pitch_sweep`, or, after `execute_music`, a `SoundChannel` at tempo $0100 |
-| `sound_wait.ts` | **(A1a)** `audioUpdate()` (fade, music, then SFX), `soundFinished()` (channels 5, 6, 8); `updateMusic6Times()` advances music/SFX only |
+| `low_health_alarm.ts` | **(A5c1 CP5)** `wLowHealthAlarm`, the CHAN5 id and the disabled flag; pulse 1's `$E2` envelope. Not saved. Bit 7 is unset until A5c3 |
+| `sound_wait.ts` | **(A1a)** `audioUpdate()` (fade, alarm, music, then SFX), `soundFinished()` (bit 7 returns at once, else channels 5, 6, 8); `updateMusic6Times()` advances music/SFX only |
 | `sfx_names.ts` | **(A1a)** the extracted SFX, preloaded |
-| `synthesizer.ts` | Per-sample generation of all 4 channels: pulse (phase accumulator + duty table), wave (32-sample lookup), noise (LFSR + 64 Hz hardware envelope in the callback) |
+| `synthesizer.ts` | Per-sample generation of all 4 channels: pulse (phase accumulator + duty table + the alarm's 64 Hz envelope), wave (32-sample lookup), noise (LFSR + 64 Hz hardware envelope in the callback) |
 | `frequency_table.ts` | Note → Hz, matching `Audio1_CalculateFrequency` (SRA shift, octave 1 = highest); `waveRegisterToHz` (65536/(2048−x)) |
 | `src/rom/extractors/audio.ts` | Parses binary music/SFX commands from the ROM; an SFX channel decodes as music after `execute_music` |
 

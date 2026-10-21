@@ -143,10 +143,10 @@ Everything else runs inside `game/`:
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
   `data/`, then rebuild `static/` (524 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 160 ROM tests skip
+  `ROM_PATH` the 196 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-10-18 (A5d CP5 steps 1–2): 2124/2124.**
+  tests. **Baseline 2026-10-20 (A5c3a CP3): 2411/2411.** No-ROM 2206 pass / 205 skip.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -162,10 +162,10 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 and **A5b** (every script and menu text on the cartridge's programs, A5b1–A5b7) are user-verified. The game runs
 with no ROM, from committed `data/` + `static/` (Phase R). It has 24 maps (upstream's 12, Route 2 and
 Viridian Forest from V1, Pewter City and its four buildings from V2a), ticks at the Game Boy's 59.7275 Hz, and moves on the ASM's 2-frame pass (DECISIONS #33,
-#36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2**, Pewter City (V2a maps, V2b the guides, V2c Jigglypuff and the sleeping Pikachu), 2026-10-17. **2124/2124** tests; no-ROM 1950 pass, 174 skip; typecheck/build clean.
+#36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2**, Pewter City (V2a maps, V2b the guides, V2c Jigglypuff and the sleeping Pikachu), 2026-10-17. **2411/2411** tests; no-ROM 2206 pass, 205 skip; typecheck/build clean.
 The map-music fade-out (#63, #67, #68) and the intro animation (Oak's speech, #51, #69) are done and
 user-verified (2026-10-18). Next: A5c–A5f, re-split by `notes/65-a5c-a5f-plan.md` (#70) as A5d → A5c1 → A5c2 → A5c3 → A5e → A5f;
-A5d (the transitions) is done and user-verified (2026-10-18); next is A5c1. Then V3.
+A5d (the transitions) is done and user-verified (2026-10-18), A5c1 (battle foundations, note 66) and A5c2 (the battle's menus, note 67) are done (2026-10-19); A5c3 (note 68, six sub-slices) is in progress: A5c3a CP1–CP3 checked, CP4 next. Then V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

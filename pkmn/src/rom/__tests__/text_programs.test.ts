@@ -68,7 +68,7 @@ function statements(): { lines: string[]; at: Map<string, number> } {
   return { lines, at };
 }
 
-/** label → the statements after it (to the next label). */
+/** Bodies keep an explicit physical fallthrough edge, rather than inventing text_end at labels. */
 function labelBodies(): Map<string, string[]> {
   const bodies = new Map<string, string[]>();
   for (const file of ['text', 'data/text', 'scripts', 'engine', 'home'].flatMap(asmFiles)) {
@@ -79,6 +79,7 @@ function labelBodies(): Map<string, string[]> {
       if (lab && (lab[2] || lab[1].startsWith('.'))) {
         if (!lab[1].startsWith('.')) global = lab[1];
         const name = lab[1].startsWith('.') ? global + lab[1] : lab[1];
+        cur?.push(`__fallthrough ${name}`);
         cur = [];
         if (!bodies.has(name)) bodies.set(name, cur);
         continue;
@@ -92,9 +93,14 @@ function labelBodies(): Map<string, string[]> {
 const BINDINGS: Record<string, string> = {
   wStringBuffer: 'stringBuffer', wNameBuffer: 'nameBuffer', wBoxNumString: 'boxNumString',
   hMoney: 'money', hCoins: 'coins', wHPBarHPDifference: 'hpDifference',
+  wBattleMonNick: 'battleMonNick', wEnemyMonNick: 'enemyMonNick', wTrainerName: 'trainerName',
+  wLearnMoveMonName: 'learnMoveMonName', wBoxMonNicks: 'caughtMonNick', wCurEnemyLevel: 'curEnemyLevel',
+  wPlayerNumHits: 'playerNumHits', wEnemyNumHits: 'enemyNumHits', wExpAmountGained: 'expAmountGained',
+  wAmountMoneyWon: 'amountMoneyWon', wTotalPayDayMoney: 'totalPayDayMoney',
 };
 const SOUNDS: Record<string, TextOp> = {
   sound_get_item_1: { op: 'sound', sound: 'get_item1' }, sound_get_item_1_duplicate: { op: 'sound', sound: 'get_item1' },
+  sound_level_up: { op: 'sound', sound: 'get_item1' },
   sound_get_item_2: { op: 'sound', sound: 'get_item2' }, sound_get_key_item: { op: 'sound', sound: 'get_key_item' },
   sound_caught_mon: { op: 'sound', sound: 'caught_mon' }, sound_dex_page_added: { op: 'sound', sound: 'dex_page_added' },
   sound_pokedex_rating: { op: 'sound', sound: 'pokedex_rating' },
@@ -112,9 +118,10 @@ type Row = 1 | 2 | null;
 
 /** Build one program's expected ops from its ASM, following text_far with the row. */
 function expectedFrom(bodies: Map<string, string[]>) {
-  const memo = new Map<string, { ops: TextOp[]; endRow: Row }>();
+  const memo = new Map<string, { label: string; startRow: Row; ops: TextOp[]; endRow: Row }>();
   const build = (label: string, startRow: Row): { ops: TextOp[]; endRow: Row } => {
-    const hit = memo.get(label);
+    const key = `${label}:${startRow}`;
+    const hit = memo.get(key);
     if (hit) return hit;
     const body = bodies.get(label);
     if (!body) throw new Error(`no ASM for ${label}`);
@@ -128,7 +135,13 @@ function expectedFrom(bodies: Map<string, string[]>) {
     /** Append quoted characters; an `@` ends the string. */
     const chars = (q: string): void => {
       const at = q.indexOf('@');
-      str! += expand(at >= 0 ? q.slice(0, at) : q);
+      str! += expand(at >= 0 ? q.slice(0, at) : q).replace(/<(SCROLL|LINE|NEXT|CONT|_CONT|PARA)>/g, token => {
+        if (token === '<SCROLL>') { row = 2; return token; }
+        if (token === '<PARA>') { row = 1; return '\f'; }
+        if (token === '<LINE>') { const out = row === 1 ? '\n' : token; row = 2; return out; }
+        if (token === '<NEXT>') { const out = row === 1 ? '\n' : token; row = row === 1 ? 2 : null; return out; }
+        const out = row === 2 ? '\n' : '<CONT>'; row = 2; return out;
+      });
       if (at >= 0) { ops.push({ op: 'text', text: str! }); str = null; }
     };
     let done = false;
@@ -176,17 +189,25 @@ function expectedFrom(bodies: Map<string, string[]>) {
         case 'text_dots': ops.push({ op: 'dots', count: Number(arg) }); break;
         case 'text_asm': ops.push({ op: 'asm' }); done = true; break;
         case 'text_end': done = true; break;
+        case 'db':
+          if (arg !== '"@"') throw new Error(`${label}: unexpected db ${arg}`);
+          done = true; break;
+        case '__fallthrough': {
+          const next = build(arg, row);
+          ops.push(...next.ops); row = next.endRow; done = true;
+          break;
+        }
         default:
           if (SOUNDS[cmd]) { ops.push(SOUNDS[cmd]); break; }
           throw new Error(`${label}: unexpected '${l}'`);
       }
     }
     if (str !== null) throw new Error(`${label}: string not closed`);
-    const result = { ops, endRow: row };
-    memo.set(label, result);
+    const result = { label, startRow, ops, endRow: row };
+    memo.set(key, result);
     return result;
   };
-  return build;
+  return { build, contexts: memo };
 }
 
 describe('Text programs (A5b1): every listed program against its ASM', () => {
@@ -196,16 +217,29 @@ describe('Text programs (A5b1): every listed program against its ASM', () => {
 
   it('matches the macros in pret\'s source, op for op', () => {
     if (!existsSync(REFS)) return;
-    const build = expectedFrom(labelBodies());
+    const { build, contexts } = expectedFrom(labelBodies());
     // Roots first (row 1), so each child is built from its caller's row, as the extractor does
     for (const [label, , , root] of TEXT_PROGRAM_SYMBOLS) if (root) build(label, 1);
-    for (const [label] of TEXT_PROGRAM_SYMBOLS) {
-      expect(programs[label], label).toEqual(build(label, 1).ops);
-    }
+    for (const context of contexts.values())
+      expect(programs[context.label], `${context.label} from row ${context.startRow}`).toEqual(context.ops);
+    expect([...new Set([...contexts.values()].map(c => c.label))].sort())
+      .toEqual(TEXT_PROGRAM_SYMBOLS.map(([label]) => label).sort());
   });
 
   it('text_programs.json matches the extractor', () => {
     expect(JSON.parse(readFileSync(resolve(DATA_DIR, 'text_programs.json'), 'utf8'))).toEqual(file);
+  });
+
+  it.each(['_RoseText', '_FellText', '_ExpPointsText'])('keeps %s identical when its FAR callers enter on either row', label => {
+    if (!existsSync(REFS)) return;
+    const { build, contexts } = expectedFrom(labelBodies());
+    for (const [name, , , root] of TEXT_PROGRAM_SYMBOLS) if (root) build(name, 1);
+    const entries = [...contexts.values()].filter(context => context.label === label);
+    expect(entries.map(context => context.startRow).sort()).toEqual([1, 2]);
+    for (const context of entries) {
+      expect(context.endRow).toBe(context.startRow);
+      expect(programs[label]).toEqual(context.ops);
+    }
   });
 
   it('classifies every map text as DisplayTextID runs it, read from the ASM', () => {

@@ -328,11 +328,11 @@ Warp transitions use a white fade overlay (matching original Game Boy behavior):
 
 ## Battle Transitions
 
-Visual transitions before battles start (`battle_transitions.ts`):
-- **Spiral** (scripted trainer battles, e.g. the Oak's Lab rival): clockwise inward tile-by-tile blackout, 8 tiles/frame.
-  Map-trainer battles have no transition yet — A5 adds the ASM's 8
-- **Wild** (wild encounters): 3 flash blink cycles, then horizontal stripe fill
-- Module-owns-state: `startSpiralTransition(cb)` / `startWildTransition(cb)` -> `updateBattleTransition()` -> `renderBattleTransitionOverlay()`
+Since A5d (user-verified 2026-10-18) every battle start runs `engine/battle/battle_transitions.asm`: the
+cartridge's 3-bit choice (`battle_transition_choice.ts`) picks one of all 8 transitions, which run as frame
+programs (`battle_transition.ts`) on `TransitionScreen` (`transition_screen.ts`, drawn by
+`transition_screen_render.ts`). The detail is at the top of this file and in note 65 §6 and §10. Upstream's
+two-transition `battle_transitions.ts` is gone.
 
 ## Story State
 
@@ -484,7 +484,11 @@ Beyond `load()`, `render()`, `isWalkable()`, and the getters (`width`, `height`,
 | `map_trainers.ts` | — | The trainer script trio, `TRAINER_MAPS`, the seen state and the walk-up (A1c) |
 | `emotion_bubble.ts` | — | EmotionBubble's 61-frame hold (A1c) |
 | `story_state.ts` | 182 | NPC visibility/dialogue based on story flags |
-| `battle_transitions.ts` | 164 | Spiral and wild battle transition animations |
+| `battle_transition_choice.ts` | 109 | The 3-bit transition choice, dungeon/map-ID data, levels, OAM survivors (A5d) |
+| `battle_transition.ts` | 209 | The prologue, all 8 transitions and the tail as frame programs (A5d) |
+| `battle_transition_tables.ts` | 19 | ROM tables: the flash palettes, circle and half-circle data (A5d) |
+| `transition_screen.ts` | 66 | `TransitionScreen`: the captured tilemap, window, OAM and palette registers (A5d) |
+| `transition_screen_render.ts` | 121 | Draws `TransitionScreen`: BGP on the map only, frozen OBJ sprites (A5d) |
 | `map_transitions.ts` | 175 | Async warp/connection map loading |
 | `overworld_controller.ts` | 539 | Per-frame overworld update logic, interaction handling |
 | `item_pickup.ts` | — | Item-ball, hidden-item and Route 1 sample command builders (A1b) |

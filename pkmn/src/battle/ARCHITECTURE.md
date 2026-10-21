@@ -1,5 +1,28 @@
 # Battle System Architecture
 
+A5c3a CP3 adds unused `battle_state.ts` and `battle_loaders.ts`. `BattleState` is one WRAM cell per address; each ASM name is an accessor. A5c2's menu, action and party contexts are one view over those cells. `partySpecies` follows `SET_PAL_BATTLE`: a zero `wBattleMonSpecies` reads 0, otherwise the party species at `wPlayerMonNumber`. `curPartySpecies` is `$CF90`. `curItem` stays the item-name string, and `itemIndex` stays the bag choice. `LoadBattleMonFromParty` copies the box-level byte and takes the nick from `wPlayerMonNumber`. `LoadEnemyMonFromParty` then stores `wWhichPokemon` over that byte and does not boost badges. `LoadEnemyMonData` sends a link battle through the party copy; otherwise wild DVs are two injected random calls, the second stored first, a trainer uses `$98`/`$88` and the party's HP and status, and a transformed mon keeps the original DVs. It does not apply burn or paralysis penalties. `InitWildBattle` records the ghost picture (`GhostPic` `$6920`) and writes six nick bytes, `GHOST@`. `ApplyBurnAndParalysisPenaltiesToPlayer` stores `hWhoseTurn` 1 and quarters or halves the player; `ToEnemy` stores 0 and does the same to the enemy. Badge boosts are `stat + (stat >> 3)` on the player's battle copy, even bits only, capped at 999. `ReadPlayerMonCurHPAndStatus`, `DecrementPP` and `IncrementMovePP` have no callers. `BattlePokemon` has no box-level field; the four-byte write-back updates current HP and the decoded status, and the level stays. This is not `damage.ts`'s `applyBadgeStatBoosts`, which still writes the party `BattlePokemon`. Nothing in the running battle imports these modules.
+
+A5c2 CP5 adds `battle_party_menu.ts` and PartyMenu's unused choose-only mode. `bindBattlePartyMenu`
+composes CP4's party port; the party/StatusScreen session owns its one BG tick on session frames, including the
+done frame. Resume the generator at that same frame boundary for reload CPU work; the next yield is the next
+frame. Never also call BattleScreen.vblank on session or held frames. Shared party opening/redraw remain22/16
+(ASM24/18; #73), while the battle quit/switch palette tail is the full11. The opaque retained ScreenTiles overlay
+owns the submenu and129-cell clear; the base party list is still the shared pixel renderer (#74), with its known
+partial-row redraw limit. Refusal PrintText now commits to logical/shown overlay tiles before dismissal, so its
+picture survives the four frozen copy frames. CANCEL returns null to DisplayBattleMenu's loop instead of nesting
+generators. Final idle-machine gates pass twice; note67 §11.18. Nothing in the running battle uses these modules.
+
+A5c2 CP4 adds unused `battle_menu.ts` (DisplayBattleMenu, bag/item tails, ordered HUD palette/alarm composition,
+RUN flow) and `battle_menu_screen.ts` (logical Buffer1/2 and standalone PrintText commit/dismiss). Required
+`BattleActionContext` extends the move context; the host supplies item/party/text/audio/odds ports. ListMenu's
+optional simulated-input branch defaults off. The attempt byte wraps once; the odds adapter maps byte0 to the
+ASM's 256th-attempt meaning. Audio overlap remains V5; RNG and runtime integration remain A5c3. Note67 §11.14.
+
+A5c2 CP3 adds unused `move_selection_menu.ts` (battle/Mimic/PP-item frame program), `battle_menu_context.ts`
+(raw state, Frame/Program and ports) and `battle_tiles.ts` (TileSurface over BattleScreen). Host primes CPU work
+once and owns one VBlank per serviced yield; PrintText and Buffer1 restore are ports. No main.ts, battle.ts or
+battle_ui.ts caller until A5c3. Note 67 §11.12 records tests/mutations; shared-screen palette timing stays V5 (#73).
+
 ## Data Files
 
 - `pokemon.json` (151 species), `moves.json` (165 moves), `type_chart.json`, `trainers.json` (47 classes, 396 parties), `wild/*.json`
@@ -134,16 +157,12 @@ assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM so
 
 ## Battle Transitions
 
-A5d CP2 prepares the new extracted dungeon/map-ID file, choice/level/name/OAM helpers, tracked sprite-index
-writes and audio-facade frame steps (note 65 §10.11). CP3 implements the screen, all eight frame animations,
-prologue/tail, capture/renderer and ROM slot/table guards (§10.13; awaiting check). CP4 wires the battle entries.
-Until then the runtime still uses the legacy transitions described below.
-
-- Trainer = clockwise spiral of black tiles — only scripted battles (Oak's Lab rival) use
-  it; map-trainer battles cut straight in until A5
-- Wild = 3 white flashes + horizontal stripes
-- The ASM picks one of 8 transitions (trainer / stronger enemy / dungeon map); A5
-  implements them (DECISIONS #31, `notes/04-v1c-plan.md` §1.6)
+**A5d is done (user-verified 2026-10-18; note 65, DECISIONS #70).** Every battle start (wild steps and turns,
+map trainers, the Lab rival, both catch demos) runs `PlayBattleMusic`'s stop and song, the prologue, one of the
+8 transitions picked by the cartridge's 3-bit choice (trainer / enemy ≥ lead + 3 / dungeon map), and the tail,
+then holds black until the battle is ready. The modules are in `overworld/` (`battle_transition*.ts`,
+`transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). The battle itself still starts with upstream's
+intro below (A5e replaces it).
 
 ## Wild Intro Phases
 
@@ -182,3 +201,17 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 | `volatiles.ts` | 77 | Substitute, confusion, etc. |
 | `run.ts` | 57 | Wild battle escape logic (Gen 1 TryRunningFromBattle) |
 | `encounter.ts` | 45 | Wild encounter selection |
+| `battle_screen.ts` | 270 | A5c1: `BattleScreen`. The `wTileMap` window on the shared BG thirds, a 32 × 32 BG with SCX and the LY 64–95 split, pic slots, the battle's $62–$7F tiles, OAM, BGP/OBP, `setPalBattle` (2 held + 3 frames). **Unused until A5c3** |
+| `battle_screen_render.ts` | 202 | A5c1: the pure renderer, 160 × 144 RGBA. Tile index → BGP → the cell's attribute palette; OBJ through the current OBP; CGB priority |
+| `battle_attributes.ts` | 29 | A5c1: `BGMapAttributes_Battle` (2f:6960) as ROM-tested constants |
+| `battle_hud.ts` | 186 | A5c1: `DrawPlayerHUDAndHPBar` / `DrawEnemyHUDAndHPBar`, `CenterMonName`, status priority. Returns the palette request and the alarm result. **Unused until A5c3** |
+| `battle_tiles.ts` | 13 | A5c2: TileSurface over BattleScreen, preserving numeric cells and explicit opaque clears |
+| `battle_menu_context.ts` | 120 | A5c2: raw move/action context specializations, frame generators and injected ports |
+| `move_selection_menu.ts` | 183 | A5c2: battle/Mimic/PP-item move choice, byte PP/disabled state and swaps |
+| `battle_menu.ts` | 210 | A5c2: DisplayBattleMenu, ordered HUD/palette/alarm composition, bag/item tails and RUN |
+| `battle_menu_screen.ts` | 36 | A5c2: logical Buffer1/2 and standalone PrintText commit/dismiss owner |
+| `battle_party_menu.ts` | 138 | A5c2 CP5: choose-only party hand-off, retained submenu/refusal text, status reload and switch/quit tails; null for redisplay; unused until A5c3 |
+
+**A5c1 (note 66, DECISIONS #72)** built these, plus the battle text programs in `text_programs.json`, `UpdateHPBar`
+both ways in `menus/hp_bar.ts`, and the low-health alarm (`audio/low_health_alarm.ts`). Today's battle still runs on
+`battle.ts` and `battle_ui.ts`. A5c3 switches it over; the carry-overs are in note 66 §10.20.

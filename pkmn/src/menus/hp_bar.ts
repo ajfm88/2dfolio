@@ -1,5 +1,5 @@
 // GetHPBarLength, DrawHP_ and UpdateHPBar2 (engine/gfx/hp_bar.asm, engine/pokemon/status_screen.asm).
-// Increase only. A decrease, and the fainted ending, belong to A5c.
+// Both directions and both bar types. The default type is 1, which field medicine already calls.
 
 export type HpBarColor = 'green' | 'yellow' | 'red';
 
@@ -64,11 +64,10 @@ export interface HpBarFrame {
 }
 
 /**
- * UpdateHPBar2 for an increase, one frame per tick.
- * A step prints the pre-step HP (1 frame) and, when the pixel count changes,
- * draws the old length up through but not including the new length (2 frames
- * each). It stops that walk when the next pixel would be 49. The end prints
- * the final HP (1), draws the final length (2) and waits Delay3 (3).
+ * UpdateHPBar, one frame per tick. Bar type 0 skips the per-step number, so a
+ * step whose pixel count does not change adds no frame. The walk draws the old
+ * length and stops before the new one, and also when `(e + delta) & $FF` would
+ * be 49 or more. A final HP of 0 draws an empty bar. Equal HP returns at once.
  */
 export class HpBarAnimation {
   pixels: number;
@@ -77,8 +76,8 @@ export class HpBarAnimation {
   private readonly frames: { pixels: number; shownHp: number }[];
   private index = 0;
 
-  constructor(oldHp: number, newHp: number, maxHp: number) {
-    this.frames = scheduleIncrease(oldHp, newHp, maxHp);
+  constructor(oldHp: number, newHp: number, maxHp: number, barType: 0 | 1 = 1) {
+    this.frames = scheduleHpBar(oldHp, newHp, maxHp, barType);
     this.pixels = staticHpBarPixels(oldHp, maxHp);
     this.shownHp = oldHp;
     this.done = this.frames.length === 0;
@@ -95,32 +94,39 @@ export class HpBarAnimation {
   }
 }
 
-function scheduleIncrease(oldHp: number, newHp: number, maxHp: number): { pixels: number; shownHp: number }[] {
-  if (newHp <= oldHp) return [];
+function scheduleHpBar(
+  oldHp: number, newHp: number, maxHp: number, barType: 0 | 1,
+): { pixels: number; shownHp: number }[] {
+  if (newHp === oldHp) return [];
+  const delta = newHp > oldHp ? 1 : -1;
   const frames: { pixels: number; shownHp: number }[] = [];
   let pixels = staticHpBarPixels(oldHp, maxHp);
   let cur = oldHp;
   while (cur !== newHp) {
-    const step = cur + 1;
-    const diff = getHpBarLength(step, maxHp) - getHpBarLength(cur, maxHp);
-    frames.push({ pixels, shownHp: cur });
+    const step = cur + delta;
+    const oldLen = getHpBarLength(cur, maxHp);
+    const newLen = getHpBarLength(step, maxHp);
+    const diff = delta > 0 ? newLen - oldLen : oldLen - newLen;
+    if (barType !== 0) frames.push({ pixels, shownHp: cur });
     if (diff > 0) {
-      let e = getHpBarLength(cur, maxHp);
+      let e = oldLen;
       let left = diff;
       while (left !== 0) {
-        pixels = e;
+        pixels = e & 0xff;
         frames.push({ pixels, shownHp: cur });
         frames.push({ pixels, shownHp: cur });
-        // cp $31: the next pixel would fill past the 48 px bar.
-        if (e + 1 >= 49) break;
-        e += 1;
+        // cp $31. A decrease through 0 lands on $FF and stops here too.
+        const next = (e + delta) & 0xff;
+        if (next >= 0x31) break;
+        e = next;
         left -= 1;
       }
     }
     cur = step;
   }
-  frames.push({ pixels, shownHp: newHp });
-  pixels = getHpBarLength(newHp, maxHp);
+  if (barType !== 0) frames.push({ pixels, shownHp: newHp });
+  // A final HP of 0 leaves E holding that HP, not GetHPBarLength's minimum 1.
+  pixels = newHp === 0 ? 0 : getHpBarLength(newHp, maxHp);
   for (let i = 0; i < 5; i++) frames.push({ pixels, shownHp: newHp });
   return frames;
 }

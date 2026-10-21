@@ -224,7 +224,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 2124/2124** as of 2026-10-18 (A5d CP5 steps 1–2). Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 2411/2411** as of 2026-10-20 (A5c3a CP3). No-ROM **2206 pass / 205 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -245,7 +245,64 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-2124 tests in 123 files (vitest, `environment: 'node'`); without ROM, 1950 pass / 174 skip.
+2411 tests in 138 files (vitest, `environment: 'node'`); without ROM, 2206 pass / 205 skip.
+
+**A5c3a CP3** adds 28, all no-ROM, in `battle/battle_state.test.ts`: one cell per union address, the context view (`partySpecies` is `SET_PAL_BATTLE`; `getMaxPP` leaves `usingPPUp === maxPP`), the three loaders, the ghost nick, the penalty inversion, badge boosts at 999, and the three write-backs. No A5c2 test was edited. `move_selection_menu.test.ts:237` still passes because that fixture is a plain object (note 68 §10.9). 49 branch breaks were caught and restored. One idle gate: typecheck clean, build 160 modules `index-D-cKR3ww.js` (the new modules are not on the production graph), ROM **2411/2411**, no-ROM **2206 pass / 205 skip**. ✅ Checked by Claude (note 68 §11.5). CP4 next.
+
+**A5c3a CP2** adds 29, all no-ROM, in `text/text_runner_battle.test.ts`: `TX_LOW` (including `ItemUseText00`), 1-digit `TX_NUM` (0, 1, 5, 9, 10, 100, 255; 256 throws) and the two hit programs, both sides of `<USER>`/`<TARGET>` plus the glyph fallback and the poison and burn programs, the `asm` registry (in place, nothing continues, PewterNidoran still `'asm'`), DoneText's origin cursor, `MonsStatsRoseText` below and at `$12` and at `$FF` on both turns, and `GainedText`'s three paths plus `WithExpAllText`. The unsupported-op list lost its `low` case, and the FAR resume row is `AD`. Those two `text_runner.test.ts` edits are the only existing-test edits (note 68 §10.8). 17/17 mutations caught and restored. One idle gate: typecheck clean, build 160 modules `index-D-cKR3ww.js`, ROM **2383/2383**, no-ROM **2178 pass / 205 skip**. ✅ Checked by Claude (note 68 §11.3).
+
+**A5c2 CP5** adds28 no-ROM cases in `battle/battle_party_menu.test.ts`: choose-only party input and saved
+cursor, force/sleep rules, #73's C+22/+16 timing, retained submenu/129-cell clear/thirds, CANCEL flicker, refusals,
+valid-switch11, and both real STATS pages with Q+3 and7/10/13 reloads and a single BG owner. Corrects CP4's RUN-type
+saved-byte test; no existing party/status test edited. Completion adds three real-text frozen-refusal phase
+checks, two direct CANCEL null-return checks and six alternating cancel loops with at most one live party
+generator. Fifteen mutations caught/restored (13 partial,2 completion); note67 §11.16/§11.18. Claude ruled the
+partial's two timeouts were machine load (§11.17). Final idle-machine gates pass twice sequentially with no
+timeout/config changes: typecheck/build clean, ROM2355/2355, no-ROM2150 pass /205 skip. Final check pending.
+
+**A5c2 CP4** adds 52, all no-ROM: `battle/battle_menu.test.ts` covers all entry types at H0/5/10, palette/alarm
+order, column chords and raw shared cursor IDs, Safari, both simulated demos, three-phase freeze/empty-box
+visibility, bag exits/resets/SELECT and item tails, RUN branches/byte wrap/audio waits, and real completed
+PrintText followed by a persistent template at every BG phase. Fourteen production mutations caught/restored;
+note67 §11.14. No existing test edited; no runtime battle integration. ROM 2327/2327; no-ROM 2122 pass /205 skip.
+
+**A5c2 CP3** adds 58, all no-ROM: `menus/tile_surface.test.ts` (4: shared writers/cursors, numeric battle cells,
+null/explicit clears and render-time rejection); `battle/move_selection_menu.test.ts` (54: all layouts and full
+cell fixtures for 1–4 moves, all BG phases, 6/3-frame input/wraps, raw-key priority, refusal/Struggle text ports,
+disabled-hover bytes, PP-ups/Transform, SELECT swaps/disabled nibbles/party copies and saved cursors). Existing
+tests unedited. Step 0 ROM 2221/2221; final ROM **2275/2275**, no-ROM **2070 pass /205 skip**; typecheck/build
+clean. 11/11 production mutations caught/restored; note 67 §11.12.
+
+**A5c2 CP2** adds 10: `rom/__tests__/battle_menu_data.test.ts` (5 ROM pins: RUN header/commands/JSON/end at 40 and the
+press-sound bank copies), `battle/type_names.test.ts` (3 no-ROM, 2 ROM: all 27 display slots, reverse lookup, invalid
+keys, complete pointer/string table and all 165 moves). Existing sound-id, extraction-bank and static-export
+censuses adapt only for the new sound. 6/6 production mutations caught/restored. ROM **2217/2217**, no-ROM
+**2012 pass / 205 skip**; typecheck/build clean. Note 67 §11.10; no menu/playback caller yet.
+
+**A5c1 CP5** adds 14: `audio/low_health_alarm.test.ts` (13) and one `wy` = 4 case in
+`battle/battle_screen_render.test.ts`. The alarm callback is on the audio update and returns immediately while bit 7
+is clear; nothing sets that bit. 8/8 production mutations caught (`notes/66-a5c1-cp5/`). Two sequential gate rounds:
+ROM **2207/2207**, no-ROM **2009 pass / 198 skip**. See note 66 §10.19.
+
+**A5c1 CP4** adds 23: `battle/battle_hud.test.ts` (6) and 17 in `menus/hp_bar.test.ts` (the 16 `hp_*.csv` traces,
+both bar types, plus the decrease that stops at `$31`). The HUD writers are unused. Field medicine's tests were
+not edited. 17/17 production mutations caught (`notes/66-a5c1-cp4/`). Two sequential gate rounds: ROM
+**2193/2193**, no-ROM **1995 pass / 198 skip**. See note 66 §10.17.
+
+**A5c1 CP3b** adds 1: the PrintText case in `battle/battle_screen.test.ts` (now 6). 4/4 mutations caught. One gate
+round: ROM **2170/2170**, no-ROM **1972 pass / 198 skip**. See note 66 §10.16.
+
+**A5c1 CP3** adds 12: `battle/battle_screen.test.ts` (5), `battle/battle_screen_render.test.ts` (5), and
+`rom/__tests__/battle_attributes.test.ts` (2, ROM). The screen and renderer are unused. 22/22 production mutations
+caught (`notes/66-a5c1-cp3/`). Two sequential gate rounds: ROM **2169/2169**, no-ROM **1971 pass / 198 skip**.
+See note 66 §10.14.
+
+**A5c1 CP2** adds 33 tests over the 2124 baseline. The partial added 32: `rom/__tests__/battle_text_data.test.ts`
+(21; 19 ROM-dependent), `text_program_context.test.ts` (8; no ROM), and three shared-row source-oracle cases in
+`text_programs.test.ts`. The finish adds one census guard in `text_runner.test.ts`: `low` is an extracted op kind,
+and `ItemUseText00` is the only program that contains it (`far` `_ItemUseText001`, `low`, `far` `_ItemUseText002`).
+The runner still throws on `low`. The partial's first ROM gate was **2155 pass / 1 fail**; two sequential finish
+rounds pass: typecheck/build clean, ROM **2157/2157**, no-ROM **1961 pass / 196 skip**. See note 66 §10.12.
 
 **A5d CP5 steps 1–2** adds one main_battle_transition.test.ts regression (now 17): a real wild turn during
 the door sound cancels the warp's pending map song. Removing only beginBattleEntry's cancellation fails;
@@ -724,3 +781,4 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   frames a step that way). Remove the hook before committing.
 - **A Bash-classifier outage** can refuse every Bash call for a while. PowerShell runs
   the same `npx` / `npm` commands.
+- **Python:** run `python` or `py` (3.15). `python3` is the Microsoft Store stub and fails.

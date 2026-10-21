@@ -18,7 +18,9 @@ import type { TextRow } from './text';
 import { TEXT_POINTER_TABLES, TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
 
 /** What a RAM operand holds when the program runs (the caller supplies it). */
-export type TextBinding = 'stringBuffer' | 'nameBuffer' | 'boxNumString' | 'money' | 'coins' | 'hpDifference';
+export type TextBinding = 'stringBuffer' | 'nameBuffer' | 'boxNumString' | 'money' | 'coins' | 'hpDifference'
+  | 'battleMonNick' | 'enemyMonNick' | 'trainerName' | 'learnMoveMonName' | 'caughtMonNick'
+  | 'curEnemyLevel' | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'amountMoneyWon' | 'totalPayDayMoney';
 
 /** A sound command's effect (TextCommandSounds, home/text.asm). */
 export type TextSound = 'get_item1' | 'caught_mon' | 'pokedex_rating' | 'get_item2' | 'get_key_item' | 'dex_page_added';
@@ -83,15 +85,43 @@ export interface TextProgramsFile {
   textPointers: Record<string, MapTextCall[]>;
 }
 
-// RAM operands (pokeyellow.sym) → the named input the caller binds.
-const BINDINGS: Record<number, TextBinding> = {
-  0xCF4A: 'stringBuffer',  // wStringBuffer
-  0xCD6D: 'nameBuffer',    // wNameBuffer
-  0xCD3D: 'boxNumString',  // wBoxNumString
-  0xFF9F: 'money',         // hMoney
-  0xFFA0: 'coins',         // hCoins
-  0xCEFD: 'hpDifference',  // wHPBarHPDifference (PotionText)
-};
+type TextOperandOp = 'ram' | 'bcd' | 'decimal';
+type TextOperandEntry = readonly [TextOperandOp, number, TextBinding];
+
+/** Validate a symbol table before reading operands; an op/address cannot mean two inputs. */
+export function createTextOperandBindings(entries: readonly TextOperandEntry[]): ReadonlyMap<string, TextBinding> {
+  const bindings = new Map<string, TextBinding>();
+  for (const [op, address, name] of entries) {
+    const key = `${op}:${address}`;
+    const previous = bindings.get(key);
+    if (previous !== undefined && previous !== name) {
+      throw new Error(`Ambiguous text ${op} operand $${address.toString(16)}: ${previous} / ${name}`);
+    }
+    bindings.set(key, name);
+  }
+  return bindings;
+}
+
+// pokeyellow.sym, notes/66-a5c1-plan.md §10.2. $CF4A is a string or EXP by opcode.
+const BINDINGS = createTextOperandBindings([
+  ['ram', 0xCF4A, 'stringBuffer'],     // wStringBuffer
+  ['ram', 0xCD6D, 'nameBuffer'],       // wNameBuffer
+  ['ram', 0xCD3D, 'boxNumString'],     // wBoxNumString
+  ['bcd', 0xFF9F, 'money'],           // hMoney
+  ['bcd', 0xFFA0, 'coins'],           // hCoins
+  ['decimal', 0xCEFD, 'hpDifference'], // wHPBarHPDifference
+  ['ram', 0xD008, 'battleMonNick'],    // wBattleMonNick
+  ['ram', 0xCFD9, 'enemyMonNick'],     // wEnemyMonNick
+  ['ram', 0xD049, 'trainerName'],      // wTrainerName
+  ['ram', 0xD035, 'learnMoveMonName'], // wLearnMoveMonName
+  ['ram', 0xDE05, 'caughtMonNick'],    // wBoxMonNicks (first caught nickname)
+  ['decimal', 0xD126, 'curEnemyLevel'], // wCurEnemyLevel
+  ['decimal', 0xD073, 'playerNumHits'], // wPlayerNumHits
+  ['decimal', 0xCD05, 'enemyNumHits'], // wEnemyNumHits
+  ['decimal', 0xCF4A, 'expAmountGained'], // wExpAmountGained
+  ['bcd', 0xD078, 'amountMoneyWon'],   // wAmountMoneyWon
+  ['bcd', 0xCCE5, 'totalPayDayMoney'], // wTotalPayDayMoney
+]);
 
 const SOUNDS: Record<number, TextSound> = {
   0x0B: 'get_item1', 0x0E: 'pokedex_rating', 0x0F: 'get_item1', 0x10: 'get_item2',
@@ -116,9 +146,9 @@ function fileOffset(bank: number, addr: number): number {
   return bank === 0 ? addr : bank * 0x4000 + (addr & 0x3FFF);
 }
 
-function binding(addr: number, at: string): TextBinding {
-  const b = BINDINGS[addr];
-  if (!b) throw new Error(`Unbound text RAM operand $${addr.toString(16)} in ${at}`);
+function binding(op: TextOperandOp, addr: number, at: string): TextBinding {
+  const b = BINDINGS.get(`${op}:${addr}`);
+  if (!b) throw new Error(`Unbound text ${op} operand $${addr.toString(16)} in ${at}`);
   return b;
 }
 
@@ -199,27 +229,23 @@ export function extractTextPrograms(rom: BinaryReader): TextProgramsFile {
   return { programs, textPointers };
 }
 
-/** Every listed program. A child reached from two places must agree on its starting row. */
+/** Every listed program. Multiple incoming rows must produce identical serialized ops. */
 function extractPrograms(rom: BinaryReader): TextPrograms {
   const byAddress = new Map<string, string>();
   for (const [label, bank, addr] of TEXT_PROGRAM_SYMBOLS) byAddress.set(`${bank}:${addr}`, label);
   const where = new Map(TEXT_PROGRAM_SYMBOLS.map(([label, bank, addr]) => [label, { bank, addr }]));
 
   const programs: TextPrograms = {};
-  const startRows = new Map<string, TextRow>();
   const endRows = new Map<string, TextRow>();
   const active = new Set<string>();
 
   /** Decode a program from `row`; returns the row it leaves the cursor on. */
   const decode = (label: string, row: TextRow): TextRow => {
-    const known = startRows.get(label);
-    if (known !== undefined && !active.has(label)) {
-      if (known !== row) throw new Error(`${label} is reached on text rows ${known} and ${row}`);
-      return endRows.get(label)!;
-    }
+    const entryRow = row;
+    const key = `${label}:${entryRow}`;
+    if (endRows.has(key)) return endRows.get(key)!;
     if (active.has(label)) throw new Error(`text_far cycle through ${label}`);
     active.add(label);
-    startRows.set(label, row);
     const { bank, addr } = where.get(label)!;
     const ops: TextOp[] = [];
     let p = fileOffset(bank, addr);
@@ -235,10 +261,10 @@ function extractPrograms(rom: BinaryReader): TextPrograms {
           if (s.end !== 'string') break loop;
           break;
         }
-        case 0x01: ops.push({ op: 'ram', binding: binding(rom.readWord(p), label) }); p += 2; break;
+        case 0x01: ops.push({ op: 'ram', binding: binding('ram', rom.readWord(p), label) }); p += 2; break;
         case 0x02: {
           const flags = rom.readByte(p + 2);
-          ops.push({ op: 'bcd', binding: binding(rom.readWord(p), label), bytes: flags & 0x1F,
+          ops.push({ op: 'bcd', binding: binding('bcd', rom.readWord(p), label), bytes: flags & 0x1F,
             leadingZeroes: (flags & 0x80) !== 0, leftAlign: (flags & 0x40) !== 0, moneySign: (flags & 0x20) !== 0 });
           p += 3;
           break;
@@ -262,7 +288,7 @@ function extractPrograms(rom: BinaryReader): TextPrograms {
         case 0x08: ops.push({ op: 'asm' }); break loop;
         case 0x09: {
           const n = rom.readByte(p + 2);
-          ops.push({ op: 'decimal', binding: binding(rom.readWord(p), label), bytes: n >> 4, digits: n & 0x0F });
+          ops.push({ op: 'decimal', binding: binding('decimal', rom.readWord(p), label), bytes: n >> 4, digits: n & 0x0F });
           p += 3;
           break;
         }
@@ -288,8 +314,11 @@ function extractPrograms(rom: BinaryReader): TextPrograms {
     }
     if (p >= limit) throw new Error(`${label}: text program runs past 4000 bytes`);
     active.delete(label);
+    if (programs[label] && JSON.stringify(programs[label]) !== JSON.stringify(ops)) {
+      throw new Error(`${label}: different text ops for incoming row ${entryRow}`);
+    }
     programs[label] = ops;
-    endRows.set(label, row);
+    endRows.set(key, row);
     return row;
   };
 

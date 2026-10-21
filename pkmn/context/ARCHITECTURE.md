@@ -225,7 +225,7 @@ A5d CP2 adds `battle_transitions.json` (`rom/extractors/battle_transitions.ts`):
 `{ dungeonMaps: number[], dungeonRanges: [number, number][], mapIds: Record<string, number> }`.
 The lists are the ROM's literal equality list and inclusive ranges, including its missing-map bug;
 the IDs cover `EXTRACTABLE_MAPS`. Existing map files gain no ID field. The separate runtime loader in
-`overworld/battle_transition_choice.ts` is prepared/tested but **startup wiring waits for CP4**.
+`overworld/battle_transition_choice.ts` loads it at startup (since A5d CP4); CP4 also added each map's ROM object count.
 The extractor also guards the sixteen `$ff` bytes of `BattleTransitionTile` at 1c:4ac3.
 
 These were checked directly against pret and the engine. Do not re-investigate
@@ -324,6 +324,13 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
 - Sprites use the OBP0 shade mapping `[0, 0, 1, 3]` and treat shade 0 as transparent.
 - To find the right palette for a new screen, trace the assembly's `SET_PAL_*`
   through `data/sgb/sgb_packets.asm` → `PAL_SET` → `data/sgb/sgb_palettes.asm`.
+- **On CGB the block packet isn't interpreted.** `TranslatePalPacketToBGMapAttributes` matches its address and copies a
+  precomputed ROM attribute map (`data/cgb/bg_map_attributes.asm`) into both BG maps. So per-cell palettes come from
+  that map (battle: `BGMapAttributes_Battle`, A5c1).
+- **A palette command's cost:** with the LCD on, it is **2 held frames, then `Delay3`.** The held frames have no BG
+  transfer, OAM DMA, joypad read or text tick; audio updates once each. `LoadBGMapAttributes` waits twice with
+  interrupts off and discards the VBlanks. With the LCD off it costs 0. Today only the battle screen models the hold;
+  the other screens get it in V5 (DECISIONS #73).
 
 ## Asset format rules
 
@@ -475,7 +482,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
-| `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
+| `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d); since A5c1 the unused `BattleScreen`, its renderer and the HUD writers (A5c3 wires them) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
 | `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |

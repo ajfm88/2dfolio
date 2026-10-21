@@ -3,6 +3,7 @@ import type { MusicEngine } from './music_engine';
 import type { SfxEngine } from './sfx_engine';
 import type { GBSynthesizer } from './synthesizer';
 import { soundFinished } from './sound_wait';
+import { setLowHealthChannel5 } from './low_health_alarm';
 
 /** The real engines behind PlaySound: the same host for the shared facade state and a bare AudioFade. */
 export function engineHost(
@@ -14,7 +15,7 @@ export function engineHost(
   return {
     volume: () => synth.masterVolumeRegister,
     setVolume: value => synth.setMasterVolume(value >>> 4, value & 0xf),
-    clearSfxIds: () => { sfx.clearSoundIds(); music.cancelDrum(); },
+    clearSfxIds: () => { sfx.clearSoundIds(); music.cancelDrum(); setLowHealthChannel5(0); },
     stopAllAudio: () => {
       onStopAll();
       music.stop(); sfx.stop();

@@ -2,6 +2,20 @@
 
 ## Pattern
 
+A5c2 CP5 adds PartyMenu's unused `openBattleChoice` / `goBackToChoice` API and `frameBattleChoice`.
+Opening stays C+22 and redraw16 (ASM24/18; #73). The new mode reuses the common item chooser's wrapping, raw
+B-over-A rule, cursor save and sleeping-starter rejection, with a force-A-only watch. `choiceOverlay` retains
+opaque submenu/clear writes over the existing pixel list and copies one third per session frame; its null cells
+show that list. Legacy battle/battle_forced modes remain unchanged. `battle/battle_party_menu.ts` owns the
+SWITCH/STATS/CANCEL logic. Refusal PrintText commits its border/glyphs into the retained layer before dismissal;
+the shown thirds stay frozen through GoBack's HP-copy4 and release on actual transfers. The underlying pixel
+party-row partial redraw limit remains #74. CP5's two completion fixes and passing gates are in note67 §11.18.
+
+`tile_surface.ts` holds shared tile/number/string writers and cartridge cursor routines. ScreenTiles keeps
+its methods as delegates and owns retained/visible copies; ListMenu accepts the structural TileSurface.
+The battle adapter preserves numeric cells/string glyphs with explicit opaque clears. A5c2 CP3's move chooser
+uses this seam but is not wired into the game (note 67 §11.12).
+
 Each menu is a class with `update()` and `render()` methods. State transitions are managed by `main.ts` (the game state machine dispatches to the active menu). Shared rendering utilities live in `menu_render.ts` (`drawBox`, `drawText`).
 
 ## START session (A5b7f1 CP2–CP3)
@@ -282,7 +296,7 @@ Main's `writeSave()` contains the former START save arguments verbatim and is
 also supplied to `PcStorage.saveGame`. The following-disabled callback returns
 false until V2.
 
-### Bill's PC (A5b7e complete, awaiting review/play-test)
+### Bill's PC (A5b7e complete, user-verified 2026-10-15)
 
 `BillsPc` owns the six-entry menu, BOX No., mon lists and deposit/withdraw
 submenu. `PcSession` delegates frame/text/overlay work while Bill's PC runs.

@@ -10,6 +10,7 @@ import { GBSynthesizer } from './synthesizer';
 import { SoundChannel } from './sound_channel';
 import type { ChannelHost } from './sound_channel';
 import type { SfxEngine } from './sfx_engine';
+import { bindAlarmSynth, lowHealthChannel5 } from './low_health_alarm';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,7 @@ export class MusicEngine {
 
   constructor(synth: GBSynthesizer) {
     this.synth = synth;
+    bindAlarmSynth(synth);
     this.host = {
       synth,
       tempo: () => this.tempo,
@@ -181,7 +183,11 @@ export class MusicEngine {
 
     for (const ch of this.channels) {
       if (!ch.active) continue;
-      ch.tick(sfxEngine?.isChannelActive(ch.hw) ?? false);
+      const sfxBusy = sfxEngine?.isChannelActive(ch.hw) ?? false;
+      // The alarm's CHAN5 id occupies pulse 1 without being an SFX program.
+      // The high tone leaves that id alone, so a clean first high does not suppress.
+      const alarmBusy = ch.hw === 0 && lowHealthChannel5() !== 0;
+      ch.tick(sfxBusy || alarmBusy);
     }
     if (this.drumBusy > 0) this.drumBusy--;
 

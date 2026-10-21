@@ -1,5 +1,23 @@
 {
   "programs": {
+    "AIBattleUseItemText": [
+      {
+        "op": "far",
+        "program": "_AIBattleUseItemText"
+      }
+    ],
+    "AIBattleWithdrawText": [
+      {
+        "op": "far",
+        "program": "_AIBattleWithdrawText"
+      }
+    ],
+    "AbandonLearningText": [
+      {
+        "op": "far",
+        "program": "_AbandonLearningText"
+      }
+    ],
     "AccessedBillsPCText": [
       {
         "op": "far",
@@ -24,16 +42,58 @@
         "program": "_AccessedSomeonesPCText"
       }
     ],
+    "AlreadyAsleepText": [
+      {
+        "op": "far",
+        "program": "_AlreadyAsleepText"
+      }
+    ],
+    "AlreadyOutText": [
+      {
+        "op": "far",
+        "program": "_AlreadyOutText"
+      }
+    ],
     "AntidoteText": [
       {
         "op": "far",
         "program": "_AntidoteText"
       }
     ],
+    "AttackContinuesText": [
+      {
+        "op": "far",
+        "program": "_AttackContinuesText"
+      }
+    ],
+    "AttackMissedText": [
+      {
+        "op": "far",
+        "program": "_AttackMissedText"
+      }
+    ],
     "AwakeningText": [
       {
         "op": "far",
         "program": "_AwakeningText"
+      }
+    ],
+    "BadlyPoisonedText": [
+      {
+        "op": "far",
+        "program": "_BadlyPoisonedText"
+      }
+    ],
+    "BecameConfusedText": [
+      {
+        "op": "far",
+        "program": "_BecameConfusedText"
+      }
+    ],
+    "BeganToNapText": [
+      {
+        "op": "far",
+        "program": "_BeganToNapText"
       }
     ],
     "BluesHouseDaisyBagFullText": [
@@ -78,16 +138,50 @@
         "program": "_BookcaseText"
       }
     ],
+    "BoostedText": [
+      {
+        "op": "far",
+        "program": "_BoostedText"
+      },
+      {
+        "op": "far",
+        "program": "_ExpPointsText"
+      }
+    ],
+    "BoxFullCannotThrowBallText": [
+      {
+        "op": "far",
+        "program": "_BoxFullCannotThrowBallText"
+      }
+    ],
     "BoxFullText": [
       {
         "op": "far",
         "program": "_BoxFullText"
       }
     ],
+    "BuildingRageText": [
+      {
+        "op": "far",
+        "program": "_BuildingRageText"
+      }
+    ],
     "BurnHealText": [
       {
         "op": "far",
         "program": "_BurnHealText"
+      }
+    ],
+    "BurnedText": [
+      {
+        "op": "far",
+        "program": "_BurnedText"
+      }
+    ],
+    "ButItFailedText": [
+      {
+        "op": "far",
+        "program": "_ButItFailedText"
       }
     ],
     "CannotGetOffHereText": [
@@ -114,10 +208,31 @@
         "program": "_CantDepositLastMonText"
       }
     ],
+    "CantEscapeText": [
+      {
+        "op": "far",
+        "program": "_CantEscapeText"
+      }
+    ],
+    "CantMoveText": [
+      {
+        "op": "far",
+        "program": "_CantMoveText"
+      }
+    ],
     "CantTakeMonText": [
       {
         "op": "far",
         "program": "_CantTakeMonText"
+      }
+    ],
+    "ChargeMoveEffectText": [
+      {
+        "op": "far",
+        "program": "_ChargeMoveEffectText"
+      },
+      {
+        "op": "asm"
       }
     ],
     "ChooseABoxText": [
@@ -135,6 +250,36 @@
         "op": "waitButton"
       }
     ],
+    "CoinsScatteredText": [
+      {
+        "op": "far",
+        "program": "_CoinsScatteredText"
+      }
+    ],
+    "ComeBackText": [
+      {
+        "op": "far",
+        "program": "_ComeBackText"
+      }
+    ],
+    "ConfusedNoMoreText": [
+      {
+        "op": "far",
+        "program": "_ConfusedNoMoreText"
+      }
+    ],
+    "ConvertedTypeText": [
+      {
+        "op": "far",
+        "program": "_ConvertedTypeText"
+      }
+    ],
+    "CriticalHitText": [
+      {
+        "op": "far",
+        "program": "_CriticalHitText"
+      }
+    ],
     "DepositHowManyText": [
       {
         "op": "far",
@@ -147,6 +292,18 @@
         "program": "_DepositWhichMonText"
       }
     ],
+    "DidNotLearnText": [
+      {
+        "op": "far",
+        "program": "_DidNotLearnText"
+      }
+    ],
+    "DidntAffectText": [
+      {
+        "op": "far",
+        "program": "_DidntAffectText"
+      }
+    ],
     "DiglettSculptureText": [
       {
         "op": "far",
@@ -157,6 +314,39 @@
       {
         "op": "far",
         "program": "_DiglettsCaveRoute2FishingGuruText"
+      }
+    ],
+    "DisabledNoMoreText": [
+      {
+        "op": "far",
+        "program": "_DisabledNoMoreText"
+      }
+    ],
+    "DisplayBattleMenu.RunAwayText": [
+      {
+        "op": "far",
+        "program": "_RunAwayText"
+      }
+    ],
+    "DoItText": [
+      {
+        "op": "far",
+        "program": "_DoItText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "DoesntAffectMonText": [
+      {
+        "op": "far",
+        "program": "_DoesntAffectMonText"
+      }
+    ],
+    "DreamWasEatenText": [
+      {
+        "op": "far",
+        "program": "_DreamWasEatenText"
       }
     ],
     "DroppedHiddenCoinsText": [
@@ -173,16 +363,154 @@
         "program": "_DroppedHiddenCoinsText"
       }
     ],
+    "DugAHoleText": [
+      {
+        "op": "far",
+        "program": "_DugAHoleText"
+      }
+    ],
     "ElevatorText": [
       {
         "op": "far",
         "program": "_ElevatorText"
       }
     ],
+    "EndUsedMove1Text": [
+      {
+        "op": "far",
+        "program": "_EndUsedMove1Text"
+      }
+    ],
+    "EndUsedMove2Text": [
+      {
+        "op": "far",
+        "program": "_EndUsedMove2Text"
+      }
+    ],
+    "EndUsedMove3Text": [
+      {
+        "op": "far",
+        "program": "_EndUsedMove3Text"
+      }
+    ],
+    "EndUsedMove4Text": [
+      {
+        "op": "far",
+        "program": "_EndUsedMove4Text"
+      }
+    ],
+    "EndUsedMove5Text": [
+      {
+        "op": "far",
+        "program": "_EndUsedMove5Text"
+      }
+    ],
+    "EnemyAppearedText": [
+      {
+        "op": "far",
+        "program": "_EnemyAppearedText"
+      }
+    ],
+    "EnemyMonFaintedText": [
+      {
+        "op": "far",
+        "program": "_EnemyMonFaintedText"
+      }
+    ],
+    "EnemyRanText": [
+      {
+        "op": "far",
+        "program": "_EnemyRanText"
+      }
+    ],
+    "EnemysWeakText": [
+      {
+        "op": "far",
+        "program": "_EnemysWeakText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "EnoughText": [
+      {
+        "op": "far",
+        "program": "_EnoughText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "EvadedAttackText": [
+      {
+        "op": "far",
+        "program": "_EvadedAttackText"
+      }
+    ],
+    "ExpPointsText": [
+      {
+        "op": "far",
+        "program": "_ExpPointsText"
+      }
+    ],
+    "FastAsleepText": [
+      {
+        "op": "far",
+        "program": "_FastAsleepText"
+      }
+    ],
+    "FellAsleepBecameHealthyText": [
+      {
+        "op": "far",
+        "program": "_FellAsleepBecameHealthyText"
+      }
+    ],
+    "FellAsleepText": [
+      {
+        "op": "far",
+        "program": "_FellAsleepText"
+      }
+    ],
+    "FellText": [
+      {
+        "op": "far",
+        "program": "_FellText"
+      }
+    ],
     "FileDataDestroyedText": [
       {
         "op": "far",
         "program": "_FileDataDestroyedText"
+      }
+    ],
+    "FireDefrostedText": [
+      {
+        "op": "far",
+        "program": "_FireDefrostedText"
+      }
+    ],
+    "FlewUpHighText": [
+      {
+        "op": "far",
+        "program": "_FlewUpHighText"
+      }
+    ],
+    "FlinchedText": [
+      {
+        "op": "far",
+        "program": "_FlinchedText"
+      }
+    ],
+    "FluteWokeUpText": [
+      {
+        "op": "far",
+        "program": "_FluteWokeUpText"
+      }
+    ],
+    "ForgotAndText": [
+      {
+        "op": "far",
+        "program": "_ForgotAndText"
       }
     ],
     "FoundHiddenCoinsText": [
@@ -214,10 +542,31 @@
         "sound": "get_item1"
       }
     ],
+    "FrozenText": [
+      {
+        "op": "far",
+        "program": "_FrozenText"
+      }
+    ],
     "FullHealText": [
       {
         "op": "far",
         "program": "_FullHealText"
+      }
+    ],
+    "FullyParalyzedText": [
+      {
+        "op": "far",
+        "program": "_FullyParalyzedText"
+      }
+    ],
+    "GainedText": [
+      {
+        "op": "far",
+        "program": "_GainedText"
+      },
+      {
+        "op": "asm"
       }
     ],
     "GameSavedText": [
@@ -232,6 +581,60 @@
         "program": "_GetDexRatedText"
       }
     ],
+    "GetOutText": [
+      {
+        "op": "far",
+        "program": "_GetOutText"
+      }
+    ],
+    "GetmText": [
+      {
+        "op": "far",
+        "program": "_GetmText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "GettingPumpedText": [
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_GettingPumpedText"
+      }
+    ],
+    "GhostCantBeIDdText": [
+      {
+        "op": "far",
+        "program": "_GhostCantBeIDdText"
+      }
+    ],
+    "GoText": [
+      {
+        "op": "far",
+        "program": "_GoText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "GoodText": [
+      {
+        "op": "far",
+        "program": "_GoodText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "GotAwayText": [
+      {
+        "op": "far",
+        "program": "_GotAwayText"
+      }
+    ],
     "GotMapText": [
       {
         "op": "far",
@@ -240,6 +643,54 @@
       {
         "op": "sound",
         "sound": "get_key_item"
+      }
+    ],
+    "GreatlyFellText": [
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_GreatlyFellText"
+      },
+      {
+        "op": "far",
+        "program": "_FellText"
+      }
+    ],
+    "GreatlyRoseText": [
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_GreatlyRoseText"
+      },
+      {
+        "op": "far",
+        "program": "_RoseText"
+      }
+    ],
+    "GrewLevelText": [
+      {
+        "op": "far",
+        "program": "_GrewLevelText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      }
+    ],
+    "HMCantDeleteText": [
+      {
+        "op": "far",
+        "program": "_HMCantDeleteText"
+      }
+    ],
+    "HasSubstituteText": [
+      {
+        "op": "far",
+        "program": "_HasSubstituteText"
       }
     ],
     "HiddenItemBagFullText": [
@@ -254,10 +705,58 @@
         "program": "_HisNameIsText"
       }
     ],
+    "HitWithRecoilText": [
+      {
+        "op": "far",
+        "program": "_HitWithRecoilText"
+      }
+    ],
+    "HitXTimesText": [
+      {
+        "op": "far",
+        "program": "_HitXTimesText"
+      }
+    ],
+    "HookedMonAttackedText": [
+      {
+        "op": "far",
+        "program": "_HookedMonAttackedText"
+      }
+    ],
+    "HurtByBurnText": [
+      {
+        "op": "far",
+        "program": "_HurtByBurnText"
+      }
+    ],
+    "HurtByLeechSeedText": [
+      {
+        "op": "far",
+        "program": "_HurtByLeechSeedText"
+      }
+    ],
+    "HurtByPoisonText": [
+      {
+        "op": "far",
+        "program": "_HurtByPoisonText"
+      }
+    ],
+    "HurtItselfText": [
+      {
+        "op": "far",
+        "program": "_HurtItselfText"
+      }
+    ],
     "IceHealText": [
       {
         "op": "far",
         "program": "_IceHealText"
+      }
+    ],
+    "IgnoredOrdersText": [
+      {
+        "op": "far",
+        "program": "_IgnoredOrdersText"
       }
     ],
     "IndigoPlateauStatuesText1": [
@@ -290,10 +789,97 @@
         "program": "_IntroduceRivalText"
       }
     ],
+    "IsConfusedText": [
+      {
+        "op": "far",
+        "program": "_IsConfusedText"
+      }
+    ],
+    "IsFrozenText": [
+      {
+        "op": "far",
+        "program": "_IsFrozenText"
+      }
+    ],
     "IsItOKToTossItemText": [
       {
         "op": "far",
         "program": "_IsItOKToTossItemText"
+      }
+    ],
+    "IsUnaffectedText": [
+      {
+        "op": "far",
+        "program": "_IsUnaffectedText"
+      }
+    ],
+    "ItemUseBall.emptyString": [],
+    "ItemUseBallText00": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText00"
+      }
+    ],
+    "ItemUseBallText01": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText01"
+      }
+    ],
+    "ItemUseBallText02": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText02"
+      }
+    ],
+    "ItemUseBallText03": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText03"
+      }
+    ],
+    "ItemUseBallText04": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText04"
+      }
+    ],
+    "ItemUseBallText05": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText05"
+      },
+      {
+        "op": "sound",
+        "sound": "caught_mon"
+      },
+      {
+        "op": "promptButton"
+      }
+    ],
+    "ItemUseBallText06": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText06"
+      },
+      {
+        "op": "sound",
+        "sound": "dex_page_added"
+      },
+      {
+        "op": "promptButton"
+      }
+    ],
+    "ItemUseBallText07": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText07"
+      }
+    ],
+    "ItemUseBallText08": [
+      {
+        "op": "far",
+        "program": "_ItemUseBallText08"
       }
     ],
     "ItemUseNoEffectText": [
@@ -314,16 +900,60 @@
         "program": "_ItemUseNotYoursToUseText"
       }
     ],
+    "ItemUseText00": [
+      {
+        "op": "far",
+        "program": "_ItemUseText001"
+      },
+      {
+        "op": "low"
+      },
+      {
+        "op": "far",
+        "program": "_ItemUseText002"
+      }
+    ],
     "ItemWasStoredText": [
       {
         "op": "far",
         "program": "_ItemWasStoredText"
       }
     ],
+    "ItemsCantBeUsedHereText": [
+      {
+        "op": "far",
+        "program": "_ItemsCantBeUsedHereText"
+      }
+    ],
     "JustAMomentText": [
       {
         "op": "far",
         "program": "_JustAMomentText"
+      }
+    ],
+    "KeptGoingAndCrashedText": [
+      {
+        "op": "far",
+        "program": "_KeptGoingAndCrashedText"
+      }
+    ],
+    "LearnedMove1Text": [
+      {
+        "op": "far",
+        "program": "_LearnedMove1Text"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      },
+      {
+        "op": "promptButton"
+      }
+    ],
+    "LightScreenProtectedText": [
+      {
+        "op": "far",
+        "program": "_LightScreenProtectedText"
       }
     ],
     "LinkCableHelpText1": [
@@ -357,16 +987,46 @@
       }
     ],
     "LinkMenuEmptyText": [],
+    "LoafingAroundText": [
+      {
+        "op": "far",
+        "program": "_LoafingAroundText"
+      }
+    ],
     "LooksContentText": [
       {
         "op": "far",
         "program": "_LooksContentText"
       }
     ],
+    "LoweredItsHeadText": [
+      {
+        "op": "far",
+        "program": "_LoweredItsHeadText"
+      }
+    ],
+    "MadeWhirlwindText": [
+      {
+        "op": "far",
+        "program": "_MadeWhirlwindText"
+      }
+    ],
     "MartSignText": [
       {
         "op": "far",
         "program": "_MartSignText"
+      }
+    ],
+    "MimicLearnedMoveText": [
+      {
+        "op": "far",
+        "program": "_MimicLearnedMoveText"
+      }
+    ],
+    "MirrorMoveFailedText": [
+      {
+        "op": "far",
+        "program": "_MirrorMoveFailedText"
       }
     ],
     "MonIsTakenOutText": [
@@ -387,10 +1047,85 @@
         "program": "_MonWasStoredText"
       }
     ],
+    "MoneyForWinningText": [
+      {
+        "op": "far",
+        "program": "_MoneyForWinningText"
+      }
+    ],
+    "MonsStatsFellText": [
+      {
+        "op": "far",
+        "program": "_MonsStatsFellText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "MonsStatsRoseText": [
+      {
+        "op": "far",
+        "program": "_MonsStatsRoseText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "MoveDisabledText": [
+      {
+        "op": "far",
+        "program": "_MoveDisabledText"
+      }
+    ],
+    "MoveIsDisabledText": [
+      {
+        "op": "far",
+        "program": "_MoveIsDisabledText"
+      }
+    ],
+    "MoveNameText": [
+      {
+        "op": "far",
+        "program": "_MoveNameText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "MoveNoPPText": [
+      {
+        "op": "far",
+        "program": "_MoveNoPPText"
+      }
+    ],
+    "MoveWasDisabledText": [
+      {
+        "op": "far",
+        "program": "_MoveWasDisabledText"
+      }
+    ],
+    "MultiHitText": [
+      {
+        "op": "far",
+        "program": "_MultiHitText"
+      }
+    ],
+    "MustRechargeText": [
+      {
+        "op": "far",
+        "program": "_MustRechargeText"
+      }
+    ],
     "NeedYourPokemonText": [
       {
         "op": "far",
         "program": "_NeedYourPokemonText"
+      }
+    ],
+    "NoEffectText": [
+      {
+        "op": "far",
+        "program": "_NoEffectText"
       }
     ],
     "NoMonText": [
@@ -405,6 +1140,12 @@
         "program": "_NoMoreRoomForItemText"
       }
     ],
+    "NoMovesLeftText": [
+      {
+        "op": "far",
+        "program": "_NoMovesLeftText"
+      }
+    ],
     "NoPokemonText": [
       {
         "op": "far",
@@ -417,6 +1158,30 @@
         "program": "_NoRoomToStoreText"
       }
     ],
+    "NoRunningText": [
+      {
+        "op": "far",
+        "program": "_NoRunningText"
+      }
+    ],
+    "NoWillText": [
+      {
+        "op": "far",
+        "program": "_NoWillText"
+      }
+    ],
+    "NotVeryEffectiveText": [
+      {
+        "op": "far",
+        "program": "_NotVeryEffectiveText"
+      }
+    ],
+    "NothingHappenedText": [
+      {
+        "op": "far",
+        "program": "_NothingHappenedText"
+      }
+    ],
     "NothingStoredText": [
       {
         "op": "far",
@@ -427,6 +1192,21 @@
       {
         "op": "far",
         "program": "_NothingToDepositText"
+      }
+    ],
+    "OHKOText": [
+      {
+        "op": "far",
+        "program": "_OHKOText"
+      }
+    ],
+    "OKExclamationText": [
+      {
+        "op": "far",
+        "program": "_OKExclamationText"
+      },
+      {
+        "op": "asm"
       }
     ],
     "OakLabEmailText": [
@@ -747,6 +1527,24 @@
         "program": "_OnceReleasedText"
       }
     ],
+    "OneTwoAndText": [
+      {
+        "op": "far",
+        "program": "_OneTwoAndText"
+      },
+      {
+        "op": "pause"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "PPRestoredText": [
+      {
+        "op": "far",
+        "program": "_PPRestoredText"
+      }
+    ],
     "PalletTownFisherText": [
       {
         "op": "far",
@@ -808,6 +1606,12 @@
       {
         "op": "far",
         "program": "_PalletTownSignText"
+      }
+    ],
+    "ParalyzedMayNotAttackText": [
+      {
+        "op": "far",
+        "program": "_ParalyzedMayNotAttackText"
       }
     ],
     "ParlyzHealText": [
@@ -1011,10 +1815,67 @@
         "program": "_PewterSpeechHouseYoungsterText"
       }
     ],
+    "PickUpPayDayMoneyText": [
+      {
+        "op": "far",
+        "program": "_PickUpPayDayMoneyText"
+      }
+    ],
     "PikachuUnhappyText": [
       {
         "op": "far",
         "program": "_PikachuUnhappyText"
+      }
+    ],
+    "PlayedFluteHadEffectText": [
+      {
+        "op": "far",
+        "program": "_PlayedFluteHadEffectText"
+      },
+      {
+        "op": "promptButton"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "PlayedFluteNoEffectText": [
+      {
+        "op": "far",
+        "program": "_PlayedFluteNoEffectText"
+      }
+    ],
+    "PlayerBlackedOutText2": [
+      {
+        "op": "far",
+        "program": "_PlayerBlackedOutText2"
+      }
+    ],
+    "PlayerMon1Text": [
+      {
+        "op": "far",
+        "program": "_PlayerMon1Text"
+      }
+    ],
+    "PlayerMon2Text": [
+      {
+        "op": "far",
+        "program": "_PlayerMon2Text"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "PlayerMonFaintedText": [
+      {
+        "op": "far",
+        "program": "_PlayerMonFaintedText"
+      }
+    ],
+    "PoisonedText": [
+      {
+        "op": "far",
+        "program": "_PoisonedText"
       }
     ],
     "PokeCenterSignText": [
@@ -1128,16 +1989,42 @@
         "program": "_PokemonStuffText"
       }
     ],
+    "PoofText": [
+      {
+        "op": "far",
+        "program": "_PoofText"
+      },
+      {
+        "op": "pause"
+      },
+      {
+        "op": "far",
+        "program": "_ForgotAndText"
+      }
+    ],
     "PotionText": [
       {
         "op": "far",
         "program": "_PotionText"
       }
     ],
+    "PrintEmptyString.emptyString": [],
     "PushStartText": [
       {
         "op": "far",
         "program": "_PushStartText"
+      }
+    ],
+    "RanAwayScaredText": [
+      {
+        "op": "far",
+        "program": "_RanAwayScaredText"
+      }
+    ],
+    "RanFromBattleText": [
+      {
+        "op": "far",
+        "program": "_RanFromBattleText"
       }
     ],
     "RedBedroomSNESText": [
@@ -1176,16 +2063,46 @@
         "program": "_RedsHouse1FTVWrongSideText"
       }
     ],
+    "ReflectGainedArmorText": [
+      {
+        "op": "far",
+        "program": "_ReflectGainedArmorText"
+      }
+    ],
+    "RegainedHealthText": [
+      {
+        "op": "far",
+        "program": "_RegainedHealthText"
+      }
+    ],
     "ReleaseWhichMonText": [
       {
         "op": "far",
         "program": "_ReleaseWhichMonText"
       }
     ],
+    "RestorePPWhichTechniqueText": [
+      {
+        "op": "far",
+        "program": "_RestorePPWhichTechniqueText"
+      }
+    ],
     "ReviveText": [
       {
         "op": "far",
         "program": "_ReviveText"
+      }
+    ],
+    "Rival1WinText": [
+      {
+        "op": "far",
+        "program": "_Rival1WinText"
+      }
+    ],
+    "RoseText": [
+      {
+        "op": "far",
+        "program": "_RoseText"
       }
     ],
     "Route1PrintSignText.text": [
@@ -1312,16 +2229,40 @@
         "program": "_Route2TradeHouseScientistText"
       }
     ],
+    "SafariZoneAngryText": [
+      {
+        "op": "far",
+        "program": "_SafariZoneAngryText"
+      }
+    ],
+    "SafariZoneEatingText": [
+      {
+        "op": "far",
+        "program": "_SafariZoneEatingText"
+      }
+    ],
     "SaveOptionText": [
       {
         "op": "far",
         "program": "_SaveOptionText"
       }
     ],
+    "SavingEnergyText": [
+      {
+        "op": "far",
+        "program": "_SavingEnergyText"
+      }
+    ],
     "SavingText": [
       {
         "op": "far",
         "program": "_SavingText"
+      }
+    ],
+    "ScaredText": [
+      {
+        "op": "far",
+        "program": "_ScaredText"
       }
     ],
     "ShallWeHealYourPokemonText": [
@@ -1333,10 +2274,28 @@
         "program": "_ShallWeHealYourPokemonText"
       }
     ],
+    "ShroudedInMistText": [
+      {
+        "op": "far",
+        "program": "_ShroudedInMistText"
+      }
+    ],
+    "SkyAttackGlowingText": [
+      {
+        "op": "far",
+        "program": "_SkyAttackGlowingText"
+      }
+    ],
     "SleepingPikachuText2": [
       {
         "op": "far",
         "program": "_SleepingPikachuText2"
+      }
+    ],
+    "StartBattle.outOfSafariBallsText": [
+      {
+        "op": "far",
+        "program": "_OutOfSafariBallsText"
       }
     ],
     "StartMenu_Pokemon.cannotFlyHereText": [
@@ -1375,10 +2334,52 @@
         "program": "_WarpToLastPokemonCenterText"
       }
     ],
+    "StartedSleepingEffect": [
+      {
+        "op": "far",
+        "program": "_StartedSleepingEffect"
+      }
+    ],
+    "StatusChangesEliminatedText": [
+      {
+        "op": "far",
+        "program": "_StatusChangesEliminatedText"
+      }
+    ],
     "StrengthsAndWeaknessesText": [
       {
         "op": "far",
         "program": "_StrengthsAndWeaknessesText"
+      }
+    ],
+    "SubstituteBrokeText": [
+      {
+        "op": "far",
+        "program": "_SubstituteBrokeText"
+      }
+    ],
+    "SubstituteText": [
+      {
+        "op": "far",
+        "program": "_SubstituteText"
+      }
+    ],
+    "SubstituteTookDamageText": [
+      {
+        "op": "far",
+        "program": "_SubstituteTookDamageText"
+      }
+    ],
+    "SuckedHealthText": [
+      {
+        "op": "far",
+        "program": "_SuckedHealthText"
+      }
+    ],
+    "SuperEffectiveText": [
+      {
+        "op": "far",
+        "program": "_SuperEffectiveText"
       }
     ],
     "SwitchOnText": [
@@ -1402,16 +2403,58 @@
         "text": "It's a pamphlet\non TMs.\f...\fThere are 50 TMs\nin all.\fThere are also 5\nHMs that can be\nused repeatedly.\fSILPH CO."
       }
     ],
+    "ThrashingAboutText": [
+      {
+        "op": "far",
+        "program": "_ThrashingAboutText"
+      }
+    ],
     "ThrewAwayItemText": [
       {
         "op": "far",
         "program": "_ThrewAwayItemText"
       }
     ],
+    "ThrewBaitText": [
+      {
+        "op": "far",
+        "program": "_ThrewBaitText"
+      }
+    ],
+    "ThrewRockText": [
+      {
+        "op": "far",
+        "program": "_ThrewRockText"
+      }
+    ],
+    "ThrowBallAtTrainerMonText1": [
+      {
+        "op": "far",
+        "program": "_ThrowBallAtTrainerMonText1"
+      }
+    ],
+    "ThrowBallAtTrainerMonText2": [
+      {
+        "op": "far",
+        "program": "_ThrowBallAtTrainerMonText2"
+      }
+    ],
     "TooImportantToTossText": [
       {
         "op": "far",
         "program": "_TooImportantToTossText"
+      }
+    ],
+    "TooWeakSubstituteText": [
+      {
+        "op": "far",
+        "program": "_TooWeakSubstituteText"
+      }
+    ],
+    "TookInSunlightText": [
+      {
+        "op": "far",
+        "program": "_TookInSunlightText"
       }
     ],
     "TossHowManyText": [
@@ -1432,10 +2475,52 @@
         "op": "asm"
       }
     ],
+    "TrainerAboutToUseText": [
+      {
+        "op": "far",
+        "program": "_TrainerAboutToUseText"
+      }
+    ],
+    "TrainerDefeatedText": [
+      {
+        "op": "far",
+        "program": "_TrainerDefeatedText"
+      }
+    ],
+    "TrainerSentOutText": [
+      {
+        "op": "far",
+        "program": "_TrainerSentOutText"
+      }
+    ],
+    "TrainerWantsToFightText": [
+      {
+        "op": "far",
+        "program": "_TrainerWantsToFightText"
+      }
+    ],
+    "TransformedText": [
+      {
+        "op": "far",
+        "program": "_TransformedText"
+      }
+    ],
+    "TryingToLearnText": [
+      {
+        "op": "far",
+        "program": "_TryingToLearnText"
+      }
+    ],
     "TurnPageText": [
       {
         "op": "far",
         "program": "_TurnPageText"
+      }
+    ],
+    "TurnedAwayText": [
+      {
+        "op": "far",
+        "program": "_TurnedAwayText"
       }
     ],
     "TurnedOnPC1Text": [
@@ -1448,6 +2533,66 @@
       {
         "op": "far",
         "program": "_TurnedOnPC2Text"
+      }
+    ],
+    "UnaffectedText": [
+      {
+        "op": "far",
+        "program": "_UnaffectedText"
+      }
+    ],
+    "UnleashedEnergyText": [
+      {
+        "op": "far",
+        "program": "_UnleashedEnergyText"
+      }
+    ],
+    "UnveiledGhostText": [
+      {
+        "op": "far",
+        "program": "_UnveiledGhostText"
+      }
+    ],
+    "UseNextMonText": [
+      {
+        "op": "far",
+        "program": "_UseNextMonText"
+      }
+    ],
+    "UsedMove1Text": [
+      {
+        "op": "far",
+        "program": "_UsedMove1Text"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "UsedMove2Text": [
+      {
+        "op": "far",
+        "program": "_UsedMove2Text"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "UsedMoveText": [
+      {
+        "op": "far",
+        "program": "_ActorNameText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
+    "UsedMoveText_CheckObedience.UsedInsteadText": [
+      {
+        "op": "far",
+        "program": "_UsedInsteadText"
+      },
+      {
+        "op": "asm"
       }
     ],
     "ViridianBlackboardBurnText": [
@@ -1947,6 +3092,18 @@
         "op": "waitButton"
       }
     ],
+    "WasBlownAwayText": [
+      {
+        "op": "far",
+        "program": "_WasBlownAwayText"
+      }
+    ],
+    "WasSeededText": [
+      {
+        "op": "far",
+        "program": "_WasSeededText"
+      }
+    ],
     "WhatDoYouWantText": [
       {
         "op": "far",
@@ -1983,6 +3140,33 @@
         "program": "_WhenYouChangeBoxText"
       }
     ],
+    "WhichMoveToForgetText": [
+      {
+        "op": "far",
+        "program": "_WhichMoveToForgetText"
+      }
+    ],
+    "WildMonAppearedText": [
+      {
+        "op": "far",
+        "program": "_WildMonAppearedText"
+      }
+    ],
+    "WildRanText": [
+      {
+        "op": "far",
+        "program": "_WildRanText"
+      }
+    ],
+    "WithExpAllText": [
+      {
+        "op": "far",
+        "program": "_WithExpAllText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
     "WithdrawHowManyText": [
       {
         "op": "far",
@@ -1995,6 +3179,18 @@
         "program": "_WithdrewItemText"
       }
     ],
+    "WokeUpText": [
+      {
+        "op": "far",
+        "program": "_WokeUpText"
+      }
+    ],
+    "WontObeyText": [
+      {
+        "op": "far",
+        "program": "_WontObeyText"
+      }
+    ],
     "WouldYouLikeToSaveText": [
       {
         "op": "far",
@@ -2005,6 +3201,64 @@
       {
         "op": "far",
         "program": "_YourNameIsText"
+      }
+    ],
+    "_AIBattleUseItemText": [
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": "\nused "
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\non "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_AIBattleWithdrawText": [
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": " with-\ndrew "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_AbandonLearningText": [
+      {
+        "op": "text",
+        "text": "Abandon learning\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "?<DONE>"
       }
     ],
     "_AccessedBillsPCText": [
@@ -2031,6 +3285,28 @@
         "text": "Accessed someone's\nPC.\fAccessed POKéMON\nStorage System.<PROMPT>"
       }
     ],
+    "_ActorNameText": [
+      {
+        "op": "text",
+        "text": "<USER>"
+      }
+    ],
+    "_AlreadyAsleepText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\nalready asleep!<PROMPT>"
+      }
+    ],
+    "_AlreadyOutText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " is\nalready out!<PROMPT>"
+      }
+    ],
     "_AntidoteText": [
       {
         "op": "ram",
@@ -2041,6 +3317,18 @@
         "text": " was\ncured of poison!<DONE>"
       }
     ],
+    "_AttackContinuesText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nattack continues!<DONE>"
+      }
+    ],
+    "_AttackMissedText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nattack missed!<PROMPT>"
+      }
+    ],
     "_AwakeningText": [
       {
         "op": "ram",
@@ -2049,6 +3337,28 @@
       {
         "op": "text",
         "text": "\nwoke up!<DONE>"
+      }
+    ],
+    "_BadlyPoisonedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\nbadly poisoned!<PROMPT>"
+      }
+    ],
+    "_BecameConfusedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nbecame confused!<PROMPT>"
+      }
+    ],
+    "_BeganToNapText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " began\nto nap!<PROMPT>"
       }
     ],
     "_BluesHouseDaisyBagFullText": [
@@ -2093,10 +3403,28 @@
         "text": "Crammed full of\nPOKéMON books!<DONE>"
       }
     ],
+    "_BoostedText": [
+      {
+        "op": "text",
+        "text": "a boosted<CONT>"
+      }
+    ],
+    "_BoxFullCannotThrowBallText": [
+      {
+        "op": "text",
+        "text": "The POKéMON BOX\nis full! Can't\nuse that item!<PROMPT>"
+      }
+    ],
     "_BoxFullText": [
       {
         "op": "text",
         "text": "Oops! This Box is\nfull of POKéMON.<PROMPT>"
+      }
+    ],
+    "_BuildingRageText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nRAGE is building!<PROMPT>"
       }
     ],
     "_BurnHealText": [
@@ -2107,6 +3435,18 @@
       {
         "op": "text",
         "text": "'s\nburn was healed!<DONE>"
+      }
+    ],
+    "_BurnedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nwas burned!<PROMPT>"
+      }
+    ],
+    "_ButItFailedText": [
+      {
+        "op": "text",
+        "text": "But, it failed! <PROMPT>"
       }
     ],
     "_CannotFlyHereText": [
@@ -2153,10 +3493,28 @@
         "text": "You can't deposit\nthe last POKéMON!<PROMPT>"
       }
     ],
+    "_CantEscapeText": [
+      {
+        "op": "text",
+        "text": "Can't escape!<PROMPT>"
+      }
+    ],
+    "_CantMoveText": [
+      {
+        "op": "text",
+        "text": "<USER>\ncan't move!<PROMPT>"
+      }
+    ],
     "_CantTakeMonText": [
       {
         "op": "text",
         "text": "You can't take\nany more POKéMON.\fDeposit POKéMON\nfirst.<PROMPT>"
+      }
+    ],
+    "_ChargeMoveEffectText": [
+      {
+        "op": "text",
+        "text": "<USER>"
       }
     ],
     "_ChooseABoxText": [
@@ -2171,6 +3529,36 @@
         "text": "Closed link to\nPROF.OAK's PC."
       }
     ],
+    "_CoinsScatteredText": [
+      {
+        "op": "text",
+        "text": "Coins scattered\neverywhere!<PROMPT>"
+      }
+    ],
+    "_ComeBackText": [
+      {
+        "op": "text",
+        "text": "\nCome back!<DONE>"
+      }
+    ],
+    "_ConfusedNoMoreText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nconfused no more!<PROMPT>"
+      }
+    ],
+    "_ConvertedTypeText": [
+      {
+        "op": "text",
+        "text": "Converted type to\n<TARGET>'s!<PROMPT>"
+      }
+    ],
+    "_CriticalHitText": [
+      {
+        "op": "text",
+        "text": "Critical hit!<PROMPT>"
+      }
+    ],
     "_DepositHowManyText": [
       {
         "op": "text",
@@ -2181,6 +3569,30 @@
       {
         "op": "text",
         "text": "Deposit which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_DidNotLearnText": [
+      {
+        "op": "ram",
+        "binding": "learnMoveMonName"
+      },
+      {
+        "op": "text",
+        "text": "\ndid not learn\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_DidntAffectText": [
+      {
+        "op": "text",
+        "text": "It didn't affect\n<TARGET>!<PROMPT>"
       }
     ],
     "_DiglettSculptureText": [
@@ -2195,10 +3607,40 @@
         "text": "I went to ROCK\nTUNNEL, but it's\ndark and scary.\fIf a POKéMON's\nFLASH could light\nit up...<DONE>"
       }
     ],
+    "_DisabledNoMoreText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\ndisabled no more!<PROMPT>"
+      }
+    ],
+    "_DoItText": [
+      {
+        "op": "text",
+        "text": "Do it! "
+      }
+    ],
+    "_DoesntAffectMonText": [
+      {
+        "op": "text",
+        "text": "It doesn't affect\n<TARGET>!<PROMPT>"
+      }
+    ],
+    "_DreamWasEatenText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\ndream was eaten!<PROMPT>"
+      }
+    ],
     "_DroppedHiddenCoinsText": [
       {
         "op": "text",
         "text": "\fOops! Dropped\nsome coins!<DONE>"
+      }
+    ],
+    "_DugAHoleText": [
+      {
+        "op": "text",
+        "text": "\ndug a hole!<PROMPT>"
       }
     ],
     "_ElevatorText": [
@@ -2207,16 +3649,184 @@
         "text": "This is an\nelevator.<DONE>"
       }
     ],
+    "_EndUsedMove1Text": [
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_EndUsedMove2Text": [
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_EndUsedMove3Text": [
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_EndUsedMove4Text": [
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_EndUsedMove5Text": [
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_EnemyAppearedText": [
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nappeared!<PROMPT>"
+      }
+    ],
+    "_EnemyMonFaintedText": [
+      {
+        "op": "text",
+        "text": "Enemy "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nfainted!<PROMPT>"
+      }
+    ],
+    "_EnemyRanText": [
+      {
+        "op": "text",
+        "text": "Enemy "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nran!<PROMPT>"
+      }
+    ],
+    "_EnemysWeakText": [
+      {
+        "op": "text",
+        "text": "The enemy's weak!\nGet'm! "
+      }
+    ],
+    "_EnoughText": [
+      {
+        "op": "text",
+        "text": "enough!"
+      }
+    ],
+    "_EvadedAttackText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nevaded attack!<PROMPT>"
+      }
+    ],
+    "_ExpPointsText": [
+      {
+        "op": "decimal",
+        "binding": "expAmountGained",
+        "bytes": 2,
+        "digits": 4
+      },
+      {
+        "op": "text",
+        "text": " EXP. Points!<PROMPT>"
+      }
+    ],
+    "_FastAsleepText": [
+      {
+        "op": "text",
+        "text": "<USER>\nis fast asleep!<PROMPT>"
+      }
+    ],
+    "_FellAsleepBecameHealthyText": [
+      {
+        "op": "text",
+        "text": "<USER>\nfell asleep and\nbecame healthy!<DONE>"
+      }
+    ],
+    "_FellAsleepText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nfell asleep!<PROMPT>"
+      }
+    ],
+    "_FellText": [
+      {
+        "op": "text",
+        "text": " fell!<PROMPT>"
+      }
+    ],
     "_FileDataDestroyedText": [
       {
         "op": "text",
         "text": "The file data is\ndestroyed!<PROMPT>"
       }
     ],
+    "_FireDefrostedText": [
+      {
+        "op": "text",
+        "text": "Fire defrosted\n<TARGET>!<PROMPT>"
+      }
+    ],
     "_FlashLightsAreaText": [
       {
         "op": "text",
         "text": "A blinding FLASH\nlights the area!<PROMPT>"
+      }
+    ],
+    "_FlewUpHighText": [
+      {
+        "op": "text",
+        "text": "\nflew up high!<PROMPT>"
+      }
+    ],
+    "_FlinchedText": [
+      {
+        "op": "text",
+        "text": "<USER>\nflinched!<PROMPT>"
+      }
+    ],
+    "_FluteWokeUpText": [
+      {
+        "op": "text",
+        "text": "All sleeping\nPOKéMON woke up.<PROMPT>"
+      }
+    ],
+    "_ForgotAndText": [
+      {
+        "op": "text",
+        "text": "\f"
+      },
+      {
+        "op": "ram",
+        "binding": "learnMoveMonName"
+      },
+      {
+        "op": "text",
+        "text": " forgot\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!\fAnd...<PROMPT>"
       }
     ],
     "_FoundHiddenCoins2Text": [
@@ -2283,6 +3893,12 @@
         "text": "!"
       }
     ],
+    "_FrozenText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nwas frozen solid!<PROMPT>"
+      }
+    ],
     "_FullHealText": [
       {
         "op": "ram",
@@ -2291,6 +3907,22 @@
       {
         "op": "text",
         "text": "'s\nhealth returned!<DONE>"
+      }
+    ],
+    "_FullyParalyzedText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nfully paralyzed!<PROMPT>"
+      }
+    ],
+    "_GainedText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " gained\n"
       }
     ],
     "_GameSavedText": [
@@ -2303,6 +3935,48 @@
       {
         "op": "text",
         "text": "Want to get your\nPOKéDEX rated?<DONE>"
+      }
+    ],
+    "_GetOutText": [
+      {
+        "op": "text",
+        "text": "GHOST: Get out...\nGet out...<PROMPT>"
+      }
+    ],
+    "_GetmText": [
+      {
+        "op": "text",
+        "text": "Get'm! "
+      }
+    ],
+    "_GettingPumpedText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\ngetting pumped!<PROMPT>"
+      }
+    ],
+    "_GhostCantBeIDdText": [
+      {
+        "op": "text",
+        "text": "Darn! The GHOST\ncan't be ID'd!<PROMPT>"
+      }
+    ],
+    "_GoText": [
+      {
+        "op": "text",
+        "text": "Go! "
+      }
+    ],
+    "_GoodText": [
+      {
+        "op": "text",
+        "text": "good!"
+      }
+    ],
+    "_GotAwayText": [
+      {
+        "op": "text",
+        "text": "Got away safely!<PROMPT>"
       }
     ],
     "_GotMapText": [
@@ -2319,6 +3993,50 @@
         "text": "!"
       }
     ],
+    "_GreatlyFellText": [
+      {
+        "op": "text",
+        "text": "<SCROLL>greatly"
+      }
+    ],
+    "_GreatlyRoseText": [
+      {
+        "op": "text",
+        "text": "<SCROLL>greatly"
+      }
+    ],
+    "_GrewLevelText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " grew\nto level "
+      },
+      {
+        "op": "decimal",
+        "binding": "curEnemyLevel",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_HMCantDeleteText": [
+      {
+        "op": "text",
+        "text": "HM techniques\ncan't be deleted!<PROMPT>"
+      }
+    ],
+    "_HasSubstituteText": [
+      {
+        "op": "text",
+        "text": "<USER>\nhas a SUBSTITUTE!<PROMPT>"
+      }
+    ],
     "_HiddenItemBagFullText": [
       {
         "op": "text",
@@ -2331,6 +4049,66 @@
         "text": "That's right! I\nremember now! His\nname is <RIVAL>!<PROMPT>"
       }
     ],
+    "_HitWithRecoilText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nhit with recoil!<PROMPT>"
+      }
+    ],
+    "_HitXTimesText": [
+      {
+        "op": "text",
+        "text": "Hit "
+      },
+      {
+        "op": "decimal",
+        "binding": "enemyNumHits",
+        "bytes": 1,
+        "digits": 1
+      },
+      {
+        "op": "text",
+        "text": " times!<PROMPT>"
+      }
+    ],
+    "_HookedMonAttackedText": [
+      {
+        "op": "text",
+        "text": "The hooked\n"
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nattacked!<PROMPT>"
+      }
+    ],
+    "_HurtByBurnText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nhurt by the burn!<PROMPT>"
+      }
+    ],
+    "_HurtByLeechSeedText": [
+      {
+        "op": "text",
+        "text": "LEECH SEED saps\n<USER>!<PROMPT>"
+      }
+    ],
+    "_HurtByPoisonText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nhurt by poison!<PROMPT>"
+      }
+    ],
+    "_HurtItselfText": [
+      {
+        "op": "text",
+        "text": "It hurt itself in\nits confusion!<PROMPT>"
+      }
+    ],
     "_IceHealText": [
       {
         "op": "ram",
@@ -2339,6 +4117,16 @@
       {
         "op": "text",
         "text": " was\ndefrosted!<DONE>"
+      }
+    ],
+    "_IgnoredOrdersText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nignored orders!<PROMPT>"
       }
     ],
     "_IndigoPlateauStatuesText1": [
@@ -2359,6 +4147,7 @@
         "text": "The highest\nPOKéMON authority\nPOKéMON LEAGUE HQ<DONE>"
       }
     ],
+    "_InitBattleCommon.emptyString": [],
     "_IntroducePlayerText": [
       {
         "op": "text",
@@ -2369,6 +4158,18 @@
       {
         "op": "text",
         "text": "This is my grand-\nson. He's been\nyour rival since\nyou were a baby.\f...Erm, what is\nhis name again?<PROMPT>"
+      }
+    ],
+    "_IsConfusedText": [
+      {
+        "op": "text",
+        "text": "<USER>\nis confused!<PROMPT>"
+      }
+    ],
+    "_IsFrozenText": [
+      {
+        "op": "text",
+        "text": "<USER>\nis frozen solid!<PROMPT>"
       }
     ],
     "_IsItOKToTossItemText": [
@@ -2383,6 +4184,90 @@
       {
         "op": "text",
         "text": "?<PROMPT>"
+      }
+    ],
+    "_IsUnaffectedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nis unaffected!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText00": [
+      {
+        "op": "text",
+        "text": "It dodged the\nthrown BALL!\fThis POKéMON\ncan't be caught!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText01": [
+      {
+        "op": "text",
+        "text": "You missed the\nPOKéMON!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText02": [
+      {
+        "op": "text",
+        "text": "Darn! The POKéMON\nbroke free!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText03": [
+      {
+        "op": "text",
+        "text": "Aww! It appeared\nto be caught! <PROMPT>"
+      }
+    ],
+    "_ItemUseBallText04": [
+      {
+        "op": "text",
+        "text": "Shoot! It was so\nclose too!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText05": [
+      {
+        "op": "text",
+        "text": "All right!\n"
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": " was\ncaught!"
+      }
+    ],
+    "_ItemUseBallText06": [
+      {
+        "op": "text",
+        "text": "New POKéDEX data\nwill be added for\n"
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_ItemUseBallText07": [
+      {
+        "op": "ram",
+        "binding": "caughtMonNick"
+      },
+      {
+        "op": "text",
+        "text": " was\ntransferred to\nBILL's PC!<PROMPT>"
+      }
+    ],
+    "_ItemUseBallText08": [
+      {
+        "op": "ram",
+        "binding": "caughtMonNick"
+      },
+      {
+        "op": "text",
+        "text": " was\ntransferred to\nsomeone's PC!<PROMPT>"
       }
     ],
     "_ItemUseNoEffectText": [
@@ -2403,6 +4288,22 @@
         "text": "This isn't yours\nto use!<PROMPT>"
       }
     ],
+    "_ItemUseText001": [
+      {
+        "op": "text",
+        "text": "<PLAYER> used"
+      }
+    ],
+    "_ItemUseText002": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
     "_ItemWasStoredText": [
       {
         "op": "ram",
@@ -2413,10 +4314,46 @@
         "text": " was\nstored via PC.<PROMPT>"
       }
     ],
+    "_ItemsCantBeUsedHereText": [
+      {
+        "op": "text",
+        "text": "Items can't be\nused here.<PROMPT>"
+      }
+    ],
     "_JustAMomentText": [
       {
         "op": "text",
         "text": "Just a moment.<DONE>"
+      }
+    ],
+    "_KeptGoingAndCrashedText": [
+      {
+        "op": "text",
+        "text": "<USER>\nkept going and\ncrashed!<PROMPT>"
+      }
+    ],
+    "_LearnedMove1Text": [
+      {
+        "op": "ram",
+        "binding": "learnMoveMonName"
+      },
+      {
+        "op": "text",
+        "text": " learned\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_LightScreenProtectedText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nprotected against\nspecial attacks!<PROMPT>"
       }
     ],
     "_LinkCableHelpText1": [
@@ -2449,16 +4386,58 @@
         "text": "TRADE CENTER is\nused for trading\nPOKéMON.<PROMPT>"
       }
     ],
+    "_LoafingAroundText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " is\nloafing around.<PROMPT>"
+      }
+    ],
     "_LooksContentText": [
       {
         "op": "text",
         "text": "It looks very\ncontent asleep.<DONE>"
       }
     ],
+    "_LoweredItsHeadText": [
+      {
+        "op": "text",
+        "text": "\nlowered its head!<PROMPT>"
+      }
+    ],
+    "_MadeWhirlwindText": [
+      {
+        "op": "text",
+        "text": "\nmade a whirlwind!<PROMPT>"
+      }
+    ],
     "_MartSignText": [
       {
         "op": "text",
         "text": "All your item\nneeds fulfilled!\nPOKéMON MART<DONE>"
+      }
+    ],
+    "_MimicLearnedMoveText": [
+      {
+        "op": "text",
+        "text": "<USER>\nlearned\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_MirrorMoveFailedText": [
+      {
+        "op": "text",
+        "text": "The MIRROR MOVE\nfailed!<PROMPT>"
       }
     ],
     "_MonIsTakenOutText": [
@@ -2515,6 +4494,128 @@
         "text": ".<PROMPT>"
       }
     ],
+    "_MoneyForWinningText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> got ¥"
+      },
+      {
+        "op": "bcd",
+        "binding": "amountMoneyWon",
+        "bytes": 3,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": "\nfor winning!<PROMPT>"
+      }
+    ],
+    "_MonsStatsFellText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ""
+      }
+    ],
+    "_MonsStatsRoseText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ""
+      }
+    ],
+    "_MoveDisabledText": [
+      {
+        "op": "text",
+        "text": "The move is\ndisabled!<PROMPT>"
+      }
+    ],
+    "_MoveIsDisabledText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " is\ndisabled!<PROMPT>"
+      }
+    ],
+    "_MoveNameText": [
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ""
+      },
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_MoveNoPPText": [
+      {
+        "op": "text",
+        "text": "No PP left for\nthis move!<PROMPT>"
+      }
+    ],
+    "_MoveWasDisabledText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " was\ndisabled!<PROMPT>"
+      }
+    ],
+    "_MultiHitText": [
+      {
+        "op": "text",
+        "text": "Hit the enemy\n"
+      },
+      {
+        "op": "decimal",
+        "binding": "playerNumHits",
+        "bytes": 1,
+        "digits": 1
+      },
+      {
+        "op": "text",
+        "text": " times!<PROMPT>"
+      }
+    ],
+    "_MustRechargeText": [
+      {
+        "op": "text",
+        "text": "<USER>\nmust recharge!<PROMPT>"
+      }
+    ],
     "_NeedYourPokemonText": [
       {
         "op": "text",
@@ -2525,6 +4626,12 @@
       {
         "op": "text",
         "text": "No! A new BADGE\nis required.<PROMPT>"
+      }
+    ],
+    "_NoEffectText": [
+      {
+        "op": "text",
+        "text": "No effect!<PROMPT>"
       }
     ],
     "_NoMonText": [
@@ -2539,6 +4646,16 @@
         "text": "No more room for\nitems!<DONE>"
       }
     ],
+    "_NoMovesLeftText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " has no\nmoves left!<DONE>"
+      }
+    ],
     "_NoPokemonText": [
       {
         "op": "text",
@@ -2551,10 +4668,34 @@
         "text": "No room left to\nstore items.<PROMPT>"
       }
     ],
+    "_NoRunningText": [
+      {
+        "op": "text",
+        "text": "No! There's no\nrunning from a\ntrainer battle!<PROMPT>"
+      }
+    ],
+    "_NoWillText": [
+      {
+        "op": "text",
+        "text": "There's no will\nto fight!<PROMPT>"
+      }
+    ],
     "_NotHealthyEnoughText": [
       {
         "op": "text",
         "text": "Not healthy\nenough.<PROMPT>"
+      }
+    ],
+    "_NotVeryEffectiveText": [
+      {
+        "op": "text",
+        "text": "It's not very\neffective...<PROMPT>"
+      }
+    ],
+    "_NothingHappenedText": [
+      {
+        "op": "text",
+        "text": "Nothing happened!<PROMPT>"
       }
     ],
     "_NothingStoredText": [
@@ -2567,6 +4708,18 @@
       {
         "op": "text",
         "text": "You have nothing\nto deposit.<PROMPT>"
+      }
+    ],
+    "_OHKOText": [
+      {
+        "op": "text",
+        "text": "One-hit KO!<PROMPT>"
+      }
+    ],
+    "_OKExclamationText": [
+      {
+        "op": "text",
+        "text": "OK!"
       }
     ],
     "_OakLabEmailText": [
@@ -2885,6 +5038,24 @@
         "text": " is\ngone forever. OK?<DONE>"
       }
     ],
+    "_OneTwoAndText": [
+      {
+        "op": "text",
+        "text": "1, 2 and..."
+      }
+    ],
+    "_OutOfSafariBallsText": [
+      {
+        "op": "text",
+        "text": "PA: Ding-dong!\fYou are out of\nSAFARI BALLs!<PROMPT>"
+      }
+    ],
+    "_PPRestoredText": [
+      {
+        "op": "text",
+        "text": "PP was restored.<PROMPT>"
+      }
+    ],
     "_PalletTownFisherText": [
       {
         "op": "text",
@@ -2943,6 +5114,12 @@
       {
         "op": "text",
         "text": "PALLET TOWN\nShades of your\njourney await!<DONE>"
+      }
+    ],
+    "_ParalyzedMayNotAttackText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\nparalyzed! It may\nnot attack!<PROMPT>"
       }
     ],
     "_ParlyzHealText": [
@@ -3141,6 +5318,24 @@
         "text": "POKéMON become\neasier to catch\nwhen they are\nhurt or asleep!\fBut, it's not a\nsure thing!<DONE>"
       }
     ],
+    "_PickUpPayDayMoneyText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> picked up\n¥"
+      },
+      {
+        "op": "bcd",
+        "binding": "totalPayDayMoney",
+        "bytes": 3,
+        "leadingZeroes": true,
+        "leftAlign": true,
+        "moneySign": false
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
     "_PikachuUnhappyText": [
       {
         "op": "ram",
@@ -3149,6 +5344,60 @@
       {
         "op": "text",
         "text": " looks\nunhappy about it!<PROMPT>"
+      }
+    ],
+    "_PlayedFluteHadEffectText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> played the\nPOKé FLUTE."
+      }
+    ],
+    "_PlayedFluteNoEffectText": [
+      {
+        "op": "text",
+        "text": "Played the POKé\nFLUTE.\fNow, that's a\ncatchy tune!<PROMPT>"
+      }
+    ],
+    "_PlayerBlackedOutText2": [
+      {
+        "op": "text",
+        "text": "<PLAYER> is out of\nuseable POKéMON!\f<PLAYER> blacked\nout!<PROMPT>"
+      }
+    ],
+    "_PlayerMon1Text": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_PlayerMon2Text": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " "
+      }
+    ],
+    "_PlayerMonFaintedText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nfainted!<PROMPT>"
+      }
+    ],
+    "_PoisonedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nwas poisoned!<PROMPT>"
       }
     ],
     "_PokeCenterSignText": [
@@ -3287,6 +5536,12 @@
         "text": "Wow! Tons of\nPOKéMON stuff!<DONE>"
       }
     ],
+    "_PoofText": [
+      {
+        "op": "text",
+        "text": " Poof!"
+      }
+    ],
     "_PotionText": [
       {
         "op": "ram",
@@ -3311,6 +5566,18 @@
       {
         "op": "text",
         "text": "Push START to\nopen the MENU!<DONE>"
+      }
+    ],
+    "_RanAwayScaredText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nran away scared!<PROMPT>"
+      }
+    ],
+    "_RanFromBattleText": [
+      {
+        "op": "text",
+        "text": "<USER>\nran from battle!<PROMPT>"
       }
     ],
     "_RedBedroomSNESText": [
@@ -3349,10 +5616,28 @@
         "text": "Oops, wrong side.<DONE>"
       }
     ],
+    "_ReflectGainedArmorText": [
+      {
+        "op": "text",
+        "text": "<USER>\ngained armor!<PROMPT>"
+      }
+    ],
+    "_RegainedHealthText": [
+      {
+        "op": "text",
+        "text": "<USER>\nregained health!<PROMPT>"
+      }
+    ],
     "_ReleaseWhichMonText": [
       {
         "op": "text",
         "text": "Release which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_RestorePPWhichTechniqueText": [
+      {
+        "op": "text",
+        "text": "Restore PP of\nwhich technique?<DONE>"
       }
     ],
     "_ReviveText": [
@@ -3363,6 +5648,18 @@
       {
         "op": "text",
         "text": "\nis revitalized!<DONE>"
+      }
+    ],
+    "_Rival1WinText": [
+      {
+        "op": "text",
+        "text": "<RIVAL>: Yeah! Am\nI great or what?<PROMPT>"
+      }
+    ],
+    "_RoseText": [
+      {
+        "op": "text",
+        "text": " rose!<PROMPT>"
       }
     ],
     "_Route1SignText": [
@@ -3493,10 +5790,50 @@
         "text": "A fainted POKéMON\ncan't fight. But, \nit can still use \nmoves like CUT!<DONE>"
       }
     ],
+    "_RunAwayText": [
+      {
+        "op": "text",
+        "text": "Hurry, get away!<PROMPT>"
+      }
+    ],
+    "_SafariZoneAngryText": [
+      {
+        "op": "text",
+        "text": "Wild "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nis angry!<PROMPT>"
+      }
+    ],
+    "_SafariZoneEatingText": [
+      {
+        "op": "text",
+        "text": "Wild "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nis eating!<PROMPT>"
+      }
+    ],
     "_SaveOptionText": [
       {
         "op": "text",
         "text": "The SAVE option is\non the MENU\nscreen.<DONE>"
+      }
+    ],
+    "_SavingEnergyText": [
+      {
+        "op": "text",
+        "text": "<USER>\nis saving energy!<PROMPT>"
       }
     ],
     "_SavingText": [
@@ -3505,10 +5842,32 @@
         "text": "Saving...<DONE>"
       }
     ],
+    "_ScaredText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " is too\nscared to move!<PROMPT>"
+      }
+    ],
     "_ShallWeHealYourPokemonText": [
       {
         "op": "text",
         "text": "Shall we heal your\nPOKéMON?<DONE>"
+      }
+    ],
+    "_ShroudedInMistText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nshrouded in mist!<PROMPT>"
+      }
+    ],
+    "_SkyAttackGlowingText": [
+      {
+        "op": "text",
+        "text": "\nis glowing!<PROMPT>"
       }
     ],
     "_SleepingPikachuText1": [
@@ -3523,16 +5882,64 @@
         "text": "There isn't any\nresponse...<PROMPT>"
       }
     ],
+    "_StartedSleepingEffect": [
+      {
+        "op": "text",
+        "text": "<USER>\nstarted sleeping!<DONE>"
+      }
+    ],
+    "_StatusChangesEliminatedText": [
+      {
+        "op": "text",
+        "text": "All STATUS changes\nare eliminated!<PROMPT>"
+      }
+    ],
     "_StrengthsAndWeaknessesText": [
       {
         "op": "text",
         "text": "All POKéMON types\nhave strong and\nweak points\nagainst others.<DONE>"
       }
     ],
+    "_SubstituteBrokeText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\nSUBSTITUTE broke!<PROMPT>"
+      }
+    ],
+    "_SubstituteText": [
+      {
+        "op": "text",
+        "text": "It created a\nSUBSTITUTE!<PROMPT>"
+      }
+    ],
+    "_SubstituteTookDamageText": [
+      {
+        "op": "text",
+        "text": "The SUBSTITUTE\ntook damage for\n<TARGET>!<PROMPT>"
+      }
+    ],
+    "_SuckedHealthText": [
+      {
+        "op": "text",
+        "text": "Sucked health from\n<TARGET>!<PROMPT>"
+      }
+    ],
+    "_SuperEffectiveText": [
+      {
+        "op": "text",
+        "text": "It's super\neffective!<PROMPT>"
+      }
+    ],
     "_SwitchOnText": [
       {
         "op": "text",
         "text": "Switch on!<PROMPT>"
+      }
+    ],
+    "_ThrashingAboutText": [
+      {
+        "op": "text",
+        "text": "<USER>'s\nthrashing about!<DONE>"
       }
     ],
     "_ThrewAwayItemText": [
@@ -3549,10 +5956,46 @@
         "text": ".<PROMPT>"
       }
     ],
+    "_ThrewBaitText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> threw\nsome BAIT.<DONE>"
+      }
+    ],
+    "_ThrewRockText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> threw a\nROCK.<DONE>"
+      }
+    ],
+    "_ThrowBallAtTrainerMonText1": [
+      {
+        "op": "text",
+        "text": "The trainer\nblocked the BALL!<PROMPT>"
+      }
+    ],
+    "_ThrowBallAtTrainerMonText2": [
+      {
+        "op": "text",
+        "text": "Don't be a thief!<PROMPT>"
+      }
+    ],
     "_TooImportantToTossText": [
       {
         "op": "text",
         "text": "That's too impor-\ntant to toss!<PROMPT>"
+      }
+    ],
+    "_TooWeakSubstituteText": [
+      {
+        "op": "text",
+        "text": "Too weak to make\na SUBSTITUTE!<PROMPT>"
+      }
+    ],
+    "_TookInSunlightText": [
+      {
+        "op": "text",
+        "text": "\ntook in sunlight!<PROMPT>"
       }
     ],
     "_TossHowManyText": [
@@ -3567,10 +6010,128 @@
         "text": "A TOWN MAP."
       }
     ],
+    "_TrainerAboutToUseText": [
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": " is\nabout to use\n"
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!\fWill <PLAYER>\nchange POKéMON?<DONE>"
+      }
+    ],
+    "_TrainerDefeatedText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> defeated\n"
+      },
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_TrainerSentOutText": [
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": " sent\nout "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "!<DONE>"
+      }
+    ],
+    "_TrainerWantsToFightText": [
+      {
+        "op": "ram",
+        "binding": "trainerName"
+      },
+      {
+        "op": "text",
+        "text": " wants\nto fight!<PROMPT>"
+      }
+    ],
+    "_TransformedText": [
+      {
+        "op": "text",
+        "text": "<USER>\ntransformed into\n"
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
+    "_TryingToLearnText": [
+      {
+        "op": "ram",
+        "binding": "learnMoveMonName"
+      },
+      {
+        "op": "text",
+        "text": " is\ntrying to learn\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!\fBut, "
+      },
+      {
+        "op": "ram",
+        "binding": "learnMoveMonName"
+      },
+      {
+        "op": "text",
+        "text": "\ncan't learn more\nthan 4 moves!\fDelete an older\nmove to make room\nfor "
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "?<DONE>"
+      }
+    ],
     "_TurnPageText": [
       {
         "op": "text",
         "text": "Turn the page?<DONE>"
+      }
+    ],
+    "_TurnedAwayText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " turned\naway!<PROMPT>"
       }
     ],
     "_TurnedOnPC1Text": [
@@ -3583,6 +6144,48 @@
       {
         "op": "text",
         "text": "<PLAYER> turned on\nthe PC.<PROMPT>"
+      }
+    ],
+    "_UnaffectedText": [
+      {
+        "op": "text",
+        "text": "<TARGET>'s\nunaffected!<PROMPT>"
+      }
+    ],
+    "_UnleashedEnergyText": [
+      {
+        "op": "text",
+        "text": "<USER>\nunleashed energy!<PROMPT>"
+      }
+    ],
+    "_UnveiledGhostText": [
+      {
+        "op": "text",
+        "text": "SILPH SCOPE\nunveiled the\nGHOST's identity!<PROMPT>"
+      }
+    ],
+    "_UseNextMonText": [
+      {
+        "op": "text",
+        "text": "Use next POKéMON?<DONE>"
+      }
+    ],
+    "_UsedInsteadText": [
+      {
+        "op": "text",
+        "text": "instead,<CONT>"
+      }
+    ],
+    "_UsedMove1Text": [
+      {
+        "op": "text",
+        "text": "\nused "
+      }
+    ],
+    "_UsedMove2Text": [
+      {
+        "op": "text",
+        "text": "\nused "
       }
     ],
     "_ViridianBlackboardBurnText": [
@@ -4041,6 +6644,18 @@
         "text": "Warp to the last\nPOKéMON CENTER.<DONE>"
       }
     ],
+    "_WasBlownAwayText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nwas blown away!<PROMPT>"
+      }
+    ],
+    "_WasSeededText": [
+      {
+        "op": "text",
+        "text": "<TARGET>\nwas seeded!<PROMPT>"
+      }
+    ],
     "_WhatDoYouWantText": [
       {
         "op": "text",
@@ -4077,6 +6692,46 @@
         "text": "When you change a\nPOKéMON BOX, data\nwill be saved.\fIs that okay?<DONE>"
       }
     ],
+    "_WhichMoveToForgetText": [
+      {
+        "op": "text",
+        "text": "Which move should\nbe forgotten?<DONE>"
+      }
+    ],
+    "_WildMonAppearedText": [
+      {
+        "op": "text",
+        "text": "Wild "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nappeared!<PROMPT>"
+      }
+    ],
+    "_WildRanText": [
+      {
+        "op": "text",
+        "text": "Wild "
+      },
+      {
+        "op": "ram",
+        "binding": "enemyMonNick"
+      },
+      {
+        "op": "text",
+        "text": "\nran!<PROMPT>"
+      }
+    ],
+    "_WithExpAllText": [
+      {
+        "op": "text",
+        "text": "with EXP.ALL,<CONT>"
+      }
+    ],
     "_WithdrawHowManyText": [
       {
         "op": "text",
@@ -4095,6 +6750,22 @@
       {
         "op": "text",
         "text": ".<PROMPT>"
+      }
+    ],
+    "_WokeUpText": [
+      {
+        "op": "text",
+        "text": "<USER>\nwoke up!<PROMPT>"
+      }
+    ],
+    "_WontObeyText": [
+      {
+        "op": "ram",
+        "binding": "battleMonNick"
+      },
+      {
+        "op": "text",
+        "text": " won't\nobey!<PROMPT>"
       }
     ],
     "_WouldYouLikeToSaveText": [

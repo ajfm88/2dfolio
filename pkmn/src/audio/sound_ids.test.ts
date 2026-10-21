@@ -8,7 +8,8 @@ const read = (path: string) => readFileSync(resolve(refs, path), 'utf8');
 const normalize = (name: string) => name.replace(/_/g, '').toLowerCase();
 
 describe('numeric sound identity from cartridge header layout', () => {
-  it.skipIf(!existsSync(refs))('all 49 music identities and 20 SFX IDs match independent ASM header counts and banks', () => {
+  // A5c2 CP2: RUN adds one ID and has no bank-1-suffixed symbol.
+  it.skipIf(!existsSync(refs))('all 49 music identities and 21 SFX IDs match independent ASM header counts and banks', () => {
     const layout = new Map<number, number>(); let bank = 0;
     for (const raw of read('layout.link').split('\n')) {
       const line = raw.split(';')[0].trim();
@@ -38,8 +39,10 @@ describe('numeric sound identity from cartridge header layout', () => {
     expect(constants.map(m => normalize(m[1].slice(6))).sort()).toEqual(Object.keys(expectedMusic).sort());
     expect(read('constants/music_constants.asm')).toContain('((\\2 - SFX_Headers_1) / 3)');
     expect(MUSIC_IDS).toEqual(expectedMusic);
-    for (const [name, id] of Object.entries(SFX_IDS)) expect(id, name).toBe(symbols.get(`sfx${normalize(name)}1`));
-    expect(Object.keys(SFX_IDS)).toHaveLength(20);
+    for (const [name, id] of Object.entries(SFX_IDS))
+      expect(id, name).toBe(symbols.get(name === 'run' ? 'sfxrun' : `sfx${normalize(name)}1`));
+    expect(SFX_IDS.run).toBe(0x97);
+    expect(Object.keys(SFX_IDS)).toHaveLength(21);
   });
 
   it('covers committed header-backed music and keeps the direct Flute routine separate', () => {

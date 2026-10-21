@@ -26,11 +26,13 @@ beforeAll(async () => {
 });
 
 describe('static/ export: asset keys', () => {
-  it('includes battle transitions, healing_machine, shrink and the five Pewter maps in the JSON mirror (184 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(184);
+  // A5c2 CP2: the new RUN sound adds one JSON and its static mirror.
+  it('includes battle transitions, healing_machine, shrink, run and the five Pewter maps in the JSON mirror (185 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(185);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/shrink.json');
+    expect(extracted.jsonData).toHaveProperty('audio/sfx/run.json');
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).not.toHaveProperty('maps/Museum1F.json');

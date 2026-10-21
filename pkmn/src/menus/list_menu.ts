@@ -5,7 +5,9 @@ import { getItemName, getItemPrice, isKeyItem } from '../items';
 import { getCurrentMenuItem, getEmptySlotGeneration, getListScrollOffset } from '../list_state';
 import type { BgTransfer } from '../text/bg_transfer';
 import { MenuInput } from './menu_input';
-import type { ScreenTiles } from './screen_tiles';
+import type { TileSurface, MenuCursorState } from './tile_surface';
+import { textBoxBorder, placeString, clearArea, writeBcd, writeNumber, printLevel,
+  placeMenuCursor, placeUnfilledArrowMenuCursor } from './tile_surface';
 import { monDisplayName } from '../pokemon_names';
 import { setNoTextDelay } from '../text/text_flags';
 
@@ -25,6 +27,8 @@ export type ListMenuConfig = ({ kind: 'items' | 'priced'; entries: ListEntry[] }
   /** wListScrollOffset. The caller owns it across list visits. */
   offset?: number;
   item?: number;
+  /** DisplayListMenuIDLoop's nonzero-battle-type branch. Defaults off. */
+  simulatedInput?: boolean;
 };
 
 export type ListChoice =
@@ -33,7 +37,7 @@ export type ListChoice =
 export type MonListChoice = { type: 'chosen'; index: number; name: string } | { type: 'cancelled' };
 type ListResult<K extends ListKind> = K extends 'mons' ? MonListChoice : ListChoice;
 
-type Phase = 'waitOpen' | 'waitLoop' | 'waitHold' | 'input';
+type Phase = 'waitOpen' | 'waitLoop' | 'waitHold' | 'waitSimulated' | 'input';
 
 export class ListMenu<K extends ListKind = 'items' | 'priced'> {
   offset: number;
@@ -42,12 +46,12 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
   private wait = 10;
   private mark = 0;
   private pendingSwap = false;
-  private cursorAt: { x: number; y: number } | null = null;
-  private cursorTile: string | null = ' ';
+  private readonly cursorState: MenuCursorState = { topX: 5, topY: 4, item: 0, lastItem: 0,
+    tileBehind: ' ', location: null };
   private seenEmptySlot = getEmptySlotGeneration();
 
   constructor(
-    private readonly tiles: ScreenTiles,
+    private readonly tiles: TileSurface,
     private readonly config: ListMenuConfig & { kind: K },
     private readonly transfer: BgTransfer,
   ) {
@@ -64,7 +68,7 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
     });
     this.transfer.enabled = false;
     setNoTextDelay(true); // DisplayListMenuID, before drawing the list
-    this.tiles.textBoxBorder(4, 2, 9, 14);
+    textBoxBorder(this.tiles, 4, 2, 9, 14);
   }
 
   get item(): number { return this.menu.item; }
@@ -83,8 +87,16 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
       this.menu.elapse();
       this.wait--;
       if (this.wait > 0) return null;
+      if (this.phase === 'waitSimulated') return this.choose() as ListResult<K>;
       if (this.phase === 'waitHold' && this.pendingSwap) this.applySwap();
       if (this.phase === 'waitLoop') {
+        if (this.config.simulatedInput) {
+          this.menu.item = 0;
+          this.drawCursor();
+          this.phase = 'waitSimulated';
+          this.wait = 20;
+          return null;
+        }
         this.phase = 'input';
         this.menu.restart();
         this.drawCursor();
@@ -113,7 +125,7 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
   }
 
   private beginLoop(): void {
-    this.cursorAt = null;
+    this.cursorState.location = null;
     this.pendingSwap = false;
     this.transfer.enabled = false;
     this.printEntries();
@@ -124,28 +136,28 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
 
   private printEntries(): void {
     const entries = this.config.entries;
-    this.tiles.clearArea(5, 3, 9, 14);
+    clearArea(this.tiles, 5, 3, 9, 14);
     let cancelShown = false;
     for (let row = 0; row < 4; row++) {
       const index = this.offset + row;
       const y = 4 + row * 2;
       if (index >= entries.length) {
-        this.tiles.placeString(6, y, 'CANCEL');
+        placeString(this.tiles, 6, y, 'CANCEL');
         cancelShown = true;
         break;
       }
       const entry = entries[index];
       if ('level' in entry) {
-        this.tiles.placeString(6, y, monDisplayName({ nickname: entry.name }));
-        this.tiles.printLevel(14, y + 1, entry.level);
+        placeString(this.tiles, 6, y, monDisplayName({ nickname: entry.name }));
+        printLevel(this.tiles, 14, y + 1, entry.level);
         continue;
       }
-      this.tiles.placeString(6, y, getItemName(entry.id));
+      placeString(this.tiles, 6, y, getItemName(entry.id));
       if (this.config.kind === 'priced') {
-        this.tiles.writeBcd(11, y + 1, getItemPrice(entry.id), MONEY);
+        writeBcd(this.tiles, 11, y + 1, getItemPrice(entry.id), MONEY);
       } else if (!isKeyItem(entry.id)) {
         this.tiles.put(14, y + 1, '×');
-        this.tiles.writeNumber(15, y + 1, entry.count ?? 1, { digits: 2, leadingZeroes: false });
+        writeNumber(this.tiles, 15, y + 1, entry.count ?? 1, { digits: 2, leadingZeroes: false });
       }
       if (this.mark === index + 1) this.tiles.put(5, y, '▷');
     }
@@ -153,21 +165,14 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
   }
 
   private drawCursor(): void {
-    const cursor = this.menu.cursor;
-    if (this.cursorAt && (this.cursorAt.x !== cursor.x || this.cursorAt.y !== cursor.y)) {
-      this.tiles.put(this.cursorAt.x, this.cursorAt.y, this.cursorTile);
-    }
-    if (!this.cursorAt || this.cursorAt.x !== cursor.x || this.cursorAt.y !== cursor.y) {
-      this.cursorTile = this.tiles.at(cursor.x, cursor.y);
-      this.cursorAt = { x: cursor.x, y: cursor.y };
-    }
-    this.tiles.put(cursor.x, cursor.y, '▶');
+    if (!this.cursorState.location) this.cursorState.lastItem = this.menu.item;
+    this.cursorState.item = this.menu.item;
+    placeMenuCursor(this.tiles, this.cursorState);
   }
 
   private choose(): ListChoice | MonListChoice {
     setNoTextDelay(false); // .storeChosenEntry and A on CANCEL -> ExitListMenu
-    const cursor = this.menu.cursor;
-    this.tiles.put(cursor.x, cursor.y, '▷');
+    placeUnfilledArrowMenuCursor(this.tiles, this.cursorState);
     const index = this.offset + this.menu.item;
     const entry = this.config.entries[index];
     if (!entry) return { type: 'cancelled' };

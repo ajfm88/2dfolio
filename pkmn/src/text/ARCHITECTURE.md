@@ -107,12 +107,17 @@ screen. Battle text remains on its separate renderer until A5c.
 `TextScreen` owns the buffer, cursor and history of actual Joypad reads;
 `TextPrinter` remains the one-string wrapper. `TextProgramRunner.run()` executes
 programs with shared cursor state: FAR children return to their parent after
-DONE/PROMPT, RAM strings require named bindings, and ASM returns control to the
-caller with the display retained. Sound plays once and waits without input reads.
+DONE/PROMPT, and DoneText leaves BC where that PlaceString began. RAM strings
+require named bindings. An unregistered `asm` returns control to the caller. A
+handler registered on that program label runs the next program on the same screen,
+without a new `PrintText`. Sound plays once and waits without input reads.
 Pause reads once and skips its 30-frame wait on held A/B. Command waits have no
 ProtectedDelay3; string controls retain A5a timing. Cry emits a cue only (J2).
-Numeric operations are implemented in A5b7a (below). Unused operations still throw
-with the program label and their audit home.
+`TX_LOW` sets BC to (1, 16) and continues. `<USER>` and `<TARGET>` expand during
+PlaceString when the runner has `whoseTurn` and the two nicks (`$5A` as read,
+`$59` XOR 1); otherwise they stay glyphs. Numeric operations are implemented in
+A5b7a (below). Other unused operations still throw with the program label and
+their audit home.
 `program_data.ts` loads the committed programs once at startup; no ROM is read.
 
 ### Numeric operands (A5b7a)
@@ -120,9 +125,11 @@ with the program label and their audit home.
 `TextBindings` keeps stringBuffer/nameBuffer/boxNumString as strings, and
 money/coins/hpDifference as numbers. Values are semantic nonnegative safe integers,
 not packed bytes or formatted text. Missing/wrong-kind/range-invalid operands
-throw with the source label and binding. BCD values must fit their byte count;
-decimal values must fit both their byte count and displayed digits (TX_NUM uses
-1–3 bytes and 2–7 digits). This is a caller contract, not an emulated RAM interface.
+throw with the source label and binding. BCD values must fit their byte count.
+A 2–7 digit TX_NUM must fit both its byte count and its displayed digits. A
+1-digit TX_NUM uses the same left-aligned walk (`print_num.asm:61`) and fits the
+byte width: that walk prints every place, and it does not add the value to `0`.
+This is a caller contract, not an emulated RAM interface.
 
 `home/print_bcd.asm`: the extracted `leadingZeroes` field is the raw bit-7 flag,
 so true **suppresses** leading zeroes. Suppressed right-aligned cells advance
@@ -218,6 +225,12 @@ writes `text_programs.json`:
   is one inner PrintText) or `handler`.
 The labels and addresses are in `rom/text_program_symbols.ts`. `program_data.ts` loads it at runtime; A5b4 pickups execute named programs.
 
+**A5c1 CP2 partial (note 66 §10.11):** the data now has 993 programs, including 360 unused battle/item texts.
+Bindings are keyed by opcode and address (`$CF4A`: RAM stringBuffer, decimal expAmountGained). Extraction caches
+outgoing rows per label/incoming row and rejects contexts producing different ops for one label. Frozen hashes
+preserve all 633 pre-CP2 programs and map pointers. No runtime consumer changes; the new `low` ops remain
+unsupported by the runner, and its exact data-op census currently fails pending Claude's check.
+
 ## Utilities and files
 
 `initTextSystem()` loads fonts; `reloadBorderTiles()` follows palette changes.
@@ -228,7 +241,9 @@ for the callers A5b4–A5b7 haven't moved to programs yet; `getRawText()` keeps 
 
 Tests: `text_printer.test.ts` (24), `bg_transfer.test.ts` (4), `textbox.test.ts` (31), `text_runner.test.ts` (21), `text_numbers.test.ts` (49), `map_text_calls.test.ts` (2),
 `rom/__tests__/text_decoder.test.ts` (11, three ROM-dependent),
-`rom/__tests__/text_programs.test.ts` (7, ROM-dependent; ASM comparisons need `refs/`). Integration tests
+`rom/__tests__/text_programs.test.ts` (10, ROM-dependent; ASM comparisons need `refs/`),
+`rom/__tests__/battle_text_data.test.ts` (21, 19 ROM-dependent), and
+`rom/__tests__/text_program_context.test.ts` (8, synthetic/no-ROM). Integration tests
 remain in `script/text_commands.test.ts` (9) and `overworld/item_pickup.test.ts`.
 `text_census.test.ts` adds three no-ROM tripwires for reachable plain calls,
 free-move object resolution and approved `getText` consumers (A5b7g1).

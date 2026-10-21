@@ -902,6 +902,64 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - Browser-automation harnesses written before this change (e.g. `notes/64-intro-cp5/`, `notes/65-a5d-cp5/`) press
       `z` for A; anything that reuses them must swap the keys.
 
+72. **A5c1 takes all four plan decisions; Codex implements** (2026-10-19). *The user's answer to O-39
+    (`notes/66-a5c1-plan.md` §9): "yes to all".*
+
+    - **Scope:** the battle text programs as data, `BattleScreen` and its pure renderer (the CGB attribute map
+      `BGMapAttributes_Battle` as ROM-tested constants), the HUD writers with the HP bar's decrease, and the low-health
+      alarm. **No runtime change** until A5c3. Five CPs: CP1 trace, CP2 text data, CP3 screen + renderer, CP4 HUD + HP
+      bar, CP5 alarm + verification (gates twice and a rendered contact sheet instead of a play-test).
+    - **`IntroScreen` stays** on its own model; `BattleScreen` is new. Merging the screen models is backlog, after A5e.
+    - **Text extraction, option a:** every text in the battle files (`engine/battle/**`), learn-move, and the battle
+      part of `item_effects.asm` (balls, X items, Poké Doll, Guard Spec, flute, bait/rock), Safari and ghost texts
+      included. Link-only texts and evolution's texts (E2) are left out.
+    - Bindings are keyed by address **and** op, because `wExpAmountGained` shares `wStringBuffer`'s address ($CF4A).
+    - **Codex implements;** Claude checks each CP. Commits remain local; no push. (The user switched to Grok from
+      CP2's finish onward.)
+    - **A5c1 done 2026-10-19** (note 66 §10.20). It has no play-test: nothing in the game changes until A5c3.
+
+73. **The CGB palette-command hold is fixed in V5** (2026-10-19). *The user, after the A5c1 CP1 finding was explained:
+    "pls put it in V5".*
+
+    - **The finding** (note 66 §10.5, §10.10; note 57):
+      - Every `SET_PAL_*` with the LCD on runs `SendSGBPackets` → `InitCGBPalettes` on its block packet →
+        `LoadBGMapAttributes`. That routine waits for LY $90 twice with interrupts off, and clears IF.VBlank before
+        `ei` (`engine/gfx/bg_map_attributes.asm:19–99`). Then comes `Delay3`.
+      - So in our frame model a command costs **2 held frames** (no BG transfer, OAM DMA, joypad or text tick; audio
+        updates once each), **then 3 serviced frames**. With the LCD off it costs 0.
+      - **Every** `SetPal_*` uses a block packet listed in `PalPacketPointers`: WholeScreen (overworld, Town Map,
+        generic, whole-screen Pokémon), the party menu, StatusScreen, Pokédex, trainer card, slots, title screen and
+        the intros.
+    - **Today** the port models only the `Delay3` (note 58 §2; `menus/status_screen.ts:62`), so those screens advance
+      2 frames early. A5c1's `BattleScreen.setPalBattle` already has the hold.
+    - **V5** traces every port call site of a palette command and adds the held frames (LCD-on paths only). It updates
+      the tests that pin those frame counts, each with its reason, and the user re-checks the affected screens once,
+      with V5's other fixes.
+
+74. **A5c2 takes the plan's three recommendations** (2026-10-19). *The user's answer to O-40 (note 67 §10): "yes to
+    ur recommendations".*
+
+    - **Scope:** the battle menu, the bag and RUN, the party hand-off and `MoveSelectionMenu`, as unused modules on
+      `BattleScreen`, in five CPs, with no runtime change (note 67 §1, §4).
+    - **`SFX_RUN` is extracted in A5c2 CP2,** ahead of V5's SFX catch-up, because the "Got away safely!" timing
+      depends on it.
+    - **`UseItem`'s battle bodies go in A5c3,** as their own CPs. A5c2 stops at the `UseItem` port; balls stay A5f's.
+    - **Codex implements** (question 4, the user, same day); Claude checks each CP.
+
+75. **A5c3 takes the plan's recommendations; Grok implements** (2026-10-19). *The user's answer to O-41 (note 68 §9):
+    "yes to all, grok will implement".*
+
+    - **The split:** six sub-slices. A5c3a–A5c3e build unused modules, and A5c3f switches the game over and ends with
+      the user's play-test. A5e and A5f follow (note 68 §2).
+    - **The move effects are ported from `effects.asm` and `move_effects/*.asm` in A5c3c.** `effects.ts` retires at
+      the switch-over. The battle-mechanics audit (#70) keeps the damage formula, the hit test, crits, the stat
+      arithmetic and the trainer AI.
+    - **Catching comes in A5c3e:** `ItemUseBall`'s flow and texts, with the toss, poof and shake as animation ports.
+      A5f adds those animations on A5e's player and folds the catch demo in.
+    - **Grok implements;** Claude checks each CP.
+    - **References:** `pokeyellow` is the source. `oldamber`, `pkmn/engine`, `gen1recomp` and `pkmn/dmg` are cross-checks,
+      and a cited behaviour also cites its ASM line (note 68 §3).
+
 ## Open — not decided, needs the user
 
 

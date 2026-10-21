@@ -15,6 +15,243 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-19 (A5c1 CP2 checked) — Claude
+
+I checked Grok's CP2 finish (`a35be0c`, note 66 §10.13). **CP2 passes and is complete.** The census change is exactly
+§10.12's; my ROM run is **2157/2157**; the eight entries moved to HISTORY are verbatim. Fixed CLAUDE.md's stale "160
+ROM tests skip" (196). Wrote the CP3 brief into §11. **Next: A5c1 CP3** (`BattleScreen` and its renderer). Nothing
+pushed.
+
+### 2026-10-19 (A5c1 CP2 finished — awaiting check) — Grok
+
+Finished CP2 as note 66 §10.12. The opcode census now includes `low`, and `ItemUseText00` is the only program that
+contains it, with ops `far` `_ItemUseText001`, `low`, `far` `_ItemUseText002`. The runner and its unsupported-op
+test are unchanged. Gates twice, one after another: typecheck and build clean (158 modules); ROM **2157/2157**;
+no-ROM **1961 pass / 196 skip**. Moved the eight oldest session entries to HISTORY so this file stays under 40 KB.
+**CP2 awaits Claude's final check. CP3 not started.** Local commit only.
+
+### 2026-10-19 (A5c1 CP2 partial checked) — Claude
+
+I checked Codex's CP2 partial (`447edd6`, note 66 §10.12). **Passes so far.** The op-and-address bindings, the per-row
+cache and the frozen 633 old programs are right. The one ROM failure is a stale A5b4 census: `ItemUseText00` really has
+`text_low`. Ruling: add `low` with a guard that only `ItemUseText00` has it; A5c3 must run TX_LOW. **Next: Codex
+finishes CP2** (that change, gates twice, baseline). Nothing pushed.
+
+### 2026-10-19 (A5c1 CP2 partial — stopped for check) — Codex
+
+Added all 360 selected programs, 11 opcode-aware bindings, context-aware row caching and independent oracle/frozen
+baseline guards (note 66 §10.11; evidence `notes/66-a5c1-cp2/`). Setup twice: only the JSON pair changes, all 633
+old programs/pointers and 893 other assets preserved; all output identical between runs. Focused **39/39**,
+mutations **24/24** caught/restored; typecheck/build clean. First ROM gate **2155 pass / 1 fail**: untouched
+text_runner opcode census omits new `low`. Stopped under §5, leaving the assertion unchanged; no-ROM gates and
+round 2 not run. **Claude checks the partial and census finding; CP2 not complete, CP3 not started.** Local commit only.
+
+### 2026-10-19 (A5c1 CP1 checked) — Claude
+
+I checked Codex's CP1 (`92032d3`, note 66 §10.10). **Passes.** Re-ran both trace scripts (368/368 streams match the
+ROM); verified the new binding addresses, the HUD tile layout, `CenterMonName`, the status priority, the stat-text
+choice, the alarm's 7-bit timer, and the palette command's interrupt-disabled copies. Answered §10.9's four questions
+(`SET_PAL_BATTLE` = 2 held frames + Delay3 in our frame model). New backlog finding: **every CGB palette command
+holds 2 more frames than the port models** (StatusScreen, party menu, …) and needs a small slice the user places.
+Wrote the CP2 brief into §11. **Next: A5c1 CP2.** Nothing pushed.
+
+### 2026-10-19 (A5c1 CP1 — traced, awaiting check) — Codex
+
+Trace only, note 66 §10.1–§10.9; evidence in `notes/66-a5c1-cp1/`. All 368 selected text streams match source/ROM;
+360 additions proposed (633→993), with the boxed-nickname binding, three row-cache conflicts and source fallthrough
+recorded. Traced VRAM/layers, CGB attributes and blocked VBlanks, HUD cells, both HP-bar directions/types and the
+seven-bit/31-update alarm; §2 corrections marked. Four review questions in §10.9. No production or generated-data
+changes. Gates twice sequentially: typecheck/build clean, ROM **2124/2124**, no-ROM **1950 / 174 skip**.
+**Stop for Claude's CP1 check; CP2 not started.** Local commit only; nothing pushed.
+
+### 2026-10-19 (O-39 answered) — the user, recorded by Claude
+
+"yes to all" → DECISIONS #72: A5c1 as note 66 plans it (five CPs, no runtime change), `IntroScreen` stays, text
+extraction option a, Codex implements. **Next: Codex runs A5c1 CP1** (note 66 §11). Local commit only.
+
+### 2026-10-19 (A5c1 plan) — Claude
+
+Wrote `notes/66-a5c1-plan.md` from `core.asm`'s HUD routines, the battle text files, `SetPal_Battle`, the CGB
+attribute maps and `low_health_alarm.asm`. Findings: on CGB the battle colours come from the ROM map
+`BGMapAttributes_Battle` (the text box takes the player mon's palette); `wExpAmountGained` shares `wStringBuffer`'s
+address, which the address-keyed bindings can't tell apart; about 400 new text programs. No code changed.
+**Next: the user answers O-39; then Codex runs A5c1 CP1.** Nothing pushed.
+
+### 2026-10-19 (stale docs fixed) — Claude
+
+Read the context files, then at the user's request fixed stale lines: PROJECT's test counts (2123/2105 → 2124), the
+pre-A5d transition text in `context/ARCHITECTURE.md`, `overworld/` and `battle/` ARCHITECTURE (the plural module is
+gone; the file table now lists A5d's five modules), the Trainers row above, Bill's PC's heading, and a retired marker
+in note 65 §1. Docs only; tests not rerun. **Next: Claude writes A5c1's plan note.** Nothing pushed.
+
+### 2026-10-18 (session closed) — Claude
+
+The user asked where the battle's SELECT move swap lands: **A5c2** (`MoveSelectionMenu`), live with A5c3's switch-over.
+The facts are in note 57. Archived the seven intro-animation session entries to HISTORY (DECISIONS #61) and stopped the
+5173 dev server. **Next session: Claude writes A5c1's plan note** (battle text data, `BattleScreen`, the HUD); the user
+approves it, then Codex or Sonnet runs CP1. Gates: ROM **2124/2124**, no-ROM **1950 / 174 skip**. Nothing pushed.
+
+### 2026-10-18 (A5d done; A/B keys swapped) — the user, recorded by Claude
+
+The user play-tested A5d with sound: "everything works as intended". **A5d is done.** At their request, A is now the X
+key and B the Z key (`input/input.ts`, DECISIONS #71); docs updated. **Next: A5c1's plan note.** Nothing pushed.
+
+### 2026-10-18 (A5d CP5 checked) — Claude
+
+I checked CP5 (note 65 §10.18). **Passes.** Codex's pending-song test passes. I viewed Sonnet's contact sheets for Route
+1, the Forest shrink, the Lab's outward spiral and Pallet, and read all ten run summaries. The survivors, the frozen
+sprites, the flash colours, the music (stop at E, song at E+1) and the black hold all match §10.5. The first battle
+frames are white; that's upstream's intro (A5e). **Next: the user's play-test with sound (§6.4).** Nothing pushed.
+
+### 2026-10-18 (A5d CP5 steps 3–5: the browser walk) — Claude Sonnet
+
+Ran the walk on spare port 5191 (never 5173) with Playwright, one fresh browser context per attempt and a hand-written
+`p151-s` save; observation only, no source edits. Ten transitions reached and checked: Route 1 DoubleCircle and Circle,
+Forest wild HStripes and VStripes, Forest trainer Shrink and Split, Lab rival inward and outward spiral, Oak's Pikachu
+(Pallet) and the old man's demo (both DoubleCircle). Black-from and tail ticks equal §10.5's +2; the flash BGP table is exact
+with OBP0/OBP1 untouched; NPCs and Pikachu go at E+7 and only the player and the `hSpriteIndex` source stay; black
+holds to the hand-off and never flashes back. Music: stop at E, `wildbattle`/`trainerbattle` at E+1, nothing after.
+No page errors; one handled 404 per run on maps with no wild table (Lab, Pallet, Viridian), upstream baseline. Finding for
+the play-test: the first battle frame is white (upstream's intro, A5e's job). Results in note 65 §10.17 part 2; scripts and
+screenshots in `notes/65-a5d-cp5/` (five local commits, by group). Server stopped, contexts' storage cleared. **Next:
+Claude's CP5 check, then the user's play-test with sound.** Nothing pushed.
+
+### 2026-10-18 (A5d CP5 steps 1–2 done) — Codex
+
+Added one real-main regression (`ecb2d38`): wild turn during a warp's door sound cancels the pending map song.
+Removed only beginBattleEntry's cancellation to prove the test fails (routes1 fade requested), then restored
+main.ts byte-for-byte. Final gates twice sequentially: typecheck/build clean, ROM **2124/2124**, no-ROM
+**1950 pass /174 skip**. Test setup corrections and evidence in note 65 §10.17 (part 1); production unchanged.
+Moved the three oldest session entries verbatim to HISTORY to keep STATUS below 40 KB.
+**CP5 steps 1–2 done; the browser walk (steps 3–5) is next, by another agent.** Committed locally, never pushed.
+
+### 2026-10-18 (A5d CP4 checked) — Claude
+
+I checked Codex's CP4 (`ed9513a`, note 65 §10.16). **Passes.** Every battle start now runs stop → one frame → PM →
+one frame → the chosen transition, holding black until the battle is ready. Re-ran the gates one at a time: ROM
+**2123/2123**, no-ROM **1949 / 174 skip**. 2 of my 3 mutations were caught. The survivor is an untested old call
+(dropping a warp's pending map song); CP5 adds that test. Logged a V3 backlog entry: `wGymLeaderNo` comes from the
+trainer class, not the gym scripts. Wrote the CP5 brief into §11. **Next: A5d CP5.** Nothing pushed.
+
+### 2026-10-18 (A5d CP4 — implemented, awaiting check) — Codex
+
+Note 65 §10.15: ROM object counts first (`366e8a5`, generated diff exactly the JSON pair), then shared
+E stop → E+1 PM → E+2 capture/prologue → choice/tail → black until Battle/demo readiness (`e717d38`).
+All entries wired; explicit hidden/source slots and Oak aliases; raw sheets preloaded; old transitions retired.
++18 tests; **32/32** production mutations caught/restored (`notes/65-a5d-cp4/`). Sequential gates clean:
+ROM **2123/2123** (123 files), no-ROM **1949/174**; build 158 modules, `index-C5g3zY9S.js`.
+Existing test changes/reasons and timing evidence logged in §10.15. **Stop for Claude's CP4 check; no CP5 walk.**
+Committed locally, never pushed.
+
+### 2026-10-18 (A5d CP3 checked) — Claude
+
+I checked Codex's CP3 (`09a59cf`, note 65 §10.14). **Passes.** Every frame program matches `battle_transitions.asm`
+and the tail matches `core.asm`. I decoded the flash, circle and half-circle tables from the ROM myself; they equal the
+constants. Re-ran the gates one at a time: ROM **2105/2105**, no-ROM **1932 / 173 skip**. 3 of my 4 mutations were
+caught; the survivor is equivalent. CP4 carry-over: the survivor slot table needs each map's ROM object count, because
+three maps drop hidden objects from the port's data. Wrote the CP4 brief into §11. **Next: A5d CP4.** Nothing pushed.
+
+### 2026-10-18 (A5d CP3 — implemented, awaiting check) — Codex
+
+Note 65 §10.13: screen and all eight transition frame programs, 8-frame prologue/9-frame tail, native map capture,
+frozen raw OBJ renderer, ROM constants and all-map slot tripwires. +62 tests, **59/59** production mutations
+caught/restored (`notes/65-a5d-cp3/`). Sequential typecheck/build clean; ROM **2105/2105**, no-ROM **1932/173**,
+122 files. CP1's two pre-tail enable snapshots are accounted for explicitly; checked CP1 evidence unchanged.
+Main, legacy transitions, extractors and generated assets unchanged; production bundle unchanged. Partial
+`122bd04`, then completion commit. **Stop for Claude's CP3 check; CP4 not started.** Nothing pushed.
+
+### 2026-10-18 (A5d CP3 — partial implementation) — Codex
+
+CP3 only: TransitionScreen, literal frame routines, ROM constants/slot guards, native map capture and frozen
+OBJ rendering. Typecheck clean; new suites pass **62/62** with ROM. Per-cell oracle covers all three inherited
+portions; raster tests use committed Pallet art. CP1's pre-tail enable-flag logging seam is accounted for explicitly.
+Main, legacy transitions, extractors and generated assets unchanged. Mutations/full gates and final §10.13 pending.
+
+### 2026-10-18 (A5d CP2 checked) — Claude
+
+I checked Codex's CP2 (`a27a3d3`, note 65 §10.12). **Passes.** Checked against the ASM: the data bytes, the choice table,
+the level compare, `PlayBattleMusic`'s branches and the register writers. NPC `textId` equals the object slot on all 24
+maps. `wNameBuffer` and `wStringBuffer` are separate, so the name rule holds. Re-ran the gates one at a time: ROM
+**2043/2043**, no-ROM **1879 / 164 skip**. 3 of my 4 mutations were caught; the survivor is equivalent. Wrote the CP3
+brief into §11 (ROM tables as constants with ROM tests, plus a slot tripwire). **Next: A5d CP3.** Nothing pushed.
+
+### 2026-10-18 (A5d CP2 — implemented, awaiting check) — Codex
+
+Note 65 §10.11: new dungeon/map-ID JSON pair, tile/preset-byte ROM guards, choice/level/name/OAM helpers,
+sprite-index writers and the one-frame music facade. No battle wiring or CP3 work. +73 tests; typecheck/build
+clean; sequential ROM **2043/2043**, no-ROM **1879 pass /164 skip** (119 files). **46/46** production mutations
+caught/restored (`notes/65-a5d-cp2/`). Only two new generated files; all 893 old files unchanged, setup twice
+byte-identical. Eleven exact-command cases gain only metadata; no assertion removed. Partial `6b1d8f1`, then
+local completion commit. **Stop for Claude's CP2 check; CP3 not started.** Nothing pushed.
+
+### 2026-10-18 (A5d CP2 — in progress) — Codex
+
+CP2 only, note 65 §11 including the clarifications. First partial commit: new transition data/extraction,
+choice/level/name/OAM helpers and audio-facade steps. Typecheck clean; the three new suites pass **56/56**
+with ROM. Sprite-register writers are in progress; full gates and production mutations still pending.
+No battle paths wired. Stop for Claude's check once CP2 is complete; never push.
+
+### 2026-10-18 (docs sync, CP2 brief tightened) — Claude
+
+Read the context files and code. Fixed stale lines: PROJECT's 1913 → 1970 test counts, ARCHITECTURE's "intro CP4 awaiting
+check" and the SFX count (16 → 20). Added three clarifications to note 65 §11's CP2 brief: map IDs go in the new data file,
+the `hSpriteIndex` writers are in scope, and the preset rival-name bytes are constants with a ROM test. **Next: A5d CP2.**
+Docs only; nothing pushed.
+
+### 2026-10-18 (repository orientation) — Codex
+
+At the user's request, read the project instructions, live handoff, context and subsystem architecture documentation,
+and reviewed the runtime entry points, data loading, overworld controller, existing transitions and test setup.
+Read note 65's CP1 review and CP2 handoff. No implementation slice claimed; **A5d CP2 remains next**.
+No code or generated data changed; tests not rerun for this reading-only session. Local documentation commit only.
+
+### 2026-10-18 (planning session closed) — Claude
+
+At the user's request: synced CLAUDE, PROJECT and PLAN to the A5 re-split (#70; A5d at CP2), wrote the CP2 handoff
+and brief into note 65 §11, and stopped the 5173 dev server. **Next session: the user relays A5d CP2 to Codex or Sonnet;
+Claude checks it.** Nothing pushed.
+
+### 2026-10-18 (A5d CP1 checked) — Claude
+
+I checked Sonnet's A5d CP1 (`a223d7b`, note 65 §10). **Passes.** Verified: C4 (`ReadTrainer` runs before the
+transition, last level wins); C1 (Oak's `hTextID` = 1 = his slot); C3. I re-derived both spirals with my own transcriptions:
+19 writes past `wTileMap` and 19 unpainted cells outward; inward 359 writes, (9,8) missed, 153 ticks. Decided §10.9's
+three questions: the rival-byte rule (an approximation until the J2 naming audit), track `hSpriteIndex`, hold black.
+Removed a committed `.pyc` and `err.txt`. **Next: A5d CP2.** Nothing pushed.
+
+### 2026-10-18 (A5d CP1 — trace only) — Claude Sonnet
+
+CP1 only; note 65 §10.1–10.9 plus `notes/65-a5d-cp1/` (a model of `battle_transitions.asm`, `frame_tables.txt`, `ticks_p0.txt`).
+Totals confirmed exactly: DoubleCircle 102, Circle 132, HStripes 60, VStripes 54, Shrink 64, Split 64, inward spiral 153, outward 120;
+prologue 8, tail 9, `PlayBattleMusic` = stop at E, song at E+1, transition entered E+2. Corrections to §6.1 (C1–C10, marked ✎ there):
+- the OAM survivor is the sprite at `hSpriteIndex` (so Oak and the old man stay in their scripted wild-type battles; a walked wild
+  step keeps the player only; OAM has 10 blocks); trainer `wCurEnemyLevel` is the **last** party member's;
+- Oak's Pikachu walks `CompareLevels` to `wRivalName`+6 and reads `wCurMapConnections` (12): **DoubleCircle** for preset names, Circle
+  only for a ≤ 5-letter custom name with zero leftover bytes (**Claude's call**);
+- the outward spiral overshoots 19 cells into row 18 and leaves 19 screen cells unpainted; only Viridian Forest is a dungeon (IDs 51);
+  the tile is 16 × $FF; no existing test pins any of this (§7's rows are empty).
+Gates, run one after another: typecheck clean; ROM **1970/1970**; no-ROM **1810 pass / 160 skip** — unchanged. Local commits
+(`A5d CP1 (partial)` ×2, then this one); nothing pushed. **CP1 awaits Claude's check; CP2 not started.**
+
+### 2026-10-18 (O-38 answered) — the user, recorded by Claude
+
+"yes to all" → DECISIONS #70: A5d first, then A5c1–A5c3, A5e, A5f; the battle as a frame program on a `BattleScreen`;
+the mechanics audit after V5, before Phase B; the small sub-animation player; Codex implements. **Next: Codex runs A5d
+CP1.** Local commit only.
+
+### 2026-10-18 (A5c–A5f plan) — Claude
+
+At the user's request, wrote `notes/65-a5c-a5f-plan.md` from `core.asm`, `battle_transitions.asm`, `init_battle*.asm`,
+`play_battle_music.asm`, the palette packets and the battle texts. The four slices are much bigger than note 21's 6–8
+sessions: six sub-slices, about 28 CPs. None of the battle texts are extracted. Battle needs per-block CGB palettes;
+`PrintText` in battle is the home routine A5b already ported. Proposed design: the battle as a frame program on a
+`BattleScreen`, flow from `core.asm`, math behind ASM-named ports. Proposed order: A5d first, planned in detail.
+- **Transitions:** all 8 transitions and the 3-bit choice.
+- **The screen they run on:** the overworld tilemap in thirds, with a BGP-only flash (sprites keep their colours).
+- **The sprite clear:** NPCs and Pikachu cleared, the trainer kept; a 256-iteration wild-battle quirk.
+- **The music:** `PlayBattleMusic`'s one-frame gap.
+**O-38 open.** Docs only; nothing pushed.
+
 ### 2026-10-18 (intro animation done) — the user, recorded by Claude
 
 The user play-tested with sound: "everything checks perfectly". They asked whether the ~2.4 s of silence between the

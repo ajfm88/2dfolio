@@ -11,6 +11,8 @@
  * The mixed output goes through BiquadFilter nodes for analog simulation.
  */
 
+import { registerToHz } from './frequency_table';
+
 const BUFFER_SIZE = 2048; // ScriptProcessorNode buffer size
 
 // Duty cycle patterns (8 steps each)
@@ -28,6 +30,11 @@ interface PulseState {
   duty: number;       // 0-3
   enabled: boolean;
   phase: number;      // 0-1 fractional position in cycle
+  /** NR12 period, 0–7. 0 disables the sample-clock envelope. */
+  envFade: number;
+  envIncreasing: boolean;
+  envCounter: number;
+  envPhase: number;
 }
 
 interface WaveState {
@@ -61,8 +68,8 @@ export class GBSynthesizer {
 
   // Channel state (public for debug access)
   pulse: PulseState[] = [
-    { frequency: 0, volume: 0, duty: 2, enabled: false, phase: 0 },
-    { frequency: 0, volume: 0, duty: 2, enabled: false, phase: 0 },
+    { frequency: 0, volume: 0, duty: 2, enabled: false, phase: 0, envFade: 0, envIncreasing: false, envCounter: 0, envPhase: 0 },
+    { frequency: 0, volume: 0, duty: 2, enabled: false, phase: 0, envFade: 0, envIncreasing: false, envCounter: 0, envPhase: 0 },
   ];
   wave: WaveState = { frequency: 0, volumeLevel: 0, waveform: [], enabled: false, phase: 0 };
   noise: NoiseState = {
@@ -142,6 +149,8 @@ export class GBSynthesizer {
 
   private samplePulse(ch: PulseState, sampleRate: number): number {
     if (!ch.enabled || ch.frequency <= 0 || ch.volume <= 0) return 0;
+    this.advancePulseEnvelope(ch, sampleRate);
+    if (ch.volume <= 0) return 0;
 
     // Advance phase
     ch.phase += ch.frequency / sampleRate;
@@ -215,6 +224,7 @@ export class GBSynthesizer {
 
   setPulseFrequency(channel: 0 | 1, hz: number): void {
     this.pulse[channel].frequency = hz;
+    this.pulse[channel].envFade = 0;
     this.pulse[channel].enabled = hz > 0 && this.pulse[channel].volume > 0;
   }
 
@@ -225,12 +235,60 @@ export class GBSynthesizer {
   setPulseVolume(channel: 0 | 1, volume: number): void {
     const v = Math.max(0, Math.min(15, volume));
     this.pulse[channel].volume = v;
+    this.pulse[channel].envFade = 0;
     this.pulse[channel].enabled = v > 0 && this.pulse[channel].frequency > 0;
   }
 
   silencePulse(channel: 0 | 1): void {
-    this.pulse[channel].volume = 0;
-    this.pulse[channel].enabled = false;
+    const ch = this.pulse[channel];
+    ch.volume = 0;
+    ch.enabled = false;
+    ch.envFade = 0;
+  }
+
+  /**
+   * NR11–NR14 for one pulse. NR12's upper bits enable the DAC. A trigger restarts the
+   * envelope at the initial volume; the length counter stays off when NR14 bit 6 is clear.
+   * The envelope then steps on the 64 Hz sample clock, the same clock as noise.
+   */
+  writePulse(channel: 0 | 1, nr11: number, nr12: number, nr13: number, nr14: number): void {
+    const ch = this.pulse[channel];
+    const dacOn = (nr12 & 0xf8) !== 0;
+    if (!dacOn) {
+      this.silencePulse(channel);
+      return;
+    }
+    ch.duty = (nr11 >> 6) & 3;
+    const freqReg = ((nr14 & 0x07) << 8) | (nr13 & 0xff);
+    ch.frequency = registerToHz(freqReg);
+    if ((nr14 & 0x80) !== 0) {
+      ch.volume = (nr12 >> 4) & 0x0f;
+      ch.envFade = nr12 & 0x07;
+      ch.envIncreasing = (nr12 & 0x08) !== 0;
+      ch.envCounter = 0;
+      ch.envPhase = 0;
+    }
+    ch.enabled = ch.volume > 0 && ch.frequency > 0;
+  }
+
+  /** Sample-clock advance for tests. One 64 Hz envelope clock is `sampleRate / 64` samples. */
+  runPulse(channel: 0 | 1, samples: number, sampleRate: number): void {
+    for (let i = 0; i < samples; i++) this.samplePulse(this.pulse[channel], sampleRate);
+  }
+
+  private advancePulseEnvelope(ch: PulseState, sampleRate: number): void {
+    if (ch.envFade <= 0) return;
+    ch.envPhase += 64 / sampleRate;
+    while (ch.envPhase >= 1) {
+      ch.envPhase -= 1;
+      ch.envCounter++;
+      if (ch.envCounter >= ch.envFade) {
+        ch.envCounter = 0;
+        if (ch.envIncreasing && ch.volume < 15) ch.volume++;
+        else if (!ch.envIncreasing && ch.volume > 0) ch.volume--;
+        if (ch.volume === 0) ch.enabled = false;
+      }
+    }
   }
 
   // ─── Wave Channel ──────────────────────────────────────────────────────

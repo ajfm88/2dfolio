@@ -7,7 +7,10 @@ import { isPressed, isPassPressed, readJoypad } from '../input';
 import { TextBox } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
 import { PartyMenuOpening } from './party_menu_opening';
-import { drawText, drawBox } from './menu_render';
+import { drawText, drawBox, drawScreenTile } from './menu_render';
+import { ScreenTiles } from './screen_tiles';
+import type { TextBindings } from '../text/text_runner';
+import type { Program } from '../battle/battle_menu_context';
 import { drawPartyIcon, loadPartyIcons } from './party_icons';
 import { playSFX } from '../audio';
 import type { BattlePokemon } from '../battle';
@@ -65,6 +68,8 @@ export interface PartyRowOverride {
   status?: StatusCondition;
 }
 
+export type BattlePartyChoice = { kind: 'chosen'; slot: number } | { kind: 'cancelled' };
+
 export class PartyMenu {
   private party: BattlePokemon[] = [];
   private cursor = 0;
@@ -83,7 +88,13 @@ export class PartyMenu {
   get paletteWhite(): boolean { return this.opening?.paletteWhite ?? this.stats?.paletteWhite ?? false; }
 
   // Battle mode support. useItem is the bag's medicine menu: A picks, B cancels, no submenu.
-  private mode: 'overworld' | 'battle' | 'battle_forced' | 'useItem' = 'overworld';
+  private mode: 'overworld' | 'battle' | 'battle_forced' | 'useItem' | 'battle_choice' = 'overworld';
+  /** Opaque writes cover the pixel party list; null releases a cell back to it. */
+  readonly choiceOverlay = new ScreenTiles();
+  private choiceForced = false;
+  private choiceDelay = 3;
+  private choiceRedrawAge: number | null = null;
+  private choiceTextActive = false;
   private battleActiveIndex = 0; // index of Pokemon currently in battle
   /** After close, >= 0 means a Pokemon was selected for battle switch, -1 means cancelled. */
   selectedSwitchIndex = -1;
@@ -102,6 +113,7 @@ export class PartyMenu {
   cursorVisible = true;
 
   show(party: BattlePokemon[]): void {
+    this.choiceOverlay.reset(); this.choiceRedrawAge = null; this.choiceTextActive = false;
     this.party = party;
     this.state = 'list';
     this.stats = null;
@@ -127,6 +139,87 @@ export class PartyMenu {
   open(party: BattlePokemon[]): void {
     this.show(party);
     this.beginOpening();
+  }
+
+  /** Unused battle hand-off. Shared C+22 opening (#73; cartridge C+24). */
+  openBattleChoice(party: BattlePokemon[], options: { forceChoose: boolean }): void {
+    this.open(party);
+    this.mode = 'battle_choice'; this.choiceForced = options.forceChoose; this.choiceDelay = 3;
+  }
+
+  /** PartyMenuInit + RedrawPartyMenu, not the full white/icon opening.
+   * #73: 4 HP-copy + 3 palette + 3 text + 3 reveal + 3 input = 16 (cartridge 18). */
+  goBackToChoice(): void {
+    this.cursor = this.party.length ? Math.min(getPartyAndBillsSavedMenuItem(), this.party.length - 1) : 0;
+    this.cursorGlyph = '▶'; this.chosenIndex = -1; this.choiceForced = false;
+    this.choiceRedrawAge = 0; this.choiceDelay = 3; this.promptVisible = false;
+    textBgTransfer.enabled = false;
+  }
+
+  /** Own exactly one BG tick, including while a submenu is on this retained layer. */
+  presentBattleChoice(): void {
+    if (this.choiceTextActive) this.captureBattleChoiceText();
+    if (textBgTransfer.enabled) this.choiceOverlay.copyShownThird(textBgTransfer.nextPortion);
+    if (this.opening) this.opening.present();
+    else if (this.openingTextBox.active) this.openingTextBox.update();
+    else textBgTransfer.tick();
+    if (this.choiceTextActive) this.captureBattleChoiceText();
+  }
+
+  /** PrintText cells become ordinary retained tiles; shown cells still copy only on their VBlank. */
+  private captureBattleChoiceText(): void {
+    const snapshot = this.openingTextBox.saveScreen();
+    if (!snapshot.border) return;
+    this.choiceOverlay.textBoxBorder(0, 12, 4, 18);
+    for (let row = 1; row <= 4; row++) for (let col = 1; col <= 18; col++)
+      this.choiceOverlay.put(col, 12 + row, snapshot.buffer[row * 20 + col]);
+  }
+
+  frameBattleChoice(read: () => void = readJoypad, sound: () => void = () => playSFX('press_ab')): BattlePartyChoice | null {
+    this.presentBattleChoice();
+    if (this.sleepingText) {
+      if (!this.sleepingText.isComplete) return null;
+      this.sleepingText.dismiss(); this.sleepingText = null;
+      return { kind: 'cancelled' };
+    }
+    if (this.opening) {
+      const ready = this.opening.frame(); this.promptVisible = !this.opening.paletteWhite;
+      if (!ready) return null;
+      this.opening = null; this.choiceDelay = 0;
+    } else if (this.choiceRedrawAge !== null) {
+      const age = ++this.choiceRedrawAge;
+      if (age === 4) { this.choiceOverlay.release(0, 0, 18, 20); textBgTransfer.enabled = true; }
+      if (age === 7) this.openingTextBox.printStandalone({ program: 'PartyMenuNormalText' }, { noDelay: true });
+      if (age === 10) textBgTransfer.enabled = true;
+      if (age === 13) { this.openingTextBox.dismiss(); this.promptVisible = true; }
+      if (age < 16) return null;
+      this.choiceRedrawAge = null; this.choiceDelay = 0;
+    }
+    if (this.choiceDelay > 0 && --this.choiceDelay > 0) return null;
+    read();
+    const pressed = isPassPressed;
+    const a = pressed('a'), b = pressed('b');
+    // A-only watches still return the raw B bit on A+B. A suppresses vertical movement.
+    if (!a && this.choiceForced && b) {
+      if (pressed('up')) this.cursor = (this.cursor - 1 + this.party.length) % this.party.length;
+      else if (pressed('down')) this.cursor = (this.cursor + 1) % this.party.length;
+      this.choiceDelay = 3; return null;
+    }
+    const closed = this.updateItemUse(pressed, sound);
+    if (closed) return this.chosenIndex < 0 || !this.party.length ? { kind: 'cancelled' }
+      : { kind: 'chosen', slot: this.chosenIndex };
+    if (a || b || pressed('up') || pressed('down') || pressed('left') || pressed('right') || pressed('start') || pressed('select')) this.choiceDelay = 3;
+    return null;
+  }
+
+  /** Party-screen PrintText owns session frames, rather than the battle TextBox. */
+  *printBattleChoiceText(program: string, bindings?: TextBindings): Program {
+    this.promptVisible = false; this.choiceOverlay.release(0, 12, 6, 20);
+    this.openingTextBox.printStandalone({ program }, { bindings });
+    this.choiceTextActive = true; this.captureBattleChoiceText();
+    while (!this.openingTextBox.isComplete) { yield 'session'; this.presentBattleChoice(); }
+    this.choiceTextActive = false;
+    this.openingTextBox.dismiss();
   }
 
   private beginOpening(): void {
@@ -191,7 +284,7 @@ export class PartyMenu {
    * wrap (wMenuWrappingEnabled); A or B plays press_ab; B is tested first, so A+B cancels.
    * The cursor is saved on either key. The chosen row gets ▷.
    */
-  private updateItemUse(pressed: (button: GameButton) => boolean): 'close' | null {
+  private updateItemUse(pressed: (button: GameButton) => boolean, sound: () => void = () => playSFX('press_ab')): 'close' | null {
     const a = pressed('a');
     const b = pressed('b');
     const count = this.party.length;
@@ -200,10 +293,11 @@ export class PartyMenu {
       else if (pressed('down')) this.cursor = (this.cursor + 1) % count;
     }
     if (!a && !b) return null;
-    playSFX('press_ab');
+    sound();
     this.rememberCursor();
-    this.cursorGlyph = '▷';
+    if (this.mode !== 'battle_choice') this.cursorGlyph = '▷';
     if (!b && this.rejectSleepingStarter()) return null;
+    this.cursorGlyph = '▷';
     this.chosenIndex = b ? -1 : this.cursor;
     return 'close';
   }
@@ -347,6 +441,13 @@ export class PartyMenu {
       this.renderSubmenu();
     }
     if (this.sleepingText && !this.itemTextBox) this.sleepingText.render();
+    if (this.mode === 'battle_choice') {
+      if (this.openingTextBox.active && !this.sleepingText) this.openingTextBox.render();
+      for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) {
+        const glyph = this.choiceOverlay.visibleAt(x, y);
+        if (glyph !== null) drawScreenTile(glyph, x * TILE_SIZE, y * TILE_SIZE);
+      }
+    }
   }
 
   private renderList(): void {
@@ -368,7 +469,7 @@ export class PartyMenu {
         drawText('\u25B7', 0, y); // unfilled arrow for switch source
       }
       if (i === this.cursor && this.cursorVisible) {
-        drawText(this.mode === 'useItem' ? this.cursorGlyph : '\u25B6', 0, y);
+        drawText(this.mode === 'useItem' || this.mode === 'battle_choice' ? this.cursorGlyph : '\u25B6', 0, y);
       }
 
       // Name at column 3

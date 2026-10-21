@@ -18,7 +18,7 @@ function rig(programs: TextPrograms, down = 0) {
 }
 
 describe('TextCommandProcessor source contracts (A5b4)', () => {
-  it.each(['<DONE>', '<PROMPT>'])('FAR resumes its parent after child %s, with the same cursor', end => {
+  it.each(['<DONE>', '<PROMPT>'])('FAR resumes its parent after child %s on the BC DoneText left', end => {
     const r = rig({ P: [{ op: 'text', text: 'A' }, { op: 'far', program: 'C' }, { op: 'text', text: 'D' }],
       C: [{ op: 'text', text: `B${end}` }, { op: 'text', text: 'WRONG' }] });
     const run = r.runner.run('P', {}, true);
@@ -29,7 +29,8 @@ describe('TextCommandProcessor source contracts (A5b4)', () => {
       run.next(); run.next(); r.input.down = TEXT_B;
     }
     expect(run.next()).toEqual({ done: true, value: 'returned' });
-    expect(r.row()).toBe('ABD');
+    // DoneText does not copy HL into BC, so D is printed on B (home/text.asm:221–228).
+    expect(r.row()).toBe('AD');
   });
 
   it('ram continues the current cursor, including player-name substitution', () => {
@@ -100,7 +101,7 @@ describe('TextCommandProcessor source contracts (A5b4)', () => {
 
   it.each<TextOp>([
     { op: 'move', row: 1, col: 1 }, { op: 'box', row: 1, col: 1, width: 1, height: 1 },
-    { op: 'low' }, { op: 'scroll' }, { op: 'dots', count: 1 },
+    { op: 'scroll' }, { op: 'dots', count: 1 },
   ])('unsupported $op fails with its program label and audit home', op => {
     const r = rig({ P: [op] });
     expect(() => r.runner.run('P').next()).toThrow(`unsupported text op ${op.op} (A5b7) in P`);
@@ -118,7 +119,17 @@ const file = JSON.parse(readFileSync(resolve(__dirname, '../../data/text_program
 describe('committed program contracts (A5b4)', () => {
   it('pins the exact extracted op census, including the numeric menu operands', () => {
     const kinds = [...new Set(Object.values(file.programs).flat().map(op => op.op))].sort();
-    expect(kinds).toEqual(['asm', 'bcd', 'cry', 'decimal', 'far', 'pause', 'promptButton', 'ram', 'sound', 'text', 'waitButton']);
+    expect(kinds).toEqual(['asm', 'bcd', 'cry', 'decimal', 'far', 'low', 'pause', 'promptButton', 'ram', 'sound', 'text', 'waitButton']);
+  });
+
+  it('ItemUseText00 is the only program containing low, and its ops are the two FAR wrappers around it', () => {
+    const withLow = Object.entries(file.programs).filter(([, ops]) => ops.some(op => op.op === 'low')).map(([label]) => label);
+    expect(withLow).toEqual(['ItemUseText00']);
+    expect(file.programs.ItemUseText00).toEqual([
+      { op: 'far', program: '_ItemUseText001' },
+      { op: 'low' },
+      { op: 'far', program: '_ItemUseText002' },
+    ]);
   });
 
   it('all binding-free plain NPC/sign programs match flattened string buffers and frame counts', () => {

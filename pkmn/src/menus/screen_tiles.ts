@@ -2,8 +2,9 @@
 // null means no menu wrote that cell: rows 0–11 show the map, rows 12–17 show the TextBox.
 // A visible copy changes only when a third is transferred (home/vcopy.asm).
 
-import { tokenizeGlyphs } from '../text/charmap';
-import { LEVEL_GLYPH } from './menu_glyph_ids';
+import { textBoxBorder, placeString, clearArea, writeBcd, writeNumber, printLevel } from './tile_surface';
+import type { BcdWrite, NumberWrite } from './tile_surface';
+export type { BcdWrite, NumberWrite } from './tile_surface';
 import type { BgTransfer } from '../text/bg_transfer';
 import type { TextBox, TextBoxScreen } from '../text/textbox';
 
@@ -17,20 +18,6 @@ export interface ScreenSnapshot {
 
 /** A menu layer without an active TextBox (the START display's Buffer2). */
 export type ScreenTileSnapshot = readonly (string | null)[];
-
-export interface BcdWrite {
-  bytes: number;
-  /** BIT_LEADING_ZEROES: suppressed cells are skipped, not blanked. */
-  suppressZero: boolean;
-  leftAlign: boolean;
-  moneySign: boolean;
-}
-
-export interface NumberWrite {
-  digits: number;
-  /** PrintNumber's BIT_LEADING_ZEROES. Set: write the zeros. Clear: skip them. */
-  leadingZeroes: boolean;
-}
 
 const BCD_CAP = 999999;
 
@@ -59,37 +46,13 @@ export class ScreenTiles {
   }
 
   /** TextBoxBorder: c×b box at (x, y). c is the interior width, b the interior height. */
-  textBoxBorder(x: number, y: number, innerH: number, innerW: number): void {
-    this.put(x, y, '┌');
-    for (let i = 0; i < innerW; i++) this.put(x + 1 + i, y, '─');
-    this.put(x + innerW + 1, y, '┐');
-    for (let row = 0; row < innerH; row++) {
-      this.put(x, y + 1 + row, '│');
-      for (let i = 0; i < innerW; i++) this.put(x + 1 + i, y + 1 + row, ' ');
-      this.put(x + innerW + 1, y + 1 + row, '│');
-    }
-    const bottom = y + innerH + 1;
-    this.put(x, bottom, '└');
-    for (let i = 0; i < innerW; i++) this.put(x + 1 + i, bottom, '─');
-    this.put(x + innerW + 1, bottom, '┘');
-  }
+  textBoxBorder(x: number, y: number, innerH: number, innerW: number): void { textBoxBorder(this, x, y, innerH, innerW); }
 
   /** PlaceString. `<NEXT>` advances two rows and returns to this x. `@` ends the string. */
-  placeString(x: number, y: number, text: string): void {
-    const body = text.endsWith('@') ? text.slice(0, -1) : text;
-    const lines = body.split('<NEXT>');
-    for (let line = 0; line < lines.length; line++) {
-      let col = x;
-      for (const glyph of tokenizeGlyphs(lines[line])) this.put(col++, y + line * 2, glyph);
-    }
-  }
+  placeString(x: number, y: number, text: string): void { placeString(this, x, y, text); }
 
   /** ClearScreenArea: c×b spaces at (x, y). */
-  clearArea(x: number, y: number, height: number, width: number): void {
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) this.put(x + col, y + row, ' ');
-    }
-  }
+  clearArea(x: number, y: number, height: number, width: number): void { clearArea(this, x, y, height, width); }
 
   /** Give those cells back to the map or the message box. */
   release(x: number, y: number, height: number, width: number): void {
@@ -99,51 +62,13 @@ export class ScreenTiles {
   }
 
   /** PrintBCDNumber. Suppressed cells are skipped; an all-zero right-aligned value backs up one. */
-  writeBcd(x: number, y: number, value: number, flags: BcdWrite): void {
-    let suppress = flags.suppressZero;
-    let col = x;
-    const write = (glyph: string) => { this.put(col, y, glyph); col++; };
-    if (flags.moneySign && !suppress) write('¥');
-    for (const digit of String(value).padStart(flags.bytes * 2, '0')) {
-      if (suppress && digit === '0') {
-        if (!flags.leftAlign) col++;
-        continue;
-      }
-      if (suppress && flags.moneySign) write('¥');
-      suppress = false;
-      write(digit);
-    }
-    if (suppress) {
-      if (!flags.leftAlign) col--;
-      if (flags.moneySign) write('¥');
-      write('0');
-    }
-  }
+  writeBcd(x: number, y: number, value: number, flags: BcdWrite): void { writeBcd(this, x, y, value, flags); }
 
   /** PrintNumber (1–3 bytes). Suppressed leading cells are skipped; the ones digit is always written. */
-  writeNumber(x: number, y: number, value: number, flags: NumberWrite): void {
-    let col = x;
-    let past = false;
-    const digits = String(value).padStart(flags.digits, '0').slice(-flags.digits);
-    for (let i = 0; i < digits.length; i++) {
-      const digit = digits[i] ?? '0';
-      const ones = i === digits.length - 1;
-      const zero = digit === '0' && !past;
-      if (zero && !flags.leadingZeroes && !ones) {
-        col++;
-        continue;
-      }
-      this.put(col, y, digit);
-      col++;
-      past = true;
-    }
-  }
+  writeNumber(x: number, y: number, value: number, flags: NumberWrite): void { writeNumber(this, x, y, value, flags); }
 
   /** PrintLevel: left-aligned, with the hundreds digit overwriting <LV> at 100. */
-  printLevel(x: number, y: number, level: number): void {
-    if (level < 100) this.put(x, y, LEVEL_GLYPH);
-    this.placeString(level < 100 ? x + 1 : x, y, String(level));
-  }
+  printLevel(x: number, y: number, level: number): void { printLevel(this, x, y, level); }
 
   /** Drop every cell. The map and the message box show through again. */
   reset(): void {

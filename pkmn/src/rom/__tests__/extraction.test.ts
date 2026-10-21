@@ -674,11 +674,10 @@ describe('Audio: the key-item jingle and the PC sounds (A5b3)', () => {
   });
 
   it('only save, turn_on_pc and enter_pc differ between audio banks $02 and $1f', () => {
-    // Every SFX_HEADERS address is shared by SFX_Headers_1 and SFX_Headers_3.
+    // A5c2 CP2: compare the bank-$02 entries only; RUN exists exclusively in bank $08.
     // heal_hp and heal_ailment (A5b7c2) match across the two banks.
     // The decoder normalizes sound_call/sound_loop pointers to command indices.
-    const different = Object.entries(SFX_HEADERS).filter(([, header]) => {
-      expect(header.bank).toBe(0x02);
+    const different = Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x02).filter(([, header]) => {
       return JSON.stringify(extractSfxAt(rom, 0x02, header.addr)) !==
         JSON.stringify(extractSfxAt(rom, 0x1f, header.addr));
     }).map(([name]) => name).sort();
