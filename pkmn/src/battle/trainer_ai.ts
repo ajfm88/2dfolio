@@ -79,21 +79,7 @@ export function selectTrainerMove(
     scores.push(enemy.moves[i].pp > 0 ? 10 : 50); // heavily discourage 0 PP moves
   }
 
-  // Apply AI modifiers in order
-  for (const mod of aiModifiers) {
-    switch (mod) {
-      case 1:
-        applyModification1(scores, enemy, player);
-        break;
-      case 2:
-        applyModification2(scores, enemy);
-        break;
-      case 3:
-        applyModification3(scores, enemy, player);
-        break;
-      // mod 4 does nothing (unused)
-    }
-  }
+  applyTrainerMoveModifiers(scores, enemy, player, aiModifiers);
 
   // Find minimum score among valid moves
   let minScore = Infinity;
@@ -113,6 +99,26 @@ export function selectTrainerMove(
 
   if (bestMoves.length === 0) return 'STRUGGLE';
   return bestMoves[Math.floor(Math.random() * bestMoves.length)].id;
+}
+
+/** Shared dispatch only; the three upstream modification bodies stay unchanged. */
+export function applyTrainerMoveModifiers(
+  scores: number[], enemy: BattlePokemon, player: BattlePokemon, aiModifiers: readonly number[],
+): void {
+  for (const mod of aiModifiers) {
+    switch (mod) {
+      case 1:
+        applyModification1(scores, enemy, player);
+        break;
+      case 2:
+        applyModification2(scores, enemy);
+        break;
+      case 3:
+        applyModification3(scores, enemy, player);
+        break;
+      // mod 4 does nothing (unused)
+    }
+  }
 }
 
 /**

@@ -3,6 +3,8 @@
 // IncrementMovePP; decrement_pp.asm; init_battle.asm InitWildBattle's ghost block;
 // home/move_mon.asm CalcStats; evos_moves.asm WriteMonMoves; add_mon.asm LoadMovePPs.
 import type { BattlePokemon } from './types';
+import { getMove } from './data';
+import { TYPE_NAMES } from '../rom/constants';
 import {
   A, ATKDEFDV_TRAINER, BRN, encodeText, GHOST_PIC, indexToPokedex, isGhostBattle, LINK_STATE_BATTLING,
   MAX_STAT_VALUE, MON_GHOST, NAME_LENGTH, NUM_MOVES, NUM_STAT_MODS, PAR, PARTYMON_STRUCT_LENGTH,
@@ -49,17 +51,31 @@ export function statusByte(mon: BattlePokemon): number {
   return 0;
 }
 
-/** BattlePokemon has no box-level byte. The packed slot uses level for that byte. */
+function partyTypeByte(type: string): number {
+  const key = type === 'PSYCHIC' ? 'PSYCHIC_TYPE' : type;
+  const entry = Object.entries(TYPE_NAMES).find(([, name]) => name === key);
+  if (!entry) throw new Error(`unknown party type: ${type}`);
+  return Number(entry[0]);
+}
+
+/** BattlePokemon has no box-level byte or packed PP Up bits (pp/maxPp are separate).
+ * The slot uses level for box level and copies current PP without PP Up bits. */
 export function partySlotFromPokemon(mon: BattlePokemon): PartySlot {
   return {
-    species: mon.species.id,
+    species: POKEDEX_ORDER.indexOf(mon.species.id) + 1,
     hp: mon.currentHp,
     boxLevel: mon.level,
     status: statusByte(mon),
-    type1: 0,
-    type2: 0,
+    type1: partyTypeByte(mon.species.type1),
+    type2: partyTypeByte(mon.species.type2),
     catchRate: mon.species.catchRate,
-    moves: [0, 0, 0, 0],
+    moves: Array.from({ length: NUM_MOVES }, (_, i) => {
+      const move = mon.moves[i];
+      if (!move) return 0;
+      const data = getMove(move.id);
+      if (!data) throw new Error(`unknown party move: ${move.id}`);
+      return data.id;
+    }),
     dvs: [((mon.atkDV & 0xf) << 4) | (mon.defDV & 0xf), ((mon.spdDV & 0xf) << 4) | (mon.spcDV & 0xf)],
     pp: mon.moves.slice(0, 4).map(move => move.pp & 0x3f),
     level: mon.level,
@@ -119,7 +135,7 @@ function fillMods(state: BattleState, addr: number): void {
   for (let i = 0; i < NUM_STAT_MODS; i++) state.mem[addr + i] = 7;
 }
 
-function getMonHeader(state: BattleState, id: number): SpeciesHeader {
+export function getMonHeader(state: BattleState, id: number): SpeciesHeader {
   const header = state.species(id & 0xff);
   state.mem[A.wMonHIndex] = id & 0xff;
   for (let i = 0; i < 5; i++) state.mem[A.wMonHBaseStats + i] = header.base[i] & 0xff;

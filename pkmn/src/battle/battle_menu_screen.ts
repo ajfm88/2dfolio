@@ -3,7 +3,7 @@ import { BattleScreen } from './battle_screen';
 import type { BattleCell } from './battle_screen';
 import { BattleTiles } from './battle_tiles';
 import { TextBox } from '../text/textbox';
-import type { TextBindings } from '../text/text_runner';
+import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import type { Program } from './battle_menu_context';
 import { textBgTransfer } from '../text/bg_transfer';
 
@@ -27,8 +27,8 @@ export class BattleMenuScreen {
   }
   /** Exactly one serviced VBlank, including the active text runner. Held frames must skip this. */
   vblank(): void { this.screen.vblank(this.textBox.active ? this.textBox : undefined, true); }
-  *printText(program: string, bindings?: TextBindings): Program {
-    this.textBox.printStandalone({ program }, { bindings });
+  *printText(program: string, bindings?: TextBindings, options: TextRunnerOptions = {}): Program {
+    this.textBox.printStandalone({ program }, { bindings, ...options });
     while (!this.textBox.isComplete) yield 'serviced';
     // captureText already committed the final CPU writes. No extra flush, clear or Buffer1 restore.
     this.textBox.dismiss();

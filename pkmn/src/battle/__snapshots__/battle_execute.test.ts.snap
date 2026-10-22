@@ -1,0 +1,6928 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Execute actor 0 > Bide release nonzerofalse enters miss label, with its own level swap already performed 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:UnleashedEnergyText @0 L10/20",
+    "frame:session @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Bide release nonzerotrue enters miss label, with its own level swap already performed 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:UnleashedEnergyText @0 L10/20",
+    "frame:session @0 L10/20",
+    "play:117:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:117:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:90 @0 L10/20",
+    "frame:serviced @0 L10/20 *11",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > CANNOT_MOVE exits before flags reset, text, RNG or encouragement; only player clears action 1`] = `
+{
+  "ledger": [],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Counter false restores levels after its one hit draw, no range/vars 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "rng:Counter:0 @0 L10/20",
+    "play:68:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:68:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:80 @0 L10/20",
+    "frame:serviced @0 L10/20 *17",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Counter true restores levels after its one hit draw, no range/vars 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "rng:Counter:255 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Explosion missedfalse plays type0 on miss and always-effect precedes faint exit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:153:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:153:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "play:5:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:5:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:65 @0 L10/20",
+    "frame:serviced @0 L10/20 *27",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "effect:call:7 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Explosion missedtrue plays type0 on miss and always-effect precedes faint exit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:255 @0 L10/20",
+    "play:153:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:153:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:7 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Metronome accepts $A4, the final legal ID, then tails its Substitute effect 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:118:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:118:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "Metronome @0 L10/20",
+    "rng:Metronome:164 @0 L10/20",
+    "reload:164 @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:79 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Metronome animates before rejected draws then reloads; called move starts at charge check 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:118:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:118:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "Metronome @0 L10/20",
+    "rng:Metronome:0 @0 L10/20",
+    "rng:Metronome:165 @0 L10/20",
+    "rng:Metronome:118 @0 L10/20",
+    "rng:Metronome:1 @0 L10/20",
+    "reload:1 @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Metronome preserves disobedience on re-entry to the copied charge check 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:118:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:118:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "Metronome @0 L10/20",
+    "rng:Metronome:76 @0 L10/20",
+    "reload:76 @0 L10/20",
+    "effect:tail:39 @0 L10/20",
+  ],
+  "result": {
+    "b": 4,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Mirror Move failure writes opposing UsedMove0 into selected and exits Done 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "text:MirrorMoveFailedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Mirror Move failure writes opposing UsedMove119 into selected and exits Done 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "text:MirrorMoveFailedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Mirror clears player disobedience before copied Charge tails; enemy preserves it until announce 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "reload:76 @0 L10/20",
+    "effect:tail:39 @0 L10/20",
+  ],
+  "result": {
+    "b": 3,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Mirror success re-enters charge check, repeats text, and compensates original-slot PP 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "reload:1 @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > OHKO calculation calls its effect port, missedfalse controls Z and subsequent stages 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "effect:call:38 @0 L10/20",
+    "frame:held @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:12:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:12:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *63",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "text:OHKOText @0 L10/20",
+    "frame:session @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 0 > OHKO calculation calls its effect port, missedtrue controls Z and subsequent stages 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "effect:call:38 @0 L10/20",
+    "frame:held @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:UnaffectedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > PP compensation stays on the original slot, including transformed raw party increment 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "reload:1 @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Rage continuation enters announce and skips PP through existing Rage guard 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "moveName @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:99:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:99:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:97 @0 L10/20",
+    "frame:serviced @0 L10/20 *7",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Rage is called in both always and final effect stages 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:99:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:99:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:97 @0 L10/20",
+    "frame:serviced @0 L10/20 *7",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "effect:call:81 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+    "effect:call:81 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > SetDamage skips crit/Counter/vars/range, with hit called at the enemy swapped levels 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:69:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:69:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:90 @0 L10/20",
+    "frame:serviced @0 L10/20 *11",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Thrash continuation starts at calc, including final confusion draw before crit/range/hit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:ThrashingAboutText @0 L10/20",
+    "frame:session @0 L10/20",
+    "rng:status:3 @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:37:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:37:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:90 @0 L10/20",
+    "frame:serviced @0 L10/20 *11",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > Twineedle changes effect before next hit, then final poison dispatch follows count text 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:41:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:41:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:92 @0 L10/20",
+    "frame:serviced @0 L10/20 *11",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:SuperEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:77 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+    "play:41:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:41:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:92:84 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:SuperEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "rage @0 L10/20",
+    "text:MultiHitText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:2 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > always-effect runs before KO test, and the faint exit preserves action/counts and returns B=0 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:153:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:153:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "play:5:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:5:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:1:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "effect:call:7 @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 0 > called moves can nest Mirror -> Metronome -> Charge without another status/obedience pass 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "reload:118 @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:118:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:118:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "Metronome @0 L10/20",
+    "rng:Metronome:76 @0 L10/20",
+    "reload:76 @0 L10/20",
+    "effect:tail:39 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > charge release reloads only the player, clears both bits, and bypasses obedience 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > charge/Fly effect 39 tails before used text and PP, preserving b/action 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "effect:tail:39 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > charge/Fly effect 43 tails before used text and PP, preserving b/action 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "effect:tail:43 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > conditional hit stream: Dream Eater 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > conditional hit stream: Swift 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "play:129:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:129:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:93 @0 L10/20",
+    "frame:serviced @0 L10/20 *11",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > conditional hit stream: X Accuracy 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > conditional hit stream: immunity 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:DoesntAffectMonText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > conditional hit stream: invulnerability 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > cont effect 27 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:27 @0 L10/20",
+    "frame:held @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "apply @0 L10/20",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > cont effect 42 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:42 @0 L10/20",
+    "frame:held @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "apply @0 L10/20",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > disabled selected move exits Done without loading, announcing or spending PP 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "moveName @0 L10/20",
+    "text:MoveIsDisabledText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > final non-Special effect is called only after apply/critical/effectiveness/Rage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+    "effect:call:4 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > full paralysis consumes only its status draw and returns Done 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "rng:status:62 @0 L10/20",
+    "text:FullyParalyzedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > multi-hit KO on the second hit stops mid-loop with remaining count and shared overkill damage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:2:1 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+    "rage @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:1:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 0 > multi-hit KOfalse repeats animation/application only and keeps shared damage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:99 @0 L10/20",
+    "frame:serviced @0 L10/20 *7",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:99:98 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:98:97 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rage @0 L10/20",
+    "text:MultiHitText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > multi-hit KOtrue repeats animation/application only and keeps shared damage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:24:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:24:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:1:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "text:NotVeryEffectiveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:call:44 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 0 > ordinary KO skips Done, Rage and any final side effect, preserving action byte 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:1:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *5",
+    "huds @0 L10/20",
+    "frame:held @0 L10/20 *2",
+    "frame:serviced @0 L10/20 *3",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 0 > ordinary accuracy miss spends crit/range/hit then waits30 before failure 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:255 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "failure @0 L10/20",
+    "text:AttackMissedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > own Substitute hides and reshows around move/exploding animation and actor HUD 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "hide @0 L10/20",
+    "frame:held @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "reshow @0 L10/20",
+    "frame:session @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > plain hit has the complete routine / level / RNG / frame ledger 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > range rejection consumes its draw before the single hit draw 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:0 @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 24 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:24 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 25 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:25 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 28 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:28 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 46 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:46 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 47 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:47 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 49 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:49 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 56 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:56 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 57 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:57 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 64 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:64 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 65 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:65 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 66 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:66 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 67 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:67 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 79 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:79 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 82 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:82 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 84 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:84 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual1 effect 85 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:85 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 1 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:1 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 10 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:10 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 11 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:11 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 12 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:12 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 13 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:13 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 14 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:14 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 15 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:15 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 18 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:18 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 19 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:19 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 20 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:20 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 21 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:21 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 22 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:22 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 23 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:23 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 26 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:26 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 32 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:32 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 50 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:50 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 51 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:51 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 52 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:52 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 53 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:53 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 54 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:54 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 55 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:55 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 58 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:58 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 59 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:59 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 60 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:60 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 61 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:61 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 62 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:62 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > residual2 effect 63 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "effect:tail:63 @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > self-confusion uses the checked status/self-hit seam and reaches Done without move RNG 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:IsConfusedText @0 L10/20",
+    "frame:session @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:190:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "rng:status:128 @0 L10/20",
+    "text:HurtItselfText @0 L10/20",
+    "frame:session @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "playerHud @1 L10/20",
+    "bar:1:100:94 @0 L10/20",
+    "frame:serviced @0 L10/20 *16",
+    "huds @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > stale effect at zero-power calc becomes Fly/Charge 0 at its 30-frame continuation 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:167:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:167:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "apply @0 L10/20",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > stale effect at zero-power calc becomes Fly/Charge 1 at its 30-frame continuation 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "play:167:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:167:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "apply @0 L10/20",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > status early Done for status/flags 1 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:WokeUpText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > status early Done for status/flags 8 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:FlinchedText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > status early Done for status/flags 32 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:IsFrozenText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > status early Done for status/flags 64 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:MustRechargeText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > successful hit composes Building Rage under the target actor before any multi-hit bookkeeping 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+    "text:BuildingRageText @1 L10/20",
+    "frame:session @1 L10/20",
+    "statUp @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > tail effect B=0 is preserved and bypasses Done/action clear; called B=0 does not exit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "effect:tail:47 @0 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 0 > trapping continuation enters animation with cached damage and no level swap or RNG 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:AttackContinuesText @0 L10/20",
+    "frame:session @0 L10/20",
+    "play:35:5 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:35:5 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 0 > zero-power calc Z skips type/range/hit, but still applies and waits20 after the30 path 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:0 @0 L10/20",
+    "frame:serviced @0 L10/20 *30",
+    "apply @0 L10/20",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Bide release nonzerofalse enters miss label, with its own level swap already performed 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:UnleashedEnergyText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Bide release nonzerotrue enters miss label, with its own level swap already performed 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:UnleashedEnergyText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L20/10",
+    "play:117:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:117:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:90 @1 L10/20",
+    "frame:serviced @1 L10/20 *22",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > CANNOT_MOVE exits before flags reset, text, RNG or encouragement; only player clears action 1`] = `
+{
+  "ledger": [],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Counter false restores levels after its one hit draw, no range/vars 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "rng:Counter:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:68:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:68:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:80 @1 L10/20",
+    "frame:serviced @1 L10/20 *38",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Counter true restores levels after its one hit draw, no range/vars 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "rng:Counter:255 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Explosion missedfalse plays type0 on miss and always-effect precedes faint exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:153:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:153:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "play:5:5 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:5:5 @1 L10/20",
+    "frame:held @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:41 @1 L10/20",
+    "frame:serviced @1 L10/20 *101",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "effect:call:7 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Explosion missedtrue plays type0 on miss and always-effect precedes faint exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:255 @1 L20/10",
+    "swap @1 L20/10",
+    "play:153:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:153:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:7 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Metronome accepts $A4, the final legal ID, then tails its Substitute effect 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:118:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:118:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "Metronome @1 L10/20",
+    "rng:Metronome:164 @1 L10/20",
+    "reload:164 @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:79 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Metronome animates before rejected draws then reloads; called move starts at charge check 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:118:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:118:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "Metronome @1 L10/20",
+    "rng:Metronome:0 @1 L10/20",
+    "rng:Metronome:165 @1 L10/20",
+    "rng:Metronome:118 @1 L10/20",
+    "rng:Metronome:1 @1 L10/20",
+    "reload:1 @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Metronome preserves disobedience on re-entry to the copied charge check 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:118:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:118:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "Metronome @1 L10/20",
+    "rng:Metronome:76 @1 L10/20",
+    "reload:76 @1 L10/20",
+    "effect:tail:39 @1 L10/20",
+  ],
+  "result": {
+    "b": 4,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Mirror Move failure writes opposing UsedMove0 into selected and exits Done 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "text:MirrorMoveFailedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Mirror Move failure writes opposing UsedMove119 into selected and exits Done 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "text:MirrorMoveFailedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Mirror clears player disobedience before copied Charge tails; enemy preserves it until announce 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "reload:76 @1 L10/20",
+    "effect:tail:39 @1 L10/20",
+  ],
+  "result": {
+    "b": 3,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Mirror success re-enters charge check, repeats text, and compensates original-slot PP 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "reload:1 @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > OHKO calculation calls its effect port, missedfalse controls Z and subsequent stages 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "effect:call:38 @1 L20/10",
+    "frame:held @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:12:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:12:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *164",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "text:OHKOText @1 L10/20",
+    "frame:session @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 1 > OHKO calculation calls its effect port, missedtrue controls Z and subsequent stages 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "effect:call:38 @1 L20/10",
+    "frame:held @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:UnaffectedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > PP compensation stays on the original slot, including transformed raw party increment 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "reload:1 @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Rage continuation enters announce and skips PP through existing Rage guard 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "moveName @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:99:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:99:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:95 @1 L10/20",
+    "frame:serviced @1 L10/20 *15",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Rage is called in both always and final effect stages 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:99:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:99:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:95 @1 L10/20",
+    "frame:serviced @1 L10/20 *15",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "effect:call:81 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+    "effect:call:81 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > SetDamage skips crit/Counter/vars/range, with hit called at the enemy swapped levels 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:69:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:69:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:80 @1 L10/20",
+    "frame:serviced @1 L10/20 *38",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Thrash continuation starts at calc, including final confusion draw before crit/range/hit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:ThrashingAboutText @1 L10/20",
+    "frame:session @1 L10/20",
+    "rng:status:3 @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:37:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:37:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:83 @1 L10/20",
+    "frame:serviced @1 L10/20 *35",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > Twineedle changes effect before next hit, then final poison dispatch follows count text 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:41:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:41:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:89 @1 L10/20",
+    "frame:serviced @1 L10/20 *25",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:SuperEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:77 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+    "play:41:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:41:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:89:78 @1 L10/20",
+    "frame:serviced @1 L10/20 *23",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:SuperEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "rage @1 L10/20",
+    "text:HitXTimesText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:2 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > always-effect runs before KO test, and the faint exit preserves action/counts and returns B=0 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:153:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:153:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "play:5:5 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:5:5 @1 L10/20",
+    "frame:held @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:1:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *7",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "effect:call:7 @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 1 > called moves can nest Mirror -> Metronome -> Charge without another status/obedience pass 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "reload:118 @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:118:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:118:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "Metronome @1 L10/20",
+    "rng:Metronome:76 @1 L10/20",
+    "reload:76 @1 L10/20",
+    "effect:tail:39 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > charge release reloads only the player, clears both bits, and bypasses obedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "moveName @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > charge/Fly effect 39 tails before used text and PP, preserving b/action 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "effect:tail:39 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > charge/Fly effect 43 tails before used text and PP, preserving b/action 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "effect:tail:43 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > conditional hit stream: Dream Eater 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > conditional hit stream: Swift 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "swap @1 L20/10",
+    "play:129:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:129:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:89 @1 L10/20",
+    "frame:serviced @1 L10/20 *25",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > conditional hit stream: X Accuracy 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > conditional hit stream: immunity 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:DoesntAffectMonText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > conditional hit stream: invulnerability 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > cont effect 27 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:27 @1 L10/20",
+    "frame:held @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "apply @1 L10/20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > cont effect 42 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:42 @1 L10/20",
+    "frame:held @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "apply @1 L10/20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > disabled selected move exits Done without loading, announcing or spending PP 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "moveName @1 L10/20",
+    "text:MoveIsDisabledText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > final non-Special effect is called only after apply/critical/effectiveness/Rage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+    "effect:call:4 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > full paralysis consumes only its status draw and returns Done 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "rng:status:62 @1 L10/20",
+    "text:FullyParalyzedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > multi-hit KO on the second hit stops mid-loop with remaining count and shared overkill damage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:4:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *9",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+    "rage @1 L10/20",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:1:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *7",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 1 > multi-hit KOfalse repeats animation/application only and keeps shared damage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:97 @1 L10/20",
+    "frame:serviced @1 L10/20 *11",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:97:94 @1 L10/20",
+    "frame:serviced @1 L10/20 *11",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:94:91 @1 L10/20",
+    "frame:serviced @1 L10/20 *11",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rage @1 L10/20",
+    "text:HitXTimesText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > multi-hit KOtrue repeats animation/application only and keeps shared damage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:24:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:24:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:1:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *7",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "text:NotVeryEffectiveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:call:44 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 1 > ordinary KO skips Done, Rage and any final side effect, preserving action byte 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:1:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *7",
+    "huds @1 L10/20",
+    "frame:held @1 L10/20 *2",
+    "frame:serviced @1 L10/20 *3",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "fainted",
+  },
+}
+`;
+
+exports[`Execute actor 1 > ordinary accuracy miss spends crit/range/hit then waits30 before failure 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:255 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "failure @1 L10/20",
+    "text:AttackMissedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > own Substitute hides and reshows around move/exploding animation and actor HUD 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "hide @1 L10/20",
+    "frame:held @1 L10/20",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "reshow @1 L10/20",
+    "frame:session @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > plain hit has the complete routine / level / RNG / frame ledger 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > range rejection consumes its draw before the single hit draw 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:0 @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 24 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:24 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 25 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:25 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 28 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:28 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 46 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:46 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 47 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:47 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 49 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:49 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 56 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:56 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 57 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:57 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 64 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:64 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 65 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:65 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 66 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:66 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 67 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:67 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 79 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:79 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 82 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:82 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 84 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:84 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual1 effect 85 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:85 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 1 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:1 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 10 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:10 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 11 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:11 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 12 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:12 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 13 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:13 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 14 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:14 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 15 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:15 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 18 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:18 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 19 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:19 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 20 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:20 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 21 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:21 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 22 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:22 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 23 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:23 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 26 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:26 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 32 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:32 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 50 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:50 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 51 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:51 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 52 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:52 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 53 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:53 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 54 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:54 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 55 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:55 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 58 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:58 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 59 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:59 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 60 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:60 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 61 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:61 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 62 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:62 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > residual2 effect 63 dispatches at its exact stage 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "effect:tail:63 @1 L10/20",
+    "frame:held @1 L10/20",
+  ],
+  "result": {
+    "b": 7,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > self-confusion uses the checked status/self-hit seam and reaches Done without move RNG 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:IsConfusedText @1 L10/20",
+    "frame:session @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:191:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "rng:status:128 @1 L10/20",
+    "text:HurtItselfText @1 L10/20",
+    "frame:session @1 L10/20",
+    "vars @1 L10/20",
+    "calc:20 @1 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:0 @0 L10/20",
+    "frame:held @0 L10/20",
+    "bar:0:100:90 @1 L10/20",
+    "frame:serviced @1 L10/20 *11",
+    "huds @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > stale effect at zero-power calc becomes Fly/Charge 0 at its 30-frame continuation 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:167:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:167:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "apply @1 L10/20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > stale effect at zero-power calc becomes Fly/Charge 1 at its 30-frame continuation 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "play:167:0 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:167:0 @1 L10/20",
+    "frame:held @1 L10/20",
+    "apply @1 L10/20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > status early Done for status/flags 1 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:WokeUpText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > status early Done for status/flags 8 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:FlinchedText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > status early Done for status/flags 32 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:IsFrozenText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > status early Done for status/flags 64 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:MustRechargeText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > successful hit composes Building Rage under the target actor before any multi-hit bookkeeping 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+    "text:BuildingRageText @0 L10/20",
+    "frame:session @0 L10/20",
+    "statUp @0 L10/20",
+    "frame:held @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > tail effect B=0 is preserved and bypasses Done/action clear; called B=0 does not exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "effect:tail:47 @1 L10/20",
+  ],
+  "result": {
+    "b": 0,
+    "exit": "effect",
+  },
+}
+`;
+
+exports[`Execute actor 1 > trapping continuation enters animation with cached damage and no level swap or RNG 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:AttackContinuesText @1 L10/20",
+    "frame:session @1 L10/20",
+    "play:35:2 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:35:2 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:95 @1 L10/20",
+    "frame:serviced @1 L10/20 *15",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`Execute actor 1 > zero-power calc Z skips type/range/hit, but still applies and waits20 after the30 path 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:0 @1 L20/10",
+    "swap @1 L20/10",
+    "frame:serviced @1 L10/20 *30",
+    "apply @1 L10/20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`disobedience cannot-use result goes directly to Done, with no announcement or PP spend 1`] = `
+{
+  "ledger": [
+    "ghost @0 L11/20",
+    "status @0 L11/20",
+    "getMove @0 L11/20",
+    "obedience @0 L11/20",
+    "rng:obedience:160 @0 L11/20",
+    "rng:obedience:20 @0 L11/20",
+    "rng:obedience:0 @0 L11/20",
+    "rng:obedience:16 @0 L11/20",
+    "text:BeganToNapText @0 L11/20",
+    "frame:session @0 L11/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy encouragement 0 increments before status, byte-wrapped, even on early sleep exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:WokeUpText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy encouragement 1 increments before status, byte-wrapped, even on early sleep exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:WokeUpText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy encouragement 254 increments before status, byte-wrapped, even on early sleep exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:WokeUpText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy encouragement 255 increments before status, byte-wrapped, even on early sleep exit 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "text:WokeUpText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy link data 4 exits before encouragement/flag reset, retaining action/disobedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "link",
+  },
+}
+`;
+
+exports[`enemy link data 5 exits before encouragement/flag reset, retaining action/disobedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "link",
+  },
+}
+`;
+
+exports[`enemy link data 13 exits before encouragement/flag reset, retaining action/disobedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "link",
+  },
+}
+`;
+
+exports[`enemy link data 15 exits before encouragement/flag reset, retaining action/disobedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "link",
+  },
+}
+`;
+
+exports[`enemy link data 255 exits before encouragement/flag reset, retaining action/disobedience 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "link",
+  },
+}
+`;
+
+exports[`enemy link move/Struggle data 0 executes; no used-action gate 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy link move/Struggle data 3 executes; no used-action gate 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`enemy link move/Struggle data 14 executes; no used-action gate 1`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > Silph Scope lookup uses the existing packed inventory 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > Silph Scope lookup uses the existing packed inventory 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > battle kind 0 is not a ghost battle 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > battle kind 0 is not a ghost battle 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > battle kind 2 is not a ghost battle 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > battle kind 2 is not a ghost battle 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > ghost text returns Done before loading/status/encouragement, preserving UsedMove 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "text:ScaredText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > ghost text returns Done before loading/status/encouragement, preserving UsedMove 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "text:GetOutText @1 L10/20",
+    "frame:session @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > outside Tower map 141 continues through ordinary hit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > outside Tower map 141 continues through ordinary hit 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > outside Tower map 149 continues through ordinary hit 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "getMove @0 L10/20",
+    "obedience @0 L10/20",
+    "usedMove @0 L10/20",
+    "text:UsedMoveText @0 L10/20",
+    "frame:session @0 L10/20",
+    "crit @0 L10/20",
+    "rng:crit:8 @0 L10/20",
+    "Counter @0 L10/20",
+    "vars @0 L10/20",
+    "calc:10 @0 L10/20",
+    "type @0 L10/20",
+    "range @0 L10/20",
+    "rng:range:179 @0 L10/20",
+    "hit @0 L10/20",
+    "rng:hit:0 @0 L10/20",
+    "play:1:4 @0 L10/20",
+    "frame:serviced @0 L10/20 *3",
+    "animation:1:4 @0 L10/20",
+    "frame:held @0 L10/20",
+    "explode @0 L10/20",
+    "playerHud @0 L10/20",
+    "apply @0 L10/20",
+    "bar:0:100:95 @0 L10/20",
+    "frame:serviced @0 L10/20 *9",
+    "huds @0 L10/20",
+    "criticalText @0 L10/20",
+    "frame:serviced @0 L10/20 *20",
+    "effectiveness @0 L10/20",
+    "rage @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > outside Tower map 149 continues through ordinary hit 2`] = `
+{
+  "ledger": [
+    "ghost @1 L10/20",
+    "status @1 L10/20",
+    "getMove @1 L10/20",
+    "usedMove @1 L10/20",
+    "text:UsedMoveText @1 L10/20",
+    "frame:session @1 L10/20",
+    "swap @1 L10/20",
+    "crit @1 L20/10",
+    "rng:crit:8 @1 L20/10",
+    "Counter @1 L20/10",
+    "swap @1 L20/10",
+    "vars @1 L10/20",
+    "swap @1 L10/20",
+    "calc:20 @1 L20/10",
+    "type @1 L20/10",
+    "range @1 L20/10",
+    "rng:range:179 @1 L20/10",
+    "hit @1 L20/10",
+    "rng:hit:0 @1 L20/10",
+    "swap @1 L20/10",
+    "play:1:1 @1 L10/20",
+    "frame:serviced @1 L10/20 *3",
+    "animation:1:1 @1 L10/20",
+    "frame:held @1 L10/20",
+    "explode @1 L10/20",
+    "enemyHud @1 L10/20",
+    "apply @1 L10/20",
+    "bar:1:100:92 @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "huds @1 L10/20",
+    "criticalText @1 L10/20",
+    "frame:serviced @1 L10/20 *20",
+    "effectiveness @1 L10/20",
+    "rage @1 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > player ghost with sleep/freeze 1 reaches status instead of ScaredText 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:WokeUpText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`ghost inventory gate > player ghost with sleep/freeze 32 reaches status instead of ScaredText 1`] = `
+{
+  "ledger": [
+    "ghost @0 L10/20",
+    "status @0 L10/20",
+    "text:IsFrozenText @0 L10/20",
+    "frame:session @0 L10/20",
+  ],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;
+
+exports[`used player turn clears action after resetting four flag bytes, before ghost/status 1`] = `
+{
+  "ledger": [],
+  "result": {
+    "b": 1,
+    "exit": "done",
+  },
+}
+`;

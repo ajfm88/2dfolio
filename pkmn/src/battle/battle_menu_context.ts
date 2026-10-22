@@ -95,6 +95,8 @@ export interface BattleActionContext extends BattleMenuContext {
   enemyHud: BattleHudMon;
   partySpecies: number;
   enemySpecies2: number;
+  /** $D11D after DeterminePaletteID; optional for existing plain menu contexts. */
+  pokedexNum?: number;
 }
 
 export interface BattleActionHost {

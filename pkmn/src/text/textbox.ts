@@ -5,7 +5,7 @@ import { isHeld, syncJoypadRead } from '../input';
 import { charToTile, extraCharToTile } from './charmap';
 import { TextScreen, TEXT_A, TEXT_B, TEXT_BUFFER_SIZE } from './text_printer';
 import { TextProgramRunner } from './text_runner';
-import type { TextBindings, TextReturn } from './text_runner';
+import type { TextBindings, TextReturn, TextRunnerOptions } from './text_runner';
 import { getTextPrograms } from './program_data';
 import { CloseSequence } from './close_sequence';
 import { setOpeningSpriteUpdates } from '../overworld/ui_entry';
@@ -235,12 +235,12 @@ export class TextBox {
   }
   /** Standalone PrintText: border at T, Delay3, then the program; retain its box on return.
    * BIT_NO_TEXT_DELAY skips letter delays only, never Delay3 or native waits. */
-  printStandalone(source: TextSource, opts: { bindings?: TextBindings; noDelay?: boolean } = {}): void {
+  printStandalone(source: TextSource, opts: TextRunnerOptions & { bindings?: TextBindings; noDelay?: boolean } = {}): void {
     if (!this.active || this.mode !== 'printText') this.reset('printText');
     this.textComplete = false;
     this.start(this.printing(source, { box: 'new', ...opts }));
   }
-  private *printing(source: TextSource, opts: { box?: 'new' | 'keep'; bindings?: TextBindings; noDelay?: boolean }): Generator<void> {
+  private *printing(source: TextSource, opts: TextRunnerOptions & { box?: 'new' | 'keep'; bindings?: TextBindings; noDelay?: boolean }): Generator<void> {
     const screen = this.screen!;
     this._phase = 'printing';
     if ((opts.box ?? 'new') === 'new') {
@@ -249,9 +249,15 @@ export class TextBox {
       yield* screen.delay(3);
     }
     screen.resetCursor();
-    this.textReturn = 'program' in source
-      ? yield* new TextProgramRunner(screen, getTextPrograms(), this.ports()).run(source.program, opts.bindings, opts.noDelay)
-      : (yield* screen.placeString(substituteNames(source.text), opts.noDelay), 'returned');
+    if ('program' in source) {
+      const runner = new TextProgramRunner(screen, getTextPrograms(), this.ports());
+      runner.setBattleNames(opts.actors);
+      for (const [label, handler] of Object.entries(opts.asm ?? {})) runner.registerAsm(label, handler);
+      this.textReturn = yield* runner.run(source.program, opts.bindings, opts.noDelay);
+    } else {
+      yield* screen.placeString(substituteNames(source.text), opts.noDelay);
+      this.textReturn = 'returned';
+    }
     this.textComplete = true;
   }
   waitSilent(): void { this.start(this.silentWait()); }

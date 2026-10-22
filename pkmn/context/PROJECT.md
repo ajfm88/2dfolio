@@ -49,7 +49,7 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-10-18
+## State as of 2026-10-21
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
@@ -59,12 +59,13 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   trainers battle as in the original (V1c); Oak's Pikachu catch runs the original's
   catch demo, which the old man shares (V1d); the real Viridian old men replace
   upstream's demo gates and the walk north is open (V1e) — **V1 done**.
-- **2207/2207** tests across 130 files (375 upstream, then every slice since); typecheck, build and the ROM-backed suite re-checked 2026-10-19 (A5c1 CP5). No-ROM 2009 pass / 198 skip.
+- **3514/3514** tests across 157 files (375 upstream, then every slice since); typecheck, build and the ROM-backed suite re-checked 2026-10-20 (A5c3b checkpoint-07). No-ROM 3308 pass / 206 skip.
 - Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40).
 - **A1b done 2026-10-06** (implemented by Sol, reviewed by Claude, user-verified; DECISIONS #41): collectible item balls that stay gone in saves, hidden items and Route 1's sample per the ASM, the cartridge's text/sound waits, the slot-order/99 inventory rule and selected-stack removal.
 - **A1c done 2026-10-06** (Claude; DECISIONS #43; user-verified): Forest trainers spot the player as `TrainerEngage` does, with the meet music, the "!" and the walk-up. **Milestone A1 is done.** Next: A5, V2.
 - **A5a done 2026-10-06** (Sol implemented, Claude reviewed, user-verified; DECISIONS #44): text types, scrolls and ends as the cartridge's printer does; NPC, sign and trainer texts open and close per `DisplayTextID`. Next: A5b.
 - The game ticks at the Game Boy's 59.7275 Hz (DECISIONS #33).
+- **A5c (the battle) in progress** (`notes/65-a5c-a5f-plan.md`, DECISIONS #70): A5d (transitions) ✅ user-verified 2026-10-18; A5c1 (foundations) and A5c2 (menus) ✅ 2026-10-19; A5c3 (the battle engine from the ASM, note 68, #75) runs as six sub-slices, all built unused until A5c3f switches the game over. **A5c3a (state and plumbing) and A5c3b (the whole turn, MainInBattleLoop down) ✅ 2026-10-20.** Next: A5c3c (move effects, note 69), then A5c3d (faint/switch/EXP), A5c3e (trainer AI), A5c3f (switch-over). The production bundle is unchanged throughout (`index-Dn4MlLpw.js`).
 - **A5b planned by Sol 2026-10-06, approved as DECISIONS #45**: seven increments
   (`notes/23-a5b-plan.md`): text, sprite-set and audio extraction, then execution/close,
   story, school/intro and menu texts. **A5b1 done 2026-10-07** (Claude implemented, Sol

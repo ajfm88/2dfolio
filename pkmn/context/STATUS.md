@@ -42,11 +42,11 @@ co-author line. **Never push** — there is no remote and there must never be on
 the lost 30-map state (V1 ✅ → V2 Pewter → V3 Gym + Museum → V4 Diglett's Cave + Route 3 → V5 fixes), with
 Phase A slices placed in between (DECISIONS #29, #35, #55). Done so far: V1, A6, A1, A5a, A5b. **StatusScreen
 and the healing machine are user-verified complete.** **V2 (Pewter City) is user-verified complete (2026-10-17):** V2a → V2b → V2c (notes 60–62). **Map-music fade-out is complete and user-verified (2026-10-18):** CP1–CP4 checked, including the door-sound wait (#67/#68; note 63 §10.16). **The intro animation is complete and
-user-verified (2026-10-18):** CP1–CP5, note 64, DECISIONS #51/#69. **Next: A5c–A5f.**
+user-verified (2026-10-18):** CP1–CP5, note 64, DECISIONS #51/#69. **Now: A5c–A5f** — A5c3a and A5c3b ✅ (2026-10-20); next A5c3c checkpoint-01 (note 68 §11.35).
 
 ---
 
-## 📍 Where things stand — updated 2026-10-19 (*Setup* re-checked 2026-10-19; refs not refreshed since 2026-10-01)
+## 📍 Where things stand — updated 2026-10-21 (*Setup* re-checked 2026-10-19; refs not refreshed since 2026-10-01)
 
 ### Setup — done
 
@@ -61,7 +61,7 @@ user-verified (2026-10-18):** CP1–CP5, note 64, DECISIONS #51/#69. **Next: A5c
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 185 JSON → `data/`; also rebuilds `static/`: 524 PNG + 3 `.tilemap` + 185 JSON mirror. A5c2 CP2 adds only RUN JSON and its mirror; all 895 existing generated files unchanged; setup twice byte-identical (note 67 §11.10) |
 | Typecheck | Clean |
-| Tests | **2383/2383**, 137 files; no-ROM **2178 pass / 205 skip** (A5c3a CP2, note 68 §10.8). A5c2 CP5 was 2355/2355, 2150/205 (note 67 §11.18) |
+| Tests | **3426/3426**, 155 files; no-ROM **3220 pass / 206 skip** (A5c3b checkpoint-06, note 68 §10.18) |
 
 **A5c1 CP5, 2026-10-19:** the low-health alarm, the `wy` renderer edge, and the contact sheet. ROM **2207/2207**, no-ROM **2009 pass / 198 skip**.
 8/8 production mutations caught. Note 66 §10.19. ✅ Checked by Claude (§10.20): **A5c1 complete.** Nothing sets the
@@ -149,6 +149,8 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 
 ## In progress
 
+**A5c3b ✅ complete, 2026-10-20** (checkpoints 01–07, note 68 §11.34). **Next: A5c3c checkpoint-01**, a trace of the move effects with no code, into a new note 69 (§11.35).
+
 **A5d ✅ done and user-verified, 2026-10-18** ("everything works as intended").
 
 **A5c1 ✅ complete, 2026-10-19** (`notes/66-a5c1-plan.md`, DECISIONS #72; CP1 Codex, CP2 Codex + Grok, CP3–CP5 Grok,
@@ -158,7 +160,7 @@ each checked by Claude, §10.20). It has no play-test: nothing in the game chang
 §11.19). The battle menu, the bag and RUN, the party hand-off and `MoveSelectionMenu`, all unused until A5c3; no
 play-test. **A5c3 planned, 2026-10-19** (`notes/68-a5c3-plan.md`, Claude): re-split into six sub-slices, A5c3a–A5c3e unused,
 then A5c3f the switch-over with your play-test (about 27 CPs), and A5c3a (state and plumbing) planned in detail.
-**O-41 answered: yes to all** (DECISIONS #75). **Grok implements. A5c3a CP1 ✅ checked** (note 68 §10, §11.1). **A5c3a CP2 ✅ checked** (note 68 §11.3). **A5c3a CP3 ✅ checked** (note 68 §11.5). **Next: Grok runs CP4** (stat routines and math ports, brief in note 68 §11.6).
+**O-41 answered: yes to all** (DECISIONS #75). **Grok implements. A5c3a CP1 ✅ checked** (note 68 §10, §11.1). **A5c3a CP2 ✅ checked** (note 68 §11.3). **A5c3a CP3 ✅ checked** (note 68 §11.5). **A5c3a checkpoint-04 ✅ checked** (note 68 §11.8). **Checkpoint-04b ✅ checked** (§11.11). **Checkpoint-05 ✅ checked** (§11.13). **A5c3a ✅ complete, 2026-10-20.** **A5c3b checkpoint-01 ✅ checked** (§11.15; b1/b2 split, checkpoints 02–07). **Checkpoint-02 ✅ checked** (§11.17). **Checkpoint-03 ✅ checked** (§11.19). **Checkpoint-04 ✅ checked** (§11.22; Codex, finished by Grok). **A5c3b1 ✅ complete.** **Checkpoint-05 ✅ checked** (with its fix, §11.24–11.26). **Checkpoint-05b ✅ checked** (§11.28). **Checkpoint-06 ✅ checked** (with its fix, §11.30–11.32). **Checkpoint-07 ✅ checked** (§11.34). **A5c3b ✅ complete.** **A5c3c checkpoint-01 next** (§11.35, trace → note 69). **A5c3f carry-over:** `BattleState`'s `wLowHealthAlarm` (`$D082`) and `wLowHealthAlarmDisabled` delegate to the audio module or are removed. **O-43 answered → #77** (checkpoint-05 ports the math from the ASM).
 
 **A5c–A5f is planned:** `notes/65-a5c-a5f-plan.md` (Claude, 2026-10-18). It re-splits the work into six sub-slices
 (A5d → A5c1 → A5c2 → A5c3 → A5e → A5f) and plans A5d (the transitions) in detail. **Approved (O-38 → DECISIONS #70).
@@ -171,7 +173,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5c–A5f** | A | Note 65, DECISIONS #70; **A5d ✅ user-verified** → **A5c1 ✅** (note66) → **A5c2 ✅** (note 67) → **A5c3** (note 68, #75: a–e unused, f switch-over; **A5c3a CP1 ✅ CP2 ✅ CP3 ✅; next CP4 (Grok, note 68 §11.6)**) → A5c3 program → A5e intro → A5f wild catch, with catch demo folded in |
+| 1 | **A5c–A5f** | A | Note 65, DECISIONS #70; **A5d ✅ user-verified** → **A5c1 ✅** (note66) → **A5c2 ✅** (note 67) → **A5c3** (note 68, #75: a–e unused, f switch-over; **A5c3a ✅ complete (checkpoints 01–05, §11.13); A5c3b checkpoint-01 ✅; checkpoint-02 ✅; checkpoint-03 ✅; checkpoint-04 ✅ (A5c3b1 complete); checkpoint-05 ✅ (with its fix, §11.26); checkpoint-05b ✅ (§11.28); checkpoint-06 ✅ (§11.32); checkpoint-07 ✅ — **A5c3b ✅ complete (§11.34)**; A5c3c checkpoint-01 next (§11.35, note 69); A5c3f must delegate or remove BattleState's two alarm cells; checkpoint-05 ports the math (#77)**) → A5c3 program → A5e intro → A5f wild catch, with catch demo folded in |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
 | 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
@@ -232,6 +234,10 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
+- **O-43 ✅ answered 2026-10-20 → DECISIONS #77:** A5c3b checkpoint-05 ports the damage, hit and crit routines from the ASM.
+- **O-42: where does stat experience go?** (note 68 §11.7, finding 1) Nothing models it today; A5c3d ports
+  `experience.asm`, which writes it. Claude recommends A5c3d's first checkpoint after its trace; the alternative is J2,
+  with A5c3d leaving it out. Not blocking until A5c3d.
 - **O-2: Crystal animated GIFs in the randomizer pool?** Not blocking; decide when
   X1 starts. (`DECISIONS.md` → *Open*.)
 
@@ -246,230 +252,156 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 - Cable club receptionist (`ViridianPokecenter:4`): link features need a user decision; no slice is invented for it.
 
+### 2026-10-21 (session closed) — Claude
+
+The user stopped for the day; the next session starts with a fresh agent. Context files are up to date:
+- STATUS;
+- CLAUDE.md *Where things stand*;
+- PROJECT *State*;
+- PLAN's A5 row;
+- CONVENTIONS (the checkpoint-07 entry marked checked).
+
+**Resume with A5c3c checkpoint-01**, a trace of the move effects with **no code**, into a new
+`notes/69-a5c3c-effects.md`:
+- The brief is note 68 §11.35.
+- The paste-ready prompt for Codex is in the last Claude turn; rebuild it from §11.35 if lost.
+- Then Claude checks the trace and writes the checkpoint-02 brief.
+
+**How this session ran:** Codex and Grok implemented; Claude did each check, re-running the gates and its own
+mutations, and wrote each next brief. The pattern was brief → implement → check → (fix checkpoint if needed) →
+next brief.
+
+**Baselines:**
+- typecheck clean;
+- bundle `index-Dn4MlLpw.js` (`43dd8163…`), unchanged since A5c3a;
+- ROM **3514/3514**, no-ROM **3308 pass / 206 skip**.
+
+**Carry-overs:**
+- A5c3f must make `BattleState`'s `wLowHealthAlarm` / `wLowHealthAlarmDisabled` delegate to the audio module, or
+  remove them.
+- `a5c3_unused.test.ts` must list every new unused module.
+- One ROM-suite flake was seen once on 2026-10-20 and never reproduced; name it if it recurs.
+
+Local commits only.
+
+### 2026-10-20 (A5c3b checkpoint-07 checked; A5c3b complete) — Claude
+
+Checkpoint-07 passes (note 68 §11.34), so **A5c3b is complete**: the whole turn, from `MainInBattleLoop` down, is
+ported and unused.
+- **What I checked:**
+  - the entry checks;
+  - every selection gate and flag mask in ASM order;
+  - the link block (the Metronome-only bug kept);
+  - Quick Attack / Counter priority, the BE speed compare and the tie with its clock inversion;
+  - both action orders with every faint / escape / AI exit;
+  - `CheckNumAttacksLeft` once per turn.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3514/3514; no-ROM 3308 / 206 skip.
+- **Mutations:** 9/9 of mine caught.
+- **Next:** A5c3c (the move effects). Checkpoint-01 is a trace with no code, written into a new note 69 (§11.35).
+
+Local commit only.
+
 ## Session log
 
-### 2026-10-20 (session closed) — Claude
+### 2026-10-20 (A5c3b checkpoint-07 — awaiting Claude's closing check) — Codex
 
-The user stopped for the day. Context files brought up to date: STATUS, CLAUDE.md *Where things stand*, PLAN (A5 row),
-PROJECT (*State*), CONVENTIONS (CP2/CP3 marked checked). **Resume with A5c3a CP4:** Grok implements from note 68
-§11.6 (paste-ready prompt in the previous Claude turn; the brief itself is complete). Then Claude checks CP4, and CP5
-(the host and verification) closes A5c3a. Baselines: ROM 2411/2411, no-ROM 2206 / 205 skip. Local commits only.
+Unused `battle_turn.ts` composes MainInBattleLoop, with explicit exit labels and TrainerAI/link-switch ports.
+90 whole-turn tests / ledgers use packed/wild loaders, real menus/text/HUD/execution/residuals and the audio rig;
+105/105 mutations caught/restored. First typecheck found a missing flag return in the new tracing wrapper;
+fixed and restarted the sequential gates from `game/`: typecheck/build clean, ROM **3514/3514** first run
+(no one-off failure), no-ROM **3308 pass / 206 skip**, 157 files. Bundle `index-Dn4MlLpw.js`, SHA256 unchanged.
+Only earlier-test edit adds the module to the graph guard; no production wiring. Results and later-slice API /
+A5c3f import ownership in note 68 §10.19. One local commit, never pushed. Stopped; Claude's check closes A5c3b.
 
-### 2026-10-20 (A5c3a CP3 checked) — Claude
+### 2026-10-20 (A5c3b checkpoint-06 fix checked; checkpoint-06 complete) — Claude
 
-CP3 passes (note 68 §11.5). Loaders, penalties, badge boosts, write-backs and the `partySpecies` view match the ASM.
-Zero A5c2 test edits: the fixtures are plain objects, and a new view test proves the one-byte `$D11D`. Gap carried
-to CP4: `partySlotFromPokemon` packs zero types and zero moves. CP4 brief in §11.6. Gates, one after another:
-typecheck clean, build 160 modules `index-D-cKR3ww.js`, ROM 2411/2411, no-ROM 2206 / 205 skip. Local commit only.
+The fix passes (note 68 §11.32).
+- **What I checked:**
+  - the player reload before the charge test;
+  - the shims removed, with the bodies identical to the deleted files;
+  - one import-graph test from `main.ts` in place of the three name guards.
+- **Correction:** my §11.30 item 2 was a false finding. The old name path already wrote all four bytes; the new
+  code is equivalent.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3424/3424; no-ROM 3218 / 206 skip.
+- **Mutations:** 3/3 of mine caught.
+- **Checkpoint-06 is complete.**
+- **Next:** the checkpoint-07 brief (§11.33), `MainInBattleLoop`, which closes A5c3b.
 
-### 2026-10-20 (A5c3a CP3 — awaiting check) — Grok
+Local commit only.
 
-Implemented note 68 §11.4 in `battle_state.ts` and `battle_loaders.ts` (detail in §10.9). One WRAM cell per address. A5c2's contexts are a view over it. Zero A5c2 test edits: `move_selection_menu.test.ts:237` still passes because that fixture is a plain object (`item_effects.asm:2802–2807` writes both names of `$D11D`; the new view test asserts `usingPPUp === maxPP`). 28 new tests. Gates once, sequential, idle: typecheck clean, build 160 modules `index-D-cKR3ww.js` (the new modules are not on the production graph), ROM **2411/2411** (138 files), no-ROM **2206 pass / 205 skip**. **CP3 awaits Claude's check; CP4 not started.** Local commit only.
+### 2026-10-20 (A5c3b checkpoint-06 fix — awaiting Claude's check) — Codex
 
-### 2026-10-20 (A5c3a CP2 checked) — Claude
+Implemented §11.31; results and §10.18 corrections in note 68 §10.18a. Player reload before the charge
+test; enemy GetName list index/type/bank inputs and NamedObjectIndex output asserted. Original numeric/hit/apply
+bodies restored, shims deleted; three guards replaced by one main-rooted import-graph test for all 13 ports.
+20/20 mutations caught/restored. Gates once sequentially from checked `game/`: typecheck/build clean,
+ROM **3424/3424** (first run, no one-off failure), no-ROM **3218 pass / 206 skip**, 156 files.
+Bundle `index-Dn4MlLpw.js`, SHA256 `43dd8163…` unchanged. Earlier tests passed unedited except the three
+authorized guards; no production wiring. One local commit, never pushed. Stop for Claude; checkpoint-07 not started.
 
-CP2 passes (note 68 §11.3). Handlers, `TX_LOW`, the 1-digit walk, `<USER>`/`<TARGET>` and `DoneText` match the ASM;
-the two edited `text_runner.test.ts` assertions are accepted. The DoneText cursor change is live code but invisible
-today: no committed program prints after a `<DONE>`/`<PROMPT>`. CP3 brief in §11.4 (moves the penalties and badge
-boosts into CP3, because the loaders call them). Gates, one after another: typecheck clean, build 160 modules
-`index-D-cKR3ww.js`, ROM 2383/2383, no-ROM 2178 / 205 skip. Local commit only.
+### 2026-10-20 (A5c3b checkpoint-06 checked: two items and a cleanup) — Claude
 
-### 2026-10-19 (A5c3a CP2 — awaiting check) — Grok
+Checkpoint-06 is right apart from two small items (note 68 §11.30).
+- **What's right:**
+  - the `{ b, exit }` contract;
+  - the full flow on both sides;
+  - the level swaps;
+  - all six effect tables;
+  - `HandleExplodingAnimation`'s bug kept;
+  - Rage, ghost, Mirror Move / Metronome;
+  - the new WRAM cells.
+- **Item 1, my brief's error, flagged by Codex:** the player calls `GetCurrentMove` before the charge test; only
+  the enemy skips it.
+- **Item 2:** the enemy's charge release must also write `GetName`'s inputs (`wNameListIndex` / `wNameListType` /
+  `wPredefBank`).
+- **Cleanup ruling:** remove the three re-export shims. Replace the three source-name guards with one import-graph
+  test from `main.ts`.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3426/3426; no-ROM 3220 / 206 skip.
+- **Mutations:** 12/12 of mine caught.
+- **Next:** the checkpoint-06 fix (§11.31), then checkpoint-07.
 
-Implemented note 68 §11.2 in the text runner and printer (detail in §10.8). `TX_LOW`, 1-digit `TX_NUM`, `<USER>`/`<TARGET>` from `whoseTurn`, the `asm` registry (unregistered still returns `'asm'`), DoneText's cursor, and `MonsStatsRoseText` / `GainedText` / `WithExpAllText`. Two assertions in `text_runner.test.ts` were edited to match the ASM (the unsupported `low` case, and the FAR resume row `AD`). 29 new tests; the suite grew by 28. Gates once, sequential, idle: typecheck clean, build 160 modules `index-D-cKR3ww.js`, ROM **2383/2383** (137 files), no-ROM **2178 pass / 205 skip**. **CP2 awaits Claude's check; CP3 not started.** Local commit only.
+Local commit only.
 
-### 2026-10-19 (A5c3a CP1 checked) — Claude
+### 2026-10-20 (A5c3b checkpoint-06 — awaiting Claude's check) — Codex
 
-CP1 passes (note 68 §11.1). Re-read the cited ASM; every ✎ CP1 correction holds. One gap settled: `$D11D` is both
-`wUsingPPUp` and `wMaxPP`, so `move_selection_menu.test.ts:237` pins a state the cartridge never has. Ruling: CP3's
-one cell per address wins, and CP3 may fix only such alias assertions, each cited and listed. `curItem` stays a
-string view until A5c3e. All seven open questions answered. CP2 brief in §11.2. Gates, one after another, idle:
-typecheck clean, build 160 modules `index-Bax8aCF_.js`, ROM 2355/2355, no-ROM 2150 / 205 skip. Local commit only.
+Unused execution Programs and helpers compose the earlier checkpoints; note 68 §10.18. 260 new no-ROM
+tests, 226 call/frame ledgers, 224/224 mutations caught/restored. Earlier numeric/hit/application bodies
+moved byte-identically behind their stable exports so their guard tests stay unedited. Every existing test
+passed. New fixture tuple typing corrected, then sequential gates passed: typecheck/build clean, ROM
+**3426/3426** (first run, no flake), no-ROM **3220 pass / 206 skip**. Bundle `index-Dn4MlLpw.js`, SHA256
+`43dd8163165da59ada90b520deffda517d47d062a79698d97e1f5cd429da79f1`, unchanged. **Claude: confirm the player
+charging reload discrepancy recorded in §10.18; implementation follows §11.29 as directed.** Local commit
+only. Stop for Claude's check; checkpoint-07 not started. A5c3f alarm carry-over unchanged.
 
-### 2026-10-19 (A5c3a CP1 — traced, awaiting check) — Grok
+### 2026-10-20 (A5c3b checkpoint-05b checked) — Claude
 
-Traced A5c3a CP1 (note 68 §4.1 and §10.1–§10.7). No production code, tests or generated data. Evidence in
-`notes/68-a5c3a-cp1/`. Gates twice, sequential, idle machine: typecheck clean, build clean (160 modules,
-`index-Bax8aCF_.js` both rounds), ROM **2355/2355**, no-ROM **2150 pass / 205 skip**. **CP1 awaits Claude's
-check; CP2 not started.** Local commit only.
+Checkpoint-05b passes (note 68 §11.28).
+- **What I checked:**
+  - `MoveHitTest` / `CalcHitChance` (including `CheckTargetSubstitute`'s A overwrite and the returned flags);
+  - Counter;
+  - `ApplyAttack*` / `ApplyDamage*` (LE HP-bar byte order, overkill, Psywave asymmetry and freeze);
+  - `AttackSubstitute`;
+  - the failure / crit / effectiveness texts;
+  - the new WRAM addresses;
+  - `battle_arithmetic.ts` moved out unchanged.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3166/3166 (no flake); no-ROM 2960 / 206
+  skip.
+- **Mutations:** 14/14 of mine caught.
+- **Next:** the checkpoint-06 brief (§11.29), `ExecutePlayerMove` / `ExecuteEnemyMove`:
+  - the `{ b, exit }` return contract;
+  - the level swaps on every branch;
+  - `HandleExplodingAnimation`'s enemy-side status bug;
+  - `HandleBuildingRage`, the ghost text and the effect arrays.
 
-### 2026-10-19 (O-41 answered) — the user, recorded by Claude
+Local commit only.
 
-"yes to all, grok will implement" → DECISIONS #75: the six-sub-slice split, effects ported in A5c3c, catching in
-A5c3e, Grok implements. **Next: Grok runs A5c3a CP1.** Local commit only.
+### 2026-10-20 (A5c3b checkpoint-05b — awaiting Claude's check) — Codex
 
-### 2026-10-19 (A5c3 plan) — Claude
-
-Wrote `notes/68-a5c3-plan.md` from `core.asm`'s routine map, `init_battle.asm`, `end_of_battle.asm`, upstream's
-`battle.ts` / `effects.ts` / `main.ts`, and the reference implementations (`oldamber`'s C battle, `pkmn/engine`'s Gen 1
-mechanics and bug catalogue, `gen1recomp`). Findings: A5c3 is about 27 CPs, not 5–6; upstream's effects embed
-invented text, so porting `effects.asm` beats adapters; catching must come before A5f; `EndOfBattle` zeroes START's
-cursor (note 67 corrected). No code changed. **Next: the user answers O-41.** Nothing pushed.
-
-### 2026-10-19 (A5c2 CP5 checked; A5c2 complete) — Claude
-
-Checked Codex's CP5 completion (`09a0b26`, note 67 §11.19). **Passes; A5c2 is complete.** Both fixes are as briefed;
-typecheck clean, ROM **2355/2355**, no-ROM **2150 / 205 skip**. **Next: Claude writes A5c3's plan note.** Nothing
-pushed.
-
-### 2026-10-19 (A5c2 CP5 complete — awaiting check) — Codex
-
-Fixed the refusal's frozen picture and CANCEL's recursive redisplay; six tests added,2/2 mutations caught/restored
-(note67 §11.18). Gates twice sequentially with zero other test processes: typecheck/build clean, ROM **2355/2355**,
-no-ROM **2150 pass /205 skip** both rounds. No timeout changes or recurrence; prior party/status and CP4 tests
-unedited. Baselines/docs updated. **CP5 completion awaits Claude's check; A5c3 not started.** Local commit only;
-nothing pushed.
-
-### 2026-10-19 (A5c2 CP5 partial checked) — Claude
-
-Checked Codex's CP5 partial (`2705b3f`, note 67 §11.17). **The two timeouts are load, not a regression:** my idle run
-is **2349/2349**, and the two tests take 82 and 874 ms alone. The partial passes against the ASM, and the contact sheet
-is right. **Two fixes before closing:** the refusal text's frozen picture, and CANCEL's tail jump. Then gates twice on
-an idle machine (§12). **Next: Codex finishes CP5.** Nothing pushed.
-
-### 2026-10-19 (A5c2 CP5 partial — stopped for check) — Codex
-
-Added unused choose-only party hand-off, retained submenu, status reload/switch/quit tails;22 new tests and the
-contact sheet; corrected CP4's cursor-byte test;13/13 mutations caught/restored (note67 §11.16). Archived four
-old entries verbatim first (`4cadab0`). Typecheck/build pass; ROM **2347 pass /2 existing 5000ms timeouts** (Pewter
-tripwire, text-program ASM macro oracle). Stopped under §5: no-ROM/round2 not run. Existing party/status tests
-unedited. Frozen refusal-text/partial redraw limit recorded. **CP5 partial awaits Claude; A5c3 not started.**
-Local commit only; nothing pushed.
-
-### 2026-10-19 (A5c2 CP4 checked) — Claude
-
-Checked Codex's CP4 (`a7ed94d`, note 67 §11.15). **Passes, with one test gap:** the RUN-type cursor-byte test picks
-row 0, so its mutation survives (CP5 step 0). Re-ran ROM **2327/2327**, no-ROM **2122 / 205 skip**, and three more
-mutations (caught). Wrote the CP5 brief (§12: the party hand-off, contact sheet, gates twice). **Next: Codex runs CP5.**
-Nothing pushed.
-
-### 2026-10-19 (A5c2 CP4 — awaiting check) — Codex
-
-Added unused DisplayBattleMenu, bag and RUN, logical buffers/PrintText owner, ordered HUD palette/alarm handling
-and ListMenu's default-off simulated path. Added 52 no-ROM tests; all existing tests unedited; 14/14 mutations
-caught/restored (note67 §11.14). Gates once sequentially: typecheck/build clean, ROM **2327/2327**, no-ROM **2122
-pass /205 skip**. No game entry-point, extractor or generated changes. **CP4 awaits Claude's check; CP5 not
-started.** Local commit only; nothing pushed.
-
-### 2026-10-19 (A5c2 CP3 checked) — Claude
-
-Checked Codex's CP3 (`921adf3`, note 67 §11.13). **Passes.** Re-ran typecheck, ROM **2275/2275**, no-ROM **2070 / 205
-skip**, and three mutations of my own (all caught). Checked `FormatMovesString`, `AddBonusPP`, `AnyMoveToSelect`, the
-key order, the swap and `PlaceMenuCursor` against the ASM. `ListMenu`'s cursor now uses the shared, ASM-faithful
-routine, with every old test passing. Wrote the CP4 brief (§12). **Next: Codex runs CP4.** Nothing pushed.
-
-### 2026-10-19 (A5c2 CP3 — awaiting check) — Codex
-
-Lifted TileSurface writers/cursors and the BattleScreen adapter first; step-0 ROM suite passed 2221/2221 with
-every existing test unedited. Added the unused MoveSelectionMenu and context/ports, 54 move tests plus four
-surface tests; 11/11 production mutations caught/restored (note 67 §11.12). Gates once, sequentially:
-typecheck/build clean; ROM **2275/2275**; no-ROM **2070 pass /205 skip**. No main/battle/battle_ui, extractor or
-generated changes. **CP3 awaits Claude's check; CP4 not started.** Local commit only; nothing pushed.
-
-### 2026-10-19 (A5c2 CP2 checked) — Claude
-
-Checked Codex's CP2 (`5e13116`, note 67 §11.11). **Passes.** Re-ran typecheck, ROM **2217/2217**, no-ROM **2012 / 205
-skip**, and two mutations (both caught). Accepted one small runtime change: `run.json` now preloads with the other
-sounds; nothing plays it. Wrote the CP3 brief (§12: `TileSurface`, then `MoveSelectionMenu`). **Next: Codex runs CP3.**
-Nothing pushed.
-
-### 2026-10-19 (A5c2 CP2 — awaiting check) — Codex
-
-Added battle-bank RUN extraction/registration and its two generated files, the press-sound bank pin, and the
-ROM-tested 27-entry type display table/reverse lookup (note 67 §11.10). All 895 prior generated files unchanged;
-setup twice identical. Ten new tests; 6/6 mutations caught and restored. Gates once, sequentially: typecheck/build
-clean; ROM **2217/2217**; no-ROM **2012 pass /205 skip**. No menu code, TYPE_NAMES/moves/chart changes or RUN
-playback caller. **CP2 awaits Claude's check; CP3 not started.** Local commit only; nothing pushed.
-
-### 2026-10-19 (A5c2 CP1 checked) — Claude
-
-Checked Codex's CP1 (`f832354`, note 67 §11.9). **Passes.** Re-ran the ROM suite (**2207/2207**). Checked
-`ManualTextScroll`'s sound wait, `AddBonusPP`, `TypeNames` and the identical press-sound copies against the ASM.
-Answered the four questions: keep the shared C+22 opening (#73), an overlay layer for the battle party, RUN's overlap
-→ V5, a ROM-tested 27-entry type-name table. Four backlog entries. Wrote the CP2 brief (§12). **Next: Codex runs CP2.**
-Nothing pushed.
-
-### 2026-10-19 (A5c2 CP1 — traced, awaiting check) — Codex
-
-Traced all seven CP1 items in note 67 §11.1–§11.8; replaced §2's draft timing with tables and marked corrections
-**✎ CP1**. Evidence in `notes/67-a5c2-cp1/`: BG phases, ROM sound/header/type checks and gate logs. Gates twice,
-sequentially: typecheck/build clean; ROM **2207/2207**; no-ROM **2009 pass /198 skip**. An earlier interrupted ROM
-run and its uncaptured failure cause are recorded in §11.8; both complete repeats passed with no code changes.
-Four review questions for Claude (including PSYCHIC_TYPE's display mapping); no production, test or generated-data edits. **CP1 awaits Claude's check; CP2
-not started.** Local commit only; nothing pushed.
-
-### 2026-10-19 (O-40 answered) — the user, recorded by Claude
-
-"yes to ur recommendations" → DECISIONS #74: A5c2 as note 67 plans it, `SFX_RUN` in CP2, `UseItem`'s battle bodies in
-A5c3. Codex implements. **Next: Codex runs CP1.** Local commit only.
-
-### 2026-10-19 (A5c2 plan) — Claude
-
-Wrote `notes/67-a5c2-plan.md` from `core.asm` 2076–3085, `TryRunningFromBattle`, `HandleMenuInput_`, `DisplayListMenuID`,
-the party-menu home routines and `InitBattleVariables`. Findings include: the battle menu's cursor byte is START's;
-the move cursor jumps back to the last-used move after SELECT; the move menu reads every 6 frames; the bag hides the
-menu box; upstream invents five texts and blocks items in trainer battles; `SFX_RUN` exists only in the battle bank.
-No code changed. **Next: the user answers O-40; then CP1.** Nothing pushed.
-
-### 2026-10-19 (session closed) — Claude
-
-The user asked what the palette-timing finding means, then placed its fix in **V5** (DECISIONS #73): every CGB
-palette command holds 2 frames before its Delay3, and today's screens advance 2 frames early. Updated the backlog
-entry, PLAN's and the queue's V5 rows, and the engine docs (`context/ARCHITECTURE.md` → *Color*, module map;
-`battle/ARCHITECTURE.md` → A5c1's modules). **Next session: Claude writes A5c2's plan note** (the battle's menus),
-starting from note 66 §10.20's carry-overs. Gates as of A5c1 CP5: ROM **2207/2207**, no-ROM **2009 / 198 skip**.
-No remote; nothing pushed.
-
-### 2026-10-19 (A5c1 CP5 checked; A5c1 complete) — Claude
-
-First, at the user's request, undid commands run in the wrong window: **removed the `origin` remote** (Hard rule #9;
-nothing was pushed) and deleted `.git/filter-repo/`. `git filter-repo` had changed nothing: all 397 commits kept their
-hashes, since none of its paths exist here. It also expired the reflog. Checked the ignored files: the ROM (SHA1
-`cc7d0326…4a38e1`), `refs/` on their pinned branches, `pkmn-sprites/` and `node_modules` are intact.
-Then checked Grok's CP5 (`585a243`, note 66 §10.20). **Passes; A5c1 is complete.** ROM **2207/2207**, typecheck clean,
-alarm checked against the ASM, contact sheet checked (the diamond corners are Yellow's own border tiles). Backlog: SFX
-on CHAN5 during the alarm. **Next: Claude writes A5c2's plan note.** Nothing pushed.
-
-### 2026-10-19 (A5c1 CP5 — awaiting check) — Grok
-
-Added the low-health alarm, the `wy` fast-path fallback, and the contact sheet (note 66 §10.19). The alarm runs
-after the fade and before music, and returns immediately while bit 7 is clear. Nothing sets that bit. 8/8
-mutations caught. Moved the oldest session entries (from 2026-10-18's "session closed" through A5d CP2) verbatim
-to HISTORY. Gates twice: typecheck and build clean (159 modules, `index--OzXZl0W.js`); ROM **2207/2207**; no-ROM
-**2009 pass / 198 skip**. **CP5 awaits Claude's check. A5c2 not started.** Local commit only.
-
-### 2026-10-19 (A5c1 CP3b and CP4 checked) — Claude
-
-I checked Grok's CP3b (`10b2f4e`) and CP4 (`76110c5`), note 66 §10.18. **Both pass.** Re-ran the ROM suite
-(**2193/2193**) and typecheck. Checked the HUD order, alarm branches, enemy divide and the `DrawHPBar` sliver (`de` is
-restored, so the colour sees the pre-sliver 0) against the ASM. One old renderer edge (a band crossing a non-aligned
-`wy`) goes into CP5 step 0. Wrote the CP5 brief into §11. **Next: A5c1 CP5.** Nothing pushed.
-
-### 2026-10-19 (A5c1 CP4 — awaiting check) — Grok
-
-Added the battle HUD writers and the HP bar's decrease (note 66 §10.17). Both are unused by battle. 42 HUD
-fixtures, the 16 HP traces, and every alarm branch. 17/17 mutations caught. Field medicine's tests were not
-edited. Gates twice: typecheck and build clean (158 modules, `index-WnW_DSQ-.js`); ROM **2193/2193**; no-ROM
-**1995 pass / 198 skip**. **CP3b (`10b2f4e`) and CP4 await Claude's check. CP5 not started.** Local commit only.
-
-### 2026-10-19 (A5c1 CP3b — awaiting check) — Grok
-
-Fixed the two CP3 defects (note 66 §10.16). Border glyphs map to $79–$7E, and `captureText` draws the border then
-the inner 4×18. OBJ colours follow the current OBP. Species inputs are documented as dex numbers, and `bandStays`
-tests `scxSplit === null`. 4/4 mutations caught. Gates once: typecheck and build clean (158 modules,
-`index-DHc45_UK.js` unchanged); ROM **2170/2170**; no-ROM **1972 pass / 198 skip**. **CP3b awaits Claude's check.
-CP4 is the next commit. CP5 not started.** Local commit only.
-
-### 2026-10-19 (A5c1 CP3 checked) — Claude
-
-I checked Grok's CP3 (`685c65d`, note 66 §10.15). **Passes, with two required fixes**, both reproduced with a throwaway
-probe (deleted): `┌─┐│└┘` throw in `battleGlyphTile`, and `captureText` copies the TextBox buffer's blank border
-over the box, so battle text couldn't show; OBJ palettes stay at the install-time OBP. Moved Grok's §10.14 back
-into §10 order. Wrote CP3b + CP4 into §11. **Next: CP3b, then CP4.** Nothing pushed.
-
-### 2026-10-19 (A5c1 CP3 — awaiting check) — Grok
-
-Built `BattleScreen` and its pure renderer, unused (note 66 §10.14). No HUD writers and no `main`/`battle` wiring.
-32×32 background, battle attribute map, eight OBJ palettes, `PAL_BLACK`, and the 2-hold plus 3-serviced palette step.
-12 tests. 22/22 production mutations caught. Gates twice: typecheck/build clean (158 modules); ROM **2169/2169**;
-no-ROM **1971 pass / 198 skip**. A cached frame was 0.48 ms. **CP3 awaits Claude's check. CP4 not started.** Local commit only.
+Unused `battle_hit.ts` / `battle_apply.ts`: hit/chance, Counter, fixed damage/Psywave, HP application,
+Substitute and failure/crit/effectiveness texts, per §11.27. Results in note 68 §10.17. Shared unchanged
+Multiply/Divide; reused RNG, HP/HUD Programs and text runner. 240 new no-ROM tests, 164/164 mutations
+caught/restored. Every existing test passed unedited. Gates once sequentially from checked `game/`:
+typecheck/build clean, ROM **3166/3166** on first run (no flake), no-ROM **2960 pass / 206 skip**.
+Bundle `index-Dn4MlLpw.js`, SHA256 `43dd8163165da59ada90b520deffda517d47d062a79698d97e1f5cd429da79f1`,
+unchanged. No game imports of the new modules. Local commit only. **Stop for Claude's check;
+checkpoint-06 not started.** A5c3f alarm carry-over unchanged.

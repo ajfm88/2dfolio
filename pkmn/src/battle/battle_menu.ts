@@ -16,19 +16,32 @@ import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } 
 
 const KEYS: readonly GameButton[] = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
 
-export function* drawHudsAndHpBars(ctx: BattleActionContext, host: BattleActionHost): Program {
-  const palette = function* (): Program {
-    yield* host.screen.setPalBattle({ partySpecies: ctx.partySpecies, enemySpecies2: ctx.enemySpecies2,
-      playerBar: ctx.playerHud.barColor as 0 | 1 | 2, enemyBar: ctx.enemyHud.barColor as 0 | 1 | 2 });
-  };
+export type HudContext = Pick<BattleActionContext, 'playerHud' | 'enemyHud' | 'partySpecies' | 'enemySpecies2' | 'pokedexNum'>;
+type HudHost = Pick<BattleActionHost, 'screen'>;
+
+function* hudPalette(ctx: HudContext, host: HudHost): Program {
+  ctx.pokedexNum = ctx.enemySpecies2;
+  yield* host.screen.setPalBattle({ partySpecies: ctx.partySpecies, enemySpecies2: ctx.enemySpecies2,
+    playerBar: ctx.playerHud.barColor as 0 | 1 | 2, enemyBar: ctx.enemyHud.barColor as 0 | 1 | 2 });
+}
+
+export function* drawPlayerHudProgram(ctx: HudContext, host: HudHost): Program {
   const player = drawPlayerHudAndHpBar(host.screen, { ...ctx.playerHud,
     alarm: lowHealthAlarm(), alarmDisabled: isLowHealthAlarmDisabled() });
   ctx.playerHud.barColor = player.barColor;
-  if (player.paletteRequest) yield* palette();
+  if (player.paletteRequest) yield* hudPalette(ctx, host);
   applyHudAlarm(player.alarm, player.clearChan5);
+}
+
+export function* drawEnemyHudProgram(ctx: HudContext, host: HudHost): Program {
   const enemy = drawEnemyHudAndHpBar(host.screen, ctx.enemyHud);
   ctx.enemyHud.barColor = enemy.barColor;
-  if (enemy.paletteRequest) yield* palette();
+  if (enemy.paletteRequest) yield* hudPalette(ctx, host);
+}
+
+export function* drawHudsAndHpBars(ctx: HudContext, host: HudHost): Program {
+  yield* drawPlayerHudProgram(ctx, host);
+  yield* drawEnemyHudProgram(ctx, host);
 }
 
 export function drawBattleMenuTemplate(ctx: BattleActionContext, host: BattleActionHost): void {

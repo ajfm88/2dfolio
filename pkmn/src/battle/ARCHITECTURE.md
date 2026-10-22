@@ -1,5 +1,55 @@
 # Battle System Architecture
 
+Unused turn entry: `mainInBattleLoop(state, ctx, host, ports, trainer?)` in `battle_turn.ts` composes
+MainInBattleLoop (note 68 §10.19). `ctx` is the existing `battleContext(state)` view with the caller's bag;
+`host` combines A5c2's action/move hosts and forwards per-print runner options. The shared `hudContext`
+adapter refreshes menu HUD views before DisplayBattleMenu without copying HUD logic. `TurnPorts` extends
+`ExecutePorts` with TrainerAI returning carry and link SwitchEnemyMon. The optional trainer selection model
+must match raw enemy move slots. The Program loops through full turns/cancels, returning `ran`, `escaped`,
+`playerFainted`, `enemyFainted` or `enemyRan`. It neither services frames nor handles those later-slice exits.
+A5c3f will import this entry, create/load the existing state/context/host, wire A5c3c–e's effect/item/AI and
+faint/end handlers, and run the Program on the existing frame owner. LoadBattleMoveData/text programs and
+the existing species/move tables remain startup prerequisites. No production import yet.
+
+Unused execution: `battle_execute.ts` composes both ExecuteMove Programs, with helper routines/effect tables
+in `battle_execute_helpers.ts` (note 68 §10.18). Entry returns `{ b, exit }`; status continuations resume at
+their ASM labels, and only player Done clears the action byte. Effects and presentation are injected;
+TrainerAI remains a later-slice port; `battle_turn.ts` owns the main loop. Numeric/hit/application routines live in their original
+`battle_damage_asm.ts`, `battle_hit.ts` and `battle_apply.ts` modules. `a5c3_unused.test.ts` walks relative
+imports from `main.ts` to keep all 14 A5c3b ports outside the running graph (notes 68 §10.18a, §10.19).
+The player reloads the move before checking CHARGING_UP; the enemy release supplies the MOVE_NAME list
+index/type/bank to `getName`, which writes NamedObjectIndex and loads the name before the string copy.
+
+**A5c3a state and plumbing (complete, checked by Claude 2026-10-20; note 68 §11.13).** `battle_state.ts` owns WRAM cells and the menu
+views; `battle_loaders.ts` loads battle copies and writes party data at the cartridge's specific points.
+`battle_random.ts` and `battle_math.ts` provide RNG, stats, damage-result and move-selection ports; the upstream
+damage/effect bodies remain audit work. The text runner supports actors and per-print ASM handlers. Unused
+`battle_host.ts` primes a Program once, then each `step` completes one frame: serviced = menu-screen VBlank
+(including exactly one text tick), injected audio callback, resume; held/session = resume only. The session
+already owns its frame. **The host owns no audio clock:** production's callback is a no-op because main's
+`tickAudio` already owns audio timing; tests inject real `audioUpdate` through the audio rig on serviced frames
+only. Neither the host nor the test-only composed load/HUD/text program is wired into the running game.
+
+A5c3a checkpoint-04b corrects these unused ports (note 68 §10.11): set-damage effects and Counter keep neutral
+multiplier `$0A`, with no STAB/chart walk or type-immunity miss. Palette views convert internal IDs to dex numbers
+without writing `$D11D`; the palette command's real write remains the host's responsibility. Trainer selection
+uses `aiEnemyTrainerChooseMoves`' WRAM candidate address, then the shared BattleRandom band loop, with disabled
+and zero-slot retries. `wBuffer` at `$CEE9` holds byte scores (10, disabled 80), then minimum-score move bytes.
+No modifiers return the original move list. Models must match WRAM moves; enemy PP does not affect candidates.
+Only the unchanged modifier bodies are shared with upstream's still-working `selectTrainerMove`. The party
+adapter now reads the loaded `getMove` cache. These ports remain disconnected from the running game.
+
+A5c3a checkpoint-04 adds unused `battle_math.ts` and `battle_random.ts` (note 68 §10.10). `BattleState.random`
+defaults to seeded BattleRandom with injectable `readDIV`; link walks/regenerates nine of ten seeds. Stat ports
+use saved unmodified words, the exact 13 ratios, 999/1 limits and the pinned mod-0 ROM-byte wrap. Both unused
+double/halve far routines are preserved, including 16-bit doubling overflow. `executeMoveDamageChain` keeps
+upstream damage intact, writing result cells and deriving the multiplier byte from the **last** matching chart
+row with the same string keys (Psychic bug retained). Wild move choice has 63/64/63/66 bands; trainer modifiers
+delegate to upstream; link consumes an already exchanged nybble. Metronome rejection samples IDs 1–164 except
+118. The party adapter now packs real internal species/type/move bytes from committed tables. `BattlePokemon`
+has separate current/max PP and no packed PP Up bits. Nothing imports these ports in the running game; the
+checkpoint-04 production bundle was unchanged. Damage/RNG order and quarter-effective floor differences remain audit work.
+
 A5c3a CP3 adds unused `battle_state.ts` and `battle_loaders.ts`. `BattleState` is one WRAM cell per address; each ASM name is an accessor. A5c2's menu, action and party contexts are one view over those cells. `partySpecies` follows `SET_PAL_BATTLE`: a zero `wBattleMonSpecies` reads 0, otherwise the party species at `wPlayerMonNumber`. `curPartySpecies` is `$CF90`. `curItem` stays the item-name string, and `itemIndex` stays the bag choice. `LoadBattleMonFromParty` copies the box-level byte and takes the nick from `wPlayerMonNumber`. `LoadEnemyMonFromParty` then stores `wWhichPokemon` over that byte and does not boost badges. `LoadEnemyMonData` sends a link battle through the party copy; otherwise wild DVs are two injected random calls, the second stored first, a trainer uses `$98`/`$88` and the party's HP and status, and a transformed mon keeps the original DVs. It does not apply burn or paralysis penalties. `InitWildBattle` records the ghost picture (`GhostPic` `$6920`) and writes six nick bytes, `GHOST@`. `ApplyBurnAndParalysisPenaltiesToPlayer` stores `hWhoseTurn` 1 and quarters or halves the player; `ToEnemy` stores 0 and does the same to the enemy. Badge boosts are `stat + (stat >> 3)` on the player's battle copy, even bits only, capped at 999. `ReadPlayerMonCurHPAndStatus`, `DecrementPP` and `IncrementMovePP` have no callers. `BattlePokemon` has no box-level field; the four-byte write-back updates current HP and the decoded status, and the level stays. This is not `damage.ts`'s `applyBadgeStatBoosts`, which still writes the party `BattlePokemon`. Nothing in the running battle imports these modules.
 
 A5c2 CP5 adds `battle_party_menu.ts` and PartyMenu's unused choose-only mode. `bindBattlePartyMenu`

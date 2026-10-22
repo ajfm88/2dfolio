@@ -960,6 +960,31 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **References:** `pokeyellow` is the source. `oldamber`, `pkmn/engine`, `gen1recomp` and `pkmn/dmg` are cross-checks,
       and a cited behaviour also cites its ASM line (note 68 §3).
 
+76. **Checkpoints are named `checkpoint-NN`; Codex implements A5c3a checkpoint-04** (2026-10-20). *The user: "let's
+    stop using CP as the abbreviation to checkpoint, we can just call them checkpoin-04 and so on", and asked for a
+    Codex prompt for the next checkpoint.*
+
+    - New text writes `checkpoint-01`, `checkpoint-02`, … in notes, STATUS, commit messages and prompts ("A5c3a
+      checkpoint-04: …"). Existing headings, entries and commit messages keep "CP"; nothing is renamed retroactively.
+    - Codex implements A5c3a checkpoint-04 (this amends #75's "Grok implements" for that checkpoint). Claude still
+      checks each one.
+
+77. **A5c3b ports the damage, hit and crit routines from the ASM** (2026-10-20). *The user's answer to O-43 (note 68
+    §11.15, answer 1): "yes to your recommendation".*
+
+    - The turn calls them one stage at a time, in the cartridge's `BattleRandom` order (crit → range → hit). So A5c3b
+      checkpoint-05 ports §12.8's staged routines byte for byte:
+      - `GetDamageVars*` and `CalculateDamage`;
+      - `CriticalHitTest`, `AdjustDamageForMoveType` and `RandomizeDamage`;
+      - `MoveHitTest` / `CalcHitChance` and `HandleCounterMove`;
+      - `ApplyAttackTo*` / `ApplyDamageTo*` and `AttackSubstitute`.
+
+      Checkpoint-05 may split into 05 / 05b.
+    - `damage.ts` and checkpoint-04's result adapter stay for today's game, and retire at A5c3f.
+    - This amends #75: the battle-mechanics audit (#70) now verifies these routines instead of porting them. It still
+      owns the stat arithmetic's remaining questions and the trainer AI's bodies.
+    - Gen 1 bugs in these routines are kept, including the division-by-zero freeze (note 68 §11.15, answer 1).
+
 ## Open — not decided, needs the user
 
 

@@ -30,6 +30,9 @@ already knew.
    no remote exists and none may be added (Hard rule #9). If a slice is split
    mid-way, commit what is verified and say so in the log.
 
+**Checkpoint naming (DECISIONS #76).** A slice's checkpoints are `checkpoint-01`, `checkpoint-02`, … in every new
+note, STATUS entry, commit message and prompt. Don't abbreviate them "CP"; older text keeps its spelling.
+
 **Keep STATUS.md short (DECISIONS #61).** Log a session in a few lines; put the detail in the slice's `notes/`
 file. If STATUS.md passes ~40 KB, move the oldest session entries verbatim to `HISTORY.md` → *Recent session
 archive* in a docs-only commit. Findings for later slices go in `notes/57-findings-backlog.md`.
@@ -245,7 +248,116 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-2411 tests in 138 files (vitest, `environment: 'node'`); without ROM, 2206 pass / 205 skip.
+3514 tests in 157 files (vitest, `environment: 'node'`); without ROM, 3308 pass / 206 skip.
+
+**A5c3b checkpoint-07** adds 90 no-ROM whole-turn tests and 90 call/frame/RNG/audio ledgers in
+`battle/battle_turn.test.ts`. Real packed/wild loaders, menus, text runner, HUD, selector, execution and
+residual Programs, with the audio rig ticking serviced frames only. All gates, cancellation, RUN/Doll,
+priorities/ties/link, both action orders, every exit and AI carry, residual sides, flinch and trapping cleanup.
+105/105 mutations caught/restored. Only existing-test edit: add battle_turn to the graph guard. First
+typecheck caught a missing flag return in the new tracing wrapper; fixed, then restarted the sequential
+gates from checked `game/`. Typecheck/build clean, ROM **3514/3514** first run (no one-off failure), no-ROM
+**3308 / 206 skip**; build/ROM/no-ROM each ran once. Bundle `index-Dn4MlLpw.js` and SHA256 unchanged.
+Note 68 §10.19 documents the later-slice API/A5c3f imports. Checked by Claude (note 68 §11.34); A5c3b complete.
+
+**A5c3b checkpoint-06 fix** rewrites the two charge-release cases: player reloads before the charge test;
+enemy supplies GetName's three inputs and verifies its NamedObjectIndex output. Restores numeric/hit/apply
+bodies to the original module names and removes the shims. Three source-name guards become one relative-import
+graph test rooted at `main.ts`, protecting all 13 A5c3b ports. Net -2 tests, +1 file; earlier tests otherwise
+unedited. 20/20 mutations caught/restored, including each forbidden transitive production import. Gates once
+sequentially from checked `game/`: typecheck/build clean, ROM **3424/3424** (no one-off failure), no-ROM
+**3218 / 206 skip**. Bundle `index-Dn4MlLpw.js`, SHA256 unchanged. Note 68 §10.18a; checked by Claude (§11.32).
+
+**A5c3b checkpoint-06** adds 260 no-ROM tests: 254 in `battle/battle_execute.test.ts`, six in
+`battle/battle_execute_text.test.ts`, plus 226 call/frame ledgers. Both execution Programs compose the
+checked status/obedience/text/math/hit/application/HP/HUD routines. All exits/B values, level swaps,
+effect tables/stages, charge, conditional RNG, Mirror/Metronome PP and text, multi-hit/KO, Rage, ghost,
+link/encouragement and exploding-animation bug. 224/224 mutations caught/restored. Existing tests passed
+unedited. First typecheck needed a new fixture's four-byte moves tuple corrected; the restarted sequential
+gate sequence passed. Build/ROM/no-ROM each ran once from checked `game/`: ROM **3426/3426** (no flake),
+no-ROM **3220 pass / 206 skip**; bundle `index-Dn4MlLpw.js` and SHA256 unchanged. Note 68 §10.18 includes
+the brief/ASM player-charge reload discrepancy, resolved by Claude in §11.30 and fixed in §10.18a above.
+Checkpoint-07 not started.
+
+**A5c3b checkpoint-05b** adds 240 no-ROM tests: 114 in `battle/battle_hit.test.ts`, 106 in
+`battle/battle_apply.test.ts`, 20 in `battle/battle_apply_text.test.ts`. Hit/accuracy and Counter flags,
+early returns on both sides, named seeded hit/Psywave rejection logs, byte-wrapped empty-range freezes,
+fixed damage, exact HP write order and cartridge frame ledgers, Substitute and the crash glitch, and the
+committed failure/crit/effectiveness programs through the text runner. Real Multiply/Divide is shared with
+checkpoint-05; real HP/HUD Programs reused. All 164 mutations caught/restored; every existing test passed
+unedited. Gates once sequentially from checked `game/`: typecheck/build clean, ROM **3166/3166** on its
+first run (no flake), no-ROM **2960 pass / 206 skip**. Bundle `index-Dn4MlLpw.js` and SHA256 unchanged.
+Note 68 §10.17 and its mutation ledger; awaiting Claude's check. Checkpoint-06 not started.
+
+**A5c3b checkpoint-05 fix** removes the four duplicate-RNG tests and adds two crit tests: 34 tests now in
+`battle/battle_damage_asm.test.ts` (33 no-ROM, 1 ROM-gated). Crit coverage uses the circular left rotate:
+draw 2 → 16, speed 36 crits, speed 32 is equal and does not; `$81` → `$0C` wraps; turn/link cases use the
+circular value; the result is independent of SBC borrow. All four requested mutations caught and restored.
+Every other test passed unedited. Gates once sequentially from checked `game/`: typecheck/build clean,
+ROM **2926/2926**, no-ROM **2720 pass / 206 skip**. Bundle `index-Dn4MlLpw.js` and SHA256 unchanged. Note 68
+§10.16a; awaiting Claude's check. Checkpoint-05b not started.
+
+**A5c3b checkpoint-05** adds 36 tests in `battle/battle_damage_asm.test.ts` (35 no-ROM, 1 ROM-gated).
+`GetDamageVars*`, `GetEnemyMonStat`, `CalculateDamage`, `CriticalHitTest`, `AdjustDamageForMoveType` and
+`RandomizeDamage`, ported from the ASM into unused `battle_damage_asm.ts`. Defense 0 yields `'serviced'` and
+never returns. The type-chart test checks `type_chart.json` against the ROM `TypeEffects` table (82 rows, no
+`$FE`) and is the extra skip without `ROM_PATH`. 65/65 mutations caught and restored. Existing tests unedited.
+`damage.ts` and the checkpoint-04 adapter are unchanged. Gates once from `game/`: typecheck/build clean, ROM
+2928/2928, no-ROM 2722 pass / 206 skip. Bundle `index-Dn4MlLpw.js` byte-identical. Note 68 §10.16; awaiting
+Claude's check. Checkpoint-05b not started.
+
+**A5c3b checkpoint-04** adds 105 no-ROM tests: 21 in `battle/battle_hp.test.ts`, 60 in
+`battle/battle_residual.test.ts`, 24 in `battle/battle_hud_state.test.ts`. Residual damage, the HP-bar
+Program and the HUD composition. The low-health alarm stays owned by `audio/low_health_alarm.ts`; the new
+HUD tests set that byte and assert `$D082` is untouched. Existing tests unedited, including
+`low_health_alarm.test.ts`. Alarm-path mutations 86, 87, 89–91 and 101–103 re-checked and caught; 88 is
+retired with the bridge and replaced by a `$D082` sync that the new test catches. Gates once from `game/`:
+typecheck/build clean, ROM 2892/2892, no-ROM 2687 pass / 205 skip. Bundle `index-Dn4MlLpw.js`
+byte-identical. Note 68 §10.15; awaiting Claude's check. Checkpoint-05 not started.
+
+**A5c3b checkpoint-03** adds 146 no-ROM tests: 87 in `battle/battle_turn_status.test.ts`, 50 in
+`battle/battle_obedience.test.ts`, 9 in `battle/battle_turn_status_integration.test.ts`. Both sides pin
+status order, explicit continuations, self-hit state/math/HP ports, RNG boundaries and frame ownership;
+obedience covers badge/OT gates, SWAP/rejection order, nap/ignore/self-hit, original-slot/raw PP and the
+256-draw guards. Real BattleHost tests run committed text with actor/RAM bindings. Existing tests unedited.
+129/129 mutations caught/restored after strengthening two new assertions; restored focused set 224/224.
+After correcting Array.at in a new test for the configured TS library, the clean ordered gates pass:
+typecheck/build, ROM 2787/2787, no-ROM 2582 pass / 205 skip. Bundle `index-Dn4MlLpw.js` byte-identical.
+Note 68 §10.14; awaiting Claude's check.
+
+**A5c3b checkpoint-02** adds 50 no-ROM tests: 28 in `battle/battle_move_data.test.ts`, 22 in
+`battle/battle_turn_text.test.ts`. They cover the three BE union words, move records and name copies,
+invalid IDs, original-slot/transformed/raw-byte PP composition, all grammar groups, both actors,
+disobedience and same-cell `!` overwrite. Only the ruled existing battle_state alias case changed
+(old/new expectations in note 68 §10.13). 46/46 mutations caught/restored; post-mutation focused check 78/78.
+The earlier root-directory invocation was a skipped run without game's setup, not a test failure
+(Claude's ruling). Final ordered gates once from game/: typecheck/build clean, ROM 2641/2641,
+no-ROM 2436 pass / 205 skip; bundle `index-Dn4MlLpw.js` byte-identical. Awaiting Claude's check.
+
+**A5c3a checkpoint-05** adds 27 no-ROM tests in `battle/battle_host.test.ts`: per-frame host ownership/order,
+runner actor/ASM options, all four unchanged overworld ASM roots, live state nicks, real audio sound waits,
+palette `$D11D` alias/zero/CPU timing, and the packed-party + seeded-wild + HUD + committed text program.
+Existing tests unedited. Exact composed sequence: 2 held + 3 serviced palette frames + 23 serviced text frames;
+36/36 production mutations caught/restored. After correcting a new async audio mock's initial typecheck error,
+both final ordered gate rounds pass: typecheck/build clean, ROM **2591/2591**, no-ROM **2386 / 205 skip**.
+Both final builds have identical SHA-256; the required live TextBox seam changes the previous checkpoint's
+bundle, while a production-import-graph guard excludes the host. Note 68 §10.12; awaiting Claude's check.
+
+**A5c3a checkpoint-04b** adds 43 no-ROM tests in `battle/battle_math_fixes.test.ts`: set-damage/Counter type
+bypasses and upstream zero damage, palette dex conversion without alias writes, byte AI scores/minimum lists,
+Disable, zero PP, WRAM validation, and trainer band sampling through BattleRandom. Only the four existing cases
+approved in note 68 §11.10 changed, plus `beforeAll(loadBattleData)` setup; old/new expectations and ASM citations
+are in §10.11. 38/38 mutations caught/restored, including each edited case, disabled selection and missing dex
+conversion. Final gates once, serially, idle: typecheck/build clean, ROM **2564/2564**, no-ROM **2359 / 205 skip**.
+Awaiting Claude's check.
+
+**A5c3a checkpoint-04** adds 110 no-ROM tests in `battle/battle_math.test.ts`: seeded/off-link and nine-seed link
+RNG, all 13 stat ratios and mod-0 ROM-byte wrap, double/halve masks/order/overflow, damage result bytes with
+last-row type effectiveness and dead Psychic rows, every enemy-selection branch and 63/64/63/66 wild bands,
+Metronome rejection, and real species/type/move/PP party round trips. All existing tests unedited. 104/104
+production mutations caught/restored, including first-match and product substitutions; the defender-type-1
+survivor was strengthened and caught. Final gates once, serially, idle: typecheck/build clean, unchanged bundle,
+ROM **2521/2521**, no-ROM **2316 pass / 205 skip**. Note 68 §10.10; awaiting Claude's check.
 
 **A5c3a CP3** adds 28, all no-ROM, in `battle/battle_state.test.ts`: one cell per union address, the context view (`partySpecies` is `SET_PAL_BATTLE`; `getMaxPP` leaves `usingPPUp === maxPP`), the three loaders, the ghost nick, the penalty inversion, badge boosts at 999, and the three write-backs. No A5c2 test was edited. `move_selection_menu.test.ts:237` still passes because that fixture is a plain object (note 68 §10.9). 49 branch breaks were caught and restored. One idle gate: typecheck clean, build 160 modules `index-D-cKR3ww.js` (the new modules are not on the production graph), ROM **2411/2411**, no-ROM **2206 pass / 205 skip**. ✅ Checked by Claude (note 68 §11.5). CP4 next.
 

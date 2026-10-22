@@ -7,6 +7,7 @@ import type { BattleHudMon, PlayerHudMon } from './battle_hud';
 import type { MenuMove } from './battle_menu_context';
 import type { BattlePartyContext } from './battle_party_menu';
 import type { BattlePokemon } from './types';
+import { battleRandom } from './battle_random';
 
 export const NAME_LENGTH = 11;
 export const NAME_BUFFER_LENGTH = 20;
@@ -70,12 +71,15 @@ export const A = {
   wEnemyMonSpecies2: 0xcfd7,
   wCurSpecies: 0xd0b4,
   wNameListIndex: 0xd0b4,
+  wNameListType: 0xd0b5,
+  wPredefBank: 0xd0b6,
   wCurPartySpecies: 0xcf90,
   wCurItem: 0xcf90,
   wCurListMenuItem: 0xcf90,
   wWhichPokemon: 0xcf91,
   wPlayerMonNumber: 0xcc2f,
   hWhoseTurn: 0xfff3,
+  hSerialConnectionStatus: 0xffaa,
   wIsInBattle: 0xd056,
   wBattleType: 0xd059,
   wLinkState: 0xd12a,
@@ -97,9 +101,31 @@ export const A = {
   wMoveMissed: 0xd05e,
   wDamageMultipliers: 0xd05a,
   wLowHealthAlarm: 0xd082,
+  // wram.asm:654,1140–1146,1225–1231,1295,1482–1495. HP bar words are LE.
+  wLowHealthAlarmDisabled: 0xccf6,
+  wHPBarMaxHP: 0xcee9,
+  wHPBarOldHP: 0xceeb,
+  wHPBarNewHP: 0xceed,
+  wHPBarDelta: 0xceef,
+  wHPBarTempHP: 0xcef0,
+  wHPBarHPDifference: 0xcefd,
+  wHPBarType: 0xcf93,
+  wPlayerHPBarColor: 0xcf1c,
+  wEnemyHPBarColor: 0xcf1d,
+  wPlayerToxicCounter: 0xd06b,
+  wEnemyToxicCounter: 0xd070,
   hRandomAdd: 0xffd3,
   hRandomSub: 0xffd4,
+  wLinkBattleRandomNumberList: 0xd147,
+  wLinkBattleRandomNumberListIndex: 0xccde,
+  wSerialExchangeNybbleReceiveData: 0xcc3e,
+  wEnemyDisabledMove: 0xd071,
+  wBuffer: 0xcee9,
   hJoy7: 0xffb7,
+  // wram.asm:589-604; encouragement, spare, two substitute bytes, debug, spare, then menu type.
+  wAILayer2Encouragement: 0xccd5,
+  wPlayerSubstituteHP: 0xccd7,
+  wEnemySubstituteHP: 0xccd8,
   wMoveMenuType: 0xccdb,
   wMenuItemToSwap: 0xcc35,
   wCurrentMenuItem: 0xcc26,
@@ -107,8 +133,37 @@ export const A = {
   wEnemyMoveListIndex: 0xcce2,
   wPlayerSelectedMove: 0xccdc,
   wEnemySelectedMove: 0xccdd,
+  wPlayerMoveNum: 0xcfd1,
+  wPlayerMoveEffect: 0xcfd2,
+  wPlayerMovePower: 0xcfd3,
+  wPlayerMoveType: 0xcfd4,
+  wPlayerMoveAccuracy: 0xcfd5,
+  wPlayerMoveMaxPP: 0xcfd6,
+  wEnemyMoveNum: 0xcfcb,
+  wEnemyMoveEffect: 0xcfcc,
+  wEnemyMovePower: 0xcfcd,
+  wEnemyMoveType: 0xcfce,
+  wEnemyMoveAccuracy: 0xcfcf,
+  wEnemyMoveMaxPP: 0xcfd0,
+  wPlayerUsedMove: 0xccf1,
+  wEnemyUsedMove: 0xccf2,
+  wMonIsDisobedient: 0xcced,
+  wMoveDidntMiss: 0xccf4, // wram.asm:647, immediately after wEnemyMonMinimized.
   wNumMovesMinusOne: 0xcd6c,
   wPlayerDisabledMove: 0xd06c,
+  // ram/wram.asm:1478–1498, 635–636; existing union cells stay shared.
+  wPlayerConfusedCounter: 0xd06a,
+  wEnemyConfusedCounter: 0xd06f,
+  wEnemyNumAttacksLeft: 0xd06e,
+  wPlayerDisabledMoveNumber: 0xccee,
+  wEnemyDisabledMoveNumber: 0xccef,
+  wMaxMenuItem: 0xcc28,
+  // wEscapedFromBattle $D077 +1, money union3, then wAnimationID (wram.asm:1517–1530).
+  wAnimationID: 0xd07b,
+  // wObtainedBadges $D355, unused badges1, letter flags1, then player ID (wram.asm:1948–1954).
+  wPlayerID: 0xd358,
+  // party_struct/box_struct: MON_OTID=$0C; $D16A+$0C (macros/ram.asm:17).
+  wPartyMon1OTID: 0xd176,
   wMonDataLocation: 0xcc49,
   wNumRunAttempts: 0xd11f,
   wBattleResult: 0xcf0b,
@@ -143,7 +198,11 @@ export const A = {
   wPlayerMonUnmodifiedLevel: 0xcd0f,
   wEnemyMonUnmodifiedLevel: 0xcd23,
   wPlayerMonStatMods: 0xcd1a,
+  wPlayerMonAccuracyMod: 0xcd1e,
+  wPlayerMonEvasionMod: 0xcd1f,
   wEnemyMonStatMods: 0xcd2e,
+  wEnemyMonAccuracyMod: 0xcd32,
+  wEnemyMonEvasionMod: 0xcd33,
   wPartyMons: 0xd16a,
   wPartyMonNicks: 0xd2b4,
   wEnemyMons: 0xd8a3,
@@ -204,6 +263,10 @@ const WORD_BE: Record<string, number> = {
   wEnemyMonSpeed: A.wEnemyMonSpeed,
   wEnemyMonSpecial: A.wEnemyMonSpecial,
   wDamage: A.wDamage,
+  // core.asm:3658–3688,6044–6074; experience.asm:95–100: high byte first.
+  wPlayerBideAccumulatedDamage: A.wPlayerNumHits,
+  wEnemyBideAccumulatedDamage: A.wEnemyNumHits,
+  wExpAmountGained: A.wStringBuffer,
 };
 
 type ByteProps = { [K in BattleByteName]: number };
@@ -287,7 +350,7 @@ export function writeBytes(mem: Uint8Array, addr: number, values: readonly numbe
   for (let i = 0; i < length; i++) mem[addr + i] = (values[i] ?? 0) & 0xff;
 }
 
-function decodeNick(mem: Uint8Array, addr: number): string {
+export function decodeNick(mem: Uint8Array, addr: number): string {
   let text = '';
   for (let i = 0; i < NAME_LENGTH; i++) {
     const byte = mem[addr + i];
@@ -310,7 +373,10 @@ function installByte(self: BattleState, mem: Uint8Array, name: string, addr: num
 
 export class BattleState {
   readonly mem = new Uint8Array(0x10000);
-  random: () => number = () => 0;
+  random: () => number = () => battleRandom(this);
+  private divider = 0;
+  /** Deterministic rDIV stand-in, replaceable by the eventual host or a test. */
+  readDIV: () => number = () => (this.divider++ & 0xff);
   /** Mirrors the player party. BattlePokemon has no box-level field; the raw slot does. */
   partyMons: (BattlePokemon | null)[] = [null, null, null, null, null, null];
   /** Recorded by InitWildBattle. The picture itself is drawn in A5e. */
@@ -333,9 +399,6 @@ export class BattleState {
         set: (value: number) => this.writeBE(addr, value),
       });
     }
-    installLeWord(this, 'wPlayerBideAccumulatedDamage', 0xd073);
-    installLeWord(this, 'wEnemyBideAccumulatedDamage', 0xcd05);
-    installLeWord(this, 'wExpAmountGained', A.wStringBuffer);
   }
 
   readBE(addr: number): number {
@@ -376,18 +439,6 @@ export class BattleState {
     }
     this.mem[cursor] = 0xff;
   }
-}
-
-function installLeWord(self: BattleState, name: string, addr: number): void {
-  Object.defineProperty(self, name, {
-    configurable: true,
-    enumerable: true,
-    get: () => self.mem[addr] | (self.mem[addr + 1] << 8),
-    set: (value: number) => {
-      self.mem[addr] = value & 0xff;
-      self.mem[addr + 1] = (value >> 8) & 0xff;
-    },
-  });
 }
 
 /** IndexToPokedex: internal id in wPokedexNum becomes the national dex number in the same byte. */
@@ -505,9 +556,11 @@ export function battleContext(state: BattleState): BattlePartyContext {
   bind('partySpecies', () => {
     if (state.wBattleMonSpecies === 0) return 0;
     const slot = state.wPlayerMonNumber;
-    return state.mem[A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH];
+    const species = state.mem[A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH];
+    return species === 0 ? 0 : POKEDEX_ORDER[species - 1];
   });
-  raw('enemySpecies2', 'wEnemyMonSpecies2');
+  bind('enemySpecies2', () => state.wEnemyMonSpecies2 === 0 ? 0 : POKEDEX_ORDER[state.wEnemyMonSpecies2 - 1]);
+  raw('pokedexNum', 'wPokedexNum');
   bind('partyMons', () => state.partyMons, value => { state.partyMons = value as (BattlePokemon | null)[]; });
   bind('battleMonNick', () => decodeNick(state.mem, A.wBattleMonNick), value => {
     writeBytes(state.mem, A.wBattleMonNick, encodeText(`${value as string}@`), NAME_LENGTH);

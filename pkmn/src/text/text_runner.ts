@@ -26,6 +26,12 @@ export interface TextAsmState {
 /** Returns the next program to run on this screen, or nothing to continue after the op. */
 export type TextAsmHandler = (state: TextAsmState) => string | void;
 
+/** Per-print runner configuration; ordinary overworld prints leave both absent. */
+export interface TextRunnerOptions {
+  actors?: PlaceActors;
+  asm?: Record<string, TextAsmHandler>;
+}
+
 /** effects.asm:552–565. cp ATTACK_DOWN1_EFFECT ($12); ret nc keeps GreatlyRoseText. */
 export function monsStatsRoseText(effect: number): TextAsmHandler {
   return () => (effect & 0xff) >= 0x12 ? 'GreatlyRoseText' : 'RoseText';

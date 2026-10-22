@@ -1,4 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { loadBattleData } from './data';
+beforeAll(loadBattleData);
 vi.mock('../input', () => ({ isPassPressed: () => false, isHeld: () => false }));
 import type { MoveMenuHost } from './battle_menu_context';
 import { getMaxPP } from './move_selection_menu';
@@ -98,18 +100,18 @@ describe('union cells', () => {
     expect(state.wBattleMenuCurrentPP).toBe(0x8f);
   });
 
-  it('shares $CF4A, $CC5B and the Bide low byte', () => {
+  it('shares $CF4A, $CC5B and the Bide high byte', () => {
     const state = new BattleState();
     state.mem[A.wStringBuffer] = 0xab;
-    expect(state.wExpAmountGained & 0xff).toBe(0xab);
+    expect(state.wExpAmountGained >> 8).toBe(0xab);
     state.wGainBoostedExp = 9;
     expect(state.mem[A.wStringBuffer + 2]).toBe(9);
     state.wAnimationType = 3;
     expect(state.wBoostExpByExpAll).toBe(3);
     state.wPlayerBideAccumulatedDamage = 0x0205;
-    expect(state.wPlayerNumHits).toBe(5);
+    expect(state.wPlayerNumHits).toBe(2);
     state.wEnemyNumHits = 4;
-    expect(state.wEnemyBideAccumulatedDamage & 0xff).toBe(4);
+    expect(state.wEnemyBideAccumulatedDamage >> 8).toBe(4);
   });
 
   it('$CF90 is the numeric species byte, and the view string is not that cell', () => {
@@ -134,7 +136,7 @@ describe('context view', () => {
     state.wBattleMonSpecies = 0x54;
     state.wCurPartySpecies = 0x99;
     const view = battleContext(state);
-    expect(view.partySpecies).toBe(0x54);
+    expect(view.partySpecies).toBe(25);
     state.wBattleMonSpecies = 0;
     expect(view.partySpecies).toBe(0);
     expect(view.curPartySpecies).toBe(0x99);

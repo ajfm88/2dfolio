@@ -157,7 +157,7 @@ function clearRectangle(screen: BattleScreen, x: number, y: number, width: numbe
 }
 
 /** DrawHPBar. `type` 1 ends in `$6D`; type 0 ends in `$6C`. `pixels` is already the visible count. */
-function drawHpBar(screen: BattleScreen, x: number, y: number, pixels: number, type: 0 | 1): void {
+export function drawHpBar(screen: BattleScreen, x: number, y: number, pixels: number, type: 0 | 1): void {
   screen.put(x, y, 0x71);
   screen.put(x + 1, y, 0x62);
   const fills = hpBarFills(pixels);
