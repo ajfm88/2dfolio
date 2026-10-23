@@ -1,6 +1,7 @@
 // Unused A5c3 host. home/vblank.asm order, home/window.asm PrintText;
 // note 68 §10.5, §11.1 answer 7 and §11.12 define the frame protocol.
 import { BattleMenuScreen } from './battle_menu_screen';
+import { battleScreenFor, bindBattleScreen } from './battle_screen';
 import { A, decodeNick, type BattleState } from './battle_state';
 import type { Frame, Program } from './battle_menu_context';
 import type { PlaceActors } from '../text/text_printer';
@@ -11,9 +12,11 @@ export class BattleHost<T = void> {
   private pending: IteratorResult<Frame, T> | undefined;
   private readonly actors: PlaceActors;
 
-  /** Production leaves audio a no-op: main.tickAudio already owns its clock.
+  /** pret home/tilemap.asm:9-28; animations.asm:599-617: bind the host's screen and Buffer 2.
+   * Production leaves audio a no-op: main.tickAudio already owns its clock.
    * Tests inject their engines' audioUpdate, on serviced frames only. */
-  constructor(state: BattleState, readonly video = new BattleMenuScreen(), private readonly audio: () => void = () => {}) {
+  constructor(state: BattleState, readonly video = new BattleMenuScreen(battleScreenFor(state)), private readonly audio: () => void = () => {}) {
+    bindBattleScreen(state, video.screen);
     this.actors = {
       get whoseTurn() { return state.hWhoseTurn; },
       get battleMonNick() { return decodeNick(state.mem, A.wBattleMonNick); },

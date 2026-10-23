@@ -19,7 +19,7 @@ describe.each([0, 1] as const)('status checks, actor %i', side => {
     m[c.confused] = 4; m[c.count] = 3; m[c.disabled] = 0x11;
     const result = collect(r.check()); expect(result.result).toBe(done); expect(m[c.status]).toBe(count - 1);
     expect([m[c.used], m[c.flags], m[c.flags2], m[c.confused], m[c.count], m[c.disabled]]).toEqual([0, 0x8b, 0x20, 4, 3, 0x11]);
-    expect(result.frames).toEqual(count === 1 ? [] : Array(3).fill('serviced'));
+    expect(result.frames).toEqual(count === 1 ? [] : Array(15).fill('serviced'));
     const anim = `anim:${side === 0 ? 0xbc : 0xbd}:${side}`;
     expect(r.events).toEqual(count === 1 ? ['text:WokeUpText'] : side === 0
       ? [anim, 'text:FastAsleepText'] : ['text:FastAsleepText', anim]);
@@ -64,7 +64,7 @@ describe.each([0, 1] as const)('status checks, actor %i', side => {
     m[c.flags] = 0x90; m[c.confused] = 2; m[c.status] = 0x40;
     const random = r.rolls(...(roll === 127 ? [127, 63] : [128]));
     expect(collect(r.check())).toEqual({ result: roll === 127 ? 'normal' : done,
-      frames: Array(roll === 127 ? 3 : 6).fill('serviced') });
+      frames: Array(roll === 127 ? 15 : 30).fill('serviced') });
     expect(m[c.flags]).toBe(roll === 127 ? 0x90 : 128); expect(m[c.confused]).toBe(1);
     expect(r.events.slice(0, 3)).toEqual(['text:IsConfusedText', `anim:${side === 0 ? 0xbe : 0xbf}:${side}`, `random:${roll}`]);
     expect(random).toHaveBeenCalledTimes(roll === 127 ? 2 : 1);
@@ -86,7 +86,7 @@ describe.each([0, 1] as const)('status checks, actor %i', side => {
   it('self-hit with Fly also runs the shared status-affected animation after applying damage', () => {
     const r = statusRig(side); r.s.mem[r.c.flags] = 128; r.s.mem[r.c.confused] = 2;
     r.s.mem[r.c.move + 1] = 0x2b; r.rolls(128);
-    expect(collect(r.check())).toEqual({ result: done, frames: Array(9).fill('serviced') });
+    expect(collect(r.check())).toEqual({ result: done, frames: Array(45).fill('serviced') });
     expect(r.events.slice(-2)).toEqual([`apply:${side}`, `anim:167:${side}`]);
   });
   it('Bide count0 wraps to255 and holds without release text', () => {
@@ -110,7 +110,7 @@ describe.each([0, 1] as const)('status checks, actor %i', side => {
     m[c.status] = 64; m[c.flags] = 0x77; m[c.move + 1] = effect; m[c.count] = 3;
     r.rolls(62); const result = collect(r.check());
     expect(result.result).toBe(done); expect(m[c.flags]).toBe(68); expect(m[c.count]).toBe(3);
-    expect(result.frames).toEqual(effect === 0 ? [] : Array(3).fill('serviced'));
+    expect(result.frames).toEqual(effect === 0 ? [] : Array(15).fill('serviced'));
     expect(r.texts).toEqual(['FullyParalyzedText']);
     if (effect !== 0) expect(r.events[r.events.length - 1]).toBe(`anim:167:${side}`);
   });
@@ -207,7 +207,7 @@ describe.each([0, 1] as const)('status checks, actor %i', side => {
       expect([state.hWhoseTurn, actor, state.wDamage]).toEqual([side, side, 345]); r.events.push('apply');
     };
     const result = collect(handleSelfConfusionDamage(s, r.host, r.ports, side));
-    expect(result.frames).toEqual(['session', 'serviced', 'serviced', 'serviced', 'held']);
+    expect(result.frames).toEqual(['session', 'serviced', 'serviced', 'serviced', 'held', ...Array(12).fill('serviced')]);
     expect(r.events).toEqual(side === 0 ? ['text:HurtItselfText', 'calc', 'animation', 'hud:1', 'apply']
       : ['text:HurtItselfText', 'calc', 'animation', 'apply']);
     expect([...m.slice(c.move + 1, c.move + 4)]).toEqual([0x2b, 40, 0]); expect(s.hWhoseTurn).toBe(side);
@@ -218,5 +218,5 @@ it('PlayMoveAnimation writes ID before its three serviced frames, then delegates
   const r = statusRig(); const p = playMoveAnimation(r.s, r.ports, 0xa7);
   expect(p.next()).toEqual({ value: 'serviced', done: false }); expect(r.s.wAnimationID).toBe(0xa7);
   expect(r.events).toEqual([]); expect(p.next().value).toBe('serviced'); expect(p.next().value).toBe('serviced');
-  expect(p.next().done).toBe(true); expect(r.events).toEqual(['anim:167:0']);
+  expect(collect(p).frames).toEqual(Array(12).fill('serviced')); expect(r.events).toEqual(['anim:167:0']);
 });

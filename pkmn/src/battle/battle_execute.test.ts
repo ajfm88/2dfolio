@@ -170,7 +170,7 @@ for (const side of [0, 1] as const) describe(`Execute actor ${side}`, () => {
       const swapped = side === 1 && (['crit', 'rng:crit:8', 'Counter', 'calc:20', 'type', 'range', 'rng:range:179', 'hit', 'rng:hit:0'].includes(e.routine));
       if (e.routine !== 'swap') expect(e.levels).toEqual(swapped ? [20, 10] : [10, 20]);
     }
-    expect(out.frames).toEqual(['session', ...Array(3).fill('serviced'), 'held', ...Array((side ? 20 : 9) + 20).fill('serviced')]);
+    expect(out.frames).toEqual(['session', ...Array(3).fill('serviced'), 'held', ...Array((side ? 20 : 9) + 32).fill('serviced')]);
     expect(r.s.readBE(r.c.opposite)).toBe(side ? 92 : 95); expect(r.s.wMoveDidntMiss).toBe(1);
     expect(r.s.mem[r.battlePP]).toBe(side ? 12 : 11); expect(r.s.mem[r.partyPP]).toBe(side ? 12 : 11);
   });
@@ -607,7 +607,7 @@ describe('Rage and exploding presentation helpers', () => {
     it.each([1, 120, 153])('exploding move %i triggers only the two exploding IDs', id => {
       const r = rig(side, id, []); const out = finish(helpers.handleExplodingAnimation(r.s, r.ports));
       expect(r.names().includes('animation:5:5')).toBe(id !== 1);
-      expect(out.frames).toEqual(id === 1 ? [] : ['serviced', 'serviced', 'serviced', 'held']);
+      expect(out.frames).toEqual(id === 1 ? [] : ['serviced', 'serviced', 'serviced', 'held', ...Array(12).fill('serviced')]);
     });
     it.each(['enemy-invulnerable', 'ghost1', 'ghost2', 'miss'])('exploding skip condition %s', gate => {
       const r = rig(side, 153, []);
@@ -621,7 +621,7 @@ describe('Rage and exploding presentation helpers', () => {
   }
   it('enemy exploding-animation bug ignores player invulnerability but tests its own', () => {
     const r = rig(1, 153, []); r.s.wPlayerBattleStatus1 = 0x40;
-    expect(finish(helpers.handleExplodingAnimation(r.s, r.ports)).frames).toHaveLength(4);
+    expect(finish(helpers.handleExplodingAnimation(r.s, r.ports)).frames).toHaveLength(16);
     r.s.wEnemyBattleStatus1 = 0x40; expect(finish(helpers.handleExplodingAnimation(r.s, r.ports)).frames).toEqual([]);
   });
 });

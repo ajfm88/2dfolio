@@ -1,0 +1,855 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`real turn printer side 0 > 'Dig' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 91,
+  "escaped": 0,
+  "flags1": [
+    216,
+    8,
+  ],
+  "frames": 33,
+  "ledger": [
+    "hide",
+    "anim:192:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:DugAHoleText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Fly' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 19,
+  "escaped": 0,
+  "flags1": [
+    216,
+    8,
+  ],
+  "frames": 35,
+  "ledger": [
+    "hide",
+    "anim:100:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:FlewUpHighText",
+    "S16",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Pay Day' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 32,
+  "ledger": [
+    "text:CoinsScatteredText",
+    "S32",
+    "textDone",
+  ],
+  "payDayMoney": [
+    0,
+    0,
+    128,
+  ],
+  "totalPayDayMoney": [
+    18,
+    53,
+    54,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Razor Wind' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 13,
+  "escaped": 0,
+  "flags1": [
+    152,
+    8,
+  ],
+  "frames": 39,
+  "ledger": [
+    "hide",
+    "anim:174:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:MadeWhirlwindText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Roar escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 63,
+  "ledger": [
+    "syncPlayer",
+    "anim:46:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:RanAwayScaredText",
+    "S31",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Skull Bash' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 130,
+  "escaped": 0,
+  "flags1": [
+    152,
+    8,
+  ],
+  "frames": 39,
+  "ledger": [
+    "hide",
+    "anim:174:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:LoweredItsHeadText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Sky Attack' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 143,
+  "escaped": 0,
+  "flags1": [
+    152,
+    8,
+  ],
+  "frames": 33,
+  "ledger": [
+    "hide",
+    "anim:174:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:SkyAttackGlowingText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Solarbeam' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 76,
+  "escaped": 0,
+  "flags1": [
+    152,
+    8,
+  ],
+  "frames": 39,
+  "ledger": [
+    "hide",
+    "anim:174:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:TookInSunlightText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Teleport escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 58,
+  "ledger": [
+    "syncPlayer",
+    "anim:100:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:RanFromBattleText",
+    "S26",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'Whirlwind escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 62,
+  "ledger": [
+    "syncPlayer",
+    "anim:18:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:WasBlownAwayText",
+    "S30",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'non-charge Dig fallback' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 1,
+  "escaped": 0,
+  "flags1": [
+    152,
+    8,
+  ],
+  "frames": 33,
+  "ledger": [
+    "hide",
+    "anim:174:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S7",
+    "suffix:DugAHoleText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'trainer failed Teleport' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 0 > 'trainer unaffected' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 79,
+  "ledger": [
+    "S50",
+    "text:IsUnaffectedText",
+    "S29",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Dig' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 91,
+  "escaped": 0,
+  "flags1": [
+    136,
+    88,
+  ],
+  "frames": 38,
+  "ledger": [
+    "hide",
+    "anim:192:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:DugAHoleText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Fly' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 19,
+  "escaped": 0,
+  "flags1": [
+    136,
+    88,
+  ],
+  "frames": 40,
+  "ledger": [
+    "hide",
+    "anim:100:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:FlewUpHighText",
+    "S16",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Pay Day' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 32,
+  "ledger": [
+    "text:CoinsScatteredText",
+    "S32",
+    "textDone",
+  ],
+  "payDayMoney": [
+    0,
+    1,
+    32,
+  ],
+  "totalPayDayMoney": [
+    18,
+    53,
+    118,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Razor Wind' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 13,
+  "escaped": 0,
+  "flags1": [
+    136,
+    24,
+  ],
+  "frames": 44,
+  "ledger": [
+    "hide",
+    "anim:175:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:MadeWhirlwindText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Roar escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 58,
+  "ledger": [
+    "syncPlayer",
+    "anim:46:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:RanAwayScaredText",
+    "S26",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Skull Bash' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 130,
+  "escaped": 0,
+  "flags1": [
+    136,
+    24,
+  ],
+  "frames": 44,
+  "ledger": [
+    "hide",
+    "anim:175:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:LoweredItsHeadText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Sky Attack' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 143,
+  "escaped": 0,
+  "flags1": [
+    136,
+    24,
+  ],
+  "frames": 38,
+  "ledger": [
+    "hide",
+    "anim:175:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:SkyAttackGlowingText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Solarbeam' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 76,
+  "escaped": 0,
+  "flags1": [
+    136,
+    24,
+  ],
+  "frames": 44,
+  "ledger": [
+    "hide",
+    "anim:175:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:TookInSunlightText",
+    "S20",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Teleport escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 63,
+  "ledger": [
+    "syncPlayer",
+    "anim:100:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:RanFromBattleText",
+    "S31",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'Whirlwind escape' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 1,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 57,
+  "ledger": [
+    "syncPlayer",
+    "anim:18:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "S20",
+    "text:WasBlownAwayText",
+    "S25",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'non-charge Dig fallback' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 1,
+  "escaped": 0,
+  "flags1": [
+    136,
+    24,
+  ],
+  "frames": 38,
+  "ledger": [
+    "hide",
+    "anim:175:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:ChargeMoveEffectText",
+    "S12",
+    "suffix:DugAHoleText",
+    "S14",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'trainer failed Teleport' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;
+
+exports[`real turn printer side 1 > 'trainer unaffected' complete frame/RNG/text ledger 1`] = `
+{
+  "charge": 93,
+  "escaped": 0,
+  "flags1": [
+    136,
+    8,
+  ],
+  "frames": 74,
+  "ledger": [
+    "S50",
+    "text:IsUnaffectedText",
+    "S24",
+    "textDone",
+  ],
+  "payDayMoney": [
+    81,
+    82,
+    83,
+  ],
+  "totalPayDayMoney": [
+    18,
+    52,
+    86,
+  ],
+}
+`;

@@ -8,6 +8,7 @@ import { readPlayerMonCurHPAndStatus } from './battle_loaders';
 import { handlePoisonBurnLeechSeed, checkNumAttacksLeft } from './battle_residual';
 import { drawHuds, hudContext } from './battle_hud_state';
 import { executePlayerMove, executeEnemyMove, type ExecutePorts } from './battle_execute';
+import { bindEntryBattleScreen } from './battle_screen_binding';
 import type { BattleActionContext, BattleActionHost, MoveMenuHost, Program } from './battle_menu_context';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 
@@ -20,11 +21,13 @@ export interface TurnPorts extends ExecutePorts {
   switchEnemyMon(state: BattleState): Program;
 }
 
-/** Loops through complete turns and menu cancellations; the caller owns the returned exit label. */
+/** pret core.asm:289-475. Loops through complete turns and menu cancellations; the caller owns the returned exit label.
+ * Binds the host's screen before the turn's first read or presentation (note 69 §10.4 item 0). */
 export function* mainInBattleLoop(
   state: BattleState, ctx: BattleActionContext, host: TurnHost, ports: TurnPorts, trainer?: TrainerMoveSelection,
 ): Program<TurnExit> {
   const screen = host.screen;
+  bindEntryBattleScreen(state, screen);
   const residualPorts = { animation: ports.animation, drawHuds: () => drawHuds(state, screen) };
   for (;;) {
     readPlayerMonCurHPAndStatus(state);

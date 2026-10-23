@@ -985,6 +985,17 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       owns the stat arithmetic's remaining questions and the trainer AI's bodies.
     - Gen 1 bugs in these routines are kept, including the division-by-zero freeze (note 68 §11.15, answer 1).
 
+78. **Codex implements A5c3c, planned in note 69** (2026-10-21). *The user, asking Claude to plan the next slice:
+    "codex will implement".*
+
+    - A5c3c (the move effects) is planned in `notes/69-a5c3c-effects.md`: seven checkpoints. 01 is a trace with no
+      code, 02–06 port the handler families, and 07 composes the `jumpMoveEffect` port and the retirement map. Its §7
+      supersedes note 68 §11.35 as the checkpoint-01 brief.
+    - This amends #75's "Grok implements" for A5c3c. Claude checks each checkpoint, as before.
+    - Claude's call in the plan (§3.1): checkpoint-02 ports Yellow's `Func_78e98` frames inside the shared
+      `playMoveAnimation` helper, which changes the frame counts in A5c3b's checked ledgers. `MoveAnimation` itself
+      stays a presentation port.
+
 ## Open — not decided, needs the user
 
 

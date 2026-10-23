@@ -168,13 +168,26 @@ function writeScaled(state: BattleState, addr: number, shifts: number): void {
 }
 
 /**
+ * pret core.asm:6463-6466.
  * Nonzero hWhoseTurn penalizes the player. Zero penalizes the enemy.
  * ToPlayer stores 1 and ToEnemy stores 0, so each routine hits the side it is named for.
  */
 function applyPenalties(state: BattleState): void {
+  quarterSpeedDueToParalysis(state);
+  halveAttackDueToBurn(state);
+}
+
+/** pret core.asm:6468-6509. Penalize the non-acting side, without changing hWhoseTurn. */
+export function quarterSpeedDueToParalysis(state: BattleState): void {
   const player = state.hWhoseTurn !== 0;
   const status = player ? state.wBattleMonStatus : state.wEnemyMonStatus;
   if ((status & PAR) !== 0) writeScaled(state, player ? A.wBattleMonSpeed : A.wEnemyMonSpeed, 2);
+}
+
+/** pret core.asm:6511-6548. Penalize the non-acting side, minimum one Attack point. */
+export function halveAttackDueToBurn(state: BattleState): void {
+  const player = state.hWhoseTurn !== 0;
+  const status = player ? state.wBattleMonStatus : state.wEnemyMonStatus;
   if ((status & BRN) !== 0) writeScaled(state, player ? A.wBattleMonAttack : A.wEnemyMonAttack, 1);
 }
 

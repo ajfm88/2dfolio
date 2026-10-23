@@ -2,6 +2,7 @@
 // VBlank order follows home/vblank.asm:28–40: BG third, video copy, OAM DMA, then the TextBox tick.
 import { textBgTransfer } from '../text/bg_transfer';
 import type { TextBox } from '../text/textbox';
+import { delayFrames, type Program } from './battle_menu_context';
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../menus/screen_tiles';
 import { charToTile } from '../text/charmap';
 import {
@@ -76,6 +77,25 @@ function throughRegister(base: readonly Rgb[], register: number): Rgb[] {
 }
 
 interface VideoCopy { write: (index: number) => void; next: number; total: number }
+export interface BattleScreenBuffer2 {
+  saveScreenTilesToBuffer2(): void;
+  loadScreenTilesFromBuffer2(): void;
+}
+const stateScreens = new WeakMap<object, BattleScreen>();
+/** pret animations.asm:599-617: one presentation owner for a battle, including headless Programs. */
+export function battleScreenFor(state: object): BattleScreen {
+  let screen = stateScreens.get(state);
+  if (!screen) { screen = new BattleScreen(); stateScreens.set(state, screen); }
+  return screen;
+}
+/** pret home/tilemap.asm:9-28; note 69 section 10.4 item 0: inspect without creating a lazy screen. */
+export function boundBattleScreenFor(state: object): BattleScreen | undefined {
+  return stateScreens.get(state);
+}
+/** pret home/tilemap.asm:9-28: associate the active host with its existing screen/Buffer 2. */
+export function bindBattleScreen(state: object, screen: BattleScreen): void {
+  stateScreens.set(state, screen);
+}
 
 export class BattleScreen {
   bgp = 0xe4;
@@ -85,6 +105,8 @@ export class BattleScreen {
   wx = 7;
   /** hWY. $90 hides the window below the screen. */
   wy = 0;
+  /** pret init_battle.asm:104-117: transfer into the shown BG1 window by default. */
+  transferDestination: 0x98 | 0x9c = 0x9c;
   scx = 0;
   scy = 0;
   /** Whole-scanline SCX for LY 64–95. Null uses scx on every line. */
@@ -96,6 +118,7 @@ export class BattleScreen {
   private readonly logical: BattleCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
   private readonly shown: BattleCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
   private readonly background: BattleCell[] = Array(BG_COLUMNS * BG_ROWS).fill(' ');
+  private buffer2: readonly BattleCell[] = this.cells;
   private readonly front: (BattlePicSlot | null)[] = Array(49).fill(null);
   private readonly back: (BattlePicSlot | null)[] = Array(49).fill(null);
   private readonly hud: (BattleHudSlot | null)[] = Array(0x7f - 0x62 + 1).fill(null);
@@ -178,6 +201,36 @@ export class BattleScreen {
     yield* this.paletteFrames();
   }
 
+  /** pret animations.asm:599-617,2770-2775; home/copy2.asm:226-239, tilemap.asm:9-28.
+   * ClearScreen and both destination writes each include Delay3, plus the enabled BG0 Delay3.
+   * BG0 is the backdrop exposed by wy; the renderer's shown window always reads BG1.
+   */
+  *refreshAfterAnimation(buffers: BattleScreenBuffer2 = this): Program {
+    buffers.saveScreenTilesToBuffer2();
+    textBgTransfer.enabled = false;
+    this.logical.fill(' ');
+    yield* delayFrames(3);
+    this.transferDestination = 0x98;
+    yield* delayFrames(3);
+    textBgTransfer.enabled = true;
+    yield* delayFrames(3);
+    textBgTransfer.enabled = false;
+    buffers.loadScreenTilesFromBuffer2(); // This CPU copy enables automatic transfers again.
+    this.transferDestination = 0x9c;
+    yield* delayFrames(3);
+    textBgTransfer.enabled = true;
+  }
+
+  /** pret home/tilemap.asm:9-13. Shared by the existing host port and Func_78e98. */
+  saveScreenTilesToBuffer2(): void { this.buffer2 = this.cells; }
+
+  /** pret home/tilemap.asm:15-28. Restore CPU tiles and leave automatic transfers enabled. */
+  loadScreenTilesFromBuffer2(): void {
+    textBgTransfer.enabled = false;
+    this.buffer2.forEach((cell, index) => { this.logical[index] = cell; });
+    textBgTransfer.enabled = true;
+  }
+
   /**
    * One serviced VBlank. Throws during the palette hold so a frame program cannot
    * sneak a BG third, an OAM DMA or a TextBox tick through a discarded interrupt.
@@ -190,7 +243,12 @@ export class BattleScreen {
     if (third !== null) {
       const rowsPerThird = 6;
       const start = third * rowsPerThird * SCREEN_WIDTH;
-      for (let index = 0; index < rowsPerThird * SCREEN_WIDTH; index++) this.shown[start + index] = this.logical[start + index];
+      for (let index = 0; index < rowsPerThird * SCREEN_WIDTH; index++) {
+        const source = start + index;
+        if (this.transferDestination === 0x98) {
+          this.background[Math.floor(source / SCREEN_WIDTH) * BG_COLUMNS + source % SCREEN_WIDTH] = this.logical[source];
+        } else this.shown[source] = this.logical[source];
+      }
     }
     if (this.copying) {
       const end = Math.min(this.copying.total, this.copying.next + 8);

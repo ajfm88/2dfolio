@@ -97,7 +97,7 @@ describe('disobedience random decisions in cartridge order', () => {
   it('disobedient self-hit uses the shared fake math/application and does not cancel multi-turn flags', () => {
     const r = traded(); r.s.wPlayerBattleStatus1 = 0x73; r.s.wPlayerMoveEffect = 0x2b;
     r.rolls(0xa0, 10, 0x82); // third swap40 => self-hit.
-    expect(r.run().frames).toEqual(Array(3).fill('serviced'));
+    expect(r.run().frames).toEqual(Array(15).fill('serviced'));
     expect(r.events).toEqual(['random:160', 'random:10', 'random:130', 'text:WontObeyText', 'text:HurtItselfText',
       'calc:0', 'anim:1:1', 'hud:1', 'apply:0']);
     expect(r.s.wPlayerBattleStatus1).toBe(0x73); expect(r.s.wMonIsDisobedient).toBe(0);
@@ -168,6 +168,6 @@ describe('256 actual-draw retry guards', () => {
     const r = traded(); r.rolls(0xa0, 10, 0x82);
     r.ports.calculateSelfHit = function* () { yield 'held'; };
     r.ports.applySelfHit = function* () { yield 'session'; };
-    expect(r.run().frames).toEqual(['held', 'serviced', 'serviced', 'serviced', 'session']);
+    expect(r.run().frames).toEqual(['held', 'serviced', 'serviced', 'serviced', ...Array(12).fill('serviced'), 'session']);
   });
 });

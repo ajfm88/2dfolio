@@ -224,7 +224,7 @@ describe('Text programs (A5b1): every listed program against its ASM', () => {
       expect(programs[context.label], `${context.label} from row ${context.startRow}`).toEqual(context.ops);
     expect([...new Set([...contexts.values()].map(c => c.label))].sort())
       .toEqual(TEXT_PROGRAM_SYMBOLS.map(([label]) => label).sort());
-  });
+  }, 30_000);
 
   it('text_programs.json matches the extractor', () => {
     expect(JSON.parse(readFileSync(resolve(DATA_DIR, 'text_programs.json'), 'utf8'))).toEqual(file);

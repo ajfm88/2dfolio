@@ -20,6 +20,26 @@ imports from `main.ts` to keep all 14 A5c3b ports outside the running graph (not
 The player reloads the move before checking CHARGING_UP; the enemy release supplies the MOVE_NAME list
 index/type/bank to `getName`, which writes NamedObjectIndex and loads the name before the string copy.
 
+**A5c3c move effects (in progress; checkpoints 01–06 checked by Claude 2026-10-22; note 69).** `battle_effects.ts`
+holds the 86-entry `MOVE_EFFECT_POINTERS` and `jumpMoveEffect`. That throws on `$00`, the seven `NULL`s and an
+unregistered label, and returns `b = 1`. Handlers come from per-family factories keyed by wrapper label:
+- `statusEffectHandlers` (`battle_effects_status.ts`);
+- `statEffectHandlers` (`battle_effects_stats.ts`);
+- `turnEffectHandlers` (`battle_effects_turns.ts`);
+- `hpEffectHandlers` (`battle_effects_hp.ts`).
+
+Each handler is `(state) => Program`. Every effects animation runs Yellow's `Func_78e98`:
+- **12 frames.** The blank goes to the hidden BG0 only.
+- It's owned by `BattleScreen` (`refreshAfterAnimation`).
+- Core `playMoveAnimation` adds its own `Delay3` first.
+
+`MoveAnimation`, the doll hide / reshow, `AnimationSubstitute` and `AnimationTransformMon` stay CPU-only ports until
+A5e.
+
+Entry Programs bind their screen through `battle_screen_binding.ts`, so a refresh can't land on a lazily created
+screen. The stat names come from the generated `data/stat_mod_text.json` (raw bytes, EVADE's overrun included).
+Checkpoint-07 composes every id through `executePlayerMove` / `executeEnemyMove`.
+
 **A5c3a state and plumbing (complete, checked by Claude 2026-10-20; note 68 §11.13).** `battle_state.ts` owns WRAM cells and the menu
 views; `battle_loaders.ts` loads battle copies and writes party data at the cartridge's specific points.
 `battle_random.ts` and `battle_math.ts` provide RNG, stats, damage-result and move-selection ports; the upstream
@@ -234,33 +254,58 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 
 | File | LOC | Purpose |
 |------|-----|---------|
-| `battle.ts` | 2333 | Main battle state machine |
-| `battle_ui.ts` | 822 | HUD, action menu, trainer intros |
-| `effects.ts` | 1051 | Move effects (stat changes, screens, leech seed, etc.) |
+| `battle.ts` | 2442 | Main battle state machine |
+| `battle_ui.ts` | 808 | HUD, action menu, trainer intros |
+| `effects.ts` | 1013 | Move effects (stat changes, screens, leech seed, etc.) |
 | `damage.ts` | 328 | Damage formula, type effectiveness |
-| `status.ts` | 250 | Sleep, freeze, burn, paralysis, poison |
+| `status.ts` | 254 | Sleep, freeze, burn, paralysis, poison |
 | `experience.ts` | 169 | XP gain, leveling |
-| `data.ts` | 157 | JSON data loading |
-| `types.ts` | 134 | TypeScript interfaces |
-| `trainer_ai.ts` | 213 | Trainer move selection |
-| `trainer_flow.ts` | 164 | V1c: meet/victory music choice, end-text pages, win/loss step lists, pic scroll, trainer pic names |
+| `data.ts` | 171 | JSON data loading |
+| `types.ts` | 135 | TypeScript interfaces |
+| `trainer_ai.ts` | 219 | Trainer move selection |
+| `trainer_flow.ts` | 166 | V1c: meet/victory music choice, end-text pages, win/loss step lists, pic scroll, trainer pic names |
 | `catch.ts` | 105 | Catch rate formula |
 | `catch_demo.ts` | 111 | V1d: the catch demo's rules and step list (old man + Oak's Pikachu) |
 | `catch_demo_screen.ts` | 626 | V1d: runs and draws the catch demo (was `pikachu/pikachu_battle.ts`) |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
 | `volatiles.ts` | 77 | Substitute, confusion, etc. |
 | `run.ts` | 57 | Wild battle escape logic (Gen 1 TryRunningFromBattle) |
-| `encounter.ts` | 45 | Wild encounter selection |
-| `battle_screen.ts` | 270 | A5c1: `BattleScreen`. The `wTileMap` window on the shared BG thirds, a 32 × 32 BG with SCX and the LY 64–95 split, pic slots, the battle's $62–$7F tiles, OAM, BGP/OBP, `setPalBattle` (2 held + 3 frames). **Unused until A5c3** |
+| `encounter.ts` | 70 | Wild encounter selection |
+| `battle_screen.ts` | 328 | A5c1: `BattleScreen`. The `wTileMap` window on the shared BG thirds, a 32 × 32 BG with SCX and the LY 64–95 split, pic slots, the battle's $62–$7F tiles, OAM, BGP/OBP, `setPalBattle` (2 held + 3 frames). **Unused until A5c3** |
 | `battle_screen_render.ts` | 202 | A5c1: the pure renderer, 160 × 144 RGBA. Tile index → BGP → the cell's attribute palette; OBJ through the current OBP; CGB priority |
 | `battle_attributes.ts` | 29 | A5c1: `BGMapAttributes_Battle` (2f:6960) as ROM-tested constants |
 | `battle_hud.ts` | 186 | A5c1: `DrawPlayerHUDAndHPBar` / `DrawEnemyHUDAndHPBar`, `CenterMonName`, status priority. Returns the palette request and the alarm result. **Unused until A5c3** |
 | `battle_tiles.ts` | 13 | A5c2: TileSurface over BattleScreen, preserving numeric cells and explicit opaque clears |
-| `battle_menu_context.ts` | 120 | A5c2: raw move/action context specializations, frame generators and injected ports |
+| `battle_menu_context.ts` | 122 | A5c2: raw move/action context specializations, frame generators and injected ports |
 | `move_selection_menu.ts` | 183 | A5c2: battle/Mimic/PP-item move choice, byte PP/disabled state and swaps |
-| `battle_menu.ts` | 210 | A5c2: DisplayBattleMenu, ordered HUD/palette/alarm composition, bag/item tails and RUN |
+| `battle_menu.ts` | 223 | A5c2: DisplayBattleMenu, ordered HUD/palette/alarm composition, bag/item tails and RUN |
 | `battle_menu_screen.ts` | 36 | A5c2: logical Buffer1/2 and standalone PrintText commit/dismiss owner |
 | `battle_party_menu.ts` | 138 | A5c2 CP5: choose-only party hand-off, retained submenu/refusal text, status reload and switch/quit tails; null for redisplay; unused until A5c3 |
+| `battle_state.ts` | 580 | A5c3a: `BattleState`, one cell per WRAM address with the ASM names as accessors (`A`); A5c2's contexts as views. **Unused until A5c3f** |
+| `battle_loaders.ts` | 428 | A5c3a: `LoadBattleMonFromParty` / `LoadEnemyMonData`, the write-back points, the burn/paralysis penalties and badge boosts. **Unused until A5c3f** |
+| `battle_random.ts` | 22 | A5c3a: the `BattleRandom` seam (seeded, injectable DIV; link list). **Unused until A5c3f** |
+| `battle_math.ts` | 166 | A5c3a: stat-modifier ratios, `SelectEnemyMove` bands, trainer move choice, the Metronome pick. **Unused until A5c3f** |
+| `battle_arithmetic.ts` | 98 | A5c3b: the shared Multiply / Divide. **Unused until A5c3f** |
+| `battle_host.ts` | 50 | A5c3a: the Program host (serviced / held / session frames). **Unused until A5c3f** |
+| `battle_move_data.ts` | 112 | A5c3b: move records, `GetCurrentMove`, `GetName`, the move-name buffer. **Unused until A5c3f** |
+| `battle_turn_text.ts` | 58 | A5c3b: the used-move text and its grammar. **Unused until A5c3f** |
+| `battle_turn_status.ts` | 172 | A5c3b: both status checks, self-confusion, `playMoveAnimation`. **Unused until A5c3f** |
+| `battle_obedience.ts` | 75 | A5c3b: `CheckForDisobedience`. **Unused until A5c3f** |
+| `battle_residual.ts` | 84 | A5c3b: `HandlePoisonBurnLeechSeed`, `CheckNumAttacksLeft`. **Unused until A5c3f** |
+| `battle_hp.ts` | 48 | A5c3b: `UpdateHPBar2` / `UpdateCurMonHPBar` on the battle state. **Unused until A5c3f** |
+| `battle_hud_state.ts` | 35 | A5c3b: HUD drawing from `BattleState` (`drawHuds`, `hudContext`). **Unused until A5c3f** |
+| `battle_damage_asm.ts` | 397 | A5c3b: the damage chain from the ASM (crit, damage vars, `CalculateDamage`, type, random range; #77). **Unused until A5c3f** |
+| `battle_hit.ts` | 88 | A5c3b: `MoveHitTest` / `CalcHitChance`, Counter. **Unused until A5c3f** |
+| `battle_apply.ts` | 153 | A5c3b: `ApplyAttackTo*` / `ApplyDamageTo*`, Substitute damage, the failure / crit / effectiveness texts. **Unused until A5c3f** |
+| `battle_execute_helpers.ts` | 98 | A5c3b: the six effect arrays, ghost text, Explosion, Rage, Mirror Move, Metronome. **Unused until A5c3f** |
+| `battle_execute.ts` | 211 | A5c3b: `ExecutePlayerMove` / `ExecuteEnemyMove`; effects through the `jumpMoveEffect` port (A5c3c). **Unused until A5c3f** |
+| `battle_turn.ts` | 111 | A5c3b: `MainInBattleLoop`, returning its exit label. **Unused until A5c3f** |
+| `battle_screen_binding.ts` | 11 | A5c3c: entry Programs bind their screen, and throw on a different one (note 69 §10.4 item 0). **Unused until A5c3f** |
+| `battle_effects.ts` | 200 | A5c3c: `MOVE_EFFECT_POINTERS` (86) and `jumpMoveEffect` (`b = 1`), `CheckTargetSubstitute`, `ClearHyperBeam`, the animation helpers with Yellow's 12-frame refresh, the failure printers. **Unused until A5c3f** |
+| `battle_effects_status.ts` | 207 | A5c3c: Sleep, Poison, Freeze / Burn / Paralyze + the fire thaw, Paralyze, Confusion, Flinch, Leech Seed. **Unused until A5c3f** |
+| `battle_effects_stats.ts` | 225 | A5c3c: stat up / down (`PrintStatText`, Minimize, Rage's direct call), Haze, Mist, Focus Energy, Reflect / Light Screen. **Unused until A5c3f** |
+| `battle_effects_turns.ts` | 190 | A5c3c: Explode, Pay Day, Bide, Thrash, Switch / Teleport, multi-hit, OHKO, Charge, Trapping, Hyper Beam, Rage. **Unused until A5c3f** |
+| `battle_effects_hp.ts` | 114 | A5c3c: Drain / Dream Eater, Recoil, Heal / Rest, Substitute (checkpoint-06b adds Transform, Conversion, Mimic, Disable, Splash). **Unused until A5c3f** |
 
 **A5c1 (note 66, DECISIONS #72)** built these, plus the battle text programs in `text_programs.json`, `UpdateHPBar`
 both ways in `menus/hp_bar.ts`, and the low-health alarm (`audio/low_health_alarm.ts`). Today's battle still runs on

@@ -1,0 +1,381 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`real volatile printer side 0 > focus complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 68,
+  "ledger": [
+    "anim:116:0",
+    "S12",
+    "text:GettingPumpedText",
+    "S56",
+    "textDone",
+  ],
+  "pauseYields": [
+    30,
+  ],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > focusFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > haze complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    95,
+    112,
+    120,
+  ],
+  "frames": 51,
+  "ledger": [
+    "anim:114:0",
+    "S12",
+    "text:StatusChangesEliminatedText",
+    "S39",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    126,
+    120,
+    248,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > lightScreen complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 69,
+  "ledger": [
+    "anim:113:0",
+    "S12",
+    "text:LightScreenProtectedText",
+    "S57",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > mist complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 40,
+  "ledger": [
+    "anim:54:0",
+    "S12",
+    "text:ShroudedInMistText",
+    "S28",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > mistFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 22,
+  "ledger": [
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > reflect complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 35,
+  "ledger": [
+    "anim:115:0",
+    "S12",
+    "text:ReflectGainedArmorText",
+    "S23",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 0 > screenFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > focus complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 73,
+  "ledger": [
+    "anim:116:0",
+    "S12",
+    "text:GettingPumpedText",
+    "S61",
+    "textDone",
+  ],
+  "pauseYields": [
+    30,
+  ],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > focusFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > haze complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    95,
+    112,
+    120,
+  ],
+  "frames": 51,
+  "ledger": [
+    "anim:114:0",
+    "S12",
+    "text:StatusChangesEliminatedText",
+    "S39",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    126,
+    120,
+    248,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > lightScreen complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 74,
+  "ledger": [
+    "anim:113:0",
+    "S12",
+    "text:LightScreenProtectedText",
+    "S62",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > mist complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 45,
+  "ledger": [
+    "anim:54:0",
+    "S12",
+    "text:ShroudedInMistText",
+    "S33",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > mistFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 22,
+  "ledger": [
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > reflect complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 40,
+  "ledger": [
+    "anim:115:0",
+    "S12",
+    "text:ReflectGainedArmorText",
+    "S28",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;
+
+exports[`real volatile printer side 1 > screenFailure complete frame/RNG/text ledger 1`] = `
+{
+  "enemy": [
+    223,
+    247,
+    127,
+  ],
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "pauseYields": [],
+  "player": [
+    254,
+    255,
+    255,
+  ],
+}
+`;

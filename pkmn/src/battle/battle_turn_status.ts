@@ -3,6 +3,7 @@ import { A, type BattleState } from './battle_state';
 import { copyMoveNameToStringBuffer, getMoveName, moveNameBinding } from './battle_move_data';
 import { delayFrames, type Program } from './battle_menu_context';
 import type { BattleTurnTextHost } from './battle_turn_text';
+import { battleScreenFor } from './battle_screen';
 
 export type BattleSide = 0 | 1;
 export type StatusContinuation = 'normal'
@@ -13,7 +14,7 @@ export type StatusContinuation = 'normal'
   | 'PlayerCanExecuteMove' | 'EnemyCanExecuteMove';
 
 export interface StatusPorts {
-  /** Interior MoveAnimation + Func_78e98 only; CPU-only until presentation is ported. */
+  /** MoveAnimation only; CPU-only until presentation is ported. */
   animation(state: BattleState): Program;
   /** GetDamageVarsFor{Player,Enemy}Attack + CalculateDamage, no crit/type/range/hit test. */
   calculateSelfHit(state: BattleState, side: BattleSide): Program;
@@ -37,11 +38,12 @@ const SIDE = [
     defense: A.wEnemyMonDefense, oppositeDefense: A.wBattleMonDefense },
 ] as const;
 
-/** core.asm:6820–6825. CPU ID write precedes Delay3; the injected interior owns any further frames. */
+/** pret core.asm:6820-6825. Delay3, MoveAnimation port, then Func_78e98's 12 serviced frames. */
 export function* playMoveAnimation(state: BattleState, ports: Pick<StatusPorts, 'animation'>, id: number): Program {
   state.wAnimationID = id;
   yield* delayFrames(3);
   yield* ports.animation(state);
+  yield* battleScreenFor(state).refreshAfterAnimation();
 }
 
 /** core.asm:3843–3885 /5957–5997. Power/type stay changed; only effect and opposite defense restore. */

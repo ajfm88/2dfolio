@@ -13,6 +13,7 @@ import { applyAttackToEnemyPokemon, applyAttackToPlayerPokemon, applyDamageToEne
   printMoveFailureText, printCriticalOHKOText, displayEffectiveness, type ApplyPorts } from './battle_apply';
 import { drawPlayerHud, drawEnemyHud } from './battle_hud_state';
 import type { BattleScreen } from './battle_screen';
+import { bindEntryBattleScreen } from './battle_screen_binding';
 import { delayFrames, type Program } from './battle_menu_context';
 import { EXECUTE_EFFECTS, isInEffectArray, swapPlayerAndEnemyLevels, printGhostText, handleExplodingAnimation,
   handleBuildingRage, mirrorMoveCopyMove, executeMetronome, type ExecutePresentation } from './battle_execute_helpers';
@@ -198,9 +199,13 @@ function* executeMove(
   }
 }
 
+/** pret core.asm:3244-3450; note 69 section 10.4 item 0: bind the actual presentation screen. */
 export function executePlayerMove(state: BattleState, screen: BattleScreen, host: BattleTurnTextHost, ports: ExecutePorts): Program<ExecuteResult> {
+  bindEntryBattleScreen(state, screen);
   return executeMove(state, screen, host, ports, true);
 }
+/** pret core.asm:5639-5856; note 69 section 10.4 item 0: reject a conflicting screen before executing. */
 export function executeEnemyMove(state: BattleState, screen: BattleScreen, host: BattleTurnTextHost, ports: ExecutePorts): Program<ExecuteResult> {
+  bindEntryBattleScreen(state, screen);
   return executeMove(state, screen, host, ports, false);
 }

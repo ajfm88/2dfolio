@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 2411/2411** as of 2026-10-20 (A5c3a CP3). No-ROM **2206 pass / 205 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 4397/4397** as of 2026-10-22 (A5c3c checkpoint-06). No-ROM **4189 pass / 208 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -248,7 +248,16 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-3514 tests in 157 files (vitest, `environment: 'node'`); without ROM, 3308 pass / 206 skip.
+4397 tests in 165 files (vitest, `environment: 'node'`); without ROM, 4189 pass / 208 skip.
+
+**A5c3c checkpoints 02–06** (2026-10-21/22, note 69 §9.9–§9.14, each checked in §10) add 883 tests, all for unused
+modules: `battle/battle_effects.test.ts` (the 86-entry dispatch with its ROM table test, the shared helpers and the
+12-frame refresh), `battle/battle_screen_binding.test.ts` (entry-screen binding and the BG0 blank),
+`battle/battle_effects_status.test.ts`, `battle/battle_effects_stats.test.ts`, `battle/battle_effects_stats_volatile.test.ts`,
+`battle/battle_effects_turns.test.ts`, `battle/battle_effects_hp.test.ts` and `rom/__tests__/stat_mod_text.test.ts`.
+Each pins both sides with frame / RNG / text ledgers and real-printer snapshots. Earlier tests changed only where the
+note authorized it: +12 frames per animation (checkpoint-02), the macro test's 30 s timeout (checkpoint-03), the
+unused-module guard, and the factory key lists.
 
 **A5c3b checkpoint-07** adds 90 no-ROM whole-turn tests and 90 call/frame/RNG/audio ledgers in
 `battle/battle_turn.test.ts`. Real packed/wild loaders, menus, text runner, HUD, selector, execution and

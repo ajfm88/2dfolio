@@ -74,7 +74,7 @@ for (const side of [0, 1] as const) describe(`residual actor${side}, core.asm:47
     const out = r.run();
     // 100->90 and90->80 of160: 3 pixels each, 10 player number steps + final number.
     // Enemy: 6 pixel frames +5 tail; player:10 +6 +6. Opponent heal100->110 same costs.
-    expect(out.frames).toEqual(Array(side === 0 ? 61 : 50).fill('serviced'));
+    expect(out.frames).toEqual(Array(side === 0 ? 85 : 74).fill('serviced'));
     expect(r.events).toEqual([`HurtByPoisonText:${side}:100:100`, `anim:186:${side}:0:100`,
       `anim:71:${side ^ 1}:0:90`, `HurtByLeechSeedText:${side}:80:110`]);
   });

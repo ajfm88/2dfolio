@@ -1,0 +1,777 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`real stat printer side 0 > downLimit includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 23,
+  "ledger": [
+    "hit",
+    "R0",
+    "text:NothingHappenedText:0",
+    "S23",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 0 > fell includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    105,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 40,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:14:6",
+    "S12",
+    "text:MonsStatsFellText:0",
+    "S19",
+    "suffix:FellText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 6,
+}
+`;
+
+exports[`real stat printer side 0 > greatlyFell includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    80,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 87,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:14:6",
+    "S12",
+    "text:MonsStatsFellText:0",
+    "S19",
+    "suffix:GreatlyFellText:ATTACK",
+    "S56",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 6,
+}
+`;
+
+exports[`real stat printer side 0 > greatlyRose includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 82,
+  "ledger": [
+    "anim:14:0",
+    "S12",
+    "badge",
+    "text:MonsStatsRoseText:0",
+    "S14",
+    "suffix:GreatlyRoseText:ATTACK",
+    "S56",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    1,
+    64,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 0 > minimize includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 34,
+  "ledger": [
+    "hide",
+    "anim:107:0",
+    "S12",
+    "show",
+    "badge",
+    "text:MonsStatsRoseText:0",
+    "S13",
+    "suffix:RoseText:EVADE",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 0 > miss includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 22,
+  "ledger": [
+    "hit",
+    "R255",
+    "text:ButItFailedText:0",
+    "S22",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 0 > rage includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    240,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 61,
+  "ledger": [
+    "text:BuildingRageText:1",
+    "S33",
+    "textDone",
+    "text:MonsStatsRoseText:1",
+    "S19",
+    "suffix:RoseText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    100,
+    0,
+    200,
+    0,
+    50,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 0 > rose includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 35,
+  "ledger": [
+    "anim:14:0",
+    "S12",
+    "badge",
+    "text:MonsStatsRoseText:0",
+    "S14",
+    "suffix:RoseText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    240,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 0 > secondary includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    105,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 28,
+  "ledger": [
+    "R0",
+    "text:MonsStatsFellText:0",
+    "S19",
+    "suffix:FellText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 0 > upLimit includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 23,
+  "ledger": [
+    "text:NothingHappenedText:0",
+    "S23",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 0,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 1 > downLimit includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 23,
+  "ledger": [
+    "R64",
+    "hit",
+    "R0",
+    "text:NothingHappenedText:1",
+    "S23",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 1 > fell includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 35,
+  "ledger": [
+    "R64",
+    "hit",
+    "R0",
+    "anim:14:3",
+    "S12",
+    "badge",
+    "text:MonsStatsFellText:1",
+    "S14",
+    "suffix:FellText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    105,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 3,
+}
+`;
+
+exports[`real stat printer side 1 > greatlyFell includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 82,
+  "ledger": [
+    "R64",
+    "hit",
+    "R0",
+    "anim:14:3",
+    "S12",
+    "badge",
+    "text:MonsStatsFellText:1",
+    "S14",
+    "suffix:GreatlyFellText:ATTACK",
+    "S56",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    80,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 3,
+}
+`;
+
+exports[`real stat printer side 1 > greatlyRose includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    1,
+    64,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 87,
+  "ledger": [
+    "anim:14:0",
+    "S12",
+    "text:MonsStatsRoseText:1",
+    "S19",
+    "suffix:GreatlyRoseText:ATTACK",
+    "S56",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 1 > minimize includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 39,
+  "ledger": [
+    "hide",
+    "anim:107:0",
+    "S12",
+    "show",
+    "text:MonsStatsRoseText:1",
+    "S18",
+    "suffix:RoseText:EVADE",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 1 > miss includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 22,
+  "ledger": [
+    "R64",
+    "hit",
+    "R255",
+    "text:ButItFailedText:1",
+    "S22",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 1 > rage includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    100,
+    0,
+    200,
+    0,
+    50,
+    0,
+    200,
+  ],
+  "frames": 51,
+  "ledger": [
+    "text:BuildingRageText:0",
+    "S28",
+    "textDone",
+    "badge",
+    "text:MonsStatsRoseText:0",
+    "S14",
+    "suffix:RoseText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    1,
+    14,
+    0,
+    225,
+    0,
+    225,
+    0,
+    225,
+  ],
+  "turn": 1,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 1 > rose includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    240,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 40,
+  "ledger": [
+    "anim:14:0",
+    "S12",
+    "text:MonsStatsRoseText:1",
+    "S19",
+    "suffix:RoseText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 0,
+}
+`;
+
+exports[`real stat printer side 1 > secondary includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 23,
+  "ledger": [
+    "R64",
+    "R0",
+    "badge",
+    "text:MonsStatsFellText:1",
+    "S14",
+    "suffix:FellText:ATTACK",
+    "S9",
+    "textDone",
+    "quarter",
+    "halve",
+  ],
+  "playerStats": [
+    0,
+    105,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 99,
+}
+`;
+
+exports[`real stat printer side 1 > upLimit includes all printer and refresh frames 1`] = `
+{
+  "enemyStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "frames": 23,
+  "ledger": [
+    "text:NothingHappenedText:1",
+    "S23",
+    "textDone",
+  ],
+  "playerStats": [
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+    0,
+    200,
+  ],
+  "turn": 1,
+  "type": 99,
+}
+`;

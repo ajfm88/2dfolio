@@ -3,6 +3,7 @@ import { A, type BattleState } from './battle_state';
 import { updateCurMonHPBar, writeHpBarWord } from './battle_hp';
 import { playMoveAnimation } from './battle_turn_status';
 import type { BattleScreen } from './battle_screen';
+import { bindEntryBattleScreen } from './battle_screen_binding';
 import { delayFrames, type Program } from './battle_menu_context';
 import type { BattleTurnTextHost } from './battle_turn_text';
 
@@ -49,9 +50,11 @@ export function* increaseEnemyHP(state: BattleState, screen: BattleScreen, bc: n
   state.hWhoseTurn ^= 1;
 }
 
+/** pret core.asm:479-691; note 69 section 10.4 item 0: bind before any residual presentation. */
 export function* handlePoisonBurnLeechSeed(
   state: BattleState, screen: BattleScreen, host: BattleTurnTextHost, ports: ResidualPorts,
 ): Program<ResidualFlags> {
+  bindEntryBattleScreen(state, screen);
   const player = state.hWhoseTurn === 0;
   const status = player ? state.wBattleMonStatus : state.wEnemyMonStatus;
   if (status & 0x18) {

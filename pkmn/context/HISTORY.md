@@ -15,6 +15,267 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-21 (A5c3c checkpoint-03 checked) — Claude
+
+**Checkpoint-03 passes** (note 69 §10.5). Re-read against `effects.asm:26–381, 1007–1032, 1165–1219`, `paralyze.asm`, `leech_seed.asm` and the constants; every handler matches, including confusion's incoming-A failure test and the player-only freeze recharge clear.
+- **Gates**, one after another: typecheck clean; build `index-Dn4MlLpw.js` (unchanged); ROM **3809/3809**; no-ROM **3602 pass / 207 skip**.
+- **14 mutations of my own**, distinct from Codex's 11: all caught and restored.
+- Restored the original `mainInBattleLoop` doc sentence that item 0 had overwritten (comment only).
+- **The stat family is split:** checkpoint-04 is stat up / down with a new extractor for the stat names (`StatModTextStrings`), Minimize and Rage's direct call; 04b is Haze, Mist, Focus Energy, Reflect / Light Screen. Nine checkpoints now.
+
+**Next:** checkpoint-04 (§10.6; Codex). Local commit only.
+
+### 2026-10-21 (A5c3c checkpoint-03 implemented; awaiting Claude's check) - Codex
+
+Item 0 first: four entry Programs bind/validate their screen, with 13 new tests including the passed-screen
+BG0 refresh; macro-comparison test timeout 30 s. New unused status-effect factory with **219 tests**,
+including 38 real-printer ledgers and both-side branch/RNG/frame pins. **11/11 required mutations caught
+and restored**; note 69 section 9.10 records results. Focused import guard caught an error-class dependency
+in BattleScreen; moved validation into an unused helper before the gates. Gates once, sequentially:
+typecheck/build clean; ROM **3809/3809**, no-ROM **3602 pass / 207 skip**, 160 files. Bundle
+**index-Dn4MlLpw.js**, SHA256 unchanged. Earlier tests changed only for the authorized timeout/guard;
+no production wiring or refs/data/static changes. One local commit; stop for Claude's check.
+**checkpoint-04 not started.**
+
+### 2026-10-21 (A5c3c checkpoint-02 checked) — Claude
+
+Checkpoint-02 passes (note 69 §10.3):
+- the 86-entry table, ROM-tested;
+- the `b = 1` wrapper;
+- the helpers' flags and guards;
+- the 12-frame refresh, step for step against `Func_78e98`, with BG0 never shown;
+- the penalty split;
+- the six cells;
+- the frame-count edits (12 × the animations played).
+
+**Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM **3577/3577**; no-ROM **3370 / 207 skip**.
+
+**Mutations:** 8/8 of mine caught.
+
+**Two items fold into checkpoint-03's item 0:**
+- entry Programs bind their screen (the lazy screen could hide a wiring mistake at A5c3f);
+- the named flake gets a 30 s timeout.
+
+**Next:** checkpoint-03 (§10.4), the status ailments. Local commit only.
+
+### 2026-10-21 (A5c3c checkpoint-02 implemented; awaiting Claude's check) - Codex
+
+Unused dispatch/helpers, the 12-frame BattleScreen refresh with hidden BG0 and restored BG1, six cells/Pay Day
+alias, and exported individual penalties. Note 69 section 9.9 records all 105 snapshot ledgers and explicit
+old -> new frame assertions, plus **10/10 mutations caught/restored**. Build **index-Dn4MlLpw.js** and SHA256
+unchanged. Final ROM **3577/3577**, no-ROM **3370 pass / 207 skip**, 158 files. Initial typecheck found a new-test
+ES2020 Array.at mistake; corrected. First ROM run found one missed authorized HUD frame count plus a named
+text_programs source-comparison timeout; both passed focused diagnosis and ROM retry. No refs/data/static
+or production wiring changes. One local commit only; stopped for Claude. **checkpoint-03 not started.**
+
+### 2026-10-21 (A5c3c checkpoint-01 checked) — Claude
+
+Checkpoint-01 passes (note 69 §10.1). Codex's trace is accurate and corrects my plan in five places, all confirmed in
+the ASM:
+- the refresh is 12 frames;
+- every dispatch returns `b = 1` through `JumpMoveEffect`;
+- Heal's carry-fed compare;
+- Transform's player-side check;
+- Substitute's scratch write.
+
+One slip fixed (the `$51` row). The checkpoint changed docs only, so no gates.
+
+**Answers:**
+- The refresh lives on `BattleScreen` with a BG0/BG1 destination. In battle the window (BG1) is what shows, so the
+  BG0 blank must never reach the screen.
+- 06 / 06b split approved.
+- The 139-row manifest approved.
+- The all-zero loops throw before drawing.
+
+**Next:** checkpoint-02 (§10.2). Local commit only.
+
+### 2026-10-21 (A5c3c checkpoint-01 — trace awaiting Claude's check) — Codex
+
+Traced effects.asm and all 14 move_effects files into **note 69 §9**, answering §7 items 1–7.
+Verified all 86 pointers/six dispatch arrays, 51 text wrappers, and the **139** legacy-test retirement rows.
+Corrections include the **12-frame** refresh (plus core-only 3-frame prefix), wrapper returns, carry-sensitive
+Heal, Transform's broken target check, and simulator disagreements. No code/tests or refs changed; gates not
+re-run (documentation only). One local commit; stopped for Claude's check. **checkpoint-02 not started.**
+
+### 2026-10-21 (A5c3c planned; stale docs fixed) — Claude
+
+Planned A5c3c, the move effects, in **`notes/69-a5c3c-effects.md`**. The user named **Codex** (DECISIONS #78).
+- §1: the dispatch, all 86 ids ($01–$56) → handler, file and line (seven `NULL` ids throw).
+- §3, six findings:
+  - Yellow's `Func_78e98` adds frames after every battle animation (checkpoint-02 ports them);
+  - the Stadium flag `$D498` changes the sleep and freeze rolls;
+  - Transform and Substitute read `wOptions`;
+  - the effects need the penalty routines one at a time;
+  - Pay Day writes the aliased `$CD6D`;
+  - six WRAM cells are missing.
+- §4: 15 cartridge behaviors the tests must pin.
+- §6: seven checkpoints. 01 is the trace, 02 the dispatch and helpers, 03 the ailments, 04 the stats, 05 the
+  multi-turn effects, 06 HP and copying, 07 the composed port and the retirement map.
+- §7: the checkpoint-01 brief, which supersedes note 68 §11.35.
+
+**Docs fixed:**
+- the test counts in STATUS, PROJECT, CONVENTIONS and ARCHITECTURE;
+- ARCHITECTURE's data/static file counts and SFX count;
+- PROJECT's stale A5c3a pointer;
+- `game/src/battle/ARCHITECTURE.md`'s *Key Files* (current LOC, every A5c3 module);
+- the session entries from A5c3b checkpoint-06 fix and earlier, moved to HISTORY.
+
+No code changed; gates not re-run (docs only). **Next:** Codex runs A5c3c checkpoint-01; Claude checks it. Local
+commit only.
+
+### 2026-10-21 (session closed) — Claude
+
+The user stopped for the day; the next session starts with a fresh agent. Context files are up to date:
+- STATUS;
+- CLAUDE.md *Where things stand*;
+- PROJECT *State*;
+- PLAN's A5 row;
+- CONVENTIONS (the checkpoint-07 entry marked checked).
+
+**Resume with A5c3c checkpoint-01**, a trace of the move effects with **no code**, into a new
+`notes/69-a5c3c-effects.md`:
+- The brief is note 68 §11.35.
+- The paste-ready prompt for Codex is in the last Claude turn; rebuild it from §11.35 if lost.
+- Then Claude checks the trace and writes the checkpoint-02 brief.
+
+**How this session ran:** Codex and Grok implemented; Claude did each check, re-running the gates and its own
+mutations, and wrote each next brief. The pattern was brief → implement → check → (fix checkpoint if needed) →
+next brief.
+
+**Baselines:**
+- typecheck clean;
+- bundle `index-Dn4MlLpw.js` (`43dd8163…`), unchanged since A5c3a;
+- ROM **3514/3514**, no-ROM **3308 pass / 206 skip**.
+
+**Carry-overs:**
+- A5c3f must make `BattleState`'s `wLowHealthAlarm` / `wLowHealthAlarmDisabled` delegate to the audio module, or
+  remove them.
+- `a5c3_unused.test.ts` must list every new unused module.
+- The ROM-suite flake (note 69 §10.3), `text_programs.test.ts`'s macro test timing out at vitest's 5 s under load, is fixed: checkpoint-03 gave it a 30 s timeout.
+
+Local commits only.
+
+### 2026-10-20 (A5c3b checkpoint-07 checked; A5c3b complete) — Claude
+
+Checkpoint-07 passes (note 68 §11.34), so **A5c3b is complete**: the whole turn, from `MainInBattleLoop` down, is
+ported and unused.
+- **What I checked:**
+  - the entry checks;
+  - every selection gate and flag mask in ASM order;
+  - the link block (the Metronome-only bug kept);
+  - Quick Attack / Counter priority, the BE speed compare and the tie with its clock inversion;
+  - both action orders with every faint / escape / AI exit;
+  - `CheckNumAttacksLeft` once per turn.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3514/3514; no-ROM 3308 / 206 skip.
+- **Mutations:** 9/9 of mine caught.
+- **Next:** A5c3c (the move effects). Checkpoint-01 is a trace with no code, written into a new note 69 (§11.35).
+
+Local commit only.
+
+
+### 2026-10-20 (A5c3b checkpoint-07 — awaiting Claude's closing check) — Codex
+
+Unused `battle_turn.ts` composes MainInBattleLoop, with explicit exit labels and TrainerAI/link-switch ports.
+90 whole-turn tests / ledgers use packed/wild loaders, real menus/text/HUD/execution/residuals and the audio rig;
+105/105 mutations caught/restored. First typecheck found a missing flag return in the new tracing wrapper;
+fixed and restarted the sequential gates from `game/`: typecheck/build clean, ROM **3514/3514** first run
+(no one-off failure), no-ROM **3308 pass / 206 skip**, 157 files. Bundle `index-Dn4MlLpw.js`, SHA256 unchanged.
+Only earlier-test edit adds the module to the graph guard; no production wiring. Results and later-slice API /
+A5c3f import ownership in note 68 §10.19. One local commit, never pushed. Stopped; Claude's check closes A5c3b.
+
+### 2026-10-20 (A5c3b checkpoint-06 fix checked; checkpoint-06 complete) — Claude
+
+The fix passes (note 68 §11.32).
+- **What I checked:**
+  - the player reload before the charge test;
+  - the shims removed, with the bodies identical to the deleted files;
+  - one import-graph test from `main.ts` in place of the three name guards.
+- **Correction:** my §11.30 item 2 was a false finding. The old name path already wrote all four bytes; the new
+  code is equivalent.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3424/3424; no-ROM 3218 / 206 skip.
+- **Mutations:** 3/3 of mine caught.
+- **Checkpoint-06 is complete.**
+- **Next:** the checkpoint-07 brief (§11.33), `MainInBattleLoop`, which closes A5c3b.
+
+Local commit only.
+
+### 2026-10-20 (A5c3b checkpoint-06 fix — awaiting Claude's check) — Codex
+
+Implemented §11.31; results and §10.18 corrections in note 68 §10.18a. Player reload before the charge
+test; enemy GetName list index/type/bank inputs and NamedObjectIndex output asserted. Original numeric/hit/apply
+bodies restored, shims deleted; three guards replaced by one main-rooted import-graph test for all 13 ports.
+20/20 mutations caught/restored. Gates once sequentially from checked `game/`: typecheck/build clean,
+ROM **3424/3424** (first run, no one-off failure), no-ROM **3218 pass / 206 skip**, 156 files.
+Bundle `index-Dn4MlLpw.js`, SHA256 `43dd8163…` unchanged. Earlier tests passed unedited except the three
+authorized guards; no production wiring. One local commit, never pushed. Stop for Claude; checkpoint-07 not started.
+
+### 2026-10-20 (A5c3b checkpoint-06 checked: two items and a cleanup) — Claude
+
+Checkpoint-06 is right apart from two small items (note 68 §11.30).
+- **What's right:**
+  - the `{ b, exit }` contract;
+  - the full flow on both sides;
+  - the level swaps;
+  - all six effect tables;
+  - `HandleExplodingAnimation`'s bug kept;
+  - Rage, ghost, Mirror Move / Metronome;
+  - the new WRAM cells.
+- **Item 1, my brief's error, flagged by Codex:** the player calls `GetCurrentMove` before the charge test; only
+  the enemy skips it.
+- **Item 2:** the enemy's charge release must also write `GetName`'s inputs (`wNameListIndex` / `wNameListType` /
+  `wPredefBank`).
+- **Cleanup ruling:** remove the three re-export shims. Replace the three source-name guards with one import-graph
+  test from `main.ts`.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3426/3426; no-ROM 3220 / 206 skip.
+- **Mutations:** 12/12 of mine caught.
+- **Next:** the checkpoint-06 fix (§11.31), then checkpoint-07.
+
+Local commit only.
+
+### 2026-10-20 (A5c3b checkpoint-06 — awaiting Claude's check) — Codex
+
+Unused execution Programs and helpers compose the earlier checkpoints; note 68 §10.18. 260 new no-ROM
+tests, 226 call/frame ledgers, 224/224 mutations caught/restored. Earlier numeric/hit/application bodies
+moved byte-identically behind their stable exports so their guard tests stay unedited. Every existing test
+passed. New fixture tuple typing corrected, then sequential gates passed: typecheck/build clean, ROM
+**3426/3426** (first run, no flake), no-ROM **3220 pass / 206 skip**. Bundle `index-Dn4MlLpw.js`, SHA256
+`43dd8163165da59ada90b520deffda517d47d062a79698d97e1f5cd429da79f1`, unchanged. **Claude: confirm the player
+charging reload discrepancy recorded in §10.18; implementation follows §11.29 as directed.** Local commit
+only. Stop for Claude's check; checkpoint-07 not started. A5c3f alarm carry-over unchanged.
+
+### 2026-10-20 (A5c3b checkpoint-05b checked) — Claude
+
+Checkpoint-05b passes (note 68 §11.28).
+- **What I checked:**
+  - `MoveHitTest` / `CalcHitChance` (including `CheckTargetSubstitute`'s A overwrite and the returned flags);
+  - Counter;
+  - `ApplyAttack*` / `ApplyDamage*` (LE HP-bar byte order, overkill, Psywave asymmetry and freeze);
+  - `AttackSubstitute`;
+  - the failure / crit / effectiveness texts;
+  - the new WRAM addresses;
+  - `battle_arithmetic.ts` moved out unchanged.
+- **Gates**, one after another: build `index-Dn4MlLpw.js` (unchanged); ROM 3166/3166 (no flake); no-ROM 2960 / 206
+  skip.
+- **Mutations:** 14/14 of mine caught.
+- **Next:** the checkpoint-06 brief (§11.29), `ExecutePlayerMove` / `ExecuteEnemyMove`:
+  - the `{ b, exit }` return contract;
+  - the level swaps on every branch;
+  - `HandleExplodingAnimation`'s enemy-side status bug;
+  - `HandleBuildingRage`, the ghost text and the effect arrays.
+
+Local commit only.
+
+### 2026-10-20 (A5c3b checkpoint-05b — awaiting Claude's check) — Codex
+
+Unused `battle_hit.ts` / `battle_apply.ts`: hit/chance, Counter, fixed damage/Psywave, HP application,
+Substitute and failure/crit/effectiveness texts, per §11.27. Results in note 68 §10.17. Shared unchanged
+Multiply/Divide; reused RNG, HP/HUD Programs and text runner. 240 new no-ROM tests, 164/164 mutations
+caught/restored. Every existing test passed unedited. Gates once sequentially from checked `game/`:
+typecheck/build clean, ROM **3166/3166** on first run (no flake), no-ROM **2960 pass / 206 skip**.
+Bundle `index-Dn4MlLpw.js`, SHA256 `43dd8163165da59ada90b520deffda517d47d062a79698d97e1f5cd429da79f1`,
+unchanged. No game imports of the new modules. Local commit only. **Stop for Claude's check;
+checkpoint-06 not started.** A5c3f alarm carry-over unchanged.
+
 ### 2026-10-20 (A5c3b checkpoint-05 fix checked; checkpoint-05 complete) — Claude
 
 The fix passes (note 68 §11.26).

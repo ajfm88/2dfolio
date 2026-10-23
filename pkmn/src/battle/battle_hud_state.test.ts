@@ -121,7 +121,7 @@ it('real HUD supplies checkpoint-03 self-hit drawPlayerHud port with turn still 
     drawPlayerHud: function* (s) { turns.push(s.hWhoseTurn); yield* drawPlayerHud(s, r.screen); },
   }));
   expect(out.result).toBe('ExecutePlayerMoveDone'); expect(turns).toEqual([1]);
-  expect(out.frames).toEqual([...Array(6).fill('serviced'), ...hold]); expect(r.s.hWhoseTurn).toBe(0);
+  expect(out.frames).toEqual([...Array(30).fill('serviced'), ...hold]); expect(r.s.hWhoseTurn).toBe(0);
 });
 
 it.each([0, 1] as const)('BattleHost residual side%i runs committed text, HP bars, HUD, and serviced-only audio/video', side => {

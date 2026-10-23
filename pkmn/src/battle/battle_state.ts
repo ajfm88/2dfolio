@@ -42,6 +42,13 @@ const USING_TRAPPING_MOVE = 1 << 5;
 const HAS_SUBSTITUTE_UP = 1 << 4;
 
 export const A = {
+  // pret ram/wram.asm:624,656,1020,1089,1946,2087; symbols 573535d7.
+  wTotalPayDayMoney: 0xcce5,
+  wPlayerMonMinimized: 0xccf7,
+  wChargeMoveNum: 0xcd3d,
+  wPayDayMoney: 0xcd6d, // Three BCD bytes alias wNameBuffer / wBattleMenuCurrentPP.
+  wOptions: 0xd354,
+  wUnknownSerialFlag_d499: 0xd498,
   wBattleMonSpecies: 0xd013,
   wBattleMonPartyPos: 0xd016,
   wBattleMonStatus: 0xd017,

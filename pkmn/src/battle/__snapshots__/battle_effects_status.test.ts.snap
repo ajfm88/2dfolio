@@ -1,0 +1,631 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`real printer ledgers side 0 > asleep 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 31,
+  "ledger": [
+    "text:AlreadyAsleepText",
+    "S31",
+    "textDone",
+  ],
+  "status": 3,
+}
+`;
+
+exports[`real printer ledgers side 0 > burn 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 38,
+  "ledger": [
+    "R0",
+    "halve",
+    "anim:169:0",
+    "S12",
+    "text:BurnedText",
+    "S26",
+    "textDone",
+  ],
+  "status": 16,
+}
+`;
+
+exports[`real printer ledgers side 0 > confusion 1`] = `
+{
+  "flags1": 128,
+  "flags2": 0,
+  "frames": 43,
+  "ledger": [
+    "hit",
+    "R0",
+    "R2",
+    "anim:47:6",
+    "S12",
+    "text:BecameConfusedText",
+    "S31",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > confusionFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 16,
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > confusionSide 1`] = `
+{
+  "flags1": 128,
+  "flags2": 0,
+  "frames": 31,
+  "ledger": [
+    "R0",
+    "R2",
+    "text:BecameConfusedText",
+    "S31",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > defrost 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 30,
+  "ledger": [
+    "text:FireDefrostedText",
+    "S30",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > flinch 1`] = `
+{
+  "flags1": 8,
+  "flags2": 0,
+  "frames": 0,
+  "ledger": [
+    "R0",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > freeze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 44,
+  "ledger": [
+    "R0",
+    "anim:169:0",
+    "S12",
+    "text:FrozenText",
+    "S32",
+    "textDone",
+  ],
+  "status": 32,
+}
+`;
+
+exports[`real printer ledgers side 0 > ground 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 82,
+  "ledger": [
+    "S50",
+    "text:DoesntAffectMonText",
+    "S32",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > paralyze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 99,
+  "ledger": [
+    "hit",
+    "R0",
+    "quarter",
+    "S30",
+    "anim:47:0",
+    "S12",
+    "text:ParalyzedMayNotAttackText",
+    "S57",
+    "textDone",
+  ],
+  "status": 64,
+}
+`;
+
+exports[`real printer ledgers side 0 > paralyzeMiss 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 81,
+  "ledger": [
+    "hit",
+    "R255",
+    "S50",
+    "text:DidntAffectText",
+    "S31",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > poison 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 40,
+  "ledger": [
+    "R0",
+    "anim:169:6",
+    "S12",
+    "text:PoisonedText",
+    "S28",
+    "textDone",
+  ],
+  "status": 8,
+}
+`;
+
+exports[`real printer ledgers side 0 > poisonFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 16,
+  "frames": 81,
+  "ledger": [
+    "S50",
+    "text:DidntAffectText",
+    "S31",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > secondaryParalyze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 69,
+  "ledger": [
+    "R0",
+    "quarter",
+    "anim:169:0",
+    "S12",
+    "text:ParalyzedMayNotAttackText",
+    "S57",
+    "textDone",
+  ],
+  "status": 64,
+}
+`;
+
+exports[`real printer ledgers side 0 > seed 1`] = `
+{
+  "flags1": 0,
+  "flags2": 128,
+  "frames": 38,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:47:0",
+    "S12",
+    "text:WasSeededText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > seedFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 79,
+  "ledger": [
+    "hit",
+    "R0",
+    "S50",
+    "text:EvadedAttackText",
+    "S29",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > sleep 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 39,
+  "ledger": [
+    "hit",
+    "R0",
+    "R2",
+    "anim:47:6",
+    "S12",
+    "text:FellAsleepText",
+    "S27",
+    "textDone",
+  ],
+  "status": 2,
+}
+`;
+
+exports[`real printer ledgers side 0 > sleepMiss 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 31,
+  "ledger": [
+    "hit",
+    "R255",
+    "text:DidntAffectText",
+    "S31",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 0 > toxic 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 43,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:92:6",
+    "S12",
+    "text:BadlyPoisonedText",
+    "S31",
+    "textDone",
+  ],
+  "status": 8,
+}
+`;
+
+exports[`real printer ledgers side 1 > asleep 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 26,
+  "ledger": [
+    "text:AlreadyAsleepText",
+    "S26",
+    "textDone",
+  ],
+  "status": 3,
+}
+`;
+
+exports[`real printer ledgers side 1 > burn 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 33,
+  "ledger": [
+    "R0",
+    "halve",
+    "anim:199:3",
+    "S12",
+    "text:BurnedText",
+    "S21",
+    "textDone",
+  ],
+  "status": 16,
+}
+`;
+
+exports[`real printer ledgers side 1 > confusion 1`] = `
+{
+  "flags1": 128,
+  "flags2": 0,
+  "frames": 38,
+  "ledger": [
+    "hit",
+    "R0",
+    "R2",
+    "anim:47:3",
+    "S12",
+    "text:BecameConfusedText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > confusionFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 16,
+  "frames": 72,
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > confusionSide 1`] = `
+{
+  "flags1": 128,
+  "flags2": 0,
+  "frames": 26,
+  "ledger": [
+    "R0",
+    "R2",
+    "text:BecameConfusedText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > defrost 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 25,
+  "ledger": [
+    "text:FireDefrostedText",
+    "S25",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > flinch 1`] = `
+{
+  "flags1": 8,
+  "flags2": 0,
+  "frames": 0,
+  "ledger": [
+    "R0",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > freeze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 39,
+  "ledger": [
+    "R0",
+    "anim:199:3",
+    "S12",
+    "text:FrozenText",
+    "S27",
+    "textDone",
+  ],
+  "status": 32,
+}
+`;
+
+exports[`real printer ledgers side 1 > ground 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 77,
+  "ledger": [
+    "S50",
+    "text:DoesntAffectMonText",
+    "S27",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > paralyze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 94,
+  "ledger": [
+    "hit",
+    "R0",
+    "quarter",
+    "S30",
+    "anim:47:0",
+    "S12",
+    "text:ParalyzedMayNotAttackText",
+    "S52",
+    "textDone",
+  ],
+  "status": 64,
+}
+`;
+
+exports[`real printer ledgers side 1 > paralyzeMiss 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 76,
+  "ledger": [
+    "hit",
+    "R255",
+    "S50",
+    "text:DidntAffectText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > poison 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 35,
+  "ledger": [
+    "R0",
+    "anim:199:3",
+    "S12",
+    "text:PoisonedText",
+    "S23",
+    "textDone",
+  ],
+  "status": 8,
+}
+`;
+
+exports[`real printer ledgers side 1 > poisonFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 16,
+  "frames": 76,
+  "ledger": [
+    "S50",
+    "text:DidntAffectText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > secondaryParalyze 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 64,
+  "ledger": [
+    "R0",
+    "quarter",
+    "anim:199:3",
+    "S12",
+    "text:ParalyzedMayNotAttackText",
+    "S52",
+    "textDone",
+  ],
+  "status": 64,
+}
+`;
+
+exports[`real printer ledgers side 1 > seed 1`] = `
+{
+  "flags1": 0,
+  "flags2": 128,
+  "frames": 33,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:47:0",
+    "S12",
+    "text:WasSeededText",
+    "S21",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > seedFail 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 74,
+  "ledger": [
+    "hit",
+    "R0",
+    "S50",
+    "text:EvadedAttackText",
+    "S24",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > sleep 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 34,
+  "ledger": [
+    "hit",
+    "R0",
+    "R2",
+    "anim:47:3",
+    "S12",
+    "text:FellAsleepText",
+    "S22",
+    "textDone",
+  ],
+  "status": 2,
+}
+`;
+
+exports[`real printer ledgers side 1 > sleepMiss 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 26,
+  "ledger": [
+    "hit",
+    "R255",
+    "text:DidntAffectText",
+    "S26",
+    "textDone",
+  ],
+  "status": 0,
+}
+`;
+
+exports[`real printer ledgers side 1 > toxic 1`] = `
+{
+  "flags1": 0,
+  "flags2": 0,
+  "frames": 38,
+  "ledger": [
+    "hit",
+    "R0",
+    "anim:92:3",
+    "S12",
+    "text:BadlyPoisonedText",
+    "S26",
+    "textDone",
+  ],
+  "status": 8,
+}
+`;

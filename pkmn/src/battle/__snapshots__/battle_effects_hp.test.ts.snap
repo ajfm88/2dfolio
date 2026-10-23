@@ -1,0 +1,3443 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HP effects side 0 > Drain > damage+0 HP10/40 ->11 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 9,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    11,
+    0,
+    11,
+    0,
+    1,
+    0,
+    11,
+  ],
+  "ledger": [
+    "bar:10->11/40:1@10,9",
+    "S9",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage1 HP10/40 ->11 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 9,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    11,
+    0,
+    11,
+    0,
+    1,
+    0,
+    11,
+  ],
+  "ledger": [
+    "bar:10->11/40:1@10,9",
+    "S9",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage8 HP40/40 ->40 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    0,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:40->40/40:1@10,9",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage9 HP10/40 ->14 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 18,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    0,
+    14,
+  ],
+  "ledger": [
+    "bar:10->14/40:1@10,9",
+    "S18",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage10 HP38/40 ->40 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 14,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "bar:38->40/40:1@10,9",
+    "S14",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage20 HP65530/65535 ->65535 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    5,
+  ],
+  "frames": 13,
+  "held": 0,
+  "hpBar": [
+    255,
+    255,
+    255,
+    255,
+    255,
+    255,
+    1,
+    255,
+    255,
+  ],
+  "ledger": [
+    "bar:65530->65535/65535:1@10,9",
+    "S13",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Drain > damage259 HP10/300 ->139 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    129,
+  ],
+  "frames": 182,
+  "held": 2,
+  "hpBar": [
+    44,
+    1,
+    139,
+    0,
+    139,
+    0,
+    1,
+    0,
+    139,
+  ],
+  "ledger": [
+    "bar:10->139/300:1@10,9",
+    "S177",
+    "barDone",
+    "hudPlayer",
+    "H2",
+    "S3",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest at full HP fails before sleep or its text 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status0 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:StartedSleepingEffect",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status5 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status8 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status16 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status32 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > Rest previous status64 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 175,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > carry test HP1/256 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Heal > carry test HP1/512 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Heal > carry test HP40/40 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Heal > carry test HP45/300 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Heal > move105 HP+0/255 ->127 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    127,
+  ],
+  "frames": 194,
+  "held": 2,
+  "hpBar": [
+    255,
+    0,
+    127,
+    0,
+    127,
+    0,
+    1,
+    0,
+    127,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:0->127/255:1@10,9",
+    "S177",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > move105 HP10/40 ->30 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 91,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    0,
+    30,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/40:1@10,9",
+    "S74",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > move105 HP10/41 ->30 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 91,
+  "held": 2,
+  "hpBar": [
+    41,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    0,
+    30,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/41:1@10,9",
+    "S74",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > move135 HP30/40 ->40 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 52,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "anim:135:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:30->40/40:1@10,9",
+    "S40",
+    "barDone",
+    "huds",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Heal > zero move still heals and resets type but skips animation/refresh 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 79,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    0,
+    30,
+  ],
+  "ledger": [
+    "bar:10->30/40:1@10,9",
+    "S74",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage+0 move36 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 11,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    0,
+    9,
+  ],
+  "ledger": [
+    "bar:10->9/40:1@10,9",
+    "S11",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage+0 move165 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 11,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    0,
+    9,
+  ],
+  "ledger": [
+    "bar:10->9/40:1@10,9",
+    "S11",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage3 move36 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 11,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    0,
+    9,
+  ],
+  "ledger": [
+    "bar:10->9/40:1@10,9",
+    "S11",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage9 move36 HP10 ->8 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 14,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    8,
+    0,
+    8,
+    0,
+    255,
+    0,
+    8,
+  ],
+  "ledger": [
+    "bar:10->8/40:1@10,9",
+    "S14",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage9 move165 HP10 ->6 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 20,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    6,
+    0,
+    6,
+    0,
+    255,
+    0,
+    6,
+  ],
+  "ledger": [
+    "bar:10->6/40:1@10,9",
+    "S20",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage40 move36 HP10 ->+0 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 38,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    255,
+    0,
+    0,
+  ],
+  "ledger": [
+    "bar:10->0/40:1@10,9",
+    "S38",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Recoil > damage80 move36 HP10 ->+0 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 38,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    255,
+    0,
+    0,
+  ],
+  "ledger": [
+    "bar:10->0/40:1@10,9",
+    "S38",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 1,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP+0/3 cost+0 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP10/40 cost10 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 67,
+  "held": 2,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP10/1024 cost+0 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP10/1028 cost1 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP20/41 cost10 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > HP255/1023 cost255 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 67,
+  "held": 2,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > already present waits50 first, then HasSubstituteText, without scratch/HP/HUD/animation writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:HasSubstituteText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > animations-off options128 uses direct CPU port with no refresh and no type reset 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > animations-off options255 uses direct CPU port with no refresh and no type reset 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 0 > Substitute > insufficient HP waits50 and leaves only the cost scratch write before TooWeakSubstituteText 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:TooWeakSubstituteText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage+0 HP10/40 ->11 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 7,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    11,
+    0,
+    11,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->11/40:0@2,2",
+    "S7",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage1 HP10/40 ->11 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 7,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    11,
+    0,
+    11,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->11/40:0@2,2",
+    "S7",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage8 HP40/40 ->40 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    0,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:40->40/40:0@2,2",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage9 HP10/40 ->14 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 13,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->14/40:0@2,2",
+    "S13",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage10 HP38/40 ->40 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 11,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:38->40/40:0@2,2",
+    "S11",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage20 HP65530/65535 ->65535 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    5,
+  ],
+  "frames": 7,
+  "held": 0,
+  "hpBar": [
+    255,
+    255,
+    255,
+    255,
+    255,
+    255,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:65530->65535/65535:0@2,2",
+    "S7",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Drain > damage259 HP10/300 ->139 leaves halved wDamage and syncs player after both real HUDs 1`] = `
+{
+  "difference": [
+    0,
+    129,
+  ],
+  "frames": 52,
+  "held": 2,
+  "hpBar": [
+    44,
+    1,
+    139,
+    0,
+    139,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->139/300:0@2,2",
+    "S47",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "H2",
+    "S3",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest at full HP fails before sleep or its text 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status0 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:StartedSleepingEffect",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status5 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status8 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status16 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status32 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > Rest previous status64 waits first, writes2, prints before HP/bar changes, preserves toxic/penalties/roster 1`] = `
+{
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 144,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > carry test HP1/256 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Heal > carry test HP1/512 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Heal > carry test HP40/40 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Heal > carry test HP45/300 fails with wait50 then unconditional printer, no writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Heal > move105 HP+0/255 ->127 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    127,
+  ],
+  "frames": 66,
+  "held": 2,
+  "hpBar": [
+    255,
+    0,
+    127,
+    0,
+    127,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:0->127/255:0@2,2",
+    "S49",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > move105 HP10/40 ->30 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 70,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/40:0@2,2",
+    "S53",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > move105 HP10/41 ->30 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 70,
+  "held": 2,
+  "hpBar": [
+    41,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/41:0@2,2",
+    "S53",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > move135 HP30/40 ->40 uses half max, type0 refresh, real bar then HUDs 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 41,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:135:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:30->40/40:0@2,2",
+    "S29",
+    "barDone",
+    "huds",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Heal > zero move still heals and resets type but skips animation/refresh 1`] = `
+{
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 58,
+  "held": 2,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->30/40:0@2,2",
+    "S53",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage+0 move36 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 9,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->9/40:0@2,2",
+    "S9",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage+0 move165 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 9,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->9/40:0@2,2",
+    "S9",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage3 move36 HP10 ->9 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    1,
+  ],
+  "frames": 9,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    9,
+    0,
+    9,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->9/40:0@2,2",
+    "S9",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage9 move36 HP10 ->8 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 11,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    8,
+    0,
+    8,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->8/40:0@2,2",
+    "S11",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage9 move165 HP10 ->6 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 15,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    6,
+    0,
+    6,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->6/40:0@2,2",
+    "S15",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage40 move36 HP10 ->+0 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 27,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->0/40:0@2,2",
+    "S27",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Recoil > damage80 move36 HP10 ->+0 leaves Damage/rosters/HUDs alone 1`] = `
+{
+  "difference": [
+    0,
+    10,
+  ],
+  "frames": 27,
+  "held": 0,
+  "hpBar": [
+    40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->0/40:0@2,2",
+    "S27",
+    "barDone",
+    "text:HitWithRecoilText",
+  ],
+  "type": 0,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP+0/3 cost+0 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP10/40 cost10 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 67,
+  "held": 2,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP10/1024 cost+0 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP10/1028 cost1 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP20/41 cost10 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > HP255/1023 cost255 accepts equality/zero and pins one-byte truncation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 67,
+  "held": 2,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > already present waits50 first, then HasSubstituteText, without scratch/HP/HUD/animation writes 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:HasSubstituteText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > animations-off options128 uses direct CPU port with no refresh and no type reset 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > animations-off options255 uses direct CPU port with no refresh and no type reset 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "huds",
+    "hudsDone",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`HP effects side 1 > Substitute > insufficient HP waits50 and leaves only the cost scratch write before TooWeakSubstituteText 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:TooWeakSubstituteText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'Dream Eater' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 4,
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hp": 14,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    0,
+    14,
+  ],
+  "ledger": [
+    "bar:10->14/40:1@10,9",
+    "S18",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:DreamWasEatenText",
+    "S32",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 0 > 'Heal failure' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 72,
+  "held": 0,
+  "hp": 40,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'Recover' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 117,
+  "held": 2,
+  "hp": 30,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    0,
+    30,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/40:1@10,9",
+    "S74",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S26",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 0 > 'Rest healthy' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 225,
+  "held": 2,
+  "hp": 40,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:StartedSleepingEffect",
+    "S24",
+    "textDone",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S26",
+    "textDone",
+  ],
+  "status": 2,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 0 > 'Rest statused' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 251,
+  "held": 2,
+  "hp": 40,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    0,
+    40,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "S50",
+    "textDone",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:1@10,9",
+    "S108",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S26",
+    "textDone",
+  ],
+  "status": 2,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 0 > 'Substitute off' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 79,
+  "held": 0,
+  "hp": 10,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "S29",
+    "textDone",
+    "huds",
+    "hudsDone",
+  ],
+  "status": 16,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'Substitute present' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 77,
+  "held": 0,
+  "hp": 20,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:HasSubstituteText",
+    "S27",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'Substitute weak' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 85,
+  "held": 0,
+  "hp": 9,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:TooWeakSubstituteText",
+    "S35",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'Substitute' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 91,
+  "held": 0,
+  "hp": 10,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "S29",
+    "textDone",
+    "huds",
+    "hudsDone",
+  ],
+  "status": 16,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 0 > 'drain' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 4,
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 52,
+  "held": 0,
+  "hp": 14,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    0,
+    14,
+  ],
+  "ledger": [
+    "bar:10->14/40:1@10,9",
+    "S18",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+    "S34",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 0 > 'recoil' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 41,
+  "held": 0,
+  "hp": 8,
+  "hpBar": [
+    40,
+    0,
+    8,
+    0,
+    8,
+    0,
+    255,
+    0,
+    8,
+  ],
+  "ledger": [
+    "bar:10->8/40:1@10,9",
+    "S14",
+    "barDone",
+    "text:HitWithRecoilText",
+    "S27",
+    "textDone",
+  ],
+  "status": 16,
+  "type": 1,
+}
+`;
+
+exports[`real HP printer side 1 > 'Dream Eater' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 4,
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 40,
+  "held": 0,
+  "hp": 14,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->14/40:0@2,2",
+    "S13",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:DreamWasEatenText",
+    "S27",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 0,
+}
+`;
+
+exports[`real HP printer side 1 > 'Heal failure' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 72,
+  "held": 0,
+  "hp": 40,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+    "S22",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 1 > 'Recover' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    20,
+  ],
+  "frames": 101,
+  "held": 2,
+  "hp": 30,
+  "hpBar": [
+    40,
+    0,
+    30,
+    0,
+    30,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->30/40:0@2,2",
+    "S53",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S31",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 0,
+}
+`;
+
+exports[`real HP printer side 1 > 'Rest healthy' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 204,
+  "held": 2,
+  "hp": 40,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:StartedSleepingEffect",
+    "S29",
+    "textDone",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S31",
+    "textDone",
+  ],
+  "status": 2,
+  "type": 0,
+}
+`;
+
+exports[`real HP printer side 1 > 'Rest statused' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    30,
+  ],
+  "frames": 230,
+  "held": 2,
+  "hp": 40,
+  "hpBar": [
+    40,
+    0,
+    40,
+    0,
+    40,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:FellAsleepBecameHealthyText",
+    "S55",
+    "textDone",
+    "anim:156:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "bar:10->40/40:0@2,2",
+    "S77",
+    "barDone",
+    "huds",
+    "H2",
+    "S3",
+    "hudsDone",
+    "text:RegainedHealthText",
+    "S31",
+    "textDone",
+  ],
+  "status": 2,
+  "type": 0,
+}
+`;
+
+exports[`real HP printer side 1 > 'Substitute off' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 79,
+  "held": 0,
+  "hp": 10,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "animationSubstitute",
+    "text:SubstituteText",
+    "S29",
+    "textDone",
+    "huds",
+    "hudsDone",
+  ],
+  "status": 64,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 1 > 'Substitute present' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 82,
+  "held": 0,
+  "hp": 20,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:HasSubstituteText",
+    "S32",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 1 > 'Substitute weak' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 85,
+  "held": 0,
+  "hp": 9,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:TooWeakSubstituteText",
+    "S35",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 1 > 'Substitute' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 91,
+  "held": 0,
+  "hp": 10,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "anim:164:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:SubstituteText",
+    "S29",
+    "textDone",
+    "huds",
+    "hudsDone",
+  ],
+  "status": 64,
+  "type": 145,
+}
+`;
+
+exports[`real HP printer side 1 > 'drain' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 4,
+  "difference": [
+    0,
+    4,
+  ],
+  "frames": 42,
+  "held": 0,
+  "hp": 14,
+  "hpBar": [
+    40,
+    0,
+    14,
+    0,
+    14,
+    0,
+    1,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->14/40:0@2,2",
+    "S13",
+    "barDone",
+    "hudPlayer",
+    "hudPlayerDone",
+    "hudEnemy",
+    "hudEnemyDone",
+    "syncPlayer",
+    "text:SuckedHealthText",
+    "S29",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 0,
+}
+`;
+
+exports[`real HP printer side 1 > 'recoil' complete bar/HUD/text/frame ledger 1`] = `
+{
+  "damage": 8,
+  "difference": [
+    0,
+    2,
+  ],
+  "frames": 43,
+  "held": 0,
+  "hp": 8,
+  "hpBar": [
+    40,
+    0,
+    8,
+    0,
+    8,
+    0,
+    255,
+    235,
+    52,
+  ],
+  "ledger": [
+    "bar:10->8/40:0@2,2",
+    "S11",
+    "barDone",
+    "text:HitWithRecoilText",
+    "S32",
+    "textDone",
+  ],
+  "status": 64,
+  "type": 0,
+}
+`;
