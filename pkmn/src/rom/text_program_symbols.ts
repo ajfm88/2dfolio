@@ -13,6 +13,9 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  // A5c3d checkpoint-03; home/trainers.asm:374-379, data/text/text_1.asm:16-19.
+  ["TrainerEndBattleText", 0x00, 0x336B, true],
+  ["_TrainerNameText", 0x26, 0x4045, false],
   ["AccessedOaksPCText", 0x07, 0x62DF, true],
   ["GetDexRatedText", 0x07, 0x62D4, true],
   ["ClosedOaksPCText", 0x07, 0x62D9, true],

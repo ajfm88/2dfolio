@@ -160,6 +160,7 @@ export function createPokemon(
     spdDV,
     spcDV,
     exp,
+    statExp: [0, 0, 0, 0, 0],
     sleepTurns: 0,
     toxicCounter: 0,
     badlyPoisoned: false,

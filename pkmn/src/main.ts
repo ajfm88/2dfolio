@@ -227,6 +227,7 @@ function deserializeBoxed(boxed: BoxedPokemon): BattlePokemon | null {
   mon.currentHp = boxed.currentHp;
   mon.status = boxed.status;
   mon.exp = boxed.exp;
+  mon.statExp = boxed.statExp ? [...boxed.statExp] : [0, 0, 0, 0, 0];
   mon.moves = boxed.moves.map(m => ({ id: m.id, pp: m.pp, maxPp: m.maxPp }));
   mon.otName = boxed.otName ?? '';
   mon.otId = boxed.otId ?? 0;

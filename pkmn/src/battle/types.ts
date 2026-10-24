@@ -35,6 +35,9 @@ export interface BattleMove {
   maxPp: number;
 }
 
+/** Party bytes 17–26: HP, attack, defense, speed, special (five unsigned words). */
+export type StatExperience = [number, number, number, number, number];
+
 export interface BattlePokemon {
   species: PokemonSpecies;
   nickname: string;
@@ -55,6 +58,7 @@ export interface BattlePokemon {
   spcDV: number;
   // Experience
   exp: number;
+  statExp: StatExperience;
   // Status tracking
   sleepTurns: number;    // 1-7 turns remaining (0 = not asleep)
   toxicCounter: number;  // increments each turn when badly poisoned

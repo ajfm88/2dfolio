@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 4397/4397** as of 2026-10-22 (A5c3c checkpoint-06). No-ROM **4189 pass / 208 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 4676/4676** as of 2026-10-22 (A5c3d checkpoint-04). No-ROM **4458 pass / 218 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -248,7 +248,33 @@ Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that add
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
 
-4397 tests in 165 files (vitest, `environment: 'node'`); without ROM, 4189 pass / 208 skip.
+**`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
+(the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
+
+4676 tests in 174 files (vitest, `environment: 'node'`); without ROM, 4458 pass / 218 skip.
+
+**A5c3d checkpoint-04** (2026-10-22, note70 §9.7) adds46 no-ROM cases:
+`battle/battle_end_helpers.test.ts` (25), `battle/battle_slides.test.ts` (11), `battle/battle_two_option.test.ts` (10).
+Covers pinned cell aliases/whole clear spans, flags/raw HP results, real NoWillText, identity/HP gates and all
+happiness/mood boundaries, owner alarm/voice-prefix ledgers, two-copy HUD,7/7/14 copies, real slides/BG phases,
+menu defaults/B/restore/hold/input/sound suppression. Exactly17 earlier cases lose4 HUD frames, including one
+composed Poke Doll snapshot; list and old/new totals in note70 and commit body. Twenty-one mutations caught
+and restored. Ordered gates pass; bundle unchanged. Checked by Claude (note 70 §9.8).
+
+**A5c3d checkpoint-03** (2026-10-22, note 70 §9.5) adds 9 ROM-only cases in
+`rom/__tests__/battle_end_data.test.ts`: Audio2 header/ID/channel pointers, independent ASM macro bytes and
+commands for level_up/faint_fall/faint_thud, end-text FAR/ASM and nameBuffer bytes, full JSON/mirror equality
+and preservation of all prior programs. Exact export/text/preload censuses adapt to the new unused data.
+Eight mutations caught/restored; one additional mode-flag mutation is equivalent for this payload. Setup twice
+identical, all final gates pass, bundle unchanged. Checked by Claude (note 70 §9.6).
+
+**A5c3d checkpoint-02** (2026-10-22, note 70 §9.3) adds 35: `battle/battle_calc_stats.test.ts` (17),
+`battle/battle_calc_experience.test.ts` (10, one ROM-only), `stat_experience.test.ts` (6), `main.test.ts` (+2).
+Covers all stat-exp root boundaries, unchanged b0 results, five stat words/cap999, six raw growth rows and
+underflows, old save/box defaults, copies, unchanged EXP resets, evolution/SWITCH tuple retention and raw
+OT/EXP/stat-exp bytes + mirror. Earlier assertions and snapshots unchanged; allowed literal builders and
+unused-module guard updated. Twelve temporary mutations caught and restored. Ordered gates all pass;
+new bundle `index-DmUTdeN6.js`. Checked by Claude (note 70 §9.4).
 
 **A5c3c checkpoints 02–06** (2026-10-21/22, note 69 §9.9–§9.14, each checked in §10) add 883 tests, all for unused
 modules: `battle/battle_effects.test.ts` (the 86-entry dispatch with its ROM table test, the shared helpers and the
@@ -258,6 +284,16 @@ modules: `battle/battle_effects.test.ts` (the 86-entry dispatch with its ROM tab
 Each pins both sides with frame / RNG / text ledgers and real-printer snapshots. Earlier tests changed only where the
 note authorized it: +12 frames per animation (checkpoint-02), the macro test's 30 s timeout (checkpoint-03), the
 unused-module guard, and the factory key lists.
+
+**A5c3c checkpoints 06b–07b** (2026-10-22, note 69 §9.15–§9.17, checked in §10.16–§10.20) add 189 tests:
+- Transform, Conversion, Mimic, Disable and Splash in `battle/battle_effects_hp.test.ts`;
+- `battle/battle_effects_composed.test.ts`: the composed registry, all 86 effect ids through execute on both sides, and one `describe` per note 69 §4 bug;
+- `battle/effects_retirement.test.ts`: the 139-row manifest that maps every old `effects.test.ts` case to an ASM-backed replacement, checked against the old file's TypeScript AST;
+- four `retire-L<line>` cases.
+
+Authorized edits to earlier tests:
+- a 30 s timeout on `battle_effects.test.ts`'s BG1-window renderer test, which times out under load;
+- `battle_effects_registry` in the unused-module guard.
 
 **A5c3b checkpoint-07** adds 90 no-ROM whole-turn tests and 90 call/frame/RNG/audio ledgers in
 `battle/battle_turn.test.ts`. Real packed/wild loaders, menus, text runner, HUD, selector, execution and

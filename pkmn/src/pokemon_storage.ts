@@ -1,5 +1,6 @@
 // Shared storage data. The serialization contract is unchanged from BillsPcMenu.
 import type { BattlePokemon } from './battle';
+import type { StatExperience } from './battle/types';
 
 export const NUM_BOXES = 12;
 export const MONS_PER_BOX = 20;
@@ -17,6 +18,7 @@ export interface BoxedPokemon {
   spdDV: number;
   spcDV: number;
   exp: number;
+  statExp?: StatExperience;
   otName?: string;
   otId?: number;
 }
@@ -35,6 +37,7 @@ export function pokemonToBoxed(mon: BattlePokemon): BoxedPokemon {
     spdDV: mon.spdDV,
     spcDV: mon.spcDV,
     exp: mon.exp,
+    statExp: [...mon.statExp],
     otName: mon.otName,
     otId: mon.otId,
   };

@@ -996,6 +996,44 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
       `playMoveAnimation` helper, which changes the frame counts in A5c3b's checked ledgers. `MoveAnimation` itself
       stays a presentation port.
 
+79. **Grok implements A5c3c checkpoint-06b** (2026-10-22). *The user, choosing between planning A5c3d and handing over
+    the checkpoint already briefed: "Give checkpoint-06b to Grok".*
+
+    - This amends #78 for checkpoint-06b only. Codex's brief (note 69 §10.14) stands, and Claude's additions for a fresh
+      implementer are in §10.15, which wins where they differ. Claude checks it, as before. The user names the
+      implementer for checkpoint-07.
+
+80. **Stat experience goes inside A5c3d; Codex implements A5c3d, planned in note 70** (2026-10-22). *The user's answer
+    to O-42 and the implementer question: "1 yes, let's go with ur recommendation. 2., codex".*
+
+    - **O-42:** stat experience is modelled in A5c3d's first implementation checkpoint, after the trace (note 68 §11.7
+      finding 1). Checkpoint-02 adds five stat-exp words to `BattlePokemon`, the save and the box (missing on old saves =
+      zeros), packs them with the OT ID, OT name and EXP into A5c3a's party bytes, and ports `CalcStats` with
+      `b = 1`. It is the one A5c3d checkpoint that touches the running game, and it changes no behaviour: nothing writes
+      the words until A5c3f, and a stat-exp bonus of 0 adds 0.
+    - **Claude's refinement (note 70 §2.2):** storing the party's *stats* in the save, and rewiring withdrawal and
+      evolution to `CalcStats` `b = 1`, wait for A5c3f. Today's live battle writes burn, paralysis, Transform and badge
+      changes into the party objects; a reload wipes them, and storing stats now would keep them. Level-up's call site is
+      A5c3d's, in the unused `GainExperience`.
+    - **The plan** (`notes/70-a5c3d-plan.md`): eight checkpoints (01 the trace, no code; 02 stat experience; 03 the battle
+      SFX, data only; 04 shared plumbing; 05 sending out and switching; 06 EXP, level-up and learning moves; 07 faint,
+      victory and blackout; 08 `EndOfBattle`, the loop driver and the retirement manifests). Cries and Pikachu's clips
+      stay cues (#45, #69). `SFX_LEVEL_UP`, `SFX_FAINT_FALL` and `SFX_FAINT_THUD` are extracted early, as RUN was (#74).
+    - **Codex implements** (this amends #75's "Grok implements" for A5c3d). Claude checks each checkpoint. Commits stay
+      local; no push.
+
+81. **The running game never reads `notes/`; tests may** (2026-10-22). *The user first asked that `notes/` "has nothing to
+    do with the main repo of the game which is in game", then, on seeing that only tests read it: "since it's just for
+    the test files, we can remove that, have it stay in the notes folder … we wont do those 4 files".*
+
+    - `notes/` is development memory: plans, traces, checks, the backlog. Production code, the build and generated data
+      never read it, and nothing in `notes/` ships.
+    - Tests may read fixtures from `notes/`. Four do today: `hp_bar.test.ts`, `low_health_alarm.test.ts` and
+      `battle_hud.test.ts` (the A5c1 paper-model traces in `notes/66-a5c1-cp1/`), and `battle_end_helpers.test.ts`
+      (note 70 §9.1.7's address table). They stay as they are. No move, no guard test.
+    - Caveat: `battle_end_helpers.test.ts` parses note 70's markdown, so rewording §9.1.7's table breaks it. Edit that
+      table only with the test in mind.
+
 ## Open — not decided, needs the user
 
 

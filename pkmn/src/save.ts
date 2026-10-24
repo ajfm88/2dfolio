@@ -2,7 +2,7 @@
 
 import type { Direction } from './core';
 import type { BattlePokemon } from './battle';
-import type { StatusCondition } from './battle/types';
+import type { StatExperience, StatusCondition } from './battle/types';
 import { createPokemon, initExperience } from './battle';
 import { Bag } from './items';
 import type { BoxedPokemon } from './pokemon_storage';
@@ -22,6 +22,7 @@ interface SavedPokemon {
   spdDV: number;
   spcDV: number;
   exp: number;
+  statExp?: StatExperience;
   otName?: string;
   otId?: number;
 }
@@ -68,6 +69,7 @@ function serializePokemon(mon: BattlePokemon): SavedPokemon {
     spdDV: mon.spdDV,
     spcDV: mon.spcDV,
     exp: mon.exp,
+    statExp: [...mon.statExp],
     otName: mon.otName,
     otId: mon.otId,
   };
@@ -86,6 +88,7 @@ function deserializePokemon(saved: SavedPokemon): BattlePokemon | null {
   mon.currentHp = saved.currentHp;
   mon.status = saved.status;
   mon.exp = saved.exp;
+  mon.statExp = saved.statExp ? [...saved.statExp] : [0, 0, 0, 0, 0];
 
   // Restore moves (createPokemon gives default moves; override with saved)
   mon.moves = saved.moves.map(m => ({ id: m.id, pp: m.pp, maxPp: m.maxPp }));

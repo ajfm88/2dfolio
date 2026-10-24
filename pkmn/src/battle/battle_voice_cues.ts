@@ -1,0 +1,19 @@
+import type { Program } from './battle_menu_context';
+import { delayFrames } from './battle_menu_context';
+
+export interface BattleVoiceHost {
+  getAlarm(): number;
+  setAlarm(value: number): void;
+  /** GetCryData/PlaySound and duration remain named presentation cues (J2/04b). */
+  cry(species: number): void;
+  clip(id: number): void;
+}
+/** pret home/pokemon.asm:140-155. Zero-duration declared cry cue, bracketed by the real alarm owner's accessors. */
+export function playCryCue(host: BattleVoiceHost, species: number): void {
+  const alarm = host.getAlarm(); host.setAlarm(0); host.cry(species & 255); host.setAlarm(alarm);
+}
+/** pret audio/pikachu_pcm.asm:1-23,86-93. Three serviced prefix frames, then deferred PCM.
+ * Four post-PCM SFX-ID clears await checkpoint-04b's owner bridge; no second audio cells are allocated here. */
+export function* playPikachuClipCue(host: BattleVoiceHost, id: number): Program {
+  yield* delayFrames(3); host.clip(id & 255);
+}

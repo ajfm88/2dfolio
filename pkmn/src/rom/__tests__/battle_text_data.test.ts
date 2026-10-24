@@ -24,9 +24,10 @@ function preservesA5b(file: TextProgramsFile): void {
 }
 
 it('keeps all 633 committed A5b programs and every map text pointer byte-identical', () => preservesA5b(committed));
-it('adds exactly 360 programs, leaving link-only and evolution texts out', () => {
-  expect(Object.keys(committed.programs)).toHaveLength(993);
-  expect(Object.keys(committed.programs).filter(label => !(label in frozen.programs))).toHaveLength(360);
+it('adds exactly 362 programs, leaving link-only and evolution texts out', () => {
+  // A5c3d checkpoint-03 adds TrainerEndBattleText and _TrainerNameText to the prior 360.
+  expect(Object.keys(committed.programs)).toHaveLength(995);
+  expect(Object.keys(committed.programs).filter(label => !(label in frozen.programs))).toHaveLength(362);
   for (const label of ['LinkBattleLostText', '_LinkBattleLostText', 'YouWinText', 'YouLoseText', 'DrawText',
     'EvolvedText', '_EvolvedText', 'IntoText', '_IntoText', 'StoppedEvolvingText', 'IsEvolvingText']) {
     expect(committed.programs).not.toHaveProperty(label);
@@ -69,17 +70,17 @@ describe.skipIf(!process.env.ROM_PATH)('battle text ROM contract', () => {
     expect(extracted.programs._MoveNameText[0]).toEqual({ op: 'ram', binding: 'stringBuffer' });
     expect(extracted.programs._ExpPointsText[0]).toEqual({ op: 'decimal', binding: 'expAmountGained', bytes: 2, digits: 4 });
   });
-  it('takes all 360 new symbol addresses from pret symbols, without duplicate addresses or labels', () => {
+  it('takes all 362 new symbol addresses from pret symbols, without duplicate addresses or labels', () => {
     const root = resolve(__dirname, '../../../..');
     const sym = execFileSync('git', ['-C', 'refs/pokeyellow', 'show', 'origin/symbols:pokeyellow.sym'],
       { cwd: root, encoding: 'utf8', windowsHide: true });
     const symbols = new Map([...sym.matchAll(/^([\da-f]+):([\da-f]+) (\S+)$/gmi)]
       .map(m => [m[3], [parseInt(m[1], 16), parseInt(m[2], 16)]]));
     const rows = TEXT_PROGRAM_SYMBOLS.filter(([label]) => !(label in frozen.programs));
-    expect(rows).toHaveLength(360);
+    expect(rows).toHaveLength(362);
     for (const [label, bank, address] of rows) expect([bank, address], label).toEqual(symbols.get(label));
-    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([label]) => label)).size).toBe(993);
-    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([, bank, address]) => `${bank}:${address}`)).size).toBe(993);
+    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([label]) => label)).size).toBe(995);
+    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([, bank, address]) => `${bank}:${address}`)).size).toBe(995);
   });
   it.each([
     ['GreatlyRoseText', ['_GreatlyRoseText', '_RoseText']],

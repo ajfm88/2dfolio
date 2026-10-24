@@ -42,6 +42,7 @@ function slot(partial: Partial<PartySlot> = {}): PartySlot {
     species: 1, hp: 40, boxLevel: 7, status: 0, type1: 0x16, type2: 0x17, catchRate: 45,
     moves: [33, 34, 0, 0], dvs: [0x12, 0x34], pp: [10, 20, 0, 0], level: 50,
     maxHp: 80, attack: 70, defense: 60, speed: 40, special: 30, nickname: 'PIKACHU',
+    otId: 0, otName: '', exp: 0, statExp: [0, 0, 0, 0, 0],
     ...partial,
   };
 }
@@ -63,7 +64,7 @@ function mon(level: number, extra: Partial<BattlePokemon> = {}): BattlePokemon {
     nickname: 'PIKA', level, currentHp: 20, maxHp: 24, attack: 18, defense: 14, speed: 20, special: 16,
     moves: [{ id: 'THUNDERSHOCK', pp: 5, maxPp: 30 }],
     statStages: { attack: 0, defense: 0, speed: 0, special: 0, accuracy: 0, evasion: 0 },
-    status: null, atkDV: 9, defDV: 8, spdDV: 8, spcDV: 8, exp: 0, sleepTurns: 0, toxicCounter: 0,
+    status: null, atkDV: 9, defDV: 8, spdDV: 8, spcDV: 8, exp: 0, statExp: [0, 0, 0, 0, 0], sleepTurns: 0, toxicCounter: 0,
     badlyPoisoned: false, volatiles: {} as BattlePokemon['volatiles'],
     originalStats: { attack: 18, defense: 14, speed: 20, special: 16 }, otName: 'RED', otId: 1,
     ...extra,

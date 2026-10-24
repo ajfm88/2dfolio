@@ -2612,6 +2612,1510 @@ exports[`HP effects side 1 > Substitute > insufficient HP waits50 and leaves onl
 }
 `;
 
+exports[`checkpoint-06b effects > Conversion side 0 > copies two target type bytes, then the current-move animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 0 > target INVULNERABLE fails with no copy and no animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 0 > user INVULNERABLE still copies the target types 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 0 > zero move resets type and skips refresh 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 1 > copies two target type bytes, then the current-move animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 1 > target INVULNERABLE fails with no copy and no animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 1 > user INVULNERABLE still copies the target types 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Conversion side 1 > zero move resets type and skips refresh 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ConvertedTypeText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Disable side 0 misses an invulnerable target with no draw 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Disable side 0 spends the hit draw when the target is already disabled 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Disable side 1 misses an invulnerable target with no draw 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Disable side 1 spends the hit draw when the target is already disabled 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Mimic menu ignores B and still writes the saved slot 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 68,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "R0",
+    "getMove:1",
+    "getMove:2",
+    "getMove:3",
+    "getMove:4",
+    "S3",
+    "readJoypad:b",
+    "S3",
+    "readJoypad:a",
+    "pressSound",
+    "restore1",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Mimic menu writes the saved slot after Down then A 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 68,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "R0",
+    "getMove:1",
+    "getMove:2",
+    "getMove:3",
+    "getMove:4",
+    "S3",
+    "readJoypad:down",
+    "S3",
+    "readJoypad:a",
+    "pressSound",
+    "restore1",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Mimic side 0 misses an invulnerable target after 50 frames and no draw 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Mimic side 1 misses an invulnerable target after 50 frames and no draw 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 50,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Splash side 0 > plays the current move and prints No effect 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:NoEffectText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Splash side 0 > zero move resets type, skips refresh, and still prints No effect 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:NoEffectText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Splash side 1 > plays the current move and prints No effect 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:NoEffectText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Splash side 1 > zero move resets type, skips refresh, and still prints No effect 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:NoEffectText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > animated copy 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > animations off 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "animationTransformMon",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > target doll is not hidden 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > user doll around the CPU transform 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "hide",
+    "animationTransformMon",
+    "show",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > user doll around the animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "hide",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 0 > zero move resets type and skips refresh 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > animated copy 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > animations off 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "animationTransformMon",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > target doll is not hidden 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > user doll around the CPU transform 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "hide",
+    "animationTransformMon",
+    "show",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > user doll around the animation 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "hide",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "show",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > Transform side 1 > zero move resets type and skips refresh 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > enemy Disable reads the player PP, redraws a zero raw byte, and packs slot 1 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "R0",
+    "R1",
+    "R0",
+    "anim:105:3",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MoveWasDisabledText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > enemy Mimic rejection-samples the player moves into wEnemyMoveListIndex 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "R0",
+    "R0",
+    "R1",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > enemy turn ignores the user INVULNERABLE bit and does not write wPlayerMoveListIndex 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > link Disable accepts a PP-Up raw byte of 0x80 and reads the enemy PP 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "R0",
+    "R0",
+    "anim:105:6",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MoveWasDisabledText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > link Mimic rejection-samples the enemy moves into wPlayerMoveListIndex 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 62,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "S50",
+    "R0",
+    "R0",
+    "R1",
+    "R2",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > masked-OR zero fails after one accepted draw and does not draw a duration 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "R0",
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > non-link Disable ignores PP, rejects empty slots, and packs the accepted slot 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "R0",
+    "R1",
+    "R2",
+    "R0",
+    "anim:105:6",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MoveWasDisabledText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > player INVULNERABLE fails after zeroing wPlayerMoveListIndex and copies nothing 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "text:ButItFailedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > player turn ignores the target INVULNERABLE bit 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 12,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText",
+  ],
+  "type": 145,
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 0 > ConvertedTypeText names the target side 1`] = `
+{
+  "frames": 46,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText:",
+    "S34",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+Converted type to 
+                  
+Enemy FOE's!      ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 0 > MimicLearnedMoveText names the copied move 1`] = `
+{
+  "frames": 98,
+  "held": 0,
+  "ledger": [
+    "S50",
+    "R0",
+    "R0",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText:POUND",
+    "S36",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+PIKA              
+                  
+learned          ▼
+────────────────────────────────────
+                  
+learned           
+                  
+POUND!           ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 0 > MoveWasDisabledText names the disabled move 1`] = `
+{
+  "frames": 59,
+  "held": 0,
+  "ledger": [
+    "R0",
+    "R0",
+    "R0",
+    "anim:105:6",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MoveWasDisabledText:POUND",
+    "S47",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+Enemy FOE's        
+                  
+POUND was        ▼
+────────────────────────────────────
+                  
+POUND was         
+                  
+disabled!        ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 0 > Splash prints No effect 1`] = `
+{
+  "frames": 28,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:NoEffectText:",
+    "S16",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+No effect!        
+                  
+                 ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 0 > TransformedText names the species and the acting side 1`] = `
+{
+  "frames": 57,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText:DITTO",
+    "S45",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+PIKA              
+                  
+transformed into ▼
+────────────────────────────────────
+                  
+transformed into  
+                  
+DITTO!           ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 1 > ConvertedTypeText names the target side 1`] = `
+{
+  "frames": 41,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:ConvertedTypeText:",
+    "S29",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+Converted type to 
+                  
+PIKA's!           ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 1 > MimicLearnedMoveText names the copied move 1`] = `
+{
+  "frames": 103,
+  "held": 0,
+  "ledger": [
+    "S50",
+    "R0",
+    "R0",
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MimicLearnedMoveText:POUND",
+    "S41",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+Enemy FOE         
+                  
+learned          ▼
+────────────────────────────────────
+                  
+learned           
+                  
+POUND!           ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 1 > MoveWasDisabledText names the disabled move 1`] = `
+{
+  "frames": 54,
+  "held": 0,
+  "ledger": [
+    "R0",
+    "R0",
+    "R0",
+    "anim:105:3",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:MoveWasDisabledText:POUND",
+    "S42",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+PIKA's             
+                  
+POUND was        ▼
+────────────────────────────────────
+                  
+POUND was         
+                  
+disabled!        ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 1 > Splash prints No effect 1`] = `
+{
+  "frames": 28,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:NoEffectText:",
+    "S16",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+No effect!        
+                  
+                 ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > real checkpoint-06b printer side 1 > TransformedText names the species and the acting side 1`] = `
+{
+  "frames": 62,
+  "held": 0,
+  "ledger": [
+    "anim:105:0",
+    "refresh",
+    "S12",
+    "refreshed",
+    "text:TransformedText:DITTO",
+    "S50",
+    "textDone",
+  ],
+  "shown": "──────────────────
+                  
+Enemy FOE         
+                  
+transformed into ▼
+────────────────────────────────────
+                  
+transformed into  
+                  
+DITTO!           ▼
+──────────────────",
+}
+`;
+
+exports[`checkpoint-06b effects > zero move Disable still disables and does not write the animation id or type 1`] = `
+{
+  "difference": [
+    160,
+    233,
+  ],
+  "frames": 0,
+  "held": 0,
+  "hpBar": [
+    236,
+    53,
+    126,
+    199,
+    16,
+    89,
+    162,
+    235,
+    52,
+  ],
+  "ledger": [
+    "R0",
+    "R0",
+    "R0",
+    "text:MoveWasDisabledText",
+  ],
+  "type": 145,
+}
+`;
+
 exports[`real HP printer side 0 > 'Dream Eater' complete bar/HUD/text/frame ledger 1`] = `
 {
   "damage": 4,

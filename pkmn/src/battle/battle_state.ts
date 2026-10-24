@@ -211,8 +211,10 @@ export const A = {
   wEnemyMonAccuracyMod: 0xcd32,
   wEnemyMonEvasionMod: 0xcd33,
   wPartyMons: 0xd16a,
+  wPartyMonOT: 0xd272,
   wPartyMonNicks: 0xd2b4,
   wEnemyMons: 0xd8a3,
+  wEnemyMonOT: 0xd9ab,
   wEnemyMonNicks: 0xd9ed,
   wPlayerName: 0xd157,
   wLinkEnemyTrainerName: 0xd886,
@@ -227,6 +229,11 @@ export const A = {
   wMonHCatchRate: 0xd0bf,
   wMonHBaseEXP: 0xd0c0,
   wMonHMoves: 0xd0c6,
+  wMonHGrowthRate: 0xd0ca,
+  wLoadedMon: 0xcf97,
+  wLoadedMonExp: 0xcfa5,
+  hProduct: 0xff95,
+  hExperience: 0xff96,
   wBattleMonHP: 0xd014,
   wBattleMonMaxHP: 0xd022,
   wBattleMonAttack: 0xd024,
@@ -254,6 +261,8 @@ export interface SpeciesHeader {
   baseExp: number;
   moves: readonly [number, number, number, number];
   learnset: readonly { level: number; move: number }[];
+  /** Supplied by the future runtime adapter; earlier isolated header fixtures may omit it. */
+  growthRate?: number;
 }
 
 const WORD_BE: Record<string, number> = {

@@ -2,12 +2,12 @@
 // ApplyBurnAndParalysisPenalties, ApplyBadgeStatBoosts, ReadPlayerMonCurHPAndStatus,
 // IncrementMovePP; decrement_pp.asm; init_battle.asm InitWildBattle's ghost block;
 // home/move_mon.asm CalcStats; evos_moves.asm WriteMonMoves; add_mon.asm LoadMovePPs.
-import type { BattlePokemon } from './types';
+import type { BattlePokemon, StatExperience } from './types';
 import { getMove } from './data';
 import { TYPE_NAMES } from '../rom/constants';
 import {
-  A, ATKDEFDV_TRAINER, BRN, encodeText, GHOST_PIC, indexToPokedex, isGhostBattle, LINK_STATE_BATTLING,
-  MAX_STAT_VALUE, MON_GHOST, NAME_LENGTH, NUM_MOVES, NUM_STAT_MODS, PAR, PARTYMON_STRUCT_LENGTH,
+  A, ATKDEFDV_TRAINER, BRN, decodeNick, encodeText, GHOST_PIC, indexToPokedex, isGhostBattle, LINK_STATE_BATTLING,
+  MAX_STAT_VALUE, MON_GHOST, NAME_LENGTH, NUM_MOVES, NUM_STATS, NUM_STAT_MODS, PAR, PARTYMON_STRUCT_LENGTH,
   POKEDEX_ORDER, PSN, RESTLESS_SOUL, setSeenFlag, SPDSPCDV_TRAINER, STRUGGLE, TRAINER_BATTLE,
   TRANSFORMED, WILD_BATTLE, writeBytes, type BattleState, type SpeciesHeader,
 } from './battle_state';
@@ -40,6 +40,10 @@ export interface PartySlot {
   speed: number;
   special: number;
   nickname: string;
+  otId: number;
+  otName: string;
+  exp: number;
+  statExp: StatExperience;
 }
 
 export function statusByte(mon: BattlePokemon): number {
@@ -85,12 +89,17 @@ export function partySlotFromPokemon(mon: BattlePokemon): PartySlot {
     speed: mon.speed,
     special: mon.special,
     nickname: mon.nickname,
+    otId: mon.otId,
+    otName: mon.otName,
+    exp: mon.exp,
+    statExp: [...mon.statExp],
   };
 }
 
 export function writePartySlot(state: BattleState, side: 'player' | 'enemy', slot: number, mon: PartySlot): void {
   const base = (side === 'player' ? A.wPartyMons : A.wEnemyMons) + slot * PARTYMON_STRUCT_LENGTH;
   const nick = (side === 'player' ? A.wPartyMonNicks : A.wEnemyMonNicks) + slot * NAME_LENGTH;
+  const ot = (side === 'player' ? A.wPartyMonOT : A.wEnemyMonOT) + slot * NAME_LENGTH;
   state.mem[base] = mon.species & 0xff;
   state.writeBE(base + 1, mon.hp);
   state.mem[base + 3] = mon.boxLevel & 0xff;
@@ -99,6 +108,12 @@ export function writePartySlot(state: BattleState, side: 'player' | 'enemy', slo
   state.mem[base + 6] = mon.type2 & 0xff;
   state.mem[base + 7] = mon.catchRate & 0xff;
   writeBytes(state.mem, base + 8, mon.moves, NUM_MOVES);
+  // macros/ram.asm:17–23; pokemon_data_constants.asm:38–44. These are not battle-struct bytes.
+  state.writeBE(base + 12, mon.otId);
+  state.mem[base + 14] = (mon.exp >>> 16) & 0xff;
+  state.writeBE(base + 15, mon.exp);
+  for (let stat = 0; stat < NUM_STATS; stat++) state.writeBE(base + 17 + stat * 2, mon.statExp[stat]);
+  writeBytes(state.mem, ot, encodeText(`${mon.otName}@`), NAME_LENGTH);
   state.mem[base + 27] = mon.dvs[0] & 0xff;
   state.mem[base + 28] = mon.dvs[1] & 0xff;
   writeBytes(state.mem, base + MON_PP, mon.pp, NUM_MOVES);
@@ -109,6 +124,19 @@ export function writePartySlot(state: BattleState, side: 'player' | 'enemy', slo
   state.writeBE(base + 40, mon.speed);
   state.writeBE(base + 42, mon.special);
   writeBytes(state.mem, nick, encodeText(`${mon.nickname}@`), NAME_LENGTH);
+  if (side === 'player') mirrorPartyProgress(state, slot);
+}
+
+/** experience.asm:24–55,93–142 and macros/ram.asm:17–23: mirror only after the byte writes. */
+export function mirrorPartyProgress(state: BattleState, slot: number): void {
+  const mon = state.partyMons[slot];
+  if (!mon) return;
+  const base = A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH;
+  mon.otId = state.readBE(base + 12);
+  mon.otName = decodeNick(state.mem, A.wPartyMonOT + slot * NAME_LENGTH);
+  mon.exp = state.mem[base + 14] * 0x10000 + state.readBE(base + 15);
+  mon.statExp = [state.readBE(base + 17), state.readBE(base + 19), state.readBE(base + 21),
+    state.readBE(base + 23), state.readBE(base + 25)];
 }
 
 function copyBytes(state: BattleState, src: number, dest: number, length: number): void {
@@ -303,7 +331,8 @@ function loadMovePPs(state: BattleState, movesAddr: number, ppAddr: number): voi
   }
 }
 
-function getMonName(state: BattleState, header: SpeciesHeader): void {
+/** home/names.asm GetMonName. Encodes name@ and zero-fills 20 bytes; not the cartridge's 10-byte copy (note 69 §10.15). */
+export function getMonName(state: BattleState, header: SpeciesHeader): void {
   const bytes = encodeText(`${header.name}@`);
   for (let i = 0; i < 20; i++) state.mem[A.wNameBuffer + i] = bytes[i] ?? 0;
 }

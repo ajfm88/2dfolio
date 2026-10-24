@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the 196 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-10-22 (A5c3c checkpoint-06): 4397/4397.** No-ROM 4189 pass / 208 skip.
+  tests. **Baseline 2026-10-22 (A5c3d checkpoint-04): 4676/4676.** No-ROM 4458 pass / 218 skip.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -165,7 +165,7 @@ Viridian Forest from V1, Pewter City and its four buildings from V2a), ticks at 
 #36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2**, Pewter City (V2a maps, V2b the guides, V2c Jigglypuff and the sleeping Pikachu), 2026-10-17. **4397/4397** tests; no-ROM 4189 pass, 208 skip; typecheck/build clean.
 The map-music fade-out (#63, #67, #68) and the intro animation (Oak's speech, #51, #69) are done and
 user-verified (2026-10-18). Next: A5c–A5f, re-split by `notes/65-a5c-a5f-plan.md` (#70) as A5d → A5c1 → A5c2 → A5c3 → A5e → A5f;
-A5d (the transitions) is done and user-verified (2026-10-18), A5c1 (battle foundations, note 66) and A5c2 (the battle's menus, note 67) are done (2026-10-19); A5c3 (note 68, six sub-slices) is in progress: A5c3a ✅ complete (checkpoints 01–05 checked, 2026-10-20); A5c3b (the turn) ✅ complete (checkpoints 01–07, 2026-10-20); A5c3c (the move effects, note 69, Codex implements, #78) is in progress: checkpoints 01–06 are checked (2026-10-22), and checkpoint-06b (Transform, Conversion, Mimic, Disable, Splash) is next, then checkpoint-07. Then V3.
+A5d (the transitions) is done and user-verified (2026-10-18), A5c1 (battle foundations, note 66) and A5c2 (the battle's menus, note 67) are done (2026-10-19); A5c3 (note 68, six sub-slices) is in progress: A5c3a ✅ complete (checkpoints 01–05 checked, 2026-10-20); A5c3b (the turn) ✅ complete (checkpoints 01–07, 2026-10-20); A5c3c (the move effects, note 69, Codex and Grok, #78/#79) ✅ complete (ten checkpoints, 2026-10-22); A5c3d (faint, EXP, switching and the end) is planned in note 70 (#80, Codex); checkpoints 01–04 checked; next: checkpoint-04b. Then V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

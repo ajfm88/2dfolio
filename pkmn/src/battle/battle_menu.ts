@@ -12,6 +12,7 @@ import { applyHudAlarm, lowHealthAlarm, isLowHealthAlarmDisabled } from '../audi
 import { drawPlayerHudAndHpBar, drawEnemyHudAndHpBar } from './battle_hud';
 import { tryRunFromBattle } from './run';
 import { delayFrames } from './battle_menu_context';
+import { loadHudTilePatterns } from './battle_slides';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
 
 const KEYS: readonly GameButton[] = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
@@ -167,7 +168,7 @@ export function* bagWasSelected(ctx: BattleActionContext, host: BattleActionHost
 export function* useBagItem(ctx: BattleActionContext, host: BattleActionHost): Program<BattleMenuFlags | null> {
   ctx.itemName = getItemName(ctx.curItem); ctx.pseudoItemID = 0;
   yield* host.useItem(ctx);
-  for (const _frame of host.screen.loadHudTilePatterns()) { void _frame; yield 'serviced'; }
+  yield* loadHudTilePatterns(host.screen);
   for (let i = 0; i < 40; i++) host.screen.setOam(i, { x: 0, y: 0, tile: 0, attributes: 0 });
   ctx.currentMenuItem = 0;
   if (ctx.battleType !== 2) {

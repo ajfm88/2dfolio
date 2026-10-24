@@ -63,6 +63,7 @@ export function makePokemon(overrides?: Partial<BattlePokemon> & {
     spdDV: overrides?.spdDV ?? 8,
     spcDV: overrides?.spcDV ?? 8,
     exp: overrides?.exp ?? 125000,
+    statExp: overrides?.statExp ? [...overrides.statExp] : [0, 0, 0, 0, 0],
     sleepTurns: overrides?.sleepTurns ?? 0,
     toxicCounter: overrides?.toxicCounter ?? 0,
     badlyPoisoned: overrides?.badlyPoisoned ?? false,

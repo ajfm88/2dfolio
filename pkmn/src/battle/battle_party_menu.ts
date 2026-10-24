@@ -4,6 +4,7 @@ import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } 
 import { PartyMenu } from '../menus/party_menu';
 import { StatusScreenSession } from '../menus/status_screen';
 import { MenuInput } from '../menus/menu_input';
+import { loadHudTilePatterns } from './battle_slides';
 import { placeMenuCursor, placeUnfilledArrowMenuCursor, textBoxBorder, placeString } from '../menus/tile_surface';
 import type { MenuCursorState } from '../menus/tile_surface';
 
@@ -55,7 +56,7 @@ function clearSprites(host: BattlePartyHost): void {
 function white(host: BattlePartyHost): void { host.screen.bgp = host.screen.obp0 = host.screen.obp1 = 0; }
 function normal(host: BattlePartyHost): void { host.screen.bgp = 0xe4; host.screen.obp0 = 0xd0; }
 function* hudCopies(host: BattlePartyHost): Program {
-  for (const _frame of host.screen.loadHudTilePatterns()) { void _frame; yield 'serviced'; }
+  yield* loadHudTilePatterns(host.screen);
 }
 function* palette(ctx: BattlePartyContext, host: BattlePartyHost): Program {
   yield* host.screen.setPalBattle({ partySpecies: ctx.partySpecies, enemySpecies2: ctx.enemySpecies2,

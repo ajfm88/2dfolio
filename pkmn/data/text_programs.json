@@ -2487,6 +2487,15 @@
         "program": "_TrainerDefeatedText"
       }
     ],
+    "TrainerEndBattleText": [
+      {
+        "op": "far",
+        "program": "_TrainerNameText"
+      },
+      {
+        "op": "asm"
+      }
+    ],
     "TrainerSentOutText": [
       {
         "op": "far",
@@ -6040,6 +6049,16 @@
       {
         "op": "text",
         "text": "!<PROMPT>"
+      }
+    ],
+    "_TrainerNameText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": ": "
       }
     ],
     "_TrainerSentOutText": [

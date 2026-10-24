@@ -59,7 +59,7 @@ const SFX_NAMES = [
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
   'push_boulder', 'switch', 'super_effective', 'tink',
   'turn_off_pc', 'turn_on_pc', '59', 'arrow_tiles',
-  'heal_ailment', 'poisoned', 'shrink', 'run',
+  'heal_ailment', 'poisoned', 'shrink', 'run', 'faint_fall', 'faint_thud',
   'teleport_exit1', 'teleport_enter1', 'teleport_exit2', 'teleport_enter2',
   'ss_anne_horn', 'trade_machine', 'safari_zone_pa',
 ];

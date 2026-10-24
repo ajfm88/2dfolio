@@ -319,4 +319,13 @@ describe.each([0, 1] as const)('status effects side %i', side => {
     r.run(); expect(r.s.mem.slice(A.wPartyMons, A.wPartyMons + PARTYMON_STRUCT_LENGTH * 6)).toEqual(party);
     expect(r.s.mem.slice(A.wEnemyMons, A.wEnemyMons + PARTYMON_STRUCT_LENGTH * 6)).toEqual(enemy);
   });
+
+  // pret effects.asm:1007-1032. FlinchSideEffect rolls and sets the bit; it never reads who moved first.
+  it('retire-L1045: only triggers if attacker moved first — reject legacy rule', () => {
+    const r = rig(side, 0x1f, [0]);
+    r.s.wActionResultOrTookBattleTurn = 0;
+    r.s.mem[r.t.flags1] = 0;
+    r.expected(['R0'], 0);
+    expect(r.s.mem[r.t.flags1] & 8).toBe(8);
+  });
 });

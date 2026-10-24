@@ -119,7 +119,7 @@ const MUSIC_HEADERS: Record<string, { bank: number; addr: number }> = {
 };
 
 // SFX headers: map SFX names to their symbol addresses
-// These are the bank-$02 copies (SFX_Headers_1), except battle-bank-only RUN. The cartridge uses the current
+// These are the bank-$02 copies (SFX_Headers_1), except the explicit Audio 2 entries below. The cartridge uses the current
 // music's audio bank; save, turn_on_pc and enter_pc differ in bank $1f.
 // Bank-aware lookup remains V5; A5b3 pins those differences (notes/28-a5b3-plan.md).
 export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
@@ -150,6 +150,10 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   shrink:           { bank: 0x02, addr: 0x41d4 }, // SFX_Shrink_1 (note 64 CP1)
   // SFX_Run, battle bank only (sfxheaders2.asm), ID $97; note 67 §11.7.
   run:              { bank: 0x08, addr: 0x41c5 },
+  // A5c3d checkpoint-03: Audio 2 only; sfxheaders2.asm:308-312,350-353,374-376.
+  level_up:         { bank: 0x08, addr: 0x4192 },
+  faint_fall:       { bank: 0x08, addr: 0x41da },
+  faint_thud:       { bank: 0x08, addr: 0x41bf },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

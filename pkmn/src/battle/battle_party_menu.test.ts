@@ -131,7 +131,7 @@ describe('PartyMenu choose-only mode, shared #73 timing', () => {
     r.advance(21); r.tick('b'); expect(r.calls.some(c => c.name === 'load2')).toBe(false);
     expect(r.party.chosenIndex).toBe(-1); r.advance(2); r.tick('a', 'b');
     expect(getPartyAndBillsSavedMenuItem()).toBe(1); expect(r.party.chosenIndex).toBe(-1);
-    r.advance(11); expect(r.calls.find(c => c.name === 'load2')?.at).toBe(31);
+    r.advance(7); expect(r.calls.find(c => c.name === 'load2')?.at).toBe(27);
   });
 
   it('sleeping starter uses the shared refusal and returns cancelled after its PrintText', () => {
@@ -178,12 +178,12 @@ describe('party submenu cells, deselection, quit and switch', () => {
     r.tick(); expect(r.party.choiceOverlay.saveVisibleTiles().join('')).not.toContain('ACTIVE');
   });
 
-  for (const cancel of ['list B', 'submenu CANCEL'] as const) it(`${cancel} returns null exactly at +11 for the caller to redisplay`, () => {
+  for (const cancel of ['list B', 'submenu CANCEL'] as const) it(`${cancel} returns null exactly at +7 for the caller to redisplay`, () => {
     const r = rig(undefined, 0, partyMenuOrRockOrRun); r.advance(21);
     if (cancel === 'list B') r.tick('b');
     else { r.tick('a'); r.advance(2); r.tick('down'); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); }
-    const k = r.time; r.advance(10); expect(r.done).toBe(false); r.tick();
-    expect(r.done).toBe(true); expect(r.result).toBe(null); expect(r.time).toBe(k + 11);
+    const k = r.time; r.advance(6); expect(r.done).toBe(false); r.tick();
+    expect(r.done).toBe(true); expect(r.result).toBe(null); expect(r.time).toBe(k + 7);
     expect(r.video.screen.bgp).toBe(0xe4);
   });
 
@@ -237,22 +237,22 @@ describe('party submenu cells, deselection, quit and switch', () => {
     expect(vi.mocked(drawScreenTile).mock.calls.some(([glyph]) => glyph === 'S')).toBe(false);
   });
 
-  for (const phase of [0, 1, 2]) it(`phase${phase}: CANCEL restores Buffer2 at+6, normal at+11, then exactly three empty bottom frames`, () => {
+  for (const phase of [0, 1, 2]) it(`phase${phase}: CANCEL restores Buffer2 at+2, normal at+7, then exactly three empty bottom frames`, () => {
     const r = rig(undefined, phase); r.choose(); r.advance(2); r.tick('down'); r.advance(2); r.tick('down'); r.advance(2); r.tick('a');
-    const k = r.time; r.advance(5); expect(r.video.screen.bgp).toBe(0); r.tick();
-    expect(r.calls.find(c => c.name === 'load2')?.at).toBe(k + 6);
+    const k = r.time; r.advance(1); expect(r.video.screen.bgp).toBe(0); r.tick();
+    expect(r.calls.find(c => c.name === 'load2')?.at).toBe(k + 2);
     expect(r.video.screen.at(15, 14)).toBe('▷'); r.advance(5); expect(r.video.screen.bgp).toBe(0xe4);
     const seen: boolean[] = [];
     for (let i = 0; i < 6; i++) { r.tick(); seen.push(r.video.screen.visibleAt(10, 14) === 'F'); }
     expect(seen.filter(v => !v)).toHaveLength(3);
-    expect(r.reads[r.reads.length - 1]).toBe(k + 17);
-    expect(r.frames.slice(k, k + 11)).toEqual(['serviced', 'serviced', 'serviced', 'serviced', 'serviced', 'serviced', 'held', 'held', 'serviced', 'serviced', 'serviced']);
+    expect(r.reads[r.reads.length - 1]).toBe(k + 13);
+    expect(r.frames.slice(k, k + 7)).toEqual(['serviced', 'serviced', 'held', 'held', 'serviced', 'serviced', 'serviced']);
   });
 
   it('B in the list uses the same quit tail and CP4 host.partyMenu is actually bound', () => {
     setBattleAndStartSavedMenuItem(2); const r = rig(undefined, 0, displayBattleMenu);
     r.advance(5); r.tick('a'); r.advance(21); r.tick('b'); const k = r.time;
-    r.advance(17); expect(r.reads[r.reads.length - 1]).toBe(k + 17);
+    r.advance(13); expect(r.reads[r.reads.length - 1]).toBe(k + 13);
     expect(r.calls.some(c => c.name === 'save2')).toBe(true); expect(r.ctx.actionResultOrTookBattleTurn).toBe(0);
   });
 
@@ -275,11 +275,11 @@ describe('party submenu cells, deselection, quit and switch', () => {
     expect(r.ctx.actionResultOrTookBattleTurn).toBe(0); expect(r.calls.some(c => c.name === 'switch')).toBe(false);
   });
 
-  it('valid switch writes result1 before white/copies, Buffer1 at+6 and switch port at+11', () => {
+  it('valid switch writes result1 before white/copies, Buffer1 at+2 and switch port at+7', () => {
     setPartyAndBillsSavedMenuItem(1); const r = rig(); r.choose(); r.advance(2); r.tick('a'); const k = r.time;
     expect(r.ctx.actionResultOrTookBattleTurn).toBe(1); expect(r.video.screen.bgp).toBe(0);
-    r.advance(10); expect(r.done).toBe(false); r.tick(); expect(r.result).toEqual({ carry: false });
-    expect(r.calls.filter(c => ['load1', 'switch'].includes(c.name)).map(c => [c.name, c.at])).toEqual([['load1', 0], ['load1', k + 6], ['switch', k + 11]]);
+    r.advance(6); expect(r.done).toBe(false); r.tick(); expect(r.result).toEqual({ carry: false });
+    expect(r.calls.filter(c => ['load1', 'switch'].includes(c.name)).map(c => [c.name, c.at])).toEqual([['load1', 0], ['load1', k + 2], ['switch', k + 7]]);
     expect(r.ctx.currentMenuItem).toBe(2); expect(r.video.screen.bgp).toBe(0xe4);
     expect(r.calls.some(c => c.name === 'load2')).toBe(false);
   });

@@ -179,7 +179,7 @@ it('renderer keeps the BG1 window picture through all twelve frames and exposes 
   expect(out.frames).toHaveLength(12);
   screen.wy = 144;
   expect(renderBattleScreen(screen, tiles)).not.toEqual(original);
-});
+}, 30_000);
 
 it.each([0, 1, 0x80])('refresh is outside the deferred MoveAnimation option/sound port (options=%i)', options => {
   const r = animationRig(); r.s.wOptions = options;

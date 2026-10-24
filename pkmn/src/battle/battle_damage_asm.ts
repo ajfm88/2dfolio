@@ -9,6 +9,7 @@ import type { Program } from './battle_menu_context';
 import { battleRandom } from './battle_random';
 import { getMonHeader } from './battle_loaders';
 import { multiply, divide } from './battle_arithmetic';
+import { calcStat } from './battle_calc_stats';
 
 /** Z from the routine's last flag write. Success is NZ; zero power and an OHKO miss are Z. */
 export interface AsmFlags { z: boolean }
@@ -26,7 +27,6 @@ export interface DamageVars {
 export type OhkoPort = (state: BattleState) => Program | void;
 
 const SPECIAL = 0x14;
-const STAT_HP = 1;
 const STAT_ATTACK = 2;
 const STAT_DEFENSE = 3;
 const STAT_SPECIAL = 5;
@@ -103,55 +103,6 @@ function multiplyDivide(value: number, multiplier: number, divisor: number): num
   return quotientWord(h);
 }
 
-function statIv(state: BattleState, stat: number): number {
-  const first = state.mem[LOADED_MON_SPEED_EXP];
-  const second = state.mem[LOADED_MON_SPEED_EXP + 1];
-  if (stat === STAT_ATTACK) return first >> 4;
-  if (stat === STAT_DEFENSE) return first & 0x0f;
-  if (stat === 4) return second >> 4;
-  if (stat === STAT_SPECIAL) return second & 0x0f;
-  const atk = first >> 4;
-  const def = first & 0x0f;
-  const spd = second >> 4;
-  const spc = second & 0x0f;
-  return ((atk & 1) << 3) | ((def & 1) << 2) | ((spd & 1) << 1) | (spc & 1);
-}
-
-/** home/move_mon.asm CalcStat with b = 0. No stat-experience loop (O-42). */
-function calcStat(state: BattleState, stat: number): number {
-  const base = state.mem[A.wMonHIndex + stat];
-  const iv = statIv(state, stat);
-  let de = base + iv;
-  // O-42: b = 0, so ceil(sqrt(stat exp)) / 4 is not added.
-  const statExperience = 0;
-  de = (de * 2 + statExperience) & 0xffff;
-  const level = state.wCurEnemyLevel;
-  const h = new Uint8Array(10);
-  h[2] = (de >> 8) & 0xff;
-  h[3] = de & 0xff;
-  h[4] = level;
-  multiply(h);
-  const mid = h[1];
-  const high = h[2];
-  const low = h[3];
-  h[0] = mid;
-  h[1] = high;
-  h[2] = low;
-  h[4] = 100;
-  if (divide(h, 3)) throw new Error('stat divide froze');
-  if (stat === STAT_HP) {
-    const withLevel = h[3] + level;
-    h[3] = u8(withLevel);
-    if (withLevel > 255) h[2] = u8(h[2] + 1);
-  }
-  const bonus = stat === STAT_HP ? 10 : 5;
-  const added = h[3] + bonus;
-  h[3] = u8(added);
-  if (added > 255) h[2] = u8(h[2] + 1);
-  if (h[2] > 0x03 || (h[2] === 0x03 && h[3] >= 0xe8)) return 999;
-  return ((h[2] << 8) | h[3]) & 0xffff;
-}
-
 function partyWord(state: BattleState, party: number, slot: number, offset: number): number {
   return state.readBE(party + (slot & 0xff) * PARTYMON_STRUCT_LENGTH + offset);
 }
@@ -166,7 +117,7 @@ export function getEnemyMonStat(state: BattleState, stat: number): number {
   getMonHeader(state, state.wCurSpecies);
   state.mem[LOADED_MON_SPEED_EXP] = state.mem[A.wEnemyMonDVs];
   state.mem[LOADED_MON_SPEED_EXP + 1] = state.mem[A.wEnemyMonDVs + 1];
-  return calcStat(state, stat);
+  return calcStat(state, stat, 0, LOADED_MON_SPEED_EXP - 11);
 }
 
 function scaleStats(offense: number, defense: number): { attack: number; defense: number } {

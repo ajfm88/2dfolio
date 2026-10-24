@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **4397** passing in 165 files (2026-10-22, A5c3c checkpoint-06; no-ROM 4189 pass / 208 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **4676** passing in 174 files (2026-10-22, A5c3d checkpoint-04; no-ROM 4458 pass / 218 skip) | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -610,9 +610,9 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
   blocksets, collision, pokedex, maps (**24**: upstream's 12 + the Route 2 /
   Viridian Forest set from V1a + Pewter City and its four buildings from V2a; NPCs can carry `item` and trainer fields), music (47 listed, all 47
-  extract since V1c fixed the `meeteviltrainer` typo), SFX (**21** extract: the item/key-item jingles and PC sounds since A5b3, `run` since A5c2 CP2, the two
+  extract since V1c fixed the `meeteviltrainer` typo), SFX (**24** extract: the item/key-item jingles and PC sounds since A5b3, `run` since A5c2 CP2, unused Audio2 `level_up`/`faint_fall`/`faint_thud` since A5c3d checkpoint-03, the two
   field-medicine sounds since A5b7c2, `healing_machine` and intro CP2's `shrink`; only names with an entry in `audio.ts` `SFX_HEADERS` —
-  `index.ts` lists 36 unique names, the setup script 46, and `extractSfx()` returns null
+  `index.ts` lists 41 unique names, the setup script 49, and `extractSfx()` returns null
   for the rest; V5 expands `SFX_HEADERS`),
   wave samples, noise instruments, font / font_extra / font_battle_extra,
   tilesets, battle HUD, title screen (+ tilemaps), overworld sprites (~70),

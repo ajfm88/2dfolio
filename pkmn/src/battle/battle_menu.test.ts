@@ -196,12 +196,12 @@ describe('battle bag and simulated input', () => {
     expect(ctx.menuItemToSwap).toBe(0); expect(ctx.menuWatchMovingOutOfBounds).toBe(0); expect(ctx.joy7).toBe(0);
   });
 
-  it('failed use copies HUD tiles6 then reopens the list without a battle-menu redraw', () => {
+  it('failed use copies HUD tiles2 then reopens the list without a battle-menu redraw', () => {
     const r = rig(context(), bagWasSelected, 0, () => {}); r.start(); r.advance(15); r.tick('a');
-    expect(r.calls.filter(c => c.name === 'use')).toHaveLength(1); r.advance(6);
+    expect(r.calls.filter(c => c.name === 'use')).toHaveLength(1); r.advance(2);
     expect(textBgTransfer.enabled).toBe(false); expect(r.ctx.joy7).toBe(1);
     r.advance(15); r.tick('b'); expect(r.result).toBe(null);
-    expect(r.calls.filter(c => c.name === 'load1').map(c => c.at)).toEqual([0, 22]);
+    expect(r.calls.filter(c => c.name === 'load1').map(c => c.at)).toEqual([0, 18]);
   });
 
   it('A on CANCEL saves its row without using an item and clears all exit flags', () => {
@@ -213,7 +213,7 @@ describe('battle bag and simulated input', () => {
     expect(getNoTextDelay()).toBe(false);
   });
 
-  for (const h of [0, 5, 10]) it(`bag choice with H=${h} clears exit flags and has the six-copy plus H+3 noncapture tail`, () => {
+  for (const h of [0, 5, 10]) it(`bag choice with H=${h} clears exit flags and has the two-copy plus H+3 noncapture tail`, () => {
     const ctx = context();
     const r = rig(ctx, bagWasSelected, 0, c => {
       c.actionResultOrTookBattleTurn = 1;
@@ -224,7 +224,7 @@ describe('battle bag and simulated input', () => {
     expect(ctx.curItem).toBe('POTION'); expect(ctx.itemIndex).toBe(0); expect(ctx.itemName).toBe('POTION');
     expect([ctx.menuItemToSwap, ctx.menuWatchMovingOutOfBounds, ctx.joy7]).toEqual([0, 0, 0]);
     expect(getNoTextDelay()).toBe(false);
-    r.advance(8 + h); expect(r.done).toBe(false); r.tick();
+    r.advance(4 + h); expect(r.done).toBe(false); r.tick();
     expect(r.result).toEqual({ carry: false }); expect(ctx.currentMenuItem).toBe(0);
     expect(r.screen.bgp).toBe(0xe4); expect(r.screen.obp0).toBe(0xd0);
   });
@@ -237,17 +237,17 @@ describe('battle bag and simulated input', () => {
     r.advance(2); r.tick('b'); expect(r.result).toBe(null); expect(ctx.menuItemToSwap).toBe(0);
   });
 
-  for (const attacks of [1, 2, 0]) it(`successful item decrements trapping counter ${attacks} with byte semantics and noncapture tail9`, () => {
+  for (const attacks of [1, 2, 0]) it(`successful item decrements trapping counter ${attacks} with byte semantics and noncapture tail5`, () => {
     const ctx = context(); ctx.usingTrappingMove = true; ctx.playerNumAttacksLeft = attacks; ctx.curItem = 'POTION';
-    const r = rig(ctx, useBagItem); r.start(); r.advance(5); expect(ctx.playerNumAttacksLeft).toBe(attacks);
+    const r = rig(ctx, useBagItem); r.start(); r.advance(1); expect(ctx.playerNumAttacksLeft).toBe(attacks);
     r.tick(); expect(ctx.playerNumAttacksLeft).toBe((attacks - 1) & 255); expect(ctx.usingTrappingMove).toBe(attacks !== 1);
     r.advance(3); expect(r.result).toEqual({ carry: false }); expect(ctx.currentMenuItem).toBe(0); expect(ctx.pseudoItemID).toBe(0);
   });
 
-  it('capture clears species and returns carry/result2 immediately after the six-copy tail', () => {
+  it('capture clears species and returns carry/result2 immediately after the two-copy tail', () => {
     const ctx = context(); ctx.curItem = 'POKE_BALL';
     const r = rig(ctx, useBagItem, 0, c => { c.actionResultOrTookBattleTurn = 1; c.capturedMonSpecies = 16; });
-    r.start(); r.advance(5); expect(r.done).toBe(false); r.tick(); expect(r.result).toEqual({ carry: true });
+    r.start(); r.advance(1); expect(r.done).toBe(false); r.tick(); expect(r.result).toEqual({ carry: true });
     expect(ctx.battleResult).toBe(2); expect(ctx.capturedMonSpecies).toBe(0); expect(r.calls.some(c => c.name === 'load1')).toBe(false);
   });
 

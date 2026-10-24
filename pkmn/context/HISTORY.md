@@ -15,6 +15,161 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-22 (session closed; next: Claude plans A5c3d) — Claude
+
+**The user ended the session here. The next Claude session plans A5c3d** (no implementer is named yet; the user names one per checkpoint). Docs brought current: CLAUDE.md, PROJECT, PLAN, ARCHITECTURE, CONVENTIONS and `game/src/battle/ARCHITECTURE.md` all show A5c3c ✅ and the **4586/4586** baseline (no-ROM **4378 / 208 skip**). One correction: the `PrintStatText` overrun entry (backlog, note 69 §10.18) first said `StatModTextStrings` is followed by code. It is followed by `StatModifierRatios`, 26 bytes with no `$50`, and then code.
+
+**For the A5c3d planner:**
+- **Scope:** note 68 §2, the A5c3d row (`core.asm` 263–288, 708–1374, 1764–1874; `experience.asm`, `learn_move.asm`, `end_of_battle.asm`, `common_text.asm`; 5 checkpoints estimated). It covers:
+  - the faint routines with `SlideDownFaintedMonPic`;
+  - the trainer's next mon with SHIFT, and `TrainerBattleVictory` (V1c's steps rehosted);
+  - EXP, level-up with `PrintStatsBox`, and learning moves;
+  - the player's faint, `ChooseNextMon` and the blackout;
+  - `SwitchPlayerMon`, `RetreatMon` and `SendOutMon`, with their animations as ports;
+  - `EnemyRan`;
+  - `EndOfBattle`: Pay Day, the evolution hand-off, Pikachu's mood and the resets;
+  - Pikachu happiness wherever the ASM changes it.
+- **Carry-ins:**
+  - note 68 §8 items 1–2 (`InitBattleVariables` and `EndOfBattle` resets; the port bodies);
+  - note 68 §10.1's text table: `PlayerMon1Text` / `PlayerMon2Text` and Go / DoIt / Getm / EnemysWeak / Enough / OK / Good / ComeBack (`common_text.asm:127–269`);
+  - note 69 §3.5 (Pay Day's money on `$CD6D`, collected by `EndOfBattle`);
+  - note 69 §10.10 item 1 (Explode zeroes the user's HP; "the faint belongs to A5c3d").
+- **The pattern to copy:** note 69 §6–§7. Checkpoint-01 is a no-code trace with numbered questions for Claude. Then come implementation checkpoints into unused modules, added to `a5c3_unused.test.ts`. Each one has ledgers on both sides, real-printer snapshots, brief mutations plus Claude's own, the four gates in order, and one local commit. A5c3f does the switch-over.
+- **Write the plan as `notes/70-a5c3d-<kind>.md`.** Add a STATUS entry and a DECISIONS entry if a choice needs the user. Commit locally. Never push.
+
+### 2026-10-22 (A5c3c checkpoint-07b checked; A5c3c complete) — Claude
+
+Grok's checkpoint-07b **passes** (**note 69 §10.20**), and **A5c3c is complete**: ten checkpoints, all checked. Commit `4bb7feb` adds the manifest and four `retire-L` cases, with zero removed lines in earlier tests and no snapshot changes. I audited every non-`prior` `correct`/`invented` link: each linked test, down to the `it.each` row that carries the rule, pins its row's corrected rule. The four new cases match their ASM lines. My gates, one after another: typecheck clean; build `index-Dn4MlLpw.js`; ROM **4586/4586**; no-ROM **4378 pass / 208 skip**. My own 7 mutations were all caught. Grok's green L780 mutation is the hand-checked case §10.19 named. **Next:** plan A5c3d (faint, EXP and level-up, learning moves, the trainer's next mon, victory, the player's faint) in a new note. Docs only. Local commit only.
+
+### 2026-10-22 (A5c3c checkpoint-07b implemented; awaiting Claude's check) — Grok
+
+New `effects_retirement.test.ts`: 139 rows. 135 link an existing plain `it` / `it.each` title; 4 new cases (L674, L789, L1045, L1184). No family handler changed. `effects.ts`, `effects.test.ts` and `a5c3_unused.test.ts` are untouched. Earlier tests only gained those cases; no snapshot changed. Nine mutations failed a test and were restored. Sharing L780 with the L789 case stayed green; that check is by hand (note 69 §9.17). No §9.6 rule was wrong.
+
+Gates, once, in order: typecheck clean; build stayed `index-Dn4MlLpw.js` (`43dd8163…`); ROM **4586/4586**, 167 files; no-ROM **4378 pass / 208 skip**, 160 files pass / 7 skip. One local commit; stop for Claude's check. **A5c3d not started.**
+
+### 2026-10-22 (A5c3c checkpoint-07 checked) — Claude
+
+Grok's checkpoint-07 **passes** (**note 69 §10.18**). Commit `1fc2ad0` adds the registry and the composed suite, and earlier tests changed only by the two authorized one-liners. My gates, one after another: typecheck clean; build `index-Dn4MlLpw.js`; ROM **4578/4578**; no-ROM **4370 pass / 208 skip** (the 06b timeout is fixed). My own 10 mutations were all caught. Grok's three surprises check out against the ASM (OHKO dispatches once; the cleared OHKO byte; `$4A`/`$4B`). For `$4A`/`$4B`, the cartridge prints code bytes past `EVADE`; logged in the backlog for the J2 audit (unreachable, since no move has `$48–$4B`). **Next:** checkpoint-07b, the 139-row retirement manifest (brief **§10.19**); the user names the implementer. Docs only. Local commit only.
+
+### 2026-10-22 (A5c3c checkpoint-07 implemented; awaiting Claude's check) — Grok
+
+New unused `battle_effects_registry.ts`: the four factories composed, HP last, still off the production graph. `battle_effects_composed.test.ts` runs all 86 effect IDs through execute on both sides and pins the §4 bugs. 123 tests, 172 snapshots. No family handler changed. `$4A` prints after writing stat-mod index 6; `$4B` throws `stat name index outside table` after writing index 7. All 12 required mutations were caught and restored. The unused-module walk stays green if the new name is removed; the composed source pin is what fails. Results: **note 69 §9.16**.
+
+Gates: typecheck failed once (TS2344, a test annotation), then clean; build stayed `index-Dn4MlLpw.js` (`43dd8163…`); ROM **4578/4578**; no-ROM **4370 pass / 208 skip**. No production wiring. One local commit; stop for Claude's check. **checkpoint-07b not started.**
+
+*Older entries (A5c3c checkpoint-06b and before) → `HISTORY.md` → *Recent session archive*.*
+
+### 2026-10-22 (A5c3c checkpoint-06b checked) — Claude
+
+Grok's checkpoint-06b **passes** (**note 69 §10.16**). Grok's commit is `7754aac`; the scope is clean, and earlier tests changed only by the two §10.15 names. All five handlers match the ASM line by line. My gates, one after another: typecheck clean; build `index-Dn4MlLpw.js`; ROM **4455/4455**; no-ROM **1 failed / 4246 / 208 skip**, twice. The failure is `battle_effects.test.ts`'s BG1-window renderer test timing out at 5 s. It passes alone in 1.2 s and fails the same way with the HP file excluded, so it is load-dependent and not caused by 06b, the same as checkpoint-03's `text_programs` timeout. It gets a 30 s timeout as checkpoint-07 item 0. My own 12 mutations were all caught. The four factories now cover all 34 effect labels.
+
+**Split:** checkpoint-07 is the composition (registry, every ID through its execute stage, the §4 bug pins; brief **§10.17**). Checkpoint-07b is the 139-row retirement manifest (87 rows need new ASM-backed cases). **Next:** checkpoint-07; the user names the implementer. Docs only. Local commit only.
+
+### 2026-10-22 (A5c3c checkpoint-06b implemented; awaiting Claude's check) — Grok
+
+Added Transform, Conversion, Mimic, Disable and Splash to the unused HP-effect factory. `getMonName` is now
+exported; that is the only earlier source edit. 58 new tests and 52 new snapshots. The previous 102 snapshots
+are unchanged. All 22 required mutations were caught and restored. Results: **note 69 §9.15**.
+Gates: typecheck failed once on an unused import, then clean; build stayed `index-Dn4MlLpw.js`
+(`43dd8163…`); ROM **4455/4455**; no-ROM **4247 pass / 208 skip**. No production wiring or data changes.
+One local commit; stop for Claude's check. **checkpoint-07 not started.**
+
+### 2026-10-22 (checkpoint-06b handed to Grok) — Claude
+
+The user moved checkpoint-06b from Codex to Grok (**DECISIONS #79**). I re-read §10.14 against `transform.asm`, `conversion.asm`, `effects.asm:1259–1423`, `GetMonName`, `wram.asm` and the sym file, and it's right. **Note 69 §10.15** adds what a fresh implementer needs:
+- the four env members, and the two authorized earlier-test edits;
+- sym-confirmed addresses and the battle-struct offsets;
+- the 8-byte stat-mod copy, padding included;
+- Mimic's INVULNERABLE checks being dead code after a real hit test;
+- `wCurrentMenuItem` left at the menu's value;
+- Disable's RNG ledger order;
+- six extra mutations.
+
+New backlog entry for A5c3f: `getMonName` isn't byte-exact against `GetMonName`. Docs only, no code. **Next:** Grok implements checkpoint-06b, then Claude checks it. Local commit only.
+
+### 2026-10-22 (end of day: docs brought current) — Claude
+
+Docs updated for the end of the session: CLAUDE.md (baseline **4397/4397**, no-ROM **4189 / 208 skip**; A5c3c at checkpoint-06b), PROJECT, CONVENTIONS (baseline plus an A5c3c test-suite paragraph), ARCHITECTURE (165 files, 186 JSON), `game/src/battle/ARCHITECTURE.md` (an A5c3c section and six new Key Files rows). STATUS entries for checkpoints 01–03 moved to HISTORY. No code changed.
+
+**Where A5c3c stands:** checkpoints 01, 02, 03, 04, 04b, 05 and 06 are done and checked (note 69 §10.1–§10.13). **Next: checkpoint-06b** (Transform, Conversion, Mimic, Disable, Splash; brief in note 69 §10.14; Codex), then checkpoint-07 (composition and the 139-row retirement manifest), then A5c3d. The paste-ready Codex prompt for 06b is the one given at the checkpoint-06 check; it only restates §10.14.
+
+### 2026-10-22 (A5c3c checkpoint-06 checked) — Claude
+
+**Checkpoint-06 passes** (note 69 §10.13). Re-read against `drain_hp.asm`, `recoil.asm`, `heal.asm` and `substitute.asm`: Drain's in-place halving and party sync, Recoil's missing sync, Heal's carry bug and Rest's order, and Substitute's always-first wait, scratch write and 0-HP success all match. Checkpoint-05's escape-boundary gap is closed.
+- **Gates**, one after another: typecheck clean; build `index-Dn4MlLpw.js` (unchanged); ROM **4397/4397**; no-ROM **4189 pass / 208 skip**.
+- **16 mutations of my own**, distinct from Codex's 16: 13 caught; the 3 survivors are equivalent or unreachable (two `≥`/`>` caps at exactly max, and a 16-bit wrap that needs max HP > 32767).
+
+**Next:** checkpoint-06b (§10.14; Codex): Transform, Conversion, Mimic, Disable, Splash. Local commit only.
+
+### 2026-10-22 (A5c3c checkpoint-06 implemented; awaiting Claude's check) - Codex
+
+Added the unused HP-effect factory: Drain/Dream Eater, Recoil, Heal/Rest and Substitute.
+Item 0 added four escape rejection-boundary cases first; its missing-`+1` mutation now fails.
+The new 107 tests/102 snapshots pin both sides, full memory writes, real HP bars/HUDs, party-sync
+asymmetry, Heal carry/Rest order and Substitute's wait/scratch/zero-HP behavior. All 15 HP mutations
+plus the boundary mutation caught/restored. Results: **note 69 §9.14**.
+Gates once in order, all first-pass: typecheck/build clean; unchanged `index-Dn4MlLpw.js`
+(`43dd8163…`); ROM **4397/4397**, no-ROM **4189 pass / 208 skip**. No production wiring or data
+changes. Earlier-test edits only the guard and four new cases. Two oldest entries archived verbatim
+to HISTORY. One local commit; stop for Claude's check. **checkpoint-06b not started.**
+
+### 2026-10-22 (A5c3c checkpoint-05 checked) — Claude
+
+**Checkpoint-05 passes** (note 69 §10.11). Re-read against `effects.asm:186–202, 800–1005, 1034–1159, 1222–1257`, `pay_day.asm`, `one_hit_ko.asm` and `bcd.asm`: all eleven handlers match, including Pay Day's 8-bit doubling and byte-level AddBCD, the Bide/`NumHits` overlap, and Charge's Dig fallback.
+- **Gates**, one after another: typecheck clean; build `index-Dn4MlLpw.js` (unchanged); ROM **4286/4286**; no-ROM **4078 pass / 208 skip**.
+- **20 mutations of my own**, distinct from Codex's 16: 18 caught; one of mine was a no-op. **One real gap:** no test hits the wild-escape rejection boundary (a draw of `user + target` is accepted). Checkpoint-06 item 0 adds it.
+
+**Next:** checkpoint-06 (§10.12; Codex): Drain / Dream Eater, Recoil, Heal / Rest, Substitute. Local commit only.
+
+### 2026-10-22 (A5c3c checkpoint-05 implemented; awaiting Claude's check) - Codex
+
+Unused turn-effect factory: eleven handlers, live Charge text suffix/fallback, bytewise Pay Day BCD,
+full byte maps and ordered RNG/refresh/wait ledgers. **183 new tests / 26 real-printer snapshots**;
+**17/17 behavioral mutations caught/restored**, plus one equivalent mask-removal trial (section9.13).
+Gates once, in order, all pass first run: typecheck/build clean; ROM **4286/4286**, no-ROM **4078 pass /
+208 skip**, 164 files. Bundle **index-Dn4MlLpw.js**, SHA256 unchanged. Earlier tests changed only in
+the guard; no production/data/refs changes. Two oldest session entries archived verbatim to HISTORY
+to keep STATUS short. One local commit; stop for Claude's check. **checkpoint-06 not started.**
+
+### 2026-10-21 (A5c3c checkpoint-04b checked) — Claude
+
+**Checkpoint-04b passes** (note 69 §10.9). Re-read against `haze.asm`, `mist.asm`, `focus_energy.asm` and `reflect_light_screen.asm`: Haze's resets, copy, target-only cure, Disable cells and volatile masks, and the three setters all match. The stat family is done.
+- **Gates**, one after another (I reran typecheck myself; Codex's first one had failed): typecheck clean; build `index-Dn4MlLpw.js` (unchanged); ROM **4103/4103**; no-ROM **3895 pass / 208 skip**.
+- **14 mutations of my own**, distinct from Codex's 16: all caught and restored.
+- The one earlier-test edit (the factory key list) was authorized mid-checkpoint.
+
+**Next:** checkpoint-05 (§10.10; Codex): Explode, Pay Day, Bide, Thrash, Switch / Teleport, multi-hit, OHKO, Charge, Trapping, Hyper Beam, Rage. Local commit only.
+
+### 2026-10-21 (A5c3c checkpoint-04b implemented; awaiting Claude's check) - Codex
+
+Haze, Mist, Focus Energy and the screens extend the unused stat factory. **107 new tests**, full Haze
+WRAM maps, 16 real-printer snapshots, **16/16 mutations caught/restored**; note 69 section 9.12.
+User authorized exactly one earlier assertion edit: factory expected keys2 ->6; title/other assertions
+unchanged. Gates once in order: initial typecheck found a nullable lookup in the new test, corrected;
+build's TypeScript recheck clean; ROM **4103/4103**, no-ROM **3895 pass / 208 skip**, 163 files. Bundle
+**index-Dn4MlLpw.js**, SHA256 unchanged. No production wiring/data/refs changes. One local commit;
+stop for Claude's check. **checkpoint-05 not started.**
+
+### 2026-10-21 (A5c3c checkpoint-04 checked) — Claude
+
+**Checkpoint-04 passes** (note 69 §10.7). Re-read against `effects.asm:387–798`, `core.asm:5084–5125` and the stat-name table: the extraction (48 raw bytes, EVADE's ratio overrun included), both stat routines, Minimize and Rage all match.
+- **Gates**, one after another: typecheck clean; build `index-Dn4MlLpw.js` (unchanged); ROM **3996/3996**; no-ROM **3788 pass / 208 skip**.
+- **16 mutations of my own**, distinct from Codex's 13: 15 caught; the 16th (`+2` threshold `$12` → `$11`) is equivalent, since ids `$10`/`$11` never reach stat-up. All restored.
+- **A5c3f carry-over:** the new extractor runs only from `extract_dev_data.ts`; fold it into `extractRom()` at the switch-over.
+
+**Next:** checkpoint-04b (§10.8; Codex): Haze, Mist, Focus Energy, Reflect / Light Screen. Local commit only.
+
+### 2026-10-21 (A5c3c checkpoint-04 implemented; awaiting Claude's check) - Codex
+
+Raw StatModTextStrings extractor first: ROM-confirmed 0f:7655, all ten-byte copies including EVADE's
+ratio overrun; setup twice, all 899 generated files byte-identical. New unused stat-up/down factory,
+live Rose/Fell suffixes, Minimize ports and real Rage composition: **185 new stat tests + 2 extraction
+tests**, 20 real-printer snapshots. **13/13 required mutations caught/restored**. Gates once in order:
+typecheck/build clean; ROM **3996/3996**, no-ROM **3788 pass / 208 skip**, 162 files. Bundle
+**index-Dn4MlLpw.js**, SHA256 unchanged. Note 69 section 9.11 has the ledgers/results. Earlier tests
+changed only in the guard; no production wiring or refs changes. One local commit; stop for Claude.
+**checkpoint-04b not started.**
+
 ### 2026-10-21 (A5c3c checkpoint-03 checked) — Claude
 
 **Checkpoint-03 passes** (note 69 §10.5). Re-read against `effects.asm:26–381, 1007–1032, 1165–1219`, `paralyze.asm`, `leech_seed.asm` and the constants; every handler matches, including confusion's incoming-A failure test and the player-only freeze recharge clear.

@@ -58,6 +58,8 @@ import type { TextBox } from './text/textbox';
 import { setTextSpeed } from './text/textbox';
 import { disablePikachuFollowing, enablePikachuFollowing, isPikachuFollowingDisabled } from './pikachu/pikachu_following';
 import type { ScriptCommand } from './script/types';
+import * as scriptModule from './script';
+import { pokemonToBoxed } from './pokemon_storage';
 import { getMenuSessionTiles } from './script/script_controller';
 import { pikachuEmotionPhase, pikachuEmotionNumber, pikachuEmotionBubble, clearPikachuEmotion } from './pikachu/pikachu_emotion';
 import { TextBox as RealTextBox } from './text/textbox';
@@ -100,6 +102,38 @@ beforeEach(() => {
   textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   for (const key of buttons) input.setKey(key, false);
   input.updateInput(); input.syncJoypadRead();
+});
+
+describe('checkpoint-02 main storage callback', () => {
+  it('the live party SWITCH moves each stat-exp tuple with its Pokemon', () => {
+    const a = createPokemon('RATTATA', 10)!, b = createPokemon('PIDGEY', 10)!;
+    const first = a.statExp = [1, 2, 3, 4, 5], second = b.statExp = [65535, 256, 63002, 0, 1];
+    host.playerParty.push(a, b); setBattleAndStartSavedMenuItem(1);
+    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(23);
+    r.step('a'); r.step(); r.step('a'); r.step();
+    r.step('down'); r.step(); r.step('a');
+    expect(host.playerParty).toEqual([b, a]);
+    expect(host.playerParty[0].statExp).toBe(second); expect(host.playerParty[1].statExp).toBe(first);
+    expect(host.playerParty.map(mon => mon.statExp)).toEqual([[65535, 256, 63002, 0, 1], [1, 2, 3, 4, 5]]);
+  });
+
+  it('old and new boxes deserialize with independent stat-exp arrays and the unchanged EXP reset', async () => {
+    await host.gameMap.load('PewterPokecenter');
+    const update = vi.spyOn(scriptModule, 'updateScript');
+    host.startScript([]); host.gameTick();
+    const storage = update.mock.calls[0][0].pcStorage!;
+    const boxed = pokemonToBoxed(createPokemon('RATTATA', 10)!); boxed.exp = 1234;
+    delete boxed.statExp;
+    const a = storage.deserialize(boxed)!, b = storage.deserialize(boxed)!;
+    expect(a.statExp).toEqual([0, 0, 0, 0, 0]); expect(b.statExp).toEqual([0, 0, 0, 0, 0]);
+    a.statExp[0] = 5; expect(b.statExp[0]).toBe(0); expect(boxed.statExp).toBeUndefined();
+    boxed.statExp = [1, 256, 63002, 64517, 65535];
+    const c = storage.deserialize(boxed)!;
+    expect(c.statExp).toEqual(boxed.statExp); expect(c.statExp).not.toBe(boxed.statExp);
+    c.statExp[0] = 999; expect(boxed.statExp[0]).toBe(1);
+    expect([a.exp, b.exp, c.exp]).toEqual([1000, 1000, 1000]);
+    expect([c.maxHp, c.attack, c.speed]).toEqual([a.maxHp, a.attack, a.speed]);
+  });
 });
 
 describe('V2c CP3 through main load paths and storage callback', () => {

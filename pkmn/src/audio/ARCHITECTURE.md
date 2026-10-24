@@ -6,6 +6,11 @@ Gym-leader precedence, Lance and RIVAL3 are tested against source IDs. CP4 prelo
 after audio unlock and drives this generator for every battle entry, followed by the second DelayFrame.
 A5c1 CP5 adds `low_health_alarm.ts`. The callback runs after the fade and before music. Nothing sets bit 7 until A5c3. Note 66 §10.19.
 
+A5c3d checkpoint-03 adds **unused data only** for Audio2 (bank $08) `level_up` ($4192, channels5/6/7),
+`faint_fall` ($41DA, channel5) and `faint_thud` ($41BF, channels5/8). Setup emits the JSON and static mirrors;
+the runtime preload list remains unchanged. Its census test now accounts for exactly these three unused files.
+No playback duration or bank/priority bridge is implemented by this data addition (note70 §9.5).
+
 Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
 (Web Audio `ScriptProcessorNode`).
 

@@ -324,3 +324,20 @@ describe.each([0, 1] as const)('real turn printer side %i', side => {
       totalPayDayMoney: [...r.s.mem.slice(A.wTotalPayDayMoney, A.wTotalPayDayMoney + 3)] }).toMatchSnapshot();
   });
 });
+
+// pret effects.asm:800-825. BideEffect always stores the flag, zeroes the accumulator and rolls; no already-active gate.
+it('retire-L789: fails if already in bide — reject legacy rule', () => {
+  for (const side of [0, 1] as const) {
+    const r = rig(side, 0x1a, [1]);
+    r.s.mem[r.u.flags1] |= 1;
+    r.s.mem[r.u.count] = 9;
+    r.expected(['R1', ...r.anim(0xae + side)], 12, memory => {
+      memory[r.u.flags1] |= 1;
+      memory[r.u.hits] = memory[r.u.hits + 1] = 0;
+      memory[A.wPlayerMoveEffect] = memory[A.wEnemyMoveEffect] = 0;
+      memory[r.u.count] = 3;
+      animationBytes(memory, 0xae + side, side === 0 ? 6 : 3);
+    });
+    expect(r.events.some(event => event.startsWith('text:'))).toBe(false);
+  }
+});

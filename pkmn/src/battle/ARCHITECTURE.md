@@ -1,5 +1,27 @@
 # Battle System Architecture
 
+A5c3d checkpoint-04 (note70 §9.7; awaiting check) adds six unused modules: `battle_end_state.ts` extends
+address names with byte views over the same mem; `battle_end_helpers.ts` holds raw FlagAction/alive/faint checks;
+`battle_two_option.ts` draws on existing battle tiles with wBuffer30, first read3 and answer15;
+`battle_slides.ts` owns the free HUD-only2-frame entry, front/trainer/back7/7/14 copies, faint14, trainer2*amount
+and return-scroll palette+7+24; `battle_pikachu.ts` gates identity with five OT bytes and applies source mood
+assignments; `battle_voice_cues.ts` brackets cry with alarm owner callbacks and retains the PCM's3-frame prefix.
+The two unused menu callers use HUD-only now; the live BattleScreen's full6-frame method is untouched. A narrow
+unused adapter accesses its existing private HUD/copy storage. No second screen/VRAM owner. Audio/video/
+Joypad/menu owner integration is still the later host's job; the raw cell view does not wire live owners.
+Four post-PCM SFX-ID clears wait for04b. All six modules are in the production import guard.
+
+A5c3d checkpoint-02 (note 70 §9.3; awaiting check) adds live `BattlePokemon.statExp` transport only:
+five words in HP/attack/defense/speed/special order, optional save/box fields, independent zero defaults and
+copies at serialization/deposit/load. Existing EXP resets and live stat calculations remain unchanged.
+Unused `battle_calc_stats.ts` shares the old b0 numeric body with b1's capped ceil-root bonus; it retains local
+arithmetic scratch and CalcStats writes five BE destination words. Unused `battle_calc_experience.ts` preserves
+six raw growth records, 24-bit underflows and a level search without a100 cap. Its SpeciesHeader provider must
+supply optional `growthRate`; missing data rejects explicitly. `battle_loaders.ts` now packs OT ID/name, EXP
+and stat-exp, then mirrors only the selected player object's identity/progress from bytes, without changing
+stats. The production import guard includes both new calculation modules. Recalculation/EXP award wiring
+and cartridge party-stat persistence remain A5c3f work.
+
 Unused turn entry: `mainInBattleLoop(state, ctx, host, ports, trainer?)` in `battle_turn.ts` composes
 MainInBattleLoop (note 68 §10.19). `ctx` is the existing `battleContext(state)` view with the caller's bag;
 `host` combines A5c2's action/move hosts and forwards per-print runner options. The shared `hudContext`
@@ -20,7 +42,7 @@ imports from `main.ts` to keep all 14 A5c3b ports outside the running graph (not
 The player reloads the move before checking CHARGING_UP; the enemy release supplies the MOVE_NAME list
 index/type/bank to `getName`, which writes NamedObjectIndex and loads the name before the string copy.
 
-**A5c3c move effects (in progress; checkpoints 01–06 checked by Claude 2026-10-22; note 69).** `battle_effects.ts`
+**A5c3c move effects (complete; ten checkpoints checked by Claude 2026-10-22; note 69 §10.20).** `battle_effects.ts`
 holds the 86-entry `MOVE_EFFECT_POINTERS` and `jumpMoveEffect`. That throws on `$00`, the seven `NULL`s and an
 unregistered label, and returns `b = 1`. Handlers come from per-family factories keyed by wrapper label:
 - `statusEffectHandlers` (`battle_effects_status.ts`);
@@ -38,7 +60,11 @@ A5e.
 
 Entry Programs bind their screen through `battle_screen_binding.ts`, so a refresh can't land on a lazily created
 screen. The stat names come from the generated `data/stat_mod_text.json` (raw bytes, EVADE's overrun included).
-Checkpoint-07 composes every id through `executePlayerMove` / `executeEnemyMove`.
+`battle_effects_registry.ts` composes the four factories into one registry: 34 labels, no label in two factories. `composedJumpMoveEffect` binds that registry as the execute port. Two test files cover the composition:
+- `battle_effects_composed.test.ts` runs all 86 ids through `executePlayerMove` / `executeEnemyMove` on both sides, at their note 69 §9.2 stages, with the §4 bug pins.
+- `effects_retirement.test.ts` maps all 139 old `effects.test.ts` cases to ASM-backed replacements. A5c3f deletes `effects.ts` and `effects.test.ts` against it.
+
+One known divergence: the extracted stat names keep only 4 bytes past `EVADE@`. So the unused `$4A` and `$4B` don't print the ratio and code bytes the cartridge does (backlog, J2).
 
 **A5c3a state and plumbing (complete, checked by Claude 2026-10-20; note 68 §11.13).** `battle_state.ts` owns WRAM cells and the menu
 views; `battle_loaders.ts` loads battle copies and writes party data at the cartridge's specific points.
@@ -305,7 +331,8 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 | `battle_effects_status.ts` | 207 | A5c3c: Sleep, Poison, Freeze / Burn / Paralyze + the fire thaw, Paralyze, Confusion, Flinch, Leech Seed. **Unused until A5c3f** |
 | `battle_effects_stats.ts` | 225 | A5c3c: stat up / down (`PrintStatText`, Minimize, Rage's direct call), Haze, Mist, Focus Energy, Reflect / Light Screen. **Unused until A5c3f** |
 | `battle_effects_turns.ts` | 190 | A5c3c: Explode, Pay Day, Bide, Thrash, Switch / Teleport, multi-hit, OHKO, Charge, Trapping, Hyper Beam, Rage. **Unused until A5c3f** |
-| `battle_effects_hp.ts` | 114 | A5c3c: Drain / Dream Eater, Recoil, Heal / Rest, Substitute (checkpoint-06b adds Transform, Conversion, Mimic, Disable, Splash). **Unused until A5c3f** |
+| `battle_effects_hp.ts` | 311 | A5c3c: Drain / Dream Eater, Recoil, Heal / Rest, Substitute, Transform, Conversion, Mimic (with its move menu), Disable, Splash. **Unused until A5c3f** |
+| `battle_effects_registry.ts` | 31 | A5c3c: the composed registry and `composedJumpMoveEffect`. **Unused until A5c3f** |
 
 **A5c1 (note 66, DECISIONS #72)** built these, plus the battle text programs in `text_programs.json`, `UpdateHPBar`
 both ways in `menus/hp_bar.ts`, and the low-health alarm (`audio/low_health_alarm.ts`). Today's battle still runs on
