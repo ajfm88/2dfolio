@@ -43,6 +43,9 @@ function record(moveId: number): MoveRecord {
   return move;
 }
 
+/** Raw six-byte Moves record, shared by the unused LearnMove FarCopyData path. */
+export function getMoveRecord(moveId: number): readonly number[] { return record(moveId).bytes; }
+
 function moveAddress(state: BattleState): number {
   return state.hWhoseTurn === 0 ? A.wPlayerMoveNum : A.wEnemyMoveNum;
 }

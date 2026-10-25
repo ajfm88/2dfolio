@@ -156,13 +156,14 @@ describe('source-shaped Pikachu gates and happiness', () => {
   });
 });
 
-it('voice cue ledger: cry brackets the owner alarm at0 frames; clip waits3 serviced frames without touching alarm', () => {
+it('voice cue ledger: cry brackets the owner alarm at0 frames; clip waits3 then clears SFX IDs without touching alarm', () => {
   let frame = 0; setLowHealthAlarm(0x9e); const log: unknown[] = [];
   const host = { getAlarm: lowHealthAlarm, setAlarm: (v: number) => { setLowHealthAlarm(v); log.push([frame, 'alarm', v]); },
-    cry: (id: number) => { log.push([frame, 'cry', id, lowHealthAlarm()]); }, clip: (id: number) => { log.push([frame, 'clip', id, lowHealthAlarm()]); } };
+    cry: (id: number) => { log.push([frame, 'cry', id, lowHealthAlarm()]); }, clip: (id: number) => { log.push([frame, 'clip', id, lowHealthAlarm()]); },
+    clearSfxIds: () => { log.push([frame, 'clearSfxIds', lowHealthAlarm()]); } };
   playCryCue(host, 84);
   const result = finish(playPikachuClipCue(host, 37), kind => { frame++; log.push([frame, kind]); });
   expect(result.frames).toEqual(['serviced', 'serviced', 'serviced']);
-  expect(log).toEqual([[0,'alarm',0],[0,'cry',84,0],[0,'alarm',158],[1,'serviced'],[2,'serviced'],[3,'serviced'],[3,'clip',37,158]]);
+  expect(log).toEqual([[0,'alarm',0],[0,'cry',84,0],[0,'alarm',158],[1,'serviced'],[2,'serviced'],[3,'serviced'],[3,'clip',37,158],[3,'clearSfxIds',158]]);
   expect(lowHealthAlarm()).toBe(158); setLowHealthAlarm(0);
 });

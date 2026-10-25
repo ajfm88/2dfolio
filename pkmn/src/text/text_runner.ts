@@ -4,7 +4,7 @@ import type { PlaceActors, PrinterPorts } from './text_printer';
 import type { TextBinding, TextPrograms } from '../rom/extractors/text_programs';
 
 type NumericTextBinding = Extract<TextBinding, 'money' | 'coins' | 'hpDifference'
-  | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'curEnemyLevel'>;
+  | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'curEnemyLevel' | 'amountMoneyWon' | 'totalPayDayMoney'>;
 export type TextBindings = Partial<Record<Exclude<TextBinding, NumericTextBinding>, string>
   & Record<NumericTextBinding, number>>;
 export interface RunnerPorts extends PrinterPorts {
@@ -26,10 +26,15 @@ export interface TextAsmState {
 /** Returns the next program to run on this screen, or nothing to continue after the op. */
 export type TextAsmHandler = (state: TextAsmState) => string | void;
 
-/** Per-print runner configuration; ordinary overworld prints leave both absent. */
+/** Optional per-print CPU continuation. Each yield holds a frame on the same text screen. */
+export type TextAsmContinuation = (state: TextAsmState) => Generator<void, string | void, void>;
+
+/** Per-print runner configuration; ordinary overworld prints omit these options. */
 export interface TextRunnerOptions {
   actors?: PlaceActors;
   asm?: Record<string, TextAsmHandler>;
+  /** Overrides a synchronous handler only for this print; never registers on the runner. */
+  asmContinuations?: Readonly<Record<string, TextAsmContinuation>>;
 }
 
 /** effects.asm:552–565. cp ATTACK_DOWN1_EFFECT ($12); ret nc keeps GreatlyRoseText. */
@@ -76,7 +81,8 @@ export class TextProgramRunner {
     this.asmHandlers.set(label, handler);
   }
 
-  *run(label: string, bindings: TextBindings = {}, noDelay = false): Generator<void, TextReturn> {
+  *run(label: string, bindings: TextBindings = {}, noDelay = false,
+    continuations?: TextRunnerOptions['asmContinuations']): Generator<void, TextReturn> {
     const ops = this.programs[label];
     if (!ops) throw new Error(`missing text program ${label}`);
     for (const op of ops) {
@@ -85,7 +91,7 @@ export class TextProgramRunner {
           if (yield* this.screen.placeString(substituteNames(op.text), noDelay, this.battleNames)) return 'returned';
           break;
         case 'far':
-          if ((yield* this.run(op.program, bindings, noDelay)) === 'asm') return 'asm';
+          if ((yield* this.run(op.program, bindings, noDelay, continuations)) === 'asm') return 'asm';
           break;
         case 'ram': {
           const text = bindings[op.binding];
@@ -147,14 +153,16 @@ export class TextProgramRunner {
           this.screen.setBc(1, 16);
           break;
         case 'asm': {
+          const continuation = continuations?.[label];
           const handler = this.asmHandlers.get(label);
-          if (!handler) return 'asm';
+          if (!continuation && !handler) return 'asm';
           const bc = this.screen.bc();
-          const next = handler({ label, column: bc.column, row: bc.row });
+          const state = { label, column: bc.column, row: bc.row };
+          const next = continuation ? yield* continuation(state) : handler!(state);
           if (next === undefined) break;
           // TextCommand_START_ASM returns into NextTextCommand. The handler's HL
           // replaces the command pointer on this screen; PrintText is not called again.
-          if ((yield* this.run(next, bindings, noDelay)) === 'asm') return 'asm';
+          if ((yield* this.run(next, bindings, noDelay, continuations)) === 'asm') return 'asm';
           return 'returned';
         }
         default: throw new Error(`unsupported text op ${op.op} (A5b7) in ${label}`);

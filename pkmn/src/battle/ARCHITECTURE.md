@@ -1,5 +1,87 @@
 # Battle System Architecture
 
+A5c3d checkpoint-08b adds test-only whole-battle ledgers (`battle_whole.test.ts`,
+`test/battle_ledger_rig.ts`) through the real loop/end, turn/effects, faint/EXP, send-out, menu, text,
+video and audio owners. Snapshots retain timed frame/RNG/text/audio/WRAM/mirror histories; deferred
+AI/item/animation/voice/evolution bodies remain named hand-offs. A prior-award level-then-run history
+uses real GainExperience before the loop because a wild faint cannot legally continue. The executable
+26/17 manifests in `end_retirement.test.ts` preserve per-case dispositions, replacement titles and a
+legacy-helper caller/export census. Both old suites and all production source stay unchanged.
+Implemented 2026-10-24 and checked (note70 §9.29, §9.30): **A5c3d complete**.
+
+A5c3d checkpoint-08 adds unused `battle_end.ts` and `battle_loop.ts` (approved08/08b split, note70 §9.2
+item7). EndOfBattle collects packed Pay Day money only on result0, before its text, then clears ForceEvolution,
+yields to the existing evolution hand-off and applies the living-starter mood floor. Its reset uses the
+authoritative alarm/CHAN5 owner and saved-menu owners, clears exactly the source battle status span,
+sets cooldown, waits on remaining sound, whites registers and writes warp$FF. CHAN5 ID clearing does
+not perform sound_ret or hardware muting; the disabled flag and other sound IDs remain source-owned.
+The existing packed-money codec is exported from the unused faint module for reuse. Blackout's full
+ClearScreen now keeps its source Delay3; four additional faint regressions close §9.26's gaps.
+The driver consumes MainInBattleLoop labels and FaintExit results using a flat generator loop, forwarding
+the same state/context/host/ports. EndOfBattle remains _InitBattleCommon's separate call after every
+normal return, including blackout. Both entries enforce the existing screen binding. The import guard
+lists all16 A5c3d modules. Whole-battle ledgers and executable26/17 retirement manifests remain08b;
+note70 §9.27 records this checkpoint's entry/unit contracts, mutations and gates.
+
+A5c3d checkpoint-07 adds unused `battle_faint.ts`: both faint handlers, enemy/player removal, blackout,
+trainer victory, victory music and EnemyRan. Handlers return `loop`/`end`/`blackout` for08's driver;
+they compose the checked chooser, enemy replacement and real EXP/learning Programs. Double-faint order,
+source Bide-byte quirks, suppressed duplicate player removal and EXP.ALL's two passes remain intact.
+Audio uses the existing alarm and BattleAudio IDs/modifiers; fall polls CHAN5, thud waits normally,
+and victory calls the existing StopAllMusic/music owner then Delay3. A byte-counter trace pins fall9,
+thud pulse17/noise31 after the bridge; the old pre-bridge17-frame fall measurement is not a golden.
+V1c's victory ordering, music rule and post-picture delay are rehosted on committed text and real
+palette/copy/scroll Programs; packed money uses the existing saturated AddBCD helper after its text.
+The retained PrintEndBattleText prefix/selected program stays the approved injected map hand-off
+(A5c3f/data extraction carry). Ordinary cry, PCM and EnemyRan's animation body remain approved cues.
+No new audio/video clock, live import or generated data; note70 §9.25 records tests and gates.
+
+A5c3d checkpoint-06b adds unused `learn_move.ts`: shared field/battle LearnMove, its full-set question,
+single-spaced forget menu, HM refusal/retry, abandonment loop and success result. `bindLearnMove` fills
+checkpoint-06's existing seam. Source party bytes own the selected move/PP write; the six-byte record
+comes from the existing move-data cache, PP Ups reset, and an active in-battle learner copies all four
+moves and PP even while transformed. The selected object move mirrors the raw write. Field and reserve
+calls preserve the battle struct. No battle-only initialization or level-up state is required.
+The existing formatter supplies the menu text; its new narrow host type changes no behavior. The adapter
+also writes source wMoves/wMovesString and name scratch. Existing YES/NO, MenuInput, tile/Buffer1 and
+retained text owners run the prompts. OneTwoAndText's yielding continuation calls BattleAudio.playSwap
+inside the same print, then returns PoofText so both pauses and ForgotAndText retain the cursor. Bank02
+field and bank08 battle jingles resolve through the same audio owner; no new clock or audio state.
+Item0 regressions and mutation/gate evidence are in note70 §9.23. No production import.
+
+A5c3d checkpoint-06 adds unused `battle_experience.ts`: GainExperience and its seven-byte in-place
+division/low-word boost helpers, party LoadMonData, PrintStatsBox, the scroll-button wait and the first
+exact-level learnset choice. It composes checkpoint-02's stat/growth routines and existing modified-stat,
+penalty, badge, HUD, happiness, text, video and audio owners. A changed level runs one block at the final
+level; reserve party writes stay separate from active battle writes, and transformed unmodified stats
+remain intact. EXP/stat EXP and recalculated party stats mirror from the authoritative raw slots.
+The existing header loader now writes an available growth byte; GainExperience rejects missing growth
+data before CalcExperience(100). Older fixtures may still omit it. GrewLevelText uses the retained printer
+and the audio owner's bank-relative sound port. The scroll wait calls its existing low-sensitivity input
+owner immediately, yields serviced frames while waiting, restores raw blink counters and adds no press
+sound. Town-map/CableClub callbacks remain with their owners. Shared LearnMove is a yielding B-result
+port for06b; this module only chooses the first exact-level move, rejects duplicates and applies the
+accepted starter Thunder/Thunderbolt mood. No production import; note70 §9.21 records tests and gates.
+
+A5c3d checkpoint-05 adds unused `battle_send_out.ts`: the player send-out/retreat text handlers, raw
+HP-prefix arithmetic, regular retreat tile writes, starter asleep scan, send-out, forced choose, use-next
+dialogue, switching, and the A5c2 switch-port binding. It composes the existing picture/HUD/palette owners,
+PartyMenu's choose-only sessions, audio/voice cues and retained text continuations. Session frames stay with
+the party owner; these routines add no clock. The binding converts A5c2's object species IDs to the raw
+party-list byte before the byte-based loader. Animation bodies and cries retain their approved A5e/J2 cue
+contracts; the real outer waits,14-frame back copy and seven-frame retreat writes are present.
+Note70 §9.17 records tests and the unchanged bundle.
+
+A5c3d checkpoint-05b adds unused `battle_enemy_send_out.ts`: EnemySendOut/FirstMon, enemy replacement,
+the SHIFT prompt and choose-only party retries. FirstMon preserves participation; EnemySendOut resets it;
+an accepted SHIFT arrives on the enemy side before SwitchPlayerMon rebuilds the player bits. The existing
+screen copy queue loads four committed Pokéball patterns into the renderer's sprite atlas in one serviced
+frame (zero with LCD off); replacing its image reference invalidates the renderer's decoded-tile cache.
+The same screen owns HUD/OAM writes, slides, palette holds and front-picture copies. The player module
+exports its existing palette, sprite-clear and party-choice helpers for this composition; their bodies are
+unchanged. No shared live file or production import changes. Link exchange still rejects at its source
+branch; animation/cry bodies retain the same approved cues. Tests and mutation evidence: note70 §9.19.
+
 A5c3d checkpoint-04 (note70 §9.7; awaiting check) adds six unused modules: `battle_end_state.ts` extends
 address names with byte views over the same mem; `battle_end_helpers.ts` holds raw FlagAction/alive/faint checks;
 `battle_two_option.ts` draws on existing battle tiles with wBuffer30, first read3 and answer15;
@@ -9,7 +91,10 @@ assignments; `battle_voice_cues.ts` brackets cry with alarm owner callbacks and 
 The two unused menu callers use HUD-only now; the live BattleScreen's full6-frame method is untouched. A narrow
 unused adapter accesses its existing private HUD/copy storage. No second screen/VRAM owner. Audio/video/
 Joypad/menu owner integration is still the later host's job; the raw cell view does not wire live owners.
-Four post-PCM SFX-ID clears wait for04b. All six modules are in the production import guard.
+Checkpoint-04b binds the post-PCM ID-clear callback to `BattleAudio.clearClipIds`, including real music-drum
+occupancy. Its unused bridge shares CHAN5 with the alarm, reads cry/battle classification per raw pulse note,
+and retains Audio1 across the yielding swap's preceding-SFX and completion waits. See note70 §9.13 and the
+audio architecture. All these modules remain in the production import guard.
 
 A5c3d checkpoint-02 (note 70 §9.3; awaiting check) adds live `BattlePokemon.statExp` transport only:
 five words in HP/attack/defense/speed/special order, optional save/box fields, independent zero defaults and

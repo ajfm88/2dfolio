@@ -253,7 +253,7 @@ export class TextBox {
       const runner = new TextProgramRunner(screen, getTextPrograms(), this.ports());
       runner.setBattleNames(opts.actors);
       for (const [label, handler] of Object.entries(opts.asm ?? {})) runner.registerAsm(label, handler);
-      this.textReturn = yield* runner.run(source.program, opts.bindings, opts.noDelay);
+      this.textReturn = yield* runner.run(source.program, opts.bindings, opts.noDelay, opts.asmContinuations);
     } else {
       yield* screen.placeString(substituteNames(source.text), opts.noDelay);
       this.textReturn = 'returned';

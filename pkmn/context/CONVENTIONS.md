@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 4676/4676** as of 2026-10-22 (A5c3d checkpoint-04). No-ROM **4458 pass / 218 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5012/5012** as of 2026-10-24 (A5c3d checkpoint-08b; A5c3d complete). No-ROM **4794 pass / 218 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -251,7 +251,47 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-4676 tests in 174 files (vitest, `environment: 'node'`); without ROM, 4458 pass / 218 skip.
+5012 tests in 179 files (vitest, `environment: 'node'`); without ROM, 4794 pass / 218 skip.
+
+**A5c3d checkpoint-08b** (2026-10-24, note70 §9.29; checked §9.30, A5c3d complete) adds29 no-ROM cases:
+`battle_whole.test.ts` has26 real loop/end histories, backed by the test-only `battle_ledger_rig.ts`;
+`end_retirement.test.ts` has two per-suite AST manifests (26/17 old cases) and the surviving-helper
+caller/export census. Ten mutations caught/restored. Old files/assertions and production source unchanged;
+all four gates pass in order without retry, bundle `index-DbYKMUqM.js` and SHA256 unchanged.
+
+**A5c3d checkpoint-08** (2026-10-23, note70 §9.27; approved08/08b split) adds42 no-ROM cases:
+five Item0 fixes/regressions,19 EndOfBattle cases and18 driver entry/unit cases. Five matching Item0
+and21 end/driver mutations caught/restored; focused397/397. A literal alarm-census suffix false positive
+was resolved by aliasing the same reset-helper import, leaving the test unchanged; the full ordered
+gate rerun passes. Bundle `index-DbYKMUqM.js` and SHA256 unchanged. Whole-battle ledgers and executable
+26/17 retirement manifests remain08b, after Claude checks08; A5c3d is not complete yet.
+
+**A5c3d checkpoint-07** (2026-10-23, note70 §9.25) adds51 no-ROM cases in the existing
+`battle_send_out.test.ts`: one cursor regression with its matching mutation and50 faint/victory cases.
+The unused Programs compose the checked text/video/audio/party/EXP owners; the Audio1 counter trace
+pins post-bridge fall9, thud pulse17/noise31. All25 additional mutations caught/restored; focused
+checks263/263. Ordered typecheck/build/ROM/no-ROM pass without retries; `index-DbYKMUqM.js` and SHA256
+unchanged. Awaiting Claude's check.
+
+**A5c3d checkpoint-06b** (2026-10-23, note70 §9.23) adds33 no-ROM cases in
+`battle_send_out.test.ts`: three matching-mutation regressions and30 shared LearnMove cases. Field and
+battle paths use the retained text, menus and authoritative swap/audio owners; the EXP seam is filled.
+All22 LearnMove mutations caught/restored after removing the test's dependence on the implementation's
+HM list. Focused checks255/255. Ordered typecheck/build/ROM/no-ROM pass without retries; bundle
+`index-DbYKMUqM.js` and SHA256 unchanged. Awaiting Claude's check.
+
+**A5c3d checkpoint-06** (2026-10-23, note70 §9.21) adds61 no-ROM cases in
+`battle_send_out.test.ts`: three enemy regressions (matching mutations caught) and58 EXP/level-up cases.
+The new module composes the checked stat/growth, text, video/audio and happiness owners; LearnMove stays
+a yielding B-result port for06b. All24 EXP mutations caught/restored after adding a saturated stat-EXP
+case for the initial b0 survivor. Ordered typecheck/build/ROM/no-ROM pass without retries, bundle
+`index-DbYKMUqM.js` and SHA256 unchanged. Awaiting Claude's check.
+
+**A5c3d checkpoint-05b** (2026-10-23, note70 §9.19) adds31 no-ROM cases in
+`battle_send_out.test.ts`: four player regressions, each caught on its matching mutation, and27 enemy
+send-out/replacement/SHIFT cases over the real party/text/video/audio owners. All17 additional enemy
+mutations caught and restored. Ordered typecheck/build/ROM/no-ROM gates pass without retries; production
+bundle `index-DbYKMUqM.js` and its SHA256 unchanged. Awaiting Claude's check.
 
 **A5c3d checkpoint-04** (2026-10-22, note70 §9.7) adds46 no-ROM cases:
 `battle/battle_end_helpers.test.ts` (25), `battle/battle_slides.test.ts` (11), `battle/battle_two_option.test.ts` (10).

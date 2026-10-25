@@ -69,6 +69,7 @@ interface SfxChannelState {
   commands: SfxCommand[];
   pc: number;
   noteDelayCounter: number;
+  noteDelayFractional: number;
   dutyCycle: number;
 
   // square_note state
@@ -88,6 +89,9 @@ interface SfxChannelState {
 
   // sound_loop
   loopCounter: number;
+  /** Audio2 battle SFX use wTempoModifier on pulse channels; normal callers stay at $0100. */
+  /** Present only for the opt-in Audio2 bridge; evaluated at each raw pulse note. */
+  battleModifiers: (() => { tempo: number; frequency: number }) | null;
 }
 
 // ─── SFX Engine ──────────────────────────────────────────────────────────────
@@ -100,6 +104,13 @@ export class SfxEngine {
 
   // Callback to notify music engine when SFX finishes on a channel
   onChannelDone: ((hwChannel: number) => void) | null = null;
+  /** Opt-in observers for ports which own wChannelSoundIDs. */
+  onSfxChannelDone: ((id: number) => void) | null = null;
+  /** Audio1_UpdateMusic skips an SFX channel once its authoritative sound ID becomes 0. */
+  channelEnabled: ((id: number) => boolean) | null = null;
+  /** Audio1_PlayNextNote may return before reading any command (the CHAN5 alarm). */
+  beforeNextNote: ((id: number) => boolean) | null = null;
+  onSoundIdsCleared: (() => void) | null = null;
 
   /** What music-mode SFX channels read: the SFX tempo and the wave instruments. */
   private readonly host: ChannelHost;
@@ -124,6 +135,9 @@ export class SfxEngine {
     this.waveSamples = samples;
   }
 
+  /** Audio1_EnableChannelOutput changes routing without re-triggering or muting the DAC. */
+  enableChannelOutput(hwChannel: number): void { this.synth.setChannelOutput(hwChannel, true); }
+
   /**
    * Play an SFX. Stops any currently playing SFX first (upstream's rule; the cartridge
    * replaces only the channels the new sound uses, by priority — a logged departure).
@@ -133,6 +147,26 @@ export class SfxEngine {
     this.channels = [];
     this._playing = true;
 
+    this.install(data);
+  }
+
+  /**
+   * Audio2_PlaySound's successful common path. The battle bridge has already performed
+   * its reverse-header priority walk and cleared the accepted channels. This deliberately
+   * does not implement priority for ordinary SFX callers.
+   */
+  installBattleSfx(data: SfxData, battleModifiers: () => { tempo: number; frequency: number }): void {
+    this.install(data, battleModifiers);
+  }
+
+  /** InitSFXVariables: clear software state only; do not sound_ret, mute, or release music. */
+  clearChannelsForPriority(ids: readonly number[]): void {
+    const selected = new Set(ids);
+    this.channels = this.channels.filter(ch => !selected.has(ch.id));
+    this._playing = this.channels.some(ch => ch.active);
+  }
+
+  private install(data: SfxData, battleModifiers: (() => { tempo: number; frequency: number }) | null = null): void {
     // Audio1_UpdateMusic runs CHAN5 → CHAN8 in order, whatever the header's order
     for (const ch of [...data.channels].sort((a, b) => a.id - b.id)) {
       const hwCh = ch.id <= 4 ? ch.id - 1 : ch.id - 5; // ch5->0, ch6->1, ch7->2, ch8->3
@@ -144,7 +178,8 @@ export class SfxEngine {
         music: musicMode ? new SoundChannel(ch.id, ch.commands, this.host) : null,
         commands: ch.commands,
         pc: 0,
-        noteDelayCounter: 0,
+        noteDelayCounter: battleModifiers ? 1 : 0,
+        noteDelayFractional: 0,
         dutyCycle: 2,
         volume: 15,
         fade: 0,
@@ -156,9 +191,11 @@ export class SfxEngine {
         sweepCounter: 0,
         isNoiseChannel: hwCh === 3,
         loopCounter: 0,
+        battleModifiers,
       };
       this.channels.push(state);
     }
+    this._playing = this.channels.some(ch => ch.active);
   }
 
   /**
@@ -184,13 +221,14 @@ export class SfxEngine {
   clearSoundIds(): void {
     this.channels = [];
     this._playing = false;
+    this.onSoundIdsCleared?.();
   }
 
   /**
    * Check if SFX is active on a specific hardware channel (0-3).
    */
   isChannelActive(hwChannel: number): boolean {
-    return this.channels.some(ch => ch.active && ch.hwChannel === hwChannel);
+    return this.channels.some(ch => ch.active && ch.hwChannel === hwChannel && (this.channelEnabled?.(ch.id) ?? true));
   }
 
   /**
@@ -202,6 +240,7 @@ export class SfxEngine {
     let anyActive = false;
     for (const ch of this.channels) {
       if (!ch.active) continue;
+      if (this.channelEnabled && !this.channelEnabled(ch.id)) { ch.active = false; continue; }
       this.tickChannel(ch);
       if (ch.active) anyActive = true;
     }
@@ -214,13 +253,23 @@ export class SfxEngine {
   // ─── Tick Logic ────────────────────────────────────────────────────────
 
   private tickChannel(ch: SfxChannelState): void {
+    if (ch.battleModifiers && (ch.music?.noteDelayCounter ?? ch.noteDelayCounter) === 1
+      && this.beforeNextNote?.(ch.id)) return;
     if (ch.music) {
+      if (ch.battleModifiers && ch.music.noteDelayCounter === 1) this.enableChannelOutput(ch.hwChannel);
       ch.music.tick(false);
       if (!ch.music.active) {
         // Its final sound_ret: the sound ID is cleared and the channel handed back
         ch.active = false;
         this.finishChannel(ch);
       }
+      return;
+    }
+
+    // Audio1_ApplyMusicAffects: byte 0 decrements to $FF; only 1 reads commands.
+    if (ch.battleModifiers && ch.noteDelayCounter !== 1) {
+      ch.noteDelayCounter = (ch.noteDelayCounter - 1) & 0xff;
+      this.applyTickEffects(ch);
       return;
     }
 
@@ -340,9 +389,17 @@ export class SfxEngine {
         }
 
         case 'square_note': {
+          if (ch.battleModifiers) this.enableChannelOutput(ch.hwChannel);
           // square_note length, volume, fade, frequency
           // Length is in frames (length + 1)
-          ch.noteDelayCounter = cmd.length! + 1;
+          if (ch.battleModifiers) {
+            // Audio1_note_length: (length + 1) * tempo plus this channel's retained
+            // fractional byte. Noise bypasses Audio1_SetSfxTempo entirely.
+            const modifier = ch.battleModifiers();
+            const total = (cmd.length! + 1) * modifier.tempo + ch.noteDelayFractional;
+            ch.noteDelayCounter = (total >>> 8) & 0xff;
+            ch.noteDelayFractional = total & 0xff;
+          } else ch.noteDelayCounter = cmd.length! + 1;
           ch.volume = cmd.volume!;
 
           // Encode fade
@@ -354,7 +411,7 @@ export class SfxEngine {
           ch.fadeCounter = 0;
 
           // Direct frequency register value
-          ch.currentFreqReg = cmd.frequency! & 0x7FF;
+          ch.currentFreqReg = (cmd.frequency! + (ch.battleModifiers?.().frequency ?? 0)) & 0x7FF;
           const hz = 131072 / (2048 - ch.currentFreqReg);
 
           if (ch.hwChannel <= 1) {
@@ -366,6 +423,7 @@ export class SfxEngine {
         }
 
         case 'noise_note': {
+          if (ch.battleModifiers) this.enableChannelOutput(ch.hwChannel);
           // noise_note length, volume, fade, param
           ch.noteDelayCounter = cmd.length! + 1;
           ch.volume = cmd.volume!;
@@ -447,5 +505,6 @@ export class SfxEngine {
   private finishChannel(ch: SfxChannelState): void {
     this.silenceHwChannel(ch.hwChannel);
     this.onChannelDone?.(ch.hwChannel);
+    this.onSfxChannelDone?.(ch.id);
   }
 }

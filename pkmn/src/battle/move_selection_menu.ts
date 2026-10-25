@@ -8,12 +8,12 @@ import type { MenuCursorState } from '../menus/tile_surface';
 import { textBgTransfer } from '../text/bg_transfer';
 import { moveTypeDisplayName } from './type_names';
 import { delayFrames } from './battle_menu_context';
-import type { BattleMenuContext, MoveMenuFlags, MoveMenuHost, Program } from './battle_menu_context';
+import type { BattleMenuContext, MoveMenuFlags, MoveMenuHost, Program, MenuMove } from './battle_menu_context';
 
 const STRUGGLE = 165;
 const KEYS: readonly GameButton[] = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
 
-export function formatMovesString(ctx: BattleMenuContext, moves: readonly number[], host: MoveMenuHost): void {
+export function formatMovesString(ctx: BattleMenuContext, moves: readonly number[], host: { getMove(id: number): Pick<MenuMove, 'name'> }): void {
   let text = '', empty = false;
   for (let row = 0; row < 4; row++) {
     const id = moves[row] ?? 0;

@@ -15,6 +15,30 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-22 (A5c3d checkpoint-02 implemented; awaiting Claude's check) — Codex
+
+Stat-exp tuple/default/copy transport is live; both load-time EXP resets remain unchanged and party stats are not newly persisted. Added unused OT/EXP/stat-exp byte adapter + mirror, shared b0/b1 CalcStat/CalcStats and raw six-row growth/level routines. **35 new cases**, earlier assertions/snapshots unchanged; **12/12 mutations caught/restored**. Details: note 70 **§9.3**.
+
+Gates in order: typecheck clean; build `index-DmUTdeN6.js` (SHA256 `7c870757…4507923d`); ROM **4621/4621**; no-ROM **4412 pass / 209 skip**. One local commit, `A5c3d checkpoint-02: stat experience`; never pushed. **Stop for Claude's check; checkpoint-03 not started.**
+
+### 2026-10-22 (A5c3d checkpoint-01 checked) — Claude
+
+**Passes** (note 70 **§9.2**). Re-read Codex's plan-changing corrections against pret and they hold: an ordinary run leaves `wBattleResult` = 2 (my §2.6 said 1; the skip-Pay-Day conclusion stands); `LoadHudTilePatterns` is two copies, the six-wait body is `LoadHudAndHpBarAndStatusTilePatterns`; `LoadMonBackPic` costs 14 frames; Pikachu's clips wait three frames before the PCM. Answers: checkpoint-04 fixes A5c2's unused HUD tails now (new free function; `battle_screen.ts` is in the production graph); **04b** adds the battle audio bridge and **04c** the yielding `text_asm` continuation, each allowed a recorded hash if it touches shared live files; checkpoint-02 adds `deserializeBoxed` to its files and keeps the live EXP reset; link throws at the first branch; `TrainerEndBattleText` / `_TrainerNameText` are extracted in checkpoint-03. Backlog +4 lines (note 57). Docs only. **Next: Codex runs checkpoint-02.** Local commit only.
+
+### 2026-10-22 (A5c3d checkpoint-01 traced; awaiting Claude's check) — Codex
+
+Completed note 70 §6 items 1–13 in **§9.1**, against pret `e89ead15` and symbols `573535d` (sym copy in the temporary scratchpad). Corrections are explicit: ordinary run result **2**, HUD-only reload **2 frames**, back-pic copies **14**, PCM's **3-frame prefix**, and the alarm/CHAN5, yielding text-asm and missing end-text-prefix seams. Includes ordered routine/exit ledgers, 149-address alias census, 42 text keys, stat-exp/storage audit, audio-rig measurements, cross-port disagreements and all **26 + 17** retirement mappings. Seven numbered questions for Claude. **Docs only** (note 70 + STATUS); no code/test/data/snapshot changes, no build or test gates run. One local commit; never pushed. **Next: Claude checks checkpoint-01; checkpoint-02 not started.**
+
+### 2026-10-22 (A5c3d planned) — Claude
+
+The user answered O-42 ("yes" to the recommendation) and named **Codex** for A5c3d (**DECISIONS #80**). The plan is **`notes/70-a5c3d-plan.md`**: the routine map (§1), eleven findings (§2), 23 behaviours to pin (§3), eight checkpoints (§5), and the checkpoint-01 brief (§6). Main findings:
+- the faint handlers `jp MainInBattleLoop`, so checkpoint-08 adds a loop driver over A5c3b's exits;
+- **checkpoint-02 (stat experience) is the one live change, with no behaviour change**: five stat-exp words on `BattlePokemon`, the save and the box (old saves = zeros). Storing the party's stats and rewiring withdrawal / evolution waits for A5c3f, because today's battle writes burn, paralysis, Transform and badge changes into the party objects;
+- the level-up text sound is bank-relative (`get_item1` plays `SFX_LEVEL_UP` in battle); `level_up`, `faint_fall` and `faint_thud` are extracted in checkpoint-03, data only;
+- running away or catching skips Pay Day, evolution and the mood floor (`wBattleResult` 1 / 2).
+
+Cries and Pikachu's clips stay cues (#45, #69). Backlog gained five lines (note 57). STATUS's six oldest entries moved to HISTORY. Docs only. **Next:** Codex runs A5c3d checkpoint-01 (trace, no code), then Claude checks it. Local commit only.
+
 ### 2026-10-22 (session closed; next: Claude plans A5c3d) — Claude
 
 **The user ended the session here. The next Claude session plans A5c3d** (no implementer is named yet; the user names one per checkpoint). Docs brought current: CLAUDE.md, PROJECT, PLAN, ARCHITECTURE, CONVENTIONS and `game/src/battle/ARCHITECTURE.md` all show A5c3c ✅ and the **4586/4586** baseline (no-ROM **4378 / 208 skip**). One correction: the `PrintStatText` overrun entry (backlog, note 69 §10.18) first said `StatModTextStrings` is followed by code. It is followed by `StatModifierRatios`, 26 bytes with no `$50`, and then code.

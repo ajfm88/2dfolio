@@ -1,5 +1,15 @@
 # Text System Architecture
 
+A5c3d checkpoint-04c adds optional `TextRunnerOptions.asmContinuations`: per-print handlers which yield
+frames and return a next-program label or void. `TextProgramRunner.run` accepts that map as its fourth
+argument and retains it through FAR calls and returned program labels. The continuation keeps the current
+screen, BC, bindings and input history; returning a label resumes TextCommandProcessor without another
+PrintText/Delay3. Returning void continues after the asm op. The persistent synchronous `registerAsm`
+registry retains its behavior; a per-print continuation overrides only that print's matching label.
+TextBox forwards the option from `printStandalone`, so the unused battle host can supply it without a new
+clock or default handler. `amountMoneyWon` and `totalPayDayMoney` are numeric three-byte BCD inputs,
+validated by the existing numeric printer. Note70 §9.15 records coverage and the new bundle hash.
+
 ## Font / Charmap
 
 `gfx/font/font.png` is 16 tiles/row × 8 rows. Regular tile index = charmap byte − $80.

@@ -81,6 +81,9 @@ export class MusicEngine {
    * waits for them too.
    */
   private drumBusy = 0;
+  private drumId = 0;
+  /** Opt-in WRAM owner used by the battle audio adapter. */
+  audioControl: { getMute(): number; setMute(value: number): void } | null = null;
 
   /** What the music channels read from the engine (wMusicTempo, the sample tables). */
   private readonly host: ChannelHost;
@@ -111,6 +114,7 @@ export class MusicEngine {
     const instr = this.noiseInstruments[instrument - 1];
     if (!instr) return false;
     this.drumBusy = drumHitUpdates(instr) + 1;
+    this.drumId = instrument;
     return true;
   }
 
@@ -119,9 +123,12 @@ export class MusicEngine {
     return this.drumBusy > 0;
   }
 
+  get channel8DrumId(): number { return this.channel8DrumBusy ? this.drumId : 0; }
+
   /** A real SFX started on channel 8: it replaces a drum hit under way (1433–1436). */
   cancelDrum(): void {
     this.drumBusy = 0;
+    this.drumId = 0;
     for (const ch of this.channels) if (ch.hw === 3) ch.cancelDrum();
   }
 
@@ -183,10 +190,21 @@ export class MusicEngine {
 
     for (const ch of this.channels) {
       if (!ch.active) continue;
+      // Audio1_UpdateMusic: nonzero pauses CHAN1–4; bit 7 records the output mute.
+      const mute = this.audioControl?.getMute() ?? 0;
+      if (mute !== 0) {
+        if ((mute & 0x80) === 0) {
+          for (let hw = 0; hw < 4; hw++) this.synth.setChannelOutput(hw, false);
+          this.audioControl?.setMute(mute | 0x80);
+        }
+        continue;
+      }
       const sfxBusy = sfxEngine?.isChannelActive(ch.hw) ?? false;
       // The alarm's CHAN5 id occupies pulse 1 without being an SFX program.
       // The high tone leaves that id alone, so a clean first high does not suppress.
       const alarmBusy = ch.hw === 0 && lowHealthChannel5() !== 0;
+      if (this.audioControl && !sfxBusy && !alarmBusy && ch.noteDelayCounter === 1)
+        this.synth.setChannelOutput(ch.hw, true);
       ch.tick(sfxBusy || alarmBusy);
     }
     if (this.drumBusy > 0) this.drumBusy--;

@@ -194,7 +194,8 @@ export function cartridgeRunOdds(player: number, enemy: number, attempts: number
   return tryRunFromBattle(player, enemy, attempts || 256).escaped;
 }
 
-export function* tryRunningFromBattle(ctx: BattleActionContext, host: BattleActionHost): Program<BattleMenuFlags> {
+export function* tryRunningFromBattle(ctx: BattleActionContext,
+  host: Pick<BattleActionHost, 'printText' | 'saveScreenTilesToBuffer1' | 'loadScreenTilesFromBuffer1' | 'waitForSound' | 'playSound' | 'runOdds'>): Program<BattleMenuFlags> {
   let escape = ctx.ghostBattle || ctx.battleType === 2 || ctx.battleType === 3;
   if (!escape && ctx.isInBattle !== 1) {
     yield* host.printText('NoRunningText'); ctx.forcePlayerToChooseMon = 1;

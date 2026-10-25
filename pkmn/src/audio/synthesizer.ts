@@ -80,6 +80,13 @@ export class GBSynthesizer {
 
   private masterVolume = 0.5; // Overall output scaling
   private nr50 = 0x77;
+  /** NR51 routing, separate from DAC/volume state (battle mute/EnableChannelOutput). */
+  private outputMask = 0x0f;
+  setChannelOutput(channel: number, enabled: boolean): void {
+    if (enabled) this.outputMask |= 1 << channel;
+    else this.outputMask &= ~(1 << channel);
+  }
+  channelOutputEnabled(channel: number): boolean { return (this.outputMask & (1 << channel)) !== 0; }
 
   /** NR50, including writes from the music interpreter. VIN bits do not set the output level. */
   get masterVolumeRegister(): number { return this.nr50; }
@@ -137,10 +144,10 @@ export class GBSynthesizer {
     for (let i = 0; i < len; i++) {
       let mix = 0;
 
-      mix += this.samplePulse(this.pulse[0], sampleRate);
-      mix += this.samplePulse(this.pulse[1], sampleRate);
-      mix += this.sampleWave(sampleRate);
-      mix += this.sampleNoise(sampleRate);
+      mix += this.samplePulse(this.pulse[0], sampleRate) * Number(this.channelOutputEnabled(0));
+      mix += this.samplePulse(this.pulse[1], sampleRate) * Number(this.channelOutputEnabled(1));
+      mix += this.sampleWave(sampleRate) * Number(this.channelOutputEnabled(2));
+      mix += this.sampleNoise(sampleRate) * Number(this.channelOutputEnabled(3));
 
       // GB mixer: sum of channels, scale to prevent clipping
       output[i] = mix * 0.25;

@@ -14,6 +14,14 @@ No playback duration or bank/priority bridge is implemented by this data additio
 Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
 (Web Audio `ScriptProcessorNode`).
 
+The unused A5c3d `battle/battle_audio.ts` adapter opts into channel-ID activity, the CHAN5 alarm's
+next-command return, raw pulse fractional timing, and dynamic cry/battle classification. It binds the
+real MusicEngine drum owner for priority and ID clearing, and can share PlaySound's current/saved banks.
+`playSwap` is a serviced-frame Program: pause/mute music, DelayFrame, switch both banks to Audio1,
+wait/play/wait, then restore both banks and clear pause. Synthesizer output routing is separate from
+DAC/volume state so enabling an alarm channel or muting music does not consume a sound_ret.
+Without the adapter the existing engine behavior is unchanged. The production import guard excludes it.
+
 | File | Purpose |
 |---|---|
 | `index.ts` | `initAudio()`, `resumeAudio()`, `playMusic(name)`, `playSFX(name)`, `stopMusic()`, `tickAudio()`, `isSoundFinished()` (A1a), `fadeOutAndStopMusic(control)` / `isAudioFadingOut()` (healing CP2), the SFX preload, the `_playSFX(name)` console helper |

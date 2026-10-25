@@ -174,6 +174,8 @@ export function getMonHeader(state: BattleState, id: number): SpeciesHeader {
   state.wMonHSpriteDim = 0;
   for (let i = 1; i <= 4; i++) state.mem[A.wMonHSpriteDim + i] = 0;
   for (let i = 0; i < NUM_MOVES; i++) state.mem[A.wMonHMoves + i] = header.moves[i] & 0xff;
+  // Checkpoint-06: the unused EXP caller needs the actual growth byte. Older isolated fixtures omit it.
+  if (header.growthRate !== undefined) state.wMonHGrowthRate = header.growthRate;
   return header;
 }
 
