@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5012/5012** as of 2026-10-24 (A5c3d checkpoint-08b; A5c3d complete). No-ROM **4794 pass / 218 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5182/5182** as of 2026-10-24 (A5c3e checkpoint-04b item 0). No-ROM **4947 pass / 235 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -251,7 +251,27 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-5012 tests in 179 files (vitest, `environment: 'node'`); without ROM, 4794 pass / 218 skip.
+5182 tests in 184 files (vitest, `environment: 'node'`); without ROM, 4947 pass / 235 skip.
+
+**A5c3e checkpoint-04b item0** (2026-10-24, note71 §10.5; audio API stop) adds one
+`battle_random.test.ts` case for explicit carry/ADC overflow/SBC and two appended `battle_item_bodies.test.ts`
+cases for nonzero animationType reset before the Bait/Rock cue. Old cases and snapshots stay frozen. The shared
+random core replaces the private copy; all old RNG histories pass. Both mutations caught; gates pass in order.
+The flute adapter/body remain unimplemented under the explicit API/bundle stop condition.
+
+**A5c3e checkpoint-04** (2026-10-24, note 71 §10.4; checked §11.8) adds3 cases to `battle_items.test.ts`
+for the prior review's raw-menu/invalid-facing/HM-id gaps, then27 cases in `battle_item_bodies.test.ts` with15
+real-printer ledgers. Registered short bodies reuse stat/happiness owners; X failures, badge stacking, the crit bug,
+ghost escape, Safari Random/saturation/70-frame waits, sounds and raw/mirrored bag writes are pinned. All11
+requested mutations caught/restored. Existing cases and old snapshots unchanged; all gates pass in order,
+bundle `index-DbYKMUqM.js` unchanged.
+
+**A5c3e checkpoint-03** (2026-10-24, note 71 §10.3; checked §11.6) adds120 no-ROM cases in
+`battle_items.test.ts`: all83 dispatch rows, refusal/result ordering, raw bag shifts and menu thresholds,
+Card Key facings/opcode bug, registry, real printer snapshots, Audio2 JSON playback and the A5c2 binding.
+`rom/__tests__/battle_items_contract.test.ts` adds2 ROM cases pinning every pointer/label and Card Key's ROM load.
+Six requested mutations caught/restored. The only old-test change adds two unused-module guard names.
+All gates pass in order; bundle `index-DbYKMUqM.js` unchanged.
 
 **A5c3d checkpoint-08b** (2026-10-24, note70 §9.29; checked §9.30, A5c3d complete) adds29 no-ROM cases:
 `battle_whole.test.ts` has26 real loop/end histories, backed by the test-only `battle_ledger_rig.ts`;

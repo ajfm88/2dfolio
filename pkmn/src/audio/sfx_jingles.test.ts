@@ -161,7 +161,7 @@ describe('SFX-mode sounds and the hand-off', () => {
 describe('the SFX preload list', () => {
   it('is exactly the live SFX setup extracts, with precisely three unused battle data files', () => {
     const files = readdirSync(resolve(__dirname, '../../data/audio/sfx')).map(f => f.replace(/\.json$/, '')).sort();
-    const unused = ['faint_fall', 'faint_thud', 'level_up']; // A5c3d checkpoint-03; wiring waits for A5c3f.
+    const unused = ['caught_mon', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up', 'pokeflute_in_battle']; // A5c3e checkpoint-02; wiring waits for A5c3f.
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);
     expect([...EXTRACTED_SFX, ...unused].sort()).toEqual(files);
   });

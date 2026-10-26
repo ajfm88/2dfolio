@@ -337,10 +337,22 @@
         "op": "asm"
       }
     ],
+    "DoYouWantToNicknameText": [
+      {
+        "op": "far",
+        "program": "_DoYouWantToNicknameText"
+      }
+    ],
     "DoesntAffectMonText": [
       {
         "op": "far",
         "program": "_DoesntAffectMonText"
+      }
+    ],
+    "DontHavePokemonText": [
+      {
+        "op": "far",
+        "program": "_DontHavePokemonText"
       }
     ],
     "DreamWasEatenText": [
@@ -3628,10 +3640,30 @@
         "text": "Do it! "
       }
     ],
+    "_DoYouWantToNicknameText": [
+      {
+        "op": "text",
+        "text": "Do you want to\ngive a nickname\nto "
+      },
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "?<DONE>"
+      }
+    ],
     "_DoesntAffectMonText": [
       {
         "op": "text",
         "text": "It doesn't affect\n<TARGET>!<PROMPT>"
+      }
+    ],
+    "_DontHavePokemonText": [
+      {
+        "op": "text",
+        "text": "You don't have a \nPOKéMON!<PROMPT>"
       }
     ],
     "_DreamWasEatenText": [

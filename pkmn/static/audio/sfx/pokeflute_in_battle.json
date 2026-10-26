@@ -1,0 +1,151 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "tempo",
+          "value": 256
+        },
+        {
+          "cmd": "execute_music"
+        },
+        {
+          "cmd": "note_type",
+          "speed": 8,
+          "volume": 0,
+          "fade": 0
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 7
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "execute_music"
+        },
+        {
+          "cmd": "note_type",
+          "speed": 8,
+          "volume": 0,
+          "fade": 0
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 7
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "rest",
+          "length": 5
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "commands": [
+        {
+          "cmd": "execute_music"
+        },
+        {
+          "cmd": "vibrato",
+          "delay": 16,
+          "depth": 1,
+          "rate": 4
+        },
+        {
+          "cmd": "note_type",
+          "speed": 8,
+          "volume": 1,
+          "fade": 0
+        },
+        {
+          "cmd": "octave",
+          "value": 5
+        },
+        {
+          "cmd": "note",
+          "pitch": 4,
+          "length": 3
+        },
+        {
+          "cmd": "note",
+          "pitch": 5,
+          "length": 3
+        },
+        {
+          "cmd": "note",
+          "pitch": 7,
+          "length": 7
+        },
+        {
+          "cmd": "note",
+          "pitch": 9,
+          "length": 3
+        },
+        {
+          "cmd": "note",
+          "pitch": 7,
+          "length": 3
+        },
+        {
+          "cmd": "octave",
+          "value": 6
+        },
+        {
+          "cmd": "note",
+          "pitch": 0,
+          "length": 13
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

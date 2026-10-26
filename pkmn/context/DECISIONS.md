@@ -1034,6 +1034,28 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - Caveat: `battle_end_helpers.test.ts` parses note 70's markdown, so rewording §9.1.7's table breaks it. Edit that
       table only with the test in mind.
 
+82. **A5c3e takes the plan's four recommendations; Codex implements, planned in note 71** (2026-10-24). *The user's
+    answer to O-44: "regarding the questions, let's say yes to all of your recommendations", and "Codex is back with
+    credits … we will give the implementation to Codex once more".*
+
+    - **The trainer AI's move-choice modifications are ported in A5c3e** (checkpoint-09): `AIEnemyTrainerChooseMoves`,
+      modifications 1–3, `ReadMove` and `AIGetTypeEffectiveness`, from the ASM. This amends #77: the battle-mechanics
+      audit (#70) verifies the AI's bodies instead of porting them. The live `selectTrainerMove` keeps upstream's bodies
+      until A5c3f.
+    - **The Pokédex page (`ShowPokedexData`) and the naming screen (`DisplayNamingScreen`) are named hand-off ports.**
+      Everything around them is ported: the texts, the owned-flag test and set, `AskName`'s HUD clear, text and YES/NO,
+      `_AddPartyMon`'s battle branch, `SendNewMonToBox`. A5c3f decides whether upstream's screens stand in until they're
+      ported.
+    - **Safari's Bait and Rock come in A5c3e** (checkpoint-04).
+    - **The plan** (`notes/71-a5c3e-plan.md`): eleven checkpoints. 01 the trace, no code; 02 the data (two SFX, maybe the
+      battle-bank heal sounds, the battle flute's channels, two text programs); 03 the dispatcher and shared tails;
+      04 the short bodies; 05 medicine; 06 the PP items; 07 the throw; 07b the caught mon's party or box; 08 the trainer
+      AI's items and switching; 09 the move-choice modifications; 10 the composition and retirement manifests.
+    - **Claude's call in the plan (§2.3):** battle medicine is its own unused module on the party bytes, with a parity
+      test against the live field port, which stays unchanged.
+    - **Codex implements** (this amends #75's "Grok implements" for A5c3e). Claude checks each checkpoint. Commits stay
+      local; no push.
+
 ## Open — not decided, needs the user
 
 

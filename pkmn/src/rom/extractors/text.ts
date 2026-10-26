@@ -153,7 +153,7 @@ export function decodeProgramString(rom: BinaryReader, offset: number, startRow:
 }
 
 /** All text consumers share this charmap; unmapped bytes identify bad offsets early. */
-function decodeTextByte(byte: number, offset: number): string {
+export function decodeTextByte(byte: number, offset: number): string {
   const glyph = CHARMAP[byte];
   if (glyph === undefined) throw new Error(`Unmapped text byte $${byte.toString(16)} at ROM $${offset.toString(16)}`);
   return glyph;

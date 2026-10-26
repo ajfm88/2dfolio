@@ -1,5 +1,24 @@
 # Battle System Architecture
 
+A5c3e checkpoint-04b item0 puts Random_ in `battle_random.ts` as `random(state, carryIn)`; off-link
+BattleRandom supplies its CP carry, Bait/Rock supply0, and the link-list path stays separate. The private item
+copy is gone. The flute adapter/body are stopped pending an audio API/bundle decision (note71 §10.5): public
+clear/reinstall preserves IDs but still ends CH5 at33. The proposed pending-stream method is not applied.
+
+A5c3e checkpoint-04 adds unused `battle_item_bodies.ts`: explicit registration for X Accuracy, Guard Spec,
+Dire Hit, the four X stats, Poké Doll and Bait/Rock (note71 §10.4). It reuses statModifierUpEffect and the Pikachu
+happiness/starter gate. X stats spend before animation, retain failure consumption and reapply badges only on
+success. Bait/Rock use the source Random clear-carry path, rejection/saturation, a named animation cue and70 frames.
+The common item tail now uses the existing general byte decoder for item-name punctuation/é, rather than the
+MoveNames alphabet. No live caller or flute body is added.
+
+A5c3e checkpoint-03 adds unused `battle_items.ts` and `battle_item_state.ts` (note71 §10.3).
+The frozen83-row dispatcher initializes result1, completes battle refusals and calls only explicitly registered
+bodies; none are installed yet. Shared tails delegate the retained printer, scroll-button wait and BattleAudio.
+Raw bag bytes own subtraction, the FF shift, menu thresholds and optional object mirroring. Item cells add aliases
+over the existing D view, without new storage. The A5c2 binding is available but unwired; the ledger rig stays fake
+until checkpoint-10. Card Key deliberately compares the pinned ROM opcode CD after fetching its battle-screen tile.
+
 A5c3d checkpoint-08b adds test-only whole-battle ledgers (`battle_whole.test.ts`,
 `test/battle_ledger_rig.ts`) through the real loop/end, turn/effects, faint/EXP, send-out, menu, text,
 video and audio owners. Snapshots retain timed frame/RNG/text/audio/WRAM/mirror histories; deferred

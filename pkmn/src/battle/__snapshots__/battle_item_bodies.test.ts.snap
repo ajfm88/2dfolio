@@ -1,0 +1,2699 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Poke Doll keeps the wild-only guard without catch gates > 'Marowak' escapes and spends the doll 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": [
+        "YELLOW used",
+        "POKé DOLL!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 45,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 33 01 ff",
+    "catchRate": 100,
+    "escaped": 1,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, POKE_DOLL:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 45,
+  },
+}
+`;
+
+exports[`Poke Doll keeps the wild-only guard without catch gates > 'Tower ghost' escapes and spends the doll 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": [
+        "YELLOW used",
+        "POKé DOLL!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 45,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 33 01 ff",
+    "catchRate": 100,
+    "escaped": 1,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, POKE_DOLL:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 45,
+  },
+}
+`;
+
+exports[`Poke Doll keeps the wild-only guard without catch gates > 'ordinary' escapes and spends the doll 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": [
+        "YELLOW used",
+        "POKé DOLL!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 45,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 33 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, POKE_DOLL:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 33 01 ff",
+    "catchRate": 100,
+    "escaped": 1,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, POKE_DOLL:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 45,
+  },
+}
+`;
+
+exports[`Safari Bait/Rock Random loop and timing > 'BAIT' rejects5/7 before4, adds5, cues animation and waits70 serviced frames 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ThrewBaitText",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        "YELLOW threw",
+        "some BAIT.",
+      ],
+      "event": "end:ThrewBaitText",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": 253,
+      "event": "Random:bait",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": 255,
+      "event": "Random:bait",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": 252,
+      "event": "Random:bait",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        202,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 15 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 15 02 ff",
+    "catchRate": 50,
+    "escaped": 0,
+    "factors": [
+      15,
+      0,
+    ],
+    "flags": 144,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, BOULDERBADGE:2",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 116,
+  },
+}
+`;
+
+exports[`Safari Bait/Rock Random loop and timing > 'ROCK' rejects5/7 before4, adds5, cues animation and waits70 serviced frames 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ThrewRockText",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": [
+        "YELLOW threw a",
+        "ROCK.",
+      ],
+      "event": "end:ThrewRockText",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": 253,
+      "event": "Random:rock",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random:rock",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": 252,
+      "event": "Random:rock",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": [
+        201,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 16 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 16 02 ff",
+    "catchRate": 200,
+    "escaped": 0,
+    "factors": [
+      0,
+      25,
+    ],
+    "flags": 144,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, CASCADEBADGE:2",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 110,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > 'X ATTACK' spends before animation and reapplies every badge boost on success 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": [
+        "YELLOW used",
+        "X ATTACK!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        174,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 58,
+      "data": undefined,
+      "event": "badges",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 58,
+      "data": undefined,
+      "event": "print:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 99,
+      "data": [
+        "PIKA's",
+        "ATTACK rose!",
+      ],
+      "event": "end:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 99,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 41 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+    "mods": [
+      8,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      168,
+      126,
+      126,
+      126,
+    ],
+  },
+  "frames": {
+    "serviced": 99,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > 'X DEFEND' spends before animation and reapplies every badge boost on success 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 42 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:2",
+        "move": [
+          33,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": [
+        "YELLOW used",
+        "X DEFEND!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 42 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:2",
+        "move": [
+          33,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 42 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:2",
+        "move": [
+          33,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 42 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:2",
+        "move": [
+          33,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 42 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:2",
+        "move": [
+          33,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        174,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 58,
+      "data": undefined,
+      "event": "badges",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 58,
+      "data": undefined,
+      "event": "print:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 101,
+      "data": [
+        "PIKA's",
+        "DEFENSE rose!",
+      ],
+      "event": "end:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 101,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 42 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+        "move": [
+          174,
+          11,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 42 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_DEFEND:1",
+    "mods": [
+      7,
+      8,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      126,
+      168,
+      126,
+      126,
+    ],
+  },
+  "frames": {
+    "serviced": 101,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > 'X SPECIAL' spends before animation and reapplies every badge boost on success 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 44 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:2",
+        "move": [
+          33,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": [
+        "YELLOW used",
+        "X SPECIAL!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 44 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:2",
+        "move": [
+          33,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 44 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:2",
+        "move": [
+          33,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 44 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:2",
+        "move": [
+          33,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 45,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 44 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:2",
+        "move": [
+          33,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 45,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 48,
+      "data": [
+        174,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "badges",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 103,
+      "data": [
+        "PIKA's",
+        "SPECIAL rose!",
+      ],
+      "event": "end:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 103,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 44 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+        "move": [
+          174,
+          13,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 44 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_SPECIAL:1",
+    "mods": [
+      7,
+      7,
+      7,
+      8,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      126,
+      126,
+      126,
+      168,
+    ],
+  },
+  "frames": {
+    "serviced": 103,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > 'X SPEED' spends before animation and reapplies every badge boost on success 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 43 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:2",
+        "move": [
+          33,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": [
+        "YELLOW used",
+        "X SPEED!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 43 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:2",
+        "move": [
+          33,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 43 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:2",
+        "move": [
+          33,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 40,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 43 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:2",
+        "move": [
+          33,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 41,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 43 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:2",
+        "move": [
+          33,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 41,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 44,
+      "data": [
+        174,
+        0,
+        0,
+      ],
+      "event": "MoveAnimation",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 56,
+      "data": undefined,
+      "event": "badges",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 56,
+      "data": undefined,
+      "event": "print:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 95,
+      "data": [
+        "PIKA's",
+        "SPEED rose!",
+      ],
+      "event": "end:MonsStatsRoseText",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 95,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 43 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_SPEED:1",
+        "move": [
+          174,
+          12,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 43 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_SPEED:1",
+    "mods": [
+      7,
+      7,
+      8,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      126,
+      126,
+      168,
+      126,
+    ],
+  },
+  "frames": {
+    "serviced": 95,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > stage13 consumes the item, prints failure, changes no stat and still rewards the active starter 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": [
+        "YELLOW used",
+        "X ATTACK!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": undefined,
+      "event": "print:NothingHappenedText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 87,
+      "data": [
+        "Nothing happened!",
+        "",
+      ],
+      "event": "end:NothingHappenedText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 87,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 41 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+    "mods": [
+      13,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 87,
+  },
+}
+`;
+
+exports[`X stat items compose the real StatModifierUpEffect > stat999 consumes the item, prints failure, changes no stat and still rewards the active starter 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": [
+        "YELLOW used",
+        "X ATTACK!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 41 02 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:2",
+        "move": [
+          33,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": undefined,
+      "event": "load1",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": undefined,
+      "event": "print:NothingHappenedText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 87,
+      "data": [
+        "Nothing happened!",
+        "",
+      ],
+      "event": "end:NothingHappenedText",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 87,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 41 01 ff",
+        "flags": 144,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+        "move": [
+          174,
+          10,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 41 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 144,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_ATTACK:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      999,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 87,
+  },
+}
+`;
+
+exports[`short body registration, flags and happiness > 'DIRE HIT' uses the active starter, restores the slot and spends repeated uses 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": [
+        "YELLOW used",
+        "DIRE HIT!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 42,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 43,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 3a 02 ff",
+        "flags": 148,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, DIRE_HIT:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 3a 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 148,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, DIRE_HIT:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 43,
+  },
+}
+`;
+
+exports[`short body registration, flags and happiness > 'GUARD SPEC.' uses the active starter, restores the slot and spends repeated uses 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [
+        3,
+        0,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 0,
+      },
+    },
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 48,
+      "data": [
+        "YELLOW used",
+        "GUARD SPEC.!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 48,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 48,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 49,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 37 02 ff",
+        "flags": 146,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, GUARD_SPEC:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 37 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 146,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, GUARD_SPEC:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 49,
+  },
+}
+`;
+
+exports[`short body registration, flags and happiness > X Accuracy uses the absolute bag index with starter at+0 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [
+        3,
+        2,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        "YELLOW used",
+        "X ACCURACY!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 47,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 2e 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 145,
+    "happiness": 99,
+    "mirror": "POTION:3, POTION:4, X_ACCURACY:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 47,
+  },
+}
+`;
+
+exports[`short body registration, flags and happiness > X Accuracy uses the absolute bag index with starter at2 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [
+        3,
+        2,
+      ],
+      "event": "happiness",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 99,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 0,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": [
+        "YELLOW used",
+        "X ACCURACY!",
+      ],
+      "event": "end:ItemUseText00",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": 142,
+      "event": "sound",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 46,
+      "data": false,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+    {
+      "at": 47,
+      "data": true,
+      "event": "scroll",
+      "state": {
+        "bag": "03 14 03 14 04 2e 02 ff",
+        "flags": 145,
+        "happiness": 100,
+        "mirror": "POTION:3, POTION:4, X_ACCURACY:2",
+        "move": [
+          33,
+          76,
+        ],
+        "result": 1,
+        "slot": 2,
+      },
+    },
+  ],
+  "final": {
+    "bag": "03 14 03 14 04 2e 01 ff",
+    "catchRate": 100,
+    "escaped": 0,
+    "factors": [
+      10,
+      20,
+    ],
+    "flags": 145,
+    "happiness": 100,
+    "mirror": "POTION:3, POTION:4, X_ACCURACY:1",
+    "mods": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+    ],
+    "move": [
+      33,
+      76,
+    ],
+    "result": 1,
+    "slot": 2,
+    "stats": [
+      112,
+      112,
+      112,
+      112,
+    ],
+  },
+  "frames": {
+    "serviced": 47,
+  },
+}
+`;

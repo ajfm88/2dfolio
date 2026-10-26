@@ -13,7 +13,7 @@ import { extractCollisionTiles } from './extractors/collision';
 import { extractPikachuMovement } from './extractors/pikachu_movement';
 import { extractPokedex } from './extractors/pokedex';
 import { extractAllMaps } from './extractors/maps';
-import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from './extractors/audio';
+import { extractMusic, extractSfx, extractSfxChannelsAt, extractWaveSamples, extractNoiseInstruments } from './extractors/audio';
 import { extractFontGraphics, extractTilesetGraphics, extractAllAdditionalGraphics } from './extractors/graphics';
 import { extractAllPokemonSprites } from './extractors/sprites';
 import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from './extractors/text';
@@ -59,7 +59,7 @@ const MUSIC_TRACKS = [
   'credits', 'halloffame', 'jigglypuffsong', 'bikeriding', 'surfing',
   'gamecorner', 'dungeon1', 'dungeon3', 'cinnabarmansion', 'pokemontower',
   'silphco', 'meeteviltrainer', 'meetfemaletrainer', 'meetmaletrainer',
-  'surfingpikachu', 'pokefluteinbattle',
+  'surfingpikachu',
 ];
 
 // SFX to extract (matching existing data/audio/sfx/ ground truth)
@@ -72,6 +72,7 @@ const SFX_NAMES = [
   'not_very_effective', 'poke_ball', 'poke_ball_shake', 'pokedex_rating',
   'press_ab', 'push_boulder', 'shrink', 'run', 'faint_fall', 'faint_thud', 'switch', 'super_effective', 'tink',
   'turn_off_pc', 'turn_on_pc', '59', 'arrow_tiles',
+  'caught_mon', 'dex_page_added',
 ];
 
 /**
@@ -175,6 +176,11 @@ export async function extractRom(
       data.jsonData[`audio/sfx/${sfxName}.json`] = sfxData;
     }
   }
+
+  // audio/poke_flute.asm: direct streams, not a header-backed SFX or music track.
+  data.jsonData['audio/sfx/pokeflute_in_battle.json'] = extractSfxChannelsAt(rom, 0x08, [
+    { id: 5, addr: 0x59eb }, { id: 6, addr: 0x59ee }, { id: 7, addr: 0x444b },
+  ]);
 
   // ── Graphics extractors ──
 

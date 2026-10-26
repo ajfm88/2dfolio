@@ -15,6 +15,206 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-23 (A5c3d checkpoint-08 implemented; awaiting Claude's check) — Codex
+
+Using §9.2 item7's approved08/08b split. Added the missing blackout ClearScreen Delay3 after a failing
+regression, plus all four review-gap regressions; all five matching mutations caught. Added unused
+EndOfBattle (Pay Day, evolution hand-off, post-evolution mood, exact resets/owners, wait/white/warp) and
+flat battleLoop dispatch. Source result histories and separate caller EndOfBattle call remain intact.
+Guard lists all16 A5c3d modules. Packed-money writer alias reuses the unused faint codec; no shared
+live implementation, old behavioral assertion, generated asset or fixture move.
+42 new cases; five Item0 and21 additional mutations caught/restored. Focused397/397. First gate attempt
+hit the old alarm census's reset/set suffix false positive; aliased the same imported reset function,
+leaving that test unchanged. All four gates rerun in order pass: typecheck/build clean; ROM **4983/4983**;
+no-ROM **4765 pass /218 skip**. Bundle `index-DbYKMUqM.js`, SHA256
+`09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23` unchanged. Details/logs: note70 §9.27.
+One local commit; never pushed. **Stop for Claude's checkpoint-08 check.** Remaining08b: composed
+whole-battle ledgers and executable26/17 retirement manifests; both unstarted. A5c3d is not complete.
+
+### 2026-10-23 (A5c3d checkpoint-07 checked) — Claude
+
+**Passes, with one fix required** (note 70 **§9.26**), `52ce35a`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged), ROM **4941/4941**, no-ROM **4723 pass / 218 skip**. Item 0's cursor gap is closed. Re-read the faint handlers, `FaintEnemyPokemon`, `RemoveFaintedPlayerMon`, `TrainerBattleVictory`, `PlayBattleVictoryMusic`, `HandlePlayerBlackOut` and `EnemyRan` against pret: all match except one bug. The blackout's `ClearScreen` drops its `Delay3` (`home/copy2.asm:226–239`), so three frames are lost; the module is unused. My 30 mutations: 23 caught, one my error, one equivalent, the fix, and four real test gaps (`FaintEnemyPokemon`'s empty string, `wBoostExpByExpAll` cleared before the first pass, no player HUD at HP 0, `DoUseNextMonDialogue`'s empty string/Buffer1 in the trainer double faint). All go to checkpoint-08 item 0. Next: checkpoint-08 (Codex).
+
+### 2026-10-23 (A5c3d checkpoint-07 implemented; awaiting Claude's check) — Codex
+
+Closed the Item0 cursor gap; its two-row mutation fails and LearnMove is unchanged. Added unused
+`battle_faint.ts`: both faint handlers, enemy/player removal, EXP.ALL, victory music, trainer victory
+with packed BCD money, Rival1/Lab and ordinary blackout, EnemyRan. Source double-faint order/Bide-byte
+quirks remain intact. Alarm/IDs/modifiers/waits/music use their authoritative owners. The independent
+Audio1 trace checks fall9 and thud pulse17/noise31 after the bridge. The approved retained trainer
+end-text map hand-off and voice/animation cues remain explicit. No shared live file or data/fixture move.
+51 new cases; Item0 plus25 additional mutations caught/restored. Focused checks263/263. Ordered gates
+pass without retries: typecheck/build clean; ROM **4941/4941**; no-ROM **4723 pass /218 skip**. Bundle
+`index-DbYKMUqM.js`, SHA256 `09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23`
+unchanged. Details/logs: note70 §9.25. One local commit; never pushed. **Stop for Claude's checkpoint-07
+check; checkpoint-08 unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-06b checked) — Claude
+
+**Passes** (note 70 **§9.24**), `bae4080`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged; the live `move_selection_menu.ts` edit is type-only), ROM **4890/4890**, no-ROM **4672 pass / 218 skip**. Item 0's three gaps are closed. Re-read `LearnMove`, `DontAbandonLearning`, `AbandonLearning`, `TryingToLearn` and `OneTwoAndText` against pret: they match. My 24 mutations: 20 caught, three equivalent, one real test gap carried to checkpoint-07 item 0 (the forget menu's redrawn cursor must step one row). Next: checkpoint-07 (Codex; faint, victory, blackout).
+
+### 2026-10-23 (A5c3d checkpoint-06b implemented; awaiting Claude's check) — Codex
+
+Closed the three Item0 gaps with matching mutation checks; no EXP bug or implementation edit. Added
+unused shared `learn_move.ts`: empty/replacement slots, menus, all five HM refusals, abandonment retries,
+raw record/PP writes and field/reserve/transformed active copies. OneTwoAndText yields the checked swap
+inside its retained print/cursor, then continues through Poof/Forgot. `bindLearnMove` fills the EXP seam.
+Existing unused formatter gets a type-only host narrowing; the move-data cache exposes its raw record.
+No shared live file, generated asset or fixture move. 33 new cases; three Item0 and22 LearnMove mutations
+caught/restored. Initial HM probe exposed test coupling; fixtures now pin source IDs independently.
+Focused checks255/255. Ordered gates pass without retries: typecheck/build clean; ROM **4890/4890**;
+no-ROM **4672 pass /218 skip**. Bundle `index-DbYKMUqM.js`, SHA256
+`09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23` unchanged. Details/logs: note70 §9.23.
+One local commit; never pushed. **Stop for Claude's checkpoint-06b check; checkpoint-07 unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-06 checked) — Claude
+
+**Passes** (note 70 **§9.22**), `a1a6a9b`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged), ROM **4857/4857**, no-ROM **4639 pass / 218 skip**. Item 0's three gaps are closed. Re-read `GainExperience`, `DivideExpDataByNumMonsGainingExp`, `BoostExp`, `LoadMonData_`, `LearnMoveFromLevelUp`, `PrintStatsBox`, `WaitForTextScrollButtonPress` and `HandleDownArrowBlinkTiming` against pret: they match. My 34 mutations: 30 caught, one equivalent (trainer boost as `wIsInBattle == 2`), three real test gaps carried to checkpoint-06b item 0 (the composed level-up's stats-box kind, LEVELUP vs USEDITEM mood `$8a`, the blink's count2 reset to 6). Next: checkpoint-06b (Codex; the shared LearnMove flow).
+
+### 2026-10-23 (A5c3d checkpoint-06 implemented; awaiting Claude's check) — Codex
+
+Closed the three Item0 gaps with matching mutation checks; no enemy bug or implementation edit. Added
+unused `battle_experience.ts`: EXP division/boost/eligibility/caps, final-level calculation and active/
+reserve updates, happiness, retained Gained/Grew text, stats box, scroll wait and first level-up move
+selection. The existing unused header loader carries growthRate; missing data rejects. LearnMove remains
+a yielding B-result port for06b. No shared live file, generated asset or fixture move.
+61 new cases; three Item0 and24 EXP mutations caught/restored. An initial b0 mutation survivor prompted
+the independent saturated-stat-EXP case. Focused checks162 pass /one ROM-gated skip. Ordered gates pass
+without retries: typecheck/build clean; ROM **4857/4857**; no-ROM **4639 pass /218 skip**. Bundle
+`index-DbYKMUqM.js`, SHA256 `09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23`
+unchanged. Details/logs: note70 §9.21. One local commit; never pushed. **Stop for Claude's checkpoint-06
+check; 06b unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-05b checked) — Claude
+
+**Passes** (note 70 **§9.20**), `9cfdc7a`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged), ROM **4796/4796**, no-ROM **4578 pass / 218 skip**. Re-read `ReplaceFaintedEnemyMon`, `GetBattleHealthBarColor`, `EnemySendOut(FirstMon)` with SHIFT, and `DrawEnemyPokeballs` against pret: they match, including `SetupPokeballs`' 256-pass zero count. My 18 mutations: 15 caught, 3 real test gaps (11-column HUD clear, YES/NO at (0, 7), SHIFT white-out) → **checkpoint-06 item 0**. **Next: Codex runs checkpoint-06** (EXP and level-up). Docs only. Local commit only.
+
+### 2026-10-23 (A5c3d checkpoint-05b implemented; awaiting Claude's check) — Codex
+
+Closed all four Item0 test gaps, each failing its matching mutation; no player bug exposed. Added unused
+enemy send-out/FirstMon, replacement and SHIFT over the checked owners, including real Pokéball sprite
+copies, source slides/front copy, retained party retries and enemy-before-player switch ordering. Existing
+player helper bodies unchanged; exported aliases for composition. No shared live file or fixture moves.
+31 new cases, four Item0 and17 enemy mutations caught/restored. Focused owner/import checks75/75.
+Ordered gates pass without retries: typecheck/build clean; ROM **4796/4796**; no-ROM **4578 pass /218 skip**.
+Bundle `index-DbYKMUqM.js`, SHA256 `09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23`
+unchanged. Details/logs: note70 §9.19. One local commit; never pushed. **Stop for Claude's checkpoint-05b
+check; checkpoint-06 unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-05 checked) — Claude
+
+**Passes** (note 70 **§9.18**), `4ad163c`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged), ROM **4765/4765**, no-ROM **4547 pass / 218 skip**. Re-read the send-out and retreat texts, `SendOutMon`, the asleep scan, the retreat tiles, `DoUseNextMonDialogue`, `ChooseNextMon` and `SwitchPlayerMon` against pret: they match. My 16 mutations: 12 caught, 4 real test gaps (move-list index clear, `SLP_MASK`, OBP0, Minimize clear) → **checkpoint-05b item 0**. Backlog: A5c2's menu passes a dex ID to the switch port (A5c3f). **Next: Codex runs checkpoint-05b.** Docs only. Local commit only.
+
+### 2026-10-23 (A5c3d checkpoint-05 implemented; awaiting Claude's check) — Codex
+
+Added unused `battle_send_out.ts`: player send/retreat messages and raw prefix math, real retreat tiles,
+send-out, use-next dialogue, choose-only replacement, switching and the A5c2 switch-port binding. Reuses
+04/04b/04c owners; preserves dead-first-slot run speed, failed-run force/B/A+B/retry behavior, participation
+flags,14-frame back copies,4+3 retreat holds, and Pikachu's retained whichPokemon. The new binding converts
+the old object menu's dex species ID to the raw party byte; existing checked menu/loader bodies unchanged.
+**43 new cases,14/14 mutations caught/restored**; details and approved cue/UI carry-overs in note70 §9.17.
+Ordered gates: typecheck/build clean, ROM **4765/4765**, no-ROM **4547 pass /218 skip**. Bundle
+`index-DbYKMUqM.js` and SHA256 `09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23` unchanged.
+No shared live file, generated asset, old behavioral assertion or fixture move. One local commit; never
+pushed. **Stop for Claude's checkpoint-05 check; enemy-side checkpoint-05b unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-04c checked) — Claude
+
+**Passes** (note 70 **§9.16**), `1cd67d1`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (SHA256 matches §9.15; new baseline), ROM **4722/4722**, no-ROM **4504 pass / 218 skip**. My three 04b survivors are now caught. The text-runner change is additive: without the option the old path is unchanged. The money bindings match the extractor and `_MoneyForWinningText`. My mutations: 3 caught, 1 equivalent (mine). **Next: Codex runs checkpoint-05** (player-side send-out and switching). Docs only. Local commit only.
+
+### 2026-10-23 (A5c3d checkpoint-04c implemented; awaiting Claude's check) — Codex
+
+Item0: three tests pin same-ID restart, CHAN5-only alarm holding and music output restoration; each fails on
+its matching mutation. Audio implementation unchanged. Added optional per-print yielding text_asm
+continuations, forwarded through FAR/redirects and TextBox without restarting PrintText; synchronous
+handlers retain their behavior. Added numeric amountMoneyWon/totalPayDayMoney types. Fourteen new text
+cases include committed OneTwoAndText + real swap waits + Poof on the retained cursor, per-print isolation,
+the single Delay3 entry and both money programs. Five further runner mutations caught/restored.
+Ordered gates: typecheck/build clean; ROM **4722/4722**; no-ROM **4504 pass /218 skip**. Bundle
+`index-DbYKMUqM.js`, SHA256 `09fe6aec76bdce03dfe23c474f46129345690920052ce62ed40aaedcfcf9fc23`.
+Details/logs: note70 §9.15. One local commit; never pushed. **Stop for Claude's check; checkpoint-05 unstarted.**
+
+### 2026-10-23 (A5c3d checkpoint-04b checked) — Claude
+
+**Passes** (note 70 **§9.14**), over `f45ae4a`, `42740d0` and `90a26f1`. Gates re-run in order: typecheck clean, build `index-CSNAcAv6.js` (SHA256 matches §9.13; new baseline), ROM **4705/4705**, no-ROM **4487 pass / 218 skip**. Every new shared-audio hook is installed only by the unused bridge. Re-read `Audio2_PlaySound`, `IsCry` / `IsBattleSFX`, the alarm branch, the mute and `OneTwoAndText` against pret: they match. Codex's `.asm_9643` correction holds (dead code); my earlier flag on it was wrong. My 11 mutations: 8 caught, 3 real test gaps (same-ID restart, CHAN5-only alarm branch, music re-enabling output after the mute) → **checkpoint-04c item 0**. **Next: Codex runs checkpoint-04c.** Docs only. Local commit only.
+
+### 2026-10-23 (checkpoint-04b remaining corrections implemented; awaiting review) — Codex
+
+Implemented note70 §9.12 corrections: alarm retains CHAN5 output/ID/pointer at its next-command boundary;
+real MusicEngine drum priority and clip/PlaySound ID clears share occupancy; swap retains both Audio1 banks
+through its yielding wait/play/wait while music is paused; cry/battle predicates include the source $EA end;
+fractional zero counters wrap through $FF. Source correction in §9.13: modifier-writing tail970–982 is
+unreferenced after a ret, so no automatic write was invented. Bridge29 tests; focused79/79; six mutations
+caught/restored. Ordered gates: typecheck/build clean, ROM **4705/4705**, no-ROM **4487 pass /218 skip**.
+Bundle `index-CSNAcAv6.js`, SHA256 `f6b665cfe0439addd14d165a7ac6c07258de2c90156eb675e325a9cfb3d0d66e`.
+Evidence/logs in note70 §9.13. Local correction commit; never pushed. **Stop for 04b review; 04c unstarted.**
+
+### 2026-10-23 (04b corrections reviewed: remaining changes requested) — Codex
+
+Reviewed `42740d0`; fixes to thud/fall timing, zero-ID activity, noise boundary and bank-relative text naming hold. **Not ready to close:** note70 §9.12 records remaining alarm/drum owner integration, swap restoring its bank before playback, incorrect upper battle-range limit/missing cry predicate, and fractional zero-counter wrap. Real-rig probes reproduce failures (`%TEMP%/pkmn-04b-review-42740d0.ts`). Focused suite **57/57** and typecheck pass; no full-suite/build rerun or implementation edits. Next: implementer completes04b corrections and ordered gates;04c remains unstarted. Oldest three session entries archived verbatim to HISTORY under #61 to keep STATUS short. Docs-only local commit.
+
+### 2026-10-23 (A5c3d checkpoint-04b review corrections; awaiting Claude) — Codex
+
+Addressed all five note70 §9.10 findings: dynamic bank/ID-based battle classification and fractional timing;
+authoritative CHAN5 ID activity; correct CHAN8 `$14` boundary/equality; bank-relative text-sound plus swap adapter
+with real text-runner coverage; and integrated clip ID clears after its three frames/PCM cue. 04c remains
+unstarted. Local fix-up commit pending; never push.
+
+### 2026-10-23 (independent checkpoint-04b review: changes requested) — Codex
+
+Reviewed `f45ae4a` against pret and the approved scope. **Not ready to close; five findings in note70 §9.10:** unconditional battle tempo/frequency incorrectly modifies thud and loses fractional timing; alarm ID changes do not control interpreter activity/waits and active-alarm completion; wrong noise priority boundary/equality; missing bank-relative text-sound dispatch; post-PCM clear helper not connected to the unused cue. Focused existing/new tests pass **28/28**, but independent real-rig probes reproduce failures (`%TEMP%/pkmn-04b-review.ts`). No game/test edits, no full-gate rerun or mutation experiments. Next: implementer fixes04b, then checkpoint review;04c remains unstarted. Docs-only local commit.
+
+### 2026-10-23 (A5c3d checkpoint-04b implemented; awaiting Claude's check) — Codex
+
+Added the unused battle-audio bridge plus an opt-in shared SFX-engine adapter. Audio 2 bank state, SFX IDs,
+waits and music suppression use the same channel state; CHAN5 is the existing low-health-alarm owner. The
+bridge distinguishes CPU ID clearing from `sound_ret` / hardware mute, supplies the battle pulse tempo and
+frequency modifiers, and retains the deferred four clip ID clears. The exact `faint_thud` reverse-header
+priority regression is pinned: CHAN8 clears before CHAN5 rejects, so no new IDs/pointers install. Four new
+no-ROM cases; import guard includes it. Typecheck/build clean; ROM **4680/4680**; no-ROM **4462 pass / 218 skip**.
+Bundle `index-BOoA_OGs.js`, SHA256 `8f4ecdcb2c765b62fe4ae8017d3ced1ea4f4ace1a6f62b3f7187b8ce0d5016ac`.
+One local commit pending; never push. **Stop for Claude's check; checkpoint-04c not started.**
+
+### 2026-10-23 (codebase and pending plan review) — Codex
+
+Reviewed the project handoff, note 70's plan and approved amendments, the battle host/import guard, audio engines/request/alarm owners and text runner; cross-checked the pending audio bridge against local pret. No implementation started; **next remains checkpoint-04b**, followed by 04c. Note 70 §9.2 supersedes the opening summary and §5's original bundle restriction: opt-in shared audio/text changes may record new hashes, with existing behavior/tests preserved. DECISIONS #81 keeps the four notes-backed test fixtures in place.
+
+**04b review recommendation:** explicitly test Audio2_PlaySound's reverse-header priority traversal, early return and partial clearing. `audio/engine_2.asm:39-85` checks headers from last to first and calls InitSFXVariables on accepted channels before checking the next; rejection returns before `.playSoundCommon` installs new pointers/IDs. For faint_thud (CHAN5/8), an accepted CHAN8 can therefore be cleared before CHAN5 rejects the request. Independent per-channel acceptance would be wrong. Bind alarm, SFX IDs, waits and music suppression to the same owner; retain the distinction between ID clears and sound_ret/hardware mute already required by §9.1.4. This is a review recommendation, not an implementation or checkpoint approval.
+
+**Verification:** typecheck/build pass; bundle `index-DmUTdeN6.js` and SHA256 `7c870757a5ed77e1b2b151bffdc62048325bd393cdc4c19e8b6af5254507923d` unchanged. Initial ROM suite: 4675 pass, one 5000ms timeout in `pewter_tripwire.test.ts`; full ROM retry: **4676/4676**. No-ROM: **4458 pass /218 skip**. No test/configuration edits. Logs in `%TEMP%/pkmn-review-20261023-{rom,rom-retry,no-rom}.log`. Review recorded locally; game code and plan unchanged.
+
+### 2026-10-22 (end of day: context brought current) — Claude
+
+Development stops for today. **Today:** A5c3c finished (checkpoints 05, 06, 06b, 07, 07b; Codex and Grok); A5c3d planned (note 70, #80) and checkpoints **01–04 checked** (Codex): the trace, stat experience (the one deliberate bundle change, now `index-DmUTdeN6.js`), the three battle SFX and two end-battle text programs, and the shared plumbing. **DECISIONS #81:** the running game never reads `notes/`; tests may, and the four fixture readers stay. Baseline **4676/4676**, no-ROM **4458 pass / 218 skip**. Brought PROJECT.md and ARCHITECTURE.md's baselines current; moved this file's five oldest entries to HISTORY (#61). **Next session: Codex runs A5c3d checkpoint-04b** (the battle audio bridge; prompt at the end of Claude's checkpoint-04 check, with no fixture move), then Claude checks it. Local commits only; never pushed.
+
+### 2026-10-22 (DECISIONS #81: the game never reads `notes/`; tests may) — Claude
+
+The user asked whether `notes/` serves the game. It doesn't: nothing in the build reads it. Four tests read fixtures from it (the A5c1 paper-model traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's address table). The user decided they stay: "we wont do those 4 files". Recorded as **DECISIONS #81** and in CONVENTIONS → *The test suite*, with a caveat: `battle_end_helpers.test.ts` parses note 70's markdown. Checkpoint-04b's brief is unchanged (no fixture move). Docs only. Local commit only.
+
+### 2026-10-22 (A5c3d checkpoint-04 checked) — Claude
+
+**Passes** (note 70 **§9.8**). Gates re-run: build `index-DmUTdeN6.js` unchanged, ROM **4676/4676**, no-ROM **4458 pass / 218 skip**. Re-read the slides, the trainer-pic scroll, `ModifyPikachuHappiness`, the starter scan and the mood clamp against pret: they match. My mutations: six caught, two equivalent. The 17 earlier ledger cases each drop by exactly 4 frames, as allowed. A5c3f must replace the private-field cast in `loadHudTilePatterns` (backlog). Docs only. **Next: Codex runs checkpoint-04b** (the battle audio bridge). Local commit only.
+
+### 2026-10-22 (A5c3d checkpoint-04 implemented; awaiting Claude's check) — Codex
+
+Six unused modules: alias/cell view, flags/alive/faint check, tile two-option menu, copies/slides/HUD-only free function, Pikachu gates/happiness/mood and voice cues. **46 new cases; 21/21 mutations caught/restored.** Two authorized unused HUD callers now use 2 frames; 16 earlier cases +1 composed Poke Doll snapshot change by exactly 4 frames (listed in note70 **§9.7** and the commit). Earlier trace's enemy Bide clear corrected to **CD05..CD06**.
+
+Gates in order: typecheck clean; build **index-DmUTdeN6.js** and SHA256 unchanged; ROM **4676/4676**; no-ROM **4458 pass / 218 skip**. No production wiring or generated changes. Clip's four SFX-ID clears wait for 04b's audio bridge; 04b/04c not started. One local commit `A5c3d checkpoint-04: shared plumbing`; never pushed. **Stop for Claude's check.**
+
+### 2026-10-22 (A5c3d checkpoint-03 checked) — Claude
+
+**Passes** (note 70 **§9.6**). Re-ran setup on the committed tree with no diff, then the gates in order: typecheck clean, build `index-DmUTdeN6.js` unchanged, ROM **4630/4630**, no-ROM **4412 pass / 218 skip**. Compared `faint_thud` and the header addresses with pret myself; `_TrainerNameText` reads `wNameBuffer`. Earlier-test edits are census counts only. Docs only. **Next: Codex runs checkpoint-04** (shared plumbing). Local commit only.
+
+### 2026-10-22 (A5c3d checkpoint-03 implemented; awaiting Claude's check) — Codex
+
+Data-only extraction of Audio2 `level_up`, `faint_fall`, `faint_thud` plus `TrainerEndBattleText` / `_TrainerNameText`; no new op or checkpoint-03b needed. ROM/source/symbol checks add 9 cases. Setup twice: **905/905 files identical**, exactly 6 new SFX/mirror files +2 text JSON changes; 897 prior files unchanged. Eight mutations caught/restored, one additional music-mode probe equivalent on these payloads. Details: note 70 **§9.5**.
+
+Final gates in order: typecheck clean; build unchanged **index-DmUTdeN6.js** (SHA256 unchanged); ROM **4630/4630**; no-ROM **4412 pass / 218 skip**. No runtime callers, engine/runner or preload changes. One local commit, `A5c3d checkpoint-03: battle SFX and end-battle text data`; never pushed. **Stop for Claude's check; checkpoint-04 not started.**
+
+### 2026-10-22 (A5c3d checkpoint-02 checked) — Claude
+
+**Passes** (note 70 **§9.4**). Re-ran the gates in order: typecheck clean, build `index-DmUTdeN6.js` (SHA256 matches §9.3), ROM **4621/4621**, no-ROM **4412 pass / 209 skip**. Re-read `CalcStat`'s root loop and `CalcLevelFromExperience` against pret: they match. Nine of my ten mutations were caught; the tenth (root capped at 254) is equivalent. Carry to checkpoint-06: the battle's header loader must supply `growthRate`. New bundle baseline `index-DmUTdeN6.js`. Docs only. **Next: Codex runs checkpoint-03** (the three SFX and the two end-battle text keys, data only). Local commit only.
+
 ### 2026-10-22 (A5c3d checkpoint-02 implemented; awaiting Claude's check) — Codex
 
 Stat-exp tuple/default/copy transport is live; both load-time EXP resets remain unchanged and party stats are not newly persisted. Added unused OT/EXP/stat-exp byte adapter + mirror, shared b0/b1 CalcStat/CalcStats and raw six-row growth/level routines. **35 new cases**, earlier assertions/snapshots unchanged; **12/12 mutations caught/restored**. Details: note 70 **§9.3**.
@@ -5348,3 +5548,105 @@ pokeyellow.gbc` → commit the regenerated `data/` + `static/` with the code (th
   slice"; the other two took the recommended defaults (DECISIONS #34).
 - ~~O-6: V1 plan decisions~~ — **resolved 2026-09-22.** The user accepted all six
   recommendations; see DECISIONS #29.
+
+## Archived STATUS sections (moved 2026-10-24)
+
+Moved verbatim from `STATUS.md` on 2026-10-24, when the A5c3e plan was written (DECISIONS #61). Each block is the
+section as it stood that day, before it was rewritten short.
+
+### *Current phase* (as of 2026-10-24)
+
+**Phase R is done** (2026-09-22): the game runs from committed files, no ROM, no setup. **Phase V** rebuilds
+the lost 30-map state (V1 ✅ → V2 Pewter → V3 Gym + Museum → V4 Diglett's Cave + Route 3 → V5 fixes), with
+Phase A slices placed in between (DECISIONS #29, #35, #55). Done so far: V1, A6, A1, A5a, A5b. **StatusScreen
+and the healing machine are user-verified complete.** **V2 (Pewter City) is user-verified complete (2026-10-17):** V2a → V2b → V2c (notes 60–62). **Map-music fade-out is complete and user-verified (2026-10-18):** CP1–CP4 checked, including the door-sound wait (#67/#68; note 63 §10.16). **The intro animation is complete and
+user-verified (2026-10-18):** CP1–CP5, note 64, DECISIONS #51/#69. **Now: A5c–A5f** — A5c3a and A5c3b ✅ (2026-10-20); **A5c3c ✅ complete (2026-10-22**; ten checkpoints, note 69 §10.20). **A5c3d planned (2026-10-22**, `notes/70-a5c3d-plan.md`, DECISIONS #80; Codex implements). **A5c3d checkpoint-01 ✅ checked** (note 70 §9.2; Codex). **Checkpoint-02 ✅ checked** (note 70 §9.4). **Checkpoint-03 ✅ checked** (note 70 §9.6). **Checkpoint-04 ✅ checked** (note 70 §9.8). **Checkpoint-04b ✅ checked** (note 70 §9.14). **Checkpoint-04c ✅ checked** (§9.16). **Checkpoint-05 ✅ checked** (§9.18; four test gaps carried to 05b item 0). **Checkpoint-05b ✅ checked** (§9.20; three test gaps carried to 06 item 0). **Checkpoint-06 ✅ checked** (§9.22; three test gaps carried to 06b item 0). **Checkpoint-06b ✅ checked** (§9.24; one test gap carried to 07 item 0). **Checkpoint-07 ✅ checked** (§9.26; one blackout `Delay3` fix and four test gaps carried to 08 item 0). **Checkpoint-08 ✅ checked** (§9.28; clean, no item 0). **Checkpoint-08b ✅ checked** (§9.30). **A5c3d ✅ complete (2026-10-24**, thirteen checkpoints). Next: plan A5c3e (Claude, note 71; items in battle).
+
+---
+
+### *In progress* (as of 2026-10-24)
+
+**A5c3d ✅ complete, 2026-10-24** (note 70 §9.30; thirteen checkpoints, all checked). **Next: A5c3e, items in battle** (note 68 §2 row A5c3e: the battle bodies of `UseItem`, X items, Guard Spec, Dire Hit, Poké Doll, the PP items, the flute, `ItemUseBall`'s flow and texts, and the trainer AI's items and switching). It has no plan yet: Claude writes `notes/71-a5c3e-plan.md` first, then Codex runs a checkpoint-01 trace. A5c3f (the switch-over and your play-test) follows.
+
+**A5c3b ✅ complete, 2026-10-20** (checkpoints 01–07, note 68 §11.34). **A5c3c planned, 2026-10-21** (Claude, `notes/69-a5c3c-effects.md`; **Codex implements**, DECISIONS #78). **Checkpoint-01 ✅ checked** (note 69 §10.1; the slice is now eight checkpoints: 01–05, 06, 06b, 07). **Checkpoint-02 ✅ checked** (§10.3): dispatch, shared helpers and Yellow's 12-frame refresh. **Checkpoint-03 ✅ checked** (§10.5): entry-screen hardening and the status ailments. The stat family is split into checkpoint-04 (stat up / down, §10.6) and 04b (Haze, Mist, Focus Energy, Reflect / Light Screen); the slice is now nine checkpoints. **Checkpoint-04 ✅ checked** (§10.7): stat up / down, the stat-name extractor, Minimize and Rage. **Checkpoint-04b ✅ checked** (§10.9): Haze, Mist, Focus Energy, Reflect / Light Screen; the stat family is done. **Checkpoint-05 ✅ checked** (§10.11): multi-turn moves and escape; one test gap (the escape rejection boundary) goes to checkpoint-06 item 0. **Checkpoint-06 ✅ checked** (§10.13): HP movement, Heal and Substitute, with the escape boundary closed. **Checkpoint-06b ✅ checked** (§10.16; Grok): Transform, Conversion, Mimic, Disable and Splash; all 34 effect labels now exist. The rest is split: **checkpoint-07** (the composed registry, every ID through the real execute stage, the §4 bug pins; brief §10.17) and **checkpoint-07b** (the 139-row retirement manifest); the slice is now ten checkpoints. **Checkpoint-07 ✅ checked** (§10.18; Grok): the composed registry, all 86 IDs through execute on both sides, the §4 bug pins. **Checkpoint-07b ✅ checked** (§10.20; Grok): the 139-row retirement manifest. **A5c3c ✅ complete, 2026-10-22.** Carry-overs: `getMonName` byte-exactness (A5c3f) and the `PrintStatText` overrun (J2), both in the backlog. **A5c3d planned, 2026-10-22** (Claude, `notes/70-a5c3d-plan.md`; **Codex implements**, DECISIONS #80; O-42 answered: stat experience is checkpoint-02). Eight checkpoints: 01 the trace (no code), 02 stat experience (the one live change, no behaviour change), 03 the battle SFX (data), 04 shared plumbing, 05 send-out and switching, 06 EXP / level-up / learning moves, 07 faint, victory and blackout, 08 `EndOfBattle`, the loop driver and the retirement manifests. **Checkpoint-01 ✅ checked** (note 70 §9.2): passes; Codex's corrections hold (run result 2, a two-copy `LoadHudTilePatterns`, 14-frame back pic, the PCM's three-frame prefix). Seven questions answered there. The slice is now 01 · 02 · 03 (+ the two end-text keys) · 04 · 04b (audio bridge) · 04c (yielding text) · 05/05b · 06/06b · 07 · 08/08b. **Checkpoint-02 ✅ checked** (note 70 §9.4): stat experience; new bundle baseline `index-DmUTdeN6.js`. **Checkpoint-03 ✅ checked** (note 70 §9.6): the three battle SFX and the two end-battle text programs, data only. **Checkpoint-04 ✅ checked** (note 70 §9.8): shared plumbing. **Checkpoint-04b ✅ checked** (note 70 §9.14): the battle audio bridge, after two correction rounds (§9.10, §9.12); new bundle baseline `index-CSNAcAv6.js`. **Checkpoint-04c ✅ checked** (note 70 §9.16): the three test gaps closed, the yielding `text_asm` continuation and the two money bindings; new bundle baseline `index-DbYKMUqM.js`. **Checkpoint-05 ✅ checked** (note 70 §9.18): the player side of send-out and switching; bundle unchanged. **Checkpoint-05b ✅ checked** (note 70 §9.20): the enemy side of send-out, replacement and SHIFT; bundle unchanged. **Checkpoint-06 ✅ checked** (§9.22). **Checkpoint-06b ✅ checked** (§9.24). **Checkpoint-07 ✅ checked** (§9.26; required blackout fix completed in08). **Checkpoint-08 ✅ checked** (§9.28; clean): EndOfBattle, the flat battleLoop, the blackout `Delay3` fix and five item 0 regressions. **Checkpoint-08b ✅ checked** (§9.30; Codex implemented, Claude ran the final gates after Codex ran out of credits): 26 whole-battle ledgers and the executable 26/17 retirement manifests. **A5c3d ✅ complete, 2026-10-24.**
+
+**A5d ✅ done and user-verified, 2026-10-18** ("everything works as intended").
+
+**A5c1 ✅ complete, 2026-10-19** (`notes/66-a5c1-plan.md`, DECISIONS #72; CP1 Codex, CP2 Codex + Grok, CP3–CP5 Grok,
+each checked by Claude, §10.20). It has no play-test: nothing in the game changes until A5c3.
+
+**A5c2 ✅ complete, 2026-10-19** (`notes/67-a5c2-plan.md`, DECISIONS #74; CP1–CP5 Codex, each checked by Claude,
+§11.19). The battle menu, the bag and RUN, the party hand-off and `MoveSelectionMenu`, all unused until A5c3; no
+play-test. **A5c3 planned, 2026-10-19** (`notes/68-a5c3-plan.md`, Claude): re-split into six sub-slices, A5c3a–A5c3e unused,
+then A5c3f the switch-over with your play-test (about 27 CPs), and A5c3a (state and plumbing) planned in detail.
+**O-41 answered: yes to all** (DECISIONS #75). **Grok implements. A5c3a CP1 ✅ checked** (note 68 §10, §11.1). **A5c3a CP2 ✅ checked** (note 68 §11.3). **A5c3a CP3 ✅ checked** (note 68 §11.5). **A5c3a checkpoint-04 ✅ checked** (note 68 §11.8). **Checkpoint-04b ✅ checked** (§11.11). **Checkpoint-05 ✅ checked** (§11.13). **A5c3a ✅ complete, 2026-10-20.** **A5c3b checkpoint-01 ✅ checked** (§11.15; b1/b2 split, checkpoints 02–07). **Checkpoint-02 ✅ checked** (§11.17). **Checkpoint-03 ✅ checked** (§11.19). **Checkpoint-04 ✅ checked** (§11.22; Codex, finished by Grok). **A5c3b1 ✅ complete.** **Checkpoint-05 ✅ checked** (with its fix, §11.24–11.26). **Checkpoint-05b ✅ checked** (§11.28). **Checkpoint-06 ✅ checked** (with its fix, §11.30–11.32). **Checkpoint-07 ✅ checked** (§11.34). **A5c3b ✅ complete.** **A5c3c checkpoints 01–06 checked** (note 69 §10.1, §10.3, §10.5, §10.7, §10.9, §10.11, §10.13). **A5c3f carry-over:** fold the `stat_mod_text` extractor into `extractRom()` (it runs from `extract_dev_data.ts` only; §10.7). **A5c3f carry-over:** `BattleState`'s `wLowHealthAlarm` (`$D082`) and `wLowHealthAlarmDisabled` delegate to the audio module or are removed. **O-43 answered → #77** (checkpoint-05 ports the math from the ASM).
+
+**A5c–A5f is planned:** `notes/65-a5c-a5f-plan.md` (Claude, 2026-10-18). It re-splits the work into six sub-slices
+(A5d → A5c1 → A5c2 → A5c3 → A5e → A5f) and plans A5d (the transitions) in detail. **Approved (O-38 → DECISIONS #70).
+A5d CP1 ✅ checked by Claude** (note 65 §10.10, passes; the three open questions decided there).
+Claude checks each CP; the user names the implementer (Codex or Sonnet).
+
+### *Next up* queue (as of 2026-10-24)
+
+Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roadmap in `PLAN.md`.
+
+| # | Slice | Phase | Notes |
+|---|---|---|---|
+| 1 | **A5c–A5f** | A | Note 65, DECISIONS #70; **A5d ✅ user-verified** → **A5c1 ✅** (note66) → **A5c2 ✅** (note 67) → **A5c3** (note 68, #75: a–e unused, f switch-over; **A5c3a ✅ complete (checkpoints 01–05, §11.13); A5c3b checkpoint-01 ✅; checkpoint-02 ✅; checkpoint-03 ✅; checkpoint-04 ✅ (A5c3b1 complete); checkpoint-05 ✅ (with its fix, §11.26); checkpoint-05b ✅ (§11.28); checkpoint-06 ✅ (§11.32); checkpoint-07 ✅ — **A5c3b ✅ complete (§11.34)**; ****A5c3c ✅ complete (note 69 §10.20); A5c3d planned (note 70, #80); A5c3d checkpoint-01 ✅ (note 70 §9.2); checkpoint-02 ✅ (§9.4); checkpoint-03 ✅ (§9.6); checkpoint-04 ✅ (§9.8); checkpoint-04b ✅ (§9.14); checkpoint-04c ✅ (§9.16); checkpoint-05 ✅ (§9.18); checkpoint-05b ✅ (§9.20); checkpoint-06 ✅ (§9.22); checkpoint-06b ✅ (§9.24); checkpoint-07 ✅ (§9.26); checkpoint-08 ✅ (§9.28); checkpoint-08b ✅ (§9.30) — **A5c3d ✅ complete (2026-10-24)**; next: plan A5c3e (items in battle, note 71)**; A5c3f must delegate or remove BattleState's two alarm cells; checkpoint-05 ports the math (#77)**) → A5c3 program → A5e intro → A5f wild catch, with catch demo folded in |
+| 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
+| 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
+| 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
+
+After that: **the opening and title screen** (DECISIONS #69: copyright, Game Freak star, Yellow's intro movie, the title
+animation and Pikachu's PCM clips; backlog entry in note 57), then **the battle-mechanics audit** (#70), then A2, A3, A4
+(in-game trades, plus the player ID and the older-save question, #59), then Phase B.
+Before planning any of these, search `notes/57-findings-backlog.md` for the slice id.
+
+### Slice notes (as of 2026-10-24)
+
+- **R1a–c** — done; see *Completed*, `notes/01-r1a-graphics-export.md`, and
+  ARCHITECTURE → *Data flow* / *Game loop & background tabs*.
+- **Driving the game from browser automation:** synthetic key taps shorter than
+  one read are lost, because `input.ts` polls key *state*: once per tick (16.7 ms)
+  in menus and text, and since A6a once per standing pass (33.5 ms) in the overworld. Hold each key ~100 ms (keydown → wait → keyup via
+  `window.dispatchEvent`, `e.key` names: `x` = A, `z` = B (since DECISIONS #71; harnesses in `notes/` before 2026-10-18's swap used `z` = A), `Enter` = Start, arrows).
+  Walking one step = ~160 ms held. More from V1b:
+  - Start a temporary server with `npx vite --host 127.0.0.1 --port <spare>
+    --strictPort`. Plain `npx vite` binds `localhost`, which is IPv6 `::1` here, so
+    `127.0.0.1` URLs time out.
+  - The splash needs a real click, then about a second before the title shows.
+  - Debug overlay: backtick, then Skip Intro (Pikachu), then the warp dropdown + Warp.
+  - The debug panel shows `Map … step x,y … dir:`, which is handy to read back with
+    JS.
+  - The first step after any warp skips the warp check (`justWarped`). A debug warp
+    next to a door needs one step away and back.
+  - A text box with `cont` lines needs one A press per scroll.
+  - From V1c: a `javascript_exec` call times out after **45 s**, so keep each walk or
+    button loop short. A stray A press that opens a text box makes every walk loop
+    stall. The tab can turn `hidden`: rAF stops, and the debug panel stops
+    rebuilding until the tab is visible again.
+  - To stage a story state, edit the save in `localStorage` (`p151-s`: `mapName`,
+    `playerX/Y` in px = step × 16, `eventFlags`, `party`) and CONTINUE. That's how
+    V1c reached the lab rival. Use a spare port (V1c used 5179), so test saves never
+    touch the user's 5173 origin, and clear them afterwards.
+  - Music changes show up as `performance.getEntriesByType('resource')` entries
+    under `/audio/music/`, one per track per page load.
+  - From V2a CP4: arrow keys are `ArrowUp`/`ArrowDown`/…; text boxes close with **B** (A re-talks); after `NEW GAME` →
+    "Skip intro? YES" the party is **empty** (the debug panel may still show a stale lead — type a species + `+ Add`); the panel
+    lags about a second; the game only advances while a script runs in the page; don't press `-`/`=`; don't poll `getImageData`
+    every frame. Details: `notes/60-v2-plan.md` §16.
+- **V1 is done** (V1a–V1e). The detail is in `notes/02-v1-plan.md` and `notes/03-v1b-plan.md`
+  … `notes/06-v1e-plan.md`. Two V1e patterns later slices will reuse:
+  - **Map script state:** a map whose ASM keeps `w<Map>CurScript` saves its resting
+    value with `getMapScript` / `setMapScript` (`events.ts`), as
+    `story/viridian_city.ts` does (DECISIONS #34).
+  - **ASM push-backs** (`StartSimulatingJoypadStates`) are the `pushPlayer` script
+    command, not `movePlayer`: they collide and hop ledges.
+- **A6 is done** (2026-10-05): `notes/08-a6-plan.md` (the loop's 2-frame pass, player 16 /
+  NPC 34 frames per step), decisions in DECISIONS #36–#39. Each later slice has its own
+  plan and review: A6c `notes/10-a6c-plan.md` + `11-a6c-review.md`, A6d `12-a6d-plan.md` +
+  `13-a6d-review.md`, A6e `14-a6e-plan.md` + `15-a6e-review.md`.
+- **A1 (after A6)** is planned in `notes/07-a1-plan.md` (2026-09-27), with the decisions
+  in DECISIONS #35: A1a → A1b → A1c.
+- **Browser automation:** the game's A button is **X** and B is **Z** (DECISIONS #71, 2026-10-18; before that it was
+  the other way round). Say so when handing over for a play-test.

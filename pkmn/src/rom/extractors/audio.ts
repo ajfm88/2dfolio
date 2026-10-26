@@ -89,7 +89,6 @@ const MUSIC_HEADERS: Record<string, { bank: number; addr: number }> = {
   defeatedtrainer:  { bank: 0x08, addr: 0x42e2 },
   defeatedwildmon:  { bank: 0x08, addr: 0x42eb },
   defeatedgymleader:{ bank: 0x08, addr: 0x42f4 },
-  pokefluteinbattle:{ bank: 0x08, addr: 0x59cf },
 
   // Bank 0x1f (SFX_Headers_3)
   titlescreen:      { bank: 0x1f, addr: 0x4249 },
@@ -154,6 +153,9 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   level_up:         { bank: 0x08, addr: 0x4192 },
   faint_fall:       { bank: 0x08, addr: 0x41da },
   faint_thud:       { bank: 0x08, addr: 0x41bf },
+  // A5c3e checkpoint-02; Audio 2, sfxheaders2.asm:359-368. No runtime preload yet.
+  caught_mon:       { bank: 0x08, addr: 0x41ce },
+  dex_page_added:   { bank: 0x08, addr: 0x41c8 },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -627,6 +629,16 @@ export function extractSfxAt(rom: BinaryReader, bank: number, addr: number): Mus
   }
 
   return { channels };
+}
+
+/** audio/poke_flute.asm: source pointers without a header. Preserve command order, including CH5's
+ * tempo before execute_music. Bootstrap execution belongs to the unused checkpoint-04b adapter. */
+export function extractSfxChannelsAt(
+  rom: BinaryReader, bank: number, pointers: readonly { id: number; addr: number }[],
+): MusicData {
+  return { channels: pointers.map(({ id, addr }) => ({
+    id, commands: decodeChannelCommands(rom, bank, addr, id === 8, true),
+  })) };
 }
 
 // Suppress unused function warning

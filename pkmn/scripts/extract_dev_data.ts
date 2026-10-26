@@ -20,7 +20,7 @@ import { extractCollisionTiles } from '../src/rom/extractors/collision';
 import { extractPikachuMovement } from '../src/rom/extractors/pikachu_movement';
 import { extractPokedex } from '../src/rom/extractors/pokedex';
 import { extractAllMaps } from '../src/rom/extractors/maps';
-import { extractMusic, extractSfx, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
+import { extractMusic, extractSfx, extractSfxChannelsAt, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
 import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from '../src/rom/extractors/text';
 import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
@@ -47,7 +47,7 @@ const MUSIC_TRACKS = [
   'credits', 'halloffame', 'jigglypuffsong', 'bikeriding', 'surfing',
   'gamecorner', 'dungeon1', 'dungeon3', 'cinnabarmansion', 'pokemontower',
   'silphco', 'meeteviltrainer', 'meetfemaletrainer', 'meetmaletrainer',
-  'surfingpikachu', 'pokefluteinbattle',
+  'surfingpikachu',
 ];
 
 const SFX_NAMES = [
@@ -62,6 +62,7 @@ const SFX_NAMES = [
   'heal_ailment', 'poisoned', 'shrink', 'run', 'faint_fall', 'faint_thud',
   'teleport_exit1', 'teleport_enter1', 'teleport_exit2', 'teleport_enter2',
   'ss_anne_horn', 'trade_machine', 'safari_zone_pa',
+  'caught_mon', 'dex_page_added',
 ];
 
 function writeJson(relPath: string, data: unknown): void {
@@ -159,6 +160,11 @@ for (const sfxName of sfxSet) {
     writeJson(`audio/sfx/${sfxName}.json`, sfxData); count++;
   }
 }
+
+// audio/poke_flute.asm: CH5 falls through into CH6; no synthetic SFX header.
+writeJson('audio/sfx/pokeflute_in_battle.json', extractSfxChannelsAt(rom, 0x08, [
+  { id: 5, addr: 0x59eb }, { id: 6, addr: 0x59ee }, { id: 7, addr: 0x444b },
+])); count++;
 
 console.log(`Done! Extracted ${count} files to data/`);
 

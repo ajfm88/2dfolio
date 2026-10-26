@@ -13,6 +13,11 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  // A5c3e checkpoint-02; naming_screen.asm AskName and item_effects.asm's catch/empty-party paths.
+  ["DoYouWantToNicknameText", 0x01, 0x62C8, true],
+  ["_DoYouWantToNicknameText", 0x28, 0x499A, false],
+  ["DontHavePokemonText", 0x03, 0x6527, true],
+  ["_DontHavePokemonText", 0x2D, 0x6E56, false],
   // A5c3d checkpoint-03; home/trainers.asm:374-379, data/text/text_1.asm:16-19.
   ["TrainerEndBattleText", 0x00, 0x336B, true],
   ["_TrainerNameText", 0x26, 0x4045, false],

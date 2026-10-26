@@ -136,6 +136,8 @@ describe.skipIf(!ROM_PATH)('checkpoint-03 end-battle text data', () => {
     const previous = JSON.parse(execFileSync('git', ['show', 'cd2c5a2:game/data/text_programs.json'], { encoding: 'utf8' })) as TextProgramsFile;
     expect(text.textPointers).toEqual(previous.textPointers);
     const existing = { ...text.programs }; delete existing.TrainerEndBattleText; delete existing._TrainerNameText;
+    // A5c3e checkpoint-02's four keys, proven against a20cfa8 in battle_item_data.test.ts.
+    for (const label of ['DoYouWantToNicknameText', '_DoYouWantToNicknameText', 'DontHavePokemonText', '_DontHavePokemonText']) delete existing[label];
     expect(existing).toEqual(previous.programs);
   });
 });

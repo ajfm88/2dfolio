@@ -1,0 +1,151 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`shared tails through the real retained text/video host > 'Func_e4bf' writes result2 before PrintText and retains the cartridge text > Func_e4bf 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "event": "print:DontHavePokemonText",
+      "result": 2,
+      "rows": undefined,
+    },
+    {
+      "at": 56,
+      "event": "end:DontHavePokemonText",
+      "result": 2,
+      "rows": [
+        "You don't have a",
+        "POKéMON!",
+      ],
+    },
+  ],
+  "pages": [
+    [
+      "You don't have a",
+      "POKéMON!         ▼",
+    ],
+  ],
+}
+`;
+
+exports[`shared tails through the real retained text/video host > 'NoEffect' writes result+0 before PrintText and retains the cartridge text > NoEffect 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "event": "print:ItemUseNoEffectText",
+      "result": 0,
+      "rows": undefined,
+    },
+    {
+      "at": 54,
+      "event": "end:ItemUseNoEffectText",
+      "result": 0,
+      "rows": [
+        "It won't have any",
+        "effect.",
+      ],
+    },
+  ],
+  "pages": [
+    [
+      "It won't have any",
+      "effect.          ▼",
+    ],
+  ],
+}
+`;
+
+exports[`shared tails through the real retained text/video host > 'NotTime' writes result+0 before PrintText and retains the cartridge text > NotTime 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "event": "print:ItemUseNotTimeText",
+      "result": 0,
+      "rows": undefined,
+    },
+    {
+      "at": 108,
+      "event": "end:ItemUseNotTimeText",
+      "result": 0,
+      "rows": [
+        "This isn't the",
+        "time to use that!",
+      ],
+    },
+  ],
+  "pages": [
+    [
+      "OAK: YELLOW!",
+      "This isn't the    ▼",
+    ],
+    [
+      "This isn't the",
+      "time to use that!▼",
+    ],
+  ],
+}
+`;
+
+exports[`shared tails through the real retained text/video host > 'NotYours' writes result+0 before PrintText and retains the cartridge text > NotYours 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "event": "print:ItemUseNotYoursToUseText",
+      "result": 0,
+      "rows": undefined,
+    },
+    {
+      "at": 52,
+      "event": "end:ItemUseNotYoursToUseText",
+      "result": 0,
+      "rows": [
+        "This isn't yours",
+        "to use!",
+      ],
+    },
+  ],
+  "pages": [
+    [
+      "This isn't yours",
+      "to use!          ▼",
+    ],
+  ],
+}
+`;
+
+exports[`shared tails through the real retained text/video host > A5c2 UseBagItem calls the new binding, prints a refusal and returns to the bag on the real host > UseBagItem refusal 1`] = `
+[
+  {
+    "at": 0,
+    "event": "print:ItemUseNotTimeText",
+    "result": 0,
+    "rows": undefined,
+  },
+  {
+    "at": 108,
+    "event": "end:ItemUseNotTimeText",
+    "result": 0,
+    "rows": [
+      "This isn't the",
+      "time to use that!",
+    ],
+  },
+]
+`;
+
+exports[`shared tails through the real retained text/video host > ItemUseText00 finishes before heal_ailment; scroll wait removes only after input and never waits for audio > item use text 1`] = `
+[
+  {
+    "at": 21,
+    "event": "end:ItemUseText00",
+    "result": 0,
+    "rows": [
+      "YELLOW used",
+      "POTION!",
+    ],
+  },
+]
+`;
