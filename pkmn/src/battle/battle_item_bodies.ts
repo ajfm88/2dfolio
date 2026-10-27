@@ -13,7 +13,7 @@ export interface ShortItemEnvironment extends Pick<StatEffectEnvironment, 'anima
 }
 // constants/{move_constants,pikachu_emotion_constants,move_effect_constants}.asm.
 export const SHORT_ITEM_CONSTANTS = { XSTATITEM_ANIM: 0xae, ROCK_ANIM: 0xc9, BAIT_ANIM: 0xca,
-  USEDXITEM: 3, ATTACK_UP1_EFFECT: 0x0a, X_ATTACK: 0x41 } as const;
+  PIKAHAPPY_USEDITEM: 2, USEDXITEM: 3, ATTACK_UP1_EFFECT: 0x0a, X_ATTACK: 0x41 } as const;
 
 /** item_effects.asm:1768-1775,1793-1800,1831-1838. Save/restore the bag's absolute slot. */
 function activeHappiness(state: BattleState): void {

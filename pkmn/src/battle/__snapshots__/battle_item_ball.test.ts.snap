@@ -1,0 +1,1756 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`'Great shake1' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random",
+    },
+    {
+      "at": 40,
+      "data": 100,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 97,
+        "id": 199,
+        "item": 3,
+        "math": [
+          0,
+          0,
+          0,
+          10,
+          244,
+          255,
+          0,
+          0,
+          0,
+          10,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText02",
+    },
+    {
+      "at": 123,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 123,
+      "data": undefined,
+      "event": "end:ItemUseBallText02",
+    },
+    {
+      "at": 123,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 123,
+      "data": [
+        2,
+        3,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 3,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText02",
+      "to": 123,
+    },
+  ],
+  "total": 123,
+}
+`;
+
+exports[`'Poke miss0' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 200,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 32,
+        "id": 199,
+        "item": 4,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          85,
+          255,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText01",
+    },
+    {
+      "at": 111,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 111,
+      "data": undefined,
+      "event": "end:ItemUseBallText01",
+    },
+    {
+      "at": 111,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 111,
+      "data": [
+        2,
+        4,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 4,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText01",
+      "to": 111,
+    },
+  ],
+  "total": 111,
+}
+`;
+
+exports[`'Safari shake3' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 200,
+      "event": "Random",
+    },
+    {
+      "at": 40,
+      "data": 130,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 99,
+        "id": 199,
+        "item": 8,
+        "math": [
+          0,
+          0,
+          0,
+          80,
+          0,
+          255,
+          0,
+          0,
+          0,
+          80,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText04",
+    },
+    {
+      "at": 119,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 119,
+      "data": undefined,
+      "event": "end:ItemUseBallText04",
+    },
+    {
+      "at": 119,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      2,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 20,
+    "item": 8,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 4,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText04",
+      "to": 119,
+    },
+  ],
+  "total": 119,
+}
+`;
+
+exports[`'Ultra shake2' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 151,
+      "event": "Random",
+    },
+    {
+      "at": 40,
+      "data": 100,
+      "event": "Random",
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 98,
+        "id": 199,
+        "item": 2,
+        "math": [
+          0,
+          0,
+          0,
+          33,
+          85,
+          255,
+          0,
+          0,
+          0,
+          33,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText03",
+    },
+    {
+      "at": 127,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 127,
+      "data": undefined,
+      "event": "end:ItemUseBallText03",
+    },
+    {
+      "at": 127,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 127,
+      "data": [
+        2,
+        2,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 2,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText03",
+      "to": 127,
+    },
+  ],
+  "total": 127,
+}
+`;
+
+exports[`'ghost' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 16,
+        "id": 199,
+        "item": 1,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText00",
+    },
+    {
+      "at": 117,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 195,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 195,
+      "data": undefined,
+      "event": "end:ItemUseBallText00",
+    },
+    {
+      "at": 195,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 195,
+      "data": [
+        2,
+        1,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 1,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText00",
+      "to": 195,
+    },
+  ],
+  "total": 195,
+}
+`;
+
+exports[`'new party capture' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 67,
+        "id": 199,
+        "item": 1,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": [
+        165,
+        20,
+      ],
+      "event": "LoadEnemyMonData",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText05",
+    },
+    {
+      "at": 109,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 132,
+      "data": 154,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "end:ItemUseBallText05",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "print:ItemUseBallText06",
+    },
+    {
+      "at": 353,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 378,
+      "data": 152,
+      "event": "sound",
+    },
+    {
+      "at": 413,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 413,
+      "data": undefined,
+      "event": "end:ItemUseBallText06",
+    },
+    {
+      "at": 413,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 413,
+      "data": 165,
+      "event": "ShowPokedexData",
+    },
+    {
+      "at": 413,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 413,
+      "data": undefined,
+      "event": "print:ItemUseBall.emptyString",
+    },
+    {
+      "at": 416,
+      "data": undefined,
+      "event": "end:ItemUseBall.emptyString",
+    },
+    {
+      "at": 416,
+      "data": [
+        2,
+        0,
+      ],
+      "event": "AddPartyMon",
+    },
+    {
+      "at": 416,
+      "data": [
+        2,
+        165,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 165,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 165,
+    "mood": [
+      1,
+      133,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      46,
+      31,
+      22,
+      36,
+      17,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText05",
+      "to": 279,
+    },
+    {
+      "from": 280,
+      "kind": "serviced",
+      "phase": "ItemUseBallText06",
+      "to": 413,
+    },
+    {
+      "from": 414,
+      "kind": "serviced",
+      "phase": "ItemUseBall.emptyString",
+      "to": 416,
+    },
+  ],
+  "total": 416,
+}
+`;
+
+exports[`'old man event set' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 99,
+        "id": 199,
+        "item": 4,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText04",
+    },
+    {
+      "at": 119,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 119,
+      "data": undefined,
+      "event": "end:ItemUseBallText04",
+    },
+    {
+      "at": 119,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      2,
+    ],
+    "captured": 1,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 4,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText04",
+      "to": 119,
+    },
+  ],
+  "total": 119,
+}
+`;
+
+exports[`'owned box Bill' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 67,
+        "id": 199,
+        "item": 1,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": [
+        165,
+        20,
+      ],
+      "event": "LoadEnemyMonData",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText05",
+    },
+    {
+      "at": 109,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 132,
+      "data": 154,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "end:ItemUseBallText05",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 279,
+      "data": 2,
+      "event": "SendNewMonToBox",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "print:ItemUseBallText07",
+    },
+    {
+      "at": 335,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 367,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 367,
+      "data": undefined,
+      "event": "end:ItemUseBallText07",
+    },
+    {
+      "at": 367,
+      "data": [
+        2,
+        165,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 165,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 165,
+    "mood": [
+      1,
+      133,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      46,
+      31,
+      22,
+      36,
+      17,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText05",
+      "to": 279,
+    },
+    {
+      "from": 280,
+      "kind": "serviced",
+      "phase": "ItemUseBallText07",
+      "to": 367,
+    },
+  ],
+  "total": 367,
+}
+`;
+
+exports[`'owned box someone' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "print:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": undefined,
+      "event": "end:ItemUseText00",
+    },
+    {
+      "at": 40,
+      "data": 255,
+      "event": "Random",
+    },
+    {
+      "at": 60,
+      "data": {
+        "anim": 67,
+        "id": 199,
+        "item": 1,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 0,
+        "turn": 0,
+        "type": 0,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 60,
+      "data": [
+        165,
+        20,
+      ],
+      "event": "LoadEnemyMonData",
+    },
+    {
+      "at": 60,
+      "data": undefined,
+      "event": "print:ItemUseBallText05",
+    },
+    {
+      "at": 109,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 132,
+      "data": 154,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "end:ItemUseBallText05",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "ClearSprites",
+    },
+    {
+      "at": 279,
+      "data": 2,
+      "event": "SendNewMonToBox",
+    },
+    {
+      "at": 279,
+      "data": undefined,
+      "event": "print:ItemUseBallText08",
+    },
+    {
+      "at": 335,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 373,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 373,
+      "data": undefined,
+      "event": "end:ItemUseBallText08",
+    },
+    {
+      "at": 373,
+      "data": [
+        2,
+        165,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 165,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 165,
+    "mood": [
+      1,
+      133,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      46,
+      31,
+      22,
+      36,
+      17,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "ItemUseText00",
+      "to": 40,
+    },
+    {
+      "from": 41,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 60,
+    },
+    {
+      "from": 61,
+      "kind": "serviced",
+      "phase": "ItemUseBallText05",
+      "to": 279,
+    },
+    {
+      "from": 280,
+      "kind": "serviced",
+      "phase": "ItemUseBallText08",
+      "to": 373,
+    },
+  ],
+  "total": 373,
+}
+`;
+
+exports[`'trainer throw' real-owner ledger 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": {
+        "enemyBar": 0,
+        "enemySpecies2": 19,
+        "partySpecies": 25,
+        "playerBar": 0,
+      },
+      "event": "palette",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "palette:end",
+    },
+    {
+      "at": 5,
+      "data": undefined,
+      "event": "load1",
+    },
+    {
+      "at": 8,
+      "data": {
+        "anim": 0,
+        "id": 199,
+        "item": 4,
+        "math": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ],
+        "multipliers": 182,
+        "turn": 1,
+        "type": 165,
+        "which": 2,
+      },
+      "event": "MoveAnimation",
+    },
+    {
+      "at": 8,
+      "data": undefined,
+      "event": "print:ThrowBallAtTrainerMonText1",
+    },
+    {
+      "at": 71,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 71,
+      "data": undefined,
+      "event": "end:ThrowBallAtTrainerMonText1",
+    },
+    {
+      "at": 71,
+      "data": undefined,
+      "event": "print:ThrowBallAtTrainerMonText2",
+    },
+    {
+      "at": 111,
+      "data": 144,
+      "event": "sound",
+    },
+    {
+      "at": 111,
+      "data": undefined,
+      "event": "end:ThrowBallAtTrainerMonText2",
+    },
+    {
+      "at": 111,
+      "data": [
+        2,
+        4,
+      ],
+      "event": "remove",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      4,
+      1,
+    ],
+    "captured": 0,
+    "dvs": [
+      152,
+      118,
+    ],
+    "hp": 100,
+    "item": 4,
+    "mood": [
+      0,
+      128,
+    ],
+    "result": 1,
+    "safari": 5,
+    "species": 165,
+    "stats": [
+      100,
+      999,
+      999,
+      999,
+      999,
+    ],
+    "status": 0,
+    "which": 2,
+  },
+  "ranges": [
+    {
+      "from": 1,
+      "kind": "held",
+      "phase": "palette",
+      "to": 2,
+    },
+    {
+      "from": 3,
+      "kind": "serviced",
+      "phase": "palette",
+      "to": 5,
+    },
+    {
+      "from": 6,
+      "kind": "serviced",
+      "phase": "cpu",
+      "to": 8,
+    },
+    {
+      "from": 9,
+      "kind": "serviced",
+      "phase": "ThrowBallAtTrainerMonText1",
+      "to": 71,
+    },
+    {
+      "from": 72,
+      "kind": "serviced",
+      "phase": "ThrowBallAtTrainerMonText2",
+      "to": 111,
+    },
+  ],
+  "total": 111,
+}
+`;

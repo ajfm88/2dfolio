@@ -6,7 +6,7 @@ import { expect, it } from 'vitest';
 it('the running production import graph cannot reach the unused A5c3 ports', () => {
   const src = resolve(__dirname, '..');
   const forbidden = new Set([
-    'battle_items', 'battle_item_state', 'battle_item_bodies',
+    'battle_items', 'battle_item_state', 'battle_item_bodies', 'battle_item_ball', 'battle_flute_audio', 'battle_item_flute', 'battle_item_medicine', 'battle_item_medicine_env', 'battle_item_pp',
     'battle_end_state', 'battle_end_helpers', 'battle_pikachu', 'battle_voice_cues', 'battle_two_option', 'battle_slides', 'battle_audio', 'battle_send_out', 'battle_enemy_send_out',
     'battle_calc_stats', 'battle_calc_experience', 'battle_experience', 'learn_move', 'battle_faint', 'battle_end', 'battle_loop',
     'battle_effects_registry', 'battle_effects_hp', 'battle_effects_turns', 'battle_effects_stats', 'battle_effects_status', 'battle_screen_binding', 'battle_effects', 'battle_move_data', 'battle_turn_text', 'battle_turn_status', 'battle_obedience',

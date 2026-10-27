@@ -1,0 +1,1341 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`real medicine presentation ledgers > 'Antidote reserve' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 1,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": 1,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait",
+    },
+    {
+      "at": 41,
+      "data": undefined,
+      "event": "wait:end",
+    },
+    {
+      "at": 41,
+      "data": [
+        142,
+        [
+          3,
+          1,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 41,
+      "data": [],
+      "event": "clearScreen",
+    },
+    {
+      "at": 44,
+      "data": undefined,
+      "event": "clearScreen:end",
+    },
+    {
+      "at": 44,
+      "data": [
+        240,
+      ],
+      "event": "redrawPartyMenu",
+    },
+    {
+      "at": 55,
+      "data": undefined,
+      "event": "redrawPartyMenu:end",
+    },
+    {
+      "at": 105,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 106,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 107,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 107,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 107,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 107,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 112,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      1,
+    ],
+    "hp": [
+      50,
+      10,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 2,
+    "result": 1,
+    "saved": 1,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "serviced",
+      "phase": "sound-wait",
+      "ticks": 17,
+      "to": 41,
+      "vblanks": 17,
+    },
+    {
+      "from": 42,
+      "kind": "serviced",
+      "phase": "clearScreen",
+      "ticks": 3,
+      "to": 44,
+      "vblanks": 3,
+    },
+    {
+      "from": 45,
+      "kind": "held",
+      "phase": "redrawPartyMenu",
+      "ticks": 0,
+      "to": 46,
+      "vblanks": 0,
+    },
+    {
+      "from": 47,
+      "kind": "serviced",
+      "phase": "redrawPartyMenu",
+      "ticks": 9,
+      "to": 55,
+      "vblanks": 9,
+    },
+    {
+      "from": 56,
+      "kind": "serviced",
+      "phase": "cpu",
+      "ticks": 52,
+      "to": 107,
+      "vblanks": 52,
+    },
+    {
+      "from": 108,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 109,
+      "vblanks": 0,
+    },
+    {
+      "from": 110,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 112,
+      "vblanks": 3,
+    },
+  ],
+  "total": 112,
+}
+`;
+
+exports[`real medicine presentation ledgers > 'Full Restore full HP status' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait",
+    },
+    {
+      "at": 41,
+      "data": undefined,
+      "event": "wait:end",
+    },
+    {
+      "at": 41,
+      "data": [
+        142,
+        [
+          3,
+          1,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 41,
+      "data": [],
+      "event": "clearScreen",
+    },
+    {
+      "at": 44,
+      "data": undefined,
+      "event": "clearScreen:end",
+    },
+    {
+      "at": 44,
+      "data": [
+        246,
+      ],
+      "event": "redrawPartyMenu",
+    },
+    {
+      "at": 55,
+      "data": undefined,
+      "event": "redrawPartyMenu:end",
+    },
+    {
+      "at": 105,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 106,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 107,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 107,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 107,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 107,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 112,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      1,
+    ],
+    "hp": [
+      100,
+      50,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 2,
+    "result": 1,
+    "saved": 0,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "serviced",
+      "phase": "sound-wait",
+      "ticks": 17,
+      "to": 41,
+      "vblanks": 17,
+    },
+    {
+      "from": 42,
+      "kind": "serviced",
+      "phase": "clearScreen",
+      "ticks": 3,
+      "to": 44,
+      "vblanks": 3,
+    },
+    {
+      "from": 45,
+      "kind": "held",
+      "phase": "redrawPartyMenu",
+      "ticks": 0,
+      "to": 46,
+      "vblanks": 0,
+    },
+    {
+      "from": 47,
+      "kind": "serviced",
+      "phase": "redrawPartyMenu",
+      "ticks": 9,
+      "to": 55,
+      "vblanks": 9,
+    },
+    {
+      "from": 56,
+      "kind": "serviced",
+      "phase": "cpu",
+      "ticks": 52,
+      "to": 107,
+      "vblanks": 52,
+    },
+    {
+      "from": 108,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 109,
+      "vblanks": 0,
+    },
+    {
+      "from": 110,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 112,
+      "vblanks": 3,
+    },
+  ],
+  "total": 112,
+}
+`;
+
+exports[`real medicine presentation ledgers > 'Potion active' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait:end",
+    },
+    {
+      "at": 24,
+      "data": [
+        141,
+        [
+          3,
+          1,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": [
+        4,
+        1,
+        10,
+        30,
+        100,
+      ],
+      "event": "animateHpBar",
+    },
+    {
+      "at": 70,
+      "data": {
+        "bar": [
+          108,
+          " ",
+          "3",
+          "0",
+        ],
+        "scratch": [
+          30,
+          30,
+        ],
+      },
+      "event": "animateHpBar:end",
+    },
+    {
+      "at": 70,
+      "data": [],
+      "event": "clearScreen",
+    },
+    {
+      "at": 73,
+      "data": undefined,
+      "event": "clearScreen:end",
+    },
+    {
+      "at": 73,
+      "data": [
+        245,
+      ],
+      "event": "redrawPartyMenu",
+    },
+    {
+      "at": 84,
+      "data": undefined,
+      "event": "redrawPartyMenu:end",
+    },
+    {
+      "at": 134,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 135,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 136,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 136,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 136,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 136,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 141,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      1,
+    ],
+    "hp": [
+      30,
+      50,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 2,
+    "result": 1,
+    "saved": 0,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "serviced",
+      "phase": "animateHpBar",
+      "ticks": 46,
+      "to": 70,
+      "vblanks": 46,
+    },
+    {
+      "from": 71,
+      "kind": "serviced",
+      "phase": "clearScreen",
+      "ticks": 3,
+      "to": 73,
+      "vblanks": 3,
+    },
+    {
+      "from": 74,
+      "kind": "held",
+      "phase": "redrawPartyMenu",
+      "ticks": 0,
+      "to": 75,
+      "vblanks": 0,
+    },
+    {
+      "from": 76,
+      "kind": "serviced",
+      "phase": "redrawPartyMenu",
+      "ticks": 9,
+      "to": 84,
+      "vblanks": 9,
+    },
+    {
+      "from": 85,
+      "kind": "serviced",
+      "phase": "cpu",
+      "ticks": 52,
+      "to": 136,
+      "vblanks": 52,
+    },
+    {
+      "from": 137,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 138,
+      "vblanks": 0,
+    },
+    {
+      "from": 139,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 141,
+      "vblanks": 3,
+    },
+  ],
+  "total": 141,
+}
+`;
+
+exports[`real medicine presentation ledgers > 'Revive fainted reserve' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 1,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": 1,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "wait:end",
+    },
+    {
+      "at": 24,
+      "data": [
+        141,
+        [
+          3,
+          1,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": [
+        4,
+        3,
+        0,
+        50,
+        101,
+      ],
+      "event": "animateHpBar",
+    },
+    {
+      "at": 124,
+      "data": {
+        "bar": [
+          108,
+          " ",
+          "5",
+          "0",
+        ],
+        "scratch": [
+          50,
+          50,
+        ],
+      },
+      "event": "animateHpBar:end",
+    },
+    {
+      "at": 124,
+      "data": [],
+      "event": "clearScreen",
+    },
+    {
+      "at": 127,
+      "data": undefined,
+      "event": "clearScreen:end",
+    },
+    {
+      "at": 127,
+      "data": [
+        247,
+      ],
+      "event": "redrawPartyMenu",
+    },
+    {
+      "at": 138,
+      "data": undefined,
+      "event": "redrawPartyMenu:end",
+    },
+    {
+      "at": 188,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 189,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 190,
+      "data": undefined,
+      "event": "scroll",
+    },
+    {
+      "at": 190,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 190,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 190,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 195,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      1,
+    ],
+    "hp": [
+      50,
+      50,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 2,
+    "result": 1,
+    "saved": 1,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "serviced",
+      "phase": "animateHpBar",
+      "ticks": 100,
+      "to": 124,
+      "vblanks": 100,
+    },
+    {
+      "from": 125,
+      "kind": "serviced",
+      "phase": "clearScreen",
+      "ticks": 3,
+      "to": 127,
+      "vblanks": 3,
+    },
+    {
+      "from": 128,
+      "kind": "held",
+      "phase": "redrawPartyMenu",
+      "ticks": 0,
+      "to": 129,
+      "vblanks": 0,
+    },
+    {
+      "from": 130,
+      "kind": "serviced",
+      "phase": "redrawPartyMenu",
+      "ticks": 9,
+      "to": 138,
+      "vblanks": 9,
+    },
+    {
+      "from": 139,
+      "kind": "serviced",
+      "phase": "cpu",
+      "ticks": 52,
+      "to": 190,
+      "vblanks": 52,
+    },
+    {
+      "from": 191,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 192,
+      "vblanks": 0,
+    },
+    {
+      "from": 193,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 195,
+      "vblanks": 3,
+    },
+  ],
+  "total": 195,
+}
+`;
+
+exports[`real medicine presentation ledgers > 'cancel' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 1,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": null,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 24,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 24,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 29,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      2,
+    ],
+    "hp": [
+      50,
+      10,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 1,
+    "result": 0,
+    "saved": 1,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 26,
+      "vblanks": 0,
+    },
+    {
+      "from": 27,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 29,
+      "vblanks": 3,
+    },
+  ],
+  "total": 29,
+}
+`;
+
+exports[`real medicine presentation ledgers > 'no effect' opening, bar, redraw, button wait and battle-palette tail 1`] = `
+{
+  "events": [
+    {
+      "at": 0,
+      "data": [],
+      "event": "displayPartyMenu",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "read",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "press",
+    },
+    {
+      "at": 24,
+      "data": [
+        144,
+        [
+          3,
+          2,
+        ],
+      ],
+      "event": "sound",
+    },
+    {
+      "at": 24,
+      "data": 0,
+      "event": "displayPartyMenu:end",
+    },
+    {
+      "at": 24,
+      "data": undefined,
+      "event": "text:ItemUseNoEffectText",
+    },
+    {
+      "at": 78,
+      "data": undefined,
+      "event": "end:ItemUseNoEffectText",
+    },
+    {
+      "at": 78,
+      "data": [
+        0,
+        0,
+        0,
+      ],
+      "event": "white",
+    },
+    {
+      "at": 78,
+      "data": [],
+      "event": "runDefaultPaletteCommand",
+    },
+    {
+      "at": 78,
+      "data": {
+        "enemyBar": 1,
+        "enemySpecies2": 25,
+        "partySpecies": 19,
+        "playerBar": 2,
+      },
+      "event": "battle-palette",
+    },
+    {
+      "at": 83,
+      "data": undefined,
+      "event": "runDefaultPaletteCommand:end",
+    },
+  ],
+  "final": {
+    "bag": [
+      3,
+      2,
+    ],
+    "hp": [
+      100,
+      50,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    "palettes": [
+      "REDBAR",
+      "YELLOWBAR",
+      "GRAYMON",
+      "YELLOWMON",
+    ],
+    "registers": [
+      0,
+      0,
+      0,
+    ],
+    "renders": 1,
+    "result": 0,
+    "saved": 0,
+    "status": [
+      null,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  },
+  "groups": [
+    {
+      "from": 1,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 10,
+      "to": 10,
+      "vblanks": 10,
+    },
+    {
+      "from": 11,
+      "kind": "held",
+      "phase": "displayPartyMenu",
+      "ticks": 0,
+      "to": 12,
+      "vblanks": 0,
+    },
+    {
+      "from": 13,
+      "kind": "session",
+      "phase": "displayPartyMenu",
+      "ticks": 12,
+      "to": 24,
+      "vblanks": 12,
+    },
+    {
+      "from": 25,
+      "kind": "serviced",
+      "phase": "text:ItemUseNoEffectText",
+      "ticks": 54,
+      "to": 78,
+      "vblanks": 54,
+    },
+    {
+      "from": 79,
+      "kind": "held",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 0,
+      "to": 80,
+      "vblanks": 0,
+    },
+    {
+      "from": 81,
+      "kind": "serviced",
+      "phase": "runDefaultPaletteCommand",
+      "ticks": 3,
+      "to": 83,
+      "vblanks": 3,
+    },
+  ],
+  "total": 83,
+}
+`;

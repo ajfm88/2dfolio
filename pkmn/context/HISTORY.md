@@ -15,6 +15,152 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-24 (end of day: A5c3e checkpoints 01–04 checked; 04b half done) — Claude
+
+Stopping for the day. Today: A5c3e was planned (note 71, #82) and STATUS archived. Checkpoints 01, 02, 03 and 04 were
+implemented by Codex and checked, and 04b's item 0 is done with its API stop settled. Context files are refreshed
+(CLAUDE.md, PROJECT, PLAN, CONVENTIONS baselines). **Next session: resume 04b** with the prompt in §11.10 (Codex, or a
+Sonnet agent while Codex is out of credits); then 05.
+
+### 2026-10-24 (A5c3e checkpoint-04b stop settled) — Claude
+
+Item 0 passes (note 71 **§11.10**). Codex's one-method `SfxEngine` proposal is accepted as an explicit bundle exception
+(+239 / +89 gzip bytes). It's additive and has one caller, which a guard test will pin. I checked that CH5's `tempo` through
+`SoundChannel` resets only the SFX fractions and never the music's tempo, as Audio 2 does. Docs only. **Next: resume
+04b.** The user may hand checkpoints to a Sonnet agent while Codex is out of credits.
+
+### 2026-10-24 (A5c3e checkpoint-04b item0 done; audio API stop) — Codex
+
+Unified Random_ into `random(state, carryIn)` and removed the Bait/Rock copy; added the two animationType cases and
+one carry/overflow test. Existing cases/ledgers unchanged; both mutations caught. Public-API probe still gives
+CH5=33, CH6/7=257 with exact flute commands. Stopped as instructed before adapter/body or live audio edits; proposed
+one pending-stream method in note71 **§10.5**, measured virtual bundle cost **+239 bytes /+89 gzip**. Gates in order
+pass: typecheck/build, **5182/5182 ROM**, **4947 pass /235 skip no-ROM**; actual bundle unchanged. One local checkpoint
+commit; no push/refs edits. **Next: Claude's API/bundle decision;04b remains incomplete.**
+
+### 2026-10-24 (A5c3e checkpoint-04 checked) — Claude
+
+**Passes** (note 71 **§11.8**), `6fd39d4`. I re-read X Accuracy, Guard Spec, Dire Hit, `ItemUseXStat`, the Poké Doll and
+Bait / Rock against pret, and accepted Codex's checkpoint-03 name-decoder fix. A5c3f checks that the extractor import
+adds only the charmap to the bundle. One reuse finding: Bait / Rock's private Random copies `battleRandom`'s core, so 04b
+makes a single `random(state, carryIn)`. My 7 mutations: 6 caught, 1 gap (`wAnimationType`'s reset), which goes to
+04b item 0. Gates in order: typecheck clean; build unchanged; ROM **5179/5179**; no-ROM **4944 / 235**. **Next: Codex
+runs checkpoint-04b** (brief §11.9).
+
+### 2026-10-24 (A5c3e checkpoint-04 implemented; awaiting check) — Codex
+
+Closed the three checkpoint-03 test gaps first (additions only), then added unused registered short item bodies:
+X Accuracy, Guard Spec, Dire Hit, four X stats, Poké Doll, Bait/Rock. Reused real stat/happiness owners;27 new cases
+and15 printer/body ledgers. Fixed the common tail's move-alphabet decoder bug exposed by GUARD SPEC./POKé DOLL,
+reusing the existing general byte decoder via a one-word export. All11 requested mutations caught. Gates sequentially
+clean: typecheck/build, **5179/5179 ROM**, **4944 pass /235 skip no-ROM**; bundle unchanged. Results note71 **§10.4**.
+One local checkpoint commit; no push, refs edits or live wiring. **Stopped for Claude;04b not started.**
+
+### 2026-10-24 (A5c3e checkpoint-03 checked) — Claude
+
+**Passes** (note 71 **§11.6**), `c538cad`. I re-read the dispatcher, every refusal's battle guard,
+`RemoveItemFromInventory_`, `_GetTileAndCoordsInFrontOfPlayer` and `PlaySoundWaitForCurrent` against pret. All four sound
+ids work out from their header addresses. My 8 mutations: 5 caught; 3 test gaps, none a bug (the saved-scroll reset byte,
+an invalid Card Key facing, and the binding's HM ids). Checkpoint-04 closes them first. Gates in order: typecheck clean;
+build `index-DbYKMUqM.js`; ROM **5149/5149**; no-ROM **4914 / 235**. **Next: Codex runs checkpoint-04** (brief §11.7).
+
+### 2026-10-24 (A5c3e checkpoint-03 implemented; awaiting check) — Codex
+
+Added unused item dispatcher/state modules: all83 ROM pointers match §10.1.16; complete battle refusals, raw bag
+removal and shared result/text/sound tails, empty body registry and unused A5c2 binding.120 new non-ROM cases +2 ROM
+cases; all six requested mutations caught. Real printer/audio and UseBagItem refusal exercised. Only old-test change:
+two names in the unused-module guard. Gates sequentially clean: typecheck, build, **5149/5149 ROM**, **4914 pass /235
+skip no-ROM**; bundle `index-DbYKMUqM.js` unchanged. Results note71 **§10.3**. One local checkpoint commit; no push or
+refs edits. **Stopped for Claude's check; checkpoint-04 not started.**
+
+### 2026-10-24 (A5c3e checkpoint-02 checked) — Claude
+
+**Passes** (note 71 **§11.4**), `5432faf`. I accepted Codex's two proposed old-test exceptions and applied them myself:
+- `battle_text_data`'s counts go 995/362 → 999/366;
+- `battle_end_data`'s `cd2c5a2` golden also leaves out the four new keys.
+
+The A5c3d checkpoint-03 precedent covers both. My §11.1 error is recorded: `ItemUseBall.emptyString` was already
+extracted. The flute streams are source-exact against pret (CH5 falls into CH6). My 3 mutations: 2 caught, 1 equivalent
+(`isSfx` is inert before `execute_music`). Gates in order: typecheck clean; build `index-DbYKMUqM.js` unchanged; ROM
+**5027/5027**; no-ROM **4794 / 233**. **Next: Codex runs checkpoint-03, the dispatcher** (brief §11.5).
+
+### 2026-10-24 (A5c3e checkpoint-02 resumed; data written, test exceptions pending) — Codex
+
+Implemented two Audio2 SFX, the flute's exact streams via one additive pointer helper, two missing text roots/FAR
+children, and deletion of bogus flute music. The requested empty root already existed; corrected the trace and retained
+it. No engine/decoder/schema changes. All15 new ROM tests pass; setup twice byte-identical across909 files; bundle SHA256
+unchanged. Gates in order: typecheck/build clean; ROM5024 pass /3 fail; no-ROM4793 pass /1 fail /233 skip. Failures are old
+text census/golden comparisons outside the permitted two old-test edits; left unchanged and proposed exact exceptions
+in **note71 §10.2.4**. One local commit, never pushed. **Stop for Claude's check;02 not passed,03 not started.**
+
+### 2026-10-24 (A5c3e checkpoint-02 schema stop settled) — Claude
+
+The stop (`abc322f`) was the right call. **The `bootstrap` field is declined** (note 71 **§11.3**): the facts are the five
+instructions of `Music_PokeFluteInBattle` (I confirmed the ROM's bytes at `08:59CF`). So 04b ports them as constants, and a
+02 ROM test pins the bytes. The flute's streams go in the existing `{channels}` shape at `sfx/pokeflute_in_battle.json`,
+through one additive pointer helper beside `extractSfxAt`. The unused-SFX census exception gains that name. Docs only.
+**Next: Codex resumes checkpoint-02.**
+
+### 2026-10-24 (A5c3e checkpoint-02 schema stop; data implementation pending) — Codex
+
+Read the checked trace and brief; confirmed that extractor MusicData and playback SfxData contain only channels,
+so cannot represent the requested flute bootstrap facts. **Stopped under the user's explicit condition and
+note 71 §11.2(2)**; proposed one `bootstrap` field on a specialized extractor type in **§10.2**, for Claude's decision.
+No extractor, engine, test, roster or generated-data changes; no setup runs or new-data validation yet. The four
+baseline gates ran in order: typecheck/build clean (`index-DbYKMUqM.js`), ROM5012/5012, no-ROM4794 pass /218 skip.
+One local documentation handoff commit with the requested checkpoint subject; never pushed. **Next: schema decision,
+then resume checkpoint-02; checkpoint-03 has not started.**
+
+### 2026-10-24 (A5c3e checkpoint-01 checked) — Claude
+
+**Passes** (note 71 **§11.1**), `c10bcc8`. Docs only, so gates not re-run (baseline 5012/5012, no-ROM 4794 / 218). All
+eleven corrections accepted after re-reading pret: the Lorelei/Dewgong `BattleRandom` in `AIGetTypeEffectiveness`, the
+catch's conditional Rand2 (the five worked examples re-done by hand), the old man's captured byte, no drinks in the field
+port, the failed X item skipping the badge re-apply, Agatha's switch with no heal fallback. One addition: medicine's
+`call z, RunDefaultPaletteCommand` always runs (`GBPalWhiteOut`'s `xor a` survives the CGB helpers' `push af` / `pop af`).
+Answers: the flute's playback adapter is its own checkpoint-04b; checkpoint-02 gets a narrow two-assertion census exception
+and deletes the garbage `pokefluteinbattle`; medicine parity covers the field's supported items only; every proposed
+regression is accepted. **Next: Codex runs checkpoint-02** (brief §11.2).
+
+### 2026-10-24 (A5c3e checkpoint-01 trace; awaiting check) — Codex
+
+Verified note 71 §1–§3 against pinned pret ASM/symbols and compared oldamber/gen1recomp; results in **note 71 §10.1**.
+Traced all83 item entries, all47 trainer AI rows, medicine/catch/storage/naming/PP/flute, timing, text bindings,
+WRAM aliases, RNG and the8/10 retirement lists. Eleven corrections/clarifications and four questions for Claude.
+Read-only ROM/audio probes confirm identical heal streams and a real flute CHAN5 gap (raw33 versus required257
+updates); no code, tests or generated data changed. Implementation gates not rerun; baseline remains5012/5012 ROM,
+4794 pass /218 skip no-ROM. One local checkpoint commit; never pushed. **Next: Claude checks checkpoint-01;
+checkpoint-02 has not started.**
+
+### 2026-10-24 (A5c3e planned; STATUS.md archived) — Claude
+
+Studied the codebase and context, then planned A5c3e: **`notes/71-a5c3e-plan.md`**. O-44 answered "yes to all"
+→ **DECISIONS #82** (the AI's move-choice modifications ported here, amending #77; the Pokédex page and naming screen are
+hand-off ports; Safari Bait and Rock included; Codex implements). Twelve findings, among them: catching reaches the
+Pokédex, party, box and naming screen; all 83 bag routines need a battle answer (the Card Key and Surfboard have no
+battle guard); battle medicine is the field flow plus the active copy (curing a status copies the party stats over the
+battle stats; Full Restore's heal keeps them); the in-battle flute is code; `SendNewMonToBox` inserts at the front, where
+`main.ts` appends. Eleven checkpoints; the checkpoint-01 brief is §6. Docs only, game code unchanged, gates not re-run
+(baseline 5012/5012, no-ROM 4794 / 218). Before planning, STATUS.md (59 KB) was archived to 27 KB (`2322f5d`). **Next:
+Codex runs A5c3e checkpoint-01.**
+
+### 2026-10-24 (A5c3d checkpoint-08b finished and checked; A5c3d complete) — Claude
+
+Codex implemented checkpoint-08b and ran out of credits while re-running the gates after its last snapshot fix. Claude ran the four gates in order (typecheck clean; build `index-DbYKMUqM.js`, hash unchanged; ROM **5012/5012**, 179 files; no-ROM **4794 pass / 218 skip**) and committed the work as Codex left it (`71da70a`). **Check passes, clean** (note 70 **§9.30**). The rig composes the real owners, and each spy delegates to the original. The 26 ledgers pair snapshots with independent assertions; the Pay Day result gate matches pret (catch → result 2 loses the money; Teleport keeps result 0). The 26/17 manifests are AST-checked. My 10 mutations: 8 caught by the new suites, and the 2 Pikachu-only ones are caught by the existing unit suites, so there is no gap. **A5c3d ✅ complete** (thirteen checkpoints). **Next: plan A5c3e** (Claude, note 71; items in battle), then Codex's checkpoint-01 trace.
+
+### 2026-10-23 (codebase and context orientation) — Codex
+
+Read the project guidance, live handoff, architecture, conventions, roadmap and decision index/recent decisions;
+reviewed the subsystem architecture docs and traced startup/timing, overworld dispatch, saves, extraction,
+the live legacy battle and the unused generator host/state/loop/import guard. Reviewed note 70 §9.28 and the
+backlog's switch-over carries. **Next remains A5c3d checkpoint-08b**, whole-battle ledgers and executable
+26/17 retirement manifests; no implementation started. Game code unchanged; tests/build not rerun for this
+study-only session. The recorded baseline remains 4983/4983 ROM, 4765 pass / 218 skip no-ROM.
+
+### 2026-10-23 (A5c3d checkpoint-08 checked; end of day) — Claude
+
+**Passes, clean** (note 70 **§9.28**), `6325495`. Gates re-run in order: typecheck clean, build `index-DbYKMUqM.js` (hash unchanged), ROM **4983/4983**, no-ROM **4765 pass / 218 skip**. The checkpoint-07 blackout `Delay3` fix is right, and all five item 0 mutations are caught. Re-read `EndOfBattle` against pret (including the 24-byte `wBattleStatusData` span counted from `wram.asm`) and the flat `battleLoop` against `MainInBattleLoop`'s tail jumps: they match. My 23 mutations: all caught. Today's checks: checkpoints 06, 06b, 07 and 08 (one implementation bug found at 07 and fixed at 08). **Next session: checkpoint-08b** (Codex; the whole-battle ledgers and the retirement manifests for `experience.test.ts` 26 and `trainer_flow.test.ts` 17, no item 0), then Claude's check; that completes A5c3d.
+
 ### 2026-10-23 (A5c3d checkpoint-08 implemented; awaiting Claude's check) — Codex
 
 Using §9.2 item7's approved08/08b split. Added the missing blackout ClearScreen Delay3 after a failing

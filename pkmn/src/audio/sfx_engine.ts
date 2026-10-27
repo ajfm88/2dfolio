@@ -159,6 +159,17 @@ export class SfxEngine {
     this.install(data, battleModifiers);
   }
 
+  // A5c3e checkpoint-04b; only battle_flute_audio.ts calls it.
+  replacePendingMusicSfxStream(id: number, commands: SfxCommand[]): void {
+    const ch = this.channels.find(ch => ch.active && ch.id === id);
+    if (!ch?.music || ch.music.pc !== 0 || ch.music.noteDelayCounter !== 1) {
+      throw new Error('expected pending music SFX');
+    }
+    ch.commands = commands;
+    ch.pc = 0;
+    ch.music = new SoundChannel(id, commands, this.host);
+  }
+
   /** InitSFXVariables: clear software state only; do not sound_ret, mute, or release music. */
   clearChannelsForPriority(ids: readonly number[]): void {
     const selected = new Set(ids);

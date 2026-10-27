@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5182/5182** as of 2026-10-24 (A5c3e checkpoint-04b item 0). No-ROM **4947 pass / 235 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5738/5738** as of 2026-10-25 (A5c3e checkpoint-07). No-ROM **5502 pass / 236 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -251,7 +251,19 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-5182 tests in 184 files (vitest, `environment: 'node'`); without ROM, 4947 pass / 235 skip.
+5738 tests in 190 files (vitest, `environment: 'node'`); without ROM, 5502 pass / 236 skip.
+
+**A5c3e checkpoints 04b–07** (2026-10-25, note 71 §10.5.4–§10.10; checked §11.11–§11.22) add six unused-module suites,
+each with its own snapshots:
+- `battle_flute_audio.test.ts` (the pending-stream method's caller guard and the real-rig flute);
+- `battle_item_flute.test.ts`;
+- `battle_item_medicine.test.ts` (312 field-parity cases on happiness, HP and status; mood is pinned against the ASM,
+  §11.15);
+- `battle_item_medicine_env.test.ts` (the real party menu, HP bar, redraw and palette, first read 24 / redraw 14);
+- `battle_item_pp.test.ts`;
+- `battle_item_ball.test.ts` (§10.1.5's fourteen worked rows with exact `Random` draws).
+
+`a5c3_unused.test.ts`' guard list gains each module. The bundle changed once, at 04b, to `index-DCGYEZm7.js`.
 
 **A5c3e checkpoint-04b item0** (2026-10-24, note71 §10.5; audio API stop) adds one
 `battle_random.test.ts` case for explicit carry/ADC overflow/SBC and two appended `battle_item_bodies.test.ts`
