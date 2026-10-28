@@ -3,7 +3,7 @@ import { A, LINK_STATE_BATTLING, STRUGGLE, WILD_BATTLE, type BattleState } from 
 import { calculateDamage, type DamageResult } from './damage';
 import { getMove, getTypeChart } from './data';
 import { getEffectiveTypes } from './effects';
-import { applyTrainerMoveModifiers } from './trainer_ai';
+import { AIEnemyTrainerChooseMoves } from './battle_ai_moves';
 import type { BattlePokemon } from './types';
 
 export { battleRandom } from './battle_random';
@@ -87,7 +87,7 @@ export interface TrainerMoveSelection {
   aiModifiers: number[];
 }
 
-/** trainer_ai.asm:3–105. Scores alias wBuffer until replaced with the minimum move list. */
+/** trainer_ai.asm:3–105. Checks the object against wEnemyMonMoves, then the class byte picks the list. */
 export function aiEnemyTrainerChooseMoves(state: BattleState, trainer: TrainerMoveSelection): number {
   if (trainer.enemy.moves.length > 4) throw new Error('enemy moves do not match wEnemyMonMoves');
   for (let slot = 0; slot < 4; slot++) {
@@ -95,21 +95,7 @@ export function aiEnemyTrainerChooseMoves(state: BattleState, trainer: TrainerMo
     const id = move ? getMove(move.id)?.id : 0;
     if (id !== state.mem[A.wEnemyMonMoves + slot]) throw new Error('enemy moves do not match wEnemyMonMoves');
   }
-  state.setBytes(A.wBuffer, [10, 10, 10, 10], 4);
-  const disabled = state.wEnemyDisabledMove >> 4;
-  if (disabled !== 0) state.mem[A.wBuffer + disabled - 1] = 0x50;
-  if (trainer.aiModifiers.length === 0) return A.wEnemyMonMoves;
-  const scores = state.bytes(A.wBuffer, 4); // Indexed writes wrap as bytes, including upstream ++/--.
-  applyTrainerMoveModifiers(scores, trainer.enemy, trainer.player, trainer.aiModifiers);
-  let minimum = Infinity;
-  for (let slot = 0; slot < 4; slot++) {
-    if (state.mem[A.wEnemyMonMoves + slot] !== 0) minimum = Math.min(minimum, scores[slot]);
-  }
-  for (let slot = 0; slot < 4; slot++) {
-    const move = state.mem[A.wEnemyMonMoves + slot];
-    state.mem[A.wBuffer + slot] = move !== 0 && scores[slot] === minimum ? move : 0;
-  }
-  return A.wBuffer;
+  return AIEnemyTrainerChooseMoves(state);
 }
 
 /** core.asm:3086–3176. Link consumes an already exchanged nybble; no serial/UI. */

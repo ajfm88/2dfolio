@@ -1,23 +1,53 @@
 # Battle System Architecture
 
-A5c3e checkpoint-04b item0 puts Random_ in `battle_random.ts` as `random(state, carryIn)`; off-link
-BattleRandom supplies its CP carry, Bait/Rock supply0, and the link-list path stays separate. The private item
-copy is gone. The flute adapter/body are stopped pending an audio API/bundle decision (note71 §10.5): public
-clear/reinstall preserves IDs but still ends CH5 at33. The proposed pending-stream method is not applied.
+## A5c3e: items, catches and trainer AI (unused until A5c3f)
 
-A5c3e checkpoint-04 adds unused `battle_item_bodies.ts`: explicit registration for X Accuracy, Guard Spec,
-Dire Hit, the four X stats, Poké Doll and Bait/Rock (note71 §10.4). It reuses statModifierUpEffect and the Pikachu
-happiness/starter gate. X stats spend before animation, retain failure consumption and reapply badges only on
-success. Bait/Rock use the source Random clear-carry path, rejection/saturation, a named animation cue and70 frames.
-The common item tail now uses the existing general byte decoder for item-name punctuation/é, rather than the
-MoveNames alphabet. No live caller or flute body is added.
+The completed ports remain outside the running game's import graph. A5c3f owns their installation and the
+user's play-test. `a5c3_unused.test.ts` guards that boundary; the production bundle is `index-DCGYEZm7.js`.
+Notes 71 §10.17/§10.19 describe the composed histories. Neither legacy catch nor trainer-AI tests/callers
+are removed here: `a5c3e_retirement.test.ts` records all 8/10 dispositions, six stale math titles and the
+exact importer/export census. Keep `loadTrainerData`/`getTrainerClass` for story, encounter and sight data.
 
-A5c3e checkpoint-03 adds unused `battle_items.ts` and `battle_item_state.ts` (note71 §10.3).
-The frozen83-row dispatcher initializes result1, completes battle refusals and calls only explicitly registered
-bodies; none are installed yet. Shared tails delegate the retained printer, scroll-button wait and BattleAudio.
-Raw bag bytes own subtraction, the FF shift, menu thresholds and optional object mirroring. Item cells add aliases
-over the existing D view, without new storage. The A5c2 binding is available but unwired; the ledger rig stays fake
-until checkpoint-10. Card Key deliberately compares the pinned ROM opcode CD after fetching its battle-screen tile.
+`battle_items.ts` dispatches the frozen 83-row item table and TM/HM refusals into an explicit body registry.
+`battle_item_state.ts` adds byte views and exact-address aliases over the same WRAM, without new storage.
+`battle_item_bodies.ts` owns X Accuracy, Guard Spec, Dire Hit, X stats, Poké Doll and Safari Bait/Rock;
+medicine and PP items live in `battle_item_medicine.ts`/`battle_item_pp.ts`. The medicine environment reuses
+the actual party menus, HUD, palette and stat loaders. Raw bag bytes own consumption/FF shifting, with an
+object mirror for existing menus. Failure, stat cap, happiness and active-versus-roster asymmetries follow ASM.
+
+`battle_item_flute.ts` and `battle_flute_audio.ts` reuse the existing Audio 2 engine, including the approved
+pending-stream replacement on `SfxEngine`. The flute polls the actual channel IDs; it has no alternate frame
+owner. `battle_random.ts` supplies raw `random(state, carryIn)` separately from BattleRandom's CP carry/link
+list. Bait/Rock, balls and TrainerAI use the raw source path. `PlaySoundWaitForCurrent` pre-waits for the old
+sound, starts the requested sound, and returns; Full Heal text begins while its new sound is still playing.
+Trainer Potions request no item sound (the retained printer still owns button acknowledgement sounds).
+
+`battle_item_ball.ts` owns throw gates, byte-rejection RNG, catch arithmetic, shake animation and consumption.
+`battle_add_mon.ts` owns party/box homes, owned/seen flags and the nickname question. The catch environment's
+dex-page and naming-screen programs remain explicit presentation ports; party/box bytes and the real YES/NO
+owner surround them. The box object mirror is deferred to A5c3f. Item names use the general byte decoder,
+including the accented POKé BALL glyph. Shared scratch such as `$D11D` and `$CD6D` retains its source aliases.
+
+`battle_trainer_ai.ts` ports all 47 class rows, gates, item routines and real switching. Its carry return
+consumes the enemy's turn. Count0 returns before Random, FF loads the class count, and EnemySendOut resets
+FF without a switch decrement. The four-byte switch write-back includes the party-position byte; first-mon1
+suppresses SHIFT during the AI send-out. X items save/restore Num/Effect around the actual stat routine.
+`battle_ai_moves.ts` owns class modifications1–3, six-byte ReadMove writes, type lookup and minimum filtering;
+`battle_math.ts` owns the selector and its rejection bands. Encouragement is read here and incremented only
+on ExecuteEnemyMove's entry; modification2 runs exactly at1 and draws no RNG.
+
+The two composition seams remain `host.useItem` (via `bindBattleItems`) and `TurnPorts.trainerAI` (via
+`trainerAIBuilder`). `test/battle_ledger_rig.ts` opts into real ports with `History.real`; trainer fixture
+headers/rosters and observations are separately opt-in. The 26 A5c3d and 18 player-item ledgers stay unchanged.
+The 14 trainer histories retain timed text/RNG/WRAM/audio and end resets, with explicit assertions independent
+of snapshots. Hooks delegate to the actual selector, HP bar, stat effect, send-out and Counter routines.
+
+Preserved Gen 1 quirks include Counter reading the last scoring record and stale shared damage after an AI
+item skips the selected move; Full Heal retaining quartered speed; Cooltrainer F's dead 25% gate; type
+effectiveness default `$10` rather than decimal10; first matching dual-type row rather than multiplication;
+and Lorelei's Dewgong roll only after a matching row, with `<$66` retaining that default. Card Key compares
+the pinned ROM opcode `$CD`. These behaviours are deliberate; do not normalize the scratch or reload the
+selected move after scoring.
 
 A5c3d checkpoint-08b adds test-only whole-battle ledgers (`battle_whole.test.ts`,
 `test/battle_ledger_rig.ts`) through the real loop/end, turn/effects, faint/EXP, send-out, menu, text,

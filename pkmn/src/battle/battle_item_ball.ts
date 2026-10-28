@@ -1,5 +1,5 @@
 // Unused A5c3e throw. pret e89ead15 engine/items/item_effects.asm:104-654,2566-2588.
-import { battleContext, decodeNick, isGhostBattle, indexToPokedex, RESTLESS_SOUL, type BattleState } from './battle_state';
+import { battleContext, decodeNick, isGhostBattle, indexToPokedex, NAME_LENGTH, RESTLESS_SOUL, type BattleState } from './battle_state';
 import { I } from './battle_item_state';
 import { random } from './battle_random';
 import { multiply, divide } from './battle_arithmetic';
@@ -10,6 +10,7 @@ import { delayFrames, type Program } from './battle_menu_context';
 import type { ExecutePresentation } from './battle_execute_helpers';
 import type { BattleMenuScreen } from './battle_menu_screen';
 import { bindEntryBattleScreen } from './battle_screen_binding';
+import { decodeTextByte } from '../rom/extractors/text';
 
 export interface BallItemEnvironment extends Pick<ExecutePresentation, 'animation'> {
   video: BattleMenuScreen;
@@ -88,7 +89,14 @@ export function* itemUseBall(state: BattleState, host: BattleItemHost, env: Ball
   if (state.wBattleType === BALL.SAFARI) state.wNumSafariBalls--;
   yield* palette(); state.mem[I.wPokeBallAnimData] = 0x43;
   video.loadScreenTilesFromBuffer1();
-  yield* host.printText('ItemUseText00', { stringBuffer: decodeNick(state.mem, I.wStringBuffer) });
+  // ItemUseText00's text_ram preserves the ItemNames charmap, including POKé BALL.
+  let itemName = '';
+  for (let at = I.wStringBuffer; at < I.wStringBuffer + NAME_LENGTH; at++) {
+    const byte = state.mem[at];
+    if (byte === 0x50 || byte === 0) break; // Preserve the prior decoder's length/termination contract.
+    itemName += decodeTextByte(byte, at);
+  }
+  yield* host.printText('ItemUseText00', { stringBuffer: itemName });
   if (isGhostBattle(state)) state.mem[I.wPokeBallAnimData] = 0x10;
   else if (demo) {
     state.mem.set(state.mem.slice(I.wPlayerName, I.wPlayerName + 11), I.wGrassRate);

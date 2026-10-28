@@ -227,7 +227,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5738/5738** as of 2026-10-25 (A5c3e checkpoint-07). No-ROM **5502 pass / 236 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5870/5870** as of 2026-10-26 (A5c3e checkpoint-09). No-ROM **5632 pass / 238 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -244,6 +244,17 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
+`battle/battle_whole_trainer_ai.test.ts`: 14 real-loop trainer histories (T1–T7) and own reviewed snapshots.
+RIVAL2 Potion/cap/threshold/count-zero, BROCK Full Heal/no-post-wait/retained speed, JUGGLER switch/write-back/
+SHIFT/FF reload, MISTY X Defend, thrash gates, LORELEI Dewgong scoring/encouragement and stale Counter with its
+control. Explicit text, tagged RNG, counts, animation, WRAM, Delay3 and end-reset assertions run independently
+of snapshots; `PKMN_SKIP_SNAPSHOTS=1` bypasses only this new suite's comparisons for mutation audits.
+
+`battle/a5c3e_retirement.test.ts`: four executable manifest checks for all 8 legacy catch and 10 trainer-AI
+cases, the six stale math titles, and the exact non-test importer/barrel census (AST, resolving aliases and
+namespace access). Records A5c3f's dispositions; retires nothing. Class-data getters and the new selector's
+`TrainerMoveSelection` type survive. Replacement titles must be unique and enabled. Note71 §10.19.
+
 Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that adds tests
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
 the new baseline.
@@ -251,7 +262,37 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-5738 tests in 190 files (vitest, `environment: 'node'`); without ROM, 5502 pass / 236 skip.
+5890 tests in 194 files (vitest, `environment: 'node'`); without ROM, 5652 pass / 238 skip.
+
+**A5c3e checkpoint-10** (2026-10-26, Codex; note 71 §10.17, awaiting Claude) adds
+`battle_whole_items.test.ts`:18 real-loop player-item histories and18 own snapshots, with explicit text,
+tagged Random/BattleRandom, inventory/mirror, party/box/owned/mood, turn/result, frame-gap and audio-clock pins.
+The ledger rig's `History.real` registers all production item bodies and TrainerAI, uses carry-aware planned
+draw queues and actual menu input, and disposes registrations after each test. Its default preserves all26
+old whole-battle ledgers byte-for-byte. All17 prescribed mutations fail explicit assertions without snapshots.
+One appended `battle_item_ball.test.ts` case pins POKé BALL's accented binding and the permitted unused-module
+decoder fix; its suite passes52/52 with old snapshots unchanged. Item0 remains checked under §11.34; the earlier stop entry
+below is historical. No old item0 test or snapshot changed during this resumed session.
+
+**A5c3e checkpoint-10 item 0 (incomplete, setup stop)** (2026-10-26, Codex, note 71 §10.16):
+`battle_ai_moves.test.ts` adds one second-type-only Electric → Water match, including modification 3's
+score reduction; the escaped type-1-only mutation fails that case. The four prescribed raw-PAR fixture
+edits in `battle_math.test.ts` / `battle_math_fixes.test.ts` expose missing `loadBattleMoveData` startup
+and throw before their restored assertions. Proposed setup exception awaits Claude; no rig or new
+whole-battle suite yet. Current total 5871; no-ROM 5629 pass / 4 fail / 238 skip. The 5870 green baseline
+above remains historical, not a claim that the stopped checkpoint is green.
+
+**A5c3e checkpoints 07b–09** (2026-10-26, Grok, note 71 §10.11–§10.15; checked §11.24–§11.32) add three unused-module
+suites:
+- `battle_add_mon.test.ts` (the caught mon's party and box homes, `AskName`, the HP/status write-back pin; the party
+  mirror's species is the live table entry);
+- `battle_trainer_ai.test.ts` (`TrainerAI`, every class routine's threshold / HP fraction / item in a 48-row hand-written
+  table, the item routines, the switch, and a ROM test of `TrainerAIPointers` found through `TrainerAI`'s own `ld hl`);
+- `battle_ai_moves.test.ts` (modifications 1–3 from the ASM, the Dewgong draw, the score proof, and a ROM test tying
+  `TrainerClassMoveChoiceModifications` to `trainers.json`'s `aiModifiers`).
+
+Checkpoint-09 also edited old fixtures in `battle_math.test.ts`, `battle_math_fixes.test.ts` and `battle_turn.test.ts` to
+set `wTrainerClass` (note 71 §10.15 lists the 9 changed assertions and §11.32 the verdicts).
 
 **A5c3e checkpoints 04b–07** (2026-10-25, note 71 §10.5.4–§10.10; checked §11.11–§11.22) add six unused-module suites,
 each with its own snapshots:

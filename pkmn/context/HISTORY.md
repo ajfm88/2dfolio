@@ -15,6 +15,134 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-25 (end of day: A5c3e checkpoints 04b–07 checked) — Claude
+
+Stopping for the day. Today Codex implemented 04b (resumed), 05, 05b, 06, 06b and 07, and Claude checked each one
+(note 71 §11.11–§11.22). Bugs found and fixed: the medicine happiness event (05 → 05b) and two WRAM deviations in the
+PP items (06 → 06b, one of them Claude's brief error). Settled: the live field mood bug stays with the Pikachu audit / J2
+(§11.15). Medicine was split into 05 / 05b, the party menu's side effects became 06b, and the bundle is
+`index-DCGYEZm7.js`. Context files refreshed (CLAUDE.md, PROJECT, PLAN, CONVENTIONS baselines). **Next session: Claude
+writes the 07b brief (§11.23)** with the HP write-back pin as item 0, **then Codex runs 07b.**
+
+### 2026-10-25 (A5c3e checkpoint-07 checked) — Claude
+
+**Passes, with one test gap** (note 71 **§11.22**), `1078984`; no bug. Re-read `ItemUseBall` and the trainer throw
+against pret step by step. EVENT_MET_BILL `$550` is confirmed from the ROM's own `CheckEvent` bytes (my constant count
+was off by one; Codex was right). My 10 mutations: 9 caught. The gap: dropping the HP write-back after the reload fails
+no test, because every full-body capture starts at full HP. Gates in order: typecheck clean; build `index-DCGYEZm7.js`,
+unchanged; ROM **5738/5738**; no-ROM **5502 / 236**. **Next: Claude writes the 07b brief.**
+
+### 2026-10-25 (A5c3e checkpoint-07 implemented; awaiting check) — Codex
+
+Added the unused ball body: real Random/HRAM formula, printer/audio, palette, enemy reload,
+dex flags and removal; recorded home/page hand-offs for07b. All14 worked rows,51 new cases,
+ten ledgers and all listed mutations caught (12 runs, including both trainer variants).
+Gen1 Ditto/Missingno./Safari-ghost bugs preserved. Ordered gates clean: typecheck/build,
+**5738/5738 ROM**, **5502 pass /236 skip no-ROM**. Bundle `index-DCGYEZm7.js` byte-identical.
+Results in note71 **§10.10**. One local commit; no live/schema/refs changes or push.
+**Stopped for Claude's check; 07b unstarted.**
+
+### 2026-10-25 (A5c3e checkpoint-06b checked; checkpoint-07 briefed) — Claude
+
+**Passes, clean** (note 71 **§11.20**), `34a63d6`. The row loop reuses A5c3d's `LoadMonData_` port in both draws.
+The selection now reads `wPartySpecies` as the ASM does, and PP no longer restores `wCurItem`. My 3 mutations: all
+caught. Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged; ROM **5687/5687**; no-ROM **5451 / 236**.
+I re-read `ItemUseBall` for the 07 brief: nothing between the toss and the removal writes `wWhichPokemon`, so the ball
+leaves the right bag slot (pinned). **Next: Codex runs checkpoint-07, the throw** (brief §11.21).
+
+### 2026-10-25 (A5c3e checkpoint-06b implemented; awaiting check) — Codex
+
+Reused the unused LoadMonData port in both use-item draws; pinned row/selection/cancel aliases,
+LoadedMon/header bytes, following starter and one-mon parties. Removed PP's two wrong restores.
+14 new cases; all five requested mutations caught. Only five PP snapshots changed, solely
+WhichPokemon and CurItem/CurPartySpecies; every frame total is unchanged (note71 **§10.9**).
+Ordered gates clean: typecheck/build, **5687/5687 ROM**, **5451 pass /236 skip no-ROM**.
+Bundle `index-DCGYEZm7.js` unchanged. One local commit; no live/schema/refs changes, no push.
+**Stopped for Claude's check; 07 unstarted.**
+
+### 2026-10-25 (A5c3e checkpoint-06 checked; checkpoint-06b briefed) — Claude
+
+**Passes with two WRAM deviations** (note 71 **§11.18**), `1a8c8c4`. The PP logic matches pret, and all 7 of my
+mutations are caught. (1) My §11.17 told Codex to restore `wCurItem` before removal. It's the same cell as
+`wCurPartySpecies`, so the cartridge leaves the chosen species there, and removal doesn't read it. (2) `RedrawPartyMenu`
+runs `LoadMonData` for each row (`wWhichPokemon`, `wCurPartySpecies`, `wMonHeader`, `wLoadedMon`), so a cancel leaves
+count − 1. Neither is visible; both are fixed in **06b**. Gates in order: typecheck clean; build `index-DCGYEZm7.js`,
+unchanged; ROM **5673/5673**; no-ROM **5437 / 236**. **Next: Codex runs checkpoint-06b** (brief §11.19).
+
+### 2026-10-25 (A5c3e checkpoint-06 implemented; awaiting check) — Codex
+
+Exported the shared use-item party session and dropped dead HP operands; all425 medicine cases/ledgers unchanged.
+Added unused PP bodies with the real type2 move menu, party-source max PP, Max Ether bug, audio and palette tails.
+33 new cases, five ledgers, all ten mutations caught. Gates in order clean: typecheck/build, **5673/5673 ROM**,
+**5437 pass /236 skip no-ROM**; bundle unchanged. Results in note71 **§10.8**. One local commit; no live-file,
+schema, refs, push or remote changes. **Stopped for Claude's check; checkpoint-07 not started.**
+
+### 2026-10-25 (A5c3e checkpoint-05b checked; checkpoint-06 briefed) — Claude
+
+**Passes, clean** (note 71 **§11.16**), `c73f749`; medicine is complete. The environment composes the real owners,
+and in battle `SET_PAL_DEFAULT` is SET_PAL_BATTLE. The HP path's 0-frame sound pre-wait is the cartridge's (the alarm
+reset clears CH5's id). My 7 mutations: 6 caught, 1 equivalent. Gates in order: typecheck clean; build
+`index-DCGYEZm7.js`, unchanged; ROM **5640/5640**; no-ROM **5404 / 236**. The private-member casts go to A5c3f's
+carry list. **Next: Codex runs checkpoint-06, the PP items** (brief §11.17).
+
+### 2026-10-25 (A5c3e checkpoint-05b resumed; awaiting check) — Codex
+
+Applied the amended happiness-only parity and40 ASM mood pins; added the unused real medicine environment.
+First read24, clear/redraw14, type2 HP bar, SET_PAL_BATTLE return; six ledgers, all seven mutations caught.
+Gates in order clean: typecheck/build, **5640/5640 ROM**, **5404 pass /236 skip no-ROM**; bundle unchanged.
+Results/totals in note71 **§10.7.1**. One local commit; no live-file, schema, refs, push or remote changes.
+**Stopped for Claude's check; checkpoint-06 not started.**
+
+### 2026-10-25 (A5c3e checkpoint-05b mood stop settled) — Claude
+
+The stop was right (note 71 **§11.15**), `a9a4c99`. Item 0 passes. The live `pikachu_happiness.ts` nudges mood one
+step toward its target, where `ModifyPikachuHappiness` writes the target. That bug is already deferred to the Pikachu
+state audit / J2 (note 57's A6b entry), so a USEDITEM-only live patch is declined. 05b's parity compares happiness, not
+mood, and battle mood gets its own ASM pins. My §11.13 claim that the field port was right was wrong, and is recorded.
+Docs only. **Next: Codex resumes 05b.**
+
+### 2026-10-25 (A5c3e checkpoint-05b item0 fix; live-field parity stop) — Codex
+
+Corrected medicine to named USEDITEM2, six event-byte snapshots and the chosen-slot test; added Potion/Full Restore
+mood$83 pins (event1 mutation caught). Extended starter parity exposes live field mood$81 versus ASM/battle$83.
+Stopped under §11.14(5); proposal in note71 **§10.7**, no presentation env begun. Gates in order: typecheck/build clean,
+ROM **5347 pass /240 fail**; no-ROM **5111 pass /240 fail /236 skip** (all failures new mood parity). Bundle unchanged.
+One local handoff commit; no live-file, refs, push or remote changes. **Next: Claude's decision;05b incomplete,06 unstarted.**
+
+### 2026-10-25 (A5c3e checkpoint-05 checked; checkpoint-05b briefed) — Claude
+
+**Passes with one bug** (note 71 **§11.13**), `0ad2c5e`. Medicine calls `modifyPikachuHappiness(state, 1)`, which is
+LEVELUP: `PIKAHAPPY_*` starts at 1, so USEDITEM is 2. The happiness change is the same, but the mood target isn't (`$8A`
+for `$83`), and the tests pin the wrong id. The live field port is right. 05b fixes it first, as item 0, and pins the
+mood and the parity. Everything else matches pret; Codex's count fix (16 medicines, not 17) is right. My 10 mutations: 9
+caught, plus the fix itself. Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged; ROM **5585/5585**;
+no-ROM **5349 / 236**. **Next: Codex runs checkpoint-05b** (brief §11.14).
+
+### 2026-10-25 (A5c3e checkpoint-05 implemented; awaiting check) — Codex
+
+Added unused medicine byte effects with the six presentation ports faked; real bag/audio/happiness/alarm/printer/waits.
+370 new cases incl.312 field-parity combinations, nine ledgers; all ten requested mutations caught. Gates in order
+clean: typecheck/build, **5585/5585 ROM**, **5349 pass /236 skip no-ROM**; bundle **index-DCGYEZm7.js** unchanged.
+Results/census clarification in note71 **§10.6**. Only old-test edit is the unused-module list. One local commit;
+no push, remote or refs edits. **Stopped for Claude's check; checkpoint-05b not started.**
+
+### 2026-10-25 (A5c3e checkpoint-04b checked; checkpoint-05 briefed) — Claude
+
+**Passes, clean** (note 71 **§11.11**), `29e3b1b`. I re-read the flute's battle branch, `WakeUpEntireParty` and
+`Music_PokeFluteInBattle` against pret; the post-flute vibrato difference is the cartridge's (`Audio1_ApplyMusicAffects`
+skips effects under an SFX). My 7 mutations: all caught. Gates in order: typecheck clean; build **`index-DCGYEZm7.js`**
+(the new baseline); ROM **5215/5215**; no-ROM **4979 / 236**. Medicine split into **05** (byte effects, presentation as
+ports) and **05b** (the real party menu, HP bar, redraw, palette and frame counts). **Next: Codex runs checkpoint-05**
+(brief §11.12).
+
+### 2026-10-25 (A5c3e checkpoint-04b resumed; awaiting check) — Codex
+
+Implemented the unused battle flute adapter/body and the sole authorized live pending-stream method; item0 unchanged.
+Real playback ends5/6/7 on257, preserves wave notes and battle-music tempo/note timing. All seven mutations caught;
+33 new tests. Gates in order clean: typecheck/build, **5215/5215 ROM**, **4979 pass /236 skip no-ROM**.
+New bundle **index-DCGYEZm7.js**,405270 bytes /124987 gzip, method-only delta+239/+92 (note71 **§10.5.4**).
+One local commit; no push, remote or refs edits. **Stopped for Claude's check; checkpoint-05 not started.**
+
 ### 2026-10-24 (end of day: A5c3e checkpoints 01–04 checked; 04b half done) — Claude
 
 Stopping for the day. Today: A5c3e was planned (note 71, #82) and STATUS archived. Checkpoints 01, 02, 03 and 04 were

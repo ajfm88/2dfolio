@@ -13,6 +13,7 @@ import { loadTextPrograms } from '../text/program_data';
 import { textBgTransfer } from '../text/bg_transfer';
 import { createPokemon, getAllLoadedMoveIds, getMove } from './data';
 import { A, BattleState, battleContext, LINK_STATE_BATTLING } from './battle_state';
+import { D } from './battle_end_state';
 import { loadBattleMoveData } from './battle_move_data';
 import * as loaders from './battle_loaders';
 import * as menus from './battle_menu';
@@ -293,7 +294,7 @@ describe('turn ordering and link switch', () => {
     enemy.moves = [{ id: 'TELEPORT', pp: 12, maxPp: 20 }];
     const trainer = { player, enemy, aiModifiers: [] };
     const r = rig({ trainer, effect: s => { s.wEscapedFromBattle = 1; return 1; } });
-    r.s.wIsInBattle = 2; r.s.wSerialExchangeNybbleReceiveData = 15;
+    r.s.wIsInBattle = 2; r.s.mem[D.wTrainerClass] = 1; r.s.wSerialExchangeNybbleReceiveData = 15;
     expect(r.run()).toBe('escaped'); expect(math.selectEnemyMove).toHaveBeenCalledWith(r.s, trainer);
     expect(r.names().some(n => n.startsWith('switch '))).toBe(false);
   });

@@ -209,6 +209,16 @@ it.each(WORKED)('$name: exact worked-table draws and animation', ({ config, anim
 });
 
 describe('throw gates, reload and raw byte pins', () => {
+  // item_effects.asm:147–149,2634–2638; text_9.asm:248–251: text_ram preserves the ItemNames é byte.
+  it('keeps the POKe BALL accented glyph in the real item-name binding', () => {
+    const r = setup(); r.s.setBytes(I.wStringBuffer, encodeText('POKé BALL@'), 11);
+    const print = r.host.printText;
+    r.host.printText = function* (label, bindings, options) {
+      if (label === 'ItemUseText00') expect(bindings?.stringBuffer).toBe('POKé BALL');
+      yield* print(label, bindings, options);
+    };
+    r.start(); r.finish();
+  });
   it('new ownership is tested before setting, and the page sees the owned bit and internal species', () => {
     const r = setup({ item: 1, draws: [255] });
     expect(r.s.mem[I.wPokedexOwned + 2] & 4).toBe(0);

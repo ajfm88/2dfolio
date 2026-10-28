@@ -1,15 +1,20 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('../input', () => ({ isPassPressed: () => false, isHeld: () => false }));
 import { A, BattleState, LINK_STATE_BATTLING, STRUGGLE } from './battle_state';
+import { D } from './battle_end_state';
 import {
   battleRandom, calculateModifiedStat, calculateModifiedStats, doubleOrHalveSelectedStats,
   executeMoveDamageChain, metronomePickMove, selectEnemyMove,
 } from './battle_math';
 import { createPokemon, getMove, getTypeChart, loadBattleData } from './data';
+import { loadBattleMoveData } from './battle_move_data';
 import { loadBattleMonFromParty, loadEnemyMonData, partySlotFromPokemon, writePartySlot } from './battle_loaders';
 import type { BattlePokemon } from './types';
 
-beforeAll(loadBattleData);
+beforeAll(async () => {
+  await loadBattleData();
+  await loadBattleMoveData();
+});
 afterEach(() => vi.restoreAllMocks());
 
 function pokemon(name = 'Rhydon'): BattlePokemon {
@@ -308,6 +313,7 @@ describe('SelectEnemyMove', () => {
     const enemy = pokemon(); const player = pokemon();
     enemy.moves = [{ id: 'GROWL', pp: 10, maxPp: 40 }, { id: 'TACKLE', pp: 10, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [45, 33, 0, 0], 4);
+    s.mem[D.wTrainerClass] = 1;
     selectEnemyMove(s, { enemy, player, aiModifiers: [] });
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 1]);
     expect(rng).toHaveBeenCalledTimes(1);
@@ -316,6 +322,7 @@ describe('SelectEnemyMove', () => {
     const s = selection(); s.wIsInBattle = 2;
     const enemy = pokemon(); enemy.moves = [{ id: 'TACKLE', pp: 0, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [33, 0, 0, 0], 4);
+    s.mem[D.wTrainerClass] = 1;
     const rng = rolls(s, [0]);
     selectEnemyMove(s, { enemy, player: pokemon(), aiModifiers: [] });
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 0]);
@@ -326,7 +333,10 @@ describe('SelectEnemyMove', () => {
     const enemy = pokemon(); const player = pokemon(); player.status = 'PAR';
     enemy.moves = [{ id: 'THUNDER_WAVE', pp: 10, maxPp: 20 }, { id: 'TACKLE', pp: 10, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [86, 33, 0, 0], 4);
+    s.mem[D.wTrainerClass] = 2;
+    s.wBattleMonStatus = 0x40;
     selectEnemyMove(s, { enemy, player, aiModifiers: [1] });
+    // trainer_ai.asm:114–131: nonzero status penalizes power-0 PARALYZE_EFFECT by 5.
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 1]);
     expect(s.bytes(A.wBuffer, 4).slice()).toEqual([0, 33, 0, 0]);
     expect(rng).toHaveBeenCalledTimes(2);

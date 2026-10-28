@@ -308,7 +308,8 @@ function calcEnemyStats(state: BattleState): void {
   }
 }
 
-function writeMonMoves(state: BattleState, movesAddr: number): void {
+/** evos_moves.asm:498–602. wLearningMovesFromDayCare 0 skips the daycare minimum. */
+export function writeMonMoves(state: BattleState, movesAddr: number): void {
   const level = state.wCurEnemyLevel;
   for (const entry of state.species(state.wCurPartySpecies).learnset) {
     if (entry.level === 0 || level < entry.level) break;

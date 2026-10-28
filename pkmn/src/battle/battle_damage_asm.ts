@@ -81,7 +81,8 @@ function unexpectedType(name: string): never {
   throw new Error(`type chart name ${name}`);
 }
 
-const TYPE_CHART: readonly ChartRow[] = loadTypeChart();
+/** TypeEffects in ROM order. Multipliers are the chart bytes 0x00 / 0x05 / 0x14. No $FF row; the array ends. */
+export const TYPE_CHART: readonly ChartRow[] = loadTypeChart();
 
 function u8(n: number): number {
   return n & 0xff;

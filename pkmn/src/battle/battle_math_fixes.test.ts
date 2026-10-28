@@ -1,11 +1,16 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('../input', () => ({ isPassPressed: () => false, isHeld: () => false }));
 import { A, battleContext, BattleState, PARTYMON_STRUCT_LENGTH } from './battle_state';
+import { D } from './battle_end_state';
 import { createPokemon, getMove, loadBattleData } from './data';
+import { loadBattleMoveData } from './battle_move_data';
 import { aiEnemyTrainerChooseMoves, executeMoveDamageChain, selectEnemyMove, type TrainerMoveSelection } from './battle_math';
 import { partySlotFromPokemon } from './battle_loaders';
 
-beforeAll(loadBattleData);
+beforeAll(async () => {
+  await loadBattleData();
+  await loadBattleMoveData();
+});
 afterEach(() => vi.restoreAllMocks());
 
 it('packs move bytes from the loaded cache after the raw import is removed', () => {
@@ -54,11 +59,17 @@ describe('checkpoint-04b damage type bypass', () => {
   });
 });
 
+// move_choices.asm. A list with no class (modification 4, a lone 2 or 3, fifty 1s) is YOUNGSTER.
+const CLASS_FOR_LIST: Readonly<Record<string, number>> = {
+  '': 1, '1': 2, '1,2': 8, '1,3': 4, '1,2,3': 7,
+};
+
 function trainerRig(ids = ['GUST', 'SAND_ATTACK'], aiModifiers: number[] = []): {
   state: BattleState; trainer: TrainerMoveSelection;
 } {
   const state = new BattleState();
   state.wIsInBattle = 2;
+  state.mem[D.wTrainerClass] = CLASS_FOR_LIST[aiModifiers.join(',')] ?? 1;
   const enemy = createPokemon('Pidgey', 50)!;
   const player = createPokemon('Pikachu', 50)!;
   enemy.moves = ids.map(id => ({ id, pp: 0, maxPp: 35 }));
@@ -88,49 +99,58 @@ describe('checkpoint-04b trainer candidate list', () => {
   it('keeps only minimum-score moves and zeroes missing slots', () => {
     const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
     trainer.player.status = 'PAR';
+    state.wBattleMonStatus = 0x40;
+    // trainer_ai.asm:114–131: nonzero status adds 5 to power-0 PARALYZE_EFFECT.
     expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wBuffer);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0, 33, 0, 0]);
   });
   it('keeps every tied minimum, including 0-PP moves', () => {
     const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK'], [4]);
-    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wBuffer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([16, 28, 33, 98]);
+    // trainer_ai.asm:34–35 and :102–104. No list contains 4 (:258–259), so this is the empty list.
+    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wEnemyMonMoves);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('does not let empty-slot scores undercut every existing move', () => {
     const { state, trainer } = trainerRig(['THUNDER_WAVE', 'SLEEP_POWDER'], [1]);
     trainer.player.status = 'PAR';
+    state.wBattleMonStatus = 0x40;
     aiEnemyTrainerChooseMoves(state, trainer);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([86, 79, 0, 0]);
   });
   it('the disabled score excludes that slot from a modified tie', () => {
     const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
     state.wEnemyDisabledMove = 0x17;
+    // trainer_ai.asm:18 writes $50, then the empty list returns without filtering (:102–104).
     aiEnemyTrainerChooseMoves(state, trainer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0, 28, 0, 0]);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0x50, 10, 10, 10]);
   });
   it('does not penalize a zero-PP move beside a positive-PP move in the scoring path', () => {
     const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
     trainer.enemy.moves[1].pp = 10;
+    // trainer_ai.asm:102–104. The empty list never reads PP.
     aiEnemyTrainerChooseMoves(state, trainer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([16, 28, 0, 0]);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('applies modifier 2 through the unchanged upstream body', () => {
     const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [2]);
     vi.spyOn(Math, 'random').mockReturnValue(0);
+    // move_choices.asm has no lone 2. Encouragement stays 0, so :159–161 would return anyway.
     aiEnemyTrainerChooseMoves(state, trainer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0, 28, 0, 0]);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('applies modifier 3 through the unchanged upstream body', () => {
     const { state, trainer } = trainerRig(['THUNDERSHOCK', 'TACKLE'], [3]);
     trainer.player = createPokemon('Squirtle', 50)!;
+    // move_choices.asm: SAILOR is 1, 3. A lone 3 is the empty list (trainer_ai.asm:34–35).
     aiEnemyTrainerChooseMoves(state, trainer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([84, 0, 0, 0]);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('wraps scores as bytes during upstream writes, rather than after the whole dispatch', () => {
     const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], Array<number>(50).fill(1));
     trainer.player.status = 'PAR'; // 10 + 50*5 = 260 -> byte 4, lower than Tackle's 10.
+    // trainer_ai.asm:37–54 runs each list entry once. Fifty 1s is not a class list (:102–104).
     aiEnemyTrainerChooseMoves(state, trainer);
-    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([86, 0, 0, 0]);
+    expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it.each([0, 1, 2, 3])('rejects a mismatching WRAM slot %i even without modifications', slot => {
     const { state, trainer } = trainerRig(); state.mem[A.wEnemyMonMoves + slot] = 255;
@@ -187,6 +207,8 @@ describe('checkpoint-04b trainer band-loop integration', () => {
   it('filtered and empty slots reroll while the band slot remains the index', () => {
     const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
     trainer.player.status = 'PAR';
+    state.wBattleMonStatus = 0x40;
+    // trainer_ai.asm:114–131: nonzero status filters power-0 PARALYZE_EFFECT (+5).
     const random = scriptedRolls(state, [0, 127, 190, 63]);
     selectEnemyMove(state, trainer);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([33, 1]);
