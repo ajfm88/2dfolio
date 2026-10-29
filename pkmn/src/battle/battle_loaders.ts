@@ -16,6 +16,8 @@ export type { SpeciesHeader };
 export { POKEDEX_ORDER };
 
 const MON_PP = 29;
+/** pret core.asm:6282-6284; pinned wram symbol $CEE9 (also wBuffer). */
+const wLearningMovesFromDayCare = 0xcee9;
 const STORING_ENERGY = 1 << 0;
 const THRASHING_ABOUT = 1 << 1;
 const ATTACKING_MULTIPLE_TIMES = 1 << 2;
@@ -334,10 +336,11 @@ function loadMovePPs(state: BattleState, movesAddr: number, ppAddr: number): voi
   }
 }
 
-/** home/names.asm GetMonName. Encodes name@ and zero-fills 20 bytes; not the cartridge's 10-byte copy (note 69 §10.15). */
+/** home/names.asm:1–25. MonsterNames entries are 10 bytes padded with @. Copy those, write @ at +10, leave +11..+19. */
 export function getMonName(state: BattleState, header: SpeciesHeader): void {
-  const bytes = encodeText(`${header.name}@`);
-  for (let i = 0; i < 20; i++) state.mem[A.wNameBuffer + i] = bytes[i] ?? 0;
+  const bytes = encodeText(`${header.name}@@@@@@@@@@`.slice(0, 10));
+  for (let i = 0; i < 10; i++) state.mem[A.wNameBuffer + i] = bytes[i];
+  state.mem[A.wNameBuffer + 10] = 0x50;
 }
 
 export function loadEnemyMonData(state: BattleState): void {
@@ -382,6 +385,8 @@ export function loadEnemyMonData(state: BattleState): void {
     copyBytes(state, moves, A.wEnemyMonMoves, NUM_MOVES);
   } else {
     copyBytes(state, A.wMonHMoves, A.wEnemyMonMoves, NUM_MOVES);
+    // pret core.asm:6282-6284. Wild WriteMonMoves clears the daycare selector ($CEE9) first.
+    state.mem[wLearningMovesFromDayCare] = 0;
     writeMonMoves(state, A.wEnemyMonMoves);
   }
   loadMovePPs(state, A.wEnemyMonMoves, A.wEnemyMonPP);

@@ -1,35 +1,27 @@
-import type { BattleState } from './battle_state';
-import type { BattleScreen, BattleHudSlot, BattlePaletteInput } from './battle_screen';
+import { W_SPRITE_FLIPPED, type BattleState } from './battle_state';
+import type { BattleScreen, BattlePaletteInput } from './battle_screen';
 import { delayFrames, type Program } from './battle_menu_context';
 import { D } from './battle_end_state';
 
-/** The existing screen owns the only VRAM copy queue and HUD slots. Narrow unused adapter; no extra storage. */
-type HudStorage = { copyTiles(total: number, write: (index: number) => void): Generator<void>; hud: (BattleHudSlot | null)[] };
-
 /** pret core.asm:6695-6718. HUD1 three tiles, HUD2+3 six; never the thirty-tile font entry at6692. */
 export function* loadHudTilePatterns(screen: BattleScreen): Program {
-  const storage = screen as unknown as HudStorage;
-  for (const _ of storage.copyTiles(3, index => { storage.hud[0x6d - 0x62 + index] = { sheet: 'hud1', tile: index }; })) {
-    void _; yield 'serviced';
-  }
-  for (const _ of storage.copyTiles(6, index => {
-    const id = index < 3 ? 0x73 + index : 0x76 + index - 3;
-    storage.hud[id - 0x62] = { sheet: index < 3 ? 'hud2' : 'hud3', tile: index % 3 };
-  })) { void _; yield 'serviced'; }
+  for (const _ of screen.loadHudOnlyTilePatterns()) { void _; yield 'serviced'; }
 }
 /** pret home/pics.asm:44-104,187-193. Predecoded picture cue; real49-tile transfer, seven serviced frames. */
-export function* loadMonFrontSprite(screen: BattleScreen, picture: string): Program {
-  for (const _ of screen.copyFront(picture)) { void _; yield 'serviced'; }
+export function* loadMonFrontSprite(screen: BattleScreen, picture: string, flipped = false): Program {
+  for (const _ of screen.copyFront(picture, flipped)) { void _; yield 'serviced'; }
 }
 /** pret init_battle.asm:143-158. Caller owns trainer pointer/bank selection; same49-tile transfer. */
-export function* loadTrainerPic(screen: BattleScreen, picture: string): Program {
-  yield* loadMonFrontSprite(screen, picture);
+export function* loadTrainerPic(screen: BattleScreen, picture: string, flipped = false): Program {
+  yield* loadMonFrontSprite(screen, picture, flipped);
 }
 /** pret init_battle.asm:160-178. Interlace's49-tile copy, then CopyVideoData's49-tile copy:14 frames. */
 export function* loadMonBackPic(state: BattleState, screen: BattleScreen, picture: string): Program {
   state.wCurPartySpecies = state.wBattleMonSpecies2;
   for (let row = 5; row < 12; row++) for (let col = 1; col < 9; col++) screen.put(col, row, ' ');
-  for (let copy = 0; copy < 2; copy++) for (const _ of screen.copyBack(picture)) { void _; yield 'serviced'; }
+  const flipped = state.mem[W_SPRITE_FLIPPED] !== 0;
+  for (const _ of screen.copyBack(picture, flipped)) { void _; yield 'serviced'; }
+  for (const _ of screen.copySpritePicture(picture, flipped)) { void _; yield 'serviced'; }
 }
 function put(screen: BattleScreen, at: number, value: number | string): void { screen.put(at % 20, Math.floor(at / 20), value); }
 function get(screen: BattleScreen, at: number): number | string { return screen.at(at % 20, Math.floor(at / 20)) ?? ' '; }

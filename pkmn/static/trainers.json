@@ -3,6 +3,7 @@
     "id": 1,
     "displayName": "YOUNGSTER",
     "baseMoney": 15,
+    "pic": "youngster.png",
     "aiModifiers": [],
     "parties": [
       [
@@ -154,6 +155,7 @@
     "id": 2,
     "displayName": "BUG CATCHER",
     "baseMoney": 10,
+    "pic": "bugcatcher.png",
     "aiModifiers": [
       1
     ],
@@ -342,6 +344,7 @@
     "id": 3,
     "displayName": "LASS",
     "baseMoney": 15,
+    "pic": "lass.png",
     "aiModifiers": [
       1
     ],
@@ -554,6 +557,7 @@
     "id": 4,
     "displayName": "SAILOR",
     "baseMoney": 30,
+    "pic": "sailor.png",
     "aiModifiers": [
       1,
       3
@@ -641,6 +645,7 @@
     "id": 5,
     "displayName": "JR.TRAINER♂",
     "baseMoney": 20,
+    "pic": "jr.trainerm.png",
     "aiModifiers": [
       1
     ],
@@ -751,6 +756,7 @@
     "id": 6,
     "displayName": "JR.TRAINER♀",
     "baseMoney": 20,
+    "pic": "jr.trainerf.png",
     "aiModifiers": [
       1
     ],
@@ -1055,6 +1061,7 @@
     "id": 7,
     "displayName": "POKéMANIAC",
     "baseMoney": 50,
+    "pic": "pokemaniac.png",
     "aiModifiers": [
       1,
       2,
@@ -1141,6 +1148,7 @@
     "id": 8,
     "displayName": "SUPER NERD",
     "baseMoney": 25,
+    "pic": "supernerd.png",
     "aiModifiers": [
       1,
       2
@@ -1304,6 +1312,7 @@
     "id": 9,
     "displayName": "HIKER",
     "baseMoney": 35,
+    "pic": "hiker.png",
     "aiModifiers": [
       1
     ],
@@ -1478,6 +1487,7 @@
     "id": 10,
     "displayName": "BIKER",
     "baseMoney": 20,
+    "pic": "biker.png",
     "aiModifiers": [
       1
     ],
@@ -1686,6 +1696,7 @@
     "id": 11,
     "displayName": "BURGLAR",
     "baseMoney": 90,
+    "pic": "burglar.png",
     "aiModifiers": [
       1,
       3
@@ -1783,6 +1794,7 @@
     "id": 12,
     "displayName": "ENGINEER",
     "baseMoney": 50,
+    "pic": "engineer.png",
     "aiModifiers": [
       1
     ],
@@ -1823,6 +1835,7 @@
     "id": 13,
     "displayName": "JUGGLER",
     "baseMoney": 35,
+    "pic": "juggler.png",
     "aiModifiers": [
       1,
       2
@@ -1833,6 +1846,7 @@
     "id": 14,
     "displayName": "FISHERMAN",
     "baseMoney": 35,
+    "pic": "fisher.png",
     "aiModifiers": [
       1,
       3
@@ -1994,6 +2008,7 @@
     "id": 15,
     "displayName": "SWIMMER",
     "baseMoney": 5,
+    "pic": "swimmer.png",
     "aiModifiers": [
       1,
       3
@@ -2187,6 +2202,7 @@
     "id": 16,
     "displayName": "CUE BALL",
     "baseMoney": 25,
+    "pic": "cueball.png",
     "aiModifiers": [],
     "parties": [
       [
@@ -2293,6 +2309,7 @@
     "id": 17,
     "displayName": "GAMBLER",
     "baseMoney": 70,
+    "pic": "gambler.png",
     "aiModifiers": [
       1
     ],
@@ -2381,6 +2398,7 @@
     "id": 18,
     "displayName": "BEAUTY",
     "baseMoney": 70,
+    "pic": "beauty.png",
     "aiModifiers": [
       1,
       3
@@ -2574,6 +2592,7 @@
     "id": 19,
     "displayName": "PSYCHIC",
     "baseMoney": 10,
+    "pic": "psychic.png",
     "aiModifiers": [
       1,
       2
@@ -2633,6 +2652,7 @@
     "id": 20,
     "displayName": "ROCKER",
     "baseMoney": 25,
+    "pic": "rocker.png",
     "aiModifiers": [
       1
     ],
@@ -2667,6 +2687,7 @@
     "id": 21,
     "displayName": "JUGGLER",
     "baseMoney": 35,
+    "pic": "juggler.png",
     "aiModifiers": [
       1
     ],
@@ -2761,6 +2782,7 @@
     "id": 22,
     "displayName": "TAMER",
     "baseMoney": 40,
+    "pic": "tamer.png",
     "aiModifiers": [
       1
     ],
@@ -2839,6 +2861,7 @@
     "id": 23,
     "displayName": "BIRD KEEPER",
     "baseMoney": 25,
+    "pic": "birdkeeper.png",
     "aiModifiers": [
       1
     ],
@@ -3079,6 +3102,7 @@
     "id": 24,
     "displayName": "BLACKBELT",
     "baseMoney": 25,
+    "pic": "blackbelt.png",
     "aiModifiers": [
       1
     ],
@@ -3187,6 +3211,7 @@
     "id": 25,
     "displayName": "RIVAL1",
     "baseMoney": 35,
+    "pic": "rival1.png",
     "aiModifiers": [
       1
     ],
@@ -3231,6 +3256,7 @@
     "id": 26,
     "displayName": "PROF.OAK",
     "baseMoney": 99,
+    "pic": "prof.oak.png",
     "aiModifiers": [
       1,
       3
@@ -3308,6 +3334,7 @@
     "id": 27,
     "displayName": "CHIEF",
     "baseMoney": 30,
+    "pic": "scientist.png",
     "aiModifiers": [
       1,
       2
@@ -3318,6 +3345,7 @@
     "id": 28,
     "displayName": "SCIENTIST",
     "baseMoney": 50,
+    "pic": "scientist.png",
     "aiModifiers": [
       1,
       2
@@ -3495,6 +3523,7 @@
     "id": 29,
     "displayName": "GIOVANNI",
     "baseMoney": 99,
+    "pic": "giovanni.png",
     "aiModifiers": [
       1,
       3
@@ -3579,6 +3608,11 @@
     "id": 30,
     "displayName": "ROCKET",
     "baseMoney": 30,
+    "pic": "rocket.png",
+    "picOverride": {
+      "trainerNoAtLeast": 42,
+      "pic": "jessiejames.png"
+    },
     "aiModifiers": [
       1
     ],
@@ -4183,6 +4217,7 @@
     "id": 31,
     "displayName": "COOLTRAINER♂",
     "baseMoney": 35,
+    "pic": "cooltrainerm.png",
     "aiModifiers": [
       1,
       3
@@ -4306,6 +4341,7 @@
     "id": 32,
     "displayName": "COOLTRAINER♀",
     "baseMoney": 35,
+    "pic": "cooltrainerf.png",
     "aiModifiers": [
       1,
       3
@@ -4413,6 +4449,7 @@
     "id": 33,
     "displayName": "BRUNO",
     "baseMoney": 99,
+    "pic": "bruno.png",
     "aiModifiers": [
       1
     ],
@@ -4468,6 +4505,7 @@
     "id": 34,
     "displayName": "BROCK",
     "baseMoney": 99,
+    "pic": "brock.png",
     "aiModifiers": [
       1
     ],
@@ -4492,6 +4530,7 @@
     "id": 35,
     "displayName": "MISTY",
     "baseMoney": 99,
+    "pic": "misty.png",
     "aiModifiers": [
       1,
       3
@@ -4516,6 +4555,7 @@
     "id": 36,
     "displayName": "LT.SURGE",
     "baseMoney": 99,
+    "pic": "lt.surge.png",
     "aiModifiers": [
       1
     ],
@@ -4538,6 +4578,7 @@
     "id": 37,
     "displayName": "ERIKA",
     "baseMoney": 99,
+    "pic": "erika.png",
     "aiModifiers": [
       1,
       3
@@ -4572,6 +4613,7 @@
     "id": 38,
     "displayName": "KOGA",
     "baseMoney": 99,
+    "pic": "koga.png",
     "aiModifiers": [
       1,
       3
@@ -4619,6 +4661,7 @@
     "id": 39,
     "displayName": "BLAINE",
     "baseMoney": 99,
+    "pic": "blaine.png",
     "aiModifiers": [
       1
     ],
@@ -4652,6 +4695,7 @@
     "id": 40,
     "displayName": "SABRINA",
     "baseMoney": 99,
+    "pic": "sabrina.png",
     "aiModifiers": [
       1
     ],
@@ -4686,6 +4730,7 @@
     "id": 41,
     "displayName": "GENTLEMAN",
     "baseMoney": 70,
+    "pic": "gentleman.png",
     "aiModifiers": [
       1,
       2
@@ -4743,6 +4788,7 @@
     "id": 42,
     "displayName": "RIVAL2",
     "baseMoney": 65,
+    "pic": "rival2.png",
     "aiModifiers": [
       1,
       3
@@ -4982,6 +5028,7 @@
     "id": 43,
     "displayName": "RIVAL3",
     "baseMoney": 99,
+    "pic": "rival3.png",
     "aiModifiers": [
       1,
       3
@@ -5129,6 +5176,7 @@
     "id": 44,
     "displayName": "LORELEI",
     "baseMoney": 99,
+    "pic": "lorelei.png",
     "aiModifiers": [
       1,
       2,
@@ -5179,6 +5227,7 @@
     "id": 45,
     "displayName": "CHANNELER",
     "baseMoney": 30,
+    "pic": "channeler.png",
     "aiModifiers": [
       1
     ],
@@ -5361,6 +5410,7 @@
     "id": 46,
     "displayName": "AGATHA",
     "baseMoney": 99,
+    "pic": "agatha.png",
     "aiModifiers": [
       1
     ],
@@ -5411,6 +5461,7 @@
     "id": 47,
     "displayName": "LANCE",
     "baseMoney": 99,
+    "pic": "lance.png",
     "aiModifiers": [
       1,
       3

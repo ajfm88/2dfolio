@@ -283,7 +283,7 @@ describe('party home', () => {
     expect(r.party(0)[0]).toBe(0x11);
     expectPartyBytes(r.party(1), 1, 20, 13, PAR, MOVES, 0x99, [46, 31, 22, 36, 17]);
     expect([...r.s.mem.subarray(A.wPartyMonOT + 11, A.wPartyMonOT + 22)]).toEqual(bytes('ASH@1234567'));
-    expect([...r.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@'));
+    expect([...r.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@@@@'));
     expect(r.loads()).toBe(0); expect(r.screen.at(0, 0)).toBe(' ');
     expect(r.screen.at(14, 7)).toBe(battleGlyphTile('Z'));
     expect(r.events.filter(e => e.event === 'naming')).toEqual([]);
@@ -347,8 +347,8 @@ describe('party home', () => {
   it('NO and B both copy the species name', () => {
     const declined = runHome({ keys: ['down', 'a'] }, x => addPartyMon(x.s, x.env));
     const pressed = runHome({ keys: ['b'] }, x => addPartyMon(x.s, x.env));
-    expect([...declined.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@'));
-    expect([...pressed.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@'));
+    expect([...declined.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@@@@'));
+    expect([...pressed.s.mem.subarray(A.wPartyMonNicks + 11, A.wPartyMonNicks + 22)]).toEqual(bytes('RATTATA@@@@'));
     expect(declined.events.filter(e => e.event === 'naming')).toEqual([]);
     expect(pressed.events.filter(e => e.event === 'naming')).toEqual([]);
   });
@@ -404,7 +404,7 @@ describe('box home', () => {
     expect(r.s.mem[I.wBoxCount]).toBe(1);
     expect([...r.s.mem.subarray(I.wBoxSpecies, I.wBoxSpecies + 2)]).toEqual([1, 0xff]);
     expect(readBoxSlot(r.s, 0).ot).toEqual(bytes('ASH@1234567'));
-    expect(readBoxSlot(r.s, 0).nick).toEqual(bytes('RATTATA@'));
+    expect(readBoxSlot(r.s, 0).nick).toEqual(bytes('RATTATA@@@@'));
     expect(r.events.find(e => e.event === 'during-box')!.data).toBe(0xee);
     const box = readBoxSlot(r.s, 0).bytes;
     expect(box[0]).toBe(1); expect(box[3]).toBe(20); expect(box.slice(29, 33)).toEqual([9, 8, 7, 6]);
@@ -423,7 +423,7 @@ describe('box home', () => {
     expect(readBoxSlot(r.s, 1).ot[0]).toBe(0x30);
     expect(readBoxSlot(r.s, 1).nick[0]).toBe(0x40);
     expect(readBoxSlot(r.s, 0).ot).toEqual(bytes('ASH@1234567'));
-    expect(readBoxSlot(r.s, 0).nick).toEqual(bytes('RATTATA@'));
+    expect(readBoxSlot(r.s, 0).nick).toEqual(bytes('RATTATA@@@@'));
   });
 
   it('shifts a box of 19 to 20 and keeps the old order', () => {
@@ -457,8 +457,8 @@ describe('box home', () => {
     const pressed = runHome({ box: 0, keys: ['b'] }, x => sendNewMonToBox(x.s, x.env));
     expect(readBoxSlot(yes.s, 0).nick).toEqual(bytes('PIKACHU@ABC'));
     expect(readBoxSlot(empty.s, 0).nick).toEqual(bytes('ZAPDOS@XXXX'));
-    expect(readBoxSlot(no.s, 0).nick).toEqual(bytes('RATTATA@'));
-    expect(readBoxSlot(pressed.s, 0).nick).toEqual(bytes('RATTATA@'));
+    expect(readBoxSlot(no.s, 0).nick).toEqual(bytes('RATTATA@@@@'));
+    expect(readBoxSlot(pressed.s, 0).nick).toEqual(bytes('RATTATA@@@@'));
   });
 });
 

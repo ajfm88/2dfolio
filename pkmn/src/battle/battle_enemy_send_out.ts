@@ -1,5 +1,5 @@
 // Unused enemy-side ports. pret core.asm:901–927,1315–1482; note70 checkpoint-05b.
-import { decodeNick, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { decodeNick, LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { flagAction, hasMonFainted } from './battle_end_helpers';
 import { getMonHeader, loadEnemyMonData } from './battle_loaders';
@@ -24,16 +24,14 @@ export interface EnemySendOutHost extends PlayerSendOutHost {
   pokeballTiles: RawImage;
 }
 
-type CopyQueue = { copyTiles(total: number, write: (index: number) => void): Generator<void> };
-
-/** draw_hud_pokeball_gfx.asm:9–17,35–120,138–168. One real four-tile copy, then HUD and six OAM writes. */
-export function* drawEnemyPokeballs(state: BattleState, host: EnemySendOutHost): Program {
+/** pret draw_hud_pokeball_gfx.asm:13-17. One four-tile copy shared by both party HUDs. */
+export function* loadPartyPokeballGfx(host: Pick<EnemySendOutHost, 'screen' | 'renderTiles' | 'pokeballTiles'>): Program {
   const atlas = host.renderTiles.sprites, source = host.pokeballTiles;
   const data = new Uint8ClampedArray(atlas.data), across = atlas.width >>> 3, sourceAcross = source.width >>> 3;
   if (!across || !sourceAcross || source.width * source.height < 4 * 64 || atlas.width * atlas.height < 0x35 * 64)
     throw new BattleUnsupportedState('pokeball sprite atlas');
   // Replace the atlas reference when the VBlank copy completes: the renderer caches decoded tiles by image identity.
-  for (const _ of (host.screen as unknown as CopyQueue).copyTiles(4, index => {
+  for (const _ of host.screen.copyVideoData(4, index => {
     const tile = 0x31 + index;
     for (let y=0; y<8; y++) for (let x=0; x<8; x++) for (let component=0; component<4; component++) {
       const src = ((Math.floor(index/sourceAcross)*8+y)*source.width+(index%sourceAcross)*8+x)*4+component;
@@ -42,6 +40,10 @@ export function* drawEnemyPokeballs(state: BattleState, host: EnemySendOutHost):
     }
     if (index === 3) host.renderTiles.sprites = { width: atlas.width, height: atlas.height, data };
   })) { void _; yield 'serviced'; }
+}
+
+/** pret draw_hud_pokeball_gfx.asm:35-49,52-120,138-168. Enemy HUD and six shadow-OAM writes. */
+export function setupEnemyPartyPokeballs(state: BattleState, host: Pick<EnemySendOutHost, 'screen'>): void {
   const e=ENEMY_SEND_CELLS;
   state.setBytes(e.wHUDGraphicsTiles,[0x73,0x74,0x78],3);
   host.screen.put(1,2,0x73); host.screen.put(1,3,0x74);
@@ -59,6 +61,12 @@ export function* drawEnemyPokeballs(state: BattleState, host: EnemySendOutHost):
     host.screen.setOam(6+slot,{ y:state.mem[e.wBaseCoordY],x:state.mem[e.wBaseCoordX],tile:state.mem[D.wBuffer+slot],attributes:1 });
     state.mem[e.wBaseCoordX]=(state.mem[e.wBaseCoordX]-8)&255;
   }
+}
+
+/** pret draw_hud_pokeball_gfx.asm:9-11. Copy once, then place the enemy party. */
+export function* drawEnemyPokeballs(state: BattleState, host: EnemySendOutHost): Program {
+  yield* loadPartyPokeballGfx(host);
+  setupEnemyPartyPokeballs(state, host);
 }
 
 /** core.asm:1315–1328. Unlike FirstMon, reset both participation bytes before setting the active player's bits. */
@@ -119,7 +127,7 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
   yield* host.printText('TrainerSentOutText',{trainerName:decodeNick(state.mem,D.wTrainerName),
     enemyMonNick:decodeNick(state.mem,D.wEnemyMonNick)});
   state.wCurPartySpecies=state.wCurSpecies=state.wEnemyMonSpecies2; getMonHeader(state,state.wCurSpecies);
-  yield* loadMonFrontSprite(host.screen,host.frontPicture(state));
+  yield* loadMonFrontSprite(host.screen,host.frontPicture(state),state.mem[W_SPRITE_FLIPPED] !== 0);
   state.mem[D.hStartTileID]=0xcf; host.sendingOutMon(state,15,6);
   playCryCue(host.voice,state.wEnemyMonSpecies2);
   yield* drawEnemyHud(state,host.screen);

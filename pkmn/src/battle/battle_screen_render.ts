@@ -17,6 +17,7 @@ export interface BattleRenderTiles {
   hud2: RawImage;
   hud3: RawImage;
   pictures: ReadonlyMap<string, RawImage>;
+  flippedPictures?: ReadonlyMap<string, RawImage>;
   /** $8000 sprite tiles. OAM never reads the BG picture or HUD slots. */
   sprites: RawImage;
 }
@@ -71,12 +72,12 @@ function cellIndices(screen: BattleScreen, tiles: BattleRenderTiles, cell: Battl
   if (id >= 0x80) return tileIndices(tiles.font, id - 0x80, false, false);
   if (id <= 0x30) {
     const slot = screen.frontSlot(id);
-    const image = slot && tiles.pictures.get(slot.picture);
+    const image = slot && (screen.pictureFlipped(id) ? tiles.flippedPictures?.get(slot.picture) : tiles.pictures.get(slot.picture));
     return image ? tileIndices(image, pictureTile(image, slot), false, false) : null;
   }
   if (id <= 0x61) {
     const slot = screen.backSlot(id);
-    const image = slot && tiles.pictures.get(slot.picture);
+    const image = slot && (screen.pictureFlipped(id) ? tiles.flippedPictures?.get(slot.picture) : tiles.pictures.get(slot.picture));
     return image ? tileIndices(image, pictureTile(image, slot), false, false) : null;
   }
   const hud = screen.hudSlot(id);
@@ -179,7 +180,12 @@ export function renderBattleScreen(screen: BattleScreen, tiles: BattleRenderTile
     const sprite = screen.oam(index);
     const left = sprite.x - 8, top = sprite.y - 16;
     if (left <= -8 || top <= -8 || left >= WIDTH || top >= HEIGHT) continue;
-    const indices = tileIndices(tiles.sprites, sprite.tile, (sprite.attributes & 0x20) !== 0, (sprite.attributes & 0x40) !== 0);
+    const slot = screen.spriteSlot(sprite.tile);
+    const image = slot && (screen.pictureFlipped(sprite.tile, true) ? tiles.flippedPictures?.get(slot.picture) : tiles.pictures.get(slot.picture));
+    // An owned VRAM tile cannot read a different pattern from the compatibility sheet.
+    if (slot && !image) continue;
+    const indices = tileIndices(image ?? tiles.sprites, image && slot ? pictureTile(image, slot) : sprite.tile,
+      (sprite.attributes & 0x20) !== 0, (sprite.attributes & 0x40) !== 0);
     const palette = screen.objPalette(sprite.attributes & 7);
     for (let py = 0; py < 8; py++) for (let px = 0; px < 8; px++) {
       const x = left + px, y = top + py;

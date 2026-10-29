@@ -131,6 +131,7 @@ export const RED_PIC_FRONT    = symToOffset(0x04, 0x5a97);  // RedPicFront — c
 export const RED_PIC_BACK     = symToOffset(0x3d, 0x43b1);  // RedPicBack — compressed
 export const PROF_OAK_PIC_BACK = symToOffset(0x3d, 0x44d2);  // ProfOakPicBack — compressed
 export const OLD_MAN_PIC_BACK = symToOffset(0x3d, 0x4441);   // OldManPicBack — compressed (gfx/battle/oldmanb.pic)
+export const GHOST_PIC        = symToOffset(0x0d, 0x6920);   // GhostPic — compressed (gfx/battle/ghost.pic), header $66
 export const SHRINK_PIC_1     = symToOffset(0x04, 0x5b96);  // ShrinkPic1 — compressed
 export const SHRINK_PIC_2     = symToOffset(0x04, 0x5bf0);  // ShrinkPic2 — compressed
 

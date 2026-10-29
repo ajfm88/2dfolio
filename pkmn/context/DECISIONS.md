@@ -1056,6 +1056,19 @@ Don't relitigate without new information. Add new entries at the bottom, dated.
     - **Codex implements** (this amends #75's "Grok implements" for A5c3e). Claude checks each checkpoint. Commits stay
       local; no push.
 
+83. **A5c3f takes the plan's three recommendations; Grok implements, planned in note 72** (2026-10-26). *The
+user's answer to O-45: "1 through 3 are ok, grok will implement".* (1) Until A5e, every move, poof and status
+animation uses the cartridge's BATTLE ANIMATION OFF path (`MoveAnimation`: 30 frames, then
+`PlayApplyingAttackAnimation`'s shake or blink with its hit sound); `TOSS_ANIM` (`$C1`) stays a cue until A5f.
+(2) After a catch, today's naming screen (given the cartridge's nickname mode) and today's Pokédex data page stand
+in until each gets an ASM port. (3) The old engine (`battle.ts` and its math) retires after the user's play-test,
+in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each checkpoint.
+
+84. **Codex implements A5c3f checkpoint-04** (2026-10-27). *The user: "codex weill implement today".*
+
+    - This amends #83's "Grok implements" for checkpoint-04. The brief (note 72 §11.6) stands as written. Claude
+      checks it, as before. The user names the implementer for later checkpoints.
+
 ## Open — not decided, needs the user
 
 

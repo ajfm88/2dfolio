@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Route1 real04 opening frame: enemy, Red back, HUD and party ball pixels before snapshots 1`] = `
+{
+  "final": "2c28a812f017f7b95e907b396379a784e837a8bd708610b0ea15d3a1ff5ac546",
+  "frame": 102,
+  "opening": "2c28a812f017f7b95e907b396379a784e837a8bd708610b0ea15d3a1ff5ac546",
+}
+`;

@@ -156,6 +156,12 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   // A5c3e checkpoint-02; Audio 2, sfxheaders2.asm:359-368. No runtime preload yet.
   caught_mon:       { bank: 0x08, addr: 0x41ce },
   dex_page_added:   { bank: 0x08, addr: 0x41c8 },
+  // A5c3f checkpoint-02: Audio 2 only, one channel each. sfxheaders2.asm:406,410,446,590.
+  // No runtime preload. IDs are (header - $4000) / 3.
+  damage:              { bank: 0x08, addr: 0x41f2 }, // SFX_Damage, $A6, channel 8
+  not_very_effective:  { bank: 0x08, addr: 0x41f5 }, // SFX_Not_Very_Effective, $A7, channel 8
+  super_effective:     { bank: 0x08, addr: 0x4210 }, // SFX_Super_Effective, $B0, channel 8
+  trainer_appeared:    { bank: 0x08, addr: 0x42bb }, // SFX_Trainer_Appeared, $E9, channel 5
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

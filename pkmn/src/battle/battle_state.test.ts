@@ -420,7 +420,7 @@ describe('ghost', () => {
     expect(state.wMonHSpriteDim).toBe(0x66);
     expect(state.mem[A.wMonHSpriteDim + 1]).toBe(GHOST_PIC & 0xff);
     expect(state.mem[A.wMonHSpriteDim + 2]).toBe(GHOST_PIC >> 8);
-    const tail = [...encodeText('MAROWAK@').slice(6), 0, 0, 0];
+    const tail = [...encodeText('MAROWAK@@@@').slice(6)]; // GetMonName's @-padded 10 bytes + @ at +10
     expect([...state.bytes(A.wEnemyMonNick, 11)]).toEqual([...encodeText('GHOST@'), ...tail]);
     expect(state.wPokedexNum).toBe(112);
   });

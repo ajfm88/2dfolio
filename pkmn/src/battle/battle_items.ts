@@ -243,7 +243,9 @@ export function* useItem(state: BattleState, host: BattleItemHost): Program {
  * Intentionally never called by the live game or ledger rig. GetItemName stays with its caller. */
 export function bindBattleItems(state: BattleState, host: BattleItemHost): BattleActionHost['useItem'] {
   return function* (ctx: BattleActionContext): Program {
-    const key = ctx.curItem === 'PARALYZE_HEAL' ? 'PARLYZ_HEAL' : ctx.curItem;
+    // pret core.asm:2288-2291, constants/item_constants.asm:32-34: Safari's pseudo-items alias the badges.
+    const key = ctx.curItem === 'PARALYZE_HEAL' ? 'PARLYZ_HEAL'
+      : ctx.curItem === 'SAFARI_BAIT' ? 'BOULDERBADGE' : ctx.curItem === 'SAFARI_ROCK' ? 'CASCADEBADGE' : ctx.curItem;
     let id: number | undefined = BATTLE_ITEM_POINTERS.find(row => row.item === key)?.id;
     const machine = /^(HM|TM)(\d{2})$/.exec(key);
     if (machine) {

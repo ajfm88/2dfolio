@@ -188,7 +188,7 @@ it('all ball text programs already exist', () => {
 
 it.each(WORKED)('$name: exact worked-table draws and animation', ({ config, anim, captured }) => {
   const r = setup(config); r.start(); r.finish();
-  expect(r.events.find(e => e.event === 'MoveAnimation')!.data).toMatchObject({ id: 0xc7, anim, turn: 0, type: 0, multipliers: 0 });
+  expect(r.events.find(e => e.event === 'MoveAnimation')!.data).toMatchObject({ id: 0xc1, anim, turn: 0, type: 0, multipliers: 0 });
   expect(r.events.filter(e => e.event === 'Random').map(e => e.data)).toEqual(config.draws ?? [200]);
   expect(r.s.wCapturedMonSpecies).toBe(captured); expect(r.s.wActionResultOrTookBattleTurn).toBe(1);
   expect(r.s.wWhichPokemon).toBe(2);
@@ -242,7 +242,14 @@ describe('throw gates, reload and raw byte pins', () => {
     const r = setup({ type: 2, map: 0x8e, item: 8, draws: [] }); r.start();
     expect(r.s.wNumSafariBalls).toBe(4); r.finish();
   });
-  it('event checks use Yellow WRAM and the full Bill event index', () => {
+  it('TOSS_ANIM is $C1 (move_constants.asm:207); $C7 is SHAKE_SCREEN_ANIM', () => {
+  expect(BALL.TOSS_ANIM).toBe(0xc1);
+  const r = setup();
+  r.start(); r.finish();
+  expect(r.s.wAnimationID).toBe(0xc1);
+  expect((r.events.find(e => e.event === 'MoveAnimation')!.data as { id: number }).id).toBe(0xc1);
+});
+it('event checks use Yellow WRAM and the full Bill event index', () => {
     expect(BALL.eventFlags).toBe(0xd746);
     expect(BALL.initialCatchTraining).toBe(0x2f); expect(BALL.metBill).toBe(0x550);
   });
@@ -267,7 +274,7 @@ describe('throw gates, reload and raw byte pins', () => {
   it('trainer throw spends the turn and bag slot, with Delay3 and no wild zeroing', () => {
     const r = setup({ trainer: true, draws: [] }); r.start(); r.finish();
     const anim = r.events.find(e => e.event === 'MoveAnimation')!;
-    expect(anim.at).toBe(8); expect(anim.data).toMatchObject({ id: 0xc7, turn: 1, type: 0xa5, multipliers: 0xb6 });
+    expect(anim.at).toBe(8); expect(anim.data).toMatchObject({ id: 0xc1, turn: 1, type: 0xa5, multipliers: 0xb6 });
     expect(r.labels()).toEqual(['ThrowBallAtTrainerMonText1', 'ThrowBallAtTrainerMonText2']);
     expect(r.bag.map(stack => stack.count)).toEqual([3, 4, 1]); expect(r.s.wActionResultOrTookBattleTurn).toBe(1);
   });

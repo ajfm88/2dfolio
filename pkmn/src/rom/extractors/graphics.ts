@@ -13,7 +13,7 @@ import {
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
   SHOCK_EMOTE,
   ZZZ_EMOTE,
-  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, SHRINK_PIC_1, SHRINK_PIC_2,
+  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, GHOST_PIC, SHRINK_PIC_1, SHRINK_PIC_2,
   HEAL_MACHINE_GFX, LEDGE_HOPPING_SHADOW,
   TOWN_MAP_TILES, TOWN_MAP_CURSOR, MON_NEST_ICON,
   POKEDEX_TILES,
@@ -448,6 +448,16 @@ function extractCompressedSprite(rom: BinaryReader, offset: number): ImageData |
   }
 }
 
+/** GhostPic, gfx/pics.asm. init_battle.asm forces dimension $66 (6×6) and does not read the header.
+ *  The committed file is the ROM decode, the same path as the other compressed pics. */
+export function extractGhostPic(rom: BinaryReader): ImageData {
+  const image = extractCompressedSprite(rom, GHOST_PIC);
+  if (!image || image.width !== 48 || image.height !== 48) {
+    throw new Error('GhostPic did not decode as a 48×48 sprite');
+  }
+  return image;
+}
+
 /**
  * Extract player and trainer compressed sprites.
  */
@@ -683,6 +693,7 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/font/ED.png'] = extractEdTile(rom);
   images['/gfx/font/P.png'] = extractPTile(rom);
   images['/gfx/battle/balls.png'] = extractBallTiles(rom);
+  images['/gfx/battle/ghost.png'] = extractGhostPic(rom);
   images['/gfx/battle/move_anim_0.png'] = extractMoveAnim0(rom);
 
   // Title screen graphics

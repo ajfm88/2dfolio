@@ -310,7 +310,7 @@ export function battleLedger(o: History = {}) {
     sendingOutMon(state,x,y){mark('sendCue',[state.hWhoseTurn,x,y]);},
     pikachuEntrance(){mark('pikaEntrance');},slidePlayerOff(){mark('pikaRetreat');},
     animation:function* (state){mark('animationCue',[state.wAnimationID,state.hWhoseTurn]);
-      if(o.real&&state.wAnimationID===0xc7)mark('ballAnimData',state.mem[I.wPokeBallAnimData]);},
+      if(o.real&&state.wAnimationID===0xc1)mark('ballAnimData',state.mem[I.wPokeBallAnimData]);},
     voice:{getAlarm:lowHealthAlarm,setAlarm:setLowHealthAlarm,cry(id){mark('cryCue',id);},clip(id){mark('pcmCue',id);}},
     stopAllMusic(){mark('stopMusic');audio.fade.requests.stopAllMusic();},
     playVictoryMusic(name,bank){mark('music',[name,bank]);bridge.audioBank=bridge.savedAudioBank=bank;audio.music.play(musicData(name));},

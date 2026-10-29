@@ -27,13 +27,15 @@ beforeAll(async () => {
 
 describe('static/ export: asset keys', () => {
   // A5c3d checkpoint-03 adds three unused battle SFX JSON and their mirrors.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (190 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(190);
+  // A5c3f checkpoint-02: four more SFX plus stat_mod_text, which extractRom now emits. 190 → 195.
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (195 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(195);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
+    expect(extracted.jsonData).toHaveProperty('stat_mod_text.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/shrink.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/run.json');
-    for (const name of ['level_up', 'faint_fall', 'faint_thud'])
+    for (const name of ['level_up', 'faint_fall', 'faint_thud', 'damage', 'not_very_effective', 'super_effective', 'trainer_appeared'])
       expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
@@ -42,15 +44,17 @@ describe('static/ export: asset keys', () => {
     expect(extracted.jsonData).not.toHaveProperty('maps/Route3.json');
   });
 
-  it('extracts 524 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 525 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
     // StatusScreen CP2 adds font/P.png → 521.
     // V2c CP2 adds pikachu/unknown_e7b83.png, unknown_e7d13.png, emotes/zzz.png → 524.
+    // A5c3f checkpoint-02 adds battle/ghost.png → 525.
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(524);
+    expect(imageKeys.length).toBe(525);
+    expect(imageKeys).toContain('/gfx/battle/ghost.png');
     expect(imageKeys).toContain('/gfx/font/P.png');
     expect(binaryKeys).toEqual([
       'gfx/title/pika_bubble.tilemap',

@@ -5,7 +5,7 @@ import { BinaryReader } from '../binary_reader';
 import {
   TRAINER_DATA_PTRS, TRAINER_NAMES, TRAINER_PIC_MONEY,
   TRAINER_MOVE_CHOICES, TRAINER_SPECIAL_MOVES, TRAINER_DATA_END,
-  TRAINER_DATA_BANK, NUM_TRAINERS,
+  TRAINER_DATA_BANK, NUM_TRAINERS, TRAINER_PIC_OFFSETS,
 } from '../rom_offsets';
 // Name lookup tables passed as parameters (read from ROM, not hardcoded)
 import { decodeText } from './text';
@@ -20,9 +20,20 @@ export interface TrainerClass {
   id: number;
   displayName: string;
   baseMoney: number;
+  pic: string;
+  /** ROCKET only: IsFightingJessieJames' pic for wTrainerNo >= trainerNoAtLeast. */
+  picOverride?: { trainerNoAtLeast: number; pic: string };
   aiModifiers: number[];
   parties: TrainerPartyMember[][];
 }
+
+/** ROCKET's row. home/trainers2.asm IsFightingJessieJames: class ROCKET and
+ *  wTrainerNo >= $2A stores JessieJamesPic. The $2A–$2D branch and the >= $2E
+ *  branch both load that pic. Base money stays Rocket's. */
+export const JESSIE_JAMES_PIC = {
+  trainerNoAtLeast: 0x2a,
+  pic: 'jessiejames.png',
+} as const;
 
 /** Parse BCD3 (3-byte big-endian BCD) to integer.
  *  Each nibble is a decimal digit: 0x00 0x15 0x00 → 1500. */
@@ -47,6 +58,30 @@ function readTrainerNames(rom: BinaryReader): string[] {
     offset += len + 1;
   }
   return names;
+}
+
+/** Bank-$13 pic address → committed static/gfx/trainers file.
+ *  ChiefPic is an empty alias of ScientistPic, so both pointers name scientist.png.
+ *  JessieJamesPic is in this map and is not a class row. */
+function trainerPicByPointer(): Map<number, string> {
+  const pics = new Map<number, string>();
+  for (const [name, offset] of Object.entries(TRAINER_PIC_OFFSETS)) {
+    pics.set(0x4000 + (offset & 0x3fff), `${name}.png`);
+  }
+  return pics;
+}
+
+/** The dw at the start of each TrainerPicAndMoneyPointers row. */
+function readPics(rom: BinaryReader): string[] {
+  const pics = trainerPicByPointer();
+  const result: string[] = [];
+  for (let i = 0; i < NUM_TRAINERS; i++) {
+    const pointer = rom.readWord(TRAINER_PIC_MONEY + i * 5);
+    const file = pics.get(pointer);
+    if (!file) throw new Error(`trainer class ${i + 1} pic pointer $${pointer.toString(16)} has no committed file`);
+    result.push(file);
+  }
+  return result;
 }
 
 /** Read base money for each trainer class from pic_money table.
@@ -238,6 +273,7 @@ export function extractTrainers(
 ): Record<string, TrainerClass> {
   const displayNames = readTrainerNames(rom);
   const baseMoney = readBaseMoney(rom);
+  const pics = readPics(rom);
   const aiModifiers = readMoveChoices(rom);
   const parties = readParties(rom, pokemonNames);
   const specials = readSpecialMoves(rom);
@@ -255,6 +291,8 @@ export function extractTrainers(
       id: classId,
       displayName: displayNames[i],
       baseMoney: baseMoney[i],
+      pic: pics[i],
+      ...(className === 'ROCKET' ? { picOverride: { ...JESSIE_JAMES_PIC } } : {}),
       aiModifiers: aiModifiers[i],
       parties: parties[i],
     };

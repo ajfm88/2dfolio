@@ -295,9 +295,11 @@ function speciesHeader(name: string): SpeciesHeader {
 function copy(memory: Uint8Array, from: number, to: number, length: number): void {
   memory.set(memory.slice(from, from + length), to);
 }
+// home/names.asm:1–25: ten @-padded MonsterNames bytes, @ at +10, +11.. untouched (A5c3f checkpoint-03).
 function monName(memory: Uint8Array, name: string): void {
-  const bytes = encodeText(`${name}@`);
-  for (let i = 0; i < NAME_BUFFER_LENGTH; i++) memory[A.wNameBuffer + i] = bytes[i] ?? 0;
+  const bytes = encodeText(`${name}@@@@@@@@@@`.slice(0, 10));
+  for (let i = 0; i < 10; i++) memory[A.wNameBuffer + i] = bytes[i];
+  memory[A.wNameBuffer + 10] = 0x50;
 }
 function expectMoveName(memory: Uint8Array, id: number): void {
   const scratch = new BattleState();
@@ -427,7 +429,8 @@ describe('checkpoint-06b effects', () => {
     expect(s.mem[A.wBattleMonPartyPos]).toBe(0x11); expect(s.mem[A.wEnemyMonPartyPos]).toBe(0x22);
     expect(s.wPlayerDisabledMove).toBe(0x21); expect(s.wEnemyDisabledMove).toBe(0x43);
     expect(s.wNamedObjectIndex).toBe(DITTO);
-    expect([...s.mem.slice(A.wNameBuffer, A.wNameBuffer + 20)]).toEqual([...encodeText('DITTO@'), ...Array(14).fill(0)]);
+    // GetMonName writes 11 bytes; +11..+19 stay as they were (sameBytes in r.expected pins them).
+    expect([...s.mem.slice(A.wNameBuffer, A.wNameBuffer + 11)]).toEqual(encodeText('DITTO@@@@@@'));
     const mods = player ? A.wPlayerMonStatMods : A.wEnemyMonStatMods;
     expect([...s.mem.slice(mods, mods + 8)]).toEqual(Array.from({ length: 8 }, (_, i) => (player ? 0x70 : 0x50) + i));
     const unmodified = (player ? A.wPlayerMonUnmodifiedLevel : A.wEnemyMonUnmodifiedLevel) + 3;

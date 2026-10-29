@@ -1,5 +1,58 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-06: unused picture pixels (awaiting Claude)
+
+Checkpoint-07a item0 puts the canonical `W_SPRITE_FLIPPED` in `battle_state.ts`; `INIT.wSpriteFlipped` is only an
+old-test compatibility alias, carried to11. The party codec remains pending the NULL/name-boundary ruling in
+note72 §10.9; no provisional decoder migration is retained.
+
+`battle_pictures.ts` builds front7×7 boxes and scaled backs from decoded committed PNGs. Fronts use the dimension
+byte's floor-centered columns and bottom-aligned rows; ghost forces66, trainers77. Backs keep source0..27 on both
+axes and duplicate2×2. `loadBattleRenderTiles(decode)` names all358 PNGs (352 pictures plus font/HUD/balls), reads
+trainer picture metadata from committed trainers.json, and uses one pure RGBA conversion. `battle_picture_decode.ts`
+is the isolated browser canvas adapter; the core never fetches or uses canvas. No browser scaling or extraction.
+Each copied tile retains orientation separately from the existing slot descriptor. Front flip reverses pixels within
+each tile; the existing tilemap reverses columns. Synthetic flipped backs reverse source nibbles before scaling and
+swap output nibbles after it. Normal reachable battles leave the flip flag0. `BattleScreen` owns independent sprite
+picture slots00–30, filled during the second back copy; the renderer uses them before the fallback sprite atlas.
+Balls remain atlas tiles31–34. Existing fixture slots, clocks and old snapshots stay unchanged. Note72 §10.8 records
+the pixel assertions, mutation proofs and carry to retire trainer_flow.ts's live CHIEF mapping in checkpoint11.
+
+## A5c3f checkpoint-05: unused move animation, OFF path (awaiting Claude)
+
+`battle_move_anim.ts` fills the existing animation port with `moveAnimation(state, host)`. Until A5e it always
+takes the non-SGB OFF path, including when options bit7 is clear. It owns the waits, animation palettes,30 frames,
+type0–6 applying animation and byte cleanup. TossC1 remains an A5f cue; the existing ball constant is unchanged.
+The outer `playMoveAnimation` still owns Delay3 and the12-frame refresh. Hit sounds use the committed damage,
+not-very-effective and super-effective streams through `BattleAudio`, with source frequency/tempo modifiers.
+`BattleScreen.bindWindowRegisters` binds views of hWY and the WY-update hold flag; serviced VBlank copies the
+shadow when the hold clears. Vertical/horizontal mutations retain the decreasing-pass quirk. Blink flips turns,
+clears the target7×7, copies the source column-major tile IDs and re-enables automatic BG transfer before Delay3.
+Note72 §10.7 records item0's five mutation checks, the14 new mutations and18 own animation ledgers; the old rig and
+all old snapshots stay unchanged. The production import guard includes the new module.
+
+## A5c3f checkpoint-04b: unused StartBattle through the restores (awaiting Claude)
+
+`battle_start.ts` composes `initBattleAfterTransition`, the new `startBattle`, the existing turn/faint/end owners,
+and `_InitBattleCommon`'s ordered flag/palette/tile-animation restores. It returns the loop exit and final carry;
+checkpoint-08's session still owns random-state detach. The Safari branch uses the existing menu and real item
+bodies, committed text programs, and raw `Random` (carry1 only on escape doubling overflow).
+The enemy HP scan walks by44 with D starting3, stopping before `ENEMY_SCAN_MODELLED_END=$E000` under note72 §11.9;
+this explicitly models the memory boundary, not a cartridge rule. Link stays unsupported. The production import
+guard includes the new module. Its independent20-test suite has16 composed ledgers; the old rig stays unchanged.
+Note72 §10.6 records the16 mutations and the ASM-proved Safari pseudo-item alias fix in the unused item binder.
+
+## A5c3f checkpoint-04: unused battle start (awaiting Claude)
+
+`battle_init.ts` separates `setupBattleBeforeTransition` (WRAM and pre-transition wild DVs/trainer party, no frames
+or music) from `initBattleAfterTransition` (first frame at the full HUD load, ending before StartBattle). The returned
+saved map-palette/letter flags are for checkpoint-04b's restore. `BattleRandomState` attaches the retained HRAM/DIV
+to each state and detaches after the battle; its owner outlives states. Production lifetime/DIV remain checkpoint-08.
+The interim slide keeps the 21-entry head, two seven-frame back copies, full tail and opening text; no scroll loop.
+The host supplies the existing audio/voice/text owners, committed ball tiles and named picture/Marowak hand-offs.
+`BattleScreen` exposes full/HUD-only copies, shadow OAM and its existing video queue; prior entry names still delegate.
+Both new modules stay in the production import guard. Note 72 §10.4 records the ledgers, mutations and hand-offs.
+
 ## A5c3e: items, catches and trainer AI (unused until A5c3f)
 
 The completed ports remain outside the running game's import graph. A5c3f owns their installation and the

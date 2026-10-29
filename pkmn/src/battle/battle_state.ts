@@ -10,6 +10,8 @@ import type { BattlePokemon } from './types';
 import { battleRandom } from './battle_random';
 
 export const NAME_LENGTH = 11;
+/** pret ram/wram.asm wSpriteFlipped; pinned symbols573535d. Shared by both picture-copy owners. */
+export const W_SPRITE_FLIPPED = 0xd0a9;
 export const NAME_BUFFER_LENGTH = 20;
 export const PARTY_LENGTH = 6;
 export const PARTYMON_STRUCT_LENGTH = 0x2c;

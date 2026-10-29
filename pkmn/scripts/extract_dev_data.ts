@@ -63,6 +63,7 @@ const SFX_NAMES = [
   'teleport_exit1', 'teleport_enter1', 'teleport_exit2', 'teleport_enter2',
   'ss_anne_horn', 'trade_machine', 'safari_zone_pa',
   'caught_mon', 'dex_page_added',
+  'damage', 'trainer_appeared',
 ];
 
 function writeJson(relPath: string, data: unknown): void {
@@ -116,7 +117,7 @@ writeJson('game_text.json', extractGameText(rom)); count++;
 writeJson('text_programs.json', extractTextPrograms(rom)); count++;
 writeJson('map_sprite_sets.json', extractMapSpriteSets(rom)); count++;
 writeJson('battle_transitions.json', extractBattleTransitions(rom)); count++;
-// Development-only raw table for the unused effects port; writeStatic mirrors all data JSON.
+// extractRom() emits the same table. This write is what data/ holds; writeStatic mirrors it.
 writeJson('stat_mod_text.json', extractStatModText(rom)); count++;
 writeJson('pokemon.json', extractPokemon(rom, moveNames, itemNames)); count++;
 writeJson('moves.json', extractMoves(rom, moveNames)); count++;

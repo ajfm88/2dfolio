@@ -262,7 +262,8 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-5890 tests in 194 files (vitest, `environment: 'node'`); without ROM, 5652 pass / 238 skip.
+6019 tests in 202 files (vitest, `environment: 'node'`); without ROM, 5770 pass / 249 skip.
+Checkpoint-06 validated the full suite with4 workers after default-worker Pewter tripwire load timeouts (note72 §10.8).
 
 **A5c3e checkpoint-10** (2026-10-26, Codex; note 71 §10.17, awaiting Claude) adds
 `battle_whole_items.test.ts`:18 real-loop player-item histories and18 own snapshots, with explicit text,
@@ -808,6 +809,43 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+- **A5c3f checkpoint-07a item0 / stop** (2026-10-27, Codex; note72 §10.9): the existing flipped-picture case
+  now asserts the player back's sprite owner orientation; Claude's b fails plainly. One canonical flip constant,
+  with INIT's old-test alias carried to11. Codec migration stopped at NULL-vs-terminator / uninitialized name
+  reads in unchanged fixtures; all provisional codec changes removed. No new cases or snapshot changes.
+
+- **A5c3f checkpoint-06** (2026-10-27, Codex; note72 §10.8, awaiting Claude):16 no-ROM cases in
+  `battle_pictures.test.ts`, from358 committed PNGs. Pixel-exact front/back boxes, forced ghost/trainer dimensions,
+  all trainer rows, synthetic flip pipeline, independent sprite owner and21-OAM scanout, browser/pngjs equality,
+  and a real04 opening frame with named enemy/back/HUD/ball pixels before its snapshot. All12 mutations fail
+  plain assertions. Item0 adds two hBaseTileID assertions to the old animation suite; mutation j fails both.
+  All old snapshots/tests remain unchanged except item0 and the import guard; no extraction or trainer_flow edit.
+
+- **A5c3f checkpoint-05** (2026-10-27, Codex; note72 §10.7, awaiting Claude):
+  `battle_move_anim.test.ts` adds18 no-ROM cases/18 own ledgers for the non-SGB OFF animation, real host/screen/audio,
+  register waveforms, hit-sound bands, blink copies and cleanup. The Route1 Tackle span is123 frames including the
+  existing outer Delay3/refresh. All14 mutations fail plain assertions. Item0 adds three cases and text-entry Buffer1
+  assertions in `battle_start.test.ts`; b/g/h/j/n all fail plainly. Old rig and all old snapshots remain unchanged.
+
+- **A5c3f checkpoint-04b continued** (2026-10-27, Codex; note72 §10.6, awaiting Claude):
+  `battle/battle_start.test.ts` adds20 no-ROM cases and16 independent composed ledgers from the first
+  post-transition frame through EndOfBattle/restores. Real menus, item bodies, turn/faint/EXP and retained RNG;
+  four scan tests pin §11.9's E000 modelling boundary. All16 mutations fail new plain assertions (17 runs,
+  both battle-type variants). Bait/Rock histories prove the unused binder's source-defined badge alias fix.
+  Old tests/snapshots/rig unchanged except the import guard addition; entry forwards the loop's trainer type.
+
+- **A5c3f checkpoint-04b item 0** (2026-10-27, Codex; note72 §10.5): two new no-ROM cases in
+  `battle/battle_init.test.ts` (21 total), for stale trainer class and mirrored picture columns; plain assertions
+  pin the 49-cell enemy pic, player HUD and own OAM X. Claude's C/F/L/S/V all caught by plain assertions.
+  The 11 ledgers change only their22 empty-program key entries. StartBattle work stopped at the brief's enemy-scan
+  condition; the rest of04b is incomplete, with no new engine entry or loop bound.
+
+- **A5c3f checkpoint-04** (2026-10-27, Codex; note 72 §10.4, awaiting Claude): 19 no-ROM tests in
+  `battle/battle_init.test.ts`, with 11 new ledgers through the real state/host/printer/audio owners. Pre-transition
+  draws/WRAM, opening frames/text, party balls, ghost/Marowak/Pikachu branches, Safari bounds, gym byte and retained
+  RNG. All 12 requested mutations caught and restored; daycare-selector regression fails before its unused-loader
+  fix and passes after. Earlier tests/snapshots unchanged except the unused-module guard's two additions.
 
 - **V2a CP2** adds 16 ROM extraction tests: five full-map comparisons and eleven source/structure,
   stock and malformed-payload checks. ROM **1703/1703**, no-ROM **1550 pass / 153 skip**, 95 files;

@@ -20,8 +20,9 @@ export interface BallItemEnvironment extends Pick<ExecutePresentation, 'animatio
 }
 // ram/wram.asm and constants/{event,battle,move,pokemon}_constants.asm.
 // Event checks address their own byte, rather than FlagAction's eight-bit C index.
+// TOSS_ANIM is constants/move_constants.asm:207 ($C1). SHAKE_SCREEN_ANIM is $C7.
 export const BALL = { eventFlags: 0xd746, initialCatchTraining: 0x2f, metBill: 0x550,
-  OLD_MAN: 1, SAFARI: 2, PIKACHU: 4, TOSS_ANIM: 0xc7, DITTO: 0x4c } as const;
+  OLD_MAN: 1, SAFARI: 2, PIKACHU: 4, TOSS_ANIM: 0xc1, DITTO: 0x4c } as const;
 
 /** item_effects.asm:196-435; home/math.asm:8-32. All math uses the actual HRAM union. */
 export function calculateBallAnimation(state: BattleState): number {

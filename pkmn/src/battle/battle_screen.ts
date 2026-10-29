@@ -103,8 +103,14 @@ export class BattleScreen {
   obp1 = 0xe0;
   /** rWX. The window's left edge is wx − 7. */
   wx = 7;
-  /** hWY. $90 hides the window below the screen. */
+  /** rWY. $90 hides the window below the screen; serviced VBlank copies a bound hWY. */
   wy = 0;
+  private windowRegisters?: { readonly wy: number; readonly disabled: number };
+  /** pret home/vblank.asm:19-26. Bind the animation's WRAM/HRAM views, without duplicate register storage. */
+  bindWindowRegisters(registers: { readonly wy: number; readonly disabled: number }): void {
+    this.windowRegisters = registers;
+  }
+  get disableVBlankWYUpdate(): number { return this.windowRegisters?.disabled ?? 0; }
   /** pret init_battle.asm:104-117: transfer into the shown BG1 window by default. */
   transferDestination: 0x98 | 0x9c = 0x9c;
   scx = 0;
@@ -121,6 +127,10 @@ export class BattleScreen {
   private buffer2: readonly BattleCell[] = this.cells;
   private readonly front: (BattlePicSlot | null)[] = Array(49).fill(null);
   private readonly back: (BattlePicSlot | null)[] = Array(49).fill(null);
+  private readonly spritePictures: (BattlePicSlot | null)[] = Array(49).fill(null);
+  private readonly frontFlips: boolean[] = Array(49).fill(false);
+  private readonly backFlips: boolean[] = Array(49).fill(false);
+  private readonly spriteFlips: boolean[] = Array(49).fill(false);
   private readonly hud: (BattleHudSlot | null)[] = Array(0x7f - 0x62 + 1).fill(null);
   private readonly pending: BattleOam[] = Array.from({ length: 40 }, () => ({ y: 0, x: 0, tile: 0, attributes: 0 }));
   private shownOam: BattleOam[] = this.pending.map(entry => ({ ...entry }));
@@ -154,8 +164,16 @@ export class BattleScreen {
   }
   frontSlot(id: number): BattlePicSlot | null { return id >= 0 && id <= 0x30 ? this.front[id] : null; }
   backSlot(id: number): BattlePicSlot | null { return id >= 0x31 && id <= 0x61 ? this.back[id - 0x31] : null; }
+  /** pret core.asm:6433-6443, init_battle.asm:173-178. Independent $8000 picture owner. */
+  spriteSlot(id: number): BattlePicSlot | null { return id >= 0 && id <= 0x30 ? this.spritePictures[id] : null; }
+  /** pret home/uncompress.asm:307,394,487; home/pics.asm:174-186. Decode orientation belongs to each copied tile. */
+  pictureFlipped(id: number, sprite = false): boolean {
+    return sprite ? this.spriteFlips[id] ?? false : id < 0x31 ? this.frontFlips[id] ?? false : this.backFlips[id - 0x31] ?? false;
+  }
   hudSlot(id: number): BattleHudSlot | null { return id >= 0x62 && id <= 0x7f ? this.hud[id - 0x62] : null; }
   oam(index: number): BattleOam { return { ...this.shownOam[index] }; }
+  /** pret home/clear_sprites.asm:11-20. CPU shadow OAM, before the next DMA. */
+  shadowOam(index: number): BattleOam { return { ...this.pending[index] }; }
 
   setOam(index: number, entry: BattleOam): void {
     if (index < 0 || index >= 40) throw new Error('OAM index out of range');
@@ -163,21 +181,37 @@ export class BattleScreen {
   }
 
   /** CopyVideoData: floor(n/8)+1 serviced frames with the LCD on, and none with it off. */
-  *copyFront(picture: string): Generator<void> {
-    yield* this.copyTiles(49, index => { this.front[index] = { picture, tile: index }; });
+  *copyFront(picture: string, flipped = false): Generator<void> {
+    yield* this.copyTiles(49, index => { this.front[index] = { picture, tile: index }; this.frontFlips[index] = flipped; });
   }
-  *copyBack(picture: string): Generator<void> {
-    yield* this.copyTiles(49, index => { this.back[index] = { picture, tile: index }; });
+  *copyBack(picture: string, flipped = false): Generator<void> {
+    yield* this.copyTiles(49, index => { this.back[index] = { picture, tile: index }; this.backFlips[index] = flipped; });
   }
-  /** Extra font (30), then HUD1 (3), then HUD2+HUD3 (6). Later copies overwrite the shared ids. */
-  *loadHudTilePatterns(): Generator<void> {
+  /** pret core.asm:6433-6443, init_battle.asm:173-178. Same seven serviced frames, separate sprite VRAM. */
+  *copySpritePicture(picture: string, flipped = false): Generator<void> {
+    yield* this.copyTiles(49, index => { this.spritePictures[index] = { picture, tile: index }; this.spriteFlips[index] = flipped; });
+  }
+  /** pret core.asm:6692-6693. Extra font (30), then the HUD-only entry (3 + 6). */
+  *loadHudAndHpBarAndStatusTilePatterns(): Generator<void> {
     yield* this.copyTiles(30, index => { this.hud[index] = { sheet: 'extra', tile: index }; });
+    yield* this.loadHudOnlyTilePatterns();
+  }
+  /** Compatibility entry for earlier callers/tests; the full entry is named above. */
+  *loadHudTilePatterns(): Generator<void> { yield* this.loadHudAndHpBarAndStatusTilePatterns(); }
+
+  /** pret core.asm:6695-6722. HUD-only copies, without LoadHpBarAndStatusTilePatterns. */
+  *loadHudOnlyTilePatterns(): Generator<void> {
     yield* this.copyTiles(3, index => { this.hud[0x6d - 0x62 + index] = { sheet: 'hud1', tile: index }; });
     yield* this.copyTiles(6, index => {
       const id = index < 3 ? 0x73 + index : 0x76 + (index - 3);
       const sheet = index < 3 ? 'hud2' : 'hud3';
       this.hud[id - 0x62] = { sheet, tile: index < 3 ? index : index - 3 };
     });
+  }
+
+  /** pret home/copy2.asm:41-103, CopyVideoData. Reuse the existing queue for sprite patterns. */
+  *copyVideoData(total: number, write: (index: number) => void): Generator<void> {
+    yield* this.copyTiles(total, write);
   }
 
   /**
@@ -238,6 +272,7 @@ export class BattleScreen {
   vblank(box?: TextBox, advanceText = false): number | null {
     if (this.paletteHold > 0) throw new Error('SET_PAL_BATTLE hold');
     if (box?.active && box.displaySession) throw new Error('Battle text requires standalone PrintText');
+    if (this.windowRegisters && this.disableVBlankWYUpdate === 0) this.wy = this.windowRegisters.wy;
     this.captureText(box);
     const third = textBgTransfer.enabled ? textBgTransfer.nextPortion : null;
     if (third !== null) {
