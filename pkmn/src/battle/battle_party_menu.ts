@@ -10,6 +10,7 @@ import type { MenuCursorState } from '../menus/tile_surface';
 
 export interface BattlePartyContext extends BattleActionContext {
   partyMons: BattlePokemon[];
+  partySpeciesList: readonly number[];
   battleMonNick: string;
   firstMonsNotOutYet: number;
   enemyHasSubstitute: boolean;
@@ -85,7 +86,7 @@ export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattleParty
       return null; // jp DisplayBattleMenu: caller redisplays without generator recursion.
     }
     ctx.whichPokemon = choice.slot;
-    ctx.curPartySpecies = ctx.battleMonSpecies2 = ctx.partyMons[choice.slot].species.id;
+    ctx.curPartySpecies = ctx.battleMonSpecies2 = ctx.partySpeciesList[choice.slot];
     const cursor = drawBattlePartySubmenu(party);
     ctx.currentMenuItem = 0;
     const input = new MenuInput({ watched: ['a', 'b'], maxItem: 2, topX: 12, topY: 12 });
@@ -124,6 +125,7 @@ export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattleParty
       }
       if (ctx.whichPokemon === ctx.playerMonNumber) {
         yield* party.printBattleChoiceText('AlreadyOutText', { battleMonNick: ctx.battleMonNick });
+      // HasMonFainted (core.asm:1512): opening refresh makes this HP equal the party word.
       } else if (ctx.partyMons[ctx.whichPokemon].currentHp === 0) {
         if (ctx.firstMonsNotOutYet === 0) yield* party.printBattleChoiceText('NoWillText');
       } else {

@@ -1,6 +1,7 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused A5c3f checkpoint-04. pret e89ead15; stops immediately before StartBattle.
 import {
-  A, decodeNick, encodeText, GHOST_PIC, isGhostBattle, MON_GHOST, RESTLESS_SOUL, SILPH_SCOPE,
+  A, encodeText, GHOST_PIC, isGhostBattle, MON_GHOST, RESTLESS_SOUL, SILPH_SCOPE,
   TRAINER_BATTLE, WILD_BATTLE, W_SPRITE_FLIPPED, type BattleState,
 } from './battle_state';
 import { D } from './battle_end_state';
@@ -168,11 +169,11 @@ export function* printBeginningBattleText(state: BattleState, host: BattleInitHo
       state.wCurPartySpecies = state.wEnemyMonSpecies2;
       if (state.wEnemyMonSpecies2 === RESTLESS_SOUL) {
         if (scope) {
-          yield* host.printText('EnemyAppearedText', { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+          yield* host.printText('EnemyAppearedText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
           yield* host.printText('UnveiledGhostText');
           loadEnemyMonData(state);
           yield* host.marowakAnimation(state);
-          yield* host.printText('WildMonAppearedText', { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+          yield* host.printText('WildMonAppearedText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
           yield* trainerAppearedSound(state, host);
           return;
         }
@@ -181,7 +182,7 @@ export function* printBeginningBattleText(state: BattleState, host: BattleInitHo
         yield* ordinaryWildBeginning(state, host);
         return;
       }
-      yield* host.printText('EnemyAppearedText', { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+      yield* host.printText('EnemyAppearedText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
       yield* host.printText('GhostCantBeIDdText');
       return;
     }
@@ -193,7 +194,7 @@ export function* printBeginningBattleText(state: BattleState, host: BattleInitHo
     program = 'TrainerWantsToFightText';
   }
   if (state.wBattleType === 0) yield* drawAllPokeballs(state, host);
-  yield* host.printText(program, { trainerName: decodeNick(state.mem, D.wTrainerName) });
+  yield* host.printText(program, { trainerName: decodeBattleText(state.mem, D.wTrainerName) });
 }
 
 /** pret common_text.asm:11-35,43-52. Existing cry/PCM cue ports; committed text programs only. */
@@ -202,7 +203,7 @@ function* ordinaryWildBeginning(state: BattleState, host: BattleInitHost): Progr
   else playCryCue(host.voice, state.wEnemyMonSpecies2);
   if (state.wBattleType === 0) yield* drawAllPokeballs(state, host);
   yield* host.printText(state.wMoveMissed ? 'HookedMonAttackedText' : 'WildMonAppearedText',
-    { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+    { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
 }
 
 /** pret core.asm:9-14,88-103. Interim slide: omit the scroll and its setup, retain the entire tail. */

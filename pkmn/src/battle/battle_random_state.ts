@@ -6,18 +6,21 @@ export class BattleRandomState {
   hRandomSub = 0;
   private attached: BattleState | null = null;
   private previousDIV: (() => number) | null = null;
+  private previousCycles: ((cycles: number) => void) | undefined;
 
   /** pret engine/math/random.asm:1-14. DIV is supplied by the host; it is not reset for each battle. */
-  constructor(readonly readDIV: () => number) {}
+  constructor(readonly readDIV: () => number, private readonly advanceCycles?: (cycles: number) => void) {}
 
   /** pret engine/math/random.asm:1-14. Install the retained HRAM bytes before LoadEnemyMonData. */
   attach(state: BattleState): void {
     if (this.attached) throw new Error('battle random state already attached');
     this.attached = state;
     this.previousDIV = state.readDIV;
+    this.previousCycles = state.advanceRandomCycles;
     state.hRandomAdd = this.hRandomAdd;
     state.hRandomSub = this.hRandomSub;
     state.readDIV = this.readDIV;
+    state.advanceRandomCycles = this.advanceCycles;
   }
 
   /** pret engine/math/random.asm:1-14. Return live HRAM to its longer-lived owner after the battle. */
@@ -26,7 +29,9 @@ export class BattleRandomState {
     this.hRandomAdd = state.hRandomAdd;
     this.hRandomSub = state.hRandomSub;
     state.readDIV = this.previousDIV!;
+    state.advanceRandomCycles = this.previousCycles;
     this.attached = null;
     this.previousDIV = null;
+    this.previousCycles = undefined;
   }
 }

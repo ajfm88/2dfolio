@@ -80,6 +80,8 @@ function rig() {
   s.wWhichPokemon = s.wPlayerMonNumber = 0; s.wBattleMonSpecies2 = 0x54;
   loadBattleMonFromParty(s); s.wEnemyMonHP = s.wEnemyMonMaxHP = 100; s.wEnemyMonSpeed = 100;
   s.wEnemyMonSpecies2 = 1; s.wIsInBattle = 1;
+  // §11.15: this synthetic enemy has no loaded nickname.
+  s.mem[D.wEnemyMonNick] = 0x50;
   video.saveScreenTilesToBuffer1();
   const host: PlayerSendOutHost = {
     screen, tiles: video.tiles, audio: bridge, partyView: party,

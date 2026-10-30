@@ -1,7 +1,9 @@
+import { refreshPartyMirror } from './battle_party_codec';
+import { decodeBattleText } from './battle_text_codec';
 // Unused medicine presentation. pret e89ead15 home/pokemon.asm:187–306;
 // engine/menus/party_menu.asm:1–235; engine/gfx/hp_bar.asm:48–283.
 import { I } from './battle_item_state';
-import { battleContext, decodeNick, type BattleState } from './battle_state';
+import { battleContext, type BattleState } from './battle_state';
 import type { MedicineItemEnvironment } from './battle_item_medicine';
 import type { BattleMenuScreen } from './battle_menu_screen';
 import type { BattleScreen } from './battle_screen';
@@ -66,7 +68,7 @@ export function createMedicineItemEnvironment(state: BattleState, host: Medicine
   return {
     /** home/pokemon.asm:187–306. Medicine retains the pre-use row picture. */
     displayPartyMenu: function* (): Program<number | null> {
-      frozen = state.partyMons.slice(0, state.mem[I.wPartyCount]).map(mon => ({
+      frozen = refreshPartyMirror(state).map(mon => ({
         pixels: staticHpBarPixels(mon!.currentHp, mon!.maxHp), shownHp: mon!.currentHp, status: mon!.status,
       }));
       return yield* displayUseItemPartyMenu(state, host);
@@ -112,7 +114,7 @@ export function createMedicineItemEnvironment(state: BattleState, host: Medicine
       yield* palette.paletteFrames();
       const savedFlags = state.mem[I.wStatusFlags5]; state.mem[I.wStatusFlags5] |= 0x40;
       video.textBox.printStandalone({ program: message }, { noDelay: true, bindings: {
-        nameBuffer: decodeNick(state.mem, I.wPartyMonNicks + state.mem[I.wUsedItemOnWhichPokemon] * 11),
+        nameBuffer: decodeBattleText(state.mem, I.wPartyMonNicks + state.mem[I.wUsedItemOnWhichPokemon] * 11),
         hpDifference: state.readBE(I.wHPBarHPDifference),
       } });
       while (!video.textBox.isComplete) yield 'serviced';
@@ -152,8 +154,7 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
   }
 
 
-  const mons = state.partyMons.slice(0, state.mem[I.wPartyCount]);
-  if (mons.some(mon => !mon)) throw new Error('medicine requires the party mirror');
+  const mons = refreshPartyMirror(state);
   party.showForItem(mons as NonNullable<typeof mons[number]>[], video.textBox);
   const frozen = mons.map(mon => ({ pixels: staticHpBarPixels(mon!.currentHp, mon!.maxHp),
     shownHp: mon!.currentHp, status: mon!.status }));

@@ -1,3 +1,4 @@
+import { refreshPartyMon } from './battle_party_codec';
 // Unused ItemUseMedicine battle port, pret e89ead15 engine/items/item_effects.asm:903–1377.
 import { I } from './battle_item_state';
 import { SHORT_ITEM_CONSTANTS } from './battle_item_bodies';
@@ -31,17 +32,10 @@ const CURES: Readonly<Record<number, readonly [number, number]>> = {
   0x0e: [0x07, 0xf3], 0x0f: [0x40, 0xf4], [FULL_HEAL]: [0xff, 0xf6],
 };
 
-/** item_effects.asm:985–1011,1280–1301. Narrow byte-first writes; no unrelated mirror fields. */
+/** Clear the raw status before refreshing the presentation cache. */
 function clearPartyStatus(state: BattleState, slot: number): void {
   state.mem[I.wPartyMons + slot * PARTYMON_STRUCT_LENGTH + 4] = 0;
-  const mon = state.partyMons[slot];
-  if (mon) { mon.status = null; mon.sleepTurns = 0; }
-}
-
-/** item_effects.asm:1204–1284. Mirror only the completed raw HP write, never repack the slot. */
-function mirrorMedicineHp(state: BattleState, slot: number): void {
-  const mon = state.partyMons[slot];
-  if (mon) mon.currentHp = state.readBE(I.wPartyMons + slot * PARTYMON_STRUCT_LENGTH + 1);
+  if (state.partyMons[slot]) refreshPartyMon(state, slot);
 }
 
 /** item_effects.asm:955–1011. Copy max HP through Special; keep inherited hWhoseTurn. */
@@ -99,7 +93,7 @@ function healHp(state: BattleState, slot: number): boolean {
   else if (hp >= maxHp || item < 0x12 || item === MAX_REVIVE) hp = maxHp;
   state.writeBE(base + 1, hp);
   writeHpBarWord(state, I.wHPBarNewHP, hp);
-  mirrorMedicineHp(state, slot);
+  if (state.partyMons[slot]) refreshPartyMon(state, slot);
   if (item === FULL_RESTORE) clearPartyStatus(state, slot);
   if (slot === state.wPlayerMonNumber) {
     state.wBattleMonHP = hp;

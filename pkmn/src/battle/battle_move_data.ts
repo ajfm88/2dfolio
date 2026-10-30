@@ -1,7 +1,8 @@
 // Unused turn ports. pret e89ead15 core.asm:5167–5182,6142–6173.
 import { EFFECT_NAMES, TYPE_NAMES } from '../rom/constants';
-import { getAllLoadedMoveIds, getMove, loadBattleData } from './data';
+import { getAllLoadedMoveIds, getMove } from './data';
 import { incrementMovePP } from './battle_loaders';
+import { loadTrainerSpeciesData } from './battle_trainer_data';
 import { A, charmapByte, encodeText, NAME_BUFFER_LENGTH, STRUGGLE, type BattleState } from './battle_state';
 
 /** Outside the legal-state boundary ruled in note 68 §11.15 answer 3; never a cartridge miss. */
@@ -16,7 +17,8 @@ const nameGlyphs = new Map<number, string>();
 
 /** Explicit startup for the unused port; uses the loaded move cache and committed display names. */
 export async function loadBattleMoveData(): Promise<void> {
-  await loadBattleData();
+  // One shared preload also covers cold session startup without racing main's fetch cache.
+  await loadTrainerSpeciesData();
   const response = await fetch('move_names.json');
   if (!response.ok) throw new Error(`move names: HTTP ${response.status}`);
   const names = await response.json() as Record<string, string>;

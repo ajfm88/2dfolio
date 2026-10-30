@@ -1,14 +1,16 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused WRAM-to-A5c2 HUD composition. core.asm:1886–2049, palettes.asm:28–41,297–313.
-import { A, battleContext, decodeNick, type BattleState } from './battle_state';
+import { A, battleContext, type BattleState } from './battle_state';
 import { drawEnemyHudProgram, drawPlayerHudProgram, drawHudsAndHpBars, type HudContext } from './battle_menu';
 import type { BattleHudMon } from './battle_hud';
 import type { BattleScreen } from './battle_screen';
 import type { Program } from './battle_menu_context';
 
-/** Fresh raw-mon views each draw; bar colour writes land in the stored WRAM byte. */
+/** pret core.asm:9-103,1886-2049. Palette setup precedes LoadBattleMonFromParty:
+ * read names only when the HUD places them, never while constructing palette inputs. */
 export function hudContext(state: BattleState): HudContext {
   const mon = (enemy: boolean): BattleHudMon => ({
-    nickname: decodeNick(state.mem, enemy ? A.wEnemyMonNick : A.wBattleMonNick),
+    get nickname() { return decodeBattleText(state.mem, enemy ? A.wEnemyMonNick : A.wBattleMonNick); },
     level: enemy ? state.wEnemyMonLevel : state.wBattleMonLevel,
     status: enemy ? state.wEnemyMonStatus : state.wBattleMonStatus,
     hp: enemy ? state.wEnemyMonHP : state.wBattleMonHP,

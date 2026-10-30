@@ -107,6 +107,8 @@ function composedRig(side: 0 | 1, id = 1, draws: readonly number[] = HIT) {
   vi.restoreAllMocks();
   const r = hpRig(side), s = r.s, events: Event[] = [];
   for (let i = 0; i < s.mem.length; i++) s.mem[i] = (i * 73 + (i >> 8) * 29 + 37) & 255;
+  // §11.15: the patterned fixture does not supply names; only terminate the name buffers.
+  s.mem[A.wBattleMonNick] = s.mem[A.wEnemyMonNick] = 0x50;
   s.hWhoseTurn = side;
   s.wBattleMonLevel = 10; s.wEnemyMonLevel = 20; s.wCurEnemyLevel = 10;
   s.wBattleMonHP = s.wEnemyMonHP = 100; s.wBattleMonMaxHP = s.wEnemyMonMaxHP = 160;

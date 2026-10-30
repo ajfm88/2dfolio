@@ -1,5 +1,6 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused CheckForDisobedience. pret e89ead15 core.asm:4001–4179; note68 §11.15 answer3.
-import { A, decodeNick, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, STRUGGLE, type BattleState } from './battle_state';
+import { A, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, STRUGGLE, type BattleState } from './battle_state';
 import { BattleUnsupportedState, getCurrentMove } from './battle_move_data';
 import { handleSelfConfusionDamage, type StatusPorts } from './battle_turn_status';
 import type { BattleTurnTextHost } from './battle_turn_text';
@@ -25,7 +26,7 @@ function* ignore(state: BattleState, host: BattleTurnTextHost): Program<Obedienc
 
 /** Disobedience roots use text_ram wBattleMonNick, not the <USER> control. */
 function* obedienceText(state: BattleState, host: BattleTurnTextHost, label: string): Program {
-  yield* host.printText(label, { get battleMonNick() { return decodeNick(state.mem, A.wBattleMonNick); } });
+  yield* host.printText(label, { get battleMonNick() { return decodeBattleText(state.mem, A.wBattleMonNick); } });
 }
 
 export function* checkForDisobedience(

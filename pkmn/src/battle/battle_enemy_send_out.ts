@@ -1,5 +1,6 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused enemy-side ports. pret core.asm:901–927,1315–1482; note70 checkpoint-05b.
-import { decodeNick, LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
+import { LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { flagAction, hasMonFainted } from './battle_end_helpers';
 import { getMonHeader, loadEnemyMonData } from './battle_loaders';
@@ -99,8 +100,8 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
   state.writeBE(D.wLastSwitchInEnemyMonHP,state.wEnemyMonHP);
   state.wCurrentMenuItem=1;
   if(state.wFirstMonsNotOutYet!==1 && state.mem[D.wPartyCount]!==1 && !(state.mem[D.wOptions]&0x40)) {
-    yield* host.printText('TrainerAboutToUseText', { trainerName:decodeNick(state.mem,D.wTrainerName),
-      enemyMonNick:decodeNick(state.mem,D.wEnemyMonNick) });
+    yield* host.printText('TrainerAboutToUseText', { trainerName:decodeBattleText(state.mem,D.wTrainerName),
+      enemyMonNick:decodeBattleText(state.mem,D.wEnemyMonNick) });
     state.mem[D.wTextBoxID]=0x14;
     yield* displayTwoOptionMenu(state,host,0,7,8,1);
     if(state.wCurrentMenuItem===0) {
@@ -110,7 +111,7 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
         state.wCurrentMenuItem=1;
         if(choice.carry) break;
         if(state.wWhichPokemon===state.wPlayerMonNumber) {
-          yield* host.partyView.printBattleChoiceText('AlreadyOutText',{battleMonNick:decodeNick(state.mem,D.wBattleMonNick)});
+          yield* host.partyView.printBattleChoiceText('AlreadyOutText',{battleMonNick:decodeBattleText(state.mem,D.wBattleMonNick)});
         } else if(!(yield* hasMonFainted(state,{printText:program=>host.partyView.printBattleChoiceText(program)})).zero) {
           state.wCurrentMenuItem=0; break;
         }
@@ -124,8 +125,8 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
   for(let y=0;y<4;y++) for(let x=0;x<11;x++) host.screen.put(x,y,' ');
   yield* setSendOutBattlePalette(state,host);
   host.screen.bgp=0xe4; host.screen.obp0=0xd0;
-  yield* host.printText('TrainerSentOutText',{trainerName:decodeNick(state.mem,D.wTrainerName),
-    enemyMonNick:decodeNick(state.mem,D.wEnemyMonNick)});
+  yield* host.printText('TrainerSentOutText',{trainerName:decodeBattleText(state.mem,D.wTrainerName),
+    enemyMonNick:decodeBattleText(state.mem,D.wEnemyMonNick)});
   state.wCurPartySpecies=state.wCurSpecies=state.wEnemyMonSpecies2; getMonHeader(state,state.wCurSpecies);
   yield* loadMonFrontSprite(host.screen,host.frontPicture(state),state.mem[W_SPRITE_FLIPPED] !== 0);
   state.mem[D.hStartTileID]=0xcf; host.sendingOutMon(state,15,6);

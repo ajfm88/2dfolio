@@ -3,9 +3,7 @@
 // engine/battle/get_trainer_name.asm, engine/battle/read_trainer_party.asm,
 // engine/pokemon/add_mon.asm _AddPartyMon (ENEMY_PARTY_DATA), engine/math/bcd.asm AddBCD.
 // No live caller. The pic is a filename for checkpoint-04; wTrainerPicPointer stays untouched.
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { getTrainerSpeciesData, type TrainerRow, type MoveRow, type MonRow, type PartyMember } from './battle_trainer_data';
 import { GROWTH_RATE_NAMES, TYPE_NAMES } from '../rom/constants';
 import { writePartyMovePP } from './battle_add_mon';
 import { calcExperience } from './battle_calc_experience';
@@ -39,40 +37,6 @@ const RIVAL3 = 0x2b;
 /** Party + (MON_HP_EXP - 1). CalcStat's DVs are 11 and 12 bytes past this. */
 const STAT_EXP_BASE = 16;
 
-interface PartyMember {
-  species: string;
-  level: number;
-  moveOverrides?: Record<string, string>;
-}
-
-interface TrainerRow {
-  id: number;
-  displayName: string;
-  baseMoney: number;
-  pic: string;
-  picOverride?: { trainerNoAtLeast: number; pic: string };
-  parties: PartyMember[][];
-}
-
-interface MoveRow { id: number; pp: number }
-
-interface MonRow {
-  name: string;
-  hp: number;
-  attack: number;
-  defense: number;
-  speed: number;
-  special: number;
-  type1: string;
-  type2: string;
-  catchRate: number;
-  baseExp: number;
-  startMoves: string[];
-  growthRate: string;
-  learnset: { level: number; move: string }[];
-}
-
-const DATA = resolve(dirname(fileURLToPath(import.meta.url)), '../../data');
 const pics = new WeakMap<BattleState, string>();
 
 let rows: Map<number, TrainerRow> | null = null;
@@ -83,9 +47,7 @@ let headers: Map<number, SpeciesHeader> | null = null;
 
 function load(): void {
   if (rows) return;
-  const trainers = JSON.parse(readFileSync(resolve(DATA, 'trainers.json'), 'utf8')) as Record<string, TrainerRow>;
-  const pokemon = JSON.parse(readFileSync(resolve(DATA, 'pokemon.json'), 'utf8')) as (MonRow | null)[];
-  const moves = JSON.parse(readFileSync(resolve(DATA, 'moves.json'), 'utf8')) as Record<string, MoveRow>;
+  const { trainers, pokemon, moves } = getTrainerSpeciesData();
   rows = new Map(Object.values(trainers).map(row => [row.id, row]));
   packed = [...rows.values()].sort((a, b) => a.id - b.id).flatMap(row => encodeText(`${row.displayName}@`));
   moveByName = new Map(Object.entries(moves));

@@ -1998,7 +1998,7 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > real 
       {
         "at": 313,
         "data": {
-          "enemyMonNick": "R??????",
+          "enemyMonNick": "Rattata",
         },
         "name": "text:EnemyMonFaintedText",
       },
@@ -2018,7 +2018,7 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > real 
       {
         "at": 360,
         "data": [
-          "Enemy R??????",
+          "Enemy Rattata",
           "fainted!",
         ],
         "name": "textEnd:EnemyMonFaintedText",

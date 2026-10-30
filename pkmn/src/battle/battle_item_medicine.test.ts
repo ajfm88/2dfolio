@@ -263,7 +263,7 @@ describe('battle-only copies, Toxic and inherited stat selectors', () => {
     expect([r.s.wBattleMonStatus, r.s.wPlayerBattleStatus3, r.s.wPlayerToxicCounter]).toEqual([0, 0xa8, 11]);
     expect(r.s.mem.slice(I.wPlayerMonStatMods, I.wPlayerMonStatMods + 8)).toEqual(stages);
     expect(r.s.mem[I.wObtainedBadges]).toBe(255); expect(r.stats).toHaveBeenCalledOnce();
-    expect(r.mon.status).toBeNull(); expect(r.mon.attack).toBe(100);
+    expect(r.mon.status).toBeNull(); expect(r.mon.attack).toBe(0x234);
     expect(r.events).toMatchSnapshot();
   });
   it('a reserve cure leaves active status, all stats and BADLY_POISONED untouched', () => {

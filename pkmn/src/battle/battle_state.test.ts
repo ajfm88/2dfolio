@@ -1,3 +1,5 @@
+import { encodePartyMon, pokemonToPartyRecord } from './battle_party_codec';
+import { createPokemon } from './data';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadBattleData } from './data';
 beforeAll(loadBattleData);
@@ -560,6 +562,9 @@ describe('write-back', () => {
 
   it('skips Struggle, the status1 mask, Rage and a transformed party', () => {
     const state = new BattleState();
+    const record = pokemonToPartyRecord(createPokemon('PIKACHU', 10)!);
+    record.moves = [33, 0, 0, 0];
+    encodePartyMon(state, 1, record);
     state.wPlayerMoveListIndex = 2;
     state.wPlayerMonNumber = 1;
     state.mem[A.wBattleMonPP + 2] = 5;
@@ -593,6 +598,9 @@ describe('write-back', () => {
 
   it('decrements the selected party slot and mirrors the low PP bits', () => {
     const state = new BattleState();
+    const record = pokemonToPartyRecord(createPokemon('PIKACHU', 10)!);
+    record.moves = [33, 34, 0, 0];
+    encodePartyMon(state, 0, record);
     const active = mon(10, { moves: [
       { id: 'A', pp: 5, maxPp: 5 }, { id: 'B', pp: 5, maxPp: 5 },
       { id: 'C', pp: 5, maxPp: 5 }, { id: 'D', pp: 5, maxPp: 5 },
@@ -612,6 +620,9 @@ describe('write-back', () => {
 
   it('increments the player or the enemy slot named by the turn byte', () => {
     const state = new BattleState();
+    const record = pokemonToPartyRecord(createPokemon('PIKACHU', 10)!);
+    record.moves = [33, 0, 0, 0];
+    encodePartyMon(state, 1, record);
     state.hWhoseTurn = 0;
     state.wPlayerMonNumber = 1;
     state.wPlayerMoveListIndex = 0;

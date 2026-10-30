@@ -1,5 +1,6 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused A5c3f checkpoint-04b. pret e89ead15, core.asm:135-260 and init_battle.asm:130-139.
-import { A, decodeNick, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { I } from './battle_item_state';
 import { delayFrames, type BattleActionContext, type Program } from './battle_menu_context';
@@ -59,7 +60,7 @@ export function* printSafariZoneBattleText(state: BattleState, host: BattleStart
     }
   }
   host.loadScreenTilesFromBuffer1();
-  yield* host.printText(program, { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+  yield* host.printText(program, { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
 }
 
 /** pret core.asm:135-260. Compose existing send-out/menu/turn/faint owners; no frame clock here. */

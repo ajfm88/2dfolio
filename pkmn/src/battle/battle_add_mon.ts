@@ -1,3 +1,5 @@
+import { refreshPartyMon } from './battle_party_codec';
+import { decodeBattleText } from './battle_text_codec';
 // Unused caught-mon homes. pret e89ead15 engine/pokemon/add_mon.asm:1-283,
 // engine/menus/naming_screen.asm:1-53, engine/items/item_effects.asm:2931-3113.
 // No live caller. The box object mirror waits for A5c3f.
@@ -13,7 +15,7 @@ import { displayTwoOptionMenu, type TwoOptionHost } from './battle_two_option';
 import { getAllLoadedMoveIds, getMove, getSpeciesById } from './data';
 import { createVolatiles } from './volatiles';
 import {
-  A, decodeNick, indexToPokedex, NAME_LENGTH, NUM_MOVES, NUM_STATS, PARTY_LENGTH, PARTYMON_STRUCT_LENGTH,
+  A, indexToPokedex, NAME_LENGTH, NUM_MOVES, NUM_STATS, PARTY_LENGTH, PARTYMON_STRUCT_LENGTH,
   POKEDEX_ORDER, WILD_BATTLE, type BattleState,
 } from './battle_state';
 import type { BattleMove, BattlePokemon, StatExperience, StatusCondition } from './types';
@@ -98,7 +100,7 @@ export function battlePokemonFromPartyBytes(state: BattleState, index: number): 
   if (!species) throw new Error(`no species for dex ${dex}`);
   return {
     species,
-    nickname: decodeNick(state.mem, A.wPartyMonNicks + index * NAME_LENGTH),
+    nickname: decodeBattleText(state.mem, A.wPartyMonNicks + index * NAME_LENGTH),
     level: state.mem[base + 33],
     currentHp: state.readBE(base + 1),
     maxHp: state.readBE(base + 34),
@@ -111,7 +113,7 @@ export function battlePokemonFromPartyBytes(state: BattleState, index: number): 
     statExp, sleepTurns: status.sleepTurns, toxicCounter: 0, badlyPoisoned: false,
     volatiles: createVolatiles(),
     originalStats: { attack, defense, speed, special },
-    otName: decodeNick(state.mem, A.wPartyMonOT + index * NAME_LENGTH),
+    otName: decodeBattleText(state.mem, A.wPartyMonOT + index * NAME_LENGTH),
     otId: state.readBE(base + 12),
   };
 }
@@ -142,7 +144,7 @@ export function* askName(state: BattleState, env: CaughtMonEnvironment, destinat
   }
   state.wNamedObjectIndex = state.wCurPartySpecies;
   getMonName(state, state.species(state.wNamedObjectIndex));
-  yield* env.host.printText('DoYouWantToNicknameText', { nameBuffer: decodeNick(state.mem, A.wNameBuffer) });
+  yield* env.host.printText('DoYouWantToNicknameText', { nameBuffer: decodeBattleText(state.mem, A.wNameBuffer) });
   state.mem[I.wTextBoxID] = TWO_OPTION_MENU;
   yield* displayTwoOptionMenu(state, env.menu, 14, 7, 8, 15);
   if (state.wCurrentMenuItem === 0) {
@@ -205,7 +207,7 @@ export function* addPartyMon(state: BattleState, env: CaughtMonEnvironment): Pro
   writePartyMovePP(state, base + 8, base + 28);
   state.mem[base + 33] = state.wCurEnemyLevel;
   state.mem.copyWithin(base + 34, A.wEnemyMonMaxHP, A.wEnemyMonMaxHP + NUM_STATS * 2);
-  state.partyMons[index] = battlePokemonFromPartyBytes(state, index);
+  refreshPartyMon(state, index);
   return { carry: true };
 }
 

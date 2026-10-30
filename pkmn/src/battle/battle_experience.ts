@@ -1,11 +1,13 @@
+import { refreshPartyMon } from './battle_party_codec';
+import { decodeBattleText } from './battle_text_codec';
 // Unused checkpoint-06 ports. pret e89ead15 battle/experience.asm:1–382;
 // pokemon/evos_moves.asm:325–382, status_screen.asm:255–300, home/joypad2.asm:55–87.
-import { decodeNick, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { multiply, divide } from './battle_arithmetic';
 import { calcExperience, calcLevelFromExperience } from './battle_calc_experience';
 import { calcStats } from './battle_calc_stats';
-import { getMonHeader, mirrorPartyProgress, applyBurnAndParalysisPenaltiesToPlayer, applyBadgeStatBoosts } from './battle_loaders';
+import { getMonHeader, applyBurnAndParalysisPenaltiesToPlayer, applyBadgeStatBoosts } from './battle_loaders';
 import { calculateModifiedStats } from './battle_math';
 import { drawPlayerHud } from './battle_hud_state';
 import { flagAction } from './battle_end_helpers';
@@ -120,15 +122,6 @@ export function* learnMoveFromLevelUp(state: BattleState, host: Pick<ExperienceH
   state.wPokedexNum = state.wCurPartySpecies;
 }
 
-function mirrorStats(state: BattleState, at: number): void {
-  mirrorPartyProgress(state, state.wWhichPokemon);
-  const mon = state.partyMons[state.wWhichPokemon];
-  if (!mon) return;
-  mon.level = state.mem[at + 33]; mon.currentHp = state.readBE(at + 1); mon.maxHp = state.readBE(at + 34);
-  mon.attack = state.readBE(at + 36); mon.defense = state.readBE(at + 38);
-  mon.speed = state.readBE(at + 40); mon.special = state.readBE(at + 42);
-}
-
 /** experience.asm:1–297. One level-up block at the final calculated level, never intermediate levels. */
 export function* gainExperience(state: BattleState, host: ExperienceHost): Program {
   if (state.wLinkState === LINK_STATE_BATTLING) return;
@@ -151,9 +144,9 @@ export function* gainExperience(state: BattleState, host: ExperienceHost): Progr
       const header = getMonHeader(state, state.wCurSpecies);
       if (header.growthRate === undefined) throw new BattleUnsupportedState('species header missing growth rate');
       exp = Math.min(exp, calcExperience(state, 100));
-      state.mem[at + 14] = exp >>> 16; state.writeBE(at + 15, exp); mirrorPartyProgress(state, slot);
+      state.mem[at + 14] = exp >>> 16; state.writeBE(at + 15, exp); if (state.partyMons[slot]) refreshPartyMon(state, slot);
       state.mem.set(state.mem.slice(D.wPartyMonNicks + 11 * slot, D.wPartyMonNicks + 11 * slot + 11), D.wNameBuffer);
-      yield* host.printText('GainedText', { nameBuffer: decodeNick(state.mem, D.wNameBuffer), expAmountGained: gained },
+      yield* host.printText('GainedText', { nameBuffer: decodeBattleText(state.mem, D.wNameBuffer), expAmountGained: gained },
         { asm: { GainedText: gainedText(state.wBoostExpByExpAll, state.wGainBoostedExp), WithExpAllText: withExpAllText() } });
       state.wMonDataLocation = 0; loadExperienceMonData(state);
       const level = calcLevelFromExperience(state);
@@ -161,7 +154,7 @@ export function* gainExperience(state: BattleState, host: ExperienceHost): Progr
         const oldLevel = state.wCurEnemyLevel; state.wCurEnemyLevel = state.mem[at + 33] = level;
         state.wCurSpecies = state.wPokedexNum = state.mem[at]; getMonHeader(state, state.wCurSpecies);
         const oldMax = state.readBE(at + 34); calcStats(state, 1, at + 16, at + 34);
-        state.writeBE(at + 1, state.readBE(at + 1) + state.readBE(at + 34) - oldMax); mirrorStats(state, at);
+        state.writeBE(at + 1, state.readBE(at + 1) + state.readBE(at + 34) - oldMax); if (state.partyMons[slot]) refreshPartyMon(state, slot);
         if (slot === state.wPlayerMonNumber) {
           state.mem.set(state.mem.slice(at + 1, at + 3), D.wBattleMonHP);
           state.mem.set(state.mem.slice(at + 33, at + 44), D.wBattleMonLevel);
@@ -172,7 +165,7 @@ export function* gainExperience(state: BattleState, host: ExperienceHost): Progr
           yield* host.printText('PrintEmptyString.emptyString'); host.saveScreenTilesToBuffer1();
         }
         modifyPikachuHappiness(state, 1);
-        yield* host.printText('GrewLevelText', { nameBuffer: decodeNick(state.mem, D.wNameBuffer), curEnemyLevel: state.wCurEnemyLevel });
+        yield* host.printText('GrewLevelText', { nameBuffer: decodeBattleText(state.mem, D.wNameBuffer), curEnemyLevel: state.wCurEnemyLevel });
         state.wMonDataLocation = 0; loadExperienceMonData(state);
         printStatsBox(state, host.tiles); yield* waitForTextScrollButtonPress(state, host);
         host.loadScreenTilesFromBuffer1(); state.wMonDataLocation = 0; state.wPokedexNum = state.wCurSpecies;

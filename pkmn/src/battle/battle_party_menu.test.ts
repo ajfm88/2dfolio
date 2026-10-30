@@ -43,7 +43,7 @@ function context(): BattlePartyContext {
     menuWatchMovingOutOfBounds: 0, joy7: 0, bag: [],
     playerHud: { nickname: 'PIKACHU', level: 5, status: 0, hp: 30, maxHp: 30, barColor: 0, alarm: 0, alarmDisabled: false },
     enemyHud: { nickname: 'PIDGEY', level: 3, status: 0, hp: 20, maxHp: 20, barColor: 0 },
-    partySpecies: 25, enemySpecies2: 16, partyMons, battleMonNick: 'ACTIVE', firstMonsNotOutYet: 0,
+    partySpecies: 25, enemySpecies2: 16, partySpeciesList: [0x54, 0x24], partyMons, battleMonNick: 'ACTIVE', firstMonsNotOutYet: 0,
     enemyHasSubstitute: false, enemyMinimized: false, enemySpecies: 16, enemyPicture: 'enemy',
     curPartySpecies: 0, curSpecies: 0, battleMonSpecies2: 0 };
 }

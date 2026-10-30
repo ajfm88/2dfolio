@@ -3,15 +3,17 @@ import { BattleScreen } from './battle_screen';
 import type { BattleCell } from './battle_screen';
 import { BattleTiles } from './battle_tiles';
 import { TextBox } from '../text/textbox';
+import type { TextDisplayHost } from '../text/textbox';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import type { Program } from './battle_menu_context';
 import { textBgTransfer } from '../text/bg_transfer';
 
 export class BattleMenuScreen {
   readonly tiles: BattleTiles;
-  readonly textBox = new TextBox();
+  readonly textBox: TextBox;
   private buffer1: readonly BattleCell[];
-  constructor(readonly screen = new BattleScreen()) {
+  constructor(readonly screen = new BattleScreen(), host?: TextDisplayHost) {
+    this.textBox = new TextBox(host);
     this.tiles = new BattleTiles(screen);
     this.buffer1 = screen.cells;
     screen.saveScreenTilesToBuffer2();

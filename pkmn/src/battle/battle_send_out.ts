@@ -1,6 +1,9 @@
+import { refreshPartyMirror } from './battle_party_codec';
+import { partyMenuOrRockOrRun } from './battle_party_menu';
+import { decodeBattleText } from './battle_text_codec';
 // Unused player-side ports. pret e89ead15 core.asm:1091–1167,1764–1871,2525–2546;
 // common_text.asm:113–259. Enemy send-out/SHIFT remain checkpoint-05b.
-import { battleContext, decodeNick, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { battleContext, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { multiply, divide } from './battle_arithmetic';
 import { flagAction, hasMonFainted } from './battle_end_helpers';
@@ -58,14 +61,14 @@ export function* printSendOutMonMessage(state: BattleState, host: Pick<PlayerSen
     if (percent === null) for (;;) yield 'serviced';
     label = percent >= 70 ? 'GoText' : percent >= 40 ? 'DoItText' : percent >= 10 ? 'GetmText' : 'EnemysWeakText';
   }
-  yield* host.printText(label, { battleMonNick: decodeNick(state.mem, D.wBattleMonNick) }, {
+  yield* host.printText(label, { battleMonNick: decodeBattleText(state.mem, D.wBattleMonNick) }, {
     asm: Object.fromEntries(['GoText', 'DoItText', 'GetmText', 'EnemysWeakText'].map(key => [key, () => 'PlayerMon1Text'])),
   });
 }
 
 /** common_text.asm:183–259. The math runs at PlayerMon2Text's asm, after placing the nickname. */
 export function* retreatMon(state: BattleState, host: Pick<PlayerSendOutHost, 'printText'>): Program {
-  yield* host.printText('PlayerMon2Text', { battleMonNick: decodeNick(state.mem, D.wBattleMonNick) }, {
+  yield* host.printText('PlayerMon2Text', { battleMonNick: decodeBattleText(state.mem, D.wBattleMonNick) }, {
     asm: Object.fromEntries(['EnoughText', 'OKExclamationText', 'GoodText'].map(key => [key, () => 'ComeBackText'])),
     asmContinuations: { PlayerMon2Text: function* () {
       const delta = (state.readBE(D.wLastSwitchInEnemyMonHP) - state.wEnemyMonHP) & 65535;
@@ -177,9 +180,7 @@ function* chooseParty(state: BattleState, host: PlayerSendOutHost, first: boolea
   state.wMaxMenuItem = Math.max(0, state.mem[D.wPartyCount] - 1);
   const forceChoose = state.wForcePlayerToChooseMon !== 0; state.wForcePlayerToChooseMon = 0;
   state.mem[D.wMenuWatchedKeys] = forceChoose ? 1 : 3;
-  if (first) host.partyView.openBattleChoice(state.partyMons.slice(0, state.mem[D.wPartyCount]).map(mon => {
-    if (!mon) throw new BattleUnsupportedState('missing party mirror'); return mon;
-  }), { forceChoose });
+  if (first) host.partyView.openBattleChoice(refreshPartyMirror(state), { forceChoose });
   else host.partyView.goBackToChoice();
   let choice;
   do { yield 'session'; choice = host.partyView.frameBattleChoice(host.readJoypad, host.pressSound); } while (!choice);
@@ -226,12 +227,17 @@ export function* switchPlayerMon(state: BattleState, host: PlayerSendOutHost): P
 /** Fills A5c2's unused switchPlayerMon port, over the same BattleState-backed menu context. */
 export function bindPlayerSwitch(state: BattleState, host: BattlePartyHost, player: PlayerSendOutHost): void {
   host.switchPlayerMon = function* () {
-    // A5c2's object menu passes dex species IDs. HandlePartyMenuInput reads the raw species list;
-    // adapt that hand-off here before the byte-based loader consumes wBattleMonSpecies2.
-    state.wCurPartySpecies = state.wBattleMonSpecies2 = state.mem[D.wPartySpecies + state.wWhichPokemon];
     yield* switchPlayerMon(state, player);
   };
 }
 
 // Shared only by the unused enemy-side composition; player implementations stay unchanged.
 export { palette as setSendOutBattlePalette, clearSprites as clearSendOutSprites, chooseParty as choosePartyForSendOut };
+
+/** State-aware party port: shared menus consume a fresh cache of the party bytes. */
+export function bindStateBattlePartyMenu(state: BattleState, host: BattlePartyHost): void {
+  host.partyMenu = function* () {
+    refreshPartyMirror(state);
+    return yield* partyMenuOrRockOrRun(battleContext(state), host);
+  };
+}

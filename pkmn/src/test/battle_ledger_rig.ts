@@ -1,3 +1,4 @@
+import { refreshPartyMon } from '../battle/battle_party_codec';
 // checkpoint-08b test-only composition. No production caller or alternate frame owner.
 import { expect, vi } from 'vitest';
 import { PNG } from 'pngjs';
@@ -49,7 +50,7 @@ import { registerMedicineBattleItemBody } from '../battle/battle_item_medicine';
 import { createMedicineItemEnvironment } from '../battle/battle_item_medicine_env';
 import { registerPPBattleItemBody } from '../battle/battle_item_pp';
 import { registerBallBattleItemBody } from '../battle/battle_item_ball';
-import { ballHomes, readBoxSlot, battlePokemonFromPartyBytes, type CaughtMonEnvironment } from '../battle/battle_add_mon';
+import { ballHomes, readBoxSlot, type CaughtMonEnvironment } from '../battle/battle_add_mon';
 import { trainerAIBuilder } from '../battle/battle_trainer_ai';
 import type { SfxData } from '../audio/sfx_engine';
 
@@ -107,7 +108,7 @@ export function battleLedger(o: History = {}) {
     s.mem[D.wPartySpecies+i] = 0x24;
     // The old fixture intentionally overrides bytes without synchronizing presentation objects.
     // Real item menus must see those same HP/stat/move bytes, through the existing mirror adapter.
-    if(o.real)s.partyMons[i]=battlePokemonFromPartyBytes(s,i);
+    if(o.real)refreshPartyMon(s,i);
   }
   s.mem[D.wPartySpecies+count] = 255;
   s.writeBE(D.wPlayerID,0x1234); s.setBytes(D.wPlayerName,encodeText('ASH@'),11);

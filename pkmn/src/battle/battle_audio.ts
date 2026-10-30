@@ -32,10 +32,18 @@ export class BattleAudio {
   frequencyModifier = 0;
   tempoModifier = 0;
   private readonly ids = new Map<number, number>([[6, 0], [7, 0], [8, 0]]);
+  private restoreHooks: (() => void) | null = null;
 
   constructor(private readonly sfx: SfxEngine, private readonly music: MusicEngine,
     banks: Pick<PlaySound, 'audioBank' | 'savedAudioBank'> = { audioBank: 8, savedAudioBank: 8 }) {
     this.banks = banks;
+    const previous = { done: sfx.onSfxChannelDone, enabled: sfx.channelEnabled,
+      note: sfx.beforeNextNote, cleared: sfx.onSoundIdsCleared, control: music.audioControl };
+    this.restoreHooks = () => {
+      sfx.onSfxChannelDone = previous.done; sfx.channelEnabled = previous.enabled;
+      sfx.beforeNextNote = previous.note; sfx.onSoundIdsCleared = previous.cleared;
+      music.audioControl = previous.control;
+    };
     const prior = sfx.onSfxChannelDone;
     sfx.onSfxChannelDone = channel => { prior?.(channel); this.complete(channel); };
     sfx.channelEnabled = channel => this.channelId(channel) !== 0;
@@ -49,6 +57,9 @@ export class BattleAudio {
     music.audioControl = { getMute: () => this.muteAudioAndPauseMusic,
       setMute: value => { this.muteAudioAndPauseMusic = value; } };
   }
+
+  /** Return the page's engines to their exact previous owners; safe to call twice. */
+  dispose(): void { this.restoreHooks?.(); this.restoreHooks = null; }
 
   channelId(channel: number): number {
     if (channel === 5) return lowHealthChannel5();

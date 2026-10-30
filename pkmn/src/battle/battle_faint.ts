@@ -1,5 +1,6 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused checkpoint-07 ports. pret e89ead15 engine/battle/core.asm:263–279,708–1083,1171–1204.
-import { battleContext, decodeNick, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { battleContext, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { anyPartyAlive, anyEnemyPokemonAliveCheck, flagAction } from './battle_end_helpers';
 import { readPlayerMonCurHPAndStatus } from './battle_loaders';
@@ -68,7 +69,7 @@ export function* trainerBattleVictory(state: BattleState, host: FaintHost): Prog
   if (champion) state.mem[D.wStatusFlags7] |= 2;
   if (state.wLinkState === LINK_STATE_BATTLING) throw new BattleUnsupportedState('link');
   yield* playBattleVictoryMusic(host, victoryMusicFor(champion ? 'RIVAL3' : '', state.mem[D.wGymLeaderNo] !== 0));
-  yield* host.printText('TrainerDefeatedText', { trainerName: decodeNick(state.mem, D.wTrainerName) });
+  yield* host.printText('TrainerDefeatedText', { trainerName: decodeBattleText(state.mem, D.wTrainerName) });
   yield* trainerScroll(state, host); yield* delayFrames(AFTER_PIC_SCROLL_DELAY);
   yield* host.printEndBattleText(state);
   yield* host.printText('MoneyForWinningText', { amountMoneyWon: readBattleBcd(state, D.wAmountMoneyWon) });
@@ -88,7 +89,7 @@ export function* handlePlayerBlackOut(state: BattleState, host: FaintHost): Prog
 export function* enemyRan(state: BattleState, host: FaintHost): Program {
   host.loadScreenTilesFromBuffer1();
   if (state.wLinkState === LINK_STATE_BATTLING) throw new BattleUnsupportedState('link');
-  yield* host.printText('WildRanText', { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+  yield* host.printText('WildRanText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
   yield* host.waitForSound(); host.audio.play(host.runSound);
   state.hWhoseTurn = 0; host.enemySlideOff(state); // No post-RUN wait in this root.
 }
@@ -104,7 +105,7 @@ export function* removeFaintedPlayerMon(state: BattleState, host: FaintHost): Pr
   state.wWhichPokemon = state.wPlayerMonNumber;
   if (isThisPartyMonStarterPikachu(state)) yield* playPikachuClipCue({ ...host.voice, clearSfxIds: () => host.audio.clearClipIds() }, 4);
   else playCryCue(host.voice, state.wBattleMonSpecies);
-  yield* host.printText('PlayerMonFaintedText', { battleMonNick: decodeNick(state.mem, D.wBattleMonNick) });
+  yield* host.printText('PlayerMonFaintedText', { battleMonNick: decodeBattleText(state.mem, D.wBattleMonNick) });
   state.wWhichPokemon = state.wPlayerMonNumber;
   const difference = state.wEnemyMonLevel - state.wBattleMonLevel;
   modifyPikachuHappiness(state, difference >= 30 ? 10 : 8);
@@ -128,7 +129,7 @@ export function* faintEnemyPokemon(state: BattleState, host: FaintHost): Program
   }
   if (state.wBattleMonHP === 0 && state.mem[D.wInHandlePlayerMonFainted] === 0) yield* removeFaintedPlayerMon(state, host);
   if (anyPartyAlive(state).zero) return;
-  yield* host.printText('EnemyMonFaintedText', { enemyMonNick: decodeNick(state.mem, D.wEnemyMonNick) });
+  yield* host.printText('EnemyMonFaintedText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
   yield* host.printText('PrintEmptyString.emptyString'); host.saveScreenTilesToBuffer1(); state.wBattleResult = 0;
   const expAll = state.quantityInBag(0x4b) !== 0; // Preserve this result across the first EXP pass.
   if (expAll) for (let i = 0; i < 7; i++) state.mem[D.wEnemyMonBaseStats + i] >>>= 1;

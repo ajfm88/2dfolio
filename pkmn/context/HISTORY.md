@@ -15,6 +15,512 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-10-28 (A5c3f checkpoint-07b checked; handoff written) — Claude
+
+Checked 07b (note 72 **§11.20.1**): the world encoder, outcome decoder, box variant and option packers match §10.1.5 and
+§11.18–19, addresses check, nothing live touched; my 8 mutations all caught, Codex's 14 all plain. Gates ROM **6060/6060**,
+no-ROM **5811 / 249**, bundle unchanged. Wrote the **handoff (§11.20.2)**: Claude briefs 07c (the party refresh) next, then
+08–10 and the play-test; lessons on rulings and slice size; O-46 (timing tests) opened. No code changed. The user paused
+the project here.
+
+### 2026-10-28 (A5c3f checkpoint-07b continued2; implemented, awaiting Claude) — Codex
+
+Unused BattleWorld/input encoder and post-EndOfBattle outcome decoder, exact options, two event inputs,
+current-box33-byte codec and capacity20 bag guard. No event flags returned;08 preserves the live Set and
+retains the raw modifier.29 new no-ROM cases include real04b Route1 EXP/seen/owned/money, Bug Catcher prize,
+real ball/happiness/Pay Day paths. All14 mutations fail plain assertions; old tests/snapshots untouched.
+Owner/address table, object losses and08/10/11/backlog carries in note72 **§10.10.6–8**. Ordered default-worker
+gates pass: typecheck/build clean, ROM **6060/6060**, no-ROM **5811 pass /249 skip**; bundle unchanged.
+One local commit, never pushed. **Stopped for Claude's check. No07c work.**
+
+### 2026-10-28 (A5c3f checkpoint-07b event-flag ruling) — Claude
+
+The stop (note 72 §10.10.4) was right: the live flag set mixes event bits, badges and status bits (`USED_POKECENTER` is
+`$D72D` bit 2). An audit of battle paths shows the battle reads two event bits (`$2F`, `$550`) and writes none. Ruled
+(**§11.19**): encode only those two by an explicit table; the outcome carries no event flags; 08 leaves the live set alone;
+the full string→cell mapping is 10's. No code changed.
+
+### 2026-10-28 (A5c3f checkpoint-07b continued; saved flag-array stop) — Codex
+
+Resumed item1 under §11.18. The whole saved `eventFlags` string Set includes USED_POKECENTER, which
+ASM stores at `wStatusFlags4` D72D bit2, outside `wEventFlags` D746. Encoding every string into the event
+array conflicts with ASM; dropping it violates the whole-array round-trip. Stopped; no workaround or code
+changes. Source evidence and proposed representation ruling in note72 **§10.10.4–5**. Modifier requirements
+remain accepted/pending. Ordered default-worker retained gates pass: typecheck/build clean, ROM **6031/6031**,
+no-ROM **5782 pass /249 skip**, bundle unchanged. One local docs commit, never pushed.
+**07b incomplete; Claude rules on flags. No07c work.**
+
+### 2026-10-28 (A5c3f checkpoint-07b item 0 checked; emotion modifier ruled) — Claude
+
+Item 0 passes (note 72 **§11.18**). The stop was right: `wPikachuEmotionModifier` (`$D49B`) is saved cartridge data
+written by items, by learning Thunder and by poison, and the live game has no field for it. Ruled: a raw byte in the world
+and the outcome, 0 today, kept across battles by 08 and saved by 10. Backlog and 11 carries recorded. No code changed.
+
+### 2026-10-28 (A5c3f checkpoint-07b item0; Pikachu modifier owner stop) — Codex
+
+Added two new no-ROM assertions pinning dual-type type2 and all four originalStats words; Claude's f/h
+mutations each fail plainly, restored afterward. Owner audit confirms D49B is `wPikachuEmotionModifier`,
+but no live owner exists; the exposed displayed emotion is `wExpressionNumber` D447. No default is specified
+for this required census input. Stopped under §11.17.3 item4; evidence/proposed ruling in note72 **§10.10**.
+No bridge APIs, live/production source, old tests or snapshots changed. Ordered default-worker gates pass:
+typecheck/build clean, ROM **6031/6031**, no-ROM **5782 pass /249 skip**; bundle unchanged.
+One local commit, never pushed. **07b incomplete; Claude checks item0 and rules on the owner. No07c work.**
+
+### 2026-10-28 (A5c3f checkpoint-07a checked; 07b briefed) — Claude
+
+Checked 07a (note 72 **§11.17.1**): the codec matches `party_struct`, the PP arithmetic and status bits are right, the
+decoder is strict, the lazy names were proved failing first, and the 24-snapshot audit is convincing (with the old decoder's
+semantics, all 78 cases pass against the old goldens). My 10 mutations: 7 caught, 1 equivalent, 2 escaped (dual-type
+`type2`, `originalStats`), which are 07b's item 0. Re-split the rest of 07 into **07b, inputs and outputs (brief §11.17.3)**,
+and 07c, the party refresh. No code changed.
+
+### 2026-10-28 (A5c3f checkpoint-07a continued4; implemented, awaiting Claude) — Codex
+
+Restored accepted drafts/seeds; audited every changed snapshot leaf, proved old-decoder control green,
+then updated only init6/start16/move_anim1/pictures1 snapshots. Fresh lazy-name test fails eager, passes lazy.
+Added unused raw66-byte codec, live adapters, strict decoder and10 no-ROM cases; all13 mutations fail plain
+assertions. Object losses and07b/11 handoffs documented in note72 **§10.9.12–15**. Old assertions/thresholds
+unchanged. Ordered gates pass at default workers: typecheck/build clean, ROM **6029/6029**, no-ROM
+**5780 pass /249 skip**; bundle unchanged. One local commit, never pushed.
+**Stopped for Claude's check. No07b work.**
+
+### 2026-10-28 (A5c3f checkpoint-07a timing ruling) — Claude
+
+Read §10.9.10: the permitted seeds cleared all 104 name-buffer failures with no assertion edits (accepted). The stop
+was a 1.10 ms wall-clock result in the untouched `battle_screen_render.test.ts` timing case, which is machine load. Ruled
+(**§11.16**): a timing failure in an untouched file is re-run alone; it continues if that passes, and stops if not.
+Thresholds are never edited. 07a resumes at the snapshot audit. No code changed.
+
+### 2026-10-28 (A5c3f checkpoint-07a continued 3; renderer timing stop) — Codex
+
+Restored the drafts and seeded only permitted name buffers; all104 old decoder failures cleared, including
+the three original expected-error assertions. Full ROM run: **5994 pass /25 fail** =24 snapshot mismatches
+plus the untouched renderer's **1.1013ms <1ms** performance assertion. Stopped under §11.15 item3;
+no snapshot update, codec completion or mutations. Every seed and the pending audit counts are logged in
+note72 **§10.9.10–11**. Provisional files preserved under `.git/checkpoint07a-continued3-stop/`, then removed.
+Ordered retained-tree gates pass at default workers: typecheck/build clean, bundle unchanged,
+ROM **6019/6019**, no-ROM **5770 pass /249 skip**. One local commit, never pushed.
+**07a incomplete; Claude checks the timing stop. No07b work.**
+
+### 2026-10-28 (A5c3f checkpoint-07a general fixture ruling; Sol named) — Claude
+
+Codex's full-suite audit (note 72 §10.9.8) found 104 old-fixture failures, all strict-decoder throws on name buffers
+that synthetic fixtures never wrote, plus two more name-derived snapshot files. Replaced the case-by-case rulings with
+one general rule (**§11.15**): fixtures may seed terminated names where the failure is a name-buffer decoder throw and
+nothing else changes, and name-derived snapshots may be updated after audit. Anything else is a stop. The user named
+GPT Sol to finish 07a. No code changed.
+
+### 2026-10-28 (A5c3f checkpoint-07a continued 2; full-suite audit stop) — Codex
+
+Re-applied the saved decoder migration, lazy names and permitted host fixture seed. The required full old-suite
+audit failed: **5891 pass /128 fail** (104 non-snapshot failures, including three plain assertion failures;
+24 snapshot mismatches, two outside init/start). Census and traces: note72 **§10.9.8–9**. Stopped as required;
+no `vitest -u`, no fixture exceptions extended, no codec mutations attempted. Provisional changes removed;
+original drafts and audit evidence preserved locally under `.git/`. No gameplay or snapshot changes retained.
+Ordered retained-tree gates all passed at default workers: typecheck/build clean, bundle unchanged,
+ROM **6019/6019**, no-ROM **5770 pass /249 skip**. One local commit, never pushed.
+**07a remains incomplete; Claude must rule on the additional fixtures and two snapshot files. No07b work.**
+
+### 2026-10-27 (A5c3f checkpoint-07a snapshot ruling; paused for the night) — Claude
+
+Codex stopped again (note 72 §10.9.5): the strict decoder turns 22 old snapshots' `Wild R??????` into `Wild Rattata`.
+Ruled (**§11.14**): those snapshots recorded the old decoder's bug, so they may be updated after an audit showing the
+diff is only the name letters, their cells and downstream hashes. Codex's removed drafts are kept locally under
+`.git/checkpoint07a-continued-stop/`. Paused at the user's request; 07a resumes from those drafts. No code changed.
+
+### 2026-10-27 (A5c3f checkpoint-07a continued; snapshot stop) — Codex
+
+Resumed under §11.13. Strict charmap migration plus lazy HUD names and the single authorized fixture seed exposed
+22 old snapshot mismatches: the existing goldens contain `R??????`, while the correct decoder prints `Rattata`.
+Stopped under the explicit no-snapshot-change rule; no snapshot update or fallback. All provisional code/fixture
+edits removed; checked item0 retained. Evidence and pending work in note72 **§10.9.5–7**. Retained-tree gates:
+typecheck/build clean, bundle unchanged; ROM6019/6019 at4 workers after only the default Pewter timeout;
+no-ROM5770 pass /249 skip at default workers. No snapshots or old tests changed.
+One local commit, never pushed. **07a remains incomplete; Claude rules on the snapshot boundary. No07b work.**
+
+### 2026-10-27 (A5c3f checkpoint-07a item 0 checked; NULL ruled) — Claude
+
+Checked Codex's 07a item 0 (note 72 **§11.13**): passes. The stop was right: `$00` is `<NULL>`, and printed it shows
+the debug `TextIDErrorText`, not an empty name. Ruling: a strict decoder (throws on `$00`, unreachable in play); `hudContext`
+reads names lazily; one narrow exception seeds `@` in one old `battle_host.test.ts` fixture's two name buffers; the codec
+keeps raw name bytes. Codex's PP table accepted. 07a resumes from item 1. No code changed.
+
+### 2026-10-27 (A5c3f checkpoint-07a item0; NULL/name stop) — Codex
+
+Item0 verified: flipped player-back sprite-owner assertion catches Claude's b; one canonical flip constant, INIT alias
+carried to11. Codec migration then hit the ASM NULL/debug-text vs unchanged zero-filled-name fixture conflict:
+20 targeted failures. All provisional codec/decoder/call-site edits removed; no old snapshot/test edits beyond item0.
+Trace and PP audit (165 moves, no ambiguity) in note72 **§10.9**. Retained-result gates: typecheck/build clean;
+default runs hit only Pewter5000ms timeouts,4-worker reruns ROM **6019/6019**, no-ROM **5770 /249 skip**; bundle unchanged.
+One local commit; never pushed. **07a incomplete: Claude rules on NULL next. No07b work.**
+
+### 2026-10-27 (A5c3f checkpoint-06 checked; 07 split; 07a briefed) — Claude
+
+Checked Codex's 06 (note 72 **§11.12.1**): front/back boxes, the flip (nibble reversal + merge SWAP), both sprite-owner
+copies and the trainer rows match the ASM. My 10 mutations: 8 caught plainly, 1 equivalent (alpha), 1 escaped (sprite
+owner flip), which is 07a's item 0 with the duplicate `wSpriteFlipped` constant. My default-worker ROM run passed
+**6019/6019**; the `pewter_tripwire.test.ts` timeout Codex hit is machine load (raised with the user). Split 07 into
+**07a, the party codec + charmap decoder (brief §11.12.3)**, and 07b, the census. No code changed.
+
+### 2026-10-27 (A5c3f checkpoint-06 implemented; awaiting Claude) — Codex
+
+Unused pure picture boxes, shared RGBA decode, trainer metadata and independent sprite owner;16 new no-ROM tests.
+All12 mutations fail plainly; item0 j fails both base-tile assertions. Real04 pixels asserted before the new snapshot.
+Old snapshots/rig unchanged; no extraction or trainer_flow edit. Its CHIEF mapping is a checkpoint11 carry (§10.8).
+Ordered gates: typecheck/build clean; full ROM **6019/6019**, no-ROM **5770 /249 skip**, with4 workers after two
+default-worker Pewter5000ms load timeouts. Bundle unchanged. One local commit; never pushed.
+**Next: Claude checks checkpoint-06. Checkpoint-07 not started.**
+
+### 2026-10-27 (A5c3f checkpoint-05 checked; 06 briefed) — Claude
+
+Checked Codex's 05 (note 72 **§11.11.1**): the OFF-path `MoveAnimation`, the shakes, the blink and the sound bands
+match the ASM; the new WRAM addresses check against pokered's symbols with Yellow's one-byte shift. Frame totals
+re-added (Tackle 108 / 123; type-5 neutral 53 including the final sound wait). My 16 extra mutations: 15 caught
+plainly, 1 escaped (`hBaseTileID` unwritten), which is 06's item 0. Wrote the **checkpoint-06 brief (§11.11.2)**:
+front and back 7x7 boxes, `wSpriteFlipped`, trainer pics, the sprite-tile owner, one decode path. No code changed.
+
+### 2026-10-27 (A5c3f checkpoint-05 implemented; awaiting Claude) — Codex
+
+Unused OFF-path move animation: palettes/waits, all six applying types, hit sounds, byte cleanup and WY VBlank hold.
+Item0's b/g/h/j/n all fail plainly;14/14 new animation mutations also fail plain assertions. Added18 new cases/ledgers
+and three item0 cases; old rig and all old snapshots unchanged. Real Route1 Tackle spans123 frames. Note72 **§10.7**.
+Ordered gates green: typecheck/build, ROM **6003/6003**, no-ROM **5754 /249 skip**; bundle unchanged.
+One local commit; never pushed. **Next: Claude checks checkpoint-05. Checkpoint-06 not started.**
+
+### 2026-10-27 (A5c3f checkpoint-04b checked; 05 briefed) — Claude
+
+Checked Codex's 04b (note 72 **§11.10.1**): `StartBattle`, the Safari loop and `initBattleCommon` match the ASM line
+for line; the binder alias fix and the type-only census fix are accepted. My 14 mutations: 7 caught plainly, 2 only by
+snapshot (b, j), 2 escaped but can't happen (a, c), 3 escaped and real (g: fainted lead species; h: missed ball with no
+bait or anger; n: stale `wCurSpecies`). Those five are 05's item 0. Wrote the **checkpoint-05 brief (§11.10.2)**, the
+OFF-path move animation, after re-checking §10.1.9 against the ASM (vertical-shake WY sequence and VBlank restore
+added). No code changed.
+
+### 2026-10-27 (A5c3f checkpoint-04b continued; awaiting Claude) — Codex
+
+Implemented the unused StartBattle/Safari loop and composed post-transition → EndOfBattle → restores entry,
+under the E000 modelling boundary ruling. New20 tests/16 ledgers; all16 mutations fail plain assertions (17 runs).
+Real Bait/Rock histories prove the ASM-defined badge-alias fix in the unused binder. Old tests/rig/snapshots
+unchanged except the import guard. Note72 **§10.6** records source, correction, mutation table and gate retries.
+Final ordered gates: typecheck/build clean; ROM **5982/5982**; no-ROM **5733 / 249 skip**; bundle unchanged.
+One local commit; no push. **Next: Claude checks checkpoint-04b. No checkpoint05 work.**
+
+### 2026-10-27 (A5c3f checkpoint-04b item 0 checked; scan ruled) — Claude
+
+Checked Codex's item 0 (note 72 **§11.9**): it passes; my mutations C/F/L/S/V each fail a plain assertion. The scan
+stop was right, and the trace is correct: in a wild battle `wEnemyMon1HP` is `wWaterMons`, which Route 1 never writes.
+Ruling: the stored byte has seven readers, all link-only, and the engine throws on link. So the port walks exactly
+and stops before `$E000`, a named modelling boundary; Route 1 stores `$2F`. Four tests and two mutations were added to
+the brief. 04b continues from item 1. No code changed; gates unchanged from Codex's run.
+
+### 2026-10-27 (A5c3f checkpoint-04b item 0; enemy-scan stop) — Codex
+
+Item 0 complete: own empty-program key, named daycare selector, plain picture/HUD/OAM assertions and the two
+new cases. Claude's C/F/L/S/V all fail plain assertions; snapshot changes are only22 program-key replacements.
+Then hit §11.8's required stop: Route 1 has43 zero pairs in WRAM, next `$E008`; no StartBattle code or workaround.
+Trace and source-only Safari carry check in note72 **§10.5**. Gates in order: typecheck/build clean, ROM **5962/5962**,
+no-ROM **5713 / 249 skip**; bundle unchanged. One local commit; no push. **04b incomplete; Claude reviews the scan next.**
+
+### 2026-10-27 (A5c3f checkpoint-04 checked; 04b briefed) — Claude
+
+Checked Codex's checkpoint-04 (note 72 **§11.7**): it passes the ASM. Every constant was re-checked against pret's
+symbols. Codex's two trace corrections (`$77` is never stored; the back pic is two 49-tile copies) and its daycare-byte
+fix in the unused loader are accepted. Found: the empty print should use `_InitBattleCommon.emptyString` (correction
+12 was wrong). Claude's 22 mutations: 19 caught, 2 escaped (stale `wTrainerClass`, `wSpriteFlipped`), 1 equivalent; 3
+snapshot-only. All go into 04b's item 0. Gates green: ROM **5960/5960**, no-ROM **5711 / 249**, bundle unchanged. Wrote
+the **04b brief (§11.8)**: `StartBattle` with the Safari loop, `EndOfBattle`, the restores, one composed entry. One
+local commit; no push.
+
+### 2026-10-27 (A5c3f checkpoint-04 implemented; awaiting Claude) — Codex
+
+Unused pre-transition setup, persistent RNG and the post-transition battle start through the instruction before
+StartBattle; opening text, party balls and interim slide tail on the real frame/text/audio owners (note 72 §10.4).
+19 new tests, 11 ledgers; all 12 requested mutations caught/restored. Fixed one ASM-proved unused-loader omission
+(daycare selector), with a failing-then-passing new test. Gates in order: typecheck/build clean, ROM **5960/5960**,
+no-ROM **5711 / 249 skip**; bundle `index-DCGYEZm7.js` unchanged. Existing name-codec and presentation hand-offs
+remain recorded in §10.4.3. One local commit; no push. **Next: Claude checks checkpoint-04. 04b not started.**
+
+### 2026-10-27 (orientation; Codex named for checkpoint-04) — Claude
+
+Read the context files and the code checkpoint-04 composes. Gates re-run: typecheck clean, ROM **5941/5941**. The user
+named Codex for checkpoint-04 (DECISIONS #84); the brief (note 72 §11.6) is unchanged. Stale baselines noticed in
+PROJECT.md, ARCHITECTURE.md *Stack* and CONVENTIONS.md *Verification*; STATUS.md is ~49 KB, due an archive move.
+Docs only; one local commit; no push.
+
+### 2026-10-27 (codebase and context study) — Codex
+
+Read the entry-point rules, current handoff and recent sessions, project goals, roadmap, architecture, conventions,
+decision summaries and latest decisions; surveyed the eight subsystem docs and traced the runtime entry, extraction,
+save, text, overworld and unused battle-host/import-guard code. Read note 72's checkpoint-03 check and checkpoint-04
+brief. No implementation checkpoint claimed or started. Current handoff remains A5c3f checkpoint-03 checked,
+checkpoint-04 briefed for Grok, with Claude checking. No gameplay changes or tests run; baseline numbers above are
+the prior verified results. Study logged and committed locally; no push.
+
+### 2026-10-27 (A5c3f checkpoint-03 checked; 04 briefed) — Claude
+
+Checked checkpoint-03 (note 72 **§11.5**). The 44 red tests were Claude's brief's fault: the byte-exact `getMonName`
+changed byte maps the brief hadn't authorized editing. Claude updated the hand-written expectations, re-snapshotted
+five files and audited every changed line (only `$50` name pads, `wAnimationID` `$C7`→`$C1`, toss 199→193). It
+restored a snapshot that `vitest -u` had emptied, and added a rule against that. Gates green: ROM **5941/5941**,
+no-ROM **5692 / 249**, bundle unchanged. Wrote the checkpoint-04 brief (§11.6). One local commit; no push.
+
+### 2026-10-27 (A5c3f checkpoint-03: the trainer's party) — Grok
+
+Unused `battle_trainer_party.ts`: names (13-byte rival spill and packed class names), pic via `ROCKET.picOverride` and a
+WeakMap, base-money BCD, `ReadTrainer` with the enemy `_AddPartyMon` bytes, special-move ids without PP, and the
+`AddBCD` money loop. Enemy nicknames are not written (`add_mon.asm` skips naming). `getMonName` copies 10 bytes and an
+`@` at +10. `TOSS_ANIM` is `$C1`. The module stays off the production graph. New tests pass (22 party, including the
+47-class ROM walk, plus the toss pin). Bundle still `index-DCGYEZm7.js`. ROM **5897 pass / 44 fail** (5941); no-ROM
+**5648 pass / 44 fail / 249 skip**. The 44 old failures are listed in note 72 §10.3.5 and were not edited. No gameplay
+claim. Stop for Claude's check. Do not start checkpoint-04. One local commit; no push.
+
+### 2026-10-27 (end of day) — Claude
+
+Closed for the night. A5c3e is complete; A5c3f is planned (note 72), with checkpoints 01–02 checked, O-45 answered
+(#83), and Grok implementing. **Grok is mid-checkpoint-03** (the trainer's party, brief §11.4): its uncommitted files
+(`battle_trainer_party.ts` and its test, the toss-id fix in `battle_item_ball.ts`, the rig, the guard,
+`battle_loaders.ts`, the items snapshot) were left untouched. **Next session:** Grok commits 03 → Claude checks it
+(§11.5), then writes the 04 brief. Baseline ROM 5918/5918, no-ROM 5670 / 248; bundle `index-DCGYEZm7.js`. Committed
+STATUS.md only; no push.
+
+### 2026-10-26 (A5c3f checkpoint-02 checked; 03 briefed) — Claude
+
+Checked checkpoint-02 (note 72 **§11.3**). The three failing tests came from Claude's brief: a top-level
+`jessieJames` key in a map of classes. Claude moved it into `ROCKET.picOverride`, regenerated, and pinned it.
+Gates green: ROM **5918/5918**, no-ROM **5670 / 248**, bundle unchanged. Wrote the checkpoint-03 brief (§11.4).
+One local commit; no push.
+
+### 2026-10-26 (A5c3f checkpoint-02 data) — Grok
+
+Extracted the four bank-`$08` sounds, `ghost.png`, trainer pics (CHIEF → `scientist.png`; Jessie & James as
+`jessieJames`), and folded `stat_mod_text` into `extractRom()`. Setup: 195 JSON; static 525 PNG + 3 tilemaps +
+195 JSON. Bundle stayed `index-DCGYEZm7.js` (405.27 kB / 124.99 kB gzip). Typecheck and build clean. ROM
+**5915 pass / 3 fail** (5918); no-ROM **5668 pass / 2 fail / 248 skip**. The failures are `extraction.test.ts`,
+`data.test.ts` and `battle_ai_moves.test.ts`, left unedited (note 72 §10.2.5). **O-45 is still open.**
+**Next: Claude checks checkpoint-02.** One local commit; no push.
+
+### 2026-10-26 (A5c3f checkpoint-01 checked; 02 briefed) — Claude
+
+Checked Grok's trace (note 72 **§11.1**). Re-verified the two-`BattleRandom` wild DVs, the shared gym byte `$D05B`,
+`TOSS_ANIM` `$C1` (A5c3e's ball code stores `$C7`, a missed bug, fixed in 03) and the Marowak fall-through. The
+existing `baseMoney` is exact. The random state lands in 04. Wrote the checkpoint-02 brief (§11.2): four sounds,
+`ghost.png`, trainer pics in `trainers.json`, and the `stat_mod_text` fold. O-45 is still open. One local commit;
+no push.
+
+### 2026-10-26 (A5c3f checkpoint-01 traced) — Grok
+
+Traced the switch-over. No code, no tests, no build. Results are note 72 **§10.1**. Eighteen corrections to §1–§4:
+wild DVs are two `BattleRandom` draws and they happen before A5d's transition; `wLoneAttackNo` is `wGymLeaderNo`;
+`TOSS_ANIM` is `$C1` while `battle_item_ball.ts` stores `$C7`; the four sounds and `ghost.png` are the missing
+assets. All 16 brief items are answered. Ten questions for Claude are in §10.1.17. **O-45 is not answered.**
+Baseline unchanged (ROM 5908/5908, no-ROM 5670 / 238, bundle `index-DCGYEZm7.js`). **Next: Claude checks
+checkpoint-01.** One local commit; no push.
+
+### 2026-10-26 (A5c3f planned) — Claude
+
+Planned the switch-over in **`notes/72-a5c3f-plan.md`**. Traced `init_battle.asm`, `StartBattle`,
+`PrintBeginningBattleText`, `ReadTrainer` and the OFF path of `MoveAnimation`, plus `main.ts`'s battle start and end.
+Nine findings: the object ↔ byte adapters are lossy; production randomness would repeat; the pictures need 7×7
+placement; four sounds are unextracted; the naming screen has no nickname mode; the save must store stats, but only
+after the switch. Twelve checkpoints; the checkpoint-01 brief is §6. **O-45** (four questions) is open. One local
+commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10b checked; A5c3e closed) — Claude
+
+Codex ran out of usage before committing; Claude normalized ARCHITECTURE.md's line endings, logged and committed its
+10b work, then checked it (note 71 **§11.38**). T6/T7 re-derived from the ASM, including the Counter regression (stale
+TACKLE record doubles stale Ember damage) and its control. 6 of Claude's 7 planted bugs fail; the 7th (TrainerAI
+carry-in) is invisible to the rig by design and caught by the unit suite. Gates green: ROM **5908/5908**, no-ROM
+**5670 / 238**, bundle unchanged. **A5c3e is complete**; updated CLAUDE.md, PLAN and PROJECT. Open for A5c3f: keep or
+remove `TrainerMoveSelection`. **Next: Claude writes the A5c3f brief.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10b implemented) — Codex
+
+Resumed 10b at §11.36.2 under §11.37 (note 71 **§10.19**). Real-only rig options (`trainerTrace`, class, `wAICount`,
+enemy moves/species/status, header types), `battle_whole_trainer_ai.test.ts` T1–T7 (14 cases), and
+`a5c3e_retirement.test.ts` (8 + 10 old cases, the six stale math titles, the caller census). 21/21 mutations caught; no
+production fix. ROM **5908/5908**, no-ROM **5670 / 238**; bundle unchanged. ARCHITECTURE and CONVENTIONS updated. Ran
+out of usage before this entry and the commit; Claude wrote both from Codex's on-disk work. One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10b T2 stop checked) — Claude
+
+Codex's stop was correct (note 71 **§11.37**): `PlaySoundWaitForCurrent` waits only for the previous sound. Corrected
+T2's wording in §11.36.3 (the heal sound starts before the text, no post-wait) and added mutation 8b (a post-wait
+must fail). No code changed; baseline unchanged (ROM 5890/5890, no-ROM 5652 / 238). **Next: Codex resumes 10b at
+§11.36.2.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10b T2 sound-order stop) — Codex
+
+Re-checked the facts table against ASM; T2's sound-completion requirement conflicts with
+`home/delay.asm:8–12` and the checked helper. Proposal/evidence in **note 71 §10.18**; no code changed,
+0/20 mutations attempted. Ordered gates green: ROM5890/5890, no-ROM5652/238 skip; bundle unchanged.
+**Awaiting Claude's T2 correction; 10b incomplete, A5c3e open.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10 checked; 10b briefed) — Claude
+
+Checked checkpoint-10 (note 71 **§11.35**): the opt-in rig, H1–H12 (18 cases) and the POKé BALL decoder fix are all
+accepted. Re-derived H1 `$63` and the H2/H4 box-level bytes from the ASM. 7 of Claude's 8 planted bugs fail; the 8th is
+equivalent (the ball sets the owned flag first). Gates green: ROM **5890/5890**, no-ROM **5652 / 238**, bundle
+unchanged. Wrote the **10b brief (§11.36)**: T1–T7 (RIVAL2 Potion, BROCK Full Heal, JUGGLER switch with the `$FF`
+reload, MISTY X Defend, a thrash gate, LORELEI's Dewgong scoring, and the Counter regression with its control), the
+retirement manifests and census, 20 mutations, and the closing docs. **Next: Codex runs 10b.** One local commit;
+no push.
+
+### 2026-10-26 (A5c3e checkpoint-10 resumed; awaiting check) — Codex
+
+Opt-in real rig,18 player-item histories/snapshots; all17 mutations caught. One permitted unused ball-name
+decoder fix, with a focused test; old whole-battle files unchanged. Results **note 71 §10.17**.
+Gates in order: typecheck/build clean, ROM5890/5890, no-ROM5652/238 skip; bundle unchanged.
+**Stopped for Claude's check;10b unstarted.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10 item-0 stop checked) — Claude
+
+Checked Codex's stop (note 71 **§11.34**). The brief missed that a nonzero status byte reaches `ReadMove`,
+whose records need `loadBattleMoveData`; granted the setup exception and applied it to `battle_math.test.ts`
+and `battle_math_fixes.test.ts`. All four restored fixtures pass with their original assertions; the type-2
+pin is accepted. Typecheck/build clean, bundle `index-DCGYEZm7.js` unchanged; ROM **5871/5871**, no-ROM
+**5633 / 238 skip**. **Next: Codex resumes checkpoint-10 at §11.33.3.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10 item 0; setup stop) — Codex
+
+Applied the four permitted PAR fixture edits and the second-type-only AI pin. All four restored fixtures
+throw before their assertions because the two math suites never call `loadBattleMoveData`; stopped under
+§11.33.2, with the concrete loader proposal in **note 71 §10.16**. New AI pin passes and catches the escaped
+mutation (1 failure). Typecheck/build clean; bundle unchanged. ROM 5866 pass / 5 fail (four setup errors plus
+one unrelated timeout); no-ROM 5629 pass / 4 fail / 238 skip. Timeout passes isolated and in no-ROM.
+Rig, whole-battle files/snapshots and production untouched. **Next: Claude settles the loader exception;
+resume 10 afterwards. Checkpoint-10b not started.** One local commit; no push.
+
+### 2026-10-26 (A5c3e checkpoint-10 briefed; split 10 / 10b) — Claude
+
+Wrote the checkpoint-10 brief (note 71 **§11.33**). **10 is split**: 10 = item 0 (the `[1]` fixtures get
+`wBattleMonStatus` PAR and their pre-`a3c92d6` assertions back; a type-2-only `AIGetTypeEffectiveness` test), the
+ledger rig's opt-in `real` ports (every item body and `trainerAIBuilder`, tagged `Random`/`BattleRandom` draws with
+the right carry), and twelve player-item whole-battle histories in a new `battle_whole_items.test.ts`; the A5c3d
+ledgers and snapshot stay byte-identical. 10b (previewed §11.33.9) = trainer-AI histories, the Counter regression, the
+retirement manifests, closing A5c3e. Tests only; bundle must stay `index-DCGYEZm7.js`. **Next: Codex runs
+checkpoint-10.** Docs only.
+
+### 2026-10-26 (codebase and context orientation) — Codex
+
+Read the entry-point rules, live handoff, project/architecture/conventions/roadmap and relevant decisions;
+reviewed subsystem documentation, runtime initialization, extraction, save transport and the unused battle
+state/host/loop, import guard and ledger rig. No implementation slice claimed and no gameplay changes.
+Tests/build not re-run; the checked checkpoint-09 baseline above remains the recorded baseline.
+**Next remains: Claude writes note 71 §11.33, the checkpoint-10 brief, then the implementer runs it.**
+
+### 2026-10-26 (end of day: A5c3e checkpoints 07b–09 checked) — Claude
+
+Stopping for the day. Grok implemented 07b, 08 and 09 (with a fix round each for 07b and 08); Claude briefed and checked
+each (note 71 §11.23–§11.32). Bugs found and fixed: the caught mon's party mirror built its own species (07b fix). Test
+gaps closed: the box DVs and AskName's clear (07b fix); every AI routine's own threshold, fraction and item (08 fix).
+Claude's own errors, recorded: §11.22's write-back "gap" was an equivalent mutation; §11.23's menu box; §11.27's
+equality-clamp mutation; §11.31 item 9 allowing only the class byte. Context files refreshed (CLAUDE.md, CONVENTIONS,
+PROJECT, PLAN baselines); 2026-10-25's session entries moved to `HISTORY.md`.
+
+**Next session: Claude writes the checkpoint-10 brief (note 71 §11.33), then the implementer runs it.** It closes A5c3e.
+For the planner, read in order:
+- note 71 §5 (row 10), §3 and §10.1.13 (the pins), §10.1.14 (visible switch-over differences), §10.1.19 (the
+  retirement census: `catch.test.ts` 8, `trainer_ai.test.ts` 10, and the rest);
+- **item 0** from §11.32: set `wBattleMonStatus` PAR (`$40`) in the three old `[1]` fixtures so their original assertions
+  hold, and pin an `AIGetTypeEffectiveness` match on the player's **second** type only;
+- §11.31's closing note: the composed regression (the AI's leftover `ReadMove` record, then an AI item, then the
+  player's Counter);
+- §10.15's six stale old assertions (`[2]`, `[3]`, `[4]`, fifty 1s) go into the retirement manifest;
+- the rig: `game/src/test/battle_ledger_rig.ts` (its `trainerAI` hand-off and `selectEnemyMove` spy are the two fakes 10
+  replaces), and the builders: `ballHomes` (07b), `trainerAIBuilder` (08), `registerBallBattleItemBody` and the other
+  body registrations (04–07).
+
+### 2026-10-26 (A5c3e checkpoint-09 checked; 09 complete) — Claude
+
+**Passes the ASM** (note 71 **§11.32**), `a3c92d6`. Grok's deviation (throw on a list starting with 0) and the
+`TYPE_CHART` export are accepted. Six of the 9 changed old assertions are accepted. Three `[1]` cases lost their point
+because my brief allowed only the class byte; 10's item 0 sets `wBattleMonStatus` so their original assertions hold.
+My 11 mutations: 10 caught; the gap is a type-2-only chart match (also item 0). Gates in order: typecheck clean;
+build `index-DCGYEZm7.js`, unchanged; ROM **5870/5870**; no-ROM **5632 / 238**. **Next: Claude writes the
+checkpoint-10 brief.**
+
+### 2026-10-26 (A5c3e checkpoint-09 implemented; awaiting check) — Grok
+
+The move-choice modifications are in unused `battle_ai_moves.ts` (note 71 **§10.15**). `battle_math.ts` delegates and no longer reads `aiModifiers` or imports `trainer_ai.ts`. Nine old assertions changed where the ASM disagrees with the upstream bodies; whole-battle ledgers did not. Gates: typecheck clean; build `index-DCGYEZm7.js` unchanged; ROM **5870/5870**; no-ROM **5632 pass / 238 skip**. One local commit. **Stopped for Claude's check; checkpoint-10 not started.**
+
+### 2026-10-26 (A5c3e checkpoint-09 briefed) — Claude
+
+Wrote the checkpoint-09 brief (note 71 **§11.31**) after re-reading `trainer_ai.asm:1–272`, `move_choices.asm` and
+`AIGetTypeEffectiveness`. Settled: the port reads `wTrainerClass` (not the caller's `aiModifiers`), with a ROM test
+tying the table to `trainers.json`; `battle_math.ts` delegates and drops its `trainer_ai.ts` import; old tests may only
+gain a `wTrainerClass` (stop past 12 cases). Pins: the `$10` default bug, first-row lookup, the Dewgong draw, mod 2's
+byte ranges, the leftover `ReadMove` record. **Next: Grok runs checkpoint-09.** Docs only.
+
+### 2026-10-26 (A5c3e checkpoint-08 fix checked; 08 complete) — Claude
+
+**Passes, clean** (note 71 **§11.30**), `5dce42a`. The 48-row table uses hand-written values. My 7 mutations: all
+caught, including the 4 that escaped §11.28. Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged; ROM
+**5848/5848**; no-ROM **5611 / 237**. **Next: Claude writes the checkpoint-09 brief** (the move-choice modifications).
+
+### 2026-10-26 (A5c3e checkpoint-08 fix implemented; awaiting check) — Grok
+
+Tests only. One 48-row table through `trainerAI` pins each routine's roll, HP fraction and item or switch from §10.1.10, written out by hand (note 71 **§10.14**). All ten mutations are caught. Gates: typecheck clean; build `index-DCGYEZm7.js` unchanged; ROM **5848/5848**; no-ROM **5611 pass / 237 skip**. One local commit. **Stopped for Claude's check; checkpoint-09 not started.**
+
+### 2026-10-26 (A5c3e checkpoint-08 checked; fix briefed) — Claude
+
+**Passes the ASM, with one test gap** (note 71 **§11.28**), `a2912c8`. No bug. Both of Grok's stops are accepted: the
+equality-clamp mutation is equivalent (my brief's error), and the link return is reachable only by a direct call.
+My 16 mutations: 12 caught. The 4 that escaped are each routine's own details (Blaine's and Rival3's divisors,
+Lorelei's threshold, Koga's item). Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged; ROM
+**5800/5800**; no-ROM **5563 / 237**. **Next: Grok runs the 08 fix** (brief §11.29), a table-driven test over all 19
+routines.
+
+### 2026-10-26 (A5c3e checkpoint-08 implemented; awaiting check) — Grok
+
+The trainer AI's items and switching are in unused `battle_trainer_ai.ts` (note 71 **§10.13**). Potions, Full Restore, Full Heal, the X items and the switch go through the real bar, stat effect, printer and `enemySendOut`. One link return is unreachable: `enemySendOut` still throws on a link battle, so that branch is a proposal in §10.13. Gates: typecheck clean; build `index-DCGYEZm7.js` unchanged; ROM **5800/5800**; no-ROM **5563 pass / 237 skip**. One local commit. **Stopped for Claude's check; checkpoint-09 not started.**
+
+### 2026-10-26 (A5c3e checkpoint-08 briefed) — Claude
+
+Wrote the checkpoint-08 brief (note 71 **§11.27**) after re-reading `trainer_ai.asm:290–751` and its caller. Pinned for
+Grok: rgbds's `percent` values (64 / 32 / 128 / 20, strict), Cooltrainer F's dead gate, Agatha's missing fallback, the
+potion's carry-only high byte and borrow-only clamp, the switch's 4-byte copy putting the party position in the roster's
+box-level byte, no decrement on a switch, and a ROM test reading the pointer table through `TrainerAI`'s own `ld hl`.
+**Next: Grok runs checkpoint-08.** Docs only.
+
+### 2026-10-26 (A5c3e checkpoint-07b fix checked; 07b complete) — Claude
+
+**Passes, clean** (note 71 **§11.26**), `4c7d6ac`. The mirror takes the live species; box DVs and the clear's edges are
+pinned; no cast. My 5 mutations: all caught. Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged; ROM
+**5765/5765**; no-ROM **5529 / 236**. **Next: Claude writes the checkpoint-08 brief** (the trainer AI's items and switching).
+
+### 2026-10-26 (A5c3e checkpoint-07b fix implemented; awaiting check) — Grok
+
+The party mirror now uses `getSpeciesById`. Box DVs and the 11×4 clear's edges are pinned. `ballHomes` yields through a wrapper; the `as unknown as` cast is gone. All five mutations in §11.25 are caught (note 71 **§10.12**). Gates: typecheck clean; build `index-DCGYEZm7.js` unchanged; ROM **5765/5765**; no-ROM **5529 pass / 236 skip**. One local commit. **Stopped for Claude's check; checkpoint-08 not started.**
+
+### 2026-10-26 (A5c3e checkpoint-07b checked; fix briefed) — Claude
+
+**Passes the ASM, with one bug and two test gaps** (note 71 **§11.24**), `7dbfb86`. The party mirror builds its own
+species object with the **nickname as its name** and an empty learnset and evolution list. After A5c3f a named catch
+would save under the wrong species and never evolve. Gaps: the box DVs and the cleared area's edges. Grok was right
+about the HP write-back (redundant on the cartridge too, so my §11.22 "gap" was an equivalent mutation) and about the
+NO path's menu box. My 13 mutations: 10 caught. Gates in order: typecheck clean; build `index-DCGYEZm7.js`, unchanged;
+ROM **5764/5764**; no-ROM **5528 / 236**. **Next: Grok runs the 07b fix** (brief §11.25).
+
+### 2026-10-26 (A5c3e checkpoint-07b implemented; awaiting check) — Grok
+
+Added unused `battle_add_mon.ts`: `_AddPartyMon`'s wild player branch, `AskName` and `SendNewMonToBox`,
+wired through `ballHomes`. Item 0 pins the reload's HP and status. The write-back removal fails no test:
+the ball sets `TRANSFORMED` first, so the loader does not reset HP (note 71 **§10.11**). The line stays.
+26 new tests. Gates: typecheck clean; build `index-DCGYEZm7.js` unchanged; ROM **5764/5764**; no-ROM
+**5528 pass / 236 skip**. One local commit. **Stopped for Claude's check; checkpoint-08 not started.**
+
+### 2026-10-26 (A5c3e checkpoint-07b briefed) — Claude
+
+Wrote the 07b brief (note 71 **§11.23**) after re-reading pret's `_AddPartyMon`, `AddPartyMon_WriteMovePP`, `AskName`
+and `SendNewMonToBox`. Item 0 is §11.22's HP write-back pin. The brief settles three things: the box is bytes only in
+07b, with the `pcBoxes` sync going to A5c3f; the naming screen is the one new hand-off; and exporting `writeMonMoves`
+is the only edit to an existing source file. It also pins three things in the ASM: `wMoveData` sharing a cell with
+`wNameBuffer`, AskName reading but never writing `wTwoOptionMenuID`, and the NO path not restoring the screen.
+**Grok implements 07b** (the user's choice today). Docs only.
+
+*Older entries (2026-10-25 and before) → `HISTORY.md` → *Recent session archive*.*
+
 ### 2026-10-25 (end of day: A5c3e checkpoints 04b–07 checked) — Claude
 
 Stopping for the day. Today Codex implemented 04b (resumed), 05, 05b, 06, 06b and 07, and Claude checked each one

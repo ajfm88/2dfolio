@@ -119,10 +119,10 @@ export function registerBattleItemBody(label: BattleItemLabel, program: BattleIt
 }
 
 /** Audio 2 IDs; assets are loaded before entering a CPU-paced battle program. */
+export const BATTLE_ITEM_SOUND_ASSETS = [[0x9a, 'caught_mon'], [0x98, 'dex_page_added'],
+  [0x8d, 'heal_hp'], [0x8e, 'heal_ailment']] as const;
 export async function loadBattleItemSounds(): Promise<ReadonlyMap<number, BattleSfx>> {
-  const assets = [[0x9a, 'caught_mon'], [0x98, 'dex_page_added'],
-    [0x8d, 'heal_hp'], [0x8e, 'heal_ailment']] as const;
-  return new Map(await Promise.all(assets.map(async ([id, name]) => {
+  return new Map(await Promise.all(BATTLE_ITEM_SOUND_ASSETS.map(async ([id, name]) => {
     const response = await fetch(`audio/sfx/${name}.json`);
     if (!response.ok) throw new Error(`battle item sound: ${name}`);
     return [id, { id, data: await response.json() as SfxData }] as const;

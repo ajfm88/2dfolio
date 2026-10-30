@@ -1,3 +1,5 @@
+import { refreshPartyMon } from './battle_party_codec';
+import { decodeBattleText } from './battle_text_codec';
 // core.asm LoadBattleMonFromParty, LoadEnemyMonFromParty, LoadEnemyMonData,
 // ApplyBurnAndParalysisPenalties, ApplyBadgeStatBoosts, ReadPlayerMonCurHPAndStatus,
 // IncrementMovePP; decrement_pp.asm; init_battle.asm InitWildBattle's ghost block;
@@ -6,7 +8,7 @@ import type { BattlePokemon, StatExperience } from './types';
 import { getMove } from './data';
 import { TYPE_NAMES } from '../rom/constants';
 import {
-  A, ATKDEFDV_TRAINER, BRN, decodeNick, encodeText, GHOST_PIC, indexToPokedex, isGhostBattle, LINK_STATE_BATTLING,
+  A, ATKDEFDV_TRAINER, BRN, encodeText, GHOST_PIC, indexToPokedex, isGhostBattle, LINK_STATE_BATTLING,
   MAX_STAT_VALUE, MON_GHOST, NAME_LENGTH, NUM_MOVES, NUM_STATS, NUM_STAT_MODS, PAR, PARTYMON_STRUCT_LENGTH,
   POKEDEX_ORDER, PSN, RESTLESS_SOUL, setSeenFlag, SPDSPCDV_TRAINER, STRUGGLE, TRAINER_BATTLE,
   TRANSFORMED, WILD_BATTLE, writeBytes, type BattleState, type SpeciesHeader,
@@ -135,7 +137,7 @@ export function mirrorPartyProgress(state: BattleState, slot: number): void {
   if (!mon) return;
   const base = A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH;
   mon.otId = state.readBE(base + 12);
-  mon.otName = decodeNick(state.mem, A.wPartyMonOT + slot * NAME_LENGTH);
+  mon.otName = decodeBattleText(state.mem, A.wPartyMonOT + slot * NAME_LENGTH);
   mon.exp = state.mem[base + 14] * 0x10000 + state.readBE(base + 15);
   mon.statExp = [state.readBE(base + 17), state.readBE(base + 19), state.readBE(base + 21),
     state.readBE(base + 23), state.readBE(base + 25)];
@@ -425,32 +427,11 @@ export function initWildBattle(state: BattleState): void {
   }
 }
 
-function applyDecodedStatus(mon: BattlePokemon, status: number): void {
-  if ((status & PAR) !== 0) { mon.status = 'PAR'; mon.sleepTurns = 0; return; }
-  if ((status & FRZ) !== 0) { mon.status = 'FRZ'; mon.sleepTurns = 0; return; }
-  if ((status & BRN) !== 0) { mon.status = 'BRN'; mon.sleepTurns = 0; return; }
-  if ((status & PSN) !== 0) { mon.status = 'PSN'; mon.sleepTurns = 0; return; }
-  if ((status & 7) !== 0) { mon.status = 'SLP'; mon.sleepTurns = status & 7; return; }
-  mon.status = null;
-  mon.sleepTurns = 0;
-}
-
 export function readPlayerMonCurHPAndStatus(state: BattleState): void {
   const slot = state.wPlayerMonNumber;
   const dest = A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH + 1;
   copyBytes(state, A.wBattleMonHP, dest, 4);
-  const mon = state.partyMons[slot];
-  if (!mon) return;
-  mon.currentHp = state.readBE(dest);
-  applyDecodedStatus(mon, state.mem[dest + 3]);
-}
-
-function mirrorPartyPp(state: BattleState, slot: number, index: number): void {
-  const mon = state.partyMons[slot];
-  const move = mon?.moves[index];
-  if (!move) return;
-  const byte = state.mem[A.wPartyMons + slot * PARTYMON_STRUCT_LENGTH + MON_PP + index];
-  move.pp = byte & 0x3f;
+  if (state.partyMons[slot]) refreshPartyMon(state, slot);
 }
 
 export function decrementPP(state: BattleState, moveId: number): void {
@@ -462,7 +443,7 @@ export function decrementPP(state: BattleState, moveId: number): void {
   if ((state.wPlayerBattleStatus3 & TRANSFORMED) !== 0) return;
   const party = A.wPartyMons + state.wPlayerMonNumber * PARTYMON_STRUCT_LENGTH + MON_PP + index;
   state.mem[party] = (state.mem[party] - 1) & 0xff;
-  mirrorPartyPp(state, state.wPlayerMonNumber, index);
+  if (state.partyMons[state.wPlayerMonNumber]) refreshPartyMon(state, state.wPlayerMonNumber);
 }
 
 export function incrementMovePP(state: BattleState): void {
@@ -474,5 +455,5 @@ export function incrementMovePP(state: BattleState): void {
   const base = enemyTurn ? A.wEnemyMons : A.wPartyMons;
   const party = base + slot * PARTYMON_STRUCT_LENGTH + MON_PP + index;
   state.mem[party] = (state.mem[party] + 1) & 0xff;
-  if (!enemyTurn) mirrorPartyPp(state, slot, index);
+  if (!enemyTurn && state.partyMons[slot]) refreshPartyMon(state, slot);
 }

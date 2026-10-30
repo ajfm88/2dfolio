@@ -208,6 +208,8 @@ describe('palette CPU write and composed battle program', () => {
     const state = new BattleState(), host = new BattleHost(state);
     state.wBattleMonHP = state.wBattleMonMaxHP = state.wEnemyMonHP = state.wEnemyMonMaxHP = 30;
     state.wEnemyMonSpecies2 = 1; state.mem[PLAYER_BAR] = 2;
+    state.mem[A.wBattleMonNick] = 0x50;
+    state.mem[A.wEnemyMonNick] = 0x50;
     const ctx = { ...fillHuds(state) }; delete ctx.pokedexNum;
     host.start(drawHudsAndHpBars(ctx, actionHost(host.video)));
     expect(ctx.pokedexNum).toBe(112); drive(host);

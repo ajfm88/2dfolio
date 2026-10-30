@@ -1,8 +1,9 @@
+import { refreshPartyMon } from './battle_party_codec';
+import { decodeBattleText } from './battle_text_codec';
 // Unused shared field/battle LearnMove. pret e89ead15 engine/pokemon/learn_move.asm:1–250.
-import { battleContext, decodeNick, encodeText, type BattleState } from './battle_state';
+import { battleContext, encodeText, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { getMoveName, getName, moveNameBinding, getMoveRecord, BattleUnsupportedState } from './battle_move_data';
-import { getAllLoadedMoveIds, getMove } from './data';
 import { formatMovesString } from './move_selection_menu';
 import { displayTwoOptionMenu, type TwoOptionHost } from './battle_two_option';
 import { MenuInput } from '../menus/menu_input';
@@ -33,8 +34,8 @@ export function oneTwoAndText(host: Pick<LearnMoveHost, 'audio' | 'swapSound'>):
 }
 
 function bindings(state: BattleState): TextBindings {
-  return { learnMoveMonName: decodeNick(state.mem, D.wLearnMoveMonName),
-    stringBuffer: moveNameBinding(state), nameBuffer: decodeNick(state.mem, D.wNameBuffer) };
+  return { learnMoveMonName: decodeBattleText(state.mem, D.wLearnMoveMonName),
+    stringBuffer: moveNameBinding(state), nameBuffer: decodeBattleText(state.mem, D.wNameBuffer) };
 }
 
 function formatLearnMoves(state: BattleState, at: number): string {
@@ -88,13 +89,6 @@ export function* tryingToLearn(state: BattleState, host: LearnMoveHost, movesAt:
   }
 }
 
-function mirrorLearnedMove(state: BattleState, slot: number, pp: number): void {
-  const mon = state.partyMons[state.wWhichPokemon]; if (!mon) return;
-  const key = getAllLoadedMoveIds().find(id => getMove(id)!.id === state.mem[D.wMoveNum]);
-  if (!key) throw new BattleUnsupportedState('learned move key');
-  mon.moves[slot] = { id: key, pp, maxPp: pp };
-}
-
 /** :1–96. No battle-only prerequisite; wIsInBattle gates only the final battle-copy writes. */
 export function* learnMove(state: BattleState, host: LearnMoveHost): Program<{ b: 0 | 1 }> {
   host.saveScreenTilesToBuffer1();
@@ -118,7 +112,7 @@ export function* learnMove(state: BattleState, host: LearnMoveHost): Program<{ b
     const move = state.mem[D.wMoveNum]; state.mem[movesAt + slot] = move;
     state.setBytes(D.wBuffer, getMoveRecord(move), 6);
     const pp = state.mem[D.wBuffer + 5]; state.mem[movesAt + 21 + slot] = pp;
-    mirrorLearnedMove(state, slot, pp);
+    if (state.partyMons[state.wWhichPokemon]) refreshPartyMon(state, state.wWhichPokemon);
     if (state.wIsInBattle && state.wWhichPokemon === state.wPlayerMonNumber) {
       state.mem.set(state.mem.slice(movesAt, movesAt + 4), D.wBattleMonMoves);
       state.mem.set(state.mem.slice(movesAt + 21, movesAt + 25), D.wBattleMonPP);

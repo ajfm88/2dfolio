@@ -1,3 +1,4 @@
+import { decodeBattleText } from './battle_text_codec';
 // WRAM-shaped battle state. One cell per address; ASM names are accessors onto that cell.
 // Layout: ram/wram.asm, macros/ram.asm, notes/68 aliases.json. pret pin e89ead15.
 import { charToTile } from '../text/charmap';
@@ -44,6 +45,8 @@ const USING_TRAPPING_MOVE = 1 << 5;
 const HAS_SUBSTITUTE_UP = 1 << 4;
 
 export const A = {
+  wPartyCount: 0xd162,
+  wPartySpecies: 0xd163,
   // pret ram/wram.asm:624,656,1020,1089,1946,2087; symbols 573535d7.
   wTotalPayDayMoney: 0xcce5,
   wPlayerMonMinimized: 0xccf7,
@@ -395,6 +398,8 @@ export class BattleState {
   private divider = 0;
   /** Deterministic rDIV stand-in, replaceable by the eventual host or a test. */
   readDIV: () => number = () => (this.divider++ & 0xff);
+  /** Optional session clock; fixture DIV providers retain their existing behavior. */
+  advanceRandomCycles?: (cycles: number) => void;
   /** Mirrors the player party. BattlePokemon has no box-level field; the raw slot does. */
   partyMons: (BattlePokemon | null)[] = [null, null, null, null, null, null];
   /** Recorded by InitWildBattle. The picture itself is drawn in A5e. */
@@ -579,8 +584,9 @@ export function battleContext(state: BattleState): BattlePartyContext {
   });
   bind('enemySpecies2', () => state.wEnemyMonSpecies2 === 0 ? 0 : POKEDEX_ORDER[state.wEnemyMonSpecies2 - 1]);
   raw('pokedexNum', 'wPokedexNum');
+  bind('partySpeciesList', () => liveBytes(state.mem, A.wPartySpecies, PARTY_LENGTH + 1));
   bind('partyMons', () => state.partyMons, value => { state.partyMons = value as (BattlePokemon | null)[]; });
-  bind('battleMonNick', () => decodeNick(state.mem, A.wBattleMonNick), value => {
+  bind('battleMonNick', () => decodeBattleText(state.mem, A.wBattleMonNick), value => {
     writeBytes(state.mem, A.wBattleMonNick, encodeText(`${value as string}@`), NAME_LENGTH);
   });
   raw('firstMonsNotOutYet', 'wFirstMonsNotOutYet');

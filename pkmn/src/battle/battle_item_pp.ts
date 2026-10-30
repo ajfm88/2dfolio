@@ -1,3 +1,4 @@
+import { refreshPartyMon } from './battle_party_codec';
 // Unused ItemUsePPRestore. pret e89ead15 engine/items/item_effects.asm:2174–2384.
 import { I } from './battle_item_state';
 import { battleContext, type BattleState } from './battle_state';
@@ -36,8 +37,7 @@ export function restorePartyMovePP(state: BattleState): boolean {
   if ((full ? packed : packed & 63) === max) return false;
   const pp = full ? max : Math.min(max, (packed & 63) + 10);
   state.mem[at] = (packed & 0xc0) + pp;
-  const move = state.partyMons[state.wWhichPokemon]?.moves[state.wCurrentMenuItem];
-  if (move) move.pp = state.mem[at] & 63;
+  if (state.partyMons[state.wWhichPokemon]) refreshPartyMon(state, state.wWhichPokemon);
   return state.mem[at] !== 0; // NZ from the final ADD, as the caller tests it.
 }
 

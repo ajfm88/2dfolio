@@ -114,6 +114,8 @@ export interface TextBoxOptions {
 }
 
 export interface TextDisplayHost {
+  /** Optional private owner, used by battle text; field callers retain the facade. */
+  sound?: { play(name: string): void; finished(): boolean; beep(): void };
   /** CloseTextDisplay's cost on the current map; 'full' once BIT_FONT_LOADED is clear. */
   closeFrames(reload?: CloseReload): number;
   updateSprites(): void;
@@ -210,8 +212,10 @@ export class TextBox {
   }
   private ports() {
     return { buttons: () => this.buttons(), speed: () => textSpeed,
-      soundFinished: () => isSoundFinished(), beep: () => { playSFX('press_ab'); }, joypadRead: syncJoypadRead,
-      playSound: (name: string) => { playSFX(name); }, cry: (species: string) => { this.host.cry?.(species); } };
+      soundFinished: () => this.host.sound ? this.host.sound.finished() : isSoundFinished(),
+      beep: () => { if (this.host.sound) this.host.sound.beep(); else playSFX('press_ab'); }, joypadRead: syncJoypadRead,
+      playSound: (name: string) => { if (this.host.sound) this.host.sound.play(name); else playSFX(name); },
+      cry: (species: string) => { this.host.cry?.(species); } };
   }
   private start(run: Generator<void>): void {
     this.complete = false; this.run = run; this.advance();

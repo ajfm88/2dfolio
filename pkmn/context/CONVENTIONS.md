@@ -244,6 +244,34 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
+`battle/battle_session.test.ts`:18 no-ROM cases through the unused session API and real input,
+frame/HRAM and injected real audio engines. Win pins Tackle123/EXP8024 and the audited counted-DIV ledger;
+blackout, RUN, random retention, exact-owner teardown, engine-clock and108-frame animation controls,
+finish guard and session-level text sounds. Real TrainerAI returns zero-frame/carryfalse on every
+wild call; a forced trainer call reaches the throwing08b environment. First load with main ready
+pins44 fetches and358 image decodes, each once. B-only scroll confirmation, all three printer
+speeds, host waits, victory stop order and exact restored map bytes close08a's check gaps.
+`battle/battle_session_core.test.ts`:eight no-ROM cases pin cycle-counted DIV, reset/replay,
+the bounded frozen-clock damage retry, node-import census, all24 committed maps and unknown
+tileset rejection, plus47 once-only fetches on cold startup. The session suite also bounds an
+actual old-clock battle in randomizeDamage and proves its counted-clock replacement finishes.
+08a's18 mutation proofs are in note72 §10.12;08b's12 plain proofs and snapshot audit are in §10.13.
+`text/textbox_sound_owner.test.ts`:two default-port compatibility cases pin
+facade sound/wait/beep behavior; existing text/menu/overworld suites remain unedited.
+
+`battle/battle_item_medicine_env.test.ts` also pins08a item0: a stale reserve row must
+freeze byte-authoritative HP/status/pixels before the inner menu's own refresh. Its row override
+assertion catches07c mutationg (SLP/43px versus null/12px). Note72 §10.12 records the failing-first
+mutation proof and the separate, uncommitted-as-test text/audio boundary probe.
+
+`battle/battle_party_refresh.test.ts`: 21 no-ROM cases for the in-place, changed-field-only party
+cache refresh, unchanged RAM/RNG, error propagation and low-level import census; byte-first EXP,
+medicine, PP, move-learning and catch writers; send-out, both use-item entries and the state-aware
+party binder, including defrost/flute and STATS. Pidgey selection pins internal$24 on SWITCH,
+STATS, AlreadyOut and NoWill. `battle_world_composed.test.ts` also pins Route1's cached EXP8024
+and full decoded-record equality. Note72 §10.11 holds the 14 plain-assertion mutation proofs and
+the audited26 mirror-only golden updates with their old-writer control proof.
+
 `battle/battle_whole_trainer_ai.test.ts`: 14 real-loop trainer histories (T1–T7) and own reviewed snapshots.
 RIVAL2 Potion/cap/threshold/count-zero, BROCK Full Heal/no-post-wait/retained speed, JUGGLER switch/write-back/
 SHIFT/FF reload, MISTY X Defend, thrash gates, LORELEI Dewgong scoring/encouragement and stale Counter with its
@@ -810,6 +838,18 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
 
 **Added per slice (newest first)**
 
+- **A5c3f checkpoint-07b continued2** (2026-10-28, Codex; note72 §10.10.6 onward, awaiting Claude):
+  `battle_world.test.ts` adds27 no-ROM cases for all input/output rows,12 options combinations, money,
+  exact event/dex bits, current-box raw codec, bag capacity and post-battle quantities, modifier and
+  real ball/happiness/EndOfBattle reads. `battle_world_composed.test.ts` adds two04b-harness cases,
+  Route1 EXP/seen/owned/money and Bug Catcher prize, entered through the bridge.14 mutations fail
+  plain assertions. The two earlier item0 cases stay in `battle_bridge_io.test.ts`; no old tests edited.
+- **A5c3f checkpoint-07a continued4** (2026-10-28, Codex; note72 §10.9.12 onward, awaiting Claude):
+  `battle_bridge.test.ts` adds10 no-ROM cases: raw66-byte identity/extremes, all190 internal species,
+  all165 move PP tables and Up counts, live fields/statuses, all87 accepted single glyphs, strict NULL/@,
+  the real host's Nidoran male tile, the production import census and a failing-first lazy HUD regression.
+  All13 mutations fail plain assertions. The unused-import guard gains bridge/text codec; only the
+  accepted name-buffer seeds alter old fixtures. Four snapshot files have24 audited name-only updates.
 - **A5c3f checkpoint-07a item0 / stop** (2026-10-27, Codex; note72 §10.9): the existing flipped-picture case
   now asserts the player back's sprite owner orientation; Claude's b fails plainly. One canonical flip constant,
   with INIT's old-test alias carried to11. Codec migration stopped at NULL-vs-terminator / uninitialized name

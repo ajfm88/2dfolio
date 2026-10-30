@@ -284,3 +284,22 @@ describe('06b medicine draw cells', () => {
     expect(s.mem.slice(A.wLoadedMon, A.wLoadedMon + 44)).toEqual(copies[copies.length - 1]);
   });
 });
+
+// 08a item0: env-level frozen rows are captured before the inner menu's own refresh.
+it('item0 freezes the byte-authoritative pre-use row before the nested item menu refresh', () => {
+  const r = setup({ name: 'stale row', id: 0x14, slot: 1, hp: 90, max: 100, status: 'SLP' });
+  r.s.writeBE(A.wPartyMons + 44 + 1, 25);
+  r.s.mem[A.wPartyMons + 44 + 4] = 0;
+  expect(r.s.partyMons[1]!.currentHp).toBe(90);
+  expect(r.s.partyMons[1]!.status).toBe('SLP');
+  r.env.displayPartyMenu().next();
+  const override = vi.spyOn(r.party, 'setHpOverride');
+  r.s.mem[I.wUsedItemOnWhichPokemon] = 1;
+  r.s.wHPBarType = 2;
+  writeHpBarWord(r.s, I.wHPBarOldHP, 25);
+  writeHpBarWord(r.s, I.wHPBarNewHP, 26);
+  writeHpBarWord(r.s, I.wHPBarMaxHP, 100);
+  r.env.animateHpBar(4, 3).next();
+  // First type2 frame holds the old HP and 25/100 of the 48-pixel bar.
+  expect(override).toHaveBeenCalledWith(1, { shownHp: 25, status: null, pixels: 12, colorPixels: 12 });
+});

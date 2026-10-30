@@ -44,6 +44,12 @@ let inTick = false;
 let initialized = false;
 let audioReady = false;
 
+/** Unused battle-session seam; the page retains ownership of these engines and their clock. */
+export function getBattleAudioEngines(): { sfx: SfxEngine; music: MusicEngine; banks: PlaySound } {
+  if (!sfxEngine || !engine || !requests) throw new Error('audio is not initialized');
+  return { sfx: sfxEngine, music: engine, banks: requests };
+}
+
 /** rAUDVOL / NR50, as used by StatusScreen and StatusScreen2. */
 export function setMasterVolume(left: number, right: number): void {
   synth?.setMasterVolume(left, right);
@@ -286,7 +292,7 @@ async function startSfx(name: string): Promise<void> {
   sfxEngine.play(data);
 }
 
-async function loadSfx(name: string): Promise<SfxData | undefined> {
+export async function loadSfx(name: string): Promise<SfxData | undefined> {
   try {
     const resp = await fetch(`audio/sfx/${name}.json`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);

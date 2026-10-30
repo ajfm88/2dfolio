@@ -1,8 +1,9 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused A5c3 host. home/vblank.asm order, home/window.asm PrintText;
 // note 68 §10.5, §11.1 answer 7 and §11.12 define the frame protocol.
 import { BattleMenuScreen } from './battle_menu_screen';
 import { battleScreenFor, bindBattleScreen } from './battle_screen';
-import { A, decodeNick, type BattleState } from './battle_state';
+import { A, type BattleState } from './battle_state';
 import type { Frame, Program } from './battle_menu_context';
 import type { PlaceActors } from '../text/text_printer';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
@@ -19,8 +20,8 @@ export class BattleHost<T = void> {
     bindBattleScreen(state, video.screen);
     this.actors = {
       get whoseTurn() { return state.hWhoseTurn; },
-      get battleMonNick() { return decodeNick(state.mem, A.wBattleMonNick); },
-      get enemyMonNick() { return decodeNick(state.mem, A.wEnemyMonNick); },
+      get battleMonNick() { return decodeBattleText(state.mem, A.wBattleMonNick); },
+      get enemyMonNick() { return decodeBattleText(state.mem, A.wEnemyMonNick); },
     };
   }
 

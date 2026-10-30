@@ -575,20 +575,8 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -599,10 +587,10 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -780,20 +768,8 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -804,10 +780,10 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -935,20 +911,8 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -959,10 +923,10 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             25,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -1044,20 +1008,8 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -1068,10 +1020,10 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             37,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -1166,20 +1118,8 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -1190,33 +1130,21 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             37,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
         {
           "exp": 8048,
-          "hp": 46,
+          "hp": 60,
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -1227,10 +1155,10 @@ exports[`checkpoint-08b whole-battle ledgers > EXP.ALL makes both real award pas
             12,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -1571,20 +1499,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then catch keeps the sour
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -1595,10 +1511,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then catch keeps the sour
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -1734,20 +1650,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then catch keeps the sour
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -1758,10 +1662,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then catch keeps the sour
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -2255,20 +2159,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then move keeps the sourc
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -2279,10 +2171,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then move keeps the sourc
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -2418,20 +2310,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then move keeps the sourc
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -2442,10 +2322,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then move keeps the sourc
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -2661,49 +2541,6 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then move keeps the sourc
         0,
       ],
       "name": "animationCue",
-    },
-    {
-      "at": 305,
-      "data": [
-        {
-          "exp": 8000,
-          "hp": 60,
-          "level": 20,
-          "moves": [
-            [
-              "GUST",
-              34,
-            ],
-            [
-              "SAND_ATTACK",
-              63,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
-            ],
-          ],
-          "statExp": [
-            0,
-            0,
-            0,
-            0,
-            0,
-          ],
-          "stats": [
-            46,
-            26,
-            24,
-            30,
-            22,
-          ],
-        },
-      ],
-      "name": "mirror",
     },
     {
       "at": 337,
@@ -3024,20 +2861,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -3048,10 +2873,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -3229,20 +3054,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -3253,10 +3066,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -3396,20 +3209,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -3420,10 +3221,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -3572,6 +3373,62 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "at": 361,
       "data": null,
       "name": "sprites",
+    },
+    {
+      "at": 361,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "PAY_DAY",
+              34,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TELEPORT",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 383,
@@ -3806,20 +3663,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -3830,10 +3675,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -3843,20 +3688,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TELEPORT",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -3867,10 +3700,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -4286,20 +4119,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then run keeps the source
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -4310,10 +4131,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then run keeps the source
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -4449,20 +4270,8 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then run keeps the source
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "PAY_DAY",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -4473,10 +4282,10 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then run keeps the source
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -4890,20 +4699,8 @@ exports[`checkpoint-08b whole-battle ledgers > RIVAL1 loss in Oaks Lab scrolls t
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -4914,10 +4711,10 @@ exports[`checkpoint-08b whole-battle ledgers > RIVAL1 loss in Oaks Lab scrolls t
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -5071,20 +4868,8 @@ exports[`checkpoint-08b whole-battle ledgers > RIVAL1 loss in Oaks Lab scrolls t
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -5095,10 +4880,10 @@ exports[`checkpoint-08b whole-battle ledgers > RIVAL1 loss in Oaks Lab scrolls t
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -5487,20 +5272,8 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -5511,10 +5284,10 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -5655,20 +5428,8 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -5679,10 +5440,10 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -5773,20 +5534,8 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -5797,10 +5546,10 @@ exports[`checkpoint-08b whole-battle ledgers > a real win resets every seeded en
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -6311,20 +6060,8 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -6335,10 +6072,10 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -6479,20 +6216,8 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -6503,10 +6228,10 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -6610,20 +6335,8 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -6634,10 +6347,10 @@ exports[`checkpoint-08b whole-battle ledgers > end-text flag is consumed even fo
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -7203,20 +6916,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -7227,10 +6928,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -7371,20 +7072,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -7395,10 +7084,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -7430,20 +7119,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -7454,10 +7131,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first Explode double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -8177,20 +7854,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -8201,10 +7866,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -8382,20 +8047,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -8406,10 +8059,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -8478,20 +8131,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -8502,10 +8143,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -8638,6 +8279,62 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "at": 228,
       "data": null,
       "name": "save1",
+    },
+    {
+      "at": 228,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "EXPLOSION",
+              34,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 250,
@@ -9028,20 +8725,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -9052,10 +8737,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -9065,20 +8750,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -9089,10 +8762,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -9196,20 +8869,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -9220,10 +8881,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -9233,20 +8894,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -9257,10 +8906,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
             35,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -9852,20 +9501,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -9876,10 +9513,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -10057,20 +9694,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -10081,10 +9706,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -10153,20 +9778,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -10177,10 +9790,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -10300,20 +9913,8 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -10324,33 +9925,21 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
         {
           "exp": 8200,
-          "hp": 46,
+          "hp": 60,
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "EXPLOSION",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -10361,10 +9950,10 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first wild double faint wit
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -10860,20 +10449,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -10884,10 +10461,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            1,
             22,
           ],
         },
@@ -11078,20 +10655,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11102,10 +10667,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            1,
             22,
           ],
         },
@@ -11308,6 +10873,62 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "at": 240,
       "data": null,
       "name": "save1",
+    },
+    {
+      "at": 240,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            1,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            50,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 262,
@@ -11614,20 +11235,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11638,10 +11247,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            1,
             22,
           ],
         },
@@ -11651,20 +11260,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11675,10 +11272,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -11702,20 +11299,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11726,10 +11311,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            1,
             22,
           ],
         },
@@ -11739,20 +11324,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11763,10 +11336,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -11849,20 +11422,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11873,10 +11434,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            1,
             22,
           ],
         },
@@ -11886,20 +11447,8 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -11910,10 +11459,10 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -12957,24 +12506,12 @@ exports[`checkpoint-08b whole-battle ledgers > level then RUN keeps result2 and 
       "data": [
         {
           "exp": 8199,
-          "hp": 46,
-          "level": 20,
+          "hp": 60,
+          "level": 19,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -12985,10 +12522,10 @@ exports[`checkpoint-08b whole-battle ledgers > level then RUN keeps result2 and 
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -13020,6 +12557,37 @@ exports[`checkpoint-08b whole-battle ledgers > level then RUN keeps result2 and 
       "at": 54,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
+    },
+    {
+      "at": 54,
+      "data": [
+        {
+          "exp": 8199,
+          "hp": 46,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            10,
+            20,
+            30,
+            40,
+            50,
+          ],
+          "stats": [
+            46,
+            26,
+            24,
+            30,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 57,
@@ -15213,20 +14781,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -15237,10 +14793,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -15418,20 +14974,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -15442,10 +14986,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -15532,20 +15076,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -15556,10 +15088,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -15708,6 +15240,62 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "at": 315,
       "data": null,
       "name": "sprites",
+    },
+    {
+      "at": 315,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "TAKE_DOWN",
+              34,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 337,
@@ -15961,20 +15549,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -15985,10 +15561,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -15998,20 +15574,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16022,10 +15586,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16244,20 +15808,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16268,10 +15820,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16281,20 +15833,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               33,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16305,10 +15845,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16527,20 +16067,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16551,10 +16079,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16564,20 +16092,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               32,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16588,10 +16104,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16682,20 +16198,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TAKE_DOWN",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16706,10 +16210,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -16719,20 +16223,8 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               32,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -16743,10 +16235,10 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -17630,20 +17122,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -17654,10 +17134,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -17808,20 +17288,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -17832,10 +17300,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -17922,20 +17390,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -17946,10 +17402,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18098,6 +17554,62 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "at": 299,
       "data": null,
       "name": "sprites",
+    },
+    {
+      "at": 299,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "SUBSTITUTE",
+              34,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 321,
@@ -18351,20 +17863,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18375,10 +17875,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18388,20 +17888,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18412,10 +17900,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18634,20 +18122,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18658,10 +18134,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18671,20 +18147,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               33,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18695,10 +18159,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18917,20 +18381,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18941,10 +18393,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -18954,20 +18406,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               32,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -18978,10 +18418,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19200,20 +18640,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19224,10 +18652,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19237,20 +18665,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               31,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19261,10 +18677,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19483,20 +18899,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19507,10 +18911,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19520,20 +18924,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               30,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19544,10 +18936,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19638,20 +19030,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "SUBSTITUTE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19662,10 +19042,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -19675,20 +19055,8 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               30,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -19699,10 +19067,10 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -20126,20 +19494,8 @@ exports[`checkpoint-08b whole-battle ledgers > ordinary blackout follows an actu
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -20150,10 +19506,10 @@ exports[`checkpoint-08b whole-battle ledgers > ordinary blackout follows an actu
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -20307,20 +19663,8 @@ exports[`checkpoint-08b whole-battle ledgers > ordinary blackout follows an actu
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -20331,10 +19675,10 @@ exports[`checkpoint-08b whole-battle ledgers > ordinary blackout follows an actu
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -20810,20 +20154,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -20834,10 +20166,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21028,20 +20360,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21052,10 +20372,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21204,6 +20524,62 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "at": 211,
       "data": null,
       "name": "sprites",
+    },
+    {
+      "at": 211,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            50,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            50,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 233,
@@ -21510,20 +20886,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21534,10 +20898,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21547,20 +20911,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21571,10 +20923,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21598,20 +20950,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21622,10 +20962,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21635,20 +20975,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21659,10 +20987,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21745,20 +21073,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21769,10 +21085,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -21782,20 +21098,8 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -21806,10 +21110,10 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -22150,20 +21454,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first Explode double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -22174,10 +21466,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first Explode double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -22339,20 +21631,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first Explode double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -22363,10 +21643,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first Explode double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -23090,20 +22370,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -23114,10 +22382,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -23316,20 +22584,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -23340,10 +22596,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -23509,6 +22765,62 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "at": 272,
       "data": null,
       "name": "save1",
+    },
+    {
+      "at": 272,
+      "data": [
+        {
+          "exp": 8000,
+          "hp": 0,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            50,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            50,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 294,
@@ -23899,20 +23211,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -23923,10 +23223,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -23936,20 +23236,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -23960,10 +23248,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -24067,20 +23355,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -24091,10 +23367,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -24104,20 +23380,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -24128,10 +23392,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
             35,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -24676,20 +23940,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -24700,10 +23952,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -24902,20 +24154,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -24926,10 +24166,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -25082,20 +24322,8 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -25106,33 +24334,21 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
         {
           "exp": 8200,
-          "hp": 46,
+          "hp": 1,
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -25143,10 +24359,10 @@ exports[`checkpoint-08b whole-battle ledgers > player-first wild double faint wi
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -25780,20 +24996,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -25804,10 +25008,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -25948,20 +25152,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -25972,10 +25164,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -26079,20 +25271,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -26103,10 +25283,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer end text keeps the source
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -26971,20 +26151,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -26995,10 +26163,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -27176,20 +26344,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -27200,10 +26356,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -27344,20 +26500,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -27368,10 +26512,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -27537,6 +26681,62 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "at": 423,
       "data": null,
       "name": "sprites",
+    },
+    {
+      "at": 423,
+      "data": [
+        {
+          "exp": 8300,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              34,
+            ],
+          ],
+          "statExp": [
+            10,
+            20,
+            30,
+            40,
+            50,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+        {
+          "exp": 8000,
+          "hp": 60,
+          "level": 20,
+          "moves": [
+            [
+              "TACKLE",
+              35,
+            ],
+          ],
+          "statExp": [
+            0,
+            0,
+            0,
+            0,
+            0,
+          ],
+          "stats": [
+            60,
+            26,
+            24,
+            150,
+            22,
+          ],
+        },
+      ],
+      "name": "mirror",
     },
     {
       "at": 445,
@@ -27722,86 +26922,6 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 710,
-      "data": [
-        {
-          "exp": 8300,
-          "hp": 60,
-          "level": 20,
-          "moves": [
-            [
-              "GUST",
-              34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
-            ],
-          ],
-          "statExp": [
-            10,
-            20,
-            30,
-            40,
-            50,
-          ],
-          "stats": [
-            46,
-            26,
-            24,
-            30,
-            22,
-          ],
-        },
-        {
-          "exp": 8000,
-          "hp": 60,
-          "level": 20,
-          "moves": [
-            [
-              "GUST",
-              35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
-            ],
-          ],
-          "statExp": [
-            0,
-            0,
-            0,
-            0,
-            0,
-          ],
-          "stats": [
-            46,
-            26,
-            24,
-            30,
-            22,
-          ],
-        },
-      ],
-      "name": "mirror",
-    },
-    {
       "at": 713,
       "data": [
         "",
@@ -27930,20 +27050,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -27954,10 +27062,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -27967,20 +27075,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -27991,10 +27087,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -28098,20 +27194,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -28122,10 +27206,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -28135,20 +27219,8 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -28159,10 +27231,10 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
             35,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -28568,20 +27640,8 @@ exports[`checkpoint-08b whole-battle ledgers > unsupported link end branch rejec
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -28592,10 +27652,10 @@ exports[`checkpoint-08b whole-battle ledgers > unsupported link end branch rejec
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -28844,20 +27904,8 @@ exports[`checkpoint-08b whole-battle ledgers > unsupported link faint branch rej
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -28868,10 +27916,10 @@ exports[`checkpoint-08b whole-battle ledgers > unsupported link faint branch rej
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            50,
             22,
           ],
         },
@@ -29187,20 +28235,8 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -29211,10 +28247,10 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -29355,20 +28391,8 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -29379,10 +28403,10 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -29473,20 +28497,8 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -29497,10 +28509,10 @@ exports[`checkpoint-08b whole-battle ledgers > wild win executes a damaging turn
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -29845,20 +28857,8 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               35,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -29869,10 +28869,10 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -30013,20 +29013,8 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -30037,10 +29025,10 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
             0,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },
@@ -30131,20 +29119,8 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
           "level": 20,
           "moves": [
             [
-              "GUST",
+              "TACKLE",
               34,
-            ],
-            [
-              "SAND_ATTACK",
-              15,
-            ],
-            [
-              "QUICK_ATTACK",
-              30,
-            ],
-            [
-              "WHIRLWIND",
-              20,
             ],
           ],
           "statExp": [
@@ -30155,10 +29131,10 @@ exports[`checkpoint-08b whole-battle ledgers > zero EXP still adds stat experien
             50,
           ],
           "stats": [
-            46,
+            60,
             26,
             24,
-            30,
+            150,
             22,
           ],
         },

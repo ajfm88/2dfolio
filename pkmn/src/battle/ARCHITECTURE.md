@@ -1,10 +1,76 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-08b: core fixes, awaiting Claude's check
+
+`battle_session.ts` remains unused: cached startup assets, session-owned bank08 text IDs,
+counted DIV/retained HRAM, byte-first setup and party refresh, one-step tick, absolute outcomes
+and audio-hook disposal. Its private BattleMenuScreen supplies TextBox's optional sound owner;
+shared TextBox defaults retain facade behavior. Wild win/blackout/RUN and level-up text pass
+through real input/engines. The actual checked TrainerAI owns the wild/link return; every member
+of its environment throws08b. Session traces pin one zero-frame/carryfalse call per enemy turn
+with no environment access. The faint loop encodes blackout carry in its exit, decoded by finish.
+The loader pins44 once-only fetches with main ready (47 cold) and358 once-only decodes. Raw trainer
+tables preload through fetch/the main data cache in battle_trainer_data, without state/address-map
+imports; the synchronous species provider builds identical headers from those tables. The shared
+preload also prepares unchanged legacy move-table callers, without racing main's table loads.
+Map tilesets are fetched from the committed map inventory and resolved through all25 header rows;
+unknown map/tileset names throw. The approved live bundle remains unchanged. Main wiring waits until09.
+
+RNG timing: F comes from the page's frame counter; t counts the actual random paths, resets when
+F changes, and readDIV samples floor((70224*F+t)/256)&255 before adding its own12 T-cycles. The
+single cited battle_random_cycles table gives direct Random408 cycles and non-link BattleRandom448,
+whose samples occur at220/264. Caller instructions between draws and other frame work are the
+one ruled approximation. Optional cycle hooks preserve existing fixture DIV behavior and detach
+with the random owner. No wall-clock RNG or saved HRAM.09 supplies frames() and resolves one global
+text-speed owner. Note72 §10.13 holds12/12 plain mutation proofs, the bounded old-clock battle
+control and the permitted roll-only ledger audit;08a's18 proofs remain in §10.12.08c owns trainers,
+the item registry/abort, end text, shared menus and PartyMenu's optional text host (§11.28.4).
+
+## A5c3f checkpoint-07c: unused party refresh (awaiting Claude)
+
+Party bytes are authoritative; `state.partyMons` is only the shared menus' presentation cache.
+`battle_party_codec.ts` holds the low-level codec and in-place `refreshPartyMon` / `refreshPartyMirror`:
+only changed fields are assigned (species by identity, aggregates structurally), without byte writes,
+RNG or frames. The bridge re-exports the codec and keeps world/box handling; the codec never imports
+its high-level consumers or D/I address tables. Existing byte-first writers refresh occupied slots;
+the catch creates its slot. Send-out/use-item openings and `bindStateBattlePartyMenu` refresh the cache
+before menu consumption, covering defrost and flute writes too. Party selection reads the internal
+`partySpeciesList` binding, so STATS/refusal and SWITCH all keep raw species bytes. Fixture writers
+remain until11;08 owns the initial refresh and the new binder, with no post-EndOfBattle refresh.
+
+## A5c3f checkpoint-07b: unused world inputs and outcomes (awaiting Claude)
+
+`BattleWorld` snapshots owner values; `writeBattleInputs` writes only battle WRAM. Load the committed
+map-id table with `loadBattleBridgeData` before entry. Options pack the exact text/style/animation bits;
+money uses the shared three-byte BCD codec. Bag order and quantities survive, with a hard20-entry limit.
+Only the selected PC box is encoded; the shared mon prefix gives lossless33-byte box records and raw names.
+The party codec still owns the44-byte party records. No party mirror refresh is installed here.
+
+Only INITIAL_CATCH_TRAINING and MET_BILL become event bits. No event flags are returned:08 leaves the
+live string Set untouched. `readBattleOutputs` must run after EndOfBattle and returns absolute values,
+including prize/Pay Day, happiness/mood and the raw emotion modifier.08 must not re-apply happiness;
+it retains the modifier across battles.10 owns its save, boxed metadata losses and complete flag mapping.
+The module stays outside the live import graph; all old tests and snapshots are unchanged.
+
+## A5c3f checkpoint-07a: unused party codec (checked)
+
+`battle_bridge.ts` owns the lossless 44-byte party record plus raw 11-byte OT/nickname buffers,
+and the explicitly lossy live-object adapters. Record encoding does not interpret names or species.
+The shared `POKEDEX_ORDER` maps all190 internal indices; raw records preserve MissingNo gaps and
+the live adapter refuses them. PP maxima follow DIV5, bonus cap7 and final AND3F; deriving Ups refuses
+ambiguous/impossible maxima. The old adapters remain in place for checkpoint07c, then retire in11.
+
+`battle_text_codec.ts` is the strict charmap boundary, split out to avoid a bridge/state cycle.
+All production decodeNick callers use it; the old export remains for old tests until11. NULL throws
+the ruled unsupported-state error. HUD nickname getters defer reads until placement; the real04
+palette path is covered by a fresh failing-first regression. Names now retain lowercase and gender
+glyphs; 24 audited old snapshots changed only names/cells/downstream hashes. Neither new module
+is reachable from the running game. Object losses and all13 mutation results are in note72 §10.9.12 onward.
+
 ## A5c3f checkpoint-06: unused picture pixels (awaiting Claude)
 
 Checkpoint-07a item0 puts the canonical `W_SPRITE_FLIPPED` in `battle_state.ts`; `INIT.wSpriteFlipped` is only an
-old-test compatibility alias, carried to11. The party codec remains pending the NULL/name-boundary ruling in
-note72 §10.9; no provisional decoder migration is retained.
+old-test compatibility alias, carried to11. The unused party codec and strict decoder are described above.
 
 `battle_pictures.ts` builds front7×7 boxes and scaled backs from decoded committed PNGs. Fronts use the dimension
 byte's floor-centered columns and bottom-aligned rows; ghost forces66, trainers77. Backs keep source0..27 on both

@@ -1,5 +1,6 @@
+import { decodeBattleText } from './battle_text_codec';
 // Unused A5c3e throw. pret e89ead15 engine/items/item_effects.asm:104-654,2566-2588.
-import { battleContext, decodeNick, isGhostBattle, indexToPokedex, NAME_LENGTH, RESTLESS_SOUL, type BattleState } from './battle_state';
+import { battleContext, isGhostBattle, indexToPokedex, NAME_LENGTH, RESTLESS_SOUL, type BattleState } from './battle_state';
 import { I } from './battle_item_state';
 import { random } from './battle_random';
 import { multiply, divide } from './battle_arithmetic';
@@ -129,7 +130,7 @@ export function* itemUseBall(state: BattleState, host: BattleItemHost, env: Ball
     loadEnemyMonData(state); state.wCurPartySpecies = species;
     state.wEnemyMonHP = hp; state.wEnemyMonStatus = status;
     state.wCapturedMonSpecies = state.wCurPartySpecies = state.wPokedexNum = state.wEnemyMonSpecies;
-    yield* host.printText('ItemUseBallText05', { enemyMonNick: decodeNick(state.mem, I.wEnemyMonNick) });
+    yield* host.printText('ItemUseBallText05', { enemyMonNick: decodeBattleText(state.mem, I.wEnemyMonNick) });
     if (demo) clearSprites();
     else {
       indexToPokedex(state);
@@ -137,7 +138,7 @@ export function* itemUseBall(state: BattleState, host: BattleItemHost, env: Ball
       const owned = flagAction(state, I.wPokedexOwned, 2, bit);
       flagAction(state, I.wPokedexOwned, 1, bit);
       if (!owned) {
-        yield* host.printText('ItemUseBallText06', { enemyMonNick: decodeNick(state.mem, I.wEnemyMonNick) }); clearSprites();
+        yield* host.printText('ItemUseBallText06', { enemyMonNick: decodeBattleText(state.mem, I.wEnemyMonNick) }); clearSprites();
         state.wPokedexNum = state.wEnemyMonSpecies; yield* env.showPokedexData();
       }
       state.mem[I.wPikachuEmotionModifier] = 1; state.mem[I.wPikachuMood] = 0x85;
@@ -147,7 +148,7 @@ export function* itemUseBall(state: BattleState, host: BattleItemHost, env: Ball
       } else {
         clearSprites(); yield* env.sendNewMonToBox();
         yield* host.printText(event(BALL.metBill) ? 'ItemUseBallText07' : 'ItemUseBallText08',
-          { caughtMonNick: decodeNick(state.mem, I.wBoxMonNicks) });
+          { caughtMonNick: decodeBattleText(state.mem, I.wBoxMonNicks) });
       }
     }
   }
