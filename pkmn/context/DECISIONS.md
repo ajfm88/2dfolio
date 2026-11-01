@@ -1069,6 +1069,17 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
     - This amends #83's "Grok implements" for checkpoint-04. The brief (note 72 §11.6) stands as written. Claude
       checks it, as before. The user names the implementer for later checkpoints.
 
+85. **The new battle engine's species names come from the cartridge's `MonsterNames`, in A5c3f checkpoint-08g, before 09**
+    (2026-10-30, O-47). *The user: "yes, we should fix it in that 08g checkpoint (not now, tomorrow)", adding that the
+    `Nidoran-F` spelling had thrown them off.*
+
+    - Today's `pokemon.json` names are upstream's title case (`Rattata`, `Nidoran-F`): `rom/extractors/pokemon.ts` reads
+      `MonsterNames` and then applies `titleCaseName`. The cartridge's names are all caps (`RATTATA`, `NIDORAN♀`).
+    - 08g gives the battle the cartridge's bytes, as an additive extracted table, so the play-test and the first saves
+      print and store what the cartridge does. Note 72 §11.39.2 finding 6.
+    - This amends PLAN.md's "species display names move to V5" for the battle engine only. The overworld menus'
+      display names stay V5's.
+
 ## Open — not decided, needs the user
 
 

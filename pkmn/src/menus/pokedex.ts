@@ -87,7 +87,11 @@ export class PokedexMenu {
   // Blink timer for area screen nest icons
   private blinkTimer = 0;
 
+  // ShowPokedexData's stand-in: one species, opened from outside the Pokédex
+  private single: { owned: boolean; pressSound?: () => void } | null = null;
+
   async show(currentMapName?: string): Promise<void> {
+    this.single = null;
     this.state = 'list';
     this.cursor = 0;
     this.scrollOffset = 0;
@@ -96,6 +100,12 @@ export class PokedexMenu {
     this.frontSprite = null;
     this.spriteLoadingFor = '';
 
+    await this.load();
+    this.resolveLocation(currentMapName);
+  }
+
+  /** The tables and tiles. A battle loads them before a catch can reach showData. */
+  async load(): Promise<void> {
     if (!this.dataLoaded) {
       const [pokedexData, pokemonData, townMapData, tileset, nestIcon, playerSpr, pokedexTileset, pokeballTiles, pokedexTilesetBrown, battleExtraTiles] = await Promise.all([
         fetch('pokedex.json').then(r => r.json()) as Promise<(PokedexEntry | null)[]>,
@@ -127,12 +137,27 @@ export class PokedexMenu {
 
       this.dataLoaded = true;
     }
+  }
 
+  private resolveLocation(currentMapName?: string): void {
     // Resolve player's map location (indoor maps → parent town)
     if (currentMapName && this.townMapData) {
       const parent = this.townMapData.indoorMapParent[currentMapName];
       this.playerLocationKey = parent ?? currentMapName;
     }
+  }
+
+  /** ShowPokedexData's stand-in (O-45.2): the data page for one species, closing back to the caller.
+   * The caller supplies owned: a battle's dex flags reach pokedex_state only after it ends. */
+  showData(dexNum: number, options: { owned: boolean; pressSound?: () => void }): void {
+    if (!this.dataLoaded) throw new Error('Pokédex data not loaded');
+    this.single = { ...options };
+    this.state = 'data';
+    this.selectedDex = dexNum;
+    this.blinkTimer = 0;
+    this.frontSprite = null;
+    this.spriteLoadingFor = '';
+    this.loadFrontSprite();
   }
 
   update(): PokedexResult {
@@ -368,24 +393,38 @@ export class PokedexMenu {
 
   private updateData(): PokedexResult {
     if (isPressed('a') || isPressed('b')) {
-      playSFX('press_ab');
-      if (isPressed('a') && isOwned(this.selectedDex)) {
+      this.dataPressSound();
+      if (isPressed('a') && this.ownedSelected()) {
         const entry = this.pokedexData[this.selectedDex];
         if (entry && entry.description.length > 1) {
           this.state = 'data_page2';
           return 'open';
         }
       }
-      this.state = 'side_menu';
+      return this.leaveData();
     }
     return 'open';
   }
 
   private updateDataPage2(): PokedexResult {
     if (isPressed('a') || isPressed('b')) {
-      playSFX('press_ab');
-      this.state = 'side_menu';
+      this.dataPressSound();
+      return this.leaveData();
     }
+    return 'open';
+  }
+
+  private ownedSelected(): boolean {
+    return this.single ? this.single.owned : isOwned(this.selectedDex);
+  }
+
+  private dataPressSound(): void {
+    if (this.single?.pressSound) this.single.pressSound(); else playSFX('press_ab');
+  }
+
+  private leaveData(): PokedexResult {
+    if (this.single) { this.single = null; return 'closed'; }
+    this.state = 'side_menu';
     return 'open';
   }
 
@@ -393,7 +432,7 @@ export class PokedexMenu {
     const entry = this.pokedexData[this.selectedDex];
     if (!entry) return;
 
-    const owned = isOwned(this.selectedDex);
+    const owned = this.ownedSelected();
 
     fillRect(0, 0, GB_WIDTH, GB_HEIGHT, 0); // white background
 

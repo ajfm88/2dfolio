@@ -4,7 +4,7 @@
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { fillRect, drawFadeOverlay } from '../renderer';
 import { isPressed, isPassPressed, readJoypad } from '../input';
-import { TextBox } from '../text/textbox';
+import { TextBox, type TextDisplayHost } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
 import { PartyMenuOpening } from './party_menu_opening';
 import { drawText, drawBox, drawScreenTile } from './menu_render';
@@ -79,7 +79,8 @@ export class PartyMenu {
   private frameCounter = 0;
   private stats: StatusScreenSession | null = null;
   private opening: PartyMenuOpening | null = null;
-  private readonly openingTextBox = new TextBox();
+  private readonly openingTextBox: TextBox;
+  constructor(textHost?: TextDisplayHost) { this.openingTextBox = new TextBox(textHost); }
   private sleepingText: TextBox | null = null;
   private itemTextBox: TextBox | null = null;
   /** The stats session owns actual reads and its one BG-transfer tick. */

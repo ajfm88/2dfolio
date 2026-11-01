@@ -22,7 +22,7 @@ beforeAll(async()=>{
 });
 
 it('cold session startup fetches main and session tables once even without main preloading them',()=>{
- expect(coldFetches.size).toBe(47);
+ expect(coldFetches.size).toBe(48);
  for(const [name,count] of coldFetches)expect(count,name).toBe(1);
 });
 

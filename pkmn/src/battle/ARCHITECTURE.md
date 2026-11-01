@@ -1,13 +1,70 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-08f: catch homes, awaiting Claude's check
+
+The unused session has a separate once-only loadBattleStandInData beside loadBattleSessionData.
+It shares one PokedexMenu and preloads that page, ED and party icons. Both stand-in homes
+throw BattleUnsupportedState('stand-in screens not loaded') until ready;09 awaits both loaders.
+The ball uses the existing addPartyMon/sendNewMonToBox ports, with AskName's actual YES/NO.
+The naming adapter handles the ASM white/clear entry and exit, byte writes, HUD reload and
+bit6; its non-null keyboard cells overlay wStringBuffer before the full11-byte copy.
+The dex adapter converts the internal species to dex, reads battle-owned bytes and preserves
+the name/header side effects. It owns the animation save/zero/restore, bit1, facade fade flag
+and NR50 $33/$77 around the page. abort during dex or STATS clears the flag and restores $77.
+Foreground gains naming/pokedex only during their loops; outer frames remain battle. The
+session exposes both screen objects for09. No live caller or bundle change. Note72 §10.17.
+
+Checkpoint-08e extracts the unchanged bag Proxy into exported bagBackedContext(context,state).
+Its direct pin covers fresh byte reads, write rejection and passthrough keys. A new real-input
+abort-mid-item case probes random.attach(new BattleState()) after abort, proving detach.
+Both §11.36 escape mutations now fail plain assertions. No other session change; note72 §10.16.
+
+## A5c3f checkpoint-08d: menus, checked in §11.36
+
+The unused session has one PartyMenu whose optional text host is the same object used by
+BattleMenuScreen. The default field callers retain their behavior. A session-only subclass
+observes show/showForItem for the foreground: party/partyItem on opening, battle on either
+host buffer reload, status while the default statusView is set. Main presents this in09;
+no renderer code or additional foreground exists. loadEnemyPicVariant is an A5e cue.
+
+The battle context Proxy decodes bag count/pair bytes freshly through readBagEntries; writes
+to its bag property throw. The same decoder supplies the absolute outcome. Each useItem
+registers the short/flute/medicine/PP/ball bodies inside try/finally and disposes in reverse
+order, including after partial registration failure. No bodies are held between uses. The
+medicine environment is built once per session; the flute stream is fetched once. Ball homes
+still throw08f. abort releases an interrupted registration, random and audio hooks, then
+rejects all further operations. Finish also releases registrations.
+
+Item0 pins the20-byte end-name binding helper and the exact Misty environment count2. The
+new16-case suite uses real two-frame input with rendering output mocks. All10 menu mutations
+and both item0 mutations fail plain assertions. Typecheck/build and ROM6137/6137 pass;
+no-ROM5886/250 skip plus the known Pewter timeout, passing1/1 alone under §11.16. Bundle
+index-CTDQDkp0.js changes only through PartyMenu's constructor seam. Note72 §10.15.
+
+## A5c3f checkpoint-08c: trainers (checked)
+
+The unused session now supplies a world-keyed, byte-reading `TrainerMoveSelection` and the real
+TrainerAI environment (screen, item/text/send-out owners and existing A5e presentation cues).
+`handoffs.trainerEnvironment` counts reads of items/text/sendOut; wild calls still read none.
+`BattleWorld.endBattleText` carries committed win/lose labels and writes bit7 of `$D72C`.
+PrintEndBattleText tests/clears that bit, runs SaveTrainerName, prints TrainerEndBattleText through
+its same-screen ASM continuation, and waits on the session's own audio. The saved-label selector
+retains both result branches; the lose branch is unreachable through TrainerBattleVictory.
+SaveTrainerName uses the 47-row name-pointer table and copies through @ without clearing its tail;
+the nameBuffer binding decodes up to20 bytes with the full charmap. Menus still throw08d.
+Main's end-label sources and SetEnemyTrainerToStayAndFaceAnyDirection remain checkpoint-09 carries;
+the adapter retires in11. No live wiring or snapshot changes. The retirement importer manifest
+now includes the session under §11.33's one-row exception. Typecheck/build and both full suites
+pass;08c was checked under §11.34. Note72 §10.14.5–9.
+
 ## A5c3f checkpoint-08b: core fixes, awaiting Claude's check
 
 `battle_session.ts` remains unused: cached startup assets, session-owned bank08 text IDs,
 counted DIV/retained HRAM, byte-first setup and party refresh, one-step tick, absolute outcomes
 and audio-hook disposal. Its private BattleMenuScreen supplies TextBox's optional sound owner;
 shared TextBox defaults retain facade behavior. Wild win/blackout/RUN and level-up text pass
-through real input/engines. The actual checked TrainerAI owns the wild/link return; every member
-of its environment throws08b. Session traces pin one zero-frame/carryfalse call per enemy turn
+through real input/engines. The actual checked TrainerAI owns the wild/link return (08c now provides
+the live trainer environment). Session traces pin one zero-frame/carryfalse call per wild enemy turn
 with no environment access. The faint loop encodes blackout carry in its exit, decoded by finish.
 The loader pins44 once-only fetches with main ready (47 cold) and358 once-only decodes. Raw trainer
 tables preload through fetch/the main data cache in battle_trainer_data, without state/address-map
@@ -23,8 +80,8 @@ whose samples occur at220/264. Caller instructions between draws and other frame
 one ruled approximation. Optional cycle hooks preserve existing fixture DIV behavior and detach
 with the random owner. No wall-clock RNG or saved HRAM.09 supplies frames() and resolves one global
 text-speed owner. Note72 §10.13 holds12/12 plain mutation proofs, the bounded old-clock battle
-control and the permitted roll-only ledger audit;08a's18 proofs remain in §10.12.08c owns trainers,
-the item registry/abort, end text, shared menus and PartyMenu's optional text host (§11.28.4).
+control and the permitted roll-only ledger audit;08a's18 proofs remain in §10.12.08c owns trainers
+and end text;08d owns the item registry/abort, shared menus and PartyMenu's optional text host (§11.32).
 
 ## A5c3f checkpoint-07c: unused party refresh (awaiting Claude)
 

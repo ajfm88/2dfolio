@@ -53,6 +53,7 @@ export function unpackOptions(byte: number): GameOptions {
 }
 /** Snapshot only: no reference to a live owner is retained or changed by the encoder. */
 export interface BattleWorld {
+  readonly endBattleText?: { readonly win: string; readonly lose: string };
   readonly options: Readonly<GameOptions>;
   readonly badges: readonly string[];
   readonly mapName: string;
@@ -90,6 +91,7 @@ export interface BattleOutcome {
 // event_constants.asm:33 ($2F),519 ($550); live spellings: viridian_city.ts and menus/pc.ts.
 const INPUT_EVENTS = [['INITIAL_CATCH_TRAINING', 0x2f], ['MET_BILL', 0x550]] as const;
 const EVENT_BASE = 0xd746;
+export const W_STATUS_FLAGS3 = 0xd72c;
 function itemNumber(name: string): number {
   const key = name === 'PARALYZE_HEAL' ? 'PARLYZ_HEAL' : name;
   const row = BATTLE_ITEM_POINTERS.find(r => r.item === key);
@@ -133,6 +135,8 @@ export function boxedPokemonToRecord(boxed: BoxedPokemon): BoxMonRecord {
 }
 /** Before setupBattleBeforeTransition. Only these two event bits are battle inputs;08 leaves the live Set alone. */
 export function writeBattleInputs(state: BattleState, world: BattleWorld): void {
+  // ram/wram.asm wStatusFlags3 ($D72C); ram_constants.asm BIT_PRINT_END_BATTLE_TEXT=7.
+  state.mem[W_STATUS_FLAGS3] = (state.mem[W_STATUS_FLAGS3] & ~0x80) | (world.endBattleText ? 0x80 : 0);
   // menu_constants.asm:1 BAG_ITEM_CAPACITY=20; wram.asm reserves count +20 pairs +FF.
   if (world.bag.length > 20) throw new BattleUnsupportedState('bag exceeds cartridge capacity20');
   const box = world.pcBoxes[world.currentPcBox];
@@ -165,6 +169,12 @@ export function writeBattleInputs(state: BattleState, world: BattleWorld): void 
   box.forEach((mon, slot) => { const r = boxedPokemonToRecord(mon); encodeBoxMon(state, slot, r); state.mem[I.wBoxSpecies + slot] = r.species; });
   state.mem[I.wBoxSpecies + box.length] = 255;
 }
+/** DisplayListMenuID and the outcome share the same count/pair-byte decoder. */
+export function readBagEntries(state: BattleState): ItemStack[] {
+  const count = state.mem[A.wNumBagItems];
+  if (count > 20) throw new BattleUnsupportedState('output capacity');
+  return Array.from({ length: count }, (_, i) => ({ id: itemString(state.mem[A.wBagItems + i * 2]), count: state.mem[A.wBagItems + i * 2 + 1] }));
+}
 /** Call AFTER EndOfBattle: absolute final values, prize/Pay Day already included.08 must not re-apply happiness changes.
  * No event flags returned: the battle writes none;08 leaves every live string flag untouched. */
 export function readBattleOutputs(state: BattleState): BattleOutcome {
@@ -172,7 +182,7 @@ export function readBattleOutputs(state: BattleState): BattleOutcome {
   if (partyCount > 6 || boxCount > 20 || bagCount > 20) throw new BattleUnsupportedState('output capacity');
   return { party: Array.from({ length: partyCount }, (_, slot) => decodePartyMon(state, slot)),
     money: readBattleBcd(state, D.wPlayerMoney), seen: readDex(state, A.wPokedexSeen), owned: readDex(state, I.wPokedexOwned),
-    bag: Array.from({ length: bagCount }, (_, i) => ({ id: itemString(state.mem[A.wBagItems + i * 2]), count: state.mem[A.wBagItems + i * 2 + 1] })),
+    bag: readBagEntries(state),
     box: Array.from({ length: boxCount }, (_, slot) => decodeBoxMon(state, slot)),
     pikachuHappiness: state.mem[D.wPikachuHappiness], pikachuMood: state.mem[D.wPikachuMood],
     pikachuEmotionModifier: state.mem[D.wPikachuEmotionModifier], battleResult: state.wBattleResult,

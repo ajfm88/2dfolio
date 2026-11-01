@@ -244,18 +244,46 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
+`battle/battle_session_catch.test.ts`:12 no-ROM cases drive start/tick with two-frame presses
+and output mocks. They cover both not-loaded homes before the separate loader, its exact
+fetch/asset census and shared page, new/owned catches, exact11-byte typed/NO/empty names,
+both Bill transfer messages, audio/flags/palettes, and abort during naming/dex/STATS.
+An explicit nonzero animation seed at the battle menu makes the dex pop observable before
+EndOfBattle restores the map value. All14 catch mutations fail plain assertions; the one
+added naming-screen re-show case catches08e's counter-reset escape. Note72 §10.17.
+
+`menus/naming_screen.test.ts` and `menus/pokedex.test.ts`:21 no-ROM cases, authored on the
+pre-edit tree. Ten old-mode cases pin labels, caps, keys, sounds, list/side/data/area exits
+and three full-trace SHA256 values; eleven new-entry cases cover the nickname buffer/header,
+caller sound and single-species ownership/load/close/reset contracts. The complete files are
+unchanged after screen edits. PKMN_SCREEN_BASELINE=1 defers only new API cases for the recorded
+old-tree run; ordinary runs execute all21. `battle/battle_session_stand_ins.test.ts`:two cases
+close08d's abort-detach and bag-write gaps. All15 mutations fail plain assertions. Note72 §10.16.
+
 `battle/battle_session.test.ts`:18 no-ROM cases through the unused session API and real input,
 frame/HRAM and injected real audio engines. Win pins Tackle123/EXP8024 and the audited counted-DIV ledger;
 blackout, RUN, random retention, exact-owner teardown, engine-clock and108-frame animation controls,
 finish guard and session-level text sounds. Real TrainerAI returns zero-frame/carryfalse on every
-wild call; a forced trainer call reaches the throwing08b environment. First load with main ready
-pins44 fetches and358 image decodes, each once. B-only scroll confirmation, all three printer
+wild call; the permitted replacement trainer case runs Misty's X Defend in a real battle, pinning
+its counter decrement, DEFENSE stage, text and live environment. First load with main ready
+pins45 fetches (including08d's flute) and358 image decodes, each once. B-only scroll confirmation, all three printer
 speeds, host waits, victory stop order and exact restored map bytes close08a's check gaps.
 `battle/battle_session_core.test.ts`:eight no-ROM cases pin cycle-counted DIV, reset/replay,
 the bounded frozen-clock damage retry, node-import census, all24 committed maps and unknown
-tileset rejection, plus47 once-only fetches on cold startup. The session suite also bounds an
+tileset rejection, plus48 once-only fetches on cold startup. The session suite also bounds an
 actual old-clock battle in randomizeDamage and proves its counted-clock replacement finishes.
 08a's18 mutation proofs are in note72 §10.12;08b's12 plain proofs and snapshot audit are in §10.13.
+`battle/battle_session_trainers.test.ts`:10 no-ROM cases and one ROM case cover the world-keyed
+adapter, SET/SHIFT Forest wins, NO at the real switch prompt, rival loss/win, end-text bit and
+sound-wait ordering, the pure saved-label selector, SaveTrainerName's @-bounded copy and all47
+ROM name-pointer rows. The8 required08c mutations plus08a's carry-false-stub mutation fail plain
+assertions; evidence in note72 §10.14.5 onward. No snapshots changed.
+`battle/battle_session_menus.test.ts`:16 no-ROM cases use start/tick and two-frame key holds,
+with renderer/menu_render/party_icons output mocks. Item0 pins full-length end-name decoding
+and exact Misty handoffs. Cases cover Potion, fresh bag bytes/reopening, two uses and successive
+sessions, Ether, X ATTACK, flute, voluntary/forced switch, STATS, own-owner AlreadyOutText beep,
+abort lifecycle/cleanup and the08f ball stop. All10 menu mutations plus both item0 mutations
+fail plain assertions. Evidence and gate timing fallback: note72 §10.15.
 `text/textbox_sound_owner.test.ts`:two default-port compatibility cases pin
 facade sound/wait/beep behavior; existing text/menu/overworld suites remain unedited.
 

@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-10-28 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
+**Last updated:** 2026-10-30 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
 
 ---
 
@@ -42,8 +42,8 @@ co-author line. **Never push** — there is no remote and there must never be on
 Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISIONS #29, #35, #55). **Now: A5c–A5f** (note 65,
 #70): A5d ✅ user-verified, A5c1 ✅, A5c2 ✅, and **A5c3** (note 68, #75) runs as six sub-slices, built unused until A5c3f
 switches the game over. A5c3a ✅, A5c3b ✅ (2026-10-20), A5c3c ✅ (2026-10-22, note 69), **A5c3d ✅ (2026-10-24, note 70,
-thirteen checkpoints)**, A5c3e ✅ (2026-10-26, note 71). **Now: A5c3f, the switch-over (note 72): checkpoints 01–08b ✅;
-08c (trainers) in progress under the ruling §11.31; then 08d the menus, 08e the stand-in screens, 08f the catch, 09 the
+thirteen checkpoints)**, A5c3e ✅ (2026-10-26, note 71). **Now: A5c3f, the switch-over (note 72): checkpoints 01–08f ✅;
+next 08g the species names (#85), then 09, 09 the
 switch, 10 the save and your play-test.** The full history of this paragraph is in `HISTORY.md` →
 *Archived STATUS sections (moved 2026-10-24)*.
 
@@ -62,7 +62,7 @@ switch, 10 the save and your play-test.** The full history of this paragraph is 
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 195 JSON → `data/`; static 525 PNG + 3 tilemaps + 195 JSON mirror (A5c3f checkpoint-02, note 72 §10.2). A5c3e checkpoint-02: setup twice byte-identical across 909 files; three new SFX assets, old bogus flute music removed, four text keys added; all 901 other surviving files unchanged (note 71 §10.2.4) |
 | Typecheck | Clean |
-| Tests | ROM **6110/6110**; no-ROM **5861 pass /249 skip** (default workers; restored08b baseline after08c stop; note72 §10.14.3). Bundle **index-BcAMTGMe.js**,405392 bytes /125.02kB gzip |
+| Tests | 08f ✅ (re-run by Claude: ROM 6173/6173, no-ROM 5923/250, no timeouts). Codex's run: **6173 ROM /5923 no-ROM cases validated**,250 ROM-only skips. Full ROM6171 + Route1/Pewter timeouts →18/18 and1/1 alone; no-ROM5922 + Route1 timeout →18/18 alone (§11.16). Typecheck/build clean. **index-BAeUVEwA.js**,406730 bytes /125.47kB gzip, unchanged; no production-reachable changes. Note72 §10.17 |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -150,13 +150,15 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 
 ## In progress
 
+**2026-10-30 — checkpoint-08f ✅ checked (note 72 §11.40); checkpoint 08 (08a–08f) is complete. O-47 answered (DECISIONS #85). Next session: Claude spikes and briefs **08g, the cartridge's species names**; then 09 (the switch). 09's item 0 carries §11.40's joypad pin.**
+
 **A5c3f, the switch-over** (Claude's plan `notes/72-a5c3f-plan.md`; O-45 answered → DECISIONS #83: the BATTLE ANIMATION
 OFF move presentation, the catch's stand-in screens, the old engine retiring after the play-test; Grok ran 01–03;
-Codex ran 04, #84, and 04b–07c; 07c checked, §11.22. **08 split into 08a–08d (§11.23.2); 08a briefed in §11.23.3**).
+Codex ran 04, #84, and 04b onward. **08 split into 08a–08f (§11.35), all ✅**).
 Checkpoints: 01 ✅ (trace, §11.1) · 02 ✅ (data, §11.3) · 03 ✅ (the trainer's party, §11.5) · 04 ✅ (the battle's start
-up to StartBattle, §11.7) · 04b ✅ (StartBattle to EndOfBattle, §11.10) · 05 ✅ (the OFF move animation, §11.11) · 06 ✅ (the pictures, §11.12) · 07a ✅ (the party codec, §11.17) · 07b ✅ (inputs and outputs, §11.20) · 07c ✅ (the party refresh, §11.22) · 08a ✅ (the session's core, §11.27) · 08b ✅ (the core fixes, §11.29) · **08c in progress: the trainer-environment test ruled (§11.31); Codex resumes at §11.30.3 item 1** · 08d the menus · 08e the stand-in screens · 08f the catch ·
+up to StartBattle, §11.7) · 04b ✅ (StartBattle to EndOfBattle, §11.10) · 05 ✅ (the OFF move animation, §11.11) · 06 ✅ (the pictures, §11.12) · 07a ✅ (the party codec, §11.17) · 07b ✅ (inputs and outputs, §11.20) · 07c ✅ (the party refresh, §11.22) · 08a ✅ (the session's core, §11.27) · 08b ✅ (the core fixes, §11.29) · 08c ✅ (trainers, §11.34) · 08d ✅ (menus, §11.36) · 08e ✅ (the stand-in screens, §11.38) · 08f ✅ (the catch, §11.40) ·
 09 the switch · 10 the save, then the user's play-test · 10b+ fixes · 11 retirement.
-Baseline ROM 6110/6110, no-ROM 5861 /249 skip (default workers; restored08b, §10.14.3). Bundle `index-BcAMTGMe.js` unchanged.08c has no retained implementation: item2's live environment conflicts with the old test's required08b throw, and the Rules allow only message renames. Proof/proposed ruling: §10.14. Carry lists: note72 §7, §10.9.13 and §10.10.6.
+08f: all three catch homes, separate once-only stand-in loader, naming/dex adapters and abort audio restoration. ROM6173 /no-ROM5923 validated,250 skips, timing fallbacks recorded; bundle `index-BAeUVEwA.js` unchanged. All15 mutations fail plain assertions. Results/carries: note72 §10.17; stop for Claude's check.
 
 **A5c3e ✅ complete** (note 71 §11.38, 2026-10-26).
 
@@ -193,7 +195,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5c–A5f** | A | Note 65, #70. A5d ✅ → A5c1 ✅ → A5c2 ✅ → **A5c3** (note 68, #75): a ✅ · b ✅ · c ✅ · d ✅ · e ✅ · **f the switch-over (note 72, #83/#84; Grok 01–03, then Codex; 01–08b ✅, 08c awaiting old-test ruling) with your play-test** → A5e intros and animations → A5f the wild catch's animations, with the catch demo folded in |
+| 1 | **A5c–A5f** | A | Note 65, #70. A5d ✅ → A5c1 ✅ → A5c2 ✅ → **A5c3** (note 68, #75): a ✅ · b ✅ · c ✅ · d ✅ · e ✅ · **f the switch-over (note 72, #83/#84; Grok 01–03, then Codex; 01–08f ✅, 08g (#85) then 09) with your play-test** → A5e intros and animations → A5f the wild catch's animations, with the catch demo folded in |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
 | 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
@@ -241,6 +243,8 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
+- **O-47 ✅ answered 2026-10-30 → DECISIONS #85:** the battle's species names come from the cartridge's `MonsterNames`, in
+  checkpoint-08g before 09 (Claude briefs it next session).
 - **O-46 (open, 2026-10-28):** a small separate slice for the load-sensitive timing tests (`pewter_tripwire.test.ts` 5000 ms,
   `battle_screen_render.test.ts` 1 ms)? Meanwhile, note 72 §11.16's re-run-alone rule applies. Claude recommends yes, after A5c3f.
 - **O-45 ✅ answered 2026-10-26 → DECISIONS #83:** yes to note 72 §9's 1–3 (the OFF-path move presentation, the
@@ -264,6 +268,172 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 - Cable club receptionist (`ViridianPokecenter:4`): link features need a user decision; no slice is invented for it.
 
 ## Session log
+
+### 2026-10-30 (A5c3f 08f check; checkpoint 08 complete) — Claude
+
+Checked c195f22 against §11.39.3: pass (note 72 **§11.40**).
+- Gates re-run in order: typecheck clean; build `index-BAeUVEwA.js` unchanged; ROM 6173/6173; no-ROM 5923 / 250 skip; no timeouts.
+- Codex's Route 1 timeout is load: the case takes about 730 ms alone on both 08f's and 08e's session code.
+- Five mutations of Claude's own: three caught.
+  - **c6/c6b escaped:** the stand-in loops' per-frame joypad reads have no pin.
+  - That goes into 09's item 0.
+
+Docs only. The user then answered O-47: fix it in 08g (DECISIONS #85). **Next session: Claude spikes and briefs 08g.**
+
+### 2026-10-30 (A5c3f checkpoint-08f catch; ready for check) — Codex
+
+Item0 first: naming re-show counter pin. Composed all three catch homes and both stand-in
+adapters/loader in the unused session; exact11-byte overlay, flags, NR50 and abort cleanup.
+All15 mutations fail plain assertions. Gates: typecheck/build clean; ROM6171 + Route1/Pewter
+timeouts pass18/18 and1/1 alone; no-ROM5922 /250 skip + Route1 timeout passes18/18 alone
+(§11.16). Bundle `index-BAeUVEwA.js` unchanged; no live edits. Note72 §10.17. One local
+commit, never pushed. Stop for Claude's check; no09 work. O-47 remains open.
+
+### 2026-10-29 (A5c3f 08f spike; 08f briefed) — Claude
+
+Spiked the catch on e40d112 (reverted; diff in `notes/72-a5c3f-checkpoint-08f/claude-spike.diff`).
+- The ball's three homes run through A5c3e's ports, plus two adapters around 08e's stand-ins:
+  - a new species gets the dex page, then YES and a typed name, then the party;
+  - NO keeps the species name, and an owned species skips the page;
+  - a full party goes to the box.
+- The nickname's 11 bytes keep `wStringBuffer`'s leftover cells, as the cartridge does.
+- The bundle is unchanged.
+
+Findings (note 72 **§11.39.2**):
+- the stand-ins get their own once-only loader, so the session loader and five old test files stay untouched;
+- the dex's `owned` comes from the battle's bytes;
+- `abort()` must restore NR50 and the fade flag;
+- **O-47:** the species names are upstream's title case, not the cartridge's capitals.
+
+Brief **§11.39.3**. Docs only. **Next: Codex runs checkpoint-08f; the user answers O-47.**
+
+### 2026-10-29 (A5c3f 08e check) — Claude
+
+Checked cb76a0e against §11.37.3: pass (note 72 **§11.38**).
+- Gates re-run in order: typecheck clean; build `index-BAeUVEwA.js`; ROM 6160/6160; no-ROM 5910 / 250 skip. Neither §11.16 timing case occurred.
+- Six mutations of Claude's own: two caught, four escaped.
+  - Accepted: n2 (equivalent), n3 (cosmetic), n4 (not observable).
+  - **n1:** the icon's frame counter is not reset on a re-show. The ASM zeroes `wAnimCounter` on every open. This goes into 08f's item 0.
+
+Docs only. **Next: Claude spikes and briefs 08f (the catch).**
+
+### 2026-10-29 (A5c3f checkpoint-08e stand-in screens; ready for check) — Codex
+
+Closed item0 first; pinned player/rival/Pokédex on the old modules, then added nickname and
+single-species data entries. The complete new screen test files remain unchanged;23 new cases,
+all15 mutations caught plainly. Ordered gates: typecheck/build clean; ROM6159 + known Pewter
+timeout passes1/1 alone; no-ROM5909 /250 skip + known renderer timing failure passes6/6 alone
+(§11.16). Bundle `index-BAeUVEwA.js`; import walk proves only naming_screen/pokedex changed
+in production. Results and evidence: note72 §10.16. One local commit, never pushed. Stop for
+Claude's check; no08f work.
+
+### 2026-10-29 (A5c3f 08e spike; 08e briefed) — Claude
+
+Spiked the stand-in screens on 5d27017 (reverted; diff in `notes/72-a5c3f-checkpoint-08e/claude-spike.diff`).
+- A trace of today's player, rival and Pokédex modes, recorded before the edits, is **byte-identical** after both edits.
+- The nickname mode works:
+  - an empty name submits `''`;
+  - the header matches the ASM;
+  - the limit is 10 letters;
+  - the cartridge's 11 `wStringBuffer` bytes are kept.
+- `showData` works with the caller's `owned`. Every naming-grid character encodes and round-trips.
+
+Findings (note 72 **§11.37.2**):
+- neither module had a test, so item 1 pins today's modes first;
+- the data page must take `owned` from the battle, not `pokedex_state`;
+- the live naming screen's departures go to J2, including a **new** one: it switches to lowercase after the first letter, which the ASM never does;
+- the battle-side ASM around both calls is 08f's.
+
+Brief **§11.37.3**. Docs only. **Next: Codex runs checkpoint-08e.**
+
+### 2026-10-29 (A5c3f 08d check) — Claude
+
+Checked 9345b85 against §11.35.3: pass (note 72 **§11.36**).
+- Gates re-run in order: typecheck clean; build `index-CTDQDkp0.js`; ROM 6137/6137; no-ROM 5887 / 250 skip (no Pewter timeout this run).
+- Six mutations of Claude's own: four caught; two escaped.
+  - **m1:** `abort` not detaching the random state. Claude's `attach` probe kills it.
+  - **m4:** a `bag` write through the Proxy is allowed. Nothing writes the bag, so the guard has no test.
+  - Both go into 08e's item 0.
+
+Docs only. **Next: Claude spikes and briefs 08e (the stand-in screens).**
+
+### 2026-10-29 (A5c3f checkpoint-08d menus; ready for check) — Codex
+
+Closed item0's two gaps first, then composed the shared PartyMenu/text host, fresh bag Proxy, scoped item bodies,
+abort and four foregrounds.16 new no-ROM cases; all10 brief mutations +2 item0 mutations fail plain assertions.
+Ordered gates: typecheck/build clean; ROM6137/6137; no-ROM5886 /250 skip + known Pewter timeout, file alone1/1
+under §11.16, thresholds unchanged. Bundle index-CTDQDkp0.js (405396 bytes; SHA256 in note72 **§10.15**);
+only PartyMenu's seam changes production. Only old-test edits are the two flute census updates; no snapshots.
+One local commit, never pushed. **Stopped for Claude's check; no08e work.**
+
+### 2026-10-29 (A5c3f 08d spike; 08d briefed) — Claude
+
+Spiked the menus on 08c's tree (reverted; diff kept in `notes/72-a5c3f-checkpoint-08d/claude-spike.diff`). Seven real-input paths
+work: Potion, Ether, the PKMN switch, STATS, `AlreadyOutText`, the forced send-out with a second session after it, and `abort()`.
+Findings (note 72 **§11.35.2**):
+- Registering the item bodies at create breaks 20 old cases, so they register per `useItem` call;
+- the bag from bytes goes through a context `Proxy`;
+- the foreground comes from the party menu's opening and the buffer loads, not the frame kind;
+- the flute stream joins two census lists;
+- `loadEnemyPicVariant` is A5e's;
+- the sleeping gate reads live follow state.
+
+Brief **§11.35.3**. Docs only. **Next: Codex runs checkpoint-08d.**
+
+### 2026-10-29 (A5c3f checkpoint-08c checked) — Claude
+
+Checked Codex's 08c (585d20e) against §11.32–§11.33. The code matches, and the manifest diff is exactly the one row. Gates re-run
+one after another: typecheck and build clean, `index-BcAMTGMe.js` unchanged, ROM **6121/6121**, no-ROM **5871 / 250 skip**.
+Six mutations: four caught (past-`@` write, the ROM table row, `wStatusFlags3` overwrite, frozen adapter); two escaped
+(the 11-byte `nameBuffer` decode; the `items` hand-off counter). Both are test gaps, carried as 08d's item 0 (note 72 **§11.34**).
+Docs only. **Next: Claude spikes 08d (the menus), then briefs it.**
+
+### 2026-10-29 (A5c3f checkpoint-08c continued2; gates pass) — Codex
+
+Applied exactly §11.33's one CALLERS row in sorted position; no other test or implementation changes.
+Ordered default-worker gates: typecheck/build clean, ROM **6121/6121**, no-ROM **5871 pass /250 skip**;
+both full runs pass first try, no timing retries or threshold changes. Bundle index-BcAMTGMe.js and SHA256
+unchanged. Earlier mutation proofs stand. Results/evidence note72 **§10.14.9**. One local commit,
+never pushed. **Stopped for Claude's check; no08d work.**
+
+### 2026-10-29 (A5c3f 08c retirement-manifest ruling) — Claude
+
+Codex's 08c stop (note 72 §10.14.7) was right: the world-keyed adapter imports `TrainerMoveSelection`, and the A5c3e
+importer census pins every importer. Re-ran it alone with the ROM: the only difference is that one row. Ruled (note 72
+**§11.33**): add the one `CALLERS` row, no other manifest change and no hiding the import. The full-run timeout re-runs
+alone under §11.16. Read the retained source; it matches §11.32. Docs only. **Next: Codex applies §11.33, re-runs the
+four gates in order, commits "trainers (continued 2)"; then Claude checks 08c.**
+
+### 2026-10-29 (A5c3f checkpoint-08c continued; retirement-manifest STOP) — Codex
+
+Retained the world-keyed adapter, live TrainerAI environment, bit-gated end text and47-row SaveTrainerName port
+under §11.32. Only permitted old-case edit: real Misty X Defend;10 new no-ROM cases +1 ROM case.8/8 required
+mutations and08a's carryfalse stub fail plain assertions. Typecheck/build pass; bundle unchanged index-BcAMTGMe.js.
+ROM gate6119 pass /2 fail: old a5c3e_retirement importer census rejects the new TrainerMoveSelection import;
+untouched session timeout passes18/18 alone. No-ROM gate not run after STOP. No snapshots or other old tests edited.
+Evidence/proposed one-row exception in note72 **§10.14.5–8**. One local commit, never pushed. **08c incomplete;
+stopped for Claude's check/ruling; no08d work.**
+
+### 2026-10-29 (A5c3f 08c pre-flight spike; advance rulings) — Claude
+
+Spiked 08c end to end before Codex resumes (note 72 **§11.32**; reverted, tree clean): Bug Catcher SET and SHIFT wins, the
+lab rival's loss and win, Misty's X Defend and Juggler's switch through the live AI environment. The full no-ROM suite failed
+only §11.31's case; bundle unchanged. Found and pre-ruled:
+- the brief's SHIFT case needs a two-mon player party and pays 3070, not 3100;
+- the forced call before `start()` can't run, so §11.31's case becomes a real Misty battle;
+- `SaveTrainerName`'s own table (ROM `$27E19`), copied through the `@`;
+- `lose` is unreachable in battle (`core.asm:825–826`), so it is pinned as a pure function;
+- new tests go in a new file.
+
+Docs only. **Next: Codex runs 08c (continued) under §11.30.3 as amended by §11.32; then Claude checks it and briefs 08d.**
+
+### 2026-10-29 (codebase and context orientation) — Codex
+
+Reviewed the entry-point rules, live handoff, project goals, roadmap, conventions, architecture and recent decisions;
+traced the runtime entry point, extraction/test setup and unused battle session/state/host/world boundary, and read
+the subsystem architecture summaries. Study only: no implementation checkpoint claimed, no game/test changes or
+verification gates run. Latest resume point remains note 72 **§11.30.3 item 1 under §11.31** (08c trainers); the queue's
+"awaiting old-test ruling" wording predates that accepted ruling. 08d and live wiring remain later work.
 
 ### 2026-10-28 (end of day: 08c ruling; STATUS archived) — Claude
 

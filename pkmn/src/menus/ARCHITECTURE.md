@@ -1,5 +1,22 @@
 # Menus Architecture
 
+A5c3f checkpoint-08e adds two stand-in entries under O-45.2, without changing callers.
+NamingScreen's nickname mode requires a subject, permits ten letters and an empty submit,
+draws the species/header and full-HP party icon, and accepts the caller's pressSound.
+Its eleven-cell stringBuffer retains letter/@ writes and uses null for untouched cells.
+Player/rival behavior and the Pokédex list are pinned by pre-edit full-trace hashes.
+PokedexMenu.load preloads tables/tiles; showData takes the caller's owned flag and sound,
+then closes to that caller. show clears that state and retains the list's side-menu return.
+Front-sprite loading stays asynchronous. These remain stand-ins: the screen-frame, input,
+auto-lowercase, cry and volume departures await J2. The catch wiring/outer frames are08f.
+Evidence: note72 §10.16.
+
+A5c3f checkpoint-08d gives PartyMenu an optional TextDisplayHost constructor argument for
+openingTextBox. The unused battle session shares its own text/audio host with BattleMenuScreen;
+AlreadyOutText, NoWillText and the existing sleepingText fallback inherit that owner. Field
+callers pass nothing and keep their default facade. Foreground observation stays in the session
+subclass, with no other PartyMenu API or renderer change. Note72 §10.15.
+
 ## Pattern
 
 A5c2 CP5 adds PartyMenu's unused `openBattleChoice` / `goBackToChoice` API and `frameBattleChoice`.

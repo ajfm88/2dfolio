@@ -1,5 +1,6 @@
-// Unused production session. 08a/b own wild FIGHT/RUN and core fixes;08c supplies trainers and menus.
-import { getBattleAudioEngines, loadSfx } from '../audio';
+// Unused production session: shared menus, scoped item bodies and catch homes. Live wiring is09.
+import { getBattleAudioEngines, loadSfx, setMasterVolume } from '../audio';
+import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { soundFinished } from '../audio/sound_wait';
 import { musicIdentity, SFX_IDS } from '../audio/sound_ids';
 import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
@@ -7,23 +8,25 @@ import * as input from '../input';
 import { isPassPressed } from '../input';
 import { setTextSpeed, type TextDisplayHost } from '../text/textbox';
 import { BattleAudio, type BattleSfx } from './battle_audio';
-import { BattleState, battleContext, POKEDEX_ORDER } from './battle_state';
+import { A, BattleState, battleContext, charmapByte, indexToPokedex, NAME_BUFFER_LENGTH, NAME_LENGTH, POKEDEX_ORDER } from './battle_state';
 import { BattleScreen } from './battle_screen';
 import { BattleHost } from './battle_host';
 import { BattleMenuScreen } from './battle_menu_screen';
 import { BattleRandomState } from './battle_random_state';
 import { RANDOM_CYCLES } from './battle_random_cycles';
-import { writeBattleInputs, readBattleOutputs, loadBattleBridgeData, battleMapNames, type BattleWorld } from './battle_bridge';
+import { writeBattleInputs, readBattleOutputs, readBagEntries, loadBattleBridgeData, battleMapNames, W_STATUS_FLAGS3, type BattleWorld } from './battle_bridge';
 import { refreshPartyMirror } from './battle_party_codec';
 import { setupBattleBeforeTransition, INIT } from './battle_init';
 import { initBattleCommon, type BattleStartHost, type BattleCommonExit } from './battle_start';
-import { installTrainerSpecies, trainerPicName } from './battle_trainer_party';
+import { installTrainerSpecies, saveTrainerName, trainerPicName } from './battle_trainer_party';
+import { decodeBattleText } from './battle_text_codec';
+import type { TrainerMoveSelection } from './battle_math';
 import { loadTrainerSpeciesData } from './battle_trainer_data';
 import { getAllLoadedMoveIds, getMove } from './data';
 import { getMoveRecord, BattleUnsupportedState } from './battle_move_data';
 import { loadStatEffectData, statModifierUpEffect } from './battle_effects_stats';
 import { loadTrainerAIItemNames, trainerAI, type TrainerAIEnvironment } from './battle_trainer_ai';
-import { loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS } from './battle_items';
+import { bindBattleItems, loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS, type BattleItemHost } from './battle_items';
 import { composedJumpMoveEffect } from './battle_effects_registry';
 import { bindLearnMove, type LearnMoveHost } from './learn_move';
 import { moveAnimation } from './battle_move_anim';
@@ -32,8 +35,29 @@ import { loadBattleRenderTiles, type PictureDecoder } from './battle_pictures';
 import { browserPictureDecoder } from './battle_picture_decode';
 import type { RawImage, BattleRenderTiles } from './battle_screen_render';
 import type { TurnPorts } from './battle_turn';
-import type { Program } from './battle_menu_context';
+import { delayFrames, type Program } from './battle_menu_context';
+import { NamingScreen, loadEdTile } from '../menus/naming_screen';
+import { PokedexMenu } from '../menus/pokedex';
+import { loadPartyIcons } from '../menus/party_icons';
+import { addPartyMon, sendNewMonToBox, type CaughtMonEnvironment } from './battle_add_mon';
+import { getMonName, getMonHeader } from './battle_loaders';
+import { flagAction } from './battle_end_helpers';
+import { I } from './battle_item_state';
+import { D } from './battle_end_state';
+import { loadHudTilePatterns } from './battle_slides';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
+import { PartyMenu } from '../menus/party_menu';
+import type { BattlePartyHost } from './battle_party_menu';
+import { bindPlayerSwitch, bindStateBattlePartyMenu } from './battle_send_out';
+import { registerShortBattleItemBodies } from './battle_item_bodies';
+import { registerFluteBattleItemBody } from './battle_item_flute';
+import { registerMedicineBattleItemBody } from './battle_item_medicine';
+import { createMedicineItemEnvironment } from './battle_item_medicine_env';
+import { registerPPBattleItemBody } from './battle_item_pp';
+import { registerBallBattleItemBody } from './battle_item_ball';
+import type { SfxData } from '../audio/sfx_engine';
+import type { BattlePokemon } from './types';
+import type { TextBox } from '../text/textbox';
 
 function itemSoundId(name: 'caught_mon' | 'dex_page_added'): number {
   return BATTLE_ITEM_SOUND_ASSETS.find(row => row[1] === name)![0];
@@ -47,7 +71,7 @@ const HOST_SOUNDS = { trainer_appeared: 0xe9, faint_fall: 0x9e, faint_thud: 0x95
   run: SFX_IDS.run, swap: SFX_IDS.swap, press_ab: SFX_IDS.press_ab,
   damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7 } as const;
 interface SessionData { renderTiles: BattleRenderTiles; pokeballTiles: RawImage; mapTilesets: ReadonlyMap<string, string>;
-  sounds: ReadonlyMap<string, BattleSfx>; itemSounds: ReadonlyMap<number, BattleSfx> }
+  sounds: ReadonlyMap<string, BattleSfx>; itemSounds: ReadonlyMap<number, BattleSfx>; flute: SfxData }
 let data: SessionData | undefined;
 let loading: Promise<void> | undefined;
 /** Browser image -> RawImage only; all picture construction remains in the checked picture owner. */
@@ -75,12 +99,22 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
       // This checked loader also calls loadBattleMoveData; invoking it separately would load twice.
       loadStatEffectData(), loadTrainerAIItemNames(),
     ]);
+    const flute = await loadSfx('pokeflute_in_battle');
+    if (!flute) throw new Error('session flute stream missing');
     const soundsByName = new Map<string, BattleSfx>(sounds);
     for (const [id, name] of BATTLE_ITEM_SOUND_ASSETS) {
       if (name === 'caught_mon' || name === 'dex_page_added') soundsByName.set(name, itemSounds.get(id)!);
     }
-    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, itemSounds, mapTilesets: new Map(mapTilesets) };
+    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, itemSounds, mapTilesets: new Map(mapTilesets), flute };
   })();
+}
+/** O-45.2's stand-in screens, loaded once beside the session data. PokedexMenu.load fetches per instance,
+ * so every session shares this one page. Only a catch's homes read it. */
+const standInPokedex = new PokedexMenu();
+let standInsLoaded = false;
+let standInLoading: Promise<void> | undefined;
+export function loadBattleStandInData(): Promise<void> {
+  return standInLoading ??= Promise.all([standInPokedex.load(), loadEdTile(), loadPartyIcons()]).then(() => { standInsLoaded = true; });
 }
 export type SessionAudioOwners = ReturnType<typeof getBattleAudioEngines>;
 export function battleTextSoundOwner(audio: BattleAudio, owners: SessionAudioOwners,
@@ -106,6 +140,25 @@ export function createSessionRandom(frames: () => number): BattleRandomState {
   }, elapsed => { sync(); cycles += elapsed; });
 }
 export interface BattleSessionDeps { random: BattleRandomState; audio?: () => SessionAudioOwners }
+export type BattleForeground = 'battle' | 'party' | 'partyItem' | 'status' | 'naming' | 'pokedex';
+/** DisplayListMenuID reads cartridge bag bytes; every other context cell retains its existing owner. */
+export function bagBackedContext(context: ReturnType<typeof battleContext>, state: BattleState): ReturnType<typeof battleContext> {
+  return new Proxy(context, {
+    get: (target, key) => key === 'bag' ? readBagEntries(state) : Reflect.get(target, key),
+    set: (target, key, value) => {
+      if (key === 'bag') throw new Error('battle bag is a read-only view of cartridge bytes');
+      return Reflect.set(target, key, value);
+    },
+  });
+}
+/** home/trainers.asm:357–372, GetSavedEndBattleTextPointer. */
+export function getSavedEndBattleTextPointer(state: BattleState, labels: NonNullable<BattleWorld['endBattleText']>): string {
+  return state.wBattleResult === 0 ? labels.win : labels.lose;
+}
+/** SaveTrainerName's @-terminated wNameBuffer can contain the full20-byte name window. */
+export function trainerEndNameBuffer(state: BattleState): string {
+  return decodeBattleText(state.mem, A.wNameBuffer, NAME_BUFFER_LENGTH);
+}
 /** data/tilesets/tileset_headers.asm:12-36, one row per tileset.
  * TILEANIM_NONE=0, WATER=1, WATER_FLOWER=2 (constants/tileset_constants.asm). */
 export const TILESET_ANIMATIONS: Readonly<Record<string, number>> = Object.freeze({
@@ -159,20 +212,32 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const saved = setupBattleBeforeTransition(state, deps.random);
   const owners = (deps.audio ?? getBattleAudioEngines)();
   const audio = new BattleAudio(owners.sfx, owners.music, owners.banks);
-  const video = new BattleMenuScreen(new BattleScreen(), { closeFrames: () => 7, updateSprites() {},
-    sound: battleTextSoundOwner(audio, owners, assets.sounds) });
+  const textHost: TextDisplayHost = { closeFrames: () => 7, updateSprites() {},
+    sound: battleTextSoundOwner(audio, owners, assets.sounds) };
+  const video = new BattleMenuScreen(new BattleScreen(), textHost);
   const driver = new BattleHost<BattleCommonExit>(state, video);
-  const screen = video.screen, ctx = battleContext(state);
+  const screen = video.screen, rawContext = battleContext(state);
+  // home/list_menu.asm: DisplayListMenuID reads the live count and entries at each opening.
+  const ctx = bagBackedContext(rawContext, state);
+  let foreground: BattleForeground = 'battle';
+  class SessionPartyMenu extends PartyMenu {
+    override show(mons: BattlePokemon[]): void { super.show(mons); foreground = 'party'; }
+    override showForItem(mons: BattlePokemon[], box?: TextBox): void {
+      super.showForItem(mons, box); foreground = 'partyItem';
+    }
+  }
+  const party = new SessionPartyMenu(textHost);
   const textLog: { label: string; complete: boolean }[] = [];
   const handoffs = { trainerEnvironment: 0, other: 0 };
-  const unsupported08b = function* (): Program<never> { handoffs.other++; throw new BattleUnsupportedState('08b'); };
-  const trainerUnavailable = (): never => { handoffs.trainerEnvironment++; throw new BattleUnsupportedState('08b'); };
-  // §11.26: the checked TrainerAI owns the wild/link returns; every actual trainer dependency is08b.
+  // The checked TrainerAI owns wild/link returns; only trainer branches read these live owners.
   const trainerEnvironment: TrainerAIEnvironment = {
-    get screen() { return trainerUnavailable(); }, get items() { return trainerUnavailable(); },
-    get text() { return trainerUnavailable(); }, get sendOut() { return trainerUnavailable(); },
-    get animation() { return trainerUnavailable(); }, get hideSubstitute() { return trainerUnavailable(); },
-    get reshowSubstitute() { return trainerUnavailable(); },
+    screen,
+    get items() { handoffs.trainerEnvironment++; return { ...host, sounds: assets.itemSounds }; },
+    get text() { handoffs.trainerEnvironment++; return host; },
+    get sendOut() { handoffs.trainerEnvironment++; return host; },
+    animation: s => host.animation(s),
+    hideSubstitute: function* () { /* A5e presentation cue. */ },
+    reshowSubstitute: function* () { /* A5e presentation cue. */ },
   };
   const trainerAILog: { frames: number; carry?: boolean }[] = [];
   const boundTrainerAI: TurnPorts['trainerAI'] = function* (s) {
@@ -187,13 +252,12 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const sound = (name: string): BattleSfx => {
     const value = assets.sounds.get(name); if (!value) throw new BattleUnsupportedState(`session sound ${name}`); return value;
   };
-  const host: BattleStartHost & LearnMoveHost = {
+  // All four are replaced by the checked binders below, before a session can start.
+  const unboundPort = function* (): Program<never> { throw new Error('battle session port not bound'); };
+  const host: BattleStartHost & LearnMoveHost & BattlePartyHost = {
     screen, tiles: video.tiles, audio,
-    // 08c owns the shared PartyMenu instance; single-mon core cases never reach the chooser.
-    partyView: { openBattleChoice: () => { throw new BattleUnsupportedState('08b'); },
-      goBackToChoice: () => { throw new BattleUnsupportedState('08b'); },
-      frameBattleChoice: () => { throw new BattleUnsupportedState('08b'); },
-      printBattleChoiceText: unsupported08b },
+    partyView: party, statusView: null,
+    loadEnemyPicVariant: function* () { /* A5e AnimationSubstitute / AnimationMinimizeMon cue. */ },
     renderTiles: assets.renderTiles, pokeballTiles: assets.pokeballTiles,
     trainerAppeared: sound('trainer_appeared'), faintFall: sound('faint_fall'), faintThud: sound('faint_thud'),
     runSound: sound('run'), swapSound: sound('swap'),
@@ -202,9 +266,9 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
       yield* driver.printText(label, bindings, options); entry.complete = true;
     },
     saveScreenTilesToBuffer1: () => video.saveScreenTilesToBuffer1(),
-    loadScreenTilesFromBuffer1: () => video.loadScreenTilesFromBuffer1(),
+    loadScreenTilesFromBuffer1: () => { foreground = 'battle'; video.loadScreenTilesFromBuffer1(); },
     saveScreenTilesToBuffer2: () => video.saveScreenTilesToBuffer2(),
-    loadScreenTilesFromBuffer2: () => video.loadScreenTilesFromBuffer2(),
+    loadScreenTilesFromBuffer2: () => { foreground = 'battle'; video.loadScreenTilesFromBuffer2(); },
     getMove(id) { const key = getAllLoadedMoveIds().find(key => getMove(key)!.id === id);
       if (!key) throw new BattleUnsupportedState(`move ${id}`); return { ...getMove(key)!, name: key }; },
     readJoypad: input.readJoypad,
@@ -229,10 +293,100 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     stopAllMusic: () => { owners.banks.stopAllMusic(); },
     playVictoryMusic(name) { const identity = musicIdentity(name);
       if (!identity) throw new BattleUnsupportedState(`victory music ${name}`); owners.banks.playMusic(identity); },
-    printEndBattleText: unsupported08b, learnMove: unsupported08b, useItem: unsupported08b, partyMenu: unsupported08b,
+    // home/trainers.asm:334–355. The bridge retains labels instead of ROM pointers.
+    printEndBattleText: function* (s) {
+      const enabled = s.mem[W_STATUS_FLAGS3] & 0x80;
+      s.mem[W_STATUS_FLAGS3] &= ~0x80;
+      if (!enabled) return;
+      saveTrainerName(s);
+      yield* host.printText('TrainerEndBattleText', { nameBuffer: trainerEndNameBuffer(s) }, {
+        asmContinuations: { TrainerEndBattleText: function* () { return getSavedEndBattleTextPointer(s, world.endBattleText!); } },
+      });
+      // SetEnemyTrainerToStayAndFaceAnyDirection: live map sprite, checkpoint-09's owner.
+      yield* host.waitForSound();
+    },
     evolutionAfterBattle: function* () { /* 09 applies the outcome's retained evolution flags. */ },
+    learnMove: unboundPort, useItem: unboundPort, partyMenu: unboundPort, switchPlayerMon: unboundPort,
   };
   bindLearnMove(host, host);
+  bindPlayerSwitch(state, host, host);
+  bindStateBattlePartyMenu(state, host);
+  const itemHost: BattleItemHost = { ...host, sounds: assets.itemSounds };
+  const itemPresentation = { screen, video, partyView: party, readJoypad: host.readJoypad, pressSound: host.pressSound };
+  const medicine = createMedicineItemEnvironment(state, itemPresentation);
+  const disposers: (() => void)[] = [];
+  const disposeItems = () => { disposers.splice(0).reverse().forEach(dispose => dispose()); };
+  const boundUseItem = bindBattleItems(state, itemHost);
+  // home/fade.asm GBPalWhiteOut / GBPalNormal; home/copy2.asm ClearScreen; home/clear_sprites.asm.
+  const white = () => { screen.bgp = screen.obp0 = screen.obp1 = 0; };
+  const normal = () => { screen.bgp = 0xe4; screen.obp0 = 0xd0; };
+  const clearScreen = function* (): Program {
+    for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) screen.put(x, y, ' ');
+    yield* delayFrames(3);
+  };
+  const clearSprites = () => { for (let i = 0; i < 40; i++) screen.setOam(i, { y: 0, x: 0, tile: 0, attributes: 0 }); };
+  const naming = new NamingScreen(), pokedex = standInPokedex;
+  const requireStandIns = () => { if (!standInsLoaded) throw new BattleUnsupportedState('stand-in screens not loaded'); };
+  let standIn: 'naming' | 'pokedex' | null = null;
+  /** naming_screen.asm:83-187, NAME_MON_SCREEN. The keyboard between entry and exit is O-45.2's stand-in. */
+  const displayNamingScreen = function* (species: number, type: number, destination: number): Program {
+    if (type !== 2) throw new BattleUnsupportedState(`naming screen type ${type}`);
+    requireStandIns();
+    state.mem[D.wStatusFlags5] |= 1 << 6;
+    white(); yield* delayFrames(3); yield* clearScreen();
+    // PrintNamingText: GetMonName into wNameBuffer.
+    state.wNamedObjectIndex = species; getMonName(state, state.species(species));
+    state.mem[A.wStringBuffer] = 0x50; state.mem[D.wAnimCounter] = 0;
+    naming.show('nickname', { speciesName: decodeBattleText(state.mem, A.wNameBuffer), dex: POKEDEX_ORDER[species - 1],
+      pressSound: host.pressSound });
+    normal(); standIn = 'naming';
+    for (;;) { yield 'session'; host.readJoypad(); if (naming.update() === 'done') break; }
+    standIn = null;
+    // .submitNickname: the cells the keyboard wrote, then NAME_LENGTH bytes to the caller's HL.
+    naming.stringBuffer.forEach((ch, i) => { if (ch !== null) state.mem[A.wStringBuffer + i] = charmapByte(ch); });
+    state.mem.copyWithin(destination, A.wStringBuffer, A.wStringBuffer + NAME_LENGTH);
+    white(); yield* delayFrames(3); yield* clearScreen(); clearSprites(); normal();
+    state.mem[D.wAnimCounter] = 0; state.mem[D.wStatusFlags5] &= ~(1 << 6);
+    yield* loadHudTilePatterns(screen);
+  };
+  /** pokedex.asm:438-480, ShowPokedexData from the battle. The page itself is O-45.2's stand-in; cries are J2's. */
+  const showPokedexData = function* (): Program {
+    requireStandIns();
+    white(); yield* delayFrames(3); yield* clearScreen();
+    state.mem[D.wStatusFlags2] |= 1 << 1; setNoAudioFadeOut(true); setMasterVolume(3, 3);
+    const animations = state.mem[INIT.hTileAnimations]; state.mem[INIT.hTileAnimations] = 0;
+    white();
+    const species = state.wPokedexNum; state.wCurPartySpecies = species;
+    // DrawDexEntryOnScreen: GetMonName, IndexToPokedex (restored), the owned test, GetMonHeader.
+    state.wNamedObjectIndex = species; getMonName(state, state.species(species));
+    indexToPokedex(state); const dex = state.wPokedexNum;
+    const owned = flagAction(state, I.wPokedexOwned, 2, (dex - 1) & 255) !== 0;
+    state.wPokedexNum = species; state.wCurSpecies = species; getMonHeader(state, species);
+    pokedex.showData(dex, { owned, pressSound: host.pressSound });
+    yield* delayFrames(3); normal(); standIn = 'pokedex';
+    for (;;) { yield 'session'; host.readJoypad(); if (pokedex.update() === 'closed') break; }
+    standIn = null;
+    state.mem[INIT.hTileAnimations] = animations;
+    white(); yield* clearScreen(); normal();
+    state.mem[D.wStatusFlags2] &= ~(1 << 1); setNoAudioFadeOut(false); setMasterVolume(7, 7);
+  };
+  const caught: CaughtMonEnvironment = { state, host: itemHost, menu: host, video, displayNamingScreen };
+  host.useItem = function* (context) {
+    // Registers are page-global, but these closures belong only to this use. Also clean up a partial registration.
+    try {
+      disposers.push(registerShortBattleItemBodies({ animation: host.animation,
+        hideSubstitute: function* () { /* A5e presentation cue. */ }, reshowSubstitute: function* () { /* A5e presentation cue. */ },
+        loadScreenTilesFromBuffer1: host.loadScreenTilesFromBuffer1 }));
+      disposers.push(registerFluteBattleItemBody({ sfx: owners.sfx, streams: assets.flute,
+        loadScreenTilesFromBuffer2: host.loadScreenTilesFromBuffer2 }));
+      disposers.push(registerMedicineBattleItemBody(medicine));
+      disposers.push(registerPPBattleItemBody({ ...itemPresentation, moveMenu: host }));
+      disposers.push(registerBallBattleItemBody({ video, animation: host.animation,
+        addPartyMon: function* () { yield* addPartyMon(state, caught); },
+        sendNewMonToBox: function* () { yield* sendNewMonToBox(state, caught); }, showPokedexData }));
+      yield* boundUseItem(context);
+    } finally { disposeItems(); }
+  };
   const presentation = { animation: host.animation,
     hideSubstitute: function* () { /* A5e presentation cue. */ }, reshowSubstitute: function* () { /* A5e presentation cue. */ } };
   const env = { ...presentation, host, screen, moveMenu: { ctx, host },
@@ -242,25 +396,47 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     statModifierUpEffect: s => statModifierUpEffect(s, env), trainerAI: boundTrainerAI,
     switchEnemyMon: function* () { throw new BattleUnsupportedState('link'); },
     substituteBreak: function* () { /* A5e presentation cue. */ }, shake: function* () { /* A5e presentation cue. */ } };
-  let started = false, finished = false;
+  // SelectEnemyMove reads the current enemy's four bytes on every access, including after a send-out.
+  const trainer: TrainerMoveSelection | undefined = world.opponent >= 200 ? {
+    get enemy() { return { ...state.partyMons[0]!, moves: Array.from({ length: 4 }, (_, i) => state.mem[A.wEnemyMonMoves + i])
+      .filter(Boolean).map(id => {
+        const key = getAllLoadedMoveIds().find(k => getMove(k)!.id === id)!;
+        return { id: key, pp: 35, maxPp: 35 };
+      }) }; },
+    player: state.partyMons[0]!, aiModifiers: [],
+  } : undefined;
+  let started = false, finished = false, aborted = false;
   return {
-    state, screen, video, textLog, trainerAILog, handoffs,
+    state, screen, video, party, textLog, trainerAILog, handoffs,
+    get foreground(): BattleForeground { return host.statusView ? 'status' : standIn ?? foreground; },
+    naming, pokedex,
     /** The bound turn port is also observable for the trainer-environment boundary proof. */
     trainerAI: boundTrainerAI,
+    get trainer() { return trainer; },
     animation: host.animation,
     get done() { return started && driver.done; },
     start() {
+      if (aborted) throw new Error('session aborted');
       if (started) throw new Error('session already started'); started = true;
       setTextSpeed(world.options.textSpeed === 'MID' ? 'medium' : world.options.textSpeed === 'FAST' ? 'fast' : 'slow');
-      driver.start(initBattleCommon(state, saved, ctx, host, ports));
+      driver.start(initBattleCommon(state, saved, ctx, host, ports, trainer));
     },
-    tick() { if (!started) throw new Error('session not started'); return driver.step(); },
+    tick() { if (aborted) throw new Error('session aborted'); if (!started) throw new Error('session not started'); return driver.step(); },
     finish() {
+      if (aborted) throw new Error('session aborted');
       if (!started || !driver.done || finished) throw new Error('session is not ready to finish');
       const result = driver.result!;
       // The faint loop encodes HandlePlayerBlackOut's carry in its exit (battle_faint.ts).
       const output = { outcome: readBattleOutputs(state), exit: result.exit, blackoutCarry: result.blackoutCarry ?? (result.exit === 'blackout') };
-      deps.random.detach(state); audio.dispose(); finished = true; return output;
+      disposeItems(); deps.random.detach(state); audio.dispose(); finished = true; return output;
+    },
+    abort() {
+      if (aborted || finished) throw new Error('session cannot abort');
+      if (standIn === 'pokedex' || host.statusView) {
+        state.mem[D.wStatusFlags2] &= ~(1 << 1);
+        setNoAudioFadeOut(false); setMasterVolume(7, 7);
+      }
+      disposeItems(); deps.random.detach(state); audio.dispose(); aborted = true;
     },
   };
 }

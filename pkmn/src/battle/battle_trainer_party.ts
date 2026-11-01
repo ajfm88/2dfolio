@@ -168,6 +168,30 @@ export function getTrainerName(state: BattleState): void {
   state.mem[W_UNUSED_NAME_POINTER + 1] = (after >>> 8) & 0xff;
 }
 
+/** data/trainers/name_pointers.asm, class IDs 1–47. Literals use the committed TrainerNames bytes. */
+export const TRAINER_NAME_POINTERS: readonly ('literal' | 'wTrainerName')[] = [
+  'literal', 'literal', 'literal', 'wTrainerName', 'literal', 'literal', 'literal', 'literal',
+  'wTrainerName', 'wTrainerName', 'literal', 'literal', 'literal', 'wTrainerName', 'literal',
+  'wTrainerName', 'wTrainerName', 'literal', 'wTrainerName', 'literal', 'literal', 'wTrainerName',
+  'wTrainerName', 'literal', 'wTrainerName', 'literal', 'literal', 'literal', 'wTrainerName',
+  'literal', 'literal', 'literal', 'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName',
+  'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName',
+  'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName', 'wTrainerName',
+];
+
+/** engine/battle/save_trainer_name.asm: copy through @, retaining the rest of wNameBuffer. */
+export function saveTrainerName(state: BattleState): void {
+  const cls = state.mem[D.wTrainerClass];
+  const source = TRAINER_NAME_POINTERS[cls - 1];
+  if (!source) throw new BattleUnsupportedState(`trainer class ${cls}`);
+  const literal = source === 'literal' ? encodeText(`${classRow(cls).displayName}@`) : undefined;
+  for (let i = 0;; i++) {
+    const byte = literal ? literal[i] : state.mem[(D.wTrainerName + i) & 0xffff];
+    state.mem[(A.wNameBuffer + i) & 0xffff] = byte;
+    if (byte === 0x50) return;
+  }
+}
+
 /** home/trainers2.asm. Pic override is ROCKET.picOverride; both Jessie branches share that file. */
 export function getTrainerInformation(state: BattleState): void {
   getTrainerName(state);

@@ -68,6 +68,7 @@ const CALLERS=[
   'battle/battle.ts imports attemptCatch delete',
   'battle/battle.ts imports selectTrainerMove delete',
   'battle/battle_loop.ts imports TrainerMoveSelection keep',
+  'battle/battle_session.ts imports TrainerMoveSelection keep',
   'battle/battle_turn.ts imports TrainerMoveSelection keep',
   'battle/index.ts exports attemptCatch delete',
   'battle/index.ts exports getTrainerClass keep',

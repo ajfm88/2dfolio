@@ -9,8 +9,11 @@ import { isPressed } from '../input';
 import { drawTileBorder, getFontCanvas } from '../text';
 import { drawText, drawChar } from './menu_render';
 import { playSFX } from '../audio';
+import { drawPartyIcon } from './party_icons';
 
 const MAX_NAME_LENGTH = 7; // PLAYER_NAME_LENGTH - 1 in assembly
+const MAX_NICKNAME_LENGTH = 10; // NAME_LENGTH - 1 (.checkMonNameLength)
+const STRING_BUFFER_LENGTH = 11; // NAME_LENGTH, the bytes .submitNickname copies
 
 // Alphabet grids (from data/text/alphabets.asm)
 const UPPER_ROWS: string[] = [
@@ -66,7 +69,9 @@ export async function loadEdTile(): Promise<void> {
   ]);
 }
 
-export type NamingScreenType = 'player' | 'rival';
+export type NamingScreenType = 'player' | 'rival' | 'nickname';
+/** NAME_MON_SCREEN's header (PrintNamingText) and the caller's press sound. */
+export interface NicknameSubject { speciesName: string; dex: number; pressSound?: () => void }
 
 export class NamingScreen {
   private type: NamingScreenType = 'player';
@@ -76,12 +81,22 @@ export class NamingScreen {
   private uppercase = true;
   private _active = false;
   private _result: string | null = null;
+  private subject: NicknameSubject | null = null;
+  private frameCounter = 0;
+  /** wStringBuffer as the cartridge leaves it: null = a byte this screen never wrote. */
+  private buffer: (string | null)[] = [];
 
   get active(): boolean { return this._active; }
   get result(): string | null { return this._result; }
+  get stringBuffer(): readonly (string | null)[] { return this.buffer; }
+  private get maxLength(): number { return this.type === 'nickname' ? MAX_NICKNAME_LENGTH : MAX_NAME_LENGTH; }
 
-  show(type: NamingScreenType): void {
+  show(type: NamingScreenType, subject?: NicknameSubject): void {
+    if ((type === 'nickname') !== (subject !== undefined)) throw new Error('nickname mode needs its subject');
     this.type = type;
+    this.subject = subject ?? null;
+    this.frameCounter = 0;
+    this.buffer = Array.from({ length: STRING_BUFFER_LENGTH }, (_, i) => i === 0 ? '@' : null);
     this.name = '';
     this.cursorRow = 0;
     this.cursorCol = 0;
@@ -92,6 +107,7 @@ export class NamingScreen {
 
   update(): 'done' | null {
     if (!this._active) return null;
+    this.frameCounter++;
 
     // Navigation
     if (isPressed('up')) {
@@ -128,7 +144,7 @@ export class NamingScreen {
 
     // A = select character or action
     if (isPressed('a')) {
-      playSFX('press_ab');
+      this.pressSound();
       if (this.cursorRow >= CASE_ROW) {
         // Case toggle
         this.uppercase = !this.uppercase;
@@ -137,7 +153,8 @@ export class NamingScreen {
         if (ch === '\0') {
           // ED button — submit
           return this.submitName();
-        } else if (this.name.length < MAX_NAME_LENGTH) {
+        } else if (this.name.length < this.maxLength) {
+          this.buffer[this.name.length] = ch; this.buffer[this.name.length + 1] = '@';
           this.name += ch;
           // Auto-switch to lowercase after first uppercase character
           if (this.name.length === 1 && this.uppercase) {
@@ -145,7 +162,7 @@ export class NamingScreen {
           }
         }
         // Auto-move to ED when name is full
-        if (this.name.length >= MAX_NAME_LENGTH) {
+        if (this.name.length >= this.maxLength) {
           this.cursorRow = 4;
           this.cursorCol = 8;
         }
@@ -154,8 +171,9 @@ export class NamingScreen {
 
     // B = delete last character
     if (isPressed('b')) {
-      playSFX('press_ab');
+      this.pressSound();
       if (this.name.length > 0) {
+        this.buffer[this.name.length - 1] = '@';
         this.name = this.name.slice(0, -1);
       }
     }
@@ -163,8 +181,13 @@ export class NamingScreen {
     return null;
   }
 
+  private pressSound(): void {
+    if (this.subject?.pressSound) this.subject.pressSound(); else playSFX('press_ab');
+  }
+
   private submitName(): 'done' | null {
-    if (this.name.length === 0) return null;
+    // NAME_MON_SCREEN submits an empty name; AskName reads its '@' as "keep the species name".
+    if (this.name.length === 0 && this.type !== 'nickname') return null;
     this._result = this.name;
     this._active = false;
     return 'done';
@@ -192,8 +215,15 @@ export class NamingScreen {
     fillRect(0, 0, GB_WIDTH, GB_HEIGHT, 0);
 
     // Label: "YOUR NAME?" or "RIVAL's NAME?"
-    const label = this.type === 'player' ? 'YOUR NAME?' : "RIVAL's NAME?";
-    drawText(label, LABEL_X * T, LABEL_Y * T);
+    if (this.subject) {
+      // PrintNamingText's NAME_MON_SCREEN branch; the party sprite is slot 0's, at ForceSpeed1.
+      drawPartyIcon(this.subject.dex, T, 0, this.frameCounter, 1);
+      drawText(this.subject.speciesName, 4 * T, LABEL_Y * T);
+      drawText('NICKNAME?', LABEL_X * T, UNDER_Y * T);
+    } else {
+      const label = this.type === 'player' ? 'YOUR NAME?' : "RIVAL's NAME?";
+      drawText(label, LABEL_X * T, LABEL_Y * T);
+    }
 
     // Current name
     if (this.name.length > 0) {
@@ -203,9 +233,9 @@ export class NamingScreen {
     // Underscores below name — from font_battle_extra.png
     // Assembly: tile $76 = regular underscore, tile $77 = raised underscore (cursor position)
     if (underscoreCanvas) {
-      for (let i = 0; i < MAX_NAME_LENGTH; i++) {
+      for (let i = 0; i < this.maxLength; i++) {
         const ux = (NAME_X + i) * T;
-        const isCurrentPos = i === this.name.length && this.name.length < MAX_NAME_LENGTH;
+        const isCurrentPos = i === this.name.length && this.name.length < this.maxLength;
         drawTile(underscoreCanvas, isCurrentPos ? RAISED_UNDERSCORE_TILE : UNDERSCORE_TILE, ux, UNDER_Y * T);
       }
     }

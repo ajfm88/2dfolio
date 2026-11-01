@@ -185,12 +185,29 @@ it('setup draws DVs before frames and shared HRAM carries across two sessions, t
  expect(dv2).not.toEqual([...fresh.session.state.mem.slice(A.wEnemyMonDVs,A.wEnemyMonDVs+2)]);expect(dv2).not.toEqual(dv1);
  second.drive('run');fresh.drive('run');
 });
-it('the bound trainer port reaches the real AI and its throwing08b environment for a trainer',()=>{
- const h=setup({frames:()=>0}),s=h.session.state;s.wIsInBattle=2;
- s.mem[D.wTrainerClass]=TRAINER_AI_POINTERS.findIndex(row=>row.className==='BLACKBELT')+1;
- s.mem[D.wAICount]=0xff;s.hRandomAdd=0;
- expect(()=>h.session.trainerAI(s).next()).toThrow(/08b/);
- expect(h.session.handoffs).toEqual({trainerEnvironment:1,other:0});
+it('the bound trainer port runs Misty X Defend through the real session and live AI owners',()=>{
+ const mon=createPokemon(25,45,'PIKACHU',{atk:9,def:8,spd:8,spc:8})!;
+ mon.moves=[{id:'TACKLE',pp:35,maxPp:35}];
+ let time=0;
+ const h=setup({frames:()=>time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
+   partyIndex:0,party:[mon],options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}}),s=h.session.state;
+ h.start();let returned=0;const counts:number[]=[],stages:number[]=[];
+ for(let n=0;!h.session.done&&n<10000;n++){
+  if(s.mem[D.wAICount]===1)counts.push(1);
+  const pressed:GameButton[]=time%2?[]:h.session.video.textBox.isWaitingForInput?['b']:['a'];
+  time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();h.r.update();expect(()=>h.session.tick()).not.toThrow();
+  const completed=h.session.trainerAILog.filter(call=>call.carry===true);
+  if(completed.length>returned){returned=completed.length;counts.push(s.mem[D.wAICount]);stages.push(s.mem[A.wEnemyMonStatMods+1]);}
+ }
+ expect(h.session.done).toBe(true);
+ const used=h.session.trainerAILog.filter(call=>call.carry===true);
+ expect(used).toHaveLength(1);expect(used[0].frames).toBeGreaterThan(0);
+ const texts=h.session.textLog.map(row=>row.label),item=texts.indexOf('AIBattleUseItemText');
+ expect(item).toBeGreaterThan(-1);expect(texts.indexOf('MonsStatsRoseText')).toBeGreaterThan(item);
+ expect(counts).toContain(1);expect(counts[counts.length-1]).toBe(0);expect(stages).toEqual([8]);
+ expect(h.session.handoffs.trainerEnvironment).toBeGreaterThan(0);expect(h.session.handoffs.other).toBe(0);
+ expect(h.r.synth.log.some(write=>write.m==='freq0')).toBe(true);
+ const result=h.session.finish();expect(result.exit).toBe('end');expect(result.outcome.battleResult).toBe(0);
 });
 it('a session step leaves the externally clocked engine channel cursors and delays alone',()=>{
  const h=setup();h.start();
@@ -245,7 +262,7 @@ it('the session loader is once-only and the second call decodes and fetches noth
  const expected=['battle_transitions.json','move_names.json','stat_mod_text.json','item_names.json','trainers.json',
   ...Object.keys(import.meta.glob('../../data/maps/*.json')).map(path=>'maps/'+path.split('/').pop()),
   ...['trainer_appeared','faint_fall','faint_thud','run','swap','press_ab','damage','super_effective','not_very_effective',
-  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment'].map(name=>`audio/sfx/${name}.json`)];
+  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle'].map(name=>`audio/sfx/${name}.json`)];
  expect([...firstFetches.keys()].sort()).toEqual(expected.sort());
  expect([...firstFetches.values()]).toEqual(expected.map(()=>1));
  expect(firstDecodes.size).toBe(358);expect([...firstDecodes.values()]).toEqual(Array(358).fill(1));
