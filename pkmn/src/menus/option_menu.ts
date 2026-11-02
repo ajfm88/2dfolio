@@ -25,6 +25,7 @@ const DEFAULT_OPTIONS: GameOptions = {
   animation: 'ON',
   battleStyle: 'SHIFT',
 };
+const TEXT_SPEED_MAP: Record<TextSpeed, 'fast' | 'medium' | 'slow'> = { FAST: 'fast', MID: 'medium', SLOW: 'slow' };
 
 // Cycle arrays for left/right navigation
 const TEXT_SPEED_VALUES: TextSpeed[] = ['FAST', 'MID', 'SLOW'];
@@ -52,14 +53,21 @@ const CANCEL_INDEX = 3;
 
 export class OptionMenu {
   private cursor = 0;
-  private options: GameOptions;
+  private currentOptions: GameOptions;
 
   constructor() {
-    this.options = { ...DEFAULT_OPTIONS };
+    this.currentOptions = { ...DEFAULT_OPTIONS };
   }
 
+  get options(): Readonly<GameOptions> { return this.currentOptions; }
+
   getOptions(): GameOptions {
-    return this.options;
+    return this.currentOptions;
+  }
+
+  restore(options: Readonly<GameOptions> = DEFAULT_OPTIONS): void {
+    this.currentOptions = {...options};
+    setTextSpeed(TEXT_SPEED_MAP[this.currentOptions.textSpeed]);
   }
 
   show(): void {
@@ -118,9 +126,9 @@ export class OptionMenu {
     drawText('BATTLESTYLE:', LABEL_COL * TILE_SIZE, OPTION_ROWS[2] * TILE_SIZE);
 
     // Values (right-padded to avoid leftover characters)
-    drawText(this.padValue(this.options.textSpeed, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[0] * TILE_SIZE);
-    drawText(this.padValue(this.options.animation, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[1] * TILE_SIZE);
-    drawText(this.padValue(this.options.battleStyle, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[2] * TILE_SIZE);
+    drawText(this.padValue(this.currentOptions.textSpeed, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[0] * TILE_SIZE);
+    drawText(this.padValue(this.currentOptions.animation, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[1] * TILE_SIZE);
+    drawText(this.padValue(this.currentOptions.battleStyle, 5), VALUE_COL * TILE_SIZE, OPTION_ROWS[2] * TILE_SIZE);
 
     // CANCEL at bottom
     drawText('CANCEL', LABEL_COL * TILE_SIZE, CANCEL_ROW * TILE_SIZE);
@@ -137,21 +145,20 @@ export class OptionMenu {
   private cycleOption(index: number, dir: number): void {
     switch (index) {
       case 0: {
-        const i = TEXT_SPEED_VALUES.indexOf(this.options.textSpeed);
-        this.options.textSpeed = TEXT_SPEED_VALUES[(i + dir + TEXT_SPEED_VALUES.length) % TEXT_SPEED_VALUES.length];
+        const i = TEXT_SPEED_VALUES.indexOf(this.currentOptions.textSpeed);
+        this.currentOptions.textSpeed = TEXT_SPEED_VALUES[(i + dir + TEXT_SPEED_VALUES.length) % TEXT_SPEED_VALUES.length];
         // Apply to textbox system
-        const speedMap: Record<TextSpeed, 'fast' | 'medium' | 'slow'> = { FAST: 'fast', MID: 'medium', SLOW: 'slow' };
-        setTextSpeed(speedMap[this.options.textSpeed]);
+        setTextSpeed(TEXT_SPEED_MAP[this.currentOptions.textSpeed]);
         break;
       }
       case 1: {
-        const i = ANIMATION_VALUES.indexOf(this.options.animation);
-        this.options.animation = ANIMATION_VALUES[(i + dir + ANIMATION_VALUES.length) % ANIMATION_VALUES.length];
+        const i = ANIMATION_VALUES.indexOf(this.currentOptions.animation);
+        this.currentOptions.animation = ANIMATION_VALUES[(i + dir + ANIMATION_VALUES.length) % ANIMATION_VALUES.length];
         break;
       }
       case 2: {
-        const i = BATTLE_STYLE_VALUES.indexOf(this.options.battleStyle);
-        this.options.battleStyle = BATTLE_STYLE_VALUES[(i + dir + BATTLE_STYLE_VALUES.length) % BATTLE_STYLE_VALUES.length];
+        const i = BATTLE_STYLE_VALUES.indexOf(this.currentOptions.battleStyle);
+        this.currentOptions.battleStyle = BATTLE_STYLE_VALUES[(i + dir + BATTLE_STYLE_VALUES.length) % BATTLE_STYLE_VALUES.length];
         break;
       }
     }

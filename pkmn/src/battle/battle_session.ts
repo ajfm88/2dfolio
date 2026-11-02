@@ -6,7 +6,7 @@ import { musicIdentity, SFX_IDS } from '../audio/sound_ids';
 import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
 import * as input from '../input';
 import { isPassPressed } from '../input';
-import { setTextSpeed, type TextDisplayHost } from '../text/textbox';
+import type { TextDisplayHost } from '../text/textbox';
 import { BattleAudio, type BattleSfx } from './battle_audio';
 import { A, BattleState, battleContext, charmapByte, indexToPokedex, NAME_BUFFER_LENGTH, NAME_LENGTH, POKEDEX_ORDER } from './battle_state';
 import { BattleScreen } from './battle_screen';
@@ -30,6 +30,7 @@ import { bindBattleItems, loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS, type B
 import { composedJumpMoveEffect } from './battle_effects_registry';
 import { bindLearnMove, type LearnMoveHost } from './learn_move';
 import { moveAnimation } from './battle_move_anim';
+import { tossBallAnimation } from './battle_ball_animation';
 import { cartridgeRunOdds } from './battle_menu';
 import { loadBattleRenderTiles, type PictureDecoder } from './battle_pictures';
 import { browserPictureDecoder } from './battle_picture_decode';
@@ -44,11 +45,11 @@ import { getMonName, getMonHeader } from './battle_loaders';
 import { flagAction } from './battle_end_helpers';
 import { I } from './battle_item_state';
 import { D } from './battle_end_state';
-import { loadHudTilePatterns } from './battle_slides';
+import { loadHudTilePatterns, animationSlideMonOff, animationSlideEnemyMonOff } from './battle_slides';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import { PartyMenu } from '../menus/party_menu';
 import type { BattlePartyHost } from './battle_party_menu';
-import { bindPlayerSwitch, bindStateBattlePartyMenu } from './battle_send_out';
+import { bindPlayerSwitch, bindStateBattlePartyMenu, sendingOutMon, pikachuEntrance } from './battle_send_out';
 import { registerShortBattleItemBodies } from './battle_item_bodies';
 import { registerFluteBattleItemBody } from './battle_item_flute';
 import { registerMedicineBattleItemBody } from './battle_item_medicine';
@@ -284,12 +285,13 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm,
       cry() { /* J2 silent cry cue. */ }, clip() { /* J2 PCM cue; caller retains its three frames. */ } },
     updateSprites() { /* A5e presentation cue. */ },
-    sendingOutMon() { /* A5e presentation cue. */ }, pikachuEntrance() { /* A5e presentation cue. */ },
-    slidePlayerOff() { /* A5e presentation cue. */ }, enemySlideOff() { /* A5e presentation cue. */ },
+    sendingOutMon: (s, x, y) => sendingOutMon(s, host, x, y), pikachuEntrance: s => pikachuEntrance(s, host),
+    slidePlayerOff: s => animationSlideMonOff(s, screen), enemySlideOff: s => animationSlideEnemyMonOff(s, screen),
     marowakAnimation: function* () { throw new BattleUnsupportedState('unreachable Marowak'); },
     animation: s => moveAnimation(s, { screen, audio,
       sounds: { damage: sound('damage'), superEffective: sound('super_effective'), notVeryEffective: sound('not_very_effective') },
-      waitForSound: host.waitForSound, tossBall: function* () { /* A5f toss cue. */ } }),
+      waitForSound: host.waitForSound, tossBall: state => tossBallAnimation(state, { screen, audio, faintThud: host.faintThud,
+        ballSubanimation: function* (_id) { /* A5f OAM animations and their sounds; zero frames. */ } }) }),
     stopAllMusic: () => { owners.banks.stopAllMusic(); },
     playVictoryMusic(name) { const identity = musicIdentity(name);
       if (!identity) throw new BattleUnsupportedState(`victory music ${name}`); owners.banks.playMusic(identity); },
@@ -408,6 +410,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   let started = false, finished = false, aborted = false;
   return {
     state, screen, video, party, textLog, trainerAILog, handoffs,
+    get renderTiles() { return assets.renderTiles; },
+    get statusView() { return host.statusView; },
     get foreground(): BattleForeground { return host.statusView ? 'status' : standIn ?? foreground; },
     naming, pokedex,
     /** The bound turn port is also observable for the trainer-environment boundary proof. */
@@ -418,7 +422,6 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     start() {
       if (aborted) throw new Error('session aborted');
       if (started) throw new Error('session already started'); started = true;
-      setTextSpeed(world.options.textSpeed === 'MID' ? 'medium' : world.options.textSpeed === 'FAST' ? 'fast' : 'slow');
       driver.start(initBattleCommon(state, saved, ctx, host, ports, trainer));
     },
     tick() { if (aborted) throw new Error('session aborted'); if (!started) throw new Error('session not started'); return driver.step(); },

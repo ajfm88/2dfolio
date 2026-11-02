@@ -10,9 +10,13 @@ import { presentBattleScreen, renderBattleScreen } from './battle_screen_render'
 import type { BattleRenderTiles, RawImage } from './battle_screen_render';
 
 const putImageData = vi.hoisted(() => vi.fn());
-vi.mock('../renderer', () => ({ getCtx: () => ({ putImageData }) }));
+const presentOutput = vi.hoisted(() => ({ drawImage:vi.fn(),imageSmoothingEnabled:true }));
+vi.mock('../renderer', () => ({ getCtx: () => presentOutput, getScale:() => 3 }));
 
-beforeAll(() => installNodeImageData());
+beforeAll(() => {
+  installNodeImageData();
+  vi.stubGlobal('document',{createElement:() => ({width:0,height:0,getContext:() => ({putImageData})})});
+});
 beforeEach(() => { textBgTransfer.enabled = true; textBgTransfer.resetPortion(); putImageData.mockClear(); });
 afterEach(() => { textBgTransfer.enabled = true; textBgTransfer.resetPortion(); });
 
@@ -196,7 +200,7 @@ describe('battle screen renderer', () => {
     expect(pixel(renderBattleScreen(screen, tiles), 0, 0)).not.toEqual(mid);
   });
 
-  it('renders a cached frame in under a millisecond and presents it with putImageData', () => {
+  it('renders a cached frame in under a millisecond and presents it scaled from a native offscreen buffer', () => {
     const screen = new BattleScreen();
     const tiles = load(screen, solid(56, 56, 85));
     for (let index = 0; index < 20 * 18; index++) screen.put(index % 20, Math.floor(index / 20), 0x80 + (index % 26));
@@ -214,5 +218,7 @@ describe('battle screen renderer', () => {
     expect(image.height).toBe(144);
     expect(putImageData.mock.calls[0][1]).toBe(0);
     expect(putImageData.mock.calls[0][2]).toBe(0);
+    expect(presentOutput.drawImage).toHaveBeenCalledWith(expect.objectContaining({width:160,height:144}),0,0,480,432);
+    expect(presentOutput.imageSmoothingEnabled).toBe(false);
   });
 });

@@ -26,7 +26,8 @@ export interface PcStorage {
   boxes: BoxedPokemon[][];
   getCurrentBox(): number;
   setCurrentBox(index: number): void;
-  deserialize(boxed: BoxedPokemon): BattlePokemon | null;
+  withdraw(boxed: BoxedPokemon): BattlePokemon | null;
+  boxStats(boxed: BoxedPokemon): BattlePokemon | null;
   hasFlag(flag: string): boolean;
   saveGame(): void;
   isPikachuFollowingDisabled(): boolean;

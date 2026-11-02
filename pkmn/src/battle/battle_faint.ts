@@ -30,7 +30,7 @@ export interface FaintHost extends EnemySendOutHost, ExperienceHost {
    * Prefix extraction remains the approved A5c3f/data carry (note70 §9.1 item9). */
   printEndBattleText(state: BattleState): Program;
   /** Approved deferred AnimationSlideEnemyMonOff body; caller's whoseTurn is0. */
-  enemySlideOff(state: BattleState): void;
+  enemySlideOff(state: BattleState): Program;
 }
 export type FaintExit = 'loop' | 'end' | 'blackout';
 
@@ -91,7 +91,7 @@ export function* enemyRan(state: BattleState, host: FaintHost): Program {
   if (state.wLinkState === LINK_STATE_BATTLING) throw new BattleUnsupportedState('link');
   yield* host.printText('WildRanText', { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
   yield* host.waitForSound(); host.audio.play(host.runSound);
-  state.hWhoseTurn = 0; host.enemySlideOff(state); // No post-RUN wait in this root.
+  state.hWhoseTurn = 0; yield* host.enemySlideOff(state); // No post-RUN wait in this root.
 }
 
 export function* removeFaintedPlayerMon(state: BattleState, host: FaintHost): Program {

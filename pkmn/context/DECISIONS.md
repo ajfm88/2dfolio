@@ -1080,6 +1080,36 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
     - This amends PLAN.md's "species display names move to V5" for the battle engine only. The overworld menus'
       display names stay V5's.
 
+86. **After a battle, an un-nicknamed mon's name goes back as upstream's `species.name`** (2026-10-30, O-48, option A).
+    *The user: "lets go with the recommendation".*
+
+    - In A5c3f checkpoint-09's write-back, nickname bytes equal to the species' `MonsterNames` entry become
+      `species.name` (`Nidoran-F`); any other bytes are decoded verbatim. Note 72 §11.41.2 finding 5.
+    - Inside the battle (texts, HUD, its party menu and status screen) the names stay the cartridge's (#85).
+    - The live world, the save and `evolution.ts`'s rename keep upstream's convention until V5 changes the species
+      display names once, with a save migration. Checkpoint-10's raw name bytes may later carry the exact bytes.
+
+87. **A5c3f checkpoint-09 splits into 09a, 09b and 09c** (2026-10-30, Claude's call under CONVENTIONS → *Scoping rules*).
+
+    - **09a:** the live adapter, unused and headless: the world in, the outcome out, the cartridge's evolution choice, the
+      map-side plan. Also the end-battle text labels as generated data, in their own commit. The bundle is unchanged.
+    - **09b:** `main.ts` switches to the session, and the bundle changes.
+    - **09c:** the `partyItem` screen and `debug.ts` on `BattleState`.
+    - Each is briefed after the previous one's check. Note 72 §11.44.
+
+88. **A5c3f checkpoint-10 splits into 10a and 10b, and the save stores the cartridge's mon records** (2026-10-30, Claude's
+    call under CONVENTIONS → *Scoping rules*; the user may overturn it).
+
+    - **10a, the mon paths:** deposit, withdrawal and the box's STATS page as `_MoveMon` and `StatusScreen` do them
+      (`CalcStats` `b = 1`, the level from EXP on withdrawal), evolution's stats and unclamped HP, the catch's front
+      insertion, and the box mon's sleep counter. **10b, the save:** party and box mons saved as their struct bytes,
+      version 1 loading, the options and the emotion modifier. Play-test fixes take 10c onward.
+    - **The raw record cells that the live objects derive** (types, catch rate, the party struct's box-level byte, name
+      padding, move-slot holes) are derived at save time, as the bridge derives them. No single-player Yellow code reads
+      them, so the carries that said "raw metadata, 10" are closed, not deferred. Reopen only for a link feature.
+    - Version-1 saves load. Their sleeping mons get sleep counter 1, a migration value, because version 1 never stored
+      the counter. Note 72 §11.55.
+
 ## Open — not decided, needs the user
 
 

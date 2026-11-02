@@ -18,7 +18,7 @@ export interface MoveAnimationHost {
   sounds: { damage: BattleSfx; superEffective: BattleSfx; notVeryEffective: BattleSfx };
   /** Existing WaitForSoundToFinish owner, including the low-health bit7 early return. */
   waitForSound(): Program;
-  /** TossBallAnimation remains A5f's presentation hand-off. */
+  /** TossBallAnimation owns the BG steps; its OAM sub-animations remain A5f cues. */
   tossBall(state: BattleState): Program;
 }
 

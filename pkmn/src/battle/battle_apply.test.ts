@@ -19,9 +19,11 @@ import {
   type ApplyPorts,
 } from './battle_apply';
 import { adjustDamageForMoveType } from './battle_damage_asm';
+import { loadBattleData } from './data';
 import { moveHitTest } from './battle_hit';
 
 beforeAll(loadTextPrograms);
+beforeAll(loadBattleData);
 afterEach(() => vi.restoreAllMocks());
 
 function rig(side: 0 | 1) {

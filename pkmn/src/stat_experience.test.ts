@@ -1,21 +1,25 @@
 import { beforeAll, afterEach, expect, it, vi } from 'vitest';
+vi.hoisted(() => Object.assign(globalThis,{window:{addEventListener(){}}}));
 vi.mock('./battle', async () => {
   const data = await import('./battle/data'); const experience = await import('./battle/experience');
   return { createPokemon: data.createPokemon, initExperience: experience.initExperience };
 });
 import { createPokemon, loadBattleData } from './battle/data';
+import { loadTrainerSpeciesData } from './battle/battle_trainer_data';
+import { loadBattleBridgeData } from './battle/battle_bridge';
 import { applyEvolution, checkEvolutions } from './battle/evolution';
 import { pokemonToBoxed } from './pokemon_storage';
-import { loadGame, restoreParty, saveGame, type SaveData } from './save';
+import { loadGame, restoreParty, saveGame, type SaveDataV1, type SaveDataV2, type SavedMonBytes } from './save';
+import { decodePartyMon } from './battle/battle_party_codec';
 import { Bag } from './items';
 import { A, BattleState, decodeNick, encodeText, NAME_LENGTH, PARTYMON_STRUCT_LENGTH } from './battle/battle_state';
 import { mirrorPartyProgress, partySlotFromPokemon, writePartySlot, loadBattleMonFromParty } from './battle/battle_loaders';
 
-beforeAll(loadBattleData);
+beforeAll(async () => { await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData(); });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 function mon() { return createPokemon('PIKACHU', 10, 'SPARK', { atk: 9, def: 8, spd: 7, spc: 6 })!; }
-function oldSave(): SaveData {
+function oldSave(): SaveDataV1 {
   const boxed = pokemonToBoxed(mon()); delete boxed.statExp; boxed.exp = 1234;
   return { version: 1, mapName: 'PalletTown', playerX: 0, playerY: 0, playerDirection: 'down',
     party: [{ ...boxed }, { ...boxed }], bag: [], money: 3000, defeatedTrainers: [] };
@@ -26,12 +30,12 @@ it('fresh Pokemon and old-save members each own independent zero stat-exp arrays
   expect(b.statExp).toEqual([0, 0, 0, 0, 0]);
   const old = oldSave(); const party = restoreParty(old);
   expect(party.map(p => p.statExp)).toEqual([[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]);
-  expect(party.map(p => p.exp)).toEqual([1000, 1000]); // The live EXP reset is deliberately preserved.
+  expect(party.map(p => p.exp)).toEqual([1234, 1234]);
   party[0].statExp[0] = 65535;
   expect(party[1].statExp).toEqual([0, 0, 0, 0, 0]); expect(old.party[0].statExp).toBeUndefined();
 });
 
-it('evolution retains the existing stat-exp tuple and the live b=0 stat calculation', () => {
+it('evolution retains the existing stat-exp tuple and uses the b = 1 stat calculation', () => {
   const dvs = { atk: 9, def: 8, spd: 7, spc: 6 };
   const trained = createPokemon('PIDGEY', 18, undefined, dvs)!, zero = createPokemon('PIDGEY', 18, undefined, dvs)!;
   const words = trained.statExp = [65535, 63002, 64517, 256, 1];
@@ -39,12 +43,14 @@ it('evolution retains the existing stat-exp tuple and the live b=0 stat calculat
   applyEvolution(trained, target); applyEvolution(zero, target);
   expect(trained.statExp).toBe(words); expect(trained.statExp).toEqual([65535, 63002, 64517, 256, 1]);
   expect([trained.maxHp, trained.attack, trained.defense, trained.speed, trained.special])
-    .toEqual([zero.maxHp, zero.attack, zero.defense, zero.speed, zero.special]);
+    .toEqual([65, 41, 39, 33, 25]);
+  expect([zero.maxHp, zero.attack, zero.defense, zero.speed, zero.special])
+    .toEqual([54, 29, 27, 33, 25]);
 });
 
-it('deposit and save serialize copies; load preserves five words but still resets partial EXP', () => {
+it('deposit and save serialize copies; load preserves five words, exact EXP and stored stats', () => {
   const original = mon(); original.statExp = [1, 256, 63002, 64517, 65535]; original.exp = 1234;
-  original.attack = 999; original.speed = 1; // These transient stats must not enter the save.
+  original.attack = 999; original.speed = 1; // Stored stat words survive the version-2 reload.
   const box = pokemonToBoxed(original);
   expect(box.statExp).not.toBe(original.statExp); expect(box.statExp).toEqual(original.statExp);
   original.statExp[0] = 99; expect(box.statExp![0]).toBe(1);
@@ -53,16 +59,20 @@ it('deposit and save serialize copies; load preserves five words but still reset
     setItem: (key: string, value: string) => { stored.set(key, value); } });
   const stringify = vi.spyOn(JSON, 'stringify');
   saveGame('PalletTown', 16, 32, 'down', [original], new Bag(), 3000, new Set());
-  const serialized = stringify.mock.calls[0][0] as SaveData;
-  expect(serialized.party[0].statExp).not.toBe(original.statExp);
+  const serialized = stringify.mock.calls[0][0] as SaveDataV2;
+  const record = (bytes:SavedMonBytes) => {
+    const s=new BattleState();s.mem.set(bytes.mon,A.wPartyMons);s.mem.set(bytes.ot,A.wPartyMonOT);s.mem.set(bytes.nick,A.wPartyMonNicks);
+    return decodePartyMon(s,0);
+  };
+  expect(record(serialized.party[0]).statExp).not.toBe(original.statExp);
   expect(serialized.party[0]).not.toHaveProperty('attack'); expect(serialized.party[0]).not.toHaveProperty('maxHp');
   original.statExp[1] = 777;
-  expect(serialized.party[0].statExp).toEqual([99, 256, 63002, 64517, 65535]);
-  const saved = loadGame()!; const restored = restoreParty(saved)[0];
+  expect(record(serialized.party[0]).statExp).toEqual([99, 256, 63002, 64517, 65535]);
+  const saved = loadGame() as SaveDataV2; const restored = restoreParty(saved)[0];
   expect(restored.statExp).toEqual([99, 256, 63002, 64517, 65535]);
-  expect(restored.statExp).not.toBe(saved.party[0].statExp);
-  expect(restored.exp).toBe(1000); expect(restored.attack).toBe(mon().attack); expect(restored.speed).toBe(mon().speed);
-  restored.statExp[2] = 0; expect(saved.party[0].statExp![2]).toBe(63002);
+  expect(restored.statExp).not.toBe(record(saved.party[0]).statExp);
+  expect(restored.exp).toBe(1234); expect(restored.attack).toBe(999); expect(restored.speed).toBe(1);
+  restored.statExp[2] = 0; expect(record(saved.party[0]).statExp[2]).toBe(63002);
 });
 
 it.each(['player', 'enemy'] as const)('packs %s identity, 24-bit EXP and five BE words without leaking them into battle data', side => {

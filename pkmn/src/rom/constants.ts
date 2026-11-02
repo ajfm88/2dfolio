@@ -127,3 +127,5 @@ export const GROWTH_RATE_NAMES: string[] = [
 export const EVOLVE_LEVEL = 1;
 export const EVOLVE_ITEM = 2;
 export const EVOLVE_TRADE = 3;
+/** pret effects.asm:780–798: stat names are copied ten bytes at a time. */
+export const STAT_NAME_LENGTH = 10;

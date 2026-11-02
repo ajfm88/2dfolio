@@ -13,6 +13,7 @@ export interface BoxedPokemon {
   maxHp: number;
   moves: { id: string; pp: number; maxPp: number }[];
   status: 'PSN' | 'BRN' | 'FRZ' | 'PAR' | 'SLP' | null;
+  sleepTurns: number;
   atkDV: number;
   defDV: number;
   spdDV: number;
@@ -32,6 +33,7 @@ export function pokemonToBoxed(mon: BattlePokemon): BoxedPokemon {
     maxHp: mon.maxHp,
     moves: mon.moves.map(m => ({ id: m.id, pp: m.pp, maxPp: m.maxPp })),
     status: mon.status,
+    sleepTurns: mon.sleepTurns,
     atkDV: mon.atkDV,
     defDV: mon.defDV,
     spdDV: mon.spdDV,

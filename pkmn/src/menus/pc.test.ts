@@ -40,7 +40,7 @@ function rig(items: ItemStack[] = [{ id: 'POTION', count: 3 }], stored: ItemStac
   let currentBox = 2;
   const sprites = vi.fn(); const session = new PcSession(tiles, box, textBgTransfer, bag, pc, sprites, options ? 'generic' : 'direct', {
     party: [], boxes: Array.from({ length: 12 }, () => []), getCurrentBox: () => currentBox,
-    setCurrentBox: index => { currentBox = index; }, deserialize: () => null,
+    setCurrentBox: index => { currentBox = index; }, withdraw: () => null, boxStats: () => null,
     hasFlag: flag => flag === 'GOT_POKEDEX' ? !!options?.dex : flag === 'MET_BILL' ? !!options?.metBill : false,
     saveGame: vi.fn(), isPikachuFollowingDisabled: () => false,
   });

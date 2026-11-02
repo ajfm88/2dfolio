@@ -2,6 +2,7 @@
 import { A, NAME_LENGTH, type BattleState } from './battle_state';
 import { BattleUnsupportedState } from './battle_move_data';
 import { createPokemon } from './data';
+import { monsterName } from './battle_trainer_data';
 import type { BattlePokemon } from './types';
 import { decodePrefix, encodePrefix, nameBytes, decodePartyMon, encodePartyMon, pokemonToPartyRecord,
   type PartyMonRecord, type BoxMonRecord } from './battle_party_codec';
@@ -122,15 +123,20 @@ function readDex(state: BattleState, base: number): number[] {
     const bit = number - 1; return Boolean(state.mem[base + (bit >> 3)] & (1 << (bit & 7)));
   });
 }
+/** The live objects' default nickname is upstream's species.name; the cartridge's bytes are MonsterNames'. */
+export function worldPartyRecord(mon: BattlePokemon): PartyMonRecord {
+  const r = pokemonToPartyRecord(mon);
+  return mon.nickname === mon.species.name ? { ...r, nickname: nameBytes(monsterName(r.species)) } : r;
+}
 /** Only prefix cells are needed by battle. Missing boxed raw metadata is a checkpoint10 loss (note72). */
 export function boxedPokemonToRecord(boxed: BoxedPokemon): BoxMonRecord {
   const mon = createPokemon(boxed.speciesName, boxed.level, boxed.nickname,
     { atk: boxed.atkDV, def: boxed.defDV, spd: boxed.spdDV, spc: boxed.spcDV });
   if (!mon) throw new BattleUnsupportedState(`boxed species ${boxed.speciesName}`);
-  mon.currentHp = boxed.currentHp; mon.status = boxed.status; mon.exp = boxed.exp;
+  mon.currentHp = boxed.currentHp; mon.status = boxed.status; mon.sleepTurns = boxed.sleepTurns; mon.exp = boxed.exp;
   mon.statExp = boxed.statExp ? [...boxed.statExp] : [0, 0, 0, 0, 0];
   mon.otName = boxed.otName ?? ''; mon.otId = boxed.otId ?? 0; mon.moves = boxed.moves.map(m => ({ ...m }));
-  const { level: _level, maxHp: _hp, attack: _atk, defense: _def, speed: _spd, special: _spc, ...prefix } = pokemonToPartyRecord(mon);
+  const { level: _level, maxHp: _hp, attack: _atk, defense: _def, speed: _spd, special: _spc, ...prefix } = worldPartyRecord(mon);
   return prefix;
 }
 /** Before setupBattleBeforeTransition. Only these two event bits are battle inputs;08 leaves the live Set alone. */
@@ -163,7 +169,7 @@ export function writeBattleInputs(state: BattleState, world: BattleWorld): void 
   writeDex(state, A.wPokedexSeen, world.seen); writeDex(state, I.wPokedexOwned, world.owned);
   state.setBag(world.bag.map(item => ({ id: itemNumber(item.id), quantity: item.count })));
   state.mem[D.wPartyCount] = world.party.length;
-  world.party.forEach((mon, slot) => { const r = pokemonToPartyRecord(mon); encodePartyMon(state, slot, r); state.mem[D.wPartySpecies + slot] = r.species; });
+  world.party.forEach((mon, slot) => { const r = worldPartyRecord(mon); encodePartyMon(state, slot, r); state.mem[D.wPartySpecies + slot] = r.species; });
   state.mem[D.wPartySpecies + world.party.length] = 255;
   state.mem[I.wBoxCount] = box.length;
   box.forEach((mon, slot) => { const r = boxedPokemonToRecord(mon); encodeBoxMon(state, slot, r); state.mem[I.wBoxSpecies + slot] = r.species; });

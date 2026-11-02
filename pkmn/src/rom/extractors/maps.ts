@@ -6,7 +6,7 @@
 import { BinaryReader } from '../binary_reader';
 import { MAP_HEADER_PTRS, MAP_HEADER_BANKS, MAP_TEXT_PTRS, PICK_UP_ITEM_TEXT_ADDR, symToOffset } from '../rom_offsets';
 import { decodeMapText } from './text';
-import { TEXT_POINTER_TABLES } from '../text_program_symbols';
+import { TEXT_POINTER_TABLES, TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
 
 // ── Constants ───────────────────────────────────────────────────
 
@@ -282,6 +282,7 @@ export interface MapNpc {
   trainerParty?: number;      // 0-based index into that class's parties
   sightRange?: number;        // header byte 1 >> 4: steps TrainerEngage sees (0 = talk only)
   endBattleText?: string;     // in battle after "PLAYER defeated CLASS!", shown as "CLASS: " + text
+  endBattleTextLabels?: { win: string; lose: string };
   afterBattleText?: string;   // talking to the trainer once beaten
 }
 
@@ -838,6 +839,7 @@ interface TrainerHeader {
   sightRange: number;       // header byte 1 = sight << 4 (TrainerEngage's distance)
   battleText: string;       // TRAINER_BEFORE_BATTLE_TEXT
   endBattleText: string;    // TRAINER_WON_BATTLE_TEXT
+  endBattleTextLabels: { win: string; lose: string };
   afterBattleText: string;  // TRAINER_AFTER_BATTLE_TEXT
 }
 
@@ -910,11 +912,19 @@ function readTrainerHeader(rom: BinaryReader, mapName: string, textId: number): 
     const h = inBank(rom.readWord(header + field));
     return h === null ? null : readFarText(rom, h);
   };
+  const label = (field: number): string => {
+    const addr = rom.readWord(header + field);
+    const symbol = TEXT_PROGRAM_SYMBOLS.find(([, bank, address]) => bank === textPtrs.bank && address === addr);
+    if (!symbol) throw new Error(`${mapName} trainer ${textId}: unresolved end-battle text ${textPtrs.bank.toString(16)}:${addr.toString(16)} at header +${field}`);
+    return symbol[0];
+  };
+  const endBattleTextLabels = { win: label(8), lose: label(10) };
   const battleText = text(4);
   const afterBattleText = text(6);
   const endBattleText = text(8);
   if (battleText === null || afterBattleText === null || endBattleText === null) return null;
-  return { sightRange: rom.readByte(header + 1) >> 4, battleText, endBattleText, afterBattleText };
+  return { sightRange: rom.readByte(header + 1) >> 4, battleText, endBattleText, afterBattleText,
+    endBattleTextLabels };
 }
 
 // ── Public API ─────────────────────────────────────────────────
@@ -1092,6 +1102,7 @@ export function extractMap(
       npc.trainerParty = (romNpc.trainerSet ?? 1) - 1;
       npc.sightRange = trainer.sightRange;
       npc.endBattleText = trainer.endBattleText;
+      npc.endBattleTextLabels = trainer.endBattleTextLabels;
       npc.afterBattleText = trainer.afterBattleText;
     }
 

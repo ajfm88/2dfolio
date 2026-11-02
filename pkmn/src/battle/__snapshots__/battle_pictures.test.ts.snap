@@ -2,8 +2,8 @@
 
 exports[`Route1 real04 opening frame: enemy, Red back, HUD and party ball pixels before snapshots 1`] = `
 {
-  "final": "60efb6d54dc7d3967bdef10c509b80f81204b7b459cb5285dcc05d1a89128690",
+  "final": "14338c8662d22b661de9b5f21cd5fb81806262feee479569524f1f579be7cbd6",
   "frame": 102,
-  "opening": "60efb6d54dc7d3967bdef10c509b80f81204b7b459cb5285dcc05d1a89128690",
+  "opening": "14338c8662d22b661de9b5f21cd5fb81806262feee479569524f1f579be7cbd6",
 }
 `;

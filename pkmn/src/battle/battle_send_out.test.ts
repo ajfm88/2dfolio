@@ -105,9 +105,9 @@ function rig() {
     },
     backPicture(state) { mark('back', state.wBattleMonSpecies2); return `back-${state.wBattleMonSpecies2}`; },
     animation: function* (state) { mark('animation', [state.wAnimationID, state.hWhoseTurn]); },
-    sendingOutMon(state, x, y) { mark('sendCue', [state.hWhoseTurn, x, y]); },
-    pikachuEntrance(state) { mark('pikaEntrance', [state.hWhoseTurn, textBgTransfer.enabled]); },
-    slidePlayerOff(state) { mark('pikaRetreat', [state.hWhoseTurn, state.wWhichPokemon]); },
+    *sendingOutMon(state, x, y) { mark('sendCue', [state.hWhoseTurn, x, y]); },
+    *pikachuEntrance(state) { mark('pikaEntrance', [state.hWhoseTurn, textBgTransfer.enabled]); },
+    *slidePlayerOff(state) { mark('pikaRetreat', [state.hWhoseTurn, state.wWhichPokemon]); },
     voice: { getAlarm: lowHealthAlarm, setAlarm(value) { mark('alarm', value); setLowHealthAlarm(value); },
       cry(id) { mark('cry', [id, lowHealthAlarm()]); }, clip(id) { mark('clip', id); } },
   };
@@ -680,9 +680,9 @@ describe('ReplaceFaintedEnemyMon',()=>{
     const input:GameButton[][]=[['a'],['down'],['a']];
     r.host.readJoypad=()=>{const keys=input.shift()??[];vi.mocked(isPassPressed).mockImplementation(key=>keys.includes(key));};
     const sending=r.host.sendingOutMon; let cues=0;
-    r.host.sendingOutMon=(state,x,y)=>{
+    r.host.sendingOutMon=function* (state,x,y){
       cues++; expect([state.wActionResultOrTookBattleTurn,state.wEnemyMoveNum,state.wAILayer2Encouragement]).toEqual([1,0x51,0x52]);
-      sending(state,x,y);
+      yield* sending(state,x,y);
     };
     r.start(replaceFaintedEnemyMon(r.s,r.host)); r.finish();
     expect(input).toEqual([]); expect(cues).toBe(2); expect(r.s.wPlayerMonNumber).toBe(1);
@@ -1273,7 +1273,7 @@ function faintRig(mode=2) {
     playVictoryMusic(name,bank){r.mark('victoryMusic',[name,bank]);r.bridge.audioBank=r.bridge.savedAudioBank=bank;r.audio.music.play(musicData(name));},
     trainerPicture(){r.mark('trainerPicture');return 'trainer';},
     printEndBattleText:function*(){r.mark('endTextHandOff');},
-    enemySlideOff(state){r.mark('enemySlide',[state.hWhoseTurn,r.bridge.channelId(8)]);},
+    *enemySlideOff(state){r.mark('enemySlide',[state.hWhoseTurn,r.bridge.channelId(8)]);},
   };bindLearnMove(host,host);
   const play=r.bridge.play.bind(r.bridge);vi.spyOn(r.bridge,'play').mockImplementation(sound=>{r.mark('sfx',[sound.id,r.bridge.frequencyModifier,r.bridge.tempoModifier]);return play(sound);});
   return {...r,host};

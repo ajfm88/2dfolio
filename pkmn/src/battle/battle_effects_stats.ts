@@ -14,7 +14,8 @@ import { monsStatsRoseText, type TextAsmHandler } from '../text/text_runner';
 import type { BattleTurnTextHost } from './battle_turn_text';
 import type { ExecutePresentation } from './battle_execute_helpers';
 import { delayFrames, type Program } from './battle_menu_context';
-import { STAT_NAME_LENGTH, type StatModTextData } from '../rom/extractors/stat_mod_text';
+import { STAT_NAME_LENGTH } from '../rom/constants';
+import type { StatModTextData } from '../rom/extractors/stat_mod_text';
 
 export interface StatEffectEnvironment extends Pick<ExecutePresentation, 'animation' | 'hideSubstitute' | 'reshowSubstitute'> {
   host: BattleTurnTextHost;

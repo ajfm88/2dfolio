@@ -6,7 +6,8 @@ import {
   getListScrollOffset, setListScrollOffset, getPartyAndBillsSavedMenuItem,
   setPartyAndBillsSavedMenuItem, setCurrentMenuItem,
 } from '../list_state';
-import { MONS_PER_BOX, pokemonToBoxed, isStarterPikachuBoxed } from '../pokemon_storage';
+import { MONS_PER_BOX, isStarterPikachuBoxed } from '../pokemon_storage';
+import { depositMon } from '../pokemon_transfers';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { modifyPikachuHappiness } from '../pikachu/pikachu_happiness';
 import { monDisplayName } from '../pokemon_names';
@@ -195,7 +196,7 @@ export class BillsPc extends PcDisplay {
   private viewStats(): void {
     this.buffer1 = this.tiles.save(this.textBox);
     const mon = this.parentItem === 1 ? this.storage.party[this.selected!.index]
-      : this.storage.deserialize(this.box()[this.selected!.index]);
+      : this.storage.boxStats(this.box()[this.selected!.index]);
     if (!mon) throw new Error('Cannot display stored Pokemon stats');
     this.stats = new StatusScreenSession(mon, { syncRead: false });
   }
@@ -227,10 +228,10 @@ export class BillsPc extends PcDisplay {
       const mon = this.storage.party[index];
       playCry(mon.species.name);
       if (isStarterPikachu(mon)) modifyPikachuHappiness('DEPOSITED');
-      box.push(pokemonToBoxed(mon));
+      box.push(depositMon(mon));
       this.storage.party.splice(index, 1);
     } else {
-      const mon = this.storage.deserialize(box[index]);
+      const mon = this.storage.withdraw(box[index]);
       if (!mon) throw new Error('Cannot deserialize stored Pokemon');
       playCry(box[index].speciesName);
       this.storage.party.push(mon);

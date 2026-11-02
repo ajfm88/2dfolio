@@ -11,20 +11,28 @@ export default defineConfig({
       return code.slice(0, code.lastIndexOf('\ninit().catch')) + `
 export const mainTest = {
   gameTick, checkUiEntry, drawUiLayer, renderPikachuEmotionScene, openStartMenu, restOfPass, overworldDeps, startScript,
-  startNewGame, loadSavedGame, handleWarpLoad, handleBlackoutWarp, connectToMap,
+  writeSave, startNewGame, loadSavedGame, handleWarpLoad, handleBlackoutWarp, connectToMap,
+  init, gameLoop, renderLiveBattle, startBattle, startTrainerBattle, engageTrainer,
+  get pageTicks() { return pageTicks; }, get random() { return sessionRandom; },
+  get boxes() { return pcBoxes; }, get money() { return playerMoney; }, set money(value: number) { playerMoney=value; },
   renderBattleEntry, get battleEntry() { return battleEntry; }, ow,
   async finishFade() { const callback = fadeCallback; fadeCallback = null; await callback?.(); },
   startMenu, partyMenu, bagMenu, optionMenu,
   oakSpeech, namingScreen, get introMapReady() { return introMapReady; },
   pokedexMenu, trainerCard, saveMenu, textBox, playerParty, player, gameMap, pikachuFollower,
-  set battle(value: Battle | null) { currentBattle = value; state = 'battle'; },
-  get battle() { return currentBattle; },
+  set session(value: LiveSession | null) {
+    currentSession = value; state = 'battle';
+    const encounter: LiveBattleEncounter = {kind:'wild',species:19,level:3};
+    battleInput = {world:snapshotBattleWorld(encounter),encounter,blackoutCarry:false};
+  },
+  get session() { return currentSession; },
   get state() { return state; }, set state(value: GameState) { state = value; }, get fade() { return fadeAlpha; },
   get mapName() { return currentMapName; }, mainMenu,
   get bag() { return playerBag; },
   set mapNpcs(value: Npc[]) { npcs = value; },
   reset() {
-    state = 'overworld'; currentBattle = null; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
+    if (currentSession && !currentSession.done) currentSession.abort();
+    state = 'overworld'; currentSession = null; battleInput = null; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
     fadeCallback = null; prevTickInPassState = false; pendingWarpMusic = null;
     introFrames = 0; introMapReady = false;
     battleEntry = null; pendingTrainer = null; engagedTrainer = null;

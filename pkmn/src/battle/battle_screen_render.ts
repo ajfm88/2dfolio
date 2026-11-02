@@ -1,5 +1,5 @@
 // Pure battle scanout. The browser wrapper only calls putImageData. No HUD writers and no clock.
-import { getCtx } from '../renderer';
+import { getCtx, getScale } from '../renderer';
 import { dmgShadeMapping } from '../renderer/palette_shades';
 import { BATTLE_BG_ATTRIBUTES } from './battle_attributes';
 import { battleGlyphTile } from './battle_screen';
@@ -201,8 +201,20 @@ export function renderBattleScreen(screen: BattleScreen, tiles: BattleRenderTile
   return pixels;
 }
 
-/** Browser entry. It does not draw, scale or composite; the caller owns the clock. */
-export function presentBattleScreen(screen: BattleScreen, tiles: BattleRenderTiles): void {
+let presentCanvas: HTMLCanvasElement | undefined;
+/** Presentation only; reuse the native-size buffer and scale with nearest-neighbour pixels. */
+export function presentBattleScreen(screen: BattleScreen, tiles: BattleRenderTiles, nonBlankOnly = false): void {
   const pixels = new Uint8ClampedArray(renderBattleScreen(screen, tiles));
-  getCtx().putImageData(new ImageData(pixels, WIDTH, HEIGHT), 0, 0);
+  if (!presentCanvas) {
+    presentCanvas = document.createElement('canvas');
+    presentCanvas.width = WIDTH; presentCanvas.height = HEIGHT;
+  }
+  presentCanvas.getContext('2d')!.putImageData(new ImageData(pixels, WIDTH, HEIGHT), 0, 0);
+  const ctx = getCtx(), scale = getScale();
+  ctx.imageSmoothingEnabled = false;
+  if (!nonBlankOnly) ctx.drawImage(presentCanvas,0,0,WIDTH*scale,HEIGHT*scale);
+  else for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) {
+    if (screen.visibleAt(x,y) === ' ') continue;
+    ctx.drawImage(presentCanvas,x*8,y*8,8,8,x*8*scale,y*8*scale,8*scale,8*scale);
+  }
 }

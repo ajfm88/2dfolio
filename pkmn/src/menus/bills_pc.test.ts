@@ -1,3 +1,5 @@
+import { loadTrainerSpeciesData } from '../battle/battle_trainer_data';
+import { loadBattleBridgeData } from '../battle/battle_bridge';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => { (globalThis as unknown as { window: unknown }).window = { addEventListener() {} }; });
 import { loadStatusScreenAssets } from './status_screen';
@@ -23,7 +25,7 @@ import { POKEBALL_GLYPH } from './menu_glyphs';
 vi.mock('../audio', () => ({ playSFX: vi.fn(), setMasterVolume: vi.fn(), isSoundFinished: vi.fn(() => true) }));
 vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), loadBattleSprite: async () => ({ width: 40, height: 40 }), getMonsterPalette: () => 'YELLOWMON', fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({}), loadTileset: async () => ({}) }));
 const KEYS: GameButton[] = ['a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'];
-beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadStatusScreenAssets(); });
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData(); await loadStatusScreenAssets(); });
 beforeEach(() => {
   vi.clearAllMocks(); vi.mocked(isSoundFinished).mockReturnValue(true);
   vi.mocked(playSFX).mockImplementation(() => Promise.resolve());
@@ -42,11 +44,12 @@ function rig(party: BattlePokemon[] = [mon('PIKACHU'), mon()], box: BoxedPokemon
   textBox.open({ autoBox: false }); for (let i = 0; i < 20; i++) textBox.update();
   const boxes = Array.from({ length: 12 }, () => [] as BoxedPokemon[]); boxes[currentBox] = box;
   const sprites = vi.fn();
-  const storage: PcStorage = { party, boxes, getCurrentBox: () => currentBox, setCurrentBox: value => { currentBox = value; },
-    deserialize: b => {
+  const deserialize = (b: BoxedPokemon) => {
       const p = createPokemon(b.speciesName, b.level, b.nickname, { atk: b.atkDV, def: b.defDV, spd: b.spdDV, spc: b.spcDV })!;
       p.currentHp = b.currentHp; p.status = b.status; p.moves = structuredClone(b.moves); return p;
-    }, hasFlag: () => true, saveGame: vi.fn(), isPikachuFollowingDisabled: () => disabled };
+  };
+  const storage: PcStorage = { party, boxes, getCurrentBox: () => currentBox, setCurrentBox: value => { currentBox = value; },
+    withdraw: deserialize, boxStats: deserialize, hasFlag: () => true, saveGame: vi.fn(), isPikachuFollowingDisabled: () => disabled };
   const printed: { program: string; noDelay: boolean | undefined; frame: number }[] = [];
   let frame = 0;
   const print = textBox.print.bind(textBox);
@@ -300,5 +303,13 @@ describe('BillsPC_ on the retained display', () => {
     r.frames(16); r.tick('a'); r.until(() => !r.pc.advanceText); r.frames(3); r.tick('a');
     r.frames(14); expect(r.box).toHaveLength(5); r.tick(); expect(r.box).toHaveLength(4);
     expect(r.printed[r.printed.length - 1]?.program).toBe('MonWasReleasedText');
+  });
+  it('10a: deposit appends after existing box objects and preserves the sleeping mon counter',()=>{
+    const sleeping=mon('RATTATA');sleeping.status='SLP';sleeping.sleepTurns=5;
+    const old=boxed(),r=rig([sleeping,mon('PIKACHU')],[old]);
+    r.branch(1);r.choose();
+    expect(r.box).toHaveLength(2);expect(r.box[0]).toBe(old);
+    expect(r.box[1].status).toBe('SLP');expect(r.box[1].sleepTurns).toBe(5);
+    expect(r.party).toHaveLength(1);expect(r.party[0].species.name).toBe('Pikachu');
   });
 });

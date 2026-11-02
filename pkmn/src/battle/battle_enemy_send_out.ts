@@ -129,7 +129,7 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
     enemyMonNick:decodeBattleText(state.mem,D.wEnemyMonNick)});
   state.wCurPartySpecies=state.wCurSpecies=state.wEnemyMonSpecies2; getMonHeader(state,state.wCurSpecies);
   yield* loadMonFrontSprite(host.screen,host.frontPicture(state),state.mem[W_SPRITE_FLIPPED] !== 0);
-  state.mem[D.hStartTileID]=0xcf; host.sendingOutMon(state,15,6);
+  state.mem[D.hStartTileID]=0xcf; yield* host.sendingOutMon(state,15,6);
   playCryCue(host.voice,state.wEnemyMonSpecies2);
   yield* drawEnemyHud(state,host.screen);
   if(state.wCurrentMenuItem!==0) return;

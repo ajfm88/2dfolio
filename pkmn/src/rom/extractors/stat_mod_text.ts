@@ -4,7 +4,6 @@ import type { BinaryReader } from '../binary_reader';
 
 export const STAT_MOD_TEXT_OFFSET = 0x0f * 0x4000 + 0x3655;
 export const STAT_MOD_TEXT_LENGTH = 0x2c;
-export const STAT_NAME_LENGTH = 10;
 export interface StatModTextData { bytes: number[] }
 
 /** pret effects.asm:780-794: EVADE's ten-byte copy includes four following ratio bytes. */

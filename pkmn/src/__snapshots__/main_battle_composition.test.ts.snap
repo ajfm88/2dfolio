@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`partyItem Ether presents its move box over the list and retains outside pixels 1`] = `"90a6c16bba129be66a70057e39d17503d906f662693c1f23d9498118562a0e94"`;
+
+exports[`partyItem Potion presents white, list, shown prompt and animated HP number pixels 1`] = `
+{
+  "hp": "c88315a24d4daf5fba8be2cc67e8702a8aa35ed22a7d24f8909315450f5f8e38",
+  "prompt": "a182ade7a36565b8fb395a09095ef6c082e32c11c9d356d9615923d93f60c806",
+}
+`;

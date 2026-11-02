@@ -28,8 +28,8 @@ beforeAll(async () => {
 describe('static/ export: asset keys', () => {
   // A5c3d checkpoint-03 adds three unused battle SFX JSON and their mirrors.
   // A5c3f checkpoint-02: four more SFX plus stat_mod_text, which extractRom now emits. 190 → 195.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (195 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(195);
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (196 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(196);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('stat_mod_text.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');

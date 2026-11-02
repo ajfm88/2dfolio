@@ -1,6 +1,4 @@
 // A5c3c checkpoint-07. The composed port is unused by the running game (note 69 §10.17).
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true) }));
@@ -332,10 +330,6 @@ describe('composed registry', () => {
     return makeEnv(state, new BattleMenuScreen().screen, () => {});
   }
   it('stage row covers $01-$56', () => { expect(STAGE_ROW).toHaveLength(0x56); });
-  it('the unused-module guard names battle_effects_registry', () => {
-    const source = readFileSync(resolve(__dirname, 'a5c3_unused.test.ts'), 'utf8');
-    expect(source).toContain("'battle_effects_registry'");
-  });
   it('registry keys equal the 34 non-NULL labels, each from exactly one factory', () => {
     const s = hpRig(0).s;
     const env = envFor(s);

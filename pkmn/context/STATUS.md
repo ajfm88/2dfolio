@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-10-30 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
+**Last updated:** 2026-10-31 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
 
 ---
 
@@ -43,7 +43,7 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 #70): A5d ✅ user-verified, A5c1 ✅, A5c2 ✅, and **A5c3** (note 68, #75) runs as six sub-slices, built unused until A5c3f
 switches the game over. A5c3a ✅, A5c3b ✅ (2026-10-20), A5c3c ✅ (2026-10-22, note 69), **A5c3d ✅ (2026-10-24, note 70,
 thirteen checkpoints)**, A5c3e ✅ (2026-10-26, note 71). **Now: A5c3f, the switch-over (note 72): checkpoints 01–08f ✅;
-next 08g the species names (#85), then 09, 09 the
+next 08g the species names (#85; briefed, §11.41), then 09 the
 switch, 10 the save and your play-test.** The full history of this paragraph is in `HISTORY.md` →
 *Archived STATUS sections (moved 2026-10-24)*.
 
@@ -60,9 +60,9 @@ switch, 10 the save and your play-test.** The full history of this paragraph is 
 | ROM | `game/pokeyellow.gbc`, SHA1 `cc7d0326…4a38e1` (DECISIONS #14) — re-verified 2026-09-22 |
 | `refs/` | All 5 cloned on pinned branches, refreshed 2026-10-01 with `./pull-refs.sh`: `pokeyellow` master `e89ead15`, `gen1recomp` dev `20ab97ab` (was `78a3defa`, +165 commits), `oldamber` main `268d571`, `engine` main `79957401` (was `9b88fd6c`, +13: a Zig toolchain update, no Gen 1 logic change), `dmg` main `5e3b785` |
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
-| `npm run setup` | 195 JSON → `data/`; static 525 PNG + 3 tilemaps + 195 JSON mirror (A5c3f checkpoint-02, note 72 §10.2). A5c3e checkpoint-02: setup twice byte-identical across 909 files; three new SFX assets, old bogus flute music removed, four text keys added; all 901 other surviving files unchanged (note 71 §10.2.4) |
+| `npm run setup` | 196 JSON → `data/`; static 525 PNG + 3 tilemaps + 196 JSON mirror (A5c3f checkpoint-08g adds `monster_names.json`, note 72 §10.18; setup twice, only the two new name-table files). A5c3e checkpoint-02: setup twice byte-identical across 909 files; three new SFX assets, old bogus flute music removed, four text keys added; all 901 other surviving files unchanged (note 71 §10.2.4) |
 | Typecheck | Clean |
-| Tests | 08f ✅ (re-run by Claude: ROM 6173/6173, no-ROM 5923/250, no timeouts). Codex's run: **6173 ROM /5923 no-ROM cases validated**,250 ROM-only skips. Full ROM6171 + Route1/Pewter timeouts →18/18 and1/1 alone; no-ROM5922 + Route1 timeout →18/18 alone (§11.16). Typecheck/build clean. **index-BAeUVEwA.js**,406730 bytes /125.47kB gzip, unchanged; no production-reachable changes. Note72 §10.17 |
+| Tests | 10b implemented, pending Claude: **ROM6260/6260**, **no-ROM6003 pass /257 skip**, default workers, no failures/timeouts. Typecheck/build and unchanged bundle-marker gate pass. Bundle **`index-Ccytk04i.js`**, **654,297 bytes /187.72 kB gzip**. All11 mutations caught. Note72 section10.23.5. Checked10a baseline:6250/5993 with257 skips. |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -150,14 +150,17 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 
 ## In progress
 
-**2026-10-30 — checkpoint-08f ✅ checked (note 72 §11.40); checkpoint 08 (08a–08f) is complete. O-47 answered (DECISIONS #85). Next session: Claude spikes and briefs **08g, the cartridge's species names**; then 09 (the switch). 09's item 0 carries §11.40's joypad pin.**
+**2026-10-30 — A5c3f checkpoint-10 ✅ (10a §11.59, 10b §11.62); the user's play-test ran, found three bugs, and stopped for the day.** Fix them in this order, then the user resumes the play-test (checklist note 72 §11.62.2):
+1. **10c ✅ checked (§11.70, `6e6abbb`): the send-out pics, the slide-offs and the ball's hide/show.** Bundle `index-DCWF4j_j.js`.
+2. **10d, briefed (§11.64): Pikachu stays green in grey Pewter.** The follower's sheet is tinted once at boot (`main.ts:432`), while the player's reloads on every map. An old overworld bug. Handoff: "Then 10d per §11.64, own commit."
+3. **Finding 3, open (§11.65): FIGHT's move menu never appears in the browser,** though moves can be chosen blind. Claude's spike shows the session's cells and the rig's present are correct, so it's a browser-only path. **Claude investigates first next session** (the real browser), then briefs 10e.
 
 **A5c3f, the switch-over** (Claude's plan `notes/72-a5c3f-plan.md`; O-45 answered → DECISIONS #83: the BATTLE ANIMATION
 OFF move presentation, the catch's stand-in screens, the old engine retiring after the play-test; Grok ran 01–03;
-Codex ran 04, #84, and 04b onward. **08 split into 08a–08f (§11.35), all ✅**).
+Codex ran 04, #84, and 04b onward. **08 split into 08a–08g (§11.35, §11.41), all ✅**).
 Checkpoints: 01 ✅ (trace, §11.1) · 02 ✅ (data, §11.3) · 03 ✅ (the trainer's party, §11.5) · 04 ✅ (the battle's start
-up to StartBattle, §11.7) · 04b ✅ (StartBattle to EndOfBattle, §11.10) · 05 ✅ (the OFF move animation, §11.11) · 06 ✅ (the pictures, §11.12) · 07a ✅ (the party codec, §11.17) · 07b ✅ (inputs and outputs, §11.20) · 07c ✅ (the party refresh, §11.22) · 08a ✅ (the session's core, §11.27) · 08b ✅ (the core fixes, §11.29) · 08c ✅ (trainers, §11.34) · 08d ✅ (menus, §11.36) · 08e ✅ (the stand-in screens, §11.38) · 08f ✅ (the catch, §11.40) ·
-09 the switch · 10 the save, then the user's play-test · 10b+ fixes · 11 retirement.
+up to StartBattle, §11.7) · 04b ✅ (StartBattle to EndOfBattle, §11.10) · 05 ✅ (the OFF move animation, §11.11) · 06 ✅ (the pictures, §11.12) · 07a ✅ (the party codec, §11.17) · 07b ✅ (inputs and outputs, §11.20) · 07c ✅ (the party refresh, §11.22) · 08a ✅ (the session's core, §11.27) · 08b ✅ (the core fixes, §11.29) · 08c ✅ (trainers, §11.34) · 08d ✅ (menus, §11.36) · 08e ✅ (the stand-in screens, §11.38) · 08f ✅ (the catch, §11.40) · 08g ✅ (species names, §11.43) ·
+09a ✅ (the live adapter, §11.45) · 09b ✅ (the switch, §11.51) · 09c ✅ (§11.54) · 10a ✅ (§11.59) · 10b ✅ (§11.62) · play-test round 1 (three findings, §11.63–§11.65) · 10c ✅ (§11.70) · 10d briefed · 10e after finding 3's diagnosis · 11 retirement.
 08f: all three catch homes, separate once-only stand-in loader, naming/dex adapters and abort audio restoration. ROM6173 /no-ROM5923 validated,250 skips, timing fallbacks recorded; bundle `index-BAeUVEwA.js` unchanged. All15 mutations fail plain assertions. Results/carries: note72 §10.17; stop for Claude's check.
 
 **A5c3e ✅ complete** (note 71 §11.38, 2026-10-26).
@@ -195,7 +198,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5c–A5f** | A | Note 65, #70. A5d ✅ → A5c1 ✅ → A5c2 ✅ → **A5c3** (note 68, #75): a ✅ · b ✅ · c ✅ · d ✅ · e ✅ · **f the switch-over (note 72, #83/#84; Grok 01–03, then Codex; 01–08f ✅, 08g (#85) then 09) with your play-test** → A5e intros and animations → A5f the wild catch's animations, with the catch demo folded in |
+| 1 | **A5c–A5f** | A | Note 65, #70. A5d ✅ → A5c1 ✅ → A5c2 ✅ → **A5c3** (note 68, #75): a ✅ · b ✅ · c ✅ · d ✅ · e ✅ · **f the switch-over (note 72; 01–10 ✅; the play-test's fixes next: 10c, 10d, finding 3 → 10e; then the play-test resumes; then 11, the retirement)** → A5e intros and animations → A5f the wild catch's animations, with the catch demo folded in |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
 | 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
@@ -243,6 +246,8 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
+- **O-48 ✅ answered 2026-10-30 → DECISIONS #86:** option A. After a battle, an un-nicknamed mon's name goes back as
+  upstream's `species.name`; 09's write-back implements it.
 - **O-47 ✅ answered 2026-10-30 → DECISIONS #85:** the battle's species names come from the cartridge's `MonsterNames`, in
   checkpoint-08g before 09 (Claude briefs it next session).
 - **O-46 (open, 2026-10-28):** a small separate slice for the load-sensitive timing tests (`pewter_tripwire.test.ts` 5000 ms,
@@ -268,6 +273,211 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 - Cable club receptionist (`ViridianPokecenter:4`): link features need a user decision; no slice is invented for it.
 
 ## Session log
+
+### 2026-11-01 (A5c3f 10c ruled and checked) — Claude
+
+- Ruled Codex's four 10c stops:
+  - §11.66: the ball toss's hide/show joins 10c, and its OAM steps stay A5f cues;
+  - §11.67: ledger shifts come from the frame-driven DIV, proved by a zero-wait control;
+  - §11.68: a test whose purpose is a single roll may pin its random source;
+  - §11.69: Misty's pin, with exact per-mon counts.
+- Checked 10c (§11.70) against the ASM and reran typecheck and no-ROM. My own mutation was caught.
+- Next: 10d (Pikachu's palette, §11.64), then finding 3's browser investigation (§11.65).
+
+### 2026-10-31 (A5c3f checkpoint-10c complete, awaiting check) — Codex
+
+Completed §11.69's pinned Misty proof, including two per-mon FF writes and exact item/stat text order. Added12 real-main/session/raster cases; all12 mutations fail plain assertions, restored byte-for-byte. Final ordered gates pass: typecheck; build index-DCWF4j_j.js656,232 bytes; ROM6272/6272; no-ROM6015/257 skip, no timing fallback. Note72 §10.24.6 records counts, prior controls, mutation evidence, bundle and scope. Local checkpoint commit; never pushed. Stop for Claude's check; 10d unstarted.
+
+### 2026-10-31 (A5c3f checkpoint-10c, derived pin stop) — Codex
+
+Read §11.68; derived and tested only DIV40, giving the first eligible Misty roll30. Existing item/stat text assertions pass, but the exact trainer hand-off assertion fails4 vs2: the AI allowance resets per enemy mon. Restored the entire failed pin, changed no assertions and tried no further sources. Note72 §10.24.5 records the derivation, run and per-mon ASM reset. Docs-only local checkpoint commit; remaining tests/mutations/gates pending. Stop for Claude's ruling; never pushed, no10d.
+
+### 2026-10-31 (A5c3f checkpoint-10c resumed, Misty purpose stop) — Codex
+
+Applied §11.67's Route1 value/snapshot update;18/18 pass and first Tackle still123 frames. Broader preflight finds Misty wins without the AI item, breaking the exact hand-off test's stated purpose. All-waits-zero control restores that file16/16 and Route1's old plain assertions; only accepted Route1 hashes/FF8B differ. Controls restored, Misty unchanged. Note72 §10.24.4 records both runs. Local checkpoint commit, no push; new tests/mutations/gates pending, stop for Claude's ruling, no10d.
+
+### 2026-10-31 (A5c3f checkpoint-10c resumed, ledger stop) — Codex
+
+Applied §11.66's expanded scope as partial Programs behind the session's five cues; the existing faint-thud owner works. Typecheck passes. Unchanged session test fails final HP/PP and runs695 frames versus the committed1067, rather than delay-only1079. Exact counts and RNG inference in note72 §10.24.3; temporary diagnostics restored, assertions/snapshots unchanged. New proof, ten mutations and remaining gates pending. One local checkpoint commit, explicitly incomplete; stop for Claude's ruling, never pushed, 10d unstarted.
+
+### 2026-10-31 (A5c3f checkpoint-10c, inventory stop) — Codex
+
+Read the brief and all listed ASM before code. Inventoried the session's other deferred cues; `tossBall` is reachable on today's maps and its ASM hides/shows the enemy BG pic, triggering the explicit scope stop. Note 72 §10.24 records the call chain, A5e carries and verification limits. Documentation-only local checkpoint commit; no implementation, gates or mutations, no push. Stop for Claude's ruling; do not start 10d.
+
+### 2026-10-30 (play-test round 1 wrapped; findings 2–3) — Claude
+
+- Ran the dev server for the user's play-test. The user stopped for the day after three findings.
+- Finding 1 (no back pic) → 10c, briefed.
+- Finding 2 (Pikachu's palette in Pewter) → 10d, briefed.
+- Finding 3 (no FIGHT menu in the browser):
+  - the spike shows the session and the rig are correct;
+  - it's open, and Claude investigates it in the real browser first next session (§11.65).
+- Spikes deleted, dev server stopped.
+- The user's pre-10b save backup `pkmn-save.txt` (version 1) is committed at the repo root, at the user's request. Use it to test version-1 loading.
+
+### 2026-10-30 (play-test finding 1; 10c briefed) — Claude
+
+- The user's play-test found no back pic.
+- Reproduced it with a throwaway spike (deleted). The cause is the session's no-op send-out cues, which the cartridge implements as tilemap writes.
+- Briefed 10c (§11.63).
+
+### 2026-10-30 (A5c3f 10b checked) — Claude
+
+- Ruled 10b's old-test stop (§11.61).
+- Checked 10b (§11.62.1) and reran typecheck and no-ROM.
+- Wrote the user's play-test checklist (§11.62.2).
+- Next: the play-test.
+
+### 2026-10-30 (A5c3f checkpoint-10b complete, pending check) - Codex
+
+Applied section11.61's two exact old-test changes. Added ten real-data save/main-menu proofs and caught all11 mutations, with source restored afterward. Gates pass in order: typecheck; build `index-Ccytk04i.js`,654,297 bytes; unchanged bundle markers; ROM6260/6260 (232 files); no-ROM6003 pass /257 skip (219 files pass,13 skip). Main's three version1 mocks remain unchanged. Architecture/STATUS and note72 section10.23.5 record version2, version1 migration, owner lifetimes, proof, allowed old-test edits and scope audit. One local commit `A5c3f checkpoint-10b: the save`, never pushed. Stop for Claude's check; the user's play-test checklist comes afterward.
+
+
+### 2026-10-30 (A5c3f checkpoint-10b, old-test scope stop) - Codex
+
+Implemented the partial v2 save/v1 migration and two live owners under section 11.60.3; applied only the allowed saved-JSON/getter test adaptations. Typecheck clean. Focused tests pass132, fail2: the separate legacy fresh-array EXP reset assertion and save's two retired initExperience census entries, both outside the old-test list. Main's three v1 load mocks are unchanged and pass. Details and exact requested scope in note72 section 10.23. Worktree retained, no new proof/mutations/final gates, commit or push; play-test unstarted.
+
+
+### 2026-10-30 (A5c3f 10b briefed) — Claude
+
+- Briefed 10b (§11.60) on §11.55.4's pre-rulings.
+- `loadGame` keeps returning raw `SaveData` (versions 1 and 2), so main's version-1 mocks remain.
+- Decoding moves into `restoreParty` / `restoreBoxes`.
+- Next: the implementer runs 10b.
+
+### 2026-10-30 (A5c3f 10a checked) — Claude
+
+- Ruled 10a's three stops (§11.56–§11.58: old-test allowances, mutation 6 equivalent, `stat_experience.test.ts`).
+- Checked 10a (§11.59): recomputed the withdrawal stats by hand, and reran typecheck and no-ROM.
+- Next: the 10b brief.
+
+### 2026-10-30 (A5c3f checkpoint-10a complete, pending check) - Codex
+
+Applied section 11.58's fixture and single b=1 evolution expectation; all other stat-experience cases, including the save/EXP reset, stay unchanged. Final gates pass in order: typecheck; build `index-JxBhHJZc.js`, 653,398 bytes; unchanged bundle script; ROM 6250/6250 (230 files); no-ROM 5993 pass / 257 skip (217 files pass, 13 skip). Nine required mutations caught; deposit overwrite mutation accepted as equivalent. Architecture/STATUS and note72 section 10.22.9 record the complete proof and old-test allowances. One local commit `A5c3f checkpoint-10a: the mon paths`, never pushed. Stop for Claude's check; 10b unstarted.
+
+
+### 2026-10-30 (A5c3f checkpoint-10a, section 11.57 gate stop) - Codex
+
+Applied the story-PC loads; retained the accepted equivalent deposit mutant and nine required catches. Gates: typecheck/build/bundle script pass; bundle `index-JxBhHJZc.js` 653,398 bytes. ROM passes 6244 tests but stat_experience.test.ts fails collection with missing window, reproduced alone. Its old b=0 evolution expectation also needs scope. Left file untouched and documented exact requested changes in note72 section 10.22.8. Architecture/STATUS updated. No no-ROM gate, commit or push; retain worktree for the ruling and final gate rerun.
+
+
+### 2026-10-30 (A5c3f checkpoint-10a, section 11.56 continuation) - Codex
+
+Applied the listed old-test allowances, added 12 passing real-data proofs, and caught nine mutations. Typecheck clean. New narrow stop: story-PC also needs table-loading setup beyond its callback-only allowance; deposit mutation 6 is semantically identical at the required live boundary and survives. No further old-test edits or fake fixtures. Full findings and artifacts in note 72 sections 10.22.5-7. Worktree retained, no final gates/bundle claim, commit or push. Await Claude's ruling, then finish 10a.
+
+
+### 2026-10-30 (A5c3f checkpoint-10a, old-test scope stop) - Codex
+
+Implemented partial mon paths under section 11.55.3 and the three allowed old-test adaptations. Typecheck fails only in two additional PcStorage fixture files outside the list; focused diagnostics expose the remaining catch-order, retirement snapshot and loader-fixture scope. The allowed main/live tests pass 94/94. No production boxed maxHp reader; no protected data/session/save-format changes. Details and exact requested rulings: note 72 section 10.22. No new proof/mutations/final gates, commit or push; retain worktree for continuation.
+
+
+### 2026-10-30 (A5c3f 10a briefed) — Claude
+
+- Read the live save, PC and evolution paths against `_MoveMon`, `StatusScreen`, `Evolution_PartyMonLoop`, `SendNewMonToBox` and `MainMenu`.
+- Found:
+  - every reload and every withdrawal resets EXP and drops stat EXP from the stats;
+  - box mons lose their sleep counter;
+  - evolution ignores stat EXP and clamps HP.
+- Split 10 into 10a and 10b (DECISIONS #88) and briefed 10a (§11.55.3). 10b is pre-ruled in §11.55.4.
+- Next: the implementer runs 10a.
+
+### 2026-10-30 (A5c3f 09c checked) — Claude
+
+- Checked 09c (note 72 §11.54). All items are as briefed. One accepted reading: the debug catch rate is the actual-rate cell.
+- Fixed §11.53's own error: `stat_mod_text.ts` never used `STAT_NAME_LENGTH`. Removed the import and its `void` keep-alive.
+- Re-checked: typecheck is clean, setup leaves the data unchanged, ROM passes 6238/6238, and the bundle is byte-identical.
+- Next: the checkpoint-10 brief (the save).
+
+### 2026-10-30 (A5c3f checkpoint-09c complete, pending check) - Codex
+
+Completed the section 11.53 constant move, real-main Potion/Ether region hashes, live-owner snapshot regression, byte-view/full-WRAM and DOM-panel proof. No PartyMenu, item bodies or session frame changes. All 11 mutations caught. Gates pass in order: typecheck; build `index-BFFnK4IM.js`, 653,446 bytes; bundle markers; ROM 6238/6238; no-ROM 5981 pass / 257 skip. Setup reproduces 920 files byte-for-byte. STATUS/architecture and note 72 section 10.21.4 record the result, source scope and carries. One local commit `A5c3f checkpoint-09c: partyItem and the debug overlay`, never pushed. Stop for Claude's check; no checkpoint 10 work.
+
+
+### 2026-10-30 (A5c3f checkpoint-09c, extractor stop) - Codex
+
+Implemented partial snapshot/composition/debug changes and the required source/bundle checks. The source guard exposes the unapproved stat-text extractor constant edge through `battle_effects_stats.ts`; stopped per the brief without changing that edge. Typecheck clean, eight byte-view tests pass, isolated guard fails plainly. Worktree retained; no final gates, bundle claim, commit or push. Full handoff: note 72 section 10.21. Await Claude's ruling before completing 09c.
+
+
+### 2026-10-30 (A5c3f 09c briefed) — Claude
+
+Spiked `partyItem` with a throwaway copy of the Potion/Ether harness (deleted).
+- After the opening's blank, the battle screen holds only the item text box, the HP number and Ether's move list. The party list is the blank part.
+- So 09b's plain render was missing the prompt and the messages.
+- Briefed 09c (note 72 §11.52):
+  - the composition: the party list, then the non-blank shown cells, all white when `bgp = 0`;
+  - a byte-backed debug view;
+  - the text-extractor source rule and `check-bundle.mjs`;
+  - the snapshot copy as item 0.
+- Next: the implementer runs 09c.
+
+### 2026-10-30 (A5c3f 09b checked) — Claude
+
+Checked checkpoint-09b (note 72 §11.51), after four rulings during it (§11.47–§11.50: the counted party, the sleeping-Pikachu gates, the browser-safe type chart and old tests, `battle_ai_moves.test.ts`).
+- Typecheck and build clean; bundle `index-BcFy-L-E.js` with no `node:` imports; ROM 6221/6221; no-ROM 5964/257.
+- Three extra mutations on `main.ts`, all caught.
+- One low finding for 09c: the world snapshot aliases the live party and box arrays.
+- Next: Claude briefs 09c.
+
+### 2026-10-30 (A5c3f checkpoint-09b complete, pending check) - Codex
+
+Applied section 11.50's AI test import/loop update with every assertion unchanged. All gates pass in order: typecheck; build `index-BcFy-L-E.js`, 650,975 bytes; ROM 6221/6221 (225 files); no-ROM 5964 pass / 257 skip (212 files pass, 13 skip). No timing fallback. All 18 mutation variants caught across the checkpoint. STATUS and battle architecture updated; one local commit `A5c3f checkpoint-09b: the switch`, never pushed. Full proof, prior stops and carries: note 72 section 10.20.7. Stop for Claude's check; no 09c work.
+
+
+### 2026-10-30 (A5c3f checkpoint-09b, §11.49 continuation) — Codex
+
+Implemented the authorised chart and old-test repairs; both new mutations caught. Additional old AI test reader blocks typecheck under the strict edit list. Details and proof in note 72 §10.20.6. Awaiting that narrow scope ruling before final ordered gates and the single local checkpoint commit. No push.
+
+
+### 2026-10-30 (A5c3f 09b briefed) — Claude
+
+Read `main.ts`' entry, tick, input gate, finish and render paths, `BattleHost`, the session's surface, the audio facade and the main-level tests (note 72 §11.46).
+- Pre-ruled:
+  - `start()` on the transition's done tick, one `tick` per `gameTick`, no `syncJoypadRead` in `battle`;
+  - `OptionMenu` owns the text speed;
+  - a scaled present plus the other foregrounds' own renders;
+  - the boot loaders and the three victory tunes preloaded;
+  - the finish through 09a's plan, and the old duplicated logic deleted;
+  - Oak's Lab labels from `OaksLab.asm`;
+  - the guard inverted, with type-only imports skipped.
+- Old main-level test edits are listed one by one, and their frame, music and fade expectations stay.
+- Next: the implementer runs 09b.
+
+### 2026-10-30 (A5c3f 09a checked) — Claude
+
+Checked checkpoint-09a (note 72 §11.45). The data commit and the adapter both match the brief.
+- Typecheck clean; bundle `index-BAeUVEwA.js`; ROM 6206/6206; no-ROM 5949/257.
+- Four extra mutations, all caught. Accepted Codex's computed live `maxHp` for a boxed catch.
+- Next: Claude briefs 09b.
+
+### 2026-10-30 (A5c3f 09 split; 09a briefed) — Claude
+
+Read `main.ts`' battle paths, the session's surface, the bridge and the live owners, plus `end_of_battle.asm`, `evos_moves.asm`, `home/trainers.asm` and the `trainer` macro (note 72 §11.44).
+- 09 splits three ways (DECISIONS #87): 09a the live adapter, 09b the switch, 09c `partyItem` and the debug overlay.
+- Findings:
+  - evolution after battle is flag-bit plus level only, with no HP check (fainted-but-levelled mons evolve) and no item entries;
+  - the end-battle labels must come from the trainer headers' pointers via `text_program_symbols.ts` (a data commit);
+  - the party updates in place by slot, and the box appends its one new mon (the front insert stays 10's);
+  - every other value is absolute.
+- Next: the implementer runs 09a.
+
+### 2026-10-30 (A5c3f 08g checked) — Claude
+
+Checked checkpoint-08g (note 72 §11.43). Earlier the same day: ruled on Codex's audit stop (§11.42, `f2355bd`).
+- The code is the spike's. Typecheck clean; bundle `index-BAeUVEwA.js` unchanged; ROM 6181/6181; no-ROM 5928/253.
+- The audit reran clean: 26 entries, no unknown leaves, the one §11.42 drop. The move-animation ledger's matching no-op token is accepted.
+- Two extra mutations: the HTTP check was caught; a case-insensitive nickname match survived. Carried to 09 as a test.
+- Next: Claude briefs 09.
+
+### 2026-10-30 (A5c3f 08g spike; 08g briefed) — Claude
+
+Spiked the species names on d484d36 (reverted; diff in `notes/72-a5c3f-checkpoint-08g/claude-spike.diff`).
+- All 190 `MonsterNames` entries round-trip as strings; only the Nidorans and Mr. Mime differ from upstream beyond case.
+- Setup adds exactly two files; the bundle stays `index-BAeUVEwA.js`.
+- Fallout: 26 snapshots (enemy names only) and 3 counts; no fixture reaches the player-side forward map.
+
+Findings and brief: note 72 **§11.41** (the lookup key stays `pokemon.json`'s, because the Nidorans would collide; a
+snapshot audit with a control; ten mutations). New **O-48** for 09. Docs only. **Next: Codex runs 08g** (the user named
+Codex).
 
 ### 2026-10-30 (A5c3f 08f check; checkpoint 08 complete) — Claude
 

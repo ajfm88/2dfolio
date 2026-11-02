@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+vi.hoisted(() => Object.assign(globalThis,{window:{addEventListener(){}}}));
+import { loadTrainerSpeciesData } from './battle_trainer_data';
+import { loadBattleBridgeData } from './battle_bridge';
 import { checkEvolutions, applyEvolution, getEvolutionMoves } from './evolution';
 import { loadBattleData, createPokemon } from './data';
 
 beforeAll(async () => {
-  await loadBattleData();
+  await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData();
 });
 
 describe('checkEvolutions', () => {

@@ -25,7 +25,7 @@ import { D } from './battle_end_state';
 import { TRAINER_AI_POINTERS } from './battle_trainer_ai';
 import { MOVE_ANIM } from './battle_move_anim';
 import { BattleRandomState } from './battle_random_state';
-import { getTextSpeed } from '../text/textbox';
+import { getTextSpeed, setTextSpeed } from '../text/textbox';
 import { decodePartyMon, partyRecordToPokemon } from './battle_party_codec';
 import type { BattleWorld } from './battle_bridge';
 import type { GameButton } from '../core';
@@ -106,7 +106,7 @@ it('Route1 wild win uses the production session, real input, 123-frame first Tac
  expect([...h.session.state.mem.slice(A.wEnemyMonPP,A.wEnemyMonPP+4)]).toEqual([35,30,0,0]);
  expect([h.session.state.mem[INIT.wMapPalOffset],h.session.state.mem[INIT.wLetterPrintingDelayFlags],h.session.state.mem[INIT.wSavedTileAnimations]]).toEqual([0,1,2]);
  const result=h.drive();expect(result.exit).toBe('end');expect(result.outcome.party[0].exp).toBe(8024);
- expect([result.outcome.party[0].hp,result.outcome.party[0].pp[0]]).toEqual([44,33]);
+ expect([result.outcome.party[0].hp,result.outcome.party[0].pp[0]]).toEqual([47,34]);
  expect(result.outcome.seen).toEqual([19,25]);expect(result.outcome.money).toBe(3000);expect(result.outcome.battleResult).toBe(0);
  expect([h.session.state.mem[INIT.wMapPalOffset],h.session.state.mem[INIT.wLetterPrintingDelayFlags],h.session.state.mem[INIT.hTileAnimations]]).toEqual([0,1,2]);
  expect(h.musicRequests.slice(0,3)).toEqual(['wildbattle','stop','defeatedwildmon']);
@@ -136,14 +136,15 @@ it('item0: B alone ends the real level-up stats scroll wait',()=>{
  const h=setup({world:{party:[mon]},scrollB:true});const result=h.drive('fight',1800);
  expect(result.outcome.party[0].level).toBe(21);expect(h.session.state.mem[D.hJoy5]).toBe(2);
 });
-it('item0: FAST MID SLOW reach the private printer with increasing character delays',()=>{
- const durations:number[]=[];
- for(const [textSpeed,name] of [['FAST','fast'],['MID','medium'],['SLOW','slow']] as const){
-  const h=setup({world:{options:{textSpeed,animation:'OFF',battleStyle:'SET'}}});h.start();expect(getTextSpeed()).toBe(name);
-  const box=h.session.video.textBox;box.printStandalone({text:'AB'});let frames=0;
-  while(!box.isTextComplete&&frames<100){box.update();frames++;}expect(box.isTextComplete).toBe(true);durations.push(frames);
- }
- expect(durations[0]).toBeLessThan(durations[1]);expect(durations[1]).toBeLessThan(durations[2]);
+it('item0: start leaves the OptionMenu-owned text speed alone for FAST MID SLOW worlds',()=>{
+ const previous=getTextSpeed();
+ try {
+  for(const textSpeed of ['FAST','MID','SLOW'] as const){
+   setTextSpeed('slow');
+   const h=setup({world:{options:{textSpeed,animation:'OFF',battleStyle:'SET'}}});h.start();
+   expect(getTextSpeed()).toBe('slow');h.session.abort();
+  }
+ } finally { setTextSpeed(previous); }
 });
 it('item0: the bound host sound wait spans the real text sound and returns only after its engines finish',()=>{
  const h=setup();h.banks.audioBank=8;
@@ -259,7 +260,7 @@ it('syncJoypadRead outside a session eats the same fresh edge its menu reader ne
  setKey('a',false);readJoypad();setKey('a',true);updateInput();syncJoypadRead();readJoypad();expect(isPassPressed('a')).toBe(false);
 });
 it('the session loader is once-only and the second call decodes and fetches nothing',async()=>{
- const expected=['battle_transitions.json','move_names.json','stat_mod_text.json','item_names.json','trainers.json',
+ const expected=['battle_transitions.json','move_names.json','stat_mod_text.json','item_names.json','trainers.json','monster_names.json',
   ...Object.keys(import.meta.glob('../../data/maps/*.json')).map(path=>'maps/'+path.split('/').pop()),
   ...['trainer_appeared','faint_fall','faint_thud','run','swap','press_ab','damage','super_effective','not_very_effective',
   'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle'].map(name=>`audio/sfx/${name}.json`)];

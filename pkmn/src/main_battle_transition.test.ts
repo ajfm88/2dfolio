@@ -25,6 +25,7 @@ import { loadBattleTransitionData } from './overworld/battle_transition_choice';
 import { textBgTransfer } from './text/bg_transfer';
 import { uiTiles } from './renderer/ui_tiles';
 import { Battle, createPokemon, loadBattleData, loadTrainerData, getTrainerClass } from './battle';
+import { loadBattleSessionData,loadBattleStandInData,createBattleSession } from './battle/battle_session';
 import type { BattlePokemon } from './battle';
 import type { GameMap, Player } from './overworld';
 import type { OverworldDeps, OverworldState } from './overworld';
@@ -49,7 +50,7 @@ const host = (main as unknown as { mainTest: {
   reset(): void; gameTick(): void; checkUiEntry(): void; renderBattleEntry(): void;
   startScript(commands: import('./script').ScriptCommand[]): void;
   handleWarpLoad(name: string, warp: number, pos?: { x: number; y: number }): Promise<void>;
-  overworldDeps(): OverworldDeps; ow: OverworldState; state: string; battle: Battle | null;
+  overworldDeps(): OverworldDeps; ow: OverworldState; state: string; session: ReturnType<typeof createBattleSession> | null;
   player: Player; gameMap: GameMap; pikachuFollower: PikachuFollower; playerParty: BattlePokemon[];
   textBox: { active: boolean }; readonly battleEntry: Entry | null;
 } }).mainTest;
@@ -76,6 +77,7 @@ beforeAll(async () => {
   }
   await Promise.all([initTextSystem(), loadGameText(), loadTextPrograms(), loadMapSpriteSets(), loadBattleTransitionData(),
     loadBattleData(), loadTrainerData(), loadPikachuMovementData(), host.player.loadSprite(), host.pikachuFollower.loadSprite()]);
+  await loadBattleSessionData(async file => {const p=PNG.sync.read(readFileSync('static/'+file));return {width:p.width,height:p.height,data:p.data};}); await loadBattleStandInData();
   vi.spyOn(GBSynthesizer.prototype, 'resume').mockResolvedValue();
   audio.initAudio(); await audio.resumeAudio();
   await Promise.all(['wildbattle', 'trainerbattle', 'gymleaderbattle', 'finalbattle', 'meetrival', 'meetprofoak', 'meetmaletrainer'].map(audio.preloadMusic));
@@ -138,7 +140,8 @@ const cases = [
 it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and black readiness hold', async row => {
   const lead = 'lead' in row ? row.lead : 10;
   const ready = deferred();
-  const init = vi.spyOn(Battle.prototype, 'init').mockImplementation(() => ready.promise);
+  const demo = row.name.includes('old man') || row.name.includes('Oak Pikachu');
+  const init = demo ? vi.spyOn(Battle.prototype, 'init').mockImplementation(() => ready.promise) : vi.fn();
   const originalSprite = renderer.loadBattleSprite;
   const demoLoad = vi.spyOn(renderer, 'loadBattleSprite').mockImplementation(async (...args) => { await ready.promise; return originalSprite(...args); });
   if (row.name.includes('wild') || row.name.includes('turn')) {
@@ -227,7 +230,7 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
   if (row.map === 'PalletTown') expect(getScriptNpcs().find(npc => npc.data.id === 'prof_script')!.data.textId).toBe(1);
   for (let tick = 1; tick <= row.duration; tick++) {
     await step();
-    expect(host.state).toBe('battle_transition');
+    expect(host.state).toBe(demo || tick < row.duration ? 'battle_transition' : 'battle');
     expect(transfer).toHaveBeenCalledTimes(tick + 2);
     if (tick === 5) expect(entry.screen!.visibleSprites).toEqual(row.survivor ? [0, row.survivor] : [0]);
     if (tick === 20) {
@@ -238,8 +241,8 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
     if (tick < row.duration) { expect(init).not.toHaveBeenCalled(); expect(demoLoad).not.toHaveBeenCalled(); }
   }
   expect(entry.initialising).toBe(true); expect(entry.screen!.black).toBe(true);
-  const demo = row.name.includes('old man') || row.name.includes('Oak Pikachu');
-  expect(init).toHaveBeenCalledTimes(demo ? 0 : 1); expect(demoLoad).toHaveBeenCalledTimes(demo ? 3 : 0);
+  expect(init).toHaveBeenCalledTimes(0); expect(demoLoad).toHaveBeenCalledTimes(demo ? 3 : 0);
+  if (demo) {
   for (let wait = 0; wait < 4; wait++) {
     await step(); host.renderBattleEntry(); expect(host.state).toBe('battle_transition');
     const black = [...capture.palette[3], 255];
@@ -247,11 +250,16 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
     expect(entry.screen!.visibleSprites).toEqual([]);
   }
   expect(frame - e).toBe(row.duration + 6);
-  ready.resolve(); await vi.waitFor(() => expect(host.state).toBe(demo ? 'catch_demo' : 'battle'));
+  ready.resolve(); await vi.waitFor(() => expect(host.state).toBe('catch_demo'));
+  } else {
+    expect(host.state).toBe('battle'); expect(host.session).not.toBeNull();
+    expect(()=>host.session!.start()).toThrow('already started');
+    expect(frame-e).toBe(row.duration+2);
+  }
   expect(host.battleEntry).toBeNull(); expect(host.textBox.active).toBe(false);
   expect(requests.filter(request => request.song === song && request.frame >= e)).toEqual([{ frame: e + 1, song }]);
   expect(host.player.isMoving).toBe(false);
-  if (!demo) expect(host.battle).toBeInstanceOf(Battle);
+  if (!demo) expect(host.session!.done).toBe(false);
 });
 
 it('CP5: a wild entry cancels the warp song still waiting for the door sound', async () => {

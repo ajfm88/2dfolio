@@ -23,6 +23,8 @@ import { playSFX, isSoundFinished } from '../audio';
 import { setCurrentMenuItem, setListScrollOffset } from '../list_state';
 import { setNoTextDelay } from '../text/text_flags';
 import { createPokemon, loadBattleData } from '../battle/data';
+import { loadTrainerSpeciesData } from '../battle/battle_trainer_data';
+import { loadBattleBridgeData } from '../battle/battle_bridge';
 import { pokemonToBoxed } from '../pokemon_storage';
 import { updateSprites } from '../overworld/sprites';
 
@@ -32,7 +34,7 @@ vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), getMonsterPalette: () 
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));
 const BUTTONS: GameButton[] = ['a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'];
 let soundFrames = 0;
-beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadStatusScreenAssets(); });
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData(); await loadStatusScreenAssets(); });
 beforeEach(() => {
   setNoTextDelay(false);
   vi.restoreAllMocks(); vi.clearAllMocks(); soundFrames = 0;
@@ -52,7 +54,10 @@ function world(generic = false, facing: Direction = 'up') {
   const box = new TextBox({ closeFrames: () => generic ? 17 : 7, updateSprites: () => updateSprites([], map, player, follower) });
   const deps: ScriptDeps = { textBox: box, player, gameMap: map, npcs: [], playerParty: [], playerBag: new Bag(), pcItems: [{ id: 'POTION', count: 2 }],
     pikachuFollower: follower, pcStorage: { party: [], boxes: Array.from({ length: 12 }, () => []),
-      getCurrentBox: () => 0, setCurrentBox: () => {}, deserialize: saved => {
+      getCurrentBox: () => 0, setCurrentBox: () => {}, withdraw: saved => {
+        const mon = createPokemon(saved.speciesName, saved.level, saved.nickname)!;
+        mon.currentHp = saved.currentHp; mon.status = saved.status; mon.moves = structuredClone(saved.moves); return mon;
+      }, boxStats: saved => {
         const mon = createPokemon(saved.speciesName, saved.level, saved.nickname)!;
         mon.currentHp = saved.currentHp; mon.status = saved.status; mon.moves = structuredClone(saved.moves); return mon;
       }, hasFlag: flag => flag === 'GOT_POKEDEX',

@@ -163,6 +163,11 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   Since A1b saves include optional `hiddenObjects` (`Map:npcId` keys for collected
   balls); old saves default to an empty set. Bag/PC stacks are restored verbatim,
   including duplicate ids created by the cartridge's 99-per-slot rule.
+  Since A5c3f checkpoint-10b, version2 stores party/box struct and name bytes via
+  the existing codec, plus packed options and Pikachu's emotion modifier.
+  Version1 remains readable with exact EXP, CalcStats b=1 at its saved level and
+  migration sleep counters. Main-menu entry restores options/modifier before
+  CONTINUE or NEW GAME; NEW GAME retains them. See note72 §10.23.5.
 - **IndexedDB** — upstream's extracted-ROM cache (`src/rom/rom_cache.ts`). Unused
   since R1b; a browser that ran the upstream gate may still hold a stale one
   (harmless — nothing reads it).
@@ -210,6 +215,7 @@ Summary of path → shape → source:
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
 | `item_names.json` | `Record<CONSTANT, display>` (`text.ts:readItemDisplayNames`) | ROM via extractor |
 | `move_names.json` | `Record<MOVE_CONSTANT, display>` (`text.ts:readMoveDisplayNames`), all 165 moves in ID order, no NO_MOVE entry; shares the constant-name reader's table walk (StatusScreen CP2) | ROM MoveNames, 2F:4000 |
+| `monster_names.json` | `(string\|null)[191]`, [0]=null; internal IDs 1–190, including 39 `MISSINGNO.` slots (`text.ts:readMonsterNames`). Cartridge spellings for the new battle engine only (A5c3f checkpoint-08g) | ROM MonsterNames, 3A:4000; ten bytes per entry |
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |

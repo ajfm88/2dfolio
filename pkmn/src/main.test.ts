@@ -4,7 +4,7 @@ vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
 });
 // Map-music CP3: main's map-music entries (DF, six passes, restores, blackout stop) are facade calls.
-vi.mock('./audio', () => ({ setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: vi.fn(() => true), isSfxPlaying: () => false,
+vi.mock('./audio', () => ({ loadSfx: async (name:string) => sfxData(name), setMasterVolume: vi.fn(), tickAudio: vi.fn(() => menuAudio.update()), getBattleAudioEngines: () => ({sfx:menuAudio.sfx,music:menuAudio.music,banks:menuAudio.fade.requests}), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: vi.fn(() => true), isSfxPlaying: () => false,
   playMusicNew: vi.fn(), playDefaultMusic: vi.fn(), playDefaultMusicFadeOutCurrent: vi.fn(), restoreNurseMusic: vi.fn(), updateMusic6Times: vi.fn(),
   fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false), stopAllSounds: vi.fn(),
   isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(async () => {}) }));
@@ -30,7 +30,14 @@ vi.mock('./battle/battle_ui', async importOriginal => {
   return { ...actual, createSilhouette: () => ({ width: 1, height: 1 }) as never }; // no canvas in node
 });
 import { loadStatusScreenAssets } from './menus/status_screen';
-import { Battle } from './battle/battle';
+import { rig, sfxData } from './test/audio_rig';
+import { loadBattleSessionData, loadBattleStandInData, createBattleSession, createSessionRandom } from './battle/battle_session';
+import { BattleState } from './battle/battle_state';
+import { writeBattleInputs, readBattleOutputs } from './battle/battle_bridge';
+import { D } from './battle/battle_end_state';
+import { battleWorld } from './test/battle_world_fixture';
+import { PNG } from 'pngjs';
+const menuAudio = rig();
 import * as main from './main';
 import * as input from './input';
 import { restoreFlags } from './events';
@@ -49,7 +56,8 @@ import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem } from '
 import * as saves from './save';
 import type { GameButton } from './core';
 import type { StartMenuSession } from './menus/start_menu';
-import type { PartyMenu, BagSession, OptionMenu, PokedexMenu, TrainerCard, SaveSession } from './menus';
+import { PartyMenu } from "./menus/party_menu";
+import type { BagSession, OptionMenu, PokedexMenu, TrainerCard, SaveSession } from './menus';
 import type { BattlePokemon } from './battle';
 import type { Player, GameMap } from './overworld';
 import type { PikachuFollower } from './pikachu';
@@ -79,7 +87,7 @@ const host = (main as unknown as { mainTest: {
   handleWarpLoad(map: string, warp: number): Promise<void>; handleBlackoutWarp(): void;
   connectToMap(map: string, direction: 'north' | 'south', offset: number): Promise<void>;
   finishFade(): Promise<void>; startScript(commands: ScriptCommand[]): void;
-  state: string; readonly mapName: string; mainMenu: { update(): unknown }; readonly fade: number; readonly bag: Bag; battle: Battle | null;
+  state: string; readonly mapName: string; mainMenu: { update(): unknown }; readonly fade: number; readonly bag: Bag; session: ReturnType<typeof createBattleSession> | null; readonly boxes: import('./pokemon_storage').BoxedPokemon[][]; readonly money: number;
   startMenu: StartMenuSession; partyMenu: PartyMenu; bagMenu: BagSession;
   optionMenu: OptionMenu; pokedexMenu: PokedexMenu; trainerCard: TrainerCard; saveMenu: SaveSession;
   textBox: TextBox;
@@ -89,6 +97,8 @@ const host = (main as unknown as { mainTest: {
 const buttons: GameButton[] = ['a', 'b', 'start', 'select', 'up', 'down', 'left', 'right'];
 beforeAll(async () => {
   await Promise.all([initTextSystem(), loadGameText(), loadTextPrograms(), loadMapSpriteSets(), loadBattleData(), loadStatusScreenAssets()]);
+  await loadBattleSessionData(async file => { const p=PNG.sync.read(readFileSync('static/'+file)); return {width:p.width,height:p.height,data:p.data}; });
+  await loadBattleStandInData();
 });
 beforeEach(() => {
   vi.restoreAllMocks(); vi.clearAllMocks(); host.reset(); restoreFlags(['GOT_POKEDEX']);
@@ -117,22 +127,22 @@ describe('checkpoint-02 main storage callback', () => {
     expect(host.playerParty.map(mon => mon.statExp)).toEqual([[65535, 256, 63002, 0, 1], [1, 2, 3, 4, 5]]);
   });
 
-  it('old and new boxes deserialize with independent stat-exp arrays and the unchanged EXP reset', async () => {
+  it('old and new boxes withdraw with independent stat-exp arrays, exact EXP and recomputed stats', async () => {
     await host.gameMap.load('PewterPokecenter');
     const update = vi.spyOn(scriptModule, 'updateScript');
     host.startScript([]); host.gameTick();
     const storage = update.mock.calls[0][0].pcStorage!;
     const boxed = pokemonToBoxed(createPokemon('RATTATA', 10)!); boxed.exp = 1234;
     delete boxed.statExp;
-    const a = storage.deserialize(boxed)!, b = storage.deserialize(boxed)!;
+    const a = storage.withdraw(boxed)!, b = storage.withdraw(boxed)!;
     expect(a.statExp).toEqual([0, 0, 0, 0, 0]); expect(b.statExp).toEqual([0, 0, 0, 0, 0]);
     a.statExp[0] = 5; expect(b.statExp[0]).toBe(0); expect(boxed.statExp).toBeUndefined();
     boxed.statExp = [1, 256, 63002, 64517, 65535];
-    const c = storage.deserialize(boxed)!;
+    const c = storage.withdraw(boxed)!;
     expect(c.statExp).toEqual(boxed.statExp); expect(c.statExp).not.toBe(boxed.statExp);
     c.statExp[0] = 999; expect(boxed.statExp[0]).toBe(1);
-    expect([a.exp, b.exp, c.exp]).toEqual([1000, 1000, 1000]);
-    expect([c.maxHp, c.attack, c.speed]).toEqual([a.maxHp, a.attack, a.speed]);
+    expect([a.exp, b.exp, c.exp]).toEqual([1234, 1234, 1234]);
+    expect(c.maxHp).toBe(a.maxHp); expect(c.speed).toBeGreaterThan(a.speed);
   });
 });
 
@@ -259,7 +269,7 @@ describe('StatusScreen through main party and battle dispatch', () => {
     expect(host.bag.items).toEqual([{ id: 'POTION', count: 2 }]);
     expect(mon.currentHp).toBe(mon.maxHp);
   });
-  it.each(['overworld', 'battle', 'forced'] as const)('runs both pages and returns to the same mon in %s mode', mode => {
+  it.each(['overworld', 'battle'] as const)('runs both pages and returns to the same mon in %s mode', mode => {
     const party = [createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!];
     host.playerParty.push(...party); const r = driver();
     let menu = host.partyMenu;
@@ -267,21 +277,23 @@ describe('StatusScreen through main party and battle dispatch', () => {
       setBattleAndStartSavedMenuItem(1); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(23);
       expect(host.state).toBe('party_menu');
     } else {
-      const battle = new Battle(party[0], createPokemon('PIDGEY', 5)!, party, new Bag(), new Set(), 'ASH');
-      Reflect.set(battle, 'state', mode === 'forced' ? 'forced_switch' : 'choose_pokemon');
-      menu = Reflect.get(battle, 'partyMenu') as PartyMenu;
-      menu.showForBattle(party, 0, mode === 'forced'); host.battle = battle;
+      menu = sessionParty(r, false);
     }
-    r.step('down'); r.step(); r.step('a'); r.step(); r.step('down'); r.step(); r.step('a');
-    expect(menu.statusScreenActive).toBe(true);
+    if(mode === 'overworld') {
+      r.step('down'); r.step(); r.step('a'); r.step(); r.step('down'); r.step(); r.step('a');
+    } else {
+      if(Reflect.get(menu,'cursor') !== 1) r.step('down');
+      r.wait(3); r.step('a'); r.wait(3); r.step('down'); r.wait(3); r.step('a');
+    }
+    expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
     const selected = Reflect.get(menu, 'cursor'); expect(selected).toBe(1);
     const read = r.read.mock.calls.length, sync = r.sync.mock.calls.length, ticks = r.transfer.mock.calls.length;
     r.wait(26); expect(r.read).toHaveBeenCalledTimes(read); expect(r.sync).toHaveBeenCalledTimes(sync);
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
     r.step(); expect(r.read).toHaveBeenCalledTimes(read + 1);
-    r.step('b'); r.wait(3); expect(menu.statusScreenActive).toBe(true);
-    r.step('b'); r.wait(2); expect(menu.statusScreenActive).toBe(true);
-    r.step(); expect(menu.statusScreenActive).toBe(false);
+    r.step('b'); r.wait(3); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
+    r.step('b'); r.wait(2); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
+    r.step(); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(false);
     expect(Reflect.get(menu, 'state')).toBe('list'); expect(Reflect.get(menu, 'cursor')).toBe(selected);
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 35);
     if (mode === 'overworld') {
@@ -330,7 +342,7 @@ describe('SAVE through main dispatch and real storage', () => {
     expect(host.textBox.active).toBe(false); // note 53 M1: close must dismiss a released-A SAVE display
     expect(write).toHaveBeenCalledOnce(); expect(playSFX).toHaveBeenCalledWith('save');
     const saved = saves.loadGame()!;
-    expect(saved.mapName).toBe('RedsHouse2F'); expect(saved.party[0].speciesName).toBe('Pikachu');
+    expect(saved.mapName).toBe('RedsHouse2F'); expect(saves.restoreParty(saved)[0].species.name).toBe('Pikachu');
     expect(JSON.stringify(saved)).not.toContain('SavedMenuItem');
     expect([saved.playerX, saved.playerY]).toEqual([host.player.x, host.player.y]);
     await host.loadSavedGame();
@@ -376,6 +388,23 @@ function driver() {
   };
   const wait = (n: number) => { for (let i = 0; i < n; i++) step(); };
   return { step, wait, read, sync, transfer };
+}
+
+function sessionParty(r:ReturnType<typeof driver>,forced:boolean):PartyMenu {
+  if(forced) host.playerParty[0].currentHp=1;
+  const session=createBattleSession(battleWorld({party:host.playerParty,enemyLevel:forced?20:3,
+    options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}),{random:createSessionRandom(()=>menuAudio.synth.update),
+    audio:()=>({sfx:menuAudio.sfx,music:menuAudio.music,banks:menuAudio.fade.requests})});
+  host.session=session;session.start();
+  for(let frame=0;session.foreground!=='party'&&frame<6000;frame++){
+    const menu=!session.video.textBox.active&&session.screen.at(10,14)==='F';
+    if(frame%4===0){
+      if(menu&&!forced)r.step(session.screen.at(15,14)==='\u25b6'?'a':'right');
+      else r.step('a');
+    } else r.step();
+  }
+  expect(session.foreground).toBe('party');r.wait(22);
+  return session.party;
 }
 
 describe('V2c CP4 through main', () => {
@@ -541,14 +570,13 @@ describe('V2c CP4 through main', () => {
 
   it('battle party selection and icons retain their existing behavior even with the field flag set', () => {
     party(); const [pika, rat] = host.playerParty;
-    const battle = new Battle(pika, createPokemon('PIDGEY', 5)!, host.playerParty, new Bag(), new Set(), 'ASH');
-    Reflect.set(battle, 'state', 'choose_pokemon');
-    const menu = Reflect.get(battle, 'partyMenu') as PartyMenu;
-    menu.showForBattle([pika, rat], 0, false); host.battle = battle;
+    const menu = new PartyMenu(); menu.showForBattle([pika,rat],0,false);
+    expect(host.playerParty).toEqual([pika,rat]);
     const icons = vi.spyOn(partyIcons, 'drawPartyIcon'); menu.render();
     expect(icons.mock.calls.map(c => c[0])).toEqual([25, 19]);
-    const print = vi.spyOn(RealTextBox.prototype, 'printStandalone'); const r = driver(); r.step('a');
-    expect(Reflect.get(menu, 'state')).toBe('submenu'); expect(print).not.toHaveBeenCalled();
+    const print = vi.spyOn(RealTextBox.prototype, 'printStandalone');
+    buttons.forEach(key=>input.setKey(key,key==='a')); input.updateInput(); menu.update();
+    expect(Reflect.get(menu,'state')).toBe('submenu'); expect(print).not.toHaveBeenCalled();
   });
 
   it('field medicine prints the sleeping prompt once, cancels back to the bag, and consumes no item/HP', () => {
@@ -730,12 +758,15 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     expect(updateMusic6Times).not.toHaveBeenCalled();
   });
 
-  const finishedBattle = (extra: Record<string, unknown> = {}) => ({
-    update() {}, finished: true, caughtPokemon: null, moneyWon: 0, levelsGained: 0, playerPokemonFainted: false,
-    carelessTrainerFaint: false, isBlackout: false, playerLost: false, ...extra }) as unknown as Battle;
+  const finishedBattle = (extra: Record<string, unknown> = {}) => {
+    const state=new BattleState();
+    writeBattleInputs(state,battleWorld({party:host.playerParty,pcBoxes:host.boxes,bag:host.bag.items,money:host.money}));
+    state.mem[D.wCanEvolveFlags]=0x3f; state.wBattleResult=extra.playerLost?1:0;
+    return {tick() {},done:true,finish:()=>({outcome:readBattleOutputs(state),exit:extra.isBlackout?'blackout':'end',blackoutCarry:!!extra.isBlackout})} as unknown as ReturnType<typeof createBattleSession>;
+  };
 
   it('a battle return: no standalone stop; six passes, then DF with the after-battle reason (c = 8)', () => {
-    host.battle = finishedBattle(); host.gameTick();
+    host.session = finishedBattle(); host.gameTick();
     expect(host.state).toBe('overworld');
     expect(stopMusic).not.toHaveBeenCalled();
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
@@ -745,7 +776,7 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
   it('a battle return through the whole evolution queue requests the fade only after the last evolution', () => {
     const mon = createPokemon(25, 5)!; host.playerParty.push(mon);
     vi.spyOn(Math, 'random').mockReturnValue(0);
-    host.battle = finishedBattle(); host.gameTick();
+    host.session = finishedBattle(); host.gameTick();
     // Whatever the queue holds, nothing asks for the map song before the queue is exhausted.
     if (host.state === 'evolution') expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
     else expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
@@ -753,7 +784,7 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
 
   it('a battle return with evolutions requests the fade once, only after the whole queue has ended', async () => {
     host.playerParty.push(createPokemon(16, 18)!); // Pidgey L18 evolves
-    host.battle = finishedBattle(); host.gameTick();
+    host.session = finishedBattle(); host.gameTick();
     expect(host.state).toBe('evolution');
     expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
     for (let i = 0; i < 6000 && host.state === 'evolution'; i++) {
@@ -795,7 +826,7 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     vi.mocked(isSoundFinished).mockReturnValue(false);
     await host.handleWarpLoad('PewterCity', 0); host.gameTick();
     expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
-    host.battle = finishedBattle({ isBlackout: true, playerLost: true }); host.gameTick();
+    host.session = finishedBattle({ isBlackout: true, playerLost: true }); host.gameTick();
     vi.mocked(isSoundFinished).mockReturnValue(true); host.gameTick();
     expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalledWith('cities1', false);
   });
@@ -805,7 +836,7 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     await host.handleWarpLoad('PewterPokecenter', 0); // now standing in the Pokécenter (departed song: pokecenter)
     host.gameTick(); // the warp's own request (after its door sound) is made before the blackout begins
     vi.mocked(playDefaultMusicFadeOutCurrent).mockClear(); vi.mocked(updateMusic6Times).mockClear();
-    host.battle = finishedBattle({ isBlackout: true, playerLost: true }); host.gameTick();
+    host.session = finishedBattle({ isBlackout: true, playerLost: true }); host.gameTick();
     expect(fadeOutAndStopMusic).toHaveBeenCalledExactlyOnceWith(8);
     let waits = 0;
     vi.mocked(isAudioFadingOut).mockImplementation(() => waits++ < 2);

@@ -2,6 +2,28 @@ import { W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import type { BattleScreen, BattlePaletteInput } from './battle_screen';
 import { delayFrames, type Program } from './battle_menu_context';
 import { D } from './battle_end_state';
+import { battleGlyphTile } from './battle_screen';
+
+/** pret animations.asm:1259–1270,1870–1938. wSlideMonDelay aliases wSubAnimTransform ($D08A).
+ * EnemyNextTile deliberately keeps the cartridge's comparison against $30. */
+export function* animationSlideMonOff(state: BattleState, screen: BattleScreen): Program {
+  state.mem[0xd08a] = 3;
+  const enemy = state.hWhoseTurn !== 0, x = enemy ? 12 : 0, y = enemy ? 0 : 5;
+  for (let step = 0; step < 8; step++) {
+    for (let row = 0; row < 7; row++) for (let col = 0; col < 8; col++) {
+      const cell = screen.at(x + col, y + row) ?? ' ';
+      const tile = typeof cell === 'number' ? cell : battleGlyphTile(cell);
+      const next = (tile + (enemy ? -7 : 7)) & 255;
+      screen.put(x + col, y + row, next < (enemy ? 0x30 : 0x62) ? next : ' ');
+    }
+    yield* delayFrames(state.mem[0xd08a]);
+  }
+}
+export function* animationSlideEnemyMonOff(state: BattleState, screen: BattleScreen): Program {
+  state.hWhoseTurn ^= 1;
+  yield* animationSlideMonOff(state, screen);
+  state.hWhoseTurn ^= 1;
+}
 
 /** pret core.asm:6695-6718. HUD1 three tiles, HUD2+3 six; never the thirty-tile font entry at6692. */
 export function* loadHudTilePatterns(screen: BattleScreen): Program {

@@ -31,6 +31,7 @@ import { lowHealthChannel5 } from '../audio/low_health_alarm';
 import { loadStatusScreenAssets } from '../menus/status_screen';
 import type { BattleForeground } from './battle_session';
 import type { Frame } from './battle_menu_context';
+import { BattleRandomState } from './battle_random_state';
 
 const keys:GameButton[]=['a','b','up','down','left','right','start','select'];
 const decode=async(file:string)=>{const p=PNG.sync.read(readFileSync('static/'+file));return {width:p.width,height:p.height,data:p.data};};
@@ -44,14 +45,14 @@ function pikachu(level=20,hp?:number){
   mon.moves=[{id:'TACKLE',pp:35,maxPp:35}];if(hp!==undefined)mon.currentHp=hp;return mon;
 }
 type Plan={menu:('fight'|'item'|'pkmn')[];party:GameButton[][];partyDefault?:GameButton[];bag?:('use'|'cancel')[]};
-function setup(overrides:Partial<BattleWorld>={}){
+function setup(overrides:Partial<BattleWorld>={},pinnedRandom?:BattleRandomState){
   const r=rig();let time=0;
   const banks=new PlaySound(engineHost(r.synth,r.music,r.sfx,(id,bank)=>{
     const name=musicNameForSound(id,bank);if(!name)throw new Error(`unexpected music ${id}:${bank}`);r.music.play(musicData(name));
   }));
   const world=battleWorld({party:[pikachu()],options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'},...overrides});
   setPlayerName(world.playerName);setRivalName(world.rivalName);
-  const random=createSessionRandom(()=>time);
+  const random=pinnedRandom??createSessionRandom(()=>time);
   const priorHooks=[r.sfx.onSfxChannelDone,r.sfx.channelEnabled,r.sfx.beforeNextNote,r.sfx.onSoundIdsCleared,r.music.audioControl];
   const session=createBattleSession(world,{random,audio:()=>({sfx:r.sfx,music:r.music,banks})});
   const row=(y:number)=>Array.from({length:20},(_,x)=>{const c=session.screen.at(x,y);return typeof c==='string'?c:' ';}).join('');
@@ -59,10 +60,11 @@ function setup(overrides:Partial<BattleWorld>={}){
   const foreground:BattleForeground[]=['battle'];
   const frames:{time:number;kind:Frame|null;fg:BattleForeground;hp:number;pp:number;stage:number;menu:string;bgp:number;bag:string;ai:number}[]=[];
   const bagRows:string[]=[];let bagOpenings=0,wasBag=false;
-  const ack:{id:number;at:number}[]=[];
+  const ack:{id:number;at:number}[]=[],aiPositions:number[]=[];
   const tick=(pressed:GameButton[]=[])=>{
     const already=partyText().includes('already out!');
     time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();r.update();const kind=session.tick();
+    while(aiPositions.length<session.trainerAILog.length)aiPositions.push(session.state.wEnemyMonPartyPos);
     const fg=session.foreground;if(foreground[foreground.length-1]!==fg)foreground.push(fg);
     expect(['battle','party','partyItem','status']).toContain(fg);
     if(partyText().toLowerCase().includes('sleeping'))throw new Error('STOP: sleeping starter gate reached');
@@ -107,7 +109,7 @@ function setup(overrides:Partial<BattleWorld>={}){
     expect(session.done,JSON.stringify({time,foreground,labels:session.textLog.slice(-6),frames:frames.slice(-3)})).toBe(true);
     return session.finish();
   };
-  return {r,random,banks,world,session,tick,start,automatic,drive,runMenus,frames,foreground,bagRows,ack,priorHooks,get time(){return time;}};
+  return {r,random,banks,world,session,tick,start,automatic,drive,runMenus,frames,foreground,bagRows,ack,aiPositions,priorHooks,get time(){return time;}};
 }
 function complete(h:ReturnType<typeof setup>,plan:Plan){
   let output:ReturnType<typeof h.session.finish>|undefined;
@@ -117,13 +119,37 @@ it('item0: the end-text binding helper retains the full COOLTRAINER male name be
   const s=new BattleState();s.mem[D.wTrainerClass]=31;saveTrainerName(s);
   expect(trainerEndNameBuffer(s)).toBe('COOLTRAINER♂');
 });
-it('item0: Misty uses the exact item and text hand-off count through the bound session',()=>{
-  const h=setup({opponent:235,party:[pikachu(45)]});const result=h.drive();
+it('item0: Misty uses X DEFEND once per mon (pinned DIV 40) with two hand-offs each',()=>{
+  // Pin presentation-independent DIV40: trainer_ai.asm:373–376; +41 draws choice41, crit82,
+  // damage123/164/205, hit246, then Random30<65. core.asm:1331+ resets wAICount per mon.
+  const h=setup({opponent:235,party:[pikachu(45)]},new BattleRandomState(()=>40));
+  const memory=h.session.state.mem,resets:{value:number;stack:string;uses:number}[]=[];
+  // Observe the exact byte writes while forwarding all TypedArray operations to the same memory.
+  Object.defineProperty(h.session.state,'mem',{value:new Proxy(memory,{
+    get(target,key){const value=Reflect.get(target,key,target);return typeof value==='function'?value.bind(target):value;},
+    set(target,key,value){
+      if(key===String(D.wAICount)&&value===255)resets.push({value,stack:new Error().stack??'',
+        uses:h.session.textLog.filter(row=>row.label==='AIBattleUseItemText').length});
+      return Reflect.set(target,key,value);
+    },
+  })});
+  let result:ReturnType<typeof h.drive>;
+  try{result=h.drive();}finally{Object.defineProperty(h.session.state,'mem',{value:memory});}
   expect(result.exit).toBe('end');expect(result.outcome.battleResult).toBe(0);
   const labels=h.session.textLog.map(row=>row.label);
   expect(labels).toContain('AIBattleUseItemText');expect(labels).toContain('MonsStatsRoseText');
-  expect(h.session.handoffs).toEqual({trainerEnvironment:2,other:0});
-  expect(h.session.trainerAILog.filter(row=>row.carry)).toHaveLength(1);
+  expect(h.session.handoffs).toEqual({trainerEnvironment:4,other:0});
+  expect(h.session.trainerAILog.filter(row=>row.carry)).toHaveLength(2);
+  expect(h.session.trainerAILog.flatMap((row,i)=>row.carry?[h.aiPositions[i]]:[])).toEqual([0,1]);
+  // Init seeds FF once; both subsequent resets are the actual FirstMon write, before uses 1 and 2.
+  expect(resets.map(row=>row.value)).toEqual([255,255,255]);
+  expect(resets[0].stack).toContain('initBattleAfterTransition');
+  for(const reset of resets.slice(1))expect(reset.stack).toContain('enemySendOutFirstMon');
+  expect(resets.map(row=>row.uses)).toEqual([0,0,1]);
+  expect(labels.filter(label=>label==='AIBattleUseItemText')).toHaveLength(2);
+  for(const index of labels.flatMap((label,i)=>label==='AIBattleUseItemText'?[i]:[])){
+    expect(labels[index+1]).toBe('MonsStatsRoseText');
+  }
 });
 it('Potion heals20 to40 on partyItem across held and serviced frames, removes its byte slot and ends the battle',()=>{
   const h=setup({party:[pikachu(20,20)],bag:[{id:'POTION',count:1}]});

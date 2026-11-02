@@ -35,18 +35,27 @@ export interface MonRow {
 }
 
 
-interface TrainerTables { trainers: Record<string, TrainerRow>; pokemon: (MonRow | null)[]; moves: Record<string, MoveRow> }
+interface TrainerTables { trainers: Record<string, TrainerRow>; pokemon: (MonRow | null)[]; moves: Record<string, MoveRow>;
+  monsterNames: readonly (string | null)[] }
 let tables: TrainerTables | undefined;
 let loading: Promise<void> | undefined;
 /** The same committed files through fetch. Reuse main's pokemon/moves cache. */
 export function loadTrainerSpeciesData(): Promise<void> {
   return loading ??= (async () => {
-    const [, response] = await Promise.all([loadBattleData(), fetch('trainers.json')]);
+    const [, response, names] = await Promise.all([loadBattleData(), fetch('trainers.json'), fetch('monster_names.json')]);
     if (!response.ok) throw new Error(`trainers: HTTP ${response.status}`);
+    if (!names.ok) throw new Error(`monster names: HTTP ${names.status}`);
     tables = { trainers: await response.json() as Record<string, TrainerRow>,
       pokemon: Array.from({length:152}, (_, dex) => getSpeciesById(dex)),
-      moves: Object.fromEntries(getAllLoadedMoveIds().map(name => [name, getMove(name)!])) };
+      moves: Object.fromEntries(getAllLoadedMoveIds().map(name => [name, getMove(name)!])),
+      monsterNames: Object.freeze(await names.json() as (string | null)[]) };
   })();
+}
+/** home/names.asm GetMonName's source: MonsterNames by internal id, as the cartridge stores it. */
+export function monsterName(id: number): string {
+  const name = getTrainerSpeciesData().monsterNames[id];
+  if (typeof name !== 'string') throw new Error(`monster name ${id}`);
+  return name;
 }
 export function getTrainerSpeciesData(): TrainerTables {
   if (!tables) throw new Error('trainer species data not loaded');

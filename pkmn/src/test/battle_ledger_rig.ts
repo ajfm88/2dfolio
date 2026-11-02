@@ -308,8 +308,8 @@ export function battleLedger(o: History = {}) {
     backPicture(state){mark('back',state.wBattleMonSpecies2);return 'back';},
     frontPicture(state){mark('front',state.wEnemyMonSpecies2);return 'front';},
     trainerPicture(){mark('trainerPic');return 'trainer';},
-    sendingOutMon(state,x,y){mark('sendCue',[state.hWhoseTurn,x,y]);},
-    pikachuEntrance(){mark('pikaEntrance');},slidePlayerOff(){mark('pikaRetreat');},
+    *sendingOutMon(state,x,y){mark('sendCue',[state.hWhoseTurn,x,y]);},
+    *pikachuEntrance(){mark('pikaEntrance');},*slidePlayerOff(){mark('pikaRetreat');},
     animation:function* (state){mark('animationCue',[state.wAnimationID,state.hWhoseTurn]);
       if(o.real&&state.wAnimationID===0xc1)mark('ballAnimData',state.mem[I.wPokeBallAnimData]);},
     voice:{getAlarm:lowHealthAlarm,setAlarm:setLowHealthAlarm,cry(id){mark('cryCue',id);},clip(id){mark('pcmCue',id);}},
@@ -323,7 +323,7 @@ export function battleLedger(o: History = {}) {
         {asm:{TrainerEndBattleText:state=>{mark('endTextCursor',state);return o.endText??'PrintEmptyString.emptyString';}}});
       yield* host.waitForSound();
     },
-    enemySlideOff(){mark('enemySlideCue');},
+    *enemySlideOff(){mark('enemySlideCue');},
     readScrollJoypad(){mark('scrollRead');return isPassPressed('a')?1:0;},
     learnMove:function*(){throw new Error('unbound LearnMove');},
     useItem:function* (context){

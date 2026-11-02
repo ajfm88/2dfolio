@@ -16,7 +16,7 @@ import { extractAllMaps } from './extractors/maps';
 import { extractMusic, extractSfx, extractSfxChannelsAt, extractWaveSamples, extractNoiseInstruments } from './extractors/audio';
 import { extractFontGraphics, extractTilesetGraphics, extractAllAdditionalGraphics } from './extractors/graphics';
 import { extractAllPokemonSprites } from './extractors/sprites';
-import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from './extractors/text';
+import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames, readMonsterNames } from './extractors/text';
 import { extractGameText } from './extractors/game_text';
 import { extractTextPrograms } from './extractors/text_programs';
 import { extractMapSpriteSets } from './extractors/map_sprite_sets';
@@ -111,6 +111,7 @@ export async function extractRom(
   // ── Item and move display names (for runtime use) ──
   data.jsonData['item_names.json'] = readItemDisplayNames(rom);
   data.jsonData['move_names.json'] = readMoveDisplayNames(rom);
+  data.jsonData['monster_names.json'] = readMonsterNames(rom);
 
   // ── Game text (dialogue & UI strings) ──
   data.jsonData['game_text.json'] = extractGameText(rom);

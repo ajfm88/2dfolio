@@ -79,7 +79,7 @@ export interface ScriptDeps {
 export type ScriptAction =
   | { type: 'scriptEnded'; resumePass?: boolean }
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
-  | { type: 'startBattleTransition'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
+  | { type: 'startBattleTransition'; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
   | { type: 'openStartMenu' }
   | { type: 'townMap' }
@@ -889,6 +889,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       scriptBattlePending = true;
       return {
         type: 'startBattleTransition',
+        ...(cmd.endBattleLabels ? {endBattleLabels:cmd.endBattleLabels} : {}),
         trainerClass: cmd.trainerClass,
         partyIndex: cmd.partyIndex,
         trainerName: cmd.trainerName,

@@ -37,6 +37,7 @@ export interface NpcData {
   sightRange?: number;      // how many steps (16px) the trainer can see (default 0 = talk only)
   defeated?: boolean;        // set to true after losing to player
   endBattleText?: string;    // printed after "CLASS: " when the player wins (trainer header won text)
+  endBattleTextLabels?: { win: string; lose: string }; // saved trainer-header pointers, resolved by bank/address
   afterBattleText?: string;  // what a beaten trainer says when talked to (trainer header after text)
   shopItems?: string[];      // mart inventory (item IDs)
   item?: string;             // PickUpItemText object: item constant, extracted since V1a

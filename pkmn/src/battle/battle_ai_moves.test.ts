@@ -2,11 +2,11 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createPokemon, getAllLoadedMoveIds, getMove } from './data';
+import { createPokemon, getAllLoadedMoveIds, getMove, loadBattleData } from './data';
 import { A, BattleState, type BattleState as State } from './battle_state';
 import { D } from './battle_end_state';
 import { getMoveRecord, loadBattleMoveData } from './battle_move_data';
-import { TYPE_CHART } from './battle_damage_asm';
+import { typeChart } from './battle_damage_asm';
 import { selectEnemyMove, type TrainerMoveSelection } from './battle_math';
 import {
   AIEnemyTrainerChooseMoves, AIGetTypeEffectiveness, AIMoveChoiceModification1,
@@ -15,6 +15,7 @@ import {
 } from './battle_ai_moves';
 
 beforeAll(loadBattleMoveData);
+beforeAll(loadBattleData);
 
 const LORELEI = 0x2c;
 const DEWGONG = 0x78;
@@ -488,7 +489,7 @@ describe('reachable scores match the minimum entries', () => {
   ];
 
   function chart(moveType: number, type1: number, type2: number): number {
-    for (const row of TYPE_CHART) {
+    for (const row of typeChart()) {
       if (row.attack !== moveType) continue;
       if (row.defend === type1 || row.defend === type2) return row.multiplier;
     }

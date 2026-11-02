@@ -88,7 +88,7 @@ export type ScriptCommand = (
     }
   | { type: 'unhideNpc'; npcId: string }
   | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardProgram: string }
-  | { type: 'startBattle'; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
+  | { type: 'startBattle'; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
   | { type: 'healParty' }
   | { type: 'restoreMapMusic'; waitForCurrent?: boolean }
   | { type: 'healingMachine' }

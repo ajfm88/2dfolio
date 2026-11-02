@@ -3,6 +3,12 @@
 
 import type { BattlePokemon, PokemonSpecies } from './types';
 import { getSpecies } from './data';
+import { A, BattleState } from './battle_state';
+import { worldPartyRecord } from './battle_bridge';
+import { encodePartyMon, decodePartyMon } from './battle_party_codec';
+import { installTrainerSpecies } from './battle_trainer_party';
+import { getMonHeader } from './battle_loaders';
+import { calcStats } from './battle_calc_stats';
 
 export interface EvolutionCandidate {
   pokemon: BattlePokemon;
@@ -45,18 +51,18 @@ export function applyEvolution(pokemon: BattlePokemon, targetSpecies: PokemonSpe
 
   pokemon.species = targetSpecies;
 
-  // Recalculate stats for new species
-  const hpDV = ((pokemon.atkDV & 1) << 3) | ((pokemon.defDV & 1) << 2) |
-               ((pokemon.spdDV & 1) << 1) | (pokemon.spcDV & 1);
-  pokemon.maxHp = calcHp(targetSpecies.hp, hpDV, pokemon.level);
-  pokemon.attack = calcStat(targetSpecies.attack, pokemon.atkDV, pokemon.level);
-  pokemon.defense = calcStat(targetSpecies.defense, pokemon.defDV, pokemon.level);
-  pokemon.speed = calcStat(targetSpecies.speed, pokemon.spdDV, pokemon.level);
-  pokemon.special = calcStat(targetSpecies.special, pokemon.spcDV, pokemon.level);
+  // evos_moves.asm:176–207: CalcStats b=1 with the evolved species' header.
+  const state = new BattleState(); installTrainerSpecies(state);
+  const record = worldPartyRecord(pokemon); encodePartyMon(state,0,record);
+  getMonHeader(state,record.species); state.wCurEnemyLevel = pokemon.level;
+  calcStats(state,1,A.wPartyMons+16,A.wPartyMons+34);
+  const stats = decodePartyMon(state,0);
+  pokemon.maxHp = stats.maxHp; pokemon.attack = stats.attack; pokemon.defense = stats.defense;
+  pokemon.speed = stats.speed; pokemon.special = stats.special;
 
   // Preserve HP delta
   const hpGain = pokemon.maxHp - oldMaxHp;
-  pokemon.currentHp = Math.min(pokemon.maxHp, Math.max(1, pokemon.currentHp + hpGain));
+  pokemon.currentHp = (pokemon.currentHp + hpGain) & 0xffff;
 
   // Auto-rename if nickname matches old species name (assembly: CheckForRenamedMon)
   if (pokemon.nickname.toUpperCase() === oldName.toUpperCase()) {
@@ -82,13 +88,4 @@ export function getEvolutionMoves(pokemon: BattlePokemon): string[] {
     }
   }
   return newMoves;
-}
-
-// Stat formulas (same as data.ts and experience.ts)
-function calcHp(base: number, dv: number, level: number): number {
-  return Math.floor(((base + dv) * 2 * level) / 100) + level + 10;
-}
-
-function calcStat(base: number, dv: number, level: number): number {
-  return Math.floor(((base + dv) * 2 * level) / 100) + 5;
 }

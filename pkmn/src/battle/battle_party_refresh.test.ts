@@ -2,7 +2,8 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 vi.hoisted(() => Object.assign(globalThis, { window: { addEventListener() {} } }));
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: vi.fn(() => true) }));
-vi.mock('../renderer', () => ({ drawTile: vi.fn(), fillRect: vi.fn(), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }) }));
+vi.mock('../renderer', () => ({ drawTile: vi.fn(), fillRect: vi.fn(), loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }),
+  getScale:()=>1,getCtx:()=>({drawImage:vi.fn(),save(){},restore(){},translate(){},scale(){}}),loadSprite:async()=>({width:16,height:96}) }));
 import { readFileSync } from 'node:fs';
 import { A, BattleState, battleContext } from './battle_state';
 import { decodePartyMon, encodePartyMon, pokemonToPartyRecord, partyRecordToPokemon, refreshPartyMon, refreshPartyMirror } from './battle_party_codec';
@@ -54,6 +55,15 @@ function presentation(r: ReturnType<typeof harness>) { return {screen:r.screen,v
 function partyHost(r: ReturnType<typeof harness>): BattlePartyHost {
   return {...r.host,partyView:r.party,statusView:null,loadEnemyPicVariant:function*(){},switchPlayerMon:function*(){}};
 }
+it('voluntary PARTY passes the counted cache objects and renders without null trailing slots',()=>{
+  const r=harness(),s=r.s,host=partyHost(r),open=vi.spyOn(r.party,'openBattleChoice');
+  expect(s.partyMons).toHaveLength(6);expect(s.partyMons.slice(2)).toEqual([null,null,null,null]);
+  bindStateBattlePartyMenu(s,host);const program=host.partyMenu(battleContext(s));program.next();
+  const mons=open.mock.calls[0][0];expect(mons).toHaveLength(2);
+  expect(mons[0]).toBe(s.partyMons[0]);expect(mons[1]).toBe(s.partyMons[1]);
+  for(let frame=0;frame<22;frame++)program.next();
+  expect(r.party.paletteWhite).toBe(false);expect(()=>r.party.render()).not.toThrow();
+});
 it('refresh preserves array and object identity, writes only changed HP, and changes no memory or RNG',()=>{
   const s=seed(),array=s.partyMons,held=s.partyMons[0]!;
   const original=held.originalStats;held.originalStats={special:original.special,speed:original.speed,defense:original.defense,attack:original.attack};

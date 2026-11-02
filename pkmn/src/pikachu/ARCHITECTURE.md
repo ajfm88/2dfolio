@@ -2,6 +2,12 @@
 
 ## Modules
 
+`pikachu_happiness.ts` also owns the persisted emotion modifier (initial0), exposed
+by getPikachuEmotionModifier/setPikachuEmotionModifier. Battle outcomes write this
+owner; save version2 stores it. Main-menu entry and CONTINUE restore it, while
+resetPikachuHappiness/NEW GAME reset only happiness and mood. Version1 defaults
+the modifier to0. See note72 §10.23.5 and InitPlayerData2.
+
 | File | LOC | Purpose |
 |------|-----|---------|
 | `pikachu_follower.ts` | — | Native follow commands, movement, flat ledge hops, separate script targets, placement after a warp, image latch |

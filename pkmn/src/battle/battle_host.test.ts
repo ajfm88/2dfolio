@@ -259,7 +259,7 @@ describe('palette CPU write and composed battle program', () => {
   });
 });
 
-it('keeps the host outside the production module graph', () => {
+it('reaches the host and menu screen in the production module graph', () => {
   const seen = new Set<string>();
   function visit(file: string): void {
     if (seen.has(file)) return;
@@ -273,6 +273,6 @@ it('keeps the host outside the production module graph', () => {
     }
   }
   visit(resolve(__dirname, '../main.ts'));
-  expect(seen.has(resolve(__dirname, 'battle_host.ts'))).toBe(false);
-  expect(seen.has(resolve(__dirname, 'battle_menu_screen.ts'))).toBe(false);
+  expect(seen.has(resolve(__dirname, 'battle_host.ts'))).toBe(true);
+  expect(seen.has(resolve(__dirname, 'battle_menu_screen.ts'))).toBe(true);
 });

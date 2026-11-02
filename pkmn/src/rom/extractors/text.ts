@@ -328,6 +328,13 @@ export function readPokemonInternalNames(rom: BinaryReader): Record<number, stri
   return names;
 }
 
+/** Cartridge MonsterNames (3A:4000) as stored, indexed by internal ID; [0] = null. Includes the MISSINGNO. slots. */
+export function readMonsterNames(rom: BinaryReader): (string | null)[] {
+  const names: (string | null)[] = [null];
+  for (let i = 1; i <= NUM_POKEMON; i++) names.push(decodeFixedString(rom, MONSTER_NAMES + (i - 1) * NAME_LENGTH, NAME_LENGTH));
+  return names;
+}
+
 /**
  * Convert a ROM pokemon name (uppercase) to a filesystem-safe filename.
  * "BULBASAUR" → "bulbasaur", "NIDORAN♂" → "nidoran_m",

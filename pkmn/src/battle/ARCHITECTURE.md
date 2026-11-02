@@ -1,5 +1,23 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-10c: send-out pictures and ball BG steps
+
+The session's entrance/send-out/slide cues are Programs on its existing BattleScreen.
+Starter Pikachu places eight overlapping column steps at (0,5), two frames each.
+AnimateSendingOutMon shares the retreat's downscale tables, uses hStartTileID/hBaseTileID,
+waits3/4/5 and writes the full column-major pic, including wSpriteFlipped's column order.
+Both slide-offs take eight three-frame steps; the enemy subtraction/comparison bug remains.
+
+battle_ball_animation ports TossBallAnimation's item choice, nybbles, sequence and trainer branch.
+HIDEPIC and SHOWPIC use the shared auto-BG-transfer model and Delay3. The sole
+ballSubanimation(id) cue defers OAM and its move sounds to A5f, taking zero frames.
+The trainer block uses the existing BattleAudio/faintThud owner. Cries remain silent (#83).
+Substitute/Minimize/Transform stay A5e carries. No turn, item-body or codec changes.
+
+Presentation waits move frame-driven DIV. Note72 §11.67–§11.69 govern value-only ledger
+updates and ASM-derived test clocks. Misty's pinned DIV40 proof checks two per-mon AI
+uses, their positions and texts, and the actual EnemySendOutFirstMon FF reset writes.
+
 ## A5c3f checkpoint-08f: catch homes, awaiting Claude's check
 
 The unused session has a separate once-only loadBattleStandInData beside loadBattleSessionData.
@@ -647,3 +665,195 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 **A5c1 (note 66, DECISIONS #72)** built these, plus the battle text programs in `text_programs.json`, `UpdateHPBar`
 both ways in `menus/hp_bar.ts`, and the low-health alarm (`audio/low_health_alarm.ts`). Today's battle still runs on
 `battle.ts` and `battle_ui.ts`. A5c3 switches it over; the carry-overs are in note 66 §10.20.
+
+## A5c3f checkpoint-08g: cartridge species names
+
+`battle_trainer_data.ts` fetches `monster_names.json` in the same once-only promise as
+the trainer/species tables. `monsterName(internal)` returns the cartridge spelling and
+throws for a missing entry. `battle_trainer_party.ts` gives each header that name while
+keeping species lookup keys based on upstream's `pokemon.json`, so `NIDORAN_F` and
+`NIDORAN_M` remain distinct. `getMonName` keeps its ten-byte copy and terminator.
+
+At the world boundary, `battle_bridge.ts` maps a nickname equal to the object's
+`species.name` to the cartridge's default bytes for both party and box inputs.
+Explicit nicknames stay verbatim; live objects and the exact party codec stay unchanged.
+The new session's texts and HUD therefore use `RATTATA`, `PIKACHU`, `NIDORAN♀` and `MR.MIME`.
+The stand-in Pokédex page still draws upstream's name until J2/V5.
+
+This remains unused by `main.ts` until checkpoint-09. Its write-back will map default
+cartridge name bytes back to `species.name` (O-48 option A, DECISIONS #86). Raw save name
+bytes in checkpoint-10 will resolve the ambiguity of a nickname typed exactly like
+upstream's default (`Pikachu`). See note 72 §10.18 and §11.41–§11.42.
+
+## A5c3f checkpoint-09a: live adapter, still unused
+
+`battle_live.ts` takes supplied live values and an encounter descriptor to build the
+session's `BattleWorld`. It translates the wild dex species to an internal ID and a
+trainer class to class+200, retaining badge spellings, labels and the caller's gym byte.
+It imports no live owner or `main.ts`; checkpoint-09b supplies the owners and setters.
+Map trainers' `endBattleTextLabels` come from header words +8/+10, resolved strictly
+by bank/address during extraction. The decoded `endBattleText` stays until retirement.
+
+`applyBattleOutcome` validates and decodes everything before writing absolute values.
+It preserves existing party objects, appends a caught party member, validates old box
+prefixes and inserts a new boxed object at the front (checkpoint-10a).
+The box conversion reads the prefix directly, without synthesizing a party stat tail;
+the live `BoxedPokemon` type requires a `maxHp` cache, computed with the existing
+`CalcStat` from the actual species, box level, DVs and stat EXP. Default cartridge name
+bytes map back to `species.name` per #86; typed `NIDORAN-F` and `MR. MIME` stay verbatim.
+Money, bag, dex, happiness and mood replace live values. The raw emotion modifier is
+written through LiveBattleOwners to pikachu_happiness.ts and persisted by 10b.
+
+The returned map plan distinguishes `battleResult === 1` from `blackoutCarry`; an Oak's
+Lab loss therefore resumes the script without a warp. Evolution candidates use only
+flagged slots and level entries, including flagged fainted mons, in party order; a
+nonzero result skips evolution. The evolution screen remains upstream's stand-in.
+Its order is a known departure: Yellow evolves inside `EndOfBattle`, before
+`UpdatePikachuMoodAfterBattle`, the sound wait and white-out; our stand-in runs after
+the session ends. The cooldown, trainer flag/facing, blackout heal/halving/warp and
+map music/fade remain checkpoint-09b's map-side work. See note 72 §10.19 and §11.44.
+
+## A5c3f checkpoint-09b: live switch
+
+`main.ts` now creates the production session immediately after priming battle music,
+before the overworld transition. A page-lifetime random state reads a `pageTicks`
+counter advanced before audio on each game tick. On the transition's final tick,
+`session.start()` primes its CPU work synchronously; the next game tick services the
+first HUD-load frame. Main ticks audio once and the session once, and leaves battle
+joypad ownership to the session's hosts. `OptionMenu` owns text speed; session start
+does not alter it.
+
+The presenter reuses a native 160×144 canvas and draws it at `getScale()` without
+smoothing. The party, status, naming and Pokédex foregrounds use their own renderers,
+with no frame or input advancement from presentation. `partyItem` currently presents
+only the party; composing the battle cells remains 09c. Debug receives null until 09c.
+Both data loaders and stand-in assets finish before splash; unlock preloads the three
+victory tracks for immediate numeric `PlaySound` playback from the shared music cache.
+
+At completion main calls the 09a adapter once. Its plan drives trainer defeat/facing,
+evolution choice, the old map fade/music tail, and blackout heal/halving/warp. Wild and
+trainer byte owners supply seen/owned, party, box, bag, money and happiness. Main no
+longer repeats those effects or checks the whole party for evolution. Map trainers
+pass extracted label pairs; Oak's Lab passes its distinct win and lose labels.
+
+The voluntary party binder uses a Proxy to present the counted party slice, retaining
+the six-slot cache and forwarding every other context key/write (§11.47). The forced
+chooser remains choose-only: B cannot exit it, and A on a living reserve sends it out
+without a STATS/SWITCH submenu (§11.48). The old forced-status test row was removed.
+
+The sleeping-Pikachu icon and selection gates apply to `battle_choice`, as in the ASM.
+The only scripts setting the following-disabled bit (Bill's House, Pewter's Jigglypuff,
+Fan Club) start no battle before it is cleared; that battle scenario is unreachable.
+The synthetic regression pins the hidden icon, `PartyMenuText_12cc`, then cancellation
+back to the battle menu, matching `.asm_128f`'s carry exit. No continuation divergence
+was observed. The old `'battle'` mode's exemption stays only for the retiring engine;
+its icon case now exercises `showForBattle` directly, without main.
+
+Catch demos retain their start/finish branches and renderer until A5f. The inverted
+guard proves main reaches `battle_session`/`battle_live` and not `battle/battle.ts`.
+Note 72 §10.20 lists all remaining reachable legacy helpers for retirement in 11.
+Options persistence remains checkpoint-10b; front box insertion is implemented in 10a.
+The derived record cells are closed by #88; they are not a pending metadata store.
+09c also owns the bundle text-extractor audit. The deferred evolution screen and its
+known ordering departure remain as recorded in 09a.
+
+The damage type chart now builds once on first use from the boot-fetched data,
+preserving ROM row order and byte multipliers; use before boot throws. The runtime
+graph guard rejects Node-only imports. The old AI test now uses this lazy chart
+under §11.50. The completed 09b switch builds `index-BcFy-L-E.js` (650,975 bytes);
+ROM 6221/6221 and no-ROM 5964 pass / 257 skip. See note 72 §10.20.7 and Claude's
+check in §11.51. The following 09c work completes the foreground/debug handoff.
+
+### Checkpoint-09c: composition, debug bytes and extractor boundary
+
+`partyItem` uses the full scaled scanout while BGP is zero. Otherwise main presents
+the party list, then the single battle scanout buffer through a cell mask: only
+`visibleAt(x,y) !== ' '` overlays the list. This preserves BG-third timing. The item
+text box, HP animation's number/bar cells and Ether move list therefore overwrite
+the party pixels as the final tilemap writes do on the cartridge. Blits use the
+same nearest-neighbour scale as the full present; no frame/input work occurs there.
+
+Entry snapshots copy the party, box outer array and active box array while keeping
+their objects. The live-owner count/order validation can reject a party change before
+committing any battle output. The other box arrays retain their existing references.
+
+`debug_battle_view.ts` is a memory view over the named `battle_state.ts` cells. HP
+uses BE words/max clamps; status writes one byte (SLP=3) without a stat effect;
+stages expose 1–13 as −6…+6. Player EXP follows `wPlayerMonNumber` into `wPartyMons`
+at the party struct's three-byte MON_EXP offset. Enemy EXP is not editable. The
+info line reads the foreground, speed words, active party EXP and enemy header cells.
+Panel writes occur after due ticks, force no HUD redraw and update no object mirror.
+Controls wait for initialized species/nickname cells during entry/send-out; outside
+battle the original party/object path remains. The old Battle type import is gone.
+
+The source graph permits only `decodeTextByte` from `rom/extractors/text.ts` and no
+other extractor module. Stat effects take the sole `STAT_NAME_LENGTH` definition
+from `rom/constants.ts`; their extractor schema import stays type-only. The bundle
+gate checks the decoder marker, rejects both program-decoder error markers and
+`node:`. Setup reproduces all 920 static/data files byte-for-byte.
+
+09c: `index-BFFnK4IM.js`, 653,446 bytes; ROM 6238/6238, no-ROM 5981 pass / 257 skip.
+All eleven mutation variants are caught. See note 72 §10.21.4; stop for Claude's check
+before checkpoint 10's save work and the user's play-test.
+
+### Checkpoint-10a mon paths (implemented; awaiting Claude's check)
+
+`pokemon_transfers.ts` owns the live deposit, withdrawal and box-STATS paths. It uses
+the existing records/codec and scratch BattleState, with the shared species header,
+`calcLevelFromExperience` and `calcStats`. Deposit copies the box prefix and sets
+BoxLevel to party level; Bills PC appends deposits. Withdrawal derives level from
+exact EXP at `wLoadedMon`, while box STATS uses BoxLevel. Both calculate stored stats
+with b=1 and keep prefix HP, status/sleep, packed PP Ups and exact EXP. STATS leaves
+the box entry untouched. Both paths retain the #86 live nickname policy.
+
+BoxedPokemon includes sleepTurns throughout both box-record conversions and
+pokemonToBoxed. Version-1 main restore supplies a missing counter of 1 for SLP and
+0 otherwise; this is an explicit migration value, not a cartridge behaviour. An
+existing counter is retained. The save format/version itself remains unchanged
+until 10b.
+
+Evolution computes the new species' stored stats through the same checked CalcStats
+b=1 port, then adds the max-HP difference to old HP in 16-bit arithmetic, without a
+clamp. A flagged fainted mon can return with positive HP; a zero difference leaves
+HP0. `checkEvolutions` and upstream's evolution presentation are otherwise unchanged.
+
+Catches into a full party prepend the new boxed object. The old-slot invariant is
+still live slot i = outcome slot i+added; live order matches the bytes and the next
+battle's box inputs. Deposit and caught-mon insertion intentionally have different
+orders, matching their separate ASM paths.
+
+Nine required mutation variants are caught. The deleted deposit overwrite is an
+accepted equivalent (#88; note72 §11.57), because worldPartyRecord derives both
+BoxLevel and level from mon.level. The explicit ASM overwrite stays. The stat-exp
+test now pins the b=1 literal stats under §11.58, retaining its tuple and save cases.
+Final gates pass: typecheck, build, bundle markers, ROM6250/6250 and no-ROM5993 pass /
+257 skip. Bundle: `index-JxBhHJZc.js`, 653,398 bytes. See note72 §10.22.9; stop for
+Claude's check in §11.59. The following 10b work completes record persistence,
+version-1 migration stats/EXP, options and emotion-modifier saves.
+
+### Checkpoint-10b: record saves and main-menu restoration
+
+`save.ts` writes version2 under the unchanged `p151-s` key. Party entries contain
+44 struct bytes,11 OT bytes and11 nickname bytes; box entries contain33+11+11.
+The existing codecs write/read scratch slot0 at their own named addresses. No
+parallel codec or stat formula is used. Loaded party stats, exact EXP, sleep counter
+and PP Ups come from the record; default nicknames follow #86. Box arrays retain
+their front order. Decode errors propagate, and no partial party is returned.
+Main decodes both mon collections before applying the party.
+
+`loadGame` returns the parsed version1/version2 union, rejecting unsupported versions
+and parse failures. Version1 party members use 10a's box-STATS path at the saved
+level with CalcStats b=1, exact saved EXP and SLP1/healthy0 migration counters.
+Version1 box fill is now in restoreBoxes, retaining an existing counter. These
+are explicit migration rules; raw derived record cells remain closed under #88.
+
+OptionMenu.restore and menu edits share one text-speed map. Every title→main-menu
+entry first restores MID/ON/SHIFT, then the save's packed options and modifier
+(version1 uses defaults/modifier0). CONTINUE restores them again. The modifier's
+single owner is pikachu_happiness.ts; main snapshots read it, and the live battle
+adapter supplies its setter through LiveBattleOwners. NEW GAME keeps both loaded
+values while resetting happiness/mood, as InitPlayerData2 does.
+
+10b: `index-Ccytk04i.js`, 654,297 bytes; ROM6260/6260, no-ROM6003 pass /257 skip.
+All eleven mutations are caught. See note72 §10.23.5. Stop for Claude's check,
+then the user's play-test; no retirement or play-test fixes have started.

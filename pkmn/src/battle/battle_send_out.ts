@@ -3,7 +3,7 @@ import { partyMenuOrRockOrRun } from './battle_party_menu';
 import { decodeBattleText } from './battle_text_codec';
 // Unused player-side ports. pret e89ead15 core.asm:1091–1167,1764–1871,2525–2546;
 // common_text.asm:113–259. Enemy send-out/SHIFT remain checkpoint-05b.
-import { battleContext, LINK_STATE_BATTLING, type BattleState } from './battle_state';
+import { battleContext, LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { multiply, divide } from './battle_arithmetic';
 import { flagAction, hasMonFainted } from './battle_end_helpers';
@@ -35,9 +35,9 @@ export interface PlayerSendOutHost extends Pick<BattleActionHost, 'screen' | 'ti
   backPicture(state: BattleState): string;
   /** Deferred animation bodies; their outer waits/copies remain in these ports. */
   animation(state: BattleState): Program;
-  sendingOutMon(state: BattleState, x: number, y: number): void;
-  pikachuEntrance(state: BattleState): void;
-  slidePlayerOff(state: BattleState): void;
+  sendingOutMon(state: BattleState, x: number, y: number): Program;
+  pikachuEntrance(state: BattleState): Program;
+  slidePlayerOff(state: BattleState): Program;
 }
 
 /** common_text.asm:119–150,196–225. Real shared HRAM Multiply/Divide, including stale high byte on retreat. */
@@ -118,14 +118,14 @@ export function* sendOutMon(state: BattleState, host: PlayerSendOutHost): Progra
   state.wEnemyBattleStatus1 &= ~0x20;
   if (isThisPartyMonStarterPikachu(state)) {
     state.hWhoseTurn = 0; textBgTransfer.enabled = true;
-    host.pikachuEntrance(state);
+    yield* host.pikachuEntrance(state);
     const clip = isPlayerPikachuAsleepInParty(state) ? 37 : 11;
     yield* playPikachuClipCue({ getAlarm: () => host.voice.getAlarm(), setAlarm: value => host.voice.setAlarm(value),
       cry: id => host.voice.cry(id), clip: id => host.voice.clip(id), clearSfxIds: () => host.audio.clearClipIds() }, clip);
   } else {
     state.hWhoseTurn = 1;
     yield* playMoveAnimation(state, host, 0xc3); // POOF_ANIM, constants/move_constants.asm.
-    host.sendingOutMon(state, 4, 11);
+    yield* host.sendingOutMon(state, 4, 11);
     playCryCue(host.voice, state.wCurPartySpecies);
   }
   yield* host.printText('PrintEmptyString.emptyString'); host.saveScreenTilesToBuffer1();
@@ -138,18 +138,44 @@ function clearBack(host: PlayerSendOutHost): void {
   for (let row = 5; row < 12; row++) for (let col = 1; col < 8; col++) host.screen.put(col, row, ' ');
 }
 /** animations.asm:2427–2468. CopyDownscaledMonTiles has no copy wait. */
-function downscale(state: BattleState, host: PlayerSendOutHost, small: boolean): void {
-  state.mem[D.wDownscaledMonSize] = small ? 1 : 0; state.mem[D.hBaseTileID] = 0;
+function downscale(state: BattleState, host: Pick<PlayerSendOutHost, 'screen'>, small: boolean,
+  x = small ? 4 : 3, y = small ? 9 : 7): void {
+  state.mem[D.wDownscaledMonSize] = small ? 1 : 0;
   textBgTransfer.enabled = false;
-  const size = small ? 3 : 5, x = small ? 4 : 3, y = small ? 9 : 7, table = small ? DOWNSCALED_3 : DOWNSCALED_5;
-  table.forEach((tile, i) => host.screen.put(x + i % size, y + Math.floor(i / size), tile));
+  const size = small ? 3 : 5, table = small ? DOWNSCALED_3 : DOWNSCALED_5;
+  table.forEach((tile, i) => host.screen.put(x + i % size, y + Math.floor(i / size), (tile + state.mem[D.hBaseTileID]) & 255));
   textBgTransfer.enabled = true;
+}
+/** pret pikachu_entrance_anim.asm. Eight overlapping column placements, including the trailing blank column. */
+export function* pikachuEntrance(_state: BattleState, host: Pick<PlayerSendOutHost, 'screen'>): Program {
+  for (let columns = 1; columns <= 8; columns++) {
+    for (let column = 0; column < columns; column++) for (let row = 0; row < 7; row++) {
+      const tile = 91 - column * 7 + row;
+      host.screen.put(columns - 1 - column, 5 + row, tile < 49 ? ' ' : tile);
+    }
+    yield* delayFrames(2);
+  }
+}
+/** pret init_battle.asm:181–277. HL is preserved by each downscale copy; all tile arithmetic is byte-sized. */
+export function* sendingOutMon(state: BattleState, host: Pick<PlayerSendOutHost, 'screen'>, x: number, y: number): Program {
+  state.mem[D.hBaseTileID] = state.mem[D.hStartTileID];
+  if (state.wIsInBattle !== 0) {
+    host.screen.put(x, y, (state.wIsInBattle + 0x4c) & 255);
+    yield* delayFrames(3);
+    x--; y -= 2; downscale(state, host, true, x, y); yield* delayFrames(4);
+    x--; y -= 2; downscale(state, host, false, x, y); yield* delayFrames(5);
+    x--; y -= 2;
+  } else { x -= 3; y -= 6; }
+  const base = (state.mem[D.hBaseTileID] + 0x31) & 255;
+  for (let column = 0; column < 7; column++) for (let row = 0; row < 7; row++)
+    host.screen.put(x + (state.mem[W_SPRITE_FLIPPED] ? 6 - column : column), y + row, (base + column * 7 + row) & 255);
 }
 /** core.asm:1828–1871. Starter check temporarily selects the outgoing active mon, then restores selection. */
 export function* animateRetreatingPlayerMon(state: BattleState, host: PlayerSendOutHost): Program {
   const selected = state.wWhichPokemon; state.wWhichPokemon = state.wPlayerMonNumber;
   const starter = isThisPartyMonStarterPikachu(state); state.wWhichPokemon = selected;
-  if (starter) { state.hWhoseTurn = 0; host.slidePlayerOff(state); return; }
+  if (starter) { state.hWhoseTurn = 0; yield* host.slidePlayerOff(state); return; }
+  state.mem[D.hBaseTileID] = 0;
   clearBack(host); downscale(state, host, false); yield* delayFrames(4);
   clearBack(host); downscale(state, host, true); yield* delayFrames(3);
   clearBack(host); host.screen.put(5, 11, 0x4c); clearBack(host);
@@ -237,7 +263,13 @@ export { palette as setSendOutBattlePalette, clearSprites as clearSendOutSprites
 /** State-aware party port: shared menus consume a fresh cache of the party bytes. */
 export function bindStateBattlePartyMenu(state: BattleState, host: BattlePartyHost): void {
   host.partyMenu = function* () {
-    refreshPartyMirror(state);
-    return yield* partyMenuOrRockOrRun(battleContext(state), host);
+    const mons = refreshPartyMirror(state);
+    const context = new Proxy(battleContext(state), {
+      get(target, key, receiver) {
+        return key === 'partyMons' ? mons : Reflect.get(target, key, receiver);
+      },
+      set(target, key, value, receiver) { return Reflect.set(target, key, value, receiver); },
+    });
+    return yield* partyMenuOrRockOrRun(context, host);
   };
 }

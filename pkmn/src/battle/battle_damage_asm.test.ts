@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadBattleData } from './data';
 import { TYPE_NAMES } from '../rom/constants';
 import { TYPE_EFFECTS } from '../rom/rom_offsets';
 import type { Program } from './battle_menu_context';
@@ -20,6 +21,8 @@ import {
   getEnemyMonStat,
   randomizeDamage,
 } from './battle_damage_asm';
+
+beforeAll(loadBattleData);
 
 const MON_ATTACK = 36;
 const MON_DEFENSE = 38;

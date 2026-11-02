@@ -137,7 +137,7 @@ export function buildOaksLabRivalBattleScript(
     // Metadata costs no frames and keeps the port's existing movement timing.
     { type: 'faceNpc', npcId: 'rival', direction: 'down', spriteIndex: 1 }, mask('none'),
     { type: 'startBattle', trainerClass: 'RIVAL1', partyIndex: 0, trainerName: getRivalName(),
-      endBattleProgram: 'OaksLabRivalIPickedTheWrongPokemonText' },
+      endBattleProgram: 'OaksLabRivalIPickedTheWrongPokemonText', endBattleLabels: {win:'OaksLabRivalIPickedTheWrongPokemonText',lose:'OaksLabRivalAmIGreatOrWhatText'} },
     { type: 'callback', fn: () => { setJoyIgnore('dpad'); setRivalStarter(rivalStarterAfterLabBattle(wasLastBattleWon())); } },
     { type: 'healParty' }, { type: 'setFlag', flag: 'BATTLED_RIVAL_IN_OAKS_LAB' },
     { type: 'wait', frames: 20 }, ...labDisplay('OaksLabRivalSmellYouLaterText.Text'), rivalMusic,

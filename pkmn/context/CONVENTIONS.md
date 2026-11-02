@@ -201,11 +201,18 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
   reads produces no new edge. Retained script text still needs one BG transfer per frame.
 - Evolution targets in ASM are plain tokens; nothing evolves into a special-named
   species, so simple TitleCase suffices there.
-- **Species names come in two spellings.** `trainers.json` and `wild/*.json` use pret
+- **Species names come in three spellings.** `trainers.json` and `wild/*.json` use pret
   constants (`NIDORAN_F`, `MR_MIME`, `FARFETCHD`); `pokemon.json` uses display names
   (`Nidoran-F`, `Mr. Mime`, `Farfetch'd`). Always resolve through `getSpecies()`, which
   compares without case or punctuation since V1c. Before that, the Forest Lass's
   Nidoran hung the game and Route 22's wild Nidorans silently never appeared.
+  `monster_names.json` adds the cartridge's spelling (`NIDORAN♀`, `MR.MIME`, `PIKACHU`),
+  indexed by internal ID, for the new battle engine only (A5c3f checkpoint-08g).
+  Keep trainer species keys based on `pokemon.json`: stripping punctuation from the
+  cartridge's Nidoran names makes both keys `NIDORAN`. At the battle boundary, a nickname
+  equal to `species.name` becomes the cartridge's default name; other nicknames stay verbatim.
+  The codec stays exact, and the overworld keeps upstream's names until V5. Checkpoint-09
+  maps default name bytes back to `species.name` (O-48 option A, DECISIONS #86).
 - **Trainer pics are keyed by class key, not display name** (`trainerPicName()` in
   `battle/trainer_flow.ts`): `BUG_CATCHER` → `bugcatcher.png`, while "BUG CATCHER" has
   no file. A failed pic load leaves `startTrainerBattle` holding black in `battle_transition`
@@ -278,6 +285,11 @@ adapter, SET/SHIFT Forest wins, NO at the real switch prompt, rival loss/win, en
 sound-wait ordering, the pure saved-label selector, SaveTrainerName's @-bounded copy and all47
 ROM name-pointer rows. The8 required08c mutations plus08a's carry-false-stub mutation fail plain
 assertions; evidence in note72 §10.14.5 onward. No snapshots changed.
+`main_battle_pics.test.ts`:12 no-ROM cases drive real main/session input with the raster rig.
+They pin send-out stages and waits, back/front pic pixel hashes, flipped columns, both slide-offs,
+ball hide/show and transfer timing, toss selection and trainer block sound order. Outcome-sensitive
+cases own a fixed frame4 DIV clock. Note72 §10.24 records the mutation proof and ledger controls.
+
 `battle/battle_session_menus.test.ts`:16 no-ROM cases use start/tick and two-frame key holds,
 with renderer/menu_render/party_icons output mocks. Item0 pins full-length end-name decoding
 and exact Misty handoffs. Cases cover Potion, fresh bag bytes/reopening, two uses and successive

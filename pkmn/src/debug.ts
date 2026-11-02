@@ -3,7 +3,8 @@ import { getCtx, getScale, resizeCanvas } from './renderer';
 import type { GameMap } from './overworld/map';
 import type { Player } from './overworld/player';
 import type { Npc } from './overworld/npc';
-import type { Battle } from './battle/battle';
+import { A, type BattleState } from './battle/battle_state';
+import { debugBattleMon, debugBattleInfo, type DebugBattleMon } from './debug_battle_view';
 import type { BattlePokemon, StatusCondition } from './battle/types';
 import { type Bag, getAllItemIds, getItemName } from './items';
 import { getPikachuHappiness, getPikachuMood, restorePikachuHappiness } from './overworld';
@@ -166,7 +167,8 @@ export function renderDebugOverlay(
 // ──────── HTML Debug Panel ────────
 
 let panel: HTMLDivElement | null = null;
-let currentBattle: Battle | null = null;
+let currentBattle: BattleState | null = null;
+let currentForeground = 'battle';
 let currentBag: Bag | null = null;
 let currentPlayer: Player | null = null;
 let currentMap: GameMap | null = null;
@@ -224,12 +226,15 @@ function updatePanelVisibility(): void {
 }
 
 /** Call from main.ts each frame to keep panel in sync with battle state. */
-export function updateDebugPanel(battle: Battle | null, bag: Bag | null, player?: Player, map?: GameMap, party?: BattlePokemon[]): void {
+export function updateDebugPanel(battle: BattleState | null, bag: Bag | null, player?: Player, map?: GameMap, party?: BattlePokemon[], foreground = 'battle'): void {
   if (!enabled) return;
   if (!panel) panel = createPanel();
 
-  if (battle !== currentBattle) needsRebuild = true;
+  const playerReady = !!battle?.wBattleMonSpecies && !!battle.mem[A.wBattleMonNick];
+  const enemyReady = !!battle?.wEnemyMonSpecies && !!battle.mem[A.wEnemyMonNick];
+  if (battle !== currentBattle || !!playerRefs !== playerReady || !!enemyRefs !== enemyReady) needsRebuild = true;
   currentBattle = battle;
+  currentForeground = foreground;
   currentBag = bag;
   currentPlayer = player ?? null;
   currentMap = map ?? null;
@@ -343,13 +348,15 @@ function rebuildPanel(): void {
     battleInfoEl = info;
     panel.appendChild(info);
 
-    const [pSection, pRefs] = buildPokemonSection('PLAYER', currentBattle.playerPokemon, '#4f4');
-    const [eSection, eRefs] = buildPokemonSection('ENEMY', currentBattle.enemyPokemon, '#f66');
-    playerRefs = pRefs;
-    enemyRefs = eRefs;
     partyRefs = null;
-    panel.appendChild(pSection);
-    panel.appendChild(eSection);
+    if (currentBattle.wBattleMonSpecies && currentBattle.mem[A.wBattleMonNick]) {
+      const [section, refs] = buildPokemonSection('PLAYER', debugBattleMon(currentBattle), '#4f4');
+      playerRefs = refs; panel.appendChild(section);
+    }
+    if (currentBattle.wEnemyMonSpecies && currentBattle.mem[A.wEnemyMonNick]) {
+      const [section, refs] = buildPokemonSection('ENEMY', debugBattleMon(currentBattle,true), '#f66');
+      enemyRefs = refs; panel.appendChild(section);
+    }
   } else {
     battleInfoEl = null;
     // Party lead Pokemon controls (outside battle)
@@ -386,26 +393,23 @@ function rebuildPanel(): void {
 /** Live-refresh displayed values without rebuilding DOM. */
 function refreshPanel(): void {
   if (currentBattle && playerRefs) {
-    refreshMon(currentBattle.playerPokemon, playerRefs);
-    // Force-sync display HP so the in-game HUD matches immediately
-    currentBattle.playerDisplayHp = currentBattle.playerPokemon.currentHp;
+    refreshMon(debugBattleMon(currentBattle), playerRefs);
   }
   if (currentBattle && enemyRefs) {
-    refreshMon(currentBattle.enemyPokemon, enemyRefs);
-    currentBattle.enemyDisplayHp = currentBattle.enemyPokemon.currentHp;
+    refreshMon(debugBattleMon(currentBattle,true), enemyRefs);
   }
   if (!currentBattle && partyRefs && currentParty && currentParty.length > 0) {
     refreshMon(currentParty[0], partyRefs);
   }
   if (currentBattle && battleInfoEl) {
-    const p = currentBattle.playerPokemon;
-    const e = currentBattle.enemyPokemon;
-    const trainerInfo = currentBattle.isTrainerBattle ? ' [TRAINER]' : '';
+    const p = debugBattleMon(currentBattle);
+    const e = debugBattleMon(currentBattle,true);
+    const info = debugBattleInfo(currentBattle,currentForeground);
     const html =
-      `<span style="color:#ff0">State: ${currentBattle.state}${trainerInfo}</span><br>` +
+      `<span style="color:#ff0">State: ${info.foreground}</span><br>` +
       `<span style="color:#ff0">Spd: ${p.speed} vs ${e.speed}</span> ` +
       `<span style="color:#8f8">EXP:${p.exp}</span><br>` +
-      `<span style="color:#f80">CR:${e.species.catchRate} BX:${e.species.baseExp}</span>`;
+      `<span style="color:#f80">CR:${info.catchRate} BX:${info.baseExp}</span>`;
     if (battleInfoEl.innerHTML !== html) battleInfoEl.innerHTML = html;
   }
   if (overworldInfoEl && currentPlayer) {
@@ -444,7 +448,7 @@ function refreshPanel(): void {
   }
 }
 
-function refreshMon(mon: BattlePokemon, refs: LiveRefs): void {
+function refreshMon(mon: BattlePokemon | DebugBattleMon, refs: LiveRefs): void {
   // Header (level may change)
   const headerText = `${mon.nickname} Lv${mon.level}`;
   if (!refs.header.textContent?.endsWith(headerText)) {
@@ -465,6 +469,7 @@ function refreshMon(mon: BattlePokemon, refs: LiveRefs): void {
   const expText = mon.level >= 100
     ? `EXP: ${mon.exp} (MAX)`
     : `EXP: ${mon.exp} / ${totalExpForLevel(mon.species.growthRate, mon.level + 1)}  (${expToNextLevel(mon.species.growthRate, mon.level, mon.exp)} to next)`;
+  if ('memoryPoke' in mon && mon.enemy) refs.expLabel.parentElement!.style.display = 'none';
   if (refs.expLabel.textContent !== expText) refs.expLabel.textContent = expText;
 
   // Stats
@@ -484,7 +489,7 @@ function refreshMon(mon: BattlePokemon, refs: LiveRefs): void {
   }
 }
 
-function buildPokemonSection(label: string, mon: BattlePokemon, color: string): [HTMLDivElement, LiveRefs] {
+function buildPokemonSection(label: string, mon: BattlePokemon | DebugBattleMon, color: string): [HTMLDivElement, LiveRefs] {
   const section = el('div', '') as HTMLDivElement;
   section.style.cssText = `margin-bottom: 12px; border: 1px solid ${color}; border-radius: 4px; padding: 6px;`;
 
@@ -516,12 +521,14 @@ function buildPokemonSection(label: string, mon: BattlePokemon, color: string): 
     ? `EXP: ${mon.exp} (MAX)`
     : `EXP: ${mon.exp} / ${nextLvlExp}  (${toNext} to next)`;
   expRow.appendChild(expLabel);
-  if (mon.level < 100) {
+  if (mon.level < 100 && !('memoryPoke' in mon && mon.enemy)) {
     expRow.appendChild(btn('Near Lvl', () => {
       mon.exp = totalExpForLevel(mon.species.growthRate, mon.level + 1) - 1;
     }));
   }
   section.appendChild(expRow);
+
+  if ('memoryPoke' in mon && mon.enemy) expRow.style.display = 'none';
 
   // Stats (Atk/Def/Spd/Spc) — live-updated to show badge boosts
   const statsLabel = el('div', '');
@@ -536,6 +543,7 @@ function buildPokemonSection(label: string, mon: BattlePokemon, color: string): 
   for (const st of STATUS_OPTIONS) {
     const btnLabel = st ?? 'None';
     const b = btn(btnLabel, () => {
+      if ('memoryPoke' in mon) { mon.status = st; return; }
       // Restore stats from old status before applying new one
       if (mon.status === 'BRN') {
         mon.attack = Math.floor(((mon.species.attack + mon.atkDV) * 2 * mon.level) / 100) + 5;

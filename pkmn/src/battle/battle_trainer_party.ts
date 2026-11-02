@@ -3,7 +3,7 @@
 // engine/battle/get_trainer_name.asm, engine/battle/read_trainer_party.asm,
 // engine/pokemon/add_mon.asm _AddPartyMon (ENEMY_PARTY_DATA), engine/math/bcd.asm AddBCD.
 // No live caller. The pic is a filename for checkpoint-04; wTrainerPicPointer stays untouched.
-import { getTrainerSpeciesData, type TrainerRow, type MoveRow, type MonRow, type PartyMember } from './battle_trainer_data';
+import { getTrainerSpeciesData, monsterName, type TrainerRow, type MoveRow, type MonRow, type PartyMember } from './battle_trainer_data';
 import { GROWTH_RATE_NAMES, TYPE_NAMES } from '../rom/constants';
 import { writePartyMovePP } from './battle_add_mon';
 import { calcExperience } from './battle_calc_experience';
@@ -58,7 +58,7 @@ function load(): void {
     const internal = POKEDEX_ORDER.indexOf(dex) + 1;
     if (internal <= 0) throw new BattleUnsupportedState(`no internal id for dex ${dex}`);
     speciesByKey!.set(speciesKey(entry.name), internal);
-    headers!.set(internal, headerOf(entry));
+    headers!.set(internal, headerOf(entry, monsterName(internal)));
   });
 }
 
@@ -86,11 +86,11 @@ function four(names: readonly string[]): [number, number, number, number] {
   return ids;
 }
 
-function headerOf(entry: MonRow): SpeciesHeader {
+function headerOf(entry: MonRow, name: string): SpeciesHeader {
   const growthRate = GROWTH_RATE_NAMES.indexOf(entry.growthRate);
   if (growthRate < 0) throw new BattleUnsupportedState(`growth ${entry.growthRate}`);
   return {
-    name: entry.name,
+    name,
     base: [entry.hp, entry.attack, entry.defense, entry.speed, entry.special],
     type1: typeByte(entry.type1), type2: typeByte(entry.type2),
     catchRate: entry.catchRate, baseExp: entry.baseExp, moves: four(entry.startMoves),

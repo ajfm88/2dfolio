@@ -8,9 +8,12 @@ import { isPikachuFollowingDisabled } from './pikachu_following';
 // --- State ---
 let pikachuHappiness = 90;   // assembly init_player_data default
 let pikachuMood = 0x80;       // 128 = neutral
+let pikachuEmotionModifier = 0;
 
 export function getPikachuHappiness(): number { return pikachuHappiness; }
 export function getPikachuMood(): number { return pikachuMood; }
+export function getPikachuEmotionModifier(): number { return pikachuEmotionModifier; }
+export function setPikachuEmotionModifier(value: number): void { pikachuEmotionModifier = value & 0xff; }
 
 export function resetPikachuHappiness(): void {
   pikachuHappiness = 90;

@@ -6,7 +6,7 @@
 import { A, NUM_MOVES, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { BattleUnsupportedState, getMoveRecord } from './battle_move_data';
-import { TYPE_CHART } from './battle_damage_asm';
+import { typeChart } from './battle_damage_asm';
 
 const NUM_TRAINERS = 47;
 const LORELEI = 0x2c;
@@ -60,7 +60,7 @@ export function AIGetTypeEffectiveness(state: BattleState): void {
   state.mem[A.wTypeEffectiveness] = 0x10;
   let matched = false;
   let multiplier = 0;
-  for (const row of TYPE_CHART) {
+  for (const row of typeChart()) {
     if (row.attack !== moveType) continue;
     if (row.defend !== type1 && row.defend !== type2) continue;
     matched = true;

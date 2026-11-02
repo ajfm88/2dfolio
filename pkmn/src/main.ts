@@ -1,3 +1,12 @@
+import { getPikachuEmotionModifier, setPikachuEmotionModifier } from './pikachu/pikachu_happiness';
+import { packOptions, unpackOptions } from './battle/battle_bridge';
+import { withdrawMon, boxStatsMon } from './pokemon_transfers';
+import { createBattleSession, createSessionRandom, loadBattleSessionData, loadBattleStandInData } from './battle/battle_session';
+import { liveBattleWorld, applyBattleOutcome, type LiveBattleEncounter, type LiveBattleInput } from './battle/battle_live';
+import { loadBattleBridgeData } from './battle/battle_bridge';
+import { loadTrainerSpeciesData } from './battle/battle_trainer_data';
+import { POKEDEX_ORDER } from './battle/battle_state';
+import { presentBattleScreen } from './battle/battle_screen_render';
 import { getSpriteIndex, setSpriteIndex } from './overworld/sprite_index';
 import { loadBattleTransitionData, getBattleTransitionData, chooseBattleTransition, battleTransitionLevels } from './overworld/battle_transition_choice';
 import { battleTransition } from './overworld/battle_transition';
@@ -51,7 +60,7 @@ import { EmotionBubble } from "./overworld/emotion_bubble";
 import { updateSprites } from "./overworld/sprites";
 import { setJoyIgnore } from "./input/joy_ignore";
 import type { OverworldAction, OverworldDeps } from "./overworld";
-import { PikachuFollower, shouldPikachuFollow, modifyPikachuHappiness, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
+import { PikachuFollower, shouldPikachuFollow, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
 import { enablePikachuFollowing, isPikachuFollowingDisabled } from "./pikachu/pikachu_following";
 import {
   startPikachuEmotion, updatePikachuEmotionAnim, renderPikachuEmotionBox,
@@ -69,15 +78,12 @@ import {
 } from "./text";
 import { updateDebugPanel, consumeDebugWarp } from "./debug";
 import {
-  Battle,
   loadBattleData,
   createPokemon,
   initBattleUI,
   loadWildEncounters,
-  initExperience,
   loadTrainerData,
   getTrainerClass,
-  checkEvolutions,
   applyEvolution,
   loadPokemonSprites,
   renderBattleText,
@@ -88,7 +94,7 @@ import {
 } from "./battle";
 import { loadStatusScreenAssets } from './menus/status_screen';
 import { createSilhouette } from "./battle/battle_ui";
-import { meetMusicFor, victoryMusicFor } from "./battle/trainer_flow";
+import { meetMusicFor } from "./battle/trainer_flow";
 import type { BattlePokemon, TrainerPartyMember, EvolutionCandidate } from "./battle";
 import { Bag, getItemName, initItemNames } from "./items";
 import type { ItemStack } from "./items";
@@ -108,10 +114,10 @@ import {
   NamingScreen,
   loadEdTile,
 } from "./menus";
-import { NUM_BOXES, pokemonToBoxed, type BoxedPokemon } from "./pokemon_storage";
+import { NUM_BOXES, type BoxedPokemon } from "./pokemon_storage";
 import { setBattleAndStartSavedMenuItem } from './list_state';
 import type { StartReturn } from './menus/start_menu';
-import { saveGame, loadGame, restoreParty, restoreBag, hasSavedGame } from "./save";
+import { saveGame, loadGame, restoreParty, restoreBoxes, restoreBag, hasSavedGame, type SaveData } from "./save";
 import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts, getAllHiddenObjects, restoreHiddenObjects } from "./events";
 import { VIRIDIAN_CITY, initialViridianScript, martSpawnsOldMan } from "./story/viridian_city";
 import { markSeen, markOwned, getSeenList, getOwnedList, getOwnedCount, restorePokedex } from "./pokedex_state";
@@ -131,7 +137,7 @@ import {
 import { buildViridianMartParcelScript } from "./story/viridian_mart";
 import {
   getPlayerName, getRivalName, setPlayerName, setRivalName, restoreNames,
-  getRivalStarter, setRivalStarter, substituteNames,
+  getRivalStarter, setRivalStarter,
 } from "./core/player_state";
 
 const gameMap = new GameMap();
@@ -215,26 +221,6 @@ let pcItems: ItemStack[] = [{ id: 'POTION', count: 1 }];
 let pcBoxes: BoxedPokemon[][] = Array.from({ length: NUM_BOXES }, () => []);
 let currentPcBox = 0;
 
-/** Deserialize a boxed Pokemon back into a live BattlePokemon. */
-function deserializeBoxed(boxed: BoxedPokemon): BattlePokemon | null {
-  const mon = createPokemon(
-    boxed.speciesName,
-    boxed.level,
-    boxed.nickname,
-    { atk: boxed.atkDV, def: boxed.defDV, spd: boxed.spdDV, spc: boxed.spcDV },
-  );
-  if (!mon) return null;
-  mon.currentHp = boxed.currentHp;
-  mon.status = boxed.status;
-  mon.exp = boxed.exp;
-  mon.statExp = boxed.statExp ? [...boxed.statExp] : [0, 0, 0, 0, 0];
-  mon.moves = boxed.moves.map(m => ({ id: m.id, pp: m.pp, maxPp: m.maxPp }));
-  mon.otName = boxed.otName ?? '';
-  mon.otId = boxed.otId ?? 0;
-  initExperience(mon);
-  return mon;
-}
-
 // Player's money
 let playerMoney = 3000;
 
@@ -288,7 +274,11 @@ let playTimeMs = 0;
 let lastPlayTimeUpdate = Date.now();
 
 // Active battle
-let currentBattle: Battle | null = null;
+type LiveSession = ReturnType<typeof createBattleSession>;
+let currentSession: LiveSession | null = null;
+let battleInput: LiveBattleInput | null = null;
+let pageTicks = 0;
+const sessionRandom = createSessionRandom(() => pageTicks);
 
 // Map trainer encounter (home/trainers.asm). `pendingTrainer` is set while the
 // before-battle text is up; `engagedTrainer` is the trainer being fought, flagged as
@@ -312,19 +302,33 @@ interface BattleEntry {
   choice: ReturnType<typeof chooseBattleTransition> | null;
   levels: ReturnType<typeof battleTransitionLevels>;
   opponentIsTrainer: boolean;
-  initialise(): Promise<void>;
+  initialise(): void | Promise<void>;
   initialising: boolean;
 }
 let battleEntry: BattleEntry | null = null;
 
+function snapshotBattleWorld(encounter: LiveBattleEncounter) {
+  return liveBattleWorld({options:optionMenu.options,badges:[...getPlayerBadges()],mapName:getMapName(),
+      eventFlags:getAllFlags(),pikachuHappiness:getPikachuHappiness(),pikachuMood:getPikachuMood(),
+      pikachuEmotionModifier:getPikachuEmotionModifier(),playerName:getPlayerName(),rivalName:getRivalName(),
+      party:[...playerParty],money:playerMoney,seen:getSeenList(),owned:getOwnedList(),bag:playerBag.items,
+      pcBoxes:pcBoxes.map((box,index)=>index===currentPcBox?[...box]:box),currentPcBox},encounter);
+}
+
 /** InitBattleCommon: E stops, E+1 requests music, E+2 enters BattleTransition. */
 function beginBattleEntry(
   opponentIsTrainer: boolean, enemy: number | readonly TrainerPartyMember[],
-  curOpponent: number, gymLeaderNo: number, initialise: () => Promise<void>,
+  curOpponent: number, gymLeaderNo: number, initialise: () => void | Promise<void>,
+  encounter?: LiveBattleEncounter,
 ): void {
   cancelPendingMapMusic();
   const music = playBattleMusic({ curOpponent, gymLeaderNo });
   music.next();
+  if (encounter) {
+    const world = snapshotBattleWorld(encounter);
+    battleInput = {world,encounter,blackoutCarry:false};
+    currentSession = createBattleSession(world,{random:sessionRandom});
+  }
   battleEntry = { music, musicResumed: false, screen: null, capture: null, program: null, choice: null,
     levels: battleTransitionLevels(playerParty, enemy, { player: getPlayerName(), rival: getRivalName() }),
     opponentIsTrainer, initialise, initialising: false };
@@ -360,7 +364,9 @@ function tickBattleEntry(): void {
   entry.screen.vblank(); // sole owner of the shared BG transfer clock in this state
   if (!entry.initialising && entry.program!.next().done) {
     entry.initialising = true;
-    void entry.initialise().then(() => { battleEntry = null; });
+    const pending = entry.initialise();
+    if (pending) void pending.then(() => { battleEntry = null; });
+    else battleEntry = null;
   }
 }
 
@@ -432,6 +438,10 @@ async function init(): Promise<void> {
     loadStatusScreenAssets(),
     loadMapSpriteSets(),
     loadBattleTransitionData(),
+    loadBattleSessionData(),
+    loadBattleStandInData(),
+    loadBattleBridgeData(),
+    loadTrainerSpeciesData(),
     oakSpeech.load(),
     loadEdTile(),
   ]);
@@ -446,7 +456,8 @@ async function init(): Promise<void> {
     document.removeEventListener('click', onSplashClick);
     await resumeAudio();
     await preloadMusic('routes2'); // Audio cache is available after unlock; E2 must not wait for a fetch.
-    await Promise.all(['wildbattle', 'trainerbattle', 'gymleaderbattle', 'finalbattle'].map(track => preloadMusic(track)));
+    await Promise.all([...['wildbattle', 'trainerbattle', 'gymleaderbattle', 'finalbattle'],
+      'defeatedwildmon', 'defeatedtrainer', 'defeatedgymleader'].map(track => preloadMusic(track)));
     state = "title_screen";
     playMusic("titlescreen");
   };
@@ -482,13 +493,23 @@ function writeSave(): void {
     getRivalStarter(),
     getAllMapScripts(),
     getAllHiddenObjects(),
+    packOptions(optionMenu.options),
+    getPikachuEmotionModifier(),
   );
+}
+
+/** MainMenu loads options before either CONTINUE or NEW GAME (main_menu.asm:1-12). */
+function restoreSavedSettings(saved:SaveData|null):void {
+  if(saved?.version===2)optionMenu.restore(unpackOptions(saved.options));
+  setPikachuEmotionModifier(saved?.version===2?saved.pikachuEmotionModifier:0);
 }
 
 /** Load a saved game and transition to overworld. */
 async function loadSavedGame(): Promise<void> {
   const saved = loadGame();
   if (!saved) return;
+  optionMenu.restore();
+  restoreSavedSettings(saved);
   setNoMapMusic(false); // transient WRAM bit, never saved
   setBattleAndStartSavedMenuItem(0); // WRAM, never restored from SRAM
 
@@ -506,6 +527,7 @@ async function loadSavedGame(): Promise<void> {
   player.direction = saved.playerDirection;
 
   const restoredParty = restoreParty(saved);
+  const restoredBoxes = restoreBoxes(saved);
   playerParty.length = 0;
   playerParty.push(...restoredParty);
 
@@ -522,7 +544,7 @@ async function loadSavedGame(): Promise<void> {
   }
   // Restore Pokemon box storage
   if (saved.pcBoxes) {
-    pcBoxes = saved.pcBoxes.map(box => [...box]);
+    pcBoxes = restoredBoxes;
     while (pcBoxes.length < NUM_BOXES) pcBoxes.push([]);
   }
   if (saved.currentPcBox !== undefined) {
@@ -606,22 +628,11 @@ function getPlayerBadges(): ReadonlySet<string> {
 /** Start a wild battle with transition animation. */
 function startBattle(wildPokemon: BattlePokemon): void {
   if (playerParty.length === 0) return;
-  markSeen(wildPokemon.species.id);
-
-  beginBattleEntry(false, wildPokemon.level, wildPokemon.species.id, 0, async () => {
-    const battle = new Battle(
-      playerParty[0],
-      wildPokemon,
-      playerParty,
-      playerBag,
-      getPlayerBadges(),
-      getPlayerName()
-    );
-    battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic('defeatedwildmon'); };
-    await battle.init();
-    currentBattle = battle;
-    state = "battle";
-  });
+  const encounter: LiveBattleEncounter = {kind:'wild',species:wildPokemon.species.id,level:wildPokemon.level};
+  beginBattleEntry(false, wildPokemon.level, POKEDEX_ORDER.indexOf(wildPokemon.species.id)+1, 0, () => {
+    currentSession!.start();
+    state = 'battle';
+  }, encounter);
 }
 
 /**
@@ -632,13 +643,13 @@ function startBattle(wildPokemon: BattlePokemon): void {
  * spotted, so none plays here — that and the "!" bubble are A1's.
  */
 function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
-  const { trainerClass, trainerParty, trainerName, dialogue, endBattleText } = npc.data;
+  const { trainerClass, trainerParty, dialogue, endBattleTextLabels } = npc.data;
   if (!trainerClass || trainerParty === undefined) {
     state = "overworld";
     return;
   }
   if (!dialogue) {
-    startTrainerBattle(trainerClass, trainerParty, trainerName, { endBattleText, engaged: npc });
+    startTrainerBattle(trainerClass, trainerParty, { endBattleLabels:endBattleTextLabels, engaged: npc });
     return;
   }
   pendingTrainer = { npc, meetMusic: seenByTrainer ? null : meetMusicFor(trainerClass) };
@@ -657,59 +668,22 @@ function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
 function startTrainerBattle(
   trainerClassName: string,
   partyIndex: number,
-  trainerName?: string,
-  opts: { endBattleText?: string; engaged?: Npc } = {},
+  opts: { endBattleLabels?: {win:string;lose:string}; engaged?: Npc } = {},
 ): void {
   engagedTrainer = null;
   if (playerParty.length === 0) return;
-
+  if (!opts.endBattleLabels) throw new Error('trainer encounter requires end-battle labels');
   const trainerClass = getTrainerClass(trainerClassName);
-  if (!trainerClass || partyIndex >= trainerClass.parties.length) {
-    console.warn(`Invalid trainer: ${trainerClassName}[${partyIndex}]`);
-    return;
-  }
-
+  if (!trainerClass || partyIndex >= trainerClass.parties.length) throw new Error(`Invalid trainer: ${trainerClassName}[${partyIndex}]`);
   const partyMembers = trainerClass.parties[partyIndex] as TrainerPartyMember[];
-  // Create a dummy enemy for the constructor (will be replaced by setupTrainerBattle)
-  const dummyEnemy = createPokemon(
-    partyMembers[0].species,
-    partyMembers[0].level
-  );
-  if (!dummyEnemy) return;
-
-  // Mark all trainer's Pokemon as seen
-  for (const pm of partyMembers) {
-    const mon = createPokemon(pm.species, pm.level);
-    if (mon) markSeen(mon.species.id);
-  }
-
-  // Assembly: init_battle.asm — trigger GYMLEADER happiness before gym leader battles
-  // Gym leader trainer class IDs (assembly indices)
-  const GYM_LEADER_IDS = new Set([34, 35, 36, 37, 38, 39, 40, 29]);
-  if (GYM_LEADER_IDS.has(trainerClass.id)) {
-    modifyPikachuHappiness('GYMLEADER');
-  }
-
-  beginBattleEntry(true, partyMembers, trainerClass.id + 200, GYM_LEADER_IDS.has(trainerClass.id) ? 1 : 0, async () => {
-    const battle = new Battle(playerParty[0], dummyEnemy, playerParty, playerBag, getPlayerBadges(), getPlayerName());
-    const displayName = trainerName ?? trainerClass.displayName;
-    battle.setupTrainerBattle(trainerClass, partyMembers, displayName, {
-      classKey: trainerClassName,
-      mapName: getMapName(),
-      endBattleText: opts.endBattleText ? substituteNames(opts.endBattleText) : undefined,
-    });
-    // TrainerBattleVictory: the fanfare starts once the whole party is down.
-    // Gym leaders (defeatedgymleader, wGymLeaderNo) arrive with their gyms in V3.
-    const victoryMusic = victoryMusicFor(trainerClassName);
-    battle.onVictory = () => { cancelPendingMapMusic(); stopMusic(); playMusic(victoryMusic); };
-    engagedTrainer = opts.engaged ?? null;
-    await battle.init();
-    currentBattle = battle;
-    state = "battle";
-  });
+  engagedTrainer = opts.engaged ?? null;
+  const encounter: LiveBattleEncounter = {kind:'trainer',trainerClass:trainerClassName,partyIndex,
+    endBattleText:opts.endBattleLabels,gymLeaderNo:0};
+  beginBattleEntry(true, partyMembers, trainerClass.id+200, 0, () => {
+    currentSession!.start();
+    state = 'battle';
+  }, encounter);
 }
-
-// ──────── Evolution state machine ────────
 
 // Assembly timing: 80 frame initial delay, 8 animation cycles
 const EVOLUTION_PRE_ANIM_FRAMES = 80;  // assembly: ld c, 80; call DelayFrames
@@ -1208,6 +1182,7 @@ function enterMapAfterBattle(): void {
 
 /** One game tick — all update logic (no rendering). */
 function gameTick(): void {
+  pageTicks++;
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
   if (state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit") {
@@ -1230,9 +1205,8 @@ function gameTick(): void {
   const isPass = inPassState && !movementBlocking && passClock.tick();
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
   const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
-    || (state === 'battle' && currentBattle?.statusScreenActive)
     || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
-  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && !sessionOwnInput && !textBox.active) syncJoypadRead();
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && !sessionOwnInput && !textBox.active) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1241,6 +1215,8 @@ function gameTick(): void {
     const action = titleScreen.update();
     if (action === 'start') {
       // Title music keeps playing through main menu (matches original game)
+      optionMenu.restore();
+      restoreSavedSettings(loadGame());
       mainMenu.show(hasSavedGame());
       state = "main_menu";
     }
@@ -1448,7 +1424,7 @@ function gameTick(): void {
       textBox, player, gameMap, npcs, playerParty, playerBag,
       pcItems,
       pcStorage: { party: playerParty, boxes: pcBoxes, getCurrentBox: () => currentPcBox,
-        setCurrentBox: index => { currentPcBox = index; }, deserialize: deserializeBoxed, hasFlag,
+        setCurrentBox: index => { currentPcBox = index; }, withdraw: withdrawMon, boxStats: boxStatsMon, hasFlag,
         saveGame: writeSave, isPikachuFollowingDisabled },
       getMoney: () => playerMoney,
       setMoney: amount => { playerMoney = amount; },
@@ -1515,8 +1491,8 @@ function gameTick(): void {
           break;
         }
         case 'startBattleTransition':
-          startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, scriptAction.trainerName, {
-            endBattleText: scriptAction.endBattleText,
+          startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, {
+            endBattleLabels: scriptAction.endBattleLabels,
           });
           break;
         case 'warp':
@@ -1573,8 +1549,8 @@ function gameTick(): void {
       if (pendingTrainer) {
         const { npc } = pendingTrainer;
         pendingTrainer = null;
-        startTrainerBattle(npc.data.trainerClass!, npc.data.trainerParty!, npc.data.trainerName, {
-          endBattleText: npc.data.endBattleText,
+        startTrainerBattle(npc.data.trainerClass!, npc.data.trainerParty!, {
+          endBattleLabels: npc.data.endBattleTextLabels,
           engaged: npc,
         });
         return;
@@ -1605,50 +1581,17 @@ function gameTick(): void {
   } else if (state === "battle_transition") {
     tickBattleEntry();
   } else if (state === "battle") {
-    if (currentBattle) {
-      currentBattle.update();
-
-      if (currentBattle.finished) {
+    if (currentSession) {
+      currentSession.tick();
+      if (currentSession.done) {
+        const result = currentSession.finish();
+        const plan = applyBattleOutcome(result.outcome, {party:playerParty,boxes:pcBoxes,bag:playerBag,
+          setMoney:value => {playerMoney=value;}, restorePokedex, restorePikachuHappiness, setPikachuEmotionModifier, setLastBattleWon},
+          {...battleInput!,blackoutCarry:result.blackoutCarry});
         ow.encounterCooldown = 3; // EndOfBattle sets BIT_WILD_ENCOUNTER_COOLDOWN
         Object.assign(ow, enterMapCounters(ow));
-        if (currentBattle.caughtPokemon) {
-          const caught = currentBattle.caughtPokemon;
-          caught.otName = getPlayerName();
-          markOwned(caught.species.id);
-          initExperience(caught);
-          if (playerParty.length < 6) {
-            playerParty.push(caught);
-          } else {
-            // Party full — send to current PC box (assembly: SendNewMonToBox)
-            pcBoxes[currentPcBox].push(pokemonToBoxed(caught));
-          }
-        }
-        if (currentBattle.moneyWon > 0) {
-          playerMoney += currentBattle.moneyWon;
-        }
-
-        // Pikachu happiness modifiers from battle
-        for (let i = 0; i < currentBattle.levelsGained; i++) {
-          modifyPikachuHappiness('LEVELUP');
-        }
-        if (currentBattle.playerPokemonFainted) {
-          // Assembly: core.asm — CARELESSTRAINER fires instead of FAINTED when level gap >= 30
-          if (currentBattle.carelessTrainerFaint) {
-            modifyPikachuHappiness('CARELESSTRAINER');
-          } else {
-            modifyPikachuHappiness('FAINTED');
-          }
-        }
-
-        // Check for blackout: battle sets isBlackout when all party Pokemon fainted
-        // and has already shown "X is out of useable POKéMON!" + "X blacked out!" text
-        const blackout = currentBattle.isBlackout;
-        // A loss without a blackout: RIVAL1 in Oak's Lab (HandlePlayerBlackOut `ret z`)
-        const lost = blackout || currentBattle.playerLost;
-        setLastBattleWon(!lost); // wBattleResult, read by story scripts
-
         // EndTrainerBattle: flag the trainer as fought unless the battle was lost
-        if (engagedTrainer && !lost) {
+        if (engagedTrainer && plan.trainerDefeated) {
           engagedTrainer.data.defeated = true;
           markDefeated(engagedTrainer.data.id);
           // PrintEndBattleText → SetEnemyTrainerToStayAndFaceAnyDirection, on the live
@@ -1657,9 +1600,10 @@ function gameTick(): void {
         }
         engagedTrainer = null;
 
-        currentBattle = null;
+        currentSession = null;
+        battleInput = null;
 
-        if (blackout) {
+        if (plan.blackout) {
           cancelPendingMapMusic(); fadeOutAndStopMusic(8); // StopMusic(8): the fade is waited out in the blackout loader
           // Blackout sequence: halve money, heal party, warp to last pokecenter town
           playerMoney = Math.floor(playerMoney / 2);
@@ -1674,7 +1618,7 @@ function gameTick(): void {
           endTrainerBattle(currentMapName, ow);
           handleBlackoutWarp();
         } else {
-          // Victory fanfare is already playing (triggered by battle.onVictory callback)
+          // Victory fanfare is already playing (owned by the session)
           // Re-evaluate Pikachu visibility (Pikachu may have fainted)
           pikachuFollower.visible = followerCanDraw();
           // EnterMap's UpdateSprites (after any evolutions on the cartridge; nothing on the
@@ -1683,7 +1627,7 @@ function gameTick(): void {
 
           // Check for post-battle evolutions before returning to overworld
           // (EndOfBattle skips them after a lost battle)
-          const evoCandidates = lost ? [] : checkEvolutions(playerParty);
+          const evoCandidates = plan.evolutions;
           if (evoCandidates.length > 0) {
             // Determine where to return after all evolutions
             if (isScriptBattlePending() && getActiveScript()) {
@@ -1817,6 +1761,26 @@ function startBackgroundTicker(): void {
   };
 }
 
+function renderLiveBattle(): void {
+  const session = currentSession;
+  if (!session) return;
+  switch (session.foreground) {
+    case 'battle': presentBattleScreen(session.screen,session.renderTiles); break;
+    case 'party': session.party.render(); break;
+    case 'partyItem':
+      if (session.screen.bgp === 0) presentBattleScreen(session.screen,session.renderTiles);
+      else {
+        session.party.render();
+        presentBattleScreen(session.screen,session.renderTiles,true);
+      }
+      break;
+    case 'status': session.statusView!.render(); break;
+    case 'naming': session.naming.render(); break;
+    case 'pokedex': session.pokedex.render(); break;
+    default: throw new Error(`unknown battle foreground ${session.foreground}`);
+  }
+}
+
 function gameLoop(now = 0): void {
   requestAnimationFrame(gameLoop);
   lastRafTime = performance.now();
@@ -1825,7 +1789,7 @@ function gameLoop(now = 0): void {
   if (!runDueTicks(now)) return;
 
   // Update debug panel (HTML, outside canvas)
-  updateDebugPanel(currentBattle, playerBag, player, gameMap, playerParty);
+  updateDebugPanel(currentSession?.state ?? null, playerBag, player, gameMap, playerParty, currentSession?.foreground);
 
   // DisplayTextIDInit checks sprite availability after the UI has written its
   // tiles. Capture those boxes first, then composite them over the scene once.
@@ -1849,7 +1813,7 @@ function gameLoop(now = 0): void {
     clear();
     renderBattleEntry();
   } else if (state === "battle") {
-    currentBattle?.render();
+    renderLiveBattle();
   } else if (state === "catch_demo") {
     renderCatchDemo();
   } else if (state === "evolution") {

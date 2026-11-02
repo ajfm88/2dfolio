@@ -21,7 +21,7 @@ import { extractPikachuMovement } from '../src/rom/extractors/pikachu_movement';
 import { extractPokedex } from '../src/rom/extractors/pokedex';
 import { extractAllMaps } from '../src/rom/extractors/maps';
 import { extractMusic, extractSfx, extractSfxChannelsAt, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
-import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames } from '../src/rom/extractors/text';
+import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames, readMonsterNames } from '../src/rom/extractors/text';
 import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
 import { extractMapSpriteSets } from '../src/rom/extractors/map_sprite_sets';
@@ -113,6 +113,7 @@ let count = 0;
 
 writeJson('item_names.json', readItemDisplayNames(rom)); count++;
 writeJson('move_names.json', readMoveDisplayNames(rom)); count++;
+writeJson('monster_names.json', readMonsterNames(rom)); count++;
 writeJson('game_text.json', extractGameText(rom)); count++;
 writeJson('text_programs.json', extractTextPrograms(rom)); count++;
 writeJson('map_sprite_sets.json', extractMapSpriteSets(rom)); count++;

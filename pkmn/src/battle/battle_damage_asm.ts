@@ -1,8 +1,7 @@
 // Unused damage numbers. pret e89ead15 core.asm:4201–4713, 5246–5356, 5602–5636.
 // home/math.asm, engine/math/multiply_divide.asm, home/move_mon.asm CalcStat, home/random.asm.
 // The running game does not import this module. damage.ts and the checkpoint-04 adapter stay.
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { getTypeChart } from './data';
 import { TYPE_NAMES } from '../rom/constants';
 import { A, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, type BattleState } from './battle_state';
 import type { Program } from './battle_menu_context';
@@ -66,11 +65,15 @@ function chartByte(multiplier: number): number {
   throw new Error(`type chart multiplier ${multiplier}`);
 }
 
-function loadTypeChart(): ChartRow[] {
-  const path = fileURLToPath(new URL('../../data/type_chart.json', import.meta.url));
-  const rows = JSON.parse(readFileSync(path, 'utf8')) as { attacker: string; defender: string; multiplier: number }[];
+let cachedTypeChart: readonly ChartRow[] | undefined;
+
+/** TypeEffects in ROM order. Multipliers are 0x00 / 0x05 / 0x14; no $FF row. */
+export function typeChart(): readonly ChartRow[] {
+  if (cachedTypeChart) return cachedTypeChart;
+  const rows = getTypeChart();
+  if (!rows.length) throw new Error('type chart not loaded');
   if (rows.length !== 82) throw new Error(`type chart has ${rows.length} rows`);
-  return rows.map(row => ({
+  return cachedTypeChart = rows.map(row => ({
     attack: TYPE_BYTE[row.attacker] ?? unexpectedType(row.attacker),
     defend: TYPE_BYTE[row.defender] ?? unexpectedType(row.defender),
     multiplier: chartByte(row.multiplier),
@@ -80,9 +83,6 @@ function loadTypeChart(): ChartRow[] {
 function unexpectedType(name: string): never {
   throw new Error(`type chart name ${name}`);
 }
-
-/** TypeEffects in ROM order. Multipliers are the chart bytes 0x00 / 0x05 / 0x14. No $FF row; the array ends. */
-export const TYPE_CHART: readonly ChartRow[] = loadTypeChart();
 
 function u8(n: number): number {
   return n & 0xff;
@@ -316,7 +316,7 @@ export function adjustDamageForMoveType(state: BattleState): void {
     state.wDamage = (damage + (damage >> 1)) & 0xffff;
     state.wDamageMultipliers |= STAB_BIT;
   }
-  for (const row of TYPE_CHART) {
+  for (const row of typeChart()) {
     if (row.attack !== moveType) continue;
     if (row.defend !== defend1 && row.defend !== defend2) continue;
     const stab = state.wDamageMultipliers & STAB_BIT;

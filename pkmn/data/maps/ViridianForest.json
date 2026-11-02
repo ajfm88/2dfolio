@@ -514,6 +514,10 @@
       "trainerParty": 0,
       "sightRange": 4,
       "endBattleText": "No!\nCATERPIE can't\ncut it!<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "ViridianForestYoungster2EndBattleText",
+        "lose": "ViridianForestYoungster2EndBattleText"
+      },
       "afterBattleText": "Ssh! You'll scare\nthe bugs away!"
     },
     {
@@ -529,6 +533,10 @@
       "trainerParty": 1,
       "sightRange": 4,
       "endBattleText": "Huh?\nI ran out of\nPOKéMON!<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "ViridianForestYoungster3EndBattleText",
+        "lose": "ViridianForestYoungster3EndBattleText"
+      },
       "afterBattleText": "Darn! I'm going\nto catch some\nstronger ones!"
     },
     {
@@ -544,6 +552,10 @@
       "trainerParty": 2,
       "sightRange": 1,
       "endBattleText": "I\ngive! You're good\nat this!<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "ViridianForestYoungster4EndBattleText",
+        "lose": "ViridianForestYoungster4EndBattleText"
+      },
       "afterBattleText": "Sometimes, you\ncan find stuff on\nthe ground!\fI'm looking for\nthe stuff I\ndropped!"
     },
     {
@@ -558,6 +570,10 @@
       "trainerParty": 18,
       "sightRange": 0,
       "endBattleText": "Oh no,\nreally?<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "ViridianForestCooltrainerFEndBattleText",
+        "lose": "ViridianForestCooltrainerFEndBattleText"
+      },
       "afterBattleText": "I looked forever,\nbut I never found\na PIKACHU here!"
     },
     {
@@ -573,6 +589,10 @@
       "trainerParty": 14,
       "sightRange": 4,
       "endBattleText": "After\nall I did...<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "ViridianForestYoungster5EndBattleText",
+        "lose": "ViridianForestYoungster5EndBattleText"
+      },
       "afterBattleText": "A METAPOD is cool\nbecause its\nattack is its\ndefense!"
     },
     {
