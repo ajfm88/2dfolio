@@ -85,6 +85,7 @@ export const A = {
   wNameListIndex: 0xd0b4,
   wNameListType: 0xd0b5,
   wPredefBank: 0xd0b6,
+  wMovesString: 0xd0e0,
   wCurPartySpecies: 0xcf90,
   wCurItem: 0xcf90,
   wCurListMenuItem: 0xcf90,

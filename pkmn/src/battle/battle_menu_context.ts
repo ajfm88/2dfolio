@@ -50,6 +50,8 @@ export interface BattleMenuContext {
 export interface MoveMenuHost {
   tiles: TileSurface;
   getMove(id: number): MenuMove;
+  getMoveName(id: number): string;
+  writeMovesString?(text: string): void;
   readJoypad(): void;
   pressSound(): void;
   printText(program: string, bindings?: TextBindings): Program;

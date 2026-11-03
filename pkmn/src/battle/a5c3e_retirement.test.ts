@@ -1,5 +1,5 @@
-// Executable switch-over plan only. No old case or live caller is retired in A5c3e.
-import { readFileSync, readdirSync } from 'node:fs';
+// A5c3e's verified inventories become absence/replacement records at A5c3f 11c.
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
@@ -65,12 +65,9 @@ const SYMBOLS={attemptCatch:'delete',selectTrainerMove:'delete',applyTrainerMove
 // The class-data getters and their barrel exports serve main's story/encounter/sight setup.
 // TrainerMoveSelection is the NEW byte-selector's model-check type, required by both real loop ports.
 const CALLERS=[
-  'battle/battle.ts imports attemptCatch delete',
-  'battle/battle.ts imports selectTrainerMove delete',
   'battle/battle_loop.ts imports TrainerMoveSelection keep',
   'battle/battle_session.ts imports TrainerMoveSelection keep',
   'battle/battle_turn.ts imports TrainerMoveSelection keep',
-  'battle/index.ts exports attemptCatch delete',
   'battle/index.ts exports getTrainerClass keep',
   'battle/index.ts exports loadTrainerData keep',
   'main.ts imports getTrainerClass keep',
@@ -119,19 +116,32 @@ function callers():string[]{
 describe('A5c3e executable retirement manifests for A5c3f',()=>{
   it.each([{file:'catch.test.ts',rows:CATCH,count:8},{file:'trainer_ai.test.ts',rows:TRAINER,count:10}])
   ('$file accounts for all $count old cases and unique enabled replacement titles',({file,rows,count})=>{
-    expect(cases(file).map(({line,title})=>({line,title}))).toEqual(rows.map(({line,title})=>({line,title})));
+    expect(existsSync(resolve(__dirname,file)), 'old file absent').toBe(false);
     expect(rows).toHaveLength(count);expect(new Set(rows.map(r=>r.line)).size).toBe(count);
     for(const r of rows)replacement(file,r);
   });
   it('records all six stale math titles for deletion or rename without editing them',()=>{
     expect(STALE).toHaveLength(6);
     for(const r of STALE){
-      expect(cases('battle_math_fixes.test.ts').filter(c=>c.line===r.line&&c.title===r.title)).toHaveLength(1);
+      expect(cases('battle_math_fixes.test.ts').filter(c=>c.title===r.title)).toHaveLength(1);
       expect(['delete','rename']).toContain(r.disposition);replacement('battle_math_fixes.test.ts',r);
     }
   });
   it('pins every non-test importer and barrel export, preserving the class-data getters',()=>{
     expect(callers()).toEqual(CALLERS);
+    for(const file of ['battle.ts','catch.ts','effects.ts','damage.ts','status.ts','volatiles.ts'])
+      expect(existsSync(resolve(__dirname,file)), `retired source absent: ${file}`).toBe(false);
+    const trainer=source(resolve(__dirname,'trainer_ai.ts'));
+    expect(trainer.statements.filter(ts.isFunctionDeclaration).map(n=>n.name?.text).sort())
+      .toEqual(['getTrainerClass','loadTrainerData']);
+    // Check the public symbol names even if a stub/alias resolves outside the deleted file.
+    const barrel=resolve(__dirname,'index.ts');
+    const program=ts.createProgram([barrel],{target:ts.ScriptTarget.ESNext,module:ts.ModuleKind.ESNext,
+      moduleResolution:ts.ModuleResolutionKind.Bundler,skipLibCheck:true,noLib:true,types:[]});
+    const checker=program.getTypeChecker();
+    const exports=checker.getExportsOfModule(checker.getSymbolAtLocation(program.getSourceFile(barrel)!)!).map(s=>s.name);
+    for(const retired of ['Battle','attemptCatch','BallType','CatchResult','checkPreTurnStatus','tryInflictStatus',
+      'applyEndOfTurnDamage','createVolatiles','resetVolatiles','Volatiles'])expect(exports).not.toContain(retired);
     expect(SYMBOLS).toEqual({attemptCatch:'delete',selectTrainerMove:'delete',applyTrainerMoveModifiers:'delete',
       loadTrainerData:'keep',getTrainerClass:'keep',TrainerMoveSelection:'keep'});
   },20000);

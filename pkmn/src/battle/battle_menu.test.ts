@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { isPassPressed, isHeld } from '../input';
 import type { GameButton } from '../core';
 import { BattleMenuScreen } from './battle_menu_screen';
-import { bagWasSelected, battleMenuRunWasSelected, cartridgeRunOdds, displayBattleMenu,
+import { bagWasSelected, battleMenuRunWasSelected, battleRunOdds, displayBattleMenu,
   drawBattleMenuTemplate, drawHudsAndHpBars, tryRunningFromBattle, useBagItem } from './battle_menu';
 import { delayFrames } from './battle_menu_context';
+import { BattleState } from './battle_state';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
 import { setBattleAndStartSavedMenuItem, getBattleAndStartSavedMenuItem, setBagSavedMenuItem,
   getBagSavedMenuItem, setListScrollOffset, getListScrollOffset, resetListStateForEmptySlot } from '../list_state';
@@ -18,6 +19,12 @@ vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true }));
 vi.mock('../text/program_data', () => ({ getTextPrograms: () => ({
   CP4Text: [{ op: 'text', text: 'HI<DONE>' }],
 }) }));
+
+function stateRunOdds(player: number, enemy: number, attempts: number): boolean {
+  const state = new BattleState();
+  state.wBattleMonSpeed = player; state.wEnemyMonSpeed = enemy; state.wNumRunAttempts = attempts;
+  return battleRunOdds(state);
+}
 
 function context(): BattleActionContext {
   return { moveMenuType: 0, battleMoves: [1, 0, 0, 0], battlePP: [5, 0, 0, 0], enemyMoves: [1, 0, 0, 0],
@@ -68,7 +75,7 @@ function rig(ctx = context(), routine: Routine = displayBattleMenu, portion = 0,
     partyMenu: function* () { event('party'); return { carry: false }; },
     playSound(name) { event(name); if (name === 'run') busy[8] = frame + 40; },
     waitForSound: function* () { event('wait'); while (!(lowHealthAlarm() & 0x80) && [5, 6, 8].some(ch => busy[ch] > frame)) yield 'serviced'; },
-    runOdds: vi.fn(cartridgeRunOdds),
+    runOdds: vi.fn(stateRunOdds),
   };
   let program: ReturnType<Routine> | undefined, step: IteratorResult<import('./battle_menu_context').Frame, BattleMenuFlags | null | void>;
   const start = () => { program = routine(ctx, host); step = program.next(); };
@@ -287,7 +294,7 @@ describe('RUN control flow and sound ports', () => {
     const ctx = context(); ctx.numRunAttempts = 255; ctx.playerSpeed = 1; ctx.enemySpeed = 100;
     const r = rig(ctx, tryRunningFromBattle); r.start(); expect(ctx.numRunAttempts).toBe(0);
     expect(r.host.runOdds).toHaveBeenCalledWith(1, 100, 0); r.advance(80); expect(r.result).toEqual({ carry: true });
-    expect(cartridgeRunOdds(1, 100, 0)).toBe(true);
+    expect(stateRunOdds(1, 100, 0)).toBe(true);
   });
 
   it('success waits for selecting beep, RUN, prompt beep, then saves with carry', () => {

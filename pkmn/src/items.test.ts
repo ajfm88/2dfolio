@@ -12,8 +12,7 @@ import { restoreBag } from './save';
 import type { SaveData } from './save';
 import { isPressed } from './input';
 import { drawText } from './menus/menu_render';
-import { Battle } from './battle/battle';
-import { createPokemon, loadBattleData } from './battle/data';
+import { loadBattleData } from './battle/data';
 import { loadGameText } from './text/game_text';
 
 vi.mock('./input', () => ({ isPressed: vi.fn(() => false), isHeld: vi.fn(() => false) }));
@@ -121,11 +120,6 @@ describe('RemoveItemFromInventory_ and save slots', () => {
   });
 });
 
-function press(menu: { update: () => unknown }, button = 'a'): void {
-  vi.mocked(isPressed).mockImplementation(key => key === button);
-  menu.update();
-}
-
 describe('inventory callers through menu input', () => {
   it('names the use routines for the items defined today', () => {
     expect(ITEM_USE_ROUTINE.POKE_BALL).toBe('ItemUseBall');
@@ -136,17 +130,6 @@ describe('inventory callers through menu input', () => {
     expect(PARTY_MENU_ITEMS.has('POTION')).toBe(true);
     expect(PARTY_MENU_ITEMS.has('POKE_BALL')).toBe(false);
     expect(CLOSE_MENU_ITEMS.has('ESCAPE_ROPE')).toBe(true);
-  });
-  it.each(['POKE_BALL', 'POTION', 'ANTIDOTE'])('battle consumes the selected second %s slot', id => {
-    const bag = new Bag(); bag.items = [{ id, count: 99 }, { id, count: 1 }];
-    const player = createPokemon('RATTATA', 5)!; player.currentHp = 1; player.status = 'PSN';
-    const enemy = createPokemon('PIDGEY', 3)!;
-    const battle = new Battle(player, enemy, [player], bag);
-    battle.state = 'choose_action';
-    press(battle, 'down'); press(battle); // ITEM
-    expect(battle.state).toBe('choose_item');
-    press(battle, 'down'); press(battle);
-    expect(bag.items).toEqual([{ id, count: 99 }]);
   });
 });
 

@@ -24,7 +24,7 @@ import * as aiMoves from '../battle/battle_ai_moves';
 import * as stats from '../battle/battle_effects_stats';
 import * as hpBar from '../battle/battle_hp';
 import * as sendOut from '../battle/battle_enemy_send_out';
-import { getMoveRecord } from '../battle/battle_move_data';
+import { getMoveRecord, moveDisplayName, moveMenuNameSource } from '../battle/battle_move_data';
 import { bindLearnMove, type LearnMoveHost } from '../battle/learn_move';
 import { battleLoop, type BattleLoopHost } from '../battle/battle_loop';
 import { endOfBattle, type BattleEndHost } from '../battle/battle_end';
@@ -273,7 +273,8 @@ export function battleLedger(o: History = {}) {
     loadScreenTilesFromBuffer1(){mark('load1');video.loadScreenTilesFromBuffer1();},
     saveScreenTilesToBuffer2(){mark('save2');video.saveScreenTilesToBuffer2();},
     loadScreenTilesFromBuffer2(){mark('load2');video.loadScreenTilesFromBuffer2();},
-    getMove(id){const key=getAllLoadedMoveIds().find(key=>getMove(key)!.id===id)!;return {...getMove(key)!,name:key};},
+    ...moveMenuNameSource(s),
+    getMove(id){const key=getAllLoadedMoveIds().find(key=>getMove(key)!.id===id)!;return {...getMove(key)!,name:moveDisplayName(id)};},
     readJoypad(){
       let keys:GameButton[]=['a'];
       if(phase==='battle'&&ctx.joy7!==1) {

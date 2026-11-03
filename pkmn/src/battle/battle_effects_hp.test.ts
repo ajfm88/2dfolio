@@ -115,6 +115,7 @@ function rig(side: 0 | 1, id: number, current = 10, max = 40, move = 105) {
       ctx: battleContext(s),
       host: {
         tiles: video.tiles,
+        getMoveName(id) { return this.getMove(id).name; },
         getMove: id => {
           events.push(`getMove:${id}`);
           return { id, name: 'M', type: 'NORMAL', pp: 35, power: 40, accuracy: 1, effect: 'NO_EFFECT' };

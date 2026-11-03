@@ -4,9 +4,9 @@ import { A, BattleState, LINK_STATE_BATTLING, STRUGGLE } from './battle_state';
 import { D } from './battle_end_state';
 import {
   battleRandom, calculateModifiedStat, calculateModifiedStats, doubleOrHalveSelectedStats,
-  executeMoveDamageChain, metronomePickMove, selectEnemyMove,
+  metronomePickMove, selectEnemyMove,
 } from './battle_math';
-import { createPokemon, getMove, getTypeChart, loadBattleData } from './data';
+import { createPokemon, loadBattleData } from './data';
 import { loadBattleMoveData } from './battle_move_data';
 import { loadBattleMonFromParty, loadEnemyMonData, partySlotFromPokemon, writePartySlot } from './battle_loaders';
 import type { BattlePokemon } from './types';
@@ -173,85 +173,6 @@ describe('DoubleOrHalveSelectedStats', () => {
   it('halving carries the high byte into the low byte', () => {
     const s = new BattleState(); s.wBattleMonAttack = 257; s.wPlayerStatsToHalve = 1;
     doubleOrHalveSelectedStats(s); expect(s.wBattleMonAttack).toBe(128);
-  });
-});
-
-describe('Execute move damage chain result adapter', () => {
-  const cases: [string, string, string, number, number][] = [
-    ['EARTHQUAKE', 'GRASS', 'POISON', 20, 1],
-    ['KARATE_CHOP', 'NORMAL', 'FLYING', 10, 1], // Gen 1 Karate Chop is NORMAL.
-    ['LOW_KICK', 'NORMAL', 'FLYING', 5, 1],
-    ['SURF', 'FIRE', 'FIRE', 20, 2],
-    ['SURF', 'FIRE', 'NORMAL', 20, 2],
-    ['SURF', 'ROCK', 'GROUND', 20, 4],
-    ['EMBER', 'WATER', 'ROCK', 5, 0.25],
-    ['TACKLE', 'NORMAL', 'NORMAL', 10, 1],
-    ['THUNDERSHOCK', 'GROUND', 'GROUND', 0, 0],
-  ];
-  for (const [moveId, type1, type2, byte, effectiveness] of cases) {
-    it.each([false, true])(`${moveId} vs ${type1}/${type2}, STAB %s`, stab => {
-      const s = new BattleState(); const attacker = pokemon(); const defender = pokemon();
-      const move = getMove(moveId)!;
-      attacker.volatiles.convertedType1 = 'DRAGON';
-      attacker.volatiles.convertedType2 = stab ? move.type : 'DRAGON';
-      defender.volatiles.convertedType1 = type1; defender.volatiles.convertedType2 = type2;
-      s.wDamageMultipliers = 0xff; s.wMoveMissed = 1; s.wCriticalHitOrOHKO = 0xff;
-      vi.spyOn(Math, 'random').mockReturnValue(0.99);
-      const result = executeMoveDamageChain(s, attacker, defender, moveId, true);
-      expect(result.effectiveness).toBe(effectiveness);
-      expect(s.wDamageMultipliers).toBe(byte | (stab ? 0x80 : 0));
-      expect(s.wDamage).toBe(result.damage);
-      expect(s.wCriticalHitOrOHKO).toBe(0);
-      expect(s.wMoveMissed).toBe(effectiveness === 0 ? 1 : 0);
-      if (effectiveness === 0) expect(result.missed).toBe(false);
-    });
-  }
-  it('keeps the four dead Psychic-defender rows dead (no numeric type remap)', () => {
-    expect(getTypeChart().filter(row => row.defender === 'PSYCHIC_TYPE')).toHaveLength(4);
-    const s = new BattleState(); const a = pokemon(); const d = pokemon('Abra');
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = executeMoveDamageChain(s, a, d, 'LICK', true);
-    expect(result.effectiveness).toBe(1); expect(s.wDamageMultipliers).toBe(10);
-  });
-  it('STAB also matches attacker type 1, without doubling the type row', () => {
-    const s = new BattleState(); const a = pokemon(); const d = pokemon();
-    a.volatiles.convertedType1 = 'WATER'; a.volatiles.convertedType2 = 'NORMAL';
-    d.volatiles.convertedType1 = 'FIRE'; d.volatiles.convertedType2 = 'FIRE';
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    expect(executeMoveDamageChain(s, a, d, 'SURF', true).effectiveness).toBe(2);
-    expect(s.wDamageMultipliers).toBe(0x94);
-  });
-  it('pins upstream quarter-effective minimum damage 1 rather than ASM floor-to-zero miss', () => {
-    const s = new BattleState(); const a = pokemon(); const d = pokemon();
-    a.level = 1; a.special = 1; d.special = 999;
-    a.volatiles.convertedType1 = 'NORMAL'; a.volatiles.convertedType2 = 'NORMAL';
-    d.volatiles.convertedType1 = 'WATER'; d.volatiles.convertedType2 = 'ROCK';
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = executeMoveDamageChain(s, a, d, 'EMBER', true);
-    expect(result.damage).toBe(1); expect(s.wDamage).toBe(1);
-    expect(s.wMoveMissed).toBe(0); expect(s.wDamageMultipliers).toBe(5);
-  });
-  it('writes a crit as 1, never an OHKO code, and clears it on the next move', () => {
-    const s = new BattleState(); const a = pokemon(); const d = pokemon();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    expect(executeMoveDamageChain(s, a, d, 'TACKLE', true).critical).toBe(true);
-    expect(s.wCriticalHitOrOHKO).toBe(1);
-    executeMoveDamageChain(s, a, d, 'GROWL', true);
-    expect([s.wCriticalHitOrOHKO, s.wMoveMissed, s.wDamage, s.wDamageMultipliers]).toEqual([0, 0, 0, 10]);
-  });
-  it('keeps upstream accuracy/crit/range RNG order and passes skipAccuracy through', () => {
-    const s = new BattleState(); const a = pokemon(); const d = pokemon();
-    const rng = vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    executeMoveDamageChain(s, a, d, 'TACKLE'); expect(rng).toHaveBeenCalledTimes(3);
-    rng.mockClear(); executeMoveDamageChain(s, a, d, 'TACKLE', true); expect(rng).toHaveBeenCalledTimes(2);
-    rng.mockReturnValue(255 / 256);
-    executeMoveDamageChain(s, a, d, 'TACKLE');
-    expect([s.wDamage, s.wMoveMissed, s.wCriticalHitOrOHKO]).toEqual([0, 1, 0]);
-  });
-  it('handles an unknown move through upstream missed result and fresh neutral byte', () => {
-    const s = new BattleState(); s.wDamageMultipliers = 255;
-    executeMoveDamageChain(s, pokemon(), pokemon(), 'MISSING');
-    expect([s.wDamage, s.wMoveMissed, s.wDamageMultipliers]).toEqual([0, 1, 10]);
   });
 });
 

@@ -67,7 +67,7 @@ function mon(level: number, extra: Partial<BattlePokemon> = {}): BattlePokemon {
     moves: [{ id: 'THUNDERSHOCK', pp: 5, maxPp: 30 }],
     statStages: { attack: 0, defense: 0, speed: 0, special: 0, accuracy: 0, evasion: 0 },
     status: null, atkDV: 9, defDV: 8, spdDV: 8, spcDV: 8, exp: 0, statExp: [0, 0, 0, 0, 0], sleepTurns: 0, toxicCounter: 0,
-    badlyPoisoned: false, volatiles: {} as BattlePokemon['volatiles'],
+    badlyPoisoned: false,
     originalStats: { attack: 18, defense: 14, speed: 20, special: 16 }, otName: 'RED', otId: 1,
     ...extra,
   };

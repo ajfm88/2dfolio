@@ -4,7 +4,7 @@ import { A, battleContext, BattleState, PARTYMON_STRUCT_LENGTH } from './battle_
 import { D } from './battle_end_state';
 import { createPokemon, getMove, loadBattleData } from './data';
 import { loadBattleMoveData } from './battle_move_data';
-import { aiEnemyTrainerChooseMoves, executeMoveDamageChain, selectEnemyMove, type TrainerMoveSelection } from './battle_math';
+import { aiEnemyTrainerChooseMoves, selectEnemyMove, type TrainerMoveSelection } from './battle_math';
 import { partySlotFromPokemon } from './battle_loaders';
 
 beforeAll(async () => {
@@ -19,44 +19,6 @@ it('packs move bytes from the loaded cache after the raw import is removed', () 
   const slot = partySlotFromPokemon(mon);
   expect(slot.moves).toEqual([16, 28, 0, 0]);
   expect(slot.pp).toEqual([0, 7]);
-});
-
-describe('checkpoint-04b damage type bypass', () => {
-  it.each([
-    ['Gastly', 'NIGHT_SHADE', 'Rattata'],
-    ['Mankey', 'SEISMIC_TOSS', 'Gastly'],
-    ['Mankey', 'COUNTER', 'Gastly'],
-    ['Rattata', 'SUPER_FANG', 'Gastly'],
-  ])('%s %s vs %s leaves the neutral byte and no type miss', (species, move, target) => {
-    const a = createPokemon(species, 50)!;
-    const d = createPokemon(target, 50)!;
-    const s = new BattleState();
-    s.wDamageMultipliers = 255;
-    s.wMoveMissed = 1;
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = executeMoveDamageChain(s, a, d, move, true);
-    expect(result.damage).toBe(0); // Unchanged upstream immunity; the audit owns its body.
-    expect(result.missed).toBe(false);
-    expect([s.wDamage, s.wDamageMultipliers, s.wMoveMissed]).toEqual([0, 10, 0]);
-    expect(s.wCriticalHitOrOHKO).toBe(result.critical ? 1 : 0);
-  });
-  it('still records an accuracy miss for a set-damage move', () => {
-    const a = createPokemon('Mankey', 50)!;
-    const d = createPokemon('Gastly', 50)!;
-    const s = new BattleState();
-    vi.spyOn(Math, 'random').mockReturnValue(255 / 256);
-    const result = executeMoveDamageChain(s, a, d, 'SEISMIC_TOSS');
-    expect(result.missed).toBe(true);
-    expect([s.wDamage, s.wDamageMultipliers, s.wMoveMissed]).toEqual([0, 10, 1]);
-  });
-  it('keeps ordinary STAB immunity and its type miss', () => {
-    const a = createPokemon('Pikachu', 50)!;
-    const d = createPokemon('Diglett', 50)!;
-    const s = new BattleState();
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    executeMoveDamageChain(s, a, d, 'THUNDERSHOCK', true);
-    expect([s.wDamage, s.wDamageMultipliers, s.wMoveMissed]).toEqual([0, 0x80, 1]);
-  });
 });
 
 // move_choices.asm. A list with no class (modification 4, a lone 2 or 3, fifty 1s) is YOUNGSTER.

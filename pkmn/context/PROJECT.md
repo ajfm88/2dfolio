@@ -49,7 +49,7 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-10-22
+## State as of 2026-11-01
 
 - **The July–August code was lost** (DECISIONS #26). `game/` was re-created from
   vanilla upstream (`gididaf/pokemon-yellow-typescript` @ `05faa114`).
@@ -59,7 +59,8 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   trainers battle as in the original (V1c); Oak's Pikachu catch runs the original's
   catch demo, which the old man shares (V1d); the real Viridian old men replace
   upstream's demo gates and the walk north is open (V1e) — **V1 done**.
-- **5012/5012** tests across 179 files (375 upstream, then every slice since); typecheck, build and the ROM-backed suite re-checked 2026-10-24 (A5c3d checkpoint-08b; A5c3d complete). No-ROM 4794 pass / 218 skip.
+- **5980/5980** tests (2026-11-01, A5c3f checkpoint-11d; no-ROM 5723 pass / 257 skip). Counts fell from a 6304 peak as the old engine's tests retired under their manifests (note 72 §11.78–§11.92). The live count is in `STATUS.md`.
+- **A5c3f (2026-10-26 → 11-01):** the game switched to the new battle engine, ported from the ASM (checkpoint-09b). The user's play-test found four bugs, fixed in 10c–10f, then passed. The old upstream engine is retired (11a–11d; RUN's `Math.random()` roll fixed on the way). 11e/11f carry cleanups remain.
 - Since A6a (2026-09-28) the overworld moves at the Game Boy's pace: a 2-frame pass, 16 frames a player step, 34 an NPC step (DECISIONS #36). A6b–A6e (done and user-verified by 2026-10-05; A6 complete) port the order inside a pass, NPC wandering and turning, Pikachu's idle behavior, the ledge hop with Pikachu on Yellow's follow buffer, and Pikachu's scripted movement (DECISIONS #37–#39). A1a (2026-10-06, user-verified) ported the item jingles and brought the music engine to `engine_1.asm`: the wave channel an octave lower, perfect pitch, vibrato, silent rests (DECISIONS #40).
 - **A1b done 2026-10-06** (implemented by Sol, reviewed by Claude, user-verified; DECISIONS #41): collectible item balls that stay gone in saves, hidden items and Route 1's sample per the ASM, the cartridge's text/sound waits, the slot-order/99 inventory rule and selected-stack removal.
 - **A1c done 2026-10-06** (Claude; DECISIONS #43; user-verified): Forest trainers spot the player as `TrainerEngage` does, with the meet music, the "!" and the walk-up. **Milestone A1 is done.** Next: A5, V2.
@@ -91,7 +92,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Feed the engine's existing data contract exactly (same JSON shapes) — we feed
    it, we don't rewrite it. ✅
-4. Full test suite green against generated data. ✅ (**5012**, 2026-10-24)
+4. Full test suite green against generated data. ✅ (**5980**, 2026-11-01; live count in `STATUS.md`)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -132,7 +133,7 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (5012)
+1. `npm run typecheck` + full `npm test` green. ✅ (5980, 2026-11-01)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

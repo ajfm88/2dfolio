@@ -176,6 +176,7 @@ function history(o: Case = {}) {
     saveScreenTilesToBuffer1() { mark('save1'); buffer1 = screen.cells; video.saveScreenTilesToBuffer1(); },
     loadScreenTilesFromBuffer1() { mark('load1'); video.loadScreenTilesFromBuffer1(); },
     saveScreenTilesToBuffer2() { video.saveScreenTilesToBuffer2(); }, loadScreenTilesFromBuffer2() { video.loadScreenTilesFromBuffer2(); },
+    getMoveName(id) { return this.getMove(id).name; },
     getMove(id) { const key = getAllLoadedMoveIds().find(k => getMove(k)!.id === id)!; return { ...getMove(key)!, name: key }; },
     readJoypad() {
       let pressed: GameButton[] = ['a'];
@@ -188,7 +189,7 @@ function history(o: Case = {}) {
     },
     pressSound() { bridge.play({ id: 0x90, data: sfxData('press_ab') }); },
     waitForSound: function* () { while (!soundFinished(audio.sfx, audio.music, 0)) yield 'serviced'; },
-    playSound(name) { bridge.play({ id: 0x97, data: sfxData(name) }); }, runOdds: menu.cartridgeRunOdds,
+    playSound(name) { bridge.play({ id: 0x97, data: sfxData(name) }); }, runOdds: () => menu.battleRunOdds(s),
     frontPicture: state => `front/${POKEDEX_ORDER[state.wCurPartySpecies - 1]}`,
     backPicture: state => `back/${POKEDEX_ORDER[state.wBattleMonSpecies2 - 1]}`,
     trainerPicture: state => trainerPicName(state)!,

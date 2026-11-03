@@ -1,6 +1,6 @@
 // A5c3c checkpoint-07b. The retirement manifest is test data (note 69 §10.19).
-// It is not on the production import graph. effects.ts and effects.test.ts stay until A5c3f.
-import { readFileSync } from 'node:fs';
+// Verified before retirement; 11c keeps the rows and proves absence/enabled replacements.
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { expect, it } from 'vitest';
@@ -193,52 +193,52 @@ function sourceFile(file: string): ts.SourceFile {
   return ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
 }
 
-interface CallInfo { line: number; callee: string; title: string | null }
+interface CallInfo { line: number; callee: string; title: string | null; disabled: boolean }
 
 /** Direct `it(` / `test(`, plus `it.each(...)(title)`. A template title (`${...}`) is recorded as null. */
 function callInfos(sf: ts.SourceFile): CallInfo[] {
   const out: CallInfo[] = [];
-  function visit(node: ts.Node): void {
+  function visit(node: ts.Node, blocked = false): void {
     if (ts.isCallExpression(node)) {
+      const expression = node.expression.getText(sf);
+      const disabled = blocked || /\.(skip|todo|only|skipIf|runIf)\b/.test(expression);
       const callee = calleeName(node.expression);
-      if (callee === 'it' || callee === 'test' || callee === 'it.each()' || callee === 'test.each()') {
+      if (/^(it|test)(?:\.|\(|$)/.test(expression)) {
         const arg = node.arguments[0];
         const title = arg && (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) ? arg.text : null;
-        out.push({ line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, callee, title });
+        if (title !== null) out.push({ line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, callee: callee ?? expression, title, disabled });
       }
+      if (/^describe(?:\.|\(|$)/.test(expression)) blocked = disabled;
     }
-    ts.forEachChild(node, visit);
+    ts.forEachChild(node, child => visit(child, blocked));
   }
   visit(sf);
   return out;
 }
 
-it('the old effects suite matches the 139-row manifest', () => {
-  const calls = callInfos(sourceFile('effects.test.ts'));
-  expect(calls.filter(call => call.callee === 'test' || call.callee === 'test.each()')).toEqual([]);
-  const its = calls.filter(call => call.callee === 'it');
-  expect(its.every(call => call.title !== null)).toBe(true);
-  const got = its.map(call => ({ line: call.line, title: call.title }));
-  expect(new Set(got.map(row => row.line + '\0' + row.title)).size).toBe(139);
-  expect(got).toEqual(ROWS.map(row => ({ line: row.line, title: row.title })));
+it('records all 139 old effects cases and proves the old files are absent', () => {
+  expect(existsSync(resolve(__dirname, 'effects.test.ts')), 'old file absent').toBe(false);
+  expect(existsSync(resolve(__dirname, 'effects.ts'))).toBe(false);
+  expect(ROWS).toHaveLength(139);
+  expect(new Set(ROWS.map(row => row.line + '\0' + row.title)).size).toBe(139);
 });
 
 it('every replacement title is a unique plain it in its file', () => {
-  const plain = new Map<string, string[]>();
-  function titles(file: string): string[] {
+  const plain = new Map<string, CallInfo[]>();
+  function titles(file: string): CallInfo[] {
     const cached = plain.get(file);
     if (cached) return cached;
-    const found = callInfos(sourceFile(file))
-      .filter(call => (call.callee === 'it' || call.callee === 'it.each()') && call.title !== null)
-      .map(call => call.title as string);
+    const found = callInfos(sourceFile(file));
     plain.set(file, found);
     return found;
   }
   const problems: string[] = [];
   for (const row of ROWS) {
     const base = row.file.split(/[/\\]/).pop() ?? row.file;
-    const hits = titles(row.file).filter(title => title === row.test).length;
+    const found = titles(row.file).filter(call => call.title === row.test);
+    const hits = found.length;
     if (hits !== 1) problems.push('L' + row.line + ' ' + row.file + ' has ' + hits + ' plain its titled ' + JSON.stringify(row.test));
+    if (found.some(call => call.disabled)) problems.push('L' + row.line + ' replacement is disabled: ' + row.test);
     if (row.suite === 'prior' && FAMILY.has(base)) problems.push('L' + row.line + ' prior file is a family test: ' + base);
     if (row.test.startsWith('retire-L')) {
       const allowed = SUITE_FILES[row.suite as Exclude<RetirementRow['suite'], 'prior'>];

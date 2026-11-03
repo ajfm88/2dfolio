@@ -1,4 +1,4 @@
-// note70 §9.1.11. Individual assertions migrate; the legacy files/helpers stay until A5c3f.
+// note70 §9.1.11: verified inventories; 11d retains absence/keep/replacement records.
 import { describe, expect, it } from 'vitest';
 import ts from 'typescript';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -48,7 +48,7 @@ const TRAINER:Row[]=[
   row(45,'is defeatedtrainer, or defeatedgymleader for a gym leader or RIVAL3','replace',send,'rehosts trainer victory for $trainer/$gym','core.asm:930–947; main and new faint still consume victoryMusicFor','victoryMusicFor'),
   row(54,'puts "NAME: " in front of the first line and pages two lines at a time','correct','battle_whole.test.ts','trainer end text keeps the source prefix cursor through its selected program','home/trainers.asm:334–379; retained printer replaces array surrogate','endBattleTextPages'),
   row(61,'starts a new page at a paragraph break','keep','trainer_flow.test.ts','starts a new page at a paragraph break','legacy battle/catch-demo still use array pages until switch-over','battleTextPages'),
-  row(65,"keeps every map trainer's prefixed first line within the text box",'keep','trainer_flow.test.ts',"keeps every map trainer's prefixed first line within the text box",'home/trainers.asm:374–379; preserve five-trainer map census until equivalent program coverage','endBattleTextPages'),
+  row(65,"keeps every map trainer's prefixed first line within the text box",'replace','battle_whole.test.ts',"every map trainer's end text fits the box through the battle printer",'home/trainers.asm:334–379; SaveTrainerName and the real text runner preserve the prefix and cartridge line breaks','endBattleTextPages'),
   row(83,'moves one tile left every 4 frames, from tile 19 to tile 14','replace','battle_slides.test.ts','trainer return is palette2 held+3 serviced, copy7, then six4-frame growing columns from19 to14','scroll_draw_trainer_pic.asm:4–32; real palette/copy/BG thirds','picScrollX'),
   row(94,'runs music → defeated → pic scroll → 40 frames → end text → money','replace','battle_whole.test.ts','trainer win accepts SHIFT, sends the enemy before the player, and awards money after end text','core.asm:929–963; actual loop and end Programs','victorySequence'),
   row(110,'skips only the end text when none was saved','correct','battle_whole.test.ts','end-text flag is consumed even for an empty source and does not replay on the next call','home/trainers.asm:334–355; flag gate replaces empty-string proxy','victorySequence'),
@@ -56,7 +56,7 @@ const TRAINER:Row[]=[
   row(125,"shows RIVAL1's pic and win text, with no blackout in Oak's Lab",'replace','battle_whole.test.ts','RIVAL1 loss in Oaks Lab scrolls the trainer and returns without blackout','core.asm:1172–1188; real KO, loop and end','lossSequence'),
   row(135,'blacks out after the RIVAL1 text anywhere else','replace',send,'Rival1 special prefix on map$map returns carry$carry','core.asm:1175–1204; Lab gate then black palette','lossSequence'),
   row(141,'treats a wild battle like a map trainer','replace','battle_whole.test.ts','ordinary blackout follows an actual enemy KO and skips evolution','core.asm:1175–1177,1189–1204; actual wild loss','lossSequence'),
-  row(149,'resolves every trainer class to an exported pic','keep','trainer_flow.test.ts','resolves every trainer class to an exported pic','init_battle.asm:143–158; live battle_ui asset mapping survives','trainerPicName'),
+  row(149,'resolves every trainer class to an exported pic','replace','../rom/__tests__/battle_assets_data.test.ts','pins all 47 class pics against TrainerPicAndMoneyPointers, with CHIEF on scientist.png','pic_pointers_money.asm TrainerPicAndMoneyPointers; ChiefPic aliases ScientistPic so CHIEF is scientist.png','trainerPicName'),
   row(161,'is Flareon after a win and Vaporeon after a loss','keep','trainer_flow.test.ts','is Flareon after a win and Vaporeon after a loss','scripts/OaksLab.asm; story/oaks_lab.ts caller survives','rivalStarterAfterLabBattle'),
 ];
 
@@ -64,16 +64,20 @@ interface Case {line:number;title:string;disabled:boolean}
 function source(file:string){return ts.createSourceFile(file,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true);}
 function cases(file:string):Case[]{
   const sf=source(resolve(__dirname,file)),out:Case[]=[];
-  function visit(node:ts.Node):void{
+  function visit(node:ts.Node,blocked=false):void{
     if(ts.isCallExpression(node)){
       const expression=node.expression.getText(sf);
-      if(/^(it|test)(?:\.(?:each|skip|only|skipIf|runIf)(?:\([\s\S]*\))?)*$/.test(expression)){
+      // describe.skipIf(!ROM_PATH) is the suite's ROM gate. The test runs in the ROM gate.
+      const romGate=/^(?:describe|it|test)\.skipIf\(\s*!(?:ROM_PATH|process\.env\.ROM_PATH)\s*\)$/.test(expression);
+      const disabled=blocked||(!romGate&&/\.(skip|todo|only|skipIf|runIf)\b/.test(expression));
+      if(/^(it|test)(?:\.|\(|$)/.test(expression)){
         const title=node.arguments[0];
         if(title&&ts.isStringLiteralLike(title))out.push({line:sf.getLineAndCharacterOfPosition(node.getStart()).line+1,
-          title:title.text,disabled:/\.(skip|only|skipIf|runIf)/.test(expression)});
+          title:title.text,disabled});
       }
+      if(/^describe(?:\.|\(|$)/.test(expression))blocked=disabled;
     }
-    ts.forEachChild(node,visit);
+    ts.forEachChild(node,child=>visit(child,blocked));
   }visit(sf);return out;
 }
 
@@ -112,24 +116,33 @@ function callers(){
 
 describe('checkpoint-08b executable retirement manifests',()=>{
   it.each([{file:'experience.test.ts',rows:EXP,count:26},{file:'trainer_flow.test.ts',rows:TRAINER,count:17}])
-  ('$file has exactly $count individually accounted cases and unique enabled replacement titles',({file,rows,count})=>{
-    const original=cases(file);expect(original).toHaveLength(count);expect(rows).toHaveLength(count);
-    expect(original.map(({line,title})=>({line,title}))).toEqual(rows.map(({line,title})=>({line,title})));
+  ('$file records retired cases as absent, keep cases as enabled and unique enabled replacements',({file,rows,count})=>{
+    const original=cases(file),kept=rows.filter(r=>r.disposition==='keep');
+    expect(original).toHaveLength(kept.length);expect(rows).toHaveLength(count);
+    expect(original.map(c=>c.title)).toEqual(kept.map(r=>r.title));
     expect(new Set(rows.map(r=>r.line)).size).toBe(count);
     for(const r of rows){
+      const found=original.filter(c=>c.title===r.title);
+      if(r.disposition==='keep'){expect(found).toHaveLength(1);expect(found[0].disabled).toBe(false);}
+      else expect(found,`retired case absent: ${r.title}`).toEqual([]);
       const replacements=cases(r.file).filter(c=>c.title===r.test);
       expect(replacements,`${file}:${r.line} -> ${r.file}: ${r.test}`).toHaveLength(1);
       expect(replacements[0].disabled).toBe(false);expect(r.rule.length).toBeGreaterThan(20);
       if(r.disposition==='keep')expect(r.file).toBe(file);
       else expect(r.file).not.toBe(file);
     }
+    const production=source(resolve(__dirname,file.replace('.test.ts','.ts')));
+    const retired=file==='experience.test.ts'
+      ? ['calcLevelFromExp','calcExpGain','gainExperience','forceLearnMove']
+      : ['endBattleTextPages','picScrollX','victorySequence','lossSequence','trainerPicName'];
+    for(const name of retired)expect(production.statements.some(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name),`retired helper absent: ${name}`).toBe(false);
   });
   it('keeps every surviving legacy helper import, call and export visible to the switch-over',()=>{
     const actual=callers();expect(actual).toMatchSnapshot();
-    for(const helper of ['totalExpForLevel','expToNextLevel','initExperience','forceLearnMove','meetMusicFor',
-      'victoryMusicFor','battleTextPages','endBattleTextPages','trainerPicName','rivalStarterAfterLabBattle'])
+    for(const helper of ['totalExpForLevel','expToNextLevel','initExperience','meetMusicFor',
+      'victoryMusicFor','battleTextPages','rivalStarterAfterLabBattle'])
       expect(actual.some(s=>s.includes(`calls ${helper}`)),helper).toBe(true);
     expect(EXP.filter(r=>r.disposition==='keep')).toHaveLength(3);
-    expect(TRAINER.filter(r=>r.disposition==='keep')).toHaveLength(8);
+    expect(TRAINER.filter(r=>r.disposition==='keep')).toHaveLength(6);
   });
 });

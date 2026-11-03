@@ -105,7 +105,7 @@ function setup({ id = 0x50, slot = 0, list = [1, 45, 84, 93], pp = [0, 40, 30, 2
   const env: PPItemEnvironment = {
     screen, video, partyView: party,
     readJoypad() { mark('party:read'); keys = [partyCancel ? 'b' : 'a']; }, pressSound: press,
-    moveMenu: { tiles: video.tiles, getMove: move => moves.get(move)!,
+    moveMenu: { tiles: video.tiles, getMoveName(id) { return this.getMove(id).name; }, getMove: move => moves.get(move)!,
       readJoypad() { mark('move:read'); keys = [moveCancelFirst && moveCalls === 1 ? 'b' :
         s.wCurrentMenuItem < moveIndex + 1 ? 'down' : 'a']; },
       pressSound: press, printText: host.printText,

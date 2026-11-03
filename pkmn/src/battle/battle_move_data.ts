@@ -48,6 +48,32 @@ function record(moveId: number): MoveRecord {
 /** Raw six-byte Moves record, shared by the unused LearnMove FarCopyData path. */
 export function getMoveRecord(moveId: number): readonly number[] { return record(moveId).bytes; }
 
+/** Read the existing packed MoveNames without writing GetName's scratch cells. */
+export function moveDisplayName(moveId: number): string {
+  let name = '';
+  for (let at = record(moveId).nameOffset; nameBytes[at] !== 0x50; at++) {
+    const glyph = nameGlyphs.get(nameBytes[at]);
+    if (glyph === undefined) throw new BattleUnsupportedState(`unsupported move-name byte ${nameBytes[at]}`);
+    name += glyph;
+  }
+  return name;
+}
+
+/** FormatMovesString's shared GetName / wMovesString port, also used by LearnMove. CPU only. */
+export function moveMenuNameSource(state: BattleState) {
+  return {
+    getMoveName(id: number): string {
+      state.wNameListIndex = id; state.wPredefBank = 0x2f; state.wNameListType = 2;
+      getName(state);
+      return moveNameBinding(state, A.wNameBuffer);
+    },
+    writeMovesString(text: string): void {
+      const bytes = text.split('<NEXT>').flatMap((part, i) => [...(i ? [0x4e] : []), ...encodeText(part)]);
+      state.mem.set(bytes, A.wMovesString);
+    },
+  };
+}
+
 function moveAddress(state: BattleState): number {
   return state.hWhoseTurn === 0 ? A.wPlayerMoveNum : A.wEnemyMoveNum;
 }

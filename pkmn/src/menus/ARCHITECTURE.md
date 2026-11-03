@@ -1,5 +1,11 @@
 # Menus Architecture
 
+A5c3f checkpoint-10f adds optional `StatusScreenSession` option `page2Name`. It is called
+at page2's name placement, never during construction/page1. Only the battle session supplies
+it through its existing createStatusScreen seam: internal species → wNamedObjectIndex →
+GetMonName → decoded wNameBuffer. Field callers retain upstream page2 names until V5.
+Page1/nicknames and timing are unchanged; note72 §10.27 records WRAM/Pay Day controls.
+
 A5c3f checkpoint-08e adds two stand-in entries under O-45.2, without changing callers.
 NamingScreen's nickname mode requires a subject, permits ten letters and an empty submit,
 draws the species/header and full-HP party icon, and accepts the caller's pressSound.

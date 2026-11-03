@@ -38,7 +38,7 @@ export class StatusScreenSession {
   private picture: HTMLCanvasElement | null = null;
   private readonly barColor: HpBarColor;
 
-  constructor(private readonly mon: BattlePokemon, options: { syncRead: boolean }) {
+  constructor(private readonly mon: BattlePokemon, private readonly options: { syncRead: boolean; page2Name?: () => string }) {
     // Party's legacy input adapter has already read this selection. Bill's MenuInput
     // uses the real Joypad read and must retain its hJoyLast unchanged.
     if (options.syncRead) syncJoypadRead();
@@ -147,7 +147,7 @@ export class StatusScreenSession {
     this.number(12, 4, mon.exp, 7);
     this.number(7, 6, expToNextLevel(mon.species.growthRate, mon.level, mon.exp), 7);
     t.put(14, 6, TO_GLYPH); t.printLevel(16, 6, Math.min(mon.level + 1, 100));
-    t.clearArea(9, 0, 2, 10); t.placeString(9, 1, mon.species.name.toUpperCase());
+    t.clearArea(9, 0, 2, 10); t.placeString(9, 1, this.options.page2Name?.() ?? mon.species.name.toUpperCase());
   }
 
   render(): void {

@@ -519,6 +519,7 @@ async function loadSavedGame(): Promise<void> {
   await gameMap.load(saved.mapName);
   Object.assign(ow, createOverworldState());
   await player.loadSprite();
+  await pikachuFollower.loadSprite();
   npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
   await loadWildEncounters(saved.mapName);
 
@@ -597,6 +598,7 @@ async function startNewGame(): Promise<void> {
   await reloadBorderTiles();
   await gameMap.load("RedsHouse2F");
   await player.loadSprite();
+  await pikachuFollower.loadSprite();
   npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
 
   player.setTilePosition(6, 4);

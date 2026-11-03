@@ -13,7 +13,6 @@ import type { BattleMenuScreen } from './battle_menu_screen';
 import { getMoveRecord, BattleUnsupportedState } from './battle_move_data';
 import { displayTwoOptionMenu, type TwoOptionHost } from './battle_two_option';
 import { getAllLoadedMoveIds, getMove, getSpeciesById } from './data';
-import { createVolatiles } from './volatiles';
 import {
   A, indexToPokedex, NAME_LENGTH, NUM_MOVES, NUM_STATS, PARTY_LENGTH, PARTYMON_STRUCT_LENGTH,
   POKEDEX_ORDER, WILD_BATTLE, type BattleState,
@@ -111,7 +110,6 @@ export function battlePokemonFromPartyBytes(state: BattleState, index: number): 
     spdDV: state.mem[base + 28] >> 4, spcDV: state.mem[base + 28] & 0xf,
     exp: state.mem[base + 14] * 0x10000 + state.readBE(base + 15),
     statExp, sleepTurns: status.sleepTurns, toxicCounter: 0, badlyPoisoned: false,
-    volatiles: createVolatiles(),
     originalStats: { attack, defense, speed, special },
     otName: decodeBattleText(state.mem, A.wPartyMonOT + index * NAME_LENGTH),
     otId: state.readBE(base + 12),

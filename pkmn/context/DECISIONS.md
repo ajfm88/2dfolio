@@ -1110,6 +1110,23 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
     - Version-1 saves load. Their sleeping mons get sleep counter 1, a migration value, because version 1 never stored
       the counter. Note 72 §11.55.
 
+89. **A5c3f checkpoint-11 splits into 11a–11d, and RUN's roll moves to `BattleRandom`** (2026-11-01, Claude's call under
+    CONVENTIONS → *Scoping rules*; the user may overturn it).
+
+    - **11a:** RUN's `TryRunningFromBattle` draws from `BattleRandom`, as the cartridge does, not from upstream's
+      `Math.random()` (a live fidelity bug found while planning 11). `run.ts` retires with its manifest.
+    - **11b:** the three missing manifests (`damage`, `status`, `volatiles`), plus rows for the dead damage wrapper's
+      tests and `items.test.ts`' old battle cases. Documentation only.
+    - **11c:** the deletion of the old engine; the existing manifests become records.
+    - **11d:** `battle_ui.ts`, `experience.ts`, `trainer_flow.ts` and the barrel shrink to their live callers, then
+      the carry cleanups, re-inventoried first. A5c3f closes.
+    - A throwing battle renderer stays fail-loud, with no on-screen error (that would be invented UI). Note 72 §11.78.
+    - **Amended 2026-11-01 (note 72 §11.87):** 11d is only the dead-code shrink; the carry cleanups become **11e**,
+      re-inventoried first, so each checkpoint stays about checkpoint-05's size.
+    - **Amended again 2026-11-01 (note 72 §11.93):** the re-inventory found 11 open carries; **11e** takes the six
+      production cleanups and **11f** the five test-infrastructure helpers (party fixtures, `decodeNick`, the
+      `wSpriteFlipped` alias). A5c3f closes after 11f.
+
 ## Open — not decided, needs the user
 
 

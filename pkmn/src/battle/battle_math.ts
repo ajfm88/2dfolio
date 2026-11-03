@@ -1,8 +1,6 @@
 // Unused ports for A5c3. pret e89ead15 engine/battle/core.asm, cited below.
 import { A, LINK_STATE_BATTLING, STRUGGLE, WILD_BATTLE, type BattleState } from './battle_state';
-import { calculateDamage, type DamageResult } from './damage';
-import { getMove, getTypeChart } from './data';
-import { getEffectiveTypes } from './effects';
+import { getMove } from './data';
 import { AIEnemyTrainerChooseMoves } from './battle_ai_moves';
 import type { BattlePokemon } from './types';
 
@@ -48,37 +46,6 @@ export function doubleOrHalveSelectedStats(state: BattleState): void {
     const addr = start + stat * 2;
     if (halve & (1 << stat)) state.writeBE(addr, Math.max(1, state.readBE(addr) >> 1));
   }
-}
-
-/** Execute{Player,Enemy}Move's damage/type/random/hit chain, result adapter only.
- * calculateDamage keeps its upstream RNG order, formula and early returns.
- * core.asm:3251–3321, 5246–5355, 5658–5725; note 68 §11.7.
- */
-export function executeMoveDamageChain(
-  state: BattleState, attacker: BattlePokemon, defender: BattlePokemon, moveId: string, skipAccuracy = false,
-): DamageResult {
-  state.wDamageMultipliers = 10;
-  const result = calculateDamage(attacker, defender, moveId, skipAccuracy);
-  const move = getMove(moveId);
-  // SetDamageEffects and HandleCounterMove bypass AdjustDamageForMoveType.
-  // core.asm:3305–3321, 4718–4780, 5706–5725.
-  const skipsType = move?.effect === 'SUPER_FANG_EFFECT' || move?.effect === 'SPECIAL_DAMAGE_EFFECT' || moveId === 'COUNTER';
-  if (move && move.power !== 0 && !skipsType) {
-    const attackTypes = getEffectiveTypes(attacker);
-    const defendTypes = getEffectiveTypes(defender);
-    const stab = attackTypes.type1 === move.type || attackTypes.type2 === move.type ? 0x80 : 0;
-    let factor = 10;
-    for (const row of getTypeChart()) {
-      if (row.attacker === move.type && (row.defender === defendTypes.type1 || row.defender === defendTypes.type2)) {
-        factor = row.multiplier * 10;
-      }
-    }
-    state.wDamageMultipliers = stab | factor;
-  }
-  state.wDamage = result.damage;
-  state.wCriticalHitOrOHKO = result.critical ? 1 : 0;
-  state.wMoveMissed = result.missed || (!skipsType && result.effectiveness === 0) ? 1 : 0;
-  return result;
 }
 
 export interface TrainerMoveSelection {

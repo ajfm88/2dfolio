@@ -10,7 +10,9 @@ import { getItemName } from '../items';
 import { textBgTransfer } from '../text/bg_transfer';
 import { applyHudAlarm, lowHealthAlarm, isLowHealthAlarmDisabled } from '../audio/low_health_alarm';
 import { drawPlayerHudAndHpBar, drawEnemyHudAndHpBar } from './battle_hud';
-import { tryRunFromBattle } from './run';
+import { A, type BattleState } from './battle_state';
+import { multiply, divide } from './battle_arithmetic';
+import { battleRandom } from './battle_random';
 import { delayFrames } from './battle_menu_context';
 import { loadHudTilePatterns } from './battle_slides';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
@@ -189,9 +191,30 @@ export function* useBagItem(ctx: BattleActionContext, host: BattleActionHost): P
 
 function normalPalette(host: BattleActionHost): void { host.screen.bgp = 0xe4; host.screen.obp0 = 0xd0; }
 
-/** Zero byte represents the 256th attempt: ASM's dec c loop adds 30 255 times. */
-export function cartridgeRunOdds(player: number, enemy: number, attempts: number): boolean {
-  return tryRunFromBattle(player, enemy, attempts || 256).escaped;
+/** core.asm:1560–1607. CPU-only odds; the caller already incremented the byte attempt. */
+export function battleRunOdds(state: BattleState): boolean {
+  const player = state.wBattleMonSpeed, enemy = state.wEnemyMonSpeed;
+  // StringCmp's two-byte unsigned comparison, including equality.
+  if (player >= enemy) return true;
+  const h = state.mem.subarray(A.hProduct, A.hProduct + 10);
+  h[1] = 0; h[2] = player >>> 8; h[3] = player & 0xff; h[4] = 32;
+  multiply(h);
+  h[0] = h[2]; h[1] = h[3]; // the low product word becomes the two-byte dividend
+  // hEnemySpeed has no existing state cell; retain the source word locally.
+  const divisor = (enemy >>> 2) & 0xff;
+  if (divisor === 0) return true;
+  h[4] = divisor;
+  if (divide(h, 2)) throw new Error('RUN divide froze');
+  if (h[2] !== 0) return true;
+  let c = state.wNumRunAttempts;
+  for (;;) {
+    c = (c - 1) & 0xff;
+    if (c === 0) break;
+    const sum = h[3] + 30;
+    h[3] = sum & 0xff;
+    if (sum > 255) return true;
+  }
+  return h[3] >= battleRandom(state);
 }
 
 export function* tryRunningFromBattle(ctx: BattleActionContext,

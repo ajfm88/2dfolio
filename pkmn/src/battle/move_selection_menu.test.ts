@@ -37,6 +37,7 @@ function rig(ctx = context(), portion = 0) {
   const restores: number[] = [];
   const host: MoveMenuHost = {
     tiles: new BattleTiles(screen),
+    getMoveName(id) { return this.getMove(id).name; },
     getMove: id => { const move = moves.get(id); if (!move) throw new Error(`unknown move ${id}`); return move; },
     readJoypad: () => { reads.push(frame); vi.mocked(isPassPressed).mockImplementation(key => keys.includes(key)); },
     pressSound: () => { sounds.push(frame); },

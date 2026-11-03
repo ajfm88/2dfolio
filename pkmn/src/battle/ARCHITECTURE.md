@@ -1,5 +1,14 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-11a: RUN odds
+
+`battle_menu.ts`'s CPU-only `battleRunOdds(state)` reads the active speed words and the
+already-incremented attempt byte. It uses the shared HRAM Multiply/Divide ports; only the
+final compare consumes one BattleRandom. Early escapes consume none. No hEnemySpeed cell
+exists in the state, so that word stays local. The session closes runOdds over its state.
+`run.ts`, its11 old tests and cartridgeRunOdds are retired; the verified manifest and
+replacement coverage live in run_retirement/battle_run tests. Note72 §10.28.
+
 ## A5c3f checkpoint-10c: send-out pictures and ball BG steps
 
 The session's entrance/send-out/slide cues are Programs on its existing BattleScreen.
@@ -552,9 +561,11 @@ Battle text itself awaits A5c. `battleTextPages()` strips the map extractor's
   is never printed. Against RIVAL1 the enemy side is cleared, his pic scrolls in, 40
   frames, `_Rival1WinText`; in Oak's Lab there's no blackout (`playerLost` instead of
   `isBlackout`), elsewhere the blackout follows.
-- **Trainer pics load by class key** (`trainerPicName('BUG_CATCHER')` → `bugcatcher`), not
-  by display name: "BUG CATCHER" has no file, and before V1c that hung the game on the
-  battle's first frame for 11 classes.
+- **Trainer pics come from the extracted data**, not from the class's display name:
+  `trainers.json`' `pic` (the cartridge's `TrainerPicAndMoneyPointers`; CHIEF uses
+  `scientist.png`), read by `battle_trainer_party.ts`' `trainerPicName(state)`. Upstream's
+  class-key mapping in `trainer_flow.ts` retired in A5c3f checkpoint-11d. Before V1c, a
+  display-name lookup ("BUG CATCHER" has no file) hung the battle's first frame for 11 classes.
 
 ## Catch demo (V1d)
 
@@ -623,7 +634,7 @@ Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` fo
 | `catch_demo_screen.ts` | 626 | V1d: runs and draws the catch demo (was `pikachu/pikachu_battle.ts`) |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
 | `volatiles.ts` | 77 | Substitute, confusion, etc. |
-| `run.ts` | 57 | Wild battle escape logic (Gen 1 TryRunningFromBattle) |
+| `battle_menu.ts` (`battleRunOdds`) | — | State-backed RUN odds on shared HRAM and BattleRandom; run.ts retired in checkpoint-11a |
 | `encounter.ts` | 70 | Wild encounter selection |
 | `battle_screen.ts` | 328 | A5c1: `BattleScreen`. The `wTileMap` window on the shared BG thirds, a 32 × 32 BG with SCX and the LY 64–95 split, pic slots, the battle's $62–$7F tiles, OAM, BGP/OBP, `setPalBattle` (2 held + 3 frames). **Unused until A5c3** |
 | `battle_screen_render.ts` | 202 | A5c1: the pure renderer, 160 × 144 RGBA. Tile index → BGP → the cell's attribute palette; OBJ through the current OBP; CGB priority |

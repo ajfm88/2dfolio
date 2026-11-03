@@ -8,23 +8,24 @@ import type { MenuCursorState } from '../menus/tile_surface';
 import { textBgTransfer } from '../text/bg_transfer';
 import { moveTypeDisplayName } from './type_names';
 import { delayFrames } from './battle_menu_context';
-import type { BattleMenuContext, MoveMenuFlags, MoveMenuHost, Program, MenuMove } from './battle_menu_context';
+import type { BattleMenuContext, MoveMenuFlags, MoveMenuHost, Program } from './battle_menu_context';
 
 const STRUGGLE = 165;
 const KEYS: readonly GameButton[] = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
 
-export function formatMovesString(ctx: BattleMenuContext, moves: readonly number[], host: { getMove(id: number): Pick<MenuMove, 'name'> }): void {
+export function formatMovesString(ctx: BattleMenuContext, moves: readonly number[], host: Pick<MoveMenuHost, 'getMoveName' | 'writeMovesString'>): void {
   let text = '', empty = false;
   for (let row = 0; row < 4; row++) {
     const id = moves[row] ?? 0;
     if (!id) empty = true; // first zero terminates names, even if a later byte is nonzero
     if (empty) text += '-' + (row === 3 ? '' : '<NEXT>');
     else {
-      text += host.getMove(id).name + '<NEXT>';
+      text += host.getMoveName(id) + '<NEXT>';
       ctx.numMovesMinusOne = row;
     }
   }
   ctx.movesString = text + '@';
+  host.writeMovesString?.(ctx.movesString);
 }
 
 /** AddBonusPP's byte arithmetic, including the zero-count 256-iteration wrap. CPU only. */

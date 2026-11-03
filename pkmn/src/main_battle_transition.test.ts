@@ -1,5 +1,5 @@
 // CP4 runs real main dispatch, input, maps, scripts, frame programs, capture,
-// renderer and audio facade. Only Battle.init / demo asset readiness are held.
+// renderer and audio facade. Only demo asset readiness is held.
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 vi.hoisted(() => Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } }));
 vi.mock('./debug', () => ({ isNoClip: () => false, isNoEncounters: () => false, consumeDebugWarp: () => null }));
@@ -24,7 +24,7 @@ import { loadMapSpriteSets } from './overworld/sprite_sets';
 import { loadBattleTransitionData } from './overworld/battle_transition_choice';
 import { textBgTransfer } from './text/bg_transfer';
 import { uiTiles } from './renderer/ui_tiles';
-import { Battle, createPokemon, loadBattleData, loadTrainerData, getTrainerClass } from './battle';
+import { createPokemon, loadBattleData, loadTrainerData, getTrainerClass } from './battle';
 import { loadBattleSessionData,loadBattleStandInData,createBattleSession } from './battle/battle_session';
 import type { BattlePokemon } from './battle';
 import type { GameMap, Player } from './overworld';
@@ -141,7 +141,7 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
   const lead = 'lead' in row ? row.lead : 10;
   const ready = deferred();
   const demo = row.name.includes('old man') || row.name.includes('Oak Pikachu');
-  const init = demo ? vi.spyOn(Battle.prototype, 'init').mockImplementation(() => ready.promise) : vi.fn();
+  const init = vi.fn();
   const originalSprite = renderer.loadBattleSprite;
   const demoLoad = vi.spyOn(renderer, 'loadBattleSprite').mockImplementation(async (...args) => { await ready.promise; return originalSprite(...args); });
   if (row.name.includes('wild') || row.name.includes('turn')) {
@@ -276,7 +276,6 @@ it('CP5: a wild entry cancels the warp song still waiting for the door sound', a
   expect(grass).toBeDefined();
   host.player.setTilePosition(grass!.x, grass!.y); host.player.direction = 'down';
   vi.spyOn(Math, 'random').mockReturnValue(0);
-  vi.spyOn(Battle.prototype, 'init').mockResolvedValue();
   await step(); await step(); // establish a stopped pass, independent of the previous case's last direction
   expect(audio.isSoundFinished()).toBe(false);
   await untilEntry([host.overworldDeps().player.direction === 'left' ? 'right' : 'left']); // turn during the 40-frame door sound

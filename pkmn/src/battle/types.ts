@@ -1,6 +1,5 @@
 // Battle system type definitions
 
-import type { Volatiles } from './volatiles';
 
 export interface PokemonSpecies {
   id: number;
@@ -63,8 +62,6 @@ export interface BattlePokemon {
   sleepTurns: number;    // 1-7 turns remaining (0 = not asleep)
   toxicCounter: number;  // increments each turn when badly poisoned
   badlyPoisoned: boolean;
-  // Volatile statuses (reset on switch-out / battle end)
-  volatiles: Volatiles;
   // Snapshot of stats at battle start (for Haze reset)
   originalStats: { attack: number; defense: number; speed: number; special: number };
   // Original Trainer

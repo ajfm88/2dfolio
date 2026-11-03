@@ -1,9 +1,9 @@
 import { refreshPartyMon } from './battle_party_codec';
 import { decodeBattleText } from './battle_text_codec';
 // Unused shared field/battle LearnMove. pret e89ead15 engine/pokemon/learn_move.asm:1–250.
-import { battleContext, encodeText, type BattleState } from './battle_state';
+import { battleContext, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
-import { getMoveName, getName, moveNameBinding, getMoveRecord, BattleUnsupportedState } from './battle_move_data';
+import { getMoveName, moveMenuNameSource, moveNameBinding, getMoveRecord, BattleUnsupportedState } from './battle_move_data';
 import { formatMovesString } from './move_selection_menu';
 import { displayTwoOptionMenu, type TwoOptionHost } from './battle_two_option';
 import { MenuInput } from '../menus/menu_input';
@@ -41,12 +41,8 @@ function bindings(state: BattleState): TextBindings {
 function formatLearnMoves(state: BattleState, at: number): string {
   const moves = [...state.mem.slice(at, at + 4)]; state.setBytes(D.wMoves, moves, 4);
   const ctx = battleContext(state);
-  formatMovesString(ctx, moves, { getMove(id) {
-    state.wNameListIndex = id; state.wNameListType = 2; state.wPredefBank = 0x2f; getName(state);
-    return { name: moveNameBinding(state, D.wNameBuffer) };
-  } });
-  const bytes = ctx.movesString.split('<NEXT>').flatMap((part, i) => [...(i ? [0x4e] : []), ...encodeText(part)]);
-  state.mem.set(bytes, D.wMovesString); return ctx.movesString;
+  formatMovesString(ctx, moves, moveMenuNameSource(state));
+  return ctx.movesString;
 }
 
 function* yesNo(state: BattleState, host: LearnMoveHost): Program<boolean> {

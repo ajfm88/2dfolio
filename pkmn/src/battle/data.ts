@@ -4,7 +4,6 @@ import type {
   PokemonSpecies, MoveData, TypeMatchup, WildEncounterData,
   BattlePokemon, BattleMove,
 } from './types';
-import { createVolatiles } from './volatiles';
 
 let pokemonData: (PokemonSpecies | null)[] | null = null;
 let moveData: Record<string, MoveData> | null = null;
@@ -164,7 +163,6 @@ export function createPokemon(
     sleepTurns: 0,
     toxicCounter: 0,
     badlyPoisoned: false,
-    volatiles: createVolatiles(),
     originalStats: { attack, defense, speed, special },
     otName: '',
     otId: 0,

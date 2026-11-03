@@ -1,8 +1,6 @@
 // Test helper factories for building BattlePokemon and mocking randomness
 
 import type { BattlePokemon, PokemonSpecies, BattleMove, StatStages } from '../battle/types';
-import { createVolatiles } from '../battle/volatiles';
-import type { Volatiles } from '../battle/volatiles';
 import { vi } from 'vitest';
 
 /** Default species for test Pokemon. */
@@ -30,7 +28,6 @@ export function makeSpecies(overrides?: Partial<PokemonSpecies>): PokemonSpecies
 /** Build a BattlePokemon with sensible defaults. Every field overridable. */
 export function makePokemon(overrides?: Partial<BattlePokemon> & {
   speciesOverrides?: Partial<PokemonSpecies>;
-  volatileOverrides?: Partial<Volatiles>;
 }): BattlePokemon {
   const species = makeSpecies(overrides?.speciesOverrides);
   const moves: BattleMove[] = overrides?.moves ?? [
@@ -40,10 +37,6 @@ export function makePokemon(overrides?: Partial<BattlePokemon> & {
   const defense = overrides?.defense ?? 50;
   const speed = overrides?.speed ?? 50;
   const special = overrides?.special ?? 50;
-
-  const volatiles = overrides?.volatileOverrides
-    ? { ...createVolatiles(), ...overrides.volatileOverrides }
-    : overrides?.volatiles ?? createVolatiles();
 
   const pkmn: BattlePokemon = {
     species,
@@ -67,7 +60,6 @@ export function makePokemon(overrides?: Partial<BattlePokemon> & {
     sleepTurns: overrides?.sleepTurns ?? 0,
     toxicCounter: overrides?.toxicCounter ?? 0,
     badlyPoisoned: overrides?.badlyPoisoned ?? false,
-    volatiles,
     originalStats: overrides?.originalStats ?? { attack, defense, speed, special },
     otName: overrides?.otName ?? '',
     otId: overrides?.otId ?? 0,

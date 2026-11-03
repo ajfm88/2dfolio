@@ -23,7 +23,7 @@ import { decodeBattleText } from './battle_text_codec';
 import type { TrainerMoveSelection } from './battle_math';
 import { loadTrainerSpeciesData } from './battle_trainer_data';
 import { getAllLoadedMoveIds, getMove } from './data';
-import { getMoveRecord, BattleUnsupportedState } from './battle_move_data';
+import { getMoveRecord, moveDisplayName, moveMenuNameSource, BattleUnsupportedState } from './battle_move_data';
 import { loadStatEffectData, statModifierUpEffect } from './battle_effects_stats';
 import { loadTrainerAIItemNames, trainerAI, type TrainerAIEnvironment } from './battle_trainer_ai';
 import { bindBattleItems, loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS, type BattleItemHost } from './battle_items';
@@ -31,7 +31,7 @@ import { composedJumpMoveEffect } from './battle_effects_registry';
 import { bindLearnMove, type LearnMoveHost } from './learn_move';
 import { moveAnimation } from './battle_move_anim';
 import { tossBallAnimation } from './battle_ball_animation';
-import { cartridgeRunOdds } from './battle_menu';
+import { battleRunOdds } from './battle_menu';
 import { loadBattleRenderTiles, type PictureDecoder } from './battle_pictures';
 import { browserPictureDecoder } from './battle_picture_decode';
 import type { RawImage, BattleRenderTiles } from './battle_screen_render';
@@ -48,6 +48,7 @@ import { D } from './battle_end_state';
 import { loadHudTilePatterns, animationSlideMonOff, animationSlideEnemyMonOff } from './battle_slides';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import { PartyMenu } from '../menus/party_menu';
+import { StatusScreenSession } from '../menus/status_screen';
 import type { BattlePartyHost } from './battle_party_menu';
 import { bindPlayerSwitch, bindStateBattlePartyMenu, sendingOutMon, pikachuEntrance } from './battle_send_out';
 import { registerShortBattleItemBodies } from './battle_item_bodies';
@@ -258,6 +259,13 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const host: BattleStartHost & LearnMoveHost & BattlePartyHost = {
     screen, tiles: video.tiles, audio,
     partyView: party, statusView: null,
+    createStatusScreen(mon, options) {
+      return new StatusScreenSession(mon, { ...options, page2Name: () => {
+        const id = POKEDEX_ORDER.indexOf(mon.species.id) + 1;
+        state.wNamedObjectIndex = id; getMonName(state, state.species(id));
+        return decodeBattleText(state.mem, A.wNameBuffer);
+      } });
+    },
     loadEnemyPicVariant: function* () { /* A5e AnimationSubstitute / AnimationMinimizeMon cue. */ },
     renderTiles: assets.renderTiles, pokeballTiles: assets.pokeballTiles,
     trainerAppeared: sound('trainer_appeared'), faintFall: sound('faint_fall'), faintThud: sound('faint_thud'),
@@ -270,15 +278,16 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     loadScreenTilesFromBuffer1: () => { foreground = 'battle'; video.loadScreenTilesFromBuffer1(); },
     saveScreenTilesToBuffer2: () => video.saveScreenTilesToBuffer2(),
     loadScreenTilesFromBuffer2: () => { foreground = 'battle'; video.loadScreenTilesFromBuffer2(); },
+    ...moveMenuNameSource(state),
     getMove(id) { const key = getAllLoadedMoveIds().find(key => getMove(key)!.id === id);
-      if (!key) throw new BattleUnsupportedState(`move ${id}`); return { ...getMove(key)!, name: key }; },
+      if (!key) throw new BattleUnsupportedState(`move ${id}`); return { ...getMove(key)!, name: moveDisplayName(id) }; },
     readJoypad: input.readJoypad,
     readScrollJoypad() {
       input.readJoypad(); return (isPassPressed('a') ? 1 : 0) | (isPassPressed('b') ? 2 : 0);
     },
     pressSound: () => { audio.play(sound('press_ab')); },
     waitForSound: function* () { while (!soundFinished(owners.sfx, owners.music, 0)) yield 'serviced'; },
-    playSound: name => { audio.play(sound(name)); }, runOdds: cartridgeRunOdds,
+    playSound: name => { audio.play(sound(name)); }, runOdds: () => battleRunOdds(state),
     frontPicture: s => `front/${POKEDEX_ORDER[s.wCurPartySpecies - 1]}`,
     backPicture: s => `back/${POKEDEX_ORDER[s.wBattleMonSpecies2 - 1]}`,
     trainerPicture: s => trainerPicName(s)!,

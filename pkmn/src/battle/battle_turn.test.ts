@@ -127,6 +127,7 @@ function rig(o: Options = {}) {
   };
   const action: TurnHost = {
     screen: host.video.screen, tiles: host.video.tiles,
+    getMoveName(id) { return this.getMove(id).name; },
     getMove(id) { const key = getAllLoadedMoveIds().find(key => getMove(key)!.id === id)!; return { ...getMove(key)!, name: key }; },
     readJoypad() {
       const key = choosing && o.cancel && !cancelled ? 'b' : 'a';

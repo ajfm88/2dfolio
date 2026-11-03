@@ -213,10 +213,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
   equal to `species.name` becomes the cartridge's default name; other nicknames stay verbatim.
   The codec stays exact, and the overworld keeps upstream's names until V5. Checkpoint-09
   maps default name bytes back to `species.name` (O-48 option A, DECISIONS #86).
-- **Trainer pics are keyed by class key, not display name** (`trainerPicName()` in
-  `battle/trainer_flow.ts`): `BUG_CATCHER` → `bugcatcher.png`, while "BUG CATCHER" has
-  no file. A failed pic load leaves `startTrainerBattle` holding black in `battle_transition`
-  forever — no error on screen, only in the console.
+- **Trainer pics come from `trainers.json`'s `pic`** (extracted `TrainerPicAndMoneyPointers`, CHIEF on `scientist.png`) through `trainerPicName(state)` in `battle/battle_trainer_party.ts`.
+  A missing pic still holds the transition black in `battle_transition` — no error on screen, only in the console.
 
 ## File organization
 
@@ -234,7 +232,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5870/5870** as of 2026-10-26 (A5c3e checkpoint-09). No-ROM **5632 pass / 238 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5980/5980** as of 2026-11-01 (A5c3f checkpoint-11d; the old engine's tests retired under their manifests). No-ROM **5723 pass / 257 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -250,6 +248,29 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+`battle/battle_run.test.ts`:15 odds/session cases cover draw-free escapes, one BattleRandom
+compare, pinned worked/equality/failure examples, attempt256, no Math.random and the exact
+post-failed-RUN enemy stream. `battle/run_retirement.test.ts`: two cases record all11 old
+run.test.ts rows (verified before deletion), require old files/wrapper absent and enabled
+named replacements. Five mutations fail plainly; note72 §10.28. Old snapshots are unchanged.
+
+`main_battle_stats_name.test.ts`: six no-ROM real-main/raster cases cover default Nidoran♀/♂
+STATS names, GetMonName WRAM/tail and page2-only timing, a nickname, unchanged field START,
+and a complete-battle control with pending Pay Day42. Four mutations fail plain assertions;
+the control masks only CD6D–CD77/D11D and proves every other WRAM cell/frame unchanged.
+No old snapshots change. Evidence: note72 §10.27.
+
+`main_move_names.test.ts` and `battle/move_names_format.test.ts`: four no-ROM cases cover
+the user's real-main/raster FIGHT entry, all165 MoveNames glyphs and ledger-host names,
+FormatMovesString's GetName/WRAM writes, and real SELECT swap/redraw. Four mutations fail
+plain assertions. The52 existing snapshot updates are audited as permitted WRAM only,
+with identical frames/rolls/audio/screens/outcomes; note72 §10.26 lists every snapshot.
+
+`main_follower_palette.test.ts`: four no-ROM cases use real main map entry and the real renderer
+with the raster canvas. They check the player's and follower's drawn palette colours after
+Route2 → Pewter connection, Pewter → Pokécenter warp, CONTINUE in Pewter, and NEW GAME.
+The connection's omitted follower reload fails a plain pixel assertion (note72 §10.25).
 
 `battle/battle_session_catch.test.ts`:12 no-ROM cases drive start/tick with two-frame presses
 and output mocks. They cover both not-loaded homes before the separate loader, its exact

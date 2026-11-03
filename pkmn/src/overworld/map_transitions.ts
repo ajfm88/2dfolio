@@ -52,6 +52,7 @@ export async function performWarpLoad(
   }
 
   await player.loadSprite();
+  await pikachuFollower.loadSprite();
   const npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
   applyDefeatedTrainers(destMapName, npcs, defeatedTrainers);
   applyStoryNpcState(destMapName, npcs);
@@ -122,6 +123,7 @@ export async function performMapConnection(
 
   await gameMap.load(destMapName);
   await player.loadSprite();
+  await pikachuFollower.loadSprite();
   const npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
   applyDefeatedTrainers(destMapName, npcs, defeatedTrainers);
   applyStoryNpcState(destMapName, npcs);

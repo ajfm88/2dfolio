@@ -90,6 +90,7 @@ function makeEnv(state: BattleState, screen: BattleScreen, mark: (routine: strin
       ctx: battleContext(state),
       host: {
         tiles: menu.tiles,
+        getMoveName(id) { return this.getMove(id).name; },
         getMove: id => ({ id, name: 'M', type: 'NORMAL', pp: 35, power: 40, accuracy: 1, effect: 'NO_EFFECT' }),
         readJoypad: () => { vi.mocked(isPassPressed).mockImplementation(key => key === 'a'); },
         pressSound: () => { mark('pressSound'); },

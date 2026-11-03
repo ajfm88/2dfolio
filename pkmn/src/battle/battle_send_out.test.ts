@@ -1373,6 +1373,7 @@ describe('checkpoint-08 EndOfBattle',()=>{
 function loopRig(){
   const r=faintRig();function* unexpected():Program<never>{throw new Error('unexpected turn port in router unit test');}
   const host:BattleLoopHost={...r.host,
+    getMoveName(id) { return this.getMove(id).name; },
     getMove(id){const key=getAllLoadedMoveIds().find(key=>getMove(key)!.id===id)!;return {...getMove(key)!,name:key};},
     saveScreenTilesToBuffer2:()=>r.video.saveScreenTilesToBuffer2(),loadScreenTilesFromBuffer2:()=>r.video.loadScreenTilesFromBuffer2(),
     useItem:unexpected,partyMenu:unexpected,

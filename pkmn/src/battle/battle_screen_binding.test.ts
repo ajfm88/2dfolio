@@ -19,7 +19,7 @@ function rig() {
   const s = new BattleState(), video = new BattleMenuScreen(), screen = video.screen;
   s.wPlayerSelectedMove = s.wEnemySelectedMove = 0xff;
   const host: TurnHost = {
-    screen, tiles: video.tiles, printText: function* () {}, getMove: () => { throw new Error('unexpected move lookup'); },
+    screen, tiles: video.tiles, printText: function* () {}, getMoveName: () => { throw new Error('unexpected name lookup'); }, getMove: () => { throw new Error('unexpected move lookup'); },
     readJoypad() {}, pressSound() {}, saveScreenTilesToBuffer1() { video.saveScreenTilesToBuffer1(); },
     loadScreenTilesFromBuffer1() { video.loadScreenTilesFromBuffer1(); },
     saveScreenTilesToBuffer2() { video.saveScreenTilesToBuffer2(); },

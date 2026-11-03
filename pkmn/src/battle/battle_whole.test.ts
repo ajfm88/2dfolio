@@ -16,6 +16,14 @@ import { setLowHealthAlarm,setLowHealthAlarmDisabled,setLowHealthChannel5,lowHea
 import { D } from './battle_end_state';
 import { readBattleBcd } from './battle_faint';
 import { gainExperience } from './battle_experience';
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { isHeld } from '../input';
+import { TextScreen } from '../text/text_printer';
+import { loadTrainerSpeciesData, getTrainerSpeciesData } from './battle_trainer_data';
+import { saveTrainerName } from './battle_trainer_party';
+import { A, NAME_BUFFER_LENGTH } from './battle_state';
+import { decodeBattleText } from './battle_text_codec';
 
 beforeAll(async()=>{await loadBattleData();await loadBattleMoveData();await loadTextPrograms();await loadStatEffectData();await initTextSystem();});
 beforeEach(()=>{
@@ -179,6 +187,47 @@ describe('checkpoint-08b whole-battle ledgers',()=>{
     expect(r.events.find(e=>e.name==='endTextCursor')?.data).toEqual({label:'TrainerEndBattleText',column:6,row:14});
     expect(r.events.find(e=>e.name==='textEnd:TrainerEndBattleText')?.data).toEqual(['ACE: Oh no,','really?']);
     expect(r.ledger()).toMatchSnapshot();
+  });
+  it("every map trainer's end text fits the box through the battle printer",async()=>{
+    await loadTrainerSpeciesData();
+    const maps=resolve(__dirname,'../../data/maps');
+    type Header={id:string;trainerClass?:string;endBattleText?:string;endBattleTextLabels?:{win:string;lose:string}};
+    const trainers=readdirSync(maps).filter(f=>f.endsWith('.json')).flatMap(file=>{
+      const map=JSON.parse(readFileSync(resolve(maps,file),'utf8')) as {name:string;npcs?:Header[]};
+      return (map.npcs??[]).filter(n=>n.trainerClass&&n.endBattleText).map(n=>({...n,map:map.name}));
+    });
+    expect(trainers.length).toBeGreaterThanOrEqual(5);
+    // Cartridge text fits through its own line breaks. Guard extraction and the "NAME: " prefix.
+    // Observe put BEFORE its clipping guard; inspecting only the final BattleScreen would hide overflow.
+    const printer=TextScreen.prototype as unknown as {put(glyph:string):void};
+    const put=printer.put;
+    let written:{column:number;row:number;glyph:string}[]=[];
+    vi.spyOn(printer,'put').mockImplementation(function(this:TextScreen,glyph:string){
+      written.push({...this.bc(),glyph});put.call(this,glyph);
+    });
+    for(const trainer of trainers) {
+      expect(trainer.endBattleTextLabels,`${trainer.map}:${trainer.id} source labels`).toBeDefined();
+      for(const label of new Set(Object.values(trainer.endBattleTextLabels!))) {
+        const r=battleLedger({trainer:true});written=[];
+        try {
+          r.s.mem[D.wTrainerClass]=getTrainerSpeciesData().trainers[trainer.trainerClass!].id;
+          saveTrainerName(r.s);
+          r.driver.start((function*(){
+            yield* r.host.printText('TrainerEndBattleText',{
+              nameBuffer:decodeBattleText(r.s.mem,A.wNameBuffer,NAME_BUFFER_LENGTH),
+            },{asm:{TrainerEndBattleText:()=>label}});
+            return 'end';
+          })());
+          for(let frame=0;!r.driver.done&&frame<4000;frame++) {
+            vi.mocked(isHeld).mockImplementation(key=>key==='b'&&frame%2===0);
+            r.driver.step();
+          }
+          const context=`${trainer.map}:${trainer.id} ${trainer.trainerClass} ${label}`;
+          expect(r.driver.done,context).toBe(true);expect(written.length,context).toBeGreaterThan(0);
+          expect(written.filter(c=>c.column<1||c.column>18||![14,16].includes(c.row)),context).toEqual([]);
+        } finally {r.dispose();}
+      }
+    }
   });
   it('end-text flag is consumed even for an empty source and does not replay on the next call',()=>{
     const r=battleLedger({trainer:true});r.s.mem[0xd72c]=0x81;

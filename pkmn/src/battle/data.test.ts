@@ -176,13 +176,6 @@ describe('createPokemon', () => {
   });
 
   describe('full object', () => {
-    it('volatiles initialized via createVolatiles()', () => {
-      const pkmn = createPokemon('PIKACHU', 50, undefined, { atk: 8, def: 8, spd: 8, spc: 8 });
-      expect(pkmn!.volatiles.confusion).toBe(0);
-      expect(pkmn!.volatiles.substitute).toBe(0);
-      expect(pkmn!.volatiles.leechSeed).toBe(false);
-    });
-
     it('originalStats snapshot matches computed stats', () => {
       const pkmn = createPokemon('PIKACHU', 50, undefined, { atk: 8, def: 8, spd: 8, spc: 8 });
       expect(pkmn!.originalStats.attack).toBe(pkmn!.attack);
