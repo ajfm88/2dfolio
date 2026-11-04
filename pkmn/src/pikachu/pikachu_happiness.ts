@@ -266,9 +266,10 @@ export function getPikachuFacePath(party: BattlePokemon[]): string {
   return getPikachuAnimScript(party).baseFace;
 }
 
-/** UpdatePikachuHappinessAndMood, after StepCountCheck. */
-export function updatePikachuWalking(stepCounter: number, randomByte: () => number, starterAlive: boolean): void {
-  if (stepCounter === 0 && walkingHappinessRoll(stepCounter, randomByte()) && starterAlive) modifyPikachuHappiness('WALKING');
+/** UpdatePikachuHappinessAndMood, after StepCountCheck. `random` is Random with its incoming carry. */
+export function updatePikachuWalking(stepCounter: number, random: (carryIn: 0 | 1) => number, starterAlive: boolean): void {
+  // poison.asm:128-133: AND A / JR NZ leaves carry clear for the Random.
+  if (stepCounter === 0 && walkingHappinessRoll(stepCounter, random(0)) && starterAlive) modifyPikachuHappiness('WALKING');
   pikachuMood = moodTowardNeutral(pikachuMood);
 }
 

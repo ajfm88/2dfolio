@@ -16,13 +16,15 @@ import { enablePikachuFollowing } from '../pikachu/pikachu_following';
 import { rig as audioRig, sfxData, musicData } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5, isLowHealthAlarmDisabled } from '../audio/low_health_alarm';
-import { BattleState, battleContext, decodeNick, encodeText } from './battle_state';
+import { BattleState, battleContext, encodeText } from './battle_state';
+import { decodeBattleText } from './battle_text_codec';
 import { D } from './battle_end_state';
 import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { PartyMenu } from '../menus/party_menu';
 import { createPokemon, loadBattleData } from './data';
-import { loadBattleMonFromParty, partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { loadBattleMonFromParty } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import type { Frame, Program } from './battle_menu_context';
 import type { GameButton } from '../core';
 import { animateRetreatingPlayerMon, chooseNextMon, doUseNextMonDialogue, DOWNSCALED_3, DOWNSCALED_5,
@@ -36,7 +38,7 @@ import { execFileSync } from 'node:child_process';
 import { drawEnemyPokeballs, enemySendOut, enemySendOutFirstMon, replaceFaintedEnemyMon,
   ENEMY_SEND_CELLS, type EnemySendOutHost } from './battle_enemy_send_out';
 import { boostExp, divideExpDataByNumMonsGainingExp, gainExperience, learnMoveFromLevelUp,
-  loadExperienceMonData, printStatsBox, waitForTextScrollButtonPress, type ExperienceHost } from './battle_experience';
+  loadMonData, printStatsBox, waitForTextScrollButtonPress, type ExperienceHost } from './battle_experience';
 import { getMonHeader } from './battle_loaders';
 import { loadBattleMoveData, moveNameBinding, getMoveName, copyMoveNameToStringBuffer } from './battle_move_data';
 import { learnMove, bindLearnMove, oneTwoAndText, type LearnMoveHost } from './learn_move';
@@ -323,7 +325,7 @@ describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () =>
     expect(noWill).toHaveBeenCalledWith('NoWillText');
     expect(r.s.wPlayerMonNumber).toBe(1); expect(r.s.wWhichPokemon).toBe(1);
     expect([r.s.mem[D.wPartyGainExpFlags],r.s.mem[D.wPartyFoughtCurrentEnemyFlags]]).toEqual([0x82,0x42]);
-    expect(decodeNick(r.s.mem,D.wBattleMonNick)).toBe('NEW'); expect(r.s.wBattleMonSpecies).toBe(0x24);
+    expect(decodeBattleText(r.s.mem,D.wBattleMonNick)).toBe('NEW'); expect(r.s.wBattleMonSpecies).toBe(0x24);
     expect(r.s.mem.slice(D.wPartyMons,D.wPartyMons+3*44)).toEqual(partyBefore);
     expect(r.s.wActionResultOrTookBattleTurn).toBe(0); expect(r.screen.obp1).toBe(0);
     expect(r.frames.filter(kind=>kind==='held')).toHaveLength(4); // reload palette + SendOut palette
@@ -860,7 +862,7 @@ describe('checkpoint-06 level-up composition',()=>{
     const r=expRig(); r.s.wWhichPokemon=1; r.s.wMonDataLocation=0;
     r.s.mem.fill(0x79,D.wLoadedMon-1,D.wLoadedMon+45);
     const before=r.s.mem.slice(D.wPartyMons+44,D.wPartyMons+88);
-    loadExperienceMonData(r.s);
+    loadMonData(r.s);
     expect(r.s.mem.slice(D.wLoadedMon,D.wLoadedMon+44)).toEqual(before);
     expect([r.s.mem[D.wLoadedMon-1],r.s.mem[D.wLoadedMon+44]]).toEqual([0x79,0x79]);
     expect(r.s.wCurSpecies).toBe(0x24); expect(r.s.wCurPartySpecies).toBe(0x24);
@@ -1387,11 +1389,10 @@ describe('checkpoint-08 battleLoop entry and dispatch',()=>{
   it.each([0,1,2].flatMap(result=>[{result,exit:'ran' as const},{result,exit:'escaped' as const}]))
   ('$exit retains existing result$result and leaves EndOfBattle to the caller',({result,exit})=>{
     const r=loopRig();r.s.wBattleResult=result;
-    const trainer={enemy:r.s.partyMons[1]!,player:r.s.partyMons[0]!,aiModifiers:[1,2]};
-    const main=vi.spyOn(turnEntry,'mainInBattleLoop').mockImplementation(function* (state,ctx,host,ports,actualTrainer){
-      expect([state,ctx,host,ports]).toEqual([r.s,r.ctx,r.host,r.ports]);expect(actualTrainer).toBe(trainer);yield 'serviced';return exit;
+    const main=vi.spyOn(turnEntry,'mainInBattleLoop').mockImplementation(function* (state,ctx,host,ports){
+      expect([state,ctx,host,ports]).toEqual([r.s,r.ctx,r.host,r.ports]);yield 'serviced';return exit;
     });
-    r.start(battleLoop(r.s,r.ctx,r.host,r.ports,trainer));r.finish();expect(r.driver.result).toBe('end');expect(main).toHaveBeenCalledOnce();
+    r.start(battleLoop(r.s,r.ctx,r.host,r.ports));r.finish();expect(r.driver.result).toBe('end');expect(main).toHaveBeenCalledOnce();
     expect(r.s.wBattleResult).toBe(result);expect(r.s.wIsInBattle).toBe(2);expect(r.events.some(e=>e.name==='evolution')).toBe(false);
   });
   it.each((['enemy','player'] as const).flatMap(side=>(['loop','end','blackout'] as const).map(next=>({side,next}))))

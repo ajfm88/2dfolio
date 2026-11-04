@@ -12,22 +12,16 @@ import type { Program } from './battle_menu_context';
 import type { BattleMenuScreen } from './battle_menu_screen';
 import { getMoveRecord, BattleUnsupportedState } from './battle_move_data';
 import { displayTwoOptionMenu, type TwoOptionHost } from './battle_two_option';
-import { getAllLoadedMoveIds, getMove, getSpeciesById } from './data';
 import {
   A, indexToPokedex, NAME_LENGTH, NUM_MOVES, NUM_STATS, PARTY_LENGTH, PARTYMON_STRUCT_LENGTH,
-  POKEDEX_ORDER, WILD_BATTLE, type BattleState,
+  WILD_BATTLE, type BattleState,
 } from './battle_state';
-import type { BattleMove, BattlePokemon, StatExperience, StatusCondition } from './types';
 
 const NAME_MON_SCREEN = 2;
 const KADABRA = 0x26;
 const TWISTEDSPOON_GSC = 0x60;
 const BOXMON_STRUCT_LENGTH = 0x21;
 const TWO_OPTION_MENU = 0x14;
-const PAR = 1 << 6;
-const FRZ = 1 << 5;
-const BRN = 1 << 4;
-const PSN = 1 << 3;
 
 export interface CaughtMonEnvironment {
   state: BattleState;
@@ -59,61 +53,6 @@ function shiftDown(state: BattleState, base: number, stride: number, copies: num
     const src = base + index * stride;
     state.mem.copyWithin(src + stride, src, src + stride);
   }
-}
-
-function moveName(id: number): string {
-  const name = getAllLoadedMoveIds().find(key => getMove(key)?.id === id);
-  if (!name) throw new Error(`move ${id}`);
-  return name;
-}
-
-function statusOf(byte: number): { status: StatusCondition; sleepTurns: number } {
-  if (byte & PAR) return { status: 'PAR', sleepTurns: 0 };
-  if (byte & FRZ) return { status: 'FRZ', sleepTurns: 0 };
-  if (byte & BRN) return { status: 'BRN', sleepTurns: 0 };
-  if (byte & PSN) return { status: 'PSN', sleepTurns: 0 };
-  if (byte & 7) return { status: 'SLP', sleepTurns: byte & 7 };
-  return { status: null, sleepTurns: 0 };
-}
-
-/** Pure. Reads the party bytes just written. Draws no Random. Box level stays 0 in the bytes. */
-export function battlePokemonFromPartyBytes(state: BattleState, index: number): BattlePokemon {
-  const base = A.wPartyMons + index * PARTYMON_STRUCT_LENGTH;
-  const internal = state.mem[base];
-  const moves: BattleMove[] = [];
-  for (let i = 0; i < NUM_MOVES; i++) {
-    const id = state.mem[base + 8 + i];
-    if (id === 0) continue;
-    const pp = state.mem[base + 29 + i];
-    moves.push({ id: moveName(id), pp, maxPp: pp });
-  }
-  const attack = state.readBE(base + 36);
-  const defense = state.readBE(base + 38);
-  const speed = state.readBE(base + 40);
-  const special = state.readBE(base + 42);
-  const status = statusOf(state.mem[base + 4]);
-  const statExp: StatExperience = [state.readBE(base + 17), state.readBE(base + 19), state.readBE(base + 21),
-    state.readBE(base + 23), state.readBE(base + 25)];
-  const dex = POKEDEX_ORDER[internal - 1] ?? 0;
-  const species = getSpeciesById(dex);
-  if (!species) throw new Error(`no species for dex ${dex}`);
-  return {
-    species,
-    nickname: decodeBattleText(state.mem, A.wPartyMonNicks + index * NAME_LENGTH),
-    level: state.mem[base + 33],
-    currentHp: state.readBE(base + 1),
-    maxHp: state.readBE(base + 34),
-    attack, defense, speed, special, moves,
-    statStages: { attack: 0, defense: 0, speed: 0, special: 0, accuracy: 0, evasion: 0 },
-    status: status.status,
-    atkDV: state.mem[base + 27] >> 4, defDV: state.mem[base + 27] & 0xf,
-    spdDV: state.mem[base + 28] >> 4, spcDV: state.mem[base + 28] & 0xf,
-    exp: state.mem[base + 14] * 0x10000 + state.readBE(base + 15),
-    statExp, sleepTurns: status.sleepTurns, toxicCounter: 0, badlyPoisoned: false,
-    originalStats: { attack, defense, speed, special },
-    otName: decodeBattleText(state.mem, A.wPartyMonOT + index * NAME_LENGTH),
-    otId: state.readBE(base + 12),
-  };
 }
 
 /** add_mon.asm:254-282. DE enters on the second DV; the first inc de lands on PP. */

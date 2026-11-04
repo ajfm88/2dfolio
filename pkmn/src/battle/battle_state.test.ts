@@ -12,12 +12,8 @@ import {
   RESTLESS_SOUL, SILPH_SCOPE, STRUGGLE, WILD_BATTLE, TRAINER_BATTLE, LINK_STATE_BATTLING,
   type SpeciesHeader,
 } from './battle_state';
-import {
-  applyBadgeStatBoosts, applyBurnAndParalysisPenaltiesToEnemy, applyBurnAndParalysisPenaltiesToPlayer,
-  decrementPP, incrementMovePP, initWildBattle, loadBattleMonFromParty, loadEnemyMonData,
-  loadEnemyMonFromParty, partySlotFromPokemon, readPlayerMonCurHPAndStatus, writePartySlot,
-  type PartySlot,
-} from './battle_loaders';
+import { applyBadgeStatBoosts, applyBurnAndParalysisPenaltiesToEnemy, applyBurnAndParalysisPenaltiesToPlayer, decrementPP, incrementMovePP, initWildBattle, loadBattleMonFromParty, loadEnemyMonData, loadEnemyMonFromParty, readPlayerMonCurHPAndStatus } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot, type PartySlot } from '../test/party_slot_fixture';
 import type { BattlePokemon } from './types';
 
 const PAR = 0x40;
@@ -661,5 +657,19 @@ describe('pokedex order', () => {
     expect(POKEDEX_ORDER).toHaveLength(190);
     expect(POKEDEX_ORDER[0]).toBe(112);
     expect(charmapByte('P')).toBe(0x8f);
+  });
+});
+
+describe('party slot fixture', () => {
+  it('writePartySlot zero-pads the nick and the OT after the @ (the ledger layout, §10.9)', () => {
+    const state = new BattleState(), index = 2;
+    const nickname = 'PIKA', otName = 'ASH';
+    writePartySlot(state, 'player', index, slot({ nickname, otName }));
+    for (const [base, name] of [[A.wPartyMonNicks, nickname], [A.wPartyMonOT, otName]] as const) {
+      const text = encodeText(`${name}@`);
+      const expected = [...text, ...Array<number>(NAME_LENGTH - text.length).fill(0)];
+      const address = base + index * NAME_LENGTH;
+      expect([...state.mem.slice(address, address + NAME_LENGTH)], name).toEqual(expected);
+    }
   });
 });

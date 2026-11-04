@@ -40,7 +40,7 @@ describe('checkpoint-08b whole-battle ledgers',()=>{
     expect(r.events.filter(e=>e.name==='rng').map(e=>e.data)).toEqual([['select',0,0],['crit',0,8],['range',0,179],['hit',0,0]]);
     expect(r.events.filter(e=>e.name==='loopReturned').map(e=>e.data)).toEqual([['end',0]]);
     expect(r.ledger()).toMatchSnapshot();
-  },20000);
+  });
   it('trainer win accepts SHIFT, sends the enemy before the player, and awards money after end text',()=>{
     const r=battleLedger({trainer:true,reserves:1,enemies:2});r.s.mem[0xd72c]=0x80;
     r.s.mem[D.wAmountMoneyWon+2]=0x50;
@@ -145,14 +145,14 @@ describe('checkpoint-08b whole-battle ledgers',()=>{
     expect(r.runBattle()).toBe('end');expect(r.s.wBattleResult).toBe(0);expect(r.s.wPlayerMonNumber).toBe(1);
     expect(r.events.filter(e=>e.name==='yesNo').length).toBeGreaterThanOrEqual(1);
     expect(r.ledger()).toMatchSnapshot();
-  },20000);
+  });
   it.each([36,164])('move%i reaches player faint after recoil or exact-cost Substitute, then chooses and wins',move=>{
     const r=battleLedger({playerMove:move,reserves:1,hp:move===164?15:1,enemyHp:60});
     r.s.writeBE(D.wPartyMons+45,60);r.s.partyMons[1]!.currentHp=60;r.s.mem[D.wPartyMons+44+8]=33;
     expect(r.runBattle()).toBe('end');expect(r.s.partyMons[0]!.currentHp).toBe(0);
     expect(r.s.wPlayerMonNumber).toBe(1);expect(r.s.wBattleResult).toBe(0);
     expect(r.ledger()).toMatchSnapshot();
-  },20000);
+  });
   it.each(['run','catch','move'] as const)('Pay Day then %s keeps the source result history and collection gate',exit=>{
     const r=battleLedger({playerMove:6,enemyHp:60,action:entry=>entry===1?'fight':exit==='catch'?'catch':exit==='run'?'run':'fight'});
     r.s.setBag([{id:4,quantity:1}]);r.ctx.bag=[{id:'POKE_BALL',count:1}];
@@ -172,7 +172,7 @@ describe('checkpoint-08b whole-battle ledgers',()=>{
     expect(readBattleBcd(r.s,D.wPlayerMoney)).toBe(exit==='move'?40:0);
     expect(r.events.filter(e=>e.name==='evolutionHandOff')).toHaveLength(exit==='move'?1:0);
     expect(r.ledger()).toMatchSnapshot();
-  },20000);
+  });
   it('zero EXP still adds stat experience and prints zero without a minimum-one award',()=>{
     const r=battleLedger();r.s.wEnemyMonBaseExp=0;
     expect(r.runBattle()).toBe('end');expect(r.s.partyMons[0]!.exp).toBe(8000);

@@ -8,7 +8,8 @@ import {
 } from './battle_math';
 import { createPokemon, loadBattleData } from './data';
 import { loadBattleMoveData } from './battle_move_data';
-import { loadBattleMonFromParty, loadEnemyMonData, partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { loadBattleMonFromParty, loadEnemyMonData } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import type { BattlePokemon } from './types';
 
 beforeAll(async () => {
@@ -231,40 +232,31 @@ describe('SelectEnemyMove', () => {
   });
   it('trainer with no modifications uses the WRAM move and BattleRandom band slot', () => {
     const s = selection(); s.wIsInBattle = 2; const rng = rolls(s, [63]);
-    const enemy = pokemon(); const player = pokemon();
-    enemy.moves = [{ id: 'GROWL', pp: 10, maxPp: 40 }, { id: 'TACKLE', pp: 10, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [45, 33, 0, 0], 4);
     s.mem[D.wTrainerClass] = 1;
-    selectEnemyMove(s, { enemy, player, aiModifiers: [] });
+    selectEnemyMove(s);
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 1]);
     expect(rng).toHaveBeenCalledTimes(1);
   });
   it('trainer moves at zero PP are still chosen instead of Struggle', () => {
     const s = selection(); s.wIsInBattle = 2;
-    const enemy = pokemon(); enemy.moves = [{ id: 'TACKLE', pp: 0, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [33, 0, 0, 0], 4);
     s.mem[D.wTrainerClass] = 1;
     const rng = rolls(s, [0]);
-    selectEnemyMove(s, { enemy, player: pokemon(), aiModifiers: [] });
+    selectEnemyMove(s);
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 0]);
     expect(rng).toHaveBeenCalledTimes(1);
   });
   it('passes trainer modifiers and the player status into the unchanged body', () => {
     const s = selection(); s.wIsInBattle = 2; const rng = rolls(s, [0, 63]);
-    const enemy = pokemon(); const player = pokemon(); player.status = 'PAR';
-    enemy.moves = [{ id: 'THUNDER_WAVE', pp: 10, maxPp: 20 }, { id: 'TACKLE', pp: 10, maxPp: 35 }];
     s.setBytes(A.wEnemyMonMoves, [86, 33, 0, 0], 4);
     s.mem[D.wTrainerClass] = 2;
     s.wBattleMonStatus = 0x40;
-    selectEnemyMove(s, { enemy, player, aiModifiers: [1] });
+    selectEnemyMove(s);
     // trainer_ai.asm:114–131: nonzero status penalizes power-0 PARALYZE_EFFECT by 5.
     expect([s.wEnemySelectedMove, s.wEnemyMoveListIndex]).toEqual([33, 1]);
     expect(s.bytes(A.wBuffer, 4).slice()).toEqual([0, 33, 0, 0]);
     expect(rng).toHaveBeenCalledTimes(2);
-  });
-  it('requires explicit trainer context', () => {
-    const s = selection(); s.wIsInBattle = 2;
-    expect(() => selectEnemyMove(s)).toThrow('trainer selection requires battle Pokemon');
   });
 });
 

@@ -1,5 +1,26 @@
 # Battle System Architecture
 
+## A5c3f checkpoint-11f: fixture writers and decoder retirement
+
+`PartySlot`, `partyTypeByte`, `partySlotFromPokemon`, `writePartySlot` and `mirrorPartyProgress`
+live only in `src/test/party_slot_fixture.ts`, with their recorded byte layout unchanged
+(zero padding after `@`). Production writes through `battle_party_codec.ts`; a test guards
+against production imports of `src/test/`. `statusByte` and the loaders' `MON_PP` stay in place.
+The unused `battlePokemonFromPartyBytes` and `decodeNick` helpers are removed; tests use the
+codec and `decodeBattleText`. `W_SPRITE_FLIPPED` is the sole flip-address name; INIT no longer
+aliases it. No runtime behavior or existing ledger changes. Note72 §10.33.4.
+
+## A5c3f checkpoint-11e: production carries
+
+`audio/low_health_alarm.ts` owns $D082 and $CCF6; `BattleState` has no duplicate cells.
+Medicine uses public `BattleScreen.setPalPartyMenu()`, `PartyMenu.itemCursor` and `updateItemUse`.
+The palette command installs MEWMON/GREENBAR/YELLOWBAR/REDBAR before its existing 2 held + 3
+serviced waits (LCD off: no waits). `loadMonData` remains in `battle_experience.ts` to avoid a
+loader/move-data cycle. Trainer move selection reads WRAM directly through
+`AIEnemyTrainerChooseMoves(state)`; `TrainerMoveSelection` and its object adapters are gone.
+PartyMenu retains overworld, useItem and battle_choice modes. The three-line `bindPlayerSwitch`
+binder stays; its raw-species carry was already closed in checkpoint-07c. Note72 §10.32.
+
 ## A5c3f checkpoint-11a: RUN odds
 
 `battle_menu.ts`'s CPU-only `battleRunOdds(state)` reads the active speed words and the
@@ -597,45 +618,41 @@ map trainers, the Lab rival, both catch demos) runs `PlayBattleMusic`'s stop and
 8 transitions picked by the cartridge's 3-bit choice (trainer / enemy ≥ lead + 3 / dungeon map), and the tail,
 then holds black until the battle is ready. The modules are in `overworld/` (`battle_transition*.ts`,
 `transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). The battle itself still starts with upstream's
-intro below (A5e replaces it).
+intro: since A5c3f the new engine runs `_InitBattleCommon` / `StartBattle` without the silhouette slide and the
+send-out animations, whose bodies are named A5e cues (see *What A5e inherits* below).
 
-## Wild Intro Phases
+## What A5e inherits (2026-11-02)
 
-`slide_in` (wild from LEFT, Red from RIGHT) -> `colorize` -> `appeared_text` -> `send_player` (Red slides LEFT off) -> `send_pokemon` (Pokemon slides in from LEFT, only after Red gone) -> `go_text`
+Upstream's intro phases (`slide_in` → `colorize` → … → `go_text`, canvas silhouettes, `loadPlayerTrainerSprite`)
+now survive only in `catch_demo_screen.ts`, which A5f retires. The live battle (the new engine since A5c3f 09b) skips
+the presentation bodies A5e owns. Each is a **named no-op cue** (`grep -rn "A5e" src/battle --include=*.ts`):
+- the silhouette slide in `_InitBattleCommon`;
+- `updateSprites`, `sendingOutMon`, `pikachuEntrance` and `slidePlayerOff` / `enemySlideOff`;
+- `hideSubstitute` / `reshowSubstitute`, `animationSubstitute`, `animationTransformMon`, `substituteBreak`, `shake`
+  and `loadEnemyPicVariant`;
+- move animations: `battle_move_anim.ts` always takes the BATTLE ANIMATION OFF path, whatever `wOptions` bit 7 says
+  (DECISIONS #83).
 
-## Trainer Intro Phases
-
-`slide_in` -> `colorize` -> `pokeballs_text` -> `send_enemy` -> `send_enemy_text` -> `send_player` -> `send_player_text`
-
-## Silhouettes
-
-Canvas `source-atop` compositing for all-black sprite versions, `globalAlpha` for colorize blend.
-
-## Player Trainer Sprite
-
-`loadPlayerTrainerSprite()` loads Red's backsprite (`/gfx/player/redb.png`) for wild intros.
+A5e's scope is note 65 §4. The carries are in note 72: §10.24.1, §11.66 and the A5e rows of §10.26.
 
 ## Key Files
 
+(The deleted old engine's rows, `battle.ts`, `effects.ts`, `damage.ts`, `status.ts`, `catch.ts` and `volatiles.ts`,
+were removed on 2026-11-02. They went in A5c3f 11c.)
+
 | File | LOC | Purpose |
 |------|-----|---------|
-| `battle.ts` | 2442 | Main battle state machine |
-| `battle_ui.ts` | 808 | HUD, action menu, trainer intros |
-| `effects.ts` | 1013 | Move effects (stat changes, screens, leech seed, etc.) |
-| `damage.ts` | 328 | Damage formula, type effectiveness |
-| `status.ts` | 254 | Sleep, freeze, burn, paralysis, poison |
-| `experience.ts` | 169 | XP gain, leveling |
+| `battle_ui.ts` | 374 | Upstream canvas drawing still used by the catch demo (shrunk in A5c3f 11d) |
+| `experience.ts` | 43 | Growth-rate EXP tables and `initExperience` (shrunk in 11d; level-up is `battle_exp*.ts`) |
 | `data.ts` | 171 | JSON data loading |
 | `types.ts` | 135 | TypeScript interfaces |
-| `trainer_ai.ts` | 219 | Trainer move selection |
-| `trainer_flow.ts` | 166 | V1c: meet/victory music choice, end-text pages, win/loss step lists, pic scroll, trainer pic names |
-| `catch.ts` | 105 | Catch rate formula |
+| `trainer_ai.ts` | 27 | `getTrainerClass` / `loadTrainerData` only (the AI is `battle_trainer_ai.ts`) |
+| `trainer_flow.ts` | 61 | Meet/victory music choice, end-text pages, the rival-starter byte (shrunk in 11d) |
 | `catch_demo.ts` | 111 | V1d: the catch demo's rules and step list (old man + Oak's Pikachu) |
 | `catch_demo_screen.ts` | 626 | V1d: runs and draws the catch demo (was `pikachu/pikachu_battle.ts`) |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
-| `volatiles.ts` | 77 | Substitute, confusion, etc. |
 | `battle_menu.ts` (`battleRunOdds`) | — | State-backed RUN odds on shared HRAM and BattleRandom; run.ts retired in checkpoint-11a |
-| `encounter.ts` | 70 | Wild encounter selection |
+| `encounter.ts` | 73 | Wild encounter selection: reads `hRandomAdd` / `hRandomSub` (note 74) |
 | `battle_screen.ts` | 328 | A5c1: `BattleScreen`. The `wTileMap` window on the shared BG thirds, a 32 × 32 BG with SCX and the LY 64–95 split, pic slots, the battle's $62–$7F tiles, OAM, BGP/OBP, `setPalBattle` (2 held + 3 frames). **Unused until A5c3** |
 | `battle_screen_render.ts` | 202 | A5c1: the pure renderer, 160 × 144 RGBA. Tile index → BGP → the cell's attribute palette; OBJ through the current OBP; CGB priority |
 | `battle_attributes.ts` | 29 | A5c1: `BGMapAttributes_Battle` (2f:6960) as ROM-tested constants |

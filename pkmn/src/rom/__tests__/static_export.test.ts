@@ -156,5 +156,5 @@ describe('static/ export: files on disk', () => {
     expect(stale).toEqual([]);
     // It re-encodes ~521 PNGs and reads ~850 files: under 1 s warm, but a cold file cache
     // on the first run of a session went past vitest's default 5 s (2026-09-28, 2026-10-06).
-  }, 30_000);
+  });
 });

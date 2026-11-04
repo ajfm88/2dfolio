@@ -89,6 +89,13 @@ describe('UpdatePikachuHappinessAndMood', () => {
     expect(getPikachuMood()).toBe(101);
   });
 
+  it('the walking roll enters Random with carry clear (poison.asm:128-133, DECISIONS #91)', () => {
+    restorePikachuHappiness(90, 100);
+    const random = vi.fn((_carryIn: 0 | 1) => 1);
+    updatePikachuWalking(0, random, true);
+    expect(random.mock.calls).toEqual([[0]]);
+  });
+
   it('an absent or fainted starter skips the bonus but still rolls and drifts mood', () => {
     restorePikachuHappiness(90, 200);
     const random = vi.fn(() => 1);

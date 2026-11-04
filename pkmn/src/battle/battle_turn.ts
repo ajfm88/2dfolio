@@ -2,7 +2,7 @@
 import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { displayBattleMenu } from './battle_menu';
 import { moveSelectionMenu } from './move_selection_menu';
-import { selectEnemyMove, type TrainerMoveSelection } from './battle_math';
+import { selectEnemyMove } from './battle_math';
 import { battleRandom } from './battle_random';
 import { readPlayerMonCurHPAndStatus } from './battle_loaders';
 import { handlePoisonBurnLeechSeed, checkNumAttacksLeft } from './battle_residual';
@@ -24,7 +24,7 @@ export interface TurnPorts extends ExecutePorts {
 /** pret core.asm:289-475. Loops through complete turns and menu cancellations; the caller owns the returned exit label.
  * Binds the host's screen before the turn's first read or presentation (note 69 §10.4 item 0). */
 export function* mainInBattleLoop(
-  state: BattleState, ctx: BattleActionContext, host: TurnHost, ports: TurnPorts, trainer?: TrainerMoveSelection,
+  state: BattleState, ctx: BattleActionContext, host: TurnHost, ports: TurnPorts,
 ): Program<TurnExit> {
   const screen = host.screen;
   bindEntryBattleScreen(state, screen);
@@ -55,7 +55,7 @@ export function* mainInBattleLoop(
         }
       }
     }
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     if (state.wLinkState === LINK_STATE_BATTLING) {
       const received = state.wSerialExchangeNybbleReceiveData;
       if (received === 0x0f) return 'enemyRan';

@@ -7,9 +7,11 @@ vi.mock('../renderer', () => ({ drawTile: vi.fn(), fillRect: vi.fn(), loadFont: 
   loadTileset: async () => ({ width: 128 }) }));
 import { BattleHost } from './battle_host';
 import { BattleMenuScreen } from './battle_menu_screen';
-import { A, BattleState, battleContext, decodeNick, encodeText, type SpeciesHeader } from './battle_state';
+import { A, BattleState, battleContext, encodeText, type SpeciesHeader } from './battle_state';
+import { decodeBattleText } from './battle_text_codec';
 import { createPokemon, loadBattleData } from './data';
-import { initWildBattle, loadBattleMonFromParty, partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { initWildBattle, loadBattleMonFromParty } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { drawHudsAndHpBars } from './battle_menu';
 import type { BattleActionContext, BattleActionHost, Frame, Program } from './battle_menu_context';
 import { initTextSystem, setTextSpeed, TextBox } from '../text/textbox';
@@ -174,12 +176,12 @@ const PLAYER_BAR = 0xcf1c, ENEMY_BAR = 0xcf1d;
 function fillHuds(state: BattleState): BattleActionContext {
   const ctx = battleContext(state);
   ctx.playerHud = {
-    nickname: decodeNick(state.mem, A.wBattleMonNick), level: state.wBattleMonLevel, status: state.wBattleMonStatus,
-    hp: state.wBattleMonHP, maxHp: state.wBattleMonMaxHP, alarm: state.wLowHealthAlarm, alarmDisabled: false,
+    nickname: decodeBattleText(state.mem, A.wBattleMonNick), level: state.wBattleMonLevel, status: state.wBattleMonStatus,
+    hp: state.wBattleMonHP, maxHp: state.wBattleMonMaxHP, alarm: 0, alarmDisabled: false,
     get barColor() { return state.mem[PLAYER_BAR]; }, set barColor(value: number) { state.mem[PLAYER_BAR] = value; },
   };
   ctx.enemyHud = {
-    nickname: decodeNick(state.mem, A.wEnemyMonNick), level: state.wEnemyMonLevel, status: state.wEnemyMonStatus,
+    nickname: decodeBattleText(state.mem, A.wEnemyMonNick), level: state.wEnemyMonLevel, status: state.wEnemyMonStatus,
     hp: state.wEnemyMonHP, maxHp: state.wEnemyMonMaxHP,
     get barColor() { return state.mem[ENEMY_BAR]; }, set barColor(value: number) { state.mem[ENEMY_BAR] = value; },
   };
@@ -193,6 +195,7 @@ describe('palette CPU write and composed battle program', () => {
     state.mem[A.wPartyMons] = player; state.wBattleMonSpecies = player; state.wEnemyMonSpecies2 = enemy;
     state.wBattleMonHP = state.wBattleMonMaxHP = state.wEnemyMonHP = state.wEnemyMonMaxHP = 30;
     state.mem[PLAYER_BAR] = 2; state.wMaxPP = 0x77;
+    state.mem[A.wBattleMonNick] = state.mem[A.wEnemyMonNick] = 0x50;
     const ctx = fillHuds(state), host = new BattleHost(state, video);
     host.start(drawHudsAndHpBars(ctx, actionHost(video)));
     expect([ctx.pokedexNum, state.wPokedexNum, state.wMaxPP]).toEqual([dex, dex, dex]);
@@ -218,6 +221,7 @@ describe('palette CPU write and composed battle program', () => {
     const state = new BattleState(), host = new BattleHost(state);
     state.wBattleMonHP = state.wBattleMonMaxHP = state.wEnemyMonHP = state.wEnemyMonMaxHP = 30;
     state.wMaxPP = 0x77;
+    state.mem[A.wBattleMonNick] = state.mem[A.wEnemyMonNick] = 0x50;
     host.start(drawHudsAndHpBars(fillHuds(state), actionHost(host.video)));
     expect(host.done).toBe(true); expect(state.wMaxPP).toBe(0x77);
   });

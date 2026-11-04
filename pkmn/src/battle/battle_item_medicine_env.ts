@@ -20,14 +20,14 @@ import type { GameButton } from '../core';
 import { isPassPressed } from '../input';
 import { textBgTransfer } from '../text/bg_transfer';
 import { getPartyAndBillsSavedMenuItem } from '../list_state';
-import { loadExperienceMonData } from './battle_experience';
+import { loadMonData } from './battle_experience';
 
 /** RedrawPartyMenu_: LoadMonData runs after each row's icon, without a frame wait.
  * The following-starter $FF icon index never replaces wWhichPokemon. */
 function loadDrawnPartyRows(state: BattleState): void {
   for (let row = 0; row < state.mem[I.wPartyCount]; row++) {
     state.wWhichPokemon = row;
-    loadExperienceMonData(state);
+    loadMonData(state);
   }
 }
 
@@ -39,11 +39,6 @@ export interface MedicinePresentationHost {
   pressSound(): void;
 }
 
-// Same narrow unused-owner adaptation as battle_slides.ts: existing state/timing only,
-// no duplicate palette engine, menu input implementation, sprite store or live edit.
-type PartyPaletteOwner = { installPalettes(names: string[]): void; paletteFrames(): Program };
-type UseItemOwner = { cursor: number;
-  updateItemUse(pressed: (key: GameButton) => boolean, sound: () => void): 'close' | null };
 const KEYS: readonly GameButton[] = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
 const MESSAGES: Readonly<Record<number, string>> = { 0xf0: 'AntidoteText', 0xf1: 'BurnHealText',
   0xf2: 'IceHealText', 0xf3: 'AwakeningText', 0xf4: 'ParlyzHealText', 0xf5: 'PotionText',
@@ -54,7 +49,6 @@ export function createMedicineItemEnvironment(state: BattleState, host: Medicine
   bindEntryBattleScreen(state, host.screen);
   if (host.video.screen !== host.screen) throw new Error('medicine requires the host video screen');
   const { screen, video, partyView: party } = host;
-  const palette = screen as unknown as PartyPaletteOwner;
   let frozen: PartyRowOverride[] = [];
   function transfer(enabled: boolean): void {
     state.mem[I.hAutoBGTransferEnabled] = Number(enabled); textBgTransfer.enabled = enabled;
@@ -62,8 +56,6 @@ export function createMedicineItemEnvironment(state: BattleState, host: Medicine
   function white(): void { screen.bgp = screen.obp0 = screen.obp1 = 0; }
   function normal(): void { screen.bgp = 0xe4; screen.obp0 = 0xd0; }
   function blank(): void { for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) screen.put(x, y, ' '); }
-  // data/sgb/sgb_packets.asm PalPacket_PartyMenu; same screen owns all four bases.
-  function installPartyPalette(): void { palette.installPalettes(['MEWMON', 'GREENBAR', 'YELLOWBAR', 'REDBAR']); }
 
   return {
     /** home/pokemon.asm:187–306. Medicine retains the pre-use row picture. */
@@ -110,8 +102,8 @@ export function createMedicineItemEnvironment(state: BattleState, host: Medicine
       if (!message) throw new Error(`unknown medicine message ${id}`);
       party.promptVisible = false; party.cursorVisible = false;
       frozen.forEach((_row, index) => party.setHpOverride(index, null));
-      party.render(); loadDrawnPartyRows(state); installPartyPalette();
-      yield* palette.paletteFrames();
+      party.render(); loadDrawnPartyRows(state);
+      yield* screen.setPalPartyMenu();
       const savedFlags = state.mem[I.wStatusFlags5]; state.mem[I.wStatusFlags5] |= 0x40;
       video.textBox.printStandalone({ program: message }, { noDelay: true, bindings: {
         nameBuffer: decodeBattleText(state.mem, I.wPartyMonNicks + state.mem[I.wUsedItemOnWhichPokemon] * 11),
@@ -137,16 +129,12 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
   bindEntryBattleScreen(state, host.screen);
   if (host.video.screen !== host.screen) throw new Error('medicine requires the host video screen');
   const { screen, video, partyView: party } = host;
-  const palette = screen as unknown as PartyPaletteOwner;
-  const useItem = party as unknown as UseItemOwner;
   function transfer(enabled: boolean): void {
     state.mem[I.hAutoBGTransferEnabled] = Number(enabled); textBgTransfer.enabled = enabled;
   }
   function white(): void { screen.bgp = screen.obp0 = screen.obp1 = 0; }
   function normal(): void { screen.bgp = 0xe4; screen.obp0 = 0xd0; }
   function blank(): void { for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) screen.put(x, y, ' '); }
-  // data/sgb/sgb_packets.asm PalPacket_PartyMenu; same screen owns all four bases.
-  function installPartyPalette(): void { palette.installPalettes(['MEWMON', 'GREENBAR', 'YELLOWBAR', 'REDBAR']); }
   function* sessionFrame(): Program { yield 'session'; video.vblank(); }
   function selectedCells(slot: number): void {
     state.wWhichPokemon = slot;
@@ -164,7 +152,7 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
   state.wMonDataLocation = state.wMenuWatchMovingOutOfBounds = 0;
   state.mem[I.wStatusFlags5] |= 0x40;
   state.mem[I.wTopMenuItemY] = 1; state.mem[I.wTopMenuItemX] = 0;
-  state.wCurrentMenuItem = useItem.cursor;
+  state.wCurrentMenuItem = party.itemCursor;
   state.mem[I.wMaxMenuItem] = Math.max(0, mons.length - 1); state.mem[I.wMenuWatchedKeys] = 3;
   state.mem[I.wMenuWrappingEnabled] = 1;
   for (let age = 1; age <= 10; age++) {
@@ -175,30 +163,30 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
     }
     if (age === 7) blank();
   }
-  party.render(); loadDrawnPartyRows(state); installPartyPalette();
+  party.render(); loadDrawnPartyRows(state);
   // Opening already accounts for the palette's three serviced waits. Advance its
   // age only on those waits; held frames tick neither the screen nor the TextBox.
-  for (const frame of palette.paletteFrames()) {
+  for (const frame of screen.setPalPartyMenu()) {
     if (frame === 'held') yield 'held';
     else { yield* sessionFrame(); opening.frame(); }
   }
   for (let age = 14; age <= 19; age++) { yield* sessionFrame(); opening.frame(); }
   transfer(true); normal(); party.promptVisible = true;
   const input = new MenuInput({ watched: ['a', 'b'], maxItem: mons.length - 1,
-    topX: 0, topY: 1, item: useItem.cursor });
+    topX: 0, topY: 1, item: party.itemCursor });
   let closed: 'close' | null = null;
   while (!closed) {
     yield* sessionFrame();
     if (party.ownsInput) closed = party.update(isPassPressed); // retained sleeping-Pikachu text gate.
     else {
       let pressed: GameButton[] | null = null;
-      input.item = useItem.cursor;
+      input.item = party.itemCursor;
       input.update(() => { host.readJoypad(); pressed = KEYS.filter(isPassPressed); }, () => {});
       // MenuInput owns Delay3/read cadence. PartyMenu owns wrapping, A+B, saved
       // cursor and its starter gate; its sound callback routes through the battle host.
-      if (pressed) closed = useItem.updateItemUse(key => pressed!.includes(key), host.pressSound);
+      if (pressed) closed = party.updateItemUse(key => pressed!.includes(key), host.pressSound);
     }
-    state.wCurrentMenuItem = useItem.cursor;
+    state.wCurrentMenuItem = party.itemCursor;
   }
   state.mem[I.wPartyAndBillsPCSavedMenuItem] = getPartyAndBillsSavedMenuItem();
   state.mem[I.wStatusFlags5] &= ~0x40; state.mem[I.wMenuWrappingEnabled] = 0;

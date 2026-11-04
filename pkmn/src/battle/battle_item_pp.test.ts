@@ -24,7 +24,7 @@ import { I } from './battle_item_state';
 import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { useItem, type BattleItemHost } from './battle_items';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { loadBattleMoveData, moveNameBinding, getMoveRecord } from './battle_move_data';
 import { getPartyMoveMaxPP, registerPPBattleItemBody, type PPItemEnvironment } from './battle_item_pp';
 import * as sessions from './battle_item_medicine_env';
@@ -306,8 +306,8 @@ describe('06b party draw and selection cells', () => {
   ])('$name retains cartridge aliases and row order', ({ config, which, item }) => {
     const r = setup(config), s = r.s, count = s.mem[I.wPartyCount];
     const expected = s.mem.slice(I.wPartyMons + 44 * (count - 1), I.wPartyMons + 44 * count);
-    const rows: number[] = [], load = monData.loadExperienceMonData;
-    vi.spyOn(monData, 'loadExperienceMonData').mockImplementation(state => {
+    const rows: number[] = [], load = monData.loadMonData;
+    vi.spyOn(monData, 'loadMonData').mockImplementation(state => {
       rows.push(state.wWhichPokemon); load(state);
       const row = state.wWhichPokemon, species = state.mem[I.wPartySpecies + row];
       expect([state.wCurPartySpecies, state.wCurSpecies]).toEqual([species, species]);
@@ -336,12 +336,12 @@ describe('06b party draw and selection cells', () => {
     const bytes = Uint8Array.from({ length: 44 }, (_, i) => i + 100);
     s.mem.set(bytes, I.wPartyMons);
     s.mem[A.wLoadedMon - 1] = 0x66; s.mem[A.wLoadedMon + 44] = 0x77;
-    monData.loadExperienceMonData(s);
+    monData.loadMonData(s);
     expect([s.wCurPartySpecies, s.wCurSpecies, s.mem[A.wMonHIndex]]).toEqual([0x54, 0x54, 0x54]);
     expect([...s.mem.slice(A.wMonHBaseStats, A.wMonHBaseStats + 5)]).toEqual([35, 55, 30, 90, 50]);
     expect(s.mem.slice(A.wLoadedMon, A.wLoadedMon + 44)).toEqual(bytes);
     expect([s.mem[A.wLoadedMon - 1], s.mem[A.wLoadedMon + 44]]).toEqual([0x66, 0x77]);
-    s.wMonDataLocation = 1; expect(() => monData.loadExperienceMonData(s)).toThrow();
+    s.wMonDataLocation = 1; expect(() => monData.loadMonData(s)).toThrow();
   });
 
   it('selection reads the species list rather than the slot struct', () => {

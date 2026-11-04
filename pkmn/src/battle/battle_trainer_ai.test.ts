@@ -20,7 +20,7 @@ import { I } from './battle_item_state';
 import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { PartyMenu } from '../menus/party_menu';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { loadStatEffectData } from './battle_effects_stats';
 import { BattleUnsupportedState } from './battle_move_data';
 import { ENEMY_SEND_CELLS } from './battle_enemy_send_out';

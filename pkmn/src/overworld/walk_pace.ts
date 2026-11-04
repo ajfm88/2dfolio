@@ -444,8 +444,9 @@ type NpcStatus = 'init' | 'ready' | 'moving' | 'resting';
 export interface NpcPassContext {
   /** wWalkCounter ≠ 0: a ready sprite can't try anything while the player is mid-step. */
   playerWalking: boolean;
-  /** A random byte (hRandomAdd). */
-  random: () => number;
+  /** Random with its incoming carry; returns hRandomAdd. Every UpdateNPCSprite call enters with carry clear
+   *  (movement.asm:183-185 after GetTileSpriteStandsOn's ADD HL,DE; :301-309 JR NC; :656-659 ADD $8; :1043-1052 JR NC). */
+  random: (carryIn: 0 | 1) => number;
   /** CanWalkOntoTile past its STAY check: the terrain, the screen edge and the sprite
    *  collision mask, read after the try has set the facing and step vector. */
   canWalk: (dir: Direction) => boolean;
@@ -631,7 +632,7 @@ export class NpcWalk {
           return;
         }
         // .randomMovement: the direction byte, then TryWalking (Func_5337 first)
-        const dir = npcDirection(ctx.random(), this.movement2);
+        const dir = npcDirection(ctx.random(0), this.movement2);
         this.facing = dir;
         this.setVector(dir);
         const next = this.movement1 === 'walk' && ctx.canWalk(dir)
@@ -641,7 +642,7 @@ export class NpcWalk {
           // CanWalkOntoTile .impassable
           this.status = 'resting';
           this.setVector(null);
-          this.delay = ctx.random() & 0x7f;
+          this.delay = ctx.random(0) & 0x7f;
           return;
         }
         this.dispX = next.x;
@@ -662,7 +663,7 @@ export class NpcWalk {
           } else {
             // .initNextMovementCounter
             this.status = 'resting';
-            this.delay = ctx.random() & 0x7f;
+            this.delay = ctx.random(0) & 0x7f;
             this.setVector(null);
           }
         }

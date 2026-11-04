@@ -102,13 +102,12 @@ it('enemy-only HUD never resets or ticks the audio alarm', () => {
   expect(lowHealthAlarm()).toBe(151);
 });
 it('drawPlayerHud and drawHuds leave BattleState $D082 untouched', () => {
-  const r = hpRig(); r.s.wBattleMonHP = 1; r.s.wLowHealthAlarm = 0x12; r.s.wLowHealthAlarmDisabled = 1;
+  const r = hpRig(); r.s.wBattleMonHP = 1; r.s.mem[0xd082] = 0x12; r.s.mem[0xccf6] = 1;
   setLowHealthAlarm(0x15); setLowHealthAlarmDisabled(false);
   finish(drawPlayerHud(r.s, r.screen));
   finish(drawHuds(r.s, r.screen));
-  expect(A.wLowHealthAlarm).toBe(0xd082);
-  expect(r.s.mem[A.wLowHealthAlarm]).toBe(0x12);
-  expect(r.s.wLowHealthAlarmDisabled).toBe(1);
+  expect(r.s.mem[0xd082]).toBe(0x12);
+  expect(r.s.mem[0xccf6]).toBe(1);
   expect(lowHealthAlarm()).toBe(0x95);
 });
 it('real HUD supplies checkpoint-03 self-hit drawPlayerHud port with turn still flipped', () => {
@@ -161,7 +160,6 @@ it.each([0, 1] as const)('BattleHost residual side%i runs committed text, HP bar
 it('new scratch/status cells have their cartridge addresses and shared buffer alias', () => {
   expect([A.wHPBarMaxHP, A.wHPBarOldHP, A.wHPBarNewHP, A.wHPBarDelta, A.wHPBarTempHP,
     A.wHPBarHPDifference, A.wHPBarType]).toEqual([0xcee9, 0xceeb, 0xceed, 0xceef, 0xcef0, 0xcefd, 0xcf93]);
-  expect([A.wPlayerHPBarColor, A.wEnemyHPBarColor, A.wPlayerToxicCounter, A.wEnemyToxicCounter,
-    A.wLowHealthAlarmDisabled]).toEqual([0xcf1c, 0xcf1d, 0xd06b, 0xd070, 0xccf6]);
+  expect([A.wPlayerHPBarColor, A.wEnemyHPBarColor, A.wPlayerToxicCounter, A.wEnemyToxicCounter]).toEqual([0xcf1c, 0xcf1d, 0xd06b, 0xd070]);
   const r = hpRig(); r.s.mem[A.wHPBarMaxHP] = 22; expect(r.s.wBuffer).toBe(22);
 });

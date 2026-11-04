@@ -3,6 +3,7 @@
 // Returns an OverworldAction describing what main.ts should do next (state
 // transition, battle start, etc.), or null when no action is needed.
 
+import { overworldRandom } from './overworld_random';
 import type { Direction } from '../core';
 
 import type { Player, Interaction } from './player';
@@ -430,7 +431,7 @@ export function handleStepComplete(deps: OverworldDeps, ow: OverworldState, simu
         // ApplyOutOfBattlePoisonDamage skips this when the party is empty.
         if (deps.playerParty.length > 0) {
           const starterAlive = deps.playerParty.some(mon => mon.species.id === 25 && mon.currentHp > 0);
-          updatePikachuWalking(ow.stepCounter, () => Math.floor(Math.random() * 256), starterAlive);
+          updatePikachuWalking(ow.stepCounter, overworldRandom, starterAlive);
         }
         return null;
       case 'encounter': return checkEncounter(deps, ow);

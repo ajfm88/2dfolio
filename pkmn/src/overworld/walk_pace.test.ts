@@ -654,3 +654,15 @@ describe('NPCs (engine/overworld/movement.asm)', () => {
     expect(n.facing).toBe('up');
   });
 });
+
+describe('Random carry (DECISIONS #91)', () => {
+  it('every UpdateNPCSprite Random enters with carry clear: the direction byte, the rest after a step and after a failed try', () => {
+    const carries: number[] = [];
+    let open = true;
+    const random = (carryIn: 0 | 1) => { carries.push(carryIn); return 0x40; };
+    const n = new NpcWalk('down', 'walk', 'any');
+    for (let i = 0; i < 600; i++) { if (i === 300) open = false; n.pass(npcCtx({ random, canWalk: () => open })); }
+    expect(carries.length).toBeGreaterThan(4);
+    expect(new Set(carries)).toEqual(new Set([0]));
+  });
+});

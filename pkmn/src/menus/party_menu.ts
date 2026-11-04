@@ -16,7 +16,6 @@ import { playSFX } from '../audio';
 import type { BattlePokemon } from '../battle';
 import type { StatusCondition } from '../battle/types';
 import type { GameButton } from '../core';
-import { getText } from '../text';
 import { getTextPrograms } from '../text/program_data';
 import { formatHpFraction, PARTY_HP_FRACTION_COL } from './hp_bar';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
@@ -88,17 +87,16 @@ export class PartyMenu {
   get ownsInput(): boolean { return this.statusScreenActive || this.opening !== null || this.sleepingText !== null; }
   get paletteWhite(): boolean { return this.opening?.paletteWhite ?? this.stats?.paletteWhite ?? false; }
 
-  // Battle mode support. useItem is the bag's medicine menu: A picks, B cancels, no submenu.
-  private mode: 'overworld' | 'battle' | 'battle_forced' | 'useItem' | 'battle_choice' = 'overworld';
+  // useItem is the bag's medicine menu: A picks, B cancels, no submenu. battle_choice is the battle's own.
+  private mode: 'overworld' | 'useItem' | 'battle_choice' = 'overworld';
   /** Opaque writes cover the pixel party list; null releases a cell back to it. */
   readonly choiceOverlay = new ScreenTiles();
   private choiceForced = false;
   private choiceDelay = 3;
   private choiceRedrawAge: number | null = null;
   private choiceTextActive = false;
-  private battleActiveIndex = 0; // index of Pokemon currently in battle
-  /** After close, >= 0 means a Pokemon was selected for battle switch, -1 means cancelled. */
-  selectedSwitchIndex = -1;
+  /** wCurrentMenuItem's source for the battle's USE_ITEM menu. */
+  get itemCursor(): number { return this.cursor; }
   /** useItem: the chosen slot, or -1 when B cancelled. */
   chosenIndex = -1;
   /** False while a result or no-effect PrintText owns the bottom box. */
@@ -126,7 +124,6 @@ export class PartyMenu {
     this.switchFrom = -1;
     this.frameCounter = 0;
     this.mode = 'overworld';
-    this.selectedSwitchIndex = -1;
     this.chosenIndex = -1;
     this.hpOverride = [];
     this.cursorGlyph = '▶';
@@ -228,14 +225,6 @@ export class PartyMenu {
     this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, 'PartyMenuNormalText');
   }
 
-  /** Show party menu in battle context. Battle still starts on the first row (A5c). */
-  showForBattle(party: BattlePokemon[], activeIndex: number, forced: boolean): void {
-    this.show(party);
-    this.mode = forced ? 'battle_forced' : 'battle';
-    this.battleActiveIndex = activeIndex;
-    this.cursor = 0;
-  }
-
   /** DisplayPartyMenu for USE_ITEM. A returns the slot; B cancels. */
   showForItem(party: BattlePokemon[], textBox?: TextBox): void {
     this.show(party);
@@ -285,7 +274,7 @@ export class PartyMenu {
    * wrap (wMenuWrappingEnabled); A or B plays press_ab; B is tested first, so A+B cancels.
    * The cursor is saved on either key. The chosen row gets ▷.
    */
-  private updateItemUse(pressed: (button: GameButton) => boolean, sound: () => void = () => playSFX('press_ab')): 'close' | null {
+  updateItemUse(pressed: (button: GameButton) => boolean, sound: () => void = () => playSFX('press_ab')): 'close' | null {
     const a = pressed('a');
     const b = pressed('b');
     const count = this.party.length;
@@ -321,22 +310,15 @@ export class PartyMenu {
       this.state = 'submenu';
     } else if (pressed('b')) {
       playSFX('press_ab');
-      if (this.mode === 'battle_forced') return null; // can't cancel forced switch
       this.rememberCursor();
-      this.selectedSwitchIndex = -1;
       if (this.mode === 'useItem') this.chosenIndex = -1;
       return 'close';
     }
     return null;
   }
 
-  private getSubmenuItems(): readonly string[] {
-    if (this.mode === 'battle_forced') return ['SWITCH', 'STATS'] as const;
-    return SUBMENU_ITEMS;
-  }
-
   private updateSubmenu(): 'close' | null {
-    const items = this.getSubmenuItems();
+    const items = SUBMENU_ITEMS;
     if (isPressed('up')) {
       this.subCursor = (this.subCursor - 1 + items.length) % items.length;
     } else if (isPressed('down')) {
@@ -348,31 +330,15 @@ export class PartyMenu {
         this.stats = new StatusScreenSession(this.party[this.cursor], { syncRead: true });
         this.state = 'stats';
       } else if (action === 'SWITCH') {
-        if (this.mode === 'battle' || this.mode === 'battle_forced') {
-          // Battle switch: validate and select for battle
-          const mon = this.party[this.cursor];
-          if (mon.currentHp <= 0 || this.cursor === this.battleActiveIndex) {
-            // Can't switch to fainted or already-active Pokemon
-            this.state = 'list';
-          } else {
-            this.selectedSwitchIndex = this.cursor;
-            return 'close';
-          }
+        // Overworld: swap party positions
+        if (this.party.length > 1) {
+          this.switchFrom = this.cursor;
+          this.state = 'switch_target';
         } else {
-          // Overworld: swap party positions
-          if (this.party.length > 1) {
-            this.switchFrom = this.cursor;
-            this.state = 'switch_target';
-          } else {
-            this.state = 'list';
-          }
+          this.state = 'list';
         }
       } else {
         // CANCEL
-        if (this.mode === 'battle' || this.mode === 'battle_forced') {
-          this.selectedSwitchIndex = -1;
-          return 'close';
-        }
         this.state = 'list';
       }
     } else if (isPressed('b')) {
@@ -419,11 +385,9 @@ export class PartyMenu {
   /** .asm_128f runs before the swap branch; the prompt itself owns its A/B wait. */
   private rejectSleepingStarter(): boolean {
     const mon = this.party[this.cursor];
-    if (this.mode === 'battle' || this.mode === 'battle_forced'
-        || !mon || !isStarterPikachu(mon) || !isPikachuFollowingDisabled()) return false;
+    if (!mon || !isStarterPikachu(mon) || !isPikachuFollowingDisabled()) return false;
     this.rememberCursor();
     this.chosenIndex = -1;
-    this.selectedSwitchIndex = -1;
     this.promptVisible = false;
     this.sleepingText = this.itemTextBox ?? this.openingTextBox;
     this.sleepingText.printStandalone({ program: 'PartyMenuText_12cc' }, { noDelay: false });
@@ -462,7 +426,7 @@ export class PartyMenu {
 
       // Party icon — only the cursor-selected Pokemon animates
       const frame = i === this.cursor ? this.frameCounter : 0;
-      const sleeping = this.mode !== 'battle' && this.mode !== 'battle_forced' && isStarterPikachu(mon) && isPikachuFollowingDisabled();
+      const sleeping = isStarterPikachu(mon) && isPikachuFollowingDisabled();
       if (!sleeping) drawPartyIcon(mon.species.id, ICON_X, y, frame, hpRatio);
 
       // Cursor (or switch marker)
@@ -504,23 +468,21 @@ export class PartyMenu {
     }
   }
 
-  /** Battle keeps its current line. Overworld and item use read the programs. */
+  /** Overworld and item use read the programs. */
   private promptLines(): string[] {
-    if (this.mode === 'battle' || this.mode === 'battle_forced') return [getText('PARTY_CHOOSE')];
     const program = this.state === 'switch_target' ? 'PartyMenuSwapMonText'
       : this.mode === 'useItem' ? 'PartyMenuItemUseText'
       : 'PartyMenuNormalText';
     return linesOfProgram(program);
   }
 
-  /** Overworld and item use share the cursor. Battle does not write it (A5c). */
+  /** HandlePartyMenuInput (home/pokemon.asm:257) saves the cursor in every mode. */
   private rememberCursor(): void {
-    if (this.mode === 'battle' || this.mode === 'battle_forced') return;
     setPartyAndBillsSavedMenuItem(this.cursor);
   }
 
   private renderSubmenu(): void {
-    const items = this.getSubmenuItems();
+    const items = SUBMENU_ITEMS;
     // Fixed position: box at (11,11)-(19,17), text at (13,12)
     drawBox(SUBMENU_X, SUBMENU_Y, SUBMENU_W, SUBMENU_H);
 

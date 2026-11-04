@@ -11,9 +11,9 @@ import { monFrontBox, ghostPictureBox, trainerPictureBox, backPictureBox, traine
 import { browserPictureDecoder } from './battle_picture_decode';
 import { renderBattleScreen, type RawImage, type BattleRenderTiles } from './battle_screen_render';
 import { BattleHost } from './battle_host';
-import { BattleState, A, POKEDEX_ORDER, encodeText } from './battle_state';
+import { BattleState, A, POKEDEX_ORDER, encodeText, W_SPRITE_FLIPPED } from './battle_state';
 import { D } from './battle_end_state';
-import { INIT, loadPlayerBackPic, setupBattleBeforeTransition, initBattleAfterTransition, type BattleInitHost } from './battle_init';
+import { loadPlayerBackPic, setupBattleBeforeTransition, initBattleAfterTransition, type BattleInitHost } from './battle_init';
 import { loadMonBackPic } from './battle_slides';
 import { BattleAudio } from './battle_audio';
 import { BattleRandomState } from './battle_random_state';
@@ -25,7 +25,7 @@ import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHea
 import { soundFinished } from '../audio/sound_wait';
 import { installTrainerSpecies } from './battle_trainer_party';
 import { createPokemon, loadBattleData } from './data';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { getMoveRecord, loadBattleMoveData } from './battle_move_data';
 import { loadTextPrograms } from '../text/program_data';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
@@ -186,7 +186,7 @@ async function route1Frame(flipped = false) {
   mon.otName = 'ASH'; mon.otId = 0x1234; s.partyMons[0] = mon; s.mem[D.wPartyCount] = 1; s.setBytes(D.wPartySpecies, [0x54, 255], 2);
   writePartySlot(s, 'player', 0, partySlotFromPokemon(mon)); s.setBytes(A.wPlayerName, encodeText('ASH@'), 11); s.writeBE(A.wPlayerID, 0x1234);
   s.wCurOpponent = 0xa5; s.wCurEnemyLevel = 3; s.wCurMap = 0x0c;
-  const random = new BattleRandomState(() => 0); setupBattleBeforeTransition(s, random); s.mem[INIT.wSpriteFlipped] = Number(flipped);
+  const random = new BattleRandomState(() => 0); setupBattleBeforeTransition(s, random); s.mem[W_SPRITE_FLIPPED] = Number(flipped);
   let opening: Uint8ClampedArray | undefined; let frame = 0;
   const host: BattleInitHost = { screen, audio: bridge, renderTiles: { sprites: tiles.sprites }, pokeballTiles: raw('gfx/battle/balls.png'),
     trainerAppeared: { id: 0xe9, data: sfxData('trainer_appeared') }, frontPicture: state => `front/${POKEDEX_ORDER[state.wCurPartySpecies - 1]}`,
@@ -215,4 +215,4 @@ it('Route1 real04 opening frame: enemy, Red back, HUD and party ball pixels befo
   expect(pixel(opening, 147, 80)).toEqual([...screen.bgPalette(0)[3], 255]);
   expect(pixel(opening, 91, 81)).toEqual([...screen.objPalette(0)[3], 255]);
   expect({ frame, opening: hash(opening), final: hash(final) }).toMatchSnapshot();
-}, 20000);
+});

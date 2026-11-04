@@ -126,23 +126,6 @@ describe('PartyMenu useItem and the saved cursor', () => {
     expect(menu.chosenIndex).toBe(1);
   });
 
-  it('battle still starts on row 0 and does not write the saved cursor', () => {
-    const menu = new PartyMenu();
-    const party = [mon(13, 39), mon(10, 20)];
-    setPartyAndBillsSavedMenuItem(1);
-    menu.showForBattle(party, 0, false);
-    press('a');
-    expect(menu.update()).toBeNull();
-    press('a');
-    expect(menu.update()).toBeNull();
-    expect(menu.selectedSwitchIndex).toBe(-1);
-    expect(getPartyAndBillsSavedMenuItem()).toBe(1);
-
-    menu.showForBattle(party, 0, true);
-    press('b');
-    expect(menu.update()).toBeNull();
-    expect(getPartyAndBillsSavedMenuItem()).toBe(1);
-  });
 });
 
 describe('PartyMenu prompts', () => {

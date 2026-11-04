@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { pinOverworldRandom } from '../test/overworld_random_pin';
 import { initScript, updateScript } from './script_controller';
 import type { ScriptDeps } from './script_controller';
 import type { ScriptCommand } from './types';
@@ -28,7 +29,7 @@ vi.mock('../audio', () => ({ playMusic: vi.fn(), playSFX: vi.fn(), isSfxPlaying:
 vi.mock('../renderer', () => ({ loadSprite: async () => ({ width: 16, height: 96 }), drawSprite: vi.fn(),
   fillRect: vi.fn(), drawTile: vi.fn(), drawShadowUnderSprites: vi.fn() }));
 beforeEach(() => { vi.clearAllMocks(); restoreHiddenObjects([]); setJoyIgnore('none'); uiTiles.clear();
-  vi.mocked(isSoundFinished).mockReturnValue(true); vi.spyOn(Math, 'random').mockReturnValue(0.5); });
+  vi.mocked(isSoundFinished).mockReturnValue(true); pinOverworldRandom(128); });
 afterEach(() => { initScript([]); vi.restoreAllMocks(); });
 
 function scene(x = 10, y = 10, gx = 10, gy = 9): ScriptDeps {

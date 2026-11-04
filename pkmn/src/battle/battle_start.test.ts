@@ -28,7 +28,7 @@ import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { BattleRandomState } from './battle_random_state';
 import { createPokemon, getMove, getAllLoadedMoveIds, loadBattleData } from './data';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { installTrainerSpecies, trainerPicName, speciesInternalId, W_TRAINER_NO, W_RIVAL_NAME } from './battle_trainer_party';
 import { getMoveRecord, loadBattleMoveData } from './battle_move_data';
 import { loadStatEffectData, statModifierUpEffect } from './battle_effects_stats';
@@ -56,7 +56,6 @@ import * as send from './battle_send_out';
 import * as enemySend from './battle_enemy_send_out';
 import * as slides from './battle_slides';
 import * as helpers from './battle_end_helpers';
-import type { TrainerMoveSelection } from './battle_math';
 import type { Program } from './battle_menu_context';
 import type { TurnPorts } from './battle_turn';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
@@ -270,14 +269,9 @@ function history(o: Case = {}) {
   vi.spyOn(helpers, 'anyPartyAlive').mockImplementation(state => { mark('alive'); return alive(state); });
   const saved = setupBattleBeforeTransition(s, random); rngPhase = 'turn';
   const initial = { ram: ramLedger(s.mem), draws: [...events], saved };
-  const trainer: TrainerMoveSelection | undefined = o.trainer ? {
-    get enemy() { return { ...s.partyMons[0]!, moves: Array.from({ length: 4 }, (_, i) => s.mem[A.wEnemyMonMoves + i]).filter(Boolean).map(id => {
-      const key = getAllLoadedMoveIds().find(k => getMove(k)!.id === id)!; return { id: key, pp: 35, maxPp: 35 };
-    }) }; }, player: s.partyMons[0]!, aiModifiers: [],
-  } : undefined;
   const drive = () => {
     let previous = Buffer.from(s.mem);
-    driver.start(initBattleCommon(s, saved, ctx, host, ports, trainer));
+    driver.start(initBattleCommon(s, saved, ctx, host, ports));
     for (; !driver.done && time < 8000;) {
       time++;
       keys(time % 2 ? [] : video.textBox.isWaitingForInput ? ['b'] : ['a']);
@@ -345,7 +339,7 @@ describe('checkpoint-04b composed first frame through EndOfBattle and restores',
     expect(events(h, 'slide.return')[0].at - events(h, 'slide')[0].at).toBe(18);
     expect(events(h, 'loop')).toHaveLength(1); expect(h.texts).toContain('GainedText');
     expect(trace).toMatchSnapshot();
-  }, 20000);
+  });
   it('Forest win: enemy send-out precedes the40, real trainer turns and prize money', () => {
     const h = history({ trainer: 2 }); const trace = h.drive(); restores(h);
     expect(h.s.wSerialExchangeNybbleReceiveData).toBe(4);
@@ -354,13 +348,13 @@ describe('checkpoint-04b composed first frame through EndOfBattle and restores',
     expect(events(h, 'save1').find(e => e.at > sent.at)!.at - sent.at).toBe(40);
     expect(h.texts).toContain('MoneyForWinningText'); expect(readBattleBcd(h.s, D.wPlayerMoney)).toBe(70);
     expect(trace).toMatchSnapshot();
-  }, 20000);
+  });
   it('fainted lead: slot1 is sent with both flags and no NoWillText', () => {
     const h = history({ leadFainted: true }); const trace = h.drive(); restores(h);
     expect(h.texts).not.toContain('NoWillText');
     expect(events(h, 'playerSend')[0].data).toEqual({ slot: 1, fought: 2, exp: 2 });
     expect(trace).toMatchSnapshot();
-  }, 20000);
+  });
   it('every party member fainted at entry: StartBattle blackout still calls EndOfBattle', () => {
     const h = history({ allFainted: true }); const trace = h.drive(); restores(h);
     expect(h.driver.result?.exit).toBe('blackout'); expect(events(h, 'loop')).toHaveLength(0);
@@ -373,12 +367,12 @@ describe('checkpoint-04b composed first frame through EndOfBattle and restores',
     expect(events(h, 'playerFaint.return')[0]?.data).toBe('end');
     expect(h.driver.result?.exit).toBe('end'); expect(h.texts).toContain('Rival1WinText');
     expect(h.texts).not.toContain('PlayerBlackedOutText2'); expect(trace).toMatchSnapshot();
-  }, 20000);
+  });
   it.each([3, 4])('type%i skips AnyPartyAlive even with a fainted party', type => {
     const h = history({ type, allFainted: true, actions: ['run'] }); const trace = h.drive(); restores(h);
     expect(events(h, 'alive')).toHaveLength(0); expect(events(h, 'blackout')).toHaveLength(0);
     expect(h.menuCount).toBe(1); expect(trace).toMatchSnapshot();
-  }, 20000);
+  });
   it('Safari fainted party does not skip AnyPartyAlive', () => {
     const h = history({ type: 2, allFainted: true }); const trace = h.drive(); restores(h);
     expect(events(h, 'alive')).toHaveLength(1); expect(h.menuCount).toBe(0);
@@ -441,7 +435,7 @@ describe('checkpoint-05 item0', () => {
   it('g: fainted Pikachu lead sends Rattata reserve with its own header base stats', () => {
     const h = history({ leadFainted: true, reserveSpecies: 'RATTATA' }); h.drive(); restores(h);
     expect(h.sentSpecies[0]).toEqual({ party: 0xa5, battle: 0xa5, base: [30, 56, 35, 72, 25] });
-  }, 20000);
+  });
   it('h: a missed ball with bait0 and anger0 prints neither Safari text and decrements neither', () => {
     const h = history({ type: 2, balls: 2, speed: 40, actions: ['ball', 'run'], itemDraws: [150, 255], escapeDraws: [80] }); h.drive(); restores(h);
     expect(h.texts).not.toContain('SafariZoneEatingText'); expect(h.texts).not.toContain('SafariZoneAngryText');

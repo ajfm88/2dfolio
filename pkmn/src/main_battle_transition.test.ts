@@ -1,5 +1,6 @@
 // CP4 runs real main dispatch, input, maps, scripts, frame programs, capture,
 // renderer and audio facade. Only demo asset readiness is held.
+import { pinOverworldRandom } from './test/overworld_random_pin';
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 vi.hoisted(() => Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } }));
 vi.mock('./debug', () => ({ isNoClip: () => false, isNoEncounters: () => false, consumeDebugWarp: () => null }));
@@ -162,7 +163,7 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
       const fainted = createPokemon('RATTATA', 1)!; fainted.currentHp = 0; host.playerParty.unshift(fainted);
     }
     if (row.name.includes('turn')) setSpriteIndex(3); // a sign's stale hTextID; no land-collision write on a turn
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     await untilEntry([row.name.includes('turn') ? 'left' : 'down']);
     expect(host.player.justTurned).toBe(row.name.includes('turn'));
   } else if (row.name.includes('trainer')) {
@@ -176,22 +177,22 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
       parties[18] = original.map((member, index) => ({ ...member, level: index === 0 ? 16 : 6 }));
       restoreTrainer = () => { parties[18] = original; };
     }
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     await untilEntry();
   } else if (row.name.includes('Lab rival')) {
     await world(row.map, 4, 6, ['GOT_STARTER', 'FOLLOWED_OAK_INTO_LAB'], lead);
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     await untilEntry();
   } else if (row.name === 'forced old man') {
     await world(row.map, 19, 9, ['GOT_STARTER', 'GOT_POKEDEX']);
     restoreMapScripts({ ViridianCity: 1 });
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     await untilEntry();
   } else if (row.name === 'repeat old man') {
     await world(row.map, 17, 6, ['GOT_STARTER', 'GOT_POKEDEX', 'COMPLETED_CATCH_TRAINING', 'SPAWNED_OLD_MAN_1']);
     expect(host.overworldDeps().npcs.find(npc => npc.data.id === 'oldman1')!.hidden).toBe(false);
     host.player.direction = 'up';
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     await untilEntry();
   } else {
     await world(row.map, 10, 0, []); host.playerParty.length = 0; host.pikachuFollower.visible = false;
@@ -275,7 +276,7 @@ it('CP5: a wild entry cancels the warp song still waiting for the door sound', a
   }
   expect(grass).toBeDefined();
   host.player.setTilePosition(grass!.x, grass!.y); host.player.direction = 'down';
-  vi.spyOn(Math, 'random').mockReturnValue(0);
+  pinOverworldRandom(0);
   await step(); await step(); // establish a stopped pass, independent of the previous case's last direction
   expect(audio.isSoundFinished()).toBe(false);
   await untilEntry([host.overworldDeps().player.direction === 'left' ? 'right' : 'left']); // turn during the 40-frame door sound

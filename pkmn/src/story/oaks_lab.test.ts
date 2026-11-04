@@ -29,6 +29,8 @@ import { restoreFlags, restoreHiddenObjects, setFlag, hasFlag } from '../events'
 import { setJoyIgnore } from '../input/joy_ignore';
 import { PikachuFollower } from '../pikachu/pikachu_follower';
 import { applyStoryNpcState } from '../overworld/story_state';
+import { installOverworldRandom } from '../overworld/overworld_random';
+import { pinOverworldRandom } from '../test/overworld_random_pin';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: () => false,
   isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn(), readJoypad: vi.fn() }));
@@ -210,6 +212,17 @@ describe('Lab runtime timing and side effects', () => {
     for (let t = 1; t < 96; t++) { tick(deps, t, false); vi.mocked(fillRect).mockClear(); uiTiles.clear(); deps.textBox.render();
       expect(fillRect).not.toHaveBeenCalled(); expect(uiTiles.tileAt(18, 16)).toBe(0); expect(deps.textBox.active).toBe(true); }
     expect(syncJoypadRead).toHaveBeenCalledTimes(1); tick(deps, 96, false); expect(deps.textBox.active).toBe(false);
+  });
+  it('the gift draws its DVs from two Random calls: Speed|Special first, then Attack|Defense with the first call\'s carry (add_mon.asm:109-124)', () => {
+    const draws = [{ value: 0x12, carry: 1 as const }, { value: 0x34, carry: 0 as const }], carries: number[] = [];
+    let carry: 0 | 1 = 0;
+    pinOverworldRandom(0);
+    installOverworldRandom({ hRandomAdd: 0, hRandomSub: 0, get carry() { return carry; },
+      random: carryIn => { carries.push(carryIn); const draw = draws.shift()!; carry = draw.carry; return draw.value; } });
+    const deps = scene(); run(deps, labGiftDisplay(), 4000);
+    const [mon] = deps.playerParty;
+    expect(carries).toEqual([0, 1]);
+    expect([mon.atkDV, mon.defDV, mon.spdDV, mon.spcDV]).toEqual([3, 4, 1, 2]);
   });
   it('the gift adds Pikachu only after the real key-item jingle returns, then hides the follower and closes 15', () => {
     const deps = scene(); initScript(labGiftDisplay()); updateScript(deps, false);

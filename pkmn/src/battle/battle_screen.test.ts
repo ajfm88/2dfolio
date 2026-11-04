@@ -148,6 +148,35 @@ describe('BattleScreen model', () => {
     }
   });
 
+  it('installs the party-menu palettes before yielding, holds two frames and services three, or yields none with LCD off', () => {
+    const names = ['MEWMON', 'GREENBAR', 'YELLOWBAR', 'REDBAR'];
+    const screen = new BattleScreen();
+    const run = screen.setPalPartyMenu();
+    expect(run.next()).toEqual({ done: false, value: 'held' });
+    for (let slot = 0; slot < 4; slot++) {
+      expect(screen.paletteName(slot)).toBe(names[slot]);
+      expect(screen.bgPalette(slot)).toEqual(getPaletteColors(names[slot]));
+    }
+    expect(() => screen.vblank()).toThrow(/SET_PAL_BATTLE hold/);
+    expect(run.next()).toEqual({ done: false, value: 'held' });
+    expect(() => screen.vblank()).toThrow(/SET_PAL_BATTLE hold/);
+    for (let frame = 0; frame < 3; frame++) {
+      expect(run.next()).toEqual({ done: false, value: 'serviced' });
+      expect(screen.vblank()).toBe(frame);
+    }
+    expect(run.next()).toEqual({ done: true, value: undefined });
+
+    const off = new BattleScreen();
+    off.lcdOn = false;
+    expect([...off.setPalPartyMenu()]).toEqual([]);
+    for (let slot = 0; slot < 4; slot++) {
+      expect(off.paletteName(slot)).toBe(names[slot]);
+      expect(off.bgPalette(slot)).toEqual(getPaletteColors(names[slot]));
+    }
+    expect(off.paletteHold).toBe(0);
+    expect(() => off.vblank()).not.toThrow();
+  });
+
   it('resolves only the HP and LV glyphs, and keeps OAM pending until DMA', () => {
     expect(battleGlyphTile(LEVEL_GLYPH)).toBe(0x6e);
     expect(battleGlyphTile(HP_GLYPH)).toBe(0x71);

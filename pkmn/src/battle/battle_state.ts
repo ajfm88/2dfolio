@@ -113,9 +113,7 @@ export const A = {
   wCriticalHitOrOHKO: 0xd05d,
   wMoveMissed: 0xd05e,
   wDamageMultipliers: 0xd05a,
-  wLowHealthAlarm: 0xd082,
-  // wram.asm:654,1140–1146,1225–1231,1295,1482–1495. HP bar words are LE.
-  wLowHealthAlarmDisabled: 0xccf6,
+  // wram.asm:1140–1146,1225–1231,1295,1482–1495. HP bar words are LE.
   wHPBarMaxHP: 0xcee9,
   wHPBarOldHP: 0xceeb,
   wHPBarNewHP: 0xceed,
@@ -370,18 +368,6 @@ export function liveBytes(mem: Uint8Array, addr: number, length: number): number
 
 export function writeBytes(mem: Uint8Array, addr: number, values: readonly number[], length: number): void {
   for (let i = 0; i < length; i++) mem[addr + i] = (values[i] ?? 0) & 0xff;
-}
-
-export function decodeNick(mem: Uint8Array, addr: number): string {
-  let text = '';
-  for (let i = 0; i < NAME_LENGTH; i++) {
-    const byte = mem[addr + i];
-    if (byte === 0x50 || byte === 0) break;
-    if (byte === 0x7f) text += ' ';
-    else if (byte >= 0x80 && byte <= 0x99) text += String.fromCharCode(65 + byte - 0x80);
-    else text += '?';
-  }
-  return text;
 }
 
 function installByte(self: BattleState, mem: Uint8Array, name: string, addr: number): void {

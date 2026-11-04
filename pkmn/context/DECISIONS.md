@@ -1127,6 +1127,27 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
       production cleanups and **11f** the five test-infrastructure helpers (party fixtures, `decodeNick`, the
       `wSpriteFlipped` alias). A5c3f closes after 11f.
 
+90. **The load-sensitive timing tests get their own small slice after A5c3f; Codex implements A5c3f checkpoint-11e**
+    (2026-11-02, O-46). *The user: "yes, let's go with the small separate slice after a5c3f for the load sensitive timing
+    tests, also yes pls start the 11e spike and write the brief so that codex implements".*
+
+    - The timing slice runs after A5c3f closes (after 11f), before A5e. Its scope is the cases note 72 §11.16 re-runs
+      alone: `pewter_tripwire.test.ts` (5000 ms), the Route 1 session case and `battle_screen_render.test.ts` (1 ms).
+      Until it lands, §11.16's re-run-alone rule stands.
+    - **Briefed 2026-11-02 (note 73):** one suite-wide `testTimeout` of 30 s in `vitest.config.ts`, with no per-test
+      overrides (a guard case pins this); a wall-clock assertion takes the best of N samples. The rule retires when the
+      slice lands.
+    - 11e's brief is note 72 §11.94. It removes the BattleState alarm cells, the medicine casts, the old party-menu battle
+      modes and `TrainerMoveSelection`, and renames `loadExperienceMonData` to `loadMonData`. Row 5
+      (`bindPlayerSwitch`) was already closed by 07c. Claude checks 11e.
+
+91. **The overworld's random numbers move onto the cartridge's `Random` in a small slice before A5e** (2026-11-02,
+    O-49). *The user: "yes let's do that small slice that u recommend".*
+
+    - Scope (findings backlog, note 72 §11.78.2 item 5): the wild encounter rolls, `createPokemon`'s DVs, NPC wandering
+      and Pikachu's idle and walking bytes. They read `hRandomAdd` / `hRandomSub`, which `Random` updates from DIV.
+    - It runs after the timing-tests slice (#90) and before A5e. Claude spikes and briefs it; Codex implements it.
+
 ## Open — not decided, needs the user
 
 

@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { pinOverworldRandom } from '../test/overworld_random_pin';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 vi.hoisted(() => { Object.assign(globalThis, { window: { addEventListener() {} } }); });
@@ -44,7 +45,7 @@ beforeEach(() => {
   vi.restoreAllMocks(); vi.clearAllMocks(); events.restoreFlags([]); events.restoreMapScripts({}); events.restoreHiddenObjects([]);
   setJoyIgnore('none'); setTextSpeed('fast'); uiTiles.clear();
   for (const button of ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'] as const) input.setKey(button, false);
-  input.updateInput(); input.syncJoypadRead(); vi.spyOn(Math, 'random').mockReturnValue(0.5);
+  input.updateInput(); input.syncJoypadRead(); pinOverworldRandom(128);
   vi.mocked(isSoundFinished).mockReturnValue(true);
 });
 afterEach(() => { initScript([]); vi.restoreAllMocks(); });

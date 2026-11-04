@@ -1,5 +1,32 @@
 # Overworld Architecture
 
+## Random
+
+`main.ts` installs its page-lifetime `sessionRandom` (`BattleRandomState`) through
+`overworld_random.ts`. It owns `hRandomAdd` / `hRandomSub` across overworld play and battles.
+Outside battle, `random(carryIn)` runs the cartridge's ADC/SBC with the existing `RANDOM_CYCLES`
+accounting, returns Add, and exposes SBC's exit borrow as `carry`. A battle attaches the bytes
+to BattleState and returns them on detach; direct owner draws throw while attached. Before
+main installs it, module tests get a lazy zero-HRAM owner with an incrementing stand-in DIV.
+
+VBlank's Random runs first in `gameTick` after the page frame increments, before game-state
+dispatch, unless a battle owns the bytes. It receives carry 1 while the existing play-time
+predicate counts, 0 otherwise (`home/vblank.asm:43`, `home/play_time.asm`). Encounters draw
+nothing: they compare Add to the rate and use Sub for the slot; the existing clamp remains.
+
+Call-site carries follow the ASM (note 74 §1): NPC direction and every movement-rest path 0;
+Pikachu glance 1 from `CP $5`, antic 0 from `JR NC`; walking happiness 0 from `AND A`.
+The gift uses two calls: first with 0 for Speed/Special, second with the first call's SBC
+borrow for Attack/Defense. `createPokemon` draws nothing and defaults omitted DVs to zero.
+Production code never calls `Math.random`; tests pin the owner with `pinOverworldRandom(byte)`.
+
+Accepted approximations: the cartridge's main-menu LoadSAV may set the timer-counting bit
+before Continue is chosen, while the port uses its existing play-time predicate; the
+255-hour maximum is not modelled because port play time has no cap; DIV remains the frame
+model `floor((70224 * frame + cycles) / 256)`, not the real boot clock. Battle frames skip
+the VBlank call because that engine does not yet model it; note 57 backlogs it separately.
+The player ID and other unreachable Random callers remain with their feature backlogs.
+
 A5d CP4 wires `transition_screen.ts`, `battle_transition.ts`, `battle_transition_tables.ts` and
 `transition_screen_render.ts` (note 65 §10.13). The logical/shown cells, window/OAM DMA, palette bytes and inherited
 BG thirds follow the checked CP1 frames. Captured origin IDs 0–359 are distinct from FF/blank sentinels.

@@ -1,4 +1,5 @@
 // Main's actual state dispatch; Vitest alone exposes lexical bindings (see config).
+import { pinOverworldRandom } from './test/overworld_random_pin';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
@@ -568,16 +569,6 @@ describe('V2c CP4 through main', () => {
     expect(Reflect.get(host.partyMenu, 'state')).toBe('submenu'); expect(print).not.toHaveBeenCalled();
   });
 
-  it('battle party selection and icons retain their existing behavior even with the field flag set', () => {
-    party(); const [pika, rat] = host.playerParty;
-    const menu = new PartyMenu(); menu.showForBattle([pika,rat],0,false);
-    expect(host.playerParty).toEqual([pika,rat]);
-    const icons = vi.spyOn(partyIcons, 'drawPartyIcon'); menu.render();
-    expect(icons.mock.calls.map(c => c[0])).toEqual([25, 19]);
-    const print = vi.spyOn(RealTextBox.prototype, 'printStandalone');
-    buttons.forEach(key=>input.setKey(key,key==='a')); input.updateInput(); menu.update();
-    expect(Reflect.get(menu,'state')).toBe('submenu'); expect(print).not.toHaveBeenCalled();
-  });
 
   it('field medicine prints the sleeping prompt once, cancels back to the bag, and consumes no item/HP', () => {
     const { mon } = party(); mon.currentHp = 1; host.bag.items = [{ id: 'POTION', count: 2 }];
@@ -775,7 +766,7 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
 
   it('a battle return through the whole evolution queue requests the fade only after the last evolution', () => {
     const mon = createPokemon(25, 5)!; host.playerParty.push(mon);
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     host.session = finishedBattle(); host.gameTick();
     // Whatever the queue holds, nothing asks for the map song before the queue is exhausted.
     if (host.state === 'evolution') expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();

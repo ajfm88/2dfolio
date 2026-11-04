@@ -21,7 +21,8 @@ import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { resetListStateForEmptySlot } from '../list_state';
 import { D } from './battle_end_state';
 import { installTrainerSpecies } from './battle_trainer_party';
-import { partySlotFromPokemon, writePartySlot, loadBattleMonFromParty, loadEnemyMonData } from './battle_loaders';
+import { loadBattleMonFromParty, loadEnemyMonData } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import * as status from './battle_turn_status';
 
 const sounds: MoveAnimationHost['sounds'] = {
@@ -50,7 +51,7 @@ function fixture(o: Options = {}) {
   for (let row = 0; row < 7; row++) for (let col = 0; col < 7; col++) {
     screen.put(12 + col, row, row + 7 * col); screen.put(1 + col, 5 + row, 0x31 + row + 7 * col);
   }
-  if (o.alarm) { s.wLowHealthAlarm = 0x80; setLowHealthAlarm(0x80); }
+  if (o.alarm) { setLowHealthAlarm(0x80); }
   if (o.busy) bridge.play({ id: 0x90, data: sfxData('press_ab') });
   if (o.bg === false) textBgTransfer.enabled = false;
   const play = bridge.play.bind(bridge);
@@ -189,5 +190,5 @@ describe('checkpoint-05 OFF animation through real host, screen and audio', () =
     expect(played.find(sound => sound.id === 0xa6)).toMatchObject({ frequency: 0x20, tempo: 0x30 });
     expect(r.events.some(e => e.name === 'text:GainedText')).toBe(true);
     expect({ spans, ports, frames, played, battle: r.ledger() }).toMatchSnapshot();
-  }, 20000);
+  });
 });

@@ -12,8 +12,10 @@ import { pokemonToBoxed } from './pokemon_storage';
 import { loadGame, restoreParty, saveGame, type SaveDataV1, type SaveDataV2, type SavedMonBytes } from './save';
 import { decodePartyMon } from './battle/battle_party_codec';
 import { Bag } from './items';
-import { A, BattleState, decodeNick, encodeText, NAME_LENGTH, PARTYMON_STRUCT_LENGTH } from './battle/battle_state';
-import { mirrorPartyProgress, partySlotFromPokemon, writePartySlot, loadBattleMonFromParty } from './battle/battle_loaders';
+import { A, BattleState, encodeText, NAME_LENGTH, PARTYMON_STRUCT_LENGTH } from './battle/battle_state';
+import { decodeBattleText } from './battle/battle_text_codec';
+import { loadBattleMonFromParty } from './battle/battle_loaders';
+import { mirrorPartyProgress, partySlotFromPokemon, writePartySlot } from './test/party_slot_fixture';
 
 beforeAll(async () => { await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData(); });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
@@ -89,7 +91,7 @@ it.each(['player', 'enemy'] as const)('packs %s identity, 24-bit EXP and five BE
   expect([...s.mem.slice(base + 12, base + 27)]).toEqual([
     0x12, 0x34, 0xab, 0xcd, 0xef, 0, 0, 1, 0x23, 0x45, 0x67, 0xf6, 0x1a, 0xff, 0xff,
   ]);
-  expect(decodeNick(s.mem, ot)).toBe('ASH');
+  expect(decodeBattleText(s.mem, ot)).toBe('ASH');
   expect([s.mem[base - 1], s.mem[base + 44], s.mem[ot - 1], s.mem[ot + NAME_LENGTH]])
     .toEqual([0xa5, 0x5a, 0xa6, 0x6a]);
   if (side === 'player') {

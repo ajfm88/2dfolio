@@ -18,14 +18,15 @@ import { uiTiles } from '../renderer/ui_tiles';
 import { rig as audioRig, sfxData } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled } from '../audio/low_health_alarm';
-import { A, BattleState, decodeNick, encodeText, POKEDEX_ORDER } from './battle_state';
+import { A, BattleState, encodeText, POKEDEX_ORDER, W_SPRITE_FLIPPED } from './battle_state';
+import { decodeBattleText } from './battle_text_codec';
 import { D } from './battle_end_state';
 import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { BattleRandomState } from './battle_random_state';
 import { battleRandom } from './battle_random';
 import { createPokemon, loadBattleData } from './data';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { installTrainerSpecies, W_RIVAL_NAME, W_TRAINER_NO } from './battle_trainer_party';
 import { loadBattleMoveData, getMoveRecord } from './battle_move_data';
 import { INIT, initBattleVariables, setupBattleBeforeTransition, initBattleAfterTransition, type BattleInitHost } from './battle_init';
@@ -77,7 +78,7 @@ function harness(options: Options = {}) {
   state.mem.fill(0xa5, D.wPlayerStatsToDouble, D.wPlayerStatsToDouble + 5);
   state.wPlayerDisabledMove = 0xa5;
   state.mem[D.wTrainerClass] = options.staleTrainerClass ?? 0;
-  state.mem[INIT.wSpriteFlipped] = options.flipped ? 1 : 0;
+  state.mem[W_SPRITE_FLIPPED] = options.flipped ? 1 : 0;
   state.mem[D.wLearningMovesFromDayCare] = options.daycare ?? 0;
   state.setBag(options.scope ? [{ id: 0x48, quantity: 1 }] : []);
   const random = new BattleRandomState(() => ((++divReads * 0x10) & 255));
@@ -192,7 +193,7 @@ function assertCommon(h: ReturnType<typeof harness>): void {
   expect(h.screen.transferDestination).toBe(0x9c); expect(h.screen.wy).toBe(0);
   expect([h.screen.scx, h.screen.scy, h.screen.scxSplit]).toEqual([0, 0, null]);
   expect(textBgTransfer.enabled).toBe(true);
-  const flipped = h.state.mem[INIT.wSpriteFlipped] !== 0;
+  const flipped = h.state.mem[W_SPRITE_FLIPPED] !== 0;
   for (let col = 0; col < 7; col++) for (let row = 0; row < 7; row++) {
     expect(h.screen.at(12 + (flipped ? 6 - col : col), row), 'enemy pic cell at (12,0)').toBe(col * 7 + row);
     expect(h.screen.at(1 + (flipped ? 6 - col : col), 5 + row), 'player pic cell at (1,5)').toBe(0x31 + col * 7 + row);
@@ -256,7 +257,7 @@ describe('checkpoint-04 battle start, through the instruction before StartBattle
   it('RIVAL1: the actual rival name reaches the committed trainer text', () => {
     const h = harness({ trainer: 25, map: 0x28 }); const trace = h.drive(); assertCommon(h);
     expect(h.printRecords[0].rows.join(' ')).toContain('GARY');
-    expect(decodeNick(h.state.mem, D.wTrainerName)).toBe('GARY');
+    expect(decodeBattleText(h.state.mem, D.wTrainerName)).toBe('GARY');
     expect(h.screen.frontSlot(0)?.picture).toBe('rival1.png');
     expect(trace).toMatchSnapshot();
   });

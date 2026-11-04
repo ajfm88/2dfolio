@@ -1,4 +1,5 @@
 import type { Direction } from '../core';
+import { overworldRandom } from '../overworld/overworld_random';
 import { TILE_SIZE } from '../core';
 import { drawSprite, loadSprite, drawShadowUnderSprites } from '../renderer';
 import type { SpriteDraw } from '../renderer';
@@ -39,8 +40,8 @@ const OPPOSITE: Record<Direction, Direction> = {
   up: 'down', down: 'up', left: 'right', right: 'left',
 };
 
-/** The random byte the idle routines read (hRandomAdd). */
-const randomByte = (): number => Math.floor(Math.random() * 256);
+/** The idle routines' Random calls (hRandomAdd). */
+const randomByte = (carryIn: 0 | 1): number => overworldRandom(carryIn);
 
 /** SPRITE_FACING_* → direction. */
 const FACING_DIRECTION: Record<number, Direction> = { 0x0: 'down', 0x4: 'up', 0x8: 'left', 0xc: 'right' };
@@ -57,8 +58,8 @@ export interface PikachuSpriteContext {
   playerMapStep: { x: number; y: number };
   /** wSpritePlayerStateData1FacingDirection */
   playerFacing: Direction;
-  /** A random byte (tests inject one). */
-  random?: () => number;
+  /** Random with its incoming carry (tests inject one). */
+  random?: (carryIn: 0 | 1) => number;
   /** UI tiles on screen ($60+ means a box), with the player's world pixels to place
    *  Pikachu's footprint. Ordinary overworld passes have no UI and leave this out. */
   ui?: PikachuUiTiles;

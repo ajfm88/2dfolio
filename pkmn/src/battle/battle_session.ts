@@ -20,7 +20,6 @@ import { setupBattleBeforeTransition, INIT } from './battle_init';
 import { initBattleCommon, type BattleStartHost, type BattleCommonExit } from './battle_start';
 import { installTrainerSpecies, saveTrainerName, trainerPicName } from './battle_trainer_party';
 import { decodeBattleText } from './battle_text_codec';
-import type { TrainerMoveSelection } from './battle_math';
 import { loadTrainerSpeciesData } from './battle_trainer_data';
 import { getAllLoadedMoveIds, getMove } from './data';
 import { getMoveRecord, moveDisplayName, moveMenuNameSource, BattleUnsupportedState } from './battle_move_data';
@@ -407,15 +406,6 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     statModifierUpEffect: s => statModifierUpEffect(s, env), trainerAI: boundTrainerAI,
     switchEnemyMon: function* () { throw new BattleUnsupportedState('link'); },
     substituteBreak: function* () { /* A5e presentation cue. */ }, shake: function* () { /* A5e presentation cue. */ } };
-  // SelectEnemyMove reads the current enemy's four bytes on every access, including after a send-out.
-  const trainer: TrainerMoveSelection | undefined = world.opponent >= 200 ? {
-    get enemy() { return { ...state.partyMons[0]!, moves: Array.from({ length: 4 }, (_, i) => state.mem[A.wEnemyMonMoves + i])
-      .filter(Boolean).map(id => {
-        const key = getAllLoadedMoveIds().find(k => getMove(k)!.id === id)!;
-        return { id: key, pp: 35, maxPp: 35 };
-      }) }; },
-    player: state.partyMons[0]!, aiModifiers: [],
-  } : undefined;
   let started = false, finished = false, aborted = false;
   return {
     state, screen, video, party, textLog, trainerAILog, handoffs,
@@ -425,13 +415,12 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     naming, pokedex,
     /** The bound turn port is also observable for the trainer-environment boundary proof. */
     trainerAI: boundTrainerAI,
-    get trainer() { return trainer; },
     animation: host.animation,
     get done() { return started && driver.done; },
     start() {
       if (aborted) throw new Error('session aborted');
       if (started) throw new Error('session already started'); started = true;
-      driver.start(initBattleCommon(state, saved, ctx, host, ports, trainer));
+      driver.start(initBattleCommon(state, saved, ctx, host, ports));
     },
     tick() { if (aborted) throw new Error('session aborted'); if (!started) throw new Error('session not started'); return driver.step(); },
     finish() {

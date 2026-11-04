@@ -232,7 +232,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5980/5980** as of 2026-11-01 (A5c3f checkpoint-11d; the old engine's tests retired under their manifests). No-ROM **5723 pass / 257 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5984/5984** as of 2026-11-02 (the overworld RNG slice, checked; default workers). No-ROM **5727 pass / 257 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -248,6 +248,21 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+`overworld/overworld_random.test.ts` pins the page owner's ADC/SBC, exit borrow, battle
+attachment boundary and absence of production `Math.random`. Overworld/main/story tests use
+`pinOverworldRandom(byte)` from `src/test/overworld_random_pin.ts`: every call returns that byte
+and both retained bytes equal it. Global setup unpins after each case. Battle no-Math.random
+spies remain. Injected movement callbacks accept `(carryIn: 0 | 1) => number`.
+
+**Timing rule (#90, note 73):** one 30 s timeout in `vitest.config.ts`; never a per-test,
+per-suite or per-hook timeout; a wall-clock assertion takes the best of N samples. Each full
+gate runs once at default workers. A timeout or wall-clock failure stops the slice; note 72
+§11.16's re-run-alone fallback is retired.
+
+`suite_timeouts.test.ts` pins the running task's 30,000 ms default and scans every test file's
+AST for local timeout arguments/options, including chained cases, suites and hooks. The cached
+render case retains its 1 ms budget and title, using the best of ten renders after warm-up.
 
 `battle/battle_run.test.ts`:15 odds/session cases cover draw-free escapes, one BattleRandom
 compare, pinned worked/equality/failure examples, attempt256, no Math.random and the exact
@@ -341,8 +356,12 @@ of snapshots; `PKMN_SKIP_SNAPSHOTS=1` bypasses only this new suite's comparisons
 
 `battle/a5c3e_retirement.test.ts`: four executable manifest checks for all 8 legacy catch and 10 trainer-AI
 cases, the six stale math titles, and the exact non-test importer/barrel census (AST, resolving aliases and
-namespace access). Records A5c3f's dispositions; retires nothing. Class-data getters and the new selector's
-`TrainerMoveSelection` type survive. Replacement titles must be unique and enabled. Note71 §10.19.
+namespace access). Records A5c3f's dispositions; retires nothing. Class-data getters survive;
+checkpoint-11e removes the obsolete `TrainerMoveSelection` type/import rows. Replacement titles must be unique and enabled. Note71 §10.19.
+
+**A5c3f checkpoint-11e** adds one `battle_screen.test.ts` palette pin: party palette names/colours
+installed before the first yield, 2 held + 3 serviced frames, and no LCD-off yields. Ten tests of
+retired code are removed under note 72 §11.94; §10.32 lists them and all four caught mutations.
 
 Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that adds tests
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
@@ -899,6 +918,23 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
 
 **Added per slice (newest first)**
 
+**Overworld RNG slice (#91)** adds nine: encounter Add/Sub boundary; four owner/census
+cases; main VBlank carry/battle exclusion; gift DV order/inherited borrow; NPC carries;
+Pikachu glance/antic carries. Two existing cases rewritten as briefed, one authorized DV
+retitle, none deleted. Twenty-six fixed-byte pins converted, seven plain mutations caught;
+note 74 §8.
+
+**Timing-tests slice (#90)** adds one suite-wide timeout guard (`suite_timeouts.test.ts`),
+removes all 27 numeric overrides, and makes the cached render budget best-of-10. Three plain
+mutation witnesses and two simultaneous ROM suites pass their checks; no case renamed or
+deleted. Note73 §4.
+
+**A5c3f checkpoint-11f** adds two: `battle_bridge.test.ts` guards against production imports
+of `src/test/`; `battle_state.test.ts` pins the party-slot fixture's zero padding after `@`
+for both nickname and OT in a nonzero slot. Fixture writers move verbatim to
+`src/test/party_slot_fixture.ts`; no cases or snapshots retire. Four mutations caught by plain
+assertions, including §11.97's new padding witness. Note72 §10.33.4.
+
 - **A5c3f checkpoint-07b continued2** (2026-10-28, Codex; note72 §10.10.6 onward, awaiting Claude):
   `battle_world.test.ts` adds27 no-ROM cases for all input/output rows,12 options combinations, money,
   exact event/dex bits, current-box raw codec, bag capacity and post-battle quantities, modifier and
@@ -1188,6 +1224,12 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   the per-pass method instead: a temporary `window` hook to `player`, then patch
   `player.update` to log `performance.now()` and `x` per call (A6a measured 15.99
   frames a step that way). Remove the hook before committing.
+- **Never junction or symlink a real folder into a throwaway worktree.** On 2026-11-02 a spike worktree had
+  junctions to `game/node_modules` and `refs/`, and `git worktree remove --force` deleted *through* them. It emptied
+  `node_modules`, deleted `refs/engine` and `refs/dmg`, and broke `refs/gen1recomp`. Restored with `npm ci` and
+  re-clones at the pinned commits. Instead, run `npm ci` inside the worktree, and point tests at the real refs (or
+  copy what you need). If a junction exists, unlink it first with `[System.IO.Directory]::Delete(path, $false)` in
+  PowerShell, then remove the worktree.
 - **A Bash-classifier outage** can refuse every Bash call for a while. PowerShell runs
   the same `npx` / `npm` commands.
 - **Python:** run `python` or `py` (3.15). `python3` is the Microsoft Store stub and fails.

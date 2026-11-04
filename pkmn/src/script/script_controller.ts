@@ -1,6 +1,7 @@
 // Script controller — owns all script execution state extracted from main.ts.
 // updateScript() returns actions for state transitions that main.ts processes.
 
+import { overworldRandom, overworldRandomCarry } from '../overworld/overworld_random';
 import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
 import { setSpriteIndex } from '../overworld/sprite_index';
 import { TILE_SIZE } from '../core';
@@ -790,7 +791,11 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       break;
 
     case 'addPokemon': {
-      const mon = createPokemon(cmd.species, cmd.level);
+      // add_mon.asm:109-124: not in battle, two Random calls (the first after AND A, carry clear). The first
+      // lands in b, written to DVs+1 (Speed|Special); the second in a, written to DVs (Attack|Defense).
+      const first = overworldRandom(0), second = overworldRandom(overworldRandomCarry());
+      const mon = createPokemon(cmd.species, cmd.level, undefined,
+        { atk: second >> 4, def: second & 0x0f, spd: first >> 4, spc: first & 0x0f });
       if (mon) {
         initExperience(mon);
         mon.otName = getPlayerName();

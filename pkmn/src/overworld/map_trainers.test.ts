@@ -1,4 +1,5 @@
 // A1c: trainer sight through the overworld controller (notes/20-a1c-plan.md §1, §5).
+import { pinOverworldRandom } from '../test/overworld_random_pin';
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { Player } from './player';
 import { Npc } from './npc';
@@ -203,7 +204,7 @@ describe('where sight runs (RunMapScript on standing passes)', () => {
 describe('the trainer script: CheckFightingMapTrainers → DisplayEnemyTrainerTextAndStartBattle → EndTrainerBattle', () => {
   /** Spotted by youngster5 at 3 (2 steps), with the trainer's movement status set first. */
   function spotted(status: 'resting' | 'readyAfterBubble'): { deps: OverworldDeps; ow: OverworldState; y5: Npc; engage: { npc: Npc; steps: number; facing: Direction } } {
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    pinOverworldRandom(128);
     const deps = forest(16, 17);
     const y5 = trainer('youngster5', 13, 17, 'right', 4);
     deps.npcs.push(y5);

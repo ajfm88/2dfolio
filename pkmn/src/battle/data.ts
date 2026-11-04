@@ -96,10 +96,12 @@ export function createPokemon(
     : getSpecies(speciesNameOrId);
   if (!species) return null;
 
-  const atkDV = dvs?.atk ?? Math.floor(Math.random() * 16);
-  const defDV = dvs?.def ?? Math.floor(Math.random() * 16);
-  const spdDV = dvs?.spd ?? Math.floor(Math.random() * 16);
-  const spcDV = dvs?.spc ?? Math.floor(Math.random() * 16);
+  // No randomness here (DECISIONS #91): the cartridge paths that need DVs pass them (AddPartyMon's two Random
+  // calls, the battle's BattleRandom). The wild and catch-demo callers' DVs are replaced by the battle.
+  const atkDV = dvs?.atk ?? 0;
+  const defDV = dvs?.def ?? 0;
+  const spdDV = dvs?.spd ?? 0;
+  const spcDV = dvs?.spc ?? 0;
 
   const maxHp = calcHp(species.hp, ((atkDV & 1) << 3) | ((defDV & 1) << 2) | ((spdDV & 1) << 1) | (spcDV & 1), level);
   const attack = calcStat(species.attack, atkDV, level);

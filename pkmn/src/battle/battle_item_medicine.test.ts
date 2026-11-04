@@ -21,7 +21,7 @@ import { BattleHost } from './battle_host';
 import { BattleAudio } from './battle_audio';
 import { BATTLE_ITEM_POINTERS, useItem, type BattleItemHost } from './battle_items';
 import { registerMedicineBattleItemBody, type MedicineItemEnvironment } from './battle_item_medicine';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { readHpBarWord } from './battle_hp';
 import * as happiness from './battle_pikachu';
 import * as math from './battle_math';

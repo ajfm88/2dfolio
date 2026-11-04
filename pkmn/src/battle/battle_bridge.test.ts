@@ -28,7 +28,8 @@ it('real04 palette setup leaves the unloaded player nickname unread and HUD read
 });
 
 import { readFileSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
+import ts from 'typescript';
 import { createPokemon, getAllLoadedMoveIds, getMove } from './data';
 import { decodePartyMon, encodePartyMon, partyRecordToPokemon, pokemonToPartyRecord, derivePPUps, partyMaxPP, decodeBattleText } from './battle_bridge';
 import { BattleUnsupportedState } from './battle_move_data';
@@ -144,9 +145,42 @@ it('round-trips every single glyph accepted by encodeText, with @ as the termina
 it('has no legacy decodeNick production import or caller left in the unused modules', () => {
   const offenders: string[] = [];
   for (const file of readdirSync(__dirname).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))) {
-    const source = readFileSync(resolve(__dirname,file),'utf8').replace('export function decodeNick(', 'export function legacyCompatibility(');
+    const source = readFileSync(resolve(__dirname,file),'utf8');
     if (/\bdecodeNick\b/.test(source)) offenders.push(file);
   }
+  expect(offenders).toEqual([]);
+});
+it('no production module imports src/test/', () => {
+  const src = resolve(__dirname, '..'), fixtures = resolve(src, 'test');
+  const config = ts.readConfigFile(resolve(src, '../tsconfig.json'), ts.sys.readFile);
+  const { options } = ts.parseJsonConfigFileContent(config.config, ts.sys, resolve(src, '..'));
+  const offenders: string[] = [];
+  function walk(dir: string): void {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const file = resolve(dir, entry.name);
+      if (entry.isDirectory()) { if (file !== fixtures) walk(file); continue; }
+      if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
+      const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+      function check(specifier: ts.Node | undefined): void {
+        if (!specifier || !ts.isStringLiteralLike(specifier)) return;
+        const target = ts.resolveModuleName(specifier.text, file, options, ts.sys).resolvedModule?.resolvedFileName;
+        if (!target) return;
+        const path = relative(fixtures, target);
+        if (path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`)))
+          offenders.push(`${relative(src, file)} imports ${specifier.text}`);
+      }
+      function visit(node: ts.Node): void {
+        if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) check(node.moduleSpecifier);
+        if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) check(node.moduleReference.expression);
+        if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) check(node.argument.literal);
+        if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword
+          || (ts.isIdentifier(node.expression) && node.expression.text === 'require'))) check(node.arguments[0]);
+        ts.forEachChild(node, visit);
+      }
+      visit(source);
+    }
+  }
+  walk(src);
   expect(offenders).toEqual([]);
 });
 it('prints a Nidoran male party nickname through the real host actor as the male charmap tile', async () => {

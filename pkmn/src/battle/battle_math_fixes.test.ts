@@ -4,8 +4,9 @@ import { A, battleContext, BattleState, PARTYMON_STRUCT_LENGTH } from './battle_
 import { D } from './battle_end_state';
 import { createPokemon, getMove, loadBattleData } from './data';
 import { loadBattleMoveData } from './battle_move_data';
-import { aiEnemyTrainerChooseMoves, selectEnemyMove, type TrainerMoveSelection } from './battle_math';
-import { partySlotFromPokemon } from './battle_loaders';
+import { selectEnemyMove } from './battle_math';
+import { AIEnemyTrainerChooseMoves } from './battle_ai_moves';
+import { partySlotFromPokemon } from '../test/party_slot_fixture';
 
 beforeAll(async () => {
   await loadBattleData();
@@ -27,103 +28,84 @@ const CLASS_FOR_LIST: Readonly<Record<string, number>> = {
 };
 
 function trainerRig(ids = ['GUST', 'SAND_ATTACK'], aiModifiers: number[] = []): {
-  state: BattleState; trainer: TrainerMoveSelection;
+  state: BattleState;
 } {
   const state = new BattleState();
   state.wIsInBattle = 2;
   state.mem[D.wTrainerClass] = CLASS_FOR_LIST[aiModifiers.join(',')] ?? 1;
-  const enemy = createPokemon('Pidgey', 50)!;
-  const player = createPokemon('Pikachu', 50)!;
-  enemy.moves = ids.map(id => ({ id, pp: 0, maxPp: 35 }));
   state.setBytes(A.wEnemyMonMoves, ids.map(id => getMove(id)!.id), 4);
-  return { state, trainer: { enemy, player, aiModifiers } };
+  return { state };
 }
 
 describe('checkpoint-04b trainer candidate list', () => {
   it('returns the original WRAM address without modifications and initializes four byte scores', () => {
-    const { state, trainer } = trainerRig();
-    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wEnemyMonMoves);
+    const { state } = trainerRig();
+    expect(AIEnemyTrainerChooseMoves(state)).toBe(A.wEnemyMonMoves);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
     expect(state.bytes(A.wEnemyMonMoves, 4).slice()).toEqual([16, 28, 0, 0]);
   });
   it.each([1, 2, 3, 4])('disabled slot %i gets score 0x50 before any filtering', disabled => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK']);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK']);
     state.wEnemyDisabledMove = (disabled << 4) | 7;
-    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wEnemyMonMoves);
+    expect(AIEnemyTrainerChooseMoves(state)).toBe(A.wEnemyMonMoves);
     const scores = [10, 10, 10, 10]; scores[disabled - 1] = 0x50;
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual(scores);
   });
   it('ignores the disabled duration when the high nybble is zero', () => {
-    const { state, trainer } = trainerRig(); state.wEnemyDisabledMove = 7;
-    aiEnemyTrainerChooseMoves(state, trainer);
+    const { state } = trainerRig(); state.wEnemyDisabledMove = 7;
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('keeps only minimum-score moves and zeroes missing slots', () => {
-    const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
-    trainer.player.status = 'PAR';
+    const { state } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
     state.wBattleMonStatus = 0x40;
     // trainer_ai.asm:114–131: nonzero status adds 5 to power-0 PARALYZE_EFFECT.
-    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wBuffer);
+    expect(AIEnemyTrainerChooseMoves(state)).toBe(A.wBuffer);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0, 33, 0, 0]);
   });
   it('keeps every tied minimum, including 0-PP moves', () => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK'], [4]);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK'], [4]);
     // trainer_ai.asm:34–35 and :102–104. No list contains 4 (:258–259), so this is the empty list.
-    expect(aiEnemyTrainerChooseMoves(state, trainer)).toBe(A.wEnemyMonMoves);
+    expect(AIEnemyTrainerChooseMoves(state)).toBe(A.wEnemyMonMoves);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('does not let empty-slot scores undercut every existing move', () => {
-    const { state, trainer } = trainerRig(['THUNDER_WAVE', 'SLEEP_POWDER'], [1]);
-    trainer.player.status = 'PAR';
+    const { state } = trainerRig(['THUNDER_WAVE', 'SLEEP_POWDER'], [1]);
     state.wBattleMonStatus = 0x40;
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([86, 79, 0, 0]);
   });
   it('the disabled score excludes that slot from a modified tie', () => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
     state.wEnemyDisabledMove = 0x17;
     // trainer_ai.asm:18 writes $50, then the empty list returns without filtering (:102–104).
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0x50, 10, 10, 10]);
   });
   it('does not penalize a zero-PP move beside a positive-PP move in the scoring path', () => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
-    trainer.enemy.moves[1].pp = 10;
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK'], [4]);
     // trainer_ai.asm:102–104. The empty list never reads PP.
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('applies modifier 2 through the unchanged upstream body', () => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], [2]);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK'], [2]);
     vi.spyOn(Math, 'random').mockReturnValue(0);
     // move_choices.asm has no lone 2. Encouragement stays 0, so :159–161 would return anyway.
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('applies modifier 3 through the unchanged upstream body', () => {
-    const { state, trainer } = trainerRig(['THUNDERSHOCK', 'TACKLE'], [3]);
-    trainer.player = createPokemon('Squirtle', 50)!;
+    const { state } = trainerRig(['THUNDERSHOCK', 'TACKLE'], [3]);
     // move_choices.asm: SAILOR is 1, 3. A lone 3 is the empty list (trainer_ai.asm:34–35).
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
   });
   it('wraps scores as bytes during upstream writes, rather than after the whole dispatch', () => {
-    const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], Array<number>(50).fill(1));
-    trainer.player.status = 'PAR'; // 10 + 50*5 = 260 -> byte 4, lower than Tackle's 10.
+    const { state } = trainerRig(['THUNDER_WAVE', 'TACKLE'], Array<number>(50).fill(1));
     // trainer_ai.asm:37–54 runs each list entry once. Fifty 1s is not a class list (:102–104).
-    aiEnemyTrainerChooseMoves(state, trainer);
+    AIEnemyTrainerChooseMoves(state);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([10, 10, 10, 10]);
-  });
-  it.each([0, 1, 2, 3])('rejects a mismatching WRAM slot %i even without modifications', slot => {
-    const { state, trainer } = trainerRig(); state.mem[A.wEnemyMonMoves + slot] = 255;
-    expect(() => aiEnemyTrainerChooseMoves(state, trainer)).toThrow('enemy moves do not match wEnemyMonMoves');
-  });
-  it('rejects unknown move keys and more than four moves', () => {
-    const { state, trainer } = trainerRig(); trainer.enemy.moves[0].id = 'INVALID';
-    expect(() => aiEnemyTrainerChooseMoves(state, trainer)).toThrow('enemy moves do not match');
-    trainer.enemy.moves = Array.from({ length: 5 }, () => ({ id: 'TACKLE', pp: 0, maxPp: 35 }));
-    state.setBytes(A.wEnemyMonMoves, [33, 33, 33, 33], 4);
-    expect(() => aiEnemyTrainerChooseMoves(state, trainer)).toThrow('enemy moves do not match');
   });
 });
 
@@ -159,54 +141,49 @@ function scriptedRolls(state: BattleState, values: number[]): ReturnType<typeof 
 
 describe('checkpoint-04b trainer band-loop integration', () => {
   it.each([{ aiModifiers: [] }, { aiModifiers: [4] }])('never picks the disabled move, modifiers $aiModifiers', ({ aiModifiers }) => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK'], aiModifiers);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK'], aiModifiers);
     state.wEnemyDisabledMove = 0x17;
     const random = scriptedRolls(state, [0, 62, 63]);
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([28, 1]);
     expect(random).toHaveBeenCalledTimes(3);
   });
   it('filtered and empty slots reroll while the band slot remains the index', () => {
-    const { state, trainer } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
-    trainer.player.status = 'PAR';
+    const { state } = trainerRig(['THUNDER_WAVE', 'TACKLE'], [1]);
     state.wBattleMonStatus = 0x40;
     // trainer_ai.asm:114–131: nonzero status filters power-0 PARALYZE_EFFECT (+5).
     const random = scriptedRolls(state, [0, 127, 190, 63]);
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([33, 1]);
     expect(random).toHaveBeenCalledTimes(4);
     expect(state.bytes(A.wBuffer, 4).slice()).toEqual([0, 33, 0, 0]);
   });
   it.each([[62, 0], [63, 1], [126, 1], [127, 2], [189, 2], [190, 3]])
   ('tied trainer roll %i uses slot %i', (roll, slot) => {
-    const { state, trainer } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK'], [4]);
+    const { state } = trainerRig(['GUST', 'SAND_ATTACK', 'TACKLE', 'QUICK_ATTACK'], [4]);
     const random = scriptedRolls(state, [roll]);
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([[16, 28, 33, 98][slot], slot]);
     expect(random).toHaveBeenCalledTimes(1);
   });
   it('uses the seeded default BattleRandom seam with no Math.random selection', () => {
-    const { state, trainer } = trainerRig();
+    const { state } = trainerRig();
     state.wEnemyDisabledMove = 0x11;
     state.hRandomAdd = 255;
     state.readDIV = vi.fn().mockReturnValueOnce(0).mockReturnValueOnce(0).mockReturnValueOnce(62).mockReturnValueOnce(0);
     const mathRandom = vi.spyOn(Math, 'random').mockImplementation(() => { throw new Error('Math.random selection'); });
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex, state.hRandomAdd]).toEqual([28, 1, 63]);
     expect(state.readDIV).toHaveBeenCalledTimes(4);
     expect(mathRandom).not.toHaveBeenCalled();
   });
   it('still uses Struggle for a sole disabled move, before invoking trainer scoring', () => {
-    const { state, trainer } = trainerRig(['GUST']);
+    const { state } = trainerRig(['GUST']);
     state.wEnemyDisabledMove = 1;
     state.wEnemyMoveListIndex = 3;
     const random = scriptedRolls(state, []);
-    selectEnemyMove(state, trainer);
+    selectEnemyMove(state);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([165, 3]);
     expect(random).not.toHaveBeenCalled();
-  });
-  it('validates the model on the full trainer selection path', () => {
-    const { state, trainer } = trainerRig(); state.mem[A.wEnemyMonMoves] = 33;
-    expect(() => selectEnemyMove(state, trainer)).toThrow('enemy moves do not match');
   });
 });

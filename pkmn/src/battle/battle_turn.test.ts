@@ -16,6 +16,7 @@ import { A, BattleState, battleContext, LINK_STATE_BATTLING } from './battle_sta
 import { D } from './battle_end_state';
 import { loadBattleMoveData } from './battle_move_data';
 import * as loaders from './battle_loaders';
+import * as fixture from '../test/party_slot_fixture';
 import * as menus from './battle_menu';
 import * as chooser from './move_selection_menu';
 import * as math from './battle_math';
@@ -40,7 +41,6 @@ afterEach(() => vi.restoreAllMocks());
 interface Options {
   player?: number; enemy?: number; first?: 0 | 1; tie?: number; clock?: number;
   cancel?: boolean; ai?: boolean; aiTurn?: 0 | 1; effect?: (s: BattleState) => number;
-  trainer?: math.TrainerMoveSelection;
 }
 function rig(o: Options = {}) {
   const s = new BattleState(), audio = audioRig(), events: string[] = [], frames: Frame[] = [];
@@ -65,7 +65,7 @@ function rig(o: Options = {}) {
   s.movePP = () => 35;
   const mon = createPokemon('Pikachu', 50, 'PIKA', { atk: 9, def: 8, spd: 8, spc: 8 })!;
   s.partyMons[0] = mon;
-  loaders.writePartySlot(s, 'player', 0, loaders.partySlotFromPokemon(mon)); s.wBattleMonSpecies2 = 84;
+  fixture.writePartySlot(s, 'player', 0, fixture.partySlotFromPokemon(mon)); s.wBattleMonSpecies2 = 84;
   loaders.loadBattleMonFromParty(s);
   s.wEnemyMonSpecies2 = s.wCurPartySpecies = 1; s.wCurEnemyLevel = 50; loaders.initWildBattle(s);
   expect(s.bytes(A.wEnemyMonDVs, 2).slice()).toEqual([6, 3]);
@@ -99,8 +99,8 @@ function rig(o: Options = {}) {
   const read = loaders.readPlayerMonCurHPAndStatus;
   vi.spyOn(loaders, 'readPlayerMonCurHPAndStatus').mockImplementation(state => { mark('readHP'); read(state); });
   const select = math.selectEnemyMove;
-  vi.spyOn(math, 'selectEnemyMove').mockImplementation((state, trainer) => {
-    mark('selectEnemy'); phase = 'selectEnemy'; select(state, trainer); phase = 'tie';
+  vi.spyOn(math, 'selectEnemyMove').mockImplementation(state => {
+    mark('selectEnemy'); phase = 'selectEnemy'; select(state); phase = 'tie';
   });
   const clean = residual.checkNumAttacksLeft;
   vi.spyOn(residual, 'checkNumAttacksLeft').mockImplementation(state => {
@@ -150,7 +150,7 @@ function rig(o: Options = {}) {
   const run = () => {
     let down = false;
     host.start((function* (): Program<TurnExit> {
-      const program = mainInBattleLoop(s, ctx, action, ports, o.trainer);
+      const program = mainInBattleLoop(s, ctx, action, ports);
       for (;;) { const next = program.next(); if (next.done) return next.value; mark(`frame:${next.value}`); yield next.value; }
     })());
     while (!host.done && frame++ < 6000) {
@@ -291,12 +291,9 @@ describe('turn ordering and link switch', () => {
     expect(r.events).toContain(`switchSelected:${move === 118 ? 118 : 100}`);
   });
   it('non-link receive RUN is ignored and the real trainer selector receives its model', () => {
-    const player = createPokemon('Pikachu', 10)!, enemy = createPokemon('Rhydon', 20)!;
-    enemy.moves = [{ id: 'TELEPORT', pp: 12, maxPp: 20 }];
-    const trainer = { player, enemy, aiModifiers: [] };
-    const r = rig({ trainer, effect: s => { s.wEscapedFromBattle = 1; return 1; } });
+    const r = rig({ effect: s => { s.wEscapedFromBattle = 1; return 1; } });
     r.s.wIsInBattle = 2; r.s.mem[D.wTrainerClass] = 1; r.s.wSerialExchangeNybbleReceiveData = 15;
-    expect(r.run()).toBe('escaped'); expect(math.selectEnemyMove).toHaveBeenCalledWith(r.s, trainer);
+    expect(r.run()).toBe('escaped'); expect(math.selectEnemyMove).toHaveBeenCalledWith(r.s);
     expect(r.names().some(n => n.startsWith('switch '))).toBe(false);
   });
   it('link switch leaves a nontrapping Metronome slot alone', () => {

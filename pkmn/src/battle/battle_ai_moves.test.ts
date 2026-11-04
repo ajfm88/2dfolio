@@ -2,12 +2,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createPokemon, getAllLoadedMoveIds, getMove, loadBattleData } from './data';
+import { loadBattleData } from './data';
 import { A, BattleState, type BattleState as State } from './battle_state';
 import { D } from './battle_end_state';
 import { getMoveRecord, loadBattleMoveData } from './battle_move_data';
 import { typeChart } from './battle_damage_asm';
-import { selectEnemyMove, type TrainerMoveSelection } from './battle_math';
+import { selectEnemyMove } from './battle_math';
 import {
   AIEnemyTrainerChooseMoves, AIGetTypeEffectiveness, AIMoveChoiceModification1,
   AIMoveChoiceModification2, AIMoveChoiceModification3, AIMoveChoiceModification4,
@@ -56,17 +56,6 @@ function place(state: State, ids: readonly number[], classId: number): void {
   state.setBytes(A.wEnemyMonMoves, padded, 4);
   state.mem[D.wTrainerClass] = classId;
   state.setBytes(A.wBuffer, [10, 10, 10, 10], 4);
-}
-
-function trainer(ids: readonly number[]): TrainerMoveSelection {
-  const enemy = createPokemon('Pidgey', 20)!;
-  const player = createPokemon('Pikachu', 20)!;
-  enemy.moves = ids.filter(id => id !== 0).map(id => {
-    const key = getAllLoadedMoveIds().find(name => getMove(name)!.id === id);
-    if (!key) throw new Error(`move ${id}`);
-    return { id: key, pp: 0, maxPp: 35 };
-  });
-  return { enemy, player, aiModifiers: [] };
 }
 
 function script(state: State, rolls: readonly number[]): number[] {
@@ -400,7 +389,7 @@ describe('ledgers', () => {
     state.wBattleMonType1 = WATER;
     state.wBattleMonType2 = WATER;
     const draws = script(state, [0, 63]);
-    selectEnemyMove(state, trainer([86, 33]));
+    selectEnemyMove(state);
     expect(draws).toEqual([0, 63]);
     expect(scores(state)).toEqual([0, 33, 0, 0]);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([33, 1]);
@@ -425,7 +414,7 @@ describe('ledgers', () => {
     place(state, [16, 28], 7);
     state.wAILayer2Encouragement = 1;
     const draws = script(state, [63]);
-    selectEnemyMove(state, trainer([16, 28]));
+    selectEnemyMove(state);
     expect(draws).toEqual([63]);
     expect(scores(state)).toEqual([0, 28, 0, 0]);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([28, 1]);
@@ -441,7 +430,7 @@ describe('ledgers', () => {
       state.wBattleMonType1 = WATER;
       state.wBattleMonType2 = WATER;
       const draws = script(state, [roll, slotRoll]);
-      selectEnemyMove(state, trainer([33, 84]));
+      selectEnemyMove(state);
       return { state, draws };
     };
     const low = run(0x65, 0);
@@ -466,7 +455,7 @@ describe('ledgers', () => {
     state.setBytes(A.wEnemyMoveNum, [0xee, 0xee, 0xee, 0xee, 0xee, 0xee], 6);
     state.wTypeEffectiveness = 0xab;
     const draws = script(state, [0, 62, 63]);
-    selectEnemyMove(state, trainer([16, 28]));
+    selectEnemyMove(state);
     expect(draws).toEqual([0, 62, 63]);
     expect(scores(state)).toEqual([0x50, 10, 10, 10]);
     expect([state.wEnemySelectedMove, state.wEnemyMoveListIndex]).toEqual([28, 1]);

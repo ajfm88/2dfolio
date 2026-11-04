@@ -21,13 +21,14 @@ import { BALL, itemUseBall, type BallItemEnvironment } from './battle_item_ball'
 import type { BattleItemHost } from './battle_items';
 import { calcStats } from './battle_calc_stats';
 import { calcExperience } from './battle_calc_experience';
-import { partySlotFromPokemon } from './battle_loaders';
+import { partySlotFromPokemon } from '../test/party_slot_fixture';
+import { decodePartyMon, partyRecordToPokemon } from './battle_party_codec';
 import { getMoveRecord, BattleUnsupportedState, loadBattleMoveData } from './battle_move_data';
 import { getSpeciesById, loadBattleData } from './data';
 import { pokemonToBoxed } from '../pokemon_storage';
 import { flagAction } from './battle_end_helpers';
 import {
-  addPartyMon, askName, ballHomes, battlePokemonFromPartyBytes, readBoxSlot, sendNewMonToBox,
+  addPartyMon, askName, ballHomes, readBoxSlot, sendNewMonToBox,
   type CaughtMonEnvironment,
 } from './battle_add_mon';
 import * as rng from './battle_random';
@@ -292,7 +293,7 @@ describe('party home', () => {
     expect([...r.s.mem.subarray(A.wNameBuffer, A.wNameBuffer + 6)]).toEqual([...getMoveRecord(4)]);
     const mon = r.s.partyMons[1]!;
     const slot = partySlotFromPokemon(mon);
-    expect(battlePokemonFromPartyBytes(r.s, 1).nickname).toBe(mon.nickname);
+    expect(partyRecordToPokemon(decodePartyMon(r.s, 1)).nickname).toBe(mon.nickname);
     expect(slot.species).toBe(1); expect(slot.boxLevel).toBe(20); expect(slot.level).toBe(20);
     expect(slot.hp).toBe(13); expect(slot.status).toBe(PAR); expect(slot.moves).toEqual([...MOVES]);
     expect(slot.pp).toEqual(ppOf(MOVES)); expect(slot.dvs).toEqual([0x98, 0x76]);

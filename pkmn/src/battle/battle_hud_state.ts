@@ -20,7 +20,7 @@ export function hudContext(state: BattleState): HudContext {
   });
   const ctx = battleContext(state);
   // Preserve the live colour accessor; spreading the base record would sever its setter.
-  // drawPlayerHudProgram overwrites alarm from the audio module. These cells stay unread.
+  // drawPlayerHudProgram reads alarm from the audio module, which owns $D082 and $CCF6.
   ctx.playerHud = Object.assign(mon(false), { alarm: 0, alarmDisabled: false });
   ctx.enemyHud = mon(true);
   return ctx;

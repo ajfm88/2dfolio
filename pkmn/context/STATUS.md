@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-01 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅)
+**Last updated:** 2026-11-02 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅, A5d ✅, A5c ✅; A5e and A5f left)
 
 ---
 
@@ -40,11 +40,12 @@ co-author line. **Never push** — there is no remote and there must never be on
 
 **Phase R is done** (2026-09-22). **Phase V** rebuilds the lost 30-map state (V1 ✅ → V2 ✅ → V3 Gym + Museum → V4
 Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISIONS #29, #35, #55). **Now: A5c–A5f** (note 65,
-#70): A5d ✅, A5c1 ✅, A5c2 ✅, A5c3a–e ✅, and **A5c3f, the switch-over (note 72), is in its last checkpoint: 11e, then 11f**.
-The game has run on the new battle engine since 09b, and the user's play-test passed on 2026-11-01. Then A5e (intros and
-animations), A5f (the wild catch's animations), then V3. Earlier versions of this paragraph are in `HISTORY.md`.
+#70): A5d ✅ and **A5c ✅ complete**: A5c1, A5c2 and A5c3a–f. A5c3f is the switch-over (note 72); the game has run on the new battle
+engine since its 09b, and the user's play-test passed on 2026-11-01. Two small slices followed on 2026-11-02: the
+timing tests (#90, note 73) and the overworld RNG (#91, note 74). **Next: A5e** (intros and animations), then A5f (the
+wild catch), then V3. Earlier versions of this paragraph are in `HISTORY.md`.
 
-## 📍 Where things stand — updated 2026-10-24 (*Setup* re-checked 2026-10-19; refs not refreshed since 2026-10-01)
+## 📍 Where things stand — updated 2026-11-02 (*Setup* re-checked 2026-10-19; refs not refreshed since 2026-10-01, restored at the same pins 2026-11-02)
 
 ### Setup — done
 
@@ -59,7 +60,7 @@ animations), A5f (the wild catch's animations), then V3. Earlier versions of thi
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 196 JSON → `data/`; static 525 PNG + 3 tilemaps + 196 JSON mirror (A5c3f checkpoint-08g adds `monster_names.json`, note 72 §10.18; setup twice, only the two new name-table files). A5c3e checkpoint-02: setup twice byte-identical across 909 files; three new SFX assets, old bogus flute music removed, four text keys added; all 901 other surviving files unchanged (note 71 §10.2.4) |
 | Typecheck | Clean |
-| Tests | 11d checked (2026-11-01): **ROM 5980/5980**, **no-ROM 5723 pass / 257 skip**, default workers. Typecheck and build clean; bundle **`index-BWcH8Scp.js`**, 656,218 bytes. Load-sensitive timing cases pass alone (note 72 §11.16). |
+| Tests | 2026-11-02, the overworld RNG slice checked: **ROM 5984/5984**, **no-ROM 5727 pass / 257 skip**, default workers, each first run (one 30 s suite timeout, note 73). Typecheck/build/marker clean; bundle **`index-Czquhkm9.js`**, 655,094 bytes |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -83,10 +84,12 @@ animations), A5f (the wild catch's animations), then V3. Earlier versions of thi
 | Trainer sight | ✅ **A1c, user-verified 2026-10-06** (`notes/20-a1c-plan.md`, DECISIONS #43): the Forest's map script runs `TrainerEngage` on standing passes ($fc quirk, pop-in), the meet music at spotting, EmotionBubble (61 frames), the `MoveSprite` walk-up, `wJoyIgnore`/`BIT_SEEN_BY_TRAINER`, `EndTrainerBattle`'s pass. Forest sight ranges 4, 4, 1, 0, 4. The hop-midpoint `RunMapScript` → V4 (tripwire test) |
 | Catch demo | ✅ **since V1d**: Oak's Pikachu catch runs the ASM's simulated FIGHT → ITEM → POKé BALL input, with both outcomes (caught, or 3 shakes and "Shoot! It was so close too!"). Since V1e the Viridian old man uses it too |
 | Whiteout | ✅ `handleBlackoutWarp` — halves money, heals, warps to last Pokécenter |
-| Badge stat boosts | ✅ `damage.ts:applyBadgeStatBoosts`. Nothing awards a badge yet → V3 |
+| Badge stat boosts | ✅ `battle_loaders.ts` `applyBadgeStatBoosts` (the cartridge's, on the battle copy). Nothing awards a badge yet → V3 |
+| Battles | ✅ **The new engine since A5c3f 09b** (notes 66–72): `BattleState` on WRAM-shaped cells, the turn, every move effect, items, the trainer AI, faint/EXP/switching and the end, all from the ASM; old engine deleted (11c). Still stand-ins: the intro's silhouette slide and the send-out / substitute / transform animations (named A5e cues), move animations on the OFF path (#83), and the catch screens (A5f, `catch_demo_screen.ts`). User play-test passed 2026-11-01 |
+| Random numbers | ✅ **The cartridge's `Random` / `BattleRandom` everywhere** (note 74): one page-lifetime owner of `hRandomAdd` / `hRandomSub`, VBlank's per-frame call outside battle, each site's carry. No production `Math.random` (a census pins it). Battle frames skip the VBlank call (backlogged) |
 | TM/HM teaching | ❌ → A2 |
 | Poison walking, Repel, Escape Rope | ❌ (items exist in the price table only) → A3 |
-| Text and menus | ✅ **A5a/A5b**: every overworld text, sign, hidden event, bookshelf, story scene and menu text runs the cartridge's text programs with its timing (printer, DisplayTextID open/close, PrintText); the Mart, bag, field medicine, HP bar, item/Pokécenter/Bill's PCs, START and SAVE are the cartridge's. Battle text is still upstream's (A5c). The StatusScreen port (stats pages, shared party opening, corrected medicine timing) is user-verified |
+| Text and menus | ✅ **A5a/A5b**: every overworld text, sign, hidden event, bookshelf, story scene and menu text runs the cartridge's text programs with its timing (printer, DisplayTextID open/close, PrintText); the Mart, bag, field medicine, HP bar, item/Pokécenter/Bill's PCs, START and SAVE are the cartridge's. Battle text runs on the cartridge's programs too, since A5c3f. The StatusScreen port (stats pages, shared party opening, corrected medicine timing) is user-verified |
 | Evolution, move learning, Pokédex, PC, shops, save | ✅ (see `ARCHITECTURE.md` → *Engine reference* and `game/src/battle/ARCHITECTURE.md`) |
 | Save | `localStorage` key `p151-s` — use **`http://127.0.0.1:5173/`** |
 | Overworld pace | ✅ **since A6a (2026-09-28): the ASM's 2-frame pass.** Player and Pikachu 16 frames a step (measured 15.99), NPCs 34 (Yellow's fast codes 18, walking in step with the player 16), the mirrored up/down walking frame, the turn rule, the ledge jump table, the joypad read on standing passes, held-key triggers fixed (`overworld/walk_pace.ts`, DECISIONS #36). The user: "he walks at a perfect, gb speed". **Every cutscene, a ledge, NPC/Pikachu pace and START across a step user-verified 2026-10-01** |
@@ -143,32 +146,48 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **A5c3b** ✅ | The turn, unused: `MainInBattleLoop`, `SelectEnemyMove`, both `ExecuteMove` programs, the status checks, disobedience, the damage, hit and crit routines from the ASM (#77), residual damage. Checkpoints 01–07, Codex and Grok, each checked by Claude (2026-10-20); note 68 §11.34 |
 | **A5c3c** ✅ | Every move effect from `effects.asm` and `move_effects/*.asm`, unused: 86 ids through one registry, the bug pins, the 139-row retirement manifest for `effects.test.ts`. Ten checkpoints, Codex and Grok, each checked by Claude (2026-10-22); note 69 §10.20 |
 | **A5c3d** ✅ | Faint, EXP, switching and the end, unused: send-out and SHIFT, EXP and level-up, `LearnMove`, both faint handlers, victory and blackout, `EndOfBattle` and the loop driver, whole-battle ledgers and the 26/17 retirement manifests; stat experience in the save (the one live change, no behaviour change, #80). Thirteen checkpoints, Codex, each checked by Claude (2026-10-24); note 70 §9.30 |
+| **A5c3e** ✅ | Items in battle and the trainer AI, unused until A5c3f: every battle item body, the 47 trainer-class AI rows, switching. Checkpoints 01–10b, Codex then Grok, each checked by Claude (2026-10-26); note 71, DECISIONS #82 |
+| **A5c3f** ✅ | The switch-over: the live game on the new battle engine (09b), the user's play-test (passed 2026-11-01 after 10c–10f), then the old engine retired (11a–11f: RUN on `BattleRandom`, manifests, 7,651 lines deleted, carries, test helpers). Codex, Grok and Codex, each checked by Claude (2026-11-02); note 72, DECISIONS #83–#89 |
+| **Timing tests** ✅ | One 30 s suite timeout, no per-test overrides (a guard pins it), the 1 ms render case best-of-10; the re-run-alone rule retired. Codex, checked by Claude (2026-11-02); note 73, DECISIONS #90 |
+| **Overworld RNG** ✅ | The cartridge's `Random` outside battle: VBlank's per-frame call, the encounter's two bytes, NPC / Pikachu / gift carries, no `Math.random`. Codex, checked by Claude (+1 pin) (2026-11-02); note 74, DECISIONS #91 |
 | **Intro animation** ✅ | Oak's speech frame for frame: BGP/OBP0 palette fades (the silhouette, the white fades), the window slide, the tile slides with the BG-thirds tear, the 7-frame pic copies and the shrink wipe, little Red, `SFX_SHRINK`, the intro music's fade-to-stop, the 20-frame entry and 40-frame white exit. CP1–CP5 by Codex, checked by Claude, **user-verified 2026-10-18**; note 64, DECISIONS #51/#69 |
 
 ## In progress
 
-**A5c3f, the switch-over** (plan `notes/72-a5c3f-plan.md`; DECISIONS #83–#89). The game runs on the new battle engine
-since 09b. The user's play-test passed on 2026-11-01 after the fixes 10c–10f. **Checkpoint 11, the retirement, is
-nearly done:**
-- 11a ✅ RUN draws from `BattleRandom` (a live bug: it rolled `Math.random()`), §11.79, `4f3e547`.
-- 11b ✅ the missing retirement manifests, §11.81, `c0b88da`.
-- 11c ✅ the old engine deleted (7,651 lines), §11.86, `7ca9e22`.
-- 11d ✅ `battle_ui.ts`, `experience.ts`, `trainer_flow.ts` shrunk to their live callers, §11.92, `61aa262`
-  (Codex, then Grok).
-- **11e next:** the six production carry cleanups in §11.93 (the alarm cells, the medicine casts, the `LoadMonData_`
-  rename, `TrainerMoveSelection`, `bindPlayerSwitch`, the old party-menu mode). **Claude spikes it on a throwaway
-  worktree, then briefs it.**
-- **11f after:** the five test-infrastructure helpers in §11.93 (the party-slot fixtures, `decodeNick`, the
-  `wSpriteFlipped` alias). A5c3f closes after 11f.
+**Nothing is in progress.** The 2026-11-02 session closed A5c3f (11e, 11f), the timing-tests slice (#90, note 73) and
+the overworld RNG slice (#91, note 74), each checked by Claude. The working tree is clean, and everything is committed
+locally, never pushed (the last code commit is `d39bd9d`).
 
-**Rules learned in 11 (note 72):** census rows go only when the source text they record is deleted (§11.89);
-snapshots may only lose subtrees named after deleted things (§11.85); a `keep` case reading dead code is replaced by
-a new-engine test (§11.88). Spike before every brief, and carry every failure the spike shows into the brief.
+**Next: Claude plans A5e (intros and animations) and spikes its first checkpoint. Codex implements.** Start here:
+1. **Scope:** `notes/65-a5c-a5f-plan.md` §4's A5e row. That covers the 72-frame split slide with the head sprites,
+   black → battle palette, `DrawAllPokeballs`, `PrintBeginningBattleText`'s order, the trainer pic at tile 12, the
+   front pics aligned (5 × 5 → tile 13), `SlideTrainerPicOffScreen`, the sub-animation player for `POOF_ANIM`,
+   `AnimateSendingOutMon`, `AnimateRetreatingPlayerMon` and the starter Pikachu entrance. ASM: `core.asm:9–135`,
+   `1220–1500`, `1764–1875`; `init_battle.asm`; `draw_hud_pokeball_gfx.asm`; `data/battle_anims`. Its estimate
+   is 4–5 checkpoints. Note 65 §5 has the rules for every A5 slice.
+2. **What A5e inherits:** `game/src/battle/ARCHITECTURE.md` → *What A5e inherits* lists the named no-op cues the live
+   battle skips today. Every one is greppable as `A5e` in `src/battle`.
+3. **Decide with the user first:** A5e should open with a short plan note, the next note number (75), and its open
+   questions. Ask the user before checkpoint-01 is briefed. In particular, ask whether move animations with BATTLE
+   ANIMATION ON stay out of A5e (note 65 decision 4 kept move animations upstream's; DECISIONS #83 took the OFF path
+   until A5e).
+4. **Search `notes/57-findings-backlog.md` for `A5e`.** The screen-model merge waits until after A5e.
 
-**Implementer:** Grok since 11d (Codex is out of quota); either may run 11e from the brief.
+**How the last slices ran (keep doing this):**
+- Claude spikes each checkpoint in the main checkout, records the whole diff as `notes/NN-…/spike.diff`, restores the
+  tree, and writes a brief that names every stop, every mutation (each must fail a *plain* assertion) and the exact
+  counts.
+- Codex applies the diff, audits it and reports. Claude then re-runs every gate once, first time, and tries one mutation
+  of its own. On 2026-11-02 that caught a gap in the RNG brief: an unpinned carry.
 
-The earlier *In progress* text (play-test findings, A5c3f's checkpoint list, A5c3e, the A5c3f carry list) is in
-`HISTORY.md` → *Archived STATUS sections (moved 2026-11-01)*.
+**Rules learned in A5c3f's checkpoint 11 (note 72):**
+- census rows go only when the source text they record is deleted (§11.89);
+- snapshots may only lose subtrees named after deleted things (§11.85);
+- a `keep` case reading dead code is replaced by a new-engine test (§11.88).
+
+**Since note 73: one 30 s suite timeout and no re-run-alone fallback.** A timeout in a full run is a real failure.
+
+The finished A5c3f / timing / RNG detail moved to `HISTORY.md` → *Archived STATUS sections (moved 2026-11-02)*.
 
 ## Next up — queue
 
@@ -176,7 +195,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5c–A5f** | A | Note 65, #70. A5d ✅ → A5c1 ✅ → A5c2 ✅ → **A5c3** (note 68, #75): a–e ✅ · **f the switch-over (note 72): 01–11d ✅; next 11e (spike, then brief), then 11f** → A5e intros and animations → A5f the wild catch's animations, with the catch demo folded in |
+| 1 | **A5e** intros and animations | A | Note 65 §4 (#70). **Claude plans it next** (STATUS → *In progress* has the start list). Then **A5f**, the wild catch's animations, with the catch demo folded in. Done before it: A5d, A5c1–A5c3 (a–f), the timing tests (#90), the overworld RNG (#91) |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
 | 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
@@ -224,22 +243,17 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
+- **O-49 ✅ answered 2026-11-02 → DECISIONS #91:** yes. The overworld RNG slice ran before A5e (note 74).
 - **O-48 ✅ answered 2026-10-30 → DECISIONS #86:** option A. After a battle, an un-nicknamed mon's name goes back as
   upstream's `species.name`; 09's write-back implements it.
 - **O-47 ✅ answered 2026-10-30 → DECISIONS #85:** the battle's species names come from the cartridge's `MonsterNames`, in
   checkpoint-08g before 09 (Claude briefs it next session).
-- **O-46 (open, 2026-10-28):** a small separate slice for the load-sensitive timing tests (`pewter_tripwire.test.ts` 5000 ms,
-  `battle_screen_render.test.ts` 1 ms)? Meanwhile, note 72 §11.16's re-run-alone rule applies. Claude recommends yes, after A5c3f.
-- **O-45 ✅ answered 2026-10-26 → DECISIONS #83:** yes to note 72 §9's 1–3 (the OFF-path move presentation, the
-  catch's stand-in screens, retirement after the play-test); Grok implements.
-- **O-44 ✅ answered 2026-10-24 → DECISIONS #82:** yes to all four of note 71 §9: the AI's move-choice modifications are
-  ported in A5c3e; the Pokédex page and naming screen are hand-off ports; Safari Bait and Rock come in; Codex implements.
-- **O-43 ✅ answered 2026-10-20 → DECISIONS #77:** A5c3b checkpoint-05 ports the damage, hit and crit routines from the ASM.
-- **O-42 ✅ answered 2026-10-22 → DECISIONS #80:** stat experience goes inside A5c3d, as checkpoint-02 (note 70 §2.2).
+- **O-46 ✅ answered 2026-11-02 → DECISIONS #90:** yes. A small separate slice for the load-sensitive timing tests runs
+  after A5c3f, before A5e. It landed as note 73, and §11.16's re-run-alone rule is retired.
 - **O-2: Crystal animated GIFs in the randomizer pool?** Not blocking; decide when
   X1 starts. (`DECISIONS.md` → *Open*.)
 
-Resolved questions (O-5 … O-29; O-30 … O-38 since) moved to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16; each
+Resolved questions (O-5 … O-29; O-30 … O-38 since; O-42 … O-45 on 2026-11-02) moved to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16; each
 outcome is a numbered entry in `DECISIONS.md`.
 
 ## Notes for later
@@ -252,116 +266,114 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-11-01 (session wrap: context files updated) — Claude
+### 2026-11-02 (session wrap: context files updated for a fresh start) — Claude
 
-- Today: 10c–10f checked (finding 3 fixed and confirmed in Chrome), the play-test passed, checkpoint 11 planned and split, 11a–11d checked (the old engine retired), 11e/11f inventoried.
-- Updated the context files; moved the old *In progress* text and pre-2026-11-01 session entries to `HISTORY.md` (#61).
-- **Next session (Claude): spike 11e on a throwaway worktree, then brief it (§11.93).**
+- The user ended the day ("let's leave the start of A5e for tomorrow"). Refreshed the context for a new agent:
+  - STATUS: the phase, the Completed rows (A5c3e, A5c3f, timing, RNG), *What the game has today*, a clean
+    *In progress* with an A5e start list, and the queue.
+  - Archived: A5c3f's detail, O-42–O-45 and the 2026-11-01 session entries, to HISTORY.
+  - `game/src/battle/ARCHITECTURE.md`: removed the deleted old-engine rows from *Key Files*, refreshed the 11d
+    line counts, and replaced upstream's intro-phase sections with *What A5e inherits*.
+  - CLAUDE.md's *Where things stand*; PLAN.md's A5 row.
+- No code changed. Next: Claude plans A5e (STATUS → *In progress* has the start list).
 
-### 2026-11-01 (11e/11f inventoried) — Claude
+### 2026-11-02 (overworld RNG slice checked) — Claude
 
-- Re-inventoried checkpoint 11's carries against the code (§11.93): 11 open. Split into 11e (production: alarm cells, the medicine casts, the `LoadMonData_` rename, `TrainerMoveSelection`, `bindPlayerSwitch`, the old party-menu mode) and 11f (test infrastructure: the party-slot fixtures, `decodeNick`, the `wSpriteFlipped` alias). #89 amended.
-- Next: spike 11e on a throwaway worktree, then brief it.
+- Checked note 74 (§9, `82450d6`): the code equals the spike, and all gates were rerun first time.
+- My own mutation (walking-happiness carry 1) survived the whole suite, a gap in my brief. I moved that carry into `updatePikachuWalking` (the `UpdatePikachuHappinessAndMood` port) and pinned it in `step_end.test.ts`, proved failing under the mutation. ROM 5984/5984, no-ROM 5727/257, bundle 655,094 bytes.
+- Next: A5e (note 65): Claude plans it.
 
-### 2026-11-01 (11d checked) — Claude
+### 2026-11-02 (overworld RNG slice implemented; awaiting Claude) — Codex
 
-- Checked 11d (§11.92): the record fixes, the printer census, typecheck and no-ROM (5723/257); my resurrection mutation was caught. Fixed `battle/ARCHITECTURE.md`' stale pic bullet.
-- Next: the 11e inventory and brief.
+- Applied/audited the spike verbatim: 26 files, 72 hunks, all cited carries agree. Nine cases added, authorized DV retitle, none deleted; 26 pins converted. Seven mutations fail plain assertions and restore byte for byte. Report note 74 §8.
+- Ordered gates pass first time/default workers: typecheck/build/09c marker, ROM 5983/5983, no-ROM 5726/257. Bundle `index-BGNIygdZ.js`, 655,100 bytes (+617), exactly the spike. No ledger, snapshot, frame, screen or audio expectation changes; no production Math.random remains.
+- One local commit, never pushed. Stop for Claude's check. A5e not started; battle VBlank and future Random callers stay backlogged.
 
-### 2026-11-01 (A5c3f checkpoint-11d implemented; awaiting Claude) — Grok
+### 2026-11-02 (overworld RNG slice spiked and briefed) — Claude
 
-Finished under §11.91. Deleted `trainer_flow.ts`' `trainerPicName(classKey)` and `TRAINER_SPRITE_OVERRIDES`; row 149 now points at the 47-pic ROM census; keep counts are 3 and 6. The CHIEF mapping carry is closed. Gates: typecheck and build clean, bundle `index-BWcH8Scp.js` 656,218 bytes (−45), marker pass, ROM 5980/5980, no-ROM 5723/257. Four mutations caught and restored. Details §10.31.7. One local commit, never pushed. Stop for Claude's check. 11e not started.
+- O-49 → #91 (the user: "yes let's do that small slice that u recommend").
+- Read the ASM: `Random`'s ADC/SBC, VBlank's per-frame call (`home/vblank.asm:43`) with `TrackPlayTime`'s carry, and each overworld site's incoming carry (all 0 except Pikachu's glance, which is 1). The encounter reads both bytes without calling `Random`. The gift's DVs come from two calls.
+- Spike: ROM 5983/5983, no-ROM 5726/257, bundle +617, no snapshot change, 7 mutations plain. The diff is `notes/74-overworld-random/spike.diff`.
+- Found: the battle engine doesn't model VBlank's `Random` either. Modelling it would re-record every ledger, so it's backlogged for the battle-mechanics audit (note 57).
+- Next: Codex implements note 74; Claude checks; then A5e.
 
-### 2026-11-01 (11d's trainerPicName stop ruled) — Claude
+### 2026-11-02 (timing-tests slice checked) — Claude
 
-- Ruled Grok's stop (§11.91): `trainer_flow.ts`' `trainerPicName(classKey)` is dead (my §11.89 confused it with `battle_trainer_party.ts`' function); it goes with its CHIEF override table, row 149 maps to `battle_assets_data.test.ts`' 47-class pic test, and the carry closes.
-- Next: Grok finishes 11d.
+- Checked note 73 (§7, `0c50bb7`): the code equals the spike line for line, and the gates were rerun once each at default workers (ROM 5974/5974, no-ROM 5717/257, bundle unchanged). My own mutation (a `describe` with `{ timeout }`) was caught plainly.
+- Opened O-49 (the overworld's `Math.random()`). Next: A5e, unless the user puts the RNG slice first.
 
-### 2026-11-01 (A5c3f checkpoint-11d stopped; trainerPicName required caller) — Grok
+### 2026-11-02 (timing-tests slice implemented; awaiting Claude) — Codex
 
-Removed the five §11.89 census rows from the snapshot and nothing else. `end_retirement` is 2 pass / 1 fail: the snapshot matches, and the required-caller loop fails only on `trainerPicName` (line 142). `battleTextPages` still passes via `catch_demo.ts`. The names in §11.89 are `battle_trainer_party.ts`'s `trainerPicName(state)`, which this census does not import. Did not drop the check, add a caller, or run mutations or gates. Details §10.31.6. Worktree kept, uncommitted; no 11e.
+- Applied and audited the supplied spike verbatim across 12 files; 27 overrides removed, one guard case added, no case deleted or renamed. Three mutations fail plain assertions and restore byte for byte. Report note 73 §4.
+- Ordered gates pass first time at default workers: typecheck/build/09c marker, ROM 5974/5974, no-ROM 5717/257. Bundle unchanged `index-BUs62D6u.js`, 654,483 bytes. Both simultaneous ROM suites pass 5974/5974; slowest cases 5331.0844 / 5112.6093 ms. No re-runs, ledger/snapshot/behavior changes or runtime edits.
+- One local commit, never pushed. §11.16's re-run-alone fallback retired. Stop for Claude's check; A5e not started.
 
-### 2026-11-01 (11d handed to Grok) — Claude
+### 2026-11-02 (timing-tests slice spiked and briefed) — Claude
 
-- Codex ran out of quota after its 11d census stop. Checked its retained worktree: the shrink is done, typecheck clean, only the census fails, on §11.89's five rows.
-- Wrote the fresh-implementer handoff (§11.90). Next: Grok finishes 11d from the worktree.
+- The cause, measured: vitest 4 fails a sync case that finishes past 5 s, and load slows cases up to 8× (Pewter: 1.0 s alone, 8.0 s and failed in a full run at `edfbbf9`). The 1 ms render case times one sample, and one sample can pass 1 ms even on an idle machine (max 1.1–1.4 ms alone, 2.3 ms loaded; min stays at 0.15–0.20 ms).
+- Spike: one 30 s config timeout, 27 overrides removed, best-of-10 render, a guard case. Results: ROM 5974/5974, no-ROM 5717/257, 3 more ROM and 2 more no-ROM runs clean, two concurrent ROM suites clean (slowest 5.5 s), bundle unchanged, 3 mutations plain. The diff is `notes/73-timing-tests/spike.diff`.
+- Next: Codex implements note 73; Claude checks; then A5e.
 
-### 2026-11-01 (11d's census stop ruled) — Claude
+### 2026-11-02 (11f checked; A5c3f closed) — Claude
 
-- Ruled Codex's stop (§11.89): a census row goes iff the source text it records is deleted (owner recorded). Final form, replacing §11.83/§11.84's census clauses.
-- Next: Codex finishes 11d.
+- Checked 11f (§11.98, `69593af`): the diff matches §11.96/§11.97, and typecheck, build (654,483 bytes), the marker check, ROM 5973/5973 and no-ROM 5716/257 were rerun. My own mutation (padding the OT with `@`) failed the pin with a plain assertion and was restored clean.
+- **A5c3f complete.** Next: the timing-tests slice (O-46, #90), then A5e.
 
-### 2026-11-01 (A5c3f checkpoint-11d resumed; deleted-caller census stop) — Codex
+### 2026-11-02 (A5c3f checkpoint-11f resumed and implemented; awaiting Claude) — Codex
 
-Applied §11.88: RIVAL_STARTER stays exported, row65 replaced by the additive real-printer census, all5 Forest trainers complete with glyphs inside the text interior. Shrink and23+10 old-case deletions retained; records pass their two case-table checks with3/7 keeps. Census fails on five rows naming surviving trainerPicName/battleTextPages, whose callers/imports were deleted; §11.84 forbids dropping surviving-symbol rows. Left those expectations intact. Details/logs §10.31.3–10.31.5. No gates/mutations, new bundle or commit; worktree kept for Claude, no11e.
+- Resumed under §11.97, preserving the retained implementation. Added the authorized plain padding case; mutation 2 now fails it. Mutations 3–4 caught; earlier mutation 1 stands. Every mutant restored byte for byte; fixture blocks and all `.snap` files unchanged.
+- Ordered gates pass: typecheck/build/09c marker, ROM 5973/5973, no-ROM 5716/257, default workers, no timing fallback. Bundle `index-BUs62D6u.js`, 654,483 bytes (−93). Exactly two cases added across 11f, none deleted; report §10.33.4 and retained logs.
+- One local commit, never pushed. Stop for Claude's check; A5c3f remains open until that check. The timing-tests slice is not started.
 
-### 2026-11-01 (11d's keep-case stop ruled) — Claude
+### 2026-11-02 (11f stop ruled) — Claude
 
-- Ruled Codex's stop (§11.88): `RIVAL_STARTER` is live and stays exported; row 65's dead paging helpers go, and the case is replaced by a new-engine end-text census over every map trainer.
-- Next: Codex resumes 11d.
+- Ruled on §10.33 (§11.97): the stop was right and the brief was wrong (the ledgers are snapshots). Authorized one plain pin of the fixture's $00 padding; gates 5973 / 5716/257. Left uncommitted so Codex's single 11f commit carries it.
+- Next: Codex resumes 11f from §11.97; Claude checks, closing A5c3f.
 
-### 2026-11-01 (A5c3f checkpoint-11d stopped; keep-case/export conflicts) — Codex
+### 2026-11-02 (A5c3f checkpoint-11f stopped at mutation 2) — Codex
 
-Preflight audited all11 keep cases. Two trainer cases conflict with §11.87: line65 calls endBattleTextPages and reads BATTLE_TEXT_WIDTH (both deleted); line161 asserts RIVAL_STARTER (un-exported). Hit the explicit keep-case stop before any production/test edit. Details §10.31; dependency inventory in notes/72-a5c3f-checkpoint-11d/keep-case-audit.json. No gates or mutations run, no new bundle, no commit or push. Worktree kept for Claude's ruling; no11e.
+- Implemented §11.96 provisionally in the main checkout; report §10.33. Fixture bodies moved byte for byte. Typecheck clean, targeted 116/116 pass.
+- Mutation 1 fails a plain assertion. Mutation 2 fails only snapshots: 16 in battle_start, 72 across the full ROM suite; no plain assertion witness. Source restored byte for byte, no `.snap` changed. Stopped for Claude's ruling on the brief's plain-assertion requirement.
+- No test workaround, mutations 3–4, final ordered gates, commit or push. Uncommitted implementation/report/logs retained. Next: Claude rules, then Codex resumes the same checkout.
 
-### 2026-11-01 (11c checked; 11d briefed) — Claude
+### 2026-11-02 (11f spiked and briefed) — Claude
 
-- Checked 11c (§11.86): pure deletion, typecheck and no-ROM (5756/257) rerun; my resurrection mutation was caught.
-- Spiked 11d in a throwaway worktree (deleted) and briefed it (§11.87); the carries move to 11e (#89 amended).
-- Next: the implementer runs 11d.
+- Spiked 11f in a link-free worktree (`C:s11f`) and briefed it (§11.96). Spike results:
+  - ROM 5971/5971 and no-ROM 5714/257;
+  - bundle 654,576 → 654,483 bytes;
+  - mutations 1–3 caught.
+- The fixture writers move to `src/test/party_slot_fixture.ts`; `mirrorPartyProgress` stays exported there (amends §10.9).
+- The safety check blocked deleting `C:s11f`, so the user removes it (then `git worktree prune`).
+- **Next: Codex runs 11f from note 72 §11.96**; Claude's check then closes A5c3f.
 
-### 2026-11-01 (A5c3f checkpoint-11c implemented; awaiting Claude) — Codex
+### 2026-11-02 (11e checked) — Claude
 
-Finished under §11.85: vitest -u ran only battle_start.test.ts (23/23); retained whole-file audit proves510 removed lines are exactly17 volatile subtrees,0 added, plus15 previously approved source-census removals. All four mutations remain caught/restored; final ordered gates pass: typecheck/build/09c marker, ROM6013/6013, no-ROM5756/257 skip, no timing fallback. Bundle index-u6KvhOqD.js656,263 bytes (−437). Old engine and manifested cases retired; records pass; forceLearnMove retained for11d. Details/audit/logs §10.30.10–10.30.11. One local commit, never pushed; stop for Claude's check, no11d.
+- Checked 11e (§11.95): the diff matches §11.94, and typecheck, ROM 5971/5971, no-ROM 5714/257 and the build were rerun. My own mutation (a medicine palette with no frames) was caught.
+- Next: Claude spikes 11f (rows 7–11) in a worktree with no folder links, then briefs it.
 
-### 2026-11-01 (11c's snapshot stop ruled) — Claude
+### 2026-11-02 (A5c3f checkpoint-11e implemented; awaiting Claude) — Codex
 
-- Verified Codex's third stop myself: 16 `battle_start.test.ts` snapshots lose only 17 `volatiles` subtrees (510 lines removed, 0 added). Ruled §11.85: such removals are accepted with a zero-added-line audit.
-- Next: Codex finishes 11c.
+- Implemented §11.94; report §10.32. Removed ten retired-code cases, added one palette pin. All four mutations fail plain assertions and restore byte for byte.
+- Ordered gates pass: typecheck/build/09c marker, ROM 5971/5971, no-ROM 5714/257; no timing fallback. Bundle `index-wSZiEe-1.js`, 654,576 bytes (−1,642). No ledger, snapshot, frame, screen or audio expectation changes.
+- One local commit, never pushed. Stop for Claude's check; 11f not started. Claude checks 11e, then spikes and briefs 11f.
 
-### 2026-11-01 (A5c3f checkpoint-11c resumed; game-behavior snapshot stop) — Codex
+### 2026-11-02 (O-46 answered; 11e spiked and briefed) — Claude
 
-Applied §11.84: removed the accepted barrel pin row, added the data volatile-only case to the volatile record group (112 total engine rows), removed the stray blank line, and listed all20 removed census rows in §10.30.7. Four mutations caught by plain assertions and restored byte-for-byte. Ordered typecheck/build/marker pass; bundle index-u6KvhOqD.js656,263 bytes (−437). ROM5997 pass/16 fail (6013 total): only battle_start snapshots,17 identical legacy volatile objects removed. No behavior snapshots changed; stopped under §11.82/11.84. No-ROM unrun; no commit or push; worktree kept for Claude. Details §10.30.6–10.30.9 and logs.
+- O-46 → #90: the timing tests get their own slice after A5c3f, and Codex implements 11e.
+- Spiked 11e on a throwaway worktree and briefed it (§11.94). Spike results:
+  - ROM 5970/5970 and no-ROM 5713/257, with 10 cases retired;
+  - no ledger, snapshot or frame change;
+  - bundle 656,218 → 654,576 bytes;
+  - mutations 1, 3 and 4 caught.
+- **Incident:** removing the worktree followed my junctions and deleted `game/node_modules`, `refs/engine` and
+  `refs/dmg`, and broke `refs/gen1recomp`. Restored with `npm ci` and re-clones at the pinned commits. The real tree
+  re-verified: typecheck clean, the same `index-BWcH8Scp.js`, ROM 5980/5980. The trap is now in CONVENTIONS → *Tooling
+  traps*.
+- **Next: Codex runs 11e from note 72 §11.94.** Then Claude checks it, spikes 11f and briefs it.
 
-### 2026-11-01 (11c's barrel stop ruled) — Claude
+### 2026-11-02 (context and codebase orientation) — Codex
 
-- Ruled Codex's second stop (§11.84): census rows are removed when they name something §11.82 deletes, wherever they sit (replacing §11.83's file-keyed limit, my error). The `data.test.ts` volatiles case gets a manifest row.
-- Next: Codex resumes 11c.
+- Read the entry-point instructions, live handoff, project/roadmap, architecture, working conventions and recent decisions; reviewed the runtime, battle integration, overworld, text, save and extraction/test setup.
+- Reading only: no implementation slice claimed, no game code changed, no tests run. The recorded checkpoint-11d baseline remains unverified this session.
+- Next remains unchanged: Claude spikes checkpoint-11e on a throwaway worktree, then briefs it (note 72 §11.93); checkpoint-11f follows its check.
 
-### 2026-11-01 (A5c3f checkpoint-11c resumed; surviving-barrel census stop) — Codex
-
-Applied §11.83's end-retirement ruling and retained the remaining deletion/record implementation. Typecheck clean; initial targeted checks22/22 passed after removing the old attemptCatch barrel expectation. Census audit found that removal violates the surviving-file hard limit: `battle/index.ts` survives. Restored that expected row; a5c3e pin now fails3/4 solely on `battle/index.ts exports attemptCatch delete`. Details/log in §10.30.3–10.30.5; four mutations and build/marker/full suites unrun. Worktree kept, unstaged and uncommitted; wait for Claude's specific ruling. `forceLearnMove` remains declared for11d.
-
-### 2026-11-01 (11c's end-retirement stop ruled) — Claude
-
-- Ruled Codex's stop (§11.83): source censuses drop the deleted files' rows only; `forceLearnMove`'s required caller goes, and it joins 11d's trim list. My brief's error: the spike had shown this test failing.
-- Next: Codex resumes 11c from the retained worktree.
-
-### 2026-11-01 (A5c3f checkpoint-11c stopped; awaiting Claude's ruling) — Codex
-
-Minimal reproduction: unchanged `end_retirement.test.ts` passes3/3 before deletion, then fails its importer snapshot after deleting only `battle/battle.ts` (15 deleted call/import entries). §11.82 leaves this manifest unchanged and forbids snapshot changes; stopped without fixing it. Its subsequent required `calls forceLearnMove` also loses its sole caller. Details/logs in note72 §10.30. Only Battle's deletion retained; remaining retirement work, mutations and ordered gates unperformed. No commit or push; keep worktree for Claude's ruling.
-
-### 2026-11-01 (11b checked; 11c briefed) — Claude
-
-- Checked 11b (§11.81): read all 13 `delete` rows; typecheck and no-ROM (6047/257) rerun; my mutation was caught. The four unreachable carries went to note 57.
-- Briefed 11c (§11.82), pre-ruled from §11.78's spike. Next: the implementer runs 11c.
-
-### 2026-11-01 (A5c3f checkpoint-11b implemented; awaiting Claude) — Codex
-
-Added six static inventories in `engine_retirement.test.ts`: 111 old calls (55/39/6/7/3/1), each checked against untouched source and unique enabled new-engine witnesses. No reachable gaps; five unreachable rows carried in note72 §10.29. Three applicable mutations failed plain assertions and were restored byte-for-byte; conditional gap mutation not applicable. Ordered gates pass: typecheck/build/09c marker, ROM6304/6304, no-ROM6047/257 skip, no timing fallback. Bundle unchanged index-CFP-HvGY.js656,700 bytes; no production, old-test, chart or frame changes. One local commit, never pushed; stop for Claude's check, no11c/11d.
-
-### 2026-11-01 (11a checked; 11b briefed) — Claude
-
-- Checked 11a (§11.79) against `TryRunningFromBattle`; typecheck and no-ROM (6035/257) rerun; my mutation was caught.
-- Briefed 11b (§11.80). Next: the implementer runs 11b.
-
-### 2026-11-01 (A5c3f checkpoint-11a implemented; awaiting Claude) — Codex
-
-State-backed RUN uses shared HRAM multiply/divide and one BattleRandom only on compare; hEnemySpeed stays local (no existing cell). Manifest verified11 original line/title pairs before deletion, then checks absence/enabled replacements. Direct importers adapted only; assertions retained.15 new odds/session cases +2 manifest cases replace11 old cases. Five mutations restored byte-for-byte; Math.random proof tightened and all mutations/gates rerun. Final gates typecheck/build/marker, ROM6292/6292, no-ROM6035/257 skip, no timing fallback or old/frame/snapshot fallout. Bundle index-CFP-HvGY.js656,700 bytes. Note72 §10.28. One local commit, never pushed; stop for Claude's check, no11b.
-
-### 2026-11-01 (checkpoint-11 planned; 11a briefed) — Claude
-
-- Spiked the retirement in a throwaway worktree (deleted): the deletion's fallout is small and expected.
-- Found a live bug: RUN rolls `Math.random()`, while the cartridge calls `BattleRandom`. No test reached the compare.
-- Split 11 into 11a–11d (#89) and briefed 11a (§11.78.4). The overworld's `Math.random` uses went to note 57.
-- Next: the implementer runs 11a.

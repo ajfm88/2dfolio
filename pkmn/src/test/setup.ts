@@ -2,7 +2,8 @@
 
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { beforeAll, vi } from 'vitest';
+import { afterEach, beforeAll, vi } from 'vitest';
+import { unpinOverworldRandom } from './overworld_random_pin';
 
 const DATA_DIR = resolve(__dirname, '../../data');
 
@@ -41,3 +42,6 @@ beforeAll(() => {
     }
   });
 });
+
+// DECISIONS #91: a pinned overworld Random lasts one test.
+afterEach(() => unpinOverworldRandom());

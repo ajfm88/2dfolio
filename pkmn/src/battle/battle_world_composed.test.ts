@@ -58,7 +58,6 @@ import * as send from './battle_send_out';
 import * as enemySend from './battle_enemy_send_out';
 import * as slides from './battle_slides';
 import * as helpers from './battle_end_helpers';
-import type { TrainerMoveSelection } from './battle_math';
 import type { Program } from './battle_menu_context';
 import type { TurnPorts } from './battle_turn';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
@@ -259,14 +258,9 @@ function history(o: Case = {}) {
   vi.spyOn(helpers, 'anyPartyAlive').mockImplementation(state => { mark('alive'); return alive(state); });
   const saved = setupBattleBeforeTransition(s, random); rngPhase = 'turn';
   const initial = { ram: ramLedger(s.mem), draws: [...events], saved };
-  const trainer: TrainerMoveSelection | undefined = o.trainer ? {
-    get enemy() { return { ...s.partyMons[0]!, moves: Array.from({ length: 4 }, (_, i) => s.mem[A.wEnemyMonMoves + i]).filter(Boolean).map(id => {
-      const key = getAllLoadedMoveIds().find(k => getMove(k)!.id === id)!; return { id: key, pp: 35, maxPp: 35 };
-    }) }; }, player: s.partyMons[0]!, aiModifiers: [],
-  } : undefined;
   const drive = () => {
     let previous = Buffer.from(s.mem);
-    driver.start(initBattleCommon(s, saved, ctx, host, ports, trainer));
+    driver.start(initBattleCommon(s, saved, ctx, host, ports));
     for (; !driver.done && time < 8000;) {
       time++;
       keys(time % 2 ? [] : video.textBox.isWaitingForInput ? ['b'] : ['a']);

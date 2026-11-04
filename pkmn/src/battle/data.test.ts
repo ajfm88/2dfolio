@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { loadBattleData, getSpecies, getSpeciesById, getMove, createPokemon } from './data';
-import { mockRandom, restoreRandom } from '../test/helpers';
+import { restoreRandom } from '../test/helpers';
 import { readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
@@ -130,13 +130,12 @@ describe('createPokemon', () => {
       expect(pkmn!.spcDV).toBe(5);
     });
 
-    it('without dvs param: random DVs 0-15', () => {
-      mockRandom([0.5, 0.3, 0.8, 0.1]); // floor(0.5*16)=8, floor(0.3*16)=4, floor(0.8*16)=12, floor(0.1*16)=1
+    it('without dvs param: no randomness is drawn and the DVs are zero (DECISIONS #91)', () => {
+      const draw = vi.spyOn(Math, 'random');
       const pkmn = createPokemon('PIKACHU', 50);
-      expect(pkmn!.atkDV).toBe(8);
-      expect(pkmn!.defDV).toBe(4);
-      expect(pkmn!.spdDV).toBe(12);
-      expect(pkmn!.spcDV).toBe(1);
+      expect(draw).not.toHaveBeenCalled();
+      expect([pkmn!.atkDV, pkmn!.defDV, pkmn!.spdDV, pkmn!.spcDV]).toEqual([0, 0, 0, 0]);
+      draw.mockRestore();
     });
   });
 

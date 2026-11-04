@@ -12,13 +12,15 @@ import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
 import { PartyMenu } from '../menus/party_menu';
 import { getPartyAndBillsSavedMenuItem, getListScrollOffset } from '../list_state';
 import type { GameButton } from '../core';
-import { BattleState, battleContext, encodeText, decodeNick } from '../battle/battle_state';
+import { BattleState, battleContext, encodeText } from '../battle/battle_state';
+import { decodeBattleText } from '../battle/battle_text_codec';
 import { ENEMY_SEND_CELLS } from '../battle/battle_enemy_send_out';
 import { D } from '../battle/battle_end_state';
 import { BattleHost } from '../battle/battle_host';
 import { BattleAudio } from '../battle/battle_audio';
 import { createPokemon, getMove, getAllLoadedMoveIds } from '../battle/data';
-import { partySlotFromPokemon, writePartySlot, loadBattleMonFromParty, loadEnemyMonFromParty } from '../battle/battle_loaders';
+import { loadBattleMonFromParty, loadEnemyMonFromParty } from '../battle/battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from './party_slot_fixture';
 import { A } from '../battle/battle_state';
 import * as aiMoves from '../battle/battle_ai_moves';
 import * as stats from '../battle/battle_effects_stats';
@@ -40,7 +42,6 @@ import * as damage from '../battle/battle_damage_asm';
 import * as hit from '../battle/battle_hit';
 import * as faint from '../battle/battle_faint';
 import * as random from '../battle/battle_random';
-import type { TrainerMoveSelection } from '../battle/battle_math';
 import type { TextBox } from '../text/textbox';
 import { I } from '../battle/battle_item_state';
 import { bindBattleItems, type BattleItemHost } from '../battle/battle_items';
@@ -218,10 +219,8 @@ export function battleLedger(o: History = {}) {
   }
   s.random=()=>random.battleRandom(s);
   const choose=selection.selectEnemyMove;
-  vi.spyOn(selection,'selectEnemyMove').mockImplementation((state,trainer)=>{
-    if(trainer) trainer.enemy={...trainer.enemy,moves:Array.from({length:4},(_,i)=>s.mem[D.wEnemyMonMoves+i])
-      .filter(id=>id!==0).map(id=>({id:getAllLoadedMoveIds().find(k=>getMove(k)!.id===id)!,pp:35,maxPp:35}))};
-    listAddress=undefined;rngPhase='select'; choose(state,trainer); rngPhase='unexpected';
+  vi.spyOn(selection,'selectEnemyMove').mockImplementation(state=>{
+    listAddress=undefined;rngPhase='select'; choose(state); rngPhase='unexpected';
     if(trace)mark('selectReturn',{scores:[...s.mem.slice(A.wBuffer,A.wBuffer+4)],listAddress,
       list:listAddress===undefined?[]:[...s.mem.slice(listAddress,listAddress+4)],record:record(),
       effectiveness:s.wTypeEffectiveness,encouragement:s.wAILayer2Encouragement,selected:s.wEnemySelectedMove});
@@ -284,14 +283,14 @@ export function battleLedger(o: History = {}) {
       } else if(o.real && (phase==='bag'||phase==='battle'&&ctx.joy7===1)) {
         keys=refused?['b']:[ctx.currentMenuItem + getListScrollOffset() === (o.bagTarget??0)?'a':'down'];
       } else if(o.real && phase==='itemParty') {
-        const cursor=(party as unknown as {cursor:number}).cursor;
+        const cursor=party.itemCursor;
         keys=[cursor===(o.partyTarget??0)?'a':'down'];
       } else if(o.real && phase==='move' && s.wMoveMenuType===2) {
         keys=[ctx.currentMenuItem===(o.moveTarget??0)+1?'a':ctx.currentMenuItem>(o.moveTarget??0)+1?'up':'down'];
       } else if(o.real && phase==='nickname') {
         keys=o.nickname===undefined?['b']:['a'];
       } else if(phase==='party') {
-        const cursor=(party as unknown as {cursor:number}).cursor;
+        const cursor=party.itemCursor;
         keys=[cursor===target?'a':'down'];
       } else if(phase==='yesNo' && ((o.refuseNext && s.wIsInBattle===1)||(s.wIsInBattle===2&&s.wPlayerMonNumber===1))) keys=['b'];
       setKeys(keys);mark('input',[o.real&&phase==='battle'&&ctx.joy7===1?'bag':phase,keys,getPartyAndBillsSavedMenuItem()]);
@@ -320,7 +319,7 @@ export function battleLedger(o: History = {}) {
       // Approved injected map hand-off (home/trainers.asm:334-379); retained text, not interpolated pages.
       const print=(state.mem[0xd72c]&0x80)!==0; state.mem[0xd72c]&=~0x80;
       mark('endTextHandOff',[print,state.wBattleResult]); if(!print)return;
-      yield* host.printText('TrainerEndBattleText',{nameBuffer:decodeNick(state.mem,D.wTrainerName)},
+      yield* host.printText('TrainerEndBattleText',{nameBuffer:decodeBattleText(state.mem,D.wTrainerName)},
         {asm:{TrainerEndBattleText:state=>{mark('endTextCursor',state);return o.endText??'PrintEmptyString.emptyString';}}});
       yield* host.waitForSound();
     },
@@ -400,8 +399,6 @@ export function battleLedger(o: History = {}) {
       if(trace)mark('trainerBefore',aiState());const r=yield* ai(state);
       if(trace)mark('trainerAfter',{...aiState(),carry:r.carry});rngPhase='unexpected';return r;};
   }
-  const trainers=():TrainerMoveSelection=>({enemy:{...s.partyMons[0]!,moves:[{id:getAllLoadedMoveIds().find(k=>getMove(k)!.id===(o.enemyMove??150))!,pp:35,maxPp:35}]},
-    player:s.partyMons[0]!,aiModifiers:[]});
   // All WRAM changes and object mirrors recorded after every CPU resume, including completion.
   const raw=Buffer.from(s.mem.buffer,s.mem.byteOffset,s.mem.byteLength),previous=Buffer.from(s.mem);
   let mirror='', channelIds='';
@@ -422,10 +419,9 @@ export function battleLedger(o: History = {}) {
     }
   }
   function runBattle(prelude?:Program,beforeEnd?:()=>void){
-    const trainer=o.trainer?trainers():undefined;
     driver.start((function*():Program<string>{
       if(prelude){mark('priorAward');yield* prelude;mark('priorAwardReturned');}
-      const exit=yield* battleLoop(s,ctx,host,ports,trainer); mark('loopReturned',[exit,s.wBattleResult]);
+      const exit=yield* battleLoop(s,ctx,host,ports); mark('loopReturned',[exit,s.wBattleResult]);
       beforeEnd?.();
       yield* endOfBattle(s,host);mark('endReturned',[exit,s.wBattleResult]);return exit;
     })());capture();

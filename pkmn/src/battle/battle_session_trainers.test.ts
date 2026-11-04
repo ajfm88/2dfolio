@@ -81,15 +81,6 @@ function setup(overrides: Partial<BattleWorld> = {}) {
   };
   return {r,session,world,pages,moneySound,turns,sends,start,tick,drive};
 }
-it('trainer adapter exists before start, reads current move bytes, and wild worlds have none', () => {
-  const h = setup(), s = h.session.state;
-  expect(s.wIsInBattle).not.toBe(2); expect(h.session.trainer).toBeDefined();
-  s.mem.set([33,39,0,0],A.wEnemyMonMoves);
-  expect(h.session.trainer!.enemy.moves.map(m => m.id)).toEqual(['TACKLE','TAIL_WHIP']);
-  s.mem.set([45,0,0,0],A.wEnemyMonMoves);
-  expect(h.session.trainer!.enemy.moves.map(m => m.id)).toEqual(['GROWL']);
-  expect(setup({opponent:0xa5,endBattleText:undefined}).session.trainer).toBeUndefined();
-});
 it('Forest SET win uses both Caterpies, real trainer AI and the named end program before money', () => {
   const h = setup(), result = h.drive(), labels = h.session.textLog.map(row => row.label);
   expect(result.exit).toBe('end'); expect(result.outcome.battleResult).toBe(0); expect(result.outcome.money).toBe(3070);

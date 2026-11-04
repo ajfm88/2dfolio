@@ -3,6 +3,7 @@
 import type { WildEncounterData, BattlePokemon } from './types';
 import { ENCOUNTER_SLOTS } from './types';
 import { getWildData, createPokemon } from './data';
+import { overworldRandomBytes } from '../overworld/overworld_random';
 
 let currentMapWild: WildEncounterData | null = null;
 let currentMapName = '';
@@ -50,11 +51,13 @@ export function tryWildEncounter(context: EncounterContext): BattlePokemon | nul
 
   if (rate === 0 || pool.length === 0) return null;
 
-  // Encounter check: random 0-255, must be < rate
-  if (Math.floor(Math.random() * 256) >= rate) return null;
+  // wild_encounters.asm:50-56: hRandomAdd against the rate, then hRandomSub picks the slot. Neither calls
+  // Random; they read what VBlank's Random (and any overworld call since) left.
+  const { hRandomAdd, hRandomSub } = overworldRandomBytes();
+  if (hRandomAdd >= rate) return null;
 
   // Select encounter slot
-  const slotRoll = Math.floor(Math.random() * 256);
+  const slotRoll = hRandomSub;
   let slotIndex = 0;
   for (const slot of ENCOUNTER_SLOTS) {
     if (slotRoll < slot.threshold) {

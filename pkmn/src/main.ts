@@ -1,4 +1,5 @@
 import { getPikachuEmotionModifier, setPikachuEmotionModifier } from './pikachu/pikachu_happiness';
+import { installOverworldRandom } from './overworld/overworld_random';
 import { packOptions, unpackOptions } from './battle/battle_bridge';
 import { withdrawMon, boxStatsMon } from './pokemon_transfers';
 import { createBattleSession, createSessionRandom, loadBattleSessionData, loadBattleStandInData } from './battle/battle_session';
@@ -279,6 +280,7 @@ let currentSession: LiveSession | null = null;
 let battleInput: LiveBattleInput | null = null;
 let pageTicks = 0;
 const sessionRandom = createSessionRandom(() => pageTicks);
+installOverworldRandom(sessionRandom);
 
 // Map trainer encounter (home/trainers.asm). `pendingTrainer` is set while the
 // before-battle text is up; `engagedTrainer` is the trainer being fought, flagged as
@@ -1187,7 +1189,12 @@ function gameTick(): void {
   pageTicks++;
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
-  if (state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit") {
+  const timerCounting = state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit";
+  // home/vblank.asm:43: VBlank calls Random every frame. TrackPlayTime (home/play_time.asm) leaves carry set
+  // while the game timer counts (its CP 60 / CP $FF), clear otherwise (CountDownIgnoreInputBitReset's AND A).
+  // A battle's frames skip it for now: the battle engine does not model this call (findings backlog).
+  if (!sessionRandom.isAttached) sessionRandom.random(timerCounting ? 1 : 0);
+  if (timerCounting) {
     playTimeMs += now - lastPlayTimeUpdate;
   }
   lastPlayTimeUpdate = now;

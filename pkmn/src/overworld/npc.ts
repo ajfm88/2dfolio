@@ -1,4 +1,5 @@
 import type { Direction, NpcData } from '../core';
+import { overworldRandom } from './overworld_random';
 import { TILE_SIZE } from '../core';
 import { drawSprite, loadSprite } from '../renderer';
 import { NpcWalk, walkFrame } from './walk_pace';
@@ -20,8 +21,8 @@ const FRAMES: Record<Direction, FrameSet> = {
 
 const STEP_SIZE = 16;   // pixels per step (2 tiles)
 
-/** The random byte UpdateNPCSprite reads (hRandomAdd). */
-const randomByte = (): number => Math.floor(Math.random() * 256);
+/** UpdateNPCSprite's Random calls (hRandomAdd). */
+const randomByte = (carryIn: 0 | 1): number => overworldRandom(carryIn);
 
 /** RivalIDs (engine/overworld/npc_movement_2.asm): the rival leaves after battling. */
 const RIVAL_CLASSES = new Set(['RIVAL1', 'RIVAL2', 'RIVAL3']);
@@ -50,8 +51,8 @@ export interface NpcUpdateContext {
   slot: number;
   /** The live sprite table in slot order: earlier slots already updated this pass. */
   sprites: () => readonly CollisionSprite[];
-  /** A random byte (tests inject one). */
-  random?: () => number;
+  /** Random with its incoming carry (tests inject one). */
+  random?: (carryIn: 0 | 1) => number;
 }
 
 /**

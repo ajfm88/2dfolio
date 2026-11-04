@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the 196 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-01 (A5c3f checkpoint-11d, checked; default workers): 5980/5980.** No-ROM 5723 pass / 257 skip. Load-sensitive timeouts (Pewter, Route 1 session, the 1 ms render case) pass alone under note 72 §11.16.
+  tests. **Baseline 2026-11-02 (the overworld RNG slice, checked; default workers): 5984/5984.** No-ROM 5727 pass / 257 skip.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -158,14 +158,20 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-10-21:** milestones **R1, V1, A6, A1 and V2 are done**, and A5 is half done: **A5a** (the text printer)
-and **A5b** (every script and menu text on the cartridge's programs, A5b1–A5b7) are user-verified. The game runs
-with no ROM, from committed `data/` + `static/` (Phase R). It has 24 maps (upstream's 12, Route 2 and
-Viridian Forest from V1, Pewter City and its four buildings from V2a), ticks at the Game Boy's 59.7275 Hz, and moves on the ASM's 2-frame pass (DECISIONS #33,
-#36). StatusScreen (#58) and the healing machine (#63) are user-verified, and so is **V2**, Pewter City (V2a maps, V2b the guides, V2c Jigglypuff and the sleeping Pikachu), 2026-10-17. **4397/4397** tests; no-ROM 4189 pass, 208 skip; typecheck/build clean.
-The map-music fade-out (#63, #67, #68) and the intro animation (Oak's speech, #51, #69) are done and
-user-verified (2026-10-18). Next: A5c–A5f, re-split by `notes/65-a5c-a5f-plan.md` (#70) as A5d → A5c1 → A5c2 → A5c3 → A5e → A5f;
-A5d (the transitions) is done and user-verified (2026-10-18), A5c1 (battle foundations, note 66) and A5c2 (the battle's menus, note 67) are done (2026-10-19); A5c3 (note 68, six sub-slices) is in progress: A5c3a ✅ complete (checkpoints 01–05 checked, 2026-10-20); A5c3b (the turn) ✅ complete (checkpoints 01–07, 2026-10-20); A5c3c (the move effects, note 69, Codex and Grok, #78/#79) ✅ complete (ten checkpoints, 2026-10-22); A5c3d (faint, EXP, switching and the end, note 70, #80, Codex) ✅ complete (thirteen checkpoints, 2026-10-24); A5c3e (items in battle and the trainer AI, note 71, #82; Codex, Grok since 07b) ✅ complete (checkpoints 01–10b, 2026-10-26). **A5c3f (the switch-over, note 72):** the game has run on the new battle engine since checkpoint-09b, the user's play-test passed (2026-11-01), and the old engine is retired (11a–11d); 11e and 11f (carry cleanups, §11.93) close it. Then A5e, A5f, then V3.
+**2026-11-02:** milestones **R1, V1, A6, A1 and V2 are done**. A5 is two-thirds done:
+- **A5a** (the text printer), **A5b** (every script and menu text) and **A5d** (the battle transitions) are
+  user-verified.
+- **A5c** is complete: A5c1, A5c2 and A5c3a–f (notes 66–72). The game runs on a battle engine ported from the ASM
+  (since A5c3f checkpoint-09b; user play-test passed 2026-11-01). The old upstream engine is deleted.
+- Two small slices followed: one 30 s suite timeout (#90, note 73), and the cartridge's `Random` outside battle
+  (#91, note 74).
+
+The game runs with no ROM, from committed `data/` + `static/` (Phase R). It has 24 maps (upstream's 12, Route 2 and
+Viridian Forest from V1, Pewter City and its four buildings from V2a). It ticks at the Game Boy's 59.7275 Hz and
+moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **5984/5984**; no-ROM 5727 pass, 257 skip.
+
+**Next: A5e** (the battle intros and send-out animations, note 65 §4; STATUS → *In progress* has the start list),
+then A5f (the wild catch, folding in the catch demo), then V3.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

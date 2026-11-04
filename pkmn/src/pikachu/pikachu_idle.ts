@@ -84,8 +84,8 @@ export interface PikachuIdleContext {
   overlapsPlayer: boolean;
   /** GetPikachuFollowCommand: the retained command (0 when the buffer is empty). */
   followCommand: number;
-  /** A random byte (hRandomAdd). */
-  random: () => number;
+  /** Random with its incoming carry; returns hRandomAdd. */
+  random: (carryIn: 0 | 1) => number;
 }
 
 /** What the update did to the image: hidden ($ff), refreshed (UpdatePikachuWalkingSprite),
@@ -115,7 +115,7 @@ export class PikachuIdle {
     if (this.counter === 0) {
       if (ctx.followCommand >= 5) return this.startAntic(sprite, ctx);
       this.counter = 0x20;
-      sprite.facing = COMMAND_DIRECTIONS[(ctx.random() & 0x0c) >> 2];
+      sprite.facing = COMMAND_DIRECTIONS[(ctx.random(1) & 0x0c) >> 2]; // pikachu_follow.asm:548-552: CP $5 left carry set
     }
     sprite.anim.intra = 0;
     sprite.anim.frame = 0;
@@ -160,7 +160,7 @@ export class PikachuIdle {
 
   /** Func_fc842 */
   private startAntic(sprite: PikachuIdleSprite, ctx: PikachuIdleContext): PikachuImageUpdate {
-    const antic = ANTICS[ctx.random() & 3];
+    const antic = ANTICS[ctx.random(0) & 3]; // pikachu_follow.asm:550,582-585: reached by JR NC, carry clear
     if (antic === 'bounce') {
       // Func_fc862: face the command's way; the image keeps what it showed
       sprite.facing = commandFacing(ctx.followCommand);

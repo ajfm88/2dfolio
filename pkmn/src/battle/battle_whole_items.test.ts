@@ -25,7 +25,8 @@ import { resetListStateForEmptySlot,setBattleAndStartSavedMenuItem,setPartyAndBi
 import { setLowHealthAlarm,setLowHealthAlarmDisabled,setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { I } from './battle_item_state';
 import { D } from './battle_end_state';
-import { encodeText,decodeNick } from './battle_state';
+import { encodeText } from './battle_state';
+import { decodeBattleText } from './battle_text_codec';
 import { loadBattleMonFromParty } from './battle_loaders';
 import * as loaders from './battle_loaders';
 import * as stats from './battle_effects_stats';
@@ -136,7 +137,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     // The alias is overwritten later by palette work; pin the actual byte at the toss.
     expect(r.events.find(e=>e.name==='ballAnimData')?.data).toBe(anim);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:237–247 (sleep borrow),485–606; add_mon.asm:1–252; naming_screen.asm:1–49.
   it.each([false,true])('H2/H3 capture, already owned=%s',owned=>{
@@ -148,8 +149,8 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     finish(r,2);
     expect(returned(r).result).toBe(1);expect(returned(r).captured).toBe(0x24);
     expect(r.s.mem[I.wPartyCount]).toBe(2);expect([...r.s.mem.slice(I.wPartySpecies,I.wPartySpecies+3)]).toEqual([0x24,0x24,255]);
-    expect(decodeNick(r.s.mem,I.wPartyMonNicks+11)).toBe(owned?'PIDGEY':'BIRDY');
-    expect(decodeNick(r.s.mem,I.wPartyMonOT+11)).toBe('ASH');expect(r.s.partyMons[1]!.species).toBe(getSpeciesById(16));
+    expect(decodeBattleText(r.s.mem,I.wPartyMonNicks+11)).toBe(owned?'PIDGEY':'BIRDY');
+    expect(decodeBattleText(r.s.mem,I.wPartyMonOT+11)).toBe('ASH');expect(r.s.partyMons[1]!.species).toBe(getSpeciesById(16));
     expect(r.s.partyMons[1]!.currentHp).toBe(13);expect(r.s.partyMons[1]!.status).toBe('SLP');
     // add_mon.asm:146–252: medium-fast EXP=20^3=8000; HP DV10; fresh stats50/26/24/30/21.
     expect([...r.s.mem.slice(I.wPartyMons+44,I.wPartyMons+88)]).toEqual([
@@ -174,7 +175,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'evolutionHandOff')).toHaveLength(0);expect(draws(r)).toEqual([['Random','ball',1,0]]);
     expect(events(r,'yesNoReturned')[0].at-events(r,'yesNo')[0].at).toBe(3+15);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:568–587,2932–3113: front insertion on all four lists, MET_BILL changes only text.
   it.each([false,true])('H4 capture into the box, Bill met=%s',bill=>{
@@ -189,7 +190,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(readBoxSlot(r.s,0).species).toBe(0x24);expect(r.s.mem.slice(I.wPartyMons,I.wPartyMons+6*44)).toEqual(party);
     expect(readBoxSlot(r.s,0).bytes).toEqual([0x24,0,1,20,3,0,0,255,33,0,0,0,0x12,0x34,0,31,64,
       0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0]);
-    expect(decodeNick(r.s.mem,I.wBoxMonNicks)).toBe('PIDGEY');expect(decodeNick(r.s.mem,I.wBoxMonOT)).toBe('ASH');
+    expect(decodeBattleText(r.s.mem,I.wBoxMonNicks)).toBe('PIDGEY');expect(decodeBattleText(r.s.mem,I.wBoxMonOT)).toBe('ASH');
     expect([...r.s.mem.slice(I.wBoxSpecies,I.wBoxSpecies+3)]).toEqual([0x24,0x54,255]);
     expect(labels(r)).toEqual([EMPTY,'ItemUseText00','ItemUseBallText05','ItemUseBallText06',
       'DoYouWantToNicknameText',bill?'ItemUseBallText07':'ItemUseBallText08']);enemyActed(r,false);
@@ -198,7 +199,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(draws(r)).toEqual([['Random','ball',1,0]]);
     expect(events(r,'animationCue')[0].at-events(r,'rng')[0].at).toBe(20);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:2569–2580: palette, Buffer1, Delay3, toss, two texts, consume/result1.
   it('H5 trainer ball is consumed and the enemy acts',()=>{
@@ -212,7 +213,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'paletteEnd').find(e=>e.at>pal.at)!.at-pal.at).toBe(2+3);
     expect(draws(r).some(d=>(d as string[])[0]==='Random')).toBe(false);expect(events(r,'trainerAIEntry').map(e=>e.data)).toEqual([0]);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:656–659,1755–1758,2593–2596; core.asm:2361–2363.
   it.each([[false,5,'TOWN_MAP'],[true,0x33,'POKE_DOLL']] as const)('H6 refusal trainer=%s', (trainer,id,name)=>{
@@ -226,7 +227,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(draws(r).some(d=>(d as string[])[0]==='Random')).toBe(false);
     if(trainer)expect(events(r,'trainerAIEntry')).toEqual([]); // the following player's KO precedes TrainerAI.
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:1108–1111,1287–1291,1311–1376; hp_bar.asm:48–283 (type2).
   it('H7 Potion heals the active lead and clears the low-health alarm',()=>{
@@ -239,7 +240,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'scrollRead')[0].at-events(r,'text:PotionText')[0].at).toBe(3+3+50);
     expect(events(r,'input').find(e=>(e.data as string[])[0]==='itemParty')!.at-events(r,'itemEntry')[0].at).toBe(24);
     expect(draws(r)).toEqual(turnDraws());enemyActed(r,true);snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:992–1011 overwrites ten stat bytes; core.asm loader badge boost is deliberately lost.
   it('H8 Paralyze Heal restores party stats over the badge boost without changing stages',()=>{
@@ -256,7 +257,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'scrollRead')[0].at-events(r,'text:ParlyzHealText')[0].at).toBe(3+3+50);
     expect(draws(r)).toEqual(turnDraws());enemyActed(r,true);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:1824–1831 spends before StatModifierUpEffect; effects.asm's +6 failure skips animation/badges.
   it('H9 X ATTACK at +6 is consumed from bag slot 1 before the failed effect',()=>{
@@ -274,7 +275,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'sfx').some(e=>(e.data as number[])[0]===0x8e)).toBe(true);
     expect(draws(r)).toEqual(turnDraws(0));enemyActed(r,true);
     expect(events(r,'animationCue').some(e=>(e.data as number[])[0]===0xae)).toBe(false);snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:1755–1761,2538–2549 removes doll; core.asm:316–318 returns without writing result2.
   it('H10 wild POKe DOLL escapes with battle result0',()=>{
@@ -283,7 +284,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(returned(r).items.mirror).toEqual([]);expect(draws(r)).toEqual([]);enemyActed(r,false);
     expect(labels(r)).toEqual([EMPTY,'ItemUseText00']);
     expect(events(r,'textEnd:'+EMPTY)[0].at-events(r,'text:'+EMPTY)[0].at).toBe(3);snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:1900–1973: six player raw slots, both actives, alarm7 gate and CHAN7 poll.
   it.each([false,true])('H11 flute, alarm bit7=%s',alarm=>{
@@ -315,7 +316,7 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     }
     expect(draws(r)).toEqual(turnDraws());enemyActed(r,true);
     snapshot(r);
-  },20000);
+  });
 
   // item_effects.asm:2180–2230 (real menus),2263–2279,2303–2319 (+10, preserve PP-Up bits).
   it('H12 Ether restores move slot1 and copies all four battle PP bytes',()=>{
@@ -331,5 +332,5 @@ describe('checkpoint-10 player-item whole-battle histories',()=>{
     expect(events(r,'itemReturned')[0].at-events(r,'textEnd:PPRestoredText')[0].at).toBe(5);
     expect(events(r,'input').find(e=>(e.data as string[])[0]==='itemParty')!.at-events(r,'itemEntry')[0].at).toBe(24);
     expect(draws(r)).toEqual(turnDraws());enemyActed(r,true);snapshot(r);
-  },20000);
+  });
 });

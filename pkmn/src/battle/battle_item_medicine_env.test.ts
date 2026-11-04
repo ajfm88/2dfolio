@@ -26,7 +26,7 @@ import { useItem, type BattleItemHost } from './battle_items';
 import { registerMedicineBattleItemBody } from './battle_item_medicine';
 import { createMedicineItemEnvironment } from './battle_item_medicine_env';
 import * as monData from './battle_experience';
-import { partySlotFromPokemon, writePartySlot } from './battle_loaders';
+import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { readHpBarWord, writeHpBarWord } from './battle_hp';
 import type { Frame, Program } from './battle_menu_context';
 import type { StatusCondition } from './types';
@@ -263,9 +263,9 @@ describe('06b medicine draw cells', () => {
     { name: 'one-mon success', id: 0x14, slot: 0, hp: 10, count: 1 },
   ])('$name', c => {
     const r = setup(c), s = r.s, count = s.mem[I.wPartyCount], last = count - 1;
-    const rows: number[] = [], load = monData.loadExperienceMonData;
+    const rows: number[] = [], load = monData.loadMonData;
     const copies: Uint8Array[] = [];
-    vi.spyOn(monData, 'loadExperienceMonData').mockImplementation(state => {
+    vi.spyOn(monData, 'loadMonData').mockImplementation(state => {
       rows.push(state.wWhichPokemon); load(state);
       const row = state.wWhichPokemon, species = state.mem[I.wPartySpecies + row];
       expect([state.wCurPartySpecies, state.wCurSpecies]).toEqual([species, species]);

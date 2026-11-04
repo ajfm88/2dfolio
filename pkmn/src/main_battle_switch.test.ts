@@ -1,4 +1,6 @@
 import {afterEach,beforeAll,beforeEach,expect,it,vi} from 'vitest';
+import { pinOverworldRandom } from './test/overworld_random_pin';
+import { currentOverworldRandom } from './overworld/overworld_random';
 import {host,output,loadMainBattleRig,resetMainBattleRig,tick,until,world,mon,row,openParty,frameNow} from './test/main_battle_rig';
 import * as audio from './audio';
 import * as input from './input';
@@ -29,7 +31,7 @@ it('grass encounter crosses the checked transition boundary, ticks once after au
   for(let y=4;y<map.mapData!.height*4-4&&!point;y+=2)for(let x=4;x<map.mapData!.width*4-4;x+=2)
     if(map.isGrassTile(x,y)&&map.isWalkable(x,y)&&map.isWalkable(x,y-2)){point={x,y};break;}
   expect(point).toBeDefined();host.player.setTilePosition(point!.x,point!.y-2);host.player.direction='down';
-  vi.spyOn(Math,'random').mockReturnValue(0);
+  pinOverworldRandom(0);
   until(()=>host.state==='battle_transition',()=>['down']);
   const session=host.session!,created=frameNow();expect(getSeenList()).toEqual([25]);
   expect(session.state.wEnemyMonDVs).toBeDefined();
@@ -182,4 +184,14 @@ it('main uses the retained evolution flags instead of checking the whole party',
   until(()=>host.state!=='battle',()=>[...pulse()]);
   expect(readBattleOutputs(s.state).canEvolveFlags).toBe(0);expect(host.state).toBe('overworld');
   expect(host.playerParty[0].species.id).toBe(16);expect(s.state.mem[D.wCanEvolveFlags]).toBe(0);
+});
+
+it('VBlank calls Random first in every frame outside a battle, with carry set while the timer counts, and never during one (DECISIONS #91)',async()=>{
+  await world();expect(currentOverworldRandom()).toBe(host.random);
+  const call=vi.spyOn(host.random,'random'),firsts:unknown[]=[];
+  for(let i=0;i<4;i++){call.mockClear();tick();firsts.push(call.mock.calls[0]);}
+  expect(firsts).toEqual([[1],[1],[1],[1]]);
+  begin();call.mockClear();
+  for(let i=0;i<30;i++)tick();
+  expect(call).not.toHaveBeenCalled();
 });

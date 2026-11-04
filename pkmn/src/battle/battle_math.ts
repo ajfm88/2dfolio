@@ -1,8 +1,6 @@
 // Unused ports for A5c3. pret e89ead15 engine/battle/core.asm, cited below.
 import { A, LINK_STATE_BATTLING, STRUGGLE, WILD_BATTLE, type BattleState } from './battle_state';
-import { getMove } from './data';
 import { AIEnemyTrainerChooseMoves } from './battle_ai_moves';
-import type { BattlePokemon } from './types';
 
 export { battleRandom } from './battle_random';
 
@@ -48,25 +46,8 @@ export function doubleOrHalveSelectedStats(state: BattleState): void {
   }
 }
 
-export interface TrainerMoveSelection {
-  enemy: BattlePokemon;
-  player: BattlePokemon;
-  aiModifiers: number[];
-}
-
-/** trainer_ai.asm:3–105. Checks the object against wEnemyMonMoves, then the class byte picks the list. */
-export function aiEnemyTrainerChooseMoves(state: BattleState, trainer: TrainerMoveSelection): number {
-  if (trainer.enemy.moves.length > 4) throw new Error('enemy moves do not match wEnemyMonMoves');
-  for (let slot = 0; slot < 4; slot++) {
-    const move = trainer.enemy.moves[slot];
-    const id = move ? getMove(move.id)?.id : 0;
-    if (id !== state.mem[A.wEnemyMonMoves + slot]) throw new Error('enemy moves do not match wEnemyMonMoves');
-  }
-  return AIEnemyTrainerChooseMoves(state);
-}
-
 /** core.asm:3086–3176. Link consumes an already exchanged nybble; no serial/UI. */
-export function selectEnemyMove(state: BattleState, trainer?: TrainerMoveSelection): void {
+export function selectEnemyMove(state: BattleState): void {
   if (state.wLinkState === LINK_STATE_BATTLING) {
     const received = state.wSerialExchangeNybbleReceiveData;
     if (received === 0x0e) state.wEnemySelectedMove = STRUGGLE;
@@ -90,10 +71,7 @@ export function selectEnemyMove(state: BattleState, trainer?: TrainerMoveSelecti
     return;
   }
   let list: number = A.wEnemyMonMoves;
-  if (state.wIsInBattle !== WILD_BATTLE) {
-    if (!trainer) throw new Error('trainer selection requires battle Pokemon');
-    list = aiEnemyTrainerChooseMoves(state, trainer);
-  }
+  if (state.wIsInBattle !== WILD_BATTLE) list = AIEnemyTrainerChooseMoves(state);
   for (;;) {
     const roll = state.random();
     const slot = roll < 63 ? 0 : roll < 127 ? 1 : roll < 190 ? 2 : 3;

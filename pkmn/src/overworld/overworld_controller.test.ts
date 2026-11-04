@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
+import { pinOverworldRandom } from '../test/overworld_random_pin';
 import { Player } from './player';
 import { Npc } from './npc';
 import type { NpcUpdateContext } from './npc';
@@ -105,7 +106,7 @@ describe('standing map-script hook', () => {
     const deps = world('PalletTown');
     const ow = createOverworldState();
     deps.player.setTilePosition(20, 2);
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     vi.mocked(isHeld).mockImplementation(button => button === 'up');
     expect(updateOverworld(deps, ow)).toBeNull(); // turn
     for (let i = 0; i < 8; i++) {
@@ -122,7 +123,7 @@ describe('encounter and step integration', () => {
   it('turning rolls without counting a step or changing walking mood', () => {
     const deps = world();
     const ow = createOverworldState();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     vi.mocked(isHeld).mockImplementation(button => button === 'up');
     expect(updateOverworld(deps, ow)?.type).toBe('startBattle');
     expect(ow.stepCounter).toBe(0);
@@ -134,7 +135,7 @@ describe('encounter and step integration', () => {
     const deps = world();
     const ow = createOverworldState();
     ow.encounterCooldown = 3;
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     vi.mocked(isHeld).mockImplementation(button => button === 'down');
     expect(updateOverworld(deps, ow)).toBeNull();
     expect(ow.encounterCooldown).toBe(3);
@@ -171,7 +172,7 @@ describe('encounter and step integration', () => {
     const ow = createOverworldState();
     deps.player.setTilePosition(16, 80);
     deps.gameMap.mapData!.connections.push({ direction: 'south', mapName: 'ViridianCity', offset: 0 });
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     expect(handleStepComplete(deps, ow)?.type).toBe('connectToMap');
     expect(ow.stepCounter).toBe(255);
   });
@@ -182,7 +183,7 @@ describe('encounter and step integration', () => {
     ow.doorExitStep = true;
     ow.justWarped = true;
     ow.encounterCooldown = 3;
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     for (let i = 0; i < 8; i++) expect(updateOverworld(deps, ow)).toBeNull();
     expect(deps.player.y).toBe(144);
     expect(ow.doorExitStep).toBe(false);
@@ -195,7 +196,7 @@ describe('encounter and step integration', () => {
   it('door/warp tiles suppress encounters before performing the warp', () => {
     const deps = world();
     const ow = createOverworldState();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    pinOverworldRandom(0);
     vi.spyOn(deps.gameMap, 'isInstantWarpTile').mockReturnValue(true);
     vi.spyOn(deps.gameMap, 'getWarpAt').mockReturnValue({ x: 8, y: 8, destMap: 'ViridianMart', destWarpId: 0 });
     expect(handleStepComplete(deps, ow)?.type).toBe('warp');
@@ -224,7 +225,7 @@ describe('NPC images', () => {
     const npc = new Npc(npcData);
     await npc.load();
     deps.npcs.push(npc);
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     vi.mocked(isHeld).mockImplementation(button => button === 'right');
     updateOverworld(deps, createOverworldState()); // turn
     for (let i = 0; i < 8; i++) {
@@ -322,7 +323,7 @@ describe('walking into Pikachu (CollisionCheckOnLand, wPikachuCollisionCounter)'
     deps.player.direction = 'down';
     deps.pikachuFollower.visible = true;
     deps.pikachuFollower.spawn(deps.player.x, deps.player.y, 'down');
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     return { deps, ow: createOverworldState() };
   }
 
@@ -369,7 +370,7 @@ describe('walking into Pikachu (CollisionCheckOnLand, wPikachuCollisionCounter)'
     const pika = deps.pikachuFollower;
     pika.clearBuffer();
     pika.appendFollowCommand(5);
-    vi.spyOn(Math, 'random').mockReturnValue(0); // the antic byte: bounce
+    pinOverworldRandom(0); // the antic byte: bounce
     for (let i = 0; i < 257; i++) updateOverworld(deps, ow); // 256 idle updates, then index 15
     expect(pika.antic).toBe('bounce');
     expect(pika.screenOffset).toEqual({ x: -1, y: -2 });
@@ -384,7 +385,7 @@ describe('walking into Pikachu (CollisionCheckOnLand, wPikachuCollisionCounter)'
     deps.player.direction = 'down';
     const npc = new Npc({ id: 'man', sprite: 'gentleman', x: 8, y: 7, movement: 'stay', direction: 'down', dialogue: '' });
     deps.npcs.push(npc);
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     const ow = createOverworldState();
     updateOverworld(deps, ow); // the NPC becomes visible
     vi.mocked(isHeld).mockImplementation(button => button === 'up' || button === 'b');
@@ -418,7 +419,7 @@ describe('NPC sprite collisions in slot order (UpdateSprites)', () => {
       const a = walker('a', 5, 'down');
       const b = walker('b', 7, 'up');
       deps.npcs.push(...(order === 0 ? [a, b] : [b, a]));
-      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      pinOverworldRandom(128);
       updateOverworld(deps, createOverworldState());
       const [first, second] = deps.npcs;
       expect(first.mapStepY).toBe(6);
@@ -430,7 +431,7 @@ describe('NPC sprite collisions in slot order (UpdateSprites)', () => {
     const deps = world();
     const npc = walker('a', 6, 'down');
     deps.npcs.push(npc);
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     vi.mocked(isHeld).mockImplementation(button => button === 'up');
     const ow = createOverworldState();
     updateOverworld(deps, ow); // a new game's first press turns
@@ -444,7 +445,7 @@ describe('NPC sprite collisions in slot order (UpdateSprites)', () => {
     const deps = world();
     deps.pikachuFollower.visible = true;
     deps.pikachuFollower.spawn(deps.player.x, deps.player.y, 'down'); // Pikachu at step (8, 7)
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     const ow = createOverworldState();
     // Right after a spawn Pikachu's image is $ff until its own update: invisible to slot 1
     updateOverworld(deps, ow);
@@ -472,7 +473,7 @@ describe("a beaten trainer's turning (SetEnemyTrainerToStayAndFaceAnyDirection)"
   it('then turns at random rather than back to its fixed facing', () => {
     const npc = new Npc(bugCatcher());
     npc.stayAndFaceAnyDirection('ViridianForest');
-    vi.spyOn(Math, 'random').mockReturnValue(0.8); // byte $cc: right
+    pinOverworldRandom(204); // byte $cc: right
     npc.update(npcCtx(16, 16));
     expect(npc.direction).toBe('right');
   });
@@ -592,7 +593,7 @@ describe('A6d ledge follow through the controller', () => {
     p.visible = true;
     p.spawn(deps.player.x, deps.player.y, 'down');
     await p.loadSprite();
-    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    pinOverworldRandom(253);
     vi.mocked(deps.gameMap.isWalkable).mockImplementation((_x, y) => y !== 18);
     vi.spyOn(deps.gameMap, 'isLedge').mockImplementation((_x, y, dir) => y === 16 && dir === 'down');
     vi.mocked(isHeld).mockImplementation(b => b === 'down');

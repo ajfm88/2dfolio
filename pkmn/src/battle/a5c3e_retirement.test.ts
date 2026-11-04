@@ -61,13 +61,9 @@ function cases(file:string):Case[]{
 }
 
 const SYMBOLS={attemptCatch:'delete',selectTrainerMove:'delete',applyTrainerMoveModifiers:'delete',
-  loadTrainerData:'keep',getTrainerClass:'keep',TrainerMoveSelection:'keep'} as const;
+  loadTrainerData:'keep',getTrainerClass:'keep'} as const;
 // The class-data getters and their barrel exports serve main's story/encounter/sight setup.
-// TrainerMoveSelection is the NEW byte-selector's model-check type, required by both real loop ports.
 const CALLERS=[
-  'battle/battle_loop.ts imports TrainerMoveSelection keep',
-  'battle/battle_session.ts imports TrainerMoveSelection keep',
-  'battle/battle_turn.ts imports TrainerMoveSelection keep',
   'battle/index.ts exports getTrainerClass keep',
   'battle/index.ts exports loadTrainerData keep',
   'main.ts imports getTrainerClass keep',
@@ -88,7 +84,7 @@ function callers():string[]{
     if(!symbol)return;
     if(symbol.flags&ts.SymbolFlags.Alias)symbol=checker.getAliasedSymbol(symbol);
     const name=symbol.name as keyof typeof SYMBOLS;if(!(name in SYMBOLS))return;
-    const owner=name==='attemptCatch'?'catch.ts':name==='TrainerMoveSelection'?'battle_math.ts':'trainer_ai.ts';
+    const owner=name==='attemptCatch'?'catch.ts':'trainer_ai.ts';
     if(!symbol.declarations?.some(d=>resolve(d.getSourceFile().fileName)===resolve(__dirname,owner)))return;
     out.add(`${relative(root,file).replace(/\\/g,'/')} ${kind} ${name} ${SYMBOLS[name]}`);
   }
@@ -143,8 +139,8 @@ describe('A5c3e executable retirement manifests for A5c3f',()=>{
     for(const retired of ['Battle','attemptCatch','BallType','CatchResult','checkPreTurnStatus','tryInflictStatus',
       'applyEndOfTurnDamage','createVolatiles','resetVolatiles','Volatiles'])expect(exports).not.toContain(retired);
     expect(SYMBOLS).toEqual({attemptCatch:'delete',selectTrainerMove:'delete',applyTrainerMoveModifiers:'delete',
-      loadTrainerData:'keep',getTrainerClass:'keep',TrainerMoveSelection:'keep'});
-  },20000);
+      loadTrainerData:'keep',getTrainerClass:'keep'});
+  });
 });
 
 function replacement(original:string,r:Row):void{

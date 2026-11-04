@@ -24,8 +24,6 @@ import type { TurnPorts } from './battle_turn';
 export const ENEMY_SCAN_MODELLED_END = 0xe000;
 
 export type BattleStartHost = BattleInitHost & BattleLoopHost & BattleEndHost;
-// Entry only forwards this argument; the loop owns its checked trainer-model contract.
-type BattleLoopTrainer = Parameters<typeof battleLoop>[4];
 export interface BattleStartExit { exit: BattleLoopExit; /** HandlePlayerBlackOut's carry, when that path returns. */ blackoutCarry?: boolean }
 export interface BattleCommonExit extends BattleStartExit { carry: true }
 
@@ -65,7 +63,7 @@ export function* printSafariZoneBattleText(state: BattleState, host: BattleStart
 
 /** pret core.asm:135-260. Compose existing send-out/menu/turn/faint owners; no frame clock here. */
 export function* startBattle(state: BattleState, ctx: BattleActionContext, host: BattleStartHost,
-  ports: TurnPorts, trainer?: BattleLoopTrainer): Program<BattleStartExit> {
+  ports: TurnPorts): Program<BattleStartExit> {
   bindEntryBattleScreen(state, host.screen);
   if (state.wLinkState === LINK_STATE_BATTLING) throw new BattleUnsupportedState('link');
   state.mem[D.wPartyGainExpFlags] = state.mem[D.wPartyFoughtCurrentEnemyFlags] = state.wActionResultOrTookBattleTurn = 0;
@@ -93,7 +91,7 @@ export function* startBattle(state: BattleState, ctx: BattleActionContext, host:
       loadBattleMonFromParty(state);
       host.loadScreenTilesFromBuffer1();
       yield* sendOutMon(state, host);
-      return { exit: yield* battleLoop(state, ctx, host, ports, trainer) };
+      return { exit: yield* battleLoop(state, ctx, host, ports) };
     }
     // .displaySafariZoneBattleMenu: failed actions repeat this menu without AnyPartyAlive/Buffer1's outer return.
     do {
@@ -121,9 +119,9 @@ export function* startBattle(state: BattleState, ctx: BattleActionContext, host:
 
 /** pret init_battle.asm:109-139. After every StartBattle return, EndOfBattle, ordered stack restores, SCF. */
 export function* initBattleCommon(state: BattleState, saved: BattleInitSaved, ctx: BattleActionContext,
-  host: BattleStartHost, ports: TurnPorts, trainer?: BattleLoopTrainer): Program<BattleCommonExit> {
+  host: BattleStartHost, ports: TurnPorts): Program<BattleCommonExit> {
   yield* initBattleAfterTransition(state, host);
-  const result = yield* startBattle(state, ctx, host, ports, trainer);
+  const result = yield* startBattle(state, ctx, host, ports);
   yield* endOfBattle(state, host);
   state.mem[INIT.wLetterPrintingDelayFlags] = saved.letterPrintingDelayFlags;
   state.mem[INIT.wMapPalOffset] = saved.mapPalOffset;

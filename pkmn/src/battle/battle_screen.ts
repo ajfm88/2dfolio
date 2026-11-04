@@ -230,6 +230,12 @@ export class BattleScreen {
     yield* this.paletteFrames();
   }
 
+  /** SET_PAL_PARTY_MENU: data/sgb/sgb_packets.asm PalPacket_PartyMenu. Same hold and Delay3 as setPalBattle. */
+  *setPalPartyMenu(): Generator<'held' | 'serviced'> {
+    this.installPalettes(['MEWMON', 'GREENBAR', 'YELLOWBAR', 'REDBAR']);
+    yield* this.paletteFrames();
+  }
+
   *setPalBattleBlack(): Generator<'held' | 'serviced'> {
     this.installPalettes(['PAL_BLACK', 'PAL_BLACK', 'PAL_BLACK', 'PAL_BLACK']);
     yield* this.paletteFrames();

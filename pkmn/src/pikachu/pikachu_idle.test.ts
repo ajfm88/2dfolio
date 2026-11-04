@@ -195,3 +195,16 @@ describe('the antics', () => {
     expect(s.anim.intra).toBe(13);
   });
 });
+
+describe('Random carry (DECISIONS #91)', () => {
+  it('a glance enters Random with carry set (CP $5 below 5), an antic with carry clear (JR NC)', () => {
+    const carries: number[] = [];
+    const random = (carryIn: 0 | 1) => { carries.push(carryIn); return 0; };
+    const glance = new PikachuIdle(); glance.counter = 1;
+    glance.idle(sprite(), ctx({ followCommand: 1, random }));
+    expect(carries).toEqual([1]);
+    const antic = new PikachuIdle(); antic.counter = 1;
+    antic.idle(sprite(), ctx({ followCommand: 5, random }));
+    expect(carries).toEqual([1, 0]);
+  });
+});

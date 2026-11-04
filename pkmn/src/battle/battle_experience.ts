@@ -53,9 +53,10 @@ export function boostExp(state: BattleState): void {
   state.writeBE(D.hQuotient + 2, value + (value >>> 1));
 }
 
-/** Only PLAYER_PARTY_DATA is needed by this entry. Load all44 bytes; species comes from the list. */
-export function loadExperienceMonData(state: BattleState): void {
-  if (state.wMonDataLocation !== 0) throw new BattleUnsupportedState('EXP mon data location');
+/** LoadMonData_ (engine/pokemon/load_mon_data.asm), PLAYER_PARTY_DATA only. Load all 44 bytes;
+ * species comes from the list. */
+export function loadMonData(state: BattleState): void {
+  if (state.wMonDataLocation !== 0) throw new BattleUnsupportedState('mon data location');
   state.wCurPartySpecies = state.wCurSpecies = state.mem[D.wPartySpecies + state.wWhichPokemon];
   getMonHeader(state, state.wCurSpecies);
   state.mem.set(state.mem.slice(D.wPartyMons + 44 * state.wWhichPokemon,
@@ -148,7 +149,7 @@ export function* gainExperience(state: BattleState, host: ExperienceHost): Progr
       state.mem.set(state.mem.slice(D.wPartyMonNicks + 11 * slot, D.wPartyMonNicks + 11 * slot + 11), D.wNameBuffer);
       yield* host.printText('GainedText', { nameBuffer: decodeBattleText(state.mem, D.wNameBuffer), expAmountGained: gained },
         { asm: { GainedText: gainedText(state.wBoostExpByExpAll, state.wGainBoostedExp), WithExpAllText: withExpAllText() } });
-      state.wMonDataLocation = 0; loadExperienceMonData(state);
+      state.wMonDataLocation = 0; loadMonData(state);
       const level = calcLevelFromExperience(state);
       if (state.mem[at + 33] !== level) {
         const oldLevel = state.wCurEnemyLevel; state.wCurEnemyLevel = state.mem[at + 33] = level;
@@ -166,7 +167,7 @@ export function* gainExperience(state: BattleState, host: ExperienceHost): Progr
         }
         modifyPikachuHappiness(state, 1);
         yield* host.printText('GrewLevelText', { nameBuffer: decodeBattleText(state.mem, D.wNameBuffer), curEnemyLevel: state.wCurEnemyLevel });
-        state.wMonDataLocation = 0; loadExperienceMonData(state);
+        state.wMonDataLocation = 0; loadMonData(state);
         printStatsBox(state, host.tiles); yield* waitForTextScrollButtonPress(state, host);
         host.loadScreenTilesFromBuffer1(); state.wMonDataLocation = 0; state.wPokedexNum = state.wCurSpecies;
         yield* learnMoveFromLevelUp(state, host);
