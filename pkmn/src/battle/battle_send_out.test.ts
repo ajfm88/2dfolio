@@ -451,9 +451,10 @@ function enemyRig() {
 
 describe('DrawEnemyPokeballs uses the existing copy queue, sprite atlas and OAM',()=>{
   it('pins new scratch addresses to the symbols revision already used by note70',()=>{
+    const PINNED_NAME: Record<string, string> = { wBattleObjPalID: 'wdef4' }; // note 78: pret renamed after 573535d
     const sym=execFileSync('git',['-C',resolve(__dirname,'../../../refs/pokeyellow'),'show','573535d:pokeyellow.sym'],{encoding:'utf8'});
     for(const [name,address] of Object.entries(ENEMY_SEND_CELLS))
-      expect(sym).toMatch(new RegExp(`^00:${address.toString(16)} ${name}$`,'m'));
+      expect(sym).toMatch(new RegExp(`^00:${address.toString(16)} ${PINNED_NAME[name] ?? name}$`,'m'));
   });
   it('copies all four committed ball tiles in one VBlank, retaining every other atlas tile',()=>{
     const r=enemyRig(); const before=r.atlas.data.slice(); const source=r.host.pokeballTiles;
@@ -479,7 +480,7 @@ describe('DrawEnemyPokeballs uses the existing copy queue, sprite atlas and OAM'
     expect([...r.s.mem.slice(D.wBuffer,D.wBuffer+6)]).toEqual([0x31,0x33,0x32,0x34,0x34,0x34]);
     r.screen.vblank();
     for(let i=0;i<6;i++) expect(r.screen.oam(6+i)).toEqual({y:0x20,x:0x48-i*8,tile:r.s.mem[D.wBuffer+i],attributes:1});
-    expect([r.s.mem[ENEMY_SEND_CELLS.wBaseCoordX],r.s.mem[ENEMY_SEND_CELLS.wBaseCoordY],r.s.mem[ENEMY_SEND_CELLS.wHUDPokeballGfxOffsetX],r.s.mem[ENEMY_SEND_CELLS.wdef4]])
+    expect([r.s.mem[ENEMY_SEND_CELLS.wBaseCoordX],r.s.mem[ENEMY_SEND_CELLS.wBaseCoordY],r.s.mem[ENEMY_SEND_CELLS.wHUDPokeballGfxOffsetX],r.s.mem[ENEMY_SEND_CELLS.wBattleObjPalID]])
       .toEqual([0x18,0x20,0xf8,1]);
     expect(r.screen.at(1,2)).toBe(0x73); expect(r.screen.at(1,3)).toBe(0x74); expect(r.screen.at(10,3)).toBe(0x78);
   });

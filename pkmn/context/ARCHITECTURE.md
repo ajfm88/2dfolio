@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **5984** (2026-11-02, the overworld RNG slice, checked; default workers; no-ROM 5727 pass / 257 skip). The live count is in `STATUS.md` → *Setup* | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest — baseline **6019** (2026-11-03, A5e checkpoint-03b, checked by Codex; default workers; no-ROM 5762 pass / 257 skip). The live count is in `STATUS.md` → *Setup* | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (185 files; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2).
+- **`data/`** — JSON only, produced by `npm run setup` (196 files as of2026-11-03; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. It holds 524 PNGs + 3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 186 JSON files. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-03):525 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s196 JSON files. No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -504,6 +504,14 @@ Entry point: `index.html` → `src/main.ts`.
 | `debug.ts` | Debug overlay (backtick): tile grid, stats, HP, status, stat stages, badges, bag, Pikachu mood, warp-to-location | `renderDebugOverlay()`, `updateDebugPanel()`, `consumeDebugWarp()` |
 
 ## Game state machine (`main.ts`)
+
+**A5e foundations (checked2026-11-03).** `battle_intro.ts`'s LCD-off HUD/BG0 transaction and
+`battle_intro_program.ts` / `battle_intro_timing.ts` remain outside this live state machine. The shared
+BattleScreen/renderer now supports a default-null lower scroll override (03a); no production caller enables it.
+The existing `battle_init.ts` interim slide still runs.04 must separately bind the accepted phase/capture contract,
+real text and audio to the session driver and audit timing/DIV; unchanged `BattleHost` is not a drop-in host for
+the new Program. See `game/src/battle/ARCHITECTURE.md` → *A5e foundations* and note77 §3/§9. This is not an
+additional BG counter, video/audio tick or saved-state owner.
 
 ```
 splash            "Click to start" (unlocks browser audio)

@@ -129,7 +129,7 @@ const RELATIVE: Record<'ccw' | 'cw' | 'forwardLeft' | 'forwardRight' | 'backLeft
   backRight:    [DIR.UP_LEFT, DIR.DOWN_RIGHT, DIR.UP_RIGHT, DIR.DOWN_LEFT],
 };
 
-/** Data_fd731: down → left → up → right → down. */
+/** PikaMovement_FacingDirections: down → left → up → right → down. */
 const TURN_CW: Record<number, number> = { 0x0: 0x8, 0x8: 0x4, 0x4: 0xc, 0xc: 0x0 };
 /** The same table read backwards. */
 const TURN_CCW: Record<number, number> = { 0x0: 0xc, 0xc: 0x4, 0x4: 0x8, 0x8: 0x0 };

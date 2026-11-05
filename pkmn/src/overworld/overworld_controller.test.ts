@@ -564,7 +564,7 @@ describe('text and the nurse over a bouncing Pikachu (A6c review R-2)', () => {
     expect(pika.direction).toBe('up'); // nothing turned at the interaction pass
     updateOverworld(deps, createOverworldState()); // an ordinary pass (no portrait here)
     expect(pika.direction).toBe('left');
-    expect(pika.followCommand).toBe(3); // Func_fc745 keeps the buffer
+    expect(pika.followCommand).toBe(3); // PikachuFaceAwayFromPlayer keeps the buffer
     // Served once: a later text opening leaves the facing alone
     deps.player.direction = 'up';
     afterTick(deps, new UiEntry(), 'textbox');
@@ -920,7 +920,7 @@ describe('A6e: the Pokécenter\'s Pikachu calls (DisplayPokemonCenterDialogue_)'
     const fitPrinting = trace.filter(t => t.program === 'PokemonFightingFitText' && t.printing);
     expect(fitPrinting.length).toBeGreaterThan(0);
     expect(fitPrinting.every(t => !t.image)).toBe(true);
-    // Func_6ebb(15, 0) writes its image: drawn again within the bow's first frames
+    // PokemonCenterUpdateSpriteImageIndex(15, 0) writes its image: drawn again within the bow's first frames
     const shown = trace.find(t => t.frame > fit && t.image)!;
     const farewell = textAt('PokemonCenterFarewellText');
     expect(shown.frame).toBeLessThan(farewell - 40);

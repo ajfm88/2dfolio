@@ -12,7 +12,7 @@ the modifier to0. See note72 §10.23.5 and InitPlayerData2.
 |------|-----|---------|
 | `pikachu_follower.ts` | — | Native follow commands, movement, flat ledge hops, separate script targets, placement after a warp, image latch |
 | `follow_buffer.ts` | — | Yellow's 16-byte follow buffer, retained newest command, pop and catch-up rules (A6d, pure) |
-| `pikachu_idle.ts` | — | Idle glances and the four antics (`Func_fc803`, statuses 6–9), follow-command bytes (A6c, pure) |
+| `pikachu_idle.ts` | — | Idle glances and the four antics (`PikachuMovementState_Idle`, statuses 6–9), follow-command bytes (A6c, pure) |
 | `pikachu_spawn.ts` | 129 | Where Pikachu appears after a warp: Yellow's spawn states and the per-map lists (see below) |
 | `pikachu_happiness.ts` | — | Happiness/mood state, emotion face selection (21 animation scripts), happiness modifiers |
 | `pikachu_emotion.ts` | 145 | Emotion face display: bordered box with animated 40x40 face, frame compositing |
@@ -147,23 +147,23 @@ result reconciliation, parent returns and final close.
   hidden; an antic takes the update; else a move continues or starts, or Pikachu idles in
   the same call. `fontLoadedUpdate(ctx)` is the same routine with the font loaded, run
   once as a text box or menu opens (`overworld/ui_entry.ts`, review R-2): the screen
-  check, then `Func_fc76a` (standing,
+  check, then `PikachuResumeFollowAfterPause` (standing,
   back on its map position, ready, countdown 0, command reseeded). `startMovement` /
   `tickMovement` run the scripted-movement interpreter, which never idles and leaves the
   idle state as it was. Only real UpdateSprites advance the idle machine.
-- **Talking to Pikachu** sets bit 7 (`requestFacePlayer`); `Func_fc745` serves it on the
+- **Talking to Pikachu** sets bit 7 (`requestFacePlayer`); `PikachuFaceAwayFromPlayer` serves it on the
   first update of either kind that finds Pikachu on screen (turn to the player, countdown
   0 or $80 on grass). The opening only turns Pikachu on the bare map (`openOverworldUi`);
   the emotion's movement prelude follows, then the border and its update, which hides
   Pikachu (review R-3, A6e).
 - **Under UI** `render` hides the whole sprite when its footprint touches a box, from the
   first frame (`pikachuCovered` on `uiTiles`). A bounce covered once stays invisible to
-  its end: `asm_fc87f` never redraws the image.
+  its end: `PikachuMovementState_Hop` never redraws the image.
 - **Retained command** (`followCommand`): the native buffer's newest byte —
   the spawn seed (`seedFollowCommand`: toward the player, Y first, 1–4 or 5–8, 0 on top),
   each step's 1–4, a ledge hop's 5–8 once (`recordStepForPikachu`); `clearBuffer` sets 0;
   movement calls add none. Idle reads it, never the last move's direction.
-- **Spawn** (`spawn`, `spawnAtState`) runs `Func_fc793`: refresh, ready, countdown 0, image
+- **Spawn** (`spawn`, `spawnAtState`) runs `PikachuMovementState_RefreshAndFollow`: refresh, ready, countdown 0, image
   hidden until the next update.
 - **A finished move** sets the live facing (`followEndFacing`,
   `ComputePikachuFacingDirection`): the newest command while moves remain, else toward the
@@ -173,7 +173,7 @@ result reconciliation, parent returns and final close.
   nothing counts. Else the countdown byte drops; from 0 it wraps, so the first glance comes
   after 256 updates, then `Random & $0c` picks a facing and 32 more follow. With a retained
   5–8 the expiry starts an antic instead (`Random & 3`), whose first update runs at once.
-- **Antics**: bounce 17 updates (`Pointer_fc8d6` read backward as (Y, X); live facing = the
+- **Antics**: bounce 17 updates (`PikachuSpriteStatePixelOffsets` read backward as (Y, X); live facing = the
   command's; the image stays as it was), walk in place 48 (frame +1 every 8), shuffle 32
   (frame ^1 every 8), spin 32 (clockwise every 8). A walking player ends any of them before
   its update; ending sets the countdown to 16. The bounce is a screen offset only: drawn and
@@ -203,7 +203,7 @@ A port of Yellow's `wPikachuSpawnState` (`engine/pikachu/pikachu_follow.asm`).
   | 6 | left | copies the player |
   | 7 | in front | opposite the player |
 
-  "On the player" keeps Pikachu's image hidden (`Func_fcae2`) until the player's map
+  "On the player" keeps Pikachu's image hidden (`HidePikachuIfOffScreen`) until the player's map
   position moves off it (A6c; before that it was drawn under the player).
 - **Which setter** (`home/overworld.asm` `WarpFound2`):
   - Leaving an outside map (OVERWORLD / PLATEAU tileset) → `SetPikachuSpawnOutside`,

@@ -11,6 +11,20 @@ then renders captured-cell crops -> exact BGP pass -> frozen OBJ through OBP0/1,
 hold. Captured origin 255 is distinct from the FF tile sentinel. No clocks advance during rendering. A raw
 sheet is required: an already colourized OBP canvas cannot recover the original colour indices. Note 65 §10.13.
 
+## Battle intro scanout foundations (checked2026-11-03)
+
+`battle/battle_screen_render.ts` now accepts03a's default-null `BattleScreen.scxAfterSplit`. With `scxSplit`
+active, top lines0–63 use `scx`,64–95 use `scxSplit`,96–143 use `scxAfterSplit ?? scx`; with null split the lower
+override is ignored. Zero is a valid override. Both aligned-tile and pixel paths use this selection, retain256px
+BG wrap/source attribute lookup and leave the window and OBJ unscrolled. Rendering advances no game clock.
+No production caller enables the new field; bundle support costs72 bytes with existing behavior preserved.
+
+03b's unused `BattleIntroTiming` separates physical rSCX, HRAM and captured scanout bands. Its observer must
+freeze earlier rows before source writes or VBlank's scroll/BG/OAM latches; the final LY96 window change
+affects only the remaining48 rows. The new Program is not integrated with the live driver yet. Entry phase,
+capture, masked-LCD versus palette-held audio and real text/DIV integration are04's next trace/brief work,
+not something `renderBattleScreen` should tick. See `battle/ARCHITECTURE.md` → *A5e foundations* and note77 §3/§9.
+
 ## Canvas Rendering
 
 Canvas is GB resolution (160x144) scaled to fit window. All drawing uses `* scale`.

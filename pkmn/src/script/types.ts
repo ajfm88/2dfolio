@@ -99,9 +99,9 @@ export type ScriptCommand = (
   // state 5 pending). Enabling draws nothing until something writes the image.
   | { type: 'hidePikachu' }
   | { type: 'showPikachu' }
-  // Func_6ebb(15, 0): Pikachu's facing down, 6 frames, then its standing image written
+  // PokemonCenterUpdateSpriteImageIndex(15, 0): Pikachu's facing down, 6 frames, then its standing image written
   | { type: 'pikachuStandDown' }
-  // An explicit UpdateSprites with the font loaded (Pikachu: TrySpawnPikachu, then Func_fc76a)
+  // An explicit UpdateSprites with the font loaded (Pikachu: TrySpawnPikachu, then PikachuResumeFollowAfterPause)
   | { type: 'updateSprites'; fontLoaded?: boolean }
   // DisplayTextIDInit saves sprite facings, CloseTextDisplay restores them (Pikachu's)
   | { type: 'pikachuFacing'; action: 'save' | 'restore' }

@@ -73,7 +73,7 @@ export const D = {
   wBattleStatusData: 0xd05f,
   wPlayerBattleStatusEnd: 0xd064,
   wPlayerBideAccumulatedDamage: 0xd073,
-  wUnknownSerialCounter2: 0xd073,
+  wLinkByteTimeout: 0xd073,
   wBattleStatusDataEnd: 0xd077,
   wAmountMoneyWon: 0xd078,
   wObjectToHide: 0xd078,

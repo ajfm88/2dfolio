@@ -542,7 +542,7 @@ describe('V2c CP4 through main', () => {
     const icons = vi.spyOn(partyIcons, 'drawPartyIcon'); host.partyMenu.render();
     expect(icons.mock.calls.map(c => [c[0], c[2]])).toEqual([[19, (1 - slot) * 16]]);
     const prints = vi.spyOn(RealTextBox.prototype, 'printStandalone'); r.step('a');
-    expect(prints).toHaveBeenCalledWith({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    expect(prints).toHaveBeenCalledWith({ program: 'SleepingPikachuText1' }, { noDelay: false });
     expect(host.state).toBe('party_menu'); expect(host.partyMenu.ownsInput).toBe(true);
     const box = Reflect.get(host.partyMenu, 'openingTextBox') as TextBox;
     r.wait(2); expect((Reflect.get(box, 'screen') as { buffer: string[] }).buffer[41]).toBe(' ');
@@ -556,7 +556,7 @@ describe('V2c CP4 through main', () => {
     r.step('a'); r.step(); r.step('a'); // Rattata's SWITCH
     r.step(); r.step('up'); r.step();
     const print = vi.spyOn(RealTextBox.prototype, 'printStandalone'); r.step('a');
-    expect(print).toHaveBeenCalledWith({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    expect(print).toHaveBeenCalledWith({ program: 'SleepingPikachuText1' }, { noDelay: false });
     finishSleepPrompt(r, Reflect.get(host.partyMenu, 'openingTextBox') as TextBox);
     expect(host.playerParty).toEqual(original); expect(host.playerParty).toEqual([mon, other]);
   });
@@ -575,7 +575,7 @@ describe('V2c CP4 through main', () => {
     setBattleAndStartSavedMenuItem(2); const r = driver(); host.openStartMenu(); r.wait(23); r.step('a');
     r.wait(16); r.step('a'); r.wait(3); r.step('a'); r.wait(22);
     const print = vi.spyOn(host.textBox, 'printStandalone'); r.step('a');
-    expect(print).toHaveBeenCalledExactlyOnceWith({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    expect(print).toHaveBeenCalledExactlyOnceWith({ program: 'SleepingPikachuText1' }, { noDelay: false });
     for (let frame = 0; frame < 250 && !host.textBox.isWaitingForInput; frame++) r.step();
     expect(host.textBox.isWaitingForInput).toBe(true); r.wait(3); r.step('b');
     for (let frame = 0; frame < 150 && host.bagMenu.medicineOpen; frame++) r.step();

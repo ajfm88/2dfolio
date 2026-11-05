@@ -1656,12 +1656,6 @@
         "program": "_PartyMenuSwapMonText"
       }
     ],
-    "PartyMenuText_12cc": [
-      {
-        "op": "far",
-        "program": "_SleepingPikachuText1"
-      }
-    ],
     "PewterCityCooltrainerFText": [
       {
         "op": "far",
@@ -2296,6 +2290,12 @@
       {
         "op": "far",
         "program": "_SkyAttackGlowingText"
+      }
+    ],
+    "SleepingPikachuText1": [
+      {
+        "op": "far",
+        "program": "_SleepingPikachuText1"
       }
     ],
     "SleepingPikachuText2": [

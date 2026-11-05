@@ -95,7 +95,7 @@ export function buildOakGrassScript(playerTileX: number): ScriptCommand[] {
 
     // Wild Pikachu battle — the catch demo, Oak catches it
     // (scripts/PalletTown.asm PalletTownPikachuBattleScript: BATTLE_TYPE_PIKACHU,
-    // wCurOpponent = STARTER_PIKACHU, wCurEnemyLevel = 5)
+    // wCurOpponent = STARTER, wCurEnemyLevel = 5)
     { type: 'catchDemo', battleType: 'PIKACHU', species: 'PIKACHU', level: 5 },
 
     // After battle (text/PalletTown.asm _PalletTownOakWhewText)

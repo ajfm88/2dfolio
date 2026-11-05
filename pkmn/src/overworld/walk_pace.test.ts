@@ -54,7 +54,7 @@ describe('PassClock', () => {
   });
 });
 
-describe('walk animation (Func_5274, facings.asm)', () => {
+describe('walk animation (AdvanceScriptedNPCIntraAnimFrameCounter, facings.asm)', () => {
   it('advances the frame every 4 updates', () => {
     const anim = new WalkAnim();
     const frames: number[] = [];

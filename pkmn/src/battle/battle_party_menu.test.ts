@@ -139,7 +139,7 @@ describe('PartyMenu choose-only mode, shared #73 timing', () => {
     const print = vi.spyOn(Object.getPrototypeOf(r.party['openingTextBox']), 'printStandalone');
     r.choose(); expect(r.calls.some(c => c.name === 'load2')).toBe(false);
     expect(r.party.cursorGlyph).toBe('▶');
-    expect(print).toHaveBeenCalledWith({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    expect(print).toHaveBeenCalledWith({ program: 'SleepingPikachuText1' }, { noDelay: false });
     for (let n = 0; n < 500 && !r.calls.some(c => c.name === 'load2'); n++) { if (n % 8 === 0) r.tick('b'); else r.tick(); }
     expect(r.calls.some(c => c.name === 'load2')).toBe(true); expect(r.ctx.actionResultOrTookBattleTurn).toBe(0);
     expect(getPartyAndBillsSavedMenuItem()).toBe(0);

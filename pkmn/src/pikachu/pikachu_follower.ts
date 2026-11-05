@@ -64,7 +64,7 @@ export interface PikachuSpriteContext {
    *  Pikachu's footprint. Ordinary overworld passes have no UI and leave this out. */
   ui?: PikachuUiTiles;
   /** Pikachu's lower-left tile is the map's grass tile (the GRASSPRIORITY byte that
-   *  WillPikachuSpawnOnTheScreen leaves in A, read by Func_fc745). */
+   *  WillPikachuSpawnOnTheScreen leaves in A, read by PikachuFaceAwayFromPlayer). */
   inGrass?: boolean;
 }
 
@@ -88,7 +88,7 @@ export interface PikachuFontLoadedContext extends PikachuSpriteContext {
  *   - updateSprite: UpdateSprites (SpawnPikachu_), with the screen check, the follow moves,
  *     idling (pikachu_idle.ts) and the antics;
  *   - fontLoadedUpdate: the same routine once a text box or menu is up (BIT_FONT_LOADED):
- *     the screen check, then Func_fc745 (talked to) or Func_fc76a (back to ready);
+ *     the screen check, then PikachuFaceAwayFromPlayer (talked to) or PikachuResumeFollowAfterPause (back to ready);
  *   - startMovement / tickMovement: ApplyPikachuMovementData (pikachu_movement.ts), a
  *     blocking call that moves only Pikachu, one tick per game frame.
  */
@@ -174,7 +174,7 @@ export class PikachuFollower {
   get mapStepX(): number { return this.mapX; }
   get mapStepY(): number { return this.mapY; }
 
-  /** Func_fcc08 / Func_fcc64. Bit 6 survives refreshes and interrupted hops. */
+  /** QueuePikachuFollowCommand / PikachuLedgeOrFishingDirection. Bit 6 survives refreshes and interrupted hops. */
   playerStepStarted(dir: Direction, ledge: boolean): void {
     if (ledge) {
       this.hopToggle = !this.hopToggle;
@@ -191,7 +191,7 @@ export class PikachuFollower {
 
   /** Talking to Pikachu: IsSpriteInFrontOfPlayer sets its movement status bit 7
    *  (BIT_FACE_PLAYER). The next update that finds Pikachu on screen serves it
-   *  (Func_fc745), whether the font is loaded or not. */
+   *  (PikachuFaceAwayFromPlayer), whether the font is loaded or not. */
   requestFacePlayer(): void {
     this.facePlayerPending = true;
   }
@@ -199,16 +199,16 @@ export class PikachuFollower {
   /**
    * UpdateSprites (SpawnPikachu_). Unless WillPikachuSpawnOnTheScreen passes, nothing
    * runs and the image is hidden. A pending face-player request takes the update
-   * (Func_fc745). An antic under way takes the update; otherwise a
-   * follow move continues or starts (Func_fc7aa), taking its first move in the same
+   * (PikachuFaceAwayFromPlayer). An antic under way takes the update; otherwise a
+   * follow move continues or starts (PikachuMovementState_ProcessCommand), taking its first move in the same
    * update, so following runs 8 passes a step with no gap; with nothing to execute Pikachu
-   * idles in the same call (Func_fc803).
+   * idles in the same call (PikachuMovementState_Idle).
    */
   updateSprite(ctx: PikachuSpriteContext): void {
     this.prepareStorageSpawn(ctx);
     if (!this.onScreen(ctx)) return;
     if (this.storageSpawnPending) {
-      // Func_fc793: initialize pixels only after the screen check, seed and hide.
+      // PikachuMovementState_RefreshAndFollow: initialize pixels only after the screen check, seed and hide.
       this.finishStorageSpawn(ctx);
       this.imageShown = false;
       return;
@@ -218,7 +218,7 @@ export class PikachuFollower {
       return;
     }
     // SpawnPikachu_ lines 369–370: while DisablePikachuFollowingPlayer is set,
-    // redirect to Func_fc76a (the font-loaded ready path) instead of following.
+    // redirect to PikachuResumeFollowAfterPause (the font-loaded ready path) instead of following.
     if (isPikachuFollowingDisabled()) {
       this.func_fc76a(ctx);
       return;
@@ -257,7 +257,7 @@ export class PikachuFollower {
    * drawing a text box or the START menu (engine/menus/display_text_id_init.asm), and the
    * Pokécenter runs before Pikachu walks to the nurse. A covered or off-window Pikachu is
    * only hidden and keeps everything as it was. Otherwise, if it was talked to,
-   * Func_fc745 turns it to face the player; else Func_fc76a puts it back to ready: the
+   * PikachuFaceAwayFromPlayer turns it to face the player; else PikachuResumeFollowAfterPause puts it back to ready: the
    * standing image, its screen position back on its map position (which ends a bounce
    * and finishes a move), the countdown at zero, and the follow command refreshed.
    */
@@ -407,7 +407,7 @@ export class PikachuFollower {
     this.facing = dir;
   }
 
-  /** SpriteFunc_34a1 on Pikachu's slot: its standing image written straight to IMAGEINDEX. */
+  /** SetSpriteImageIndex on Pikachu's slot: its standing image written straight to IMAGEINDEX. */
   showStandingImage(dir: Direction): void {
     this.imageShown = true;
     this.imageFacing = dir;
@@ -449,7 +449,7 @@ export class PikachuFollower {
     drawSprite(this.spriteSheet, 0, frameY, screenX, screenY, flipX);
   }
 
-  /** Func_fc793 after a spawn: the buffer refreshed with the command toward the player,
+  /** PikachuMovementState_RefreshAndFollow after a spawn: the buffer refreshed with the command toward the player,
    *  ready, the countdown at zero, the image hidden until the next update. */
   private refresh(playerX: number, playerY: number): void {
     this.storageSpawnPending = false;
@@ -468,14 +468,14 @@ export class PikachuFollower {
   }
 
   /**
-   * Func_fc745: bit 7 cleared, the countdown set to A (WillPikachuSpawnOnTheScreen's grass
+   * PikachuFaceAwayFromPlayer: bit 7 cleared, the countdown set to A (WillPikachuSpawnOnTheScreen's grass
    * priority byte: 0, or $80 on grass), facing opposite the player, animation counters
    * cleared, then UpdatePikachuWalkingSprite (with the font loaded it hides an
    * overlapping Pikachu). The ASM keeps an antic's status here; ending it avoids indexing
-   * Pointer_fc8d6 with that countdown (and this engine's tile-based talk check can reach
+   * PikachuSpriteStatePixelOffsets with that countdown (and this engine's tile-based talk check can reach
    * a bouncing Pikachu, so the offset goes too).
    */
-  /** Func_fc76a: clear anim counters, apply image, optionally snap to map position,
+  /** PikachuResumeFollowAfterPause: clear anim counters, apply image, optionally snap to map position,
    *  clear idle, refresh follow buffer. Used by fontLoadedUpdate and the
    *  DisablePikachuFollowingPlayer path in updateSprite. */
   private func_fc76a(ctx: PikachuSpriteContext): void {
@@ -500,9 +500,9 @@ export class PikachuFollower {
 
   private facePlayer(ctx: PikachuSpriteContext, fontLoaded: boolean): void {
     this.facePlayerPending = false;
-    // Func_fc745 still runs .okay's image refresh in ASM; the next asleep
-    // Func_fc76a update refreshes that image here (no visible facing change).
-    if (isPikachuFollowingDisabled()) return;  // Func_fc745: skip turn while asleep
+    // PikachuFaceAwayFromPlayer still runs .okay's image refresh in ASM; the next asleep
+    // PikachuResumeFollowAfterPause update refreshes that image here (no visible facing change).
+    if (isPikachuFollowingDisabled()) return;  // PikachuFaceAwayFromPlayer: skip turn while asleep
     this.idle.reset();
     this.idle.counter = ctx.inGrass ? 0x80 : 0;
     this.facing = OPPOSITE[ctx.playerFacing];
@@ -525,10 +525,10 @@ export class PikachuFollower {
   }
 
   /**
-   * Func_fc7aa: start the next queued move. False when nothing can execute. The map
+   * PikachuMovementState_ProcessCommand: start the next queued move. False when nothing can execute. The map
    * position moves now (AddPikachuStepVector, twice for a hop); the pixels follow by the
    * step vector each update (NormalPikachuFollow 8 × 2 px, FastPikachuFollow 4 × 4 px,
-   * Func_fca0a 8 × 4 px).
+   * PikachuDoubleStep 8 × 4 px).
    */
   private startNextMove(): boolean {
     const command = this.followBuffer.pop();

@@ -143,7 +143,7 @@ describe.each([0, 1] as const)('status effects side %i', side => {
     expect(r.s.mem[r.t.status]).toBe(7);
   });
   it('Stadium sleep masks again and rejects its own zero results', () => {
-    const r = rig(side, 0x20, [0, 0, 4, 8, 12, 7]); r.s.wUnknownSerialFlag_d499 = 1;
+    const r = rig(side, 0x20, [0, 0, 4, 8, 12, 7]); r.s.wChosenColosseum2Cup = 1;
     r.expected(['hit', 'R0', 'R0', 'R4', 'R8', 'R12', 'R7', r.anim(), 'S12', 'text:FellAsleepText'], 12);
     expect(r.s.mem[r.t.status]).toBe(3);
   });
@@ -194,7 +194,7 @@ describe.each([0, 1] as const)('status effects side %i', side => {
     [0x24, 0, 77, 0x40, 'ParalyzedMayNotAttackText']] as const)('secondary status id%i Stadium%i threshold%i', (id, stadium, threshold, status, text) => {
     it.each([true, false])('boundary succeeds=%s consumes exactly one byte and uses the correct animation', succeeds => {
       const roll = threshold - (succeeds ? 1 : 0), r = rig(side, id, [roll]);
-      r.s.wUnknownSerialFlag_d499 = stadium; r.s.wAnimationType = 99; r.s.mem[r.t.flags2] = 0x20;
+      r.s.wChosenColosseum2Cup = stadium; r.s.wAnimationType = 99; r.s.mem[r.t.flags2] = 0x20;
       r.observer.onDraw = () => expect(r.s.wAnimationType).toBe(0);
       const penalty = status === 0x10 ? ['halve'] : status === 0x40 ? ['quarter'] : [];
       r.expected([`R${roll}`, ...(succeeds ? [...penalty, r.anim(side === 0 ? 0xa9 : 0xc7, side === 0 ? 0 : 3), 'S12', `text:${text}`] : [])], succeeds ? 12 : 0);

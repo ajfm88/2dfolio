@@ -28,7 +28,7 @@ export function* attackSubstitute(
   state.mem[status] &= ~0x10;
   yield* host.printText('SubstituteBrokeText');
   state.hWhoseTurn ^= 1;
-  yield* ports.substituteBreak(state); // Func_79929, with the target as actor.
+  yield* ports.substituteBreak(state); // AnimateSubstituteBreaking, with the target as actor.
   state.hWhoseTurn ^= 1;
   if (state.hWhoseTurn === 0) state.wPlayerMoveEffect = 0;
   else state.wEnemyMoveEffect = 0;

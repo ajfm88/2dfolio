@@ -16,7 +16,7 @@ import type { BattleRenderTiles, RawImage } from './battle_screen_render';
 
 // Pinned symbols573535d; OAM and sprite-pattern storage stay with the screen/renderer owners.
 export const ENEMY_SEND_CELLS = { wEnemyPartySpecies: 0xd89c, wBaseCoordX: 0xd080, wBaseCoordY: 0xd081,
-  wHUDPokeballGfxOffsetX: 0xcd3e, wHUDGraphicsTiles: 0xcd3f, wdef4: 0xdef4 } as const;
+  wHUDPokeballGfxOffsetX: 0xcd3e, wHUDGraphicsTiles: 0xcd3f, wBattleObjPalID: 0xdef4 } as const;
 
 export interface EnemySendOutHost extends PlayerSendOutHost {
   frontPicture(state: BattleState): string;
@@ -57,7 +57,7 @@ export function setupEnemyPartyPokeballs(state: BattleState, host: Pick<EnemySen
     state.mem[(D.wBuffer+slot)&65535]=!alive?0x33:state.mem[(base+4)&65535]?0x32:0x31;
   }
   state.mem[e.wBaseCoordX]=0x48; state.mem[e.wBaseCoordY]=0x20;
-  state.mem[e.wHUDPokeballGfxOffsetX]=0xf8; state.mem[e.wdef4]=1;
+  state.mem[e.wHUDPokeballGfxOffsetX]=0xf8; state.mem[e.wBattleObjPalID]=1;
   for(let slot=0;slot<6;slot++) {
     host.screen.setOam(6+slot,{ y:state.mem[e.wBaseCoordY],x:state.mem[e.wBaseCoordX],tile:state.mem[D.wBuffer+slot],attributes:1 });
     state.mem[e.wBaseCoordX]=(state.mem[e.wBaseCoordX]-8)&255;

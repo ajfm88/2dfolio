@@ -952,7 +952,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
 
     case 'showPikachu':
       // wPikachuSpawnState = 5, EnablePikachuOverworldSpriteDrawing: drawing is allowed
-      // again, but nothing is drawn until an image is written (Func_6ebb or UpdateSprites).
+      // again, but nothing is drawn until an image is written (PokemonCenterUpdateSpriteImageIndex or UpdateSprites).
       // Spawn state 5 is read only by a Pikachu that isn't out (TrySpawnPikachu).
       pendingPikachuSpawnState = 5;
       if (pikachuDrawingDisabled && pikachuFollower) {
@@ -963,7 +963,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       break;
 
     case 'pikachuStandDown':
-      // Func_6ebb(15, 0): SetSpriteFacingDirectionAndDelay, then SpriteFunc_34a1 writes the
+      // PokemonCenterUpdateSpriteImageIndex(15, 0): SetSpriteFacingDirectionAndDelay, then SetSpriteImageIndex writes the
       // standing-down IMAGEINDEX. A starter that wasn't out (it had fainted) has no
       // position to draw at here; it appears at the next UpdateSprites.
       if (pikachuFollower?.visible) {
@@ -985,7 +985,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
         return runScript(deps, isPass, displayAdvanced);
       }
       // TrySpawnPikachu for a starter that wasn't out (status 0), at the pending spawn
-      // state; then SpawnPikachu_ with the font loaded (Func_fc76a).
+      // state; then SpawnPikachu_ with the font loaded (PikachuResumeFollowAfterPause).
       if (pikachuFollower && !pikachuFollower.visible && !pikachuDrawingDisabled
           && pendingPikachuSpawnState !== null && shouldPikachuFollow(playerParty)) {
         pikachuFollower.visible = true;

@@ -117,7 +117,7 @@ describe.each([0, 1] as const)('animation helpers side %i', side => {
   });
 });
 
-describe.each([0, 1, 2])('Func_78e98 starting third %i', phase => {
+describe.each([0, 1, 2])('SaveScreenTilesAndTransferBGMap starting third %i', phase => {
   it.each([true, false])('12-frame ledger, enables, Buffer2, hidden BG0 and shown window (initial enabled=%s)', enabled => {
     const s = new BattleState(), video = new BattleMenuScreen(), screen = video.screen;
     const host = new BattleHost(s, video); // Bind the actual host rather than a second refresh-only buffer.
@@ -203,12 +203,12 @@ it('failure printers use committed keys and delegate their frame kinds without a
 
 it('six cells have cartridge addresses and PayDayMoney aliases all three NameBuffer bytes', () => {
   const s = new BattleState();
-  expect([A.wTotalPayDayMoney, A.wPlayerMonMinimized, A.wChargeMoveNum, A.wPayDayMoney, A.wOptions, A.wUnknownSerialFlag_d499])
+  expect([A.wTotalPayDayMoney, A.wPlayerMonMinimized, A.wChargeMoveNum, A.wPayDayMoney, A.wOptions, A.wChosenColosseum2Cup])
     .toEqual([0xcce5, 0xccf7, 0xcd3d, 0xcd6d, 0xd354, 0xd498]);
   s.mem.set([0x12, 0x34, 0x56], A.wPayDayMoney);
   expect([...s.mem.slice(A.wNameBuffer, A.wNameBuffer + 3)]).toEqual([0x12, 0x34, 0x56]);
   expect(s.wBattleMenuCurrentPP).toBe(0x12); s.wBattleMenuCurrentPP = 0x99; expect(s.wPayDayMoney).toBe(0x99);
-  s.wTotalPayDayMoney = 0x23; s.wPlayerMonMinimized = 1; s.wChargeMoveNum = 19; s.wOptions = 128; s.wUnknownSerialFlag_d499 = 1;
+  s.wTotalPayDayMoney = 0x23; s.wPlayerMonMinimized = 1; s.wChargeMoveNum = 19; s.wOptions = 128; s.wChosenColosseum2Cup = 1;
   expect([s.mem[0xcce5], s.mem[0xccf7], s.mem[0xcd3d], s.mem[0xd354], s.mem[0xd498]]).toEqual([0x23, 1, 19, 128, 1]);
 });
 

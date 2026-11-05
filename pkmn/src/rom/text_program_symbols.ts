@@ -147,7 +147,7 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["PartyMenuItemUseText", 0x04, 0x5A3D, true], // engine/menus/party_menu.asm
   ["PartyMenuNormalText", 0x04, 0x5A38, true], // engine/menus/party_menu.asm
   ["PartyMenuSwapMonText", 0x04, 0x5A4C, true], // engine/menus/party_menu.asm
-  ["PartyMenuText_12cc", 0x00, 0x12cc, true], // home/pokemon.asm — sleeping Pikachu selection (V2c CP2)
+  ["SleepingPikachuText1", 0x00, 0x12cc, true], // home/pokemon.asm — sleeping Pikachu selection (V2c CP2)
   ["PikachuUnhappyText", 0x08, 0x5853, true], // engine/pokemon/bills_pc.asm
   ["PokeCenterSignText", 0x00, 0x23EA, true], // home/overworld_text.asm
   ["PokemartAnythingElseText", 0x01, 0x6BC3, true], // engine/events/pokemart.asm

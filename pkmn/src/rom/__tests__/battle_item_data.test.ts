@@ -187,6 +187,8 @@ describe.skipIf(!ROM_PATH)('A5c3e checkpoint-02 source data', () => {
   it('adds only four missing text keys, retaining the existing empty root and all prior ops/map pointers', () => {
     const previous = JSON.parse(execFileSync('git', ['show', 'a20cfa8:game/data/text_programs.json'],
       { encoding: 'utf8', windowsHide: true })) as TextProgramsFile;
+    expect(previous.programs.PartyMenuText_12cc).toBeDefined();
+    previous.programs.SleepingPikachuText1 = previous.programs.PartyMenuText_12cc; delete previous.programs.PartyMenuText_12cc; // note 78 rename
     const added = ['DoYouWantToNicknameText', '_DoYouWantToNicknameText', 'DontHavePokemonText',
       '_DontHavePokemonText'];
     expect(Object.keys(text.programs).filter(key => !(key in previous.programs)).sort()).toEqual(added.sort());

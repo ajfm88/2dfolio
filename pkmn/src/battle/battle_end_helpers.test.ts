@@ -34,6 +34,7 @@ function starter(slot = 1): BattleState {
 describe('unused end-state address view', () => {
   // 11e: audio/low_health_alarm.ts owns these two bytes; BattleState has no copy.
   const AUDIO_OWNED = ['wLowHealthAlarm', 'wLowHealthAlarmDisabled'];
+  const RENAMED_BY_NOTE78: Record<string, string> = { wUnknownSerialCounter2: 'wLinkByteTimeout' };
   it('covers every name in note70 section9.1.7, pins symbols and shares every alias byte', () => {
     const root = resolve(__dirname, '../../..');
     const note = readFileSync(resolve(root, 'notes/70-a5c3d-plan.md'), 'utf8')
@@ -44,7 +45,7 @@ describe('unused end-state address view', () => {
       const address = parseInt(hex, 16); groups++;
       for (const [, name] of names.matchAll(/`(\w+)`/g)) {
         if (AUDIO_OWNED.includes(name)) { expect(name in D, name).toBe(false); continue; }
-        const key = name as keyof typeof D;
+        const key = (RENAMED_BY_NOTE78[name] ?? name) as keyof typeof D;
         expect(D[key], name).toBe(address); expect(sym).toMatch(new RegExp(`^\\w+:${hex.toLowerCase()} ${name}$`, 'm'));
         c[key] = 0x1a5; expect(s.mem[address]).toBe(0xa5); expect(c[key]).toBe(0xa5);
         s.mem[address] = 0x5a; expect(c[key]).toBe(0x5a);

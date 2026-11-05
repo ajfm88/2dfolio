@@ -389,7 +389,7 @@ The muted check verifies those writes, not audible loudness. See note 58 §16
 for the screenshots, harness, fixture boundaries and two complete gate runs.
 
 V2c CP4 adds the sleeping-starter branch before ordinary and SWITCH-target selection:
-`PartyMenuText_12cc` runs as a standalone PrintText with its native prompt wait, then
+`SleepingPikachuText1` runs as a standalone PrintText with its native prompt wait, then
 clears the swap source and returns cancellation. START's party menu owns that TextBox;
 field medicine supplies the bag's shared TextBox, whose VBlank/input reads stay with
 the bag. The selected item and Pokémon remain untouched. Only the sleeping starter's

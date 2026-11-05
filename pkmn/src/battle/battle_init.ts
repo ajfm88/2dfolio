@@ -136,7 +136,7 @@ function setupOwnPartyPokeballs(state: BattleState, screen: BattleScreen): void 
     state.mem[(D.wBuffer + slot) & 65535] = !alive ? 0x33 : state.mem[(base + 4) & 65535] ? 0x32 : 0x31;
   }
   state.mem[e.wBaseCoordX] = state.mem[e.wBaseCoordY] = 0x60;
-  state.mem[e.wHUDPokeballGfxOffsetX] = 8; state.mem[e.wdef4] = 0;
+  state.mem[e.wHUDPokeballGfxOffsetX] = 8; state.mem[e.wBattleObjPalID] = 0;
   for (let slot = 0; slot < 6; slot++) {
     screen.setOam(slot, { y: state.mem[e.wBaseCoordY], x: state.mem[e.wBaseCoordX],
       tile: state.mem[D.wBuffer + slot], attributes: 0 });

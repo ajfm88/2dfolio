@@ -180,7 +180,7 @@ the state machines; `Player`, `Npc` and `PikachuFollower` run them.
   - **A scripted walk** defaults to one resting pass and ends one pass after its last pixel.
     `startScript(..., { keepStatus: true, bytesToFF: true })` opts into MoveSprite's
     preserved status/delay and STAY/NONE write. Existing callers retain their defaults.
-- **Walk animation** (`WalkAnim`, `Func_5274`): the frame advances every 4 updates. Frames
+- **Walk animation** (`WalkAnim`, `AdvanceScriptedNPCIntraAnimFrameCounter`): the frame advances every 4 updates. Frames
   0–3 are stand, walk, stand, walk, with the last one x-flipped facing up or down
   (`WalkingDown2`/`WalkingUp2`), so the feet alternate. Pikachu's frame advances every 2
   updates, or every 5 below happiness 80.

@@ -38,7 +38,7 @@ const SIDE = [
     defense: A.wEnemyMonDefense, oppositeDefense: A.wBattleMonDefense },
 ] as const;
 
-/** pret core.asm:6820-6825. Delay3, MoveAnimation port, then Func_78e98's 12 serviced frames. */
+/** pret core.asm:6820-6825. Delay3, MoveAnimation port, then SaveScreenTilesAndTransferBGMap's 12 serviced frames. */
 export function* playMoveAnimation(state: BattleState, ports: Pick<StatusPorts, 'animation'>, id: number): Program {
   state.wAnimationID = id;
   yield* delayFrames(3);

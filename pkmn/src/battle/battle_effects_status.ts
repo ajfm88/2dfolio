@@ -48,7 +48,7 @@ export function* sleepEffect(state: BattleState, env: StatusEffectEnvironment): 
   for (;;) {
     count = battleRandom(state) & 7;
     if (count === 0) continue;
-    if (state.wUnknownSerialFlag_d499 !== 0) {
+    if (state.wChosenColosseum2Cup !== 0) {
       count &= 3;
       if (count === 0) continue;
     }
@@ -103,7 +103,7 @@ export function* freezeBurnParalyzeEffect(state: BattleState, env: StatusEffectE
   if (m[t.status + 1] === type || m[t.status + 2] === type) return;
   const id = effect(state);
   let normalized: number, threshold: number;
-  if (id === 0x23) { normalized = 5; threshold = state.wUnknownSerialFlag_d499 === 0 ? 77 : 26; }
+  if (id === 0x23) { normalized = 5; threshold = state.wChosenColosseum2Cup === 0 ? 77 : 26; }
   else { normalized = id < 7 ? id : id - 0x1e; threshold = id < 7 ? 26 : 77; }
   if (battleRandom(state) >= threshold) return;
   let text: string;

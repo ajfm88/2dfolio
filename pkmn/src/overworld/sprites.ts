@@ -60,7 +60,7 @@ export function updateSprites(
 }
 
 /**
- * Func_fcc08 runs after UpdateSprites at every step start, including both hop halves.
+ * QueuePikachuFollowCommand runs after UpdateSprites at every step start, including both hop halves.
  * Pikachu executes the command one pass later; bit 6 suppresses the second hop append.
  */
 export function recordStepForPikachu(player: Player, pikachuFollower: PikachuFollower): void {

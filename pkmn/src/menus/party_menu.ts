@@ -390,7 +390,7 @@ export class PartyMenu {
     this.chosenIndex = -1;
     this.promptVisible = false;
     this.sleepingText = this.itemTextBox ?? this.openingTextBox;
-    this.sleepingText.printStandalone({ program: 'PartyMenuText_12cc' }, { noDelay: false });
+    this.sleepingText.printStandalone({ program: 'SleepingPikachuText1' }, { noDelay: false });
     return true;
   }
 

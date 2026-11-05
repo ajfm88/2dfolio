@@ -42,7 +42,7 @@ describe('PC follower status-0 lifecycle (TrySpawnPikachu before the screen test
     p.fontLoadedUpdate(context(() => 0));
     expect([p.x, p.y, p.direction]).toEqual([128, 128, 'up']);
     expect(Reflect.get(p, 'storageSpawnPending')).toBe(false);
-    expect(p.collisionSprite(128, 128).available).toBe(false); // Func_fcae2 overlap
+    expect(p.collisionSprite(128, 128).available).toBe(false); // HidePikachuIfOffScreen overlap
     // Follow commands start to execute as the player steps away.
     p.playerStepStarted('down', false); p.playerStepStarted('down', false);
     p.updateSprite({ ...context(() => 0), playerMapStep: { x: 8, y: 10 }, playerWalking: true });

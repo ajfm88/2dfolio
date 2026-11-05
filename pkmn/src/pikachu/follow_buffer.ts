@@ -21,7 +21,7 @@ export class PikachuFollowBuffer {
     this.commands.push(command);
   }
 
-  /** Func_fcc92 retains the last command for idling; it cannot execute alone. */
+  /** GetNextPikachuFollowCommand retains the last command for idling; it cannot execute alone. */
   pop(): number | null {
     return this.commands.length >= 2 ? this.commands.shift()! : null;
   }

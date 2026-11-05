@@ -71,7 +71,7 @@ export function adjustedCoord(coord: number, v: number): number {
  * kept if self's Y half-width is smaller than its X half-width (it moves horizontally),
  * otherwise the Y bit.
  *
- * The player's overlap with Pikachu (Func_4d0a, wd433) never enters the player's mask;
+ * The player's overlap with Pikachu (StorePikachuCollisionDelta, wPikachuCollisionUnusedDelta) never enters the player's mask;
  * CollisionCheckOnLand handles Pikachu through the exact-front check instead.
  */
 export function collisionMask(self: CollisionSprite, table: readonly CollisionSprite[]): number {

@@ -115,8 +115,10 @@ export class BattleScreen {
   transferDestination: 0x98 | 0x9c = 0x9c;
   scx = 0;
   scy = 0;
-  /** Whole-scanline SCX for LY 64–95. Null uses scx on every line. */
+  /** Whole-scanline SCX for LY 64–95. Null disables both split overrides. */
   scxSplit: number | null = null;
+  /** core.asm:80: after LY96's write. Null retains scx; used only while scxSplit is active. */
+  scxAfterSplit: number | null = null;
   lcdOn = true;
   /** Non-zero while SET_PAL_BATTLE is in its discarded-VBlank hold. vblank() throws. */
   paletteHold = 0;
@@ -261,7 +263,7 @@ export class BattleScreen {
     textBgTransfer.enabled = true;
   }
 
-  /** pret home/tilemap.asm:9-13. Shared by the existing host port and Func_78e98. */
+  /** pret home/tilemap.asm:9-13. Shared by the existing host port and SaveScreenTilesAndTransferBGMap. */
   saveScreenTilesToBuffer2(): void { this.buffer2 = this.cells; }
 
   /** pret home/tilemap.asm:15-28. Restore CPU tiles and leave automatic transfers enabled. */

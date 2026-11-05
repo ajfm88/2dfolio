@@ -1,7 +1,7 @@
 // Pikachu's scripted-movement data (A6e): engine/pikachu/pikachu_movement.asm.
 //   PikachuMovementDatabase  63 records of [func1, param1, func2, param2]; a param of $80
 //                            reads the next program byte instead
-//   SineWave_3f              32 little-endian words (`sine_table 32`)
+//   SineWave              32 little-endian words (`sine_table 32`)
 //   The byte programs that today's callers run (rom_offsets.ts PIKACHU_MOVEMENT_PROGRAMS)
 // Output: pikachu_movement.json. The interpreter is pikachu/pikachu_movement.ts.
 
@@ -23,7 +23,7 @@ export type PikachuMovementProgramId = keyof typeof PIKACHU_MOVEMENT_PROGRAMS;
 export interface PikachuMovementData {
   /** Indexed by opcode, $00–$3e. */
   commands: PikachuMovementRecord[];
-  /** SineWave_3f */
+  /** SineWave */
   sine: number[];
   /** Raw program bytes, ending in $3f. */
   programs: Record<PikachuMovementProgramId, number[]>;

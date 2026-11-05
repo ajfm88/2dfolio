@@ -1,4 +1,4 @@
-// A6c: Pikachu's idle glances and antics (pikachu_follow.asm Func_fc803 and statuses 6–9)
+// A6c: Pikachu's idle glances and antics (pikachu_follow.asm PikachuMovementState_Idle and statuses 6–9)
 
 import { describe, it, expect } from 'vitest';
 import type { Direction } from '../core';
@@ -53,7 +53,7 @@ describe('follow command bytes', () => {
   });
 });
 
-describe('idle (Func_fc803)', () => {
+describe('idle (PikachuMovementState_Idle)', () => {
   it('a zero countdown wraps: the first glance takes 256 updates, then every 32', () => {
     const idle = new PikachuIdle();
     const s = sprite();
@@ -130,7 +130,7 @@ describe('the antics', () => {
     expect(runAntic(2).idle.counter).toBe(16);
   });
 
-  it('the bounce reads Pointer_fc8d6 backward as (Y, X), faces the command, keeps its image', () => {
+  it('the bounce reads PikachuSpriteStatePixelOffsets backward as (Y, X), faces the command, keeps its image', () => {
     const { log, idle } = runAntic(0, sprite('left'), 8);
     expect(log.map(l => l.off)).toEqual([...BOUNCE_OFFSETS].reverse());
     expect(log[1].off).toEqual([-2, -1]); // the negative X side first

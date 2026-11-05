@@ -1148,7 +1148,36 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
       and Pikachu's idle and walking bytes. They read `hRandomAdd` / `hRandomSub`, which `Random` updates from DIV.
     - It runs after the timing-tests slice (#90) and before A5e. Claude spikes and briefs it; Codex implements it.
 
+92. **A5e checkpoint-03 splits into03a and03b** (2026-11-03, Codex's sizing call under CONVENTIONS → Scoping rules;
+    the user may override it).
+
+    - **03a:** the missing third scroll band in the shared battle renderer, with a default-null lower override,
+      pixel assertions, no live caller enabling it and no animation/timing changes. Note76 is its executable brief.
+    - **03b:** the unused complete silhouette Program, traced and spiked separately before briefing. The original
+      checkpoint-04 still owns live wiring and the timing/DIV ledger audit.
+    - Source evidence: `core.asm:74–88` writes rSCX at LY64 and LY96, while `home/vblank.asm:16–20` supplies
+      a distinct top-band value. The renderer at planning time could not express all three independently.
+    - LCD synchronization (`home/lcd.asm`) and the final partial raster remain03b's trace work. No fixed full-frame
+      delay is invented in03a. O-50 and all parent A5e/A5f scope boundaries remain unchanged.
+
+93. **Current A5e roles: Codex plans/spikes/reviews; Claude Sonnet implements** (2026-11-03).
+    *The user: "ill have claude sonnet implement the next slice, you will still review its work".*
+
+    - This supersedes the earlier Grok assignment and the older Claude-plans/Codex-implements wording for
+      the current checkpoint sequence.02,03a and03b followed this workflow; their reviews are notes75 §8,
+      76 §7 and77 §9. The user can reassign later checkpoints.
+    - The03b review accepts an **unused Program and explicit phase/capture contract**, not live ISR-cycle
+      timing or session integration.04 must trace/spike/brief real driver, phase, capture, audio, text and DIV
+      composition before replacing the interim intro or changing live ledger expectations.
+    - Preserve the current OFF move-animation routing until O-50 is resolved. No broader animation scope
+      or live intro wiring is implied by accepting the foundations or by stopping for the day.
+
 ## Open — not decided, needs the user
+
+**O-50. Attack move animations in A5e, or a separate future slice?** Asked2026-11-03; no unambiguous answer
+recorded at day end. Recommendation: keep attack animations on the current OFF path and limit the new player
+to the separately traced poof/presentation IDs (#70/#83, note75 §1). Resolve before the animation-data/routing
+brief; it does not block planning04's intro integration. Do not treat the earlier "+" message as a choice.
 
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.

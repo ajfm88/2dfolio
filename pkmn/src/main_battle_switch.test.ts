@@ -156,7 +156,7 @@ it('battle_choice retains the cartridge sleeping-Pikachu icon and selection gate
   await world('Route1',5,5,[mon(),mon(19,20)]);begin();disablePikachuFollowing();openParty();const s=host.session!;
   const iconsSpy=vi.spyOn(icons,'drawPartyIcon');host.renderLiveBattle();expect(iconsSpy.mock.calls.map(c=>c[0])).toEqual([19]);
   const print=vi.spyOn(TextBox.prototype,'printStandalone');tick(['a']);
-  expect(print).toHaveBeenCalledWith({program:'PartyMenuText_12cc'},{noDelay:false});
+  expect(print).toHaveBeenCalledWith({program:'SleepingPikachuText1'},{noDelay:false});
   // Observe the checked continuation without changing the unreachable scenario.
   until(()=>s.foreground==='battle',()=>[...pulse()]);
   until(()=>row(14).includes('FIGHT')&&!s.video.textBox.active,()=>[]);

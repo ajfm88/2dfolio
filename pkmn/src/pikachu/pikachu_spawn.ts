@@ -24,19 +24,19 @@ export function isOutsideTileset(tileset: string): boolean {
   return tileset === 'OVERWORLD' || tileset === 'PLATEAU';
 }
 
-// SetPikachuSpawnOutside, Pointer_fc64b: state 4 (below the player)
+// SetPikachuSpawnOutside, PikachuSpawnBelowPlayerMapList: state 4 (below the player)
 const OUTSIDE_BELOW_PLAYER = new Set([
   'VictoryRoad2F', 'Route7Gate', 'Route8Gate', 'Route16Gate1F',
   'Route18Gate1F', 'Route15Gate1F', 'Route11Gate1F',
 ]);
 
-// SetPikachuSpawnOutside, Pointer_fc653: state 3 if the player faces down, else 1
+// SetPikachuSpawnOutside, PikachuSpawnDelayedMapList: state 3 if the player faces down, else 1
 const OUTSIDE_ON_PLAYER_IF_FACING_DOWN = new Set([
   'ViridianForestNorthGate', 'CeruleanBadgeHouse', 'CeruleanTrashedHouse',
   'VermilionDock', 'CeladonMansion1F', 'Route2Gate', 'FuchsiaGoodRodHouse',
 ]);
 
-// SetPikachuSpawnWarpPad, Pointer_fc68e: state 1 (right of the player)
+// SetPikachuSpawnWarpPad, PikachuSpawnWarpPadMaps: state 1 (right of the player)
 const WARP_PAD_RIGHT_OF_PLAYER = new Set([
   'ViridianForest',
   'SafariZoneCenterRestHouse', 'SafariZoneWestRestHouse', 'SafariZoneEastRestHouse',

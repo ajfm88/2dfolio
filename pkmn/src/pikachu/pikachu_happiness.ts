@@ -217,7 +217,7 @@ const ANIM_SCRIPTS: Record<number, PikachuAnimScript> = {
     frames: [d(8), o(12), d(8), o(12)],
     duration: 50,
   },
-  // PikaPicAnimScript26 / PikaPicAnimBGFrames_32: sleeping, waking, awake.
+  // PikaPicAnimScript_WakeUp / PikaPicAnimBGFrames_32: sleeping, waking, awake.
   26: {
     baseFace: `${P}/unknown_e5000.png`,
     overlays: [

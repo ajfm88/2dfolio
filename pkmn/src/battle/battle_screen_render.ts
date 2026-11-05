@@ -122,7 +122,8 @@ export function renderBattleScreen(screen: BattleScreen, tiles: BattleRenderTile
   };
   for (let y = 0; y < HEIGHT; ) {
     const split = screen.scxSplit !== null && y >= 64 && y < 96;
-    const scrollX = split ? screen.scxSplit! : screen.scx;
+    const scrollX = split ? screen.scxSplit! : screen.scxSplit !== null && y >= 96
+      ? (screen.scxAfterSplit ?? screen.scx) : screen.scx;
     const windowBand = y >= screen.wy;
     const aligned = (scrollX & 7) === 0 && (y + screen.scy) % 8 === 0
       && (!windowBand || ((windowLeft & 7) === 0 && (y - screen.wy) % 8 === 0));

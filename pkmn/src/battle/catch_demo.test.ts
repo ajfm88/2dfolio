@@ -54,7 +54,7 @@ describe('back pics and names', () => {
     expect(gameText[catchDemoNameKey('PIKACHU')]).toBe('PROF.OAK');
   });
 
-  it('resolves both opponents (RATTATA, STARTER_PIKACHU)', () => {
+  it('resolves both opponents (RATTATA, STARTER)', () => {
     expect(getSpecies('RATTATA')?.id).toBe(19);
     expect(getSpecies('PIKACHU')?.id).toBe(25);
   });

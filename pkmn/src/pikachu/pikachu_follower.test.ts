@@ -37,7 +37,7 @@ beforeEach(() => {
 
 afterEach(() => { enablePikachuFollowing(); vi.restoreAllMocks(); });
 
-describe('following disabled (Func_fc76a / Func_fc745)', () => {
+describe('following disabled (PikachuResumeFollowAfterPause / PikachuFaceAwayFromPlayer)', () => {
   it('refreshes the buffer and standing image on every asleep update without idling or antics', async () => {
     const p = await follower(); p.spawn(160, 160, 'down'); disablePikachuFollowing();
     const random = vi.fn(() => 0);
@@ -83,7 +83,7 @@ async function follower(): Promise<PikachuFollower> {
 const lastDraw = () => { const calls = vi.mocked(drawSprite).mock.calls; return calls[calls.length - 1]; };
 
 describe('spawn and the first update', () => {
-  it('hidden until the first UpdateSprites (Func_fc793), then drawn standing', async () => {
+  it('hidden until the first UpdateSprites (PikachuMovementState_RefreshAndFollow), then drawn standing', async () => {
     const p = await follower();
     p.spawn(160, 160, 'down'); // behind = one step above
     p.render(0, 0);
@@ -290,7 +290,7 @@ describe('UI over Pikachu (A6c review R-1, R-2)', () => {
     // The font-loaded update stops at the same check: the antic survives the menu
     p.fontLoadedUpdate(fontLoaded(START()));
     expect([p.antic, p.screenOffset]).toEqual(['bounce', { x: -2, y: -4 }]);
-    // Menu closed: the bounce goes on where it stopped, but asm_fc87f never redraws the
+    // Menu closed: the bounce goes on where it stopped, but PikachuMovementState_Hop never redraws the
     // image, so IMAGEINDEX stays $ff until the bounce ends and idle draws it again
     p.updateSprite(at(8, 8));
     expect(p.screenOffset).toEqual({ x: -3, y: -2 });
@@ -347,7 +347,7 @@ describe('UI over Pikachu (A6c review R-1, R-2)', () => {
     p.requestFacePlayer();
     p.fontLoadedUpdate(fontLoaded(TEXT_BOX(), { playerFacing: 'up' }));
     expect(p.direction).toBe('down');
-    expect(p.followCommand).toBe(5); // Func_fc745 does not refresh the buffer
+    expect(p.followCommand).toBe(5); // PikachuFaceAwayFromPlayer does not refresh the buffer
     const random = vi.fn(() => 1);
     for (let i = 0; i < 255; i++) p.updateSprite(at(8, 8, { random }));
     expect(random).not.toHaveBeenCalled();
@@ -377,7 +377,7 @@ describe('UI over Pikachu (A6c review R-1, R-2)', () => {
     p.updateSprite(at(8, 8, { playerFacing: 'right', random }));
     expect(p.direction).toBe('left');
     expect(p.imageVisible).toBe(true);
-    // That pass was Func_fc745 only (no idle count); the countdown starts from 0
+    // That pass was PikachuFaceAwayFromPlayer only (no idle count); the countdown starts from 0
     for (let i = 0; i < 255; i++) p.updateSprite(at(8, 8, { random }));
     expect(random).not.toHaveBeenCalled();
     p.updateSprite(at(8, 8, { random }));

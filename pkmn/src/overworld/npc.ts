@@ -135,7 +135,7 @@ export class Npc {
 
   /** SetSpriteFacingDirection: live facing without repainting IMAGEINDEX. */
   setLiveFacing(dir: Direction): void { this.walk.facing = dir; }
-  /** SpriteFunc_34a1: standing IMAGEINDEX, without changing the live facing. */
+  /** SetSpriteImageIndex: standing IMAGEINDEX, without changing the live facing. */
   showStandingImage(dir: Direction): void {
     this.imageDirection = dir;
     this.imageFrame = 0;

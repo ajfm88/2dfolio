@@ -226,7 +226,7 @@ export const PIKACHU_EMOTION_SPRITES: Record<string, PikachuEmotionEntry> = {
   'e4e70': { offset: symToOffset(0x39, 0x4e70), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e5000': { offset: symToOffset(0x39, 0x5000), type: 'pic', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e50af': { offset: symToOffset(0x39, 0x50af), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
-  // V2c CP2: waking-sequence overlays for emotion 26 (PikaPicAnimScript26)
+  // V2c CP2: waking-sequence overlays for emotion 26 (PikaPicAnimScript_WakeUp)
   'e7b83': { offset: symToOffset(0x39, 0x7b83), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e7d13': { offset: symToOffset(0x39, 0x7d13), type: 'gfx', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
   'e523f': { offset: symToOffset(0x39, 0x523f), type: 'pic', width: 40, height: 40, tilesWide: 5, dataSize: 400 },
@@ -335,7 +335,7 @@ export const LEDGE_HOPPING_SHADOW = symToOffset(0x06, 0x6893);
 
 // Pikachu's scripted-movement interpreter (engine/pikachu/pikachu_movement.asm, A6e)
 export const PIKACHU_MOVEMENT_DATABASE = symToOffset(0x3f, 0x53b0); // 63 records × 4 bytes
-export const PIKACHU_MOVEMENT_SINE     = symToOffset(0x3f, 0x5938); // SineWave_3f: 32 words
+export const PIKACHU_MOVEMENT_SINE     = symToOffset(0x3f, 0x5938); // SineWave: 32 words
 /** The movement byte programs today's callers run: offset and exact length (with $3f).
  *  ViridianCityPikachuMovementData is 3c:5a0a — the operand of ViridianCityMovePikachu's
  *  `ld hl` (21 0a 5a); identical bytes at 3c:5e2b belong to another map. */
@@ -346,8 +346,8 @@ export const PIKACHU_MOVEMENT_PROGRAMS = {
   nurse1:            { offset: symToOffset(0x3f, 0x5294), length: 5 }, // PikachuWalksToNurseJoy.PikaMovementData1
   nurse2:            { offset: symToOffset(0x3f, 0x5299), length: 4 }, // .PikaMovementData2
   nurse3:            { offset: symToOffset(0x3f, 0x529d), length: 4 }, // .PikaMovementData3
-  emotion_fd218:     { offset: symToOffset(0x3f, 0x5218), length: 6 }, // PikachuMovementData_fd218
-  emotion_fd21e:     { offset: symToOffset(0x3f, 0x521e), length: 6 }, // PikachuMovementData_fd21e
-  emotion_fd224:     { offset: symToOffset(0x3f, 0x5224), length: 8 }, // PikachuMovementData_fd224
-  emotion_fd230:     { offset: symToOffset(0x3f, 0x5230), length: 8 }, // PikachuMovementData_fd230
+  emotion_fd218:     { offset: symToOffset(0x3f, 0x5218), length: 6 }, // PikachuMovementData_TurnAwayFromPlayer
+  emotion_fd21e:     { offset: symToOffset(0x3f, 0x521e), length: 6 }, // PikachuMovementData_TurnToSide
+  emotion_fd224:     { offset: symToOffset(0x3f, 0x5224), length: 8 }, // PikachuMovementData_FastJump
+  emotion_fd230:     { offset: symToOffset(0x3f, 0x5230), length: 8 }, // PikachuMovementData_Jump
 } as const;

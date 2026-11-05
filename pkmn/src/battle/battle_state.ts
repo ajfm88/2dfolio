@@ -53,7 +53,7 @@ export const A = {
   wChargeMoveNum: 0xcd3d,
   wPayDayMoney: 0xcd6d, // Three BCD bytes alias wNameBuffer / wBattleMenuCurrentPP.
   wOptions: 0xd354,
-  wUnknownSerialFlag_d499: 0xd498,
+  wChosenColosseum2Cup: 0xd498,
   wBattleMonSpecies: 0xd013,
   wBattleMonPartyPos: 0xd016,
   wBattleMonStatus: 0xd017,

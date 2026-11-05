@@ -203,7 +203,7 @@ describe('shared tails through the real retained text/video host', () => {
     { name: 'NoEffect', tail: itemUseNoEffect, result: 0 },
     { name: 'NotTime', tail: itemUseNotTime, result: 0 },
     { name: 'NotYours', tail: itemUseNotYoursToUse, result: 0 },
-    { name: 'Func_e4bf', tail: func_e4bf, result: 2 },
+    { name: 'ItemUseDontHavePokemon', tail: func_e4bf, result: 2 },
   ])('$name writes result$result before PrintText and retains the cartridge text', ({ name, tail, result }) => {
     const r = rig(); r.state.wActionResultOrTookBattleTurn = 99;
     r.start(tail(r.state, r.host)); expect(r.events[0].result).toBe(result); r.finish();

@@ -101,7 +101,7 @@ export type MoveEffectLabel = NonNullable<(typeof MOVE_EFFECT_POINTERS)[number]>
 export type MoveEffectHandler = (state: BattleState) => Program<number | void>;
 export type MoveEffectRegistry = Partial<Record<MoveEffectLabel, MoveEffectHandler>>;
 export interface EffectAnimationPort {
-  /** MoveAnimation only; the shared helper owns Func_78e98. */
+  /** MoveAnimation only; the shared helper owns SaveScreenTilesAndTransferBGMap. */
   animation(state: BattleState): Program;
 }
 

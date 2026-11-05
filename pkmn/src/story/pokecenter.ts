@@ -7,12 +7,12 @@ import { hasFlag } from '../events';
 import { registerTextScript } from './text_handlers';
 
 export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHeal?: () => void, used = hasFlag('USED_POKECENTER')): ScriptCommand[] {
-  // Func_6eaa: the nurse's image $04 (facing up), then 64 frames
+  // PokemonCenterNurseFacesUp: the nurse's image $04 (facing up), then 64 frames
   const nurseUp: ScriptCommand[] = [
     { type: 'faceNpc', npcId: 'nurse', direction: 'up', spriteIndex: 1 },
     { type: 'wait', frames: 64 },
   ];
-  // Func_6ebb(1, c): her facing, 6 frames (SetSpriteFacingDirectionAndDelay), her image
+  // PokemonCenterUpdateSpriteImageIndex(1, c): her facing, 6 frames (SetSpriteFacingDirectionAndDelay), her image
   const nurseFace = (direction: Direction): ScriptCommand[] => [
     { type: 'wait', frames: 6, spriteIndex: 1 },
     { type: 'faceNpc', npcId: 'nurse', direction, spriteIndex: 1 },
@@ -49,9 +49,9 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         // (data/text/text_7.asm _NeedYourPokemonText), then 64 frames
         { type: 'printText', program: 'NeedYourPokemonText' },
         { type: 'wait', frames: 64 },
-        // DisablePikachuOverworldSpriteDrawing; Func_6eaa for a living starter
+        // DisablePikachuOverworldSpriteDrawing; PokemonCenterNurseFacesUp for a living starter
         { type: 'ifStarterPikachu', following: true, then: [{ type: 'hidePikachu' }, ...nurseUp] },
-        // Func_6ebb(1, 8): left, toward the machine; 30 frames
+        // PokemonCenterUpdateSpriteImageIndex(1, 8): left, toward the machine; 30 frames
         ...nurseFace('left'),
         { type: 'wait', frames: 30 },
         // AnimateHealingMachine (ends in UpdateSprites, Pikachu still undrawn), HealParty
@@ -59,13 +59,13 @@ export function buildNurseScript(findNpc: (id: string) => Npc | undefined, onHea
         { type: 'updateSprites' },
         { type: 'healParty' },
         { type: 'restoreMapMusic' },
-        // Func_6eaa for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
+        // PokemonCenterNurseFacesUp for a living starter, spawn state 5, EnablePikachuOverworldSpriteDrawing
         { type: 'ifStarterPikachu', following: true, then: [...nurseUp, { type: 'showPikachu' }] },
-        // Func_6ebb(1, 0): back down
+        // PokemonCenterUpdateSpriteImageIndex(1, 0): back down
         ...nurseFace('down'),
         // (data/text/text_7.asm _PokemonFightingFitText)
         { type: 'printText', program: 'PokemonFightingFitText' },
-        // Func_6ebb(15, 0): Pikachu faces down and its image is written — visible again
+        // PokemonCenterUpdateSpriteImageIndex(15, 0): Pikachu faces down and its image is written — visible again
         // here, before the bow
         { type: 'ifStarterPikachu', following: true, then: [{ type: 'pikachuStandDown', spriteIndex: 15 }] },
         // LoadCurrentMapView, Delay3, UpdateSprites

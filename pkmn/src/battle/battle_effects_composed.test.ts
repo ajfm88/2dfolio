@@ -125,7 +125,7 @@ function composedRig(side: 0 | 1, id = 1, draws: readonly number[] = HIT) {
   s.wPlayerDisabledMoveNumber = s.wEnemyDisabledMoveNumber = 0;
   s.wPlayerConfusedCounter = s.wEnemyConfusedCounter = 0;
   s.wLinkState = 0; s.wIsInBattle = 0; s.wCurMap = 0; s.wObtainedBadges = 0; s.wOptions = 0;
-  s.wUnknownSerialFlag_d499 = 0; s.wActionResultOrTookBattleTurn = 0; s.wEscapedFromBattle = 0;
+  s.wChosenColosseum2Cup = 0; s.wActionResultOrTookBattleTurn = 0; s.wEscapedFromBattle = 0;
   s.wMoveMissed = 0; s.wMoveDidntMiss = 0; s.wMonIsDisobedient = 0;
   s.wCriticalHitOrOHKO = 0;
   s.wPlayerHPBarColor = 0; s.wEnemyHPBarColor = 0;

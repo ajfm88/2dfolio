@@ -6,7 +6,7 @@
 //   - the player 2 px (_AdvancePlayerSprite doubles the step vector): 8 passes a step;
 //   - an NPC 1 px per UpdateSprites (movement.asm TryWalking: a 16-count walk
 //     counter), after a start pass that moves nothing: 17 passes a step;
-//   - Yellow's fast NPC codes $04–$07 (Func_5288 → status 4, Func_5357): 2 px, counter 8;
+//   - Yellow's fast NPC codes $04–$07 (FastNPCMovement → status 4, UpdateSpriteScreenPosition): 2 px, counter 8;
 //   - an NPC walking in step with the player (DoScriptedNPCMovement): 2 px, 8 a step;
 //   - Pikachu 2 px, or 4 px catching up (pikachu_follow.asm).
 // Text, script waits, fades, audio and battles keep counting frames.
@@ -47,8 +47,8 @@ export class PassClock {
 }
 
 /**
- * A sprite's walking animation (movement.asm Func_5274): the intra-frame counter counts
- * updates, and the animation frame (0–3) advances when it wraps. Func_5274 wraps every
+ * A sprite's walking animation (movement.asm AdvanceScriptedNPCIntraAnimFrameCounter): the intra-frame counter counts
+ * updates, and the animation frame (0–3) advances when it wraps. AdvanceScriptedNPCIntraAnimFrameCounter wraps every
  * 4 updates; Pikachu's GetPikachuWalkingAnimationSpeed every 2 or 5.
  */
 export class WalkAnim {
@@ -192,7 +192,7 @@ export class PlayerWalk {
   ledge = false;
   landingPending = false;
   landedPass = false;
-  /** Func_fcc08: an ordinary step start, or either half of a hop. */
+  /** QueuePikachuFollowCommand: an ordinary step start, or either half of a hop. */
   startedFollowStep = false;
   /** Pixels into the current movement. */
   progress = 0;
@@ -430,7 +430,7 @@ export class PlayerWalk {
 
 // ── NPCs ─────────────────────────────────────────────────────────────────
 
-/** How a scripted NPC step moves (engine/overworld/movement.asm, Yellow's Func_5288). */
+/** How a scripted NPC step moves (engine/overworld/movement.asm, Yellow's FastNPCMovement). */
 export type NpcWalkMode = 'normal' | 'fast';
 
 export interface NpcStepPlan {
@@ -463,7 +463,7 @@ export interface NpcScriptOptions { keepStatus?: boolean; bytesToFF?: boolean }
  *     draws a direction byte even for STAY and fixed facings, faces that way and sets the
  *     step vector before CanWalkOntoTile decides. STAY always fails: a random rest follows,
  *     so a NONE sprite turns in place and a fixed one returns to its facing;
- *   - moving: UpdateSpriteInWalkingAnimation (or Func_5357 for the fast codes); an
+ *   - moving: UpdateSpriteInWalkingAnimation (or UpdateSpriteScreenPosition for the fast codes); an
  *     ordinary step ends with a random rest.
  * A scripted walk begins with one resting pass (UpdateSpriteMovementDelay makes a
  * scripted sprite ready on its next update) and ends one pass after its last pixel, when
@@ -631,7 +631,7 @@ export class NpcWalk {
           this.beginStep(plan.dir, plan.mode === 'fast' ? 2 : 1);
           return;
         }
-        // .randomMovement: the direction byte, then TryWalking (Func_5337 first)
+        // .randomMovement: the direction byte, then TryWalking (SetSpriteDirectionAndStepVectors first)
         const dir = npcDirection(ctx.random(0), this.movement2);
         this.facing = dir;
         this.setVector(dir);
@@ -672,7 +672,7 @@ export class NpcWalk {
     }
   }
 
-  /** TryWalking (or Func_5288's fast set): facing, vector, map position, counter, no
+  /** TryWalking (or FastNPCMovement's fast set): facing, vector, map position, counter, no
    *  pixel yet. */
   private beginStep(dir: Direction, px: number): void {
     this.stepDir = dir;

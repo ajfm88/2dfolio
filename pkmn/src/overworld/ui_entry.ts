@@ -2,8 +2,8 @@
 //
 // DisplayTextIDInit (engine/menus/display_text_id_init.asm) draws the box, sets
 // BIT_FONT_LOADED, then calls UpdateSprites once. In that update Pikachu is hidden if
-// the box covers it, and otherwise goes back to ready (Func_fc76a), or turns to the
-// player when talked to (Func_fc745). The engine runs it once per opening, in the tick
+// the box covers it, and otherwise goes back to ready (PikachuResumeFollowAfterPause), or turns to the
+// player when talked to (PikachuFaceAwayFromPlayer). The engine runs it once per opening, in the tick
 // the UI opened, from the boxes that UI draws — never from how often frames render.
 
 import type { Player } from './player';

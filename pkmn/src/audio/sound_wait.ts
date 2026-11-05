@@ -1,6 +1,6 @@
 /**
  * One VBlank audio update: FadeOutAudio, then the low-health alarm, then Audio1_UpdateMusic
- * (home/vblank.asm 66–73). The same order is Func_3082's. The music channels CHAN1–4,
+ * (home/vblank.asm 66–73). The same order is UpdateAudioDuringLoadBGMapAttributes's. The music channels CHAN1–4,
  * each suppressed while its SFX channel or the alarm's CHAN5 id is busy, then the SFX
  * channels CHAN5–8. So on the update an SFX ends, the music under it is still suppressed.
  */

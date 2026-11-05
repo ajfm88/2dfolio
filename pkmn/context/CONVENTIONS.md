@@ -43,6 +43,12 @@ to this repo, and none of it survived — DECISIONS #26.)
 
 ## Approach
 
+**Current A5e assignment (user,2026-11-03; DECISIONS #93):** Codex plans, reads the ASM, spikes and briefs;
+Claude Sonnet implements one briefed checkpoint, then Codex independently reviews both source and gates and
+tries an additional mutation.02/03a/03b are accepted.04 has no implementation brief; a roadmap row or old
+Sonnet prompt is not authorization to wire the new intro. Keep the phase-contract/live-clock distinction in
+note77 §3/§9 explicit. Earlier notes' Claude/Codex/Grok assignments are historical.
+
 Spec-driven, not improvised. The context files define what to build and the
 extractor interfaces define the exact output shape. Implement against those
 specs — do not infer behavior from memory of how Pokemon games work, and do not
@@ -232,7 +238,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 5984/5984** as of 2026-11-02 (the overworld RNG slice, checked; default workers). No-ROM **5727 pass / 257 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 6019/6019** as of 2026-11-03 (A5e checkpoint-03b, checked by Codex; default workers). No-ROM **5762 pass / 257 skip**. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -362,6 +368,26 @@ checkpoint-11e removes the obsolete `TrainerMoveSelection` type/import rows. Rep
 **A5c3f checkpoint-11e** adds one `battle_screen.test.ts` palette pin: party palette names/colours
 installed before the first yield, 2 held + 3 serviced frames, and no LCD-off yields. Ten tests of
 retired code are removed under note 72 §11.94; §10.32 lists them and all four caught mutations.
+
+**A5e checkpoint-02** adds `battle/battle_intro.test.ts` (6 plain-assertion cases) for the unused `prepareSilhouetteBackground`
+helper (LCD-off HUD load + 32-stride BG0 copy; note 75 §5). Six mutations, each caught by an AssertionError
+(`notes/75-a5e-checkpoint-02/check-mutations.ps1`). Baseline after it: 5990 ROM / 5733 no-ROM + 257 skip.
+
+**A5e checkpoint-03a** adds `battle/battle_intro_scroll.test.ts` (8 plain pixel-assertion cases) for the renderer's new
+default-null `scxAfterSplit` lower-band scroll (three-band scanout; note 76). Seven mutations, each an AssertionError
+(`notes/76-a5e-checkpoint-03a/check-mutations.ps1`). Codex checked it independently, including an eighth mutation
+of the body band's LY95 endpoint (note76 §7). Baseline: 5998 ROM / 5741 no-ROM + 257 skip.
+
+**A5e checkpoint-03b** adds `battle/battle_intro_program.test.ts` (21 plain-assertion cases) for the unused
+`battleSilhouetteIntro` Program and `BattleIntroTiming` raster barriers (note 77). Eighteen mutations, each an AssertionError
+(`notes/77-a5e-checkpoint-03b/check-mutations.ps1`). Codex checked both commits, all18 mutations and an additional
+omitted hSCY reset (note77 §9). Baseline: 6019 ROM / 5762 no-ROM + 257 skip.
+
+Together the three A5e suites add35 cases (6+8+21) over the November2 baseline, deleting or changing no old
+tests/snapshots. Latest independent gates are note77 §9; runtime bundle `index-D4Ol9Anq.js`,655166 bytes,
+SHA256 `52090ba0af1f07a29ba29d37e790498df4715e928b4d5705f498480442fab55c`. Only03a changed the bundle (+72);
+02 and03b are unused. No visible intro play-test has been claimed. A docs-only closeout records these earlier
+gates without implying they were re-run during the closeout.
 
 Moved here from root `CLAUDE.md` on 2026-10-06 (DECISIONS #42). A slice that adds tests
 adds its bullet under *Added per slice* and updates the count; root `CLAUDE.md` gets only
