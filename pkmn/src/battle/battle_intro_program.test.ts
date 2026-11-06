@@ -42,16 +42,16 @@ describe('A5e checkpoint-03b raster barriers', () => {
     const timing = clock(from); expect(driveClock(timing, timing.until(to))).toEqual(frames); expect(timing.line).toBe(to);
   });
   it.each([[144,0], [145,0], [146,1], [0,1]] as const)
-  ('masks the phase-dependent DisableLCD wait from LY%i (%i discarded boundaries)', (from, count) => {
+  ('services DisableLCD\'s deferred VBlank from LY%i (%i frames)', (from, count) => {
     const timing = clock(from), run = timing.disableLCD();
     const frames: string[] = [];
     for (let next = run.next(); !next.done; next = run.next()) {
-      expect(timing.vblankMasked).toBe(true); expect(next.value).toBe('held');
-      expect(() => timing.boundary('serviced')).toThrow('intro VBlank is masked');
-      frames.push(next.value); timing.boundary('held');
+      expect(next.value).toBe('serviced');
+      timing.boundary('serviced');
+      frames.push(next.value);
     }
     expect(frames).toHaveLength(count); expect(timing.line).toBe(145);
-    expect(timing.screen.lcdOn).toBe(false); expect(timing.vblankMasked).toBe(false);
+    expect(timing.screen.lcdOn).toBe(false);
     timing.enableLCD(); expect(timing.line).toBe(0); expect(timing.screen.lcdOn).toBe(true);
   });
   it('does not capture future visible rows while waiting144→145 inside VBlank', () => {
@@ -60,9 +60,9 @@ describe('A5e checkpoint-03b raster barriers', () => {
     expect(timing.disableLCD().next().done).toBe(true); expect(scan.to).not.toHaveBeenCalled();
     timing.enableLCD(); expect(scan.restart).toHaveBeenCalledOnce(); expect(scan.endFrame).not.toHaveBeenCalled();
   });
-  it('restores the VBlank mask when an interrupted LCD wait is closed', () => {
-    const timing = clock(146), run = timing.disableLCD(); expect(run.next().value).toBe('held');
-    run.return(undefined); expect(timing.vblankMasked).toBe(false); expect(timing.screen.lcdOn).toBe(true);
+  it('a closed DisableLCD wait leaves the LCD on', () => {
+    const timing = clock(146), run = timing.disableLCD(); expect(run.next().value).toBe('serviced');
+    run.return(undefined); expect(timing.screen.lcdOn).toBe(true);
   });
   it('rejects invalid entry phase and raster writes; waits require the LCD', () => {
     for (const line of [-1,154,1.5,NaN]) expect(() => clock(line)).toThrow('intro entry LY out of range');
@@ -70,6 +70,12 @@ describe('A5e checkpoint-03b raster barriers', () => {
     timing.screen.lcdOn = false; expect(() => timing.until(64).next()).toThrow('intro raster wait requires LCD on');
     expect(() => timing.boundary('held')).toThrow('intro boundary requires LCD on');
     timing.enableLCD(); expect(() => timing.enableLCD()).toThrow('intro LCD already enabled');
+  });
+  it('lcdOff refuses an LCD that is on, and a dark boundary leaves the line', () => {
+    const timing = clock(100);
+    expect(() => { for (const frame of timing.lcdOff(1)) void frame; }).toThrow('intro LCD-off span requires LCD off');
+    expect(() => timing.boundary('dark')).toThrow('dark frame with LCD on');
+    expect(timing.line).toBe(100);
   });
   it('latches HRAM only on serviced boundaries and seals the prior raster before the latch', () => {
     const state = new BattleState(), screen = new BattleScreen(), seen: number[] = [];
@@ -143,6 +149,7 @@ function harness(type = 0, capture = false, flipped = false, trainer = false) {
     renderTiles:tiles,pokeballTiles:png('battle/balls.png'),frontPicture:()=> 'front/19',
     saveScreenTilesToBuffer1(){},loadScreenTilesFromBuffer1(){},marowakAnimation:function*(){throw new Error('unexpected tower');},
     printText:function*(label){opening.push({label,at:frames.length,head:Array.from({length:40},(_,i)=>screen.shadowOam(i).y),palette:screen.paletteName(3)});},
+    introScanout: noScan, bindRaster() {},
     waitForSound:function*(){while(!soundFinished(audio.sfx,audio.music,0))yield 'serviced';},
     voice:{getAlarm:()=>0,setAlarm(){},cry(){},clip(){}},
   };
@@ -152,10 +159,9 @@ function harness(type = 0, capture = false, flipped = false, trainer = false) {
     while(!next.done && frames.length<500) {
       expect(next.value).not.toBe('session');
       if(next.value!=='session') {
-        const masked=timing.vblankMasked;
         timing.boundary(next.value);
         if(next.value==='serviced') {screen.vblank(); audio.update();}
-        else if(!masked) audio.update(); // Palette's manual UpdateAudioDuringLoadBGMapAttributes calls; masked LCD waits have none.
+        else if(next.value==='held') audio.update(); // Palette-held frames have the manual update. Dark ticks have no VBlank (note 79 §8.2).
       }
       frames.push(next.value); next=run.next();
     }
@@ -176,7 +182,7 @@ describe('unused complete silhouette intro',()=>{
       expect(h.iterations[k]).toEqual({body:112+2*k,head:160-2*k,hram:k<2?144:146-2*k,bg:false,phase:1});
     });
     expect(h.frames.filter(f=>f==='held')).toHaveLength(2);
-    expect(h.frames.filter(f=>f==='serviced')).toHaveLength(96);
+    expect(h.frames.filter(f=>f==='serviced')).toHaveLength(97);
     expect(h.opening[0].label).toBe('WildMonAppearedText');
     expect(h.state.mem[INTRO_SCROLL.hSCX]).toBe(2); expect(h.screen.scx).toBe(2);
     expect([h.screen.bgp,h.screen.obp0,h.screen.obp1]).toEqual([0xe4,0xe4,0xe4]);
@@ -191,7 +197,7 @@ describe('unused complete silhouette intro',()=>{
     const h=harness(type); h.drive(); expect(h.screen.backSlot(0x31)?.picture).toBe(picture);
     expect(h.screen.spriteSlot(0)?.picture).toBe(picture); expect(h.opening[0].label).toBe('WildMonAppearedText');
     expect(h.opening[0].head).toEqual(Array(40).fill(160));
-    expect(h.frames.filter(f=>f==='serviced')).toHaveLength(type===4?98:95);
+    expect(h.frames.filter(f=>f==='serviced')).toHaveLength(type===4?99:96);
   });
   it('reuses trainer opening sound/text and both party-ball writers after the slide',()=>{
     const h=harness(0,false,false,true); h.drive(); expect(h.opening[0].label).toBe('TrainerWantsToFightText');

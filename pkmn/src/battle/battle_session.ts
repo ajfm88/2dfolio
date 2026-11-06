@@ -33,7 +33,8 @@ import { tossBallAnimation } from './battle_ball_animation';
 import { battleRunOdds } from './battle_menu';
 import { loadBattleRenderTiles, type PictureDecoder } from './battle_pictures';
 import { browserPictureDecoder } from './battle_picture_decode';
-import type { RawImage, BattleRenderTiles } from './battle_screen_render';
+import { renderBattleScreen, type RawImage, type BattleRenderTiles } from './battle_screen_render';
+import { IntroRasterCapture } from './battle_intro_raster';
 import type { TurnPorts } from './battle_turn';
 import { delayFrames, type Program } from './battle_menu_context';
 import { NamingScreen, loadEdTile } from '../menus/naming_screen';
@@ -216,7 +217,12 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const textHost: TextDisplayHost = { closeFrames: () => 7, updateSprites() {},
     sound: battleTextSoundOwner(audio, owners, assets.sounds) };
   const video = new BattleMenuScreen(new BattleScreen(), textHost);
+  // BattleTransition_BlackScreen; init_battle.asm:39/64. The transition runs on the overworld renderer,
+  // so the battle screen receives its final registers here.
+  video.screen.bgp = video.screen.obp0 = video.screen.obp1 = 0xff;
   const driver = new BattleHost<BattleCommonExit>(state, video);
+  const introCapture = new IntroRasterCapture(() => renderBattleScreen(video.screen, assets.renderTiles));
+  let introRaster: IntroRasterCapture | null = null;
   const screen = video.screen, rawContext = battleContext(state);
   // home/list_menu.asm: DisplayListMenuID reads the live count and entries at each opening.
   const ctx = bagBackedContext(rawContext, state);
@@ -257,6 +263,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const unboundPort = function* (): Program<never> { throw new Error('battle session port not bound'); };
   const host: BattleStartHost & LearnMoveHost & BattlePartyHost = {
     screen, tiles: video.tiles, audio,
+    introScanout: introCapture,
+    bindRaster(timing) { driver.bindRaster(timing); introRaster = timing ? introCapture : null; },
     partyView: party, statusView: null,
     createStatusScreen(mon, options) {
       return new StatusScreenSession(mon, { ...options, page2Name: () => {
@@ -416,6 +424,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     /** The bound turn port is also observable for the trainer-environment boundary proof. */
     trainerAI: boundTrainerAI,
     animation: host.animation,
+    get introRaster() { return introRaster; },
+    get pendingFrame() { return driver.pendingFrame; },
     get done() { return started && driver.done; },
     start() {
       if (aborted) throw new Error('session aborted');

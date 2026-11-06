@@ -14,6 +14,7 @@ import { BattleHost } from './battle_host';
 import { BattleState, A, POKEDEX_ORDER, encodeText, W_SPRITE_FLIPPED } from './battle_state';
 import { D } from './battle_end_state';
 import { loadPlayerBackPic, setupBattleBeforeTransition, initBattleAfterTransition, type BattleInitHost } from './battle_init';
+import { IntroRasterCapture } from './battle_intro_raster';
 import { loadMonBackPic } from './battle_slides';
 import { BattleAudio } from './battle_audio';
 import { BattleRandomState } from './battle_random_state';
@@ -189,6 +190,7 @@ async function route1Frame(flipped = false) {
   const random = new BattleRandomState(() => 0); setupBattleBeforeTransition(s, random); s.mem[W_SPRITE_FLIPPED] = Number(flipped);
   let opening: Uint8ClampedArray | undefined; let frame = 0;
   const host: BattleInitHost = { screen, audio: bridge, renderTiles: { sprites: tiles.sprites }, pokeballTiles: raw('gfx/battle/balls.png'),
+    introScanout: new IntroRasterCapture(null), bindRaster: timing => driver.bindRaster(timing),
     trainerAppeared: { id: 0xe9, data: sfxData('trainer_appeared') }, frontPicture: state => `front/${POKEDEX_ORDER[state.wCurPartySpecies - 1]}`,
     saveScreenTilesToBuffer1: () => driver.video.saveScreenTilesToBuffer1(), loadScreenTilesFromBuffer1: () => driver.video.loadScreenTilesFromBuffer1(),
     printText: function* (program, bindings) { yield* driver.printText(program, bindings); if (program === 'WildMonAppearedText') opening = renderBattleScreen(screen, { ...tiles, sprites: host.renderTiles.sprites }); },

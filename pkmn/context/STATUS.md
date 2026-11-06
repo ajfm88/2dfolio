@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-03 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅, A5d ✅, A5c ✅; A5e and A5f left)
+**Last updated:** 2026-11-04 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅, A5d ✅, A5c ✅; A5e and A5f left)
 
 ---
 
@@ -44,10 +44,9 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 engine since its 09b, and the user's play-test passed on 2026-11-01. Two small slices followed on 2026-11-02: the
 timing tests (#90, note 73) and the overworld RNG (#91, note 74). **A5e is now in progress:** checkpoint-01's trace
 is complete; checkpoint-02, checkpoint-03a and checkpoint-03b were independently accepted on2026-11-03
-(notes75–77). **R-SYNC complete (note78, Codex): pret names synchronized, ROM6019/6019 restored.** Next checkpoint-04's planning,
-then the remaining A5e work, A5f (the wild catch), and V3. Earlier detail is in `HISTORY.md`.
+(notes75–77). **R-SYNC complete (note78, Codex): pret names synchronized.** **04a accepted by Claude 2026-11-04** (note79 §7): ROM6033/6033. **Checkpoint-04 closed 2026-11-04:** 04b accepted (note79 §10; ROM6038/6038) and user play-test passed. Next: plan checkpoint-05 (poof data, note75 §4). Then finish A5e, A5f and V3. Earlier detail is in `HISTORY.md`.
 
-## 📍 Where things stand — updated 2026-11-03 (*Setup* not reinstalled today; refs pulled 2026-11-03 evening, see the `refs/` row)
+## 📍 Where things stand — updated 2026-11-04 (*Setup* not reinstalled today; refs pulled 2026-11-03 evening, see the `refs/` row)
 
 ### Setup — done
 
@@ -62,7 +61,7 @@ then the remaining A5e work, A5f (the wild catch), and V3. Earlier detail is in 
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 196 JSON → `data/`; static 525 PNG + 3 tilemaps + 196 JSON mirror (A5c3f checkpoint-08g adds `monster_names.json`, note 72 §10.18; setup twice, only the two new name-table files). A5c3e checkpoint-02: setup twice byte-identical across 909 files; three new SFX assets, old bogus flute music removed, four text keys added; all 901 other surviving files unchanged (note 71 §10.2.4) |
 | Typecheck | Clean |
-| Tests | **R-SYNC checked by Codex,2026-11-03: ROM6019/6019; no-ROM5762 pass /257 skip**, default workers, each first resumed run after note78 §6.1. Typecheck/build clean; both mutation witnesses caught and restored byte-for-byte. Bundle **`index-bMM8kWJs.js`**,655,183 bytes; SHA256 `17adc69aa12392c395bb72b54d13f62d0f116cbd33efa60335580c719de3bf31`. Initial baseline6015/6019 and the authorized historical-reader stop are recorded in note78 §7 |
+| Tests | **04b implemented, gates passed: ROM6038/6038; no-ROM5781 pass / 257 skip**, 239 files, default workers (note79 §9.7). Bundle `index-JN4Ut5jo.js`, 659,202 bytes; SHA256 `da986d0147289732689d52143f9864645654192e2a8e0f2cf95a092a30992843`. Awaiting Claude review and user play-test |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -87,7 +86,7 @@ then the remaining A5e work, A5f (the wild catch), and V3. Earlier detail is in 
 | Catch demo | ✅ **since V1d**: Oak's Pikachu catch runs the ASM's simulated FIGHT → ITEM → POKé BALL input, with both outcomes (caught, or 3 shakes and "Shoot! It was so close too!"). Since V1e the Viridian old man uses it too |
 | Whiteout | ✅ `handleBlackoutWarp` — halves money, heals, warps to last Pokécenter |
 | Badge stat boosts | ✅ `battle_loaders.ts` `applyBadgeStatBoosts` (the cartridge's, on the battle copy). Nothing awards a badge yet → V3 |
-| Battles | ✅ **The new engine since A5c3f 09b** (notes66–72): byte-backed turn/effects/items/AI/end; old engine deleted.10c already wired growth, starter Pikachu entrance, retreat and slide-offs. Remaining presentation: the live silhouette intro (unused03b replacement accepted, awaiting04 integration), poof/OAM, substitute/minimize/transform and other named cues; move animations stay OFF (#83, O-50 open); catch screens/demo retirement stay A5f. Last user battle play-test2026-11-01; no new live intro to play-test today |
+| Battles | ✅ **The new engine since A5c3f 09b** (notes66–72): byte-backed turn/effects/items/AI/end; old engine deleted.10c already wired growth, starter Pikachu entrance, retreat and slide-offs. Remaining presentation: poof/OAM after the live silhouette intro (live since 04b; user play-test passed 2026-11-04), substitute/minimize/transform and other named cues; move animations stay OFF (#83; their own later slice, #94); catch screens/demo retirement stay A5f. Last user battle play-test2026-11-01; 04a changes nothing visible |
 | Random numbers | ✅ **The cartridge's `Random` / `BattleRandom` everywhere** (note 74): one page-lifetime owner of `hRandomAdd` / `hRandomSub`, VBlank's per-frame call outside battle, each site's carry. No production `Math.random` (a census pins it). Battle frames skip the VBlank call (backlogged) |
 | TM/HM teaching | ❌ → A2 |
 | Poison walking, Repel, Escape Rope | ❌ (items exist in the price table only) → A3 |
@@ -152,44 +151,33 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **A5c3f** ✅ | The switch-over: the live game on the new battle engine (09b), the user's play-test (passed 2026-11-01 after 10c–10f), then the old engine retired (11a–11f: RUN on `BattleRandom`, manifests, 7,651 lines deleted, carries, test helpers). Codex, Grok and Codex, each checked by Claude (2026-11-02); note 72, DECISIONS #83–#89 |
 | **Timing tests** ✅ | One 30 s suite timeout, no per-test overrides (a guard pins it), the 1 ms render case best-of-10; the re-run-alone rule retired. Codex, checked by Claude (2026-11-02); note 73, DECISIONS #90 |
 | **Overworld RNG** ✅ | The cartridge's `Random` outside battle: VBlank's per-frame call, the encounter's two bytes, NPC / Pikachu / gift carries, no `Math.random`. Codex, checked by Claude (+1 pin) (2026-11-02); note 74, DECISIONS #91 |
-| **A5e foundations through03b** ✅ |01 source inventory/trace;02 LCD-off staging (`115b59d`, review `6c9a822`);03a default-disabled third scroll band (`67e14ee`, review `7f5ddb4`);03b unused Program/raster contract (`6dc2536`+`3c201d9`, review `8861a58`). Sonnet implemented; Codex independently checked. Notes75–77,35 new cases; **A5e itself remains open** |
+| **A5e through checkpoint-04** ✅ | 04 live silhouette intro (04a `2bb547d`, 04b `090e05b`; review `d19ca04`; user play-test passed 2026-11-04; note79, #96/#97); 01 source inventory/trace;02 LCD-off staging (`115b59d`, review `6c9a822`);03a default-disabled third scroll band (`67e14ee`, review `7f5ddb4`);03b unused Program/raster contract (`6dc2536`+`3c201d9`, review `8861a58`). Sonnet implemented; Codex independently checked. Notes75–77,35 new cases; **A5e itself remains open** |
 | **Intro animation** ✅ | Oak's speech frame for frame: BGP/OBP0 palette fades (the silhouette, the white fades), the window slide, the tile slides with the BG-thirds tear, the 7-frame pic copies and the shrink wipe, little Red, `SFX_SHRINK`, the intro music's fade-to-stop, the 20-frame entry and 40-frame white exit. CP1–CP5 by Codex, checked by Claude, **user-verified 2026-10-18**; note 64, DECISIONS #51/#69 |
 
 ## In progress
 
-**R-SYNC complete, Codex,2026-11-03 (note78 §7).** Ref `b452f2ab` and the expected red baseline confirmed;
-141 replacements in50 files, two generated one-key renames, then exactly the four historical-reader shims
-authorized by §6.1. Exactly8 old-name occurrences remain, all in those shims. Resumed gates pass first run:
-ROM6019/6019, no-ROM5762/257, typecheck/build; both mutations caught and restored byte-for-byte.
-Row0 removed. Next: Codex plans/spikes/briefs checkpoint-04; no checkpoint-04 work started.
+**No active implementation. A5e checkpoint-04 closed 2026-11-04.**
+- 04a: Grok 4.7 implemented; Claude accepted (note79 §7).
+- 04b: Grok, then Codex after four valid stops ruled in §8.11–§8.14. Claude accepted it (§10), and the user
+  play-tested it the same night.
+- The live silhouette intro now runs in every battle:
+  - the transition's black registers carry into the battle screen;
+  - 2 LCD-off dark ticks give the ~3-frame white blink;
+  - the real slide; music pauses during the dark ticks.
+- ROM6038/6038; no-ROM5781 pass / 257 skip; 239 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes.
 
-**Session stopped at the user's request on 2026-11-03. No active implementation.** The accepted stop point is
-checkpoint-03b; do not rerun it or begin checkpoint-04 from a roadmap row. **Codex plans/spikes/reviews; Sonnet
-implements after a concrete brief** (DECISIONS #93). The user may change roles later.
-
-**A5e checkpoint-03b reviewed and accepted** (`notes/77-a5e-checkpoint-03b-brief.md` §9, Codex,2026-11-03).
-Reviewed both Sonnet commits (`6dc2536` code/logs, `3c201d9` docs): matches the spike, no correctness/scope
-findings and no code fix. No runtime consumer reaches the new modules. Independent gates: ROM6019/6019,
-no-ROM5762/257, typecheck/build/marker clean, unchanged bundle/hash;19 plain mutation witnesses including
-an omitted hSCY reset. **Next: Codex plans/spikes/briefs checkpoint-04; it is not started or briefed.**
-**Its live phase/capture/audio/text binding and timing/DIV audit are unbriefed; fixture phase counts are not
-cartridge ISR timing measurements.** The new Program must not run through the unchanged BattleHost.
-
-**Restart list for checkpoint-04:**
-
-1. Read root CLAUDE → this handoff → note75 §2/§4 (inventory/sequence), note76 §7 (renderer support),
-   note77 §2–§3/§9 (source trace, driver contract, accepted limits), and the battle architecture's A5e section.
-2. Read the relevant ASM and inspect `battle_init.ts`'s interim slide, `BattleHost`, `battle_session.ts`, and
-   main's tick/render/audio ownership before designing the integration.
-3. Trace live entry phase, capture partial rasters before latches, distinguish masked-LCD versus palette-held
-   audio, compose real text and audit frame-driven DIV/ledgers before permitting expectation changes.
-4. Spike and write checkpoint-04's own brief (next note number **79**; 78 is the rename sync).
-   No checkpoint-04 spike or executable brief exists yet. Sonnet implements only after this planning step.
+**Restart list (Claude, the planner):**
+1. Read root CLAUDE.md, then this handoff.
+2. Read note75 §4 (the A5e sequence; checkpoint-05 is next: poof subanimation/frame/coordinate data plus the
+   Audio2 ball-poof sound, data only), then note79 §10 (three findings to carry into the next brief), then the
+   battle architecture's A5e section.
+3. Trace or spike 05, write its brief, and give the user a paste-ready, implementer-neutral prompt. The user picks
+   the implementer, usually Codex.
 
 Note75 §4 gives the later checkpoint sequence; checkpoint-03b is accepted in note77 §9. Existing growth,
 Pikachu entrance, retreat and slide bodies already work (A5c3f10c); do not re-port them from stale cue prose.
-**O-50 pending:** Codex asked whether attack move animations stay separate. No unambiguous selection yet;
-intro planning remains independent. Resolve before the poof-data/animation-routing brief. The screen-model merge
+**O-50 answered 2026-11-04 → DECISIONS #94:** attack move animations are a separate future slice; A5e keeps them
+OFF and its sub-animation player covers only the traced presentation IDs (poof). The screen-model merge
 still waits until after A5e. Catch animations/demo retirement stay A5f; battle VBlank RNG stays backlogged.
 
 **Current A5e workflow (user assignment,2026-11-03):** Codex traces/spikes a checkpoint, captures its whole diff,
@@ -212,9 +200,10 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5e** intros and animations | A | **03b checked; Codex next traces/spikes/briefs04.**04 is unbriefed. Parent scope note65 §4 (#70); animation scope O-50 pending. Then **A5f**, the wild catch's animations and catch demo integration |
+| 1 | **A5e** intros and animations | A | **Checkpoint-04 closed (04b accepted, note79 §10; user play-test passed 2026-11-04). Next: Claude plans checkpoint-05 (poof data, note75 §4), carrying §10's findings.** Parent scope note65 §4 (#70); attack animations excluded (#94). Then **A5f**, the wild catch's animations and catch demo integration |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
+| — | **Attack move animations** (unscheduled) | A | Separate slice (#94), after A5e/A5f; the user places it. A **full pret `move_anim` interpreter** (#94 amended): every attack animation from the cartridge's data/routines. Needs its own plan |
 | 4 | **V5** Recovered fixes | V | PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
 
 After that: **the opening and title screen** (DECISIONS #69: copyright, Game Freak star, Yellow's intro movie, the title
@@ -260,9 +249,8 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
-- **O-50 pending (2026-11-03):** keep attack move animations on the existing OFF path in a separate future slice,
-  or include them in A5e? Codex recommends separate (note75 §1). Asked; no unambiguous choice yet. Independent
-  intro work is independent; resolve before the animation-data/routing brief.
+- **O-51 ✅ answered 2026-11-04 → DECISIONS #97:** yes. The LCD-off span and the first frame after `EnableLCD` are white (Pan Docs, SameBoy's measured logic); the intro gets two dark ticks (note 79 §8.1).
+- **O-50 ✅ answered 2026-11-04 → DECISIONS #94:** attack move animations get their own separate slice, not A5e.
 - **O-49 ✅ answered 2026-11-02 → DECISIONS #91:** yes. The overworld RNG slice ran before A5e (note 74).
 - **O-48 ✅ answered 2026-10-30 → DECISIONS #86:** option A. After a battle, an un-nicknamed mon's name goes back as
   upstream's `species.name`; 09's write-back implements it.
@@ -285,6 +273,63 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 - Cable club receptionist (`ViridianPokecenter:4`): link features need a user decision; no slice is invented for it.
 
 ## Session log
+
+### 2026-11-04 (A5e checkpoint-04b reviewed: accepted) — Claude (Opus)
+
+- Re-ran all gates at 090e05b: ROM6038/6038, no-ROM5781/257, bundle `index-JN4Ut5jo.js` 659,202 bytes, markers PASS.
+- Two probes (3 dark frames; no `$FF` registers) both caught. Three non-blocking findings (note79 §10). User play-test passed the same night: checkpoint-04 closed. Next: plan checkpoint-05.
+
+### 2026-11-04 (A5e checkpoint-04b implemented) - Codex
+
+- Applied only §8.14's session register assignment and specified comment; no tests or snapshots changed. Finished note79 §9 and completion docs, including §8.13/§8.14 departures.
+- All five ordered gates passed once from game/, default workers: typecheck/build/markers; ROM6038/6038, no-ROM5781/257, 239 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes (SHA256 in §9.7). 04b implemented, awaiting Claude's review and the user's play-test. Local commit only.
+
+### 2026-11-04 (A5e checkpoint-04b resume; stopped at ROM gate) - Codex
+
+- Applied §8.13's exact copy fix and corrected §9 encoding. Typecheck, build and bundle-marker check passed once from game/; bundle index-BlAefkm4.js, 659,151 bytes (hash in note79 §9.6).
+- ROM gate: 6037 pass / 1 fail, 239 files. New production-session test sees 38 white frames, expected 3. Stopped under §8.8 without rerun or no-ROM gate. Completion status deferred.
+
+
+### 2026-11-04 (A5e checkpoint-04b takeover; stopped) ? Codex
+
+- Confirmed only 11 init snapshot failures; preserved inherited implementation. Applied ?8.12 audit rules; fresh init/start/Route1/pixel audits passed, then updated their snapshots (11/16/1/1). All seven mutations produced assertion witnesses and were restored.
+- Typecheck failed TS2769 in inherited presentation code; stopped per explicit user instruction. Remaining gates and completion status deferred. Note79 ?9 records ownership, both previous stops/rulings, current stop and hashes.
+
+
+### 2026-11-04 (A5e checkpoint-04b briefed; O-51 answered) — Claude (Opus)
+
+- O-51: Pan Docs + SameBoy's hardware-measured LCD code: white while off and for the first frame after LCD-on. Counted Yellow's LCD-off work at ≈ 33,000 M-cycles ≈ 1.88 frames → two `'dark'` ticks, three white presented frames, no sound updates (DECISIONS #97).
+- Spike on 04a (reverted; the patch is kept outside the repo; isolated worktrees): 36 failures in 6 files, all classified. Route 1 under a DIV control: result, texts, frames and writes identical shifted +78; no-music audio identical shifted +76 (`compare-route1.py`). Opening-frame pixels: 101 party-ball pixels from the slide's OBP0 `$E4`. Misty passes under the control.
+- Wrote note 79 §8 (the 04b brief) and #97. No game code changed. Next: an implementer runs 04b.
+
+### 2026-11-04 (codebase orientation) — Codex
+
+- Read the project guidance, current status and engine/battle architecture. No implementation or tests; 04b remains unstarted.
+
+### 2026-11-04 (A5e checkpoint-04a reviewed and accepted) — Claude (Opus)
+
+- Reviewed `2bb547d`: the diff is exactly note 79 §4; unbound `BattleHost.step()` unchanged; capture and timing off the bundle. Re-ran every gate: identical bundle hash, ROM 6033/6033, no-ROM 5776/257.
+- Three extra probes: anchor 153 passes all behavior (confirms 146–153 equivalence), anchor 145 fails 8, a non-copying capture fails 4. Two non-blocking test findings go into 04b's brief (note 79 §7). CLAUDE.md baseline updated. Accepted.
+
+### 2026-11-04 (A5e checkpoint-04a implemented; accepted, see above) — Grok 4.7
+
+- Implemented note 79 §4 only. Serviced boundaries anchor at LY 146. `disableLCD` yields that deferred VBlank as one serviced frame. `BattleHost.bindRaster` seals before VBlank; `IntroRasterCapture` stays off the bundle. No production caller. 04b not started.
+- Nine mutations, each a plain AssertionError, restored byte-for-byte (`notes/79-a5e-checkpoint-04a/codex-mutation-*.log`). One type narrowing in the new live test (`Frame` vs `boundary`'s serviced/held), then the ordered gates once: typecheck, build, 09c marker, ROM 6033/6033, no-ROM 5776 pass / 257 skip, 239 files. Bundle `index-pI5Lpy08.js`, 655,527 bytes. Report is note 79 §6.
+- Nothing visible changes, so no play-test. Local commit, never pushed. Next: Claude reviews.
+
+### 2026-11-04 (A5e checkpoint-04 planned) — Claude (Opus)
+
+- User moved planning to Claude, implementation to Codex (#95). Traced core.asm/lcd.asm/vblank.asm/oam_dma.asm: post-VBlank
+  CPU resumes at LY146+, and DisableLCD's masked VBlank is deferred (serviced), not dropped, which corrects 03b (#96).
+- Two throwaway spikes, both reverted: the live switch breaks 34 tests in 4 files (04b, §5.2); the timing correction
+  changes exactly 7 of 03b's 21 cases. Wrote note79: trace, 04a brief (14 new tests, 9 mutations), 04b outline.
+- Backlog: other DisableLCD ports, O-51. No game code changed. Next: Codex implements 04a.
+
+### 2026-11-04 (O-50 answered) — Claude (Opus)
+
+- Studied the context and code. The user chose a separate slice for attack move animations → DECISIONS #94; added an
+  unscheduled queue row and refreshed the O-50 mentions. Docs only, no tests run. Next is unchanged: Codex plans04.
+- The user then chose a **full** pret `move_anim` interpreter for that slice: #94 amended, PROJECT's non-goal removed.
 
 ### 2026-11-03 (R-SYNC complete after the authorized historical-reader shims) — Codex
 

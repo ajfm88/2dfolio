@@ -204,8 +204,10 @@ export function renderBattleScreen(screen: BattleScreen, tiles: BattleRenderTile
 
 let presentCanvas: HTMLCanvasElement | undefined;
 /** Presentation only; reuse the native-size buffer and scale with nearest-neighbour pixels. */
-export function presentBattleScreen(screen: BattleScreen, tiles: BattleRenderTiles, nonBlankOnly = false): void {
-  const pixels = new Uint8ClampedArray(renderBattleScreen(screen, tiles));
+export function presentBattleScreen(screen: BattleScreen, tiles: BattleRenderTiles, nonBlankOnly = false,
+  compose?: (live: Uint8ClampedArray) => Uint8ClampedArray): void {
+  const rendered = new Uint8ClampedArray(renderBattleScreen(screen, tiles));
+  const pixels = compose ? new Uint8ClampedArray(compose(rendered)) : rendered;
   if (!presentCanvas) {
     presentCanvas = document.createElement('canvas');
     presentCanvas.width = WIDTH; presentCanvas.height = HEIGHT;

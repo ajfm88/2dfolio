@@ -1,4 +1,4 @@
-// Unused A5e checkpoint-03b. pret e89ead15 core.asm:9–132. Live entry stays unchanged until04.
+// Live A5e checkpoint-04b. pret e89ead15 core.asm:9–132.
 import { W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { INIT, loadPlayerBackPic, printBeginningBattleText, type BattleInitHost } from './battle_init';
@@ -12,6 +12,10 @@ import { delayFrames, type Program } from './battle_menu_context';
 import { prepareSilhouetteBackground } from './battle_intro';
 import { BattleIntroTiming, INTRO_SCROLL } from './battle_intro_timing';
 
+/** ≈33,000 M-cycles ≈ 1.88 frames of LCD-off work (note 79 §8.1). From the deferred VBlank to the
+ * first VBlank after EnableLCD the hardware takes ≈ 2.82 frames; the port takes 1 + 2 ticks (§8.2.1). */
+export const INTRO_LCD_OFF_FRAMES = 2;
+
 export function* battleSilhouetteIntro(state: BattleState, host: BattleInitHost, timing: BattleIntroTiming): Program {
   const screen = host.screen;
   if (timing.state !== state || timing.screen !== screen) throw new BattleUnsupportedState('different intro timing owner');
@@ -22,6 +26,7 @@ export function* battleSilhouetteIntro(state: BattleState, host: BattleInitHost,
   for (let y = 5; y < 8; y++) for (let x = 1; x < 8; x++) screen.put(x, y, ' ');
   yield* timing.disableLCD();
   yield* prepareSilhouetteBackground(screen);
+  yield* timing.lcdOff(INTRO_LCD_OFF_FRAMES);
   timing.enableLCD();
   state.mem[INIT.hWY] = screen.wy = 0x90;
   state.mem[INIT.hTileAnimations] = state.mem[INTRO_SCROLL.hSCY] = 0;

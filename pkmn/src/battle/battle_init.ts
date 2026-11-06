@@ -13,7 +13,7 @@ import { loadPartyPokeballGfx, setupEnemyPartyPokeballs, ENEMY_SEND_CELLS } from
 import { isPlayerPikachuAsleepInParty } from './battle_send_out';
 import { modifyPikachuHappiness } from './battle_pikachu';
 import { playCryCue, playPikachuClipCue, type BattleVoiceHost } from './battle_voice_cues';
-import { hudContext, drawEnemyHud } from './battle_hud_state';
+import { drawEnemyHud } from './battle_hud_state';
 import { bindEntryBattleScreen } from './battle_screen_binding';
 import { BattleUnsupportedState } from './battle_move_data';
 import { delayFrames, type Program } from './battle_menu_context';
@@ -22,8 +22,8 @@ import type { BattleAudio, BattleSfx } from './battle_audio';
 import type { EnemySendOutHost } from './battle_enemy_send_out';
 import type { TextBindings } from '../text/text_runner';
 import { textBgTransfer } from '../text/bg_transfer';
-import { textBoxBorder } from '../menus/tile_surface';
-import { BattleTiles } from './battle_tiles';
+import { battleSilhouetteIntro } from './battle_intro_program';
+import { BattleIntroTiming, POST_VBLANK_LY, type IntroScanout } from './battle_intro_timing';
 
 /** pret ram/{wram,hram}.asm; pinned symbols 573535d. Views only, no new WRAM storage. */
 export const INIT = {
@@ -49,6 +49,8 @@ export interface BattleInitHost extends Pick<EnemySendOutHost, 'screen' | 'rende
   marowakAnimation(state: BattleState): Program;
   /** Picture names only. Checkpoint-06 supplies their decoded pixels. */
   frontPicture(state: BattleState): string;
+  introScanout: IntroScanout;
+  bindRaster(timing: BattleIntroTiming | null): void;
 }
 
 /** pret init_battle_variables.asm:1-38. WRAM only; PlayBattleMusic remains A5d's. */
@@ -205,25 +207,6 @@ function* ordinaryWildBeginning(state: BattleState, host: BattleInitHost): Progr
     { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });
 }
 
-/** pret core.asm:9-14,88-103. Interim slide: omit the scroll and its setup, retain the entire tail. */
-export function* slidePlayerAndEnemySilhouettesOnScreen(state: BattleState, host: BattleInitHost): Program {
-  yield* loadPlayerBackPic(state, host.screen);
-  state.mem[D.wTextBoxID] = 1;
-  textBoxBorder(new BattleTiles(host.screen), 0, 12, 4, 18);
-  textBgTransfer.enabled = true;
-  state.mem[D.hStartTileID] = 0x31;
-  placePicture(state, host.screen, 1, 5);
-  state.mem[INIT.hWY] = host.screen.wy = 0;
-  textBgTransfer.enabled = true;
-  yield* delayFrames(3);
-  const ctx = hudContext(state);
-  yield* host.screen.setPalBattle({ partySpecies: ctx.partySpecies, enemySpecies2: ctx.enemySpecies2,
-    playerBar: state.wPlayerHPBarColor as 0 | 1 | 2, enemyBar: state.wEnemyHPBarColor as 0 | 1 | 2 });
-  // HideSprites changes only Y; the head's X/tile/attributes remain until ClearSprites below.
-  for (let slot = 0; slot < 40; slot++) host.screen.setOam(slot, { ...host.screen.shadowOam(slot), y: 0xa0 });
-  yield* printBeginningBattleText(state, host);
-}
-
 /** pret core.asm:6348-6367; init_battle.asm:40-128. First owned frame is the full HUD load; stop at StartBattle. */
 export function* initBattleAfterTransition(state: BattleState, host: BattleInitHost): Program {
   bindEntryBattleScreen(state, host.screen);
@@ -267,7 +250,10 @@ export function* initBattleAfterTransition(state: BattleState, host: BattleInitH
     placePicture(state, host.screen, 12, 0);
   }
   yield* host.screen.setPalBattleBlack();
-  yield* slidePlayerAndEnemySilhouettesOnScreen(state, host);
+  // setPalBattleBlack's last frame is serviced, so the intro enters at POST_VBLANK_LY (note 79 §8.5).
+  const timing = new BattleIntroTiming(state, host.screen, POST_VBLANK_LY, host.introScanout);
+  host.bindRaster(timing);
+  try { yield* battleSilhouetteIntro(state, host, timing); } finally { host.bindRaster(null); }
   textBgTransfer.enabled = false;
   // pret init_battle.asm:140-141. Use this routine's committed local @ program.
   yield* host.printText('_InitBattleCommon.emptyString');

@@ -1,29 +1,30 @@
 # Battle System Architecture
 
-## A5e foundations — current through2026-11-03
+## A5e foundations — current through 2026-11-04
 
-**02,03a and03b are implemented and independently accepted;04 is unstarted/unbriefed.** Sonnet implements,
-Codex plans/spikes/reviews (DECISIONS #93). Latest code `6dc2536`, follow-up docs `3c201d9`, review `8861a58`.
-Current suite6019 ROM /5762 no-ROM +257 skip; bundle `index-D4Ol9Anq.js`,655166 bytes. Notes75–77 hold the
-source traces, patches, mutation witnesses and exact contracts; note77 §9 is the accepted stop point.
+**02/03a/03b and 04a are accepted. 04b implemented, awaiting Claude's review and the user's play-test.** Note79 §8 is the live brief; §8.11-8.14 rule the valid stops; §9 records audits, seven mutations and passing gates. Suite **6038 ROM / 5781 no-ROM + 257 skip**, 239 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes, SHA256 `da986d0147289732689d52143f9864645654192e2a8e0f2cf95a092a30992843`. Notes75-77 retain the earlier contracts.
 
 | Owner | Behavior / reachability |
 |---|---|
-| `battle_intro.ts:prepareSilhouetteBackground` (02) | Unused LCD-off-only transaction: existing full HUD load, clear32×32 BG0, copy20×18 with32-column destination stride. No yields or changes to CPU map/window/OAM/transfer phase; caller owns head clear and LCD transitions |
-| `BattleScreen.scxAfterSplit` / `battle_screen_render.ts` (03a) | Shared live code, new capability disabled by default. With a split: top0–63=`scx`, body64–95=`scxSplit`, lower96–143=`scxAfterSplit ?? scx`. Null split ignores both overrides; explicit0 is valid. Window/OBJ remain independent; no production caller enables the new field |
-| `battle_intro_program.ts:battleSilhouetteIntro` (03b) | Unused source-order Program through existing opening-text handoff:14-frame back/head load, LCD-off transaction, prefix,72 split iterations,21 pending head X−2, flipped body restore, palette and Y-only HideSprites |
-| `battle_intro_timing.ts:BattleIntroTiming` (03b) | Unused raster-barrier/capture contract. Supplied entry LY; service anchor144; LCD-enable anchor0; phase-dependent zero/one-boundary LCD wait; physical rSCX separate from hSCX and captured top/body/lower metadata |
+| `battle_intro.ts:prepareSilhouetteBackground` (02) | Live LCD-off-only transaction: existing full HUD load, clear32×32 BG0, copy20×18 with32-column destination stride. No yields or changes to CPU map/window/OAM/transfer phase; caller owns head clear and LCD transitions |
+| `BattleScreen.scxAfterSplit` / `battle_screen_render.ts` (03a) | Shared live code, new capability disabled by default. With a split: top0–63=`scx`, body64–95=`scxSplit`, lower96–143=`scxAfterSplit ?? scx`. Null split ignores both overrides; explicit0 is valid. Window/OBJ remain independent; the live intro enables the field |
+| `battle_intro_program.ts:battleSilhouetteIntro` (03b) | Live source-order Program through existing opening-text handoff:14-frame back/head load, LCD-off transaction, prefix,72 split iterations,21 pending head X−2, flipped body restore, palette and Y-only HideSprites |
+| `battle_intro_timing.ts:BattleIntroTiming` (04a) | Bound by battle init through the session. `POST_VBLANK_LY` is 146. A serviced boundary anchors there; a held boundary stays at 144. `disableLCD` waits for LY 145 and yields that crossing as one `'serviced'` frame. LCD-enable anchor is 0. Physical rSCX stays separate from hSCX and the captured bands |
+| `battle_intro_raster.ts:IntroRasterCapture` (04a) | Session-owned `IntroScanout`. One 160×144 buffer. `to` copies each new row once. `compose` keeps rows `[0, cursor)` and takes the rest from the injected live render. Cursor 0, or no renderer, returns that live buffer. While off or in the skipped first frame, compose returns fresh opaque white; endFrame closes the skipped frame |
+| `battle_host.ts:bindRaster` (04a) | Bound by init through the production session. While bound, `step` runs `boundary` and then the existing serviced VBlank and audio. A held frame is boundary only. Dark frames run boundary without seal/latch, VBlank or audio; pendingFrame exposes the next frame. A `'session'` frame throws before any tick. `null` unbinds, including when nothing is bound |
 
-Capture prior raster rows **before** a serviced VBlank's scroll latches, BG transfer and OAM DMA. The last slide
-iteration ends at LY96: freeze its first96 rows before opening the window; only its lower48 rows see that change.
-hSCX ends2, physical rSCX is0 until the next serviced latch. A masked LCD `held` boundary services neither video
-nor audio; palette-held frames retain their manual audio update. The timing object does none of those ticks itself.
+Capture the prior raster before a serviced VBlank's scroll latch, BG transfer and OAM DMA. The CPU resumes after that handler, so the serviced anchor is LY 146 (`POST_VBLANK_LY`). Values 146–153 are equivalent for this Program's waits (64, 96 and 145). A held boundary stays at 144 because no raster wait follows it. `DisableLCD` (`home/lcd.asm`) clears rIF, masks IE.VBlank, waits for LY 145, turns the LCD off and restores rIE. It does not clear IME. IF latches the request while it is masked, and restoring IE services that pending VBlank as one ordinary serviced frame. Palette-held frames still get their manual `UpdateAudioDuringLoadBGMapAttributes` update. The timing object does none of those ticks itself.
 
-The accepted fixture assumes CPU-only work consumes no scanlines; it does not estimate ISR instruction cycles.
-The unchanged `BattleHost` does not supply its callbacks.04 must trace/bind the actual session entry phase,
-partial-raster observer, real text/audio and frame-driven DIV, then explicitly audit affected ledgers before live
-wiring. Do not re-record them using03b's fixture counts or silently add battle VBlank Random (still backlogged).
-No new live intro/user play-test is claimed. O-50 remains open before the later animation-data/routing brief.
+The last slide iteration ends at LY 96: `IntroRasterCapture` keeps rows 0–95 from before the window opens and takes rows 96–143 live. hSCX ends at 2. Physical rSCX stays 0 until the next serviced latch. Sealed frames are not stored. `main` presents `compose` while the session exposes introRaster. The presentation copies the composed bytes into an ArrayBuffer-backed array for ImageData (note79 §8.13).
+
+The session starts with BGP = OBP0 = OBP1 = $FF, inheriting BattleTransition_BlackScreen's final
+registers (init_battle.asm:39/64); the transition itself uses the overworld renderer (§8.14).
+Init binds BattleIntroTiming at POST_VBLANK_LY and unbinds in finally after the opening text. One session
+capture presents the live intro; the interim slide is retired. The Program yields two consecutive dark ticks
+after the deferred VBlank. LCD-off and the skipped first enabled frame present white (three consecutive
+presentations). Dark ticks do no VBlank or audio, including main's audio tick. DIV still advances.
+The init/start/Route1/pixel audits precede their snapshot updates (note79 §9). Attack move animations stay
+OFF (#94); battle VBlank Random remains backlogged. The user's live play-test follows Claude's review.
 
 Older dated checkpoint sections below are historical records: their "unused until A5c3f" wording does not describe
 the now-live battle engine. Use this section, STATUS and the current code for the restart point.
@@ -646,14 +647,14 @@ map trainers, the Lab rival, both catch demos) runs `PlayBattleMusic`'s stop and
 8 transitions picked by the cartridge's 3-bit choice (trainer / enemy ≥ lead + 3 / dungeon map), and the tail,
 then holds black until the battle is ready. The modules are in `overworld/` (`battle_transition*.ts`,
 `transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). The live engine still uses `battle_init.ts`'s interim
-intro without the72-frame slide; the accepted03b replacement is unused pending04. Growth, starter Pikachu,
+intro without the72-frame slide; the accepted03b replacement is unused. 04a proved its timing and the host binding; the live switch is 04b. Growth, starter Pikachu,
 retreat and slide-offs already run since A5c3f10c; the poof/OAM player remains future A5e work.
 
 ## Remaining A5e presentation carries (updated2026-11-03)
 
 Upstream's intro phases (`slide_in` → `colorize` → … → `go_text`, canvas silhouettes, `loadPlayerTrainerSprite`)
 now survive only in `catch_demo_screen.ts`, which A5f retires. Current live carries:
-- integrate the accepted unused silhouette Program into `_InitBattleCommon` in04 after its own trace/spike/brief;
+- integrate the accepted unused silhouette Program into `_InitBattleCommon` in 04b (04a landed the timing, the host binding and the capture; nothing calls them yet);
 - battle `updateSprites` remains a named no-op; trace the battle OAM owner rather than calling the field NPC/follower updater;
 - poof/OAM sub-animation player; **do not re-port** the already-live `sendingOutMon`, `pikachuEntrance`, retreat or slide-offs;
 - `hideSubstitute` / `reshowSubstitute`, `animationSubstitute`, `animationTransformMon`, `substituteBreak`, `shake`
@@ -661,8 +662,8 @@ now survive only in `catch_demo_screen.ts`, which A5f retires. Current live carr
 - move animations: `battle_move_anim.ts` always takes the BATTLE ANIMATION OFF path, whatever `wOptions` bit 7 says
   (DECISIONS #83).
 
-A5e's parent scope is note65 §4; current sequence/inventory is note75 §2/§4.02/03a/03b reviews are note75 §8,
-note76 §7 and note77 §9. Historical carries are in note72 §10.24.1, §11.66 and §10.26; check them against the code.
+A5e's parent scope is note65 §4; current sequence/inventory is note75 §2/§4. 02/03a/03b reviews are note75 §8,
+note76 §7 and note77 §9. 04a's implementation report is note79 §6; 04b is outlined in note79 §5 and not started. Historical carries are in note72 §10.24.1, §11.66 and §10.26; check them against the code.
 
 ## Key Files
 

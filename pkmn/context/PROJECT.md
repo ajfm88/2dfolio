@@ -49,35 +49,29 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-03 — stopped after accepted A5e checkpoint-03b
+## State as of 2026-11-04 — stopped after A5e checkpoint-04 (live silhouette intro, user-verified)
 
 - **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a/b/c/d are done; A5e and A5f remain open.
-  The lost July–August code was rebuilt from upstream; the live path now reaches Pewter across24 maps.
-- **No ROM at runtime.** Committed196 JSON data files and a static mirror with525 PNGs and3 tilemaps.
-  No maps, assets, extraction or dependencies changed today. Vanilla art, local play, no distribution/push.
-- The ASM-backed battle engine has been live since A5c3f checkpoint-09b. The old engine is retired.
-  Its user play-test passed2026-11-01; today's foundations do not change the visible battle intro.
-- **Today: A5e foundations through03b, implemented by Claude Sonnet and independently accepted by Codex.**
-  Note75 contains01's inventory/trace and02's unused LCD-off HUD/BG0 helper (6 cases).
-  Note76 adds03a's default-disabled third scroll band (8 pixel cases).
-  Note77 adds03b's unused full silhouette Program and phase/capture contract (21 cases).
-  Total35 new cases; no existing test/snapshot/data changes.03a alone changes the bundle by72 bytes.
-- **Accepted commits:**02=115b59d, review6c9a822;03a=67e14ee, review7f5ddb4;
-  03b=6dc2536 code/logs +3c201d9 docs, review8861a58. The two-commit03b process deviation is documented.
-- **Verified baseline:**6019/6019 ROM; no-ROM5762 pass/257 skip;238 files; default workers, first full runs.
-  Typecheck, production build and the existing decoder/no-extractor/no-node marker check pass.
-  Bundle index-D4Ol9Anq.js,655166 bytes, SHA25652090ba0af1f07a29ba29d37e790498df4715e928b4d5705f498480442fab55c.
-- The overworld remains on the Game Boy's59.7275Hz clock and2-frame pass. The cartridge's Random is shared
-  outside battle; missing battle VBlank Random remains backlogged. No mechanics/RNG changes today.
-- **Current runtime:** the existing interim intro still runs.03b is outside the runtime import graph;03a's lower
-  override is null and no production caller enables it. Growth, starter Pikachu, retreat and slide-offs already
-  run from A5c3f10c. Poof/OAM and remaining substitute/minimize/transform carries remain future A5e work.
-- **Next session:** Codex traces/spikes/briefs A5e checkpoint-04, then Sonnet implements its concrete brief and
-  Codex reviews.04 is not started or briefed. It must bind the real driver/entry phase, partial-raster capture,
-  masked-LCD versus palette-held audio and real text, then explicitly audit frame-driven DIV/ledger changes.
-  The03b fixture phase contract is not a measurement of cartridge ISR timing and is not a drop-in BattleHost.
-- **O-50 remains open:** attack move animations stay on the current OFF path until the scope answer is recorded.
-  Resolve before animation-data/routing; intro planning can proceed independently. No answer is inferred.
+  The lost July–August code was rebuilt from upstream; the live path reaches Pewter across 24 maps.
+- **No ROM at runtime.** 196 committed JSON data files and a static mirror with 525 PNGs and 3 tilemaps.
+  Vanilla art, local play, no distribution or push.
+- The ASM-backed battle engine has been live since A5c3f checkpoint-09b, and the old engine is retired.
+- **Today: A5e checkpoint-04 (note 79).** Claude planned and reviewed; Grok 4.7 implemented 04a; Grok, then Codex,
+  implemented 04b.
+  - Every battle now runs the cartridge's silhouette slide, with real raster timing.
+  - The LCD-off span is 2 dark ticks, so the screen blinks white for about 3 frames. Music isn't updated during
+    them (DECISIONS #97).
+  - The battle screen inherits the transition's black palette registers.
+  - The interim slide is deleted.
+  - Four valid implementer stops, each from a gap in the brief, were ruled in note 79 §8.11–§8.14.
+  - Claude accepted it in §10, and the user play-tested it the same night.
+- **Verified baseline:** 6038/6038 ROM; no-ROM 5781 pass / 257 skip; 239 files; default workers.
+  - Bundle `index-JN4Ut5jo.js`, 659,202 bytes.
+  - Typecheck, build and the marker check pass.
+- **Next session:** Claude plans A5e checkpoint-05 (poof data; note 75 §4), carrying note 79 §10's three findings.
+  After that: 06 the OAM sub-animation player, 07 the live poof, 08 the remaining cues, 09 the closeout, then A5f.
+- **O-50 answered 2026-11-04 (DECISIONS #94):** attack move animations are a separate future slice; A5e keeps
+  them on the OFF path and plays only the traced presentation IDs (poof).
 - The user ended the day. Keep all commits local and the existing data/art protected. After A5e: A5f's catch/demo
   integration, then V3 Gym/Museum, V4 and V5. Full detail: [STATUS](STATUS.md), notes75–77 and battle architecture.
 
@@ -104,7 +98,6 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - Gen 2 *content* — Johto dex, Unown, Gen 2 mechanics. (Gen 2 *art* is in the
   randomizer pool, skins for the 151 only — DECISIONS #23.)
 - Shinies; Crystal animated GIFs (open question O-2).
-- A full pret `move_anim` interpreter (v1 category anims are fine).
 - Deploy/hosting until the user says the product is fully working.
 
 ## Core user flow

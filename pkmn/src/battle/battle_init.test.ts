@@ -30,6 +30,7 @@ import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture
 import { installTrainerSpecies, W_RIVAL_NAME, W_TRAINER_NO } from './battle_trainer_party';
 import { loadBattleMoveData, getMoveRecord } from './battle_move_data';
 import { INIT, initBattleVariables, setupBattleBeforeTransition, initBattleAfterTransition, type BattleInitHost } from './battle_init';
+import { IntroRasterCapture } from './battle_intro_raster';
 import type { Frame } from './battle_menu_context';
 import type { BattleCell, BattleOam } from './battle_screen';
 import type { RawImage } from './battle_screen_render';
@@ -98,7 +99,7 @@ function harness(options: Options = {}) {
   let bodyPlaced = false, openingPrinted = false;
   const originalPut = screen.put.bind(screen);
   vi.spyOn(screen, 'put').mockImplementation((x, y, cell) => {
-    if (x === 1 && y === 5 && cell === 0x31) bodyPlaced = true;
+    if (y === 5 && cell === 0x31) bodyPlaced = true;
     if (bodyPlaced && !openingPrinted && cell === ' ' && x >= 1 && x <= 7 && y >= 5 && y <= 7) holes.push({ x, y, at: time });
     originalPut(x, y, cell);
   });
@@ -110,6 +111,7 @@ function harness(options: Options = {}) {
   vi.spyOn(screen, 'setPalBattle').mockImplementation(function* (input) { mark('palette', input); yield* originalPal(input); });
   const host: BattleInitHost = {
     screen, audio: bridge, trainerAppeared: { id: 0xe9, data: sfxData('trainer_appeared') },
+    introScanout: new IntroRasterCapture(null), bindRaster: timing => driver.bindRaster(timing),
     renderTiles: { sprites: { width: 128, height: 128, data: new Uint8ClampedArray(128 * 128 * 4) } },
     pokeballTiles: image('gfx/battle/balls.png'),
     frontPicture: s => `front/${POKEDEX_ORDER[s.wCurPartySpecies - 1]}`,
@@ -175,13 +177,19 @@ function assertCommon(h: ReturnType<typeof harness>): void {
   expect(h.ramAfterSetup.slice(D.wCanEvolveFlags, D.wMiscBattleDataEnd)).toEqual(new Uint8Array(60).map((_, i) => i === 6 ? 1 : 0));
   // 6 HUD + ClearScreen3 + front7 + palette5 + LoadPlayerBackPic14 + tail3 + palette5.
   expect(h.events.find(e => e.name === 'palette')?.at).toBe(16);
-  expect(h.events.filter(e => e.name === 'palette').slice(0, 2).map(e => e.at)).toEqual([16, 38]);
+  // 16 black palette, +5 its frames, +14 back pic, +1 deferred VBlank, +2 dark, +3 Delay3,
+  // +1 DelayFrame, +71 loop crossings, +3 tail Delay3 (note 79 §8.6).
+  expect(h.events.filter(e => e.name === 'palette').slice(0, 2).map(e => e.at)).toEqual([16, 116]);
   expect(h.kinds.slice(0, 6)).toEqual(Array(6).fill('serviced'));
-  expect(h.headFrames.length).toBe(22); // 14 copy + 3 tail + 5 palette frames.
+  // Head OAM is written before the first back-pic yield and HideSprites runs after setPalBattle.
+  // 14 back pic + 1 deferred VBlank + 2 dark + 3 Delay3 + 1 DelayFrame + 71 loop crossings + 3 tail + 5 palette.
+  expect(h.headFrames.length).toBe(100);
   expect(h.headFrames[0]).toEqual(Array.from({ length: 21 }, (_, i) => ({
     y: 0x38 + (i % 3) * 8, x: 0xa0 + Math.floor(i / 3) * 8, tile: Math.floor(i / 3) * 7 + i % 3, attributes: 2,
   })));
-  expect(h.holes).toEqual([]);
+  // ClearScreenArea (core.asm:14–16), row-major order; 35 = 16 black palette + 5 of its frames + 14
+  // back pic, so the clear lands before DisableLCD's deferred VBlank.
+  expect(h.holes).toEqual(Array.from({ length: 21 }, (_, i) => ({ x: 1 + i % 7, y: 5 + Math.floor(i / 7), at: 35 })));
   const empty = h.printRecords.filter(e => e.program === '_InitBattleCommon.emptyString');
   expect(empty).toHaveLength(1); expect(empty[0].end - empty[0].at).toBe(3);
   expect(h.events.find(e => e.name === 'buffer1.save')?.at).toBe(empty[0].end);
@@ -191,7 +199,7 @@ function assertCommon(h: ReturnType<typeof harness>): void {
   expect(h.state.mem.slice(D.wPlayerStatsToDouble, D.wPlayerStatsToDouble + 5)).toEqual(new Uint8Array(5));
   expect(h.state.wPlayerDisabledMove).toBe(0);
   expect(h.screen.transferDestination).toBe(0x9c); expect(h.screen.wy).toBe(0);
-  expect([h.screen.scx, h.screen.scy, h.screen.scxSplit]).toEqual([0, 0, null]);
+  expect([h.screen.scx, h.screen.scy, h.screen.scxSplit]).toEqual([2, 0, null]);
   expect(textBgTransfer.enabled).toBe(true);
   const flipped = h.state.mem[W_SPRITE_FLIPPED] !== 0;
   for (let col = 0; col < 7; col++) for (let row = 0; row < 7; row++) {
@@ -222,8 +230,8 @@ describe('checkpoint-04 battle start, through the instruction before StartBattle
     expect(h.state.mem[A.wPokedexSeen + 2] & 4).toBe(4); // Rattata dex19, seen before the transition.
     const trace = h.drive(); assertCommon(h); assertOwnPokeballs(h);
     expect(h.draws).toHaveLength(2);
-    expect(h.events.find(e => e.name === 'cry')).toMatchObject({ at: 43, data: 0xa5 });
-    const first = h.printRecords[0]; expect(first.at).toBe(44);
+    expect(h.events.find(e => e.name === 'cry')).toMatchObject({ at: 121, data: 0xa5 }); // +78 is the live intro, note 79 §8.11.
+    const first = h.printRecords[0]; expect(first.at).toBe(122); // +78 is the live intro, note 79 §8.11.
     expect(first.program).toBe('WildMonAppearedText');
     expect(first.oam.slice(0, 6).map(o => o.tile)).toEqual([0x31, 0x34, 0x34, 0x34, 0x34, 0x34]);
     expect(first.oam.slice(6).every(o => o.y === 0xa0)).toBe(true);
@@ -243,7 +251,7 @@ describe('checkpoint-04 battle start, through the instruction before StartBattle
     expect(Array.from({ length: 49 }, (_, i) => h.screen.frontSlot(i))).toEqual(
       Array.from({ length: 49 }, (_, tile) => ({ picture: 'bugcatcher.png', tile })));
     const sound = h.events.find(e => e.name === 'sound')!;
-    expect(sound).toEqual({ at: 43, name: 'sound', data: { id: 0xe9, frequency: 0, tempo: 0x80 } });
+    expect(sound).toEqual({ at: 121, name: 'sound', data: { id: 0xe9, frequency: 0, tempo: 0x80 } }); // +78 is the live intro, note 79 §8.11.
     const waited = h.events.find(e => e.name === 'sound.finished')!;
     expect(h.events.filter(e => e.name === 'sound.wait')).toHaveLength(1);
     expect(waited.at - sound.at).toBe(18); // Audio2 CHAN5 at frequency0/tempo$80, through sound_ret.
@@ -264,7 +272,7 @@ describe('checkpoint-04 battle start, through the instruction before StartBattle
 
   it.each([false, true])('Pikachu intro: asleep=%s selects clip11/37 and draws no pokeballs', asleep => {
     const h = harness({ type: 4, asleep }); const trace = h.drive(); assertCommon(h);
-    expect(h.events.find(e => e.name === 'clip')).toEqual({ at: 46, name: 'clip', data: asleep ? 37 : 11 });
+    expect(h.events.find(e => e.name === 'clip')).toEqual({ at: 124, name: 'clip', data: asleep ? 37 : 11 }); // +78 is the live intro, note 79 §8.11.
     expect(h.events.some(e => e.name === 'cry')).toBe(false);
     expect(h.printRecords[0].oam.every(o => o.y === 0xa0)).toBe(true);
     expect(h.screen.backSlot(0x31)?.picture).toBe('prof.oakb');

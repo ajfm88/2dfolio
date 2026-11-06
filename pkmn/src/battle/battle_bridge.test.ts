@@ -6,7 +6,9 @@ import { A, BattleState, encodeText, POKEDEX_ORDER } from './battle_state';
 import { loadBattleData } from './data';
 import { loadBattleMoveData } from './battle_move_data';
 import { BattleRandomState } from './battle_random_state';
-import { setupBattleBeforeTransition, slidePlayerAndEnemySilhouettesOnScreen, type BattleInitHost } from './battle_init';
+import { setupBattleBeforeTransition, type BattleInitHost } from './battle_init';
+import { battleSilhouetteIntro } from './battle_intro_program';
+import { BattleIntroTiming, POST_VBLANK_LY } from './battle_intro_timing';
 import { installTrainerSpecies } from './battle_trainer_party';
 import { BattleScreen, battleGlyphTile } from './battle_screen';
 import { hudContext } from './battle_hud_state';
@@ -17,10 +19,21 @@ it('real04 palette setup leaves the unloaded player nickname unread and HUD read
   state.wCurOpponent = 0xa5; state.wCurEnemyLevel = 3;
   setupBattleBeforeTransition(state, new BattleRandomState(() => 2));
   expect([...state.mem.slice(A.wBattleMonNick, A.wBattleMonNick + 11)]).toEqual(Array(11).fill(0));
-  // Only screen is read before PrintBeginningBattleText; stop on the first palette frame.
+  // Only screen is read before the palette's first held frame.
   const host = { screen: new BattleScreen() } as BattleInitHost;
-  const slide = slidePlayerAndEnemySilhouettesOnScreen(state, host);
-  expect(() => { for (let i = 0; i < 18; i++) expect(slide.next().done).toBe(false); }).not.toThrow();
+  const noScan = { to() {}, endFrame() {}, restart() {} };
+  const timing = new BattleIntroTiming(state, host.screen, POST_VBLANK_LY, noScan);
+  const intro = battleSilhouetteIntro(state, host, timing);
+  expect(() => {
+    for (let steps = 0; steps < 200; steps++) {
+      const next = intro.next();
+      expect(next.done).toBe(false);
+      if (next.done || next.value === 'session') continue;
+      timing.boundary(next.value);
+      if (next.value === 'held') return;
+    }
+    throw new Error('intro did not reach the palette');
+  }).not.toThrow();
   expect([...state.mem.slice(A.wBattleMonNick, A.wBattleMonNick + 11)]).toEqual(Array(11).fill(0));
   const ctx = hudContext(state);
   state.mem.set(encodeText('LATER@'), A.wBattleMonNick);

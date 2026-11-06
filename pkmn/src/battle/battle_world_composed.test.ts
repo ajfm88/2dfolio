@@ -27,6 +27,7 @@ import { A, BattleState, battleContext, POKEDEX_ORDER } from './battle_state';
 import { D } from './battle_end_state';
 import { I } from './battle_item_state';
 import { BattleHost } from './battle_host';
+import { IntroRasterCapture } from './battle_intro_raster';
 import { BattleAudio } from './battle_audio';
 import { BattleRandomState } from './battle_random_state';
 import { getMove, getAllLoadedMoveIds, loadBattleData } from './data';
@@ -159,6 +160,7 @@ function history(o: Case = {}) {
   vi.spyOn(hit, 'moveHitTest').mockImplementation(state => { rngPhase = 'hit'; const r = accuracy(state); rngPhase = 'turn'; return r; });
   const host: BattleStartHost & LearnMoveHost = {
     screen, tiles: video.tiles, audio: bridge, partyView: party,
+    introScanout: new IntroRasterCapture(null), bindRaster: timing => driver.bindRaster(timing),
     renderTiles: { sprites: { width: 128, height: 128, data: new Uint8ClampedArray(128 * 128 * 4) } },
     pokeballTiles: PNG.sync.read(readFileSync(resolve(__dirname, '../../static/gfx/battle/balls.png'))),
     trainerAppeared: { id: 0xe9, data: sfxData('trainer_appeared') },

@@ -62,7 +62,7 @@ function run(overrides:Partial<BattleWorld>={},encounter:LiveBattleEncounter={ki
         else if(catching&&row(14).includes('FIGHT')&&!session.video.textBox.active)pressed=row(16).includes('▶')?['a']:['down'];
         else pressed=session.video.textBox.isWaitingForInput?['b']:['a'];
       }
-      time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();r.update();session.tick();
+      time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();if(session.pendingFrame!=='dark')r.update();session.tick();
       for(let y=13;y<18;y++)printed.push(row(y));
     }
     expect(session.done,JSON.stringify(session.textLog.slice(-6))).toBe(true);

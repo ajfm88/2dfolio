@@ -20,6 +20,7 @@ import { BattleAudio } from './battle_audio';
 import { BattleMenuScreen } from './battle_menu_screen';
 import { BattleHost } from './battle_host';
 import { BattleState, A } from './battle_state';
+import { renderBattleScreen } from './battle_screen_render';
 import { INIT } from './battle_init';
 import { D } from './battle_end_state';
 import { TRAINER_AI_POINTERS } from './battle_trainer_ai';
@@ -68,7 +69,8 @@ function setup(options:{world?:Partial<BattleWorld>;frames?:()=>number;random?:R
  const observations:{at:number;id5:number;bank:number;grewComplete:boolean|undefined;audio:typeof r.synth.log}[]=[];
  let previous=Buffer.from(session.state.mem);
  const tick=(pressed:GameButton[]=[])=>{
-   time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();const audioStart=r.synth.log.length;r.update();
+   time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();const audioStart=r.synth.log.length;
+   if(session.pendingFrame!=='dark')r.update();
    const clock=r.synth.update;
    const frame=session.tick();expect(r.synth.update,'session must not own audio ticks').toBe(clock);
    frames.push(`${time}:${frame}:${hash(session.screen.cells)}:${hash(session.screen.visibleCells)}`);
@@ -117,6 +119,39 @@ it('Route1 wild win uses the production session, real input, 123-frame first Tac
  const ledger={initial:h.initial,frames:h.frames,writes:h.deltas,texts:h.session.textLog,audio:h.r.synth.log,result};
  if(process.env.PKMN_SESSION_AUDIT)writeFileSync(process.env.PKMN_SESSION_AUDIT,JSON.stringify(ledger));
  if(!process.env.PKMN_SESSION_SKIP_SNAPSHOT)expect(ledger).toMatchSnapshot();
+});
+it('the production session presents the bound intro, two dark ticks and three white frames',()=>{
+ const h=setup();h.start();
+ let phase:'before'|'during'|'after'='before';
+ let darks=0,sawOpening=false;
+ const whites:number[]=[];
+ let lastSlide:{presented:Uint8ClampedArray;live:Uint8ClampedArray}|null=null;
+ const upper=96*160*4;
+ for(let n=0;n<1500&&phase!=='after';n++){
+  if(h.session.pendingFrame==='dark')darks++;
+  const before=h.session.introRaster;
+  if(before){expect(phase).not.toBe('after');phase='during';}
+  else if(phase==='during')phase='after';
+  if(before&&h.session.textLog.some(t=>t.label==='WildMonAppearedText'))sawOpening=true;
+  const pressed:GameButton[]=h.time%2===0?(h.session.video.textBox.isWaitingForInput?['b']:['a']):[];
+  h.tick(pressed);
+  const after=h.session.introRaster;
+  const live=renderBattleScreen(h.session.screen,h.session.renderTiles);
+  const frame=after?after.compose(live):live;
+  if(frame.every(value=>value===255))whites.push(n);
+  if(after&&after.cursor===96&&h.session.screen.wy===0)lastSlide={presented:frame.slice(),live:live.slice()};
+ }
+ for(let n=0;n<5;n++){expect(h.session.introRaster).toBeNull();h.tick();}
+ expect(phase).toBe('after');
+ expect(sawOpening).toBe(true);
+ expect(darks).toBe(2);
+ expect(whites).toHaveLength(3);
+ expect(whites[1]).toBe(whites[0]+1);
+ expect(whites[2]).toBe(whites[1]+1);
+ expect(lastSlide).not.toBeNull();
+ const at=lastSlide!.presented.subarray(0,upper).findIndex((value,index)=>value!==lastSlide!.live[index]);
+ expect(at).toBeGreaterThanOrEqual(0);
+ h.session.abort();
 });
 it('a wild battle with a fixed frame4 clock completes with the cycle-counted DIV',()=>{
  // Bounded old-clock control: run the real battle, but stop a frozen retry after1024 DIV reads.
@@ -190,13 +225,15 @@ it('the bound trainer port runs Misty X Defend through the real session and live
  const mon=createPokemon(25,45,'PIKACHU',{atk:9,def:8,spd:8,spc:8})!;
  mon.moves=[{id:'TACKLE',pp:35,maxPp:35}];
  let time=0;
- const h=setup({frames:()=>time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
+ // 78 = the 04b intro's added frames (note 79 §8.3); the case pins the pre-04b roll.
+ const h=setup({frames:()=>time>78?time-78:time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
    partyIndex:0,party:[mon],options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}}),s=h.session.state;
  h.start();let returned=0;const counts:number[]=[],stages:number[]=[];
  for(let n=0;!h.session.done&&n<10000;n++){
   if(s.mem[D.wAICount]===1)counts.push(1);
   const pressed:GameButton[]=time%2?[]:h.session.video.textBox.isWaitingForInput?['b']:['a'];
-  time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();h.r.update();expect(()=>h.session.tick()).not.toThrow();
+  time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();
+  if(h.session.pendingFrame!=='dark')h.r.update();expect(()=>h.session.tick()).not.toThrow();
   const completed=h.session.trainerAILog.filter(call=>call.carry===true);
   if(completed.length>returned){returned=completed.length;counts.push(s.mem[D.wAICount]);stages.push(s.mem[A.wEnemyMonStatMods+1]);}
  }

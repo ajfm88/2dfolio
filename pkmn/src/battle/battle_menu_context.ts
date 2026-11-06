@@ -4,7 +4,9 @@ import type { BattleScreen } from './battle_screen';
 import type { BattleHudMon, PlayerHudMon } from './battle_hud';
 import type { ListEntry } from '../menus/list_menu';
 
-export type Frame = 'serviced' | 'held' | 'session';
+/** 'dark' (note 79 §8.2): LCD off. No VBlank, OAM DMA, BG transfer, sound update, seal or latch.
+ * Still one port tick. DIV advances; the session's DIV is 70224 × frames. */
+export type Frame = 'serviced' | 'held' | 'session' | 'dark';
 export type Program<T = void> = Generator<Frame, T, void>;
 export interface MoveMenuFlags { zero: boolean }
 export interface BattleMenuFlags { carry: boolean }

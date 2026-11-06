@@ -43,11 +43,10 @@ to this repo, and none of it survived — DECISIONS #26.)
 
 ## Approach
 
-**Current A5e assignment (user,2026-11-03; DECISIONS #93):** Codex plans, reads the ASM, spikes and briefs;
-Claude Sonnet implements one briefed checkpoint, then Codex independently reviews both source and gates and
-tries an additional mutation.02/03a/03b are accepted.04 has no implementation brief; a roadmap row or old
-Sonnet prompt is not authorization to wire the new intro. Keep the phase-contract/live-clock distinction in
-note77 §3/§9 explicit. Earlier notes' Claude/Codex/Grok assignments are historical.
+**Current A5e assignment (user, 2026-11-04; DECISIONS #95):** Claude plans, reads the ASM, spikes and briefs;
+Codex implements one briefed checkpoint, then Claude independently reviews source and gates and adds a mutation.
+04a is briefed (note79 §4); 04b is outlined only, so a roadmap row is not authorization to wire the live intro.
+02/03a/03b followed the earlier Codex-plans/Sonnet-implements assignment (#93).
 
 Spec-driven, not improvised. The context files define what to build and the
 extractor interfaces define the exact output shape. Implement against those
@@ -238,7 +237,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 6019/6019** as of 2026-11-03 (A5e checkpoint-03b, checked by Codex; default workers). No-ROM **5762 pass / 257 skip**. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 6033/6033** as of 2026-11-04 (A5e checkpoint-04a, accepted by Claude; default workers). No-ROM **5776 pass / 257 skip**, 239 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -381,10 +380,21 @@ of the body band's LY95 endpoint (note76 §7). Baseline: 5998 ROM / 5741 no-ROM 
 **A5e checkpoint-03b** adds `battle/battle_intro_program.test.ts` (21 plain-assertion cases) for the unused
 `battleSilhouetteIntro` Program and `BattleIntroTiming` raster barriers (note 77). Eighteen mutations, each an AssertionError
 (`notes/77-a5e-checkpoint-03b/check-mutations.ps1`). Codex checked both commits, all18 mutations and an additional
-omitted hSCY reset (note77 §9). Baseline: 6019 ROM / 5762 no-ROM + 257 skip.
+omitted hSCY reset (note77 §9). Baseline after 03b: 6019 ROM / 5762 no-ROM + 257 skip.
 
-Together the three A5e suites add35 cases (6+8+21) over the November2 baseline, deleting or changing no old
-tests/snapshots. Latest independent gates are note77 §9; runtime bundle `index-D4Ol9Anq.js`,655166 bytes,
+**A5e checkpoint-04a** adds `battle/battle_intro_raster.ts` and `battle/battle_intro_live.test.ts` (14 cases) and amends exactly 7 of the 21 cases in `battle_intro_program.test.ts` (note 79 §4.5): DisableLCD's deferred VBlank is one serviced frame, the 72-iteration case is 97 serviced, and the picture cases are 99 (type 4) and 96. Nine mutations, each an AssertionError (`notes/79-a5e-checkpoint-04a/codex-mutation-*.log`), restored byte-for-byte. `BattleHost.bindRaster` is on the live host and has no production caller. The timing module and the capture stay off the bundle. Baseline: 6033 ROM / 5776 no-ROM + 257 skip, 239 files. Bundle `index-pI5Lpy08.js`, 655,527 bytes, SHA256 `a0def68851987c469f8e45945800ccfe2805f8ace56289c2f624cb9f2fd46106`. No visible intro play-test. Accepted by Claude with independent gates (note 79 §7).
+
+**A5e checkpoint-04b** (note79 §9): five new cases cover dark host boundaries (bound/unbound), timing
+refusals, LCD-off/blank capture, the exact two-dark-frame Program span and production session composition.
+The production case pins raster lifetime, two dark ticks, three white presentations and the last slide's
+captured upper rows. Intro pixel comparisons report the first differing byte. Init/start/Route1/opening
+snapshots were updated only after passing audits; seven mutations have plain AssertionError witnesses.
+The session inherits the transition's black registers (§8.14), and ImageData gets an ArrayBuffer copy
+(§8.13). Final gates: 6038/6038 ROM; 5781 pass / 257 skip no-ROM; 239 files, default workers.
+Awaiting Claude's review and the user's play-test.
+
+Together the three earlier A5e suites add 35 cases (6+8+21) over the November 2 baseline, deleting or changing no old
+tests/snapshots. The independent gates for that trio are note77 §9; that closeout's bundle was `index-D4Ol9Anq.js`,655166 bytes,
 SHA256 `52090ba0af1f07a29ba29d37e790498df4715e928b4d5705f498480442fab55c`. Only03a changed the bundle (+72);
 02 and03b are unused. No visible intro play-test has been claimed. A docs-only closeout records these earlier
 gates without implying they were re-run during the closeout.
@@ -396,7 +406,7 @@ the new baseline.
 **`notes/` and the game** (DECISIONS #81): production code never reads `notes/`. Tests may read fixtures there; four do
 (the A5c1 traces in `notes/66-a5c1-cp1/`, and note 70 §9.1.7's table, which `battle_end_helpers.test.ts` parses, so edit it with care).
 
-6019 tests in 202 files (vitest, `environment: 'node'`); without ROM, 5770 pass / 249 skip.
+6033 tests in 239 files (vitest, `environment: 'node'`); without ROM, 5776 pass / 257 skip.
 Checkpoint-06 validated the full suite with4 workers after default-worker Pewter tripwire load timeouts (note72 §10.8).
 
 **A5c3e checkpoint-10** (2026-10-26, Codex; note 71 §10.17, awaiting Claude) adds

@@ -1199,8 +1199,8 @@ function gameTick(): void {
   }
   lastPlayTimeUpdate = now;
 
-  // Tick the audio engine every frame
-  tickAudio();
+  // Tick the audio engine every frame. No VBlank while the LCD is off (note 79 §8.2).
+  if (!(state === "battle" && currentSession?.pendingFrame === 'dark')) tickAudio();
   tickPendingMapMusic();
 
   // Is this frame an overworld pass? Entering the overworld from a menu, a text box or a
@@ -1774,7 +1774,11 @@ function renderLiveBattle(): void {
   const session = currentSession;
   if (!session) return;
   switch (session.foreground) {
-    case 'battle': presentBattleScreen(session.screen,session.renderTiles); break;
+    case 'battle': {
+      const raster = session.introRaster;
+      presentBattleScreen(session.screen, session.renderTiles, false, raster ? live => raster.compose(live) : undefined);
+      break;
+    }
     case 'party': session.party.render(); break;
     case 'partyItem':
       if (session.screen.bgp === 0) presentBattleScreen(session.screen,session.renderTiles);

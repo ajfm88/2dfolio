@@ -1169,15 +1169,62 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
     - The03b review accepts an **unused Program and explicit phase/capture contract**, not live ISR-cycle
       timing or session integration.04 must trace/spike/brief real driver, phase, capture, audio, text and DIV
       composition before replacing the interim intro or changing live ledger expectations.
-    - Preserve the current OFF move-animation routing until O-50 is resolved. No broader animation scope
+    - Preserve the current OFF move-animation routing until O-50 is resolved (resolved by #94). No broader animation scope
       or live intro wiring is implied by accepting the foundations or by stopping for the day.
 
-## Open — not decided, needs the user
+94. **Attack move animations are a separate future slice, not part of A5e** (2026-11-04, O-50).
+    *The user: "let's do a separate slice for the attack move animations".*
 
-**O-50. Attack move animations in A5e, or a separate future slice?** Asked2026-11-03; no unambiguous answer
-recorded at day end. Recommendation: keep attack animations on the current OFF path and limit the new player
-to the separately traced poof/presentation IDs (#70/#83, note75 §1). Resolve before the animation-data/routing
-brief; it does not block planning04's intro integration. Do not treat the earlier "+" message as a choice.
+    - A5e keeps every attack move animation on the current OFF path (#83). Its sub-animation player (note75 §4,
+      checkpoints05–07) covers only the separately traced presentation IDs, starting with poof; unsupported IDs
+      fail loudly rather than silently playing a partial attack animation.
+    - The new slice gets its own plan when it is scheduled. Where it sits in the queue is not decided yet; it
+      is not before A5e/A5f. It can reuse A5e's sub-animation player but must not shape it beyond poof's needs.
+    - **Amended 2026-11-04: it is a full pret `move_anim` interpreter.** *The user: "i want a fukll pret move anim
+      interpreter".* Every attack animation runs from the cartridge's own data and routines
+      (`engine/battle/animations.asm`, `data/moves/animations.asm`, `data/battle_anims/*`), matching the ASM; no
+      per-category stand-ins. PROJECT's old non-goal ("v1 category anims are fine") is removed.
+
+95. **A5e from checkpoint-04: Claude plans and reviews, Codex implements** (2026-11-04).
+    *The user: "please ultrathink and plan the next slice for codex to implement".*
+
+    - This supersedes #93 for checkpoint-04 onward. 02, 03a and 03b keep their Codex/Sonnet records. The user can
+      reassign any later checkpoint.
+
+96. **A5e checkpoint-04 splits into 04a and 04b, and 03b's timing contract is corrected** (2026-11-04, Claude's
+    planning trace, note 79 §2; the user may override the split).
+
+    - **04a:** an unused, proven mechanism. A post-VBlank anchor, DisableLCD's deferred VBlank, the `BattleHost`
+      raster binding (`boundary` → VBlank → audio → resume) and the presentation capture/compose, all tested on
+      the real host, printer and renderer. **04b:** the live switch, `main`'s composed presentation, retiring the
+      interim slide, the DIV/ledger audit and the user play-test. 04b's brief is written after 04a's review, from
+      its own spike.
+    - **Correction 1, the anchor:** after a serviced VBlank the CPU resumes at LY146 or later, not LY144. The
+      handler's fixed part (OAM DMA wait 159 M-cycles, plus dispatch, pushes and latches) exceeds two 114-cycle
+      lines; Yellow never enables double speed. `POST_VBLANK_LY = 146` represents 146–153 for every wait in the
+      Program.
+    - **Correction 2, DisableLCD:** `IF` latches the LY144 VBlank while `IE` masks it, and restoring `IE` after
+      LCD-off services it at once (IME is on; the preceding `DelayFrame`s prove it). So the crossing is **one
+      serviced frame** (VBlank work and audio), not a discarded held frame. 03b's `vblankMasked` and its
+      "neither video nor audio" rule are withdrawn. The live intro has no masked frames, and `main.tickAudio()`
+      already ticks correctly; no audio gating is added.
+    - Seven 03b cases change by exactly these facts (note 79 §4.5). Every other `DisableLCD` port is a backlog
+      audit (note 57). Whether the first frame after `EnableLCD` is blank is O-51, verified before 04b.
+
+97. **O-51 answered: the LCD-off span and the first frame after `EnableLCD` are white; the intro models two "dark"
+    ticks** (2026-11-04, Claude; note 79 §8.1–§8.2).
+
+    - Evidence: Pan Docs LCDC.7 and SameBoy's hardware-measured LCD logic (white while off; first frame after
+      LCD-on skipped and white, except an off-time under ~4 lines on CGB). Yellow's LCD-off work is ≈ 33,000
+      M-cycles ≈ 1.88 frames (cycle table in note 79 §8.1).
+    - Model: `INTRO_LCD_OFF_FRAMES = 2` `'dark'` frames (no VBlank, DMA, BG transfer, seal, latch or sound update;
+      one port tick each; DIV advances). The deferred VBlank stays one serviced frame (#96). Presentation: white
+      while off and for the skipped first frame, so three consecutive white frames between the black transition and
+      the slide.
+    - Audio: `main` skips `tickAudio()` on a pending `'dark'` battle frame. This amends #96's "no audio gating" for
+      this case only. Other `DisableLCD` ports stay the V5 backlog audit.
+
+## Open — not decided, needs the user
 
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.
