@@ -98,7 +98,7 @@ function clearSprites(screen: BattleScreen): void {
 }
 
 /** pret init_battle.asm:235-281. CopyUncompressedPicToTilemap, unflipped seven-column placement. */
-function placePicture(state: BattleState, screen: BattleScreen, x: number, y: number): void {
+export function placePicture(state: BattleState, screen: BattleScreen, x: number, y: number): void {
   const flipped = state.mem[W_SPRITE_FLIPPED] !== 0;
   for (let col = 0; col < 7; col++) for (let row = 0; row < 7; row++)
     screen.put(x + (flipped ? 6 - col : col), y + row, (state.mem[D.hStartTileID] + col * 7 + row) & 255);

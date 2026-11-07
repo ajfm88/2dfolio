@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest — baseline **6019** (2026-11-03, A5e checkpoint-03b, checked by Codex; default workers; no-ROM 5762 pass / 257 skip). The live count is in `STATUS.md` → *Setup* | Battle logic + cartridge behavior + extractor ground truth + `static/` export |
+| Tests | vitest - baseline **6131** (2026-11-05, A5e checkpoint-08c reviewed by Codex; default workers; no-ROM 5854 pass / 277 skip; 243 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (196 files as of2026-11-03; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2).
+- **`data/`** — JSON only, produced by `npm run setup` (198 files as of 2026-11-05; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-03):525 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s196 JSON files. No extraction was needed for A5e02–03b. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-05):525 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 198 JSON files. No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -505,13 +505,22 @@ Entry point: `index.html` → `src/main.ts`.
 
 ## Game state machine (`main.ts`)
 
-**A5e foundations (checked2026-11-03).** `battle_intro.ts`'s LCD-off HUD/BG0 transaction and
-`battle_intro_program.ts` / `battle_intro_timing.ts` remain outside this live state machine. The shared
-BattleScreen/renderer now supports a default-null lower scroll override (03a); no production caller enables it.
-The existing `battle_init.ts` interim slide still runs.04 must separately bind the accepted phase/capture contract,
-real text and audio to the session driver and audit timing/DIV; unchanged `BattleHost` is not a drop-in host for
-the new Program. See `game/src/battle/ARCHITECTURE.md` → *A5e foundations* and note77 §3/§9. This is not an
-additional BG counter, video/audio tick or saved-state owner.
+**A5e checkpoint-08c ownership (reviewed 2026-11-05, note84 section 9).** The production session owns a shallow
+copy of the render tiles and a separate picture map. Its intro capture, picture helpers, send-out host,
+sub-animation player and renderer getter all share that same session object. Composed pictures remain immutable,
+and sprite-atlas replacements are copy-on-write; neither leaks into a later battle's base assets. The accepted
+08b routines now serve the direct hide/reshow, OFF Substitute/Transform, enemy STATS reload and substitute-break
+ports; the existing horizontal shake is bound for crashes. Battle UpdateSprites remains the FF-gated no-op.
+Debug party move setup is outside battle; enemy setup writes only its four move and four PP bytes between turns.
+Attack-script special effects stay #94. User play-test is pending; STATUS.md records the stopping point.
+
+**A5e intro (live since checkpoint-04b, user-verified 2026-11-04).** The `battle` state now runs the cartridge's
+silhouette intro: `battle_init.ts` binds `BattleIntroTiming` to the session's `BattleHost` and runs
+`battle_intro_program.ts` (which calls `battle_intro.ts`'s LCD-off HUD/BG0 transaction). While the session exposes
+its `IntroRasterCapture`, `main` presents the composed raster instead of the plain BattleScreen render. The
+interim slide is deleted. The LCD-off span is two `'dark'` ticks with no VBlank and no audio, `main`'s audio tick
+included (DECISIONS #97). See `game/src/battle/ARCHITECTURE.md` → *A5e foundations* and note79 §8–§10. This
+is not an additional BG counter or saved-state owner.
 
 ```
 splash            "Click to start" (unlocks browser audio)
@@ -624,10 +633,11 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
   blocksets, collision, pokedex, maps (**24**: upstream's 12 + the Route 2 /
   Viridian Forest set from V1a + Pewter City and its four buildings from V2a; NPCs can carry `item` and trainer fields), music (47 listed, all 47
-  extract since V1c fixed the `meeteviltrainer` typo), SFX (**24** extract: the item/key-item jingles and PC sounds since A5b3, `run` since A5c2 CP2, unused Audio2 `level_up`/`faint_fall`/`faint_thud` since A5c3d checkpoint-03, the two
-  field-medicine sounds since A5b7c2, `healing_machine` and intro CP2's `shrink`; only names with an entry in `audio.ts` `SFX_HEADERS` —
+  extract since V1c fixed the `meeteviltrainer` typo), SFX (**31** extract: the item/key-item jingles and PC sounds since A5b3, `run` since A5c2 CP2, unused Audio2 `level_up`/`faint_fall`/`faint_thud` since A5c3d checkpoint-03, the two
+  field-medicine sounds since A5b7c2, `healing_machine`, intro CP2's `shrink`, and `ball_poof` (Audio 2, A5e checkpoint-05); only names with an entry in `audio.ts` `SFX_HEADERS` —
   `index.ts` lists 41 unique names, the setup script 49, and `extractSfx()` returns null
-  for the rest; V5 expands `SFX_HEADERS`),
+  for the rest; V5 expands `SFX_HEADERS`; `data/audio/sfx/` holds 32 files, one of them `pokeflute_in_battle`),
+  `battle_animations` (A5e checkpoint-05, POOF_ANIM only, #94 limits the rest),
   wave samples, noise instruments, font / font_extra / font_battle_extra,
   tilesets, battle HUD, title screen (+ tilemaps), overworld sprites (~70),
   Pokemon front/back (302), trainer & player sprites, emotes, party icons, town

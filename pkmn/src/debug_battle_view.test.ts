@@ -1,7 +1,7 @@
 import { beforeAll, expect, it } from 'vitest';
 import { A, BattleState, PARTYMON_STRUCT_LENGTH } from './battle/battle_state';
 import { loadBattleData } from './battle/data';
-import { debugBattleMon, debugBattleInfo } from './debug_battle_view';
+import { debugBattleMon, debugBattleInfo, debugEnemyMoves } from './debug_battle_view';
 import { readFileSync } from 'node:fs';
 
 beforeAll(loadBattleData);
@@ -52,4 +52,18 @@ it('info line reads foreground, speed words, selected party EXP and enemy header
   debugBattleMon(s).exp=0x123456;s.mem[A.wEnemyMonActualCatchRate]=45;s.mem[A.wEnemyMonBaseExp]=99;
   expect(debugBattleInfo(s,'partyItem')).toEqual({foreground:'partyItem',playerSpeed:301,enemySpeed:511,
     exp:0x123456,catchRate:45,baseExp:99});
+});
+
+it('enemy move setup replaces exactly four move and PP bytes and clears unused slots', () => {
+  const s=fixture(),moves=[{id:'SUBSTITUTE',pp:1,maxPp:1},{id:'MINIMIZE',pp:1,maxPp:1}];
+  poke(s,()=>{debugEnemyMoves(s,moves);},{[A.wEnemyMonMoves]:164,[A.wEnemyMonMoves+1]:107,
+    [A.wEnemyMonMoves+2]:0,[A.wEnemyMonMoves+3]:0,[A.wEnemyMonPP]:10,[A.wEnemyMonPP+1]:20,
+    [A.wEnemyMonPP+2]:0,[A.wEnemyMonPP+3]:0});
+  expect(debugEnemyMoves(s)).toEqual([{id:'SUBSTITUTE',pp:10,maxPp:10},{id:'MINIMIZE',pp:20,maxPp:20}]);
+});
+it('invalid enemy move setup is rejected atomically', () => {
+  const s=fixture(),before=s.mem.slice();
+  for(const moves of [[],[{id:'TACKLE',pp:1,maxPp:1},{id:'BAD',pp:1,maxPp:1}],Array(5).fill({id:'TACKLE',pp:1,maxPp:1})])
+    expect(()=>debugEnemyMoves(s,moves)).toThrow('invalid debug enemy moves');
+  expect(s.mem).toEqual(before);
 });

@@ -5,6 +5,7 @@ import type { BattleAudio, BattleSfx } from './battle_audio';
 import { delayFrames, type Program } from './battle_menu_context';
 import { textBgTransfer } from '../text/bg_transfer';
 import { bindEntryBattleScreen } from './battle_screen_binding';
+import { playAnimation, type SubanimationHost } from './battle_subanimation';
 
 /** pret ram/{wram,hram}.asm; pokeyellow.sym 573535d. Byte views, including the low byte at D095. */
 export const MOVE_ANIM = {
@@ -20,6 +21,17 @@ export interface MoveAnimationHost {
   waitForSound(): Program;
   /** TossBallAnimation owns the BG steps; its OAM sub-animations remain A5f cues. */
   tossBall(state: BattleState): Program;
+  /** A5e checkpoint-07: PlayAnimation's owner. Only IDs in its battle_animations.json play (#94, #99). */
+  subanimation: SubanimationHost;
+}
+
+/** constants/move_constants.asm. */
+const AMNESIA = 0x85, REST = 0x9c, SLP_ANIM = 0xbd, CONF_ANIM = 0xbf;
+/** pret animations.asm:465-486. Only the enemy's Amnesia and Rest are rewritten. */
+export function shareMoveAnimations(state: BattleState): void {
+  if (state.hWhoseTurn === 0) return;
+  if (state.wAnimationID === AMNESIA) state.wAnimationID = CONF_ANIM;
+  else if (state.wAnimationID === REST) state.wAnimationID = SLP_ANIM;
 }
 
 /** pret animations.asm:2834-2858. Modifier writes precede PlaySound; no post-sound wait here. */
@@ -49,7 +61,7 @@ function* shakeVertically(state: BattleState, screen: BattleScreen): Program {
 }
 
 /** pret engine/gfx/screen_effects.asm:42-73. The middle Delay1 and final WX7 are separate source writes. */
-function* shakeHorizontallyFast(state: BattleState, screen: BattleScreen, count: number): Program {
+export function* shakeHorizontallyFast(state: BattleState, screen: BattleScreen, count: number): Program {
   for (let b = count; b > 0; b--) {
     state.mem[MOVE_ANIM.hMutateWX] = b === count ? 0 : b;
     for (let call = 0; call < 2; call++) {
@@ -105,7 +117,9 @@ export function* playApplyingAttackAnimation(state: BattleState, host: MoveAnima
   else if (type === 4) yield* blinkOpponent(state, host.screen);
 }
 
-/** pret animations.asm:417-463,565-597 (non-SGB). Always OFF until A5e, irrespective of wOptions bit7. */
+/** pret animations.asm:417-463,565-597 (non-SGB). With wOptions bit7 clear (ON), ShareMoveAnimations then
+ * PlayAnimation for the IDs the data holds (POOF_ANIM only, checkpoint-07); every other ID keeps the OFF
+ * branch's 30 frames as its stand-in until the attack-animation slice (#94). */
 export function* moveAnimation(state: BattleState, host: MoveAnimationHost): Program {
   bindEntryBattleScreen(state, host.screen);
   host.screen.bindWindowRegisters({ get wy() { return state.mem[MOVE_ANIM.hWY]; },
@@ -115,7 +129,12 @@ export function* moveAnimation(state: BattleState, host: MoveAnimationHost): Pro
   host.screen.obp1 = 0x6c;
   if (state.wAnimationID === 0xc1) yield* host.tossBall(state);
   else if (state.wAnimationID !== 0) {
-    yield* delayFrames(30);
+    if ((state.wOptions & 0x80) === 0) {
+      shareMoveAnimations(state);
+      const id = state.wAnimationID;
+      if (host.subanimation.animations.animations.some(entry => entry.id === id)) yield* playAnimation(state, host.subanimation);
+      else yield* delayFrames(30); // #94 stand-in
+    } else yield* delayFrames(30);
     yield* playApplyingAttackAnimation(state, host);
   }
   yield* host.waitForSound();

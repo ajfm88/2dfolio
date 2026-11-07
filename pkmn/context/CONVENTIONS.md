@@ -43,9 +43,15 @@ to this repo, and none of it survived — DECISIONS #26.)
 
 ## Approach
 
-**Current A5e assignment (user, 2026-11-04; DECISIONS #95):** Claude plans, reads the ASM, spikes and briefs;
-Codex implements one briefed checkpoint, then Claude independently reviews source and gates and adds a mutation.
-04a is briefed (note79 §4); 04b is outlined only, so a roadmap row is not authorization to wire the live intro.
+**Current checkpoint-08c assignment (user, 2026-11-05; decision #102):** Codex prepares/spikes and reviews;
+Grok implements the written brief in note84. Codex reviews the actual commit, re-runs gates and adds a mutation;
+the user's visible play-test follows. 08c code review passed; the user's browser play-test is pending (note84 section 9).
+
+**Earlier A5e assignment (user, 2026-11-04; DECISIONS #95, #98):** Claude plans, reads the ASM, spikes and briefs;
+the implementer the user names (Codex for 04, Grok for 05) implements one briefed checkpoint, then Claude
+independently reviews source and gates and adds a mutation.
+The earlier assignment ran through checkpoint-08b; checkpoint-08c code review passed, with user play-test pending. A note75 §4 roadmap row is never
+authorization by itself: only a written brief is.
 02/03a/03b followed the earlier Codex-plans/Sonnet-implements assignment (#93).
 
 Spec-driven, not improvised. The context files define what to build and the
@@ -237,7 +243,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` — **baseline 6033/6033** as of 2026-11-04 (A5e checkpoint-04a, accepted by Claude; default workers). No-ROM **5776 pass / 257 skip**, 239 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6131/6131** as of 2026-11-05 (A5e checkpoint-08c, reviewed by Codex; default workers). No-ROM **5854 pass / 277 skip**, 243 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -392,6 +398,20 @@ snapshots were updated only after passing audits; seven mutations have plain Ass
 The session inherits the transition's black registers (§8.14), and ImageData gets an ArrayBuffer copy
 (§8.13). Final gates: 6038/6038 ROM; 5781 pass / 257 skip no-ROM; 239 files, default workers.
 Awaiting Claude's review and the user's play-test.
+
+**A5e checkpoint-05** adds `rom/__tests__/battle_animations_data.test.ts` (14 cases; 3 without the ROM) and changes `rom/__tests__/battle_end_data.test.ts` (`ball_poof` joins `sounds`, +2 ROM cases), `rom/__tests__/static_export.test.ts` (196 → 198 JSON) and `audio/sfx_jingles.test.ts` (`ball_poof` joins the unused list). Data only: `battle_animations.json` and `audio/sfx/ball_poof.json`. Six mutations, each an AssertionError (`notes/80-a5e-checkpoint-05/grok-mutation-M*.log`), restored byte-for-byte. Totals: 6054/6054 ROM; no-ROM 5784 pass / 270 skip; 240 files. Bundle unchanged (`index-JN4Ut5jo.js`, 659,202 bytes). Accepted by Claude (note 80 §6). No play-test.
+
+**A5e checkpoint-06a** adds 3 ROM fail-loud cases to `rom/__tests__/battle_animations_data.test.ts` (an empty sub-animation header, a pointer outside the bank, a 41-tile frame block) and changes only the title of the unused-SFX case in `audio/sfx_jingles.test.ts`. Each sub-animation gains `pointer` and `address`. Five mutations, each an AssertionError (`notes/81-a5e-checkpoint-06/06a-mutation-N*.log`), restored byte-for-byte. Totals: 6057/6057 ROM; no-ROM 5784 pass / 273 skip; 240 files. Bundle unchanged. Accepted by Claude (note 81 §7). No play-test.
+
+**A5e checkpoint-06b** adds `battle/battle_subanimation.test.ts` (27 no-ROM cases). The player is unused, and no existing test changes. Ten mutations, each an AssertionError (`notes/81-a5e-checkpoint-06/06b-mutation-P*.log`), restored byte-for-byte. Totals: 6084/6084 ROM; no-ROM 5811 pass / 273 skip; 241 files. Bundle unchanged. Accepted by Claude (note 81 §10; reviewer mutation R2 caught). No play-test.
+
+**A5e checkpoint-07** wires `moveAnimation`'s ON branch to that player for `POOF_ANIM` only. `battle_move_anim.test.ts` renames the Amnesia snapshot (the value is unchanged) and adds the Rest, ON poof, OFF poof, and stale-type cases. `battle_session.test.ts` adds the ON Route 1 send-out against OFF. The cold-start census goes from 49 fetches to 51 (`battle_animations.json`, `audio/sfx/ball_poof.json`); session decodes go from 358 to 359 (`gfx/battle/move_anim_0.png`). Eight mutations (`notes/82-a5e-checkpoint-07/07-mutation-Q*.log`), restored byte-for-byte. Q1's Route 1 session failure is a snapshot mismatch; every other failure is an AssertionError. Totals: 6089/6089 ROM; no-ROM 5816 pass / 273 skip; 241 files. Bundle `index-KIV9XXwR.js`, 664,311 bytes, SHA256 `7f35ecdda3d7b509bc4642557393030b7716b7ea05f79ff89ae55d6e1d34e421`. Accepted by Claude (note 82 §8; reviewer mutation R1 caught). User play-test passed 2026-11-05 (note 82 §9).
+
+**A5e checkpoint-08a** adds `minimizedMonSprite` to `battle_animations.json`: the five `MinimizedMonSprite` rows `[24, 60, 126, 60, 36]`. `battle_animations_data.test.ts` pins the key and the value without the ROM, and adds four ROM cases (one pin, three fail-loud guards). Six mutations (`notes/83-a5e-checkpoint-08/08a-mutation-M*.log`), restored byte-for-byte. M5 and M6 also surface the extractor's own `Error`. Totals: 6093/6093 ROM; no-ROM 5816 pass / 277 skip; 241 files. Bundle `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Accepted by Claude (note 83 §7; reviewer mutation R1 caught). No play-test.
+
+**A5e checkpoint-08b** adds unused `battle_pic_variants.ts` (the doll, the blob, Transform, hide/reshow, and the substitute breaking) and 21 no-ROM cases in `battle_pic_variants.test.ts`. `battle_init.ts` only gains `export` on `placePicture`. Ten mutations (`notes/83-a5e-checkpoint-08/08b-mutation-V*.log`), restored byte-for-byte; every failure is an AssertionError. Totals: 6114/6114 ROM; no-ROM 5837 pass / 277 skip; 242 files. Bundle unchanged, `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Accepted by Claude (note 83 §10; reviewer mutations R1, R2 caught). No play-test.
+
+**A5e checkpoint-08c** wires those helpers through the session and adds the debug move editor. `battle_session_variants.test.ts` has 15 no-ROM cases. `debug_battle_view.test.ts` adds 2 no-ROM cases. `battle_session.test.ts` changes only the loader census, 359 to 360 (`monster.png`). Twelve mutations (`notes/84-a5e-checkpoint-08c/grok-mutation-W*.log`), restored byte-for-byte; every failure is an AssertionError. Totals: 6131/6131 ROM; no-ROM 5854 pass / 277 skip; 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Code review passed; reviewer mutation R1 caught and restored. User play-test pending (note 84 §9). No play-test.
 
 Together the three earlier A5e suites add 35 cases (6+8+21) over the November 2 baseline, deleting or changing no old
 tests/snapshots. The independent gates for that trio are note77 §9; that closeout's bundle was `index-D4Ol9Anq.js`,655166 bytes,

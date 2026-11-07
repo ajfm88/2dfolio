@@ -1224,6 +1224,75 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
     - Audio: `main` skips `tickAudio()` on a pending `'dark'` battle frame. This amends #96's "no audio gating" for
       this case only. Other `DisableLCD` ports stay the V5 backlog audit.
 
+98. **A5e checkpoint-05: the poof's data gets its own extractor, `battle_animations.json`, which reads only the listed
+    presentation IDs; Grok implements** (2026-11-05, Claude; note 80).
+    *The user: "pls update docs and then plan checkpoint 05 for grok to implement".*
+
+    - Contract (`src/rom/extractors/battle_animations.ts`): pret's tables as raw bytes, never pre-transformed. That
+      covers the animation commands, sub-animations, frame blocks (Y, X, tile, flags), base coordinates and tileset
+      rows, in arrays sorted by `id`. `PRESENTATION_ANIMATIONS` (`{ POOF_ANIM: $C3 }`) is the only entry point, and
+      anything the listed IDs don't use throws. A5f and #94's attack-animation slice extend that list, not a second
+      format.
+    - `SFX_BALL_POOF` (Audio 2 only, `$93`) becomes the 31st `SFX_HEADERS` entry. No runtime preload until 06/07.
+    - Roles: the user named Grok as 05's implementer. Claude still plans and reviews (#95).
+
+99. **A5e checkpoint-06 splits into 06a (data) and 06b (the unused player); the player writes WRAM at pret's
+    addresses** (2026-11-05, Claude's planning trace, note 81 §1–§2; the user may override the split).
+
+    - Why: `PlayAnimation` and `LoadSubanimation` store ROM addresses in `wSubAnimAddrPtr` and
+      `wSubAnimSubEntryAddr`, and `D096` already outlives `MoveAnimation`'s cleanup in our tests. With no ROM at
+      runtime, those values must be committed data, and an extractor change is never mixed with engine code.
+    - **06a** adds each sub-animation's `pointer`/`address` to `battle_animations.json`, plus note 80 §6's guard
+      witnesses and test title. **06b** ports `PlayAnimation`'s sub-animation path, `LoadSubanimation`,
+      `PlaySubanimation`, `DrawFrameBlock` (all transforms and modes), `LoadMoveAnimationTiles` and
+      `DoPoofSpecialEffects`, unused. It is briefed after 06a's review, from its own spike.
+    - The player keeps its working state in the `BattleState` cells at pret's addresses, aliases included
+      (`D07C` = `wPartyMenuTypeOrMessageID`, `D08A` = `wSlideMonDelay`, `D09E`, `D080/D081`, `DEF4`). The
+      move-animation tiles overwrite the shared sprite atlas at `$31`–`$7F` and stay there, as in VRAM.
+
+100. **A5e checkpoint-07: `MoveAnimation`'s ON branch is live for the data's IDs only** (2026-11-05, Claude's
+     planning trace and spike, note 82; the user asked for 07's plan).
+
+    - With `wOptions` bit 7 clear (ON), `moveAnimation` runs `ShareMoveAnimations` (the enemy's Amnesia →
+      `CONF_ANIM`, Rest → `SLP_ANIM`) and then `PlayAnimation` for IDs that `battle_animations.json` holds
+      (`POOF_ANIM` only). Every other ID keeps the OFF branch's 30 frames as its stand-in until #94's slice.
+      `PlayApplyingAttackAnimation` follows both branches, so the stale `wAnimationType` after a faint replacement
+      (a silent shake) is preserved.
+    - The session loads `battle_animations.json`, `move_anim_0.png` (raw decode, like `balls.png`) and
+      `SFX_BALL_POOF`, and hands the player its own shared `renderTiles` object.
+    - Shadow OAM is empty at all three `SendOutMon` callers, so no party-ball entry ever composes with the poof.
+      The enemy-side poof is the catch's (A5f), not a send-out's.
+
+101. **A5e checkpoint-08 keeps #94's boundary for the ON path and splits into 08a (data), 08b (unused) and 08c
+     (live)** (2026-11-05, Claude's trace, note 83; the user chose the boundary).
+     *The user picked "Keep #94's boundary (Recommended)".*
+
+    - With BATTLE ANIMATION ON, the Substitute doll, the Minimize blob and Transform's picture come from
+      `SE_SUBSTITUTE_MON`, `SE_MINIMIZE_MON` and `SE_TRANSFORM_MON` inside those moves' attack animations. They wait
+      for #94's interpreter; under ON those moves keep the 30-frame stand-in. Every direct caller is ported under both
+      options: OFF's `AnimationSubstitute`/`AnimationTransformMon`, hide/reshow, the substitute breaking, the
+      party-menu reload, and the crash shake.
+    - `updateSprites` in battle is the cartridge's no-op (`wUpdateSpritesEnabled` = `$FF`). The Marowak cue stays a
+      throw until the Pokémon Tower phase.
+    - `MinimizedMonSprite` is committed through the extractor, reading its pointer and length from
+      `AnimationMinimizeMon`'s own operands, never hand-coded. The doll reuses the committed `monster.png`.
+
+102. **A5e checkpoint-08c: Codex prepares and reviews; Grok implements** (2026-11-05).
+     *The user: "pls prepare the next slice so that grok will implement, you will review its code".*
+
+     - This overrides #95 for checkpoint-08c. Earlier assignments remain historical. Codex traces/spikes,
+       verifies and restores the source, and writes note84 and its patch. Grok applies, audits, verifies and
+       commits locally. Codex reviews the actual commit, re-runs gates and adds a mutation. The user's
+       play-test follows; implementation alone does not close the checkpoint.
+     - Scope remains #101's direct picture cues and existing crash shake, with debug move setup for
+       reproducible tests. The editor covers party members outside battle and the active enemy between turns:
+       enemy substitute/minimized STATS reloads cannot otherwise be staged on today's maps. Enemy edits touch
+       only the battle's move/PP bytes. No attack-animation work (#94) or saved-party write-through is added.
+
+     - **End-of-day handoff, 2026-11-05:** the user asked to stop after updating all context files. Grok's
+       implementation `478f45f` passed Codex code review (note84 section 9). User play-test remains pending;
+       checkpoint-08c stays open. Resume with the play-test, not checkpoint-09 or A5f.
+
 ## Open — not decided, needs the user
 
 

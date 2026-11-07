@@ -1,0 +1,231 @@
+// A5e checkpoint-05 (note 80): data only. Independent source parse -> committed JSON; ROM -> extractor -> JSON.
+import { beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { BinaryReader } from '../binary_reader';
+import {
+  extractBattleAnimations, PRESENTATION_ANIMATIONS, type BattleAnimationData, type Subanimation,
+} from '../extractors/battle_animations';
+import {
+  ATTACK_ANIMATION_POINTERS, SUBANIMATION_POINTERS, FRAME_BLOCK_POINTERS, FRAME_BLOCK_BASE_COORDS,
+  MOVE_ANIMATION_TILES_POINTERS, ANIMATION_MINIMIZE_MON, MINIMIZED_MON_SPRITE, symToOffset,
+} from '../rom_offsets';
+
+const ROM_PATH = process.env.ROM_PATH;
+const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
+const DATA = resolve(__dirname, '../../../data');
+const STATIC = resolve(__dirname, '../../../static');
+const raw = readFileSync(resolve(DATA, 'battle_animations.json'), 'utf8');
+const file: BattleAnimationData = JSON.parse(raw);
+const source = (path: string): string[] => readFileSync(resolve(REFS, path), 'utf8').split('\n')
+  .map(line => line.replace(/;.*/, '').trim()).filter(Boolean);
+function body(path: string, label: string): string[] {
+  const lines = source(path);
+  const start = lines.findIndex(line => line === `${label}:` || line === `${label}::`);
+  if (start < 0) throw new Error(`missing source ${label}`);
+  const next = lines.findIndex((line, i) => i > start && /^\w+::?$/.test(line));
+  return lines.slice(start + 1, next < 0 ? undefined : next);
+}
+const hex = (token: string): number => parseInt(token.replace(/^\$/, ''), 16);
+/** The index of `dw <label>` in a pointer table. */
+function tableIndex(path: string, table: string, label: string): number {
+  const rows = body(path, table).filter(line => line.startsWith('dw '));
+  const index = rows.indexOf(`dw ${label}`);
+  if (index < 0) throw new Error(`${label} not in ${table}`);
+  return index;
+}
+/** Names declared by `const` after the const_def that precedes `first`, in order. */
+function constBlock(path: string, first: string): string[] {
+  const lines = source(path);
+  const start = lines.indexOf(`const ${first}`);
+  if (start < 0 || lines[start - 1] !== 'const_def') throw new Error(`no const_def block at ${first}`);
+  const names: string[] = [];
+  for (let i = start; lines[i]?.startsWith('const '); i++) names.push(lines[i].slice(6).trim());
+  return names;
+}
+const OAM_FLAGS: Record<string, number> = { OAM_XFLIP: 0x20, OAM_YFLIP: 0x40 };
+const flags = (expr: string): number => expr === '0' ? 0 : expr.split('|').reduce((value, name) => {
+  const flag = OAM_FLAGS[name.trim()];
+  if (flag === undefined) throw new Error(`unsupported OAM flag ${name}`);
+  return value | flag;
+}, 0);
+
+/** Source text can't give assembled addresses, so a source subanimation has no pointer/address (checkpoint-06a). */
+type SourceData = Omit<BattleAnimationData, 'subanimations'> & { subanimations: Omit<Subanimation, 'pointer' | 'address'>[] };
+/** Built only from pret's source text: macros/gfx.asm dbsprite, the subanim and battle_anim macros, the tables. */
+function fromSource(): SourceData {
+  const id = tableIndex('data/moves/animations.asm', 'AttackAnimationPointers', 'BallPoofAnim') + 1;
+  const [command, ...rest] = body('data/moves/animations.asm', 'BallPoofAnim');
+  expect(rest).toEqual(['db -1']);
+  const anim = /^battle_anim NO_MOVE, (\w+), (\d+), (\d+)$/.exec(command);
+  if (!anim) throw new Error(`unexpected BallPoofAnim command ${command}`);
+  const subanimId = constBlock('constants/move_animation_constants.asm', 'SUBANIM_0_STAR').indexOf(anim[1]);
+  expect(tableIndex('data/battle_anims/subanimations.asm', 'SubanimationPointers', 'Subanim_0BallPoofEnemy')).toBe(subanimId);
+  const [header, ...rows] = body('data/battle_anims/subanimations.asm', 'Subanim_0BallPoofEnemy');
+  const sub = /^subanim (\w+), (\d+)$/.exec(header);
+  if (!sub) throw new Error(`unexpected subanim header ${header}`);
+  const entries = rows.map(row => {
+    const m = /^db FRAMEBLOCK_(\w\w), BASECOORD_(\w\w), FRAMEBLOCKMODE_(\w\w)$/.exec(row);
+    if (!m) throw new Error(`unexpected subentry ${row}`);
+    return { frameBlock: hex(m[1]), baseCoord: hex(m[2]), mode: hex(m[3]) };
+  });
+  expect(entries).toHaveLength(Number(sub[2]));
+  const frameBlocks = [...new Set(entries.map(e => e.frameBlock))].sort((a, b) => a - b).map(fb => {
+    const label = `FrameBlock${fb.toString(16).padStart(2, '0')}`;
+    expect(tableIndex('data/battle_anims/frame_blocks.asm', 'FrameBlockPointers', label)).toBe(fb);
+    const [count, ...sprites] = body('data/battle_anims/frame_blocks.asm', label);
+    expect(count).toBe(`db ${sprites.length}`);
+    return { id: fb, tiles: sprites.map(line => {
+      const m = /^dbsprite\s+(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*\$(\w\w),\s*(.+)$/.exec(line);
+      if (!m) throw new Error(`unexpected sprite ${line}`);
+      const [xt, yt, xp, yp] = m.slice(1, 5).map(Number);
+      return { y: (yt * 8 + yp) % 256, x: (xt * 8 + xp) % 256, tile: hex(m[5]), flags: flags(m[6]) };
+    }) };
+  });
+  const coordRows = body('data/battle_anims/base_coords.asm', 'FrameBlockBaseCoords').filter(l => l.startsWith('db '));
+  const baseCoords = [...new Set(entries.map(e => e.baseCoord))].sort((a, b) => a - b).map(bc => {
+    const m = /^db \$(\w\w), \$(\w\w)$/.exec(coordRows[bc]);
+    if (!m) throw new Error(`unexpected base coord ${coordRows[bc]}`);
+    return { id: bc, y: hex(m[1]), x: hex(m[2]) };
+  });
+  const tilesetRows = body('engine/battle/animations.asm', 'MoveAnimationTilesPointers').filter(l => l.startsWith('anim_tileset'));
+  expect(tilesetRows[Number(anim[2])]).toMatch(/^anim_tileset \d+, MoveAnimationTiles0$/);
+  return {
+    animations: [{ id, name: 'POOF_ANIM', commands: [{ tileset: Number(anim[2]), delay: Number(anim[3]), sound: null, subanimation: subanimId }] }],
+    subanimations: [{ id: subanimId, type: constBlock('constants/move_animation_constants.asm', 'SUBANIMTYPE_NORMAL').indexOf(sub[1]), entries }],
+    frameBlocks, baseCoords,
+    tilesets: [{ id: Number(anim[2]), tiles: Number(/^anim_tileset (\d+),/.exec(tilesetRows[Number(anim[2])])![1]) }],
+    minimizedMonSprite: minimizedFromSource(),
+  };
+}
+
+/** A5e checkpoint-08a: `pusho b.X` makes `.` a 0 bit and `X` a 1 bit in each `db %` row. */
+function minimizedFromSource(): number[] {
+  const lines = body('engine/battle/animations.asm', 'MinimizedMonSprite');
+  expect([lines[0], lines[lines.length - 1]]).toEqual(['pusho b.X', 'popo']);
+  return lines.slice(1, -1).map(line => {
+    const m = /^db %([.X]{8})$/.exec(line);
+    if (!m) throw new Error(`unexpected MinimizedMonSprite row ${line}`);
+    return parseInt(m[1].replace(/\./g, '0').replace(/X/g, '1'), 2);
+  });
+}
+
+describe('battle_animations.json (A5e checkpoint-05)', () => {
+  it('commits exactly POOF_ANIM and the tables it reaches', () => {
+    expect(PRESENTATION_ANIMATIONS).toEqual({ POOF_ANIM: 0xc3 });
+    expect(Object.keys(file)).toEqual(['animations', 'subanimations', 'frameBlocks', 'baseCoords', 'tilesets', 'minimizedMonSprite']);
+    expect(file.animations).toEqual([{ id: 0xc3, name: 'POOF_ANIM', commands: [{ tileset: 0, delay: 4, sound: null, subanimation: 10 }] }]);
+    expect(file.subanimations).toEqual([{ id: 10, pointer: 0x6929, address: 0x6a42, type: 2, entries: [
+      { frameBlock: 6, baseCoord: 0x1b, mode: 0 }, { frameBlock: 7, baseCoord: 0x1b, mode: 0 },
+      { frameBlock: 8, baseCoord: 0x36, mode: 0 }, { frameBlock: 9, baseCoord: 0x36, mode: 0 },
+      { frameBlock: 10, baseCoord: 0x15, mode: 0 }, { frameBlock: 10, baseCoord: 0x15, mode: 0 },
+    ] }]);
+    expect(file.frameBlocks.map(fb => [fb.id, fb.tiles.length])).toEqual([[6, 12], [7, 16], [8, 16], [9, 12], [10, 12]]);
+    expect(file.baseCoords).toEqual([{ id: 0x15, y: 0x28, x: 0x68 }, { id: 0x1b, y: 0x30, x: 0x70 }, { id: 0x36, y: 0x2c, x: 0x6c }]);
+    expect(file.tilesets).toEqual([{ id: 0, tiles: 79 }]);
+    expect(file.minimizedMonSprite).toEqual([0x18, 0x3c, 0x7e, 0x3c, 0x24]); // A5e checkpoint-08a
+  });
+
+  it('matches an independent parse of pret source, tile by tile', () => {
+    // A5e checkpoint-06a: assembled addresses aren't in the source text; the ROM block pins them to the symbol file.
+    const withoutAddresses = { ...file, subanimations: file.subanimations.map(({ pointer: _p, address: _a, ...rest }) => rest) };
+    expect(withoutAddresses).toEqual(fromSource());
+  });
+
+  it('is mirrored byte for byte in static/', () => {
+    expect(readFileSync(resolve(STATIC, 'battle_animations.json'), 'utf8')).toBe(raw);
+    expect(raw).toBe(JSON.stringify(file, null, 2) + '\n');
+  });
+});
+
+describe.skipIf(!ROM_PATH)('battle_animations ROM extraction (A5e checkpoint-05)', () => {
+  let rom: Uint8Array, reader: BinaryReader, symbols: string;
+  beforeAll(() => {
+    rom = Uint8Array.from(readFileSync(ROM_PATH!));
+    reader = new BinaryReader(rom.slice().buffer);
+    symbols = execFileSync('git', ['-C', REFS, 'show', '573535d:pokeyellow.sym'], { encoding: 'utf8' });
+  });
+  function bankAddress(label: string): [number, number] {
+    const match = symbols.split('\n').map(line => /^(\w+):(\w+) (\S+)\s*$/.exec(line)).find(m => m?.[3] === label);
+    if (!match) throw new Error(`missing pinned symbol ${label}`);
+    return [parseInt(match[1], 16), parseInt(match[2], 16)];
+  }
+  /** A ROM label's file offset. */
+  const symbol = (label: string): number => symToOffset(...bankAddress(label));
+  /** A label's CPU address: WRAM, or a ROM label as code sees it. */
+  const address = (label: string): number => bankAddress(label)[1];
+  const word = (at: number): number => rom[at] | rom[at + 1] << 8;
+  const target = (table: number, index: number): number => symToOffset(0x1e, word(table + index * 2));
+
+  it('extracts the committed file', () => {
+    expect(extractBattleAnimations(reader)).toEqual(file);
+  });
+
+  it('pins every table offset and every pointer it follows to the symbol file', () => {
+    expect(ATTACK_ANIMATION_POINTERS).toBe(symbol('AttackAnimationPointers'));
+    expect(SUBANIMATION_POINTERS).toBe(symbol('SubanimationPointers'));
+    expect(FRAME_BLOCK_POINTERS).toBe(symbol('FrameBlockPointers'));
+    expect(FRAME_BLOCK_BASE_COORDS).toBe(symbol('FrameBlockBaseCoords'));
+    expect(MOVE_ANIMATION_TILES_POINTERS).toBe(symbol('MoveAnimationTilesPointers'));
+    expect(target(ATTACK_ANIMATION_POINTERS, 0xc3 - 1)).toBe(symbol('BallPoofAnim'));
+    expect(target(SUBANIMATION_POINTERS, 10)).toBe(symbol('Subanim_0BallPoofEnemy'));
+    // A5e checkpoint-06a: the two WRAM pointer values, as CPU addresses.
+    expect(file.subanimations[0].pointer).toBe(address('SubanimationPointers') + 10 * 2);
+    expect(file.subanimations[0].address).toBe(address('Subanim_0BallPoofEnemy'));
+    for (const fb of [6, 7, 8, 9, 10])
+      expect(target(FRAME_BLOCK_POINTERS, fb)).toBe(symbol(`FrameBlock${fb.toString(16).padStart(2, '0')}`));
+    const ts = MOVE_ANIMATION_TILES_POINTERS;
+    expect([rom[ts], symToOffset(0x1e, word(ts + 1)), rom[ts + 3]]).toEqual([79, symbol('MoveAnimationTiles0'), 0xff]);
+  });
+
+  it("pins POOF_ANIM's special-effect row and DoPoofSpecialEffects' counter and sound for checkpoint-06", () => {
+    const rows: [number, number][] = [];
+    for (let at = symbol('AnimationIdSpecialEffects'); rom[at] !== 0xff; at += 3) rows.push([rom[at], word(at + 1)]);
+    expect(rows.filter(([id]) => id === 0xc3)).toEqual([[0xc3, address('DoPoofSpecialEffects')]]);
+    const at = symbol('DoPoofSpecialEffects'), counter = address('wSubAnimCounter'), playSound = address('PlaySound');
+    // ld a, [wSubAnimCounter]; cp 5; ret nz; ld a, SFX_BALL_POOF; jp PlaySound
+    expect([...rom.subarray(at, at + 11)]).toEqual([0xfa, counter & 255, counter >> 8, 0xfe, 5, 0xc0, 0x3e, 0x93, 0xc3,
+      playSound & 255, playSound >> 8]);
+  });
+
+  it('pins MinimizedMonSprite and both routines that copy it, for checkpoint-08', () => {
+    expect([ANIMATION_MINIMIZE_MON, MINIMIZED_MON_SPRITE]).toEqual([symbol('AnimationMinimizeMon'), symbol('MinimizedMonSprite')]);
+    const sprite = address('MinimizedMonSprite'), length = address('MinimizedMonSpriteEnd') - sprite;
+    // ld de, MinimizedMonSprite; ld c, MinimizedMonSpriteEnd - MinimizedMonSprite
+    const load = [0x11, sprite & 255, sprite >> 8, 0x0e, length];
+    expect([length, ...rom.subarray(ANIMATION_MINIMIZE_MON + 16, ANIMATION_MINIMIZE_MON + 21)]).toEqual([5, ...load]);
+    // HideSubstituteShowMonAnim's .monIsMinimized copies the same rows; ReshowSubstituteAnim follows it.
+    const hide = symbol('HideSubstituteShowMonAnim'), end = symbol('ReshowSubstituteAnim'), body = [...rom.subarray(hide, end)];
+    const hits = body.flatMap((_, i) => load.every((b, k) => body[i + k] === b) ? [i] : []);
+    expect(hits).toHaveLength(1);
+  });
+
+  const poof = (): number => target(ATTACK_ANIMATION_POINTERS, 0xc3 - 1);
+  const sub = (): number => target(SUBANIMATION_POINTERS, 10);
+  const set = (at: () => number, value: number) => (r: Uint8Array) => { r[at()] = value; };
+  it.each<[string, (r: Uint8Array) => void, string]>([
+    ['a move sound', set(() => poof() + 1, 0x20), 'belongs to the attack-animation slice'],
+    ['a special-effect command', set(poof, 0xd8), 'is not a traced presentation command'],
+    ['a missing terminator', r => { for (let i = 0; i < 17 * 3; i++) r[poof() + i] = [0x04, 0xff, 0x0a][i % 3]; },
+      'POOF_ANIM: missing terminator'],
+    ['an untraced tileset', set(poof, 0x44), 'tileset 1 is not traced'],
+    ['an invalid subanimation type', set(sub, 0xc6), 'invalid type 6'],
+    ['an invalid frame block mode', set(() => sub() + 3, 5), 'invalid frame block mode 5'],
+    ['an empty frame block', set(() => target(FRAME_BLOCK_POINTERS, 6), 0), 'invalid tile count 0'],
+    ['a moved tileset pointer', set(() => MOVE_ANIMATION_TILES_POINTERS + 1, 0x38), 'not MoveAnimationTiles0'],
+    // A5e checkpoint-06a: note 80 section 6 finding 1, witnesses for the three guards checkpoint-05 left untested.
+    ['a sub-animation with no frame blocks', set(sub, 0x40), 'no frame blocks'],
+    ['a sub-animation pointer outside the bank', r => { r[SUBANIMATION_POINTERS + 20] = 0; r[SUBANIMATION_POINTERS + 21] = 0; },
+      'is outside bank $1e'],
+    ['a frame block over 40 tiles', set(() => target(FRAME_BLOCK_POINTERS, 6), 41), 'invalid tile count 41'],
+    // A5e checkpoint-08a: MinimizedMonSprite is read only through AnimationMinimizeMon's own operands.
+    ['a moved ld de', set(() => ANIMATION_MINIMIZE_MON + 16, 0x21), 'ld de / ld c are not where they were traced'],
+    ['a different sprite pointer', set(() => ANIMATION_MINIMIZE_MON + 17, 0x94), 'is not MinimizedMonSprite'],
+    ['a different row count', set(() => ANIMATION_MINIMIZE_MON + 20, 6), 'MinimizedMonSprite: 6 rows, not 5'],
+  ])('fails loudly on %s', (_, mutate, message) => {
+    const changed = rom.slice();
+    mutate(changed);
+    expect(() => extractBattleAnimations(new BinaryReader(changed.buffer))).toThrow(message);
+  });
+});

@@ -18,6 +18,17 @@ export const DUNGEON_MAPS_1 = symToOffset(0x1c, 0x4aa9);
 export const DUNGEON_MAPS_2 = symToOffset(0x1c, 0x4aae);
 export const BATTLE_TRANSITION_TILE = symToOffset(0x1c, 0x4ac3);
 
+// Battle animation tables (engine/battle/animations.asm, data/moves/animations.asm, data/battle_anims/*.asm;
+// pokeyellow.sym 573535d). A5e checkpoint-05: battle_animations.ts reads only the IDs it lists.
+export const ATTACK_ANIMATION_POINTERS = symToOffset(0x1e, 0x622a);
+export const SUBANIMATION_POINTERS = symToOffset(0x1e, 0x6915);
+export const FRAME_BLOCK_POINTERS = symToOffset(0x1e, 0x711c);
+export const FRAME_BLOCK_BASE_COORDS = symToOffset(0x1e, 0x7e2d);
+export const MOVE_ANIMATION_TILES_POINTERS = symToOffset(0x1e, 0x422b);
+// A5e checkpoint-08a: the routine that names MinimizedMonSprite and its length, and the data itself.
+export const ANIMATION_MINIMIZE_MON = symToOffset(0x1e, 0x566e);
+export const MINIMIZED_MON_SPRITE = symToOffset(0x1e, 0x5693);
+
 // ── Pokemon Data ──────────────────────────────────────────────
 export const BASE_STATS          = symToOffset(0x0e, 0x43de);  // 151 entries × 0x1C bytes
 export const MONSTER_NAMES       = symToOffset(0x3a, 0x4000);  // 151 entries × 10 bytes

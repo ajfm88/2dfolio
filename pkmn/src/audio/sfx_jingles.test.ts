@@ -159,11 +159,11 @@ describe('SFX-mode sounds and the hand-off', () => {
 });
 
 describe('the SFX preload list', () => {
-  it('is exactly the live SFX setup extracts, with precisely three unused battle data files', () => {
+  it('is exactly the live SFX setup extracts, plus the listed unused battle data files', () => {
     const files = readdirSync(resolve(__dirname, '../../data/audio/sfx')).map(f => f.replace(/\.json$/, '')).sort();
-    // A5c3e left six unused. A5c3f checkpoint-02 adds four more, still with no preload.
+    // A5c3e left six unused. A5c3f checkpoint-02 adds four more, still with no preload. A5e checkpoint-05: ball_poof.
     const unused = [
-      'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up',
+      'ball_poof', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up',
       'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'trainer_appeared',
     ];
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);

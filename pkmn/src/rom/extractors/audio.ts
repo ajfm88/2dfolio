@@ -162,6 +162,8 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   not_very_effective:  { bank: 0x08, addr: 0x41f5 }, // SFX_Not_Very_Effective, $A7, channel 8
   super_effective:     { bank: 0x08, addr: 0x4210 }, // SFX_Super_Effective, $B0, channel 8
   trainer_appeared:    { bank: 0x08, addr: 0x42bb }, // SFX_Trainer_Appeared, $E9, channel 5
+  // A5e checkpoint-05 (note 80): Audio 2 only, sfxheaders2.asm:345-348. No runtime preload.
+  ball_poof:           { bank: 0x08, addr: 0x41b9 }, // SFX_Ball_Poof, $93, channels 5 and 8
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

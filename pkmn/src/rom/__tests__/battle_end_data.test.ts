@@ -16,6 +16,8 @@ const sounds = [
   { name: 'level_up', label: 'SFX_Level_Up', header: 0x4192, id: 0x86, channels: [[5, 0x71e8], [6, 0x7203], [7, 0x721b]] },
   { name: 'faint_fall', label: 'SFX_Faint_Fall', header: 0x41da, id: 0x9e, channels: [[5, 0x445e]] },
   { name: 'faint_thud', label: 'SFX_Faint_Thud', header: 0x41bf, id: 0x95, channels: [[5, 0x43ea], [8, 0x43f1]] },
+  // A5e checkpoint-05 (note 80): DoPoofSpecialEffects' sound; sfxheaders2.asm:345-348, audio/sfx/ball_poof.asm.
+  { name: 'ball_poof', label: 'SFX_Ball_Poof', header: 0x41b9, id: 0x93, channels: [[5, 0x43db], [8, 0x43e6]] },
 ];
 const offset = (bank: number, address: number) => bank ? bank * 0x4000 + (address & 0x3fff) : address;
 let rom: Buffer, reader: BinaryReader, symbols: string, text: TextProgramsFile;

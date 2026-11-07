@@ -24,11 +24,26 @@ import { installTrainerSpecies } from './battle_trainer_party';
 import { loadBattleMonFromParty, loadEnemyMonData } from './battle_loaders';
 import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import * as status from './battle_turn_status';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { PNG } from 'pngjs';
+import type { BattleScreen } from './battle_screen';
+import type { SubanimationHost } from './battle_subanimation';
+import type { BattleAnimationData } from '../rom/extractors/battle_animations';
 
 const sounds: MoveAnimationHost['sounds'] = {
   damage: { id: 0xa6, data: sfxData('damage') }, superEffective: { id: 0xb0, data: sfxData('super_effective') },
   notVeryEffective: { id: 0xa7, data: sfxData('not_very_effective') },
 };
+const ROOT = resolve(__dirname, '../..');
+const animations: BattleAnimationData = JSON.parse(readFileSync(resolve(ROOT, 'data/battle_animations.json'), 'utf8'));
+const moveAnimationTiles = PNG.sync.read(readFileSync(resolve(ROOT, 'static/gfx/battle/move_anim_0.png')));
+const ballPoof = { id: 0x93, data: sfxData('ball_poof') };
+/** Checkpoint-07: a real player host over the committed data and a fresh white atlas. */
+function subanimation(screen: BattleScreen, audio: BattleAudio): SubanimationHost {
+  return { screen, audio, moveAnimationTiles, ballPoof, animations,
+    renderTiles: { sprites: { width: 128, height: 128, data: new Uint8ClampedArray(128 * 128 * 4).fill(255) } } };
+}
 beforeAll(async () => { await loadBattleData(); await loadBattleMoveData(); await loadStatEffectData(); await loadTextPrograms(); await initTextSystem(); });
 beforeEach(() => {
   vi.clearAllMocks(); resetListStateForEmptySlot(); setTextSpeed('fast'); textBgTransfer.enabled = true; textBgTransfer.resetPortion();
@@ -62,7 +77,7 @@ function fixture(o: Options = {}) {
     waitForSound: function* () {
       waits.push({ at: clock, active: !soundFinished(audio.sfx, audio.music, 0) });
       while (!soundFinished(audio.sfx, audio.music, 0)) yield 'serviced';
-    }, tossBall: function* () { tosses++; },
+    }, tossBall: function* () { tosses++; }, subanimation: subanimation(screen, bridge),
   };
   const pic = (x: number, y: number) => Array.from({ length: 49 }, (_, i) => screen.at(x + i % 7, y + Math.floor(i / 7)));
   const observe = () => ({ wy: screen.wy, wx: screen.wx, hold: screen.disableVBlankWYUpdate, turn: s.hWhoseTurn,
@@ -73,10 +88,19 @@ function fixture(o: Options = {}) {
   driver.start((function* () { yield* moveAnimation(s, host); returnedAt = clock; yield 'serviced'; })());
   while (!driver.done && clock < 500) { rows.push(observe()); clock++; driver.step(); }
   expect(driver.done).toBe(true);
-  return { s, screen, bridge, audio, rows, waits, played, returnedAt, tosses, final: observe(),
+  return { s, screen, bridge, audio, host, rows, waits, played, returnedAt, tosses, final: observe(),
     ledger: () => ({ rows: rows.map((r, i) => `${i}:WY${r.wy} WX${r.wx} hold${r.hold} turn${r.turn} OBP${r.obp} BG${r.bg} mutate${r.mutate} clean${r.cleanup} channels${r.channels} front[${r.front}] back[${r.back}]`),
       waits, played, returnedAt, tosses, final: observe(), audio: audio.synth.log.map(w => `${w.u}:${w.m}(${w.a})`) }) };
 }
+/** One tile's 64 red-channel bytes. */
+function tilePixels(image: { width: number; data: ArrayLike<number> }, tile: number): number[] {
+  const across = image.width >>> 3, out: number[] = [];
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++)
+    out.push(image.data[((Math.floor(tile / across) * 8 + y) * image.width + (tile % across) * 8 + x) * 4]);
+  return out;
+}
+const cells = (s: BattleState) => [0xd07c, 0xd080, 0xd081, 0xd086, 0xd09e, 0xdef4, M.hBaseTileID].map(at => s.mem[at]);
+const oamUsed = (screen: BattleScreen) => Array.from({ length: 40 }, (_, i) => screen.oam(i)).filter(e => e.y || e.x || e.tile || e.attributes).length;
 function cleanup(r: ReturnType<typeof fixture>) {
   expect([r.s.mem[M.wSubAnimSubEntryAddr], r.s.mem[M.wUnusedMoveAnimByte], r.s.mem[M.wSubAnimTransform], r.s.mem[M.wAnimSoundID]]).toEqual([0, 0, 0, 255]);
   expect(r.s.mem[M.wSubAnimSubEntryAddr + 1]).toBe(0xb6); // LD [D095], A does not clear the high byte.
@@ -147,9 +171,39 @@ describe('checkpoint-05 OFF animation through real host, screen and audio', () =
     expect(r.rows[0].obp).toEqual([0xd0, 0xe0]); expect(r.waits[0].active).toBe(true);
     expect(r.bridge.channelId(5)).toBe(0); expect(r.ledger()).toMatchSnapshot();
   });
-  it('wOptions bit7 clear still takes the OFF path until A5e; no ShareMoveAnimations rewrite', () => {
+  it('ON: ShareMoveAnimations turns the enemy Amnesia into CONF_ANIM, which has no data, so the 30-frame stand-in (#94)', () => {
     const r = fixture({ id: 133, type: 0, turn: 1, options: 0 }); cleanup(r); // enemy Amnesia
-    expect(r.returnedAt).toBe(30); expect(r.s.wAnimationID).toBe(133); expect(r.ledger()).toMatchSnapshot();
+    expect(r.returnedAt).toBe(30); expect(r.s.wAnimationID).toBe(0xbf); expect(r.ledger()).toMatchSnapshot();
+  });
+
+  it('ON: the enemy Rest becomes SLP_ANIM; the player turn rewrites neither, and OFF never runs ShareMoveAnimations', () => {
+    const cases = [[0x9c, 1, 0, 0xbd], [0x85, 0, 0, 0x85], [0x9c, 0, 0, 0x9c], [0x85, 1, 0x80, 0x85]] as const;
+    expect(cases.map(([id, turn, options]) => { const r = fixture({ id, turn, options }); cleanup(r); return [r.s.wAnimationID, r.returnedAt]; }))
+      .toEqual(cases.map(([, , , id]) => [id, 30]));
+  });
+  it('ON POOF_ANIM on the player side: 40 frames of PlayAnimation, the poof sound, its wait, then the cleanup', () => {
+    const r = fixture({ id: 0xc3, turn: 1, options: 0, multiplier: 0 });
+    expect([r.returnedAt, r.played, r.waits]).toEqual([40, [{ at: 20, id: 0x93, frequency: 0, tempo: 0 }],
+      [{ at: 0, active: false }, { at: 40, active: false }]]);
+    // MoveAnimation clears D095 only; PlayAnimation left $6A52 there (note 81 §5.2).
+    expect([r.s.mem[M.wSubAnimSubEntryAddr], r.s.mem[M.wSubAnimSubEntryAddr + 1], r.s.mem[M.wUnusedMoveAnimByte],
+      r.s.mem[M.wSubAnimTransform], r.s.mem[M.wAnimSoundID]]).toEqual([0, 0x6a, 0, 0, 0xff]);
+    expect([r.final.obp, r.rows.every(row => row.wy === 0), oamUsed(r.screen), cells(r.s)])
+      .toEqual([[0xe4, 0x6c], true, 0, [79, 0x68, 0x28, 0, 0, 2, 0]]);
+    const atlas = r.host.subanimation.renderTiles.sprites;
+    for (let n = 0; n < 79; n++) expect(tilePixels(atlas, 0x31 + n)).toEqual(tilePixels(moveAnimationTiles, n));
+  });
+  it('OFF POOF_ANIM: the 30-frame branch draws nothing, copies no tiles and plays no poof', () => {
+    const r = fixture({ id: 0xc3, turn: 1, options: 0x80, multiplier: 0 }); cleanup(r);
+    expect([r.returnedAt, r.played, oamUsed(r.screen), cells(r.s)]).toEqual([30, [], 0, [0, 0, 0, 0, 0, 0, 0xa5]]);
+    expect(tilePixels(r.host.subanimation.renderTiles.sprites, 0x31)).toEqual(Array(64).fill(255));
+  });
+  it('ON POOF_ANIM after a stale ANIMATIONTYPE_SHAKE_SCREEN_VERTICALLY: the poof, then the silent shake (multiplier 0)', () => {
+    const r = fixture({ id: 0xc3, turn: 1, options: 0, multiplier: 0, type: 1 });
+    expect([r.returnedAt, r.played.map(p => [p.at, p.id]), r.waits.map(w => w.at)]).toEqual([88, [[20, 0x93]], [0, 40, 88]]);
+    const wy = r.rows.map((row, i) => [i, row.wy]).filter(([, value], k, all) => k === 0 || value !== all[k - 1][1]);
+    expect(wy).toEqual([[0, 0], [40, 8], [43, 0], [49, 7], [52, 0], [55, 6], [58, 0], [61, 5], [64, 0], [67, 4], [70, 0],
+      [73, 3], [76, 0], [79, 2], [82, 0], [85, 1]]);
   });
 
   it('real Route1 Tackle through battleLoop: Delay3 +30 +78 blink +12 refresh =123 frames', () => {
@@ -169,7 +223,7 @@ describe('checkpoint-05 OFF animation through real host, screen and audio', () =
       r.screen.put(12 + col, row, row + 7 * col); r.screen.put(1 + col, 5 + row, 0x31 + row + 7 * col);
     }
     r.video.saveScreenTilesToBuffer1();
-    const host: MoveAnimationHost = { screen: r.screen, audio: r.bridge, sounds, waitForSound: () => r.host.waitForSound(), tossBall: function* () { throw new Error('unexpected toss'); } };
+    const host: MoveAnimationHost = { screen: r.screen, audio: r.bridge, sounds, waitForSound: () => r.host.waitForSound(), tossBall: function* () { throw new Error('unexpected toss'); }, subanimation: subanimation(r.screen, r.bridge) };
     let clock = 0; const spans: number[] = [], ports: number[] = [], frames: string[] = [];
     const played: { at: number; id: number; frequency: number; tempo: number }[] = [];
     const priorPlay = vi.mocked(r.bridge.play).getMockImplementation()!;

@@ -49,38 +49,33 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-04 — stopped after A5e checkpoint-04 (live silhouette intro, user-verified)
+## State as of 2026-11-05 - stopping after checkpoint-08c code review
 
-- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a/b/c/d are done; A5e and A5f remain open.
-  The lost July–August code was rebuilt from upstream; the live path reaches Pewter across 24 maps.
-- **No ROM at runtime.** 196 committed JSON data files and a static mirror with 525 PNGs and 3 tilemaps.
-  Vanilla art, local play, no distribution or push.
-- The ASM-backed battle engine has been live since A5c3f checkpoint-09b, and the old engine is retired.
-- **Today: A5e checkpoint-04 (note 79).** Claude planned and reviewed; Grok 4.7 implemented 04a; Grok, then Codex,
-  implemented 04b.
-  - Every battle now runs the cartridge's silhouette slide, with real raster timing.
-  - The LCD-off span is 2 dark ticks, so the screen blinks white for about 3 frames. Music isn't updated during
-    them (DECISIONS #97).
-  - The battle screen inherits the transition's black palette registers.
-  - The interim slide is deleted.
-  - Four valid implementer stops, each from a gap in the brief, were ruled in note 79 §8.11–§8.14.
-  - Claude accepted it in §10, and the user play-tested it the same night.
-- **Verified baseline:** 6038/6038 ROM; no-ROM 5781 pass / 257 skip; 239 files; default workers.
-  - Bundle `index-JN4Ut5jo.js`, 659,202 bytes.
-  - Typecheck, build and the marker check pass.
-- **Next session:** Claude plans A5e checkpoint-05 (poof data; note 75 §4), carrying note 79 §10's three findings.
-  After that: 06 the OAM sub-animation player, 07 the live poof, 08 the remaining cues, 09 the closeout, then A5f.
-- **O-50 answered 2026-11-04 (DECISIONS #94):** attack move animations are a separate future slice; A5e keeps
-  them on the OFF path and plays only the traced presentation IDs (poof).
-- The user ended the day. Keep all commits local and the existing data/art protected. After A5e: A5f's catch/demo
-  integration, then V3 Gym/Museum, V4 and V5. Full detail: [STATUS](STATUS.md), notes75–77 and battle architecture.
+- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a/b/c/d are complete; A5e and A5f remain open.
+  The playable path reaches Pewter across 24 maps. The ASM-backed battle engine is live and the old engine is retired.
+- **No ROM at runtime.** 198 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
+  local play, no remote and no push.
+- **A5e:** checkpoint-04's silhouette intro and checkpoint-07's send-out poof are user-verified. 05/06 data/player
+  and 08a/08b picture foundations are accepted. Grok implemented **08c** as `478f45f`; Codex's review passed
+  (note84 section 9), with no blocking findings and no production/test changes during review.
+- **08c is still open:** the user's browser play-test (note84 section 7) is pending. The live wiring covers direct
+  picture cues, session-local picture/atlas ownership, the existing crash shake and debug party/enemy move setup.
+  Initial ON Substitute/Transform and standalone Minimize remain inside #94's deliberate attack-animation boundary.
+- **Verified by Codex:** typecheck, build and marker check pass; ROM **6131/6131**; no-ROM **5854 pass / 277 skip**;
+  243 files, default workers. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256
+  `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Independent reviewer mutation R1 caught
+  a wrong Transform back-picture species owner as an AssertionError, then was restored.
+- **Stopping for today at the user's request.** Next session begins with the 08c play-test: A is X, B is Z.
+  Record the results before closing 08c or starting checkpoint-09. Then finish A5e, A5f, V3 Gym/Museum and V4/V5.
+  Attack move animations remain a separate later slice (#94); the screen-model merge and battle VBlank RNG remain deferred.
+- Full handoff: STATUS.md, note84 sections 7-9, decisions #94/#101/#102, and the battle subsystem architecture.
 
 ## Goals
 
 1. Run the dev server (`npx vite --host 127.0.0.1 --port 5173 --strictPort`), click, play — no ROM, no emulator, no upload screen. ✅ (R1b)
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Preserve the authoritative extractor data contract (same JSON shapes) while porting game behavior faithfully. ✅
-4. Full test suite green against generated data. ✅ (**6019**, 2026-11-03; no-ROM5762 pass/257 skip; live count in `STATUS.md`)
+4. Full test suite green against generated data. ✅ (**6131**, 2026-11-05; no-ROM 5854 pass / 277 skip; live count in `STATUS.md`)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -120,7 +115,7 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (6019 ROM /5762 no-ROM +257 skip,2026-11-03)
+1. `npm run typecheck` + full `npm test` green. ✅ (6131 ROM / 5854 no-ROM + 277 skip, 2026-11-05)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

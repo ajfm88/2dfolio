@@ -119,8 +119,11 @@ split freely.
 
 ## Phase A — Core systems (6 slices)
 
+**End-of-day stop, 2026-11-05:** checkpoint-08c code review passed (note84 section 9); user play-test in section 7
+is next. Do not close 08c or start checkpoint-09/A5f until that result is recorded. A5e remains in progress.
+
 **Current stop point (2026-11-04):** A5a/b/c/d complete; A5e accepted through checkpoint-04, the live silhouette intro
-(notes75–79; user play-test passed 2026-11-04). Next: checkpoint-05, the poof data (note75 §4); Claude plans/reviews (#95).
+(notes75–83; 08b accepted 2026-11-05). Checkpoint-08c code review passed (note84 section 9); user play-test pending (#102).
 04 is unstarted/unbriefed. O-50 is answered (#94): attack move animations are a separate later slice, outside A5e.
 A5e and A5f remain open. The rows below are milestones; note75 §4 supplies the current checkpoint sequence.
 

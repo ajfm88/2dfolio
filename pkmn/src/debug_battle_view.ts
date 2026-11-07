@@ -1,7 +1,7 @@
 import { A, NAME_LENGTH, PARTYMON_STRUCT_LENGTH, POKEDEX_ORDER, type BattleState } from './battle/battle_state';
 import { decodeBattleText } from './battle/battle_text_codec';
-import { getSpeciesById } from './battle/data';
-import type { StatusCondition } from './battle/types';
+import { getSpeciesById, getAllLoadedMoveIds, getMove } from './battle/data';
+import type { StatusCondition, BattleMove } from './battle/types';
 
 const STAGES = ['attack', 'defense', 'speed', 'special', 'accuracy', 'evasion'] as const;
 type Stage = typeof STAGES[number];
@@ -58,4 +58,22 @@ export type DebugBattleMon = ReturnType<typeof debugBattleMon>;
 export function debugBattleInfo(state:BattleState,foreground:string) {
   return {foreground,playerSpeed:state.readBE(A.wBattleMonSpeed),enemySpeed:state.readBE(A.wEnemyMonSpeed),
     exp:debugBattleMon(state).exp,catchRate:state.mem[A.wEnemyMonActualCatchRate],baseExp:state.mem[A.wEnemyMonBaseExp]};
+}
+
+/** Debug-only enemy setup, between turns. Four move/PP bytes; never touch party or saved data. */
+export function debugEnemyMoves(state: BattleState, moves?: readonly BattleMove[]): BattleMove[] {
+  if (moves) {
+    const records = moves.map(move => getMove(move.id));
+    if (!moves.length || moves.length > 4 || records.some(move => !move)) throw new Error('invalid debug enemy moves');
+    for (let i = 0; i < 4; i++) {
+      state.mem[A.wEnemyMonMoves + i] = records[i]?.id ?? 0;
+      state.mem[A.wEnemyMonPP + i] = records[i]?.pp ?? 0;
+    }
+  }
+  const ids = getAllLoadedMoveIds();
+  return Array.from({ length: 4 }, (_, i) => {
+    const id = ids.find(key => getMove(key)!.id === state.mem[A.wEnemyMonMoves + i]);
+    if (!id) return [];
+    return [{ id, pp: state.mem[A.wEnemyMonPP + i] & 63, maxPp: getMove(id)!.pp }];
+  }).flat();
 }

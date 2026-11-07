@@ -15,6 +15,146 @@ Newest first.
 
 ## Recent session archive
 
+*(Moved verbatim from STATUS.md on 2026-11-05 to keep it under ~40 KB, DECISIONS #61.)*
+
+### 2026-11-05 (A5e checkpoint-06b implemented) — Grok 4.7
+
+- Applied note 81's spike (two new files, hashes matched) and audited it against pret. Ten mutations each failed with an AssertionError and were restored. No data change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6084/6084, no-ROM 5811 pass / 273 skip, 241 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes, unchanged. Report is note 81 §9. Nothing visible, so no play-test. Awaiting Claude's review. Next is checkpoint-07's plan.
+
+### 2026-11-05 (A5e checkpoint-06b spiked and briefed) — Claude (Opus)
+
+- Spiked the player (`battle_subanimation.ts`, 202 lines, plus 27 tests), then reverted. The one first-run failure (a published atlas that later changed) is fixed with copy-on-write. Gates: ROM 6084/6084, no-ROM 5811/273, bundle unchanged, no existing test touched. 10 mutation witnesses, all plain AssertionErrors.
+- New trace facts: `hROMBankTemp` = `hBaseTileID`; the 1-entry reverse do-while loops 256 times. Wrote note81 §8 and `06b-spike.diff`. No game code committed.
+
+### 2026-11-05 (A5e checkpoint-06a reviewed: accepted) — Claude (Opus)
+
+- `6dc7d5a`: scope and all 5 hashes match. Re-ran the gates: ROM 6057/6057, no-ROM 5784/273, bundle unchanged, marker check passes. Reviewer mutation R1 (file offset instead of CPU address) caught. No findings; 06a is closed. Next: 06b's spike and brief.
+
+### 2026-11-05 (A5e checkpoint-06a implemented) — Grok 4.7
+
+- Applied note 81's spike (three files, hashes matched), audited it against pret, and ran setup twice. Only `battle_animations.json` and its mirror changed. Five mutations each failed with an AssertionError and were restored.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6057/6057, no-ROM 5784 pass / 273 skip, 240 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes, unchanged. Report is note 81 §6. Nothing visible, so no play-test. Awaiting Claude's review. Next is 06b's brief.
+
+### 2026-11-05 (A5e checkpoint-06 planned: split; 06a briefed) — Claude (Opus)
+
+- Traced `PlayAnimation` → `LoadSubanimation` → `PlaySubanimation` → `DrawFrameBlock`, `LoadMoveAnimationTiles` and the poof's sound. The player stores two ROM addresses in WRAM that 05's data lacks, so 06 splits into 06a (data) and 06b (the player) (#99). Also found the animation WRAM aliases (`D07C`, `D08A`, `D09E`).
+- Spiked 06a, then reverted: ROM 6057/6057, no-ROM 5784/273, bundle unchanged, 5 mutation witnesses (05's surviving C2–C4 now caught). Wrote note81 (06a brief, 06b outline) and `06a-spike.diff`. No game code changed.
+
+### 2026-11-05 (A5e checkpoint-05 reviewed: accepted) — Claude (Opus)
+
+- `eb9bd6e`: scope and all 13 hashes match the brief. Re-ran the gates: ROM 6054/6054, no-ROM 5784/270, bundle unchanged, marker check passes.
+- Four reviewer mutations: C1 (dropped sort) caught; C2–C4 (empty sub-animation, pointer range, 40-tile cap) survive. Those are non-blocking guard gaps; three test cases carry into the next brief (note 80 §6). Checkpoint-05 is closed. Next: plan 06.
+
+### 2026-11-05 (A5e checkpoint-05 implemented) — Grok 4.7
+
+- Applied note 80's spike (nine files, hashes matched), audited it against pret, and ran setup twice. Only the four new JSON files appeared. Six mutations each failed with an AssertionError and were restored.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6054/6054, no-ROM 5784 pass / 270 skip, 240 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes, unchanged. Report is note 80 §5. Nothing visible, so no play-test. Awaiting Claude's review. Next is checkpoint-06's plan.
+
+### 2026-11-05 (docs refreshed; A5e checkpoint-05 planned) — Claude (Opus)
+
+- Fixed the stale A5e lines in both ARCHITECTURE docs, CONVENTIONS and PROJECT (`5923672`).
+- Traced the poof (`SendOutMon` → `BallPoofAnim` → `Subanim_0BallPoofEnemy`, HFLIP + 40 px on the player's side; `DoPoofSpecialEffects` → `SFX_BALL_POOF` $93). Spiked the extractor and tests, then reverted: 3 first-run failures (2 census pins, 1 spike-test bug), final ROM 6054/6054 and no-ROM 5784/270, bundle byte-identical, 6 mutation witnesses.
+- Wrote note80 (trace, brief, `spike.diff`), DECISIONS #98, and a backlog entry (the gyms' wrong-bank poof). No game code changed. Next: Grok implements note80 §4.
+
+### 2026-11-04 (A5e checkpoint-04b reviewed: accepted) — Claude (Opus)
+
+- Re-ran all gates at 090e05b: ROM6038/6038, no-ROM5781/257, bundle `index-JN4Ut5jo.js` 659,202 bytes, markers PASS.
+- Two probes (3 dark frames; no `$FF` registers) both caught. Three non-blocking findings (note79 §10). User play-test passed the same night: checkpoint-04 closed. Next: plan checkpoint-05.
+
+### 2026-11-04 (A5e checkpoint-04b implemented) - Codex
+
+- Applied only §8.14's session register assignment and specified comment; no tests or snapshots changed. Finished note79 §9 and completion docs, including §8.13/§8.14 departures.
+- All five ordered gates passed once from game/, default workers: typecheck/build/markers; ROM6038/6038, no-ROM5781/257, 239 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes (SHA256 in §9.7). 04b implemented, awaiting Claude's review and the user's play-test. Local commit only.
+
+### 2026-11-04 (A5e checkpoint-04b resume; stopped at ROM gate) - Codex
+
+- Applied §8.13's exact copy fix and corrected §9 encoding. Typecheck, build and bundle-marker check passed once from game/; bundle index-BlAefkm4.js, 659,151 bytes (hash in note79 §9.6).
+- ROM gate: 6037 pass / 1 fail, 239 files. New production-session test sees 38 white frames, expected 3. Stopped under §8.8 without rerun or no-ROM gate. Completion status deferred.
+
+### 2026-11-04 (A5e checkpoint-04b takeover; stopped) ? Codex
+
+- Confirmed only 11 init snapshot failures; preserved inherited implementation. Applied ?8.12 audit rules; fresh init/start/Route1/pixel audits passed, then updated their snapshots (11/16/1/1). All seven mutations produced assertion witnesses and were restored.
+- Typecheck failed TS2769 in inherited presentation code; stopped per explicit user instruction. Remaining gates and completion status deferred. Note79 ?9 records ownership, both previous stops/rulings, current stop and hashes.
+
+### 2026-11-04 (A5e checkpoint-04b briefed; O-51 answered) — Claude (Opus)
+
+- O-51: Pan Docs + SameBoy's hardware-measured LCD code: white while off and for the first frame after LCD-on. Counted Yellow's LCD-off work at ≈ 33,000 M-cycles ≈ 1.88 frames → two `'dark'` ticks, three white presented frames, no sound updates (DECISIONS #97).
+- Spike on 04a (reverted; the patch is kept outside the repo; isolated worktrees): 36 failures in 6 files, all classified. Route 1 under a DIV control: result, texts, frames and writes identical shifted +78; no-music audio identical shifted +76 (`compare-route1.py`). Opening-frame pixels: 101 party-ball pixels from the slide's OBP0 `$E4`. Misty passes under the control.
+- Wrote note 79 §8 (the 04b brief) and #97. No game code changed. Next: an implementer runs 04b.
+
+### 2026-11-04 (codebase orientation) — Codex
+
+- Read the project guidance, current status and engine/battle architecture. No implementation or tests; 04b remains unstarted.
+
+### 2026-11-04 (A5e checkpoint-04a reviewed and accepted) — Claude (Opus)
+
+- Reviewed `2bb547d`: the diff is exactly note 79 §4; unbound `BattleHost.step()` unchanged; capture and timing off the bundle. Re-ran every gate: identical bundle hash, ROM 6033/6033, no-ROM 5776/257.
+- Three extra probes: anchor 153 passes all behavior (confirms 146–153 equivalence), anchor 145 fails 8, a non-copying capture fails 4. Two non-blocking test findings go into 04b's brief (note 79 §7). CLAUDE.md baseline updated. Accepted.
+
+### 2026-11-04 (A5e checkpoint-04a implemented; accepted, see above) — Grok 4.7
+
+- Implemented note 79 §4 only. Serviced boundaries anchor at LY 146. `disableLCD` yields that deferred VBlank as one serviced frame. `BattleHost.bindRaster` seals before VBlank; `IntroRasterCapture` stays off the bundle. No production caller. 04b not started.
+- Nine mutations, each a plain AssertionError, restored byte-for-byte (`notes/79-a5e-checkpoint-04a/codex-mutation-*.log`). One type narrowing in the new live test (`Frame` vs `boundary`'s serviced/held), then the ordered gates once: typecheck, build, 09c marker, ROM 6033/6033, no-ROM 5776 pass / 257 skip, 239 files. Bundle `index-pI5Lpy08.js`, 655,527 bytes. Report is note 79 §6.
+- Nothing visible changes, so no play-test. Local commit, never pushed. Next: Claude reviews.
+
+### 2026-11-04 (A5e checkpoint-04 planned) — Claude (Opus)
+
+- User moved planning to Claude, implementation to Codex (#95). Traced core.asm/lcd.asm/vblank.asm/oam_dma.asm: post-VBlank
+  CPU resumes at LY146+, and DisableLCD's masked VBlank is deferred (serviced), not dropped, which corrects 03b (#96).
+- Two throwaway spikes, both reverted: the live switch breaks 34 tests in 4 files (04b, §5.2); the timing correction
+  changes exactly 7 of 03b's 21 cases. Wrote note79: trace, 04a brief (14 new tests, 9 mutations), 04b outline.
+- Backlog: other DisableLCD ports, O-51. No game code changed. Next: Codex implements 04a.
+
+### 2026-11-04 (O-50 answered) — Claude (Opus)
+
+- Studied the context and code. The user chose a separate slice for attack move animations → DECISIONS #94; added an
+  unscheduled queue row and refreshed the O-50 mentions. Docs only, no tests run. Next is unchanged: Codex plans04.
+- The user then chose a **full** pret `move_anim` interpreter for that slice: #94 amended, PROJECT's non-goal removed.
+
+### 2026-11-03 (R-SYNC complete after the authorized historical-reader shims) — Codex
+
+- Confirmed ref/baseline; applied141 replacements in50 files and regenerated only two one-key JSON changes. Stopped correctly on four historical-reader failures; resumed with exactly note78 §6.1's four shims. Fixed the stop-entry encoding; frozen history/pin unchanged.
+- All resumed gates pass first run/default workers: old-name count8 in the four shims, typecheck, ROM6019/6019, no-ROM5762/257, build. Both mutation witnesses fail as required and restore byte-for-byte. Bundle655,183 bytes; full hash/report in note78 §7.
+- Row0 removed; one local slice commit, never pushed. Next is checkpoint-04 planning, still unstarted/unbriefed; O-50 remains open. Logs in `%TEMP%/pkmn-rsync-*.log`; no later checkpoint work.
+
+### 2026-11-03 (refs pulled; pret rename sync planned) — Claude (Opus)
+
+Ran `./pull-refs.sh` at the user's request: pokeyellow +45 (pret named every symbol), gen1recomp +480, engine +21. Full ROM
+suite after the pull: **6015/6019**, with 4 `text_programs.test.ts` failures on the renamed `PartyMenuText_12cc`. Scoped every old pret
+name our files cite (63 symbols: 141 uses in `game/`, more in notes) and wrote `notes/78-pret-rename-plan.md` as Codex's
+executable brief, queued as row 0. No code changed. Checkpoint-04's brief moves to note 79.
+
+### 2026-11-03 (day wrap: all context refreshed; stopped after03b) — Codex
+
+- Updated all seven project context files, root entry point and battle/render docs. Consolidated today's checkpoints, roles, commits, current baseline and04 restart list; archived older STATUS entries and the stale PROJECT state verbatim to HISTORY.
+- Final checked state remains note77 §9: ROM6019/6019, no-ROM5762/257, unchanged655166-byte bundle/hash.02/03a/03b accepted; no active implementation,04 unstarted/unbriefed, O-50 open. No runtime/test/data changes or additional test run in this documentation-only wrap.
+- User ended the day. Next session: Codex plans04, then Sonnet implements its reviewed brief. Local docs commit, never pushed.
+
+### 2026-11-03 (A5e checkpoint-03b checked and accepted) — Codex
+
+- Independently reviewed both Sonnet commits (`6dc2536`+`3c201d9`) against the source, spec and retained patch. No correctness/scope findings or code fixes. Documented the two-commit process deviation; no runtime import or old test/data/snapshot changes.
+- All18 prescribed mutants and an independent omitted hSCY reset fail plain assertions and restore byte-for-byte. Ordered gates pass first time/default workers: typecheck/build/marker, ROM6019/6019, no-ROM5762/257; bundle/hash unchanged. Evidence note77 §9 and `review-*`.
+- Accepted only the unused Program/phase contract. Next:04 needs its own real-driver/phase/capture/audio/text trace, spike and brief; not started. O-50 open. Baselines refreshed; oldest entries archived verbatim. Review committed locally, never pushed.
+
+### 2026-11-03 (A5e checkpoint-03b implemented; awaiting Codex review) — Claude Sonnet
+
+- Applied note77's `spike.diff` (SHA256 `4c660457…24cb3`); the three source hashes match. Audited the Program against `core.asm:9–132` (LCD-off staging, 72 iterations from B=$70/C=$90 with split writes at LY64/96, 21 shadow head X −2, hSCX after, tail, HideSprites Y-only) and the §3 timing contract.
+- Eighteen mutations each caught by an AssertionError; both sources restored byte-for-byte. Ordered gates pass first time, default workers: typecheck, build, 09c marker, ROM 6019/6019 (238 files), no-ROM 5762 pass/257 skip. Bundle `index-D4Ol9Anq.js` 655,166 bytes, hash unchanged. Logs `notes/77-a5e-checkpoint-03b/sonnet-*`.
+- No departures. Two local commits (code+logs, then docs), never pushed. Checkpoint-04 and live wiring not started. O-50 open.
+
+### 2026-11-03 (A5e checkpoint-03b spiked and briefed) — Codex
+
+- Note77 briefs the complete unused silhouette Program and phase-aware raster/capture contract. The LCD wait is zero/one boundary by entry LY; the final raster freezes its upper96 rows before the window opens. Real session/phase/audio/text integration remains04; no live timing approval is inferred from the fixture model.
+- Spike:21 cases,18 plain mutation witnesses with byte-for-byte restoration. Ordered gates pass first time/default workers: typecheck/build/marker, ROM6019/6019, no-ROM5762/257; bundle/hash unchanged. Captured patch/logs, removed game files and checked applicability. No implementation landed; baseline remains5998.
+- Next: Sonnet implements only note77 and stops for Codex review.04 unbriefed; O-50 open. Oldest entries archived verbatim to HISTORY to keep the live log short. Planning committed locally, never pushed.
+
+### 2026-11-03 (A5e checkpoint-03a checked and accepted) — Codex
+
+- Reviewed `67e14ee` independently against the source, spec and retained spike: no correctness/scope findings; no game changes needed. No live caller enables the field; existing tests/snapshots/data unchanged.
+- All seven prescribed mutants and an independent early body-end mutation fail plain assertions and restore byte-for-byte. Ordered gates pass first time/default workers: typecheck/build/marker, ROM5998/5998, no-ROM5741/257; bundle655166 bytes/hash exactly as briefed. Evidence note76 §7 and `review-*`.
+- Refreshed checked baseline references, including CLAUDE (no pending user edit), and archived oldest STATUS entries verbatim. Next:03b needs its own trace/spike/brief; not started. O-50 remains open. Local review commit, never pushed.
+
 ### 2026-11-03 — day summary and accepted stop point
 
 The user ended the day after Codex accepted A5e checkpoint-03b. No active implementation;04 is unstarted and
@@ -7478,3 +7618,31 @@ Historical snapshots, superseded by the November3 handoff. Preserved verbatim; n
 
 
 | A5 🔨 (A5a ✅ 2026-10-06, user-verified; A5b1–A5b5 ✅, A5b5c user-verified 2026-10-12, `notes/36-a5b5c-review.md`; A5b6 ✅ (`notes/38-a5b6-review.md`, user-approved 2026-10-14); A5b7 approved as A5b7a–g (`notes/39-a5b7-plan.md`, #52), A5b7a and A5b7b ✅ user-verified 2026-10-14; A5b7c ✅ user-verified 2026-10-15; A5b7d ✅ user-verified 2026-10-15; A5b7e ✅ user-verified 2026-10-15; A5b7f ✅ user-verified 2026-10-15; A5b7g ✅ user-verified 2026-10-16 — **A5b done**; A5c–A5f re-split by `notes/65-a5c-a5f-plan.md` (DECISIONS #70) as A5d → A5c1 → A5c2 → A5c3 → A5e → A5f; A5d ✅ user-verified 2026-10-18; A5c1 ✅ 2026-10-19 (note 66, #72); A5c2 ✅ 2026-10-19 (note 67, #74); A5c3 in progress (note 68, #75: A5c3a–f; A5c3a ✅ and A5c3b ✅ 2026-10-20; A5c3c ✅ 2026-10-22, note 69; A5c3d ✅ 2026-10-24, note 70; A5c3e ✅ 2026-10-26, note 71; A5c3f ✅ 2026-11-02, note 72) — **A5c done**; then the timing tests (#90, note 73) and the overworld RNG (#91, note 74) ✅ 2026-11-02; **A5e next**, then A5f) | **Battle and text presentation per the ASM** (DECISIONS #31, #41) — **runs right after A1, before V2.** (1) All 8 battle transitions (`engine/battle/battle_transitions.asm`: DoubleCircle, Circle, Spiral in both directions, Horizontal/Vertical stripes, Shrink, Split, plus the flash) and the choice between them: trainer bit, enemy ≥ lead + 3 levels, dungeon map (`data/maps/dungeon_maps.asm`, keeping its missing-maps bug). Map-trainer battles use it too; today they cut straight in. (2) Enemy pic positions: a w-wide front pic sits at tile 12 + ⌊(8−w)/2⌋ (`home/pics.asm` `LoadUncompressedSpriteData`), so the 47 5×5 pics move 8 px left; the trainer intro pic sits at tile 12 (`init_battle.asm:46`), not 13. (3) Battle text that types out and scrolls on `cont` instead of paging. (4) **Overworld text-box endings** (DECISIONS #41, `notes/18-a1b-plan.md` §8): a `done` text waits silently and closes on A's release (`HoldTextDisplayOpen`), a `prompt` ending shows ▼, `PrintText`'s `Delay3`, `para`'s 20 frames, the two-step `cont` scroll; needs each text's terminator from the extractor, and reuses A1b's text primitives. Detail: `notes/04-v1c-plan.md` §1.6 | a Route 1 wild battle → DoubleCircle; a Forest wild battle → horizontal stripes; a Forest trainer → Shrink (Split when ≥ 3 levels above the lead); the Oak's Lab rival → Spiral; Caterpie drawn at x 104; battle text types letter by letter; closing an NPC's text makes no beep and waits for A's release |
+
+## Archived PROJECT state (moved 2026-11-05 after checkpoint-08c review)
+
+## State as of 2026-11-04 — stopped after A5e checkpoint-04 (live silhouette intro, user-verified)
+
+- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a/b/c/d are done; A5e and A5f remain open.
+  The lost July–August code was rebuilt from upstream; the live path reaches Pewter across 24 maps.
+- **No ROM at runtime.** 196 committed JSON data files and a static mirror with 525 PNGs and 3 tilemaps.
+  Vanilla art, local play, no distribution or push.
+- The ASM-backed battle engine has been live since A5c3f checkpoint-09b, and the old engine is retired.
+- **Today: A5e checkpoint-04 (note 79).** Claude planned and reviewed; Grok 4.7 implemented 04a; Grok, then Codex,
+  implemented 04b.
+  - Every battle now runs the cartridge's silhouette slide, with real raster timing.
+  - The LCD-off span is 2 dark ticks, so the screen blinks white for about 3 frames. Music isn't updated during
+    them (DECISIONS #97).
+  - The battle screen inherits the transition's black palette registers.
+  - The interim slide is deleted.
+  - Four valid implementer stops, each from a gap in the brief, were ruled in note 79 §8.11–§8.14.
+  - Claude accepted it in §10, and the user play-tested it the same night.
+- **Verified baseline:** 6038/6038 ROM; no-ROM 5781 pass / 257 skip; 239 files; default workers.
+  - Bundle `index-JN4Ut5jo.js`, 659,202 bytes.
+  - Typecheck, build and the marker check pass.
+- **Next:** Grok implements A5e checkpoint-05 (poof data, data only; briefed in note 80 on 2026-11-05, #98), then Claude reviews.
+  After that: 06 the OAM sub-animation player, 07 the live poof, 08 the remaining cues, 09 the closeout, then A5f.
+- **O-50 answered 2026-11-04 (DECISIONS #94):** attack move animations are a separate future slice; A5e keeps
+  them on the OFF path and plays only the traced presentation IDs (poof).
+- The user ended the day. Keep all commits local and the existing data/art protected. After A5e: A5f's catch/demo
+  integration, then V3 Gym/Museum, V4 and V5. Full detail: [STATUS](STATUS.md), notes75–77 and battle architecture.

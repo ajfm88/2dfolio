@@ -28,14 +28,16 @@ beforeAll(async () => {
 describe('static/ export: asset keys', () => {
   // A5c3d checkpoint-03 adds three unused battle SFX JSON and their mirrors.
   // A5c3f checkpoint-02: four more SFX plus stat_mod_text, which extractRom now emits. 190 → 195.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (196 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(196);
+  // A5e checkpoint-05: battle_animations.json and audio/sfx/ball_poof.json. 196 → 198.
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (198 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(198);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
+    expect(extracted.jsonData).toHaveProperty('battle_animations.json');
     expect(extracted.jsonData).toHaveProperty('stat_mod_text.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/healing_machine.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/shrink.json');
     expect(extracted.jsonData).toHaveProperty('audio/sfx/run.json');
-    for (const name of ['level_up', 'faint_fall', 'faint_thud', 'damage', 'not_very_effective', 'super_effective', 'trainer_appeared'])
+    for (const name of ['level_up', 'faint_fall', 'faint_thud', 'damage', 'not_very_effective', 'super_effective', 'trainer_appeared', 'ball_poof'])
       expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);

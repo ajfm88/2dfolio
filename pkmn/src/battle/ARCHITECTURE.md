@@ -1,8 +1,8 @@
 # Battle System Architecture
 
-## A5e foundations — current through 2026-11-04
+## A5e foundations — current through 2026-11-05
 
-**02/03a/03b and 04a are accepted. 04b implemented, awaiting Claude's review and the user's play-test.** Note79 §8 is the live brief; §8.11-8.14 rule the valid stops; §9 records audits, seven mutations and passing gates. Suite **6038 ROM / 5781 no-ROM + 257 skip**, 239 files. Bundle `index-JN4Ut5jo.js`, 659,202 bytes, SHA256 `da986d0147289732689d52143f9864645654192e2a8e0f2cf95a092a30992843`. Notes75-77 retain the earlier contracts.
+**02/03a/03b, 04a and 04b are accepted; checkpoint-04 closed 2026-11-04 after the user's play-test. Checkpoint-05 (poof data) is accepted (note 80 §6, 2026-11-05). Checkpoint-06a is accepted (note 81 §7). Checkpoint-06b is accepted (note 81 §10), closing checkpoint-06. Checkpoint-07 (the live send-out poof) is closed: accepted (note 82 §8) and play-tested (§9), 2026-11-05. Checkpoint-08a (`MinimizedMonSprite` data) is accepted (note 83 §7). Checkpoint-08b (picture variants) is accepted (note 83 §10). Checkpoint-08c (live picture cues, the session-local registry, and the debug move editor) passed Codex code review; awaiting user play-test (note 84 §9).** Suite **6131 ROM / 5854 no-ROM + 277 skip**, 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Notes75-77 retain the earlier contracts.
 
 | Owner | Behavior / reachability |
 |---|---|
@@ -12,6 +12,11 @@
 | `battle_intro_timing.ts:BattleIntroTiming` (04a) | Bound by battle init through the session. `POST_VBLANK_LY` is 146. A serviced boundary anchors there; a held boundary stays at 144. `disableLCD` waits for LY 145 and yields that crossing as one `'serviced'` frame. LCD-enable anchor is 0. Physical rSCX stays separate from hSCX and the captured bands |
 | `battle_intro_raster.ts:IntroRasterCapture` (04a) | Session-owned `IntroScanout`. One 160×144 buffer. `to` copies each new row once. `compose` keeps rows `[0, cursor)` and takes the rest from the injected live render. Cursor 0, or no renderer, returns that live buffer. While off or in the skipped first frame, compose returns fresh opaque white; endFrame closes the skipped frame |
 | `battle_host.ts:bindRaster` (04a) | Bound by init through the production session. While bound, `step` runs `boundary` and then the existing serviced VBlank and audio. A held frame is boundary only. Dark frames run boundary without seal/latch, VBlank or audio; pendingFrame exposes the next frame. A `'session'` frame throws before any tick. `null` unbinds, including when nothing is bound |
+| `rom/extractors/battle_animations.ts`, `battle_animations.json`, `audio/sfx/ball_poof.json` (05) | Data only. `POOF_ANIM` (`$C3`) and the one sub-animation, frame blocks, base coordinates and tileset 0 it reaches, plus Audio 2 `SFX_BALL_POOF`. No runtime reader. 06a: each sub-animation's `pointer`/`address` (the `wSubAnimAddrPtr`/`wSubAnimSubEntryAddr` sources). 08a: `minimizedMonSprite` |
+| `battle_subanimation.ts` (06b) | Live through `moveAnimation`'s ON branch, for `POOF_ANIM` only. Shadow OAM through `D07C` (`wPartyMenuTypeOrMessageID`, the 79-tile count), `D080`/`D081` and `DEF4` (shared with the HUD poké-ball OAM), `D083`, `D085`, `D086`, `D088`, `D08A` (`wSlideMonDelay`), `D093`, `D095`, `D09B` (high byte first), `D09D`, `D09E` (`wSlideMonUpBottomRowLeftTile`), and `hROMBankTemp` (`$FF8B`, `hBaseTileID`). The move-animation atlas is copy-on-write, 8 tiles per VBlank, and stays after the poof. The ledger is 40 frames: 10 copy frames, then 6 blocks × 5 |
+| `battle_move_anim.ts:moveAnimation` (07) | `ShareMoveAnimations` on the enemy's turn (`AMNESIA` `$85` → `CONF_ANIM` `$BF`, `REST` `$9C` → `SLP_ANIM` `$BD`), then `PlayAnimation` only for an id in `battle_animations.json` (`POOF_ANIM` `$C3`). Every other id keeps `delayFrames(30)` (#94). `PlayApplyingAttackAnimation` runs after both the ON and OFF branches, so a stale `wAnimationType` still plays, silently when `wDamageMultipliers` is 0 |
+| `battle_pic_variants.ts` (08b, live since 08c) | A composed `wTempPic` becomes a new immutable `wTempPic#<n>` entry in the session picture map (the doll from `monster.png` tiles 0–7; the blob from `minimizedMonSprite`). `ChangeMonPic` ends with `SET_PAL_BATTLE` (2 held + 3 serviced). Departures: MissingNo has no committed header, so `GetMonHeader` throws `BattleUnsupportedState` before the Rhydon trap; that port zeroes `wMonHSpriteDim`; composed keys persist until the session is disposed |
+| `battle_session.ts` picture host, `debug.ts` / `debug_battle_view.ts` (08c) | One session-local render-tile object and picture map. `monster.png` is decoded once with the other session assets. Hide/reshow, OFF Substitute/Transform, the STATS reload, substitute break, and the exported crash shake (`B=4`, 36 frames, WX=7) call the accepted helpers. Battle `updateSprites` stays a no-op because init stores `$FF`. Outside battle the debug panel replaces party moves; between turns it pokes exactly eight enemy move/PP bytes |
 
 Capture the prior raster before a serviced VBlank's scroll latch, BG transfer and OAM DMA. The CPU resumes after that handler, so the serviced anchor is LY 146 (`POST_VBLANK_LY`). Values 146–153 are equivalent for this Program's waits (64, 96 and 145). A held boundary stays at 144 because no raster wait follows it. `DisableLCD` (`home/lcd.asm`) clears rIF, masks IE.VBlank, waits for LY 145, turns the LCD off and restores rIE. It does not clear IME. IF latches the request while it is masked, and restoring IE services that pending VBlank as one ordinary serviced frame. Palette-held frames still get their manual `UpdateAudioDuringLoadBGMapAttributes` update. The timing object does none of those ticks itself.
 
@@ -24,7 +29,7 @@ capture presents the live intro; the interim slide is retired. The Program yield
 after the deferred VBlank. LCD-off and the skipped first enabled frame present white (three consecutive
 presentations). Dark ticks do no VBlank or audio, including main's audio tick. DIV still advances.
 The init/start/Route1/pixel audits precede their snapshot updates (note79 §9). Attack move animations stay
-OFF (#94); battle VBlank Random remains backlogged. The user's live play-test follows Claude's review.
+OFF (#94); battle VBlank Random remains backlogged. The user's play-test passed on 2026-11-04.
 
 Older dated checkpoint sections below are historical records: their "unused until A5c3f" wording does not describe
 the now-live battle engine. Use this section, STATUS and the current code for the restart point.
@@ -646,24 +651,24 @@ assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM so
 map trainers, the Lab rival, both catch demos) runs `PlayBattleMusic`'s stop and song, the prologue, one of the
 8 transitions picked by the cartridge's 3-bit choice (trainer / enemy ≥ lead + 3 / dungeon map), and the tail,
 then holds black until the battle is ready. The modules are in `overworld/` (`battle_transition*.ts`,
-`transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). The live engine still uses `battle_init.ts`'s interim
-intro without the72-frame slide; the accepted03b replacement is unused. 04a proved its timing and the host binding; the live switch is 04b. Growth, starter Pikachu,
+`transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). Since A5e checkpoint-04b
+every battle runs the silhouette intro with its 72-frame slide (the interim intro is deleted). Growth, starter Pikachu,
 retreat and slide-offs already run since A5c3f10c; the poof/OAM player remains future A5e work.
 
-## Remaining A5e presentation carries (updated2026-11-03)
+## Remaining A5e presentation carries (updated 2026-11-05)
 
 Upstream's intro phases (`slide_in` → `colorize` → … → `go_text`, canvas silhouettes, `loadPlayerTrainerSprite`)
 now survive only in `catch_demo_screen.ts`, which A5f retires. Current live carries:
-- integrate the accepted unused silhouette Program into `_InitBattleCommon` in 04b (04a landed the timing, the host binding and the capture; nothing calls them yet);
 - battle `updateSprites` remains a named no-op; trace the battle OAM owner rather than calling the field NPC/follower updater;
 - poof/OAM sub-animation player; **do not re-port** the already-live `sendingOutMon`, `pikachuEntrance`, retreat or slide-offs;
-- `hideSubstitute` / `reshowSubstitute`, `animationSubstitute`, `animationTransformMon`, `substituteBreak`, `shake`
-  and `loadEnemyPicVariant`;
+- picture cues are live since 08c (note 84): `hideSubstitute` / `reshowSubstitute`, OFF `animationSubstitute` /
+  `animationTransformMon`, `substituteBreak`, the crash `shake`, and `loadEnemyPicVariant`. ON initial pictures and
+  ordinary attack animations still wait for #94;
 - move animations: `battle_move_anim.ts` always takes the BATTLE ANIMATION OFF path, whatever `wOptions` bit 7 says
   (DECISIONS #83).
 
 A5e's parent scope is note65 §4; current sequence/inventory is note75 §2/§4. 02/03a/03b reviews are note75 §8,
-note76 §7 and note77 §9. 04a's implementation report is note79 §6; 04b is outlined in note79 §5 and not started. Historical carries are in note72 §10.24.1, §11.66 and §10.26; check them against the code.
+note76 §7 and note77 §9. 04a's report is note79 §6 and its review §7; 04b's brief is §8, its report §9 and its review §10 (closed 2026-11-04). Checkpoint-05 is note80. Historical carries are in note72 §10.24.1, §11.66 and §10.26; check them against the code.
 
 ## Key Files
 

@@ -300,11 +300,13 @@ it('the session loader is once-only and the second call decodes and fetches noth
  const expected=['battle_transitions.json','move_names.json','stat_mod_text.json','item_names.json','trainers.json','monster_names.json',
   ...Object.keys(import.meta.glob('../../data/maps/*.json')).map(path=>'maps/'+path.split('/').pop()),
   ...['trainer_appeared','faint_fall','faint_thud','run','swap','press_ab','damage','super_effective','not_very_effective',
-  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle'].map(name=>`audio/sfx/${name}.json`)];
+  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle','ball_poof'].map(name=>`audio/sfx/${name}.json`),
+  'battle_animations.json'];
  expect([...firstFetches.keys()].sort()).toEqual(expected.sort());
  expect([...firstFetches.values()]).toEqual(expected.map(()=>1));
- expect(firstDecodes.size).toBe(358);expect([...firstDecodes.values()]).toEqual(Array(358).fill(1));
- expect(firstDecodes.get('gfx/battle/balls.png')).toBe(1);
+ expect(firstDecodes.size).toBe(360);expect([...firstDecodes.values()]).toEqual(Array(360).fill(1));
+ expect(firstDecodes.get('gfx/sprites/monster.png')).toBe(1);
+ expect(firstDecodes.get('gfx/battle/balls.png')).toBe(1);expect(firstDecodes.get('gfx/battle/move_anim_0.png')).toBe(1);
  for(let dex=1;dex<=151;dex++)for(const side of ['front','back'])expect(firstDecodes.get(`gfx/sprites/${side}/${dex}.png`)).toBe(1);
  const decodeAgain=vi.fn(decode);const fetchAgain=vi.spyOn(globalThis,'fetch');await loadBattleSessionData(decodeAgain);
  expect(decodeAgain).not.toHaveBeenCalled();expect(fetchAgain).not.toHaveBeenCalled();
@@ -335,4 +337,43 @@ it('the private BattleHost TextBox uses the owner for sound commands, waits and 
  }
  expect(driver.done).toBe(true);expect(sawSound).toBe(true);expect(heldAtSound).toBeGreaterThan(5);expect(r.synth.log.some(w=>w.m==='freq0')).toBe(true);
  audio.dispose();
+});
+
+/** A5e checkpoint-07: the live send-out poof (note 82). Runs Route1's wild win with animations ON or OFF. */
+function poofRun(animation:'ON'|'OFF'){
+ vi.restoreAllMocks();
+ const h=setup({world:{options:{textSpeed:'FAST',animation,battleStyle:'SET'}}}),s=h.session;
+ const plays:{at:number;id:number}[]=[];const play=BattleAudio.prototype.play;
+ vi.spyOn(BattleAudio.prototype,'play').mockImplementation(function(this:BattleAudio,sound){plays.push({at:h.time,id:sound.id});return play.call(this,sound);});
+ const rows:{at:number;id:number;atlas:unknown;oam:string[];menu:boolean;region:string}[]=[];
+ h.start();
+ for(let n=0;!s.done&&n<6000;n++){
+  h.tick(h.time%2===0?(s.video.textBox.isWaitingForInput?['b']:['a']):[]);
+  const oam:string[]=[];for(let i=0;i<40;i++){const e=s.screen.oam(i);if(e.y||e.x||e.tile||e.attributes)oam.push(`${e.y},${e.x},${e.tile.toString(16)},${e.attributes.toString(16)}`);}
+  const px=renderBattleScreen(s.screen,s.renderTiles);const region:number[]=[];
+  for(let y=72;y<80;y++)for(let x=40;x<48;x++)region.push(px[(y*160+x)*4]);
+  rows.push({at:h.time,id:s.state.wAnimationID,atlas:s.renderTiles.sprites,oam,menu:!s.video.textBox.active&&s.screen.at(10,14)==='F',region:hash(region)});
+ }
+ expect(s.done).toBe(true);expect(s.finish().exit).toBe('end');
+ return {rows,plays,t:rows.findIndex(r=>r.id===0xc3),menu:rows.findIndex(r=>r.menu)};
+}
+it('ON Route1 send-out: the live poof copies 79 tiles, draws six blocks, plays SFX_BALL_POOF and costs 10 frames over OFF',()=>{
+ const on=poofRun('ON'),off=poofRun('OFF'),t=on.t,at=on.rows[t].at;
+ expect([t,off.t]).toEqual([280,280]);
+ // Delay3, one frame, then CopyVideoData: a new atlas on each of 10 VBlanks (8 tiles each), none afterwards.
+ expect(on.rows.map((row,i)=>i>t-5&&row.atlas!==on.rows[i-1].atlas?i-t:null).filter(v=>v!==null)).toEqual([4,5,6,7,8,9,10,11,12,13]);
+ const atlas=on.rows[t+13].atlas as {data:ArrayLike<number>};
+ const source=PNG.sync.read(readFileSync('static/gfx/battle/move_anim_0.png'));
+ const tile=(image:{width:number;data:ArrayLike<number>},n:number)=>{const across=image.width>>>3,out:number[]=[];
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++)out.push(image.data[((Math.floor(n/across)*8+y)*image.width+(n%across)*8+x)*4]);return out;};
+ for(let n=0;n<79;n++)expect(tile({width:128,data:atlas.data},0x31+n),`tile $${(0x31+n).toString(16)}`).toEqual(tile(source,n));
+ // Shadow OAM is empty when the poof starts (_InitBattleCommon's ClearSprites); blocks of 12/16/16/12/12+12 entries.
+ expect(on.rows.slice(t,t+50).map(row=>row.oam.length)).toEqual([...Array(14).fill(0),...Array(5).fill(12),...Array(10).fill(16),
+  ...Array(15).fill(12),...Array(6).fill(0)]);
+ expect(on.rows[t+14].oam[0]).toBe('88,48,54,22');
+ expect(on.rows[t+14].region).not.toBe(on.rows[t+13].region); // the renderer draws block 1 from the session atlas
+ expect(on.plays.filter(p=>p.id===0x93).map(p=>p.at-at)).toEqual([23]);
+ expect([off.rows.slice(t,t+50).every(row=>row.oam.length===0),off.rows.every((row,i)=>i<t||row.atlas===off.rows[t].atlas),
+  off.plays.some(p=>p.id===0x93)]).toEqual([true,true,false]);
+ expect([on.menu,off.menu]).toEqual([353,343]);
 });

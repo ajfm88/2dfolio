@@ -21,6 +21,7 @@ import { extractGameText } from './extractors/game_text';
 import { extractTextPrograms } from './extractors/text_programs';
 import { extractMapSpriteSets } from './extractors/map_sprite_sets';
 import { extractBattleTransitions } from './extractors/battle_transitions';
+import { extractBattleAnimations } from './extractors/battle_animations';
 import { extractStatModText } from './extractors/stat_mod_text';
 import type { ExtractedData } from './data_provider';
 
@@ -77,6 +78,8 @@ const SFX_NAMES = [
   // A5c3f checkpoint-02. not_very_effective and super_effective were already listed
   // and stayed unextracted until their bank-$08 headers existed.
   'damage', 'trainer_appeared',
+  // A5e checkpoint-05 (note 80): Audio 2 only. No runtime preload yet.
+  'ball_poof',
 ];
 
 /**
@@ -119,6 +122,8 @@ export async function extractRom(
   data.jsonData['text_programs.json'] = extractTextPrograms(rom);
   data.jsonData['map_sprite_sets.json'] = extractMapSpriteSets(rom);
   data.jsonData['battle_transitions.json'] = extractBattleTransitions(rom);
+  // A5e checkpoint-05 (note 80): the poof's animation data. No runtime reader yet.
+  data.jsonData['battle_animations.json'] = extractBattleAnimations(rom);
   // note 69 §10.7: setup used to be the only caller. The bytes stay the same.
   data.jsonData['stat_mod_text.json'] = extractStatModText(rom);
 

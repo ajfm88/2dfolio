@@ -4,11 +4,11 @@ import type { GameMap } from './overworld/map';
 import type { Player } from './overworld/player';
 import type { Npc } from './overworld/npc';
 import { A, type BattleState } from './battle/battle_state';
-import { debugBattleMon, debugBattleInfo, type DebugBattleMon } from './debug_battle_view';
-import type { BattlePokemon, StatusCondition } from './battle/types';
+import { debugBattleMon, debugBattleInfo, debugEnemyMoves, type DebugBattleMon } from './debug_battle_view';
+import type { BattlePokemon, BattleMove, StatusCondition } from './battle/types';
 import { type Bag, getAllItemIds, getItemName } from './items';
 import { getPikachuHappiness, getPikachuMood, restorePikachuHappiness } from './overworld';
-import { createPokemon, getAllSpeciesNames } from './battle/data';
+import { createPokemon, getAllSpeciesNames, getAllLoadedMoveIds, getMove } from './battle/data';
 import { getPlayerName } from './core/player_state';
 import { totalExpForLevel, expToNextLevel, initExperience } from './battle/experience';
 import { markOwned } from './pokedex_state';
@@ -356,6 +356,9 @@ function rebuildPanel(): void {
     if (currentBattle.wEnemyMonSpecies && currentBattle.mem[A.wEnemyMonNick]) {
       const [section, refs] = buildPokemonSection('ENEMY', debugBattleMon(currentBattle,true), '#f66');
       enemyRefs = refs; panel.appendChild(section);
+      const enemy = currentBattle;
+      section.appendChild(el('div', 'Moves (edit at FIGHT menu)'));
+      section.appendChild(buildMoveEditor(debugEnemyMoves(enemy), moves => { debugEnemyMoves(enemy, moves); }));
     }
   } else {
     battleInfoEl = null;
@@ -596,6 +599,40 @@ function buildPokemonSection(label: string, mon: BattlePokemon | DebugBattleMon,
   return [section, refs];
 }
 
+// Debug-only setup. Whole edits validate before any write; blank slots are removed.
+function buildMoveEditor(moves: readonly BattleMove[], apply: (moves: BattleMove[]) => void): HTMLElement {
+  const moveRow = row();
+  moveRow.style.cssText += 'flex-wrap: wrap;';
+  const moveListId = 'debug-move-list';
+  if (!document.getElementById(moveListId)) {
+    const list = document.createElement('datalist'); list.id = moveListId;
+    for (const id of getAllLoadedMoveIds()) {
+      const option = document.createElement('option'); option.value = id; list.appendChild(option);
+    }
+    document.body.appendChild(list);
+  }
+  const moveInputs = Array.from({ length: 4 }, (_, slot) => {
+    const input = document.createElement('input'); input.type = 'text';
+    input.value = moves[slot]?.id ?? ''; input.placeholder = `Move ${slot + 1}`;
+    input.setAttribute('list', moveListId);
+    input.style.cssText = 'width: 100px; background: #222; color: #eee; border: 1px solid #555; font: 11px monospace;';
+    // Editing a move must not also press A/B, move the player or toggle debug.
+    input.addEventListener('keydown', e => e.stopPropagation());
+    input.addEventListener('keyup', e => e.stopPropagation());
+    moveRow.appendChild(input); return input;
+  });
+  const moveMessage = el('span', '');
+  moveRow.appendChild(btn('Set moves', () => {
+    const ids = moveInputs.map(input => input.value.trim().toUpperCase()).filter(Boolean);
+    if (!ids.length || ids.some(id => !getMove(id))) {
+      moveMessage.textContent = 'Choose 1-4 valid move IDs.'; return;
+    }
+    apply(ids.map(id => { const move = getMove(id)!; return { id, pp: move.pp, maxPp: move.pp }; }));
+    needsRebuild = true;
+  }));
+  moveRow.appendChild(moveMessage); return moveRow;
+}
+
 function buildPartySection(): HTMLElement {
   const section = document.createElement('div');
   section.style.cssText = 'margin-bottom: 12px;';
@@ -653,11 +690,12 @@ function buildPartySection(): HTMLElement {
     speciesInput.style.cssText = 'width: 90px; background: #222; color: #eee; border: 1px solid #555; border-radius: 2px; font: 11px monospace; padding: 1px 3px;';
 
     const levelInput = numInput(mon.level, 1, 100, 36);
+    const replaceDvs = dvInputs({ atk: mon.atkDV, def: mon.defDV, spd: mon.spdDV, spc: mon.spcDV });
 
     const applyBtn = btn('OK', () => {
       const name = speciesInput.value.trim();
       const lvl = clamp(parseInt(levelInput.value) || 5, 1, 100);
-      const newMon = createPokemon(name, lvl);
+      const newMon = createPokemon(name, lvl, undefined, replaceDvs.read());
       if (newMon) {
         markOwned(newMon.species.id);
         party[i] = newMon;
@@ -671,6 +709,7 @@ function buildPartySection(): HTMLElement {
     editContainer.appendChild(speciesInput);
     editContainer.appendChild(el('span', 'Lv'));
     editContainer.appendChild(levelInput);
+    replaceDvs.elements.forEach(e => editContainer.appendChild(e));
     editContainer.appendChild(applyBtn);
 
     // Remove button
@@ -688,6 +727,8 @@ function buildPartySection(): HTMLElement {
 
     section.appendChild(slotRow);
     section.appendChild(editContainer);
+
+    section.appendChild(buildMoveEditor(mon.moves, moves => { mon.moves = moves; }));
   }
 
   // Add row (if party < 6)
@@ -702,11 +743,12 @@ function buildPartySection(): HTMLElement {
     addSpecies.style.cssText = 'width: 90px; background: #222; color: #eee; border: 1px solid #555; border-radius: 2px; font: 11px monospace; padding: 1px 3px;';
 
     const addLevel = numInput(5, 1, 100, 36);
+    const addDvs = dvInputs({ atk: 0, def: 0, spd: 0, spc: 0 });
 
     const addBtn = btn('+ Add', () => {
       const name = addSpecies.value.trim();
       const lvl = clamp(parseInt(addLevel.value) || 5, 1, 100);
-      const newMon = createPokemon(name, lvl);
+      const newMon = createPokemon(name, lvl, undefined, addDvs.read());
       if (newMon) {
         newMon.otName = getPlayerName();
         markOwned(newMon.species.id);
@@ -721,6 +763,8 @@ function buildPartySection(): HTMLElement {
     addContainer.appendChild(addSpecies);
     addContainer.appendChild(el('span', 'Lv'));
     addContainer.appendChild(addLevel);
+    addDvs.elements.forEach(e => addContainer.appendChild(e));
+    addBtn.style.marginLeft = '2px';
     addContainer.appendChild(addBtn);
     section.appendChild(addContainer);
   }
@@ -965,6 +1009,25 @@ function statAbbr(stat: string): string {
     case 'evasion': return 'Eva';
     default: return stat.charAt(0).toUpperCase() + stat.slice(1, 3);
   }
+}
+
+type Dvs = { atk: number; def: number; spd: number; spc: number };
+/** Debug-only DV inputs (0-15). The HP DV is derived from these four, as on the cartridge. */
+function dvInputs(initial: Dvs): { elements: HTMLElement[]; read(): Dvs } {
+  const keys = ['atk', 'def', 'spd', 'spc'] as const;
+  const inputs = keys.map(key => numInput(initial[key], 0, 15, 44)); // room for two digits beside the spinner
+  const labels = { atk: 'Atk', def: 'Def', spd: 'Spd', spc: 'Spc' } as const;
+  const elements: HTMLElement[] = [el('span', '<span style="color:#888">DVs</span>')];
+  keys.forEach((key, i) => {
+    inputs[i].title = `${labels[key]} DV (0-15)`;
+    const label = el('span', labels[key]);
+    label.style.cssText = 'color: #aaa; font-size: 10px;';
+    elements.push(label, inputs[i]);
+  });
+  return {
+    elements,
+    read: () => Object.fromEntries(keys.map((key, i) => [key, clamp(parseInt(inputs[i].value) || 0, 0, 15)])) as Dvs,
+  };
 }
 
 function clamp(v: number, lo: number, hi: number): number {

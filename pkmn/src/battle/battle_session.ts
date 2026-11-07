@@ -28,12 +28,15 @@ import { loadTrainerAIItemNames, trainerAI, type TrainerAIEnvironment } from './
 import { bindBattleItems, loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS, type BattleItemHost } from './battle_items';
 import { composedJumpMoveEffect } from './battle_effects_registry';
 import { bindLearnMove, type LearnMoveHost } from './learn_move';
-import { moveAnimation } from './battle_move_anim';
+import { moveAnimation, shakeHorizontallyFast } from './battle_move_anim';
+import { animationSubstitute, animationMinimizeMon, animationTransformMon, hideSubstituteShowMonAnim,
+  reshowSubstituteAnim, animateSubstituteBreaking, type PicVariantHost } from './battle_pic_variants';
 import { tossBallAnimation } from './battle_ball_animation';
 import { battleRunOdds } from './battle_menu';
 import { loadBattleRenderTiles, type PictureDecoder } from './battle_pictures';
 import { browserPictureDecoder } from './battle_picture_decode';
 import { renderBattleScreen, type RawImage, type BattleRenderTiles } from './battle_screen_render';
+import type { BattleAnimationData } from '../rom/extractors/battle_animations';
 import { IntroRasterCapture } from './battle_intro_raster';
 import type { TurnPorts } from './battle_turn';
 import { delayFrames, type Program } from './battle_menu_context';
@@ -71,8 +74,9 @@ export const BATTLE_TEXT_SOUND_IDS: Readonly<Record<string, number>> = Object.fr
 });
 const HOST_SOUNDS = { trainer_appeared: 0xe9, faint_fall: 0x9e, faint_thud: 0x95,
   run: SFX_IDS.run, swap: SFX_IDS.swap, press_ab: SFX_IDS.press_ab,
-  damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7 } as const;
+  damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7, ball_poof: 0x93 } as const;
 interface SessionData { renderTiles: BattleRenderTiles; pokeballTiles: RawImage; mapTilesets: ReadonlyMap<string, string>;
+  moveAnimationTiles: RawImage; monsterSprite: RawImage; animations: BattleAnimationData;
   sounds: ReadonlyMap<string, BattleSfx>; itemSounds: ReadonlyMap<number, BattleSfx>; flute: SfxData }
 let data: SessionData | undefined;
 let loading: Promise<void> | undefined;
@@ -91,7 +95,11 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
       if (!response.ok) throw new Error(`battle map ${name}: HTTP ${response.status}`);
       const map = await response.json() as {tileset: string};return [name, map.tileset] as const;
     })));
-    const [renderTiles, itemSounds, sounds, mapTilesets] = await Promise.all([
+    const animations = fetch('battle_animations.json').then(async response => {
+      if (!response.ok) throw new Error(`battle_animations.json: HTTP ${response.status}`);
+      return await response.json() as BattleAnimationData;
+    });
+    const [renderTiles, itemSounds, sounds, mapTilesets, , , , moveAnimationTiles, animationData, monsterSprite] = await Promise.all([
       pictures, loadBattleItemSounds(), Promise.all(names.map(async name => {
         const value = await loadSfx(name); if (!value) throw new Error(`session sound ${name}`);
         const id = HOST_SOUNDS[name as keyof typeof HOST_SOUNDS] ?? SFX_IDS.get_item1;
@@ -100,6 +108,7 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
       maps, loadTrainerSpeciesData(),
       // This checked loader also calls loadBattleMoveData; invoking it separately would load twice.
       loadStatEffectData(), loadTrainerAIItemNames(),
+      decode('gfx/battle/move_anim_0.png'), animations, decode('gfx/sprites/monster.png'),
     ]);
     const flute = await loadSfx('pokeflute_in_battle');
     if (!flute) throw new Error('session flute stream missing');
@@ -107,7 +116,8 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
     for (const [id, name] of BATTLE_ITEM_SOUND_ASSETS) {
       if (name === 'caught_mon' || name === 'dex_page_added') soundsByName.set(name, itemSounds.get(id)!);
     }
-    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, itemSounds, mapTilesets: new Map(mapTilesets), flute };
+    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, itemSounds, mapTilesets: new Map(mapTilesets), flute,
+      moveAnimationTiles, monsterSprite, animations: animationData };
   })();
 }
 /** O-45.2's stand-in screens, loaded once beside the session data. PokedexMenu.load fetches per instance,
@@ -202,6 +212,8 @@ export function mapTileAnimations(map: string): number {
 export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps) {
   if (!data) throw new Error('battle session data not loaded');
   const assets = data;
+  // Composed pictures and animation atlases belong to this session, never the page asset cache.
+  const renderTiles = { ...assets.renderTiles, pictures: new Map(assets.renderTiles.pictures) };
   const state = new BattleState();
   installTrainerSpecies(state); state.movePP = id => getMoveRecord(id)[5];
   writeBattleInputs(state, world);
@@ -221,7 +233,7 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   // so the battle screen receives its final registers here.
   video.screen.bgp = video.screen.obp0 = video.screen.obp1 = 0xff;
   const driver = new BattleHost<BattleCommonExit>(state, video);
-  const introCapture = new IntroRasterCapture(() => renderBattleScreen(video.screen, assets.renderTiles));
+  const introCapture = new IntroRasterCapture(() => renderBattleScreen(video.screen, renderTiles));
   let introRaster: IntroRasterCapture | null = null;
   const screen = video.screen, rawContext = battleContext(state);
   // home/list_menu.asm: DisplayListMenuID reads the live count and entries at each opening.
@@ -236,6 +248,12 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   const party = new SessionPartyMenu(textHost);
   const textLog: { label: string; complete: boolean }[] = [];
   const handoffs = { trainerEnvironment: 0, other: 0 };
+  const pictures: PicVariantHost = { screen, renderTiles, monsterSprite: assets.monsterSprite,
+    minimizedMonSprite: assets.animations.minimizedMonSprite,
+    frontPicture: s => `front/${POKEDEX_ORDER[s.wCurPartySpecies - 1]}`,
+    backPicture: s => `back/${POKEDEX_ORDER[s.wBattleMonSpecies2 - 1]}` };
+  const hideSubstitute = (s: BattleState) => hideSubstituteShowMonAnim(s, pictures);
+  const reshowSubstitute = (s: BattleState) => reshowSubstituteAnim(s, pictures);
   // The checked TrainerAI owns wild/link returns; only trainer branches read these live owners.
   const trainerEnvironment: TrainerAIEnvironment = {
     screen,
@@ -243,8 +261,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     get text() { handoffs.trainerEnvironment++; return host; },
     get sendOut() { handoffs.trainerEnvironment++; return host; },
     animation: s => host.animation(s),
-    hideSubstitute: function* () { /* A5e presentation cue. */ },
-    reshowSubstitute: function* () { /* A5e presentation cue. */ },
+    hideSubstitute,
+    reshowSubstitute,
   };
   const trainerAILog: { frames: number; carry?: boolean }[] = [];
   const boundTrainerAI: TurnPorts['trainerAI'] = function* (s) {
@@ -273,8 +291,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
         return decodeBattleText(state.mem, A.wNameBuffer);
       } });
     },
-    loadEnemyPicVariant: function* () { /* A5e AnimationSubstitute / AnimationMinimizeMon cue. */ },
-    renderTiles: assets.renderTiles, pokeballTiles: assets.pokeballTiles,
+    loadEnemyPicVariant: kind => kind === 'substitute' ? animationSubstitute(state, pictures) : animationMinimizeMon(state, pictures),
+    renderTiles, pokeballTiles: assets.pokeballTiles,
     trainerAppeared: sound('trainer_appeared'), faintFall: sound('faint_fall'), faintThud: sound('faint_thud'),
     runSound: sound('run'), swapSound: sound('swap'),
     printText: function* (label: string, bindings?: TextBindings, options?: TextRunnerOptions) {
@@ -300,14 +318,16 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     trainerPicture: s => trainerPicName(s)!,
     voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm,
       cry() { /* J2 silent cry cue. */ }, clip() { /* J2 PCM cue; caller retains its three frames. */ } },
-    updateSprites() { /* A5e presentation cue. */ },
+    updateSprites() { /* UpdateSprites returns: init sets wUpdateSpritesEnabled=$FF (home/update_sprites.asm:1-4). */ },
     sendingOutMon: (s, x, y) => sendingOutMon(s, host, x, y), pikachuEntrance: s => pikachuEntrance(s, host),
     slidePlayerOff: s => animationSlideMonOff(s, screen), enemySlideOff: s => animationSlideEnemyMonOff(s, screen),
     marowakAnimation: function* () { throw new BattleUnsupportedState('unreachable Marowak'); },
     animation: s => moveAnimation(s, { screen, audio,
       sounds: { damage: sound('damage'), superEffective: sound('super_effective'), notVeryEffective: sound('not_very_effective') },
       waitForSound: host.waitForSound, tossBall: state => tossBallAnimation(state, { screen, audio, faintThud: host.faintThud,
-        ballSubanimation: function* (_id) { /* A5f OAM animations and their sounds; zero frames. */ } }) }),
+        ballSubanimation: function* (_id) { /* A5f OAM animations and their sounds; zero frames. */ } }),
+      subanimation: { screen, audio, renderTiles, moveAnimationTiles: assets.moveAnimationTiles,
+        ballPoof: sound('ball_poof'), animations: assets.animations } }),
     stopAllMusic: () => { owners.banks.stopAllMusic(); },
     playVictoryMusic(name) { const identity = musicIdentity(name);
       if (!identity) throw new BattleUnsupportedState(`victory music ${name}`); owners.banks.playMusic(identity); },
@@ -393,7 +413,7 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     // Registers are page-global, but these closures belong only to this use. Also clean up a partial registration.
     try {
       disposers.push(registerShortBattleItemBodies({ animation: host.animation,
-        hideSubstitute: function* () { /* A5e presentation cue. */ }, reshowSubstitute: function* () { /* A5e presentation cue. */ },
+        hideSubstitute, reshowSubstitute,
         loadScreenTilesFromBuffer1: host.loadScreenTilesFromBuffer1 }));
       disposers.push(registerFluteBattleItemBody({ sfx: owners.sfx, streams: assets.flute,
         loadScreenTilesFromBuffer2: host.loadScreenTilesFromBuffer2 }));
@@ -406,18 +426,18 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     } finally { disposeItems(); }
   };
   const presentation = { animation: host.animation,
-    hideSubstitute: function* () { /* A5e presentation cue. */ }, reshowSubstitute: function* () { /* A5e presentation cue. */ } };
+    hideSubstitute, reshowSubstitute };
   const env = { ...presentation, host, screen, moveMenu: { ctx, host },
-    animationSubstitute: function* () { /* A5e presentation cue. */ },
-    animationTransformMon: function* () { /* A5e presentation cue. */ } };
+    animationSubstitute: (s: BattleState) => animationSubstitute(s, pictures),
+    animationTransformMon: (s: BattleState) => animationTransformMon(s, pictures) };
   const ports: TurnPorts = { ...presentation, jumpMoveEffect: composedJumpMoveEffect(env),
     statModifierUpEffect: s => statModifierUpEffect(s, env), trainerAI: boundTrainerAI,
     switchEnemyMon: function* () { throw new BattleUnsupportedState('link'); },
-    substituteBreak: function* () { /* A5e presentation cue. */ }, shake: function* () { /* A5e presentation cue. */ } };
+    substituteBreak: s => animateSubstituteBreaking(s, pictures), shake: (s, b) => shakeHorizontallyFast(s, screen, b) };
   let started = false, finished = false, aborted = false;
   return {
     state, screen, video, party, textLog, trainerAILog, handoffs,
-    get renderTiles() { return assets.renderTiles; },
+    get renderTiles() { return renderTiles; },
     get statusView() { return host.statusView; },
     get foreground(): BattleForeground { return host.statusView ? 'status' : standIn ?? foreground; },
     naming, pokedex,

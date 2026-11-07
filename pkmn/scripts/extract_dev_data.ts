@@ -26,6 +26,7 @@ import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
 import { extractMapSpriteSets } from '../src/rom/extractors/map_sprite_sets';
 import { extractBattleTransitions } from '../src/rom/extractors/battle_transitions';
+import { extractBattleAnimations } from '../src/rom/extractors/battle_animations';
 import { extractStatModText } from '../src/rom/extractors/stat_mod_text';
 import townMapData from '../src/rom/town_map_data';
 import { extractRom } from '../src/rom/index';
@@ -64,6 +65,7 @@ const SFX_NAMES = [
   'ss_anne_horn', 'trade_machine', 'safari_zone_pa',
   'caught_mon', 'dex_page_added',
   'damage', 'trainer_appeared',
+  'ball_poof',
 ];
 
 function writeJson(relPath: string, data: unknown): void {
@@ -118,6 +120,7 @@ writeJson('game_text.json', extractGameText(rom)); count++;
 writeJson('text_programs.json', extractTextPrograms(rom)); count++;
 writeJson('map_sprite_sets.json', extractMapSpriteSets(rom)); count++;
 writeJson('battle_transitions.json', extractBattleTransitions(rom)); count++;
+writeJson('battle_animations.json', extractBattleAnimations(rom)); count++;
 // extractRom() emits the same table. This write is what data/ holds; writeStatic mirrors it.
 writeJson('stat_mod_text.json', extractStatModText(rom)); count++;
 writeJson('pokemon.json', extractPokemon(rom, moveNames, itemNames)); count++;
