@@ -1,6 +1,5 @@
-// Unused damage numbers. pret e89ead15 core.asm:4201–4713, 5246–5356, 5602–5636.
+// Damage numbers. pret e89ead15 core.asm:4201–4713, 5246–5356, 5602–5636.
 // home/math.asm, engine/math/multiply_divide.asm, home/move_mon.asm CalcStat, home/random.asm.
-// The running game does not import this module. damage.ts and the checkpoint-04 adapter stay.
 import { getTypeChart } from './data';
 import { TYPE_NAMES } from '../rom/constants';
 import { A, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, type BattleState } from './battle_state';

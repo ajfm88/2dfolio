@@ -1,4 +1,4 @@
-// Unused raw trainer/species tables. No battle-state/address-map imports: startup is cycle-safe.
+// Raw trainer/species tables. No battle-state/address-map imports: startup is cycle-safe.
 import { loadBattleData, getAllLoadedMoveIds, getMove, getSpeciesById } from './data';
 
 export interface PartyMember {

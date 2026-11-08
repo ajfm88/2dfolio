@@ -103,7 +103,7 @@ export class BattleAudio {
     return name === 'get_item1' && this.audioBank === 0x08 ? 'level_up' : name;
   }
 
-  /** `TextProgramRunner` port: retain normal field resolution outside this unused host. */
+  /** `TextProgramRunner` port: retain normal field resolution outside the battle host. */
   textSoundPort(playSound: (name: string) => void): (name: string) => void {
     return name => playSound(this.resolveTextSound(name));
   }

@@ -1,5 +1,5 @@
 import { refreshPartyMon } from './battle_party_codec';
-// Unused ItemUseMedicine battle port, pret e89ead15 engine/items/item_effects.asm:903–1377.
+// ItemUseMedicine battle port, pret e89ead15 engine/items/item_effects.asm:903–1377.
 import { I } from './battle_item_state';
 import { SHORT_ITEM_CONSTANTS } from './battle_item_bodies';
 import { PARTYMON_STRUCT_LENGTH, type BattleState } from './battle_state';
@@ -147,7 +147,7 @@ export function* itemUseMedicine(state: BattleState, host: BattleItemHost, env: 
   yield* env.runDefaultPaletteCommand();
 }
 
-/** item_effects.asm:903–1377. Explicit unused composition beside the short-body registration. */
+/** item_effects.asm:903–1377. Explicit composition beside the short-body registration. */
 export function registerMedicineBattleItemBody(env: MedicineItemEnvironment): () => void {
   return registerBattleItemBody('ItemUseMedicine', (state, host) => itemUseMedicine(state, host, env));
 }

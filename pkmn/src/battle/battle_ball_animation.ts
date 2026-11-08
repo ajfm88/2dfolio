@@ -13,7 +13,7 @@ export interface BallAnimationHost {
   screen: BattleScreen;
   audio: BattleAudio;
   faintThud: BattleSfx;
-  /** A5f owns these OAM animations and their sounds. Each currently takes zero frames. */
+  /** PlayAnimation for the toss, shake, poof and block IDs (A5f checkpoint-03: the session's sub-animation player). */
   ballSubanimation(id: number): Program;
 }
 

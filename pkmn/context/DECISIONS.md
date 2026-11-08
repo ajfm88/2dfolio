@@ -1292,6 +1292,53 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      - **End-of-day handoff, 2026-11-05:** the user asked to stop after updating all context files. Grok's
        implementation `478f45f` passed Codex code review (note84 section 9). User play-test remains pending;
        checkpoint-08c stays open. Resume with the play-test, not checkpoint-09 or A5f.
+     - **2026-11-06:** the user's play-test passed (note84 §10); checkpoint-08c is closed.
+
+103. **A5e checkpoint-09 is a no-code closeout; Claude plans and reviews, Codex implements** (2026-11-06, Claude's
+     planning trace, note 85).
+     *The user: "please plan the next slice so that Codex can implement it."*
+
+     - The trace found no replaced intro code left: every production battle file is reached from `main.ts`, and
+       the exports production doesn't use are ROM pins and test seams. Composition is already pinned by
+       checkpoints 04–08c's tests.
+     - What was wrong is the source's own status prose: 89 comment lines in 69 files called live code "Unused" (or
+       "until A5e", "No runtime preload yet"). 09 rewrites exactly those lines, proven comment-only by an AST
+       reprint checker and a byte-identical bundle, with the full suite still a gate (some tests read raw source).
+     - The battle ARCHITECTURE's carries section becomes a closeout census, giving every A5e item its checkpoint
+       or its future home (A5f, #94, J2, the Pokémon Tower phase, note 57). The user's full A5e play-test closes A5e.
+     - Open for the user, not blocking: note 57 files the screen-model merge "after A5e", so it becomes due when A5e
+       closes; its place in the queue is the user's call.
+
+104. **The screen-model merge runs before A5f** (2026-11-06, O-52).
+     *The user: "we can do that before A5f".*
+
+     - Note 57 filed it "after A5e": `IntroScreen`, `TransitionScreen` and `BattleScreen` onto one screen model, cleanup
+       with no visible change. A5e closed on 2026-11-06, so it is next in the queue. It gets its own plan and spike;
+       A5f follows it.
+     - **Depth (the user picked "Shared core (Recommended)"):** one shared module (`renderer/screen_model.ts`) owns the
+       tile map, the AutoBgMapTransfer thirds, the CopyVideoData queue and the message-box capture; the three classes
+       keep their own registers, VRAM, OAM and VBlank order, and the three renderers stay. Two checkpoints (note 86):
+       01 the core, unused; 02 the models on it. Claude plans and reviews; Grok implements (the user: "grok will
+       implement").
+     - **Done 2026-11-06:** both checkpoints accepted (note 86 §10, §13) and the user's play-test passed (§14).
+
+105. **A5f: the ball's sub-animations, then the catch demos as real battles; Claude plans and reviews, Grok
+     implements** (2026-11-06, Claude's planning trace, note 87).
+     *The user: "pls ultrathink and plan A5f for Grok to implement. Then you can check its work."*
+
+     - Most of note 65's A5f row went live in A5c3e/A5c3f (`ItemUseBall`, its texts and homes, the toss sequence,
+       HIDEPIC/SHOWPIC). What is left: the toss/shake/poof/block OAM animations and their two special effects (zero
+       frames today), and the two catch demos, which still run the upstream renderer.
+     - Five checkpoints (note 87 §3): 01 data (the five further `TossBallAnimation` IDs, `SFX_BALL_TOSS`, `SFX_TINK`);
+       02 the special effects, unused; 03 live; 04 the demos through the bridge and `main`; 05 retirement and the full
+       A5f play-test. Each is briefed after the previous review.
+     - **The ball animations play whatever the BATTLE ANIMATION option says**, because `MoveAnimation` jumps to
+       `TossBallAnimation` before reading `wOptions`. That is the cartridge, not a choice.
+     - `DoBallTossSpecialEffects`' ghost branch (`wPokeBallAnimData == $10`, the Marowak dodge) throws
+       `BattleUnsupportedState` until the Pokémon Tower phase, like #101's Marowak cue. THROWROCK/THROWBAIT wait for F2.
+     - `tink` names the Audio 2 copy (`SFX_Tink_2`), which is `SFX_Tink_1` byte for byte; a ROM test pins it.
+     - **2026-11-06:** checkpoints 01–02 were Grok's; the user gave 03 to Codex. All three passed review (note 87 §12, §15,
+       §18). End of day: the user's catch play-test (§16.8) is next, then 04's plan; the user names each implementer.
 
 ## Open — not decided, needs the user
 

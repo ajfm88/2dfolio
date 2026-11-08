@@ -1,8 +1,8 @@
-// Unused until A5c3f. pret e89ead15:
+// pret e89ead15:
 // home/trainers2.asm GetTrainerInformation / IsFightingJessieJames,
 // engine/battle/get_trainer_name.asm, engine/battle/read_trainer_party.asm,
 // engine/pokemon/add_mon.asm _AddPartyMon (ENEMY_PARTY_DATA), engine/math/bcd.asm AddBCD.
-// No live caller. The pic is a filename for checkpoint-04; wTrainerPicPointer stays untouched.
+// The pic is a filename (trainerPicName); wTrainerPicPointer stays untouched.
 import { getTrainerSpeciesData, monsterName, type TrainerRow, type MoveRow, type MonRow, type PartyMember } from './battle_trainer_data';
 import { GROWTH_RATE_NAMES, TYPE_NAMES } from '../rom/constants';
 import { writePartyMovePP } from './battle_add_mon';

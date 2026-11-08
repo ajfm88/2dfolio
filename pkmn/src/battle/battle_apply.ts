@@ -1,4 +1,4 @@
-// Unused application / Substitute / texts. pret e89ead15 core.asm:3889–3997,4783–5082.
+// Application / Substitute / texts. pret e89ead15 core.asm:3889–3997,4783–5082.
 import { A, type BattleState } from './battle_state';
 import { battleRandom } from './battle_random';
 import { readHpBarWord, writeHpBarWord, updateHPBar2 } from './battle_hp';

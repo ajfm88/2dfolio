@@ -1,4 +1,4 @@
-// Unused port of pret e89ead15 audio/poke_flute.asm, Music_PokeFluteInBattle.
+// Port of pret e89ead15 audio/poke_flute.asm, Music_PokeFluteInBattle.
 import type { SfxData, SfxEngine } from '../audio/sfx_engine';
 import { playSoundWaitForCurrent, type BattleItemHost } from './battle_items';
 import type { Program } from './battle_menu_context';

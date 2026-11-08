@@ -73,6 +73,10 @@ and the `loadSpriteMapped` variants for its stored OBP0 register.
 - **Pokemon back sprites**: 32x32, rendered at 2x in battle UI
 - **Pikachu emotion faces**: 40x40, 2-bit grayscale in `gfx/pikachu/unknown_eXXXX.png`
 
+## Shared screen model
+
+`screen_model.ts` owns the 20×18 tile map (`TileMap`: wTileMap, the shown copy, and AutoBgMapTransfer's six-row third), `CopyVideoData`'s queue (`VideoCopyQueue`: eight tiles a serviced frame, the transfer byte restored, an immediate LCD-off path) and the standalone message-box capture (`captureTextBox`). Since checkpoint-02, `IntroScreen`, `TransitionScreen` and `BattleScreen` are built on it. Each keeps its own registers, VRAM, OAM and VBlank order. The three renderers are unchanged.
+
 ## Key Files
 
 | File | LOC | Purpose |

@@ -1,4 +1,4 @@
-// Unused status/continuation ports. pret e89ead15 core.asm:3499–3887,5859–6141.
+// Status/continuation ports. pret e89ead15 core.asm:3499–3887,5859–6141.
 import { A, type BattleState } from './battle_state';
 import { copyMoveNameToStringBuffer, getMoveName, moveNameBinding } from './battle_move_data';
 import { delayFrames, type Program } from './battle_menu_context';

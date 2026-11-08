@@ -1,4 +1,4 @@
-// Unused until checkpoint-09b. The live owners are supplied; no main.ts dependency.
+// Live since A5c3f checkpoint-09b. The live owners are supplied; no main.ts dependency.
 // EndOfBattle / Evolution_PartyMonLoop / SendNewMonToBox (pret e89ead15).
 import { getSpecies, getSpeciesById, getAllLoadedMoveIds, getMove } from './data';
 import { BattleState, POKEDEX_ORDER } from './battle_state';

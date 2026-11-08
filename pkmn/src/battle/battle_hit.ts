@@ -1,4 +1,4 @@
-// Unused hit / Counter routines. pret e89ead15 core.asm:4718–4780,5410–5600.
+// Hit / Counter routines. pret e89ead15 core.asm:4718–4780,5410–5600.
 import { A, type BattleState } from './battle_state';
 import { battleRandom } from './battle_random';
 import { STAT_MODIFIER_RATIOS } from './battle_math';

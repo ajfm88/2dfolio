@@ -1,7 +1,9 @@
 // Oak speech's wTileMap + vFrontPic. Frame order: VBlank, then resume the CPU program.
+// The tile map, its thirds, the copy queue and the message-box capture are the shared core (renderer/screen_model.ts).
 import { textBgTransfer } from '../text/bg_transfer';
 import type { TextBox } from '../text/textbox';
 import { ScreenTiles, SCREEN_WIDTH, SCREEN_HEIGHT } from './screen_tiles';
+import { TileMap, VideoCopyQueue, captureTextBox } from '../renderer/screen_model';
 
 /** Numbers are vFrontPic tile IDs (including tile zero); strings are font/border glyphs. */
 export type IntroCell = string | number;
@@ -11,40 +13,34 @@ export class IntroScreen {
   bgp = 0xe4;
   obp0 = 0xd0;
   wx = 7;
-  private readonly logical: IntroCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
-  private readonly shown: IntroCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
+  private readonly map: TileMap<IntroCell>;
   private readonly front: (IntroSlot | null)[] = Array(49).fill(null);
-  private copying: { picture: string; next: number } | null = null;
+  private readonly copies = new VideoCopyQueue('Intro picture copy already in progress');
 
   constructor(initial?: readonly IntroCell[]) {
-    if (initial) {
-      if (initial.length !== SCREEN_WIDTH * SCREEN_HEIGHT) throw new Error('Intro requires a full screen snapshot');
-      initial.forEach((cell, index) => { this.logical[index] = cell; this.shown[index] = cell; });
-    }
+    if (initial && initial.length !== SCREEN_WIDTH * SCREEN_HEIGHT) throw new Error('Intro requires a full screen snapshot');
+    this.map = new TileMap<IntroCell>(index => initial ? initial[index] : ' ');
   }
 
-  get cells(): readonly IntroCell[] { return this.logical.slice(); }
-  get visibleCells(): readonly IntroCell[] { return this.shown.slice(); }
+  get cells(): readonly IntroCell[] { return this.map.cells; }
+  get visibleCells(): readonly IntroCell[] { return this.map.visibleCells; }
   get slots(): readonly (IntroSlot | null)[] { return this.front.map(slot => slot && { ...slot }); }
-  at(x: number, y: number): IntroCell | null { return this.cell(this.logical, x, y); }
-  visibleAt(x: number, y: number): IntroCell | null { return this.cell(this.shown, x, y); }
+  at(x: number, y: number): IntroCell | null { return this.map.at(x, y); }
+  visibleAt(x: number, y: number): IntroCell | null { return this.map.visibleAt(x, y); }
 
-  put(x: number, y: number, value: IntroCell): void {
-    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
-    this.logical[y * SCREEN_WIDTH + x] = value;
-  }
+  put(x: number, y: number, value: IntroCell): void { this.map.put(x, y, value); }
   clearArea(x: number, y: number, height: number, width: number): void {
     for (let row = 0; row < height; row++) for (let col = 0; col < width; col++) this.put(x + col, y + row, ' ');
   }
   /** CPU writes only. The speech also dismisses its TextBox when it calls ClearScreen. */
-  clearScreen(): void { this.logical.fill(' '); }
+  clearScreen(): void { this.map.fill(' '); }
   /** Naming has already cleared the window on its own clock. Preserve front VRAM and the shared phase. */
-  adoptBlankWindow(): void { this.logical.fill(' '); this.shown.fill(' '); }
+  adoptBlankWindow(): void { this.map.fill(' '); this.map.fillShown(' '); }
 
   // Reuse the existing glyph writers without widening every menu's snapshot/cell contract.
   private glyphWrite(write: (tiles: ScreenTiles) => void): void {
     const tiles = new ScreenTiles(); write(tiles);
-    tiles.saveTiles().forEach((cell, index) => { if (cell !== null) this.logical[index] = cell; });
+    tiles.saveTiles().forEach((cell, index) => { if (cell !== null) this.map.set(index, cell); });
   }
   textBoxBorder(x: number, y: number, innerH: number, innerW: number): void {
     this.glyphWrite(tiles => tiles.textBoxBorder(x, y, innerH, innerW));
@@ -61,16 +57,7 @@ export class IntroScreen {
 
   /** Schedule seven VBlank batches, then restore the caller's transfer-enabled byte on CPU return. */
   *copyVideoData(picture: string): Generator<void> {
-    if (this.copying) throw new Error('Intro picture copy already in progress');
-    const enabled = textBgTransfer.enabled;
-    textBgTransfer.enabled = false;
-    this.copying = { picture, next: 0 };
-    try {
-      for (let frame = 0; frame < 7; frame++) yield;
-    } finally {
-      this.copying = null;
-      textBgTransfer.enabled = enabled;
-    }
+    yield* this.copies.copy(49, tile => { this.front[tile] = { picture, tile }; });
   }
 
   /** Literal 125-byte copy, six steps, with a top/middle/bottom transfer after each step. */
@@ -82,10 +69,10 @@ export class IntroScreen {
       textBgTransfer.resetPortion();
       let pointer = start;
       for (let byte = 0; byte < 125; byte++) {
-        this.logical[pointer + delta] = this.logical[pointer];
+        this.map.set(pointer + delta, this.map.get(pointer));
         pointer -= delta;
       }
-      if (direction === 'left') this.logical[pointer - 1] = 0;
+      if (direction === 'left') this.map.set(pointer - 1, 0);
       textBgTransfer.enabled = true;
       for (let frame = 0; frame < 3; frame++) yield;
       start += delta;
@@ -96,21 +83,11 @@ export class IntroScreen {
    * Never also call box.update/updateDisplay in the caller. CPU text advances only when requested. */
   vblank(box?: TextBox, advanceText = false): number | null {
     if (box?.active && box.displaySession) throw new Error('Intro requires standalone PrintText');
-    if (this.copying && advanceText) throw new Error('CPU text cannot run during CopyVideoData');
+    if (this.copies.active && advanceText) throw new Error('CPU text cannot run during CopyVideoData');
     this.captureText(box);
-    const third = textBgTransfer.enabled ? textBgTransfer.nextPortion : null;
-    if (third !== null) {
-      const start = third * 6 * SCREEN_WIDTH;
-      for (let index = start; index < start + 6 * SCREEN_WIDTH; index++) this.shown[index] = this.logical[index];
-    }
+    const third = this.map.transferThird();
     // VBlankCopy follows AutoBgMapTransfer, before any resumed CPU text writes.
-    if (this.copying) {
-      const end = Math.min(49, this.copying.next + 8);
-      while (this.copying.next < end) {
-        const tile = this.copying.next++;
-        this.front[tile] = { picture: this.copying.picture, tile };
-      }
-    }
+    this.copies.service();
     if (box?.active) {
       if (advanceText) box.update(); else box.updateDisplay();
     } else textBgTransfer.tick();
@@ -119,15 +96,5 @@ export class IntroScreen {
   }
 
   /** Capture CPU text writes (also call after starting PrintText in the CPU program). No transfer or tick. */
-  captureText(box?: TextBox): void {
-    if (!box?.active) return;
-    const snapshot = box.saveScreen();
-    if (!snapshot.border) return;
-    this.textBoxBorder(0, 12, 4, 18);
-    for (let row = 1; row <= 4; row++) for (let col = 1; col <= 18; col++)
-      this.put(col, 12 + row, snapshot.buffer[row * 20 + col]);
-  }
-  private cell(cells: readonly IntroCell[], x: number, y: number): IntroCell | null {
-    return x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT ? cells[y * SCREEN_WIDTH + x] : null;
-  }
+  captureText(box?: TextBox): void { captureTextBox(this.map, box); }
 }

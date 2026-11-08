@@ -43,14 +43,21 @@ to this repo, and none of it survived — DECISIONS #26.)
 
 ## Approach
 
-**Current checkpoint-08c assignment (user, 2026-11-05; decision #102):** Codex prepares/spikes and reviews;
+**Current A5f assignment (user, 2026-11-06; decision #105):** Claude plans, spikes and reviews; the user names the
+implementer per checkpoint (Grok ran 01–02, Codex 03). Visible checkpoints end with the user's play-test.
+
+**Screen-model merge assignment (user, 2026-11-06; decision #104):** Claude planned and reviewed; Grok implemented.
+
+**A5e checkpoint-09 assignment (user, 2026-11-06; decision #103):** Claude planned and reviewed; Codex implemented.
+
+**Checkpoint-08c assignment (user, 2026-11-05; decision #102):** Codex prepares/spikes and reviews;
 Grok implements the written brief in note84. Codex reviews the actual commit, re-runs gates and adds a mutation;
-the user's visible play-test follows. 08c code review passed; the user's browser play-test is pending (note84 section 9).
+the user's visible play-test follows. 08c is closed: code review passed and the user's play-test passed 2026-11-06 (note84 §9–§10).
 
 **Earlier A5e assignment (user, 2026-11-04; DECISIONS #95, #98):** Claude plans, reads the ASM, spikes and briefs;
 the implementer the user names (Codex for 04, Grok for 05) implements one briefed checkpoint, then Claude
 independently reviews source and gates and adds a mutation.
-The earlier assignment ran through checkpoint-08b; checkpoint-08c code review passed, with user play-test pending. A note75 §4 roadmap row is never
+The earlier assignment ran through checkpoint-08b; checkpoint-08c closed 2026-11-06. Checkpoint-09's roles are the user's to assign. A note75 §4 roadmap row is never
 authorization by itself: only a written brief is.
 02/03a/03b followed the earlier Codex-plans/Sonnet-implements assignment (#93).
 
@@ -243,7 +250,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6131/6131** as of 2026-11-05 (A5e checkpoint-08c, reviewed by Codex; default workers). No-ROM **5854 pass / 277 skip**, 243 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6169/6169** as of 2026-11-06 (A5f checkpoint-03, awaiting Claude's review; default workers). No-ROM **5887 pass / 282 skip**, 245 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -274,6 +281,8 @@ gate runs once at default workers. A timeout or wall-clock failure stops the sli
 `suite_timeouts.test.ts` pins the running task's 30,000 ms default and scans every test file's
 AST for local timeout arguments/options, including chained cases, suites and hooks. The cached
 render case retains its 1 ms budget and title, using the best of ten renders after warm-up.
+
+`renderer/screen_model.test.ts` (screen-model merge checkpoint-01, note 86): 18 no-ROM cases for the unused shared core. `TileMap` covers both copies, bounds, `fill`/`fillShown`, a disabled transfer, each third without a tick, and the destination writer. `VideoCopyQueue` covers frame counts 49, 30, 3 and 8, both restore values, the LCD-off path and the busy guard. `captureTextBox` covers the no-op cases and the border/interior cells. Nothing imports `screen_model.ts` until checkpoint-02. Eight mutations (`notes/86-screen-model-merge-checkpoint-01/grok-mutation-M*.log`) each failed as an AssertionError and were restored. Totals: ROM **6149/6149**, 244 files; no-ROM **5872 pass / 277 skip** (231 passed / 13 skipped files). Bundle unchanged, `index-CW6CErI9.js`, 670,718 bytes.
 
 `battle/battle_run.test.ts`:15 odds/session cases cover draw-free escapes, one BattleRandom
 compare, pinned worked/equality/failure examples, attempt256, no Math.random and the exact
@@ -324,7 +333,7 @@ pins45 fetches (including08d's flute) and358 image decodes, each once. B-only sc
 speeds, host waits, victory stop order and exact restored map bytes close08a's check gaps.
 `battle/battle_session_core.test.ts`:eight no-ROM cases pin cycle-counted DIV, reset/replay,
 the bounded frozen-clock damage retry, node-import census, all24 committed maps and unknown
-tileset rejection, plus48 once-only fetches on cold startup. The session suite also bounds an
+tileset rejection, plus53 once-only fetches on cold startup (A5f checkpoint-03 adds ball_toss and tink). The session suite also bounds an
 actual old-clock battle in randomizeDamage and proves its counted-clock replacement finishes.
 08a's18 mutation proofs are in note72 §10.12;08b's12 plain proofs and snapshot audit are in §10.13.
 `battle/battle_session_trainers.test.ts`:10 no-ROM cases and one ROM case cover the world-keyed
@@ -336,6 +345,13 @@ assertions; evidence in note72 §10.14.5 onward. No snapshots changed.
 They pin send-out stages and waits, back/front pic pixel hashes, flipped columns, both slide-offs,
 ball hide/show and transfer timing, toss selection and trainer block sound order. Outcome-sensitive
 cases own a fixed frame4 DIV clock. Note72 §10.24 records the mutation proof and ledger controls.
+A5f checkpoint-03 updates exactly section 16.4's seven cases in three files: Master Ball 264 frames,
+breakout 318, Great Ball 94, trainer block 76, and the ghost's deliberate throw after 37 frames.
+Shakes consume wNumShakes to 0; final POOF needs a VBlank before the picture hash. Cue/sound order
+is pinned. The session loader expects ball_toss and tink; cold startup is 53 fetches. Counts stay
+6169 ROM / 5887 no-ROM + 282 skipped, 245 files. X1-X3 each caught by an AssertionError
+and restored (note87 section 17); bundle index-acc-zS92.js, 671,418 bytes, SHA256
+cc506c53907b1160fc51be5517a46d5e01ecccdccc57914275298312066931b4. Awaiting Claude's review.
 
 `battle/battle_session_menus.test.ts`:16 no-ROM cases use start/tick and two-frame key holds,
 with renderer/menu_render/party_icons output mocks. Item0 pins full-length end-name decoding
@@ -412,6 +428,10 @@ Awaiting Claude's review and the user's play-test.
 **A5e checkpoint-08b** adds unused `battle_pic_variants.ts` (the doll, the blob, Transform, hide/reshow, and the substitute breaking) and 21 no-ROM cases in `battle_pic_variants.test.ts`. `battle_init.ts` only gains `export` on `placePicture`. Ten mutations (`notes/83-a5e-checkpoint-08/08b-mutation-V*.log`), restored byte-for-byte; every failure is an AssertionError. Totals: 6114/6114 ROM; no-ROM 5837 pass / 277 skip; 242 files. Bundle unchanged, `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Accepted by Claude (note 83 §10; reviewer mutations R1, R2 caught). No play-test.
 
 **A5e checkpoint-08c** wires those helpers through the session and adds the debug move editor. `battle_session_variants.test.ts` has 15 no-ROM cases. `debug_battle_view.test.ts` adds 2 no-ROM cases. `battle_session.test.ts` changes only the loader census, 359 to 360 (`monster.png`). Twelve mutations (`notes/84-a5e-checkpoint-08c/grok-mutation-W*.log`), restored byte-for-byte; every failure is an AssertionError. Totals: 6131/6131 ROM; no-ROM 5854 pass / 277 skip; 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Code review passed; reviewer mutation R1 caught and restored. User play-test pending (note 84 §9). No play-test.
+
+**A5f checkpoint-01** adds five ROM-only cases in `rom/__tests__/battle_end_data.test.ts`: `ball_toss` and `tink` join `sounds` (two cases each) and one case pins `SFX_Tink_1` = `SFX_Tink_2`. `battle_animations_data.test.ts` pins all six TossBallAnimation IDs. `battle_subanimation.test.ts` finds POOF by ID 10. `sfx_jingles.test.ts` lists `ball_toss` and `tink` as unused. `static_export.test.ts` expects 200 JSON. Five mutations (`notes/87-a5f-checkpoint-01/grok-mutation-M*.log`), each an AssertionError, restored byte-for-byte. Totals: 6154/6154 ROM; no-ROM 5872 pass / 282 skip; 244 files. Bundle unchanged, `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. Awaiting Claude's review. No play-test.
+
+**A5f checkpoint-02** adds `battle/battle_subanimation_ball.test.ts` (15 no-ROM cases) for the toss and shake special effects. They stay unused until checkpoint-03; `BLOCKBALL_ANIM` has none, and no existing test changes. Ten mutations (`notes/87-a5f-checkpoint-02/grok-mutation-W*.log`), each an AssertionError, restored byte-for-byte. W6's log also shows the subentry guard's `BattleUnsupportedState`. Totals: 6169/6169 ROM; no-ROM 5887 pass / 282 skip; 245 files (232 passed / 13 skipped). Bundle `index-hN_k_3SH.js`, 671,318 bytes, SHA256 `5c1cc152c3209ea10dfb655a4f0c8a2985df253c5b2cfa24f342aefcc90f0439`. Awaiting Claude's review. No play-test.
 
 Together the three earlier A5e suites add 35 cases (6+8+21) over the November 2 baseline, deleting or changing no old
 tests/snapshots. The independent gates for that trio are note77 §9; that closeout's bundle was `index-D4Ol9Anq.js`,655166 bytes,

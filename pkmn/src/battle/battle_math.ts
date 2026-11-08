@@ -1,4 +1,4 @@
-// Unused ports for A5c3. pret e89ead15 engine/battle/core.asm, cited below.
+// A5c3 ports. pret e89ead15 engine/battle/core.asm, cited below.
 import { A, LINK_STATE_BATTLING, STRUGGLE, WILD_BATTLE, type BattleState } from './battle_state';
 import { AIEnemyTrainerChooseMoves } from './battle_ai_moves';
 

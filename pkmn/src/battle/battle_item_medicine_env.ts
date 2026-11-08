@@ -1,6 +1,6 @@
 import { refreshPartyMirror } from './battle_party_codec';
 import { decodeBattleText } from './battle_text_codec';
-// Unused medicine presentation. pret e89ead15 home/pokemon.asm:187–306;
+// Medicine presentation. pret e89ead15 home/pokemon.asm:187–306;
 // engine/menus/party_menu.asm:1–235; engine/gfx/hp_bar.asm:48–283.
 import { I } from './battle_item_state';
 import { battleContext, type BattleState } from './battle_state';

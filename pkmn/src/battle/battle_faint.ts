@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused checkpoint-07 ports. pret e89ead15 engine/battle/core.asm:263–279,708–1083,1171–1204.
+// A5c3d checkpoint-07 ports. pret e89ead15 engine/battle/core.asm:263–279,708–1083,1171–1204.
 import { battleContext, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { anyPartyAlive, anyEnemyPokemonAliveCheck, flagAction } from './battle_end_helpers';
@@ -50,7 +50,7 @@ function writeBcd(state: BattleState, at: number, value: number): void {
     const pair = value % 100; state.mem[at + i] = (Math.floor(pair / 10) << 4) | pair % 10; value = Math.floor(value / 100);
   }
 }
-// Reuse the packed-money codec in unused EndOfBattle; the existing victory body is unchanged.
+// Reuse the packed-money codec in EndOfBattle; the existing victory body is unchanged.
 export { writeBcd as writeBattleBcd };
 export function* playBattleVictoryMusic(host: FaintHost, name: string): Program {
   host.stopAllMusic(); host.playVictoryMusic(name, 8); yield* delayFrames(3);

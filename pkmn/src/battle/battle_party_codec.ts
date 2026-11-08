@@ -1,4 +1,4 @@
-// Unused party boundary. pret macros/ram.asm:7-37; pokemon_data_constants.asm:26-61.
+// Party boundary. pret macros/ram.asm:7-37; pokemon_data_constants.asm:26-61.
 import { A, NAME_LENGTH, PARTYMON_STRUCT_LENGTH, POKEDEX_ORDER, encodeText, type BattleState } from './battle_state';
 import { decodeBattleText } from './battle_text_codec';
 import { BattleUnsupportedState } from './battle_move_data';

@@ -9,7 +9,11 @@ import {
 } from '../rom_offsets';
 
 /** constants/move_constants.asm: the animation IDs this extractor reads. */
-export const PRESENTATION_ANIMATIONS: Record<string, number> = { POOF_ANIM: 0xc3 };
+export const PRESENTATION_ANIMATIONS: Record<string, number> = {
+  // A5f checkpoint-01 (note 87): TossBallAnimation's sub-animation IDs. SHOWPIC/HIDEPIC are special effects ported
+  // directly; THROWROCK/THROWBAIT (Safari) wait for F2.
+  TOSS_ANIM: 0xc1, SHAKE_ANIM: 0xc2, POOF_ANIM: 0xc3, BLOCKBALL_ANIM: 0xc4, GREATTOSS_ANIM: 0xc5, ULTRATOSS_ANIM: 0xc6,
+};
 
 const FIRST_SE_ID = 0xc0;       // constants/move_animation_constants.asm
 const NO_SOUND = 0xff;          // battle_anim's `NO_MOVE - 1`

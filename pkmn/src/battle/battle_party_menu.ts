@@ -1,4 +1,4 @@
-// core.asm PartyMenuOrRockOrRun's party branch. Unused until A5c3.
+// core.asm PartyMenuOrRockOrRun's party branch.
 import type { BattlePokemon } from './types';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
 import { PartyMenu } from '../menus/party_menu';
@@ -31,7 +31,7 @@ export interface BattlePartyHost extends BattleActionHost {
   switchPlayerMon(ctx: BattlePartyContext): Program;
 }
 
-/** Compose the unused host's CP4 party port; never touches the running game. */
+/** A5c2 CP4's standalone party port, used by tests only; the session uses bindStateBattlePartyMenu. */
 export function bindBattlePartyMenu(ctx: BattlePartyContext, host: BattlePartyHost): void {
   host.partyMenu = () => partyMenuOrRockOrRun(ctx, host);
 }

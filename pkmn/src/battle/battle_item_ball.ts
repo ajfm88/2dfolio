@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused A5c3e throw. pret e89ead15 engine/items/item_effects.asm:104-654,2566-2588.
+// A5c3e throw. pret e89ead15 engine/items/item_effects.asm:104-654,2566-2588.
 import { battleContext, isGhostBattle, indexToPokedex, NAME_LENGTH, RESTLESS_SOUL, type BattleState } from './battle_state';
 import { I } from './battle_item_state';
 import { random } from './battle_random';
@@ -56,7 +56,7 @@ export function calculateBallAnimation(state: BattleState): number {
   return h[3] < 10 ? 0x20 : h[3] < 30 ? 0x61 : h[3] < 70 ? 0x62 : 0x63;
 }
 
-/** item_effects.asm:104-608; core.asm:3480-3495,6174-6332. No live caller. */
+/** item_effects.asm:104-608; core.asm:3480-3495,6174-6332. */
 export function* itemUseBall(state: BattleState, host: BattleItemHost, env: BallItemEnvironment): Program {
   if (!state.wIsInBattle) { yield* itemUseNotTime(state, host); return; }
   const { video } = env, screen = video.screen;
@@ -156,7 +156,7 @@ export function* itemUseBall(state: BattleState, host: BattleItemHost, env: Ball
   removeUsedItem(state, host);
 }
 
-/** item_effects.asm:18-25,104. Explicit unused registration; storage ports arrive in07b. */
+/** item_effects.asm:18-25,104. Explicit registration; the session supplies the storage ports. */
 export function registerBallBattleItemBody(env: BallItemEnvironment): () => void {
   return registerBattleItemBody('ItemUseBall', (state, host) => itemUseBall(state, host, env));
 }

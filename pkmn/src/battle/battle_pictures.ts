@@ -1,4 +1,4 @@
-// Unused A5c3f checkpoint-06. Decoded committed PNGs only; no ROM, fetch or canvas in this module.
+// A5c3f checkpoint-06. Decoded committed PNGs only; no ROM, fetch or canvas in this module.
 import trainerText from '../../data/trainers.json?raw';
 import type { BattleRenderTiles, RawImage } from './battle_screen_render';
 

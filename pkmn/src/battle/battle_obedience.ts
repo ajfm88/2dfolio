@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused CheckForDisobedience. pret e89ead15 core.asm:4001–4179; note68 §11.15 answer3.
+// CheckForDisobedience. pret e89ead15 core.asm:4001–4179; note68 §11.15 answer3.
 import { A, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, STRUGGLE, type BattleState } from './battle_state';
 import { BattleUnsupportedState, getCurrentMove } from './battle_move_data';
 import { handleSelfConfusionDamage, type StatusPorts } from './battle_turn_status';

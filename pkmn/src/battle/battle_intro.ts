@@ -1,4 +1,4 @@
-// A5e checkpoint-02: unused LCD-off silhouette BG staging. pret e89ead15 core.asm:18-48.
+// A5e checkpoint-02: LCD-off silhouette BG staging. pret e89ead15 core.asm:18-48.
 import type { BattleScreen } from './battle_screen';
 import type { Program } from './battle_menu_context';
 

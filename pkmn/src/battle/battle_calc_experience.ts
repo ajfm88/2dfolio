@@ -1,4 +1,4 @@
-// Unused raw growth routines. pret e89ead15 engine/pokemon/experience.asm:1–149.
+// Raw growth routines. pret e89ead15 engine/pokemon/experience.asm:1–149.
 import { A, type BattleState } from './battle_state';
 import { getMonHeader } from './battle_loaders';
 import { multiply, divide } from './battle_arithmetic';

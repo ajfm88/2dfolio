@@ -1,8 +1,8 @@
 # Battle System Architecture
 
-## A5e foundations — current through 2026-11-05
+## A5e foundations — current through 2026-11-06
 
-**02/03a/03b, 04a and 04b are accepted; checkpoint-04 closed 2026-11-04 after the user's play-test. Checkpoint-05 (poof data) is accepted (note 80 §6, 2026-11-05). Checkpoint-06a is accepted (note 81 §7). Checkpoint-06b is accepted (note 81 §10), closing checkpoint-06. Checkpoint-07 (the live send-out poof) is closed: accepted (note 82 §8) and play-tested (§9), 2026-11-05. Checkpoint-08a (`MinimizedMonSprite` data) is accepted (note 83 §7). Checkpoint-08b (picture variants) is accepted (note 83 §10). Checkpoint-08c (live picture cues, the session-local registry, and the debug move editor) passed Codex code review; awaiting user play-test (note 84 §9).** Suite **6131 ROM / 5854 no-ROM + 277 skip**, 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Notes75-77 retain the earlier contracts.
+**02/03a/03b, 04a and 04b are accepted; checkpoint-04 closed 2026-11-04 after the user's play-test. Checkpoint-05 (poof data) is accepted (note 80 §6, 2026-11-05). Checkpoint-06a is accepted (note 81 §7). Checkpoint-06b is accepted (note 81 §10), closing checkpoint-06. Checkpoint-07 (the live send-out poof) is closed: accepted (note 82 §8) and play-tested (§9), 2026-11-05. Checkpoint-08a (`MinimizedMonSprite` data) is accepted (note 83 §7). Checkpoint-08b (picture variants) is accepted (note 83 §10). Checkpoint-08c (live picture cues, the session-local registry, and the debug move editor) passed Codex code review (note 84 §9) and the user play-test (§10, 2026-11-06), closing checkpoint-08.** Checkpoint-09 passed Claude's review (note 85 §11) and the user's full A5e play-test (§12), **closing A5e** (2026-11-06). Source status comments were corrected; no executable code changed. Suite **6131 ROM / 5854 no-ROM + 277 skip**, 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Notes75-77 retain the earlier contracts.
 
 | Owner | Behavior / reachability |
 |---|---|
@@ -12,9 +12,9 @@
 | `battle_intro_timing.ts:BattleIntroTiming` (04a) | Bound by battle init through the session. `POST_VBLANK_LY` is 146. A serviced boundary anchors there; a held boundary stays at 144. `disableLCD` waits for LY 145 and yields that crossing as one `'serviced'` frame. LCD-enable anchor is 0. Physical rSCX stays separate from hSCX and the captured bands |
 | `battle_intro_raster.ts:IntroRasterCapture` (04a) | Session-owned `IntroScanout`. One 160×144 buffer. `to` copies each new row once. `compose` keeps rows `[0, cursor)` and takes the rest from the injected live render. Cursor 0, or no renderer, returns that live buffer. While off or in the skipped first frame, compose returns fresh opaque white; endFrame closes the skipped frame |
 | `battle_host.ts:bindRaster` (04a) | Bound by init through the production session. While bound, `step` runs `boundary` and then the existing serviced VBlank and audio. A held frame is boundary only. Dark frames run boundary without seal/latch, VBlank or audio; pendingFrame exposes the next frame. A `'session'` frame throws before any tick. `null` unbinds, including when nothing is bound |
-| `rom/extractors/battle_animations.ts`, `battle_animations.json`, `audio/sfx/ball_poof.json` (05) | Data only. `POOF_ANIM` (`$C3`) and the one sub-animation, frame blocks, base coordinates and tileset 0 it reaches, plus Audio 2 `SFX_BALL_POOF`. No runtime reader. 06a: each sub-animation's `pointer`/`address` (the `wSubAnimAddrPtr`/`wSubAnimSubEntryAddr` sources). 08a: `minimizedMonSprite` |
-| `battle_subanimation.ts` (06b) | Live through `moveAnimation`'s ON branch, for `POOF_ANIM` only. Shadow OAM through `D07C` (`wPartyMenuTypeOrMessageID`, the 79-tile count), `D080`/`D081` and `DEF4` (shared with the HUD poké-ball OAM), `D083`, `D085`, `D086`, `D088`, `D08A` (`wSlideMonDelay`), `D093`, `D095`, `D09B` (high byte first), `D09D`, `D09E` (`wSlideMonUpBottomRowLeftTile`), and `hROMBankTemp` (`$FF8B`, `hBaseTileID`). The move-animation atlas is copy-on-write, 8 tiles per VBlank, and stays after the poof. The ledger is 40 frames: 10 copy frames, then 6 blocks × 5 |
-| `battle_move_anim.ts:moveAnimation` (07) | `ShareMoveAnimations` on the enemy's turn (`AMNESIA` `$85` → `CONF_ANIM` `$BF`, `REST` `$9C` → `SLP_ANIM` `$BD`), then `PlayAnimation` only for an id in `battle_animations.json` (`POOF_ANIM` `$C3`). Every other id keeps `delayFrames(30)` (#94). `PlayApplyingAttackAnimation` runs after both the ON and OFF branches, so a stale `wAnimationType` still plays, silently when `wDamageMultipliers` is 0 |
+| `rom/extractors/battle_animations.ts`, `battle_animations.json`, `audio/sfx/ball_poof.json`, `ball_toss.json`, `tink.json` (05; A5f checkpoint-01) | Data only. A5f checkpoint-01 adds `TOSS_ANIM` `$C1`, `SHAKE_ANIM` `$C2`, `POOF_ANIM` `$C3`, `BLOCKBALL_ANIM` `$C4`, `GREATTOSS_ANIM` `$C5` and `ULTRATOSS_ANIM` `$C6`, each one sub-animation command, plus Audio 2 `SFX_BALL_TOSS` and `SFX_TINK`. Nothing reads the new IDs or sounds yet. The session still reads `POOF_ANIM` and `SFX_BALL_POOF` since checkpoint-07. 06a: each sub-animation's `pointer`/`address` (the `wSubAnimAddrPtr`/`wSubAnimSubEntryAddr` sources). 08a: `minimizedMonSprite` |
+| `battle_subanimation.ts` (06b) | Live through `moveAnimation`'s ON branch for the send-out `POOF_ANIM`, and through `TossBallAnimation` since A5f checkpoint-03. Shadow OAM through `D07C` (`wPartyMenuTypeOrMessageID`, the 79-tile count), `D080`/`D081` and `DEF4` (shared with the HUD poké-ball OAM), `D083`, `D085`, `D086`, `D088`, `D08A` (`wSlideMonDelay`), `D093`, `D095`, `D09B` (high byte first), `D09D`, `D09E` (`wSlideMonUpBottomRowLeftTile`), and `hROMBankTemp` (`$FF8B`, `hBaseTileID`). The move-animation atlas is copy-on-write, 8 tiles per VBlank, and stays after the poof. The ledger is 40 frames: 10 copy frames, then 6 blocks × 5. A5f checkpoint-03 makes the toss, shake, poof and block animations live through the session's shared host, including the toss and tink sounds preloaded as Audio 2 IDs `$91` and `$8C`. The ball path plays whatever the animation option says. `BLOCKBALL_ANIM` has no special effect |
+| `battle_move_anim.ts:moveAnimation` (07) | `TOSS_ANIM` reaches `TossBallAnimation` before the option check; its sub-animations use the same session host as the send-out poof since A5f checkpoint-03. Otherwise, `ShareMoveAnimations` on the enemy's turn (`AMNESIA` `$85` → `CONF_ANIM` `$BF`, `REST` `$9C` → `SLP_ANIM` `$BD`), then `PlayAnimation` only for an id in `battle_animations.json` (`POOF_ANIM` `$C3`). Every other id keeps `delayFrames(30)` (#94). `PlayApplyingAttackAnimation` runs after both the ON and OFF branches, so a stale `wAnimationType` still plays, silently when `wDamageMultipliers` is 0 |
 | `battle_pic_variants.ts` (08b, live since 08c) | A composed `wTempPic` becomes a new immutable `wTempPic#<n>` entry in the session picture map (the doll from `monster.png` tiles 0–7; the blob from `minimizedMonSprite`). `ChangeMonPic` ends with `SET_PAL_BATTLE` (2 held + 3 serviced). Departures: MissingNo has no committed header, so `GetMonHeader` throws `BattleUnsupportedState` before the Rhydon trap; that port zeroes `wMonHSpriteDim`; composed keys persist until the session is disposed |
 | `battle_session.ts` picture host, `debug.ts` / `debug_battle_view.ts` (08c) | One session-local render-tile object and picture map. `monster.png` is decoded once with the other session assets. Hide/reshow, OFF Substitute/Transform, the STATS reload, substitute break, and the exported crash shake (`B=4`, 36 frames, WX=7) call the accepted helpers. Battle `updateSprites` stays a no-op because init stores `$FF`. Outside battle the debug panel replaces party moves; between turns it pokes exactly eight enemy move/PP bytes |
 
@@ -32,7 +32,8 @@ The init/start/Route1/pixel audits precede their snapshot updates (note79 §9). 
 OFF (#94); battle VBlank Random remains backlogged. The user's play-test passed on 2026-11-04.
 
 Older dated checkpoint sections below are historical records: their "unused until A5c3f" wording does not describe
-the now-live battle engine. Use this section, STATUS and the current code for the restart point.
+the now-live battle engine. Checkpoint-09 removed stale status wording from the source headers. Use this section,
+STATUS and the current code for the restart point.
 
 ## A5c3f checkpoint-11f: fixture writers and decoder retirement
 
@@ -653,19 +654,29 @@ map trainers, the Lab rival, both catch demos) runs `PlayBattleMusic`'s stop and
 then holds black until the battle is ready. The modules are in `overworld/` (`battle_transition*.ts`,
 `transition_screen*.ts`; see `src/overworld/ARCHITECTURE.md`). Since A5e checkpoint-04b
 every battle runs the silhouette intro with its 72-frame slide (the interim intro is deleted). Growth, starter Pikachu,
-retreat and slide-offs already run since A5c3f10c; the poof/OAM player remains future A5e work.
+retreat and slide-offs already run since A5c3f10c; the poof/OAM player is live since A5e checkpoint-07.
 
-## Remaining A5e presentation carries (updated 2026-11-05)
+## A5e closeout census (checkpoint-09)
 
-Upstream's intro phases (`slide_in` → `colorize` → … → `go_text`, canvas silhouettes, `loadPlayerTrainerSprite`)
-now survive only in `catch_demo_screen.ts`, which A5f retires. Current live carries:
-- battle `updateSprites` remains a named no-op; trace the battle OAM owner rather than calling the field NPC/follower updater;
-- poof/OAM sub-animation player; **do not re-port** the already-live `sendingOutMon`, `pikachuEntrance`, retreat or slide-offs;
-- picture cues are live since 08c (note 84): `hideSubstitute` / `reshowSubstitute`, OFF `animationSubstitute` /
-  `animationTransformMon`, `substituteBreak`, the crash `shake`, and `loadEnemyPicVariant`. ON initial pictures and
-  ordinary attack animations still wait for #94;
-- move animations: `battle_move_anim.ts` always takes the BATTLE ANIMATION OFF path, whatever `wOptions` bit 7 says
-  (DECISIONS #83).
+| A5e item (note 65 §4, note 75 §2) | Outcome |
+|---|---|
+| Silhouette intro: LCD-off staging, three scroll bands, 72-step slide, head OAM, LCD-off white | Live, 02–04b; user-verified 2026-11-04 |
+| Party balls, opening text, trainer placement and slide-off | Pre-existing ports, verified in 04's composition |
+| Send-out growth, starter Pikachu entrance, retreat, slide-offs | A5c3f 10c bodies, retained (not re-ported) |
+| Poof data, sub-animation player, live ON poof with `SFX_BALL_POOF` | 05–07; user-verified 2026-11-05 |
+| Substitute/Minimize/Transform direct cues, doll hide/reshow, break, STATS reload, crash shake | 08a–08c; user-verified 2026-11-06 |
+| Battle `UpdateSprites` | The cartridge's no-op (`$FF` gate), pinned in 08c |
+| Attack move animations, ON-path initial Substitute/Transform pictures, `SE_MINIMIZE_MON`, ordinary Fly/Dig hides | #94: the full `move_anim` interpreter, unscheduled |
+| Ball toss/shake/block animations and the catch's (enemy-side) poof | Live since A5f checkpoint-03; Claude's review passed (note 87 §18); the user's play-test is next (§16.8) |
+| Both catch demos' upstream renderer (`catch_demo_screen.ts`, `battle_ui.ts`) | A5f checkpoints 04–05 |
+| Cries and Pikachu PCM in battle | J2 (with the opening/title PCM work, #69) |
+| Ghost Marowak animation | Pokémon Tower phase (#101); throws until then |
+| Screen-model merge (`IntroScreen`, `TransitionScreen`, `BattleScreen`) | note 57, "after A5e": now due; the user places it |
+| Battle VBlank `Random` | note 57, backlogged |
+| Every other `DisableLCD` port's serviced frame and LCD-off span | note 57, V5 audit (#96, #97) |
+| MissingNo `GetMonHeader`, the `wMonHSpriteDim` model | Accepted 08b departures, unchanged |
+
+`battle_move_anim.ts` runs `PlayAnimation` for the IDs in `battle_animations.json` since checkpoint-07; every other ID keeps the 30-frame stand-in (#94).
 
 A5e's parent scope is note65 §4; current sequence/inventory is note75 §2/§4. 02/03a/03b reviews are note75 §8,
 note76 §7 and note77 §9. 04a's report is note79 §6 and its review §7; 04b's brief is §8, its report §9 and its review §10 (closed 2026-11-04). Checkpoint-05 is note80. Historical carries are in note72 §10.24.1, §11.66 and §10.26; check them against the code.

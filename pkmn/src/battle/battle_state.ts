@@ -389,7 +389,7 @@ export class BattleState {
   advanceRandomCycles?: (cycles: number) => void;
   /** Mirrors the player party. BattlePokemon has no box-level field; the raw slot does. */
   partyMons: (BattlePokemon | null)[] = [null, null, null, null, null, null];
-  /** Recorded by InitWildBattle. The picture itself is drawn in A5e. */
+  /** Recorded by InitWildBattle. The picture itself is drawn by battle_init.ts. */
   frontPic: 'none' | 'ghost' | 'mon' = 'none';
   /** Species passed to LoadMonFrontSprite. Ghost writes MON_GHOST here, then restores $CF90. */
   frontPicSpecies = 0;

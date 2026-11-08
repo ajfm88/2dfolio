@@ -1,7 +1,7 @@
 import { refreshPartyMirror } from './battle_party_codec';
 import { partyMenuOrRockOrRun } from './battle_party_menu';
 import { decodeBattleText } from './battle_text_codec';
-// Unused player-side ports. pret e89ead15 core.asm:1091–1167,1764–1871,2525–2546;
+// Player-side ports. pret e89ead15 core.asm:1091–1167,1764–1871,2525–2546;
 // common_text.asm:113–259. Enemy send-out/SHIFT remain checkpoint-05b.
 import { battleContext, LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
@@ -101,7 +101,7 @@ function clearSprites(host: PlayerSendOutHost): void {
   for (let i = 0; i < 40; i++) host.screen.setOam(i, { x: 0, y: 0, tile: 0, attributes: 0 });
 }
 
-/** core.asm:1764–1825. HUD/copy/palette owners are real; A5e/J2 presentation bodies remain named cues. */
+/** core.asm:1764–1825. HUD/copy/palette and the poof are real; cries remain J2 cues. */
 export function* sendOutMon(state: BattleState, host: PlayerSendOutHost): Program {
   yield* printSendOutMonMessage(state, host);
   if (state.wEnemyMonHP !== 0) yield* drawEnemyHud(state, host.screen);
@@ -250,14 +250,14 @@ export function* switchPlayerMon(state: BattleState, host: PlayerSendOutHost): P
   return { carry: false, zero: false };
 }
 
-/** Fills A5c2's unused switchPlayerMon port, over the same BattleState-backed menu context. */
+/** Fills A5c2's switchPlayerMon port, over the same BattleState-backed menu context. */
 export function bindPlayerSwitch(state: BattleState, host: BattlePartyHost, player: PlayerSendOutHost): void {
   host.switchPlayerMon = function* () {
     yield* switchPlayerMon(state, player);
   };
 }
 
-// Shared only by the unused enemy-side composition; player implementations stay unchanged.
+// Shared only by the enemy-side composition; player implementations stay unchanged.
 export { palette as setSendOutBattlePalette, clearSprites as clearSendOutSprites, chooseParty as choosePartyForSendOut };
 
 /** State-aware party port: shared menus consume a fresh cache of the party bytes. */

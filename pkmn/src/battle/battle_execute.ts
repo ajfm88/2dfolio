@@ -1,4 +1,4 @@
-// Unused ExecutePlayerMove / ExecuteEnemyMove. pret e89ead15 core.asm:3244–3450,5639–5856.
+// ExecutePlayerMove / ExecuteEnemyMove. pret e89ead15 core.asm:3244–3450,5639–5856.
 import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { getCurrentMove, getName, copyMoveNameToStringBuffer } from './battle_move_data';
 import { decrementPP } from './battle_loaders';

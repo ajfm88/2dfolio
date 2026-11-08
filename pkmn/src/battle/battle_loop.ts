@@ -1,4 +1,4 @@
-// Unused tail-jump driver. pret core.asm:289–475,708–739,981–1012; note70 §2.1.
+// Tail-jump driver. pret core.asm:289–475,708–739,981–1012; note70 §2.1.
 import type { BattleState } from './battle_state';
 import type { BattleActionContext, Program } from './battle_menu_context';
 import { mainInBattleLoop, type TurnHost, type TurnPorts } from './battle_turn';

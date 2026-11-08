@@ -1,4 +1,4 @@
-// Unused status effects. pret e89ead15 effects.asm:26-172,204-381,1007-1032,1170-1219;
+// Status effects. pret e89ead15 effects.asm:26-172,204-381,1007-1032,1170-1219;
 // engine/battle/move_effects/paralyze.asm:1-47 and leech_seed.asm:1-40.
 import { A, LINK_STATE_BATTLING, PARTYMON_STRUCT_LENGTH, type BattleState } from './battle_state';
 import { battleRandom } from './battle_random';

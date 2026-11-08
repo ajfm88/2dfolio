@@ -1,6 +1,6 @@
 import { refreshPartyMon } from './battle_party_codec';
 import { decodeBattleText } from './battle_text_codec';
-// Unused checkpoint-06 ports. pret e89ead15 battle/experience.asm:1–382;
+// A5c3d checkpoint-06 ports. pret e89ead15 battle/experience.asm:1–382;
 // pokemon/evos_moves.asm:325–382, status_screen.asm:255–300, home/joypad2.asm:55–87.
 import { LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';

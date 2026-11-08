@@ -1,4 +1,4 @@
-// Unused stat effects. pret e89ead15 engine/battle/effects.asm:387-798;
+// Stat effects. pret e89ead15 engine/battle/effects.asm:387-798;
 // core.asm:5084-5125,5448-5500. MoveAnimation and doll presentation remain ports.
 // move_effects/{haze,mist,focus_energy,reflect_light_screen}.asm, cited at each port below.
 import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';

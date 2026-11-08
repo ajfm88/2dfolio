@@ -1,4 +1,4 @@
-// Unused A5c3f checkpoint-05. pret e89ead15 engine/battle/animations.asm, engine/gfx/screen_effects.asm.
+// A5c3f checkpoint-05; ON branch since A5e checkpoint-07. pret e89ead15 engine/battle/animations.asm, engine/gfx/screen_effects.asm.
 import type { BattleState } from './battle_state';
 import type { BattleScreen } from './battle_screen';
 import type { BattleAudio, BattleSfx } from './battle_audio';

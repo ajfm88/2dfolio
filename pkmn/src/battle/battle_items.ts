@@ -1,4 +1,4 @@
-// Unused A5c3e dispatcher. pret e89ead15 engine/items/item_effects.asm; source lines at each routine.
+// A5c3e dispatcher. pret e89ead15 engine/items/item_effects.asm; source lines at each routine.
 import { I } from './battle_item_state';
 import { battleGlyphTile } from './battle_screen';
 import { type BattleState, encodeText, NAME_BUFFER_LENGTH } from './battle_state';

@@ -1,9 +1,10 @@
-// Battle wTileMap, VRAM and OAM. Unused until A5c3: nothing in main or battle imports this.
+// Battle wTileMap, VRAM and OAM.
 // VBlank order follows home/vblank.asm:28–40: BG third, video copy, OAM DMA, then the TextBox tick.
+// The tile map, its thirds, the copy queue and the message-box capture are the shared core (renderer/screen_model.ts).
 import { textBgTransfer } from '../text/bg_transfer';
 import type { TextBox } from '../text/textbox';
 import { delayFrames, type Program } from './battle_menu_context';
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../menus/screen_tiles';
+import { SCREEN_WIDTH } from '../menus/screen_tiles';
 import { charToTile } from '../text/charmap';
 import {
   HP_END_GLYPH, HP_FILL_GLYPHS, HP_GLYPH, HP_LEFT_GLYPH, LEVEL_GLYPH,
@@ -12,6 +13,7 @@ import {
 } from '../menus/menu_glyph_ids';
 import { getMonsterPalette, getPaletteColors } from '../renderer/palettes';
 import { dmgShadeMapping } from '../renderer/palette_shades';
+import { TileMap, VideoCopyQueue, captureTextBox } from '../renderer/screen_model';
 
 export type BattleCell = number | string;
 export type Rgb = readonly [number, number, number];
@@ -76,7 +78,6 @@ function throughRegister(base: readonly Rgb[], register: number): Rgb[] {
   return dmgShadeMapping(register).map(index => [base[index][0], base[index][1], base[index][2]] as Rgb);
 }
 
-interface VideoCopy { write: (index: number) => void; next: number; total: number }
 export interface BattleScreenBuffer2 {
   saveScreenTilesToBuffer2(): void;
   loadScreenTilesFromBuffer2(): void;
@@ -123,8 +124,7 @@ export class BattleScreen {
   /** Non-zero while SET_PAL_BATTLE is in its discarded-VBlank hold. vblank() throws. */
   paletteHold = 0;
 
-  private readonly logical: BattleCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
-  private readonly shown: BattleCell[] = Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill(' ');
+  private readonly map = new TileMap<BattleCell>(() => ' ');
   private readonly background: BattleCell[] = Array(BG_COLUMNS * BG_ROWS).fill(' ');
   private buffer2: readonly BattleCell[] = this.cells;
   private readonly front: (BattlePicSlot | null)[] = Array(49).fill(null);
@@ -136,23 +136,20 @@ export class BattleScreen {
   private readonly hud: (BattleHudSlot | null)[] = Array(0x7f - 0x62 + 1).fill(null);
   private readonly pending: BattleOam[] = Array.from({ length: 40 }, () => ({ y: 0, x: 0, tile: 0, attributes: 0 }));
   private shownOam: BattleOam[] = this.pending.map(entry => ({ ...entry }));
-  private copying: VideoCopy | null = null;
+  private readonly copies = new VideoCopyQueue('Battle VRAM copy already in progress');
   private bgNames: string[] = ['MEWMON', 'MEWMON', 'MEWMON', 'MEWMON'];
   private bgColours: Rgb[][] = this.bgNames.map(paletteOf);
 
-  get cells(): readonly BattleCell[] { return this.logical.slice(); }
-  get visibleCells(): readonly BattleCell[] { return this.shown.slice(); }
+  get cells(): readonly BattleCell[] { return this.map.cells; }
+  get visibleCells(): readonly BattleCell[] { return this.map.visibleCells; }
 
-  at(x: number, y: number): BattleCell | null { return this.cell(this.logical, x, y); }
-  visibleAt(x: number, y: number): BattleCell | null { return this.cell(this.shown, x, y); }
+  at(x: number, y: number): BattleCell | null { return this.map.at(x, y); }
+  visibleAt(x: number, y: number): BattleCell | null { return this.map.visibleAt(x, y); }
   bgAt(x: number, y: number): BattleCell | null {
     if (x < 0 || x >= BG_COLUMNS || y < 0 || y >= BG_ROWS) return null;
     return this.background[y * BG_COLUMNS + x];
   }
-  put(x: number, y: number, value: BattleCell): void {
-    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
-    this.logical[y * SCREEN_WIDTH + x] = value;
-  }
+  put(x: number, y: number, value: BattleCell): void { this.map.put(x, y, value); }
   putBg(x: number, y: number, value: BattleCell): void {
     if (x < 0 || x >= BG_COLUMNS || y < 0 || y >= BG_ROWS) return;
     this.background[y * BG_COLUMNS + x] = value;
@@ -250,7 +247,7 @@ export class BattleScreen {
   *refreshAfterAnimation(buffers: BattleScreenBuffer2 = this): Program {
     buffers.saveScreenTilesToBuffer2();
     textBgTransfer.enabled = false;
-    this.logical.fill(' ');
+    this.map.fill(' ');
     yield* delayFrames(3);
     this.transferDestination = 0x98;
     yield* delayFrames(3);
@@ -269,7 +266,7 @@ export class BattleScreen {
   /** pret home/tilemap.asm:15-28. Restore CPU tiles and leave automatic transfers enabled. */
   loadScreenTilesFromBuffer2(): void {
     textBgTransfer.enabled = false;
-    this.buffer2.forEach((cell, index) => { this.logical[index] = cell; });
+    this.buffer2.forEach((cell, index) => { this.map.set(index, cell); });
     textBgTransfer.enabled = true;
   }
 
@@ -282,21 +279,10 @@ export class BattleScreen {
     if (box?.active && box.displaySession) throw new Error('Battle text requires standalone PrintText');
     if (this.windowRegisters && this.disableVBlankWYUpdate === 0) this.wy = this.windowRegisters.wy;
     this.captureText(box);
-    const third = textBgTransfer.enabled ? textBgTransfer.nextPortion : null;
-    if (third !== null) {
-      const rowsPerThird = 6;
-      const start = third * rowsPerThird * SCREEN_WIDTH;
-      for (let index = 0; index < rowsPerThird * SCREEN_WIDTH; index++) {
-        const source = start + index;
-        if (this.transferDestination === 0x98) {
-          this.background[Math.floor(source / SCREEN_WIDTH) * BG_COLUMNS + source % SCREEN_WIDTH] = this.logical[source];
-        } else this.shown[source] = this.logical[source];
-      }
-    }
-    if (this.copying) {
-      const end = Math.min(this.copying.total, this.copying.next + 8);
-      while (this.copying.next < end) this.copying.write(this.copying.next++);
-    }
+    const third = this.map.transferThird(this.transferDestination === 0x98
+      ? (source, cell) => { this.background[Math.floor(source / SCREEN_WIDTH) * BG_COLUMNS + source % SCREEN_WIDTH] = cell; }
+      : undefined);
+    this.copies.service();
     this.shownOam = this.pending.map(entry => ({ ...entry }));
     if (box?.active) {
       if (advanceText) box.update(); else box.updateDisplay();
@@ -306,21 +292,7 @@ export class BattleScreen {
   }
 
   private *copyTiles(total: number, write: (index: number) => void): Generator<void> {
-    if (this.copying) throw new Error('Battle VRAM copy already in progress');
-    const enabled = textBgTransfer.enabled;
-    textBgTransfer.enabled = false;
-    try {
-      if (!this.lcdOn) {
-        for (let index = 0; index < total; index++) write(index);
-        return;
-      }
-      this.copying = { write, next: 0, total };
-      const frames = Math.floor(total / 8) + 1;
-      for (let frame = 0; frame < frames; frame++) yield;
-    } finally {
-      this.copying = null;
-      textBgTransfer.enabled = enabled;
-    }
+    yield* this.copies.copy(total, write, !this.lcdOn);
   }
 
   private *paletteFrames(): Generator<'held' | 'serviced'> {
@@ -341,31 +313,5 @@ export class BattleScreen {
     this.bgColours = names.map(paletteOf);
   }
 
-  /** TextBoxBorder(0, 12, 4, 18). The printer buffer's border cells are spaces, so only the inner 4×18 is copied. */
-  private textBoxBorder(x: number, y: number, innerH: number, innerW: number): void {
-    this.put(x, y, '┌');
-    for (let i = 0; i < innerW; i++) this.put(x + 1 + i, y, '─');
-    this.put(x + innerW + 1, y, '┐');
-    for (let row = 0; row < innerH; row++) {
-      this.put(x, y + 1 + row, '│');
-      this.put(x + innerW + 1, y + 1 + row, '│');
-    }
-    const bottom = y + innerH + 1;
-    this.put(x, bottom, '└');
-    for (let i = 0; i < innerW; i++) this.put(x + 1 + i, bottom, '─');
-    this.put(x + innerW + 1, bottom, '┘');
-  }
-
-  private captureText(box?: TextBox): void {
-    if (!box?.active) return;
-    const snapshot = box.saveScreen();
-    if (!snapshot.border) return;
-    this.textBoxBorder(0, 12, 4, 18);
-    for (let row = 1; row <= 4; row++) for (let col = 1; col <= 18; col++)
-      this.put(col, 12 + row, snapshot.buffer[row * 20 + col]);
-  }
-
-  private cell(cells: readonly BattleCell[], x: number, y: number): BattleCell | null {
-    return x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT ? cells[y * SCREEN_WIDTH + x] : null;
-  }
+  private captureText(box?: TextBox): void { captureTextBox(this.map, box); }
 }

@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-05 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅, A5d ✅, A5c ✅; A5e and A5f left)
+**Last updated:** 2026-11-06 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 5 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅); A5 in progress (A5a ✅, A5b ✅, A5d ✅, A5c ✅, A5e ✅; A5f left)
 
 ---
 
@@ -44,24 +44,24 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 engine since its 09b, and the user's play-test passed on 2026-11-01. Two small slices followed on 2026-11-02: the
 timing tests (#90, note 73) and the overworld RNG (#91, note 74). **A5e is now in progress:** checkpoint-01's trace
 is complete; checkpoint-02, checkpoint-03a and checkpoint-03b were independently accepted on2026-11-03
-(notes75–77). **R-SYNC complete (note78, Codex): pret names synchronized.** **04a accepted by Claude 2026-11-04** (note79 §7): ROM6033/6033. **Checkpoint-04 closed 2026-11-04:** 04b accepted (note79 §10; ROM6038/6038) and user play-test passed. **Checkpoint-05 (poof data) accepted 2026-11-05 (note 80 §6). Checkpoint-06 (06a, 06b) accepted 2026-11-05 (note 81 §7, §10). Checkpoint-07 (the live poof) closed 2026-11-05 (note 82 §8–§9). Checkpoint-08a accepted (note 83 §7). Checkpoint-08b accepted (note 83 §10). Checkpoint-08c code review passed; user play-test pending (note 84 §9).** Then finish A5e, A5f and V3. Earlier detail is in `HISTORY.md`.
+(notes75–77). **R-SYNC complete (note78, Codex): pret names synchronized.** **04a accepted by Claude 2026-11-04** (note79 §7): ROM6033/6033. **Checkpoint-04 closed 2026-11-04:** 04b accepted (note79 §10; ROM6038/6038) and user play-test passed. **Checkpoint-05 (poof data) accepted 2026-11-05 (note 80 §6). Checkpoint-06 (06a, 06b) accepted 2026-11-05 (note 81 §7, §10). Checkpoint-07 (the live poof) closed 2026-11-05 (note 82 §8–§9). Checkpoint-08a accepted (note 83 §7). Checkpoint-08b accepted (note 83 §10). Checkpoint-08c closed 2026-11-06 (note 84 §9–§10).** A5e is closed. The screen-model merge is done (note 86 §14). **A5f checkpoint-03 implemented, awaiting Claude's review** (note 87 section 17). Do not start checkpoint-04. Earlier detail is in `HISTORY.md`.
 
-## 📍 Where things stand — updated 2026-11-05 (*Setup* run twice for checkpoint-05; refs pulled 2026-11-03 evening, see the `refs/` row)
+## 📍 Where things stand — updated 2026-11-06 (A5f checkpoint-03; refs pulled 2026-11-03 evening, see the `refs/` row)
 
 ### Setup — done
 
 | Item | State |
 |---|---|
 | Git | Root repo, branch `master`, **no remote**. Baseline commit `9bf2d7d` = docs + vanilla upstream. `.gitattributes`: text LF, `*.png`/`*.tilemap`/`*.gbc` binary. `game/.gitattributes` (the user's, tracked since 2026-10-14, DECISIONS #53) repeats those rules for `game/` and adds linguist hints |
-| Committed generated files | `game/data/` (198 JSON) + `game/static/` (525 PNG, 3 tilemaps, 198 JSON); checkpoint-05 adds `battle_animations.json` and `audio/sfx/ball_poof.json` (setup twice, nothing else changed). Regenerate, never hand-edit |
+| Committed generated files | `game/data/` (200 JSON) + `game/static/` (525 PNG, 3 tilemaps, 200 JSON); checkpoint-05 adds `battle_animations.json` and `audio/sfx/ball_poof.json`. A5f checkpoint-01 adds `audio/sfx/ball_toss.json` and `audio/sfx/tink.json` and regenerates `battle_animations.json` (setup twice, nothing else changed). Regenerate, never hand-edit |
 | Ignored | `*.gbc`/`*.gb` (the ROM), `refs/`, `pkmn-sprites/`, `node_modules/`, `dist/` |
 | `game/LICENSE` | **Removed by the user (2026-09-22): "i want it gone".** Deletion committed with R1c. Don't restore it (DECISIONS #28) |
 | ROM | `game/pokeyellow.gbc`, SHA1 `cc7d0326…4a38e1` (DECISIONS #14) — re-verified 2026-09-22 |
 | `refs/` | All 5 on pinned branches, refreshed **2026-11-03** with `./pull-refs.sh`: `pokeyellow` master `b452f2ab` (was `e89ead15`, +45: pret named every remaining symbol; ROM unchanged; **R-SYNC complete: 63-name mapping applied; historical readers adapted per note78 section6.1**), `gen1recomp` dev `d85a6176` (was `20ab97ab`, +480), `oldamber` main `268d571` (unchanged), `engine` main `1986dd93` (was `79957401`, +21: Gen 1 `calc.zig`/`chance.zig` and build), `dmg` main `5e3b785` (unchanged). `file:line` citations written before note 78 refer to `e89ead15` |
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
-| `npm run setup` | 198 JSON → `data/`; static 525 PNG + 3 tilemaps + 198 JSON mirror. Checkpoint-05 (2026-11-05): setup twice, only `battle_animations.json` and `audio/sfx/ball_poof.json` (each mirrored). |
+| `npm run setup` | 200 JSON → `data/`; static 525 PNG + 3 tilemaps + 200 JSON mirror. A5f checkpoint-01 (2026-11-06): setup twice, only `battle_animations.json`, `audio/sfx/ball_toss.json` and `audio/sfx/tink.json` (each mirrored). |
 | Typecheck | Clean |
-| Tests | **08c code review passed; user play-test pending (note 84 §9).** ROM 6131/6131; no-ROM 5854 pass / 277 skip, 243 files (230 passed / 13 skipped), default workers. Bundle `index-CW6CErI9.js`, 670,718 bytes; SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca` |
+| Tests | **A5f checkpoint-02 implemented 2026-11-06 (note 87 §14), awaiting Claude's review.** ROM 6169/6169; no-ROM 5887 pass / 282 skip, 245 files (232 passed / 13 skipped), default workers. Bundle `index-hN_k_3SH.js`, 671,318 bytes; SHA256 `5c1cc152c3209ea10dfb655a4f0c8a2985df253c5b2cfa24f342aefcc90f0439` |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -77,7 +77,7 @@ is complete; checkpoint-02, checkpoint-03a and checkpoint-03b were independently
 | Route 22 | no NPCs (the rivals are I1). Its gate door leads to the unextracted `Route22Gate` and fails gracefully |
 | Wild data | 57 `wild/*.json` |
 | Music | **46** tracks extract; A5c3e checkpoint-02 removes the invalid `pokefluteinbattle` music entry (the real streams are unused SFX data) |
-| SFX | **21** preloaded, including A5c2 CP2's RUN (bank `$08`, header `$41c5`, ID `$97`; no playback caller yet), the nurse's `healing_machine` and intro animation's preloaded `shrink`. Wired: `press_ab`, `collision`, `start_menu`, `go_inside`/`go_outside`, the two field-medicine sounds, the machine, and shrink. A5c3f checkpoint-02 adds four unused files (`damage`, `not_very_effective`, `super_effective`, `trainer_appeared`); checkpoint-05 adds unused `ball_poof` (Audio 2, `$93`). 32 SFX JSON files, 11 unused. Other SFX and bank-aware lookup → V5 |
+| SFX | **21** preloaded, including A5c2 CP2's RUN (bank `$08`, header `$41c5`, ID `$97`; no playback caller yet), the nurse's `healing_machine` and intro animation's preloaded `shrink`. Wired: `press_ab`, `collision`, `start_menu`, `go_inside`/`go_outside`, the two field-medicine sounds, the machine, and shrink. A5c3f checkpoint-02 adds four unused files (`damage`, `not_very_effective`, `super_effective`, `trainer_appeared`); checkpoint-05 adds unused `ball_poof` (Audio 2, `$93`). A5f checkpoint-01 adds unused `ball_toss` (Audio 2, `$91`) and `tink` (Audio 2, `$8C`). 34 SFX JSON files, 13 unused. Other SFX and bank-aware lookup → V5 |
 | Type chart | **PSYCHIC bug present** — chart uses `PSYCHIC_TYPE` on both sides, species use `PSYCHIC`, so Bug→Psychic 2×, Fighting→Psychic ½×, Psychic→Psychic ½×, Ghost→Psychic 0× never apply (DECISIONS #10) → V5 |
 | Hidden items | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** DisplayTextID opens, found program begins at T+20 before give, flag on success, longer jingle and full map close; cartridge full-bag waits. Forest Potion/Antidote and Viridian City Potion |
 | Item balls | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** extracted `item` selects `PickUpItem`; box opens at T, give/hide T+20, found program T+23, `get_item1`, full map close after sound and A's release. Saved `hiddenObjects` keeps balls gone and tiles free. Full-bag failure keeps the ball. Route 1's sample preserves the flag-first quirk. Trade kid (A4) and Oak's Aide (A2) still await their handlers |
@@ -156,28 +156,20 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 
 ## In progress
 
-**A5e checkpoint-08c code review passed (Codex, note84 section 9); awaiting the user's play-test (section 7).**
-Reviewed Grok's `478f45f`: scope/hashes/audit agree; no blocking findings. The checkpoint remains open and is
-not play-tested or closed. Do not start checkpoint-09 or A5f before the play-test result is recorded.
+**A5f checkpoint-03 (the ball animations live): Claude's code review passed (note 87 §18); awaiting the user's catch play-test (§16.8).** Codex implemented it (`ccf0119`; the user's choice). ROM 6169/6169, no-ROM 5887/282, bundle `index-acc-zS92.js`. Checkpoints 01–02 accepted (§12, §15).
 
-**Stopped for today at the user's request (2026-11-05). Next session:** user runs note84 section 7 (A = X, B = Z); record each result. Codex then resolves any findings and,
-if all checks pass, closes 08c. The current #94 animation-option boundary remains intentional.
-
-Codex re-ran the ordered gates once, default workers: ROM **6131/6131**, no-ROM **5854/277**, 243 files;
-bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256
-`0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Independent mutation R1 (wrong back-picture
-species owner during Transform) was caught as an AssertionError and restored. No production or test code changed.
+**Stopped for today at the user's request (2026-11-06). Next session:** the user plays §16.8 (A = X, B = Z; balls from the debug panel's BAG) and the result is recorded as note 87 §19. Then plan **checkpoint-04** (the catch demos as real battles): note 87 §2.2 and §18's reading list hold the traced anchors. Claude plans and reviews; the user names the implementer.
 
 Note75 §4 gives the later checkpoint sequence; checkpoint-03b is accepted in note77 §9. Existing growth,
 Pikachu entrance, retreat and slide bodies already work (A5c3f10c); do not re-port them from stale cue prose.
 **O-50 answered 2026-11-04 → DECISIONS #94:** attack move animations are a separate future slice; A5e keeps them
 OFF and its sub-animation player covers only the traced presentation IDs (poof). The screen-model merge
-still waits until after A5e. Catch animations/demo retirement stay A5f; battle VBlank RNG stays backlogged.
+is done (note 86 §14). Catch animations/demo retirement stay A5f; battle VBlank RNG stays backlogged.
 
-**Current A5e workflow (decisions #95, #98, #102):** planner traces and spikes one checkpoint, captures its diff,
+**Current A5e workflow (decisions #95, #98, #102, #103):** planner traces and spikes one checkpoint, captures its diff,
 restores the source, and briefs exact gates/stops and mutation witnesses. The named implementer applies and audits
-it, verifies and commits locally; the reviewer re-runs gates and adds a mutation. **08c: Codex plans/reviews, Grok
-implements (#102).** Earlier Claude plans/reviews and implementation assignments are historical. Visible live changes
+it, verifies and commits locally; the reviewer re-runs gates and adds a mutation. **09: Claude plans/reviews, Codex
+implements (#103).** Earlier checkpoint assignments are historical. Visible live changes
 need the user's play-test after code review; stop at each checkpoint.
 
 **Rules learned in A5c3f's checkpoint 11 (note 72):**
@@ -195,7 +187,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **A5e** intros and animations | A | **Checkpoint-08c code review passed; awaiting user play-test (note 84 §9).** Then the user's play-test (§7). 08b accepted (note 83 §10). 08a accepted. Checkpoint-07 closed 2026-11-05. Checkpoint-06 closed 2026-11-05. 05 accepted 2026-11-05. Checkpoint-04 closed 2026-11-04. Parent scope note65 §4 (#70); attack animations excluded (#94). Then **A5f**, the wild catch's animations and catch demo integration |
+| 1 | **A5f** the wild catch and the catch demos | A | **Checkpoint-03 review passed (note 87 §18); the user's catch play-test (§16.8) is next.** Then 04 the demos as real battles, 05 retirement and the full A5f play-test; each briefed after the previous review. 01–02 accepted. |
 | 2 | **V3** Pewter Gym + Museum | V | Brock → BADGE_1; Museum 1F/2F |
 | 3 | **V4** Diglett's Cave + Route 3 | V | Also `RunMapScript` at the hop midpoint (#43; `trainer_tripwires.test.ts` fails first) |
 | — | **Attack move animations** (unscheduled) | A | Separate slice (#94), after A5e/A5f; the user places it. A **full pret `move_anim` interpreter** (#94 amended): every attack animation from the cartridge's data/routines. Needs its own plan |
@@ -244,6 +236,7 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
+- **O-52 ✅ answered 2026-11-06 → DECISIONS #104:** the screen-model merge runs next, before A5f.
 - **O-51 ✅ answered 2026-11-04 → DECISIONS #97:** yes. The LCD-off span and the first frame after `EnableLCD` are white (Pan Docs, SameBoy's measured logic); the intro gets two dark ticks (note 79 §8.1).
 - **O-50 ✅ answered 2026-11-04 → DECISIONS #94:** attack move animations get their own separate slice, not A5e.
 - **O-49 ✅ answered 2026-11-02 → DECISIONS #91:** yes. The overworld RNG slice ran before A5e (note 74).
@@ -269,75 +262,85 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-11-05 (A5e checkpoint-08c code review passed) - Codex
+### 2026-11-06 (A5f checkpoint-03 reviewed: passed; end of day) — Claude (Opus)
 
-- Reviewed Grok's `478f45f`: seven hashes exact, source audit agrees, twelve witness records match; no blocking findings. Ordered gates re-run: ROM 6131/6131, no-ROM 5854/277, bundle unchanged. Reviewer mutation R1 (wrong Transform back-picture species source) caught and restored.
-- Note84 section 9 records the review. No source/test changes. User play-test (section 7) pending; 08c stays open. Updated all seven context files for the end-of-day stop; archived three oldest session entries under #61.
+- Codex's `ccf0119` (the user gave 03 to Codex): byte-identical to the spike, witnesses match, archive verbatim. R1 (a wrong tink ID) caught. Gates: ROM 6169/6169, no-ROM 5887/282, bundle `index-acc-zS92.js`. Fixed one census row (the catch's poof is live). Note 87 §18. End of day: next is the user's catch play-test (§16.8), then plan checkpoint-04.
 
-### 2026-11-05 (A5e checkpoint-08c implemented) — Grok 4.7
+### 2026-11-06 (A5f checkpoint-03 implemented, awaiting Claude's review) - Codex
 
-- Applied `08c-spike.diff` at `2fef447`. Seven product files; hashes match the manifest. The twelve-item ASM audit agrees (note 84 §8). Twelve mutations (`grok-mutation-W*.log`) each failed as an AssertionError and were restored. No snapshot, data, or static edits.
-- Gates once, default workers, from `game/`: typecheck, build, 09c marker, ROM 6131/6131, no-ROM 5854 pass / 277 skip, 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Awaiting Codex review. No play-test.
+- Applied the exact five-file patch at `4c51968`; manifest PASS, four-row source audit agrees. Only section 16.4's planned test changes; no snapshots or generated data changed.
+- Ordered gates once, default workers: typecheck/build/marker pass; ROM 6169/6169 (245 files), no-ROM 5887 pass / 282 skip. Bundle `index-acc-zS92.js`, 671,418 bytes, SHA256 `cc506c53...31b4`. X1-X3 each caught by an AssertionError and restored. Report: note 87 section 17. Claude reviews next; user play-test follows. Checkpoint-04 not started.
 
-### 2026-11-05 (A5e checkpoint-08c spiked and briefed for Grok) - Codex
+### 2026-11-06 (A5f checkpoint-03 briefed for Grok) — Claude (Opus)
 
-- Prepared note84 and a seven-file spike: live picture ports, session-local assets, existing crash shake, debug party/enemy move setup. ROM 6131/6131, no-ROM 5854/277, 243 files; 12 assertion-based mutations caught. No existing snapshot changes.
-- Captured patch/hashes/logs, restored all game source and rebuilt the baseline bundle. Grok implements, Codex reviews (#102); user play-test afterwards. Checked-in baseline remains 6114/6114. Archived the oldest three session entries under #61.
+- Spiked the live binding (one sub-animation host with the ball sounds; two sounds preloaded). Seven planned test changes in three files, each matching checkpoint-02's ledgers; `wNumShakes` now ends 0; live sound order pinned. ROM 6169/6169, no-ROM 5887/282, bundle `index-acc-zS92.js`, X1–X3 caught. Note 87 §16.
 
-### 2026-11-05 (codebase and context study) — Codex
+### 2026-11-06 (A5f checkpoint-02 reviewed: accepted) — Claude (Opus)
 
-- Read the project rules, live handoff, architecture, roadmap, conventions, recent decisions and note 83; traced runtime initialization, ticks, battle sessions/host, picture variants, text, extraction and saves.
-- Study only; no implementation slice claimed and no tests run. The recorded baseline remains ROM 6114/6114, no-ROM 5837/277. Next remains Claude's checkpoint-08c spike and brief.
+- Grok's `ca7239b`: byte-identical to the spike, witnesses match, archive verbatim. R1 (GROWL's table ID) caught by the source-table test. Gates: ROM 6169/6169, no-ROM 5887/282, bundle `index-hN_k_3SH.js`. Note 87 §15. Next: brief checkpoint-03.
 
-### 2026-11-05 (A5e checkpoint-08b reviewed) — Claude (Opus)
+### 2026-11-06 (A5f checkpoint-02 implemented, awaiting Claude's review) — Grok 4.7
 
-- Reviewed Grok's `3a85e44`: scope, hashes, audit and mutation logs match §8. Re-ran the gates: ROM 6114/6114, no-ROM 5837/277, bundle unchanged. Reviewer mutations R1 (wrong copy side, caught as TypeErrors) and R2 (BG transfer left off) were caught. Accepted in note 83 §10; archived old STATUS entries.
+- Applied `02-spike.diff` on `f7cdd24`. Manifest PASS, two files. The five-row audit agrees (note 87 §14). No existing test, snapshot, session or data change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6169/6169 (245 files), no-ROM 5887 pass / 282 skip (232 passed / 13 skipped). Bundle `index-hN_k_3SH.js`, 671,318 bytes, SHA256 `5c1cc152c3209ea10dfb655a4f0c8a2985df253c5b2cfa24f342aefcc90f0439`. W1–W10 each an AssertionError and restored. Checkpoint-03 not started.
+- Archived 2 oldest session entries verbatim to HISTORY.md (DECISIONS #61).
 
-### 2026-11-05 (A5e checkpoint-08b implemented) — Grok 4.7
+### 2026-11-06 (A5f checkpoint-02 briefed for Grok) — Claude (Opus)
 
-- Applied `08b-spike.diff`. `battle_pic_variants.ts` and 21 no-ROM tests are new; `battle_init.ts` only exports `placePicture`. The eleven-item ASM audit agrees (note 83 §9). Ten mutations each failed as specified and were restored. Every failure is an AssertionError.
-- Gates once, default workers: typecheck, build, 09c marker, ROM 6114/6114, no-ROM 5837 pass / 277 skip, 242 files. Bundle unchanged, `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Report is note 83 §9. Unused, so no play-test. Awaiting Claude's review.
+- Spiked the toss and shake special effects (unused; `BLOCKBALL_ANIM` has none, by the table): ROM 6169/6169, no-ROM 5887/282, bundle `index-hN_k_3SH.js`, 15 new cases, no existing test change. W1–W10 caught as assertions (W5 and the block case revised after two first tries were caught only by thrown errors). Note 87 §13, `02-spike.diff`, manifest, runner.
 
-### 2026-11-05 (A5e checkpoint-08b spiked and briefed) — Claude (Opus)
+### 2026-11-06 (A5f checkpoint-01 reviewed: accepted) — Claude (Opus)
 
-- Spiked `battle_pic_variants.ts` (250 lines) and 21 tests, then reverted. There was no `BattleScreen` or renderer change and no existing test moved, so no split. `ChangeMonPic`'s `.done` runs SET_PAL_BATTLE; the port's MissingNo throw is pre-existing. ROM 6114/6114, no-ROM 5837/277, bundle unchanged. 10 mutations, AssertionErrors only. Wrote note83 §8 and `08b-spike.diff`.
+- Grok's `52310a9`: code byte-identical to the spike, manifest PASS 15, witnesses match, docs per §9. R1 (a corrupted `tink.json` frequency) caught by the source-encoding test. Gates: bundle unchanged, ROM 6154/6154, no-ROM 5872/282. Note 87 §12. Next: brief checkpoint-02.
 
-### 2026-11-05 (A5e checkpoint-08a reviewed: accepted) — Claude (Opus)
+### 2026-11-06 (A5f checkpoint-01 implemented, awaiting Claude's review) — Grok 4.7
 
-- Reviewed Grok's `ca3551b`: hashes exact, audit agrees, setup leaves no diff. Gates re-run: ROM 6093/6093, no-ROM 5816/277, bundle `index-ZrEHQMBj.js`. Reviewer mutation R1 (rows reversed) caught. Wrote note83 §7. Next: spike and brief 08b.
+- Applied `01-spike.diff` on `8e3ee56`. Manifest PASS, 15 files. Setup twice, byte-identical: six generated files only. The four-row audit agrees (note 87 §11). No engine code, preload or snapshot change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6154/6154 (244 files), no-ROM 5872 pass / 282 skip (231 passed / 13 skipped). Bundle unchanged, `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. M1–M5 each an AssertionError and restored. Checkpoint-02 not started.
 
-### 2026-11-05 (A5e checkpoint-08a implemented) — Grok 4.7
+### 2026-11-06 (A5f planned; checkpoint-01 briefed for Grok) — Claude (Opus)
 
-- Applied the code hunks of `08a-spike.diff` and ran setup twice. Only `battle_animations.json` and its static mirror changed; the second run matched the first. The four-item ASM audit agrees (note 83 §6). Six mutations each failed as specified and were restored. M5 and M6 also surface the extractor `Error`.
-- Gates once, default workers: typecheck, build, 09c marker, ROM 6093/6093, no-ROM 5816 pass / 277 skip, 241 files. Bundle `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Report is note 83 §6. Data only, so no play-test. Awaiting Claude's review.
+- Traced what A5f still needs: `ItemUseBall` and the toss sequence are live; the ball's OAM sub-animations ($C1–$C6) and their special effects are zero-frame, and the demos still use the old renderer. Ball animations play whatever the option says (`MoveAnimation` → `TossBallAnimation` first). Spiked checkpoint-01 (data): setup twice identical, bundle unchanged, ROM 6154/6154, no-ROM 5872/282, M1–M5 caught (two filter bugs fixed in the runner). Wrote note 87, `01-spike.diff`, the manifest and runner; DECISIONS #105; a backlog entry (`wGrassRate`).
 
-### 2026-11-05 (A5e checkpoint-08 planned; 08a briefed) — Claude (Opus)
+### 2026-11-06 (screen-model merge play-tested: done) — Claude (Opus)
 
-- Inventoried every placeholder cue against the ASM (note83 §1.1). The user kept #94's boundary for the ON path (#101). `updateSprites` is the cartridge's battle no-op; the crash shake is already ported.
-- Split 08 into 08a/b/c. Spiked 08a (MinimizedMonSprite read from AnimationMinimizeMon's operands): setup twice, one JSON. ROM 6093/6093, no-ROM 5816/277, bundle `index-ZrEHQMBj.js`; 6 mutations. Reverted; wrote note83 and `08a-spike.diff`.
+- The user ran note 86 §11.7's five checks and reported "all passes". Recorded as §14; closed the merge in STATUS, PROJECT, CLAUDE.md, DECISIONS #104 and note 57. No code changed. Next: plan A5f.
 
-### 2026-11-05 (A5e checkpoint-07 play-tested: closed) — Claude (Opus)
+### 2026-11-06 (screen-model merge checkpoint-02 reviewed: passed) — Claude (Opus)
 
-- The user passed all six note82 §5 checks ("all checked, all working well"); the poof and its sound are confirmed. Wrote note82 §9 and closed 07 here, in note75, CLAUDE.md and the docs. Next: plan checkpoint-08.
+- Grok's `869b3ee` equals the spike byte for byte; manifest PASS; witness counts and restores match the planner's. R1 (`cells` returning the shown copy) caught by 12 cases. Gates: bundle `index-BOisyFSK.js`, ROM 6149/6149, no-ROM 5872/277. Note 86 §13. Next: the user's play-test (§11.7).
 
-### 2026-11-05 (debug panel: DV inputs) — Claude (Opus)
+### 2026-11-06 (screen-model merge checkpoint-02 implemented, awaiting Claude's review) — Grok 4.7
 
-- The user asked for it during 07's play-test. `debug.ts` only: **Add** and **Replace** take Atk/Def/Spd/Spc DVs (0–15; the HP DV is derived), passed to `createPokemon`. Typecheck clean; no-ROM 5816/273; ROM 6089/6089. The bundle moves to `index-BVX0wFAN.js`, 664,949 bytes (debug code only; note82's `KIV9XXwR` was 07's own gate). Answered: a level-6 Mew at DVs 0 is 28 HP, 17 in every other stat.
+- Applied `02-spike.diff` on `70424ae`. Manifest PASS, three files. The four-row audit agrees (note 86 §12). No test, snapshot, renderer or data change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6149/6149 (244 files), no-ROM 5872 pass / 277 skip (231 passed / 13 skipped). Bundle `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. W1–W12 failure counts match §11.5; each is an AssertionError and was restored. A5f not started.
 
-### 2026-11-05 (A5e checkpoint-07 reviewed: accepted) — Claude (Opus)
+### 2026-11-06 (screen-model merge checkpoint-02 briefed for Grok) — Claude (Opus)
 
-- Reviewed Grok's `2bd65e6`: hashes exact, audit agrees, logs witness-only. Re-ran the gates: ROM 6089/6089, no-ROM 5816/273, bundle `index-KIV9XXwR.js` 664,311. Reviewer mutation R1 (OFF also runs ShareMoveAnimations) caught. Wrote note82 §8. Next: the user's play-test (note82 §5).
+- Fresh spike at `a87637b` (byte-identical to the 01-time preview): typecheck clean, bundle `index-BOisyFSK.js`, ROM 6149/6149, no-ROM 5872/277, no test changed. W1–W12 each caught by existing tests (the first runner missed W1 by omitting `battle_effects.test.ts`; a full run failed 37). Wrote note 86 §11, `02-spike.diff`, the manifest and runner.
 
-### 2026-11-05 (A5e checkpoint-07 implemented) — Grok 4.7
+### 2026-11-06 (screen-model merge checkpoint-01 reviewed: accepted) — Claude (Opus)
 
-- Applied `notes/82-a5e-checkpoint-07/07-spike.diff`. The six hashes matched. The six-item ASM audit agrees (note 82 §7). Eight mutations each failed as specified and were restored; Q1's Route 1 session failure is the one snapshot mismatch.
-- Gates once, default workers: typecheck, build, 09c marker, ROM 6089/6089, no-ROM 5816 pass / 273 skip, 241 files. Bundle `index-KIV9XXwR.js`, 664,311 bytes, SHA256 `7f35ecdda3d7b509bc4642557393030b7716b7ea05f79ff89ae55d6e1d34e421`. Report is note 82 §7. Awaiting Claude's review and the user's play-test (note 82 §5).
+- Grok's `0eca04e`: manifest PASS, only the test imports the core, report and witnesses agree, the STATUS archive is verbatim. R1 (shown aliasing wTileMap) caught by 8 cases. Gates: bundle unchanged, ROM 6149/6149, no-ROM 5872/277. Note 86 §10. Next: brief checkpoint-02.
 
-### 2026-11-05 (A5e checkpoint-07 planned) — Claude (Opus)
+### 2026-11-06 (screen-model merge checkpoint-01 implemented, awaiting Claude's review) — Grok 4.7
 
-- Traced `MoveAnimation`'s ON branch and `ShareMoveAnimations`, plus all three `SendOutMon` callers. Each calls `ClearSprites` first, so no ball OAM shows beside the poof (port probe: 63/63 empty). The stale `wAnimationType` gives a silent shake after a faint replacement. The enemy-side poof is A5f's, correcting note81 §10.2.
-- Spiked and reverted: 6 files, 3 planned fallouts, 5 new tests. ROM 6089/6089, no-ROM 5816/273, bundle `index-KIV9XXwR.js` 664,311. 8 mutations. Live, ON reaches the menu 10 frames after OFF. Wrote note82 and `07-spike.diff`, plus DECISIONS #100. No game code committed.
+- Applied `01-spike.diff` on `1bc787f`. Manifest PASS. The four-row audit agrees (note 86 §9). Nothing imports `screen_model.ts`.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6149/6149 (244 files), no-ROM 5872 pass / 277 skip (231 passed / 13 skipped). Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`, unchanged. M1–M8 each failed as an AssertionError and were restored (`grok-mutation-M*.log`). Checkpoint-02 not started.
 
-### 2026-11-05 (A5e checkpoint-06b reviewed: accepted) — Claude (Opus)
+### 2026-11-06 (screen-model merge planned; checkpoint-01 briefed for Grok) — Claude (Opus)
 
-- Reviewed Grok's `d33fb4a`: hashes exact, audit agrees, logs witness-only. Re-ran the gates: ROM 6084/6084, no-ROM 5811/273, bundle unchanged. Reviewer mutation R2 (palette reset hoisted out of the tile loop) caught by 4 synthetic cases; the real player-side poof never reaches X ≥ 88, so 07 should pin the enemy side. Wrote note81 §10. Checkpoint-06 closed. Next: plan 07.
+- The user chose a shared core (renderers unchanged). Traced the three models: the tile map's thirds, the copy queue and the message-box capture match line for line. Spiked both checkpoints: 01 alone keeps the bundle byte-identical, ROM 6149/6149, no-ROM 5872/277, M1–M8 caught; 01+02 also pass with no existing test changed (bundle `index-BOisyFSK.js`). Wrote note 86, `01-spike.diff`, the manifest, the mutation runner and the 02 preview; DECISIONS #104 amended.
+
+### 2026-11-06 (O-52 answered: screen-model merge before A5f) — Claude (Opus)
+
+- The user: "we can do that before A5f". Recorded as DECISIONS #104; queued the merge as row 1, ahead of A5f. Next: plan it.
+
+### 2026-11-06 (A5e checkpoint-09 play-tested: A5e closed) — Claude (Opus)
+
+- The user ran note 85 §7's nine checks and reported "all passes". Recorded as §12; closed checkpoint-09 and A5e in STATUS, PLAN, PROJECT, CLAUDE.md, note 75 and the battle ARCHITECTURE. No code changed. Next: plan A5f. Open: O-52 (the screen-model merge's place).
+
+### 2026-11-06 (A5e checkpoint-09 reviewed: passed) — Claude (Opus)
+
+- Codex's `ad64da2` equals the spike byte for byte; manifest PASS, docs per §5–§6. Fixed 10 more not-live comment lines (the brief's sweep gap; seven were Codex's findings) and two ARCHITECTURE lines, comment-only against `ad64da2`. Gates: ROM 6131/6131, no-ROM 5854/277, bundle unchanged. R1 (an extractor key rename) caught by the checker. Note 85 §11. Next: the user's full A5e play-test (§7).
+

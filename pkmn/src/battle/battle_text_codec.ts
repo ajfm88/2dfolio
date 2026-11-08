@@ -1,4 +1,4 @@
-// Unused charmap boundary, separate from battle_bridge to avoid a BattleState/codec import cycle.
+// Charmap boundary, separate from battle_bridge to avoid a BattleState/codec import cycle.
 import { BattleUnsupportedState } from './battle_move_data';
 import { decodeTextByte } from '../rom/extractors/text';
 

@@ -1,4 +1,4 @@
-// Logical Buffer1/2 and standalone PrintText ownership for the unused battle menus.
+// Logical Buffer1/2 and standalone PrintText ownership for the battle menus.
 import { BattleScreen } from './battle_screen';
 import type { BattleCell } from './battle_screen';
 import { BattleTiles } from './battle_tiles';

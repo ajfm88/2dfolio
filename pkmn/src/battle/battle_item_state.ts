@@ -1,4 +1,4 @@
-// Unused A5c3e item cells. pret ram/{wram,hram}.asm; symbols573535d, note71 section10.1.18.
+// A5c3e item cells. pret ram/{wram,hram}.asm; symbols573535d, note71 section10.1.18.
 import { D } from './battle_end_state';
 import type { BattleState } from './battle_state';
 

@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused enemy-side ports. pret core.asm:901–927,1315–1482; note70 checkpoint-05b.
+// Enemy-side ports. pret core.asm:901–927,1315–1482; note70 checkpoint-05b.
 import { LINK_STATE_BATTLING, W_SPRITE_FLIPPED, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { flagAction, hasMonFainted } from './battle_end_helpers';

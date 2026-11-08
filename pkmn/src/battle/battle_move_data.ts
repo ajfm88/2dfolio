@@ -1,4 +1,4 @@
-// Unused turn ports. pret e89ead15 core.asm:5167–5182,6142–6173.
+// Turn ports. pret e89ead15 core.asm:5167–5182,6142–6173.
 import { EFFECT_NAMES, TYPE_NAMES } from '../rom/constants';
 import { getAllLoadedMoveIds, getMove } from './data';
 import { incrementMovePP } from './battle_loaders';
@@ -15,7 +15,7 @@ const records = new Map<number, MoveRecord>();
 let nameBytes: number[] = [];
 const nameGlyphs = new Map<number, string>();
 
-/** Explicit startup for the unused port; uses the loaded move cache and committed display names. */
+/** Explicit startup for the port; uses the loaded move cache and committed display names. */
 export async function loadBattleMoveData(): Promise<void> {
   // One shared preload also covers cold session startup without racing main's fetch cache.
   await loadTrainerSpeciesData();
@@ -45,7 +45,7 @@ function record(moveId: number): MoveRecord {
   return move;
 }
 
-/** Raw six-byte Moves record, shared by the unused LearnMove FarCopyData path. */
+/** Raw six-byte Moves record, shared by the LearnMove FarCopyData path. */
 export function getMoveRecord(moveId: number): readonly number[] { return record(moveId).bytes; }
 
 /** Read the existing packed MoveNames without writing GetName's scratch cells. */

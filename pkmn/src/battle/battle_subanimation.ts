@@ -1,8 +1,9 @@
-// A5e checkpoint-06b (note 81): the OAM sub-animation player. Unused until checkpoint-07 wires it.
+// A5e checkpoint-06b (note 81): the OAM sub-animation player, live since checkpoint-07.
 // pret b452f2ab engine/battle/animations.asm: DrawFrameBlock 3-188, PlayAnimation 191-293, LoadSubanimation
 // 295-372, LoadMoveAnimationTiles 375-392, PlaySubanimation 619-683, AnimationCleanOAM 685-695,
-// DoSpecialEffectByAnimationId 700-718, DoPoofSpecialEffects 813-818. Only battle_animations.json's IDs play
-// (DECISIONS #94, #99); anything else throws BattleUnsupportedState.
+// DoSpecialEffectByAnimationId 700-718, DoBallTossSpecialEffects 724-777, DoBallShakeSpecialEffects 779-811,
+// DoPoofSpecialEffects 813-818. Only battle_animations.json's IDs play (DECISIONS #94, #99); anything else throws
+// BattleUnsupportedState. A5f checkpoint-02 (note 87): the ball effects, unused until checkpoint-03 binds `ball`.
 import type { BattleState } from './battle_state';
 import type { BattleScreen } from './battle_screen';
 import type { BattleAudio, BattleSfx } from './battle_audio';
@@ -13,6 +14,7 @@ import type {
 import { delayFrames, type Program } from './battle_menu_context';
 import { BattleUnsupportedState } from './battle_move_data';
 import { MOVE_ANIM } from './battle_move_anim';
+import { I } from './battle_item_state';
 
 /** pret ram/wram.asm; pokeyellow.sym 573535d. Several alias live variables (note 81 §5.2). */
 export const SUBANIM = {
@@ -30,8 +32,18 @@ export const SUBANIM = {
 
 /** constants/move_animation_constants.asm and move_constants.asm. */
 export const SUBANIMTYPE = { NORMAL: 0, HVFLIP: 1, HFLIP: 2, COORDFLIP: 3, REVERSE: 4, ENEMY: 5 } as const;
-const POOF_ANIM = 0xc3;
+const TOSS_ANIM = 0xc1, SHAKE_ANIM = 0xc2, POOF_ANIM = 0xc3, GREATTOSS_ANIM = 0xc5, ULTRATOSS_ANIM = 0xc6;
 const GROWL = 0x2d;
+const GREAT_BALL = 3; // constants/item_constants.asm: MASTER_BALL 1, ULTRA_BALL 2, GREAT_BALL 3, POKE_BALL 4
+const TRAINER_BATTLE = 2;
+/** wPokeBallAnimData's "can't be caught" value: a ghost (item_effects.asm:146-149,174-180). */
+const GHOST_ANIM_DATA = 0x10;
+/** data/battle_anims/special_effects.asm: AnimationIdSpecialEffects' IDs, in table order (IsInArray's array).
+ *  An ID outside it has no special effect (BLOCKBALL_ANIM). */
+export const SPECIAL_EFFECT_IDS: readonly number[] = [
+  0x05, 0x0c, 0x19, 0x1d, 0x27, 0x2d, 0x32, 0x3b, 0x3d, 0x3f, 0x55, 0x73, 0x78, 0x93, 0x99, 0x9d, 0xaa, 0xab, 0xac,
+  TOSS_ANIM, SHAKE_ANIM, POOF_ANIM, GREATTOSS_ANIM, ULTRATOSS_ANIM,
+];
 const SHADOW_OAM = 0xc300;
 const BASE_TILE = 0x31;
 const OAM_XFLIP = 0x20;
@@ -46,6 +58,8 @@ export interface SubanimationHost {
   moveAnimationTiles: RawImage;
   ballPoof: BattleSfx;
   animations: BattleAnimationData;
+  /** A5f: the toss's and the shake's Audio 2 sounds (SFX_BALL_TOSS $91, SFX_TINK $8C). Their effects throw without them. */
+  ball?: { toss: BattleSfx; tink: BattleSfx };
 }
 
 const word = (state: BattleState, at: number): number => state.mem[at] | state.mem[at + 1] << 8;
@@ -135,7 +149,7 @@ export function* playSubanimation(state: BattleState, host: SubanimationHost, su
     state.mem[SUBANIM.wBaseCoordX] = base.x;
     state.mem[SUBANIM.wFBMode] = entry.mode;
     yield* drawFrameBlock(state, host.screen, block);
-    doSpecialEffectByAnimationId(state, host);
+    yield* doSpecialEffectByAnimationId(state, host);
     const counter = (state.mem[SUBANIM.wSubAnimCounter] - 1) & 0xff;
     state.mem[SUBANIM.wSubAnimCounter] = counter;
     if (counter === 0) return;
@@ -195,8 +209,54 @@ export function* drawFrameBlock(state: BattleState, screen: BattleScreen, block:
   m[SUBANIM.wFBDestAddr] = SHADOW_OAM >> 8; m[SUBANIM.wFBDestAddr + 1] = SHADOW_OAM & 0xff;
 }
 
-/** DoSpecialEffectByAnimationId (700-718) for the traced ID; DoPoofSpecialEffects (813-818). */
-function doSpecialEffectByAnimationId(state: BattleState, host: SubanimationHost): void {
-  if (state.wAnimationID !== POOF_ANIM) throw new BattleUnsupportedState(`special effects for $${state.wAnimationID.toString(16)} are #94`);
+/** DoSpecialEffectByAnimationId (700-718): IsInArray over the table, then the ID's routine. An ID the table lacks has
+ *  none; a listed ID whose routine isn't ported (the attack and trade animations) throws (#94). */
+function* doSpecialEffectByAnimationId(state: BattleState, host: SubanimationHost): Program {
+  const id = state.wAnimationID;
+  if (!SPECIAL_EFFECT_IDS.includes(id)) return;
+  if (id === POOF_ANIM) { doPoofSpecialEffects(state, host); return; }
+  if (id === TOSS_ANIM || id === GREATTOSS_ANIM || id === ULTRATOSS_ANIM) { doBallTossSpecialEffects(state, host); return; }
+  if (id === SHAKE_ANIM) { yield* doBallShakeSpecialEffects(state, host); return; }
+  throw new BattleUnsupportedState(`special effects for $${id.toString(16)} are #94`);
+}
+
+/** DoPoofSpecialEffects (813-818): the sound after the poof's second frame block. */
+function doPoofSpecialEffects(state: BattleState, host: SubanimationHost): void {
   if (state.mem[SUBANIM.wSubAnimCounter] === 5) host.audio.play(host.ballPoof);
+}
+
+function ballSounds(host: SubanimationHost): { toss: BattleSfx; tink: BattleSfx } {
+  if (!host.ball) throw new BattleUnsupportedState('the ball sub-animation sounds are not bound');
+  return host.ball;
+}
+
+/** DoBallTossSpecialEffects (724-777): the Master/Ultra Ball flash, the toss sound, the trainer battle's shorter toss. */
+function doBallTossSpecialEffects(state: BattleState, host: SubanimationHost): void {
+  const m = state.mem, sounds = ballSounds(host);
+  // cp ULTRA_BALL + 1: a Master or Ultra Ball complements OBP0 colours 1 and 2. UpdateCGBPal_OBP0 takes no frames.
+  if (m[I.wCurItem] < GREAT_BALL) host.screen.obp0 ^= 0x3c;
+  if (m[SUBANIM.wSubAnimCounter] === 11) host.audio.play(sounds.toss);
+  if (state.wIsInBattle === TRAINER_BATTLE) {
+    if (m[SUBANIM.wSubAnimCounter] === 3) m[SUBANIM.wSubAnimCounter] = 2; // one frame block shorter
+    return;
+  }
+  if (m[I.wPokeBallAnimData] !== GHOST_ANIM_DATA) return;
+  const counter = m[SUBANIM.wSubAnimCounter];
+  if (counter === 3 || counter === 2 || counter === 1)
+    throw new BattleUnsupportedState('the ghost dodge (AnimCopyRowRight, rAUD1SWEEP) waits for the Pokémon Tower phase (#101)');
+}
+
+/** DoBallShakeSpecialEffects (779-811): the tink and 40 frames at each shake's start; restart while shakes remain. */
+function* doBallShakeSpecialEffects(state: BattleState, host: SubanimationHost): Program {
+  const m = state.mem, sounds = ballSounds(host);
+  if (m[SUBANIM.wSubAnimCounter] === 4) {
+    host.audio.play(sounds.tink);
+    yield* delayFrames(40);
+  }
+  if (((m[SUBANIM.wSubAnimCounter] - 1) & 0xff) !== 0) return;
+  m[I.wNumShakes] = (m[I.wNumShakes] - 1) & 0xff;
+  if (m[I.wNumShakes] === 0) return;
+  // 4 subentries of 3 bytes back, and 5: the subentry count plus one, decremented by PlaySubanimation.
+  setWord(state, SUBANIM.wSubAnimSubEntryAddr, (word(state, SUBANIM.wSubAnimSubEntryAddr) - 4 * 3) & 0xffff);
+  m[SUBANIM.wSubAnimCounter] = 5;
 }

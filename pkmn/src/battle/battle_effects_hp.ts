@@ -1,4 +1,4 @@
-// Unused HP effects. pret e89ead15 engine/battle/move_effects/{drain_hp,recoil,heal,substitute,
+// HP effects. pret e89ead15 engine/battle/move_effects/{drain_hp,recoil,heal,substitute,
 // transform,conversion}.asm and effects.asm:1259-1430.
 import { A, LINK_STATE_BATTLING, NUM_MOVES, NUM_STATS, type BattleState } from './battle_state';
 import { updateHPBar2, writeHpBarWord } from './battle_hp';
@@ -27,9 +27,9 @@ export interface HpEffectEnvironment extends EffectAnimationPort,
   Pick<ExecutePresentation, 'hideSubstitute' | 'reshowSubstitute'> {
   host: BattleTurnTextHost;
   screen: BattleScreen;
-  /** CPU-only AnimationSubstitute interior until A5e; this branch has no shared refresh. */
+  /** OFF AnimationSubstitute (battle_pic_variants.ts since A5e checkpoint-08c); this branch has no shared refresh. */
   animationSubstitute(state: BattleState): Program;
-  /** CPU-only AnimationTransformMon until A5e. This branch writes no animation id or type and has no refresh. */
+  /** OFF AnimationTransformMon (battle_pic_variants.ts since A5e checkpoint-08c). This branch writes no animation id or type and has no refresh. */
   animationTransformMon(state: BattleState): Program;
   /** The context and host MainInBattleLoop passes to moveSelectionMenu (battle_turn.ts:50). */
   moveMenu: { ctx: BattleMenuContext; host: MoveMenuHost };

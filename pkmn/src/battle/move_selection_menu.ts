@@ -1,5 +1,5 @@
 // core.asm:2567–3085; battle/misc.asm; item_effects.asm GetMaxPP/AddBonusPP.
-// Unused until A5c3. CPU work runs between yields; the host alone services VBlank.
+// CPU work runs between yields; the host alone services VBlank.
 import { isPassPressed } from '../input';
 import type { GameButton } from '../core';
 import { MenuInput } from '../menus/menu_input';

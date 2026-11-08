@@ -49,26 +49,20 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-05 - stopping after checkpoint-08c code review
+## State as of 2026-11-06 (end of day) - A5f checkpoint-03 reviewed, play-test next
 
-- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a/b/c/d are complete; A5e and A5f remain open.
+- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a–A5e are complete; A5f is in progress, then A5 is done.
   The playable path reaches Pewter across 24 maps. The ASM-backed battle engine is live and the old engine is retired.
-- **No ROM at runtime.** 198 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
+- **No ROM at runtime.** 200 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
   local play, no remote and no push.
-- **A5e:** checkpoint-04's silhouette intro and checkpoint-07's send-out poof are user-verified. 05/06 data/player
-  and 08a/08b picture foundations are accepted. Grok implemented **08c** as `478f45f`; Codex's review passed
-  (note84 section 9), with no blocking findings and no production/test changes during review.
-- **08c is still open:** the user's browser play-test (note84 section 7) is pending. The live wiring covers direct
-  picture cues, session-local picture/atlas ownership, the existing crash shake and debug party/enemy move setup.
-  Initial ON Substitute/Transform and standalone Minimize remain inside #94's deliberate attack-animation boundary.
-- **Verified by Codex:** typecheck, build and marker check pass; ROM **6131/6131**; no-ROM **5854 pass / 277 skip**;
-  243 files, default workers. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256
-  `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Independent reviewer mutation R1 caught
-  a wrong Transform back-picture species owner as an AssertionError, then was restored.
-- **Stopping for today at the user's request.** Next session begins with the 08c play-test: A is X, B is Z.
-  Record the results before closing 08c or starting checkpoint-09. Then finish A5e, A5f, V3 Gym/Museum and V4/V5.
-  Attack move animations remain a separate later slice (#94); the screen-model merge and battle VBlank RNG remain deferred.
-- Full handoff: STATUS.md, note84 sections 7-9, decisions #94/#101/#102, and the battle subsystem architecture.
+- **A5f (note 87, #105):** the catch's ball animations. 01 committed their data (the five further `TossBallAnimation`
+  IDs, `SFX_BALL_TOSS`, `SFX_TINK`); 02 ported the toss and shake special effects; 03 made them live (Codex, `ccf0119`;
+  Claude's review passed). Every throw now shows the toss, poof, shakes and the trainer's block, whatever the BATTLE
+  ANIMATION option says, as on the cartridge. The user's catch play-test (note 87 §16.8) is next.
+- **Then:** checkpoint-04, the two catch demos as real battles (the bridge has no demo encounter yet; `main` still runs
+  the old renderer), and 05, its retirement and the full A5f play-test. Then V3 Gym/Museum and V4/V5.
+- **Tests:** ROM **6169/6169**; no-ROM **5887 pass / 282 skip**; 245 files. Bundle `index-acc-zS92.js`.
+- Full handoff: STATUS.md, note 87 (§2 trace, §3 roadmap, §16 the last brief, §18 the review), decisions #94/#101/#105.
 
 ## Goals
 

@@ -22,7 +22,7 @@ beforeAll(async()=>{
 });
 
 it('cold session startup fetches main and session tables once even without main preloading them',()=>{
- expect(coldFetches.size).toBe(51); // checkpoint-07: battle_animations.json and audio/sfx/ball_poof.json
+ expect(coldFetches.size).toBe(53); // checkpoint-07: battle_animations.json and audio/sfx/ball_poof.json; A5f 03: ball_toss, tink
  expect(coldFetches.has('battle_animations.json')&&coldFetches.has('audio/sfx/ball_poof.json')).toBe(true);
  for(const [name,count] of coldFetches)expect(count,name).toBe(1);
 });

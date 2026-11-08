@@ -17,6 +17,96 @@ Newest first.
 
 *(Moved verbatim from STATUS.md on 2026-11-05 to keep it under ~40 KB, DECISIONS #61.)*
 
+*(Moved verbatim from STATUS.md on 2026-11-06, screen-model merge checkpoint-01, DECISIONS #61.)*
+
+*(Moved verbatim from STATUS.md on 2026-11-06, A5f checkpoint-02, DECISIONS #61.)*
+
+### 2026-11-06 (A5e checkpoint-09 implemented, awaiting Claude's review) - Codex
+
+- Applied the exact 69-file comment patch at `85455ce`; manifest PASS, all nine audit classes agree. Carry census and note75 handoff updated. Ordered gates once: checker/typecheck/build/marker pass; ROM 6131/6131, no-ROM 5854/277; bundle unchanged. W1-W4 caught and restored byte-for-byte; evidence and report in note85 section 10.
+- No executable code, tests, data or snapshots changed. Claude reviews next; the full A5e play-test remains pending. A5e stays open; A5f not started.
+
+### 2026-11-06 (A5e checkpoint-09 planned and briefed for Codex) — Claude (Opus)
+
+- Traced 09: every production battle file is reached from `main.ts`; no intro code is left to retire; composition is already pinned. Spiked the comment census (89 lines, 69 files) and reverted: checker PASS, bundle `index-CW6CErI9.js` byte-identical, ROM 6131/6131, no-ROM 5854/277. Four mutations witnessed (W3 shows a comment-only change can still fail a source-reading test). Wrote note 85, `09-spike.diff`, the manifest and both checkers; DECISIONS #103.
+
+### 2026-11-06 (A5e checkpoint-08c play-tested: closed) — Claude (Opus)
+
+- The user ran note84 §7 on 127.0.0.1:5173 and reported "all checks pass". Recorded as note84 §10; closed 08c in STATUS, PROJECT, PLAN, CONVENTIONS, both ARCHITECTURE files and CLAUDE.md. No code changed, no gates re-run. Next: plan checkpoint-09 for Codex.
+
+### 2026-11-05 (A5e checkpoint-08c code review passed) - Codex
+
+- Reviewed Grok's `478f45f`: seven hashes exact, source audit agrees, twelve witness records match; no blocking findings. Ordered gates re-run: ROM 6131/6131, no-ROM 5854/277, bundle unchanged. Reviewer mutation R1 (wrong Transform back-picture species source) caught and restored.
+- Note84 section 9 records the review. No source/test changes. User play-test (section 7) pending; 08c stays open. Updated all seven context files for the end-of-day stop; archived three oldest session entries under #61.
+
+### 2026-11-05 (A5e checkpoint-08c implemented) — Grok 4.7
+
+- Applied `08c-spike.diff` at `2fef447`. Seven product files; hashes match the manifest. The twelve-item ASM audit agrees (note 84 §8). Twelve mutations (`grok-mutation-W*.log`) each failed as an AssertionError and were restored. No snapshot, data, or static edits.
+- Gates once, default workers, from `game/`: typecheck, build, 09c marker, ROM 6131/6131, no-ROM 5854 pass / 277 skip, 243 files. Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`. Awaiting Codex review. No play-test.
+
+### 2026-11-05 (A5e checkpoint-08c spiked and briefed for Grok) - Codex
+
+- Prepared note84 and a seven-file spike: live picture ports, session-local assets, existing crash shake, debug party/enemy move setup. ROM 6131/6131, no-ROM 5854/277, 243 files; 12 assertion-based mutations caught. No existing snapshot changes.
+- Captured patch/hashes/logs, restored all game source and rebuilt the baseline bundle. Grok implements, Codex reviews (#102); user play-test afterwards. Checked-in baseline remains 6114/6114. Archived the oldest three session entries under #61.
+
+### 2026-11-05 (codebase and context study) — Codex
+
+- Read the project rules, live handoff, architecture, roadmap, conventions, recent decisions and note 83; traced runtime initialization, ticks, battle sessions/host, picture variants, text, extraction and saves.
+- Study only; no implementation slice claimed and no tests run. The recorded baseline remains ROM 6114/6114, no-ROM 5837/277. Next remains Claude's checkpoint-08c spike and brief.
+
+### 2026-11-05 (A5e checkpoint-08b reviewed) — Claude (Opus)
+
+- Reviewed Grok's `3a85e44`: scope, hashes, audit and mutation logs match §8. Re-ran the gates: ROM 6114/6114, no-ROM 5837/277, bundle unchanged. Reviewer mutations R1 (wrong copy side, caught as TypeErrors) and R2 (BG transfer left off) were caught. Accepted in note 83 §10; archived old STATUS entries.
+
+### 2026-11-05 (A5e checkpoint-08b implemented) — Grok 4.7
+
+- Applied `08b-spike.diff`. `battle_pic_variants.ts` and 21 no-ROM tests are new; `battle_init.ts` only exports `placePicture`. The eleven-item ASM audit agrees (note 83 §9). Ten mutations each failed as specified and were restored. Every failure is an AssertionError.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6114/6114, no-ROM 5837 pass / 277 skip, 242 files. Bundle unchanged, `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Report is note 83 §9. Unused, so no play-test. Awaiting Claude's review.
+
+### 2026-11-05 (A5e checkpoint-08b spiked and briefed) — Claude (Opus)
+
+- Spiked `battle_pic_variants.ts` (250 lines) and 21 tests, then reverted. There was no `BattleScreen` or renderer change and no existing test moved, so no split. `ChangeMonPic`'s `.done` runs SET_PAL_BATTLE; the port's MissingNo throw is pre-existing. ROM 6114/6114, no-ROM 5837/277, bundle unchanged. 10 mutations, AssertionErrors only. Wrote note83 §8 and `08b-spike.diff`.
+
+### 2026-11-05 (A5e checkpoint-08a reviewed: accepted) — Claude (Opus)
+
+- Reviewed Grok's `ca3551b`: hashes exact, audit agrees, setup leaves no diff. Gates re-run: ROM 6093/6093, no-ROM 5816/277, bundle `index-ZrEHQMBj.js`. Reviewer mutation R1 (rows reversed) caught. Wrote note83 §7. Next: spike and brief 08b.
+
+### 2026-11-05 (A5e checkpoint-08a implemented) — Grok 4.7
+
+- Applied the code hunks of `08a-spike.diff` and ran setup twice. Only `battle_animations.json` and its static mirror changed; the second run matched the first. The four-item ASM audit agrees (note 83 §6). Six mutations each failed as specified and were restored. M5 and M6 also surface the extractor `Error`.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6093/6093, no-ROM 5816 pass / 277 skip, 241 files. Bundle `index-ZrEHQMBj.js`, 664,949 bytes, SHA256 `88c6c91aaab26c07264dc9016d0daa1a8583f8fa02483f7f3a5798738ca7f08b`. Report is note 83 §6. Data only, so no play-test. Awaiting Claude's review.
+
+### 2026-11-05 (A5e checkpoint-08 planned; 08a briefed) — Claude (Opus)
+
+- Inventoried every placeholder cue against the ASM (note83 §1.1). The user kept #94's boundary for the ON path (#101). `updateSprites` is the cartridge's battle no-op; the crash shake is already ported.
+- Split 08 into 08a/b/c. Spiked 08a (MinimizedMonSprite read from AnimationMinimizeMon's operands): setup twice, one JSON. ROM 6093/6093, no-ROM 5816/277, bundle `index-ZrEHQMBj.js`; 6 mutations. Reverted; wrote note83 and `08a-spike.diff`.
+
+### 2026-11-05 (A5e checkpoint-07 play-tested: closed) — Claude (Opus)
+
+- The user passed all six note82 §5 checks ("all checked, all working well"); the poof and its sound are confirmed. Wrote note82 §9 and closed 07 here, in note75, CLAUDE.md and the docs. Next: plan checkpoint-08.
+
+### 2026-11-05 (debug panel: DV inputs) — Claude (Opus)
+
+- The user asked for it during 07's play-test. `debug.ts` only: **Add** and **Replace** take Atk/Def/Spd/Spc DVs (0–15; the HP DV is derived), passed to `createPokemon`. Typecheck clean; no-ROM 5816/273; ROM 6089/6089. The bundle moves to `index-BVX0wFAN.js`, 664,949 bytes (debug code only; note82's `KIV9XXwR` was 07's own gate). Answered: a level-6 Mew at DVs 0 is 28 HP, 17 in every other stat.
+
+### 2026-11-05 (A5e checkpoint-07 reviewed: accepted) — Claude (Opus)
+
+- Reviewed Grok's `2bd65e6`: hashes exact, audit agrees, logs witness-only. Re-ran the gates: ROM 6089/6089, no-ROM 5816/273, bundle `index-KIV9XXwR.js` 664,311. Reviewer mutation R1 (OFF also runs ShareMoveAnimations) caught. Wrote note82 §8. Next: the user's play-test (note82 §5).
+
+### 2026-11-05 (A5e checkpoint-07 implemented) — Grok 4.7
+
+- Applied `notes/82-a5e-checkpoint-07/07-spike.diff`. The six hashes matched. The six-item ASM audit agrees (note 82 §7). Eight mutations each failed as specified and were restored; Q1's Route 1 session failure is the one snapshot mismatch.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6089/6089, no-ROM 5816 pass / 273 skip, 241 files. Bundle `index-KIV9XXwR.js`, 664,311 bytes, SHA256 `7f35ecdda3d7b509bc4642557393030b7716b7ea05f79ff89ae55d6e1d34e421`. Report is note 82 §7. Awaiting Claude's review and the user's play-test (note 82 §5).
+
+### 2026-11-05 (A5e checkpoint-07 planned) — Claude (Opus)
+
+- Traced `MoveAnimation`'s ON branch and `ShareMoveAnimations`, plus all three `SendOutMon` callers. Each calls `ClearSprites` first, so no ball OAM shows beside the poof (port probe: 63/63 empty). The stale `wAnimationType` gives a silent shake after a faint replacement. The enemy-side poof is A5f's, correcting note81 §10.2.
+- Spiked and reverted: 6 files, 3 planned fallouts, 5 new tests. ROM 6089/6089, no-ROM 5816/273, bundle `index-KIV9XXwR.js` 664,311. 8 mutations. Live, ON reaches the menu 10 frames after OFF. Wrote note82 and `07-spike.diff`, plus DECISIONS #100. No game code committed.
+
+### 2026-11-05 (A5e checkpoint-06b reviewed: accepted) — Claude (Opus)
+
+- Reviewed Grok's `d33fb4a`: hashes exact, audit agrees, logs witness-only. Re-ran the gates: ROM 6084/6084, no-ROM 5811/273, bundle unchanged. Reviewer mutation R2 (palette reset hoisted out of the tile loop) caught by 4 synthetic cases; the real player-side poof never reaches X ≥ 88, so 07 should pin the enemy side. Wrote note81 §10. Checkpoint-06 closed. Next: plan 07.
+
 ### 2026-11-05 (A5e checkpoint-06b implemented) — Grok 4.7
 
 - Applied note 81's spike (two new files, hashes matched) and audited it against pret. Ten mutations each failed with an AssertionError and were restored. No data change.

@@ -1,4 +1,4 @@
-// Unused turn text. used_move_text.asm:1–137; data/moves/grammar.asm (pret e89ead15).
+// Turn text. used_move_text.asm:1–137; data/moves/grammar.asm (pret e89ead15).
 import type { TextAsmHandler, TextBindings, TextRunnerOptions } from '../text/text_runner';
 import type { Program } from './battle_menu_context';
 import { decrementPP } from './battle_loaders';

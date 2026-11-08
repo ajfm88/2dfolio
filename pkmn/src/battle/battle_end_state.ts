@@ -1,4 +1,4 @@
-// Unused A5c3d WRAM/HRAM address view. pret ram/wram.asm, ram/hram.asm; note 70 section 9.1.7.
+// A5c3d WRAM/HRAM address view. pret ram/wram.asm, ram/hram.asm; note 70 section 9.1.7.
 import { A, type BattleState } from './battle_state';
 
 export const D = {
@@ -186,7 +186,7 @@ export const D = {
 
 export type EndCells = { -readonly [K in keyof typeof D]: number };
 /** Every name is a byte view of the same BattleState.mem; words use state.readBE/writeBE.
- * Audio/video/menu owner bridges are installed only by their later hosts, not by this unused view. */
+ * Audio/video/menu owner bridges are installed only by their later hosts, not by this view. */
 export function endCells(state: BattleState): EndCells {
   return new Proxy({} as EndCells, {
     get: (_target, name) => typeof name === 'string' && name in D ? state.mem[D[name as keyof typeof D]] : undefined,

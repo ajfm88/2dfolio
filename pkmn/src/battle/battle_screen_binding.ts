@@ -1,4 +1,4 @@
-// Unused entry-screen hardening. pret home/tilemap.asm:9-28; animations.asm:599-617;
+// Entry-screen hardening. pret home/tilemap.asm:9-28; animations.asm:599-617;
 // note 69 section 10.4 item 0: the entry and animation refresh must share a screen/Buffer 2.
 import { bindBattleScreen, boundBattleScreenFor, type BattleScreen } from './battle_screen';
 import { BattleUnsupportedState } from './battle_move_data';

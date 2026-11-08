@@ -1,4 +1,4 @@
-// Unused EndOfBattle. pret e89ead15 engine/battle/end_of_battle.asm:1–79.
+// EndOfBattle. pret e89ead15 engine/battle/end_of_battle.asm:1–79.
 import { LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { readBattleBcd, writeBattleBcd, type FaintHost } from './battle_faint';

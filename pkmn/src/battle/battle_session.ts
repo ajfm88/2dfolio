@@ -1,4 +1,4 @@
-// Unused production session: shared menus, scoped item bodies and catch homes. Live wiring is09.
+// Production session: shared menus, scoped item bodies and catch homes. Live since A5c3f checkpoint-09b.
 import { getBattleAudioEngines, loadSfx, setMasterVolume } from '../audio';
 import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { soundFinished } from '../audio/sound_wait';
@@ -29,6 +29,7 @@ import { bindBattleItems, loadBattleItemSounds, BATTLE_ITEM_SOUND_ASSETS, type B
 import { composedJumpMoveEffect } from './battle_effects_registry';
 import { bindLearnMove, type LearnMoveHost } from './learn_move';
 import { moveAnimation, shakeHorizontallyFast } from './battle_move_anim';
+import { playAnimation, type SubanimationHost } from './battle_subanimation';
 import { animationSubstitute, animationMinimizeMon, animationTransformMon, hideSubstituteShowMonAnim,
   reshowSubstituteAnim, animateSubstituteBreaking, type PicVariantHost } from './battle_pic_variants';
 import { tossBallAnimation } from './battle_ball_animation';
@@ -74,7 +75,8 @@ export const BATTLE_TEXT_SOUND_IDS: Readonly<Record<string, number>> = Object.fr
 });
 const HOST_SOUNDS = { trainer_appeared: 0xe9, faint_fall: 0x9e, faint_thud: 0x95,
   run: SFX_IDS.run, swap: SFX_IDS.swap, press_ab: SFX_IDS.press_ab,
-  damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7, ball_poof: 0x93 } as const;
+  damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7, ball_poof: 0x93,
+  ball_toss: 0x91, tink: 0x8c } as const; // A5f checkpoint-03: SFX_BALL_TOSS, SFX_TINK (Audio 2)
 interface SessionData { renderTiles: BattleRenderTiles; pokeballTiles: RawImage; mapTilesets: ReadonlyMap<string, string>;
   moveAnimationTiles: RawImage; monsterSprite: RawImage; animations: BattleAnimationData;
   sounds: ReadonlyMap<string, BattleSfx>; itemSounds: ReadonlyMap<number, BattleSfx>; flute: SfxData }
@@ -322,12 +324,17 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     sendingOutMon: (s, x, y) => sendingOutMon(s, host, x, y), pikachuEntrance: s => pikachuEntrance(s, host),
     slidePlayerOff: s => animationSlideMonOff(s, screen), enemySlideOff: s => animationSlideEnemyMonOff(s, screen),
     marowakAnimation: function* () { throw new BattleUnsupportedState('unreachable Marowak'); },
-    animation: s => moveAnimation(s, { screen, audio,
-      sounds: { damage: sound('damage'), superEffective: sound('super_effective'), notVeryEffective: sound('not_very_effective') },
-      waitForSound: host.waitForSound, tossBall: state => tossBallAnimation(state, { screen, audio, faintThud: host.faintThud,
-        ballSubanimation: function* (_id) { /* A5f OAM animations and their sounds; zero frames. */ } }),
-      subanimation: { screen, audio, renderTiles, moveAnimationTiles: assets.moveAnimationTiles,
-        ballPoof: sound('ball_poof'), animations: assets.animations } }),
+    animation: s => {
+      // A5f checkpoint-03: one PlayAnimation host for the send-out poof and TossBallAnimation's sub-animations.
+      const subanimation: SubanimationHost = { screen, audio, renderTiles, moveAnimationTiles: assets.moveAnimationTiles,
+        ballPoof: sound('ball_poof'), animations: assets.animations, ball: { toss: sound('ball_toss'), tink: sound('tink') } };
+      return moveAnimation(s, { screen, audio,
+        sounds: { damage: sound('damage'), superEffective: sound('super_effective'), notVeryEffective: sound('not_very_effective') },
+        waitForSound: host.waitForSound, tossBall: state => tossBallAnimation(state, { screen, audio, faintThud: host.faintThud,
+          // playBallAnimation has stored wAnimationID (animations.asm:2810-2814).
+          ballSubanimation: function* () { yield* playAnimation(state, subanimation); } }),
+        subanimation });
+    },
     stopAllMusic: () => { owners.banks.stopAllMusic(); },
     playVictoryMusic(name) { const identity = musicIdentity(name);
       if (!identity) throw new BattleUnsupportedState(`victory music ${name}`); owners.banks.playMusic(identity); },

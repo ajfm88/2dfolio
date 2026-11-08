@@ -70,7 +70,7 @@ function hflip(block: FrameBlock, baseY: number, baseX: number): BattleOam[] {
 
 describe('playAnimation(POOF_ANIM) on the player side (hWhoseTurn = 1)', () => {
   it('takes 10 copy frames, then 5 shown frames per block, and ends with shadow OAM cleared', () => {
-    const r = rig(), sub = data.subanimations[0], seen: BattleOam[][] = [];
+    const r = rig(), sub = data.subanimations.find(s => s.id === 10)!, seen: BattleOam[][] = [];
     const total = run(r, playAnimation(r.state, r.host), () => seen.push(shown(r.screen, 16)));
     expect(total).toBe(40);
     for (let frame = 0; frame < 10; frame++) expect(seen[frame][0]).toEqual(SENTINEL);

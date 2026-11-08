@@ -1,4 +1,4 @@
-// A5e checkpoint-08b (note 83): the battle picture variants. Unused until checkpoint-08c wires them.
+// A5e checkpoint-08b (note 83): the battle picture variants, live since checkpoint-08c.
 // pret b452f2ab engine/battle/animations.asm: AnimationSlideMonDown 1242-1257, AnimationFlashMonPic 1451-1457,
 // AnimationShowMonPic 1464-1469, AnimationMinimizeMon 1808-1830, CopyTempPicToMonPic 1948-1957,
 // AnimationSubstitute 2020-2062, HideSubstituteShowMonAnim 2064-2146, ReshowSubstituteAnim 2148-2151,

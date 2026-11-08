@@ -1,4 +1,4 @@
-// Unused MainInBattleLoop. pret e89ead15 engine/battle/core.asm:289–475.
+// MainInBattleLoop. pret e89ead15 engine/battle/core.asm:289–475.
 import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { displayBattleMenu } from './battle_menu';
 import { moveSelectionMenu } from './move_selection_menu';

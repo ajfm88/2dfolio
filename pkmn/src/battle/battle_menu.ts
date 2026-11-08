@@ -1,4 +1,4 @@
-// core.asm DisplayBattleMenu, BagWasSelected/UseBagItem, and TryRunningFromBattle. Unused until A5c3.
+// core.asm DisplayBattleMenu, BagWasSelected/UseBagItem, and TryRunningFromBattle.
 import { isPassPressed } from '../input';
 import type { GameButton } from '../core';
 import { MenuInput } from '../menus/menu_input';

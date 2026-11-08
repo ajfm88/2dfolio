@@ -162,9 +162,10 @@ describe('the SFX preload list', () => {
   it('is exactly the live SFX setup extracts, plus the listed unused battle data files', () => {
     const files = readdirSync(resolve(__dirname, '../../data/audio/sfx')).map(f => f.replace(/\.json$/, '')).sort();
     // A5c3e left six unused. A5c3f checkpoint-02 adds four more, still with no preload. A5e checkpoint-05: ball_poof.
+    // A5f checkpoint-01: ball_toss and tink (Audio 2), unused until checkpoint-03.
     const unused = [
-      'ball_poof', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up',
-      'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'trainer_appeared',
+      'ball_poof', 'ball_toss', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up',
+      'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'tink', 'trainer_appeared',
     ];
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);
     expect([...EXTRACTED_SFX, ...unused].sort()).toEqual(files);

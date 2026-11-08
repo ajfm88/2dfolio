@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused A5c3 host. home/vblank.asm order, home/window.asm PrintText;
+// A5c3 host. home/vblank.asm order, home/window.asm PrintText;
 // note 68 §10.5, §11.1 answer 7 and §11.12 define the frame protocol.
 import { BattleMenuScreen } from './battle_menu_screen';
 import { battleScreenFor, bindBattleScreen, type BattleScreen } from './battle_screen';

@@ -18,6 +18,9 @@ const sounds = [
   { name: 'faint_thud', label: 'SFX_Faint_Thud', header: 0x41bf, id: 0x95, channels: [[5, 0x43ea], [8, 0x43f1]] },
   // A5e checkpoint-05 (note 80): DoPoofSpecialEffects' sound; sfxheaders2.asm:345-348, audio/sfx/ball_poof.asm.
   { name: 'ball_poof', label: 'SFX_Ball_Poof', header: 0x41b9, id: 0x93, channels: [[5, 0x43db], [8, 0x43e6]] },
+  // A5f checkpoint-01 (note 87): DoBallTossSpecialEffects' and DoBallShakeSpecialEffects' sounds; sfxheaders2.asm:320-343.
+  { name: 'ball_toss', label: 'SFX_Ball_Toss', header: 0x41b3, id: 0x91, channels: [[5, 0x43cb], [6, 0x43d4]] },
+  { name: 'tink', file: 'tink_2', label: 'SFX_Tink_2', header: 0x41a4, id: 0x8c, channels: [[5, 0x437b]] },
 ];
 const offset = (bank: number, address: number) => bank ? bank * 0x4000 + (address & 0x3fff) : address;
 let rom: Buffer, reader: BinaryReader, symbols: string, text: TextProgramsFile;
@@ -98,7 +101,7 @@ describe.skipIf(!ROM_PATH)('checkpoint-03 battle SFX data', () => {
 
   it.each(sounds)('$name matches every source command, encoded ROM byte, JSON and static mirror', sound => {
     const expected = { channels: sound.channels.map(([id, address]) => {
-      const source = sourceChannel(body(`audio/sfx/${sound.name}.asm`, `${sound.label}_Ch${id}`));
+      const source = sourceChannel(body(`audio/sfx/${sound.file ?? sound.name}.asm`, `${sound.label}_Ch${id}`));
       const at = offset(8, address);
       expect([...rom.subarray(at, at + source.bytes.length)]).toEqual(source.bytes);
       return { id, commands: source.commands };
@@ -107,6 +110,17 @@ describe.skipIf(!ROM_PATH)('checkpoint-03 battle SFX data', () => {
     const path = `audio/sfx/${sound.name}.json`, data = readFileSync(resolve(DATA, path), 'utf8');
     expect(data).toBe(JSON.stringify(expected, null, 2) + '\n');
     expect(readFileSync(resolve(STATIC, path), 'utf8')).toBe(data);
+  });
+
+  it('SFX_Tink_2 (the battle bank) is SFX_Tink_1 byte for byte, so one tink entry serves both banks', () => {
+    // A5f checkpoint-01: same ID $8C in both headers; the channel bodies differ only in their labels.
+    expect(symbol('SFX_Tink_1')).toEqual([2, 0x41a4]);
+    expect(symbol('SFX_Tink_1_Ch5')).toEqual([2, 0x43a8]);
+    const length = sourceChannel(body('audio/sfx/tink_2.asm', 'SFX_Tink_2_Ch5')).bytes.length;
+    expect(sourceChannel(body('audio/sfx/tink_1.asm', 'SFX_Tink_1_Ch5')).bytes).toHaveLength(length);
+    const one = offset(2, 0x43a8), two = offset(8, 0x437b);
+    expect([...rom.subarray(one, one + length)]).toEqual([...rom.subarray(two, two + length)]);
+    expect([rom[offset(2, 0x41a4)], rom[offset(8, 0x41a4)]]).toEqual([4, 4]); // one channel, channel 5
   });
 });
 

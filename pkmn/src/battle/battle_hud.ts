@@ -1,6 +1,5 @@
 // DrawPlayerHUDAndHPBar / DrawEnemyHUDAndHPBar (engine/battle/core.asm:1890–2049,
-// draw_hud_pokeball_gfx.asm:123–168). Unused until A5c3: no caller, and this file
-// does not run setPalBattle.
+// draw_hud_pokeball_gfx.asm:123–168). This file does not run setPalBattle.
 import { BattleScreen, battleGlyphTile } from './battle_screen';
 import { textBgTransfer } from '../text/bg_transfer';
 import { tokenizeGlyphs } from '../text/charmap';
@@ -44,7 +43,7 @@ const SLP_MASK = 0x07;
 const HP_BAR_RED = 2;
 const ALARM_BIT = 0x80;
 
-/** GetBattleHealthBarColor. The palette command itself waits for A5c3. */
+/** GetBattleHealthBarColor. The caller runs the palette command. */
 export function getBattleHealthBarColor(oldByte: number, pixels: number): HudWrite {
   const barColor = colorByte(pixels);
   return { barColor, paletteRequest: barColor !== oldByte };

@@ -66,6 +66,8 @@ const SFX_NAMES = [
   'caught_mon', 'dex_page_added',
   'damage', 'trainer_appeared',
   'ball_poof',
+  // A5f checkpoint-01 (note 87): Audio 2 only.
+  'ball_toss',
 ];
 
 function writeJson(relPath: string, data: unknown): void {

@@ -1,6 +1,6 @@
-// Unused trainer-AI items and switching. pret e89ead15 engine/battle/trainer_ai.asm:290–751;
+// Trainer-AI items and switching. pret e89ead15 engine/battle/trainer_ai.asm:290–751;
 // data/trainers/ai_pointers.asm; macros/data.asm:3; core.asm:405–475 (the caller sets hWhoseTurn 1).
-// Move-choice modifications stay in checkpoint-09. No live caller.
+// Move-choice modifications are in battle_ai_moves.ts.
 import { A, encodeText, LINK_STATE_BATTLING, NAME_BUFFER_LENGTH, NAME_LENGTH,
   PARTYMON_STRUCT_LENGTH, WILD_BATTLE, type BattleState } from './battle_state';
 import { decodeTextByte } from '../rom/extractors/text';

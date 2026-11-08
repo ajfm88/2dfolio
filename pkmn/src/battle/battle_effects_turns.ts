@@ -1,4 +1,4 @@
-// Unused turn effects. pret e89ead15 engine/battle/effects.asm and move_effects, cited below.
+// Turn effects. pret e89ead15 engine/battle/effects.asm and move_effects, cited below.
 import { A, type BattleState } from './battle_state';
 import { battleRandom } from './battle_random';
 import { divide } from './battle_arithmetic';

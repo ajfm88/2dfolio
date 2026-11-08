@@ -1,5 +1,5 @@
 import { refreshPartyMon } from './battle_party_codec';
-// Unused ItemUsePPRestore. pret e89ead15 engine/items/item_effects.asm:2174–2384.
+// ItemUsePPRestore. pret e89ead15 engine/items/item_effects.asm:2174–2384.
 import { I } from './battle_item_state';
 import { battleContext, type BattleState } from './battle_state';
 import { itemUseNoEffect, itemUseNotTime, playBattleItemSound, registerBattleItemBody, removeUsedItem,
@@ -90,7 +90,7 @@ export function* itemUsePPRestore(state: BattleState, host: BattleItemHost, env:
   state.wActionResultOrTookBattleTurn = 0; // Pop the saved bag slot WITHOUT storing it.
 }
 
-/** item_effects.asm:2174–2384. Explicit unused registration beside medicine. */
+/** item_effects.asm:2174–2384. Explicit registration beside medicine. */
 export function registerPPBattleItemBody(env: PPItemEnvironment): () => void {
   return registerBattleItemBody('ItemUsePPRestore', (state, host) => itemUsePPRestore(state, host, env));
 }

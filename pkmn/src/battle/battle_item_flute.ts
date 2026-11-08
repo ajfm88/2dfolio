@@ -1,4 +1,4 @@
-// Unused port of pret e89ead15 engine/items/item_effects.asm:1900-1977.
+// Port of pret e89ead15 engine/items/item_effects.asm:1900-1977.
 import type { BattleState } from './battle_state';
 import { I } from './battle_item_state';
 import { registerBattleItemBody, type BattleItemHost } from './battle_items';
@@ -46,7 +46,7 @@ export function* itemUsePokeFlute(state: BattleState, host: BattleItemHost, env:
   yield* host.printText('FluteWokeUpText');
 }
 
-/** Explicit unused composition beside registerShortBattleItemBodies. No field flute. */
+/** Explicit composition beside registerShortBattleItemBodies. No field flute. */
 export function registerFluteBattleItemBody(env: FluteItemEnvironment): () => void {
   return registerBattleItemBody('ItemUsePokeFlute', (state, host) => itemUsePokeFlute(state, host, env));
 }

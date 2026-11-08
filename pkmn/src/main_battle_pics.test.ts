@@ -6,6 +6,7 @@ import * as slides from './battle/battle_slides';
 import * as balls from './battle/battle_ball_animation';
 import * as sessions from './battle/battle_session';
 import {BattleAudio} from './battle/battle_audio';
+import {BattleUnsupportedState} from './battle/battle_move_data';
 import {D} from './battle/battle_end_state';
 import {I} from './battle/battle_item_state';
 import {W_SPRITE_FLIPPED} from './battle/battle_state';
@@ -175,11 +176,13 @@ function ballObserver(){
   });
   const play=BattleAudio.prototype.play;
   vi.spyOn(BattleAudio.prototype,'play').mockImplementation(function(this:BattleAudio,sound){
-    if(sound.id===0x95)order.push('thud');return play.call(this,sound);
+    if(sound.id===0x95)order.push('thud');
+    if(sound.id===0x91||sound.id===0x93||sound.id===0x8c)order.push(`sfx ${sound.id.toString(16)}`); // A5f 03: toss, poof, tink
+    return play.call(this,sound);
   });
   return {frames,cues,order,get final(){return final;}};
 }
-it('actual Master Ball catch hides the enemy before ItemUseBallText05 with three shakes retained',async()=>{
+it('actual Master Ball catch hides the enemy before ItemUseBallText05 after three shakes',async()=>{
   const b=ballObserver();await world();host.bag.items=[{id:'MASTER_BALL',count:1}];host.startBattle(mon(19,3));until(()=>host.state==='battle');
   const caught=host.session!;
   until(()=>caught.textLog.some(t=>t.label==='ItemUseBallText05'),()=>{
@@ -187,28 +190,44 @@ it('actual Master Ball catch hides the enemy before ItemUseBallText05 with three
     if(row(14).includes('FIGHT')&&!caught.video.textBox.active)return row(16).includes('▶')?['a']:['down'];
     return ['a'];
   });
-  expect(b.frames).toHaveLength(3);expect(cells(caught.screen,12,0)).toEqual(Array(49).fill(' '));
+  // A5f checkpoint-03: ULTRATOSS 10+11*3, POOF 10+6*5, HIDEPIC's Delay3, three shakes 10+3*(16+40) (note 87 §13.4).
+  expect(b.frames).toHaveLength(43+40+3+178);expect(cells(caught.screen,12,0)).toEqual(Array(49).fill(' '));
   expect(textBgTransfer.enabled).toBe(true);expect(cells(caught.screen,12,0,7,7,true)).toEqual(Array(49).fill(' '));
-  expect(caught.state.mem[I.wNumShakes]).toBe(3);expect(b.final).toBe(194);expect(b.cues).toEqual([198,195,194]);
+  // DoBallShakeSpecialEffects consumes wNumShakes: three shakes, then 0 (animations.asm:795-799).
+  expect(caught.state.mem[I.wNumShakes]).toBe(0);expect(b.final).toBe(194);expect(b.cues).toEqual([198,195,194]);
+  expect(b.order).toEqual(['cue 198','sfx 91','cue 195','sfx 93','cue 194','sfx 8c','sfx 8c','sfx 8c']);
 });
 
-it.each([{data:0x63,item:4,cues:[193,195,194,195],last:166,wait:6},
-  {data:0x20,item:3,cues:[197,195],last:195,wait:0},
-  {data:0x10,item:8,cues:[198],last:198,wait:0}])('session ball data $data item $item: exact hide/show waits and cue choice',async({data,item,cues,last,wait})=>{
+// A5f checkpoint-03: the sub-animations take their frames (note 87 §13.4): TOSS 10+11*4, GREATTOSS 10+11*4, POOF 10+6*5,
+// three shakes 10+3*(16+40). HIDEPIC starts after the toss and the first poof; SHOWPIC after the shakes and the second poof.
+it.each([{data:0x63,item:4,cues:[193,195,194,195],last:166,wait:54+40+3+178+40+3,hide:54+40,show:54+40+3+178+40},
+  {data:0x20,item:3,cues:[197,195],last:195,wait:54+40,hide:-1,show:-1}])('session ball data $data item $item: exact hide/show waits and cue choice',async({data,item,cues,last,wait,hide,show})=>{
   const s=await begin();menu(s);const before=cells(s.screen,12,0);host.renderLiveBattle();const beforeHash=region(output.pixels,96,0);
   const writes=vi.spyOn(s.screen,'put');
   const b=ballObserver();s.state.mem[I.wPokeBallAnimData]=data;s.state.mem[I.wCurItem]=item;s.state.hWhoseTurn=0;s.state.wAnimationID=0xc1;
   const program=s.animation(s.state);let next=program.next();
-  for(let i=0;!next.done&&i<300;i++){tick();next=program.next();}
+  for(let i=0;!next.done&&i<1000;i++){tick();next=program.next();}
   expect(next.done).toBe(true);expect(b.frames).toHaveLength(wait);expect(b.cues).toEqual(cues);expect(b.final).toBe(last);
-  expect(s.state.mem[I.wNumShakes]).toBe(data&15);expect(textBgTransfer.enabled).toBe(true);
+  expect(s.state.mem[I.wNumShakes]).toBe(0);expect(textBgTransfer.enabled).toBe(true); // the shake consumes them; $20 has none
   if(data===0x63){
-    for(let i=0;i<3;i++)expect(sampleCells(b.frames[i],12,0,7,7)).toEqual(Array(49).fill(' '));
-    for(let i=3;i<6;i++)expect(sampleCells(b.frames[i],12,0,7,7)).toEqual(full(0));
+    expect(sampleCells(b.frames[hide-1],12,0,7,7)).toEqual(full(0));
+    for(let i=hide;i<hide+3;i++)expect(sampleCells(b.frames[i],12,0,7,7)).toEqual(Array(49).fill(' '));
+    for(let i=hide+3;i<show;i++)expect(sampleCells(b.frames[i],12,0,7,7)).toEqual(Array(49).fill(' '));
+    for(let i=show;i<show+3;i++)expect(sampleCells(b.frames[i],12,0,7,7)).toEqual(full(0));
   }else{
     expect(writes.mock.calls.filter(([x,y,value])=>x>=12&&x<19&&y<7&&value===' ')).toEqual([]);
   }
+  // A final POOF's AnimationCleanOAM clears shadow OAM; the next VBlank's DMA clears the shown sprites.
+  s.screen.vblank();
   expect(cells(s.screen,12,0)).toEqual(before);host.renderLiveBattle();expect(region(output.pixels,96,0)).toBe(beforeHash);
+});
+
+it('session ball data $10 (a ghost): the ultra toss throws where the Marowak dodge starts, the ninth block (#105)',async()=>{
+  const s=await begin();menu(s);const b=ballObserver();
+  s.state.mem[I.wPokeBallAnimData]=0x10;s.state.mem[I.wCurItem]=8;s.state.hWhoseTurn=0;s.state.wAnimationID=0xc1;
+  const program=s.animation(s.state);
+  expect(()=>{let next=program.next();for(let i=0;!next.done&&i<1000;i++){tick();next=program.next();}}).toThrow(BattleUnsupportedState);
+  expect(b.cues).toEqual([198]);expect(b.frames).toHaveLength(10+9*3);
 });
 
 it('trainer block plays toss, the existing faint-thud, then BLOCKBALL without changing the pic',async()=>{
@@ -216,7 +235,8 @@ it('trainer block plays toss, the existing faint-thud, then BLOCKBALL without ch
   s.state.wAnimationID=0xc1;s.state.hWhoseTurn=0;s.state.mem[I.wNumShakes]=9;
   const program=s.animation(s.state);let next=program.next();
   for(let i=0;!next.done&&i<300;i++){tick();next=program.next();}
-  expect(next.done).toBe(true);expect(b.frames).toHaveLength(0);expect(b.final).toBe(196);
-  expect(b.order).toEqual(['cue 193','thud','cue 196']);expect(s.state.mem[I.wNumShakes]).toBe(9);
+  // A5f checkpoint-03: the trainer's TOSS draws 10 blocks (10+10*4), then BLOCKBALL (10+4*4).
+  expect(next.done).toBe(true);expect(b.frames).toHaveLength(50+26);expect(b.final).toBe(196);
+  expect(b.order).toEqual(['cue 193','sfx 91','thud','cue 196']);expect(s.state.mem[I.wNumShakes]).toBe(9);
   expect(cells(s.screen,12,0)).toEqual(before);
 });

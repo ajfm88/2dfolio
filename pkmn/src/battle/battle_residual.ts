@@ -1,4 +1,4 @@
-// Unused residual damage / trapping cleanup. pret e89ead15 core.asm:479–705.
+// Residual damage / trapping cleanup. pret e89ead15 core.asm:479–705.
 import { A, type BattleState } from './battle_state';
 import { updateCurMonHPBar, writeHpBarWord } from './battle_hp';
 import { playMoveAnimation } from './battle_turn_status';

@@ -1,4 +1,4 @@
-// Unused shared CalcStat/CalcStats. pret e89ead15 home/move_mon.asm:34-231.
+// Shared CalcStat/CalcStats. pret e89ead15 home/move_mon.asm:34-231.
 import { A, type BattleState } from './battle_state';
 import { multiply, divide } from './battle_arithmetic';
 

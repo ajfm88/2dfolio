@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused A5c3f checkpoint-04. pret e89ead15; stops immediately before StartBattle.
+// A5c3f checkpoint-04. pret e89ead15; stops immediately before StartBattle.
 import {
   A, encodeText, GHOST_PIC, isGhostBattle, MON_GHOST, RESTLESS_SOUL, SILPH_SCOPE,
   TRAINER_BATTLE, WILD_BATTLE, W_SPRITE_FLIPPED, type BattleState,
@@ -45,7 +45,7 @@ export interface BattleInitHost extends Pick<EnemySendOutHost, 'screen' | 'rende
   voice: BattleVoiceHost;
   trainerAppeared: BattleSfx;
   waitForSound(): Program;
-  /** Named A5e presentation hand-off (ghost_marowak_anim.asm); no substitute animation here. */
+  /** ghost_marowak_anim.asm hand-off; throws until the Pokémon Tower phase (#101). No substitute animation here. */
   marowakAnimation(state: BattleState): Program;
   /** Picture names only. Checkpoint-06 supplies their decoded pixels. */
   frontPicture(state: BattleState): string;

@@ -1,4 +1,4 @@
-// Unused world boundary; the low-level party codec must not depend on this module.
+// World boundary; the low-level party codec must not depend on this module.
 import { A, NAME_LENGTH, type BattleState } from './battle_state';
 import { BattleUnsupportedState } from './battle_move_data';
 import { createPokemon } from './data';

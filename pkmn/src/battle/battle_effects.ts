@@ -1,4 +1,4 @@
-// Unused move-effect dispatch and shared helpers. pret e89ead15 effects.asm:1-22,1237-1247,1447-1558.
+// Move-effect dispatch and shared helpers. pret e89ead15 effects.asm:1-22,1237-1247,1447-1558.
 import type { BattleState } from './battle_state';
 import { BattleUnsupportedState } from './battle_move_data';
 import type { ExecutePorts } from './battle_execute';

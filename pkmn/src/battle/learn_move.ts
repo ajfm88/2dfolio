@@ -1,6 +1,6 @@
 import { refreshPartyMon } from './battle_party_codec';
 import { decodeBattleText } from './battle_text_codec';
-// Unused shared field/battle LearnMove. pret e89ead15 engine/pokemon/learn_move.asm:1–250.
+// Shared field/battle LearnMove. pret e89ead15 engine/pokemon/learn_move.asm:1–250.
 import { battleContext, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { getMoveName, moveMenuNameSource, moveNameBinding, getMoveRecord, BattleUnsupportedState } from './battle_move_data';

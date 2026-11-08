@@ -1,4 +1,4 @@
-// Unused A5c3e short item bodies. pret e89ead15 engine/items/item_effects.asm.
+// A5c3e short item bodies. pret e89ead15 engine/items/item_effects.asm.
 import type { BattleState } from './battle_state';
 import { I } from './battle_item_state';
 import { itemUseNotTime, printItemUseTextAndRemoveItem, registerBattleItemBody,
@@ -99,7 +99,7 @@ export function* itemUseRock(state: BattleState, host: BattleItemHost, env: Shor
   yield* baitRockCommon(state, env, false);
 }
 
-/** Explicit unused composition; no top-level registrations or flute/medicine/PP/ball body. */
+/** Explicit composition; no top-level registrations or flute/medicine/PP/ball body. */
 export function registerShortBattleItemBodies(env: ShortItemEnvironment): () => void {
   const bodies: [BattleItemLabel, BattleItemBody][] = [
     ['ItemUseXAccuracy', itemUseXAccuracy], ['ItemUseGuardSpec', itemUseGuardSpec], ['ItemUseDireHit', itemUseDireHit],

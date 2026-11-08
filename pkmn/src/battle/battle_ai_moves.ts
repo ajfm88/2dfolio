@@ -1,8 +1,8 @@
-// Unused move-choice modifications. pret e89ead15 engine/battle/trainer_ai.asm:1–272,
+// Move-choice modifications. pret e89ead15 engine/battle/trainer_ai.asm:1–272,
 // data/trainers/move_choices.asm, core.asm:5363–5406 (AIGetTypeEffectiveness) and
 // core.asm:3086–3176 (SelectEnemyMove, the caller in battle_math.ts).
 // wAILayer2Encouragement is zeroed at core.asm:925 and incremented at core.asm:5656.
-// This module only reads it. No live caller.
+// This module only reads it.
 import { A, NUM_MOVES, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { BattleUnsupportedState, getMoveRecord } from './battle_move_data';

@@ -76,7 +76,7 @@ export const SFX_IDS = {
   turn_off_pc: 0x9a,
   enter_pc: 0x9b,
   shrink: 0x9c,
-  run: 0x97, // SFX_Run, bank $08 only; no caller until A5c3.
+  run: 0x97, // SFX_Run, bank $08 only; the battle's RUN plays it.
 } as const;
 
 export function musicIdentity(name: string): SoundIdentity | undefined {

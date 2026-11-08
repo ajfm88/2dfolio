@@ -1,4 +1,4 @@
-// Unused execution helpers. pret e89ead15 core.asm:3452–3497,5084–5210,6370–6379,6787–6823.
+// Execution helpers. pret e89ead15 core.asm:3452–3497,5084–5210,6370–6379,6787–6823.
 import { A, isGhostBattle, type BattleState } from './battle_state';
 import { reloadMoveData } from './battle_move_data';
 import { metronomePickMove } from './battle_math';

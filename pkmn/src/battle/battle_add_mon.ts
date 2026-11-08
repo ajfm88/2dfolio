@@ -1,8 +1,7 @@
 import { refreshPartyMon } from './battle_party_codec';
 import { decodeBattleText } from './battle_text_codec';
-// Unused caught-mon homes. pret e89ead15 engine/pokemon/add_mon.asm:1-283,
+// Caught-mon homes. pret e89ead15 engine/pokemon/add_mon.asm:1-283,
 // engine/menus/naming_screen.asm:1-53, engine/items/item_effects.asm:2931-3113.
-// No live caller. The box object mirror waits for A5c3f.
 import { I } from './battle_item_state';
 import { calcExperience } from './battle_calc_experience';
 import { flagAction } from './battle_end_helpers';

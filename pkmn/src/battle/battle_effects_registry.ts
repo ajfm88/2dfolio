@@ -1,5 +1,5 @@
-// Unused composed move-effect registry. The families import battle_effects.ts, so the
-// composition lives here (note 69 §10.17). Nothing in the running game imports this module.
+// Composed move-effect registry. The families import battle_effects.ts, so the
+// composition lives here (note 69 §10.17).
 import type { StatusEffectEnvironment } from './battle_effects_status';
 import type { StatEffectEnvironment } from './battle_effects_stats';
 import type { TurnEffectEnvironment } from './battle_effects_turns';

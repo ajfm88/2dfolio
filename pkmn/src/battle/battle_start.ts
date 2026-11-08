@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused A5c3f checkpoint-04b. pret e89ead15, core.asm:135-260 and init_battle.asm:130-139.
+// A5c3f checkpoint-04b. pret e89ead15, core.asm:135-260 and init_battle.asm:130-139.
 import { A, LINK_STATE_BATTLING, type BattleState } from './battle_state';
 import { D } from './battle_end_state';
 import { I } from './battle_item_state';

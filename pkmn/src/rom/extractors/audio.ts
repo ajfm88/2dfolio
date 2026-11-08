@@ -153,17 +153,21 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   level_up:         { bank: 0x08, addr: 0x4192 },
   faint_fall:       { bank: 0x08, addr: 0x41da },
   faint_thud:       { bank: 0x08, addr: 0x41bf },
-  // A5c3e checkpoint-02; Audio 2, sfxheaders2.asm:359-368. No runtime preload yet.
+  // A5c3e checkpoint-02; Audio 2, sfxheaders2.asm:359-368. The battle session preloads them.
   caught_mon:       { bank: 0x08, addr: 0x41ce },
   dex_page_added:   { bank: 0x08, addr: 0x41c8 },
   // A5c3f checkpoint-02: Audio 2 only, one channel each. sfxheaders2.asm:406,410,446,590.
-  // No runtime preload. IDs are (header - $4000) / 3.
+  // The battle session preloads them. IDs are (header - $4000) / 3.
   damage:              { bank: 0x08, addr: 0x41f2 }, // SFX_Damage, $A6, channel 8
   not_very_effective:  { bank: 0x08, addr: 0x41f5 }, // SFX_Not_Very_Effective, $A7, channel 8
   super_effective:     { bank: 0x08, addr: 0x4210 }, // SFX_Super_Effective, $B0, channel 8
   trainer_appeared:    { bank: 0x08, addr: 0x42bb }, // SFX_Trainer_Appeared, $E9, channel 5
-  // A5e checkpoint-05 (note 80): Audio 2 only, sfxheaders2.asm:345-348. No runtime preload.
+  // A5e checkpoint-05 (note 80): Audio 2 only, sfxheaders2.asm:345-348. The battle session preloads it (checkpoint-07).
   ball_poof:           { bank: 0x08, addr: 0x41b9 }, // SFX_Ball_Poof, $93, channels 5 and 8
+  // A5f checkpoint-01 (note 87): Audio 2, sfxheaders2.asm:320-322,340-343. DoBallTossSpecialEffects and
+  // DoBallShakeSpecialEffects play them in battle. SFX_Tink_2 matches SFX_Tink_1 byte for byte (apart from labels).
+  ball_toss:           { bank: 0x08, addr: 0x41b3 }, // SFX_Ball_Toss, $91, channels 5 and 6
+  tink:                { bank: 0x08, addr: 0x41a4 }, // SFX_Tink_2, $8C, channel 5
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -640,7 +644,7 @@ export function extractSfxAt(rom: BinaryReader, bank: number, addr: number): Mus
 }
 
 /** audio/poke_flute.asm: source pointers without a header. Preserve command order, including CH5's
- * tempo before execute_music. Bootstrap execution belongs to the unused checkpoint-04b adapter. */
+ * tempo before execute_music. battle_flute_audio.ts plays these channels in battle. */
 export function extractSfxChannelsAt(
   rom: BinaryReader, bank: number, pointers: readonly { id: number; addr: number }[],
 ): MusicData {

@@ -1,5 +1,5 @@
 import { decodeBattleText } from './battle_text_codec';
-// Unused WRAM-to-A5c2 HUD composition. core.asm:1886–2049, palettes.asm:28–41,297–313.
+// WRAM-to-A5c2 HUD composition. core.asm:1886–2049, palettes.asm:28–41,297–313.
 import { A, battleContext, type BattleState } from './battle_state';
 import { drawEnemyHudProgram, drawPlayerHudProgram, drawHudsAndHpBars, type HudContext } from './battle_menu';
 import type { BattleHudMon } from './battle_hud';

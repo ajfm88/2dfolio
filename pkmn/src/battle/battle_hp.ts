@@ -1,4 +1,4 @@
-// Unused UpdateHPBar2 / UpdateCurMonHPBar. hp_bar.asm:48–159,204–283; core.asm:677–690.
+// UpdateHPBar2 / UpdateCurMonHPBar. hp_bar.asm:48–159,204–283; core.asm:677–690.
 import { HpBarAnimation } from '../menus/hp_bar';
 import { A, type BattleState } from './battle_state';
 import { BattleScreen, battleGlyphTile } from './battle_screen';

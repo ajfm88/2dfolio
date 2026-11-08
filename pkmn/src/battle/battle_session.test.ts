@@ -300,7 +300,8 @@ it('the session loader is once-only and the second call decodes and fetches noth
  const expected=['battle_transitions.json','move_names.json','stat_mod_text.json','item_names.json','trainers.json','monster_names.json',
   ...Object.keys(import.meta.glob('../../data/maps/*.json')).map(path=>'maps/'+path.split('/').pop()),
   ...['trainer_appeared','faint_fall','faint_thud','run','swap','press_ab','damage','super_effective','not_very_effective',
-  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle','ball_poof'].map(name=>`audio/sfx/${name}.json`),
+  'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle','ball_poof',
+  'ball_toss','tink'].map(name=>`audio/sfx/${name}.json`), // A5f checkpoint-03
   'battle_animations.json'];
  expect([...firstFetches.keys()].sort()).toEqual(expected.sort());
  expect([...firstFetches.values()]).toEqual(expected.map(()=>1));

@@ -1,4 +1,4 @@
-// Music_DoLowHealthAlarm (audio/low_health_alarm.asm). Nothing in the game sets bit 7 until A5c3.
+// Music_DoLowHealthAlarm (audio/low_health_alarm.asm). The battle sets bit 7 (since A5c3f).
 // The byte and the disabled flag are not saved.
 import type { GBSynthesizer } from './synthesizer';
 
