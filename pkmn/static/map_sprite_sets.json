@@ -26,7 +26,10 @@
     "PewterNidoranHouse": 55,
     "PewterMart": 56,
     "PewterSpeechHouse": 57,
-    "PewterPokecenter": 58
+    "PewterPokecenter": 58,
+    "Museum1F": 52,
+    "Museum2F": 53,
+    "PewterGym": 54
   },
   "mapObjects": {
     "PalletTown": [
@@ -158,6 +161,25 @@
       42,
       6,
       68
+    ],
+    "Museum1F": [
+      32,
+      11,
+      32,
+      32,
+      79
+    ],
+    "Museum2F": [
+      4,
+      37,
+      32,
+      29,
+      14
+    ],
+    "PewterGym": [
+      12,
+      7,
+      36
     ]
   },
   "pictureIdsBySprite": {
@@ -235,6 +257,7 @@
     "pokedex": 75,
     "clipboard": 76,
     "snorlax": 77,
+    "old_amber": 79,
     "gambler_asleep": 82
   },
   "outdoorSetIds": [

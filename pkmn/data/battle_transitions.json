@@ -47,7 +47,10 @@
     "PewterNidoranHouse": 55,
     "PewterMart": 56,
     "PewterSpeechHouse": 57,
-    "PewterPokecenter": 58
+    "PewterPokecenter": 58,
+    "Museum1F": 52,
+    "Museum2F": 53,
+    "PewterGym": 54
   },
   "mapObjectCounts": {
     "PalletTown": 3,
@@ -73,6 +76,9 @@
     "PewterNidoranHouse": 3,
     "PewterMart": 3,
     "PewterSpeechHouse": 2,
-    "PewterPokecenter": 6
+    "PewterPokecenter": 6,
+    "Museum1F": 5,
+    "Museum2F": 5,
+    "PewterGym": 3
   }
 }

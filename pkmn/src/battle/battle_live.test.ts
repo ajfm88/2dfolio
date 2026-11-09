@@ -3,7 +3,8 @@ import { beforeAll, expect, it, vi } from 'vitest';
 vi.hoisted(() => Object.assign(globalThis,{window:{addEventListener(){}}}));
 import { loadBattleData, createPokemon } from './data';
 import { loadTrainerSpeciesData } from './battle_trainer_data';
-import { loadBattleBridgeData, nameBytes, decodePartyMon, worldPartyRecord, boxedPokemonToRecord } from './battle_bridge';
+import { loadBattleBridgeData, nameBytes, decodePartyMon, worldPartyRecord, boxedPokemonToRecord, writeBattleInputs } from './battle_bridge';
+import { BattleState } from './battle_state';
 import { applyBattleOutcome, liveBattleWorld, boxRecordToPokemon } from './battle_live';
 import { liveFixture } from '../test/battle_live_fixture';
 import { pokemonToBoxed } from '../pokemon_storage';
@@ -19,6 +20,19 @@ it('maps encounters and passes badge spellings, script gym byte, labels and part
   const trainer=liveBattleWorld(f.world,{kind:'trainer',trainerClass:'RIVAL1',partyIndex:2,endBattleText:labels,gymLeaderNo:7});
   expect([trainer.opponent,trainer.enemyLevel,trainer.partyIndex,trainer.gymLeaderNo,trainer.endBattleText]).toEqual([225,0,2,7,labels]);
   expect(() => liveBattleWorld(f.world,{kind:'wild',species:'missing',level:3})).toThrow(BattleUnsupportedState);
+});
+it("A5f checkpoint-04: a demo is a wild world plus the script's wBattleType; the bridge writes it, and 0 otherwise", () => {
+  const f=liveFixture();
+  const oak=liveBattleWorld(f.world,{kind:'demo',battleType:4,species:'PIKACHU',level:5});
+  const old=liveBattleWorld(f.world,{kind:'demo',battleType:1,species:'RATTATA',level:5});
+  expect([oak.opponent,oak.enemyLevel,oak.partyIndex,oak.gymLeaderNo,oak.battleType]).toEqual([0x54,5,0,0,4]);
+  expect([old.opponent,old.enemyLevel,old.partyIndex,old.gymLeaderNo,old.battleType]).toEqual([0xa5,5,0,0,1]);
+  expect('battleType' in liveBattleWorld(f.world,{kind:'wild',species:'RATTATA',level:5})).toBe(false);
+  expect(() => liveBattleWorld(f.world,{kind:'demo',battleType:1,species:'missing',level:5})).toThrow(BattleUnsupportedState);
+  const state=new BattleState();
+  writeBattleInputs(state,oak);expect(state.wBattleType).toBe(4);
+  writeBattleInputs(state,old);expect(state.wBattleType).toBe(1);
+  writeBattleInputs(state,f.world);expect(state.wBattleType).toBe(0);
 });
 it('round-trips every world owner and retains party and existing box identities', () => {
   const party=[mon(),mon(29,12)],box=pokemonToBoxed(mon(122,15));

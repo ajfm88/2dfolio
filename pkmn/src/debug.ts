@@ -59,6 +59,9 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   { label: 'Pewter Mart',         map: 'PewterMart',           warpId: 0 },
   { label: 'Pewter Speech House', map: 'PewterSpeechHouse',    warpId: 0 },
   { label: 'Pewter Pokecenter',   map: 'PewterPokecenter',     warpId: 0 },
+  { label: 'Pewter Gym',          map: 'PewterGym',            warpId: 0 },
+  { label: 'Museum 1F',           map: 'Museum1F',             warpId: 0 },
+  { label: 'Museum 2F',           map: 'Museum2F',             warpId: 0 },
   // Route 2 + Viridian Forest
   { label: 'Route 2',             map: 'Route2',               warpId: 5 },  // at the Forest South Gate door
   { label: 'Route 2 (north)',     map: 'Route2',               warpId: 1 },  // at the Forest North Gate exit

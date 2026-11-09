@@ -22,7 +22,7 @@ beforeAll(async()=>{
 });
 
 it('cold session startup fetches main and session tables once even without main preloading them',()=>{
- expect(coldFetches.size).toBe(53); // checkpoint-07: battle_animations.json and audio/sfx/ball_poof.json; A5f 03: ball_toss, tink
+ expect(coldFetches.size).toBe(56); // checkpoint-07: battle_animations.json and audio/sfx/ball_poof.json; A5f 03: ball_toss, tink; V3 01: three maps
  expect(coldFetches.has('battle_animations.json')&&coldFetches.has('audio/sfx/ball_poof.json')).toBe(true);
  for(const [name,count] of coldFetches)expect(count,name).toBe(1);
 });
@@ -74,7 +74,7 @@ it('the species and session sources import no node module',()=>{
  }
 });
 it('every committed map uses its tileset header animation, including Forest1, Dojo2 and Gym2',()=>{
- const files=readdirSync('data/maps').filter(name=>name.endsWith('.json'));expect(files).toHaveLength(24);
+ const files=readdirSync('data/maps').filter(name=>name.endsWith('.json'));expect(files).toHaveLength(27); // V3 01: Museum 1F/2F, Pewter Gym
  for(const file of files){
   const map=JSON.parse(readFileSync('data/maps/'+file,'utf8')) as {name:string;tileset:string};
   const expected=['OVERWORLD','DOJO','GYM'].includes(map.tileset)?2:['FOREST','CAVERN','SHIP','SHIP_PORT','FACILITY','PLATEAU'].includes(map.tileset)?1:0;

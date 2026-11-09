@@ -32,6 +32,8 @@ describe('A1c tripwires', () => {
         return existsSync(asm) && readFileSync(asm, 'utf8').includes('CheckFightingMapTrainers');
       })
       .map(m => m.name)
+      // V3 checkpoint-03 brings PewterGym_Script with Brock and the Jr. Trainer (note 88 §7).
+      .filter(name => name !== 'PewterGym')
       .sort();
     expect([...TRAINER_MAPS].sort()).toEqual(expected);
   });

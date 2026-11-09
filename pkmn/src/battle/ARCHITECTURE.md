@@ -535,8 +535,8 @@ After each step, check `isGrassTile()` -> random vs grassRate -> select slot -> 
 
 A5d CP4 sends wild steps/turns, map trainers, the Lab rival and catch demos through main's shared entry.
 Stop at E, PM at E+1, capture/prologue at E+2, selected transition and tail, then black until readiness.
-Battle.init stays unchanged. initCatchDemo returns its existing sprite-load promise so main can await the
-same readiness before entering catch_demo; its rules, animation and update timing are otherwise unchanged.
+Battle.init stays unchanged. Until A5f checkpoint-04 initCatchDemo returned its sprite-load promise so main could
+await that readiness before entering catch_demo; since 04 the demos enter the session like every other battle.
 
 ## Battle States
 
@@ -623,28 +623,25 @@ Battle text itself awaits A5c. `battleTextPages()` strips the map extractor's
   class-key mapping in `trainer_flow.ts` retired in A5c3f checkpoint-11d. Before V1c, a
   display-name lookup ("BUG CATCHER" has no file) hung the battle's first frame for 11 classes.
 
-## Catch demo (V1d)
+## Catch demo (V1d) — runs in the battle session since A5f checkpoint-04; old renderer retired in 05
 
 `BATTLE_TYPE_OLD_MAN` (the Viridian old man) and `BATTLE_TYPE_PIKACHU` (Oak's catch in Pallet
-Town) are one demo, run beside `Battle` rather than inside it (DECISIONS #32): `Battle`
-assumes a player Pokémon, and Oak's catch has an empty party. Detail and ASM sources:
-`notes/05-v1d-plan.md`.
+Town) are one demo. Since A5f checkpoint-04 they run as real wild battles on the battle engine:
+the map scripts set `wBattleType` (1 or 4), `wCurOpponent` and `wCurEnemyLevel`; the bridge
+writes `wBattleType` into the battle state; `LiveBattleEncounter` gains a `demo` kind with
+`battleType`; `main`'s `catchDemo` action builds the demo encounter and calls `beginBattleEntry`
+with it, starting a real session. The simulated menu (FIGHT → ITEM → POKé BALL), the one-ball
+list, and `ItemUseBall`'s demo branches (no party/box check, `wGrassRate` ↔ `wPlayerName`, the
+old man's forced `$63` after `INITIAL_CATCH_TRAINING`, Oak's straight `.captured`) run in the
+session. `UseBagItem` returns through `.returnAfterCapturingMon` (`wBattleResult = 2`, carry),
+so `StartBattle` returns at `ret c`. One throw ends the battle. `LoadEnemyMonData` sets the
+enemy's seen flag, so `main`'s `markSeen` is dropped. `end_of_battle.asm` skips evolution and
+Pikachu mood for `wBattleResult ≠ 0`. Since A5f checkpoint-05 the old renderer is deleted:
+`catch_demo.ts`, `catch_demo_screen.ts`, `catch_demo.test.ts` removed; `CatchDemoBattleType`
+moved to `script/types.ts`; `battle_ui.ts` shrinks to ~130 lines (evolution/Pokédex sprites and
+text only); `battleTextPages` retired with its last caller (row 61 of the 08b manifest).
 
-- `catch_demo.ts` — the rules as tested data: `catchDemoCaught` (PIKACHU always; OLD_MAN
-  unless `INITIAL_CATCH_TRAINING` is set, `ItemUseBall`), `catchDemoBackPic`
-  (`oldmanb` / `prof.oakb`), `CATCH_DEMO_BAG` (one POKé BALL), `tossBallAnims` (4 or 6),
-  and `catchDemoSteps`: "Wild X appeared!" (A) → HUD + 40 frames → ▶ FIGHT 20 → ▶ ITEM
-  20 + 10 frozen → bag 3 → ▶ POKé BALL 20 → "OLD MAN used / POKé BALL!" 20 → the toss
-  animations → the result text (A).
-- `catch_demo_screen.ts` — upstream's `pikachu/pikachu_battle.ts`, moved and generalized:
-  loads the enemy by dex with its own palette and the back pic by battle type, keeps
-  upstream's slide-in and toss/poof/shake drawing (their exact ASM timings are A5 / later),
-  and walks the steps.
-- A script starts it with `{ type: 'catchDemo', battleType, species, level }` (what the ASM
-  scripts set). `main.ts` marks the enemy seen (`LoadEnemyMonData`), plays wildbattle, runs
-  the wild transition, then the `catch_demo` state; at the end: instant white, fade in, the
-  script resumes. No ball is used, nothing joins the party, no evolution or mood update
-  (`wBattleResult = 2`).
+Detail and ASM sources: `notes/05-v1d-plan.md`, `notes/87-a5f-plan.md` §20, §24.
 
 ## Battle Transitions
 
@@ -667,8 +664,8 @@ retreat and slide-offs already run since A5c3f10c; the poof/OAM player is live s
 | Substitute/Minimize/Transform direct cues, doll hide/reshow, break, STATS reload, crash shake | 08a–08c; user-verified 2026-11-06 |
 | Battle `UpdateSprites` | The cartridge's no-op (`$FF` gate), pinned in 08c |
 | Attack move animations, ON-path initial Substitute/Transform pictures, `SE_MINIMIZE_MON`, ordinary Fly/Dig hides | #94: the full `move_anim` interpreter, unscheduled |
-| Ball toss/shake/block animations and the catch's (enemy-side) poof | Live since A5f checkpoint-03; Claude's review passed (note 87 §18); the user's play-test is next (§16.8) |
-| Both catch demos' upstream renderer (`catch_demo_screen.ts`, `battle_ui.ts`) | A5f checkpoints 04–05 |
+| Ball toss/shake/block animations and the catch's (enemy-side) poof | Live since A5f checkpoint-03: reviewed (note 87 §18), play-tested (§19) |
+| Both catch demos' upstream renderer (`catch_demo_screen.ts`, `battle_ui.ts`) | Retired in A5f checkpoint-05: `catch_demo_screen.ts` deleted, `battle_ui.ts` cut to what evolution and the Pokédex use; the demos run in the session |
 | Cries and Pikachu PCM in battle | J2 (with the opening/title PCM work, #69) |
 | Ghost Marowak animation | Pokémon Tower phase (#101); throws until then |
 | Screen-model merge (`IntroScreen`, `TransitionScreen`, `BattleScreen`) | note 57, "after A5e": now due; the user places it |
@@ -688,14 +685,14 @@ were removed on 2026-11-02. They went in A5c3f 11c.)
 
 | File | LOC | Purpose |
 |------|-----|---------|
-| `battle_ui.ts` | 374 | Upstream canvas drawing still used by the catch demo (shrunk in A5c3f 11d) |
+| `battle_ui.ts` | 119 | Upstream canvas drawing: evolution screen's sprites, silhouettes and text box; Pokédex's `loadPokemonSprites`; catch-demo drawing retired in 05 |
 | `experience.ts` | 43 | Growth-rate EXP tables and `initExperience` (shrunk in 11d; level-up is `battle_exp*.ts`) |
 | `data.ts` | 171 | JSON data loading |
 | `types.ts` | 135 | TypeScript interfaces |
 | `trainer_ai.ts` | 27 | `getTrainerClass` / `loadTrainerData` only (the AI is `battle_trainer_ai.ts`) |
-| `trainer_flow.ts` | 61 | Meet/victory music choice, end-text pages, the rival-starter byte (shrunk in 11d) |
-| `catch_demo.ts` | 111 | V1d: the catch demo's rules and step list (old man + Oak's Pikachu) |
-| `catch_demo_screen.ts` | 626 | V1d: runs and draws the catch demo (was `pikachu/pikachu_battle.ts`) |
+| `trainer_flow.ts` | 45 | Meet/victory music choice, the pic-scroll delay, the rival-starter byte (shrunk in 11d; `battleTextPages` retired in A5f checkpoint-05) |
+| `catch_demo.ts` | — | Deleted in A5f checkpoint-05; only `CatchDemoBattleType` moved to `script/types.ts` |
+| `catch_demo_screen.ts` | — | Deleted in A5f checkpoint-05 |
 | `evolution.ts` | 94 | Post-battle evolution check & apply |
 | `battle_menu.ts` (`battleRunOdds`) | — | State-backed RUN odds on shared HRAM and BattleRandom; run.ts retired in checkpoint-11a |
 | `encounter.ts` | 73 | Wild encounter selection: reads `hRandomAdd` / `hRandomSub` (note 74) |
@@ -824,7 +821,7 @@ back to the battle menu, matching `.asm_128f`'s carry exit. No continuation dive
 was observed. The old `'battle'` mode's exemption stays only for the retiring engine;
 its icon case now exercises `showForBattle` directly, without main.
 
-Catch demos retain their start/finish branches and renderer until A5f. The inverted
+Catch demos kept their own start/finish branches until A5f checkpoint-04; the dead branches go in 05. The inverted
 guard proves main reaches `battle_session`/`battle_live` and not `battle/battle.ts`.
 Note 72 §10.20 lists all remaining reachable legacy helpers for retirement in 11.
 Options persistence remains checkpoint-10b; front box insertion is implemented in 10a.

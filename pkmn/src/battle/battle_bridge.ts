@@ -68,6 +68,8 @@ export interface BattleWorld {
   readonly partyIndex: number;
   readonly opponent: number;
   readonly enemyLevel: number;
+  /** wBattleType as the map script set it: 1 the old man's demo, 4 Oak's Pikachu demo; absent is 0 (A5f checkpoint-04). */
+  readonly battleType?: 0 | 1 | 4;
   readonly party: readonly BattlePokemon[];
   readonly money: number;
   readonly seen: readonly number[];
@@ -162,7 +164,7 @@ export function writeBattleInputs(state: BattleState, world: BattleWorld): void 
   state.writeBE(A.wPlayerID, 0); state.mem.set(nameBytes(world.playerName), A.wPlayerName);
   state.mem.set(nameBytes(world.rivalName), W_RIVAL_NAME);
   state.mem[D.wGymLeaderNo] = world.gymLeaderNo; state.mem[W_TRAINER_NO] = world.partyIndex + 1;
-  state.wBattleType = 0; state.wNumSafariBalls = 0;
+  state.wBattleType = world.battleType ?? 0; state.wNumSafariBalls = 0;
   state.mem[I.wSafariBaitFactor] = state.mem[I.wSafariEscapeFactor] = 0;
   state.wCurOpponent = world.opponent; state.wCurEnemyLevel = world.enemyLevel;
   writeBattleBcd(state, D.wPlayerMoney, world.money);

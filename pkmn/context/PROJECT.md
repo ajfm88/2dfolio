@@ -49,20 +49,20 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-06 (end of day) - A5f checkpoint-03 reviewed, play-test next
+## State as of 2026-11-07 (end of day) - V3 in progress
 
-- **R1, V1, A6, A1 and V2 are done (5/36 milestones).** A5a–A5e are complete; A5f is in progress, then A5 is done.
-  The playable path reaches Pewter across 24 maps. The ASM-backed battle engine is live and the old engine is retired.
-- **No ROM at runtime.** 200 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
+- **R1, V1, A6, A1, V2 and A5 are done (6/36 milestones).** The playable path reaches Pewter across 27 maps. The
+  ASM-backed battle engine is live and the old engine and the old catch-demo renderer are retired.
+- **No ROM at runtime.** 203 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
   local play, no remote and no push.
-- **A5f (note 87, #105):** the catch's ball animations. 01 committed their data (the five further `TossBallAnimation`
-  IDs, `SFX_BALL_TOSS`, `SFX_TINK`); 02 ported the toss and shake special effects; 03 made them live (Codex, `ccf0119`;
-  Claude's review passed). Every throw now shows the toss, poof, shakes and the trainer's block, whatever the BATTLE
-  ANIMATION option says, as on the cartridge. The user's catch play-test (note 87 §16.8) is next.
-- **Then:** checkpoint-04, the two catch demos as real battles (the bridge has no demo encounter yet; `main` still runs
-  the old renderer), and 05, its retirement and the full A5f play-test. Then V3 Gym/Museum and V4/V5.
-- **Tests:** ROM **6169/6169**; no-ROM **5887 pass / 282 skip**; 245 files. Bundle `index-acc-zS92.js`.
-- Full handoff: STATUS.md, note 87 (§2 trace, §3 roadmap, §16 the last brief, §18 the review), decisions #94/#101/#105.
+- **V3 (note 88):** Pewter Gym, the Museum and the first badge, in five checkpoints. Route 3 moves in as 04, before
+  Brock's win (05), so the east edge is never open without its connection (#106). Done: 01, the three maps,
+  walkable with their texts (plus a fix: farcalled printed texts talk). 02a, the Museum ticket (map trigger, ¥50 with
+  the MONEY box, the refusal step), is reviewed and awaits the user's play-test. Next: 02b (the Old Amber, the hiker),
+  02c (the fossil pop-ups), 03 the Gym.
+- **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
+- **Tests:** ROM **6182/6182**; no-ROM **5896 pass / 286 skip**; 246 files. Bundle `index-BDiKPiKT.js`.
+- Full handoff: STATUS.md; V3's record is note 88 (§15 the 02 split, §16 the last brief, §18 the last review).
 
 ## Goals
 

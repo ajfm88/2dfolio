@@ -1122,6 +1122,114 @@
         "program": "_MultiHitText"
       }
     ],
+    "Museum1FPrintGamblerText.Text": [
+      {
+        "op": "far",
+        "program": "_Museum1FGamblerText"
+      }
+    ],
+    "Museum1FPrintOldAmberText.Text": [
+      {
+        "op": "far",
+        "program": "_Museum1FOldAmberText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.AmberIsFossilizedTreeSapText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1AmberIsFossilizedTreeSapText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.ComeAgainText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1ComeAgainText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.DoYouKnowWhatAmberIsText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1DoYouKnowWhatAmberIsText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.DontHaveEnoughMoneyText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1DontHaveEnoughMoneyText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.GoToOtherSideText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1GoToOtherSideText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.TakePlentyOfTimeText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1TakePlentyOfTimeText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.ThankYouText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1ThankYouText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.TheresALabSomewhereText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1TheresALabSomewhereText"
+      }
+    ],
+    "Museum1FPrintScientist1Text.WouldYouLikeToComeInText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist1WouldYouLikeToComeInText"
+      }
+    ],
+    "Museum1FPrintScientist3Text.Text": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist3Text"
+      }
+    ],
+    "Museum2FBrunetteGirlText": [
+      {
+        "op": "far",
+        "program": "_Museum2FBrunetteGirlText"
+      }
+    ],
+    "Museum2FGrampsText": [
+      {
+        "op": "far",
+        "program": "_Museum2FGrampsText"
+      }
+    ],
+    "Museum2FMoonStoneSignText": [
+      {
+        "op": "far",
+        "program": "_Museum2FMoonStoneSignText"
+      }
+    ],
+    "Museum2FScientistText": [
+      {
+        "op": "far",
+        "program": "_Museum2FScientistText"
+      }
+    ],
+    "Museum2FSpaceShuttleSignText": [
+      {
+        "op": "far",
+        "program": "_Museum2FSpaceShuttleSignText"
+      }
+    ],
+    "Museum2FYoungsterText": [
+      {
+        "op": "far",
+        "program": "_Museum2FYoungsterText"
+      }
+    ],
     "MustRechargeText": [
       {
         "op": "far",
@@ -1756,6 +1864,32 @@
       {
         "op": "far",
         "program": "_PewterCityYoungsterYoureATrainerFollowMeText"
+      }
+    ],
+    "PewterGymBrockWaitTakeThisText": [
+      {
+        "op": "far",
+        "program": "_PewterGymBrockWaitTakeThisText"
+      }
+    ],
+    "PewterGymReceivedTM34Text": [
+      {
+        "op": "far",
+        "program": "_PewterGymReceivedTM34Text"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      },
+      {
+        "op": "far",
+        "program": "_TM34ExplanationText"
+      }
+    ],
+    "PewterGymTM34NoRoomText": [
+      {
+        "op": "far",
+        "program": "_PewterGymTM34NoRoomText"
       }
     ],
     "PewterJigglypuff.Text": [
@@ -4651,6 +4785,114 @@
         "text": " times!<PROMPT>"
       }
     ],
+    "_Museum1FGamblerText": [
+      {
+        "op": "text",
+        "text": "That is one\nmagnificent\nfossil!<DONE>"
+      }
+    ],
+    "_Museum1FOldAmberText": [
+      {
+        "op": "text",
+        "text": "The AMBER is\nclear and gold!<DONE>"
+      }
+    ],
+    "_Museum1FScientist1AmberIsFossilizedTreeSapText": [
+      {
+        "op": "text",
+        "text": "AMBER is fossil-\nized tree sap.<DONE>"
+      }
+    ],
+    "_Museum1FScientist1ComeAgainText": [
+      {
+        "op": "text",
+        "text": "Come again!<DONE>"
+      }
+    ],
+    "_Museum1FScientist1DoYouKnowWhatAmberIsText": [
+      {
+        "op": "text",
+        "text": "You can't sneak\nin the back way!\fOh, whatever!\nDo you know what\nAMBER is?<DONE>"
+      }
+    ],
+    "_Museum1FScientist1DontHaveEnoughMoneyText": [
+      {
+        "op": "text",
+        "text": "You don't have\nenough money.<PROMPT>"
+      }
+    ],
+    "_Museum1FScientist1GoToOtherSideText": [
+      {
+        "op": "text",
+        "text": "Please go to the\nother side!<DONE>"
+      }
+    ],
+    "_Museum1FScientist1TakePlentyOfTimeText": [
+      {
+        "op": "text",
+        "text": "Take plenty of\ntime to look!<DONE>"
+      }
+    ],
+    "_Museum1FScientist1ThankYouText": [
+      {
+        "op": "text",
+        "text": "Right, ¥50!\nThank you!<DONE>"
+      }
+    ],
+    "_Museum1FScientist1TheresALabSomewhereText": [
+      {
+        "op": "text",
+        "text": "There's a lab\nsomewhere trying\nto resurrect\nancient POKéMON\nfrom AMBER.<DONE>"
+      }
+    ],
+    "_Museum1FScientist1WouldYouLikeToComeInText": [
+      {
+        "op": "text",
+        "text": "It's ¥50 for a\nchild's ticket.\fWould you like to\ncome in?<DONE>"
+      }
+    ],
+    "_Museum1FScientist3Text": [
+      {
+        "op": "text",
+        "text": "We are proud of 2\nfossils of very\nrare, prehistoric\nPOKéMON!<DONE>"
+      }
+    ],
+    "_Museum2FBrunetteGirlText": [
+      {
+        "op": "text",
+        "text": "I want a PIKACHU!\nIt's so cute!\fI asked my Daddy\nto catch me one!<DONE>"
+      }
+    ],
+    "_Museum2FGrampsText": [
+      {
+        "op": "text",
+        "text": "July 20, 1969!\fThe 1st lunar\nlanding!\fI bought a color\nTV to watch it!<DONE>"
+      }
+    ],
+    "_Museum2FMoonStoneSignText": [
+      {
+        "op": "text",
+        "text": "Meteorite that\nfell on MT.MOON.\n(MOON STONE?)<DONE>"
+      }
+    ],
+    "_Museum2FScientistText": [
+      {
+        "op": "text",
+        "text": "We have a space\nexhibit now.<DONE>"
+      }
+    ],
+    "_Museum2FSpaceShuttleSignText": [
+      {
+        "op": "text",
+        "text": "SPACE SHUTTLE\nCOLUMBIA<DONE>"
+      }
+    ],
+    "_Museum2FYoungsterText": [
+      {
+        "op": "text",
+        "text": "MOON STONE?\fWhat's so special\nabout it?<DONE>"
+      }
+    ],
     "_MustRechargeText": [
       {
         "op": "text",
@@ -5297,6 +5539,24 @@
       {
         "op": "text",
         "text": "You're a trainer\nright? BROCK's\nlooking for new\nchallengers!\nFollow me!<DONE>"
+      }
+    ],
+    "_PewterGymBrockWaitTakeThisText": [
+      {
+        "op": "text",
+        "text": "Wait! Take this\nwith you!<DONE>"
+      }
+    ],
+    "_PewterGymReceivedTM34Text": [
+      {
+        "op": "text",
+        "text": "<PLAYER> received\nTM34!"
+      }
+    ],
+    "_PewterGymTM34NoRoomText": [
+      {
+        "op": "text",
+        "text": "You don't have\nroom for this!<DONE>"
       }
     ],
     "_PewterMartSuperNerdText": [
@@ -5975,6 +6235,12 @@
       {
         "op": "text",
         "text": "Switch on!<PROMPT>"
+      }
+    ],
+    "_TM34ExplanationText": [
+      {
+        "op": "text",
+        "text": "\fA TM contains a\ntechnique that\ncan be taught to\nPOKéMON!\fA TM is good only\nonce! So when you\nuse one to teach\na new technique,\npick the POKéMON\ncarefully!\fTM34 contains\nBIDE!\fYour POKéMON will\nabsorb damage in\nbattle then pay\nit back double!<DONE>"
       }
     ],
     "_ThrashingAboutText": [
@@ -7432,6 +7698,78 @@
       {
         "call": "text",
         "program": "PewterSpeechHouseYoungsterText"
+      }
+    ],
+    "Museum1F_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "Museum1FPrintGamblerText.Text"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "printText",
+        "program": "Museum1FPrintScientist3Text.Text"
+      },
+      {
+        "call": "printText",
+        "program": "Museum1FPrintOldAmberText.Text"
+      }
+    ],
+    "Museum2F_TextPointers": [
+      {
+        "call": "text",
+        "program": "Museum2FYoungsterText"
+      },
+      {
+        "call": "text",
+        "program": "Museum2FGrampsText"
+      },
+      {
+        "call": "text",
+        "program": "Museum2FScientistText"
+      },
+      {
+        "call": "text",
+        "program": "Museum2FBrunetteGirlText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "Museum2FSpaceShuttleSignText"
+      },
+      {
+        "call": "text",
+        "program": "Museum2FMoonStoneSignText"
+      }
+    ],
+    "PewterGym_TextPointers": [
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "PewterGymBrockWaitTakeThisText"
+      },
+      {
+        "call": "text",
+        "program": "PewterGymReceivedTM34Text"
+      },
+      {
+        "call": "text",
+        "program": "PewterGymTM34NoRoomText"
       }
     ]
   }

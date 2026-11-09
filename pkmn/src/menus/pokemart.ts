@@ -13,8 +13,19 @@ import { QuantityMenu } from './quantity_menu';
 import { addBcd, type ScreenSnapshot, type ScreenTiles } from './screen_tiles';
 import type { MenuSession } from './menu_session';
 import { YesNoMenu } from './yes_no_menu';
+import { writeBcd } from './tile_surface';
+import type { MenuBoxLayout } from '../script/types';
 
 const MONEY = { bytes: 3, suppressZero: true, leftAlign: false, moneySign: true } as const;
+
+/** DisplayMoneyBox as a script menu box: the Mart's drawMoney geometry (TextBoxBorder 11,0, 1×7; "MONEY" at (13,0);
+ *  PrintBCDNumber at (12,1)) with the same digit rule, for scripts outside the Mart (V3 checkpoint-02a). */
+export function moneyBoxLayout(money: number): MenuBoxLayout {
+  const labels: MenuBoxLayout['labels'] = [{ x: 13, y: 0, text: 'MONEY' }];
+  writeBcd({ at: () => ' ', put: (x, y, value) => { if (typeof value === 'string' && value !== ' ') labels.push({ x, y, text: value }); } },
+    12, 1, money, MONEY);
+  return { x: 11, y: 0, width: 9, height: 3, labels };
+}
 /** IsItemHM: HM01–HM05. None of them are in the item table yet. */
 const HM_ITEMS = new Set(['HM01', 'HM02', 'HM03', 'HM04', 'HM05']);
 

@@ -37,8 +37,9 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x32: 'ViridianForestSouthGate',
   0x33: 'ViridianForest',
   0xC5: 'DiglettsCave',     // Referenced by DiglettsCaveRoute2 warp (extracted in V4)
-  // V2 — Museum/Gym are referenced-only until V3. Route3 stays unnamed until V4.
+  // V2 Pewter; V3 Museum + Gym (notes/88-v3-plan.md). Route3 stays unnamed until V3 checkpoint-04.
   0x34: 'Museum1F',
+  0x35: 'Museum2F',
   0x36: 'PewterGym',
   0x37: 'PewterNidoranHouse',
   0x38: 'PewterMart',
@@ -153,6 +154,7 @@ export const SPRITE_NAMES: Record<number, string> = {
   0x4B: 'pokedex',
   0x4C: 'clipboard',
   0x4D: 'snorlax',
+  0x4F: 'old_amber', // SPRITE_OLD_AMBER (Museum 1F, V3)
   0x52: 'gambler_asleep',
 };
 
@@ -530,6 +532,40 @@ const MAP_METADATA: Record<string, MapMeta> = {
     npcs: [{ id: 'gambler', direction: 'right' }, { id: 'youngster' }],
   },
 
+  // ── V3: Pewter Gym + Museum (notes/88-v3-plan.md) ──
+  // Ids: pret's const_export names minus the map prefix, lowercased, in ROM object order.
+  PewterGym: {
+    signTextOffsets: [],
+    // NPC_INDEX_FILTER keeps only GYM_GUIDE until checkpoint-03 adds BROCK and COOLTRAINER_M back.
+    npcs: [
+      { id: 'gym_guide', direction: 'down' },      // PewterGymGuideText (text_asm) — V3 checkpoint-03
+    ],
+  },
+  Museum1F: {
+    signTextOffsets: [],
+    npcs: [
+      // Every text farcalls a Museum1F_2.asm body — V3 checkpoint-02
+      { id: 'scientist1', direction: 'left' },
+      { id: 'gambler' },
+      { id: 'scientist2', direction: 'down' },
+      { id: 'scientist3' },
+      { id: 'old_amber' },
+    ],
+  },
+  Museum2F: {
+    signTextOffsets: [
+      symToOffset(0x2a, 0x650a), // _Museum2FSpaceShuttleSignText
+      symToOffset(0x2a, 0x6522), // _Museum2FMoonStoneSignText
+    ],
+    npcs: [
+      { id: 'youngster', walkDir: 'left_right' },
+      { id: 'gramps', direction: 'down' },
+      { id: 'scientist', direction: 'down' },
+      { id: 'brunette_girl' },
+      { id: 'hiker', direction: 'down' },          // Museum2FHikerText (text_asm) — V3 checkpoint-02
+    ],
+  },
+
   // ── V1: Route 2 + Viridian Forest (notes/02-v1-plan.md) ──
   // NPC ids are pret's const_export names minus the map prefix, lowercased
   // (data/maps/objects/<Map>.asm), in ROM object order. direction / walkDir mirror
@@ -640,6 +676,9 @@ export const EXTRACTABLE_MAPS: Record<string, number> = {
   PewterMart: 0x38,
   PewterSpeechHouse: 0x39,
   PewterPokecenter: 0x3A,
+  Museum1F: 0x34,
+  Museum2F: 0x35,
+  PewterGym: 0x36,
 };
 
 // ── NPC index overrides (when ROM has more NPCs than JSON) ─────
@@ -662,6 +701,11 @@ const NPC_INDEX_FILTER: Record<string, number[]> = {
   // BluesHouse ROM has 3 NPCs; JSON has 2 (skip DAISY2 walking at index 1)
   // ROM: 0=DAISY1(sitting), 1=DAISY2(walking), 2=TOWN_MAP
   BluesHouse: [0, 2],
+
+  // PewterGym ROM has 3 NPCs: 0=BROCK, 1=COOLTRAINER_M, 2=GYM_GUIDE. Brock and the Jr. Trainer would engage
+  // through the generic trainer path without PewterGymBrockText's wGymLeaderNo / post-battle script, so they
+  // stay out until V3 checkpoint-03 brings the gym's script (notes/88-v3-plan.md §3).
+  PewterGym: [2],
 };
 
 // ── ROM parsing ────────────────────────────────────────────────
@@ -1164,6 +1208,8 @@ function resolveLastMap(mapName: string): string {
     PewterMart: 'PewterCity',
     PewterSpeechHouse: 'PewterCity',
     PewterPokecenter: 'PewterCity',
+    Museum1F: 'PewterCity',
+    PewterGym: 'PewterCity',
     Route2Gate: 'Route2',
     Route2TradeHouse: 'Route2',
     DiglettsCaveRoute2: 'Route2',  // its map script also forces wLastMap = ROUTE_2

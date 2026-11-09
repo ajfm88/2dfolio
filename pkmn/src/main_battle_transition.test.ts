@@ -1,5 +1,6 @@
 // CP4 runs real main dispatch, input, maps, scripts, frame programs, capture,
-// renderer and audio facade. Only demo asset readiness is held.
+// renderer and audio facade. Only the old catch demo's asset load is held; since A5f checkpoint-04 the
+// demos enter the battle session like every other row, and nothing reaches that load (note 87 §20).
 import { pinOverworldRandom } from './test/overworld_random_pin';
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 vi.hoisted(() => Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } }));
@@ -141,7 +142,6 @@ const cases = [
 it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and black readiness hold', async row => {
   const lead = 'lead' in row ? row.lead : 10;
   const ready = deferred();
-  const demo = row.name.includes('old man') || row.name.includes('Oak Pikachu');
   const init = vi.fn();
   const originalSprite = renderer.loadBattleSprite;
   const demoLoad = vi.spyOn(renderer, 'loadBattleSprite').mockImplementation(async (...args) => { await ready.promise; return originalSprite(...args); });
@@ -231,7 +231,7 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
   if (row.map === 'PalletTown') expect(getScriptNpcs().find(npc => npc.data.id === 'prof_script')!.data.textId).toBe(1);
   for (let tick = 1; tick <= row.duration; tick++) {
     await step();
-    expect(host.state).toBe(demo || tick < row.duration ? 'battle_transition' : 'battle');
+    expect(host.state).toBe(tick < row.duration ? 'battle_transition' : 'battle');
     expect(transfer).toHaveBeenCalledTimes(tick + 2);
     if (tick === 5) expect(entry.screen!.visibleSprites).toEqual(row.survivor ? [0, row.survivor] : [0]);
     if (tick === 20) {
@@ -242,25 +242,14 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
     if (tick < row.duration) { expect(init).not.toHaveBeenCalled(); expect(demoLoad).not.toHaveBeenCalled(); }
   }
   expect(entry.initialising).toBe(true); expect(entry.screen!.black).toBe(true);
-  expect(init).toHaveBeenCalledTimes(0); expect(demoLoad).toHaveBeenCalledTimes(demo ? 3 : 0);
-  if (demo) {
-  for (let wait = 0; wait < 4; wait++) {
-    await step(); host.renderBattleEntry(); expect(host.state).toBe('battle_transition');
-    const black = [...capture.palette[3], 255];
-    expect([...output.pixel(0, 0)]).toEqual(black); expect([...output.pixel(100, 70)]).toEqual(black);
-    expect(entry.screen!.visibleSprites).toEqual([]);
-  }
-  expect(frame - e).toBe(row.duration + 6);
-  ready.resolve(); await vi.waitFor(() => expect(host.state).toBe('catch_demo'));
-  } else {
-    expect(host.state).toBe('battle'); expect(host.session).not.toBeNull();
-    expect(()=>host.session!.start()).toThrow('already started');
-    expect(frame-e).toBe(row.duration+2);
-  }
+  expect(init).toHaveBeenCalledTimes(0); expect(demoLoad).not.toHaveBeenCalled();
+  expect(host.state).toBe('battle'); expect(host.session).not.toBeNull();
+  expect(()=>host.session!.start()).toThrow('already started');
+  expect(frame-e).toBe(row.duration+2);
   expect(host.battleEntry).toBeNull(); expect(host.textBox.active).toBe(false);
   expect(requests.filter(request => request.song === song && request.frame >= e)).toEqual([{ frame: e + 1, song }]);
   expect(host.player.isMoving).toBe(false);
-  if (!demo) expect(host.session!.done).toBe(false);
+  expect(host.session!.done).toBe(false);
 });
 
 it('CP5: a wild entry cancels the warp song still waiting for the door sound', async () => {

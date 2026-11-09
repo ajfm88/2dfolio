@@ -306,6 +306,12 @@ describe('map no-auto-text-box default through the controller (V2a CP3)', () => 
     'Pewter Mart talker %i is a borderless printText of its own program', (id, program) => {
       expect(talk('PewterMart', id)).toMatchObject({ type: 'textbox', call: 'printText', autoBox: false, program });
     });
+  // V3 checkpoint-01 fix (note 88 §11): Museum 1F's gambler, back-room scientist and Old Amber display farcall a
+  // PrintText body (scripts/Museum1F_2.asm), so the extractor has no string for them; the program alone prints.
+  it.each([[2, 'Museum1FPrintGamblerText.Text'], [4, 'Museum1FPrintScientist3Text.Text'], [5, 'Museum1FPrintOldAmberText.Text']] as const)(
+    'Museum 1F object %i is a borderless printText of its farcalled program', (id, program) => {
+      expect(talk('Museum1F', id)).toMatchObject({ type: 'textbox', call: 'printText', autoBox: false, program });
+    });
   it('Viridian Mart talkers keep the automatic border and carry no program', () => {
     const action = talk('ViridianMart', 2);
     expect(action?.type).toBe('textbox');
@@ -349,8 +355,8 @@ describe('ASM interaction priority', () => {
     shelf.mockReturnValue(null); expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Sign' });
     expect(face).not.toHaveBeenCalled();
   });
-  it('today’s 24 maps have no overlapping hidden events, signs and NPCs', () => {
-    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(24);
+  it('today’s 27 maps have no overlapping hidden events, signs and NPCs', () => {
+    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(27);
     for (const file of files) {
       const map = JSON.parse(readFileSync(resolve(DATA, 'maps', file), 'utf8')) as MapData;
       const groups = [map.hiddenEvents ?? [], map.signs, map.npcs];

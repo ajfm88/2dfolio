@@ -6,6 +6,7 @@ import type { ScriptCommand } from '../script/types';
 const NO_AUTO_TEXT_BOX_MAPS: ReadonlySet<string> = new Set([
   'OaksLab',    // scripts/OaksLab.asm OaksLab_Script
   'PewterMart', // scripts/PewterMart.asm PewterMart_Script
+  'Museum1F',   // scripts/Museum1F.asm Museum1F_Script
 ]);
 
 /** The map's default for DisplayTextIDInit's initial border (true = drawn). */

@@ -2,7 +2,7 @@
 // updateScript() returns actions for state transitions that main.ts processes.
 
 import { overworldRandom, overworldRandomCarry } from '../overworld/overworld_random';
-import type { ScriptCommand, ScriptRunner, MenuBoxLayout } from './types';
+import type { ScriptCommand, ScriptRunner, MenuBoxLayout, CatchDemoBattleType } from './types';
 import { setSpriteIndex } from '../overworld/sprite_index';
 import { TILE_SIZE } from '../core';
 import type { GameButton } from '../core';
@@ -19,7 +19,7 @@ import { textBgTransfer } from '../text/bg_transfer';
 import type { Player } from '../overworld/player';
 import type { GameMap } from '../overworld/map';
 import { Npc } from '../overworld/npc';
-import type { BattlePokemon, CatchDemoBattleType } from '../battle';
+import type { BattlePokemon } from '../battle';
 import type { PikachuFollower } from '../pikachu/pikachu_follower';
 import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
 import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
@@ -52,6 +52,7 @@ import { mapAutoTextBox, applyMapAutoTextBox } from '../text/auto_text_box';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { getOwnedCount } from '../pokedex_state';
 import { mapTextCall } from '../text/map_text_calls';
+import { moneyBoxLayout } from '../menus/pokemart';
 
 // ── Dependencies passed by main.ts each frame ──────────────────────────
 
@@ -368,7 +369,10 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     } else {
       textBox.update();
       displayAdvanced = true;
-      if (textBox.hidesWindow || !textBox.active) menuSessionTiles = null;
+      if (textBox.hidesWindow || !textBox.active) {
+        menuSessionTiles = null;
+        scriptMenuBox = null; // CloseTextDisplay's map reload also covers a MONEY box (V3 checkpoint-02a)
+      }
       if (textBox.active) return null;
       scriptClosingText = false;
     }
@@ -823,6 +827,26 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       advanceScript(activeScript);
       break;
 
+    case 'moneyBox':
+      scriptMenuBox = { layout: moneyBoxLayout(deps.getMoney?.() ?? 0), cursor: null };
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+
+    case 'ifEnoughMoney': {
+      const chosen = (deps.getMoney?.() ?? 0) >= cmd.amount ? cmd.yes : cmd.no;
+      activeScript.commands.splice(activeScript.index + 1, 0, ...chosen);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+    }
+
+    case 'subtractMoney': {
+      const money = deps.getMoney?.() ?? 0;
+      if (money < cmd.amount) throw new Error('subtractMoney below zero: HasEnoughMoney must branch first');
+      deps.setMoney?.(money - cmd.amount);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
+    }
+
     case 'showNpc': {
       const npcData = {
         id: cmd.npcId,
@@ -870,6 +894,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       break;
 
     case 'catchDemo':
+      scriptBattlePending = true; // the battle's end resumes the script, as for 'startBattle'
       return { type: 'catchDemo', battleType: cmd.battleType, species: cmd.species, level: cmd.level };
 
     case 'moveParallel': {

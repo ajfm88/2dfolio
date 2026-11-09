@@ -22,10 +22,6 @@ vi.mock('./renderer', () => ({
   loadSprite: async () => ({ width: 16, height: 96 }), loadBattleSprite: async () => ({ width: 56 }),
   captureUi: (draw: () => void) => { uiTiles.clear(); draw(); return () => {}; },
 }));
-vi.mock('./battle', async importOriginal => {
-  const actual = await importOriginal<typeof import('./battle')>();
-  return { ...actual, updateCatchDemo: vi.fn(actual.updateCatchDemo) }; // passthrough; one test scripts its end
-});
 vi.mock('./battle/battle_ui', async importOriginal => {
   const actual = await importOriginal<typeof import('./battle/battle_ui')>();
   return { ...actual, createSilhouette: () => ({ width: 1, height: 1 }) as never }; // no canvas in node
@@ -46,7 +42,7 @@ import { loadMapSpriteSets } from './overworld/sprite_sets';
 import { initTextSystem, loadGameText } from './text';
 import { loadTextPrograms } from './text/program_data';
 import { textBgTransfer } from './text/bg_transfer';
-import { createPokemon, loadBattleData, updateCatchDemo } from './battle';
+import { createPokemon, loadBattleData } from './battle';
 import { playSFX, isSoundFinished, playDefaultMusicFadeOutCurrent, playDefaultMusic, playMusicNew, restoreNurseMusic, updateMusic6Times,
   stopMusic, stopAllSounds, fadeOutAndStopMusic, isAudioFadingOut } from './audio';
 import { isNoMapMusic, setNoMapMusic } from './audio/audio_flags';
@@ -784,14 +780,6 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     }
     input.setKey('b', false); input.setKey('a', false); input.updateInput();
     expect(host.state).not.toBe('evolution');
-    expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
-    expect(order(updateMusic6Times)).toBeLessThan(order(playDefaultMusicFadeOutCurrent));
-  });
-
-  it('a catch-demo return requests the after-battle fade and no standalone stop', () => {
-    vi.mocked(updateCatchDemo).mockReturnValueOnce({ type: 'ended', savedPalette: 'PALLET' } as never);
-    host.state = 'catch_demo'; host.gameTick();
-    expect(stopMusic).not.toHaveBeenCalled();
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
     expect(order(updateMusic6Times)).toBeLessThan(order(playDefaultMusicFadeOutCurrent));
   });

@@ -250,7 +250,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6169/6169** as of 2026-11-06 (A5f checkpoint-03, awaiting Claude's review; default workers). No-ROM **5887 pass / 282 skip**, 245 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6170/6170** as of 2026-11-07 (V3 checkpoint-01 fix implemented; default workers). No-ROM **5884 pass / 286 skip**, 245 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -353,6 +353,19 @@ is pinned. The session loader expects ball_toss and tink; cold startup is 53 fet
 and restored (note87 section 17); bundle index-acc-zS92.js, 671,418 bytes, SHA256
 cc506c53907b1160fc51be5517a46d5e01ecccdccc57914275298312066931b4. Awaiting Claude's review.
 
+**A5f checkpoint-04** (note 87 §20) makes the catch demos run as real battles: `battle_bridge.ts` gains
+`battleType` in `BattleWorld` and writes `wBattleType`; `battle_live.ts` adds a `demo` encounter kind;
+`script_controller.ts` sets `scriptBattlePending` for the `catchDemo` command; `main.ts` builds the
+demo encounter and calls `beginBattleEntry` with it, starting a real session. New tests:
+`battle_live.test.ts` gains one case (demo worlds, unknown species throws, bridge writes 4, 1, 0);
+`main_catch_demo_battle.test.ts` (new, 3 no-ROM cases) drives Oak's demo (empty party, caught,
+nothing kept, script resumes) and the old man's demo (with/without `INITIAL_CATCH_TRAINING`,
+`ItemUseBallText04`/`05`, party/box/bag unchanged, seen gains enemy, owned doesn't, `wBattleResult = 2`,
+script resumes once). `main_battle_transition.test.ts` changes its four demo rows to take the normal
+battle path (state `battle` at last transition tick, session already started, `frame - e = duration + 2`,
+no `loadBattleSprite` calls). No snapshot changes. Totals: 6173 ROM / 5891 no-ROM + 282 skipped, 246
+files. Bundle `index-CNkqeDax.js`, 669,177 bytes, SHA256 `81bc7f4fd765001e597cd91841b1810ce9a4099b98c20fb881931290dae19fb6`. Y1–Y4 each caught by an AssertionError and restored (note 87 §20.6).
+
 `battle/battle_session_menus.test.ts`:16 no-ROM cases use start/tick and two-frame key holds,
 with renderer/menu_render/party_icons output mocks. Item0 pins full-length end-name decoding
 and exact Misty handoffs. Cases cover Potion, fresh bag bytes/reopening, two uses and successive
@@ -432,6 +445,16 @@ Awaiting Claude's review and the user's play-test.
 **A5f checkpoint-01** adds five ROM-only cases in `rom/__tests__/battle_end_data.test.ts`: `ball_toss` and `tink` join `sounds` (two cases each) and one case pins `SFX_Tink_1` = `SFX_Tink_2`. `battle_animations_data.test.ts` pins all six TossBallAnimation IDs. `battle_subanimation.test.ts` finds POOF by ID 10. `sfx_jingles.test.ts` lists `ball_toss` and `tink` as unused. `static_export.test.ts` expects 200 JSON. Five mutations (`notes/87-a5f-checkpoint-01/grok-mutation-M*.log`), each an AssertionError, restored byte-for-byte. Totals: 6154/6154 ROM; no-ROM 5872 pass / 282 skip; 244 files. Bundle unchanged, `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. Awaiting Claude's review. No play-test.
 
 **A5f checkpoint-02** adds `battle/battle_subanimation_ball.test.ts` (15 no-ROM cases) for the toss and shake special effects. They stay unused until checkpoint-03; `BLOCKBALL_ANIM` has none, and no existing test changes. Ten mutations (`notes/87-a5f-checkpoint-02/grok-mutation-W*.log`), each an AssertionError, restored byte-for-byte. W6's log also shows the subentry guard's `BattleUnsupportedState`. Totals: 6169/6169 ROM; no-ROM 5887 pass / 282 skip; 245 files (232 passed / 13 skipped). Bundle `index-hN_k_3SH.js`, 671,318 bytes, SHA256 `5c1cc152c3209ea10dfb655a4f0c8a2985df253c5b2cfa24f342aefcc90f0439`. Awaiting Claude's review. No play-test.
+
+**A5f checkpoint-04** adds the catch demos as real battles: `battle_bridge.ts` (writes `wBattleType`), `battle_live.ts` (`demo` encounter kind), `script_controller.ts` (sets `scriptBattlePending`), `main.ts` (builds demo encounter, calls `beginBattleEntry`). New test `battle_live.test.ts` case; new file `main_catch_demo_battle.test.ts` (3 no-ROM cases); `main_battle_transition.test.ts` changes 4 demo rows. Totals: 6173 ROM / 5891 no-ROM + 282 skip; 246 files. Bundle `index-CNkqeDax.js`, 669,177 bytes. Y1–Y4 mutations caught.
+
+**A5f checkpoint-05** (note 87 §24) retires the old catch-demo renderer: deletes `battle/catch_demo_screen.ts` (626 lines), `battle/catch_demo.ts` (111), `battle/catch_demo.test.ts` (11 cases); moves `CatchDemoBattleType` to `script/types.ts`; removes `catch_demo` state and its update/render branches from `main.ts`; shrinks `battle_ui.ts` to ~130 lines (evolution/Pokédex sprites and text only); removes `battleTextPages` from `trainer_flow.ts` (its last caller). `end_retirement.test.ts` row 61 becomes `replace` → `text_printer.test.ts` (ASM rule: `para` clears four rows, holds 20 frames, starts row 14); snapshot loses three `catch_demo.ts` rows; `text_census.test.ts` removes `catch_demo_screen.ts` from approved `getText` callers; `battle_menu.test.ts` inlines four frame constants from `catch_demo.ts` as literals (ASM: `core.asm .doSimulatedMenuInput` `ld c, 20`, `home/list_menu.asm DisplayListMenuID` 10 frozen + `Delay3`, `DisplayListMenuIDLoop` 20 on first entry when `wBattleType ≠ 0`). Totals: 6160 ROM / 5878 no-ROM + 282 skip; 245 files. Bundle `index-DdDyee21.js`, 660,489 bytes. Z1–Z3 mutations caught.
+
+**V3 checkpoint-01** (note 88 §7) adds the three Pewter maps: Museum 1F, Museum 2F, Pewter Gym. Extractor changes: `MAP_ID_TO_NAME` gains Museum2F (`$35`), `SPRITE_NAMES` gains `$4F` `old_amber`, `MAP_METADATA` for the three maps (Museum 1F/2F signs and NPCs; Gym keeps only GYM_GUIDE via `NPC_INDEX_FILTER`), `MAP_TEXT_PTRS` for the three `_TextPointers` tables (5, 7, 6 entries), `TEXT_PROGRAM_SYMBOLS` gains 25 programs, `EXTRACTABLE_MAPS` and `resolveLastMap` updated. `main.ts` `MAP_MUSIC` gains Museum1F/2F `cities1`, PewterGym `gym`; `palettes.ts` PEWTER for all three; `auto_text_box.ts` adds Museum1F to no-auto-text-box set; `debug.ts` three warps. Tests: map counts 24 → 27 in 5 files; `map_sprite_sets.test.ts` `CURRENT_MAPS` +3, `INDOOR_OBJECTS` +3, `EXPECTED_W` Museum1F 3, Museum2F 6, PewterGym 4, `ENGINE_SPRITE_CONSTANTS` gains `old_amber`, `NPC_INDEX_FILTER` `PewterGym: [2]`; `small_text_handlers.test.ts` 38 → 42 seen, four deferrals (Museum1F:1,3; Museum2F:5; PewterGym:3); `trainer_tripwires.test.ts` filters PewterGym; `hidden_event_programs.test.ts` skips Museum1F fossils and Gym statues; `auto_text_box.test.ts` adds Museum and Gym runtime table cases; `extraction.test.ts` "should extract all 27 maps", "extracts Museum/Gym since V3"; `static_export.test.ts` 200 → 203 JSON; `battle_text_data.test.ts` programs 999 → 999+25, textPointers drops 3 tables; `battle_item_data.test.ts` and `battle_end_data.test.ts` use `LATER_MAP_PROGRAMS`/`LATER_MAP_TABLES` fixture. No snapshot changes. Totals: 6167 ROM / 5881 no-ROM + 286 skip; 245 files. Bundle `index-D-LGHgHY.js`, 660,743 bytes. W1–W6 mutations caught.
+
+**V3 checkpoint-01 fix** (note 88 §11) adds three no-ROM cases to `overworld/item_pickup.test.ts`: Museum 1F's objects 2, 4 and 5 (the gambler, the back-room scientist, the Old Amber display) talk through the controller as borderless `printText` calls of their farcalled programs, though the extractor has no string for them. Totals 6170 ROM / 5884 no-ROM + 286 skipped, 245 files.
+
+**V3 checkpoint-02a** (note 88 §16) adds `story/museum_1f.test.ts` (12 no-ROM cases): the MONEY box layout, the scientist's branches, the trigger squares and NOOP, and the YES / NO / ¥50 / ¥30 paths through main. `small_text_handlers.test.ts` drops `Museum1F:1` from the deferrals (the other three are renamed 02b/03). Totals: 6182 ROM / 5896 no-ROM + 286 skip; 246 files. Bundle `index-BDiKPiKT.js`, 662,542 bytes. T1–T6 mutations caught.
 
 Together the three earlier A5e suites add 35 cases (6+8+21) over the November 2 baseline, deleting or changing no old
 tests/snapshots. The independent gates for that trio are note77 §9; that closeout's bundle was `index-D4Ol9Anq.js`,655166 bytes,
@@ -966,8 +989,8 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
 
 - **Battle** — 373 tests across 13 files in `src/battle/`. `encounter.test.ts` adds the
   A6b encounter gates and indoor/FOREST/water rules. `catch_demo.test.ts` (V1d, 11)
-  covers the catch demo: the outcome rule, back pics and names, the one-ball bag, the
-  toss animations, and the step list with its ASM frame counts. `trainer_flow.test.ts` (V1c)
+  was deleted with the old catch-demo renderer in A5f checkpoint-05; the demos are covered by
+  `main_catch_demo_battle.test.ts` and the battle-session tests. `trainer_flow.test.ts` (V1c)
   covers the trainer rules as data: meet/victory music, end-text pages (every map
   trainer's first line fits), the pic scroll, the win/loss step lists, and that every
   trainer class resolves to an exported pic. `data.test.ts` checks every trainer-party

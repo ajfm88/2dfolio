@@ -1,7 +1,6 @@
 // Script engine types — commands and runner state for scripted cutscene sequences
 
 import type { Direction } from '../core';
-import type { CatchDemoBattleType } from '../battle/catch_demo';
 import type { NpcWalkMode, NpcScriptOptions } from '../overworld/walk_pace';
 import type { SimulatedJoypadState } from '../overworld/simulated_joypad';
 import type { JoyIgnore } from '../input/joy_ignore';
@@ -9,6 +8,9 @@ import type { TextBindings } from '../text/text_runner';
 import type { GameButton } from '../core';
 import type { MenuInputConfig } from '../menus/menu_input';
 import type { CloseReload } from '../overworld/sprite_sets';
+
+/** BATTLE_TYPE_OLD_MAN (1) and BATTLE_TYPE_PIKACHU (4), constants/battle_constants.asm:48-52. */
+export type CatchDemoBattleType = 'OLD_MAN' | 'PIKACHU';
 
 /** A box drawn over the map with fixed labels, in tiles; the size includes the border. */
 export interface MenuBoxLayout {
@@ -76,8 +78,8 @@ export type ScriptCommand = (
   | { type: 'hideNpc'; npcId: string }
   | { type: 'callback'; fn: () => void }
   | { type: 'warp'; map: string; warpId: number }
-  // The catch demo (battle/catch_demo.ts): the script sets wBattleType, wCurOpponent and
-  // wCurEnemyLevel (PalletTownPikachuBattleScript, ViridianCity...SetupBattle)
+  // The catch demos: the script sets wBattleType, wCurOpponent and wCurEnemyLevel
+  // (PalletTownPikachuBattleScript, ViridianCity...SetupBattle); main runs a battle session (A5f checkpoint-04)
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
   // An NPC and the player walk at once. `npcInStep`: DoScriptedNPCMovement (2 px a pass,
   // in step with the player); otherwise MoveSprite with `npcModes`. `playerFromNpcStep`:
@@ -115,6 +117,12 @@ export type ScriptCommand = (
   | { type: 'fadeIn'; frames?: number }
   | { type: 'giveItem'; itemId: string; count?: number; successCommands?: ScriptCommand[]; failCommands?: ScriptCommand[] }
   | { type: 'removeItem'; itemId: string; count?: number }
+  // DisplayMoneyBox (engine/menus/text_box.asm): the MONEY box with wPlayerMoney, until the display closes
+  | { type: 'moneyBox' }
+  // HasEnoughMoney (home/money.asm): `yes` when wPlayerMoney >= amount (no carry), else `no`
+  | { type: 'ifEnoughMoney'; amount: number; yes: ScriptCommand[]; no: ScriptCommand[] }
+  // SubBCDPredef on wPlayerMoney; callers check HasEnoughMoney first
+  | { type: 'subtractMoney'; amount: number }
 ) & {
   /** An explicit hSpriteIndex/hTextID write immediately before this command, no frame cost. */
   spriteIndex?: number;

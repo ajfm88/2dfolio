@@ -87,8 +87,7 @@ describe('A5b text caller census tripwires', () => {
   });
 
   it('getText calls remain only in the approved A5c consumers', () => {
-    const allowed = new Set(['text/game_text.ts',
-      'battle/catch_demo_screen.ts']);
+    const allowed = new Set(['text/game_text.ts']);
     const callers = new Set<string>();
     for (const path of sources(src)) walk(ast(path), node => {
       // AST inspection excludes comments, declarations and test literals.

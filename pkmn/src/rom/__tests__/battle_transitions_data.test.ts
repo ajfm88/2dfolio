@@ -32,12 +32,12 @@ function dungeonLists(): { dungeonMaps: number[]; dungeonRanges: number[][] } {
     dungeonRanges: rows(asm.split('DungeonMaps2:')[1]) };
 }
 
-it('commits one new data file with literal dungeon lists and the 24 runtime map IDs', () => {
+it('commits one new data file with literal dungeon lists and the 27 runtime map IDs', () => {
   expect(Object.keys(file).sort()).toEqual(['dungeonMaps', 'dungeonRanges', 'mapIds', 'mapObjectCounts']);
   expect(file.dungeonMaps).toEqual([51, 82, 192, 232]);
   expect(file.dungeonRanges).toEqual([[59, 61], [95, 118], [141, 151], [207, 228]]);
   expect(file.mapIds).toEqual(EXTRACTABLE_MAPS);
-  expect(Object.keys(file.mapIds)).toHaveLength(24);
+  expect(Object.keys(file.mapIds)).toHaveLength(27);
   for (const name of Object.keys(file.mapIds)) {
     const map = JSON.parse(readFileSync(resolve(DATA, `maps/${name}.json`), 'utf8'));
     expect(map).not.toHaveProperty('mapId'); expect(map).not.toHaveProperty('id');

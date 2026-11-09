@@ -18,14 +18,17 @@ import type { Bag } from '../items';
 export interface LiveBattleSources extends Omit<BattleWorld,
   'opponent' | 'enemyLevel' | 'partyIndex' | 'gymLeaderNo' | 'endBattleText'> {}
 export type LiveBattleEncounter = { kind: 'wild'; species: string | number; level: number }
+  /** ViridianCity.asm:97-106 (BATTLE_TYPE_OLD_MAN) and PalletTown.asm:138-148 (BATTLE_TYPE_PIKACHU). */
+  | { kind: 'demo'; battleType: 1 | 4; species: string | number; level: number }
   | { kind: 'trainer'; trainerClass: string; partyIndex: number; endBattleText?: BattleWorld['endBattleText']; gymLeaderNo: number };
 
 export function liveBattleWorld(sources: LiveBattleSources, encounter: LiveBattleEncounter): BattleWorld {
-  if (encounter.kind === 'wild') {
+  if (encounter.kind === 'wild' || encounter.kind === 'demo') {
     const species = typeof encounter.species === 'number' ? getSpeciesById(encounter.species) : getSpecies(encounter.species);
     const opponent = species ? POKEDEX_ORDER.indexOf(species.id)+1 : 0;
-    if (!opponent) throw new BattleUnsupportedState(`live wild species ${encounter.species}`);
-    return { ...sources, opponent, enemyLevel:encounter.level, partyIndex:0, gymLeaderNo:0 };
+    if (!opponent) throw new BattleUnsupportedState(`live ${encounter.kind} species ${encounter.species}`);
+    const world = { ...sources, opponent, enemyLevel:encounter.level, partyIndex:0, gymLeaderNo:0 };
+    return encounter.kind === 'demo' ? { ...world, battleType:encounter.battleType } : world;
   }
   const trainer = getTrainerSpeciesData().trainers[encounter.trainerClass];
   if (!trainer) throw new BattleUnsupportedState(`live trainer class ${encounter.trainerClass}`);

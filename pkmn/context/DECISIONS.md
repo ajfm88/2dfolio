@@ -1339,6 +1339,19 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      - `tink` names the Audio 2 copy (`SFX_Tink_2`), which is `SFX_Tink_1` byte for byte; a ROM test pins it.
      - **2026-11-06:** checkpoints 01–02 were Grok's; the user gave 03 to Codex. All three passed review (note 87 §12, §15,
        §18). End of day: the user's catch play-test (§16.8) is next, then 04's plan; the user names each implementer.
+     - **Closed 2026-11-07:** 04 and 05 (Codex) passed review (note 87 §22, §26); the user's full A5f play-test passed
+       (§27). A5f and A5 are done.
+
+106. **V3: Route 3 comes before Brock's win (O-53 → A)** (2026-11-07, note 88 §5).
+     *The user: "let's go with A".*
+
+     - On the cartridge, beating Brock hides Pewter's gym guy and the east exit loads Route 3. Without Route 3 the player
+       would walk onto Pewter's walkable border blocks; V2b's tripwire (`pewter_tripwire.test.ts`) fails while any
+       `BEAT_BROCK` setter exists without Pewter's named east connection to `Route3`.
+     - So V4's Route 3 map and its east connection move into V3 as a checkpoint **before** Brock's win. The tripwire passes
+       for the real reason, and every commit stays vanilla. V3: 01 the three maps, 02 the Museum, 03 the Gym without the
+       win, 04 Route 3 and the connection, 05 Brock's win and its consequences.
+     - V4 keeps Diglett's Cave, the hop-midpoint `RunMapScript` (#43) and anything of Route 3 that 04 doesn't need.
 
 ## Open — not decided, needs the user
 

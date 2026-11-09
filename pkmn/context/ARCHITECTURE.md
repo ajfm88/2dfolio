@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6169** (2026-11-06, A5f checkpoint-03, awaiting Claude's review; default workers; no-ROM 5887 pass / 282 skip; 245 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6182** (2026-11-07, V3 checkpoint-02a implemented; default workers; no-ROM 5896 pass / 286 skip; 246 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (200 files as of 2026-11-06; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
+- **`data/`** — JSON only, produced by `npm run setup` (203 files as of 2026-11-07; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-05):525 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 200 JSON files. No extraction was needed for A5e02–03b. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-07):525 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 203 JSON files. No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -488,7 +488,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
-| `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d); since A5c1 the unused `BattleScreen`, its renderer and the HUD writers (A5c3 wires them) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()`, `initCatchDemo()` |
+| `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) runs in the battle session since A5f checkpoint-04; old renderer deleted in 05; since A5c1 the unused `BattleScreen`, its renderer and the HUD writers (A5c3 wires them) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
 | `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
@@ -546,7 +546,6 @@ item_menu         bag
 blackboard        interactive board menu
 dex               Pokédex list/data/area
 town_map          map overlay
-catch_demo        the catch demo: Oak catches Pikachu, the old man (V1d)
 pikachu_emotion   animated Pikachu face box
 evolution         post-battle evolution (sprite morph, B cancels)
 script            cutscene script engine running

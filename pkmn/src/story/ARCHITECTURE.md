@@ -15,7 +15,7 @@
 
 Commands available in `ScriptCommand` (from `src/script/types.ts`):
 `displayOpen`, `printText`, `displayHide`, `displayClose`, `displayCloseInPlace`,
-`whiteOut`, `townMap`, `pokemart`, `pc`, `menuBox`, `menuInput`, `restoreSavedScreen`,
+`whiteOut`, `townMap`, `pokemart`, `pc`, `menuBox`, `moneyBox`, `ifEnoughMoney`, `subtractMoney`, `menuInput`, `restoreSavedScreen`,
 `yesNoChoice`, `emotionBubble`, `healJingle`, `restoreMapMusic`, `sound`, `textButtonWait`,
 `hideObject`, `showObject`, `overworldLoop`, `joyIgnore`, `npcMovementScript`,
 `setSpritePosition1`, `restoreSpritePosition2`, `moveNpc`, `movePlayer`, `pushPlayer`, `tryPikachuMovement`, `faceNpc`,
@@ -23,7 +23,7 @@ Commands available in `ScriptCommand` (from `src/script/types.ts`):
 `hideNpc`, `unhideNpc`, `callback`, `warp`, `catchDemo`, `moveParallel`, `awaitInteraction`,
 `startBattle`, `healParty`, `healingMachine`, `pikachuToNurse`, `hidePikachu`, `showPikachu`,
 `pikachuStandDown`, `updateSprites`, `pikachuFacing`, `ifStarterPikachu`, `fadeOut`,
-`fadeIn`, `giveItem`, `removeItem`. `pushPlayer` simulates one joypad step, with collision/ledges.
+`fadeIn`, `giveItem`, `removeItem`. `pushPlayer` simulates one joypad step, with collision/ledges. `moneyBox` draws `DisplayMoneyBox` through `moneyBoxLayout` (the Mart's box and `PrintBCDNumber` flags). `ifEnoughMoney` takes yes when money is at least the amount (`HasEnoughMoney`: equal is enough). `subtractMoney` subtracts that amount and throws if it was not checked first (`SubBCDPredef`).
 
 Retained blocking routines used by pickups (A1b, migrated in A5b4; legacy retirement A5b7g1):
 
@@ -222,6 +222,7 @@ map-music restoration and suppress the end-display opening update. Their direct 
 program starts at +20. The native exit preserves status, writes STAY/NONE, then HIDE
 and RESET include their real sprite updates; RESET resumes ordinary input that tick.
 The Youngster turns randomly afterwards and reloads STAY/DOWN from object data.
+`museum_1f.ts` (V3 checkpoint-02a) is Museum 1F's map script and the ticket scientist. DEFAULT on (9,4) or (10,4) runs the same body as text 1. Behind the counter, (13,4) or (12,3), is the amber question. On row 4 with no ticket, `moneyBox` and YES/NO: ¥50 buys the ticket (`subtractMoney`, `SFX_PURCHASE`, script NOOP); NO or too little money says "Come again", then one `pushPlayer` down after the close. Off row 4, the other-side line or "plenty of time". Pewter's own script still clears the ticket on every city pass.
 `pewter_tripwire.test.ts` blocks a new BEAT_BROCK setter until Pewter has an east Route3
 connection. CP4 verified all museum/gym/east approaches, walk-offs/guide returns, Pikachu,
 the east block, and the Youngster's random turns versus DOWN after a map reload. Viridian's
@@ -257,6 +258,7 @@ Exported builder functions (from `story/index.ts`):
 | `viridian_mart.ts` | 45 | Parcel delivery event |
 | `viridian_city.ts` | 230 | Viridian City's map script: the three old men, the catch demos, the Gym door (V1e) |
 | `pewter_city.ts` | — | Pewter's default/east check, both guides and six transient native escort states (V2b CP3) |
+| `museum_1f.ts` | — | Museum 1F's ticket map script and scientist (V3 checkpoint-02a): DEFAULT on (9,4)/(10,4), the ¥50 purchase, the refusal step |
 | `hidden_events.ts` | 64 | Scripted hidden events (school notebook, etc.) |
-| `../script/` | 880 | Script types, engine (createScript, advanceScript), controller (updateScript, render helpers) |
+| `../script/` | 880 | Script types, engine (createScript, advanceScript), controller (updateScript, render helpers); `moneyBox`, `ifEnoughMoney`, `subtractMoney` (V3 checkpoint-02a) |
 | `../overworld/story_state.ts` | 126 | NPC visibility, shop availability and defeated tracking |

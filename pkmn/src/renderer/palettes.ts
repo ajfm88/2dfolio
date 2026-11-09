@@ -105,6 +105,9 @@ const MAP_PALETTE: Record<string, string> = {
   PewterMart: 'PEWTER',
   PewterSpeechHouse: 'PEWTER',
   PewterPokecenter: 'PEWTER',
+  Museum1F: 'PEWTER',  // indoor maps take wLastMap's palette (SetPal_Overworld)
+  Museum2F: 'PEWTER',
+  PewterGym: 'PEWTER',
 
   // Route 2 + Viridian Forest. Gates, houses and the Forest take wLastMap's palette
   // (Route 2 → ROUTE); the CAVERN tileset forces PAL_CAVE

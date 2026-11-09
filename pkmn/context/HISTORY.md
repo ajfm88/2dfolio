@@ -21,6 +21,118 @@ Newest first.
 
 *(Moved verbatim from STATUS.md on 2026-11-06, A5f checkpoint-02, DECISIONS #61.)*
 
+*(Moved verbatim from STATUS.md on 2026-11-07, O-53, DECISIONS #61.)*
+
+### 2026-11-07 (A5f checkpoint-05 implemented, awaiting Claude's review) — Codex
+
+- Applied `notes/87-a5f-checkpoint-05/05-spike.diff` (16 entries incl. 3 deleted files; manifest `PASS 16 files + patch`). Source audit (4 rows): no remaining imports of deleted files; `battle_ui.ts` survivors have live callers (evolution/Pokédex); `battleTextPages` no production caller (row 61 → `text_printer.test.ts`); `battle_menu.test.ts` inlines ASM frame constants (core.asm `.doSimulatedMenuInput` `ld c, 20`, list_menu.asm `DisplayListMenuID` 10 frozen + `Delay3`, `DisplayListMenuIDLoop` 20 on first entry when `wBattleType ≠ 0`). Gates (from `game/`, sequential, default workers): typecheck pass; build `index-DdDyee21.js` 660,489 bytes SHA256 `4d2b80aa...3465a`; marker pass; ROM 6160/6160 (245 files); no-ROM 5878 pass / 282 skip (232 passed / 13 skipped). Z1–Z3 mutations each failed as AssertionError and restored. Updated battle ARCHITECTURE.md (Catch demo, A5e census, file table), context/ARCHITECTURE.md (battle module, catch_demo state), CONVENTIONS.md (test suite + baselines), CLAUDE.md (baseline). STATUS updated. Commit locally.
+
+### 2026-11-07 (A5f checkpoint-04 play-tested; checkpoint-05 briefed) — Claude (Opus)
+
+- The user's §20.8 play-test: "all passes" (note 87 §23). Traced and spiked checkpoint-05: three files deleted, the `catch_demo` state, `battle_ui.ts` cut to what evolution and the Pokédex use, `battleTextPages` retired with its last caller (08b manifest row 61 → the text printer's para witness), the old music case replaced on the session path. Spike: bundle `index-DdDyee21.js`, ROM 6160/6160, no-ROM 5878/282, Z1–Z3 caught. Note 87 §24, backlog entry for three now-unread text keys.
+
+### 2026-11-07 (A5f checkpoint-04 reviewed: passed) — Claude (Opus)
+
+- Codex's `9013024`: code byte-identical to the spike, witnesses match. No §21 and uncommitted witness logs: §21 recorded from the pasted report, logs committed. Doc fixes: a split table row in `context/ARCHITECTURE.md`, four stale battle ARCHITECTURE rows. R1 (default `wBattleType` 1) caught by 10 cases. Gates: ROM 6173/6173, no-ROM 5891/282, bundle `index-CNkqeDax.js`. Note 87 §22. Next: the user's play-test (§20.8).
+
+### 2026-11-07 (A5f checkpoint-04 implemented, awaiting Claude's review) — Codex
+
+- Applied `notes/87-a5f-checkpoint-04/04-spike.diff` (7 files, manifest `PASS 7 files + patch`). Source audit (4 rows) verified against pret ASM: PalletTown/ViridianCity scripts set `wBattleType`; core.asm types 3/4 skip `AnyPartyAlive`; battle_menu.ts/battle_item_ball.ts have the simulated input, one-ball list, and demo branches; LoadEnemyMonData sets seen flag, end_of_battle.asm skips evolution/mood for `wBattleResult ≠ 0`. Gates (from `game/`, sequential, default workers): typecheck pass; build `index-CNkqeDax.js` 669,177 bytes SHA256 `81bc7f4f...9fb6`; marker pass; ROM 6173/6173 (246 files); no-ROM 5891 pass / 282 skip (233 passed / 13 skipped). Y1–Y4 mutations each failed as AssertionError and restored. Updated battle ARCHITECTURE.md (Catch demo section, A5e census), context/ARCHITECTURE.md (battle module row, catch_demo state), CONVENTIONS.md (test suite + baselines), CLAUDE.md (baseline). STATUS updated. Commit locally.
+
+### 2026-11-07 (A5f checkpoint-03 play-tested; checkpoint-04 briefed) — Claude (Opus)
+
+- Ran the dev server for the user's §16.8 play-test; the user reported it done with no failure (note 87 §19). Traced and spiked checkpoint-04: the engine already has every demo branch, so the bridge gains `wBattleType`, `LiveBattleEncounter` a demo kind, and `main`'s `catchDemo` starts a real session. One planned test change (four rows in one file), four new cases. Spike: bundle `index-CNkqeDax.js`, ROM 6173/6173, no-ROM 5891/282, Y1–Y4 caught. Note 87 §20, `04-spike.diff`, the manifest and runner.
+
+### 2026-11-06 (A5f checkpoint-03 reviewed: passed; end of day) — Claude (Opus)
+
+- Codex's `ccf0119` (the user gave 03 to Codex): byte-identical to the spike, witnesses match, archive verbatim. R1 (a wrong tink ID) caught. Gates: ROM 6169/6169, no-ROM 5887/282, bundle `index-acc-zS92.js`. Fixed one census row (the catch's poof is live). Note 87 §18. End of day: next is the user's catch play-test (§16.8), then plan checkpoint-04.
+
+### 2026-11-06 (A5f checkpoint-03 implemented, awaiting Claude's review) - Codex
+
+- Applied the exact five-file patch at `4c51968`; manifest PASS, four-row source audit agrees. Only section 16.4's planned test changes; no snapshots or generated data changed.
+- Ordered gates once, default workers: typecheck/build/marker pass; ROM 6169/6169 (245 files), no-ROM 5887 pass / 282 skip. Bundle `index-acc-zS92.js`, 671,418 bytes, SHA256 `cc506c53...31b4`. X1-X3 each caught by an AssertionError and restored. Report: note 87 section 17. Claude reviews next; user play-test follows. Checkpoint-04 not started.
+
+### 2026-11-06 (A5f checkpoint-03 briefed for Grok) — Claude (Opus)
+
+- Spiked the live binding (one sub-animation host with the ball sounds; two sounds preloaded). Seven planned test changes in three files, each matching checkpoint-02's ledgers; `wNumShakes` now ends 0; live sound order pinned. ROM 6169/6169, no-ROM 5887/282, bundle `index-acc-zS92.js`, X1–X3 caught. Note 87 §16.
+
+### 2026-11-06 (A5f checkpoint-02 reviewed: accepted) — Claude (Opus)
+
+- Grok's `ca7239b`: byte-identical to the spike, witnesses match, archive verbatim. R1 (GROWL's table ID) caught by the source-table test. Gates: ROM 6169/6169, no-ROM 5887/282, bundle `index-hN_k_3SH.js`. Note 87 §15. Next: brief checkpoint-03.
+
+### 2026-11-06 (A5f checkpoint-02 implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `02-spike.diff` on `f7cdd24`. Manifest PASS, two files. The five-row audit agrees (note 87 §14). No existing test, snapshot, session or data change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6169/6169 (245 files), no-ROM 5887 pass / 282 skip (232 passed / 13 skipped). Bundle `index-hN_k_3SH.js`, 671,318 bytes, SHA256 `5c1cc152c3209ea10dfb655a4f0c8a2985df253c5b2cfa24f342aefcc90f0439`. W1–W10 each an AssertionError and restored. Checkpoint-03 not started.
+- Archived 2 oldest session entries verbatim to HISTORY.md (DECISIONS #61).
+
+### 2026-11-06 (A5f checkpoint-02 briefed for Grok) — Claude (Opus)
+
+- Spiked the toss and shake special effects (unused; `BLOCKBALL_ANIM` has none, by the table): ROM 6169/6169, no-ROM 5887/282, bundle `index-hN_k_3SH.js`, 15 new cases, no existing test change. W1–W10 caught as assertions (W5 and the block case revised after two first tries were caught only by thrown errors). Note 87 §13, `02-spike.diff`, manifest, runner.
+
+### 2026-11-06 (A5f checkpoint-01 reviewed: accepted) — Claude (Opus)
+
+- Grok's `52310a9`: code byte-identical to the spike, manifest PASS 15, witnesses match, docs per §9. R1 (a corrupted `tink.json` frequency) caught by the source-encoding test. Gates: bundle unchanged, ROM 6154/6154, no-ROM 5872/282. Note 87 §12. Next: brief checkpoint-02.
+
+*(Moved verbatim from STATUS.md on 2026-11-07, A5f checkpoint-05 review, DECISIONS #61.)*
+
+### 2026-11-06 (A5f checkpoint-01 implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `01-spike.diff` on `8e3ee56`. Manifest PASS, 15 files. Setup twice, byte-identical: six generated files only. The four-row audit agrees (note 87 §11). No engine code, preload or snapshot change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6154/6154 (244 files), no-ROM 5872 pass / 282 skip (231 passed / 13 skipped). Bundle unchanged, `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. M1–M5 each an AssertionError and restored. Checkpoint-02 not started.
+
+### 2026-11-06 (A5f planned; checkpoint-01 briefed for Grok) — Claude (Opus)
+
+- Traced what A5f still needs: `ItemUseBall` and the toss sequence are live; the ball's OAM sub-animations ($C1–$C6) and their special effects are zero-frame, and the demos still use the old renderer. Ball animations play whatever the option says (`MoveAnimation` → `TossBallAnimation` first). Spiked checkpoint-01 (data): setup twice identical, bundle unchanged, ROM 6154/6154, no-ROM 5872/282, M1–M5 caught (two filter bugs fixed in the runner). Wrote note 87, `01-spike.diff`, the manifest and runner; DECISIONS #105; a backlog entry (`wGrassRate`).
+
+### 2026-11-06 (screen-model merge play-tested: done) — Claude (Opus)
+
+- The user ran note 86 §11.7's five checks and reported "all passes". Recorded as §14; closed the merge in STATUS, PROJECT, CLAUDE.md, DECISIONS #104 and note 57. No code changed. Next: plan A5f.
+
+### 2026-11-06 (screen-model merge checkpoint-02 reviewed: passed) — Claude (Opus)
+
+- Grok's `869b3ee` equals the spike byte for byte; manifest PASS; witness counts and restores match the planner's. R1 (`cells` returning the shown copy) caught by 12 cases. Gates: bundle `index-BOisyFSK.js`, ROM 6149/6149, no-ROM 5872/277. Note 86 §13. Next: the user's play-test (§11.7).
+
+*(Moved verbatim from STATUS.md on 2026-11-07, A5f checkpoint-05 brief, DECISIONS #61.)*
+
+### 2026-11-06 (screen-model merge checkpoint-02 implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `02-spike.diff` on `70424ae`. Manifest PASS, three files. The four-row audit agrees (note 86 §12). No test, snapshot, renderer or data change.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6149/6149 (244 files), no-ROM 5872 pass / 277 skip (231 passed / 13 skipped). Bundle `index-BOisyFSK.js`, 670,274 bytes, SHA256 `886fa0103aa8f102924494435d35de6c8dda4c1af71a24d3d0079e076b6d2742`. W1–W12 failure counts match §11.5; each is an AssertionError and was restored. A5f not started.
+
+*(Moved verbatim from STATUS.md on 2026-11-07, A5f checkpoint-04 review, DECISIONS #61.)*
+
+### 2026-11-06 (screen-model merge checkpoint-02 briefed for Grok) — Claude (Opus)
+
+- Fresh spike at `a87637b` (byte-identical to the 01-time preview): typecheck clean, bundle `index-BOisyFSK.js`, ROM 6149/6149, no-ROM 5872/277, no test changed. W1–W12 each caught by existing tests (the first runner missed W1 by omitting `battle_effects.test.ts`; a full run failed 37). Wrote note 86 §11, `02-spike.diff`, the manifest and runner.
+
+### 2026-11-06 (screen-model merge checkpoint-01 reviewed: accepted) — Claude (Opus)
+
+- Grok's `0eca04e`: manifest PASS, only the test imports the core, report and witnesses agree, the STATUS archive is verbatim. R1 (shown aliasing wTileMap) caught by 8 cases. Gates: bundle unchanged, ROM 6149/6149, no-ROM 5872/277. Note 86 §10. Next: brief checkpoint-02.
+
+*(Moved verbatim from STATUS.md on 2026-11-07, A5f checkpoint-04 brief, DECISIONS #61.)*
+
+### 2026-11-06 (screen-model merge checkpoint-01 implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `01-spike.diff` on `1bc787f`. Manifest PASS. The four-row audit agrees (note 86 §9). Nothing imports `screen_model.ts`.
+- Gates once, default workers: typecheck, build, 09c marker, ROM 6149/6149 (244 files), no-ROM 5872 pass / 277 skip (231 passed / 13 skipped). Bundle `index-CW6CErI9.js`, 670,718 bytes, SHA256 `0f66990479c1be52952236a1345155e1ce2d93ff28601ec8ba9c5dee582d2bca`, unchanged. M1–M8 each failed as an AssertionError and were restored (`grok-mutation-M*.log`). Checkpoint-02 not started.
+
+### 2026-11-06 (screen-model merge planned; checkpoint-01 briefed for Grok) — Claude (Opus)
+
+- The user chose a shared core (renderers unchanged). Traced the three models: the tile map's thirds, the copy queue and the message-box capture match line for line. Spiked both checkpoints: 01 alone keeps the bundle byte-identical, ROM 6149/6149, no-ROM 5872/277, M1–M8 caught; 01+02 also pass with no existing test changed (bundle `index-BOisyFSK.js`). Wrote note 86, `01-spike.diff`, the manifest, the mutation runner and the 02 preview; DECISIONS #104 amended.
+
+### 2026-11-06 (O-52 answered: screen-model merge before A5f) — Claude (Opus)
+
+- The user: "we can do that before A5f". Recorded as DECISIONS #104; queued the merge as row 1, ahead of A5f. Next: plan it.
+
+### 2026-11-06 (A5e checkpoint-09 play-tested: A5e closed) — Claude (Opus)
+
+- The user ran note 85 §7's nine checks and reported "all passes". Recorded as §12; closed checkpoint-09 and A5e in STATUS, PLAN, PROJECT, CLAUDE.md, note 75 and the battle ARCHITECTURE. No code changed. Next: plan A5f. Open: O-52 (the screen-model merge's place).
+
+### 2026-11-06 (A5e checkpoint-09 reviewed: passed) — Claude (Opus)
+
+- Codex's `ad64da2` equals the spike byte for byte; manifest PASS, docs per §5–§6. Fixed 10 more not-live comment lines (the brief's sweep gap; seven were Codex's findings) and two ARCHITECTURE lines, comment-only against `ad64da2`. Gates: ROM 6131/6131, no-ROM 5854/277, bundle unchanged. R1 (an extractor key rename) caught by the checker. Note 85 §11. Next: the user's full A5e play-test (§7).
+
 ### 2026-11-06 (A5e checkpoint-09 implemented, awaiting Claude's review) - Codex
 
 - Applied the exact 69-file comment patch at `85455ce`; manifest PASS, all nine audit classes agree. Carry census and note75 handoff updated. Ordered gates once: checker/typecheck/build/marker pass; ROM 6131/6131, no-ROM 5854/277; bundle unchanged. W1-W4 caught and restored byte-for-byte; evidence and report in note85 section 10.

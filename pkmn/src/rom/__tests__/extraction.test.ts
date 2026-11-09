@@ -854,9 +854,10 @@ describe('Map extraction', () => {
     'Route2', 'Route2Gate', 'Route2TradeHouse', 'DiglettsCaveRoute2',
     'ViridianForest', 'ViridianForestSouthGate', 'ViridianForestNorthGate',
     'PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse',
+    'Museum1F', 'Museum2F', 'PewterGym',
   ];
 
-  it('should extract all 24 maps', () => {
+  it('should extract all 27 maps', () => {
     const all = extractAllMaps(rom, itemNames, trainerClassNames);
     expect(Object.keys(all).sort()).toEqual([...ALL_MAP_NAMES].sort());
   });
@@ -881,7 +882,7 @@ describe('V2a Pewter extraction', () => {
   const map = (name: string, source = rom) => extractMap(source, name, itemNames, trainerClassNames)!;
   const stock = (name: string, source = rom) => map(name, source).npcs.find(n => n.id === 'clerk')!.shopItems;
 
-  it('keeps Museum/Gym referenced-only and Route 3 unnamed, with inverse Route 2 alignment', () => {
+  it('extracts Museum/Gym since V3 and keeps Route 3 unnamed, with inverse Route 2 alignment', () => {
     const city = map('PewterCity');
     expect([city.width, city.height, city.tileset]).toEqual([20, 18, 'OVERWORLD']);
     expect(city.connections).toEqual([{ direction: 'south', mapName: 'Route2', offset: 5 }]);
@@ -891,7 +892,32 @@ describe('V2a Pewter extraction', () => {
       [7, 29, 'PewterSpeechHouse', 0], [13, 25, 'PewterPokecenter', 0],
     ]);
     const all = extractAllMaps(rom, itemNames, trainerClassNames);
-    for (const name of ['Museum1F', 'PewterGym', 'Route3']) expect(all).not.toHaveProperty(name);
+    expect(all).not.toHaveProperty('Route3'); // V3 checkpoint-04
+    for (const name of ['Museum1F', 'Museum2F', 'PewterGym']) expect(all).toHaveProperty(name);
+  });
+
+  it('V3: reads the Museum and Gym object lists, warps both ways, and keeps Brock and the Jr. Trainer out until checkpoint-03', () => {
+    expect(map('Museum1F').warps.map(w => [w.x, w.y, w.destMap, w.destWarpId])).toEqual([
+      [10, 7, 'PewterCity', 0], [11, 7, 'PewterCity', 0], [16, 7, 'PewterCity', 1], [17, 7, 'PewterCity', 1], [7, 7, 'Museum2F', 0]]);
+    expect(map('Museum2F').warps.map(w => [w.x, w.y, w.destMap, w.destWarpId])).toEqual([[7, 7, 'Museum1F', 4]]);
+    expect(map('PewterGym').warps.map(w => [w.x, w.y, w.destMap, w.destWarpId])).toEqual([[4, 13, 'PewterCity', 2], [5, 13, 'PewterCity', 2]]);
+    expect([map('Museum1F').tileset, map('Museum2F').tileset, map('PewterGym').tileset]).toEqual(['MUSEUM', 'MUSEUM', 'GYM']);
+    expect(map('PewterGym').npcs.map(n => n.id)).toEqual(['gym_guide']);
+    const objectsDir = resolve(__dirname, '../../../../refs/pokeyellow/data/maps/objects');
+    if (!existsSync(objectsDir)) return;
+    for (const name of ['Museum1F', 'Museum2F']) {
+      const asm = readFileSync(resolve(objectsDir, `${name}.asm`), 'utf8');
+      const ids = [...asm.matchAll(/const_export (\w+)/g)].map(m => m[1].slice(name.length + 1).toLowerCase());
+      const rows = [...asm.matchAll(/object_event\s+(\d+),\s*(\d+),\s*SPRITE_\w+,\s*(\w+),\s*(\w+)/g)];
+      expect(map(name).npcs.map(n => n.id), name).toEqual(ids);
+      map(name).npcs.forEach((npc, i) => {
+        const [, x, y, move, direction] = rows[i];
+        expect([npc.x, npc.y, npc.movement]).toEqual([Number(x), Number(y), move.toLowerCase()]);
+        if (move === 'WALK') expect(npc.walkDir).toBe(direction.toLowerCase());
+        else if (direction !== 'NONE') expect(npc.direction).toBe(direction.toLowerCase());
+      });
+    }
+    expect(map('Museum1F').npcs.find(n => n.id === 'old_amber')!.sprite).toBe('old_amber');
   });
 
   it('reads object ids/positions/directions from the five Pewter ASM object lists', () => {

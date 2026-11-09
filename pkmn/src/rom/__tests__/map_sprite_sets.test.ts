@@ -23,6 +23,7 @@ const CURRENT_MAPS = [
   'ViridianNicknameHouse', 'Route2', 'DiglettsCaveRoute2', 'ViridianForestNorthGate',
   'Route2TradeHouse', 'Route2Gate', 'ViridianForestSouthGate', 'ViridianForest',
   'PewterCity', 'PewterNidoranHouse', 'PewterMart', 'PewterSpeechHouse', 'PewterPokecenter',
+  'Museum1F', 'Museum2F', 'PewterGym',
 ] as const;
 
 /** Engine asset name → pret picture constant. Aliases without a canonical name are absent. */
@@ -49,7 +50,7 @@ const ENGINE_SPRITE_CONSTANTS: Record<string, string> = {
   jigglypuff: 'SPRITE_JIGGLYPUFF', clefairy: 'SPRITE_CLEFAIRY', chansey: 'SPRITE_CHANSEY',
   jessie: 'SPRITE_JESSIE', james: 'SPRITE_JAMES', poke_ball: 'SPRITE_POKE_BALL', fossil: 'SPRITE_FOSSIL',
   boulder: 'SPRITE_BOULDER', paper: 'SPRITE_PAPER', pokedex: 'SPRITE_POKEDEX', clipboard: 'SPRITE_CLIPBOARD',
-  snorlax: 'SPRITE_SNORLAX', gambler_asleep: 'SPRITE_GAMBLER_ASLEEP',
+  snorlax: 'SPRITE_SNORLAX', old_amber: 'SPRITE_OLD_AMBER', gambler_asleep: 'SPRITE_GAMBLER_ASLEEP',
 };
 
 /** Every split row, including Route 20's unused $f8 line. */
@@ -81,6 +82,10 @@ const INDOOR_OBJECTS: Record<string, readonly string[]> = {
   PewterNidoranHouse: ['monster', 'little_boy', 'middle_aged_man'],
   PewterMart: ['clerk', 'youngster', 'super_nerd'],
   PewterSpeechHouse: ['gambler', 'youngster'],
+  // V3: every object_event in source order (toggles and NPC_INDEX_FILTER don't change the allocation).
+  Museum1F: ['scientist', 'gambler', 'scientist', 'scientist', 'old_amber'],
+  Museum2F: ['youngster', 'gramps', 'scientist', 'brunette_girl', 'hiker'],
+  PewterGym: ['super_nerd', 'cooltrainer_m', 'gym_guide'],
   PewterPokecenter: ['nurse', 'gentleman', 'jigglypuff', 'link_receptionist', 'cooltrainer_f', 'chansey'],
   RedsHouse1F: ['mom'],
   RedsHouse2F: [],
@@ -108,6 +113,8 @@ const EXPECTED_W: Record<(typeof CURRENT_MAPS)[number], number> = {
   ViridianNicknameHouse: 4, ViridianForest: 3, ViridianForestNorthGate: 3,
   ViridianForestSouthGate: 3, Route2Gate: 3, Route2TradeHouse: 3,
   RedsHouse1F: 2, BluesHouse: 2, DiglettsCaveRoute2: 2, RedsHouse2F: 1,
+  // V3: Pikachu plus each distinct walking picture (old_amber is a still picture).
+  Museum1F: 3, Museum2F: 6, PewterGym: 4,
 };
 
 function fileOff(bank: number, addr: number): number {
@@ -600,7 +607,7 @@ describeRom('A5b2 map sprite sets from the ROM', () => {
   it('preserves NPC/sign text IDs from the source object and text-pointer declarations', () => {
     const filters: Record<string, number[]> = {
       OaksLab: [2, 0, 1, 3, 4, 6, 7, 8], ViridianCity: [0, 1, 2, 3, 5, 6, 4, 7], BluesHouse: [0, 2],
-      Route22: [],
+      Route22: [], PewterGym: [2], // V3 checkpoint-01 keeps only GYM_GUIDE
     };
     for (const name of CURRENT_MAPS) {
       const textIds: Record<string, number> = {};

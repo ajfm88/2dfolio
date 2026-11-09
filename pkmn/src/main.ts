@@ -88,10 +88,6 @@ import {
   applyEvolution,
   loadPokemonSprites,
   renderBattleText,
-  initCatchDemo,
-  updateCatchDemo,
-  renderCatchDemo,
-  clearCatchDemo,
 } from "./battle";
 import { loadStatusScreenAssets } from './menus/status_screen';
 import { createSilhouette } from "./battle/battle_ui";
@@ -174,7 +170,6 @@ type GameState =
   | "trainer_card"
   | "option_menu"
   | "save_menu"
-  | "catch_demo"
   | "pikachu_emotion"
   | "dex"
   | "evolution";
@@ -936,6 +931,10 @@ const MAP_MUSIC: Record<string, string> = {
   PewterMart: 'pokecenter',
   PewterSpeechHouse: 'cities1',
   PewterPokecenter: 'pokecenter',
+  // V3 (data/maps/songs.asm:55-57)
+  Museum1F: 'cities1',
+  Museum2F: 'cities1',
+  PewterGym: 'gym',
 };
 
 /** Get the music track for a map, or null if unknown. */
@@ -1480,23 +1479,21 @@ function gameTick(): void {
           break;
         }
         case 'catchDemo': {
-          // Assembly: BATTLE_TYPE_OLD_MAN / BATTLE_TYPE_PIKACHU — a wild battle (wCurOpponent
-          // is a species) run with simulated input: battle/catch_demo.ts
+          // ViridianCity.asm / PalletTown.asm set wBattleType (BATTLE_TYPE_OLD_MAN 1 / BATTLE_TYPE_PIKACHU 4),
+          // wCurOpponent and wCurEnemyLevel: a wild battle on the battle engine, which runs the simulated
+          // input and ItemUseBall's demo branches (A5f checkpoint-04).
           const enemy = createPokemon(scriptAction.species, scriptAction.level);
           if (!enemy) {
             console.error(`catchDemo: unknown species ${scriptAction.species}`);
             advanceActiveScript();
             break;
           }
-          markSeen(enemy.species.id); // LoadEnemyMonData marks it seen
-          beginBattleEntry(false, enemy.level, enemy.species.id, 0, async () => {
-            await initCatchDemo({
-              battleType: scriptAction.battleType,
-              enemy,
-              initialCatchTraining: hasFlag('INITIAL_CATCH_TRAINING'),
-            });
-            state = 'catch_demo';
-          });
+          const encounter: LiveBattleEncounter = {kind:'demo', battleType:scriptAction.battleType === 'OLD_MAN' ? 1 : 4,
+            species:enemy.species.id, level:enemy.level};
+          beginBattleEntry(false, enemy.level, POKEDEX_ORDER.indexOf(enemy.species.id)+1, 0, () => {
+            currentSession!.start();
+            state = 'battle';
+          }, encounter);
           break;
         }
         case 'startBattleTransition':
@@ -1565,25 +1562,6 @@ function gameTick(): void {
         return;
       }
       state = stateBeforeMenu;
-    }
-  } else if (state === "catch_demo") {
-    const action = updateCatchDemo();
-    if (action?.type === "ended") {
-      // _InitBattleCommon calls EndOfBattle after StartBattle for catch demos too.
-      ow.encounterCooldown = 3; // EndOfBattle → EnterMap
-      Object.assign(ow, enterMapCounters(ow));
-      // EndOfBattle: GBPalWhiteOut (instant white), then the script carries on — as the
-      // "battle" state's finish handler returns to a script. wBattleResult = 2 skips
-      // evolution and the Pikachu mood update.
-      clearCatchDemo();
-      setActivePalette(action.savedPalette);
-      reloadBorderTiles();
-      enterMapAfterBattle(); // .battleOccurred → EnterMap
-      fadeAlpha = 1;
-      fadeDir = "in";
-      state = "script";
-      advanceActiveScript();
-      loadMapMusic(currentMapName, true);
     }
   } else if (state === "evolution") {
     updateEvolution();
@@ -1827,8 +1805,6 @@ function gameLoop(now = 0): void {
     renderBattleEntry();
   } else if (state === "battle") {
     renderLiveBattle();
-  } else if (state === "catch_demo") {
-    renderCatchDemo();
   } else if (state === "evolution") {
     renderEvolution();
   } else if (state === "party_menu") {

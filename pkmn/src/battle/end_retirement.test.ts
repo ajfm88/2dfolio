@@ -47,7 +47,7 @@ const TRAINER:Row[]=[
   row(37,'plays nothing for the rivals or a gym leader','keep','trainer_flow.test.ts','plays nothing for the rivals or a gym leader','home/trainers.asm:381–397; main overworld encounter','meetMusicFor'),
   row(45,'is defeatedtrainer, or defeatedgymleader for a gym leader or RIVAL3','replace',send,'rehosts trainer victory for $trainer/$gym','core.asm:930–947; main and new faint still consume victoryMusicFor','victoryMusicFor'),
   row(54,'puts "NAME: " in front of the first line and pages two lines at a time','correct','battle_whole.test.ts','trainer end text keeps the source prefix cursor through its selected program','home/trainers.asm:334–379; retained printer replaces array surrogate','endBattleTextPages'),
-  row(61,'starts a new page at a paragraph break','keep','trainer_flow.test.ts','starts a new page at a paragraph break','legacy battle/catch-demo still use array pages until switch-over','battleTextPages'),
+  row(61,'starts a new page at a paragraph break','replace','../text/text_printer.test.ts','para clears all four inside rows, holds 20 frames, then starts row 14','home/text.asm Paragraph; battle text prints through this printer, and the catch demo, the last array-page user, retired in A5f checkpoint-05','battleTextPages'),
   row(65,"keeps every map trainer's prefixed first line within the text box",'replace','battle_whole.test.ts',"every map trainer's end text fits the box through the battle printer",'home/trainers.asm:334–379; SaveTrainerName and the real text runner preserve the prefix and cartridge line breaks','endBattleTextPages'),
   row(83,'moves one tile left every 4 frames, from tile 19 to tile 14','replace','battle_slides.test.ts','trainer return is palette2 held+3 serviced, copy7, then six4-frame growing columns from19 to14','scroll_draw_trainer_pic.asm:4–32; real palette/copy/BG thirds','picScrollX'),
   row(94,'runs music → defeated → pic scroll → 40 frames → end text → money','replace','battle_whole.test.ts','trainer win accepts SHIFT, sends the enemy before the player, and awards money after end text','core.asm:929–963; actual loop and end Programs','victorySequence'),
@@ -140,9 +140,9 @@ describe('checkpoint-08b executable retirement manifests',()=>{
   it('keeps every surviving legacy helper import, call and export visible to the switch-over',()=>{
     const actual=callers();expect(actual).toMatchSnapshot();
     for(const helper of ['totalExpForLevel','expToNextLevel','initExperience','meetMusicFor',
-      'victoryMusicFor','battleTextPages','rivalStarterAfterLabBattle'])
+      'victoryMusicFor','rivalStarterAfterLabBattle'])
       expect(actual.some(s=>s.includes(`calls ${helper}`)),helper).toBe(true);
     expect(EXP.filter(r=>r.disposition==='keep')).toHaveLength(3);
-    expect(TRAINER.filter(r=>r.disposition==='keep')).toHaveLength(6);
+    expect(TRAINER.filter(r=>r.disposition==='keep')).toHaveLength(5);
   });
 });

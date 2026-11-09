@@ -26,10 +26,11 @@ const ASM = resolve(root, '../refs/pokeyellow');
 const source = (path: string) => readFileSync(resolve(root, path), 'utf8');
 
 describe('map no-auto-text-box set (V2a CP3)', () => {
-  it('is exactly the two maps whose scripts store BIT_NO_AUTO_TEXT_BOX every pass', () => {
-    const maps = ['OaksLab', 'PewterMart', 'ViridianMart', 'PewterCity', 'ViridianPokecenter', 'PewterPokecenter'];
-    expect(maps.filter(m => !mapAutoTextBox(m))).toEqual(['OaksLab', 'PewterMart']);
-    for (const m of ['OaksLab', 'PewterMart'])
+  it('is exactly the three maps whose scripts store BIT_NO_AUTO_TEXT_BOX every pass', () => {
+    const maps = ['OaksLab', 'PewterMart', 'ViridianMart', 'PewterCity', 'ViridianPokecenter', 'PewterPokecenter',
+      'Museum1F', 'Museum2F', 'PewterGym'];
+    expect(maps.filter(m => !mapAutoTextBox(m))).toEqual(['OaksLab', 'PewterMart', 'Museum1F']); // V3 checkpoint-01
+    for (const m of ['OaksLab', 'PewterMart', 'Museum1F'])
       expect(readFileSync(resolve(ASM, `scripts/${m}.asm`), 'utf8')).toMatch(/ld a, 1 << BIT_NO_AUTO_TEXT_BOX\s+ld \[wAutoTextBoxDrawingControl\], a/);
     expect(readFileSync(resolve(ASM, 'scripts/ViridianMart.asm'), 'utf8')).not.toContain('BIT_NO_AUTO_TEXT_BOX');
   });
@@ -88,5 +89,27 @@ describe('Pewter runtime tables (V2a CP3)', () => {
   });
   it('main.ts passes the map default to START', () => {
     expect(source('src/main.ts')).toContain('startMenu.open(hasFlag(\'GOT_POKEDEX\'), getPlayerName(), mapAutoTextBox(currentMapName))');
+  });
+});
+
+describe('Museum and Gym runtime tables (V3 checkpoint-01)', () => {
+  const maps: Record<string, string> = { Museum1F: 'MUSEUM_1F', Museum2F: 'MUSEUM_2F', PewterGym: 'PEWTER_GYM' };
+  it('all three take the PEWTER palette (indoor maps use wLastMap)', () => {
+    for (const m of Object.keys(maps)) expect(getMapPalette(m)).toBe('PEWTER');
+  });
+  it('main.ts: none is outdoor; music follows data/maps/songs.asm', () => {
+    const main = source('src/main.ts');
+    const outdoor = main.match(/const OUTDOOR_MAPS = new Set\(\[([\s\S]*?)\]\)/)![1];
+    const songs = readFileSync(resolve(ASM, 'data/maps/songs.asm'), 'utf8');
+    const expected: Record<string, string> = { MUSIC_CITIES1: 'cities1', MUSIC_GYM: 'gym' };
+    for (const [m, constant] of Object.entries(maps)) {
+      expect(outdoor).not.toContain(`'${m}'`);
+      const cart = songs.match(new RegExp(`db (MUSIC_[A-Z0-9_]+), BANK[(][A-Za-z0-9_]+[)] ; ${constant}$`, 'm'))![1];
+      expect(main.match(new RegExp(`^[ ]*${m}:[ ]*'([^']+)'`, 'm'))?.[1], m).toBe(expected[cart]);
+    }
+  });
+  it('debug warps reach all three', () => {
+    const debug = source('src/debug.ts');
+    for (const m of Object.keys(maps)) expect(debug).toMatch(new RegExp(`map: '${m}',[ ]*warpId: 0`));
   });
 });

@@ -1,0 +1,111 @@
+{
+  "name": "Museum2F",
+  "width": 7,
+  "height": 4,
+  "tileset": "MUSEUM",
+  "connections": [],
+  "blocks": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    61,
+    62,
+    0,
+    0,
+    0,
+    0,
+    0,
+    63,
+    75,
+    88,
+    89,
+    90,
+    0,
+    71,
+    0,
+    0,
+    0,
+    0,
+    0,
+    86,
+    70,
+    0,
+    0
+  ],
+  "borderBlock": 10,
+  "warps": [
+    {
+      "x": 7,
+      "y": 7,
+      "destMap": "Museum1F",
+      "destWarpId": 4
+    }
+  ],
+  "signs": [
+    {
+      "textId": 6,
+      "x": 11,
+      "y": 2,
+      "text": "SPACE SHUTTLE\nCOLUMBIA"
+    },
+    {
+      "textId": 7,
+      "x": 2,
+      "y": 5,
+      "text": "Meteorite that\nfell on MT.MOON.\n(MOON STONE?)"
+    }
+  ],
+  "npcs": [
+    {
+      "textId": 1,
+      "id": "youngster",
+      "sprite": "youngster",
+      "x": 1,
+      "y": 7,
+      "movement": "walk",
+      "dialogue": "MOON STONE?\fWhat's so special\nabout it?",
+      "walkDir": "left_right"
+    },
+    {
+      "textId": 2,
+      "id": "gramps",
+      "sprite": "gramps",
+      "x": 0,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "July 20, 1969!\fThe 1st lunar\nlanding!\fI bought a color\nTV to watch it!",
+      "direction": "down"
+    },
+    {
+      "textId": 3,
+      "id": "scientist",
+      "sprite": "scientist",
+      "x": 7,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "We have a space\nexhibit now.",
+      "direction": "down"
+    },
+    {
+      "textId": 4,
+      "id": "brunette_girl",
+      "sprite": "brunette_girl",
+      "x": 11,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "I want a PIKACHU!\nIt's so cute!\fI asked my Daddy\nto catch me one!"
+    },
+    {
+      "textId": 5,
+      "id": "hiker",
+      "sprite": "hiker",
+      "x": 12,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": "Yeah, a PIKACHU\nsoon, I promise!",
+      "direction": "down"
+    }
+  ]
+}

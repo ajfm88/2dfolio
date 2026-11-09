@@ -1,10 +1,7 @@
 export { loadBattleData, createPokemon, getWildData } from './data';
-export { initBattleUI, loadPokemonSprites, renderBattleBg, renderEnemySprite, renderPlayerSprite, renderEnemyHUD, renderBattleText, createSilhouette } from './battle_ui';
+export { initBattleUI, loadPokemonSprites, renderBattleText, createSilhouette } from './battle_ui';
 export { loadWildEncounters, tryWildEncounter } from './encounter';
 export { initExperience, expToNextLevel, totalExpForLevel } from './experience';
-export { initCatchDemo, updateCatchDemo, renderCatchDemo, clearCatchDemo } from './catch_demo_screen';
-export type { CatchDemoAction } from './catch_demo_screen';
-export type { CatchDemoBattleType } from './catch_demo';
 export { loadTrainerData, getTrainerClass } from './trainer_ai';
 export type { TrainerClassData, TrainerPartyMember } from './trainer_ai';
 export type { BattlePokemon, BattleState, PokemonSpecies, MoveData } from './types';

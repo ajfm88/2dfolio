@@ -7,6 +7,7 @@ import { BinaryReader } from '../binary_reader';
 import { extractMusic, extractSfx, extractSfxChannelsAt, SFX_HEADERS, type AudioCommand } from '../extractors/audio';
 import { extractTextPrograms, type TextProgramsFile } from '../extractors/text_programs';
 import { TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
+import { LATER_MAP_PROGRAMS, LATER_MAP_TABLES, without } from './fixtures/later_map_text';
 
 const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
 const DATA = resolve(__dirname, '../../../data');
@@ -191,9 +192,9 @@ describe.skipIf(!ROM_PATH)('A5c3e checkpoint-02 source data', () => {
     previous.programs.SleepingPikachuText1 = previous.programs.PartyMenuText_12cc; delete previous.programs.PartyMenuText_12cc; // note 78 rename
     const added = ['DoYouWantToNicknameText', '_DoYouWantToNicknameText', 'DontHavePokemonText',
       '_DontHavePokemonText'];
-    expect(Object.keys(text.programs).filter(key => !(key in previous.programs)).sort()).toEqual(added.sort());
+    expect(Object.keys(text.programs).filter(key => !(key in previous.programs) && !LATER_MAP_PROGRAMS.includes(key)).sort()).toEqual(added.sort());
     for (const [key, ops] of Object.entries(previous.programs)) expect(text.programs[key], key).toEqual(ops);
-    expect(text.textPointers).toEqual(previous.textPointers);
+    expect(without(text.textPointers, LATER_MAP_TABLES)).toEqual(previous.textPointers);
     mirror('text_programs.json', text);
   });
 

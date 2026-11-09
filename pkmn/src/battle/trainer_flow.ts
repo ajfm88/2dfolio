@@ -33,22 +33,6 @@ export function victoryMusicFor(trainerClass: string, isGymLeader = false): stri
   return isGymLeader || trainerClass === 'RIVAL3' ? 'defeatedgymleader' : 'defeatedtrainer';
 }
 
-/**
- * Split a text into battle text-box pages of two lines each; `\f` (para) starts a
- * new page. Upstream's battle text box shows whole pages rather than scrolling on
- * `cont` — typed, scrolling battle text is A5.
- */
-export function battleTextPages(text: string): string[][] {
-  const pages: string[][] = [];
-  // A5a map terminators must not become literal battle text; A5c consumes them.
-  for (const para of text.replace(/<(PROMPT|DONE)>/g, '')
-    .replace(/<(CONT|LINE|NEXT|SCROLL)>/g, '\n').split('\f')) {
-    const lines = para.split('\n');
-    for (let i = 0; i < lines.length; i += 2) pages.push(lines.slice(i, i + 2));
-  }
-  return pages;
-}
-
 /** TrainerBattleVictory / HandlePlayerBlackOut: `ld c, 40; call DelayFrames` after the scroll. */
 export const AFTER_PIC_SCROLL_DELAY = 40;
 

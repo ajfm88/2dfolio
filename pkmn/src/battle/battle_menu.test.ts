@@ -13,7 +13,9 @@ import { textBgTransfer } from '../text/bg_transfer';
 import { textBoxBorder } from '../menus/tile_surface';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled } from '../audio/low_health_alarm';
 import { getNoTextDelay, setNoTextDelay } from '../text/text_flags';
-import { MENU_CURSOR_FRAMES, LIST_FROZEN_FRAMES, LIST_DRAW_FRAMES, LIST_CURSOR_FRAMES } from './catch_demo';
+// core.asm .doSimulatedMenuInput's DelayFrames 20 per cursor; DisplayListMenuID's 10 frozen frames and Delay3;
+// DisplayListMenuIDLoop's 20 on the first entry (wBattleType != 0). catch_demo.ts held these until A5f checkpoint-05.
+const MENU_CURSOR_FRAMES = 20, LIST_FROZEN_FRAMES = 10, LIST_DRAW_FRAMES = 3, LIST_CURSOR_FRAMES = 20;
 vi.mock('../input', () => ({ isPassPressed: vi.fn(() => false), isHeld: vi.fn(() => false), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true }));
 vi.mock('../text/program_data', () => ({ getTextPrograms: () => ({

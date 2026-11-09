@@ -8,6 +8,7 @@ import { BinaryReader } from '../binary_reader';
 import { extractTextPrograms } from '../extractors/text_programs';
 import type { TextOp, TextProgramsFile } from '../extractors/text_programs';
 import { TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
+import { LATER_MAP_PROGRAMS, LATER_MAP_TABLES, without } from './fixtures/later_map_text';
 
 const frozen = JSON.parse(readFileSync(resolve(__dirname, 'fixtures/text_programs_a5b_baseline.json'), 'utf8')) as {
   programs: Record<string, string>; textPointers: string;
@@ -20,15 +21,16 @@ function preservesA5b(file: TextProgramsFile): void {
     expect(file.programs[label], label).toBeDefined();
     expect(digest(file.programs[label]), label).toBe(hash);
   }
-  expect(digest(file.textPointers)).toBe(frozen.textPointers);
+  expect(digest(without(file.textPointers, LATER_MAP_TABLES))).toBe(frozen.textPointers);
 }
 
 it('keeps all 633 committed A5b programs and every map text pointer byte-identical', () => preservesA5b(committed));
 it('adds exactly 366 programs, leaving link-only and evolution texts out', () => {
   // A5c3d checkpoint-03 adds TrainerEndBattleText and _TrainerNameText to the prior 360; A5c3e checkpoint-02 adds
   // DoYouWantToNicknameText and DontHavePokemonText with their two FAR children.
-  expect(Object.keys(committed.programs)).toHaveLength(999);
-  expect(Object.keys(committed.programs).filter(label => !(label in frozen.programs))).toHaveLength(366);
+  // V3 checkpoint-01's 25 map programs are later map text (fixtures/later_map_text.ts), not battle programs.
+  expect(Object.keys(committed.programs)).toHaveLength(999 + LATER_MAP_PROGRAMS.length);
+  expect(Object.keys(committed.programs).filter(label => !(label in frozen.programs) && !LATER_MAP_PROGRAMS.includes(label))).toHaveLength(366);
   for (const label of ['LinkBattleLostText', '_LinkBattleLostText', 'YouWinText', 'YouLoseText', 'DrawText',
     'EvolvedText', '_EvolvedText', 'IntoText', '_IntoText', 'StoppedEvolvingText', 'IsEvolvingText']) {
     expect(committed.programs).not.toHaveProperty(label);
@@ -78,10 +80,11 @@ describe.skipIf(!process.env.ROM_PATH)('battle text ROM contract', () => {
     const symbols = new Map([...sym.matchAll(/^([\da-f]+):([\da-f]+) (\S+)$/gmi)]
       .map(m => [m[3], [parseInt(m[1], 16), parseInt(m[2], 16)]]));
     const rows = TEXT_PROGRAM_SYMBOLS.filter(([label]) => !(label in frozen.programs));
-    expect(rows).toHaveLength(366);
+    expect(rows).toHaveLength(366 + LATER_MAP_PROGRAMS.length);
+    expect(rows.filter(([label]) => LATER_MAP_PROGRAMS.includes(label))).toHaveLength(LATER_MAP_PROGRAMS.length);
     for (const [label, bank, address] of rows) expect([bank, address], label).toEqual(symbols.get(label));
-    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([label]) => label)).size).toBe(999);
-    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([, bank, address]) => `${bank}:${address}`)).size).toBe(999);
+    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([label]) => label)).size).toBe(999 + LATER_MAP_PROGRAMS.length);
+    expect(new Set(TEXT_PROGRAM_SYMBOLS.map(([, bank, address]) => `${bank}:${address}`)).size).toBe(999 + LATER_MAP_PROGRAMS.length);
   });
   it.each([
     ['GreatlyRoseText', ['_GreatlyRoseText', '_RoseText']],

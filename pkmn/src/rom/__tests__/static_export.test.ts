@@ -30,8 +30,10 @@ describe('static/ export: asset keys', () => {
   // A5c3f checkpoint-02: four more SFX plus stat_mod_text, which extractRom now emits. 190 → 195.
   // A5e checkpoint-05: battle_animations.json and audio/sfx/ball_poof.json. 196 → 198.
   // A5f checkpoint-01: audio/sfx/ball_toss.json and audio/sfx/tink.json. 198 → 200.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the five Pewter maps in the JSON mirror (200 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(200);
+  // V3 checkpoint-01: maps/Museum1F.json, maps/Museum2F.json and maps/PewterGym.json. 200 → 203.
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the eight Pewter maps in the JSON mirror (203 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(203);
+    for (const name of ['Museum1F', 'Museum2F', 'PewterGym']) expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('battle_animations.json');
     expect(extracted.jsonData).toHaveProperty('stat_mod_text.json');
@@ -42,8 +44,6 @@ describe('static/ export: asset keys', () => {
       expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
-    expect(extracted.jsonData).not.toHaveProperty('maps/Museum1F.json');
-    expect(extracted.jsonData).not.toHaveProperty('maps/PewterGym.json');
     expect(extracted.jsonData).not.toHaveProperty('maps/Route3.json');
   });
 

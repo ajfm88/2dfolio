@@ -36,6 +36,7 @@ import { getOwnedCount } from '../pokedex_state';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { buildOakGrassScript } from '../story/pallet_town';
 import { PEWTER_CITY, pewterCityScript } from '../story/pewter_city';
+import { MUSEUM_1F, museum1FScript } from '../story/museum_1f';
 import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
   buildOldMan2Script,
@@ -292,16 +293,17 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 
     // A beaten trainer says their after-battle text (TalkToTrainer, flag set).
     const text = npcData.defeated ? (npcData.afterBattleText ?? npcData.dialogue) : npcData.dialogue;
-    // No text yet: the trade kid (trades are A4) and Oak's
-    // Aide (HM05 is A2). Do nothing rather than open an empty text box.
-    if (!text) {
-      ow.interactedNpc = null;
-      return null;
-    }
     const call = mapTextKind(currentMapName, npcData.textId, undefined,
       currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2') : currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL'));
     const noAuto = !mapAutoTextBox(currentMapName);
     const labCall = noAuto ? mapTextCall(currentMapName, npcData.textId) : undefined;
+    // No text yet: the trade kid (trades are A4) and Oak's Aide (HM05 is A2). Do nothing rather than open an
+    // empty text box. A no-auto-box map's own program needs no extracted string: Museum 1F's farcalled PrintText
+    // bodies have none (V3 checkpoint-01 fix, note 88 §11).
+    if (!text && !(labCall?.call === 'text' || labCall?.call === 'printText')) {
+      ow.interactedNpc = null;
+      return null;
+    }
     return { type: 'textbox', text, ...(call ? { call } : {}), ...(noAuto ? {
       autoBox: false, ...(labCall?.call === 'text' || labCall?.call === 'printText' ? { program: labCall.program } : {}),
     } : {}) };
@@ -337,6 +339,12 @@ export function runMapScript(deps: OverworldDeps, ow: OverworldState): Overworld
   if (currentMapName === PEWTER_CITY) {
     const commands = pewterCityScript(textContext(deps));
     return commands ? { type: 'script', commands } : null;
+  }
+
+  // Museum1F_Script: the ticket trigger on (9,4)/(10,4) (story/museum_1f.ts), with the map's no-auto-box default
+  if (currentMapName === MUSEUM_1F) {
+    const commands = museum1FScript(textContext(deps));
+    return commands ? { type: 'script', commands: applyMapAutoTextBox(commands, MUSEUM_1F) } : null;
   }
 
   // Story trigger: Pallet Town north exit without Pokemon → Oak grass event

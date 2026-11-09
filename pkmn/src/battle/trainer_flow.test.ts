@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  meetMusicFor, battleTextPages,
+  meetMusicFor,
   rivalStarterAfterLabBattle, RIVAL_STARTER,
 } from './trainer_flow';
 
@@ -33,13 +33,6 @@ describe('meet music (PlayTrainerMusic)', () => {
     for (const c of ['RIVAL1', 'RIVAL2', 'RIVAL3']) expect(meetMusicFor(c)).toBeNull();
     expect(meetMusicFor('BROCK', true)).toBeNull();
     expect(meetMusicFor('GIOVANNI', true)).toBeNull(); // wGymLeaderNo is checked before the lists
-  });
-});
-
-describe('end-battle text (PrintEndBattleText)', () => {
-
-  it('starts a new page at a paragraph break', () => {
-    expect(battleTextPages('a\nb\fc\nd\ne')).toEqual([['a', 'b'], ['c', 'd'], ['e']]);
   });
 });
 

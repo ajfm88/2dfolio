@@ -323,6 +323,10 @@ export const MAP_TEXT_PTRS: Record<string, { offset: number; bank: number; count
   PewterMart:          { offset: symToOffset(0x1d, 0x44f3), bank: 0x1d, count: 3 },
   PewterNidoranHouse:  { offset: symToOffset(0x07, 0x4e40), bank: 0x07, count: 3 },
   PewterSpeechHouse:   { offset: symToOffset(0x07, 0x4e95), bank: 0x07, count: 2 },
+  // V3 Museum + Gym — note 88, pret symbols.
+  Museum1F:            { offset: symToOffset(0x17, 0x4124), bank: 0x17, count: 5 },
+  Museum2F:            { offset: symToOffset(0x17, 0x41c4), bank: 0x17, count: 7 },
+  PewterGym:           { offset: symToOffset(0x17, 0x4312), bank: 0x17, count: 6 },
 };
 
 // ── Palette Data ──────────────────────────────────────────────
