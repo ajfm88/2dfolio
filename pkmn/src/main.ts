@@ -667,7 +667,7 @@ function engageTrainer(npc: Npc, seenByTrainer: boolean): void {
 function startTrainerBattle(
   trainerClassName: string,
   partyIndex: number,
-  opts: { endBattleLabels?: {win:string;lose:string}; engaged?: Npc } = {},
+  opts: { endBattleLabels?: {win:string;lose:string}; engaged?: Npc; gymLeaderNo?: number } = {},
 ): void {
   engagedTrainer = null;
   if (playerParty.length === 0) return;
@@ -677,8 +677,8 @@ function startTrainerBattle(
   const partyMembers = trainerClass.parties[partyIndex] as TrainerPartyMember[];
   engagedTrainer = opts.engaged ?? null;
   const encounter: LiveBattleEncounter = {kind:'trainer',trainerClass:trainerClassName,partyIndex,
-    endBattleText:opts.endBattleLabels,gymLeaderNo:0};
-  beginBattleEntry(true, partyMembers, trainerClass.id+200, 0, () => {
+    endBattleText:opts.endBattleLabels,gymLeaderNo:opts.gymLeaderNo ?? 0};
+  beginBattleEntry(true, partyMembers, trainerClass.id+200, opts.gymLeaderNo ?? 0, () => {
     currentSession!.start();
     state = 'battle';
   }, encounter);
@@ -907,6 +907,7 @@ const MAP_MUSIC: Record<string, string> = {
   // Routes
   Route1: 'routes1',
   Route22: 'routes1',
+  Route3: 'routes3',
   // Indoor — Pallet
   RedsHouse1F: 'pallettown',
   RedsHouse2F: 'pallettown',
@@ -1444,6 +1445,12 @@ function gameTick(): void {
         else playDefaultMusic(track);
       },
       resetPassClock: () => passClock.reset(),
+      setTrainerBeaten: npcId => {
+        const npc = npcs.find(n => n.data.id === npcId);
+        if (!npc) throw new Error(`missing trainer ${npcId}`);
+        npc.data.defeated = true;
+        markDefeated(npcId);
+      },
       pikachuTile: pikachuFollower.visible ? { x: pikachuFollower.tileX, y: pikachuFollower.tileY } : undefined,
       pikachuFollower,
     };
@@ -1499,6 +1506,7 @@ function gameTick(): void {
         case 'startBattleTransition':
           startTrainerBattle(scriptAction.trainerClass, scriptAction.partyIndex, {
             endBattleLabels: scriptAction.endBattleLabels,
+            gymLeaderNo: scriptAction.gymLeaderNo,
           });
           break;
         case 'warp':
@@ -1997,7 +2005,7 @@ function startScript(commands: ScriptCommand[]): void {
     // RunNPCMovementScript function 0 and JoypadOverworld consume entry 1 in this pass.
     runScript({ textBox, player, gameMap, npcs, playerParty, playerBag, pikachuFollower,
       resetPassClock: () => passClock.reset() }, true);
-  } else if (commands[0]?.type === 'displayOpen' ||
+  } else if (commands[0]?.type === 'displayOpen' || commands[0]?.type === 'monSpritePopup' ||
       (commands[0]?.type === 'callback' && commands.some(cmd => cmd.type === 'displayOpen'))) {
     // Run an instantaneous migrated map-script prefix into its opening in this CPU tick.
     // A movement/async/wait command keeps its index and ends the dispatch here.

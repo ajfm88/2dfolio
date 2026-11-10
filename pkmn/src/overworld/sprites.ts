@@ -4,7 +4,7 @@
 import type { GameMap } from './map';
 import type { Npc } from './npc';
 import type { Player } from './player';
-import type { PikachuFollower } from '../pikachu/pikachu_follower';
+import type { PikachuFollower, PikachuUiTiles } from '../pikachu/pikachu_follower';
 import type { CollisionSprite } from './sprite_collision';
 
 /**
@@ -34,6 +34,7 @@ export function updateSprites(
   gameMap: GameMap,
   player: Player,
   pikachuFollower?: PikachuFollower,
+  ui?: PikachuUiTiles,
 ): void {
   const table = (): CollisionSprite[] => spriteTable(player, npcs, pikachuFollower);
   player.detectSpriteCollisions(table());
@@ -54,6 +55,7 @@ export function updateSprites(
       playerWalking: player.isMoving,
       playerMapStep,
       playerFacing: player.direction,
+      ...(ui ? { ui } : {}),
       inGrass: gameMap.isGrassTile(pikachuFollower.tileX, pikachuFollower.tileY),
     });
   }

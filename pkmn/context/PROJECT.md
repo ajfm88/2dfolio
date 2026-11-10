@@ -49,20 +49,14 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-07 (end of day) - V3 in progress
+## State as of 2026-11-08 (end of day) - V3 complete
 
-- **R1, V1, A6, A1, V2 and A5 are done (6/36 milestones).** The playable path reaches Pewter across 27 maps. The
-  ASM-backed battle engine is live and the old engine and the old catch-demo renderer are retired.
-- **No ROM at runtime.** 203 committed JSON files and their static mirror, 525 PNGs and 3 tilemaps. Vanilla art,
-  local play, no remote and no push.
-- **V3 (note 88):** Pewter Gym, the Museum and the first badge, in five checkpoints. Route 3 moves in as 04, before
-  Brock's win (05), so the east edge is never open without its connection (#106). Done: 01, the three maps,
-  walkable with their texts (plus a fix: farcalled printed texts talk). 02a, the Museum ticket (map trigger, ¥50 with
-  the MONEY box, the refusal step), is reviewed and awaits the user's play-test. Next: 02b (the Old Amber, the hiker),
-  02c (the fossil pop-ups), 03 the Gym.
+- **R1, V1, A6, A1, V2, A5 and V3 are done (7/36 milestones).** The playable path reaches Route 3 across 28 maps, and Brock can be beaten for the Boulder Badge and TM34. The ASM-backed battle engine is live.
+- **No ROM at runtime.** 204 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps. Vanilla art, local play, no remote and no push.
+- **Next: V4** (Diglett's Cave and the hop-midpoint `RunMapScript`), then V5's fixes.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **Tests:** ROM **6182/6182**; no-ROM **5896 pass / 286 skip**; 246 files. Bundle `index-BDiKPiKT.js`.
-- Full handoff: STATUS.md; V3's record is note 88 (§15 the 02 split, §16 the last brief, §18 the last review).
+- **Tests:** ROM **6260/6260**; no-ROM **5970 pass / 290 skip**; 249 files. Bundle `index-DtAwi9SA.js`.
+- Full handoff: STATUS.md; V3's record is note 88.
 
 ## Goals
 
@@ -102,7 +96,7 @@ Today (vanilla upstream's content, running ROM-free since R1b):
 4. North of Viridian: the old man's catch demo (Yellow's, since V1e), then Route 2 →
    Viridian Forest → its north gate → Pewter City (V2a): Pokécenter, Mart, two houses.
    The guides and Jigglypuff's sleeping-Pikachu scene work (V2b/V2c). The Museum and Gym
-   doors fail gracefully until V3; Route 3 is V4.
+   doors open since V3 checkpoint-01; Route 3 is V3 checkpoint-04 (DECISIONS #106).
 
 After Phase V: … → Route 2 / Forest → Pewter (Brock → BADGE_1, Museum) →
 Diglett's Cave → Route 3, the point the lost copy had reached.

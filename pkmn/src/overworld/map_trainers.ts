@@ -14,10 +14,10 @@ import { setSpriteIndex } from './sprite_index';
 
 /** The maps whose default script is CheckFightingMapTrainers (trainer_tripwires.test.ts
  *  keeps this in step with pret's scripts/*.asm). */
-export const TRAINER_MAPS: ReadonlySet<string> = new Set(['ViridianForest']);
+export const TRAINER_MAPS: ReadonlySet<string> = new Set(['ViridianForest', 'PewterGym', 'Route3']);
 
 /** w<Map>CurScript for the generic trio (gyms add their own phases after these, V3). */
-export const TRAINER_SCRIPT = { DEFAULT: 0, START_BATTLE: 1, END_BATTLE: 2 } as const;
+export const TRAINER_SCRIPT = { DEFAULT: 0, START_BATTLE: 1, END_BATTLE: 2, BROCK_POST_BATTLE: 3 } as const;
 
 /** BIT_SEEN_BY_TRAINER and wSpriteIndex, kept across passes (OverworldState). */
 export interface TrainerSightState {

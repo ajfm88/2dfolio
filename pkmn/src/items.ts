@@ -37,7 +37,11 @@ const ITEM_DEFS: Record<string, ItemDef> = {
   MAX_REPEL: { category: "other", price: 700 },
   OAKS_PARCEL: { category: "key", price: 0 },
   TOWN_MAP: { category: "key", price: 0 },
+  OLD_AMBER: { category: "key", price: 0 },
 };
+
+// data/items/tm_prices.asm: GetMachinePrice's nybble (TM34: 2, in thousands). The other TMs arrive with A2.
+const TM_PRICES: Record<string, number> = { TM34: 2000 };
 
 // Dynamic item display names — loaded from ROM or static data at startup
 let itemDisplayNames: Record<string, string> = {};
@@ -64,7 +68,7 @@ export function getItemCategory(id: string): ItemCategory {
 }
 
 export function getItemPrice(id: string): number {
-  return ITEM_DEFS[id]?.price ?? 0;
+  return ITEM_DEFS[id]?.price ?? TM_PRICES[id] ?? 0;
 }
 
 export function isBall(id: string): boolean {

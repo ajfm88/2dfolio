@@ -59,6 +59,35 @@
   "signs": [],
   "npcs": [
     {
+      "textId": 1,
+      "id": "brock",
+      "sprite": "super_nerd",
+      "x": 4,
+      "y": 1,
+      "movement": "stay",
+      "dialogue": "",
+      "direction": "down"
+    },
+    {
+      "textId": 2,
+      "id": "cooltrainer_m",
+      "sprite": "cooltrainer_m",
+      "x": 3,
+      "y": 6,
+      "movement": "stay",
+      "dialogue": "Stop right there,\nkid!\fYou're still light\nyears from facing\nBROCK!",
+      "direction": "right",
+      "trainerClass": "JR_TRAINER_M",
+      "trainerParty": 0,
+      "sightRange": 5,
+      "endBattleText": "Darn!\fLight years isn't\ntime! It measures\ndistance!<PROMPT>",
+      "endBattleTextLabels": {
+        "win": "PewterGymCooltrainerMEndBattleText",
+        "lose": "PewterGymCooltrainerMEndBattleText"
+      },
+      "afterBattleText": "You're pretty hot,\nbut not as hot\nas BROCK!"
+    },
+    {
       "textId": 3,
       "id": "gym_guide",
       "sprite": "gym_guide",
@@ -67,6 +96,20 @@
       "movement": "stay",
       "dialogue": "Hiya! I can tell\nyou have what it\ntakes to become a\nPOKéMON champ!\fI'm no trainer,\nbut I can tell\nyou how to win!\fLet me take you\nto the top!",
       "direction": "down"
+    }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 3,
+      "y": 10,
+      "scriptId": "PEWTER_GYM_STATUES",
+      "facing": "up"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "scriptId": "PEWTER_GYM_STATUES",
+      "facing": "up"
     }
   ]
 }

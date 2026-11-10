@@ -8,6 +8,11 @@
       "direction": "south",
       "mapName": "Route2",
       "offset": 5
+    },
+    {
+      "direction": "east",
+      "mapName": "Route3",
+      "offset": 4
     }
   ],
   "blocks": [

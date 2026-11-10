@@ -35,7 +35,15 @@ describe('native simulated joypad lists', () => {
     expect(decoded.entries.slice(-3)).toEqual([0x40, 0x40, 0xff]);
     expect(built.index).toBe(24);
     expect(built.entries.slice(21)).toEqual([0x40, 0x10, 0x20]);
-    expect(() => pewterGuys(decoded.entries, decoded.count - 1, 'gym', 36, 16)).toThrow('unreachable before V3');
+    expect(() => pewterGuys(decoded.entries, decoded.count - 1, 'gym', 36, 16)).toThrow('unreachable on the cartridge');
+  });
+  it.skipIf(!process.env.ROM_PATH)('PewterGuys has no entry for (36,16) or (35,15) through the end of bank 6', () => {
+    const rom = readFileSync(process.env.ROM_PATH!);
+    const at = (address: number) => rom[6 * 0x4000 + address - 0x4000];
+    const found = (y: number, x: number) => { for (let hl = 0x674a; hl < 0x7ffc; hl += 4) if (at(hl) === y && at(hl + 1) === x) return true; return false; };
+    expect(found(16, 34)).toBe(true); // PewterGymGuyCoords' first entry, so the walk starts in the right place
+    expect(found(16, 36)).toBe(false);
+    expect(found(15, 35)).toBe(false);
   });
   it.each(variants)('$which ($x,$y) executes the source prefix backwards and collides only at index zero', v => {
     const decoded = decodeRle(v.which === 'museum' ? PEWTER_MUSEUM_PLAYER : PEWTER_GYM_PLAYER);

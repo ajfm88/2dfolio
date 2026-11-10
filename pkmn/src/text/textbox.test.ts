@@ -251,6 +251,26 @@ describe('retained DisplayTextID session and exact close (A5b4)', () => {
     expect(reloads).toEqual([undefined, 'full']);
   });
 
+  it('a nested in-place close first runs its own DisplayTextID wait and Hold', () => {
+    const sprites = vi.fn();
+    const box = new TextBox({ closeFrames: () => 9, updateSprites: sprites });
+    box.open(); tick(box, 20); box.print({ text: 'A' }, { box: 'keep' }); tick(box, 3);
+    box.closeInPlace({ outerWait: true });
+    tick(box, 30); expect(box.closing).toBe(false); expect(box.isWaitingForInput).toBe(true);
+    down('a'); tick(box, 10); expect(box.closing).toBe(false); expect(box.phase).toBe('holding'); // Hold: A is still down
+    down(null); tick(box, 2); expect(box.closing).toBe(true);
+    tick(box, 9); expect(box.closing).toBe(false); expect(box.active).toBe(true); expect(box.isComplete).toBe(true);
+    expect(sprites).toHaveBeenCalledOnce();
+  });
+
+  it('a nested opening finds the window up, so its box is drawn from the first frame', () => {
+    const box = new TextBox({ closeFrames: () => 9, updateSprites: vi.fn() });
+    box.open(); tick(box, 20); vi.mocked(fillRect).mockClear();
+    box.open({ windowUp: true }); box.render(); expect(fillRect).toHaveBeenCalled();
+    vi.mocked(fillRect).mockClear();
+    box.open(); box.render(); expect(fillRect).not.toHaveBeenCalled();
+  });
+
   it('the pure close counter has no extra terminal frame or repeated callback', () => {
     const sprites = vi.fn(); const close = new CloseSequence(23, sprites);
     expect(close.firstFrame).toBe(true);

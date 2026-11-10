@@ -105,6 +105,12 @@ it('factory registers exactly the two wrapper labels without executing them', ()
   const r = rig(0, 10); expect(Object.keys(r.registry)).toEqual(['StatModifierUpEffect', 'StatModifierDownEffect', 'HazeEffect', 'MistEffect', 'FocusEnergyEffect', 'ReflectLightScreenEffect']); expect(r.events).toEqual([]);
 });
 
+it('Gen 1 bug: every player stat-up applies the Boulder boost again to an Attack it did not recalculate', () => {
+  const r = rig(0, 0x0b); r.s.wObtainedBadges = 1; // DEFENSE_UP1: only Defense is recalculated
+  r.run(); expect(r.s.readBE(A.wBattleMonAttack)).toBe(225);
+  r.run(); expect(r.s.readBE(A.wBattleMonAttack)).toBe(253);
+});
+
 describe.each([0, 1] as const)('stat effects side %i', side => {
   describe.each([[true, false, false], [true, true, false], [false, false, false],
     [false, true, false], [false, false, true]] as const)('every index up=%s double=%s secondary=%s', (up, double, secondary) => {

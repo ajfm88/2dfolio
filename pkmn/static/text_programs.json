@@ -42,6 +42,12 @@
         "program": "_AccessedSomeonesPCText"
       }
     ],
+    "AerodactylFossilText": [
+      {
+        "op": "far",
+        "program": "_AerodactylFossilText"
+      }
+    ],
     "AlreadyAsleepText": [
       {
         "op": "far",
@@ -693,6 +699,18 @@
         "sound": "get_item1"
       }
     ],
+    "GymStatueText1": [
+      {
+        "op": "far",
+        "program": "_GymStatueText1"
+      }
+    ],
+    "GymStatueText2": [
+      {
+        "op": "far",
+        "program": "_GymStatueText2"
+      }
+    ],
     "HMCantDeleteText": [
       {
         "op": "far",
@@ -943,6 +961,12 @@
         "program": "_JustAMomentText"
       }
     ],
+    "KabutopsFossilText": [
+      {
+        "op": "far",
+        "program": "_KabutopsFossilText"
+      }
+    ],
     "KeptGoingAndCrashedText": [
       {
         "op": "far",
@@ -1188,6 +1212,34 @@
         "program": "_Museum1FScientist1WouldYouLikeToComeInText"
       }
     ],
+    "Museum1FPrintScientist2Text.GetTheOldAmberCheckText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist2GetTheOldAmberCheckText"
+      }
+    ],
+    "Museum1FPrintScientist2Text.ReceivedOldAmberText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist2ReceivedOldAmberText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      }
+    ],
+    "Museum1FPrintScientist2Text.TakeThisToAPokemonLabText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist2TakeThisToAPokemonLabText"
+      }
+    ],
+    "Museum1FPrintScientist2Text.YouDontHaveSpaceText": [
+      {
+        "op": "far",
+        "program": "_Museum1FScientist2YouDontHaveSpaceText"
+      }
+    ],
     "Museum1FPrintScientist3Text.Text": [
       {
         "op": "far",
@@ -1204,6 +1256,24 @@
       {
         "op": "far",
         "program": "_Museum2FGrampsText"
+      }
+    ],
+    "Museum2FHikerText1": [
+      {
+        "op": "far",
+        "program": "_Museum2FHikerText1"
+      }
+    ],
+    "Museum2FHikerText2": [
+      {
+        "op": "far",
+        "program": "_Museum2FHikerText2"
+      }
+    ],
+    "Museum2FHikerText3": [
+      {
+        "op": "far",
+        "program": "_Museum2FHikerText3"
       }
     ],
     "Museum2FMoonStoneSignText": [
@@ -1866,10 +1936,90 @@
         "program": "_PewterCityYoungsterYoureATrainerFollowMeText"
       }
     ],
+    "PewterGymBrockReceivedBoulderBadgeText": [
+      {
+        "op": "far",
+        "program": "_PewterGymBrockReceivedBoulderBadgeText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      },
+      {
+        "op": "far",
+        "program": "_PewterGymBrockBoulderBadgeInfoText"
+      }
+    ],
+    "PewterGymBrockText.PostBattleAdviceText": [
+      {
+        "op": "far",
+        "program": "_PewterGymBrockPostBattleAdviceText"
+      }
+    ],
+    "PewterGymBrockText.PreBattleText": [
+      {
+        "op": "far",
+        "program": "_PewterGymBrockPreBattleText"
+      }
+    ],
     "PewterGymBrockWaitTakeThisText": [
       {
         "op": "far",
         "program": "_PewterGymBrockWaitTakeThisText"
+      }
+    ],
+    "PewterGymCooltrainerMAfterBattleText": [
+      {
+        "op": "far",
+        "program": "_PewterGymCooltrainerMAfterBattleText"
+      }
+    ],
+    "PewterGymCooltrainerMBattleText": [
+      {
+        "op": "far",
+        "program": "_PewterGymCooltrainerMBattleText"
+      }
+    ],
+    "PewterGymCooltrainerMEndBattleText": [
+      {
+        "op": "far",
+        "program": "_PewterGymCooltrainerMEndBattleText"
+      }
+    ],
+    "PewterGymGuideAdviceText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuideAdviceText"
+      }
+    ],
+    "PewterGymGuideBeginAdviceText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuideBeginAdviceText"
+      }
+    ],
+    "PewterGymGuideFreeServiceText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuideFreeServiceText"
+      }
+    ],
+    "PewterGymGuidePostBattleText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuidePostBattleText"
+      }
+    ],
+    "PewterGymGuidePreAdviceText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuidePreAdviceText"
+      }
+    ],
+    "PewterGymGuyPikachuText": [
+      {
+        "op": "far",
+        "program": "_PewterGymGuyPikachuText"
       }
     ],
     "PewterGymReceivedTM34Text": [
@@ -2367,6 +2517,162 @@
       {
         "op": "far",
         "program": "_Route2TradeHouseScientistText"
+      }
+    ],
+    "Route3CooltrainerF1AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF1AfterBattleText"
+      }
+    ],
+    "Route3CooltrainerF1BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF1BattleText"
+      }
+    ],
+    "Route3CooltrainerF1EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF1EndBattleText"
+      }
+    ],
+    "Route3CooltrainerF2AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF2AfterBattleText"
+      }
+    ],
+    "Route3CooltrainerF2BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF2BattleText"
+      }
+    ],
+    "Route3CooltrainerF2EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF2EndBattleText"
+      }
+    ],
+    "Route3CooltrainerF3AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF3AfterBattleText"
+      }
+    ],
+    "Route3CooltrainerF3BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF3BattleText"
+      }
+    ],
+    "Route3CooltrainerF3EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3CooltrainerF3EndBattleText"
+      }
+    ],
+    "Route3SignText": [
+      {
+        "op": "far",
+        "program": "_Route3SignText"
+      }
+    ],
+    "Route3SuperNerdText": [
+      {
+        "op": "far",
+        "program": "_Route3Text1"
+      }
+    ],
+    "Route3Youngster1AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster1AfterBattleText"
+      }
+    ],
+    "Route3Youngster1BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster1BattleText"
+      }
+    ],
+    "Route3Youngster1EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster1EndBattleText"
+      }
+    ],
+    "Route3Youngster2AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster2AfterBattleText"
+      }
+    ],
+    "Route3Youngster2BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster2BattleText"
+      }
+    ],
+    "Route3Youngster2EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster2EndBattleText"
+      }
+    ],
+    "Route3Youngster3AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster3AfterBattleText"
+      }
+    ],
+    "Route3Youngster3BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster3BattleText"
+      }
+    ],
+    "Route3Youngster3EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster3EndBattleText"
+      }
+    ],
+    "Route3Youngster4AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster4AfterBattleText"
+      }
+    ],
+    "Route3Youngster4BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster4BattleText"
+      }
+    ],
+    "Route3Youngster4EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster4EndBattleText"
+      }
+    ],
+    "Route3Youngster5AfterBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster5AfterBattleText"
+      }
+    ],
+    "Route3Youngster5BattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster5BattleText"
+      }
+    ],
+    "Route3Youngster5EndBattleText": [
+      {
+        "op": "far",
+        "program": "_Route3Youngster5EndBattleText"
       }
     ],
     "SafariZoneAngryText": [
@@ -3446,6 +3752,12 @@
         "text": "<USER>"
       }
     ],
+    "_AerodactylFossilText": [
+      {
+        "op": "text",
+        "text": "AERODACTYL Fossil\nA primitive and\nrare POKéMON.<DONE>"
+      }
+    ],
     "_AlreadyAsleepText": [
       {
         "op": "text",
@@ -4200,6 +4512,42 @@
         "text": "!"
       }
     ],
+    "_GymStatueText1": [
+      {
+        "op": "ram",
+        "binding": "gymCityName"
+      },
+      {
+        "op": "text",
+        "text": "\nPOKéMON GYM\nLEADER: "
+      },
+      {
+        "op": "ram",
+        "binding": "gymLeaderName"
+      },
+      {
+        "op": "text",
+        "text": "\fWINNING TRAINERS:\n<RIVAL><DONE>"
+      }
+    ],
+    "_GymStatueText2": [
+      {
+        "op": "ram",
+        "binding": "gymCityName"
+      },
+      {
+        "op": "text",
+        "text": "\nPOKéMON GYM\nLEADER: "
+      },
+      {
+        "op": "ram",
+        "binding": "gymLeaderName"
+      },
+      {
+        "op": "text",
+        "text": "\fWINNING TRAINERS:\n<RIVAL>\n<PLAYER><DONE>"
+      }
+    ],
     "_HMCantDeleteText": [
       {
         "op": "text",
@@ -4499,6 +4847,12 @@
       {
         "op": "text",
         "text": "Just a moment.<DONE>"
+      }
+    ],
+    "_KabutopsFossilText": [
+      {
+        "op": "text",
+        "text": "KABUTOPS Fossil\nA primitive and\nrare POKéMON.<DONE>"
       }
     ],
     "_KeptGoingAndCrashedText": [
@@ -4851,6 +5205,30 @@
         "text": "It's ¥50 for a\nchild's ticket.\fWould you like to\ncome in?<DONE>"
       }
     ],
+    "_Museum1FScientist2GetTheOldAmberCheckText": [
+      {
+        "op": "text",
+        "text": "Ssh! Get the OLD\nAMBER checked!<DONE>"
+      }
+    ],
+    "_Museum1FScientist2ReceivedOldAmberText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> received\nOLD AMBER!"
+      }
+    ],
+    "_Museum1FScientist2TakeThisToAPokemonLabText": [
+      {
+        "op": "text",
+        "text": "Ssh! I think that\nthis chunk of\nAMBER contains\nPOKéMON DNA!\fIt would be great\nif POKéMON could\nbe resurrected\nfrom it!\fBut, my colleagues\njust ignore me!\fSo, I have a favor\nto ask!\fTake this to a\nPOKéMON LAB and\nget it examined!<PROMPT>"
+      }
+    ],
+    "_Museum1FScientist2YouDontHaveSpaceText": [
+      {
+        "op": "text",
+        "text": "You don't have\nspace for this!<DONE>"
+      }
+    ],
     "_Museum1FScientist3Text": [
       {
         "op": "text",
@@ -4867,6 +5245,24 @@
       {
         "op": "text",
         "text": "July 20, 1969!\fThe 1st lunar\nlanding!\fI bought a color\nTV to watch it!<DONE>"
+      }
+    ],
+    "_Museum2FHikerText1": [
+      {
+        "op": "text",
+        "text": "Yeah, a PIKACHU\nsoon, I promise!<DONE>"
+      }
+    ],
+    "_Museum2FHikerText2": [
+      {
+        "op": "text",
+        "text": "Your PIKACHU looks\nuntamed.\nMay I have it for\nmy daughter?<DONE>"
+      }
+    ],
+    "_Museum2FHikerText3": [
+      {
+        "op": "text",
+        "text": "I'd like to get\nthat PIKACHU off\nyou, but it's too\nattached to you.<DONE>"
       }
     ],
     "_Museum2FMoonStoneSignText": [
@@ -5541,10 +5937,88 @@
         "text": "You're a trainer\nright? BROCK's\nlooking for new\nchallengers!\nFollow me!<DONE>"
       }
     ],
+    "_PewterGymBrockBoulderBadgeInfoText": [
+      {
+        "op": "text",
+        "text": "\fThat's an official\nPOKéMON LEAGUE\nBADGE!\fIts bearer's\nPOKéMON become\nmore powerful!\fThe technique\nFLASH can now be\nused anytime!<PROMPT>"
+      }
+    ],
+    "_PewterGymBrockPostBattleAdviceText": [
+      {
+        "op": "text",
+        "text": "There are all\nkinds of trainers\nin the world!\fSome raise POKéMON\nfor fights. Some\nsee them as pets.\fI'm in training to\nbecome a POKéMON\nbreeder.\fIf you take your\nPOKéMON training\nseriously, go\nvisit the GYM in\nCERULEAN and test\nyour abilities!<DONE>"
+      }
+    ],
+    "_PewterGymBrockPreBattleText": [
+      {
+        "op": "text",
+        "text": "I'm BROCK!\nI'm PEWTER's GYM\nLEADER!\fI believe in rock\nhard defense and\ndetermination!\fThat's why my\nPOKéMON are all\nthe rock-type!\fDo you still want\nto challenge me?\nFine then! Show\nme your best!<DONE>"
+      }
+    ],
+    "_PewterGymBrockReceivedBoulderBadgeText": [
+      {
+        "op": "text",
+        "text": "I took\nyou for granted.\fAs proof of your\nvictory, here's\nthe BOULDERBADGE!\f<PLAYER> received\nthe BOULDERBADGE!"
+      }
+    ],
     "_PewterGymBrockWaitTakeThisText": [
       {
         "op": "text",
         "text": "Wait! Take this\nwith you!<DONE>"
+      }
+    ],
+    "_PewterGymCooltrainerMAfterBattleText": [
+      {
+        "op": "text",
+        "text": "You're pretty hot,\nbut not as hot\nas BROCK!<DONE>"
+      }
+    ],
+    "_PewterGymCooltrainerMBattleText": [
+      {
+        "op": "text",
+        "text": "Stop right there,\nkid!\fYou're still light\nyears from facing\nBROCK!<DONE>"
+      }
+    ],
+    "_PewterGymCooltrainerMEndBattleText": [
+      {
+        "op": "text",
+        "text": "Darn!\fLight years isn't\ntime! It measures\ndistance!<PROMPT>"
+      }
+    ],
+    "_PewterGymGuideAdviceText": [
+      {
+        "op": "text",
+        "text": "The 1st POKéMON\nout in a match is\nat the top of the\nPOKéMON LIST!\fBy changing the\norder of POKéMON,\nmatches could be\nmade easier!<DONE>"
+      }
+    ],
+    "_PewterGymGuideBeginAdviceText": [
+      {
+        "op": "text",
+        "text": "All right! Let's\nget happening!<PROMPT>"
+      }
+    ],
+    "_PewterGymGuideFreeServiceText": [
+      {
+        "op": "text",
+        "text": "It's a free\nservice! Let's\nget happening!<PROMPT>"
+      }
+    ],
+    "_PewterGymGuidePostBattleText": [
+      {
+        "op": "text",
+        "text": "Just as I thought!\nYou're POKéMON\nchamp material!<DONE>"
+      }
+    ],
+    "_PewterGymGuidePreAdviceText": [
+      {
+        "op": "text",
+        "text": "Hiya! I can tell\nyou have what it\ntakes to become a\nPOKéMON champ!\fI'm no trainer,\nbut I can tell\nyou how to win!\fLet me take you\nto the top!<DONE>"
+      }
+    ],
+    "_PewterGymGuyPikachuText": [
+      {
+        "op": "text",
+        "text": "All right! Let's\nget happening!\fIt will be tough\nfor your PIKACHU\nat this GYM!\fElectric attacks\nare harmless to\nBROCK's ground-\ntype POKéMON.<DONE>"
       }
     ],
     "_PewterGymReceivedTM34Text": [
@@ -6089,6 +6563,162 @@
       {
         "op": "text",
         "text": "A fainted POKéMON\ncan't fight. But, \nit can still use \nmoves like CUT!<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF1AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Quit staring if\nyou don't want to\nfight!<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF1BattleText": [
+      {
+        "op": "text",
+        "text": "You looked at me,\ndidn't you?<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF1EndBattleText": [
+      {
+        "op": "text",
+        "text": "You're\nmean!<PROMPT>"
+      }
+    ],
+    "_Route3CooltrainerF2AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Avoid fights by\nnot letting\npeople see you!<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF2BattleText": [
+      {
+        "op": "text",
+        "text": "That look you\ngave me, it's so\nintriguing!<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF2EndBattleText": [
+      {
+        "op": "text",
+        "text": "Be nice!<PROMPT>"
+      }
+    ],
+    "_Route3CooltrainerF3AfterBattleText": [
+      {
+        "op": "text",
+        "text": "ROUTE 4 is at the\nfoot of MT.MOON.<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF3BattleText": [
+      {
+        "op": "text",
+        "text": "Eek! Did you\ntouch me?<DONE>"
+      }
+    ],
+    "_Route3CooltrainerF3EndBattleText": [
+      {
+        "op": "text",
+        "text": "That's it?<PROMPT>"
+      }
+    ],
+    "_Route3SignText": [
+      {
+        "op": "text",
+        "text": "ROUTE 3\nMT.MOON AHEAD<DONE>"
+      }
+    ],
+    "_Route3Text1": [
+      {
+        "op": "text",
+        "text": "Whew... I better\ntake a rest...\nGroan...\fThat tunnel from\nCERULEAN takes a\nlot out of you!<DONE>"
+      }
+    ],
+    "_Route3Youngster1AfterBattleText": [
+      {
+        "op": "text",
+        "text": "There are other\nkinds of POKéMON\nthan those found\nin the forest!<DONE>"
+      }
+    ],
+    "_Route3Youngster1BattleText": [
+      {
+        "op": "text",
+        "text": "Hey! I met you in\nVIRIDIAN FOREST!<DONE>"
+      }
+    ],
+    "_Route3Youngster1EndBattleText": [
+      {
+        "op": "text",
+        "text": "You\nbeat me again!<PROMPT>"
+      }
+    ],
+    "_Route3Youngster2AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Are you storing\nyour POKéMON on\nPC? Each BOX can\nhold 20 POKéMON!<DONE>"
+      }
+    ],
+    "_Route3Youngster2BattleText": [
+      {
+        "op": "text",
+        "text": "Hi! I like shorts!\nThey're comfy and\neasy to wear!<DONE>"
+      }
+    ],
+    "_Route3Youngster2EndBattleText": [
+      {
+        "op": "text",
+        "text": "I don't\nbelieve it!<PROMPT>"
+      }
+    ],
+    "_Route3Youngster3AfterBattleText": [
+      {
+        "op": "text",
+        "text": "If a POKéMON BOX\non the PC gets\nfull, just switch\nto another BOX!<DONE>"
+      }
+    ],
+    "_Route3Youngster3BattleText": [
+      {
+        "op": "text",
+        "text": "Are you a trainer?\nLet's fight!<DONE>"
+      }
+    ],
+    "_Route3Youngster3EndBattleText": [
+      {
+        "op": "text",
+        "text": "If I\nhad new POKéMON,\nI would've won!<PROMPT>"
+      }
+    ],
+    "_Route3Youngster4AfterBattleText": [
+      {
+        "op": "text",
+        "text": "I always wear\nshorts, even in\nwinter!<DONE>"
+      }
+    ],
+    "_Route3Youngster4BattleText": [
+      {
+        "op": "text",
+        "text": "Hey! You're not\nwearing shorts!<DONE>"
+      }
+    ],
+    "_Route3Youngster4EndBattleText": [
+      {
+        "op": "text",
+        "text": "Lost!\nLost! Lost!<PROMPT>"
+      }
+    ],
+    "_Route3Youngster5AfterBattleText": [
+      {
+        "op": "text",
+        "text": "Trained POKéMON\nare stronger than\nthe wild ones!<DONE>"
+      }
+    ],
+    "_Route3Youngster5BattleText": [
+      {
+        "op": "text",
+        "text": "You can fight my\nnew POKéMON!<DONE>"
+      }
+    ],
+    "_Route3Youngster5EndBattleText": [
+      {
+        "op": "text",
+        "text": "Done\nlike dinner!<PROMPT>"
       }
     ],
     "_RunAwayText": [
@@ -7581,6 +8211,40 @@
       {
         "call": "printText",
         "program": "ViridianSchoolHousePrintLittleGirlText.text"
+      }
+    ],
+    "Route3_TextPointers": [
+      {
+        "call": "text",
+        "program": "Route3SuperNerdText"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "handler"
+      },
+      {
+        "call": "text",
+        "program": "Route3SignText"
       }
     ],
     "PewterCity_TextPointers": [

@@ -15,6 +15,89 @@ Newest first.
 
 ## Recent session archive
 
+*(Moved verbatim from STATUS.md on 2026-11-08, V3 checkpoint-03b review, DECISIONS #61.)*
+
+### 2026-11-08 (V3 checkpoint-03a applied; verification stopped) — Codex
+
+- Started clean at `63320f4`; patch hash, all five source audit rows, setup twice (936 files identical), and manifest match. Typecheck/build passed; bundle name, size and SHA256 match. Codex mistakenly started the marker check before the build process finished: ENOENT on dist/assets. The ROM suite also started prematurely and later passed 6220/6220 (248 files). Stopped without retries, no-ROM or V1–V8; normal handoff and baseline updates deferred. Evidence in note 88 §33 and `impl-` logs. Not ready for Claude's review. Checkpoint-03b was not started.
+
+### 2026-11-08 (V3 checkpoint-02c closed) — Claude (Opus)
+
+- The user's §28.8 play-test: "all checks pass" (note 88 §31). Checkpoint-02, the Museum, is done. Traced and spiked 03a: the gym guide, the statues and the Jr. Trainer, 22 text rows, 15 new cases. Spike: bundle `index-DB0JGlo2.js`, ROM 6220/6220, no-ROM 5932/288, 248 files, V1–V8 each an AssertionError. Briefed in §32; the patch is not applied.
+
+### 2026-11-08 (V3 checkpoint-02c reviewed: passed, one test added) — Claude (Opus)
+
+- Codex's `a25ec11` equals the spike byte for byte, and every gate reproduced. Reviewer mutations found the pop-up's drawing untested (R3–R6 survived): the code was right, so a render case and two assertions were added, and all six now fail. ROM 6205/6205, no-ROM 5917/288, the bundle unchanged. Note 88 §30. Next: the user's §28.8 play-test.
+
+### 2026-11-08 (V3 checkpoint-02c implemented, awaiting Claude's review) — Codex
+
+- Applied the fossil pop-up spike on clean `3dd1f1f`; six audit rows agree. Setup twice, identical; manifest passes before and after V1–V12, each an AssertionError and restored. Gates once each, sequential, default workers: typecheck/marker pass, bundle `index-CFgwpK1I.js` 665,301 bytes with the expected SHA256, ROM 6204/6204 (247 files), no-ROM 5916 passed / 288 skipped (234 / 13 files). Full evidence, hashes and all witnesses in note 88 §29 and committed `impl-` logs. Handoff docs and baselines updated. Next: Claude's review (§30), then the user's fossil play-test (§31). Checkpoint-03 was not started.
+
+### 2026-11-08 (V3 checkpoint-02b closed) — Claude (Opus)
+
+- The user's §24.8 play-test: "all checks tested and passed" (note 88 §27). Traced and spiked 02c, the fossil pop-ups: `DisplayMonFrontSpriteInBox`, two new pictures (527 PNGs), 11 new cases. Spike: bundle `index-CFgwpK1I.js`, ROM 6204/6204, no-ROM 5916/288, 247 files, V1–V12 each an AssertionError. Briefed in §28 for Codex or Grok; the patch is not applied.
+
+### 2026-11-08 (V3 checkpoint-02b reviewed: passed) — Claude (Opus)
+
+- Grok's `b32bf25` equals the spike byte for byte. Re-ran the ASM audit, setup twice and every gate: bundle `index-Bq8X1tp7.js`, ROM 6193/6193, no-ROM 5907/286. The seven parent text pointers check out against the ROM. Reviewer mutations R1–R3 were each an AssertionError. Note 88 §26. Next: the user's §24.8 play-test.
+
+### 2026-11-08 (V3 checkpoint-02b implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `notes/88-v3-checkpoint-02b/02b-spike.diff` (6 source files; manifest `PASS 6 source + 2 generated files + patch`). Audit (5 rows) matches `Museum1FPrintScientist2Text`, `HideObject` and the fifth Museum 1F object, `Museum2FHikerText` (`cp 101`, equal is text 3), the per-pass starter bit, and the 14 symbol addresses. Setup twice from `game/`; both runs identical; only `text_programs.json` (mirrored), SHA256 `662d70aa…00d2`. Gates (from `game/`, sequential, default workers): typecheck pass; build `index-Bq8X1tp7.js` 663,122 bytes SHA256 `2feafa70…4b79`; marker pass; ROM 6193/6193 (246 files); no-ROM 5907 pass / 286 skip (233 / 13). V1–V7 each failed as AssertionError and restored (`impl-`). §25 in note 88. Docs: CLAUDE.md, CONVENTIONS.md, ARCHITECTURE.md *Stack*, story ARCHITECTURE.md. Commit locally. Next: Claude's review (§26), then the user's §24.8 play-test (§27). 02c was not started.
+
+### 2026-11-08 (02a closed; V3 checkpoint-02b briefed for Grok) — Claude (Opus)
+
+- The user's re-play: "everything goes well" (§23). Spiked 02b: the Old Amber scientist and the hiker, 14 text rows, 10 new cases. Spike: bundle `index-Bq8X1tp7.js`, ROM 6193/6193, no-ROM 5907/286, V1–V7 caught. Note 88 §24. Stopped the dev server at the user's request.
+
+### 2026-11-08 (V3 checkpoint-02a fix reviewed: passed) — Claude (Opus)
+
+- Grok's `4161579`: code byte-identical to the spike, U1–U2 match, §21 and every handoff item present. R1 (`drawScreenTile` without its clear) caught. Gates: ROM 6183/6183, no-ROM 5897/286, bundle `index-0MnhvVCI.js`. Note 88 §22. Next: the user's §16.8 re-play.
+
+### 2026-11-08 (V3 checkpoint-02a fix implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `notes/88-v3-checkpoint-02a-fix/fix-spike.diff` (3 source files; manifest `PASS 3 source + patch`). Audit: `MONEY_BOX_TEMPLATE` is box (11,0)–(19,2) with "MONEY" at (13,0), columns 13–17; 12 and 18 stay border. Gates (from `game/`, sequential, default workers): typecheck pass; build `index-0MnhvVCI.js` 662,569 bytes SHA256 `fb1f25e9…9bf4`; marker pass; ROM 6183/6183 (246 files); no-ROM 5897 pass / 286 skip (233 / 13). U1–U2 each failed as AssertionError and restored (`impl-`). §21 in note 88. Docs: CLAUDE.md, CONVENTIONS.md, ARCHITECTURE.md *Stack*. Commit locally. Next: Claude's review (§22), then the user's §16.8 re-play (§23). 02b was not started.
+
+### 2026-11-08 (02a play-test: a defect; fix briefed for Grok) — Claude (Opus)
+
+- The user's screenshot: the border runs through "MONEY". `renderScriptMenu` drew labels with transparent glyphs (§19). Spiked the fix on `drawScreenTile`: 1 new pixel case, one mock line; bundle `index-0MnhvVCI.js`, ROM 6183/6183, no-ROM 5897/286, U1–U2 caught. Note 88 §20.
+
+### 2026-11-08 (stale docs corrected; dev server up for the 02a play-test) — Claude (Opus)
+
+- Docs only, at the user's request: 02a's state in STATUS, the baseline in CONVENTIONS, V3's row in PLAN, PROJECT's core flow, ARCHITECTURE's map count. The user named Grok for 02b. Next: the user's §16.8 play-test, recorded as §19, then Claude spikes and briefs 02b as §20.
+
+*(Moved verbatim from STATUS.md on 2026-11-08, V3 checkpoint-02c review, DECISIONS #61.)*
+
+*(Moved verbatim from STATUS.md on 2026-11-08, V3 checkpoint-03b implementation, DECISIONS #61.)*
+
+### 2026-11-07 (V3 checkpoint-02a reviewed: passed; end of day) — Claude (Opus)
+
+- Grok's `736675c`: code and data byte-identical to the spike, T1–T6 match, §17 and every handoff item present (no doc fixes). R1 (no NOOP after the purchase) caught by five cases. Gates: ROM 6182/6182, no-ROM 5896/286, bundle `index-BDiKPiKT.js`. Note 88 §18. End of day: the restart list is in *In progress*.
+
+
+### 2026-11-07 (V3 checkpoint-02a implemented, awaiting Claude's review) — Grok 4.7
+
+- Applied `notes/88-v3-checkpoint-02a/02a-spike.diff` (9 source files; manifest `PASS 9 source + 2 generated files + patch`). Source audit (4 rows) matches `Museum1F.asm`, `Museum1F_2.asm`, `DisplayMoneyBox` and `HasEnoughMoney`. Setup twice from `game/`; both runs identical; only `text_programs.json` (mirrored). Gates (from `game/`, sequential, default workers): typecheck pass; build `index-BDiKPiKT.js` 662,542 bytes SHA256 `7e40c593…a201`; marker pass; ROM 6182/6182 (246 files); no-ROM 5896 pass / 286 skip (233 / 13). T1–T6 each failed as AssertionError and restored (`impl-`). §17 in note 88. Docs: CLAUDE.md, CONVENTIONS.md, ARCHITECTURE.md *Stack*, story ARCHITECTURE.md. Commit locally. Next: Claude's review (§18), then the user's play-test (§16.8).
+
+### 2026-11-07 (V3 checkpoint-02a briefed for Grok) — Claude (Opus)
+
+- Spiked the ticket: `story/museum_1f.ts` (map script + scientist, every branch), three script commands (`moneyBox` via the Mart's layout, `ifEnoughMoney`, `subtractMoney`), the box cleared at close, 18 text rows, 12 new cases. Spike: bundle `index-BDiKPiKT.js`, ROM 6182/6182, no-ROM 5896/286, T1–T6 caught. The user: Grok implements. Note 88 §16.
+
+### 2026-11-07 (V3 checkpoint-01 closed; checkpoint-02 planned) — Claude (Opus)
+
+- The user's re-play: the Old Amber display seemed silent; Claude drove the game: it talks from below and from its right, the scientist blocks it from the left. The user: "all works" (§14). Stopped the leftover dev server (PID 5024). Traced checkpoint-02 and split it: 02a ticket, 02b amber + hiker, 02c fossil pop-ups (§15). No code changed.
+
+### 2026-11-07 (V3 checkpoint-01 fix reviewed: passed) — Claude (Opus)
+
+- Codex's `b559689`: byte-identical to the fix spike. No §12 (recorded from the paste) and no test-suite entry (added). R1 (drop `printText` from the guard) caught by the three cases. Gates: ROM 6170/6170, no-ROM 5884/286. Note 88 §13. Next: the user's §7.8 re-play.
+
+### 2026-11-07 (V3 checkpoint-01 fix implemented, awaiting Claude's review) — Codex
+
+- Applied `notes/88-v3-checkpoint-01-fix/fix-spike.diff` (2 source files; manifest `PASS 2 source + patch`). Source audit: `scripts/Museum1F.asm:43-67` and `scripts/Museum1F_2.asm:137-202` rows 2, 4, 5 are `text_asm; farcall PrintText; jp TextScriptEnd`. Gates (from `game/`, sequential, default workers): typecheck pass; build `index-Dsf0YB15.js` 660,773 bytes SHA256 `f8aeac02...e42b`; marker pass; ROM 6170/6170 (245 files); no-ROM 5884 pass / 286 skip (232 / 13). Hand witness: restore controller → three `AssertionError: expected null to match object`; manifest passes. Updated CLAUDE.md, CONVENTIONS.md, ARCHITECTURE.md *Stack*. STATUS updated. Commit locally.
+
+### 2026-11-07 (V3 checkpoint-01 play-test: defect; fix briefed) — Claude (Opus)
+
+- The user's screenshot: Museum 1F's back room silent. Two of the three should have talked (§10): `handleInteraction` returns nothing for an NPC without an extracted string, and the three `farcall` bodies have none (Claude's brief tested the table, not the talk path). Spiked the fix (7 lines + 3 cases; ROM 6170/6170, no-ROM 5884/286, bundle `index-Dsf0YB15.js`); the user chose the implementer route. Note 88 §11.
+
 *(Moved verbatim from STATUS.md on 2026-11-05 to keep it under ~40 KB, DECISIONS #61.)*
 
 *(Moved verbatim from STATUS.md on 2026-11-06, screen-model merge checkpoint-01, DECISIONS #61.)*
@@ -22,6 +105,36 @@ Newest first.
 *(Moved verbatim from STATUS.md on 2026-11-06, A5f checkpoint-02, DECISIONS #61.)*
 
 *(Moved verbatim from STATUS.md on 2026-11-07, O-53, DECISIONS #61.)*
+
+*(Moved verbatim from STATUS.md on 2026-11-08, V3 checkpoint-02b brief, DECISIONS #61.)*
+
+### 2026-11-07 (V3 checkpoint-01 reviewed: passed) — Claude (Opus)
+
+- Codex's `aaa9abc`: code byte-identical to the spike, generated data matches the manifest, W1–W6 match. No §8: recorded from the pasted report. Doc fixes: ARCHITECTURE *Stack* (6173 → 6167), STATUS *Setup*'s setup row. R1 (Museum 1F's doors to Viridian) caught. Gates: ROM 6167/6167, no-ROM 5881/286, bundle `index-D-LGHgHY.js`. Note 88 §9.
+
+### 2026-11-07 (V3 checkpoint-01 implemented, awaiting Claude's review) — Codex
+
+- Applied `notes/88-v3-checkpoint-01/01-spike.diff` (22 source + 1 new fixture + 14 test files; manifest `PASS 22 source + 12 generated files + patch`). Source audit (4 rows): Museum/Gym object lists match ASM object order; music `cities1`/`cities1`/`gym` from `songs.asm:55-57`; Museum1F no-auto-box store and 3 `printText` calls from farcalled bodies; 25 text programs each match pret's symbol addresses. Setup ran twice from `game/`; both runs produced identical 12 generated files (3 map JSONs, `text_programs.json`, `map_sprite_sets.json`, `battle_transitions.json`, each mirrored). Gates (from `game/`, sequential, default workers): typecheck pass; build `index-D-LGHgHY.js` 660,743 bytes SHA256 `09822499...496f`; marker pass; ROM 6167/6167 (245 files); no-ROM 5881 pass / 286 skip (232 passed / 13 skipped). W1–W6 mutations each failed as AssertionError and restored. Updated ARCHITECTURE.md (storage model, test counts), CLAUDE.md (map count 24→27, baseline 6167/6167), CONVENTIONS.md (test suite + baselines), STATUS.md. Commit locally.
+
+### 2026-11-07 (V3 checkpoint-01 briefed) — Claude (Opus)
+
+- Spiked the three maps: extractor rows, 25 text programs from pret's symbols, music/palette/auto-box/debug warps, Brock and the Jr. Trainer filtered until 03. 19 failing cases in 13 files, each a planned change (counts, censuses, named deferrals, a shared fixture for the frozen text baselines). Spike: bundle `index-D-LGHgHY.js`, ROM 6167/6167, no-ROM 5881/286, W1–W6 caught. Note 88 §7.
+
+### 2026-11-07 (O-53 answered: Route 3 before Brock) — Claude (Opus)
+
+- The user: "let's go with A". DECISIONS #106; note 88's table gains checkpoint-04 (Route 3 and the east connection), Brock's win becomes 05. Next: brief V3 checkpoint-01.
+
+### 2026-11-07 (V3 planned) — Claude (Opus)
+
+- Deleted the untracked `pokeyellow.sym` (the user's OK; a UTF-16 copy of pret's symbol file from Codex's session). Traced V3 against `PewterGym.asm`, `Museum1F(_2).asm`, `Museum2F.asm` and the backlog: note 88, four checkpoints. Museum uses the extracted Gate tileset. V2b's `BEAT_BROCK` tripwire makes the east edge a user decision: O-53. No code changed.
+
+### 2026-11-07 (A5f play-tested: A5f and A5 closed) — Claude (Opus)
+
+- The user ran note 87 §24.8's full A5f play-test: "done, all pass". Recorded as §27; closed A5f and A5 in STATUS, PLAN, PROJECT and CLAUDE.md. No code changed. Next: plan V3.
+
+### 2026-11-07 (A5f checkpoint-05 reviewed: passed) — Claude (Opus)
+
+- Codex's `f700d96`: code byte-identical to the spike, Z1–Z3 match, §25 and logs present. Doc fixes: the `catch_demo` state line, the `catch_demo.test.ts` suite entry, the census row, two file-table rows. R2 caught; R1 (evolution font) survives: a pre-existing evolution-screen test gap, logged in note 57. Gates: ROM 6160/6160, no-ROM 5878/282, bundle `index-DdDyee21.js`. Note 87 §26. Next: the full A5f play-test (§24.8).
 
 ### 2026-11-07 (A5f checkpoint-05 implemented, awaiting Claude's review) — Codex
 
@@ -7848,3 +7961,20 @@ Historical snapshots, superseded by the November3 handoff. Preserved verbatim; n
   them on the OFF path and plays only the traced presentation IDs (poof).
 - The user ended the day. Keep all commits local and the existing data/art protected. After A5e: A5f's catch/demo
   integration, then V3 Gym/Museum, V4 and V5. Full detail: [STATUS](STATUS.md), notes75–77 and battle architecture.
+
+## Archived PROJECT state (moved 2026-11-08 when V3 closed)
+
+## State as of 2026-11-07 (end of day) - V3 in progress
+
+- **R1, V1, A6, A1, V2 and A5 are done (6/36 milestones).** The playable path reaches Pewter across 27 maps. The
+  ASM-backed battle engine is live and the old engine and the old catch-demo renderer are retired.
+- **No ROM at runtime.** 203 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps. Vanilla art,
+  local play, no remote and no push.
+- **V3 (note 88):** Pewter Gym, the Museum and the first badge, in five checkpoints. Route 3 moves in as 04, before
+  Brock's win (05), so the east edge is never open without its connection (#106). Done: 01, the three maps,
+  walkable with their texts (plus a fix: farcalled printed texts talk). 02a, the Museum ticket (map trigger, ¥50 with
+  the MONEY box, the refusal step), is reviewed and awaits the user's play-test. Next: 02b (the Old Amber, the hiker),
+  02c (the fossil pop-ups), 03 the Gym.
+- **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
+- **Tests:** ROM **6182/6182**; no-ROM **5896 pass / 286 skip**; 246 files. Bundle `index-BDiKPiKT.js`.
+- Full handoff: STATUS.md; V3's record is note 88 (§15 the 02 split, §16 the last brief, §18 the last review).

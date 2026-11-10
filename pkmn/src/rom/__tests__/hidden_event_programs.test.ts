@@ -58,12 +58,21 @@ describe('hidden-event predef programs (A5b7g2 CP1)', () => {
         if (!m) continue;
         const [x, y, label] = [Number(m[1]), Number(m[2]), m[3]];
         if (['HiddenItems', 'OpenRedsPC', 'OpenPokemonCenterPC'].includes(label)) continue;
-        // V3 checkpoint-01 defers these (note 88 §7): the fossils' DisplayMonFrontSpriteInBox → 02, the statues → 03.
-        if (map.name === 'Museum1F' && ['AerodactylFossil', 'KabutopsFossil'].includes(label)) continue;
-        if (map.name === 'PewterGym' && label === 'GymStatues') continue;
         const event = map.hiddenEvents?.find(e => e.x === x && e.y === y);
         expect(event, `${map.name} (${x},${y}) ${label}`).toBeDefined();
         const predef = predefOf(label, constant);
+        if (label === 'GymStatues') {
+          // tx_pre_id branches on the badge: story/pewter_gym.test.ts pins it.
+          expect(predef).toBeNull();
+          expect(event!.scriptId).toBe('PEWTER_GYM_STATUES');
+          continue;
+        }
+        if (label === 'AerodactylFossil' || label === 'KabutopsFossil') {
+          // The pop-up comes first, so a script runs the predef (story/museum_fossils.test.ts pins it).
+          expect(predef).toBe(`${label.replace('Fossil', '')}FossilText`);
+          expect(event!.scriptId).toBe(label === 'AerodactylFossil' ? 'AERODACTYL_FOSSIL' : 'KABUTOPS_FOSSIL');
+          continue;
+        }
         if (label === 'DisplayOakLabRightPoster') {
           expect(predef).toBeNull();
           expect(event!.scriptId).toBe('OAKS_LAB_RIGHT_POSTER');

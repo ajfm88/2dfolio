@@ -31,8 +31,8 @@ describe('static/ export: asset keys', () => {
   // A5e checkpoint-05: battle_animations.json and audio/sfx/ball_poof.json. 196 → 198.
   // A5f checkpoint-01: audio/sfx/ball_toss.json and audio/sfx/tink.json. 198 → 200.
   // V3 checkpoint-01: maps/Museum1F.json, maps/Museum2F.json and maps/PewterGym.json. 200 → 203.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the eight Pewter maps in the JSON mirror (203 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(203);
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the eight Pewter maps in the JSON mirror (204 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(204);
     for (const name of ['Museum1F', 'Museum2F', 'PewterGym']) expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('battle_animations.json');
@@ -44,19 +44,22 @@ describe('static/ export: asset keys', () => {
       expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     for (const name of ['PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse'])
       expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
-    expect(extracted.jsonData).not.toHaveProperty('maps/Route3.json');
+    expect(extracted.jsonData).toHaveProperty('maps/Route3.json');
   });
 
-  it('extracts 525 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 527 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
     // StatusScreen CP2 adds font/P.png → 521.
     // V2c CP2 adds pikachu/unknown_e7b83.png, unknown_e7d13.png, emotes/zzz.png → 524.
     // A5c3f checkpoint-02 adds battle/ghost.png → 525.
+    // V3 checkpoint-02c adds the two fossil pictures → 527.
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(525);
+    expect(imageKeys.length).toBe(527);
+    expect(imageKeys).toContain('/gfx/sprites/front/fossilkabutops.png');
+    expect(imageKeys).toContain('/gfx/sprites/front/fossilaerodactyl.png');
     expect(imageKeys).toContain('/gfx/battle/ghost.png');
     expect(imageKeys).toContain('/gfx/font/P.png');
     expect(binaryKeys).toEqual([

@@ -4,9 +4,11 @@
 //   engine/events/hidden_events/school_notebooks.asm — PrintNotebookText, ViridianSchoolNotebook
 //   engine/events/hidden_events/school_blackboard.asm — ViridianSchoolBlackboard
 //   engine/events/hidden_events/town_map.asm — TownMapText (a bookshelf predef)
+//   engine/events/hidden_events/museum_fossils.asm — AerodactylFossil, KabutopsFossil
+//   engine/events/hidden_events/gym_statues.asm — GymStatues
 
 import type { ScriptCommand } from '../script';
-import type { MenuBoxLayout } from '../script/types';
+import type { MenuBoxLayout, MonPopupPicture } from '../script/types';
 import { copyFrames } from '../overworld/sprite_sets';
 import { displayTextID, getTextHandler } from './text_handlers';
 import type { TextHandlerContext } from './text_handlers';
@@ -114,6 +116,14 @@ export function buildTownMapSignScript(): ScriptCommand[] {
   ];
 }
 
+/**
+ * AerodactylFossil / KabutopsFossil: DisplayMonFrontSpriteInBox, EnableAutoTextBoxDrawing (Museum 1F's script turns
+ * the automatic box off), then tx_pre: a plain predef text in that box, with the outer wait.
+ */
+function buildFossilScript(picture: MonPopupPicture, program: string): ScriptCommand[] {
+  return [{ type: 'monSpritePopup', picture }, ...displayTextID([{ type: 'printText', program, box: 'keep' }], { autoBox: true })];
+}
+
 /** Build script commands for scripted hidden events. Returns null if no script. */
 export function getHiddenEventScript(scriptId: string): ScriptCommand[] | null {
   if (scriptId === 'RED_PC') return displayTextID([{ type: 'pc', mode: 'direct' }], { outerWait: false });
@@ -121,6 +131,8 @@ export function getHiddenEventScript(scriptId: string): ScriptCommand[] | null {
   if (scriptId === 'VIRIDIAN_SCHOOL_NOTEBOOK') return buildSchoolNotebookScript();
   if (scriptId === 'VIRIDIAN_SCHOOL_BLACKBOARD') return buildSchoolBlackboardScript();
   if (scriptId === 'TOWN_MAP_TEXT') return buildTownMapSignScript();
+  if (scriptId === 'AERODACTYL_FOSSIL') return buildFossilScript({ url: '/gfx/sprites/front/fossilaerodactyl.png', dimensions: 0x77 }, 'AerodactylFossilText');
+  if (scriptId === 'KABUTOPS_FOSSIL') return buildFossilScript({ url: '/gfx/sprites/front/fossilkabutops.png', dimensions: 0x66 }, 'KabutopsFossilText');
   return null;
 }
 
@@ -154,6 +166,10 @@ export function interactionDisplay(
     return displayTextID([{ type: 'printText', program: interaction.program, box: 'keep' }]);
   }
   switch (interaction.scriptId) {
+    case 'PEWTER_GYM_STATUES':
+      // GymStatues: the facing is the event's own (data), the badge picks the predef. wBeatGymFlags matches wObtainedBadges.
+      return displayTextID([{ type: 'printText', box: 'keep', program: ctx.hasFlag('BADGE_1') ? 'GymStatueText2' : 'GymStatueText1',
+        bindings: { gymCityName: 'PEWTER CITY', gymLeaderName: 'BROCK' } }]); // PewterGym_Script's LoadGymLeaderAndCityName
     case 'OAKS_LAB_RIGHT_POSTER':
       // CountSetBits(wPokedexOwned); cp 2; jr c keeps SaveOptionText.
       return displayTextID([{ type: 'printText', box: 'keep',

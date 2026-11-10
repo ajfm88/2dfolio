@@ -142,6 +142,8 @@ export const RED_PIC_FRONT    = symToOffset(0x04, 0x5a97);  // RedPicFront — c
 export const RED_PIC_BACK     = symToOffset(0x3d, 0x43b1);  // RedPicBack — compressed
 export const PROF_OAK_PIC_BACK = symToOffset(0x3d, 0x44d2);  // ProfOakPicBack — compressed
 export const OLD_MAN_PIC_BACK = symToOffset(0x3d, 0x4441);   // OldManPicBack — compressed (gfx/battle/oldmanb.pic)
+export const FOSSIL_KABUTOPS_PIC   = symToOffset(0x0b, 0x7b92); // FossilKabutopsPic, header $66
+export const FOSSIL_AERODACTYL_PIC = symToOffset(0x0d, 0x67a1); // FossilAerodactylPic, header $77
 export const GHOST_PIC        = symToOffset(0x0d, 0x6920);   // GhostPic — compressed (gfx/battle/ghost.pic), header $66
 export const SHRINK_PIC_1     = symToOffset(0x04, 0x5b96);  // ShrinkPic1 — compressed
 export const SHRINK_PIC_2     = symToOffset(0x04, 0x5bf0);  // ShrinkPic2 — compressed
@@ -297,6 +299,7 @@ export const PICK_UP_ITEM_TEXT_ADDR = 0x23ef;
 // Each map's TextPointers table: array of 2-byte pointers to text handlers.
 // Text handlers starting with 0x17 (TX_FAR) contain a 3-byte far pointer to actual text.
 export const MAP_TEXT_PTRS: Record<string, { offset: number; bank: number; count: number }> = {
+  Route3: { offset: symToOffset(0x15, 0x5525), bank: 0x15, count: 10 },
   PalletTown:          { offset: symToOffset(0x06, 0x4faa), bank: 0x06, count: 8 },
   Route1:              { offset: symToOffset(0x07, 0x435c), bank: 0x07, count: 3 },
   Route22:             { offset: symToOffset(0x14, 0x5169), bank: 0x14, count: 3 },

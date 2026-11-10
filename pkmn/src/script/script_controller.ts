@@ -12,7 +12,9 @@ import { PcSession } from '../menus/pc';
 import type { PcStorage } from '../menus/pc';
 import { PokemartSession } from '../menus/pokemart';
 import { ScreenTiles } from '../menus/screen_tiles';
+import { MonSpritePopup, MON_POPUP_PICTURE } from './mon_sprite_popup';
 import { drawBox, drawScreenTile, drawText } from '../menus/menu_render';
+import { tokenizeGlyphs } from '../text/charmap';
 import { createScript, currentCommand, advanceScript } from './engine';
 import type { TextBox } from '../text';
 import { textBgTransfer } from '../text/bg_transfer';
@@ -29,7 +31,7 @@ import type { PikachuMovementProgramId } from '../rom/extractors/pikachu_movemen
 import type { PikachuSpawnState } from '../pikachu/pikachu_spawn';
 import { createPokemon, initExperience } from '../battle';
 import type { Bag, ItemStack } from '../items';
-import { drawExclamationBubble } from '../renderer';
+import { drawExclamationBubble, drawTile, loadTileset } from '../renderer';
 import { HealingMachineSession } from '../overworld/healing_machine';
 import { fadeOutAndStopMusic, isAudioFadingOut, preloadMusic } from '../audio';
 import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
@@ -74,6 +76,8 @@ export interface ScriptDeps {
   restoreMapMusic?: (entry?: 'dm' | 'pn' | 'nurse') => void;
   /** Only explicit OverworldLoop/native-pass commands reset the host's pair. */
   resetPassClock?: () => void;
+  /** Records a trainer on the current map as beaten (a script's SetEvent on its bit). */
+  setTrainerBeaten?: (npcId: string) => void;
 }
 
 // ── Actions returned to main.ts ────────────────────────────────────────
@@ -81,7 +85,7 @@ export interface ScriptDeps {
 export type ScriptAction =
   | { type: 'scriptEnded'; resumePass?: boolean }
   | { type: 'catchDemo'; battleType: CatchDemoBattleType; species: string; level: number }
-  | { type: 'startBattleTransition'; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
+  | { type: 'startBattleTransition'; gymLeaderNo?: number; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string }
   | { type: 'warp'; map: string; warpId: number }
   | { type: 'openStartMenu' }
   | { type: 'townMap' }
@@ -110,6 +114,8 @@ let scriptMenuBox: { layout: MenuBoxLayout; cursor: { x: number; y: number } | n
 let scriptMenu: { input: MenuInput; then: (keys: GameButton[], item: number) => ScriptCommand[] } | null = null;
 let scriptMenuSession: MenuSession | null = null;
 let menuSessionTiles: ScreenTiles | null = null;
+let scriptMonPopup: MonSpritePopup | null = null;
+let scriptMonPopupSheet: HTMLCanvasElement | null = null;
 const scriptBubble = new EmotionBubble<'player' | string>();
 let scriptHealingMusic: { ready: boolean } | null = null;
 
@@ -240,6 +246,8 @@ export function initScript(commands: ScriptCommand[]): void {
   scriptMenu = null;
   scriptMenuSession = null;
   menuSessionTiles = null;
+  scriptMonPopup = null;
+  scriptMonPopupSheet = null;
   scriptHealingMusic = null;
   // A replaced script must not leave a bubble on screen.
   scriptBubble.clear();
@@ -536,6 +544,15 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
   // Wait for async operations (e.g., showNpc sprite loading)
   if (scriptAsyncPending) return null;
 
+  if (scriptMonPopup) {
+    const done = scriptMonPopup.frame(() => { readJoypad(); return isPassPressed('a') || isPassPressed('b'); });
+    if (!done) return null;
+    scriptMonPopup = null;
+    player.imageDisabled = false; // DisplayTextIDInit's UpdateSprites, on the same frame
+    advanceScript(activeScript);
+    return runScript(deps, isPass, displayAdvanced);
+  }
+
   // Execute the next command
   const cmd = currentCommand(activeScript);
   if (!cmd) {
@@ -565,7 +582,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     }
     case 'displayOpen':
       scriptDisplayStarted = true;
-      textBox.open({ autoBox: cmd.autoBox ?? mapAutoTextBox(deps.gameMap.mapData?.name ?? ''), spriteUpdate: cmd.spriteUpdate });
+      textBox.open({ autoBox: cmd.autoBox ?? mapAutoTextBox(deps.gameMap.mapData?.name ?? ''), spriteUpdate: cmd.spriteUpdate, windowUp: cmd.windowUp });
       if (npcCloseFacings.size) {
         const saved = [...npcCloseFacings];
         npcCloseFacings.clear();
@@ -579,6 +596,18 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       scriptMenuBox = cmd.layout ? { layout: cmd.layout, cursor: null } : null;
       advanceScript(activeScript);
       return runScript(deps, isPass, displayAdvanced);
+
+    case 'monSpritePopup': {
+      const { picture } = cmd;
+      scriptMonPopupSheet = null;
+      // Rendering only: the routine's frames do not wait on the fetch.
+      void loadTileset(picture.url).then(sheet => { if (scriptMonPopup?.picture === picture) scriptMonPopupSheet = sheet; });
+      scriptMonPopup = new MonSpritePopup(picture, textBgTransfer, tileAt => {
+        updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower, { playerX: player.x, playerY: player.y, tileAt });
+        if (tileAt(8, 9) >= 0x60) player.imageDisabled = true;
+      });
+      return null;
+    }
 
     case 'menuInput':
       scriptMenu = { input: new MenuInput(cmd.menu), then: cmd.then };
@@ -629,7 +658,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       return null;
 
     case 'displayCloseInPlace':
-      textBox.closeInPlace();
+      textBox.closeInPlace({ outerWait: cmd.outerWait });
       scriptDisplayWaiting = true;
       return null;
 
@@ -670,6 +699,12 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       advanceScript(activeScript);
       return runScript(deps, isPass, displayAdvanced);
     }
+
+    case 'setTrainerBeaten':
+      if (!deps.setTrainerBeaten) throw new Error('setTrainerBeaten needs the main script deps');
+      deps.setTrainerBeaten(cmd.npcId);
+      advanceScript(activeScript);
+      return runScript(deps, isPass, displayAdvanced);
 
     case 'showObject': {
       showObject(cmd.map, cmd.npcId);
@@ -924,6 +959,7 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
         partyIndex: cmd.partyIndex,
         trainerName: cmd.trainerName,
         endBattleText: cmd.endBattleProgram ? legacyBattleProgram(cmd.endBattleProgram) : cmd.endBattleText,
+        ...(cmd.gymLeaderNo ? { gymLeaderNo: cmd.gymLeaderNo } : {}),
       };
     }
 
@@ -1315,11 +1351,27 @@ export function renderScriptYesNo(): void {
   if (scriptChoice) yesNoMenu.render();
 }
 
+/** The pop-up's transferred tiles. Sprites under the box stay hidden until DisplayTextIDInit's UpdateSprites. */
+function renderMonSpritePopup(): void {
+  const popup = scriptMonPopup;
+  if (!popup?.boxDrawn) return;
+  const T = TILE_SIZE;
+  uiTiles.cover(popup.box.x * T, popup.box.y * T, popup.box.width * T, popup.box.height * T);
+  for (let y = 0; y < 18; y++) for (let x = 0; x < 20; x++) {
+    const shown = popup.tiles.visibleAt(x, y);
+    if (shown === null) continue;
+    if (shown !== MON_POPUP_PICTURE) { drawScreenTile(shown, x * T, y * T); continue; }
+    if (scriptMonPopupSheet) drawTile(scriptMonPopupSheet, popup.sheetTile(x, y), x * T, y * T);
+  }
+}
+
 /** Render a handler's menu box (the blackboard), its labels and the ▶ PlaceMenuCursor left. */
 export function renderScriptMenu(): void {
+  renderMonSpritePopup();
   if (!scriptMenuBox) return;
   const { layout, cursor } = scriptMenuBox; const T = TILE_SIZE;
   drawBox(layout.x * T, layout.y * T, layout.width * T, layout.height * T);
-  for (const label of layout.labels) drawText(label.text, label.x * T, label.y * T);
+  // Each glyph is a wTileMap cell: it replaces the border tile under it (MONEY_BOX_TEMPLATE's "MONEY" at (13,0)).
+  for (const label of layout.labels) tokenizeGlyphs(label.text).forEach((glyph, i) => drawScreenTile(glyph, (label.x + i) * T, label.y * T));
   if (cursor) drawText('▶', cursor.x * T, cursor.y * T);
 }

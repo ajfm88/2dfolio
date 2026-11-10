@@ -134,6 +134,12 @@ describe('inventory callers through menu input', () => {
 });
 
 describe('item display names come from the extracted ROM names', () => {
+  it('TM34 sells at its machine price and OLD AMBER is a key item (data/items/tm_prices.asm, key_items.asm)', async () => {
+    const { getItemPrice, isKeyItem } = await import('./items');
+    expect(getItemPrice('TM34')).toBe(2000);
+    expect(isKeyItem('TM34')).toBe(false);
+    expect(isKeyItem('OLD_AMBER')).toBe(true);
+  });
   it('every runtime item id has a ROM name, including the two renamed constants', async () => {
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');

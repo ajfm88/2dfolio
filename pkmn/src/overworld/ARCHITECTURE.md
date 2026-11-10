@@ -384,6 +384,11 @@ two-transition `battle_transitions.ts` is gone.
 - **A warp to a map that isn't extracted** fails gracefully: the player stays put (see
   the Diglett's Cave entrance before V4). **A connection to one would hang**, because
   `performMapConnection` doesn't catch the load error — so the extractor never emits one.
+  Pewter's east connection to Route3 (offset 4) and Route3's west connection to PewterCity
+  (offset -4) are extracted (V3 checkpoint-04). Route3's cartridge north connection is
+  Route4 at offset 25. Route4 stays unextracted and unnamed in `MAP_ID_TO_NAME`, so no
+  north connection is emitted. Border block $2C is sixteen copies of tile $11, and
+  `Overworld_Coll` does not list $11, so the north edge is the existing tree border.
 
 ## Overworld Controller
 
@@ -423,7 +428,7 @@ are migrated. Main dispatches `displayOpen` in the interaction's own tick.
 
 ## Trainer sight (A1c, `notes/20-a1c-plan.md`, DECISIONS #43)
 
-A map with trainer headers (`map_trainers.ts` `TRAINER_MAPS`: the Forest today) runs the ASM's
+A map with trainer headers (`map_trainers.ts` `TRAINER_MAPS`: Viridian Forest, Pewter Gym and Route 3) runs the ASM's
 script trio as its `w<Map>CurScript` (`getMapScript`/`setMapScript`), from `runMapScript` on
 every standing pass, before the joypad read:
 
@@ -455,7 +460,10 @@ every standing pass, before the joypad read:
   (`enterMapAfterBattle`). A trainer that came into view on the battle step can spot you on
   the first pass back.
 - **Not built:** `RunMapScript` at a hop's midpoint (V4). `trainer_tripwires.test.ts` fails
-  if an OVERWORLD map gets a sight trainer, or if `TRAINER_MAPS` drifts from pret's scripts.
+  if an OVERWORLD map other than Route3 gets a sight trainer, or if `TRAINER_MAPS` drifts
+  from pret's scripts. Route3 is the one narrowed exception: `route3.test.ts` enumerates all
+  36 ledge pairs, and the only midpoint sight is already seen at its source. A through-main
+  case also holds DOWN at (14,6) and verifies youngster2 engages before a hop can start.
 
 ## Pikachu Follower & Happiness
 
@@ -472,8 +480,9 @@ and draws at player minus camera plus (0, 8). It runs after the player's grass o
 `destination-out` punches the current player frame out of the shadow, preserving OAM
 priority even where grass hides the player's opaque pixels. Pikachu's native command
 buffer waits on takeoff and crosses in one flat two-tile move on the next step. Still
-missing: `SFX_LEDGE` (V5) and `RunMapScript` at the hop's midpoint (V4, DECISIONS #43; a
-tripwire test fails when a map can reach it). Trainer sight runs after the landing (A1c).
+missing: `SFX_LEDGE` (V5) and `RunMapScript` at the hop's midpoint (V4, DECISIONS #43; the
+tripwire still fails for every OVERWORLD map except Route3, whose source-sight proof is in
+`route3.test.ts`). Trainer sight runs after the landing (A1c).
 
 ## GameMap Public API
 

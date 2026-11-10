@@ -133,8 +133,8 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianForest:7': 'A5b4 pickup', 'ViridianForest:8': 'A5b4 pickup', 'ViridianForest:9': 'A5b4 pickup',
       'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry',
       'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry',
-      'Museum1F:3': 'V3 checkpoint-02b Old Amber',
-      'Museum2F:5': 'V3 checkpoint-02b hiker', 'PewterGym:3': 'V3 checkpoint-03 gym guide' };
+      ...Object.fromEntries(Array.from({ length: 8 }, (_, n) => [`Route3:${n + 2}`, 'A5b4 trainer'])),
+      'PewterGym:2': 'A5b4 trainer' };
     const seen: string[] = [];
     for (const file of readdirSync(resolve(dataDir, 'maps'))) {
       const m = map(file.replace(/\.json$/, '')); const calls = getTextProgramData().textPointers[`${m.name}_TextPointers`];
@@ -146,7 +146,7 @@ describe('small handlers from the cartridge branches', () => {
         expect(!!registered !== !!excluded[key], key).toBe(true);
       }
     }
-    expect(seen).toHaveLength(42); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
+    expect(seen).toHaveLength(52); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
     expect(getTextHandler('RedsHouse1F', 2)).toBeDefined(); // TV is a hidden event, not a map sign.
   });
   it.each(['branch', 'Mart give order', 'healing jingle'])('detects an in-memory %s mutation', mutation => {

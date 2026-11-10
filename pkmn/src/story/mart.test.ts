@@ -925,6 +925,6 @@ describe('DisplayPokemartDialogue on one retained display', () => {
       expect(isKeyItem(id), id).toBe(flags.get(name));
       if (flags.get(name)) definedTrue.push(id);
     }
-    expect(definedTrue).toEqual(['OAKS_PARCEL', 'TOWN_MAP']);
+    expect(definedTrue).toEqual(['OAKS_PARCEL', 'TOWN_MAP', 'OLD_AMBER']);
   });
 });

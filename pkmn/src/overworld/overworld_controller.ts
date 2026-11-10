@@ -25,6 +25,7 @@ import { updatePikachuWalking } from '../pikachu/pikachu_happiness';
 import { countStep, runStepEnd } from './step_end';
 import type { StepCounters } from './step_end';
 import '../story/small_text_handlers';
+import '../story/pewter_gym';
 import '../story/lab_text_handlers';
 import '../story/pokecenter';
 import '../story/pewter_pokecenter';
@@ -37,11 +38,12 @@ import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { buildOakGrassScript } from '../story/pallet_town';
 import { PEWTER_CITY, pewterCityScript } from '../story/pewter_city';
 import { MUSEUM_1F, museum1FScript } from '../story/museum_1f';
+import { PEWTER_GYM, pewterGymBrockPostBattle } from '../story/pewter_gym';
 import {
   VIRIDIAN_CITY, viridianCityStep, buildSleepingOldManScript, buildGymLockedScript,
   buildOldMan2Script,
 } from '../story/viridian_city';
-import { TRAINER_MAPS, trainerMapScript, trainerTalkedTo, startTrainerWalkUp } from './map_trainers';
+import { TRAINER_MAPS, TRAINER_SCRIPT, trainerMapScript, trainerTalkedTo, startTrainerWalkUp } from './map_trainers';
 import type { TrainerSightState, TrainerScriptAction } from './map_trainers';
 import { setSpriteIndex } from './sprite_index';
 import {
@@ -331,6 +333,11 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
   const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
   if (player.isBusy || ow.doorExitStep) return null;
+
+  // PewterGym_ScriptPointers' fourth entry. A loss has already reset the script through the blackout path.
+  if (currentMapName === PEWTER_GYM && getMapScript(PEWTER_GYM) === TRAINER_SCRIPT.BROCK_POST_BATTLE) {
+    return { type: 'script', commands: pewterGymBrockPostBattle() };
+  }
 
   // The trainer trio: CheckFightingMapTrainers / DisplayEnemyTrainerTextAndStartBattle /
   // EndTrainerBattle (map_trainers.ts, A1c)

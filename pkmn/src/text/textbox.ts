@@ -147,6 +147,8 @@ export class TextBox {
   private closeSequence: CloseSequence | null = null;
   /** After an in-place CloseTextDisplay: no window, no AutoBgMapTransfer (TownMapText). */
   private windowOff = false;
+  /** A nested DisplayTextIDInit: hWY is already 0, so the window never leaves the screen. */
+  private windowUp = false;
   private host: TextDisplayHost;
   private closeStart: (() => void) | null = null;
   textReturn: TextReturn = 'returned';
@@ -206,7 +208,7 @@ export class TextBox {
     if (mode === 'displayTextID') this.revision++;
     this._active = true; this.complete = false; this.textComplete = false;
     this.finalWait = false; this.frame = 0; this.border = true; this.closeSequence = null; this.windowOff = false;
-    this.closeStart = null;
+    this.closeStart = null; this.windowUp = false;
     this.visible.fill(' ');
     this.screen = new TextScreen(this.ports(), this.buttons());
   }
@@ -223,8 +225,9 @@ export class TextBox {
   private advance(): void {
     if (this.run?.next().done) { this.complete = true; if (this.active) this._phase = 'waiting'; }
   }
-  open(opts: { autoBox?: boolean; spriteUpdate?: boolean } = {}): void {
+  open(opts: { autoBox?: boolean; spriteUpdate?: boolean; windowUp?: boolean } = {}): void {
     this.reset('displayTextID');
+    this.windowUp = opts.windowUp ?? false;
     this.start(this.opening(opts));
   }
   private *opening(opts: { autoBox?: boolean; spriteUpdate?: boolean }): Generator<void> {
@@ -291,12 +294,18 @@ export class TextBox {
    * CloseTextDisplay reached from inside the handler (TownMapText's `jp CloseTextDisplay`): the
    * whole close and its trailing UpdateSprites, after which DisplayTextID still runs Hold and
    * closes again. The window stays off ($90) and AutoBgMapTransfer stays disabled until then.
+   * outerWait: a whole nested DisplayTextID ends here (PewterGymScriptReceiveTM34), so its wait and Hold run first.
    */
-  closeInPlace(): void {
+  closeInPlace(opts: { outerWait?: boolean } = {}): void {
     if (!this.active || !this.displaySession) throw new Error('CloseTextDisplay requires an open display');
-    this.start(this.closingInPlace());
+    this.start(this.closingInPlace(opts.outerWait ?? false));
   }
-  private *closingInPlace(): Generator<void> {
+  private *closingInPlace(outerWait: boolean): Generator<void> {
+    if (outerWait) {
+      yield* this.silentWait();
+      this._phase = 'holding';
+      yield* this.screen!.holdA();
+    }
     yield* this.runClose();
     this.closeSequence = null; this.border = false; this.windowOff = true; this._phase = 'waiting';
   }
@@ -332,7 +341,7 @@ export class TextBox {
     // even though the window does not become visible until render T+3 (scanout T+4).
     uiTiles.cover(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE);
     if (this.closing && !this.closeSequence!.firstFrame) return;
-    if (this.mode === 'displayTextID' && this.frame < 3) return;
+    if (this.mode === 'displayTextID' && this.frame < 3 && !this.windowUp) return;
     fillRect(BOX_X, BOX_Y, GB_WIDTH, BOX_HEIGHT * TILE_SIZE, 0);
     drawTileBorder(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT);
     for (let row = 1; row <= 4; row++) {

@@ -217,6 +217,11 @@ Both closes restore facings and run a trailing sprite update. The white-out plus
 font copy before the existing Town Map takes 3 + 17; its internal timings and
 BG phase remain approximate until the shared Town Map audit.
 
+`displayOpen({windowUp: true})` skips the 3-frame hidden window when a nested
+DisplayTextID finds `hWY` already 0. `closeInPlace({outerWait: true})` ends that
+nested display in place, with its own wait and Hold, and leaves the outer session's Hold and full-reload close
+(V3 checkpoint-05, modelled on TownMapText).
+
 ## Extraction
 
 `rom/extractors/text.ts` provides the shared strict byte decoder: unknown bytes throw

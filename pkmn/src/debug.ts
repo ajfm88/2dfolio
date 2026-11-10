@@ -48,6 +48,7 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   { label: 'Pewter City',    map: 'PewterCity',    warpId: 0, stepPos: { x: 13, y: 26 } },
   // Routes
   { label: 'Route 1',        map: 'Route1',        warpId: 0, stepPos: { x: 5, y: 17 } },
+  { label: 'Route 3', map: 'Route3', warpId: 0, stepPos: { x: 4, y: 9 } },
   { label: 'Route 22',       map: 'Route22',       warpId: 0, stepPos: { x: 17, y: 4 } },
   // Indoor (warp 0 = entrance door, auto-steps in)
   { label: "Lab",                  map: 'OaksLab',              warpId: 0 },

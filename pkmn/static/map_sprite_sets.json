@@ -29,7 +29,8 @@
     "PewterPokecenter": 58,
     "Museum1F": 52,
     "Museum2F": 53,
-    "PewterGym": 54
+    "PewterGym": 54,
+    "Route3": 14
   },
   "mapObjects": {
     "PalletTown": [
@@ -180,6 +181,17 @@
       12,
       7,
       36
+    ],
+    "Route3": [
+      12,
+      4,
+      4,
+      6,
+      4,
+      6,
+      4,
+      4,
+      6
     ]
   },
   "pictureIdsBySprite": {

@@ -18,7 +18,7 @@ import type { TextRow } from './text';
 import { TEXT_POINTER_TABLES, TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
 
 /** What a RAM operand holds when the program runs (the caller supplies it). */
-export type TextBinding = 'stringBuffer' | 'nameBuffer' | 'boxNumString' | 'money' | 'coins' | 'hpDifference'
+export type TextBinding = 'gymCityName' | 'gymLeaderName' | 'stringBuffer' | 'nameBuffer' | 'boxNumString' | 'money' | 'coins' | 'hpDifference'
   | 'battleMonNick' | 'enemyMonNick' | 'trainerName' | 'learnMoveMonName' | 'caughtMonNick'
   | 'curEnemyLevel' | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'amountMoneyWon' | 'totalPayDayMoney';
 
@@ -113,6 +113,8 @@ const BINDINGS = createTextOperandBindings([
   ['ram', 0xD008, 'battleMonNick'],    // wBattleMonNick
   ['ram', 0xCFD9, 'enemyMonNick'],     // wEnemyMonNick
   ['ram', 0xD049, 'trainerName'],      // wTrainerName
+  ['ram', 0xCF5E, 'gymCityName'],      // wGymCityName
+  ['ram', 0xCF6F, 'gymLeaderName'],    // wGymLeaderName
   ['ram', 0xD035, 'learnMoveMonName'], // wLearnMoveMonName
   ['ram', 0xDE05, 'caughtMonNick'],    // wBoxMonNicks (first caught nickname)
   ['decimal', 0xD126, 'curEnemyLevel'], // wCurEnemyLevel

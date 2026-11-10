@@ -27,7 +27,7 @@ vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPassPressed: vi.fn(()
   readJoypad: vi.fn(), syncJoypadRead: vi.fn() }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true, playMusic: vi.fn(), isMusicChannelActive: () => false }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
-vi.mock('../menus/menu_render', () => ({ drawBox: vi.fn(), drawText: vi.fn(), drawChar: vi.fn() }));
+vi.mock('../menus/menu_render', () => ({ drawBox: vi.fn(), drawText: vi.fn(), drawChar: vi.fn(), drawScreenTile: vi.fn() }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));
 const dataDir = resolve(__dirname, '../../data');

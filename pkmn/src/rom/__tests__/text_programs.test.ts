@@ -93,7 +93,7 @@ function labelBodies(): Map<string, string[]> {
 const BINDINGS: Record<string, string> = {
   wStringBuffer: 'stringBuffer', wNameBuffer: 'nameBuffer', wBoxNumString: 'boxNumString',
   hMoney: 'money', hCoins: 'coins', wHPBarHPDifference: 'hpDifference',
-  wBattleMonNick: 'battleMonNick', wEnemyMonNick: 'enemyMonNick', wTrainerName: 'trainerName',
+  wBattleMonNick: 'battleMonNick', wEnemyMonNick: 'enemyMonNick', wTrainerName: 'trainerName', wGymCityName: 'gymCityName', wGymLeaderName: 'gymLeaderName',
   wLearnMoveMonName: 'learnMoveMonName', wBoxMonNicks: 'caughtMonNick', wCurEnemyLevel: 'curEnemyLevel',
   wPlayerNumHits: 'playerNumHits', wEnemyNumHits: 'enemyNumHits', wExpAmountGained: 'expAmountGained',
   wAmountMoneyWon: 'amountMoneyWon', wTotalPayDayMoney: 'totalPayDayMoney',

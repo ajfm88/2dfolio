@@ -7,10 +7,10 @@ import { resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import { BinaryReader } from '../binary_reader';
 import { extractSfx, SFX_HEADERS, type AudioCommand } from '../extractors/audio';
-import { extractGhostPic } from '../extractors/graphics';
+import { extractFossilPic, extractGhostPic } from '../extractors/graphics';
 import { extractTrainers, JESSIE_JAMES_PIC } from '../extractors/trainers';
 import { readMoveNames, readPokemonInternalNames, readTrainerClassNames } from '../extractors/text';
-import { GHOST_PIC } from '../rom_offsets';
+import { FOSSIL_AERODACTYL_PIC, FOSSIL_KABUTOPS_PIC, GHOST_PIC } from '../rom_offsets';
 import { installNodeImageData } from '../node_image_data';
 import { encodePng } from '../static_export';
 
@@ -136,6 +136,17 @@ describe.skipIf(!ROM_PATH)('A5c3f checkpoint-02 data', () => {
     expect(decoded.height).toBe(48);
     expect(Buffer.from(decoded.data).equals(Buffer.from(image.data.buffer, image.data.byteOffset, image.data.byteLength))).toBe(true);
     expect(existsSync(resolve(STATIC, 'gfx/trainers/chief.png'))).toBe(false);
+  });
+
+  it.each([
+    ['FossilKabutopsPic', FOSSIL_KABUTOPS_PIC, [0x0b, 0x7b92], 0x66, 48, 'fossilkabutops'],
+    ['FossilAerodactylPic', FOSSIL_AERODACTYL_PIC, [0x0d, 0x67a1], 0x77, 56, 'fossilaerodactyl'],
+  ] as const)('%s: its header and size, and the committed PNG is those decoded bytes', (symbol, at, bankAddress, header, size, file) => {
+    expect(symbols.get(symbol)).toEqual([...bankAddress]);
+    expect(at).toBe(offset(bankAddress[0], bankAddress[1]));
+    expect(rom[at]).toBe(header);
+    const image = extractFossilPic(reader, at, size);
+    expect(readFileSync(resolve(STATIC, `gfx/sprites/front/${file}.png`)).equals(encodePng(image))).toBe(true);
   });
 
   it('pins all 47 class pics against TrainerPicAndMoneyPointers, with CHIEF on scientist.png', () => {

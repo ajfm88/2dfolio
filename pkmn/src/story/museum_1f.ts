@@ -53,4 +53,20 @@ export function museum1FScript(ctx: TextHandlerContext): ScriptCommand[] | null 
   return museum1FScientist1Text(ctx);
 }
 
+const A = 'Museum1FPrintScientist2Text.';
+const amber = (label: string): ScriptCommand => ({ type: 'printText', program: A + label });
+
+/**
+ * Museum1FPrintScientist2Text. After the first text: GiveItem; on success SetEvent, then HideObject and its UpdateSprites,
+ * then the received text; on a full bag only the no-space text, so the amber stays and he asks again.
+ */
+export function museum1FScientist2Text(ctx: TextHandlerContext): ScriptCommand[] {
+  if (ctx.hasFlag('GOT_OLD_AMBER')) return displayTextID([amber('GetTheOldAmberCheckText')]);
+  return displayTextID([amber('TakeThisToAPokemonLabText'), { type: 'giveItem', itemId: 'OLD_AMBER',
+    successCommands: [{ type: 'setFlag', flag: 'GOT_OLD_AMBER' }, { type: 'hideObject', map: MUSEUM_1F, npcId: 'old_amber' },
+      { type: 'updateSprites' }, amber('ReceivedOldAmberText')],
+    failCommands: [amber('YouDontHaveSpaceText')] }]);
+}
+
 registerTextHandler(MUSEUM_1F, 1, museum1FScientist1Text);
+registerTextHandler(MUSEUM_1F, 3, museum1FScientist2Text);

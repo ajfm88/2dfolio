@@ -13,12 +13,13 @@ const maps: MapJson[] = readdirSync(DATA)
   .map(f => JSON.parse(readFileSync(resolve(DATA, f), 'utf8')) as MapJson);
 
 describe('A1c tripwires', () => {
-  it('(a) no OVERWORLD map has a trainer with sight: the hop-midpoint RunMapScript is not built', () => {
+  it('(a) outdoor sight requires a map-specific proof until the hop-midpoint hook exists', () => {
     // HandleLedges runs only on OVERWORLD. A trainer there could spot the player at a hop's
     // midpoint (pass 9), which strands them on the ledge tile (plan §1.8). When this fails
     // (V4's Route 3), port the midpoint hook and that aftermath, or prove the map can't
     // reach it and narrow this check.
-    const offending = maps.filter(m => m.tileset === 'OVERWORLD')
+    // Route3's exhaustive ledge/source-sight proof is in route3.test.ts (V3 checkpoint-04).
+    const offending = maps.filter(m => m.tileset === 'OVERWORLD' && m.name !== 'Route3')
       .flatMap(m => m.npcs.filter(n => (n.sightRange ?? 0) > 0).map(n => `${m.name}:${n.id}`));
     expect(offending).toEqual([]);
   });
@@ -32,8 +33,6 @@ describe('A1c tripwires', () => {
         return existsSync(asm) && readFileSync(asm, 'utf8').includes('CheckFightingMapTrainers');
       })
       .map(m => m.name)
-      // V3 checkpoint-03 brings PewterGym_Script with Brock and the Jr. Trainer (note 88 §7).
-      .filter(name => name !== 'PewterGym')
       .sort();
     expect([...TRAINER_MAPS].sort()).toEqual(expected);
   });

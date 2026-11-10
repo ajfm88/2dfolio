@@ -128,5 +128,17 @@
       "movement": "stay",
       "dialogue": ""
     }
+  ],
+  "hiddenEvents": [
+    {
+      "x": 2,
+      "y": 3,
+      "scriptId": "AERODACTYL_FOSSIL"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "scriptId": "KABUTOPS_FOSSIL"
+    }
   ]
 }

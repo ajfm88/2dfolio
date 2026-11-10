@@ -167,6 +167,9 @@ export class Player {
     };
   }
 
+  /** UpdatePlayerSprite's .disableSprite (IMAGEINDEX $ff): a box covers (8,9) (script/mon_sprite_popup.ts). */
+  imageDisabled = false;
+
   /** Check if player wants to interact (A button) and return the interacted NPC, sign text, or hidden item. */
   checkInteraction(gameMap: GameMap, npcs: Npc[], hiddenItemFound: (flag: string) => boolean = () => false): Interaction | null {
     if (!isPassPressed('a') || this.isBusy) return null;
@@ -387,7 +390,7 @@ export class Player {
   getCameraY(): number { return this.y - 60; }
 
   render(cameraX: number, cameraY: number): void {
-    if (!this.spriteSheet) return;
+    if (!this.spriteSheet || this.imageDisabled) return;
 
     const screenX = this.x - cameraX;
     // -4px offset matches original GB sprite positioning; a hop adds the jump table's Y

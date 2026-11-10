@@ -18,8 +18,11 @@ export interface MenuBoxLayout {
   labels: { x: number; y: number; text: string }[];
 }
 
+/** A compressed pic and its forced dimension byte ($66, $77): low nibble columns, high nibble rows. */
+export interface MonPopupPicture { url: string; dimensions: number }
+
 export type ScriptCommand = (
-  | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean }
+  | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean; windowUp?: boolean }
   | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
   // DisplayPokemartDialogue_ (engine/events/pokemart.asm), after the greeting PrintText.
   | { type: 'pokemart'; items: string[] }
@@ -30,9 +33,11 @@ export type ScriptCommand = (
   | { type: 'menuInput'; menu: MenuInputConfig; then: (keys: GameButton[], item: number) => ScriptCommand[] }
   // LoadScreenTilesFromBuffer1 back to the empty box saved after DisplayTextIDInit: no menu box, blank interior
   | { type: 'restoreSavedScreen' }
+  /** DisplayMonFrontSpriteInBox: a picture in the MON_SPRITE_POPUP box, before DisplayTextID. */
+  | { type: 'monSpritePopup'; picture: MonPopupPicture }
   | { type: 'displayClose'; outerWait: boolean; reload?: CloseReload }
   // CloseTextDisplay from inside a handler (TownMapText): the session stays open for Hold
-  | { type: 'displayCloseInPlace' }
+  | { type: 'displayCloseInPlace'; outerWait?: boolean }
   // GBPalWhiteOut (on) until the palette is loaded again (off)
   | { type: 'whiteOut'; on: boolean }
   // farcall DisplayTownMap: main.ts runs the Town Map screen, then returns into the script
@@ -47,6 +52,8 @@ export type ScriptCommand = (
   | { type: 'textButtonWait' }
   // HideObject (engine/overworld/toggleable_objects.asm): persistent map-object toggle.
   | { type: 'hideObject'; map: string; npcId: string }
+  // SetEvent on a trainer's beaten bit, no battle: saved, and the live sprite stops seeing the player.
+  | { type: 'setTrainerBeaten'; npcId: string }
   | { type: 'showObject'; map: string; npcId: string }
   /** jp OverworldLoop: two frames; optionally finish a no-input pass or end the script into ordinary input (RESET). */
   | { type: 'overworldLoop'; updateSprites?: boolean; resumeInput?: boolean }
@@ -90,7 +97,7 @@ export type ScriptCommand = (
     }
   | { type: 'unhideNpc'; npcId: string }
   | { type: 'awaitInteraction'; npcId: string; guardStepY: number; guardProgram: string }
-  | { type: 'startBattle'; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string }
+  | { type: 'startBattle'; endBattleLabels?: {win:string;lose:string}; trainerClass: string; partyIndex: number; trainerName?: string; endBattleText?: string; endBattleProgram?: string; gymLeaderNo?: number }
   | { type: 'healParty' }
   | { type: 'restoreMapMusic'; waitForCurrent?: boolean }
   | { type: 'healingMachine' }

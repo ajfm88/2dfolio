@@ -16,6 +16,7 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x01: 'ViridianCity',
   0x02: 'PewterCity',
   0x0C: 'Route1',
+  0x0E: 'Route3',
   0x21: 'Route22',
   0x22: 'Route23',    // Referenced by Route22 connection
   0x25: 'RedsHouse1F',
@@ -37,7 +38,7 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x32: 'ViridianForestSouthGate',
   0x33: 'ViridianForest',
   0xC5: 'DiglettsCave',     // Referenced by DiglettsCaveRoute2 warp (extracted in V4)
-  // V2 Pewter; V3 Museum + Gym (notes/88-v3-plan.md). Route3 stays unnamed until V3 checkpoint-04.
+  // V2 Pewter; V3 Museum + Gym (notes/88-v3-plan.md). Route3 is added in checkpoint-04; Route4 stays unnamed.
   0x34: 'Museum1F',
   0x35: 'Museum2F',
   0x36: 'PewterGym',
@@ -482,6 +483,21 @@ const MAP_METADATA: Record<string, MapMeta> = {
   },
 
   // V2a — object_const order and directions, data/maps/objects/Pewter*.asm; note 60 §13.
+  // V3 checkpoint-04: Route4 is unextracted; its north connection remains omitted.
+  Route3: {
+    signTextOffsets: [symToOffset(0x28, 0x711a)],
+    npcs: [
+      { id: 'super_nerd' },
+      { id: 'youngster1', direction: 'right' },
+      { id: 'youngster2', direction: 'down' },
+      { id: 'cooltrainer_f1', direction: 'left' },
+      { id: 'youngster3', direction: 'down' },
+      { id: 'cooltrainer_f2', direction: 'left' },
+      { id: 'youngster4', direction: 'left' },
+      { id: 'youngster5', direction: 'right' },
+      { id: 'cooltrainer_f3', direction: 'up' },
+    ],
+  },
   PewterCity: {
     signTextOffsets: [
       symToOffset(0x2d, 0x4d35), symToOffset(0x2d, 0x4d81),
@@ -536,13 +552,24 @@ const MAP_METADATA: Record<string, MapMeta> = {
   // Ids: pret's const_export names minus the map prefix, lowercased, in ROM object order.
   PewterGym: {
     signTextOffsets: [],
-    // NPC_INDEX_FILTER keeps only GYM_GUIDE until checkpoint-03 adds BROCK and COOLTRAINER_M back.
+    // V3 checkpoint-03a: engine/events/hidden_events/gym_statues.asm returns unless the player faces up.
+    hiddenEvents: [
+      { x: 3, y: 10, scriptId: 'PEWTER_GYM_STATUES', facing: 'up' },
+      { x: 6, y: 10, scriptId: 'PEWTER_GYM_STATUES', facing: 'up' },
+    ],
     npcs: [
-      { id: 'gym_guide', direction: 'down' },      // PewterGymGuideText (text_asm) — V3 checkpoint-03
+      { id: 'brock', direction: 'down' },          // PewterGymBrockText (story/pewter_gym.ts)
+      { id: 'cooltrainer_m', direction: 'right' }, // PewterGymTrainerHeader0
+      { id: 'gym_guide', direction: 'down' },      // PewterGymGuideText (story/pewter_gym.ts)
     ],
   },
   Museum1F: {
     signTextOffsets: [],
+    // data/events/hidden_events.asm. The argument SPRITE_FACING_UP isn't read: any facing finds them (V3 checkpoint-02c).
+    hiddenEvents: [
+      { x: 2, y: 3, scriptId: 'AERODACTYL_FOSSIL' },
+      { x: 2, y: 6, scriptId: 'KABUTOPS_FOSSIL' },
+    ],
     npcs: [
       // Every text farcalls a Museum1F_2.asm body — V3 checkpoint-02
       { id: 'scientist1', direction: 'left' },
@@ -679,6 +706,7 @@ export const EXTRACTABLE_MAPS: Record<string, number> = {
   Museum1F: 0x34,
   Museum2F: 0x35,
   PewterGym: 0x36,
+  Route3: 0x0E,
 };
 
 // ── NPC index overrides (when ROM has more NPCs than JSON) ─────
@@ -702,10 +730,6 @@ const NPC_INDEX_FILTER: Record<string, number[]> = {
   // ROM: 0=DAISY1(sitting), 1=DAISY2(walking), 2=TOWN_MAP
   BluesHouse: [0, 2],
 
-  // PewterGym ROM has 3 NPCs: 0=BROCK, 1=COOLTRAINER_M, 2=GYM_GUIDE. Brock and the Jr. Trainer would engage
-  // through the generic trainer path without PewterGymBrockText's wGymLeaderNo / post-battle script, so they
-  // stay out until V3 checkpoint-03 brings the gym's script (notes/88-v3-plan.md §3).
-  PewterGym: [2],
 };
 
 // ── ROM parsing ────────────────────────────────────────────────

@@ -5,6 +5,8 @@ import { displayTextID, registerTextHandler } from './text_handlers';
 import type { TextHandlerContext } from './text_handlers';
 import { potionSampleScript } from '../overworld/item_pickup';
 import { buildSleepingOldManScript, buildOldMan1Script, buildOldMan2Script } from './viridian_city';
+import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
+import { getPikachuHappiness } from '../pikachu/pikachu_happiness';
 
 const print = (program: string): ScriptCommand => ({ type: 'printText', program });
 export function momText(ctx: TextHandlerContext): ScriptCommand[] {
@@ -42,6 +44,11 @@ export function pewterSuperNerdText(): ScriptCommand[] {
     { type: 'yesNoChoice', yes: [print('PewterCitySuperNerd2Text.ThatsRightText')],
       no: [print('PewterCitySuperNerd2Text.ImSprayingRepelText')] }]);
 }
+/** Museum2FHikerText: BIT_PIKACHU_SPAWN_STARTER (the starter alive in the party; refreshed every overworld pass), then cp 101. */
+export function museum2FHikerText(ctx: TextHandlerContext): ScriptCommand[] {
+  const line = !shouldPikachuFollow(ctx.party) ? 1 : getPikachuHappiness() < 101 ? 2 : 3;
+  return displayTextID([print(`Museum2FHikerText${line}`)]);
+}
 export function girlText(ctx: TextHandlerContext): ScriptCommand[] {
   return displayTextID([print(`ViridianCityPrintGirlText.${ctx.hasFlag('GOT_POKEDEX') ? 'WhenIGoShopText' : 'HasntHadHisCoffeeYetText'}`)]);
 }
@@ -54,6 +61,7 @@ registerTextHandler('ViridianCity', 2, gamblerText);
 registerTextHandler('ViridianCity', 3, caterpillarText);
 registerTextHandler('ViridianCity', 4, girlText);
 registerTextHandler('PewterCity', 4, pewterSuperNerdText);
+registerTextHandler('Museum2F', 5, museum2FHikerText);
 registerTextHandler('ViridianCity', 5, () => buildSleepingOldManScript(false));
 registerTextHandler('ViridianCity', 7, buildOldMan1Script);
 registerTextHandler('ViridianCity', 8, ctx => ctx.hasFlag('COMPLETED_CATCH_TRAINING')

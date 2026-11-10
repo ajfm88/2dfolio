@@ -355,8 +355,8 @@ describe('ASM interaction priority', () => {
     shelf.mockReturnValue(null); expect(deps.player.checkInteraction(deps.gameMap, deps.npcs, hasFlag)).toEqual({ text: 'Sign' });
     expect(face).not.toHaveBeenCalled();
   });
-  it('today’s 27 maps have no overlapping hidden events, signs and NPCs', () => {
-    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(27);
+  it('today’s 28 maps have no overlapping hidden events, signs and NPCs', () => {
+    const files = readdirSync(resolve(DATA, 'maps')); expect(files).toHaveLength(28);
     for (const file of files) {
       const map = JSON.parse(readFileSync(resolve(DATA, 'maps', file), 'utf8')) as MapData;
       const groups = [map.hiddenEvents ?? [], map.signs, map.npcs];

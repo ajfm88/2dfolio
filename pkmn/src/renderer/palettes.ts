@@ -113,6 +113,7 @@ const MAP_PALETTE: Record<string, string> = {
   // (Route 2 → ROUTE); the CAVERN tileset forces PAL_CAVE
   // (engine/gfx/palettes.asm SetPal_Overworld)
   Route2: 'ROUTE',
+  Route3: 'ROUTE',
   Route2Gate: 'ROUTE',
   Route2TradeHouse: 'ROUTE',
   ViridianForest: 'ROUTE',

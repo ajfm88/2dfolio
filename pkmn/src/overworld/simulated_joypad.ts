@@ -43,7 +43,7 @@ export const PEWTER_GYM_COORDS: readonly PewterStart[] = [
 /** The caller already did dec a on DecodeRLEList's count. PewterGuys decrements again. */
 export function pewterGuys(entries: readonly number[], index: number, which: 'museum' | 'gym', x: number, y: number): SimulatedJoypadState {
   const start = (which === 'museum' ? PEWTER_MUSEUM_COORDS : PEWTER_GYM_COORDS).find(c => c.x === x && c.y === y);
-  if (!start) throw new Error(`PewterGuys (${x},${y}): unreachable before V3; unterminated coordinate table`);
+  if (!start) throw new Error(`PewterGuys (${x},${y}): not in the table, unreachable on the cartridge`);
   const buffer = [...entries];
   index--;
   for (const value of start.prefix) {

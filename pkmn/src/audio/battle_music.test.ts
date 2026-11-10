@@ -7,7 +7,7 @@ import type { PlaySound } from './play_sound';
 
 it.each([
   [0, 25, 'wildbattle'], [0, 165, 'wildbattle'], [0, 199, 'wildbattle'],
-  [0, 200, 'trainerbattle'], [0, 202, 'trainerbattle'], [0, 225, 'trainerbattle'],
+  [0, 200, 'trainerbattle'], [0, 202, 'trainerbattle'], [0, 225, 'trainerbattle'], [0, 229, 'trainerbattle'],
   [0, 243, 'finalbattle'], [0, 247, 'gymleaderbattle'],
   [1, 25, 'gymleaderbattle'], [8, 243, 'gymleaderbattle'],
 ] as const)('song gym=%i opponent=%i -> %s', (gymLeaderNo, curOpponent, song) => {
@@ -22,6 +22,7 @@ it('keeps the future gym-leader, Lance and Champion branches tied to the source 
   const classes = [...constants.matchAll(/^\s*trainer_const\s+(\w+)/gm)].map(match => match[1]);
   expect(battleMusicFor({ gymLeaderNo: 0, curOpponent: offset + classes.indexOf('LANCE') })).toBe('gymleaderbattle');
   expect(battleMusicFor({ gymLeaderNo: 0, curOpponent: offset + classes.indexOf('RIVAL3') })).toBe('finalbattle');
+  expect(battleMusicFor({ gymLeaderNo: 0, curOpponent: offset + classes.indexOf('GIOVANNI') })).toBe('trainerbattle');
   const source = readFileSync(resolve(refs, 'audio/play_battle_music.asm'), 'utf8');
   expect(source).toMatch(/ld \[wAudioFadeOutControl\], a[\s\S]*call StopAllMusic\s+call DelayFrame/);
   expect(source).toMatch(/cp OPP_RIVAL3[\s\S]*cp OPP_LANCE/);

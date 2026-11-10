@@ -13,7 +13,7 @@ import {
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
   SHOCK_EMOTE,
   ZZZ_EMOTE,
-  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, GHOST_PIC, SHRINK_PIC_1, SHRINK_PIC_2,
+  RED_PIC_FRONT, RED_PIC_BACK, PROF_OAK_PIC_BACK, OLD_MAN_PIC_BACK, GHOST_PIC, FOSSIL_KABUTOPS_PIC, FOSSIL_AERODACTYL_PIC, SHRINK_PIC_1, SHRINK_PIC_2,
   HEAL_MACHINE_GFX, LEDGE_HOPPING_SHADOW,
   TOWN_MAP_TILES, TOWN_MAP_CURSOR, MON_NEST_ICON,
   POKEDEX_TILES,
@@ -458,6 +458,15 @@ export function extractGhostPic(rom: BinaryReader): ImageData {
   return image;
 }
 
+/** FossilKabutopsPic ($66) and FossilAerodactylPic ($77), gfx/pics.asm: GetMonHeader's two special cases. */
+export function extractFossilPic(rom: BinaryReader, offset: number, size: number): ImageData {
+  const image = extractCompressedSprite(rom, offset);
+  if (!image || image.width !== size || image.height !== size) {
+    throw new Error(`Fossil pic at ${offset} did not decode as a ${size}×${size} sprite`);
+  }
+  return image;
+}
+
 /**
  * Extract player and trainer compressed sprites.
  */
@@ -694,6 +703,8 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/font/P.png'] = extractPTile(rom);
   images['/gfx/battle/balls.png'] = extractBallTiles(rom);
   images['/gfx/battle/ghost.png'] = extractGhostPic(rom);
+  images['/gfx/sprites/front/fossilkabutops.png'] = extractFossilPic(rom, FOSSIL_KABUTOPS_PIC, 48);
+  images['/gfx/sprites/front/fossilaerodactyl.png'] = extractFossilPic(rom, FOSSIL_AERODACTYL_PIC, 56);
   images['/gfx/battle/move_anim_0.png'] = extractMoveAnim0(rom);
 
   // Title screen graphics

@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6182** (2026-11-07, V3 checkpoint-02a implemented; default workers; no-ROM 5896 pass / 286 skip; 246 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6260** (2026-11-08, V3 closed; default workers; no-ROM 5970 pass / 290 skip; 249 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,12 +139,12 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (203 files as of 2026-11-07; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
+- **`data/`** — JSON only, produced by `npm run setup` (204 files as of 2026-11-08; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-07):525 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 203 JSON files. No extraction was needed for A5e02–03b. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-08):527 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 204 JSON files. No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -630,8 +630,8 @@ the tree (Hard rule #6) — never import them again (Hard rule #1). `index.ts`'s
   Convert dex → internal ID by scanning `PokedexOrder` in reverse. `PokedexToIndex`
   at `10:5086` is **machine code, not a data table** — never read bytes from it.
 - **Implemented extractors** (upstream): pokemon, moves, types, trainers, wild,
-  blocksets, collision, pokedex, maps (**24**: upstream's 12 + the Route 2 /
-  Viridian Forest set from V1a + Pewter City and its four buildings from V2a; NPCs can carry `item` and trainer fields), music (47 listed, all 47
+  blocksets, collision, pokedex, maps (**27**: upstream's 12 + the Route 2 /
+  Viridian Forest set from V1a + Pewter City and its four buildings from V2a + Museum 1F, Museum 2F and Pewter Gym from V3 checkpoint-01; NPCs can carry `item` and trainer fields), music (47 listed, all 47
   extract since V1c fixed the `meeteviltrainer` typo), SFX (**33** extract: the item/key-item jingles and PC sounds since A5b3, `run` since A5c2 CP2, unused Audio2 `level_up`/`faint_fall`/`faint_thud` since A5c3d checkpoint-03, the two
   field-medicine sounds since A5b7c2, `healing_machine`, intro CP2's `shrink`, and `ball_poof` (Audio 2, A5e checkpoint-05), `ball_toss` and `tink` (Audio 2, A5f checkpoint-01); only names with an entry in `audio.ts` `SFX_HEADERS` —
   `index.ts` lists 41 unique names, the setup script 49, and `extractSfx()` returns null
