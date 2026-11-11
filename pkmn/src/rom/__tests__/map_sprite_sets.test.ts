@@ -23,7 +23,7 @@ const CURRENT_MAPS = [
   'ViridianNicknameHouse', 'Route2', 'DiglettsCaveRoute2', 'ViridianForestNorthGate',
   'Route2TradeHouse', 'Route2Gate', 'ViridianForestSouthGate', 'ViridianForest',
   'PewterCity', 'PewterNidoranHouse', 'PewterMart', 'PewterSpeechHouse', 'PewterPokecenter',
-  'Museum1F', 'Museum2F', 'PewterGym', 'Route3',
+  'Museum1F', 'Museum2F', 'PewterGym', 'Route3', 'DiglettsCave', 'DiglettsCaveRoute11',
 ] as const;
 
 /** Engine asset name → pret picture constant. Aliases without a canonical name are absent. */
@@ -95,6 +95,7 @@ const INDOOR_OBJECTS: Record<string, readonly string[]> = {
   ViridianMart: ['clerk', 'youngster', 'cooltrainer_m'],
   ViridianSchoolHouse: ['brunette_girl', 'cooltrainer_f', 'little_girl'],
   ViridianNicknameHouse: ['balding_guy', 'little_girl', 'bird', 'clipboard'],
+  DiglettsCave: [], DiglettsCaveRoute11: ['gambler'],
   DiglettsCaveRoute2: ['fishing_guru'],
   ViridianForestNorthGate: ['super_nerd', 'gramps'],
   Route2TradeHouse: ['scientist', 'gameboy_kid'],
@@ -115,6 +116,7 @@ const EXPECTED_W: Record<(typeof CURRENT_MAPS)[number], number> = {
   RedsHouse1F: 2, BluesHouse: 2, DiglettsCaveRoute2: 2, RedsHouse2F: 1,
   // V3: Pikachu plus each distinct walking picture (old_amber is a still picture).
   Museum1F: 3, Museum2F: 6, PewterGym: 4,
+  DiglettsCave: 1, DiglettsCaveRoute11: 2,
 };
 
 function fileOff(bank: number, addr: number): number {

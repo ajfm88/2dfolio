@@ -854,10 +854,10 @@ describe('Map extraction', () => {
     'Route2', 'Route2Gate', 'Route2TradeHouse', 'DiglettsCaveRoute2',
     'ViridianForest', 'ViridianForestSouthGate', 'ViridianForestNorthGate',
     'PewterCity', 'PewterPokecenter', 'PewterMart', 'PewterNidoranHouse', 'PewterSpeechHouse',
-    'Museum1F', 'Museum2F', 'PewterGym', 'Route3',
+    'Museum1F', 'Museum2F', 'PewterGym', 'Route3', 'DiglettsCave', 'DiglettsCaveRoute11',
   ];
 
-  it('should extract all 28 maps', () => {
+  it('should extract all 30 maps', () => {
     const all = extractAllMaps(rom, itemNames, trainerClassNames);
     expect(Object.keys(all).sort()).toEqual([...ALL_MAP_NAMES].sort());
   });

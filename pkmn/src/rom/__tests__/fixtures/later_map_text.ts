@@ -5,6 +5,8 @@
 
 /** V3 checkpoint-01 (notes/88-v3-plan.md §7): Museum 1F, Museum 2F and Pewter Gym. */
 export const LATER_MAP_PROGRAMS: readonly string[] = [
+  // V4 checkpoint-01: Diglett's Cave Route 11 entrance.
+  'DiglettsCaveRoute11GamblerText', '_DiglettsCaveRoute11GamblerText',
   // V3 checkpoint-04: Route 3.
   'Route3SuperNerdText',
   '_Route3Text1',
@@ -87,7 +89,7 @@ export const LATER_MAP_PROGRAMS: readonly string[] = [
 ];
 
 /** The same slice's TextPointers tables. */
-export const LATER_MAP_TABLES: readonly string[] = ['Route3_TextPointers', 'Museum1F_TextPointers', 'Museum2F_TextPointers', 'PewterGym_TextPointers'];
+export const LATER_MAP_TABLES: readonly string[] = ['DiglettsCave_TextPointers', 'DiglettsCaveRoute11_TextPointers', 'Route3_TextPointers', 'Museum1F_TextPointers', 'Museum2F_TextPointers', 'PewterGym_TextPointers'];
 
 /** A copy of `record` without the keys in `keys`. */
 export function without<T>(record: Record<string, T>, keys: readonly string[]): Record<string, T> {

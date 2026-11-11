@@ -30,7 +30,9 @@
     "Museum1F": 52,
     "Museum2F": 53,
     "PewterGym": 54,
-    "Route3": 14
+    "Route3": 14,
+    "DiglettsCave": 197,
+    "DiglettsCaveRoute11": 85
   },
   "mapObjects": {
     "PalletTown": [
@@ -192,6 +194,10 @@
       4,
       4,
       6
+    ],
+    "DiglettsCave": [],
+    "DiglettsCaveRoute11": [
+      11
     ]
   },
   "pictureIdsBySprite": {

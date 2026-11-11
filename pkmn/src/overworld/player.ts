@@ -119,6 +119,7 @@ export class Player {
 
   get isMoving(): boolean { return this.walk.moving; }
   get isLanding(): boolean { return this.walk.landingPending; }
+  get mapScriptBoundary(): boolean { return this.walk.mapScriptBoundary; }
   get ledgeHopFlag(): boolean { return this.walk.ledge; }
   get startedFollowStep(): boolean { return this.walk.startedFollowStep; }
   finishLanding(): void { this.walk.finishLanding(); }
@@ -341,6 +342,15 @@ export class Player {
       const gate = pikachuInFront(this.walk.pikachuCollisionCounter, isHeld('b'), isPikachuFollowingDisabled());
       this.walk.pikachuCollisionCounter = gate.counter;
       if (gate.blocked) return 'blocked';
+    }
+
+    // TilePairCollisionsLand: CAVERN's elevation boundaries, symmetric in both directions.
+    // Other tilesets and Surf's water table are outside this checkpoint.
+    if (gameMap.mapData?.tileset === 'CAVERN') {
+      const from = gameMap.getTileAt(this.tileX, this.tileY + 1);
+      const to = gameMap.getTileAt(targetTileX, targetTileY + 1);
+      if ((from === 0x05 && [0x20, 0x41, 0x2a, 0x21].includes(to))
+        || (to === 0x05 && [0x20, 0x41, 0x2a, 0x21].includes(from))) return 'blocked';
     }
 
     // Check walkability (works for both in-bounds and connected map tiles).

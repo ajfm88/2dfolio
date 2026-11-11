@@ -924,6 +924,8 @@ const MAP_MUSIC: Record<string, string> = {
   Route2Gate: 'cities1',
   Route2TradeHouse: 'cities1',
   DiglettsCaveRoute2: 'dungeon2',
+  DiglettsCave: 'dungeon2',
+  DiglettsCaveRoute11: 'dungeon2',
   ViridianForest: 'dungeon2',
   ViridianForestSouthGate: 'cities1',
   ViridianForestNorthGate: 'cities1',
@@ -1312,14 +1314,15 @@ function gameTick(): void {
     }
     if (isPass) player.finishLanding(); // Delay3 continuation clears the ledge flag before input.
     const deps = overworldDeps();
-    // JoypadOverworld runs RunMapScript before Joypad on every standing pass.
-    if (isPass && !player.isMoving && !player.isLanding) {
+    // JoypadOverworld sees a zero walk counter at rest and between the hop's two simulated steps.
+    if (isPass && player.mapScriptBoundary) {
       const mapAction = runMapScript(deps, ow);
       if (mapAction) {
         handleOverworldAction(mapAction);
         return;
       }
-      readJoypad();
+      // Hop presses are simulated: do not consume physical A/START edges at this boundary.
+      if (!player.isBusy) readJoypad();
     }
     if (isPass) restOfPass(deps);
   } else if (state === "emotion_bubble") {

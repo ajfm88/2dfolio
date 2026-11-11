@@ -120,6 +120,8 @@ const MAP_PALETTE: Record<string, string> = {
   ViridianForestSouthGate: 'ROUTE',
   ViridianForestNorthGate: 'ROUTE',
   DiglettsCaveRoute2: 'CAVE',
+  DiglettsCave: 'CAVE',
+  DiglettsCaveRoute11: 'CAVE',
 };
 
 /** Get the palette name for a map. Falls back to 'ROUTE' for unknown maps. */

@@ -13,6 +13,9 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  // V4 checkpoint-01; scripts/DiglettsCaveRoute11.asm and text/DiglettsCaveRoute11.asm.
+  ["DiglettsCaveRoute11GamblerText", 0x07, 0x5ECF, true],
+  ["_DiglettsCaveRoute11GamblerText", 0x28, 0x5AFE, false],
   // A5c3e checkpoint-02; naming_screen.asm AskName and item_effects.asm's catch/empty-party paths.
   ["DoYouWantToNicknameText", 0x01, 0x62C8, true],
   ["_DoYouWantToNicknameText", 0x28, 0x499A, false],
@@ -1176,6 +1179,8 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
 // read from the ASM (`dw`/`dw_const` lines, `const_def` included). OaksLab and ViridianMart
 // switch their map's table to the second one (wCurMapTextPtr) after a story event.
 export const TEXT_POINTER_TABLES: readonly (readonly [string, number, number, number])[] = [
+  ["DiglettsCave_TextPointers", 0x18, 0x5F88, 0],
+  ["DiglettsCaveRoute11_TextPointers", 0x07, 0x5ECD, 1],
   ["BluesHouse_TextPointers", 0x06, 0x5C55, 3],
   ["DiglettsCaveRoute2_TextPointers", 0x07, 0x57C2, 1],
   ["OaksLab_TextPointers", 0x07, 0x4910, 27],

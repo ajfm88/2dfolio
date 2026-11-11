@@ -298,17 +298,16 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
     const call = mapTextKind(currentMapName, npcData.textId, undefined,
       currentMapName === 'OaksLab' ? hasFlag('PALLET_AFTER_GETTING_POKEBALLS_2') : currentMapName === 'ViridianMart' && hasFlag('OAK_GOT_PARCEL'));
     const noAuto = !mapAutoTextBox(currentMapName);
-    const labCall = noAuto ? mapTextCall(currentMapName, npcData.textId) : undefined;
+    const programCall = noAuto || currentMapName === 'DiglettsCaveRoute11' ? mapTextCall(currentMapName, npcData.textId) : undefined;
     // No text yet: the trade kid (trades are A4) and Oak's Aide (HM05 is A2). Do nothing rather than open an
     // empty text box. A no-auto-box map's own program needs no extracted string: Museum 1F's farcalled PrintText
     // bodies have none (V3 checkpoint-01 fix, note 88 §11).
-    if (!text && !(labCall?.call === 'text' || labCall?.call === 'printText')) {
+    if (!text && !(programCall?.call === 'text' || programCall?.call === 'printText')) {
       ow.interactedNpc = null;
       return null;
     }
-    return { type: 'textbox', text, ...(call ? { call } : {}), ...(noAuto ? {
-      autoBox: false, ...(labCall?.call === 'text' || labCall?.call === 'printText' ? { program: labCall.program } : {}),
-    } : {}) };
+    return { type: 'textbox', text, ...(call ? { call } : {}), ...(noAuto ? { autoBox: false } : {}),
+      ...(programCall?.call === 'text' || programCall?.call === 'printText' ? { program: programCall.program } : {}) };
   }
 
   if ('scriptId' in interaction || 'program' in interaction) {
@@ -332,7 +331,7 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 /** RunMapScript, before Joypad, on every standing pass. */
 export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
   const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
-  if (player.isBusy || ow.doorExitStep) return null;
+  if (!player.mapScriptBoundary || ow.doorExitStep) return null;
 
   // PewterGym_ScriptPointers' fourth entry. A loss has already reset the script through the blackout path.
   if (currentMapName === PEWTER_GYM && getMapScript(PEWTER_GYM) === TRAINER_SCRIPT.BROCK_POST_BATTLE) {
@@ -341,7 +340,9 @@ export function runMapScript(deps: OverworldDeps, ow: OverworldState): Overworld
 
   // The trainer trio: CheckFightingMapTrainers / DisplayEnemyTrainerTextAndStartBattle /
   // EndTrainerBattle (map_trainers.ts, A1c)
-  if (TRAINER_MAPS.has(currentMapName)) return trainerMapScript(currentMapName, player, npcs, ow);
+  // Mid-hop trainer interruption still requires the simulated-input/animation aftermath port.
+  // Keep the map-specific reachability tripwire until that separate checkpoint.
+  if (TRAINER_MAPS.has(currentMapName)) return player.isBusy ? null : trainerMapScript(currentMapName, player, npcs, ow);
 
   if (currentMapName === PEWTER_CITY) {
     const commands = pewterCityScript(textContext(deps));

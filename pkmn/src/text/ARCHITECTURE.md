@@ -129,6 +129,7 @@ PlaceString when the runner has `whoseTurn` and the two nicks (`$5A` as read,
 A5b7a (below). Other unused operations still throw with the program label and
 their audit home.
 `program_data.ts` loads the committed programs once at startup; no ROM is read.
+DiglettsCaveRoute11 keeps its auto-box envelope and still passes the extracted root `DiglettsCaveRoute11GamblerText` into the textbox action (V4 checkpoint-02). Other auto-box maps still pass only the flattened string.
 
 ### Numeric operands (A5b7a)
 

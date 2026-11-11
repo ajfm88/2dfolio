@@ -316,6 +316,8 @@ export const MAP_TEXT_PTRS: Record<string, { offset: number; bank: number; count
   Route2:              { offset: symToOffset(0x15, 0x54fa), bank: 0x15, count: 4 },
   Route2Gate:          { offset: symToOffset(0x17, 0x54e1), bank: 0x17, count: 2 },
   Route2TradeHouse:    { offset: symToOffset(0x07, 0x57fa), bank: 0x07, count: 2 },
+  DiglettsCave: { offset: symToOffset(0x18, 0x5f88), bank: 0x18, count: 0 },
+  DiglettsCaveRoute11: { offset: symToOffset(0x07, 0x5ecd), bank: 0x07, count: 1 },
   DiglettsCaveRoute2:  { offset: symToOffset(0x07, 0x57c2), bank: 0x07, count: 1 },
   ViridianForest:      { offset: symToOffset(0x18, 0x5112), bank: 0x18, count: 16 },
   ViridianForestSouthGate: { offset: symToOffset(0x17, 0x556a), bank: 0x17, count: 2 },

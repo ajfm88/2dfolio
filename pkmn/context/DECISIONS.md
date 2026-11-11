@@ -1353,6 +1353,21 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
        win, 04 Route 3 and the connection, 05 Brock's win and its consequences.
      - V4 keeps Diglett's Cave, the hop-midpoint `RunMapScript` (#43) and anything of Route 3 that 04 doesn't need.
 
+107. **V4 checkpoint split; Grok implements checkpoint-01** (2026-11-09, note89).
+     The user asked Codex to plan the next slice and named Grok as implementer. The plan separates extraction
+     (checkpoint-01, exact brief and spike), runtime integration and play-test (checkpoint-02), and the general
+     hop-midpoint RunMapScript (checkpoint-03). Only checkpoint-01 is briefed now. Route11 outdoors remains F1;
+     its entrance's LAST_MAP resolves to Route11, never the extractor's PalletTown fallback. Data extraction
+     acceptance does not claim that runtime presentation or V4 is finished. Later checkpoints need their own briefs.
+
+108. **Split V4's hop work into boundary foundation and trainer-interruption aftermath** (2026-11-09, note89 §11).
+     The user explicitly requested the next plan for Grok after a clean checkpoint-02 review. The review passed
+     (`b986256`); the user's cave play-test remains pending. Checkpoint-03 exposes the zero-walk-counter boundary
+     and ordinary map-script dispatch, while retaining the busy-trainer guard and Route3 reachability proof.
+     Checkpoint-04 must separately port MoveSprite_'s shared simulated-input effects, independent jump animation,
+     adjacent/nonadjacent trainer branches and joy-ignore release. Only then may the trainer tripwire be retired.
+     This is a planner's implementation split within V4; the vanilla target and milestone count are unchanged.
+
 ## Open — not decided, needs the user
 
 

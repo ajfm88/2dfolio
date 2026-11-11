@@ -355,6 +355,12 @@ export class PlayerWalk {
     this.vy = dir === 'up' ? -1 : dir === 'down' ? 1 : 0;
   }
 
+  /** wWalkCounter is zero at rest, before the first hop half, and before the second.
+   * The landing continuation blocks the loop until its UpdateSprites and Delay3 return. */
+  get mapScriptBoundary(): boolean {
+    return !this.landingPending && (!this.moving || (this.hopping && this.progress === STEP_PX));
+  }
+
   /** Moving, an armed hop, or awaiting its landing pass. */
   get busy(): boolean {
     return this.moving || this.hopArmed || this.landingPending;

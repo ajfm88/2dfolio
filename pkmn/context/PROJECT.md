@@ -49,14 +49,15 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-08 (end of day) - V3 complete
+## State as of 2026-11-09 (end of day) - V4 in progress
 
-- **R1, V1, A6, A1, V2, A5 and V3 are done (7/36 milestones).** The playable path reaches Route 3 across 28 maps, and Brock can be beaten for the Boulder Badge and TM34. The ASM-backed battle engine is live.
-- **No ROM at runtime.** 204 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps. Vanilla art, local play, no remote and no push.
-- **Next: V4** (Diglett's Cave and the hop-midpoint `RunMapScript`), then V5's fixes.
+- **R1, V1, A6, A1, V2, A5 and V3 are done (7/36 milestones).** V4 checkpoints 01–03 passed code review: both Diglett's Cave maps are extracted and runtime-wired (30 maps), and the hop map-script boundary foundation is live. Brock's badge/TM34 and the ASM-backed battle engine remain in place. The cave's user play-test is not yet complete.
+- **No ROM at runtime.** 206 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (942 generated files total). Vanilla art, local play, no remote and no push.
+- **Next:** finish the checkpoint-02 cave/Route3 play-test (note89 §8.7); checkpoint-04's trainer-interruption aftermath needs a separate plan. Trainer guard and tripwire remain; V4 is not complete. Then V5's fixes.
+- **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **Tests:** ROM **6260/6260**; no-ROM **5970 pass / 290 skip**; 249 files. Bundle `index-DtAwi9SA.js`.
-- Full handoff: STATUS.md; V3's record is note 88.
+- **Tests:** ROM **6299/6299**; no-ROM **6007 pass / 292 skip**; 252 files. Bundle `index-CoPfOLj1.js`, 669,049 bytes.
+- Full handoff: STATUS.md; V4's record is note89 (§10 and §13 reviews). Dev server stopped at the end of the day; restart it on 127.0.0.1:5173 when resuming the play-test.
 
 ## Goals
 

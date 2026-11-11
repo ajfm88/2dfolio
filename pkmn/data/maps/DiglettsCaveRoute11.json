@@ -1,0 +1,58 @@
+{
+  "name": "DiglettsCaveRoute11",
+  "width": 4,
+  "height": 4,
+  "tileset": "CAVERN",
+  "connections": [],
+  "blocks": [
+    125,
+    125,
+    125,
+    125,
+    6,
+    1,
+    1,
+    125,
+    6,
+    1,
+    39,
+    125,
+    10,
+    36,
+    4,
+    125
+  ],
+  "borderBlock": 125,
+  "warps": [
+    {
+      "x": 2,
+      "y": 7,
+      "destMap": "Route11",
+      "destWarpId": 4
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "destMap": "Route11",
+      "destWarpId": 4
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "destMap": "DiglettsCave",
+      "destWarpId": 1
+    }
+  ],
+  "signs": [],
+  "npcs": [
+    {
+      "textId": 1,
+      "id": "gambler",
+      "sprite": "gambler",
+      "x": 2,
+      "y": 3,
+      "movement": "stay",
+      "dialogue": "What a surprise!\nDIGLETTs dug this\nlong tunnel!\fIt goes right to\nVIRIDIAN CITY!"
+    }
+  ]
+}

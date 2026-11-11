@@ -13,7 +13,7 @@ import { PikachuFollower, shouldPikachuFollow } from '../pikachu/pikachu_followe
 import { warpSpawnState, CONNECTION_SPAWN_STATE } from '../pikachu/pikachu_spawn';
 import type { BattlePokemon } from '../battle';
 import { loadWildEncounters } from '../battle';
-import { setActivePalette, getMapPalette } from '../renderer';
+import { setActivePalette, getActivePalette, getMapPalette } from '../renderer';
 import { reloadBorderTiles } from '../text';
 import { clearScriptNpcs } from '../script';
 import { applyDefeatedTrainers, applyStoryNpcState } from './story_state';
@@ -41,12 +41,16 @@ export async function performWarpLoad(
   const sourceName = gameMap.mapData?.name ?? '';
   const sourceTileset = gameMap.mapData?.tileset ?? '';
 
+  const sourcePalette = getActivePalette();
   setActivePalette(getMapPalette(destMapName));
   await reloadBorderTiles();
 
   try {
     await gameMap.load(destMapName);
   } catch (e) {
+    // A missing destination leaves the source map on screen, including its font palette.
+    setActivePalette(sourcePalette);
+    await reloadBorderTiles();
     console.warn(`Map "${destMapName}" not found, staying on current map`);
     return null;
   }

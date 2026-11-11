@@ -13,11 +13,12 @@ const maps: MapJson[] = readdirSync(DATA)
   .map(f => JSON.parse(readFileSync(resolve(DATA, f), 'utf8')) as MapJson);
 
 describe('A1c tripwires', () => {
-  it('(a) outdoor sight requires a map-specific proof until the hop-midpoint hook exists', () => {
+  it('(a) outdoor sight requires a map-specific proof until midpoint trainer interruption is ported', () => {
     // HandleLedges runs only on OVERWORLD. A trainer there could spot the player at a hop's
     // midpoint (pass 9), which strands them on the ledge tile (plan §1.8). When this fails
     // (V4's Route 3), port the midpoint hook and that aftermath, or prove the map can't
     // reach it and narrow this check.
+    // V4 checkpoint-03 exposes the map-script boundary but retains the busy-trainer guard.
     // Route3's exhaustive ledge/source-sight proof is in route3.test.ts (V3 checkpoint-04).
     const offending = maps.filter(m => m.tileset === 'OVERWORLD' && m.name !== 'Route3')
       .flatMap(m => m.npcs.filter(n => (n.sightRange ?? 0) > 0).map(n => `${m.name}:${n.id}`));

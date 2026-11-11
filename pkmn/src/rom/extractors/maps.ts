@@ -37,7 +37,8 @@ const MAP_ID_TO_NAME: Record<number, string> = {
   0x31: 'Route2Gate',
   0x32: 'ViridianForestSouthGate',
   0x33: 'ViridianForest',
-  0xC5: 'DiglettsCave',     // Referenced by DiglettsCaveRoute2 warp (extracted in V4)
+  0xC5: 'DiglettsCave',
+  0x55: 'DiglettsCaveRoute11',
   // V2 Pewter; V3 Museum + Gym (notes/88-v3-plan.md). Route3 is added in checkpoint-04; Route4 stays unnamed.
   0x34: 'Museum1F',
   0x35: 'Museum2F',
@@ -624,6 +625,8 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'gameboy_kid', direction: 'down', scripted: true },
     ],
   },
+  DiglettsCave: { signTextOffsets: [], npcs: [] },
+  DiglettsCaveRoute11: { signTextOffsets: [], npcs: [{ id: 'gambler' }] },
   DiglettsCaveRoute2: {
     signTextOffsets: [],
     npcs: [
@@ -707,6 +710,8 @@ export const EXTRACTABLE_MAPS: Record<string, number> = {
   Museum2F: 0x35,
   PewterGym: 0x36,
   Route3: 0x0E,
+  DiglettsCave: 0xC5,
+  DiglettsCaveRoute11: 0x55,
 };
 
 // ── NPC index overrides (when ROM has more NPCs than JSON) ─────
@@ -1236,6 +1241,7 @@ function resolveLastMap(mapName: string): string {
     PewterGym: 'PewterCity',
     Route2Gate: 'Route2',
     Route2TradeHouse: 'Route2',
+    DiglettsCaveRoute11: 'Route11', // scripts/DiglettsCaveRoute11.asm forces wLastMap = ROUTE_11
     DiglettsCaveRoute2: 'Route2',  // its map script also forces wLastMap = ROUTE_2
     ViridianForestSouthGate: 'Route2',
     ViridianForestNorthGate: 'Route2',

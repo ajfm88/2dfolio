@@ -170,6 +170,7 @@ the state machines; `Player`, `Npc` and `PikachuFollower` run them.
     at armed+37 (landing at +34). `finishLanding()` clears the ledge flag before input,
     or before a script push advances to text. `startedFollowStep` reports both halves
     (passes 1 and 9), while `justStartedStep` retains its existing start meaning.
+  - **Hop map-script boundary** (V4 checkpoint-03): `mapScriptBoundary` is true at rest, while a hop is armed, and when a moving hop's progress is exactly 16px. It is false on the other moving passes and during the landing continuation. `isBusy` stays true at that midpoint. Ordinary map scripts dispatch there. `trainerMapScript` still returns early while the player is busy. The tripwire, its assertions and the Route3 proof stay until checkpoint-04.
 - **NPCs** (`NpcWalk`, `UpdateNPCSprite`'s statuses): a normal step is a start pass plus
   16 × 1 px (34 frames). Yellow's fast codes `$04`–`$07` are a start pass plus 8 × 2 px
   (18 frames). `moveNpc` `modes` and `moveParallel` `npcModes` choose per step.
@@ -305,6 +306,7 @@ original bytes, and talking to the beaten trainer only prints its after text.
   last stop direction. The turning pass skips `UpdateSprites`.
 - **Wall bump**: walk-in-place animation every pass; `collision` replays only when it
   isn't already playing (`isSfxPlaying('collision')`).
+- **CAVERN land tile pairs** (V4 checkpoint-02, `TilePairCollisionsLand`): after the sprite gates and before passability, `Player.checkStep` blocks both directions between `$05` and `$20`, `$41`, `$2A`, or `$21`. The water pair `$14`/`$05` and the Forest pairs stay out. Noclip still returns first.
 - **Map connections fire mid-step.** `performMapConnection` must call
   `player.cancelMovement()` after repositioning, or the next `update()`
   interpolates from the old map's target and snaps the player to a wrong spot.
@@ -382,7 +384,7 @@ two-transition `battle_transitions.ts` is gone.
 - **Pikachu** is placed by Yellow's spawn states (`src/pikachu/pikachu_spawn.ts`), chosen
   from the source and destination maps and the facing the warp fired with.
 - **A warp to a map that isn't extracted** fails gracefully: the player stays put (see
-  the Diglett's Cave entrance before V4). **A connection to one would hang**, because
+  the Diglett's Cave entrance before V4). Before the catch, `performWarpLoad` selects the destination palette and reloads the text border; on failure it restores the captured active palette and awaits `reloadBorderTiles` before returning null (V4 checkpoint-02). That is the port's missing-map support, used by DiglettsCaveRoute11's two Route11 exits. **A connection to one would hang**, because
   `performMapConnection` doesn't catch the load error — so the extractor never emits one.
   Pewter's east connection to Route3 (offset 4) and Route3's west connection to PewterCity
   (offset -4) are extracted (V3 checkpoint-04). Route3's cartridge north connection is

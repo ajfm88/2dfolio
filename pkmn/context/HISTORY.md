@@ -15,6 +15,57 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-08 (V3 closed) — Claude (Opus)
+
+- The user's §45.8 play-test: "it all passes" (note 88 §48). Checkpoint-05 and V3 are closed, 7 of 36 milestones. Checkpoint-04 had no separate play-test report (§44). Next: plan V4.
+
+### 2026-11-08 (V3 checkpoint-05 reviewed: passed) — Claude (Opus)
+
+- Grok's `c7e89ef` equals the spike byte for byte. Setup twice and every gate reproduced: bundle `index-DtAwi9SA.js`, ROM 6260/6260, no-ROM 5970/290. All 11 reviewer mutations were AssertionErrors on the first run. Two handoff-doc slips fixed. One older timing difference backlogged for V5 (the battle return doesn't block). Note 88 §47. Next: the user's §45.8 play-test (§48).
+
+### 2026-11-08 (V3 checkpoint-05 implemented, awaiting review) — Grok
+
+- Applied `05-spike.diff` on clean `953194d`. Manifest `PASS 18 source + 2 generated files + patch` before and after V1–V20. Setup twice: 938 generated files identical; only `text_programs.json` changed. Gates once each: typecheck pass, bundle `index-DtAwi9SA.js` 668,387 bytes, marker pass, ROM 6260/6260 (249 files), no-ROM 5970 passed / 290 skipped (236 / 13 files). V1–V20 each an AssertionError and restored. Report is note 88 §46. Next: the review (§47), then the user's full V3 play-test (§48). No later slice was started.
+
+### 2026-11-08 (V3 checkpoint-05 planned for Grok) — Claude (Opus)
+
+- Traced and spiked Brock's win from clean `99d1b91`: the reward as a map-script command list, the talk-again branches, a nested DisplayTextID for the full-bag retry, TM34's ¥2000 price, OLD_AMBER as a key item (a 02b miss), 18 source and 2 generated files. Spike: bundle `index-DtAwi9SA.js`, ROM 6260/6260, no-ROM 5970/290, V1–V20 each an AssertionError, clean roundtrip. The (36,16) scan has no ROM answer and stays a throw (unreachable). Briefed in §45; the patch is not applied. The user's §41.8 play-test isn't recorded (§44).
+
+
+### 2026-11-08 (V3 checkpoint-04 reviewed: passed, tests strengthened) — Codex
+
+- Grok's `122cbf7` equals the spike; setup twice and the ordered gates reproduce all expected bytes/counts. Independent ROM/ASM audit confirms the north border and ledge proof. Four of six new mutations initially survived: actual battle party, follower placement, destination NPC roster, and sight dispatch at the hop source were unpinned. Added one no-ROM case and assertions; all six now fail with AssertionError and restore. Final gates pass: unchanged bundle, ROM 6246/6246 (249 files), no-ROM 5957/289. §43 has all evidence. No production changes. Next: the user's §41.8 play-test (§44); checkpoint-05 was not started.
+
+### 2026-11-08 (V3 checkpoint-04 implemented, awaiting Codex's review) — Grok
+
+- Applied `04-spike.diff` on clean `30fcd4a`. Manifest `PASS 18 source + 10 generated files + patch` before and after V1–V12. Setup twice: 938 generated files identical; 204 JSON, 527 PNGs, 3 tilemaps. Gates once each: typecheck pass, bundle `index-6P8tD69v.js` 666,543 bytes, marker pass, ROM 6245/6245 (249 files), no-ROM 5956 passed / 289 skipped (236 / 13 files). V1–V12 each an AssertionError and restored. Report is note 88 §42. Next: Codex's review (§43), then the user's play-test (§44). Checkpoint-05 was not started.
+
+### 2026-11-08 (V3 checkpoint-04 planned for Grok) — Codex
+
+- Traced and spiked Route3 from clean `6222954`: 18 source / 10 generated files, 52 text programs, 17 no-ROM cases plus one ROM map comparison. Final gates sequential: bundle `index-6P8tD69v.js` 666,543 bytes, ROM 6245/6245 (249 files), no-ROM 5956/289. V1–V12 each an AssertionError; clean patch/setup roundtrip reproduces all hashes. Game source/data restored. §41 settles the north edge (native tree border until Route4) and pre-Brock access (debug warp; both crossings tested); the outdoor-trainer tripwire is narrowed with an exhaustive ledge/source-sight proof. Grok implements (§42), Codex reviews (§43), then the user play-tests (§44). No checkpoint-05 work.
+
+### 2026-11-08 (V3 checkpoint-03b closed) — Claude (Opus)
+
+- The user's §36.8 play-test: "all works perfectly" (note 88 §39). Checkpoint-03, the Gym, is done. The user asked Codex to plan 04: Claude's partial trace and the method are in §40, with no source changed.
+
+
+### 2026-11-08 (V3 checkpoint-03b reviewed: passed, assertions added) — Claude (Opus)
+
+- Codex's `1a42eb8` equals the spike byte for byte, and every gate reproduced. R1, R2 and R6 survived (the display's box and outer wait, `StopAllMusic`): the code was right, so three assertions were added, and all six reviewer mutations now fail. ROM 6227/6227, no-ROM 5939/288, bundle unchanged. Note 88 §38. Next: the user's §36.8 play-test.
+
+### 2026-11-08 (V3 checkpoint-03b implemented, awaiting Claude's review) — Codex
+
+- Applied the Brock spike on clean `7e7e5de`; patch hash, six audit rows and manifest match. Setup twice, all 936 generated files identical. Gates once each, fully sequential, default workers: typecheck/marker pass; expected bundle `index-TKTuDyGT.js`, 666,444 bytes and SHA256; ROM 6227/6227 (248 files); no-ROM 5939 passed / 288 skipped (235 / 13 files). V1–V10 each failed with AssertionError and were restored; final manifest passes. Hashes, audit, setup, gates and every witness are in note 88 §37 and committed `impl-` logs. Handoff docs/baselines updated. Next: Claude's review (§38), then the user's play-test (§39). No badge/TM yet, as briefed; checkpoint-04 was not started.
+
+### 2026-11-08 (V3 checkpoint-03a closed; 03b briefed for Codex) — Claude (Opus)
+
+- The user's §32.8 play-test: "all is good" (note 88 §35). Traced and spiked 03b: Brock's talk and battle as gym leader 1, the post-battle script reset, 5 text rows, 6 new cases. No badge or `BEAT_BROCK` yet. Spike: bundle `index-TKTuDyGT.js`, ROM 6227/6227, no-ROM 5939/288, V1–V10 each an AssertionError. Briefed in §36; the patch is not applied.
+
+### 2026-11-08 (V3 checkpoint-03a reviewed: passed, two tests added) — Claude (Opus)
+
+- Codex stopped at a gate-order slip of its own (§33). `030d071` equals the spike byte for byte. The review ran the full ordered sequence: bundle `index-DB0JGlo2.js`, ROM 6220/6220, no-ROM 5932/288, V1–V8 each an AssertionError, and finished the deferred handoff docs. Reviewer mutations R5 and R6 found two test gaps (the game's import of the guide, the Jr. Trainer's battle): tests added, ROM 6221/6221, no-ROM 5933/288. Note 88 §34. Next: the user's §32.8 play-test.
+
+
 *(Moved verbatim from STATUS.md on 2026-11-08, V3 checkpoint-03b review, DECISIONS #61.)*
 
 ### 2026-11-08 (V3 checkpoint-03a applied; verification stopped) — Codex

@@ -72,6 +72,8 @@ const WARP_DESTINATIONS: { label: string; map: string; warpId: number; stepPos?:
   { label: 'Route 2 Gate',        map: 'Route2Gate',           warpId: 2 },
   { label: 'Route 2 Trade House', map: 'Route2TradeHouse',     warpId: 0 },
   { label: "Diglett's Cave entrance", map: 'DiglettsCaveRoute2', warpId: 0 },
+  { label: "Diglett's Cave", map: 'DiglettsCave', warpId: 0 },
+  { label: "Diglett's Cave (Route 11 entrance)", map: 'DiglettsCaveRoute11', warpId: 2 },
 ];
 
 // Toggle with backtick

@@ -316,6 +316,12 @@
         "program": "_DiglettSculptureText"
       }
     ],
+    "DiglettsCaveRoute11GamblerText": [
+      {
+        "op": "far",
+        "program": "_DiglettsCaveRoute11GamblerText"
+      }
+    ],
     "DiglettsCaveRoute2FishingGuruText": [
       {
         "op": "far",
@@ -4068,6 +4074,12 @@
         "text": "It's a sculpture\nof DIGLETT.<DONE>"
       }
     ],
+    "_DiglettsCaveRoute11GamblerText": [
+      {
+        "op": "text",
+        "text": "What a surprise!\nDIGLETTs dug this\nlong tunnel!\fIt goes right to\nVIRIDIAN CITY!<DONE>"
+      }
+    ],
     "_DiglettsCaveRoute2FishingGuruText": [
       {
         "op": "text",
@@ -7729,6 +7741,13 @@
     ]
   },
   "textPointers": {
+    "DiglettsCave_TextPointers": [],
+    "DiglettsCaveRoute11_TextPointers": [
+      {
+        "call": "text",
+        "program": "DiglettsCaveRoute11GamblerText"
+      }
+    ],
     "BluesHouse_TextPointers": [
       {
         "call": "handler"

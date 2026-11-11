@@ -58,6 +58,7 @@ and the `loadSpriteMapped` variants for its stored OBP0 register.
 - **3 HP bar palettes**: GREENBAR (>50%), YELLOWBAR (>25%), REDBAR (<=25%)
 - **1 title screen palette**: LOGO2 (yellow letters, deep blue shadows)
 - Per-map palette via `getMapPalette(mapName)`. Indoor maps use parent town's palette.
+- DiglettsCave and DiglettsCaveRoute11 use CAVE (V4 checkpoint-02). `SetPal_Overworld` selects `PAL_CAVE` for the CAVERN tileset before it reads the map id. DiglettsCaveRoute2 already used CAVE.
 - **Sprite OBP0**: shade mapping `[0,0,1,3]` via `OBP0_MAPPING` in renderer.ts (not identity like BGP)
 
 ## Sprite Formats

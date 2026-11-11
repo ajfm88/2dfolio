@@ -31,9 +31,9 @@ describe('static/ export: asset keys', () => {
   // A5e checkpoint-05: battle_animations.json and audio/sfx/ball_poof.json. 196 → 198.
   // A5f checkpoint-01: audio/sfx/ball_toss.json and audio/sfx/tink.json. 198 → 200.
   // V3 checkpoint-01: maps/Museum1F.json, maps/Museum2F.json and maps/PewterGym.json. 200 → 203.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the eight Pewter maps in the JSON mirror (204 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(204);
-    for (const name of ['Museum1F', 'Museum2F', 'PewterGym']) expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX and the eight Pewter maps in the JSON mirror (206 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(206);
+    for (const name of ['Museum1F', 'Museum2F', 'PewterGym', 'DiglettsCave', 'DiglettsCaveRoute11']) expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');
     expect(extracted.jsonData).toHaveProperty('battle_animations.json');
     expect(extracted.jsonData).toHaveProperty('stat_mod_text.json');
