@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6299** (2026-11-09, V4 checkpoint-03; default workers; no-ROM 6007 pass / 292 skip; 252 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6317** (2026-11-10, V4 checkpoint-04 repair; default workers; no-ROM 6025 pass / 292 skip; 253 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -142,7 +142,7 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 - **`data/`** — JSON only, produced by `npm run setup` (206 files as of 2026-11-09; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
-- **Extraction-map census (V4 checkpoint-02, 2026-11-09):** 30 extracted maps, all runtime-wired. User acceptance of DiglettsCave and DiglettsCaveRoute11 waits for review and the play-test. Route 11 outdoors is not extracted.
+- **Extraction-map census (V4 complete, 2026-11-10):** 30 extracted maps, all runtime-wired. DiglettsCave and DiglettsCaveRoute11 passed review and the user's play-test (note89 §21). Route 11 outdoors is not extracted.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
   (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-09):527 PNGs +3 title
   `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 206 JSON files. No extraction was needed for A5e02–03b. That lets
@@ -571,7 +571,9 @@ because the keyup events are lost while unfocused. `p` still pauses everything.
 per pass, and everything that moves advances once per pass. `main.ts` runs a
 `PassClock` for the states `overworld` and `script`: their movement,
 `UpdateSprites` and the joypad read (standing passes only) happen on every second tick.
-V4 checkpoint-03 also dispatches map scripts when a hop's walk counter is zero at 16px (`mapScriptBoundary`). The physical joypad stays unread while the player is busy, and trainer sight still waits until the player is not busy. The interruption aftermath is checkpoint-04.
+V4 checkpoint-03 dispatches map scripts when a hop's walk counter is zero at 16px (`mapScriptBoundary`). V4 checkpoint-04 adds the aftermath: `preparePass()` (HandleMidJump) runs before RunMapScript, the joypad is read on every zero-counter pass and masked under the ledge's simulated presses, a nonadjacent trainer's walk-up zeroes the pending press (`zeroPendingSimulatedPress`), and the jump clock, the walk counter and the landing are independent (details: `game/src/overworld/ARCHITECTURE.md` → *Interrupted hop*).
+
+Checkpoint-04's accepted repair (note89 §19) starts an idle interrupted landing at the top of pass 16. A nonzero walk counter defers landing until it finishes. `restOfPass` ends preparation in `finally` so suppressed START and refused interactions give the next pass its own jump tick. The bubble's suspended continuation preserves its current preparation and advances the jump once on that pass.
 Text, script `wait`s, fades, audio and battles still count frames. The state machines are
 in `overworld/walk_pace.ts`; details in `src/overworld/ARCHITECTURE.md` → *Pace*.
 

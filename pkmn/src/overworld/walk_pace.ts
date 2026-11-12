@@ -188,7 +188,9 @@ export class PlayerWalk {
   readonly anim = new WalkAnim();
 
   moving = false;
+  /** HandleMidJump's table is running (the jump index is 0-15). It is independent of the walk. */
   hopping = false;
+  /** BIT_LEDGE_OR_FISHING: set when HandleLedges arms the hop, cleared at the landing. */
   ledge = false;
   landingPending = false;
   landedPass = false;
@@ -196,7 +198,7 @@ export class PlayerWalk {
   startedFollowStep = false;
   /** Pixels into the current movement. */
   progress = 0;
-  /** Index into HOP_Y_OFFSETS on the pass just run (-1 before the first moving pass). */
+  /** Index into HOP_Y_OFFSETS, ticked once per pass by HandleMidJump (-1 before the hop starts). */
   hopPass = -1;
   /** The direction of the current movement. */
   stepDir: Direction = 'down';
@@ -210,6 +212,10 @@ export class PlayerWalk {
   armedHop = false;
   startedHop = false;
   landedHop = false;
+  /** The pass just run advanced one of the hop's simulated halves. */
+  simStepNow = false;
+  /** AreInputsSimulated ran out of entries on the pass just run (wJoyIgnore is cleared). */
+  simExhausted = false;
 
   /** wPlayerMovingDirection */
   private movingDir: Direction | null = null;
@@ -218,6 +224,21 @@ export class PlayerWalk {
   /** wCheckFor180DegreeTurn: set on a pass with nothing pressed */
   private checkFor180 = true;
   private hopArmed = false;
+
+  /** The jump index passed its last entry; the landing waits for wWalkCounter to reach zero
+   *  (_HandleMidJump .finishedJump). */
+  private jumpFinished = false;
+  /** BIT_SCRIPTED_MOVEMENT_STATE for the ledge's two simulated presses. */
+  private simActive = false;
+  /** wSimulatedJoypadStatesIndex: 2 armed, 1 after the first press was read, 0 after the second. */
+  private simIndex = 0;
+  /** The entry the second read finds (slot 0): the ledge direction, or null once MoveSprite_
+   *  has zeroed it (a valid entry that presses nothing). */
+  private simSlot0: Direction | null = null;
+  /** The current movement is one of the hop's two simulated halves. */
+  private simMove = false;
+  /** HandleMidJump has run for this pass (main prepares the pass before RunMapScript). */
+  private prepared = false;
 
   private distance = STEP_PX;
 
@@ -254,27 +275,112 @@ export class PlayerWalk {
     this.armedHop = false;
     this.startedHop = false;
     this.landedHop = false;
+    this.simStepNow = false;
+    this.simExhausted = false;
     this.dx = 0;
     this.dy = 0;
 
-    // _HandleMidJump .finishedJump: one extra UpdateSprites, then Delay3.
+    this.preparePass();
+    this.prepared = false;
+    this.run(input, simulated, check, updateSprites);
+    this.settle();
+  }
+
+  /**
+   * The top of OverworldLoop: HandleMidJump runs before the walk counter is tested, once per
+   * pass, and JoypadOverworld clears the step vectors at a zero counter. main.ts calls this
+   * before RunMapScript so a trainer spotting the player at the hop's midpoint sees the new
+   * jump Y; pass() then does not tick again.
+   */
+  preparePass(): void {
+    if (this.prepared) return;
+    this.prepared = true;
+    if (this.hopArmed && !this.hopping) {
+      // The pass after HandleLedges: the first table entry
+      this.hopping = true;
+      this.hopPass = 0;
+    } else if (this.hopping) {
+      this.hopPass++;
+      // _HandleMidJump: index 15, inc, cp $10 -> .finishedJump before another Y is written
+      if (this.hopPass >= HOP_Y_OFFSETS.length - 1) {
+        this.hopping = false;
+        this.jumpFinished = true;
+      }
+    }
+    // .finishedJump with wWalkCounter zero lands on this very pass (UpdateSprites, Delay3)
+    if (this.jumpFinished && !this.moving && !this.landingPending) this.landingPending = true;
+    if (this.mapScriptBoundary) this.setVector(null);
+  }
+
+  /** A prepared pass that never reached pass() (a script took over) gives its tick back. */
+  cancelPrepared(): void {
+    this.prepared = false;
+  }
+
+  /** The ledge's simulated presses are still outstanding: wJoyIgnore masks the joypad read. */
+  get simulating(): boolean { return this.simActive; }
+
+  /** MoveSprite_ zeroes wSimulatedJoypadStatesEnd (slot 0). The index and the active bit survive;
+   *  with no simulation running the byte is never read. */
+  zeroPendingSimulatedPress(): void {
+    if (this.simActive) this.simSlot0 = null;
+  }
+
+  /** The end of the pass: a finished jump whose walk counter just reached zero lands on the next pass. */
+  private settle(): void {
+    if (this.jumpFinished && !this.moving && !this.landingPending) this.landingPending = true;
+  }
+
+  private run(
+    input: Direction | null,
+    simulated: boolean,
+    check: (dir: Direction) => StepCheck,
+    updateSprites: () => void,
+  ): void {
+    // _HandleMidJump .finishedJump: one extra UpdateSprites, then Delay3; the simulation ends
     if (this.landingPending) {
       this.spriteUpdate();
       updateSprites();
       this.landingPending = false;
       this.landedPass = true;
+      this.jumpFinished = false;
+      this.hopPass = -1;
+      this.simActive = false;
+      this.simIndex = 0;
+      this.simSlot0 = null;
       return;
     }
     this.finishLanding();
 
     // Mid-step (or mid-hop): UpdateSprites, then AdvancePlayerSprite
     if (this.moving) {
-      this.startedFollowStep = this.hopping && this.progress === STEP_PX;
-      this.spriteUpdate();
-      updateSprites();
-      this.pikachuCollisionCounter = 0;
-      this.advance();
-      return;
+      if (this.hopMid) {
+        // wWalkCounter is zero between the hop's halves: GetSimulatedInput reads slot 0
+        this.simIndex = 0;
+        if (this.simSlot0 === null) {
+          // MoveSprite_ zeroed it: a valid entry that presses nothing. The second half never
+          // starts and the walk counter stays zero; the jump goes on (HandleMidJump)
+          this.moving = false;
+          this.simMove = false;
+          input = null;
+        }
+      }
+      if (this.moving) {
+        this.startedFollowStep = this.hopMid;
+        if (this.hopMid) this.setVector(this.stepDir);
+        this.spriteUpdate();
+        updateSprites();
+        this.pikachuCollisionCounter = 0;
+        this.advance();
+        return;
+      }
+    } else if (this.simActive && this.simIndex === 0) {
+      // GetSimulatedInput decrements past zero: the end. hJoyHeld is cleared (this pass
+      // presses nothing), wJoyIgnore is cleared by the caller, and the ledge flag survives
+      this.simActive = false;
+      this.simSlot0 = null;
+      this.simExhausted = true;
+      input = null;
     }
 
     // JoypadOverworld, then the direction handling sets the step vector
@@ -288,13 +394,13 @@ export class PlayerWalk {
       updateSprites();
       this.pikachuCollisionCounter = 0;
       this.moving = true;
-      this.hopping = true;
+      this.simMove = true;
+      this.simIndex = 1;
       this.startedStep = true;
       this.startedFollowStep = true;
       this.startedHop = true;
       this.distance = STEP_PX * 2;
       this.progress = 0;
-      this.hopPass = -1;
       this.advance();
       return;
     }
@@ -326,7 +432,9 @@ export class PlayerWalk {
     this.movingDir = input;
     this.spriteUpdate();
     updateSprites();
-    const result = check(input);
+    // CollisionCheckOnLand: the ledge flag skips every collision check, even after the
+    // simulated presses are gone
+    const result = this.ledge ? 'walk' : check(input);
     if (result === 'blocked') {
       this.collided = true;
       return;
@@ -338,10 +446,13 @@ export class PlayerWalk {
       this.hopArmed = true;
       this.ledge = true;
       this.armedHop = true;
+      this.simActive = true;
+      this.simIndex = 2;
+      this.simSlot0 = input;
       return;
     }
     this.moving = true;
-    this.hopping = false;
+    this.simMove = false;
     this.startedStep = true;
     this.startedFollowStep = true;
     this.distance = STEP_PX;
@@ -358,17 +469,24 @@ export class PlayerWalk {
   /** wWalkCounter is zero at rest, before the first hop half, and before the second.
    * The landing continuation blocks the loop until its UpdateSprites and Delay3 return. */
   get mapScriptBoundary(): boolean {
-    return !this.landingPending && (!this.moving || (this.hopping && this.progress === STEP_PX));
+    return !this.landingPending && (!this.moving || this.hopMid);
   }
 
-  /** Moving, an armed hop, or awaiting its landing pass. */
+  /** Between the hop's two simulated halves: 16 px done, wWalkCounter zero. */
+  private get hopMid(): boolean {
+    return this.simMove && this.moving && this.progress === STEP_PX;
+  }
+
+  /** Moving, an armed hop, awaiting its landing pass, or under simulated presses. */
   get busy(): boolean {
-    return this.moving || this.hopArmed || this.landingPending;
+    return this.moving || this.hopArmed || this.landingPending || this.simActive;
   }
 
   /** Landing continuation, also used when a script completes its simulated push. */
   finishLanding(): void {
-    if (!this.landingPending && !this.moving && !this.hopArmed) this.ledge = false;
+    if (!this.landingPending && !this.moving && !this.hopArmed && !this.hopping && !this.jumpFinished) {
+      this.ledge = false;
+    }
   }
 
   /** Start a step with no pass logic (PlayerStepOutFromDoor is a simulated press). */
@@ -384,6 +502,14 @@ export class PlayerWalk {
     this.ledge = false;
     this.landingPending = false;
     this.landedPass = false;
+    this.jumpFinished = false;
+    this.simActive = false;
+    this.simIndex = 0;
+    this.simSlot0 = null;
+    this.simMove = false;
+    this.simStepNow = false;
+    this.simExhausted = false;
+    this.prepared = false;
     this.startedFollowStep = false;
     this.armedHop = false;
     this.startedHop = false;
@@ -417,18 +543,16 @@ export class PlayerWalk {
     this.dx = d.dx;
     this.dy = d.dy;
     this.progress += 2;
-    if (this.hopping) this.hopPass++;
+    if (this.simMove) this.simStepNow = true;
     // HandleLedges simulates two ordinary steps. Each half checks transitions,
     // even though the jump animation continues through the midpoint.
     if (this.progress % STEP_PX === 0) this.finishedStep = true;
     if (this.progress >= this.distance) {
       this.moving = false;
       this.finishedStep = true;
-      if (this.hopping) {
-        this.hopping = false;
-        this.hopPass = -1;
+      if (this.simMove) {
+        this.simMove = false;
         this.landedHop = true;
-        this.landingPending = true;
       }
     }
   }

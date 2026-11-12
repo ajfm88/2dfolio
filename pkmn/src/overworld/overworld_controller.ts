@@ -246,7 +246,7 @@ export function finishTrainerEngage(
   engage: { npc: Npc; steps: number; facing: Direction },
 ): void {
   updateSprites(deps.npcs, deps.gameMap, deps.player, deps.pikachuFollower);
-  startTrainerWalkUp(engage.npc, engage.steps, engage.facing);
+  startTrainerWalkUp(engage.npc, engage.steps, engage.facing, deps.player);
 }
 
 // ── Interaction handling ──────────────────────────────────────────────
@@ -340,9 +340,9 @@ export function runMapScript(deps: OverworldDeps, ow: OverworldState): Overworld
 
   // The trainer trio: CheckFightingMapTrainers / DisplayEnemyTrainerTextAndStartBattle /
   // EndTrainerBattle (map_trainers.ts, A1c)
-  // Mid-hop trainer interruption still requires the simulated-input/animation aftermath port.
-  // Keep the map-specific reachability tripwire until that separate checkpoint.
-  if (TRAINER_MAPS.has(currentMapName)) return player.isBusy ? null : trainerMapScript(currentMapName, player, npcs, ow);
+  // A trainer may spot the player at a ledge hop's midpoint (V4 checkpoint-04): the boundary
+  // check above is the zero-counter test, so no busy guard is needed here.
+  if (TRAINER_MAPS.has(currentMapName)) return trainerMapScript(currentMapName, player, npcs, ow);
 
   if (currentMapName === PEWTER_CITY) {
     const commands = pewterCityScript(textContext(deps));

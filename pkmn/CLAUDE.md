@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the 292 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-09 (V4 checkpoint-03): 6299/6299.** No-ROM 6007 pass / 292 skip, 252 files.
+  tests. **Baseline 2026-11-10 (V4 checkpoint-04 repair): 6317/6317.** No-ROM 6025 pass / 292 skip, 253 files.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -158,7 +158,7 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-11-08:** milestones **R1, V1, A6, A1, V2, A5 and V3 are done**:
+**2026-11-10:** milestones **R1, V1, A6, A1, V2, A5, V3 and V4 are done**:
 - **A5a** (the text printer), **A5b** (every script and menu text) and **A5d** (the battle transitions) are
   user-verified.
 - **A5c** is complete: A5c1, A5c2 and A5c3a–f (notes 66–72). The game runs on a battle engine ported from the ASM
@@ -169,11 +169,11 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
   closeout census, each user-verified. Attack move animations are a separate later slice (#94).
 
 The game runs with no ROM, from committed `data/` + `static/` (Phase R). It has 30 runtime-wired maps (upstream's 12, Route 2 and
-Viridian Forest from V1, Pewter City and its four buildings from V2a, Museum 1F, Museum 2F and Pewter Gym from V3 checkpoint-01, Route 3 from V3 checkpoint-04, DiglettsCave and DiglettsCaveRoute11 from V4 checkpoint-02). Code review passed; user acceptance of the cave waits for the play-test. It ticks at the Game Boy's 59.7275 Hz and
-moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **6299/6299**; no-ROM 6007 pass, 292 skip, 252 files. 206 JSON, 527 PNGs, three tilemaps.
+Viridian Forest from V1, Pewter City and its four buildings from V2a, Museum 1F, Museum 2F and Pewter Gym from V3 checkpoint-01, Route 3 from V3 checkpoint-04, DiglettsCave and DiglettsCaveRoute11 from V4 checkpoint-02). Code review and the user's cave/Route3 play-tests passed. It ticks at the Game Boy's 59.7275 Hz and
+moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **6317/6317**; no-ROM 6025 pass, 292 skip, 253 files. 206 JSON, 527 PNGs, three tilemaps.
 
 **Refs pulled 2026-11-03 evening** (R-SYNC, note 78, synchronized pret's names). The screen-model merge is done (note 86, #104).
-**A5f is complete** (note 87, #105, 2026-11-07), and with it A5. **V3 is complete** (note 88 §48, 2026-11-08; Route 3 moved in before Brock's win, #106): Pewter Gym, the Museum, Route 3 and the first badge, user-verified. **V4 checkpoint-02 passed code review** (note 89 §10); its user play-test is still pending. **V4 checkpoint-03 is accepted after review** (note 89 §13). STATUS → *In progress* has the restart list.
+**A5f is complete** (note 87, #105, 2026-11-07), and with it A5. **V3 is complete** (note 88 §48, 2026-11-08; Route 3 moved in before Brock's win, #106): Pewter Gym, the Museum, Route 3 and the first badge, user-verified. **V4 is complete** (note89 §21, 2026-11-10): all four checkpoints reviewed, Route 3 and cave play-tests passed. V5 planning is next. STATUS → *In progress* has the restart list.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

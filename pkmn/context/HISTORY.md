@@ -15,6 +15,38 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-09 (V4 checkpoint-03 planned for Grok) — Codex
+
+- At the user's explicit follow-up, traced and spiked the next boundary foundation after checkpoint-02's clean review. Split interruption aftermath into checkpoint-04 (#108). Six source/test files, seven no-ROM cases; setup twice with all 942 hashes unchanged. Ordered gates: ROM 6299/6299, no-ROM 6007/292, bundle index-CoPfOLj1.js (669,049 bytes); V1–V5 caught, clean roundtrip and source restored. Ordinary trigger geometry has no new midpoint candidates; Viridian's Gym square is an already-checked source. Brief: note89 §11. Next: Grok implements only that foundation. Checkpoint-02 user play-test remains pending.
+
+### 2026-11-09 (V4 checkpoint-02 reviewed: passed, assertions strengthened) — Codex
+
+- Reviewed `a34a3fe`: exact spike bytes, source audit and original gates reproduced. R1/R3 initially survived; pinned border-reload palette order and added a tileset-scope case. Final ordered gates: unchanged bundle, all 942 generated hashes unchanged, ROM 6292/6292, no-ROM 6000/292; V1–V9 and R1–R3 caught and restored. No production change. Note89 §10; user's §8.7 play-test is pending. User explicitly requests checkpoint-03 planning next if review is clean. Archived the oldest four log entries verbatim to HISTORY to keep STATUS short.
+
+### 2026-11-09 (V4 checkpoint-02 implemented, awaiting review) — Grok
+
+- Applied `02-spike.diff` on clean `3577666`. Setup twice: all 942 generated files unchanged. Gates once each: typecheck pass, bundle `index-Bb9iGKew.js` 668,859 bytes, ROM 6291/6291 (251 files), no-ROM 5999 passed / 292 skipped (238 / 13 files), marker pass. V1–V9 each an AssertionError and restored. Report is note 89 §9. Next: independent review, then the user's §8.7 play-test. Checkpoint-03 was not started.
+
+### 2026-11-09 (V4 checkpoint-02 planned for Grok) — Codex
+
+- Traced and spiked cave runtime (note89 §8): seven source/test files, 23 no-ROM cases, no generated changes. Fixed in the spike the missing CAVERN land pairs, gambler's flattened fallback and failed-load palette/font leak; Forest/water pair omissions are backlogged in note57. Setup twice: all 942 hashes unchanged. Sequential gates: ROM 6291/6291, no-ROM 5999/292, bundle index-Bb9iGKew.js (668,859 bytes); V1–V9 caught, clean roundtrip and source restored. Next: Grok implements §8; independent review and user play-test follow. No checkpoint-03 work.
+
+### 2026-11-09 (V4 checkpoint-01 reviewed: passed) — Codex
+
+- Reviewed Grok's `bef9884`: exact spike bytes, direct ASM/ROM audit, setup twice with all 942 hashes reproduced. Sequential gates pass: unchanged bundle, ROM 6268/6268, no-ROM 5976/292. V1–V5 and independent R1/R2 each fail with AssertionError and restore; final manifest passes. No game changes needed. Note89 §7 accepts checkpoint-01; next is checkpoint-02 planning, not implementation. Oldest four STATUS session entries archived verbatim to HISTORY to keep the handoff short.
+
+### 2026-11-09 (V4 checkpoint-01 implemented, awaiting review) — Grok
+
+- Applied `01-spike.diff` on clean `4f85be8`. Setup twice: 942 generated files identical to the spike. Gates once each: typecheck pass, bundle `index-DtAwi9SA.js` unchanged, ROM 6268/6268 (250 files), no-ROM 5976 passed / 292 skipped (237 / 13 files). V1–V5 each an AssertionError and restored. Manifest passed before and after. Report is note 89 §6. Next: independent review. Checkpoint-02 was not started.
+
+### 2026-11-09 (V4 checkpoint-01 planned for Grok) — Codex
+
+- Traced the two remaining cave maps, symbols, ladders and Route11 LAST_MAP override; scoped V4 into extraction, runtime acceptance and hop-midpoint checkpoints (note89). Spiked checkpoint-01, verified regeneration/gates/mutations and restored game source/data. Exact implementation brief and evidence are in note89 §4–§5. Next: Grok applies checkpoint-01, verifies and commits; independent review follows. V4 stays open and Route3's play-test reminder remains for checkpoint-02.
+
+### 2026-11-09 (context and codebase orientation) — Codex
+
+- Read the entry-point rules, current handoff, project context and subsystem references; traced startup, the tick loop, overworld dispatch, battle-session wiring, scripts, extraction and test setup. No implementation slice claimed and no game code changed; tests were not run for this read-through. Next remains planning V4, including the Route 3 play-test reminder above.
+
 ### 2026-11-08 (V3 closed) — Claude (Opus)
 
 - The user's §45.8 play-test: "it all passes" (note 88 §48). Checkpoint-05 and V3 are closed, 7 of 36 milestones. Checkpoint-04 had no separate play-test report (§44). Next: plan V4.

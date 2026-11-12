@@ -68,15 +68,6 @@ it('calls the live map-script dispatcher once at midpoint, before the second hal
   expect(host.state).toBe('overworld');
 });
 
-it('keeps physical START unconsumed at midpoint so holding it opens the menu after landing', async () => {
-  const start = await midpoint();
-  for (let n = 0; n < 60 && host.state !== 'start_menu'; n++) tick(['start']);
-  expect(host.state).toBe('start_menu');
-  expect(host.player.isBusy).toBe(false);
-  const dx = start.d === 'left' ? -2 : start.d === 'right' ? 2 : 0;
-  expect([host.player.mapStepX, host.player.mapStepY]).toEqual([start.x + dx, start.y + (start.d === 'down' ? 2 : 0)]);
-});
-
 it('allows the ordinary map-script body to run at midpoint without waiting for the full hop', async () => {
   await midpoint();
   const commands = [{ type: 'wait' as const, frames: 1 }];
@@ -86,13 +77,10 @@ it('allows the ordinary map-script body to run at midpoint without waiting for t
   expect(builder).toHaveBeenCalledOnce();
 });
 
-it('retains the midpoint trainer gate until the separate simulated-input aftermath port', async () => {
+it('dispatches the trainer map script at midpoint (checkpoint-04 removed the busy-trainer gate)', async () => {
   await midpoint();
   const dispatch = vi.spyOn(trainer, 'trainerMapScript');
   const deps = { ...host.overworldDeps(), currentMapName: 'Route3', npcs: [] };
-  expect(overworld.runMapScript(deps, host.ow)).toBeNull();
-  expect(dispatch).not.toHaveBeenCalled();
-  host.player.cancelMovement();
   expect(overworld.runMapScript(deps, host.ow)).toBeNull();
   expect(dispatch).toHaveBeenCalledOnce();
 });

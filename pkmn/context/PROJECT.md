@@ -49,15 +49,15 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-09 (end of day) - V4 in progress
+## State as of 2026-11-10 - V4 complete
 
-- **R1, V1, A6, A1, V2, A5 and V3 are done (7/36 milestones).** V4 checkpoints 01–03 passed code review: both Diglett's Cave maps are extracted and runtime-wired (30 maps), and the hop map-script boundary foundation is live. Brock's badge/TM34 and the ASM-backed battle engine remain in place. The cave's user play-test is not yet complete.
+- **R1, V1, A6, A1, V2, A5, V3 and V4 are done (8/36 milestones).** V4 checkpoints 01–04 passed code review, and the user's Route 3 and cave play-tests passed (note89 §20–§21). Both Diglett's Cave maps are runtime-wired (30 maps), and hop-midpoint trainer interruption is implemented. Brock's badge/TM34 and the ASM-backed battle engine remain in place.
 - **No ROM at runtime.** 206 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (942 generated files total). Vanilla art, local play, no remote and no push.
-- **Next:** finish the checkpoint-02 cave/Route3 play-test (note89 §8.7); checkpoint-04's trainer-interruption aftermath needs a separate plan. Trainer guard and tripwire remain; V4 is not complete. Then V5's fixes.
+- **Next:** V5 planning from PLAN and the existing V5 findings in note57. The milestone covers recovered fidelity fixes; its checkpoint order is still to be planned.
 - **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **Tests:** ROM **6299/6299**; no-ROM **6007 pass / 292 skip**; 252 files. Bundle `index-CoPfOLj1.js`, 669,049 bytes.
-- Full handoff: STATUS.md; V4's record is note89 (§10 and §13 reviews). Dev server stopped at the end of the day; restart it on 127.0.0.1:5173 when resuming the play-test.
+- **Tests:** ROM **6317/6317**; no-ROM **6025 pass / 292 skip**; 253 files. Bundle `index-BfVzYOru.js`, 670,982 bytes. Reproduced during checkpoint-04's successful re-review.
+- Full handoff: STATUS.md; V4 closed in note89 §21. User ended work for the day and the dev server was stopped. Restart on 127.0.0.1:5173 when needed.
 
 ## Goals
 

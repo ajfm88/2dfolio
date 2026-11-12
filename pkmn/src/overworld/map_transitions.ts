@@ -63,6 +63,9 @@ export async function performWarpLoad(
 
   await loadWildEncounters(destMapName);
 
+  // EnterMap: a hop's simulated presses, jump and shadow do not survive a warp (debug warps, blackouts)
+  player.cancelMovement();
+
   // Place player at the destination warp position
   if (stepPos) {
     player.setTilePosition(stepPos.x * 2, stepPos.y * 2);

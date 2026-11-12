@@ -55,9 +55,11 @@ const readPressed: Record<GameButton, boolean> = { ...keys };
 
 /** The overworld's joypad read (a standing pass). The edge is raw (hJoyLast); the mask
  *  applies to what the read reports. */
-export function readJoypad(): void {
+export function readJoypad(masked = false): void {
   for (const k of Object.keys(keys) as GameButton[]) {
-    readPressed[k] = keys[k] && !lastRead[k] && !joyIgnored(k);
+    // `masked`: the read happens under the ledge's simulated presses (wJoyIgnore set), so
+    // nothing counts as pressed but hJoyLast still advances
+    readPressed[k] = !masked && keys[k] && !lastRead[k] && !joyIgnored(k);
     lastRead[k] = keys[k];
   }
 }

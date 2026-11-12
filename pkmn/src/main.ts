@@ -515,6 +515,7 @@ async function loadSavedGame(): Promise<void> {
   await reloadBorderTiles();
   await gameMap.load(saved.mapName);
   Object.assign(ow, createOverworldState());
+  player.cancelMovement(); // no stale hop, press or joy lock from the previous game
   await player.loadSprite();
   await pikachuFollower.loadSprite();
   npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
@@ -590,6 +591,7 @@ async function startNewGame(): Promise<void> {
   enablePikachuFollowing();
   setBattleAndStartSavedMenuItem(0);
   Object.assign(ow, createOverworldState());
+  player.cancelMovement(); // no stale hop, press or joy lock from the previous game
   currentMapName = "RedsHouse2F";
   setActivePalette(getMapPalette("RedsHouse2F"));
   await reloadBorderTiles();
@@ -1166,6 +1168,14 @@ function returnToStart(kind: StartReturn): void {
 
 /** Finish a pass after the map script/read, including a resumed spotting pass. */
 function restOfPass(deps: OverworldDeps): void {
+  try { restOfPassBody(deps); } finally {
+    // The pass is over even when START or a suppressed interaction returned before PlayerWalk.pass():
+    // the next pass prepares (HandleMidJump) afresh. Only the bubble's suspension keeps a prepared pass.
+    player.cancelPrepared();
+  }
+}
+
+function restOfPassBody(deps: OverworldDeps): void {
   if (!player.isBusy && isPassPressed("start")) {
     // BIT_SEEN_BY_TRAINER: .displayDialogue runs UpdateSprites and opens nothing
     if (ow.seenByTrainer) {
@@ -1314,15 +1324,19 @@ function gameTick(): void {
     }
     if (isPass) player.finishLanding(); // Delay3 continuation clears the ledge flag before input.
     const deps = overworldDeps();
+    // OverworldLoop: HandleMidJump first (the jump's Y for this pass), then the walk-counter test.
+    if (isPass) player.preparePass();
     // JoypadOverworld sees a zero walk counter at rest and between the hop's two simulated steps.
     if (isPass && player.mapScriptBoundary) {
       const mapAction = runMapScript(deps, ow);
       if (mapAction) {
         handleOverworldAction(mapAction);
+        // A spotting keeps the prepared pass for the bubble's continuation; a script gives the tick back
+        if (!pendingEngage) player.cancelPrepared();
         return;
       }
-      // Hop presses are simulated: do not consume physical A/START edges at this boundary.
-      if (!player.isBusy) readJoypad();
+      // Joypad runs on every zero-counter pass; under the ledge's presses wJoyIgnore masks what it reports
+      readJoypad(player.simulating);
     }
     if (isPass) restOfPass(deps);
   } else if (state === "emotion_bubble") {
@@ -1334,7 +1348,7 @@ function gameTick(): void {
       const deps = overworldDeps();
       finishTrainerEngage(deps, engage);
       state = "overworld";
-      readJoypad();
+      readJoypad(player.simulating);
       restOfPass(deps);
     }
   } else if (state === "start_menu") {

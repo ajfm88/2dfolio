@@ -1368,6 +1368,11 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      adjacent/nonadjacent trainer branches and joy-ignore release. Only then may the trainer tripwire be retired.
      This is a planner's implementation split within V4; the vanilla target and milestone count are unchanged.
 
+109. **Sonnet implements V4 checkpoint-04 and Codex reviews** (2026-11-10, note89 §15).
+     The brief covers adjacent and nonadjacent interruption, the live slot-0 write, the next-pass input release, and
+     the independent arc and landing. `_Joypad` updates raw input history during simulation, so the checkpoint-03
+     held-START expectation changes to the cartridge's fresh-edge rule. Checkpoint-02's play-test remains pending.
+
 ## Open — not decided, needs the user
 
 

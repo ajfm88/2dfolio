@@ -170,7 +170,8 @@ the state machines; `Player`, `Npc` and `PikachuFollower` run them.
     at armed+37 (landing at +34). `finishLanding()` clears the ledge flag before input,
     or before a script push advances to text. `startedFollowStep` reports both halves
     (passes 1 and 9), while `justStartedStep` retains its existing start meaning.
-  - **Hop map-script boundary** (V4 checkpoint-03): `mapScriptBoundary` is true at rest, while a hop is armed, and when a moving hop's progress is exactly 16px. It is false on the other moving passes and during the landing continuation. `isBusy` stays true at that midpoint. Ordinary map scripts dispatch there. `trainerMapScript` still returns early while the player is busy. The tripwire, its assertions and the Route3 proof stay until checkpoint-04.
+  - **Hop map-script boundary** (V4 checkpoint-03): `mapScriptBoundary` is true at rest, while a hop is armed, and when a moving hop's progress is exactly 16px. It is false on the other moving passes and during the landing continuation. `isBusy` stays true at that midpoint. Ordinary map scripts dispatch there.
+  - **Interrupted hop** (V4 checkpoint-04, note 89 §16): `PlayerWalk` keeps what the cartridge keeps apart. `hopping` is HandleMidJump's table, ticked once per pass by `preparePass()` (main calls it before RunMapScript, so a spotting at pass 9 sees jump Y `$31`; `cancelPrepared()` hands the tick back when a script takes the pass). `simActive`/`simIndex`/`simSlot0` are the ledge's two simulated presses (index 2 armed, 1 after the first read, 0 after the second). `simMove` marks the hop's two 16 px halves. `jumpFinished` waits for a zero walk counter before `landingPending`, decided at the top of the pass (`preparePass`): pass 16 is `_HandleMidJump`'s `cp $10` pass. A nonadjacent trainer's walk-up (`startTrainerWalkUp(…, player)`) calls `zeroPendingSimulatedPress()` (MoveSprite_ zeroing slot 0): at pass 9 the zero entry is a valid read that presses nothing (no second half, no follow command, walk counter stays zero, `simulating` stays true), the next zero-counter read exhausts the cursor (`simExhausted`: Player clears `wJoyIgnore`, that pass presses nothing) and the ledge flag survives. From pass 11 the physical pad can start an ordinary step (the flag skips land collision, `stepWasSimulated` is false, the follow command still carries the ledge flag); the arc finishes on its own clock and the landing needs the walk counter at zero (pass 16 idle, pass 17 for the uninterrupted hop whose counter is still 1 on pass 16, pass 19 after a step from pass 11). `restOfPass` always ends the preparation, so a pass that returns early (START suppressed by trainer sight, a refused interaction) still gives the next pass its own jump tick; only the bubble's suspension carries a prepared pass over. An adjacent trainer never zeroes slot 0, so the hop completes and the text opens after the landing hold. `isBusy` includes `simActive`. `readJoypad(masked)` runs on every zero-counter pass and keeps raw history while the ledge's wJoyIgnore masks the report, so START held from the midpoint read has no fresh edge at landing. `collisionSprite().y` carries the jump Y (DetectCollisionBetweenSprites reads wSpritePlayerStateData1YPixels). Warps, CONTINUE and a new game call `cancelMovement()`.
 - **NPCs** (`NpcWalk`, `UpdateNPCSprite`'s statuses): a normal step is a start pass plus
   16 × 1 px (34 frames). Yellow's fast codes `$04`–`$07` are a start pass plus 8 × 2 px
   (18 frames). `moveNpc` `modes` and `moveParallel` `npcModes` choose per step.
@@ -461,11 +462,12 @@ every standing pass, before the joypad read:
 - **Every battle return that isn't a blackout** runs `EnterMap`'s `UpdateSprites`
   (`enterMapAfterBattle`). A trainer that came into view on the battle step can spot you on
   the first pass back.
-- **Not built:** `RunMapScript` at a hop's midpoint (V4). `trainer_tripwires.test.ts` fails
-  if an OVERWORLD map other than Route3 gets a sight trainer, or if `TRAINER_MAPS` drifts
-  from pret's scripts. Route3 is the one narrowed exception: `route3.test.ts` enumerates all
-  36 ledge pairs, and the only midpoint sight is already seen at its source. A through-main
-  case also holds DOWN at (14,6) and verifies youngster2 engages before a hop can start.
+- **A trainer at a hop's midpoint** is built (V4 checkpoint-04): `runMapScript` calls `trainerMapScript`
+  at the zero-counter boundary with no busy guard. `trainer_tripwires.test.ts` keeps only the census
+  cases (`TRAINER_MAPS` against pret's scripts; every sight trainer on a trainer map); the old outdoor-sight
+  tripwire (a) is retired. `route3.test.ts` still enumerates all 36 ledge pairs, and the only midpoint
+  sight is already seen at its source. `hop_trainer_interruption.test.ts` builds the midpoint cases
+  from an in-memory copy of youngster2 on row 7, because no committed map reaches one.
 
 ## Pikachu Follower & Happiness
 
@@ -482,9 +484,7 @@ and draws at player minus camera plus (0, 8). It runs after the player's grass o
 `destination-out` punches the current player frame out of the shadow, preserving OAM
 priority even where grass hides the player's opaque pixels. Pikachu's native command
 buffer waits on takeoff and crosses in one flat two-tile move on the next step. Still
-missing: `SFX_LEDGE` (V5) and `RunMapScript` at the hop's midpoint (V4, DECISIONS #43; the
-tripwire still fails for every OVERWORLD map except Route3, whose source-sight proof is in
-`route3.test.ts`). Trainer sight runs after the landing (A1c).
+missing: `SFX_LEDGE` (V5). `RunMapScript` runs at the hop's midpoint (V4 checkpoint-03/04, DECISIONS #43, #108).
 
 ## GameMap Public API
 

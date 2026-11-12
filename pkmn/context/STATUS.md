@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-09 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 7 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅, A5 ✅, V3 ✅); **V4 checkpoint-03 accepted; checkpoint-02 user play-test pending**
+**Last updated:** 2026-11-10 · **Phase:** V (Rebuild the lost work), with Phase A slices in between · **Milestones done:** 8 / 36 (R1 ✅, V1 ✅, A6 ✅, A1 ✅, V2 ✅, A5 ✅, V3 ✅, V4 ✅); **V4 closed after user play-tests; V5 planning next**
 
 ---
 
@@ -28,7 +28,7 @@ rebuilding is cheaper than the first time. The rebuild is **Phase V**.
 If a context file claims "30 maps", "395 tests", "the gate was deleted (P5-2)"
 or "PSYCHIC chart implemented" without a *lost* marker, it is stale — trust this
 file and the code, and fix the stale line. V4 checkpoint-02 wires all 30 extracted maps
-at runtime. That count is not the lost copy, and the cave is not user-verified.
+at runtime. The rebuilt cave and Route 3 passed the user's play-tests on 2026-11-10.
 
 **Commit policy (user, 2026-09-22):** commit **locally** at the end of every
 slice — `git add` + `git commit` from the root, message ending with the
@@ -40,7 +40,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 ## Current phase
 
 **Phase R is done** (2026-09-22). **Phase V** rebuilds the lost 30-map state (V1 ✅ → V2 ✅ → V3 Gym + Museum → V4
-Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISIONS #29, #35, #55). **A5 closed** 2026-11-07 (note 87 §27). **V3 closed** 2026-11-08 (note 88 §48). V4 checkpoint-01 is accepted (note 89 §7). Checkpoint-02 passed review (§10), user play-test still pending. Checkpoint-03 is accepted after review (§13). Earlier detail is in `HISTORY.md`.
+Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISIONS #29, #35, #55). **A5 closed** 2026-11-07 (note 87 §27). **V3 closed** 2026-11-08 (note 88 §48). **V4 closed** 2026-11-10 (note89 §21), after all four code reviews and the user's Route 3 and cave play-tests. V5's recovered fixes are next. Earlier detail is in `HISTORY.md`.
 
 ## 📍 Where things stand — updated 2026-11-06 (A5f checkpoint-03; refs pulled 2026-11-03 evening, see the `refs/` row)
 
@@ -57,7 +57,7 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 206 JSON → `data/`; static 527 PNG + 3 tilemaps + 206 JSON mirror. V4 checkpoint-03 (2026-11-09): setup twice, all 942 generated files unchanged from checkpoint-02. |
 | Typecheck | Clean |
-| Tests | **V4 checkpoint-03 review passed 2026-11-09 (note 89 §13).** ROM 6299/6299; no-ROM 6007 pass / 292 skip, 252 files (239 passed / 13 skipped), default workers. Bundle `index-CoPfOLj1.js`, 669,049 bytes; SHA256 `dd682f9331feed3f23aa63686e4773b11d670660fb510e122d97103d3a0138e2` |
+| Tests | **V4 checkpoint-04 accepted after re-review, 2026-11-10 (note89 §19).** ROM 6317/6317; no-ROM 6025 pass / 292 skip, 253 files (240 passed / 13 skipped), default workers. Bundle `index-BfVzYOru.js`, 670,982 bytes; SHA256 `2b46873bcba4170068e1d57f0a309e8cdef37f1aebe0ff105fada087896e223a`. All 942 generated files unchanged |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -66,7 +66,7 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 | Runtime data path | ✅ **No ROM** (R1b): the browser loads only `static/` via plain `fetch()` / `<img>`. Upstream's upload gate is deleted; the bundle has no gate code |
 | Vite | `publicDir: 'static'`, `base: '/'`, `appType: 'mpa'` (missing file = real 404). Tab title **PKMN** |
 | Background tabs | ✅ keeps running unfocused — logic + music (worker ticker, DECISIONS #27). User-verified |
-| Maps | **12 playable**: PalletTown, RedsHouse1F/2F, BluesHouse, OaksLab, Route1, Route22, ViridianCity, ViridianPokecenter, ViridianMart, ViridianSchoolHouse, ViridianNicknameHouse. **+7 playable through the debug warps since V1b:** Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate, with music, palette and Pikachu. **Since V1e the walking path is open:** Viridian → Route 2 → the Forest, once the old man's demo is done. **+5 since V2a:** PewterCity, PewterPokecenter, PewterMart, PewterNidoranHouse, PewterSpeechHouse, reached from Route 2's north edge. **+3 since V3 checkpoint-01:** Museum1F, Museum2F, PewterGym (27 maps). Museum and Gym doors now reachable; the Museum ticket (checkpoint-02a) is closed; the Old Amber and the 2F hiker (checkpoint-02b) are closed; fossil pop-ups (checkpoint-02c) are closed; Brock's talk and battle (checkpoint-03b) are closed. Checkpoint-05 awards the Boulder Badge and TM34 (closed). **+1 since V3 checkpoint-04:** Route3 (28 maps), reached by the debug warp at (4,9). Pewter's east connection to Route3 is open once Brock is beaten; before that the guide still blocks the walk. Route4 stays unextracted and unnamed, so Route3's north edge is the native tree border. **V4 checkpoint-02 wires DiglettsCave and DiglettsCaveRoute11 (30 runtime-wired maps).** Dungeon2 music, CAVE palette, ladders, the gambler program, CAVERN land pairs and the failed Route11 exits are in. Not user-verified. Route11 outdoors is not extracted. |
+| Maps | **12 playable**: PalletTown, RedsHouse1F/2F, BluesHouse, OaksLab, Route1, Route22, ViridianCity, ViridianPokecenter, ViridianMart, ViridianSchoolHouse, ViridianNicknameHouse. **+7 playable through the debug warps since V1b:** Route2, Route2Gate, Route2TradeHouse, DiglettsCaveRoute2, ViridianForest, ViridianForestSouthGate/NorthGate, with music, palette and Pikachu. **Since V1e the walking path is open:** Viridian → Route 2 → the Forest, once the old man's demo is done. **+5 since V2a:** PewterCity, PewterPokecenter, PewterMart, PewterNidoranHouse, PewterSpeechHouse, reached from Route 2's north edge. **+3 since V3 checkpoint-01:** Museum1F, Museum2F, PewterGym (27 maps). Museum and Gym doors now reachable; the Museum ticket (checkpoint-02a) is closed; the Old Amber and the 2F hiker (checkpoint-02b) are closed; fossil pop-ups (checkpoint-02c) are closed; Brock's talk and battle (checkpoint-03b) are closed. Checkpoint-05 awards the Boulder Badge and TM34 (closed). **+1 since V3 checkpoint-04:** Route3 (28 maps), reached by the debug warp at (4,9). Pewter's east connection to Route3 is open once Brock is beaten; before that the guide still blocks the walk. Route4 stays unextracted and unnamed, so Route3's north edge is the native tree border. **V4 checkpoint-02 wires DiglettsCave and DiglettsCaveRoute11 (30 runtime-wired maps).** Dungeon2 music, CAVE palette, ladders, the gambler program, CAVERN land pairs and the failed Route11 exits are in. User-verified 2026-11-10 (note89 ?21). Route11 outdoors is not extracted. |
 | Warps | ✅ since V1b: the player keeps their facing through warps, as in the ASM; Pikachu appears where Yellow's spawn states put it (`pikachu/pikachu_spawn.ts`) |
 | Demo gates | ✅ **Gone since V1e**: the invented Viridian text and Route 22's fake Blue. A test fails if "demo" appears anywhere in `data/game_text.json` or `data/maps/*.json` |
 | Viridian old men | ✅ **since V1e, as `scripts/ViridianCity.asm` runs them** (`story/viridian_city.ts`): the sleeping man's push-back; the forced demo after the Pokédex (fails, walk-away, Pikachu steps aside); the Mart spawning the walking old man and his repeatable demo (caught); the locked Gym door (hop down the ledge). The city's `wViridianCityCurScript` is saved (`mapScripts`), which keeps the Gym-door quirk (DECISIONS #34). User-verified |
@@ -78,7 +78,7 @@ Diglett's Cave + Route 3 → V5 fixes), with Phase A slices in between (DECISION
 | Hidden items | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** DisplayTextID opens, found program begins at T+20 before give, flag on success, longer jingle and full map close; cartridge full-bag waits. Forest Potion/Antidote and Viridian City Potion |
 | Item balls | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** extracted `item` selects `PickUpItem`; box opens at T, give/hide T+20, found program T+23, `get_item1`, full map close after sound and A's release. Saved `hiddenObjects` keeps balls gone and tiles free. Full-bag failure keeps the ball. Route 1's sample preserves the flag-first quirk. Trade kid (A4) and Oak's Aide (A2) still await their handlers |
 | Trainers | ✅ **since V1c, as `home/trainers.asm` runs them**: before-battle text → meet music (male / female / evil) → battle; on a win the fanfare after the last Pokémon, "defeated", the pic scrolling back in, "CLASS: " + end text, money; beaten only after a win (saved); after-battle text when talked to again. Oak's Lab rival: his texts, no blackout on a loss, `rivalStarter` saved. Since A5d every entry runs the shared transitions (user-verified 2026-10-18) |
-| Trainer sight | ✅ **A1c, user-verified 2026-10-06** (`notes/20-a1c-plan.md`, DECISIONS #43): the Forest's map script runs `TrainerEngage` on standing passes ($fc quirk, pop-in), the meet music at spotting, EmotionBubble (61 frames), the `MoveSprite` walk-up, `wJoyIgnore`/`BIT_SEEN_BY_TRAINER`, `EndTrainerBattle`'s pass. Forest sight ranges 4, 4, 1, 0, 4. Checkpoint-03 exposes the hop-midpoint map-script boundary; trainer interruption and the tripwire stay until checkpoint-04. |
+| Trainer sight | ✅ **A1c, user-verified 2026-10-06** (`notes/20-a1c-plan.md`, DECISIONS #43): the Forest's map script runs `TrainerEngage` on standing passes ($fc quirk, pop-in), the meet music at spotting, EmotionBubble (61 frames), the `MoveSprite` walk-up, `wJoyIgnore`/`BIT_SEEN_BY_TRAINER`, `EndTrainerBattle`'s pass. Forest sight ranges 4, 4, 1, 0, 4. V4 checkpoint-04's midpoint trainer interruption passed review after repair (note89 §19); the busy-trainer guard and outdoor-sight tripwire are retired. |
 | Catch demo | ✅ **since V1d**: Oak's Pikachu catch runs the ASM's simulated FIGHT → ITEM → POKé BALL input, with both outcomes (caught, or 3 shakes and "Shoot! It was so close too!"). Since V1e the Viridian old man uses it too |
 | Whiteout | ✅ `handleBlackoutWarp` — halves money, heals, warps to last Pokécenter |
 | Badge stat boosts | ✅ `battle_loaders.ts` `applyBadgeStatBoosts` (the cartridge's, on the battle copy). Brock awards the first (V3); the repeated-application bug is pinned |
@@ -149,16 +149,17 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **Overworld RNG** ✅ | The cartridge's `Random` outside battle: VBlank's per-frame call, the encounter's two bytes, NPC / Pikachu / gift carries, no `Math.random`. Codex, checked by Claude (+1 pin) (2026-11-02); note 74, DECISIONS #91 |
 | **A5e through checkpoint-05** ✅ | 05 poof animation data + `SFX_BALL_POOF`, data only (`eb9bd6e`, Grok; accepted by Claude, note80 §6, #98); 04 live silhouette intro (04a `2bb547d`, 04b `090e05b`; review `d19ca04`; user play-test passed 2026-11-04; note79, #96/#97); 01 source inventory/trace;02 LCD-off staging (`115b59d`, review `6c9a822`);03a default-disabled third scroll band (`67e14ee`, review `7f5ddb4`);03b unused Program/raster contract (`6dc2536`+`3c201d9`, review `8861a58`). Sonnet implemented; Codex independently checked. Notes75–77,35 new cases; **A5e itself remains open** |
 | **V3** (01–05) ✅ | Pewter Gym, the Museum, Route 3 and the first badge: the three maps, the ticket, the Old Amber, the hiker and fossil pop-ups, the Gym's guide, statues, Jr. Trainer and Brock, Route 3 and Pewter's east connection (#106), then Brock's reward. Codex and Grok implemented, Claude and Codex reviewed, **user-verified 2026-11-08**; note 88 |
+| **V4** (01–04) ✅ | Diglett's Cave and its Route11 entrance, runtime integration, hop-midpoint map scripts and trainer interruption. Grok and Sonnet implemented, Codex reviewed; Route 3 and cave play-tests **user-verified 2026-11-10**; note89 §21 |
 | **A5f** ✅ | The wild catch and the catch demos: ball animation data, the toss/shake effects, live ball animations, the demos as real battles, the old renderer retired. Checkpoints 01–05, Grok and Codex, each checked by Claude, **user-verified 2026-11-07**; note 87, DECISIONS #105 |
 | **Intro animation** ✅ | Oak's speech frame for frame: BGP/OBP0 palette fades (the silhouette, the white fades), the window slide, the tile slides with the BG-thirds tear, the 7-frame pic copies and the shrink wipe, little Red, `SFX_SHRINK`, the intro music's fade-to-stop, the 20-frame entry and 40-frame white exit. CP1–CP5 by Codex, checked by Claude, **user-verified 2026-10-18**; note 64, DECISIONS #51/#69 |
 
 ## In progress
 
-**End-of-day handoff, 2026-11-09.** V4 checkpoint-03 is accepted after review (Grok `d6bc442`, review `66b6d26`, note89 §13). Checkpoint-02 review passed (`b986256`, note89 §10). **The user began testing but did not report completion of §8.7; checkpoint-02 remains pending user acceptance.** They confirmed silent opponent cries; read-only ASM/code audit found the existing empty cry callback, logged in note57 (`9c1d9d6`). No audio fix or checkpoint-04 work. All 942 generated files unchanged; trainer guard, tripwire and Route3 proof remain. Dev server stopped for the day. V4 stays open.
+**End-of-day handoff, 2026-11-10.** **V4 is complete** (note89 §21). All four code reviews passed, including the repaired checkpoint-04 (`ba535da`, review `1a8c0fe`). The user passed Route 3 (§20), then reported the cave "it all works" (§21), completing checkpoint-02's §8.7 acceptance. The user ended work for today. Dev server stopped. Tomorrow starts with V5 planning from the existing backlog; no V5 checkpoint has been briefed.
 
-**Restart list for the next session:**
-1. **Resume the user play-test of checkpoint-02**, note89 §8.7, including Route3. Restart from game/: `npx vite --host 127.0.0.1 --port 5173 --strictPort`. Let the user drive; record their actual report before closing checkpoint-02. Checkpoint-03 is accepted; checkpoint-04 needs its own plan and was not started. Do not remove the trainer gate or close V4.
-2. Route 3's trainers, grass, ledges and north edge have tests and a review, but no recorded play-test (note 88 §44). Walk them in the §8.7 play-test.
+**Restart list:**
+1. **Plan V5's recovered fixes.** Read the V5 row in PLAN and every V5 finding in `notes/57-findings-backlog.md`; choose and brief the first checkpoint. The order within V5 is still to be planned.
+2. V4 and checkpoint-02's play-test are closed. For future play, restart from game/ with `npx vite --host 127.0.0.1 --port 5173 --strictPort`.
 3. Silent battle cries are confirmed and already backlogged (note57, J2); opponent send-out is growth then cry, without the player's poof animation. Do not add an enemy ball-poof sound to compensate. The user has not assigned an audio implementation slice or changed its sequencing.
 
 Pret's symbol file: read it into a scratch folder with `git -C refs/pokeyellow show origin/symbols:pokeyellow.sym`, from bash (PowerShell 5.1's `>` writes UTF-16), never into the repo root.
@@ -194,9 +195,8 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **V4** Diglett's Cave + the rest of Route 3 | V | Checkpoint-03 accepted after review (§13). Checkpoint-02's user §8.7 play-test pending. Checkpoint-04 retains trainer interruption and tripwire retirement (#108); needs a separate plan. No V4 closure yet |
+| 1 | **V5** Recovered fixes | V | Plan checkpoints from PLAN and note57: battle-return fade, PSYCHIC chart, SFX and bank-aware lookup, species names, map objects/collisions, CGB palette-command hold. No V5 brief yet |
 | — | **Attack move animations** (unscheduled) | A | Separate slice (#94), after A5e/A5f; the user places it. A **full pret `move_anim` interpreter** (#94 amended): every attack animation from the cartridge's data/routines. Needs its own plan |
-| 2 | **V5** Recovered fixes | V | The battle return's blocking fade (note 57, note 88 §47); PSYCHIC chart, SFX catch-up and bank-aware lookup, species display names, the map-object audit incl. hidden-event facing (note 19 N-2), **the CGB palette-command hold** (2 held frames before each `SET_PAL_*`'s Delay3; DECISIONS #73) |
 
 After that: **the opening and title screen** (DECISIONS #69: copyright, Game Freak star, Yellow's intro movie, the title
 animation and Pikachu's PCM clips; backlog entry in note 57), then **the battle-mechanics audit** (#70), then A2, A3, A4
@@ -268,6 +268,38 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
+### 2026-11-10 (V4 closed after cave play-test; end of day) — Codex
+
+- After the seven cave checks, the user reported "ok, tested the cae it all works :)". Route 3 had already passed. Recorded checkpoint-02 acceptance and V4 closure in note89 §21, advancing to 8/36 milestones. Tomorrow's next work is V5 planning from note57; checkpoint order remains undecided. User ended work for today; dev server stopped. Documentation update; no tests run. Baseline remains ROM 6317/6317 and no-ROM 6025/292.
+
+### 2026-11-10 (Route 3 user play-test passed) — Codex
+
+- User reported "all checks pass" for the five Route 3 checks: trainer sight, direct talk/post-battle dialogue, grass encounters, ledges/Pikachu/control, and boundaries/Pewter connection. Recorded in note89 §20 and refreshed the live handoff. Cave portion of §8.7 still pending; V4 remains open. Dev server running on 127.0.0.1:5173 (HTTP 200). Documentation update; no tests run.
+
+### 2026-11-10 (V4 checkpoint-04 repair re-reviewed, passed) — Codex
+
+- Accepted `ba535da` after source/ASM audit and reproduced ordered gates: 942 generated hashes unchanged, bundle identical, ROM 6317/6317, no-ROM 6025/292. All five independent probes pass; thirteen mutations and independent R1/R2 fail with AssertionError and restore bytes. No runtime change required. Note89 §19. Next is the pending cave/Route3 play-test (§8.7); V4 stays open.
+
+### 2026-11-10 (V4 checkpoint-04 repaired, awaiting re-review) — Sonnet
+
+- Fixed Codex's two findings (note89 §17/§18). The idle interrupted hop now lands on pass 16: `preparePass` finishes the jump at `_HandleMidJump`'s `cp $10` and, with the walk counter zero, arms the landing for that same pass (the uninterrupted hop still lands on 17, a step from pass 11 on 19). `restOfPass` ends the preparation in a `finally`, so START suppressed by trainer sight no longer costs the next pass its jump tick. Three permanent regression cases added, three idle-trace expectations moved to pass 16; the reviewer's probes now pass. Setup twice: 942 files unchanged. Typecheck, build (`index-BfVzYOru.js`, 670,982 bytes), ROM 6317/6317, no-ROM 6025 / 292 skipped, marker all pass. M1–M9 (thirteen mutations) each fail with AssertionError and restore. Next: Codex re-reviews. Cave/Route 3 play-test pending; V4 open.
+
+### 2026-11-10 (V4 checkpoint-04 reviewed, two fixes required) — Codex
+
+- Reviewed `bc35a08`. Reproduced all ordered gates, 942 generated hashes, bundle, ROM 6314/6314 and no-ROM 6022/292, all eleven mutations and independent vector mutation R1. Four independent assertions expose two gaps: idle landing is one pass late (the original brief was wrong), and suppressed START skips the following jump tick. Note89 §17 and its probes give Sonnet the repair. Runtime restored; checkpoint-04 awaits repair and review. Checkpoint-02 play-test still pending.
+
+### 2026-11-10 (V4 checkpoint-04 implemented, awaiting review) — Sonnet
+
+- Implemented note89 §15: `PlayerWalk` now has the jump clock (`preparePass`, ticked before RunMapScript), the ledge's simulated presses (cursor, zero entry vs exhaustion), a landing that needs a zero walk counter, and the land-collision skip while the flag lives. A nonadjacent trainer's walk-up zeroes the pending press (`startTrainerWalkUp(…, player)`); the adjacent branch does not. `readJoypad(masked)` runs on every zero-counter pass; the busy-trainer guard and tripwire (a) are gone; warps, CONTINUE and a new game call `cancelMovement()`. 17 new no-ROM cases (`hop_trainer_interruption.test.ts`), two `hop_map_script` cases swapped. Setup twice: 942 files unchanged. Gates once each: typecheck pass, bundle `index-rQMlCRd8.js` 670,861 bytes, ROM 6314/6314 (253 files), no-ROM 6022 / 292 skipped (240 / 13), marker pass. Eleven mutations (M1–M7) each fail with AssertionError and restore. Source-backed adjustments in §16.3. Next: Codex reviews the commit. Checkpoint-02's cave and Route 3 play-test still pending; V4 stays open.
+
+### 2026-11-10 (V4 checkpoint-04 planned for Sonnet) — Codex
+
+- Traced the two trainer branches, zero input and exhaustion, jump and landing timing, and raw START history. Note89 §15 gives Sonnet the brief and review gates. Baseline targeted tests: 124 passed, 2 skipped. Next: Sonnet implements, Codex reviews. Checkpoint-02 play-test pending.
+
+### 2026-11-10 (context and codebase orientation) — Codex
+
+- Read the live V4 handoff and project references, and traced startup, overworld passes, battle sessions, scripts, saves, extraction and test setup. The checkpoint-02 cave and Route 3 play-test in note 89 §8.7 is still pending. This read-through made no game changes and ran no tests.
+
 ### 2026-11-09 (end-of-day context handoff) — Codex
 
 - User ended the session and requested context updates. Refreshed PROJECT's stale V3 summary to the live V4 state and recorded restart instructions. Checkpoints 01–03 passed code review; checkpoint-02 cave/Route3 play-test remains incomplete, with only the silent-cry observation confirmed. Cries remain an existing deferred audio feature, not an implemented fix. Dev server stopped. No checkpoint-04 work or V4 closure. No new code/tests in this docs-only wrap-up; current baseline remains ROM 6299/6299 and no-ROM 6007/292.
@@ -283,35 +315,3 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 ### 2026-11-09 (V4 checkpoint-03 implemented, awaiting review) — Grok
 
 - Applied `03-spike.diff` on clean `1497811`. Setup twice: all 942 generated files unchanged. Gates once each: typecheck pass, bundle `index-CoPfOLj1.js` 669,049 bytes, ROM 6299/6299 (252 files), no-ROM 6007 passed / 292 skipped (239 / 13 files), marker pass. V1–V5 each an AssertionError and restored. The busy-trainer guard and Route3 proof stay. Report is note 89 §12. Next: independent review. Checkpoint-04 was not started. Checkpoint-02's user play-test is still pending.
-
-### 2026-11-09 (V4 checkpoint-03 planned for Grok) — Codex
-
-- At the user's explicit follow-up, traced and spiked the next boundary foundation after checkpoint-02's clean review. Split interruption aftermath into checkpoint-04 (#108). Six source/test files, seven no-ROM cases; setup twice with all 942 hashes unchanged. Ordered gates: ROM 6299/6299, no-ROM 6007/292, bundle index-CoPfOLj1.js (669,049 bytes); V1–V5 caught, clean roundtrip and source restored. Ordinary trigger geometry has no new midpoint candidates; Viridian's Gym square is an already-checked source. Brief: note89 §11. Next: Grok implements only that foundation. Checkpoint-02 user play-test remains pending.
-
-### 2026-11-09 (V4 checkpoint-02 reviewed: passed, assertions strengthened) — Codex
-
-- Reviewed `a34a3fe`: exact spike bytes, source audit and original gates reproduced. R1/R3 initially survived; pinned border-reload palette order and added a tileset-scope case. Final ordered gates: unchanged bundle, all 942 generated hashes unchanged, ROM 6292/6292, no-ROM 6000/292; V1–V9 and R1–R3 caught and restored. No production change. Note89 §10; user's §8.7 play-test is pending. User explicitly requests checkpoint-03 planning next if review is clean. Archived the oldest four log entries verbatim to HISTORY to keep STATUS short.
-
-### 2026-11-09 (V4 checkpoint-02 implemented, awaiting review) — Grok
-
-- Applied `02-spike.diff` on clean `3577666`. Setup twice: all 942 generated files unchanged. Gates once each: typecheck pass, bundle `index-Bb9iGKew.js` 668,859 bytes, ROM 6291/6291 (251 files), no-ROM 5999 passed / 292 skipped (238 / 13 files), marker pass. V1–V9 each an AssertionError and restored. Report is note 89 §9. Next: independent review, then the user's §8.7 play-test. Checkpoint-03 was not started.
-
-### 2026-11-09 (V4 checkpoint-02 planned for Grok) — Codex
-
-- Traced and spiked cave runtime (note89 §8): seven source/test files, 23 no-ROM cases, no generated changes. Fixed in the spike the missing CAVERN land pairs, gambler's flattened fallback and failed-load palette/font leak; Forest/water pair omissions are backlogged in note57. Setup twice: all 942 hashes unchanged. Sequential gates: ROM 6291/6291, no-ROM 5999/292, bundle index-Bb9iGKew.js (668,859 bytes); V1–V9 caught, clean roundtrip and source restored. Next: Grok implements §8; independent review and user play-test follow. No checkpoint-03 work.
-
-### 2026-11-09 (V4 checkpoint-01 reviewed: passed) — Codex
-
-- Reviewed Grok's `bef9884`: exact spike bytes, direct ASM/ROM audit, setup twice with all 942 hashes reproduced. Sequential gates pass: unchanged bundle, ROM 6268/6268, no-ROM 5976/292. V1–V5 and independent R1/R2 each fail with AssertionError and restore; final manifest passes. No game changes needed. Note89 §7 accepts checkpoint-01; next is checkpoint-02 planning, not implementation. Oldest four STATUS session entries archived verbatim to HISTORY to keep the handoff short.
-
-### 2026-11-09 (V4 checkpoint-01 implemented, awaiting review) — Grok
-
-- Applied `01-spike.diff` on clean `4f85be8`. Setup twice: 942 generated files identical to the spike. Gates once each: typecheck pass, bundle `index-DtAwi9SA.js` unchanged, ROM 6268/6268 (250 files), no-ROM 5976 passed / 292 skipped (237 / 13 files). V1–V5 each an AssertionError and restored. Manifest passed before and after. Report is note 89 §6. Next: independent review. Checkpoint-02 was not started.
-
-### 2026-11-09 (V4 checkpoint-01 planned for Grok) — Codex
-
-- Traced the two remaining cave maps, symbols, ladders and Route11 LAST_MAP override; scoped V4 into extraction, runtime acceptance and hop-midpoint checkpoints (note89). Spiked checkpoint-01, verified regeneration/gates/mutations and restored game source/data. Exact implementation brief and evidence are in note89 §4–§5. Next: Grok applies checkpoint-01, verifies and commits; independent review follows. V4 stays open and Route3's play-test reminder remains for checkpoint-02.
-
-### 2026-11-09 (context and codebase orientation) — Codex
-
-- Read the entry-point rules, current handoff, project context and subsystem references; traced startup, the tick loop, overworld dispatch, battle-session wiring, scripts, extraction and test setup. No implementation slice claimed and no game code changed; tests were not run for this read-through. Next remains planning V4, including the Route 3 play-test reminder above.

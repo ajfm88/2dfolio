@@ -6,6 +6,7 @@ import { GameMap } from './map';
 import type { Npc } from './npc';
 import { playSFX, isSfxPlaying } from '../audio';
 import { isNoClip } from '../debug';
+import { setJoyIgnore } from '../input/joy_ignore';
 import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
 import { PlayerWalk, HOP_LANDING_FRAMES, FRAMES_PER_PASS, walkFrame } from './walk_pace';
 import type { StepCheck } from './walk_pace';
@@ -120,6 +121,14 @@ export class Player {
   get isMoving(): boolean { return this.walk.moving; }
   get isLanding(): boolean { return this.walk.landingPending; }
   get mapScriptBoundary(): boolean { return this.walk.mapScriptBoundary; }
+  /** HandleMidJump and the zero-counter vector clear, ahead of RunMapScript (walk_pace.ts). */
+  preparePass(): void { this.walk.preparePass(); }
+  /** The prepared pass was taken over by a script: give its jump tick back. */
+  cancelPrepared(): void { this.walk.cancelPrepared(); }
+  /** The ledge's simulated presses are outstanding: the pass's joypad read is masked. */
+  get simulating(): boolean { return this.walk.simulating; }
+  /** MoveSprite_ (a trainer's walk-up) zeroes the pending simulated press. */
+  zeroPendingSimulatedPress(): void { this.walk.zeroPendingSimulatedPress(); }
   get ledgeHopFlag(): boolean { return this.walk.ledge; }
   get startedFollowStep(): boolean { return this.walk.startedFollowStep; }
   finishLanding(): void { this.walk.finishLanding(); }
@@ -138,10 +147,11 @@ export class Player {
   /** wPikachuCollisionCounter (walk_pace.ts PlayerWalk). */
   get pikachuCollisionCounter(): number { return this.walk.pikachuCollisionCounter; }
 
-  /** Slot 0 of the sprite table: always at screen ($40, $3c). */
+  /** Slot 0 of the sprite table: at screen ($40, $3c), except that _HandleMidJump writes the
+   *  jump table into wSpritePlayerStateData1YPixels, which DetectCollisionBetweenSprites reads. */
   collisionSprite(): CollisionSprite {
     return {
-      slot: PLAYER_SLOT, available: true, x: PLAYER_SCREEN_X, y: PLAYER_SCREEN_Y,
+      slot: PLAYER_SLOT, available: true, x: PLAYER_SCREEN_X, y: PLAYER_SCREEN_Y + this.walk.hopOffset,
       vx: this.walk.vx, vy: this.walk.vy,
     };
   }
@@ -244,6 +254,8 @@ export class Player {
 
   /** Cancel any in-progress movement (used when repositioning player on map transitions). */
   cancelMovement(): void {
+    // A warp while the ledge's presses or a trainer's mask are outstanding leaves no joy lock
+    if (this.walk.simulating || this.walk.ledge) setJoyIgnore('none');
     this.walk.cancel();
     this.frameDelay = 0;
   }
@@ -371,8 +383,12 @@ export class Player {
     // The hop's first pass collides too, but SFX_LEDGE is the sound heard (V5 extracts it)
     this.justCollided = w.collided;
     this.justTurned = w.turned;
-    this.stepWasSimulated = simulated || w.hopping || w.landedHop;
-    this.stepWasHop = w.hopping || w.landedHop;
+    // StepCountCheck: a step is simulated while the ledge's presses run (the hop's two halves);
+    // a physical step after they are exhausted, with the jump still going, is an ordinary one
+    this.stepWasSimulated = simulated || w.simStepNow || w.landedHop;
+    this.stepWasHop = w.simStepNow || w.landedHop;
+    // AreInputsSimulated .doneSimulating
+    if (w.simExhausted) setJoyIgnore('none');
     if (w.finishedStep) this.stepsCompleted++;
     this.startedHop = w.startedHop;
     this.wasHopping = w.landedHop;

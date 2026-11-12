@@ -115,11 +115,14 @@ export function endTrainerBattle(mapName: string, ow: TrainerSightState): void {
 /**
  * The end of CheckFightingMapTrainers after EmotionBubble: wJoyIgnore = PAD_CTRL_PAD, then
  * TrainerWalkUpToPlayer → MoveSprite_ (wJoyIgnore = $ff) unless the trainer is adjacent.
- * The walk keeps the trainer's movement status (MoveSprite_ doesn't touch it).
+ * The walk keeps the trainer's movement status (MoveSprite_ doesn't touch it). MoveSprite_ also zeroes
+ * the player's pending simulated press, which is what strands a hopping player at the ledge's midpoint.
  */
-export function startTrainerWalkUp(npc: Npc, steps: number, facing: Direction): void {
+export function startTrainerWalkUp(npc: Npc, steps: number, facing: Direction, player?: Player): void {
   setJoyIgnore('dpad');
   if (steps === 0) return;
   npc.startScriptedMove(Array<Direction>(steps).fill(facing), undefined, true);
+  // MoveSprite_: wSimulatedJoypadStatesEnd = 0 (the player's next simulated press, if any), wJoyIgnore = $ff
+  player?.zeroPendingSimulatedPress();
   setJoyIgnore('all');
 }

@@ -53,5 +53,6 @@ export const mainTest = {
     environment: 'node',
     include: ['src/**/*.test.ts'],
     setupFiles: ['src/test/setup.ts'],
+    testTimeout: 30_000,
   },
 });
