@@ -47,6 +47,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "mom",
       "sprite": "mom",
       "x": 5,

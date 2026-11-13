@@ -30,6 +30,9 @@ import {
   drawZzzBubble,
   getLoadedRawImageData,
   overworldObjectPalettes,
+  applyBgShades,
+  getActivePalette,
+  getPaletteColors,
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
   playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
@@ -172,7 +175,8 @@ type GameState =
   | "save_menu"
   | "pikachu_emotion"
   | "dex"
-  | "evolution";
+  | "evolution"
+  | "battle_return";
 let state: GameState = "title_screen";
 let stateBeforeMenu: GameState = "overworld"; // where to return after start_menu/textbox
 let paused = false;
@@ -690,21 +694,67 @@ function startTrainerBattle(
 const EVOLUTION_PRE_ANIM_FRAMES = 80;  // assembly: ld c, 80; call DelayFrames
 const EVOLUTION_ANIM_CYCLES = 8;       // assembly: lb bc, $1, $10 → c decrements by 2 per cycle
 
+/**
+ * home/overworld.asm .battleOccurred → EnterMap → MapEntryAfterBattle (V5b, note 92). The battle has
+ * already whited out (EndOfBattle's GBPalWhiteOut). `.noFaintCheck`'s DelayFrames(10) holds white; EnterMap
+ * then runs LoadMapData, whose own time belongs to the warp-timing slice (DECISIONS #112), and which
+ * requests the map music (UpdateMusic6Times + PlayDefaultMusicFadeOutCurrent). MapEntryAfterBattle's
+ * GBFadeInFromWhite writes FadePal7, FadePal6, FadePal5 with DelayFrames(8) after each. Nothing moves and
+ * no joypad is read (wJoyIgnore = $ff). Then EnterMap's UpdateSprites, and `jp OverworldLoop`.
+ */
+const BATTLE_RETURN_WHITE_FRAMES = 10;
+/** home/fade.asm FadePal7, FadePal6, FadePal5: [rBGP, rOBP0, rOBP1]. */
+const BATTLE_RETURN_FADE: readonly (readonly [number, number, number])[] = [[0x40, 0x40, 0x40], [0x90, 0x80, 0x90], [0xe4, 0xd0, 0xe0]];
+const BATTLE_RETURN_FADE_STEP_FRAMES = 8;
+let battleReturn: { program: Generator<void, void, void>; bgp: number | null } | null = null;
+
+function* battleReturnProgram(resume: 'overworld' | 'script'): Generator<void, void, void> {
+  for (let i = 0; i < BATTLE_RETURN_WHITE_FRAMES; i++) yield;
+  loadMapMusic(currentMapName, true);
+  for (const [bgp] of BATTLE_RETURN_FADE) {
+    battleReturn!.bgp = bgp;
+    for (let i = 0; i < BATTLE_RETURN_FADE_STEP_FRAMES; i++) yield;
+  }
+  enterMapAfterBattle();
+  if (resume === 'script') {
+    // OverworldLoop's two DelayFrames, then RunMapScript continues the map's script on the pass (D+36).
+    // The script engine runs an advanced command on the following tick, so advance it one tick before.
+    yield;
+    battleReturn = null;
+    state = 'script';
+    advanceActiveScript();
+  } else {
+    battleReturn = null;
+    state = 'overworld';
+  }
+}
+
+/** EndOfBattle's GBPalWhiteOut runs in the tick the session reports done, and `.battleOccurred` follows in the
+ * same CPU slice: the first of the ten DelayFrames is this tick. */
+function startBattleReturn(resume: 'overworld' | 'script'): void {
+  fadeAlpha = 0; fadeDir = null;
+  battleReturn = { program: battleReturnProgram(resume), bgp: null };
+  state = 'battle_return';
+  battleReturn.program.next();
+}
+
+function renderBattleReturn(): void {
+  const bgp = battleReturn?.bgp ?? null;
+  clear();
+  // BGP 0: every CGB palette's colour 0 is (31,31,31), white after gbcCorrect.
+  if (bgp === null) { drawFadeOverlay(1, '#ffffff'); return; }
+  renderOverworldScene(player.getCameraX(), player.getCameraY());
+  // With OBP0 $d0 / OBP1 $e0 sprites already composed, BGP's mapping of the composed shades equals each
+  // OBJ register of FadePal7 and FadePal6 (note 92 §2.4), so one pass over the frame is exact.
+  applyBgShades(getCtx(), bgp, getPaletteColors(getActivePalette()));
+}
+
 /** Start the next evolution in the queue. */
 function startNextEvolution(): void {
   const candidate = evolutionQueue.shift();
   if (!candidate) {
-    // All evolutions done — return to the saved state
-    fadeAlpha = 1;
-    fadeDir = "in";
-    if (evolutionReturnState === 'script') {
-      state = 'script';
-      advanceActiveScript();
-    } else {
-      state = 'overworld';
-    }
-    // EndOfBattle's evolutions come first; the loader then requests the after-battle fade
-    loadMapMusic(currentMapName, true);
+    // EndOfBattle's evolutions come first; then .battleOccurred's return
+    startBattleReturn(evolutionReturnState === 'script' ? 'script' : 'overworld');
     return;
   }
 
@@ -1590,6 +1640,8 @@ function gameTick(): void {
     }
   } else if (state === "evolution") {
     updateEvolution();
+  } else if (state === "battle_return") {
+    battleReturn!.program.next();
   } else if (state === "battle_transition") {
     tickBattleEntry();
   } else if (state === "battle") {
@@ -1633,10 +1685,6 @@ function gameTick(): void {
           // Victory fanfare is already playing (owned by the session)
           // Re-evaluate Pikachu visibility (Pikachu may have fainted)
           pikachuFollower.visible = followerCanDraw();
-          // EnterMap's UpdateSprites (after any evolutions on the cartridge; nothing on the
-          // map moves while they run)
-          enterMapAfterBattle();
-
           // Check for post-battle evolutions before returning to overworld
           // (EndOfBattle skips them after a lost battle)
           const evoCandidates = plan.evolutions;
@@ -1651,18 +1699,9 @@ function gameTick(): void {
             evolutionQueue = evoCandidates;
             startNextEvolution();
           } else {
-            fadeAlpha = 1;
-            fadeDir = "in";
-            if (isScriptBattlePending() && getActiveScript()) {
-              clearScriptBattlePending();
-              state = "script";
-              advanceActiveScript();
-            } else {
-              clearScriptBattlePending();
-              state = "overworld";
-            }
-            // The loader's after-battle fade takes over from the battle / victory tune
-            loadMapMusic(currentMapName, true);
+            const resume = isScriptBattlePending() && getActiveScript() ? 'script' : 'overworld';
+            clearScriptBattlePending();
+            startBattleReturn(resume);
           }
         }
       }
@@ -1832,6 +1871,8 @@ function gameLoop(now = 0): void {
     renderLiveBattle();
   } else if (state === "evolution") {
     renderEvolution();
+  } else if (state === "battle_return") {
+    renderBattleReturn();
   } else if (state === "party_menu") {
     partyMenu.render();
   } else if (state === "item_menu") {

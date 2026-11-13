@@ -16,6 +16,7 @@ export const mainTest = {
   get pageTicks() { return pageTicks; }, get random() { return sessionRandom; },
   get boxes() { return pcBoxes; }, get money() { return playerMoney; }, set money(value: number) { playerMoney=value; },
   renderBattleEntry, get battleEntry() { return battleEntry; }, ow,
+  get battleReturnBgp() { return battleReturn ? battleReturn.bgp : undefined; }, renderBattleReturn,
   async finishFade() { const callback = fadeCallback; fadeCallback = null; await callback?.(); },
   startMenu, partyMenu, bagMenu, optionMenu,
   oakSpeech, namingScreen, get introMapReady() { return introMapReady; },
@@ -35,7 +36,7 @@ export const mainTest = {
     state = 'overworld'; currentSession = null; battleInput = null; menuClose = null; closingSave = false; textBox.dismiss(); fadeAlpha = 0; fadeDir = null;
     fadeCallback = null; prevTickInPassState = false; pendingWarpMusic = null;
     introFrames = 0; introMapReady = false;
-    battleEntry = null; pendingTrainer = null; engagedTrainer = null;
+    battleEntry = null; pendingTrainer = null; engagedTrainer = null; battleReturn = null;
     playerParty.length = 0; playerBag = new Bag();
     npcs = []; currentMapName = 'RedsHouse2F';
     gameMap.mapData = null; player.cancelMovement();

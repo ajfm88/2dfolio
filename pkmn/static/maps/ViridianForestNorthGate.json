@@ -57,6 +57,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "super_nerd",
       "sprite": "super_nerd",
       "x": 3,
@@ -66,6 +67,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "gramps",
       "sprite": "gramps",
       "x": 2,

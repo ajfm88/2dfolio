@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "clerk",
       "sprite": "clerk",
       "x": 0,
@@ -60,6 +61,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "youngster",
       "sprite": "youngster",
       "x": 3,
@@ -70,6 +72,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "super_nerd",
       "sprite": "super_nerd",
       "x": 5,

@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "balding_guy",
       "sprite": "balding_guy",
       "x": 5,
@@ -50,6 +51,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "little_girl",
       "sprite": "little_girl",
       "x": 1,
@@ -60,6 +62,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "spearow",
       "sprite": "bird",
       "x": 5,
@@ -70,6 +73,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "speary_sign",
       "sprite": "clipboard",
       "x": 4,

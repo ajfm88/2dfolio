@@ -143,7 +143,7 @@ Put anything you learn from `refs/` here rather than in the clone.
   (`src/battle/data.ts`, `src/rom/__tests__/extraction.test.ts`), not memory.
 - Extractors are idempotent: running twice produces identical bytes. Write output
   with `JSON.stringify(data, null, 2) + '\n'`.
-- One documented exception exists: the PSYCHIC type chart (DECISIONS #10).
+- There is no exception: `type_chart.json` is the ROM's table (DECISIONS #111).
   Deviations require a DECISIONS entry — never an undocumented judgment call.
 
 ## Map expansion workflow
@@ -182,9 +182,8 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 - **PSYCHIC family**: species types use `PSYCHIC` (`pokemon.ts` converts); move
   `type` fields use `PSYCHIC_TYPE`; the *move* named Psychic is keyed `PSYCHIC_M`
-  in `moves.json`. The type chart **today** has `PSYCHIC_TYPE` on both sides (the
-  bug in DECISIONS #10); after V5 it uses `PSYCHIC_TYPE` for attackers and
-  `PSYCHIC` for defenders.
+  in `moves.json`. The chart has `PSYCHIC_TYPE` on both sides and stays that way;
+  the battle converts both spellings to byte 24 (DECISIONS #111).
 - **Species specials** (ASM filename → display name): `nidoranm`→`Nidoran-M`,
   `nidoranf`→`Nidoran-F`, `mrmime`→`Mr. Mime`, `farfetchd`→`Farfetch'd`. gfx
   filenames differ again: `nidoranm.png`, `mr.mime.png`, `farfetchd.png`.
@@ -250,7 +249,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6317/6317** as of 2026-11-10 (V4 checkpoint-04 repair; default workers). No-ROM **6025 pass / 292 skip**, 253 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6337/6337** as of 2026-11-11 (V5c checkpoint-02; default workers). No-ROM **6042 pass / 295 skip**, 257 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -266,6 +265,36 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+`rom/__tests__/map_object_ids.test.ts` (V5c checkpoint-02, note93 §9): three no-ROM
+cases compare all 102 NPCs on 30 maps with pret's `object_event` lists, pin the three
+reordered/filtered maps and match 19 toggle rows while identifying the four dropped
+objects. O1–O3 cover zero-based ids, JSON-order ids and a wrong committed Oak id;
+the ROM extraction comparisons also catch the extractor mutations. Baseline: ROM
+**6337/6337**; no-ROM **6042 pass / 295 skip**, 257 files. No runtime reader of `objectId`.
+
+`rom/__tests__/toggleable_objects_data.test.ts` (V5c checkpoint-01, note93): four cases,
+two no-ROM and two ROM-only, pin all 239 rows against pret's ASM, map-first indices,
+the four named maps and unused copies, the static mirror, ROM reproduction and fail-loud
+state/object/terminator/pointer checks. N1–N6 cover ON/OFF, null pointers, truncation,
+object zero, state validation and row alignment. Baseline: ROM **6333/6333**; no-ROM
+**6039 pass / 294 skip**, 256 files. The new JSON has no runtime reader. The review added a fifth, ROM-only
+case: a map pointer on another map's row throws (reviewer mutation R1). ROM **6334/6334**; no-ROM 6039 / 295.
+
+`main_battle_return.test.ts` (V5b checkpoint-01, note 92): six no-ROM cases pin ten white
+frames, three eight-frame palette steps, the map song at D+10, sprite refresh at D+34,
+first joypad pass at D+36, held-direction blocking, drawn shades and script resumption.
+M1–M8 cover timing, palette selection, music order, sprites, script continuation, shading
+and input reads. The three map-music cases in `main.test.ts`, three return cases in
+`main_battle_switch.test.ts` and the three catch-demo cases' shared helper now wait out
+the return, as listed in note92 §4.2. Baseline: ROM **6329/6329**; no-ROM **6037 pass /
+292 skip**, 255 files.
+
+`battle/battle_type_chart_live.test.ts` (V5a checkpoint-01, note 91): six no-ROM cases
+pin the four Psychic-defender rows, all 14 Psychic species headers, wild Abra, trainer
+Slowpoke, player Alakazam and the AI lookup, plus both Ground → Fire/Rock rows.
+M1–M5 cover the two type conversions, defender lookup, damage-loop continuation and AI matching.
+Baseline: ROM **6323/6323**; no-ROM **6031 pass / 292 skip**, 254 files.
 
 `overworld/overworld_random.test.ts` pins the page owner's ADC/SBC, exit borrow, battle
 attachment boundary and absence of production `Math.random`. Overworld/main/story tests use

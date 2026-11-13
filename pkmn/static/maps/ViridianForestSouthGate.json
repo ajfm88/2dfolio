@@ -57,6 +57,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "girl",
       "sprite": "girl",
       "x": 8,
@@ -67,6 +68,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "little_girl",
       "sprite": "little_girl",
       "x": 2,

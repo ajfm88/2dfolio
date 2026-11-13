@@ -1,0 +1,1231 @@
+{
+  "states": [
+    {
+      "map": 0,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 1,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 1,
+      "object": 7,
+      "on": false
+    },
+    {
+      "map": 1,
+      "object": 8,
+      "on": false
+    },
+    {
+      "map": 2,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 2,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 3,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 3,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 3,
+      "object": 6,
+      "on": false
+    },
+    {
+      "map": 3,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 3,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 8,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 9,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 10,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 11,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 12,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 13,
+      "on": false
+    },
+    {
+      "map": 10,
+      "object": 14,
+      "on": true
+    },
+    {
+      "map": 10,
+      "object": 15,
+      "on": false
+    },
+    {
+      "map": 13,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 13,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 15,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 20,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 23,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 23,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 23,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 26,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 27,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 33,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 33,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 35,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 35,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 36,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 39,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 39,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 39,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 40,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 40,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 40,
+      "object": 3,
+      "on": false
+    },
+    {
+      "map": 40,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 40,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 40,
+      "object": 6,
+      "on": false
+    },
+    {
+      "map": 45,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 45,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 52,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 63,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 228,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 228,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 228,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 228,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 143,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 144,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 145,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 145,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 145,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 146,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 147,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 147,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 148,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 148,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 148,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 149,
+      "object": 5,
+      "on": false
+    },
+    {
+      "map": 132,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 135,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 155,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 165,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 165,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 177,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 177,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 181,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 83,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 12,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 13,
+      "on": true
+    },
+    {
+      "map": 83,
+      "object": 14,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 194,
+      "object": 13,
+      "on": true
+    },
+    {
+      "map": 88,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 88,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 88,
+      "object": 3,
+      "on": false
+    },
+    {
+      "map": 51,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 51,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 51,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 12,
+      "on": true
+    },
+    {
+      "map": 59,
+      "object": 13,
+      "on": true
+    },
+    {
+      "map": 61,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 61,
+      "object": 6,
+      "on": false
+    },
+    {
+      "map": 61,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 61,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 61,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 61,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 96,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 102,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 103,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 103,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 104,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 104,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 104,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 198,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 198,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 198,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 199,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 199,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 200,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 200,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 200,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 200,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 201,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 201,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 202,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 202,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 202,
+      "object": 3,
+      "on": false
+    },
+    {
+      "map": 202,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 202,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 202,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 202,
+      "object": 8,
+      "on": false
+    },
+    {
+      "map": 202,
+      "object": 9,
+      "on": false
+    },
+    {
+      "map": 207,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 207,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 207,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 207,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 207,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 208,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 208,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 208,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 209,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 210,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 211,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 211,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 211,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 211,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 211,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 7,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 9,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 10,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 11,
+      "on": true
+    },
+    {
+      "map": 212,
+      "object": 12,
+      "on": true
+    },
+    {
+      "map": 213,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 213,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 213,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 233,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 233,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 233,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 234,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 235,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 235,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 235,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 235,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 244,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 214,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 215,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 215,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 216,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 216,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 216,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 216,
+      "object": 6,
+      "on": true
+    },
+    {
+      "map": 216,
+      "object": 8,
+      "on": true
+    },
+    {
+      "map": 217,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 217,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 217,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 217,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 218,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 218,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 219,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 219,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 219,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 219,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 220,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 226,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 226,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 226,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 226,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 227,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 227,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 227,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 227,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 227,
+      "object": 5,
+      "on": true
+    },
+    {
+      "map": 108,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 108,
+      "object": 4,
+      "on": true
+    },
+    {
+      "map": 120,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 192,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 192,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 159,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 159,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 160,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 160,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 161,
+      "object": 2,
+      "on": true
+    },
+    {
+      "map": 161,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 161,
+      "object": 5,
+      "on": false
+    },
+    {
+      "map": 161,
+      "object": 6,
+      "on": false
+    },
+    {
+      "map": 162,
+      "object": 1,
+      "on": false
+    },
+    {
+      "map": 162,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 162,
+      "object": 3,
+      "on": true
+    },
+    {
+      "map": 39,
+      "object": 1,
+      "on": true
+    },
+    {
+      "map": 39,
+      "object": 2,
+      "on": false
+    },
+    {
+      "map": 39,
+      "object": 3,
+      "on": true
+    }
+  ],
+  "mapFirst": {
+    "PalletTown": 0,
+    "ViridianCity": 1,
+    "Route1": null,
+    "Route22": 35,
+    "RedsHouse1F": null,
+    "RedsHouse2F": null,
+    "BluesHouse": 40,
+    "OaksLab": 43,
+    "ViridianPokecenter": null,
+    "ViridianMart": null,
+    "ViridianSchoolHouse": null,
+    "ViridianNicknameHouse": null,
+    "Route2": 26,
+    "DiglettsCaveRoute2": null,
+    "ViridianForestNorthGate": null,
+    "Route2TradeHouse": null,
+    "Route2Gate": null,
+    "ViridianForestSouthGate": null,
+    "ViridianForest": 100,
+    "PewterCity": 4,
+    "PewterNidoranHouse": null,
+    "PewterMart": null,
+    "PewterSpeechHouse": null,
+    "PewterPokecenter": null,
+    "Museum1F": 51,
+    "Museum2F": null,
+    "PewterGym": null,
+    "Route3": null,
+    "DiglettsCave": null,
+    "DiglettsCaveRoute11": null
+  }
+}

@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "nidoran",
       "sprite": "monster",
       "x": 4,
@@ -51,6 +52,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "little_boy",
       "sprite": "little_boy",
       "x": 3,
@@ -61,6 +63,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "middle_aged_man",
       "sprite": "middle_aged_man",
       "x": 1,

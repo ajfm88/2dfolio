@@ -340,6 +340,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "super_nerd",
       "sprite": "super_nerd",
       "x": 57,
@@ -349,6 +350,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 10,
@@ -368,6 +370,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 14,
@@ -387,6 +390,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "cooltrainer_f1",
       "sprite": "cooltrainer_f",
       "x": 16,
@@ -406,6 +410,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "youngster3",
       "sprite": "youngster",
       "x": 19,
@@ -425,6 +430,7 @@
     },
     {
       "textId": 6,
+      "objectId": 6,
       "id": "cooltrainer_f2",
       "sprite": "cooltrainer_f",
       "x": 23,
@@ -444,6 +450,7 @@
     },
     {
       "textId": 7,
+      "objectId": 7,
       "id": "youngster4",
       "sprite": "youngster",
       "x": 22,
@@ -463,6 +470,7 @@
     },
     {
       "textId": 8,
+      "objectId": 8,
       "id": "youngster5",
       "sprite": "youngster",
       "x": 24,
@@ -482,6 +490,7 @@
     },
     {
       "textId": 9,
+      "objectId": 9,
       "id": "cooltrainer_f3",
       "sprite": "cooltrainer_f",
       "x": 33,

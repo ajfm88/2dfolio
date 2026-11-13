@@ -1373,6 +1373,64 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      the independent arc and landing. `_Joypad` updates raw input history during simulation, so the checkpoint-03
      held-START expectation changes to the cartridge's fresh-edge rule. Checkpoint-02's play-test remains pending.
 
+110. **V5 is seven sub-slices, V5a → V5g, in note 90's order** (2026-11-11, O-54).
+     *The user: "yes to 0-54 as ordered".*
+
+     - **V5a** type-chart closure → **V5b** the battle return → **V5c** the map-object audit → **V5d** overworld
+       leftovers (FOREST land tile pairs, the two "!" bubbles) → **V5e** species display names → **V5f** the CGB
+       palette-command hold → **V5g** the SFX catch-up (g1 bank-aware data, g2 concurrent SFX and priority, g3 call
+       sites). Note 90 §3 lists which backlog item goes where.
+     - Each sub-slice is traced, spiked and briefed in its own note, after its predecessor's review. Visible ones
+       end with the user's play-test. The milestone count stays 36: V5 is one milestone.
+     - Implementer (O-57) was not answered. The standing arrangement holds: Claude plans, spikes and reviews; the
+       user names the implementer per checkpoint, so briefs stay implementer-neutral.
+
+111. **#10's PSYCHIC post-processing step is withdrawn; the live engine already matches Psychic defenders**
+     (2026-11-11, O-55, note 90 §2.1). *The user: "yes to 0-55".*
+
+     - #10 described upstream's `damage.ts`, which compared type **names** (`PSYCHIC_TYPE` in the chart and on
+       moves, `PSYCHIC` on species). A5c3f deleted that engine. The ported `AdjustDamageForMoveType` and
+       `AIGetTypeEffectiveness` compare type **bytes**: the chart's names and a species' `PSYCHIC` both become 24
+       (`battle_damage_asm.ts` `typeChart`, `battle_party_codec.ts` and `battle_trainer_party.ts` `typeByte`).
+     - So Bug → Psychic 2×, Fighting → Psychic ½× and Psychic → Psychic ½× apply, and Ghost → Psychic 0× stays as
+       the cartridge's own bug. `type_chart.json` stays the ROM's 82 rows, unmodified. **Never add the asymmetric
+       chart:** `defender: 'PSYCHIC'` has no type byte and would make `typeChart()` throw.
+     - What is left is V5a: pins through the real wild, trainer and party loaders, and the stale doc lines.
+       CONVENTIONS' "one documented exception" to schema fidelity no longer exists.
+
+112. **Three items leave V5** (2026-11-11, O-56, note 90 §4). *The user: "all 3 for 0-56".*
+
+     - **The `DisableLCD` audit of non-battle ports** (one serviced frame, the dark span, the white first frame;
+       #96, #97) goes to the warp-timing slice and to each screen's own port. None of those sites is frame-exact
+       yet, so there is nothing to attach the frames to.
+     - **The party list on tiles** goes to the J2 party-menu audit (#62).
+     - **The padded tileset-read trim** is deferred; it stays a backlog line for J2.
+
+113. **Codex implements V5a checkpoint-01; Claude reviews** (2026-11-11, O-57). *The user: "let me have codex implement".*
+     The brief is note 91 §4. Later V5 checkpoints: the user names the implementer each time.
+
+114. **V5b is one checkpoint; Codex implements; `LoadMapData` costs 0 frames on the return** (2026-11-11, note 92).
+     *The user: "ok. codex will implement".*
+
+     - Scope: `.battleOccurred`'s 10 white frames, `MapEntryAfterBattle`'s blocking `GBFadeInFromWhite`
+       (FadePal7/6/5, 8 frames each), the map song inside `LoadMapData`, `EnterMap`'s `UpdateSprites`, and the
+       first pass two frames later; a script that owned the battle resumes on that pass.
+     - `LoadMapData`'s own frames (LCD off, `SET_PAL_OVERWORLD`'s hold) stay with the warp-timing slice, beside
+       #112's `DisableLCD` audit. The screen is white then, so only the count is approximate.
+     - Blackout, the evolution screen and the warp fade are unchanged. The user play-tests after Claude's review.
+
+115. **V5c carries the cartridge's toggleable-object model; Codex implements checkpoint-01** (2026-11-11, note 93).
+     *The user: "i like that it now carries the toggle model, let's take it that way" and "codex will implement".*
+
+     - V5c ports `ToggleableObjectStates`, `wToggleableObjectFlags` (saved), `InitializeToggleableObjectsFlags`,
+       `IsObjectHidden` and Show/HideObject, and moves the port's `hiddenObjects` set and `story_state.ts`'s toggle
+       rules onto it. The save format changes in checkpoint-03, with old saves migrated.
+     - Then every map's objects come in ROM order with ROM-derived facing and walk range; OAK2, walking Daisy and
+       the Route 22 rivals are present and hidden by their toggles. Note 93 §4 has the six checkpoints.
+
+116. **Codex implements V5c checkpoint-02** (2026-11-11, note 93 §9). *The user: "pls plan it now, codex will implement".*
+     Data only: each map NPC's 1-based `objectId`; unread until checkpoint-03.
+
 ## Open — not decided, needs the user
 
 

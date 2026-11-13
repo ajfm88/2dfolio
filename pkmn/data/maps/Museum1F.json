@@ -83,6 +83,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "scientist1",
       "sprite": "scientist",
       "x": 12,
@@ -93,6 +94,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "gambler",
       "sprite": "gambler",
       "x": 1,
@@ -102,6 +104,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "scientist2",
       "sprite": "scientist",
       "x": 15,
@@ -112,6 +115,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "scientist3",
       "sprite": "scientist",
       "x": 17,
@@ -121,6 +125,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "old_amber",
       "sprite": "old_amber",
       "x": 16,

@@ -103,6 +103,7 @@ Without the adapter the existing engine behavior is unchanged. The production im
   `updateMusic6Times`, `stopAllSounds`. `main.ts` requests the map song with six passes + DF at warps, CONTINUE, NEW GAME
   and battle returns (after-battle reason), DF only at connections, and the blackout's two requests. CP4 makes the warp's
   request wait for `isSoundFinished()` so its door sound finishes before the fade (#68; note 63 §10.16).
+  Since V5b the battle return requests it at D+10, inside its `LoadMapData`.
 - **Healing CP2 fade:** control 4 lowers NR50 every 5 updates (5…35); update **40** stops all
   channels and restores $77 through the cartridge's `Audio2_StopAllAudio` behavior. No-music,
   zero-control and second-stop requests stop immediately. Idle ticks preserve StatusScreen's

@@ -53,6 +53,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "nurse",
       "sprite": "nurse",
       "x": 3,
@@ -63,6 +64,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "gentleman",
       "sprite": "gentleman",
       "x": 11,
@@ -73,6 +75,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "jigglypuff",
       "sprite": "jigglypuff",
       "x": 1,
@@ -83,6 +86,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "link_receptionist",
       "sprite": "link_receptionist",
       "x": 11,
@@ -93,6 +97,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "cooltrainer_f",
       "sprite": "cooltrainer_f",
       "x": 4,
@@ -103,6 +108,7 @@
     },
     {
       "textId": 6,
+      "objectId": 6,
       "id": "chansey",
       "sprite": "chansey",
       "x": 4,

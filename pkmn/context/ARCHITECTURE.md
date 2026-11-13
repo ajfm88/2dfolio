@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6317** (2026-11-10, V4 checkpoint-04 repair; default workers; no-ROM 6025 pass / 292 skip; 253 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6337** (2026-11-11, V5c checkpoint-02; default workers; no-ROM 6042 pass / 295 skip; 257 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,13 +139,13 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (206 files as of 2026-11-09; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
+- **`data/`** — JSON only, produced by `npm run setup` (207 files as of 2026-11-11; unused `toggleable_objects.json` since V5c checkpoint-01; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **Extraction-map census (V4 complete, 2026-11-10):** 30 extracted maps, all runtime-wired. DiglettsCave and DiglettsCaveRoute11 passed review and the user's play-test (note89 §21). Route 11 outdoors is not extracted.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
   (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-09):527 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 206 JSON files. No extraction was needed for A5e02–03b. That lets
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 207 JSON files. No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -211,6 +211,7 @@ Summary of path → shape → source:
 | `pokemon.json` | `(PokemonEntry\|null)[152]`, [0]=null (`pokemon.ts`) | ROM via extractor; also available in `refs/pokeyellow/data/pokemon/base_stats/*.asm` |
 | `moves.json` | `Record<moveName, MoveEntry>` (`moves.ts`) | ROM via extractor |
 | `type_chart.json` | `{attacker,defender,multiplier}[]` (`types.ts`) | ROM via extractor |
+| `toggleable_objects.json` | `{states: {map: number, object: number, on: boolean}[], mapFirst: Record<string, number\|null>}` (`toggleable_objects.ts`); ROM order, index = global toggle index; unused at runtime | ROM `ToggleableObjectStates` / `ToggleableObjectMapPointers`, 03:4892 / 03:469b |
 | `trainers.json` | `Record<class, TrainerClass>` (`trainers.ts`) | ROM via extractor |
 | `wild/<Map>.json` | `{grassRate,grass[],waterRate,water[]}` (`wild.ts`) | ROM via extractor |
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
@@ -220,7 +221,7 @@ Summary of path → shape → source:
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |
-| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header. Since A5b7g2 a hidden event can carry `program`, its routine's predef text program (`text` stays for compatibility) | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
+| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header. Since A5b7g2 a hidden event can carry `program`, its routine's predef text program (`text` stays for compatibility). Since V5c checkpoint-02 each NPC carries `objectId`, its 1-based `object_event` place (sprite slot, toggle object id); not read at runtime yet | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
 | `blockset_<name>.json` | `number[][]` 16 tile-ids per block (`blocksets.ts`) | ROM via extractor |
 | `collision_tiles.json` | `Record<collGroup, number[]>` (`collision.ts`) | ROM via extractor |
 | `town_map.json` | already static TS (`src/rom/town_map_data.ts`) | nothing to do |
@@ -281,11 +282,11 @@ when the directory is absent. Since R1c, `data/` is committed and always present
 Baseline: **375/375** on vanilla upstream, 381/381 after R1a, 399/399 after V1a, 409/409 after V1b, 429/429 after V1c, 441/441 after V1d, 452/452 after the tick clock (O-5), 476/476 after V1e, 502/502 after A6a, 570/570 after A6b, 705/705 after A6c, 729/729 after A6d, 767/767 after A6e, 776/776 after its revision, 812/812 after A1a, 864/864 after A1b, 910/910 after A1c, **963/963** after A5a implementation (2026-10-06; 878 pass / 85 skip without ROM). Later baselines are in `STATUS.md`; the current one is in *Stack* above.
 (The lost copy reached 395.)
 
-**PSYCHIC — decided, not implemented** (DECISIONS #10): the asymmetric chart
-(`attacker: PSYCHIC_TYPE`, `defender: PSYCHIC`) as a post-processing step on
-`extractTypeChart`'s output. The lost copy had it; upstream doesn't — re-confirmed
-2026-09-22: `type_chart.json` has `PSYCHIC_TYPE` on both sides, Alakazam is
-`PSYCHIC`, `PSYCHIC_M` is `PSYCHIC_TYPE`. Rebuild in **V5**.
+**PSYCHIC — live type bytes, unmodified chart** (2026-11-11, DECISIONS #111):
+`type_chart.json` is the ROM's 82 rows, unmodified. The engine compares type bytes,
+so all four Psychic-defender rows apply (Ghost → Psychic 0× is the cartridge's bug).
+#10's post-processing fix is withdrawn by #111 and must not be added. Pinned through
+the real loaders by `battle_type_chart_live.test.ts`.
 
 ---
 
@@ -536,6 +537,7 @@ textbox           dialogue box active
 transition        fade out → async map load → fade in
 battle_transition visual effect before a battle
 battle            battle controller owns update+render
+battle_return     .battleOccurred → EnterMap → MapEntryAfterBattle: 10 white frames, FadePal7/6/5 × 8, blocking; V5b
 emotion_bubble    the "!" over a spotting trainer: 61 frames, nothing moves (A1c); the walk-up then runs in overworld
 start_menu        right-side overlay menu
 save_menu         save confirmation + saving

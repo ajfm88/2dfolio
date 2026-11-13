@@ -210,6 +210,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 5,
@@ -219,6 +220,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 15,

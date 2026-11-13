@@ -60,6 +60,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "brock",
       "sprite": "super_nerd",
       "x": 4,
@@ -70,6 +71,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "cooltrainer_m",
       "sprite": "cooltrainer_m",
       "x": 3,
@@ -89,6 +91,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "gym_guide",
       "sprite": "gym_guide",
       "x": 7,

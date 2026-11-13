@@ -47,6 +47,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "fishing_guru",
       "sprite": "fishing_guru",
       "x": 3,

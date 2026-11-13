@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "daisy",
       "sprite": "daisy",
       "x": 2,
@@ -51,6 +52,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "town_map",
       "sprite": "pokedex",
       "x": 3,

@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "clerk",
       "sprite": "clerk",
       "x": 0,
@@ -58,6 +59,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 5,
@@ -68,6 +70,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "cooltrainer_m",
       "sprite": "cooltrainer_m",
       "x": 3,

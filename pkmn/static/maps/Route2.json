@@ -439,6 +439,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "moon_stone",
       "sprite": "poke_ball",
       "x": 13,
@@ -450,6 +451,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "hp_up",
       "sprite": "poke_ball",
       "x": 13,

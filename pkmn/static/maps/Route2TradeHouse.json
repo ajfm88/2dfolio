@@ -41,6 +41,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "scientist",
       "sprite": "scientist",
       "x": 2,
@@ -51,6 +52,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "gameboy_kid",
       "sprite": "gameboy_kid",
       "x": 4,

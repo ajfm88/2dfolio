@@ -42,7 +42,7 @@ describe('Digletts Cave extraction (V4 checkpoint-01)', () => {
   });
   it('retains the stationary gambler and the cartridge dialogue, without trainer metadata', () => {
     expect(entrance.npcs).toEqual([{
-      textId: 1, id: 'gambler', sprite: 'gambler', x: 2, y: 3, movement: 'stay',
+      textId: 1, objectId: 1, id: 'gambler', sprite: 'gambler', x: 2, y: 3, movement: 'stay',
       dialogue: 'What a surprise!\nDIGLETTs dug this\nlong tunnel!\fIt goes right to\nVIRIDIAN CITY!',
     }]);
   });

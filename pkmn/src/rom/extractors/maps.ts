@@ -269,6 +269,9 @@ export interface MapHiddenEvent {
 
 export interface MapNpc {
   textId?: number;
+  /** The object's 1-based place in the map's object_event list: its sprite slot and the toggle table's object id
+   *  (data/maps/toggleable_objects.asm). V5c checkpoint-02. */
+  objectId: number;
   id: string;
   sprite: string;
   x: number;
@@ -1140,6 +1143,7 @@ export function extractMap(
 
     const npc: MapNpc = {
       textId: romNpc.textId,
+      objectId: romIdx + 1,
       id: npcMeta.id,
       sprite: spriteName,
       x: npcX,

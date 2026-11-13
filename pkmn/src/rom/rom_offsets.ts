@@ -18,6 +18,11 @@ export const DUNGEON_MAPS_1 = symToOffset(0x1c, 0x4aa9);
 export const DUNGEON_MAPS_2 = symToOffset(0x1c, 0x4aae);
 export const BATTLE_TRANSITION_TILE = symToOffset(0x1c, 0x4ac3);
 
+// Toggleable objects (data/maps/toggleable_objects.asm, symbols branch). V5c checkpoint-01.
+export const TOGGLEABLE_OBJECT_MAP_POINTERS = symToOffset(0x03, 0x469b);
+export const NO_TOGGLE_DATA = symToOffset(0x03, 0x488f);
+export const TOGGLEABLE_OBJECT_STATES = symToOffset(0x03, 0x4892);
+
 // Battle animation tables (engine/battle/animations.asm, data/moves/animations.asm, data/battle_anims/*.asm;
 // pokeyellow.sym 573535d). A5e checkpoint-05: battle_animations.ts reads only the IDs it lists.
 export const ATTACK_ANIMATION_POINTERS = symToOffset(0x1e, 0x622a);

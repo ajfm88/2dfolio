@@ -22,6 +22,7 @@ export interface SignData {
 
 export interface NpcData {
   textId?: number;     // 1-based cartridge TextPointers index; absent on scripted-only NPCs
+  objectId?: number;   // 1-based object_event place (sprite slot, toggle object id); absent on script NPCs. V5c checkpoint-02, unread until 03
   id: string;
   sprite: string;      // filename without extension, e.g. "oak" → /gfx/sprites/oak.png
   x: number;           // tile x (in 2-tile units, same as map object coords)

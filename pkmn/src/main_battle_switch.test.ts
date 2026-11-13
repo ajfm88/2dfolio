@@ -25,7 +25,7 @@ afterEach(()=>{host.reset();vi.restoreAllMocks();});
 const pulse=()=>frameNow()%4===0?['a'] as const:[];
 function begin(){host.startBattle(mon(19,3));until(()=>host.state==='battle');return host.session!;}
 
-it('grass encounter crosses the checked transition boundary, ticks once after audio, wins and returns through the old fade/music tail',async()=>{
+it('grass encounter crosses the checked transition boundary, ticks once after audio, wins and returns through the battle return',async()=>{
   await world();const map=host.gameMap;
   let point:{x:number;y:number}|undefined;
   for(let y=4;y<map.mapData!.height*4-4&&!point;y+=2)for(let x=4;x<map.mapData!.width*4-4;x+=2)
@@ -59,11 +59,13 @@ it('grass encounter crosses the checked transition boundary, ticks once after au
   expect(requests).toContain('defeatedwildmon');expect(finish).toHaveBeenCalledOnce();
   const result=finish.mock.results[0].value!;
   expect(result.outcome.party[0].exp).toBe(8023);expect(host.playerParty[0].exp).toBe(result.outcome.party[0].exp);
-  expect(getSeenList()).toEqual([16,25]);expect(host.state).toBe('overworld');expect(host.fade).toBe(0.875);
+  expect(getSeenList()).toEqual([16,25]);expect(host.state).toBe('battle_return');expect(host.fade).toBe(0);
+  expect(mapMusic).not.toHaveBeenCalled();expect(host.ow.encounterCooldown).toBe(3);
+  // V5b (note 92): main_battle_return.test.ts pins the frames; here only the hand-off.
+  until(()=>host.state==='overworld',()=>[]);
   expect(mapMusic).toHaveBeenCalledExactlyOnceWith('routes1',true);
   expect(six.mock.invocationCallOrder[0]).toBeLessThan(mapMusic.mock.invocationCallOrder[0]);
-  expect(host.ow.encounterCooldown).toBe(3);
-  for(let n=0;n<7;n++)tick();expect(host.fade).toBe(0);
+  expect(host.fade).toBe(0);
 });
 
 it('Forest sight uses generated end text and marks/turns the engaged trainer',async()=>{
@@ -86,7 +88,7 @@ it('the actual Lab rival script passes both labels and resumes a loss without a 
   host.startScript(commands);
   until(()=>host.state==='battle_transition',()=>[...pulse()]);const s=host.session!;
   until(()=>host.state==='battle');const warp=vi.spyOn(host.gameMap,'load');
-  until(()=>host.state!=='battle',()=>[...pulse()]);
+  until(()=>host.state!=='battle',()=>[...pulse()]);until(()=>host.state!=='battle_return',()=>[]);
   expect(s.state.wBattleResult).toBe(1);expect(wasLastBattleWon()).toBe(false);expect(host.state).toBe('script');
   expect(warp).not.toHaveBeenCalled();expect(host.money).toBe(3000);
 });
@@ -181,7 +183,7 @@ it('after a faint the forced chooser ignores B and sends out a reserve on A, wit
 it('main uses the retained evolution flags instead of checking the whole party',async()=>{
   await world('Route1',5,5,[mon(16,18)]);const s=begin();
   // The real session's final output, with no flagged level-up, is a legal no-evolution outcome.
-  until(()=>host.state!=='battle',()=>[...pulse()]);
+  until(()=>host.state!=='battle',()=>[...pulse()]);until(()=>host.state!=='battle_return',()=>[]);
   expect(readBattleOutputs(s.state).canEvolveFlags).toBe(0);expect(host.state).toBe('overworld');
   expect(host.playerParty[0].species.id).toBe(16);expect(s.state.mem[D.wCanEvolveFlags]).toBe(0);
 });

@@ -143,10 +143,10 @@ Everything else runs inside `game/`:
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
   `data/`, then rebuild `static/` (527 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 292 ROM tests skip
+  `ROM_PATH` the 295 ROM tests skip
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-10 (V4 checkpoint-04 repair): 6317/6317.** No-ROM 6025 pass / 292 skip, 253 files.
+  tests. **Baseline 2026-11-11 (V5c checkpoint-02): 6337/6337.** No-ROM 6042 pass / 295 skip, 257 files.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -170,10 +170,10 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 The game runs with no ROM, from committed `data/` + `static/` (Phase R). It has 30 runtime-wired maps (upstream's 12, Route 2 and
 Viridian Forest from V1, Pewter City and its four buildings from V2a, Museum 1F, Museum 2F and Pewter Gym from V3 checkpoint-01, Route 3 from V3 checkpoint-04, DiglettsCave and DiglettsCaveRoute11 from V4 checkpoint-02). Code review and the user's cave/Route3 play-tests passed. It ticks at the Game Boy's 59.7275 Hz and
-moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **6317/6317**; no-ROM 6025 pass, 292 skip, 253 files. 206 JSON, 527 PNGs, three tilemaps.
+moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **6337/6337**; no-ROM 6042 pass, 295 skip, 257 files. 207 JSON, 527 PNGs, three tilemaps.
 
 **Refs pulled 2026-11-03 evening** (R-SYNC, note 78, synchronized pret's names). The screen-model merge is done (note 86, #104).
-**A5f is complete** (note 87, #105, 2026-11-07), and with it A5. **V3 is complete** (note 88 §48, 2026-11-08; Route 3 moved in before Brock's win, #106): Pewter Gym, the Museum, Route 3 and the first badge, user-verified. **V4 is complete** (note89 §21, 2026-11-10): all four checkpoints reviewed, Route 3 and cave play-tests passed. V5 planning is next. STATUS → *In progress* has the restart list.
+**A5f is complete** (note 87, #105, 2026-11-07), and with it A5. **V3 is complete** (note 88 §48, 2026-11-08; Route 3 moved in before Brock's win, #106): Pewter Gym, the Museum, Route 3 and the first badge, user-verified. **V4 is complete** (note89 §21, 2026-11-10): all four checkpoints reviewed, Route 3 and cave play-tests passed. **V5 is in progress** (#110): V5a (type-chart pins, #111) and V5b (the blocking battle return, user-verified) are done; V5c (the map-object audit, carrying the cartridge's toggle model, #115) has checkpoints 01–02 accepted, 03 next (note 93). STATUS → *In progress* has the restart list.
 
 ⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
 rebuilds it.

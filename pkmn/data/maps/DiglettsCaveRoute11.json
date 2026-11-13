@@ -47,6 +47,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "gambler",
       "sprite": "gambler",
       "x": 2,

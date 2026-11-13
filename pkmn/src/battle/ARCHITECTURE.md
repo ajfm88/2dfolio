@@ -483,7 +483,8 @@ defaults to seeded BattleRandom with injectable `readDIV`; link walks/regenerate
 use saved unmodified words, the exact 13 ratios, 999/1 limits and the pinned mod-0 ROM-byte wrap. Both unused
 double/halve far routines are preserved, including 16-bit doubling overflow. `executeMoveDamageChain` keeps
 upstream damage intact, writing result cells and deriving the multiplier byte from the **last** matching chart
-row with the same string keys (Psychic bug retained). Wild move choice has 63/64/63/66 bands; trainer modifiers
+row with the same string keys (Psychic bug retained). [2026-11-11: that sentence describes the A5c3a adapter;
+since A5c3f the Psychic-defender rows apply (DECISIONS #111).] Wild move choice has 63/64/63/66 bands; trainer modifiers
 delegate to upstream; link consumes an already exchanged nybble. Metronome rejection samples IDs 1–164 except
 118. The party adapter now packs real internal species/type/move bytes from committed tables. `BattlePokemon`
 has separate current/max PP and no packed PP Up bits. Nothing imports these ports in the running game; the

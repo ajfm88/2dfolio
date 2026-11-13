@@ -29,6 +29,7 @@ async function demo(battleType:'PIKACHU'|'OLD_MAN',species:string,map:string,par
   until(()=>host.state==='battle');
   const session=host.session!,liveType=session.state.wBattleType; // EndOfBattle clears it later
   until(()=>host.state!=='battle');
+  until(()=>host.state!=='battle_return'); // V5b (note 92): the battle return first
   // The finish hands back to the script (scriptBattlePending), whose next command runs on the following ticks.
   expect(host.state).toBe('script');
   for(let i=0;i<3;i++)tick();

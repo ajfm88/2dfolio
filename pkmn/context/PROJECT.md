@@ -49,15 +49,17 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-10 - V4 complete
+## State as of 2026-11-11 - V5 in progress: V5a, V5b done; V5c checkpoint-03 next
 
 - **R1, V1, A6, A1, V2, A5, V3 and V4 are done (8/36 milestones).** V4 checkpoints 01–04 passed code review, and the user's Route 3 and cave play-tests passed (note89 §20–§21). Both Diglett's Cave maps are runtime-wired (30 maps), and hop-midpoint trainer interruption is implemented. Brock's badge/TM34 and the ASM-backed battle engine remain in place.
-- **No ROM at runtime.** 206 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (942 generated files total). Vanilla art, local play, no remote and no push.
-- **Next:** V5 planning from PLAN and the existing V5 findings in note57. The milestone covers recovered fidelity fixes; its checkpoint order is still to be planned.
+- **No ROM at runtime.** 207 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (944 generated files total). Vanilla art, local play, no remote and no push.
+- **V5a is complete** (note 91 §6, reviewed 2026-11-11). The live type chart already handles Psychic defenders; #111 withdrew #10's post-processing, and the rows are pinned through the real loaders. **Next: V5b**, the battle return (note 90 §5), then V5c–V5g in the order of DECISIONS #110.
+- **V5b is complete** (note 92, user-verified 2026-11-11): the battle return blocks as the cartridge's (10 white frames, three 8-frame fade steps, the first pass at D+36).
 - **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **Tests:** ROM **6317/6317**; no-ROM **6025 pass / 292 skip**; 253 files. Bundle `index-BfVzYOru.js`, 670,982 bytes. Reproduced during checkpoint-04's successful re-review.
-- Full handoff: STATUS.md; V4 closed in note89 §21. User ended work for the day and the dev server was stopped. Restart on 127.0.0.1:5173 when needed.
+- **V5c in progress** (note 93, #115): the map-object audit now carries the cartridge's toggleable-object model. Checkpoint-01 (`toggleable_objects.json`, 239 rows) and 02 (each map NPC's `objectId`) are accepted; 03 (the toggle model, save format) is next, then ROM object order and facing (04), walking Daisy (05), small items (06).
+- **Tests:** ROM **6337/6337**; no-ROM **6042 pass / 295 skip**; 257 files (V5c checkpoint-02). Bundle `index-_kTTYOPq.js`, 671,475 bytes.
+- Full handoff: STATUS.md → *In progress* (2026-11-11 end of day). Restart the dev server on 127.0.0.1:5173 when needed.
 
 ## Goals
 

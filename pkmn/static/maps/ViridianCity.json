@@ -456,6 +456,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 13,
@@ -465,6 +466,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "gambler1",
       "sprite": "gambler",
       "x": 30,
@@ -474,6 +476,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 30,
@@ -483,6 +486,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "girl1",
       "sprite": "girl",
       "x": 17,
@@ -493,6 +497,7 @@
     },
     {
       "textId": 6,
+      "objectId": 6,
       "id": "fisher1",
       "sprite": "fisher",
       "x": 6,
@@ -503,6 +508,7 @@
     },
     {
       "textId": 7,
+      "objectId": 7,
       "id": "oldman1",
       "sprite": "gambler",
       "x": 17,
@@ -513,6 +519,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "oldman_blocking",
       "sprite": "gambler_asleep",
       "x": 18,
@@ -523,6 +530,7 @@
     },
     {
       "textId": 8,
+      "objectId": 8,
       "id": "oldman2",
       "sprite": "gambler",
       "x": 18,

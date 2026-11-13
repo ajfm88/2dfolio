@@ -754,7 +754,10 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
 
   it('a battle return: no standalone stop; six passes, then DF with the after-battle reason (c = 8)', () => {
     host.session = finishedBattle(); host.gameTick();
-    expect(host.state).toBe('overworld');
+    // V5b (note 92): .battleOccurred's ten white frames come first; LoadMapData requests the song at D+10.
+    expect(host.state).toBe('battle_return');
+    expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
+    for (let i = 0; i < 10; i++) host.gameTick();
     expect(stopMusic).not.toHaveBeenCalled();
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
     expect(order(updateMusic6Times)).toBeLessThan(order(playDefaultMusicFadeOutCurrent));
@@ -766,7 +769,10 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     host.session = finishedBattle(); host.gameTick();
     // Whatever the queue holds, nothing asks for the map song before the queue is exhausted.
     if (host.state === 'evolution') expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
-    else expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
+    else {
+      for (let i = 0; i < 10; i++) host.gameTick(); // V5b: the song is requested at D+10
+      expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
+    }
   });
 
   it('a battle return with evolutions requests the fade once, only after the whole queue has ended', async () => {
@@ -779,7 +785,9 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
       host.gameTick(); await Promise.resolve();
     }
     input.setKey('b', false); input.setKey('a', false); input.updateInput();
-    expect(host.state).not.toBe('evolution');
+    expect(host.state).toBe('battle_return');
+    expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
+    for (let i = 0; i < 10; i++) host.gameTick(); // V5b: the song is requested at D+10
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
     expect(order(updateMusic6Times)).toBeLessThan(order(playDefaultMusicFadeOutCurrent));
   });

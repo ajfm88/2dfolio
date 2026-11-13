@@ -15,6 +15,54 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-10 (V4 closed after cave play-test; end of day) — Codex
+
+- After the seven cave checks, the user reported "ok, tested the cae it all works :)". Route 3 had already passed. Recorded checkpoint-02 acceptance and V4 closure in note89 §21, advancing to 8/36 milestones. Tomorrow's next work is V5 planning from note57; checkpoint order remains undecided. User ended work for today; dev server stopped. Documentation update; no tests run. Baseline remains ROM 6317/6317 and no-ROM 6025/292.
+
+### 2026-11-10 (Route 3 user play-test passed) — Codex
+
+- User reported "all checks pass" for the five Route 3 checks: trainer sight, direct talk/post-battle dialogue, grass encounters, ledges/Pikachu/control, and boundaries/Pewter connection. Recorded in note89 §20 and refreshed the live handoff. Cave portion of §8.7 still pending; V4 remains open. Dev server running on 127.0.0.1:5173 (HTTP 200). Documentation update; no tests run.
+
+### 2026-11-10 (V4 checkpoint-04 repair re-reviewed, passed) — Codex
+
+- Accepted `ba535da` after source/ASM audit and reproduced ordered gates: 942 generated hashes unchanged, bundle identical, ROM 6317/6317, no-ROM 6025/292. All five independent probes pass; thirteen mutations and independent R1/R2 fail with AssertionError and restore bytes. No runtime change required. Note89 §19. Next is the pending cave/Route3 play-test (§8.7); V4 stays open.
+
+### 2026-11-10 (V4 checkpoint-04 repaired, awaiting re-review) — Sonnet
+
+- Fixed Codex's two findings (note89 §17/§18). The idle interrupted hop now lands on pass 16: `preparePass` finishes the jump at `_HandleMidJump`'s `cp $10` and, with the walk counter zero, arms the landing for that same pass (the uninterrupted hop still lands on 17, a step from pass 11 on 19). `restOfPass` ends the preparation in a `finally`, so START suppressed by trainer sight no longer costs the next pass its jump tick. Three permanent regression cases added, three idle-trace expectations moved to pass 16; the reviewer's probes now pass. Setup twice: 942 files unchanged. Typecheck, build (`index-BfVzYOru.js`, 670,982 bytes), ROM 6317/6317, no-ROM 6025 / 292 skipped, marker all pass. M1–M9 (thirteen mutations) each fail with AssertionError and restore. Next: Codex re-reviews. Cave/Route 3 play-test pending; V4 open.
+
+### 2026-11-10 (V4 checkpoint-04 reviewed, two fixes required) — Codex
+
+- Reviewed `bc35a08`. Reproduced all ordered gates, 942 generated hashes, bundle, ROM 6314/6314 and no-ROM 6022/292, all eleven mutations and independent vector mutation R1. Four independent assertions expose two gaps: idle landing is one pass late (the original brief was wrong), and suppressed START skips the following jump tick. Note89 §17 and its probes give Sonnet the repair. Runtime restored; checkpoint-04 awaits repair and review. Checkpoint-02 play-test still pending.
+
+### 2026-11-10 (V4 checkpoint-04 implemented, awaiting review) — Sonnet
+
+- Implemented note89 §15: `PlayerWalk` now has the jump clock (`preparePass`, ticked before RunMapScript), the ledge's simulated presses (cursor, zero entry vs exhaustion), a landing that needs a zero walk counter, and the land-collision skip while the flag lives. A nonadjacent trainer's walk-up zeroes the pending press (`startTrainerWalkUp(…, player)`); the adjacent branch does not. `readJoypad(masked)` runs on every zero-counter pass; the busy-trainer guard and tripwire (a) are gone; warps, CONTINUE and a new game call `cancelMovement()`. 17 new no-ROM cases (`hop_trainer_interruption.test.ts`), two `hop_map_script` cases swapped. Setup twice: 942 files unchanged. Gates once each: typecheck pass, bundle `index-rQMlCRd8.js` 670,861 bytes, ROM 6314/6314 (253 files), no-ROM 6022 / 292 skipped (240 / 13), marker pass. Eleven mutations (M1–M7) each fail with AssertionError and restore. Source-backed adjustments in §16.3. Next: Codex reviews the commit. Checkpoint-02's cave and Route 3 play-test still pending; V4 stays open.
+
+### 2026-11-10 (V4 checkpoint-04 planned for Sonnet) — Codex
+
+- Traced the two trainer branches, zero input and exhaustion, jump and landing timing, and raw START history. Note89 §15 gives Sonnet the brief and review gates. Baseline targeted tests: 124 passed, 2 skipped. Next: Sonnet implements, Codex reviews. Checkpoint-02 play-test pending.
+
+### 2026-11-10 (context and codebase orientation) — Codex
+
+- Read the live V4 handoff and project references, and traced startup, overworld passes, battle sessions, scripts, saves, extraction and test setup. The checkpoint-02 cave and Route 3 play-test in note 89 §8.7 is still pending. This read-through made no game changes and ran no tests.
+
+### 2026-11-09 (end-of-day context handoff) — Codex
+
+- User ended the session and requested context updates. Refreshed PROJECT's stale V3 summary to the live V4 state and recorded restart instructions. Checkpoints 01–03 passed code review; checkpoint-02 cave/Route3 play-test remains incomplete, with only the silent-cry observation confirmed. Cries remain an existing deferred audio feature, not an implemented fix. Dev server stopped. No checkpoint-04 work or V4 closure. No new code/tests in this docs-only wrap-up; current baseline remains ROM 6299/6299 and no-ROM 6007/292.
+
+### 2026-11-09 (user play-test observation: silent opponent send-outs) — Codex
+
+- Read-only ASM/code check confirms the user's missing opponent cries: live voice.cry is a no-op, as already deferred in note57 to J2. Trainer send-out has silent growth then PlayCry in ASM; it does not use the player's ball-poof animation/sound. Logged the live confirmation and exact source owners in note57. No game change or tests needed for this source check; dev server remains running and the user's checkpoint-02 play-test is still in progress, with no acceptance inferred.
+
+### 2026-11-09 (V4 checkpoint-03 reviewed: passed; checkpoint-02 play-test handed over) — Codex
+
+- Reviewed `d6bc442`: exact spike bytes and independent source/geometry audit. Setup twice unchanged (942 hashes), ordered gates reproduce bundle and ROM 6299/6299 / no-ROM 6007/292; V1–V5 and independent R1/R2 caught and restored. No code/test change needed. Note89 §13 accepts checkpoint-03; checkpoint-04 not started. At the user's request, started Vite at 127.0.0.1:5173 and handed over §8.7 for checkpoint-02; no play-test result inferred. Archived oldest four log entries verbatim to HISTORY.
+
+### 2026-11-09 (V4 checkpoint-03 implemented, awaiting review) — Grok
+
+- Applied `03-spike.diff` on clean `1497811`. Setup twice: all 942 generated files unchanged. Gates once each: typecheck pass, bundle `index-CoPfOLj1.js` 669,049 bytes, ROM 6299/6299 (252 files), no-ROM 6007 passed / 292 skipped (239 / 13 files), marker pass. V1–V5 each an AssertionError and restored. The busy-trainer guard and Route3 proof stay. Report is note 89 §12. Next: independent review. Checkpoint-04 was not started. Checkpoint-02's user play-test is still pending.
+
 ### 2026-11-09 (V4 checkpoint-03 planned for Grok) — Codex
 
 - At the user's explicit follow-up, traced and spiked the next boundary foundation after checkpoint-02's clean review. Split interruption aftermath into checkpoint-04 (#108). Six source/test files, seven no-ROM cases; setup twice with all 942 hashes unchanged. Ordered gates: ROM 6299/6299, no-ROM 6007/292, bundle index-CoPfOLj1.js (669,049 bytes); V1–V5 caught, clean roundtrip and source restored. Ordinary trigger geometry has no new midpoint candidates; Viridian's Gym square is an already-checked source. Brief: note89 §11. Next: Grok implements only that foundation. Checkpoint-02 user play-test remains pending.

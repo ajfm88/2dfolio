@@ -152,6 +152,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "prof",
       "sprite": "prof",
       "x": 10,
@@ -161,6 +162,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "girl",
       "sprite": "girl",
       "x": 3,
@@ -170,6 +172,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "fisher",
       "sprite": "fisher",
       "x": 11,

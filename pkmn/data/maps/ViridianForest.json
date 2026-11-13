@@ -494,6 +494,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "youngster1",
       "sprite": "youngster",
       "x": 16,
@@ -503,6 +504,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "youngster2",
       "sprite": "youngster",
       "x": 30,
@@ -522,6 +524,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "youngster3",
       "sprite": "youngster",
       "x": 30,
@@ -541,6 +544,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "youngster4",
       "sprite": "youngster",
       "x": 2,
@@ -560,6 +564,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "cooltrainer_f",
       "sprite": "cooltrainer_f",
       "x": 2,
@@ -578,6 +583,7 @@
     },
     {
       "textId": 6,
+      "objectId": 6,
       "id": "youngster5",
       "sprite": "youngster",
       "x": 13,
@@ -597,6 +603,7 @@
     },
     {
       "textId": 7,
+      "objectId": 7,
       "id": "potion1",
       "sprite": "poke_ball",
       "x": 25,
@@ -608,6 +615,7 @@
     },
     {
       "textId": 8,
+      "objectId": 8,
       "id": "potion2",
       "sprite": "poke_ball",
       "x": 12,
@@ -619,6 +627,7 @@
     },
     {
       "textId": 9,
+      "objectId": 9,
       "id": "poke_ball",
       "sprite": "poke_ball",
       "x": 1,
@@ -630,6 +639,7 @@
     },
     {
       "textId": 10,
+      "objectId": 10,
       "id": "youngster6",
       "sprite": "youngster",
       "x": 27,

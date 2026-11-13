@@ -469,6 +469,7 @@
   "npcs": [
     {
       "textId": 1,
+      "objectId": 1,
       "id": "cooltrainer_f",
       "sprite": "cooltrainer_f",
       "x": 8,
@@ -478,6 +479,7 @@
     },
     {
       "textId": 2,
+      "objectId": 2,
       "id": "cooltrainer_m",
       "sprite": "cooltrainer_m",
       "x": 17,
@@ -487,6 +489,7 @@
     },
     {
       "textId": 3,
+      "objectId": 3,
       "id": "super_nerd1",
       "sprite": "super_nerd",
       "x": 27,
@@ -496,6 +499,7 @@
     },
     {
       "textId": 4,
+      "objectId": 4,
       "id": "super_nerd2",
       "sprite": "super_nerd",
       "x": 26,
@@ -506,6 +510,7 @@
     },
     {
       "textId": 5,
+      "objectId": 5,
       "id": "youngster",
       "sprite": "youngster",
       "x": 35,
