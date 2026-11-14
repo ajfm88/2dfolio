@@ -118,7 +118,9 @@ import { NUM_BOXES, type BoxedPokemon } from "./pokemon_storage";
 import { setBattleAndStartSavedMenuItem } from './list_state';
 import type { StartReturn } from './menus/start_menu';
 import { saveGame, loadGame, restoreParty, restoreBoxes, restoreBag, hasSavedGame, type SaveData } from "./save";
-import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts, getAllHiddenObjects, restoreHiddenObjects } from "./events";
+import { hasFlag, setFlag, getAllFlags, restoreFlags, getAllMapScripts, restoreMapScripts } from "./events";
+import { TOGGLE, loadToggleableObjects, initializeToggleableObjectFlags, getToggleableObjectFlags, restoreToggleableObjectFlags,
+  legacyToggleableObjectFlags, hideObject, showObject } from "./overworld/toggleable_objects";
 import { VIRIDIAN_CITY, initialViridianScript, martSpawnsOldMan } from "./story/viridian_city";
 import { markSeen, markOwned, getSeenList, getOwnedList, getOwnedCount, restorePokedex } from "./pokedex_state";
 import type { ScriptCommand } from "./script";
@@ -439,6 +441,7 @@ async function init(): Promise<void> {
     loadStatusScreenAssets(),
     loadMapSpriteSets(),
     loadBattleTransitionData(),
+    loadToggleableObjects(),
     loadBattleSessionData(),
     loadBattleStandInData(),
     loadBattleBridgeData(),
@@ -493,7 +496,7 @@ function writeSave(): void {
     lastBlackoutWarp,
     getRivalStarter(),
     getAllMapScripts(),
-    getAllHiddenObjects(),
+    getToggleableObjectFlags(),
     packOptions(optionMenu.options),
     getPikachuEmotionModifier(),
   );
@@ -562,7 +565,8 @@ async function loadSavedGame(): Promise<void> {
   }
   // Saves made before V1e have no map script states: derive Viridian's from its events
   restoreMapScripts(saved.mapScripts ?? { [VIRIDIAN_CITY]: initialViridianScript(hasFlag) });
-  restoreHiddenObjects(saved.hiddenObjects ?? []);
+  // A save from before V5c checkpoint-03b has no flags: derive them from its keys and events (restored above).
+  restoreToggleableObjectFlags(saved.toggleableObjectFlags ?? legacyToggleableObjectFlags(saved.hiddenObjects ?? [], hasFlag));
   restorePikachuHappiness(saved.pikachuHappiness ?? 90, saved.pikachuMood ?? 128);
   restoreNames(saved.playerName, saved.rivalName);
   setRivalStarter(saved.rivalStarter);
@@ -619,7 +623,7 @@ async function startNewGame(): Promise<void> {
   resetPikachuHappiness();
   restoreFlags([]);           // clear all event flags
   restoreMapScripts({});      // init_player_data.asm clears wGameProgressFlags
-  restoreHiddenObjects([]);   // init_player_data.asm clears toggleable-object flags
+  initializeToggleableObjectFlags(); // init_player_data.asm: InitializeToggleableObjectsFlags
   restorePokedex([], []);     // clear pokedex
   setRivalStarter(undefined);
   // Note: player/rival names are set during Oak speech, before this function runs
@@ -2101,6 +2105,8 @@ function checkMapEntryScripts(): void {
   // man replaces OLD_MAN2 in the city (EVENT_SPAWNED_OLD_MAN_1)
   if (currentMapName === "ViridianMart" && martSpawnsOldMan(hasFlag)) {
     setFlag("SPAWNED_OLD_MAN_1");
+    hideObject(TOGGLE.OLD_MAN_2);
+    showObject(TOGGLE.OLD_MAN_1);
   }
 
   // Viridian Mart: parcel quest on first visit

@@ -33,7 +33,8 @@ Retained blocking routines used by pickups (A1b, migrated in A5b4; legacy retire
 | `sound` | Plays once, waits for `isSoundFinished()`; `waitForCurrent` waits before playing too |
 | `textButtonWait` | Silent A/B wait, no arrow; requires an active DisplayTextID session, otherwise throws without reading input |
 | `displayClose` | Optional outer silent wait, Hold while A is down, then the map's `5 + 2W` close and trailing UpdateSprites |
-| `hideObject` | Saves a `Map:npcId` key and hides the live NPC/collision slot immediately |
+| `hideObject` | Writes the toggle's flag by global index, then hides the current map's NPC in that object place and refreshes collision |
+| `showObject` | Resets the flag, unhides the current map's NPC and runs `updateSprites` |
 
 Button waits and Hold read Joypad; sound waits and close copies do not. They freeze
 the world. Returning from these routines runs the next command in the same frame.
@@ -183,8 +184,7 @@ Approved gaps: Oak's rating branch prints its lead-in and closes without a
 rating screen. Route 22's Poké Ball gift remains I1; a tripwire detects its
 flags becoming settable. PrintText's own sprite update remains J2.
 
-Saved object toggles are separate from event flags (`hiddenObjects` in `events.ts`).
-Only objects that start ON are modeled today. `hideNpc` remains transient.
+Saved object toggles are separate from event flags (`toggleableObjectFlags`, `overworld/toggleable_objects.ts`); the five deciding events carry theirs as `setFlag` `hide` / `show` (note 93 §16.1). `hideNpc` remains transient.
 
 V2b CP2 provides the native movement primitives used by CP3's `pewter_city.ts`.
 `npcMovementScript` starts in step and consumes its first simulated entry in the
@@ -197,9 +197,8 @@ and rest of the current pass (RESET); it does not replace held input with NO_INP
 completion pass; its `options` select MoveSprite's preserved status and STAY/NONE bytes.
 These timing options leave existing Pallet/A6/A1c command paths unchanged.
 
-`showObject` removes the saved hidden key, unhides the live NPC and performs full
-UpdateSprites. Existing `hideObject` retains its pickup behavior; a native caller
-adds `updateSprites {fontLoaded:false}` explicitly. The default remains font-loaded.
+`showObject` resets the flag, unhides the live NPC and performs full
+UpdateSprites. A native caller adds `updateSprites {fontLoaded:false}` explicitly. The default remains font-loaded.
 `joyIgnore {mask:'controls'}` masks SELECT, START and D-pad while retaining A/B.
 `restoreMapMusic {waitForCurrent:true}` polls only SFX completion, then restores and
 continues in that tick without playing a sound. `faceNpc {write:'live'|'image'}`

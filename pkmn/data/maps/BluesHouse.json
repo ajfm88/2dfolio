@@ -51,6 +51,17 @@
       "direction": "right"
     },
     {
+      "textId": 2,
+      "objectId": 2,
+      "id": "daisy_walking",
+      "sprite": "daisy",
+      "x": 6,
+      "y": 4,
+      "movement": "walk",
+      "dialogue": "Spending time\nwith your POKéMON\nmakes them more\nfriendly to you.",
+      "walkDir": "up_down"
+    },
+    {
       "textId": 3,
       "objectId": 3,
       "id": "town_map",
@@ -59,7 +70,6 @@
       "y": 3,
       "movement": "stay",
       "dialogue": "It's a big map!\nThis is useful!",
-      "direction": "down",
       "object": true
     }
   ],

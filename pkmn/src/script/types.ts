@@ -50,11 +50,12 @@ export type ScriptCommand = (
   | { type: 'sound'; name: string; waitForCurrent?: boolean }
   // WaitForTextScrollButtonPress (home/joypad2.asm): silent, no arrow.
   | { type: 'textButtonWait' }
-  // HideObject (engine/overworld/toggleable_objects.asm): persistent map-object toggle.
-  | { type: 'hideObject'; map: string; npcId: string }
+  // HideObject (engine/overworld/toggleable_objects.asm): the toggle's flag by its TOGGLE_* index, then the
+  // current map's sprite if the toggle is one of its rows.
+  | { type: 'hideObject'; toggle: number }
   // SetEvent on a trainer's beaten bit, no battle: saved, and the live sprite stops seeing the player.
   | { type: 'setTrainerBeaten'; npcId: string }
-  | { type: 'showObject'; map: string; npcId: string }
+  | { type: 'showObject'; toggle: number }
   /** jp OverworldLoop: two frames; optionally finish a no-input pass or end the script into ordinary input (RESET). */
   | { type: 'overworldLoop'; updateSprites?: boolean; resumeInput?: boolean }
   | { type: 'joyIgnore'; mask: JoyIgnore }
@@ -68,7 +69,9 @@ export type ScriptCommand = (
   | { type: 'faceNpc'; npcId: string; direction: Direction; write?: 'live' | 'image'; restoreAtClose?: boolean }
   | { type: 'facePlayer'; direction: Direction }
   | { type: 'wait'; frames: number }
-  | { type: 'setFlag'; flag: string }
+  // `hide` / `show`: toggle flags written with the event, sprites untouched. The cutscenes still move their
+  // sprites with hideNpc / unhideNpc; the cartridge's own HideObject / ShowObject points are the J2 cutscene audit's.
+  | { type: 'setFlag'; flag: string; hide?: readonly number[]; show?: readonly number[] }
   | { type: 'clearFlag'; flag: string }
   // w<Map>CurScript's resting value (events.ts setMapScript)
   | { type: 'setMapScript'; map: string; state: number }

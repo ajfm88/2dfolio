@@ -25,7 +25,8 @@ import { uiTiles } from '../renderer/ui_tiles';
 import { rig, sfxData } from '../test/audio_rig';
 import type { Rig } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
-import { restoreFlags, restoreHiddenObjects, setFlag, hasFlag } from '../events';
+import { restoreFlags, setFlag, hasFlag } from '../events';
+import { TOGGLE, initializeToggleableObjectFlags, hideObject, showObject } from '../overworld/toggleable_objects';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { PikachuFollower } from '../pikachu/pikachu_follower';
 import { applyStoryNpcState } from '../overworld/story_state';
@@ -47,7 +48,7 @@ const prints = (commands: ScriptCommand[]) => commands.filter(c => c.type === 'p
 const opening = (commands: ScriptCommand[]) => commands.find(c => c.type === 'displayOpen');
 let audio: Rig;
 beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); });
-beforeEach(() => { vi.clearAllMocks(); restoreFlags([]); restoreHiddenObjects([]); setJoyIgnore('none');
+beforeEach(() => { vi.clearAllMocks(); restoreFlags([]); initializeToggleableObjectFlags(); setJoyIgnore('none');
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false); setTextSpeed('fast');
   audio = rig(); vi.mocked(playSFX).mockImplementation(async name => { audio.sfx.play(sfxData(name)); });
   vi.mocked(isSoundFinished).mockImplementation(() => soundFinished(audio.sfx, audio.music, 0)); });
@@ -176,12 +177,31 @@ describe('Lab talk-time handler branches', () => {
     expect(prints(labEeveeText(context()))).toEqual(['OaksLabEeveePokeBallText.Text']);
     expect(labEeveeText(context('OAK_ASKED_TO_CHOOSE_MON')).slice(0, 3)).toEqual(labBallDisplay());
   });
-  it('dialogue swaps are removed while all Lab NPC visibility/position rules remain', () => {
+  it('dialogue swaps are removed; the ball follows its toggle and the rival keeps his post-starter place', () => {
     const deps = scene(); const texts = deps.npcs.map(n => n.data.dialogue);
     setFlag('GOT_STARTER'); applyStoryNpcState('OaksLab', deps.npcs);
+    expect(deps.npcs.find(n => n.data.id === 'item_ball')!.hidden).toBe(false); // the event alone hides nothing
+    hideObject(TOGGLE.STARTER_BALL_1); applyStoryNpcState('OaksLab', deps.npcs);
     expect(deps.npcs.map(n => n.data.dialogue)).toEqual(texts);
     expect(deps.npcs.find(n => n.data.id === 'item_ball')!.hidden).toBe(true);
-    const rival = deps.npcs.find(n => n.data.id === 'rival')!; expect([rival.x, rival.y]).toEqual([7 * 16, 4 * 16]);
+    const rival = deps.npcs.find(n => n.data.id === 'rival')!; expect([rival.x, rival.y, rival.direction]).toEqual([7 * 16, 4 * 16, 'up']);
+    // IsObjectHidden decides both ways: Oak 1 is OFF from New Game and appears with his ShowObject
+    const oak = deps.npcs.find(n => n.data.id === 'prof')!; expect(oak.hidden).toBe(true);
+    showObject(TOGGLE.OAKS_LAB_OAK_1); showObject(TOGGLE.STARTER_BALL_1); applyStoryNpcState('OaksLab', deps.npcs);
+    expect([oak.hidden, deps.npcs.find(n => n.data.id === 'item_ball')!.hidden]).toEqual([false, false]);
+    // an NPC without a toggle row keeps whatever `hidden` it has
+    const girl = deps.npcs.find(n => n.data.id === 'girl')!; girl.hidden = true; applyStoryNpcState('OaksLab', deps.npcs);
+    expect(girl.hidden).toBe(true); girl.hidden = false;
+  });
+  it('a hidden rival is not moved to the post-starter place', () => {
+    const deps = scene();
+    setFlag('GOT_STARTER');
+    hideObject(TOGGLE.OAKS_LAB_RIVAL);
+    const rival = deps.npcs.find(n => n.data.id === 'rival')!;
+    rival.x = 16; rival.y = 32; rival.direction = 'down';
+    applyStoryNpcState('OaksLab', deps.npcs);
+    expect(rival.hidden).toBe(true);
+    expect([rival.x, rival.y, rival.direction]).toEqual([16, 32, 'down']);
   });
   it('Route 22 gift flags remain unsettable by current production scripts (I1 tripwire)', () => {
     function sources(dir: string): string[] {

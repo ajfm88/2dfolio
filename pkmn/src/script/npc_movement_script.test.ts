@@ -13,7 +13,8 @@ import { Bag } from '../items';
 import { updateSprites } from '../overworld/sprites';
 import { decodeRle, pewterGuys, npcDirections, PEWTER_MUSEUM_PLAYER, PEWTER_MUSEUM_GUIDE,
   PEWTER_GYM_PLAYER, PEWTER_GYM_GUIDE, PEWTER_MUSEUM_COORDS, PEWTER_GYM_COORDS } from '../overworld/simulated_joypad';
-import { hideObject, isObjectHidden, getAllHiddenObjects, restoreHiddenObjects } from '../events';
+import { TOGGLE, hideObject, isToggledOff, getToggleableObjectFlags, restoreToggleableObjectFlags,
+  initializeToggleableObjectFlags } from '../overworld/toggleable_objects';
 import { readJoypad, syncJoypadRead } from '../input';
 import { playMusic, playSFX, isSoundFinished } from '../audio';
 import { drawSprite } from '../renderer';
@@ -28,17 +29,18 @@ vi.mock('../audio', () => ({ playMusic: vi.fn(), playSFX: vi.fn(), isSfxPlaying:
   isSoundFinished: vi.fn(() => true) }));
 vi.mock('../renderer', () => ({ loadSprite: async () => ({ width: 16, height: 96 }), drawSprite: vi.fn(),
   fillRect: vi.fn(), drawTile: vi.fn(), drawShadowUnderSprites: vi.fn() }));
-beforeEach(() => { vi.clearAllMocks(); restoreHiddenObjects([]); setJoyIgnore('none'); uiTiles.clear();
+beforeEach(() => { vi.clearAllMocks(); initializeToggleableObjectFlags(); setJoyIgnore('none'); uiTiles.clear();
   vi.mocked(isSoundFinished).mockReturnValue(true); pinOverworldRandom(128); });
 afterEach(() => { initScript([]); vi.restoreAllMocks(); });
 
 function scene(x = 10, y = 10, gx = 10, gy = 9): ScriptDeps {
   const player = new Player(); player.x = x * 16; player.y = y * 16;
   const gameMap = new GameMap();
-  gameMap.mapData = { name: 'TestEscort', width: 30, height: 30, tileset: 'OVERWORLD', connections: [],
+  gameMap.mapData = { name: 'PewterCity', // the synthetic map takes Pewter's name for its toggle list
+     width: 30, height: 30, tileset: 'OVERWORLD', connections: [],
     blocks: Array<number>(900).fill(0), borderBlock: 0, warps: [], signs: [], npcs: [] };
   gameMap.blockset = [Array<number>(16).fill(0x2c)]; gameMap.collisionTiles = new Set([0x2c]);
-  const npc = new Npc({ id: 'guide', sprite: 'youngster', x: gx, y: gy, movement: 'stay', direction: 'down', dialogue: '' });
+  const npc = new Npc({ id: 'guide', sprite: 'youngster', x: gx, y: gy, movement: 'stay', direction: 'down', dialogue: '', objectId: 3 });
   const deps: ScriptDeps = { player, gameMap, npcs: [npc], playerParty: [], playerBag: new Bag(),
     textBox: new TextBox({ closeFrames: () => 23, updateSprites: () => updateSprites(deps.npcs, gameMap, player, deps.pikachuFollower) }),
     restoreMapMusic: vi.fn(), resetPassClock: vi.fn() };
@@ -150,18 +152,18 @@ describe('RunNPCMovementScript on a synthetic test map', () => {
     updateScript(deps, clock.tick()); expect(done).not.toHaveBeenCalled();
     updateScript(deps, clock.tick()); expect(done).toHaveBeenCalledOnce();
   });
-  it('ShowObject clears only its saved toggle, unhides the live NPC, and really updates every slot now', () => {
+  it('ShowObject resets only its own flag, unhides the live NPC, and really updates every slot now', () => {
     const deps = scene(), npc = deps.npcs[0]; npc.hidden = true;
-    hideObject('TestEscort', 'guide'); hideObject('OtherMap', 'ball');
-    const saved = getAllHiddenObjects(); restoreHiddenObjects(saved); // same save/load representation
+    hideObject(TOGGLE.MUSEUM_GUY); hideObject(0x64); // $64: another map's row (a Forest ball)
+    const saved = getToggleableObjectFlags(); restoreToggleableObjectFlags(saved); // same save/load representation
     const update = vi.spyOn(npc, 'update'), collision = vi.spyOn(deps.player, 'detectSpriteCollisions'), done = vi.fn();
-    initScript([{ type: 'showObject', map: 'TestEscort', npcId: 'guide' }, { type: 'callback', fn: done }]);
+    initScript([{ type: 'showObject', toggle: TOGGLE.MUSEUM_GUY }, { type: 'callback', fn: done }]);
     updateScript(deps, false);
-    expect(npc.hidden).toBe(false); expect(isObjectHidden('TestEscort', 'guide')).toBe(false);
-    expect(isObjectHidden('OtherMap', 'ball')).toBe(true);
+    expect(npc.hidden).toBe(false); expect(isToggledOff(TOGGLE.MUSEUM_GUY)).toBe(false);
+    expect(isToggledOff(0x64)).toBe(true);
     expect(update).toHaveBeenCalledOnce(); expect(collision).toHaveBeenCalledOnce();
     expect(done).toHaveBeenCalledOnce();
-    restoreHiddenObjects(getAllHiddenObjects()); expect(isObjectHidden('TestEscort', 'guide')).toBe(false);
+    restoreToggleableObjectFlags(getToggleableObjectFlags()); expect(isToggledOff(TOGGLE.MUSEUM_GUY)).toBe(false);
   });
   it('wait-only music restore freezes input/world, plays no SFX and resumes in the ready tick', () => {
     const deps = scene(), updates = vi.spyOn(deps.npcs[0], 'update'), done = vi.fn();
@@ -218,10 +220,10 @@ describe('RunNPCMovementScript on a synthetic test map', () => {
       { type: 'joyIgnore', mask: 'all' },
       { type: 'moveNpc', npcId: 'guide', path: Array(museum ? 4 : 5).fill(museum ? 'down' : 'right'), options: { keepStatus: true, bytesToFF: true }, inPass: true },
       { type: 'callback', fn: () => markers.push(['hide', frame]) },
-      { type: 'hideObject', map: 'TestEscort', npcId: 'guide' }, { type: 'updateSprites', fontLoaded: false },
+      { type: 'hideObject', toggle: TOGGLE.MUSEUM_GUY }, { type: 'updateSprites', fontLoaded: false },
       { type: 'overworldLoop', updateSprites: true },
       { type: 'restoreSpritePosition2', npcId: 'guide', saved: museum ? { x: 27, y: 17 } : { x: 35, y: 16 } },
-      { type: 'showObject', map: 'TestEscort', npcId: 'guide' }, { type: 'joyIgnore', mask: 'none' },
+      { type: 'showObject', toggle: TOGGLE.MUSEUM_GUY }, { type: 'joyIgnore', mask: 'none' },
       { type: 'callback', fn: () => markers.push(['reset', frame]) },
       { type: 'overworldLoop', resumeInput: true },
     ];

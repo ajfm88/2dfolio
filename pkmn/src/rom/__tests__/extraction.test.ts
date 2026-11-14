@@ -1165,33 +1165,35 @@ describe('V1 maps: Route 2 + Viridian Forest', () => {
 describe('V1e: the Viridian old men and the demo gates', () => {
   const map = (name: string) => extractMap(rom, name, itemNames, trainerClassNames)!;
 
-  it('ViridianCity carries all 8 ASM objects, OLD_MAN2 included, in NPC_INDEX_FILTER order', () => {
+  it('ViridianCity carries all 8 ASM objects in ROM order, the two STAY NONE men included', () => {
     const npcs = map('ViridianCity').npcs;
-    // ROM objects 0,1,2,3,5,6,4,7 — the JSON keeps upstream's ids and order
     expect(npcs.map(n => [n.id, n.x, n.y])).toEqual([
       ['youngster1', 13, 20], ['gambler1', 30, 8], ['youngster2', 30, 25], ['girl1', 17, 9],
-      ['fisher1', 6, 23], ['oldman1', 17, 5], ['oldman_blocking', 18, 9], ['oldman2', 18, 9],
+      ['oldman_blocking', 18, 9], ['fisher1', 6, 23], ['oldman1', 17, 5], ['oldman2', 18, 9],
     ]);
     const objectsFile = resolve(__dirname, '../../../../refs/pokeyellow/data/maps/objects/ViridianCity.asm');
     if (existsSync(objectsFile)) {
       const objects = [...readFileSync(objectsFile, 'utf-8')
         .matchAll(/object_event\s+(\d+),\s*(\d+),\s*(\w+),\s*(\w+),\s*(\w+)/g)];
-      const order = [0, 1, 2, 3, 5, 6, 4, 7];
-      order.forEach((romIdx, i) => {
-        const [, x, y, , movement, dir] = objects[romIdx];
+      objects.forEach(([, x, y, , movement, dir], i) => {
         expect([npcs[i].x, npcs[i].y]).toEqual([Number(x), Number(y)]);
         expect(npcs[i].movement).toBe(movement === 'WALK' ? 'walk' : 'stay');
         if (dir === 'LEFT_RIGHT' || dir === 'UP_DOWN') expect(npcs[i].walkDir).toBe(dir.toLowerCase());
+        if (dir === 'NONE') expect(npcs[i].direction).toBeUndefined();
       });
     }
     const oldman1 = npcs.find(n => n.id === 'oldman1')!;
     expect(oldman1.walkDir).toBe('left_right'); // OLD_MAN: WALK, LEFT_RIGHT
     const oldman2 = npcs.find(n => n.id === 'oldman2')!;
-    expect(oldman2).toMatchObject({ sprite: 'gambler', movement: 'stay', direction: 'down', dialogue: '' });
+    expect(oldman2).toMatchObject({ sprite: 'gambler', movement: 'stay', dialogue: '' });
+    expect(oldman2.direction).toBeUndefined(); // STAY NONE
   });
 
-  it('Route 22 has no NPCs: the fake Blue is gone, the two rivals wait for I1', () => {
-    expect(map('Route22').npcs).toEqual([]);
+  it('Route 22 has both rivals, toggle-hidden until I1, and no invented Blue', () => {
+    expect(map('Route22').npcs.map(n => [n.id, n.sprite, n.x, n.y, n.movement, n.objectId])).toEqual([
+      ['rival1', 'blue', 25, 5, 'stay', 1],
+      ['rival2', 'blue', 25, 5, 'stay', 2],
+    ]);
   });
 
   it('no invented demo text is extracted', () => {

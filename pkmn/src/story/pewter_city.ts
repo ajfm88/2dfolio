@@ -5,6 +5,7 @@ import type { ScriptCommand } from '../script/types';
 import type { TextHandlerContext } from './text_handlers';
 import { registerTextHandler, displayTextID } from './text_handlers';
 import { clearFlag, getMapScript, setMapScript } from '../events';
+import { TOGGLE } from '../overworld/toggleable_objects';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { decodeRle, pewterGuys, npcDirections, PEWTER_MUSEUM_PLAYER, PEWTER_MUSEUM_GUIDE,
   PEWTER_GYM_PLAYER, PEWTER_GYM_GUIDE } from '../overworld/simulated_joypad';
@@ -34,6 +35,7 @@ export function pewterCityScript(ctx: TextHandlerContext): ScriptCommand[] | nul
 function escortCommands(ctx: TextHandlerContext, museum: boolean, east: boolean): { arm: ScriptCommand; afterClose: ScriptCommand[] } {
   const npcId = museum ? 'super_nerd1' : 'youngster';
   const saved = { x: 0, y: 0 };
+  const toggle = museum ? TOGGLE.MUSEUM_GUY : TOGGLE.GYM_GUY;
   const playerList = decodeRle(museum ? PEWTER_MUSEUM_PLAYER : PEWTER_GYM_PLAYER);
   const joypad = pewterGuys(playerList.entries, playerList.count - 1, museum ? 'museum' : 'gym', ctx.step.x, ctx.step.y);
   const arm: ScriptCommand = { type: 'callback', fn: () => {
@@ -67,13 +69,13 @@ function escortCommands(ctx: TextHandlerContext, museum: boolean, east: boolean)
     state(museum ? PewterScript.HIDE_MUSEUM : PewterScript.HIDE_GYM),
     { type: 'moveNpc', npcId, spriteIndex: museum ? 3 : 5, path: Array.from({ length: museum ? 4 : 5 }, () => museum ? 'down' : 'right'),
       options: { keepStatus: true, bytesToFF: true }, inPass: true },
-    { type: 'hideObject', map: PEWTER_CITY, npcId },
+    { type: 'hideObject', toggle },
     { type: 'updateSprites', fontLoaded: false }, // HideObject's UpdateSprites; preserve earlier pickup callers.
     state(museum ? PewterScript.RESET_MUSEUM : PewterScript.RESET_GYM),
     { type: 'overworldLoop', updateSprites: true },
     // The saved screen bytes are now off-window. The first visible ready update recomputes from these map steps.
     { type: 'restoreSpritePosition2', npcId, saved },
-    { type: 'showObject', map: PEWTER_CITY, npcId },
+    { type: 'showObject', toggle },
     { type: 'joyIgnore', mask: 'none' },
     { type: 'callback', fn: () => { escort = null; } },
     { type: 'overworldLoop', resumeInput: true },

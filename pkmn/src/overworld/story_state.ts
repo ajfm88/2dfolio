@@ -4,8 +4,8 @@
 // loading a map. They are stateless: all state is passed in as parameters.
 
 import type { Npc } from './npc';
-import { hasFlag, isObjectHidden } from '../events';
-import { viridianOldMenVisible } from '../story/viridian_city';
+import { hasFlag } from '../events';
+import { isObjectHidden, toggleableObjectIndex } from './toggleable_objects';
 
 /** Mark trainer NPCs as defeated based on the global tracking set. */
 export function applyDefeatedTrainers(
@@ -32,82 +32,22 @@ export function recordDefeated(
   defeatedTrainers.add(`${mapName}:${npcId}`);
 }
 
-/** Apply story-based NPC visibility and dialogue changes.
- *  Called after loading NPCs for a map, and after scripts end. */
+/** Apply each NPC's toggle and the story's remaining placement. Called after loading NPCs for a map, and
+ *  after scripts end. An object with a row in the map's toggle list is hidden or shown by its flag
+ *  (IsObjectHidden); any other NPC keeps the `hidden` it has. */
 export function applyStoryNpcState(mapName: string, npcs: Npc[]): void {
   for (const npc of npcs) {
-    if (isObjectHidden(mapName, npc.data.id)) {
-      npc.hidden = true;
-      continue;
+    const objectId = npc.data.objectId;
+    if (objectId !== undefined && toggleableObjectIndex(mapName, objectId) !== null) {
+      npc.hidden = isObjectHidden(mapName, objectId);
     }
-    // PalletTown: Oak is always hidden here — he only appears during the
-    // grass cutscene (as a script NPC) and lives in the lab afterward
-    if (mapName === "PalletTown" && npc.data.id === "prof") {
-      npc.hidden = true;
-    }
-
-    // OaksLab: Hide map NPC Oak during the intro cutscene (before GOT_STARTER).
-    // The intro script uses its own script NPCs (prof_enter, prof_desk) instead.
-    if (mapName === "OaksLab" && npc.data.id === "prof" && !hasFlag("GOT_STARTER")) {
-      npc.hidden = true;
-    }
-
-    // ViridianCity: the three old men, from the events that toggle them
-    // (story/viridian_city.ts viridianOldMenVisible)
-    if (mapName === "ViridianCity") {
-      const visible = viridianOldMenVisible(hasFlag);
-      if (npc.data.id === "oldman_blocking" || npc.data.id === "oldman2" || npc.data.id === "oldman1") {
-        npc.hidden = !visible[npc.data.id];
-      }
-    }
-
-    // OaksLab: state-dependent NPC visibility; handlers select text at talk time.
-    if (mapName === "OaksLab") {
-      if (hasFlag("GOT_POKEDEX")) {
-        // Post-Pokédex: Oak visible, rival and Pokédex objects gone.
-        if (npc.data.id === "prof") {
-          npc.hidden = false;
-        }
-        if (npc.data.id === "item_ball") npc.hidden = true;
-        if (npc.data.id === "rival") npc.hidden = true;
-        if (npc.data.id === "pokedex1") npc.hidden = true;
-        if (npc.data.id === "pokedex2") npc.hidden = true;
-      } else if (hasFlag("BATTLED_RIVAL_IN_OAKS_LAB")) {
-        // Post-rival-battle: rival has left, waiting for parcel delivery
-        if (npc.data.id === "prof") {
-          npc.hidden = false;
-        }
-        if (npc.data.id === "item_ball") npc.hidden = true;
-        if (npc.data.id === "rival") npc.hidden = true;
-      } else if (hasFlag("GOT_STARTER")) {
-        // Post-starter but pre-battle: rival still in lab near ball position
-        if (npc.data.id === "prof") {
-          npc.hidden = false;
-        }
-        if (npc.data.id === "item_ball") npc.hidden = true;
-        if (npc.data.id === "rival") {
-          // After cutscene, rival ended up at step (7,4) facing up (post ball-snatch position)
-          npc.x = 7 * 16;
-          npc.y = 4 * 16;
-          npc.direction = "up";
-        }
-      } else if (hasFlag("OAK_ASKED_TO_CHOOSE_MON")) {
-        // Mid-scene: Oak asked player to choose; show Oak on a resumed map.
-        if (npc.data.id === "prof") {
-          npc.hidden = false;
-        }
-      } else {
-        // Before intro cutscene: Oak not in lab yet
-        if (npc.data.id === "prof") npc.hidden = true;
-      }
-    }
-
-    // BluesHouse: Daisy's handler selects text at talk time; keep object visibility here.
-    // (scripts/BluesHouse.asm BluesHouseDaisySittingText)
-    if (mapName === "BluesHouse") {
-      if (npc.data.id === "town_map" && hasFlag("GOT_TOWN_MAP")) {
-        npc.hidden = true;
-      }
+    // OaksLab, after the starter and before the battle: the rival stands where the ball
+    // snatch left him, step (7,4) facing up. Not a toggle.
+    if (mapName === "OaksLab" && npc.data.id === "rival" && !npc.hidden
+      && hasFlag("GOT_STARTER") && !hasFlag("BATTLED_RIVAL_IN_OAKS_LAB") && !hasFlag("GOT_POKEDEX")) {
+      npc.x = 7 * 16;
+      npc.y = 4 * 16;
+      npc.direction = "up";
     }
   }
 }

@@ -5,11 +5,12 @@ import { getItemName } from '../items';
 import { displayTextID } from '../story/text_handlers';
 
 /** PickUpItem (engine/events/pick_up_item.asm), _FoundItemText / _NoMoreRoomForItemText
- * (data/text/text_1.asm). Give first; HideObject only on success. */
-export function itemBallScript(map: string, npcId: string, item: string): ScriptCommand[] {
+ * (data/text/text_1.asm). Give first; HideObject only on success. `toggle` is the ball's index from the
+ * map's wToggleableObjectList. */
+export function itemBallScript(toggle: number, item: string): ScriptCommand[] {
   return [{ type: 'displayOpen' }, { type: 'giveItem', itemId: item,
     successCommands: [
-      { type: 'hideObject', map, npcId },
+      { type: 'hideObject', toggle },
       { type: 'printText', program: 'FoundItemText', bindings: { stringBuffer: getItemName(item) } },
       { type: 'displayClose', outerWait: false },
     ],

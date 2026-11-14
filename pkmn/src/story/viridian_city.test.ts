@@ -3,10 +3,11 @@ import { loadGameText } from '../text/game_text';
 import { loadTextPrograms, getTextProgramData } from '../text/program_data';
 import type { ScriptCommand } from '../script';
 import {
-  ViridianScript, viridianCityStep, initialViridianScript, viridianOldMenVisible,
+  ViridianScript, viridianCityStep, initialViridianScript,
   martSpawnsOldMan, buildSleepingOldManScript, buildGymLockedScript,
   buildOldMan2Script, buildOldMan1Script,
 } from './viridian_city';
+import { TOGGLE, initializeToggleableObjectFlags, isObjectHidden, hideObject, showObject } from '../overworld/toggleable_objects';
 
 const flags = (...set: string[]) => (f: string) => set.includes(f);
 const OTHER_7 = ['BADGE_1', 'BADGE_2', 'BADGE_3', 'BADGE_4', 'BADGE_5', 'BADGE_6', 'BADGE_7'];
@@ -107,7 +108,7 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
     // EVENT_INITIAL_CATCH_TRAINING before the battle: the ball fails; it is never cleared here
     expect(script.filter(c => c.type === 'setFlag')).toEqual([
       { type: 'setFlag', flag: 'INITIAL_CATCH_TRAINING' },
-      { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING' },
+      { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING', hide: [0x03] }, // TOGGLE_OLD_MAN_2
     ]);
     expect(script.some(c => c.type === 'clearFlag')).toBe(false);
     expect(script.find(c => c.type === 'catchDemo')).toEqual({ type: 'catchDemo', battleType: 'OLD_MAN', species: 'RATTATA', level: 5 });
@@ -138,12 +139,17 @@ describe('Viridian City — the first catch demo (OLD_MAN2)', () => {
 
 describe('Viridian City — the old men\'s visibility and the Mart', () => {
   it('follows TOGGLE_LYING_OLD_MAN / TOGGLE_OLD_MAN_2 / TOGGLE_OLD_MAN_1', () => {
-    expect(viridianOldMenVisible(flags())).toEqual({ oldman_blocking: true, oldman2: false, oldman1: false });
-    expect(viridianOldMenVisible(flags('GOT_POKEDEX'))).toEqual({ oldman_blocking: false, oldman2: true, oldman1: false });
-    expect(viridianOldMenVisible(flags('GOT_POKEDEX', 'COMPLETED_CATCH_TRAINING')))
-      .toEqual({ oldman_blocking: false, oldman2: false, oldman1: false });
-    expect(viridianOldMenVisible(flags('GOT_POKEDEX', 'COMPLETED_CATCH_TRAINING', 'SPAWNED_OLD_MAN_1')))
-      .toEqual({ oldman_blocking: false, oldman2: false, oldman1: true });
+    // New Game, then each script's writes in story order (OaksLab.asm, ViridianCity.asm, ViridianMart.asm)
+    const men = () => [5, 8, 7].map(object => !isObjectHidden('ViridianCity', object)); // lying, OLD_MAN2, OLD_MAN1
+    initializeToggleableObjectFlags();
+    expect(men()).toEqual([true, false, false]);
+    hideObject(TOGGLE.LYING_OLD_MAN); showObject(TOGGLE.OLD_MAN_2); // the Pokédex
+    expect(men()).toEqual([false, true, false]);
+    hideObject(TOGGLE.OLD_MAN_2); // he walks away after the demo
+    expect(men()).toEqual([false, false, false]);
+    hideObject(TOGGLE.OLD_MAN_2); showObject(TOGGLE.OLD_MAN_1); // ViridianMartScript2
+    expect(men()).toEqual([false, false, true]);
+    initializeToggleableObjectFlags();
   });
 
   it('ViridianMartScript2 spawns the walking old man once, after the first demo', () => {

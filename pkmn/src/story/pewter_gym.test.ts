@@ -3,7 +3,8 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { readFileSync } from 'node:fs';
 import { host, loadMainBattleRig, resetMainBattleRig, until, mon, frameNow, tick } from '../test/main_battle_rig';
 import { getActiveScript } from '../script/script_controller';
-import { clearFlag, getAllHiddenObjects, getMapScript, isObjectHidden, setFlag, setMapScript } from '../events';
+import { clearFlag, getMapScript, setFlag, setMapScript } from '../events';
+import { TOGGLE, isObjectHidden, isToggledOff } from '../overworld/toggleable_objects';
 import { TextBox } from '../text';
 import { getTextProgramData } from '../text/program_data';
 import { TRAINER_MAPS, TRAINER_SCRIPT } from '../overworld/map_trainers';
@@ -203,8 +204,8 @@ describe('Pewter Gym through main', () => {
         { type: 'displayClose', outerWait: true }, { type: 'setFlag', flag: 'GOT_TM34' }]);
       expect(give.failCommands).toEqual([{ type: 'displayOpen', autoBox: true, spriteIndex: 6 }, { type: 'printText', program: 'PewterGymTM34NoRoomText', box: 'keep' },
         { type: 'displayClose', outerWait: true }]);
-      expect(flow.slice(5)).toEqual([{ type: 'setFlag', flag: 'BADGE_1' }, { type: 'hideObject', map: 'PewterCity', npcId: 'youngster' }, { type: 'updateSprites', fontLoaded: false },
-        { type: 'hideObject', map: 'Route22', npcId: 'rival1' }, { type: 'updateSprites', fontLoaded: false }, { type: 'clearFlag', flag: '1ST_ROUTE22_RIVAL_BATTLE' },
+      expect(flow.slice(5)).toEqual([{ type: 'setFlag', flag: 'BADGE_1' }, { type: 'hideObject', toggle: 0x05 }, { type: 'updateSprites', fontLoaded: false },
+        { type: 'hideObject', toggle: 0x23 }, { type: 'updateSprites', fontLoaded: false }, { type: 'clearFlag', flag: '1ST_ROUTE22_RIVAL_BATTLE' },
         { type: 'clearFlag', flag: 'ROUTE22_RIVAL_WANTS_BATTLE' }, { type: 'setTrainerBeaten', npcId: 'cooltrainer_m' }, { type: 'joyIgnore', mask: 'none' },
         { type: 'setMapScript', map: 'PewterGym', state: TRAINER_SCRIPT.DEFAULT }, { type: 'overworldLoop', resumeInput: true }]);
       for (const name of ['PewterGymBrockWaitTakeThisText', 'PewterGymReceivedTM34Text', 'PewterGymTM34NoRoomText', 'PewterGymBrockText.PostBattleAdviceText'])
@@ -223,7 +224,7 @@ describe('Pewter Gym through main', () => {
       for (const flag of ['BEAT_BROCK', 'GOT_TM34', 'BADGE_1']) expect(hasFlag(flag), flag).toBe(true);
       for (const flag of ['1ST_ROUTE22_RIVAL_BATTLE', 'ROUTE22_RIVAL_WANTS_BATTLE']) expect(hasFlag(flag), flag).toBe(false);
       expect(host.bag.getCount('TM34')).toBe(1);
-      expect(getAllHiddenObjects()).toEqual(expect.arrayContaining(['PewterCity:youngster', 'Route22:rival1']));
+      expect([isToggledOff(TOGGLE.GYM_GUY), isToggledOff(TOGGLE.ROUTE_22_RIVAL_1)]).toEqual([true, true]); // $23 is OFF from New Game and stays off
       expect(host.overworldDeps().npcs.find(n => n.data.id === 'cooltrainer_m')!.data.defeated).toBe(true);
       expect(recorded).toHaveBeenCalledWith('PewterGym', 'cooltrainer_m', expect.any(Set)); // the saved beaten set
       expect(brockNpc().data.defeated).toBeFalsy(); // he has no trainer header
@@ -236,7 +237,7 @@ describe('Pewter Gym through main', () => {
       expect(printed(prints)).toEqual(['PewterGymBrockWaitTakeThisText', 'PewterGymTM34NoRoomText']);
       expect(hasFlag('BEAT_BROCK')).toBe(true); expect(hasFlag('BADGE_1')).toBe(true); expect(hasFlag('GOT_TM34')).toBe(false);
       expect(host.bag.getCount('TM34')).toBe(0);
-      expect(isObjectHidden('PewterCity', 'youngster')).toBe(true);
+      expect(isObjectHidden('PewterCity', 5)).toBe(true);
     });
     it('after the win he gives only his advice, through PrintText', () => {
       const flow = getTextHandler('PewterGym', 1)!(ctx(['BEAT_BROCK', 'GOT_TM34']));

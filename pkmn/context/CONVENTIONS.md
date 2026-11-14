@@ -249,7 +249,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6337/6337** as of 2026-11-11 (V5c checkpoint-02; default workers). No-ROM **6042 pass / 295 skip**, 257 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6361/6361** as of 2026-11-13 (V5c checkpoint-04; default workers). No-ROM **6066 pass / 295 skip**, 260 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -266,12 +266,13 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
-`rom/__tests__/map_object_ids.test.ts` (V5c checkpoint-02, note93 §9): three no-ROM
-cases compare all 102 NPCs on 30 maps with pret's `object_event` lists, pin the three
-reordered/filtered maps and match 19 toggle rows while identifying the four dropped
-objects. O1–O3 cover zero-based ids, JSON-order ids and a wrong committed Oak id;
-the ROM extraction comparisons also catch the extractor mutations. Baseline: ROM
-**6337/6337**; no-ROM **6042 pass / 295 skip**, 257 files. No runtime reader of `objectId`.
+`overworld/toggleable_objects.test.ts` (V5c checkpoint-03a/03b, note93 §12/§16): 11 no-ROM cases pin pret's toggle constants, New Game's 32 bytes, bit layout, map lists and lookup, save byte validation and round-trip, and migration against a frozen copy of the prior story rules for all 128 event combinations. `story/story_toggles.test.ts` adds two cases checking flags after every real story command; `main_toggles.test.ts` adds six cases for startup, New Game, save, CONTINUE and migration. S1–S18 are mutation witnesses. The 03b review added one `oaks_lab.test.ts` case: a hidden rival is not moved to the post-starter place (R1). Baseline after checkpoint-04: ROM **6361/6361**; no-ROM **6066 pass / 295 skip**, 260 files.
+
+`rom/__tests__/map_object_ids.test.ts` (V5c checkpoint-02, extended in checkpoint-04, note93 §9/§19): six no-ROM
+cases compare all 106 NPCs on 30 maps with pret's `object_event` lists, in ROM order, including movement bytes.
+The four objects that checkpoint-02 dropped (`prof2`, `daisy_walking`, `rival1`, `rival2`) are present and start
+hidden. A bad WALK/STAY combination throws with the map and object number. O1–O3 covered the checkpoint-02
+extractor. Baseline: ROM **6361/6361**; no-ROM **6066 pass / 295 skip**, 260 files. The toggle model reads `objectId`.
 
 `rom/__tests__/toggleable_objects_data.test.ts` (V5c checkpoint-01, note93): four cases,
 two no-ROM and two ROM-only, pin all 239 rows against pret's ASM, map-first indices,

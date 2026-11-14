@@ -25,6 +25,8 @@ import type { OverworldDeps } from '../overworld/overworld_controller';
 import { PikachuFollower } from '../pikachu/pikachu_follower';
 import { Bag } from '../items';
 import * as events from '../events';
+import * as toggleObjects from '../overworld/toggleable_objects';
+import { toggleChanges } from '../test/toggle_state';
 import * as input from '../input';
 import { joyIgnore, setJoyIgnore } from '../input/joy_ignore';
 import { playMusic, isSoundFinished } from '../audio';
@@ -42,7 +44,7 @@ const flatten = (commands: ScriptCommand[]): ScriptCommand[] => commands.flatMap
 const last = <T>(items: T[]): T | undefined => items[items.length - 1];
 beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadGameText(); });
 beforeEach(() => {
-  vi.restoreAllMocks(); vi.clearAllMocks(); events.restoreFlags([]); events.restoreMapScripts({}); events.restoreHiddenObjects([]);
+  vi.restoreAllMocks(); vi.clearAllMocks(); events.restoreFlags([]); events.restoreMapScripts({}); toggleObjects.initializeToggleableObjectFlags();
   setJoyIgnore('none'); setTextSpeed('fast'); uiTiles.clear();
   for (const button of ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'] as const) input.setKey(button, false);
   input.updateInput(); input.syncJoypadRead(); pinOverworldRandom(128);
@@ -167,9 +169,9 @@ async function run(v: typeof variants[number], answer: 'yes' | 'no' = 'no', foll
   const print = deps.textBox.print.bind(deps.textBox);
   vi.spyOn(deps.textBox, 'print').mockImplementation((source, opts) => { if ('program' in source) prints.push([source.program, frame]); print(source, opts); });
   vi.mocked(playMusic).mockImplementation(name => { music.push([name, frame]); return Promise.resolve(); });
-  const hide = events.hideObject, show = events.showObject;
-  vi.spyOn(events, 'hideObject').mockImplementation((map, id) => { toggles.push(['hide', frame]); hide(map, id); });
-  vi.spyOn(events, 'showObject').mockImplementation((map, id) => { toggles.push(['show', frame]); show(map, id); });
+  const hide = toggleObjects.hideObject, show = toggleObjects.showObject, guide = v.museum ? toggleObjects.TOGGLE.MUSEUM_GUY : toggleObjects.TOGGLE.GYM_GUY;
+  vi.spyOn(toggleObjects, 'hideObject').mockImplementation(index => { expect(index).toBe(guide); toggles.push(['hide', frame]); hide(index); });
+  vi.spyOn(toggleObjects, 'showObject').mockImplementation(index => { expect(index).toBe(guide); toggles.push(['show', frame]); show(index); });
   let action;
   if (v.east) action = runMapScript(s.owDeps, s.ow);
   else { input.setKey('a', true); input.readJoypad(); action = updateOverworld(s.owDeps, s.ow); input.setKey('a', false); }
@@ -229,7 +231,7 @@ describe('Pewter source handlers through the real controller and committed map',
     expect(r.toggles).toEqual([['hide', hide], ['show', hide + 2]]);
     expect(r.updates.filter(t => t === hide)).toHaveLength(2); expect(r.updates.filter(t => t === hide + 2)).toHaveLength(2);
     expect(r.npc.movement).toMatchObject({ movement1: 'stay', movement2: 'none', status: 'ready' });
-    expect(r.npc.hidden).toBe(false); expect(events.getAllHiddenObjects()).toEqual([]); expect(joyIgnore()).toBe('none');
+    expect(r.npc.hidden).toBe(false); expect(toggleChanges()).toEqual({ hidden: [], shown: [] }); expect(joyIgnore()).toBe('none');
     expect([r.npc.mapStepX, r.npc.mapStepY]).toEqual(v.museum ? [27, 17] : [35, 16]);
     // RESET's stale screen bytes are never visible; restoring map-derived pixels is sufficient.
     expect(r.npc.collisionSprite(r.deps.player.x, r.deps.player.y, 1).available).toBe(false);

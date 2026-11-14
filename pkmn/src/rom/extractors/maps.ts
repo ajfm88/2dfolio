@@ -160,12 +160,6 @@ export const SPRITE_NAMES: Record<number, string> = {
   0x52: 'gambler_asleep',
 };
 
-/** Movement byte → JSON movement string */
-const MOVEMENT_NAMES: Record<number, string> = {
-  0xFE: 'walk',
-  0xFF: 'stay',
-};
-
 /** Connection direction bit masks (in order: NORTH, SOUTH, WEST, EAST) */
 const CONNECTION_BITS = [
   { bit: 8, direction: 'north' },
@@ -309,20 +303,15 @@ export interface MapData {
 
 // ── Per-map metadata (data not extractable from ROM binary) ────
 
-/** Curated NPC metadata per map: identifiers and structural overrides.
+/** Curated NPC metadata per map: identifiers, in the map's object_event order.
+ *  Facing and the walk range come from the movement bytes (objectFacing), not from here.
  *  Dialogue text is read from ROM via TextPointers, NOT hardcoded here.
  *  Optional dialogue override is only for demo-only custom text (not from ROM). */
 interface NpcMeta {
   id: string;
   dialogue?: string;  // only used for demo-custom text NOT from ROM
   textOffset?: number;  // ROM offset fallback for complex text_asm handlers
-  direction?: string;
-  walkDir?: string;
   object?: boolean;
-  x?: number;
-  y?: number;
-  sprite?: string;
-  movement?: string;
   /** Text comes from engine code (e.g. OaksAideScript, an in-game trade), so emit no
    *  dialogue: the TextPointers fallback would pick up the wrong text. */
   scripted?: boolean;
@@ -351,21 +340,22 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'prof' },
       { id: 'girl' },
       { id: 'fisher' },
-    ],
-  },
+    ] },
   Route1: {
     signTextOffsets: [symToOffset(0x28, 0x6d32)],
     npcs: [
       { id: 'youngster1', textOffset: symToOffset(0x28, 0x6bd1) },
       { id: 'youngster2', textOffset: symToOffset(0x28, 0x6cb1) },
-    ],
-  },
+    ] },
   Route22: {
     connectionOrder: ['east', 'north'],
     signTextOffsets: [symToOffset(0x29, 0x6c41)],
     // RIVAL1 / RIVAL2 stay toggle-hidden until the Route 22 rival battles (I1).
     // Upstream's invented "end of the demo" Blue was removed in V1e.
-    npcs: [],
+    npcs: [
+      { id: 'rival1' },
+      { id: 'rival2' },
+    ],
   },
   ViridianCity: {
     signTextOffsets: [
@@ -383,14 +373,14 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'youngster1', textOffset: symToOffset(0x2d, 0x45bd) },
       { id: 'gambler1', textOffset: symToOffset(0x2d, 0x4629) },
       { id: 'youngster2', textOffset: symToOffset(0x2d, 0x4686) },
-      { id: 'girl1', direction: 'right', textOffset: symToOffset(0x2d, 0x4717) },
-      { id: 'fisher1', direction: 'down', textOffset: symToOffset(0x2d, 0x47dc) },
+      { id: 'girl1', textOffset: symToOffset(0x2d, 0x4717) },
+      { id: 'oldman_blocking', textOffset: symToOffset(0x2d, 0x47a7) },
+      { id: 'fisher1', textOffset: symToOffset(0x2d, 0x47dc) },
       // OLD_MAN: WALK, LEFT_RIGHT (objects/ViridianCity.asm); shown by ViridianMartScript2
-      { id: 'oldman1', walkDir: 'left_right', textOffset: symToOffset(0x2d, 0x48eb) },
-      { id: 'oldman_blocking', direction: 'down', textOffset: symToOffset(0x2d, 0x47a7) },
+      { id: 'oldman1', textOffset: symToOffset(0x2d, 0x48eb) },
       // OLD_MAN2: stands where the sleeper lay once the Pokédex is given. His text is
       // ViridianCityOldMan2Text (text_asm), run by story/viridian_city.ts
-      { id: 'oldman2', direction: 'down', scripted: true },
+      { id: 'oldman2', scripted: true },
     ],
   },
   RedsHouse1F: {
@@ -400,17 +390,15 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 3, y: 1, textOffset: symToOffset(0x2a, 0x455c) },  // wrong side text
     ],
     npcs: [
-      { id: 'mom', direction: 'left', textOffset: symToOffset(0x2a, 0x440c) },
-    ],
-  },
+      { id: 'mom', textOffset: symToOffset(0x2a, 0x440c) },
+    ] },
   RedsHouse2F: {
     signTextOffsets: [],
     hiddenEvents: [
       { x: 0, y: 1, scriptId: 'RED_PC', facing: 'up' },
       { x: 3, y: 5, program: 'RedBedroomSNESText', textOffset: symToOffset(0x27, 0x6dd8) },  // PrintRedSNESText
     ],
-    npcs: [],
-  },
+    npcs: [] },
   BluesHouse: {
     signTextOffsets: [],
     hiddenEvents: [
@@ -419,8 +407,9 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 7, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
     ],
     npcs: [
-      { id: 'daisy', direction: 'right' },
-      { id: 'town_map', object: true, direction: 'down' },
+      { id: 'daisy' },
+      { id: 'daisy_walking' },
+      { id: 'town_map', object: true },
     ],
   },
   OaksLab: {
@@ -432,12 +421,13 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 1, y: 1, facing: 'up', program: 'OakLabEmailText', textOffset: symToOffset(0x27, 0x6911) },  // DisplayOakLabEmailText
     ],
     npcs: [
-      { id: 'prof', direction: 'down', textOffset: symToOffset(0x2a, 0x476f) },
       { id: 'rival', textOffset: symToOffset(0x2a, 0x468f) },
-      { id: 'item_ball', object: true, direction: 'down' },
-      { id: 'pokedex1', object: true, direction: 'down' },
-      { id: 'pokedex2', object: true, direction: 'down' },
-      { id: 'girl', walkDir: 'up_down' },
+      { id: 'item_ball', object: true },
+      { id: 'prof', textOffset: symToOffset(0x2a, 0x476f) },
+      { id: 'pokedex1', object: true },
+      { id: 'pokedex2', object: true },
+      { id: 'prof2' },
+      { id: 'girl' },
       { id: 'scientist1' },
       { id: 'scientist2' },
     ],
@@ -449,21 +439,19 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 13, y: 3, scriptId: 'POKECENTER_PC', facing: 'up' },
     ],
     npcs: [
-      { id: 'nurse', direction: 'down', textOffset: symToOffset(0x2c, 0x7772) },
+      { id: 'nurse', textOffset: symToOffset(0x2c, 0x7772) },
       { id: 'gentleman1', textOffset: symToOffset(0x2a, 0x56a9) },
-      { id: 'cooltrainer1', direction: 'up', textOffset: symToOffset(0x2a, 0x56f0) },
-      { id: 'receptionist1', direction: 'down', textOffset: symToOffset(0x2c, 0x788d) },
-      { id: 'chansey1', direction: 'down', textOffset: symToOffset(0x26, 0x431d) },
-    ],
-  },
+      { id: 'cooltrainer1', textOffset: symToOffset(0x2a, 0x56f0) },
+      { id: 'receptionist1', textOffset: symToOffset(0x2c, 0x788d) },
+      { id: 'chansey1', textOffset: symToOffset(0x26, 0x431d) },
+    ] },
   ViridianMart: {
     signTextOffsets: [],
     npcs: [
-      { id: 'clerk', direction: 'right', textOffset: symToOffset(0x2c, 0x74a1) },
-      { id: 'youngster1', walkDir: 'up_down', textOffset: symToOffset(0x2a, 0x57dd) },
+      { id: 'clerk', textOffset: symToOffset(0x2c, 0x74a1) },
+      { id: 'youngster1', textOffset: symToOffset(0x2a, 0x57dd) },
       { id: 'cooltrainer_m', textOffset: symToOffset(0x2a, 0x5805) },
-    ],
-  },
+    ] },
   ViridianSchoolHouse: {
     signTextOffsets: [],
     hiddenEvents: [
@@ -471,20 +459,18 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 3, y: 4, scriptId: 'VIRIDIAN_SCHOOL_NOTEBOOK' },
     ],
     npcs: [
-      { id: 'brunette_girl', direction: 'up', textOffset: symToOffset(0x2a, 0x5832) },
-      { id: 'cooltrainer_f', direction: 'down', textOffset: symToOffset(0x2a, 0x5897) },
-      { id: 'little_girl', direction: 'up', textOffset: symToOffset(0x2a, 0x585d) },
-    ],
-  },
+      { id: 'brunette_girl', textOffset: symToOffset(0x2a, 0x5832) },
+      { id: 'cooltrainer_f', textOffset: symToOffset(0x2a, 0x5897) },
+      { id: 'little_girl', textOffset: symToOffset(0x2a, 0x585d) },
+    ] },
   ViridianNicknameHouse: {
     signTextOffsets: [],
     npcs: [
       { id: 'balding_guy' },
-      { id: 'little_girl', walkDir: 'up_down' },
-      { id: 'spearow', walkDir: 'left_right' },
+      { id: 'little_girl' },
+      { id: 'spearow' },
       { id: 'speary_sign' },
-    ],
-  },
+    ] },
 
   // V2a — object_const order and directions, data/maps/objects/Pewter*.asm; note 60 §13.
   // V3 checkpoint-04: Route4 is unextracted; its north connection remains omitted.
@@ -492,16 +478,15 @@ const MAP_METADATA: Record<string, MapMeta> = {
     signTextOffsets: [symToOffset(0x28, 0x711a)],
     npcs: [
       { id: 'super_nerd' },
-      { id: 'youngster1', direction: 'right' },
-      { id: 'youngster2', direction: 'down' },
-      { id: 'cooltrainer_f1', direction: 'left' },
-      { id: 'youngster3', direction: 'down' },
-      { id: 'cooltrainer_f2', direction: 'left' },
-      { id: 'youngster4', direction: 'left' },
-      { id: 'youngster5', direction: 'right' },
-      { id: 'cooltrainer_f3', direction: 'up' },
-    ],
-  },
+      { id: 'youngster1' },
+      { id: 'youngster2' },
+      { id: 'cooltrainer_f1' },
+      { id: 'youngster3' },
+      { id: 'cooltrainer_f2' },
+      { id: 'youngster4' },
+      { id: 'youngster5' },
+      { id: 'cooltrainer_f3' },
+    ] },
   PewterCity: {
     signTextOffsets: [
       symToOffset(0x2d, 0x4d35), symToOffset(0x2d, 0x4d81),
@@ -512,10 +497,9 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { id: 'cooltrainer_f' },
       { id: 'cooltrainer_m' },
       { id: 'super_nerd1', scripted: true }, // museum guide, V2b
-      { id: 'super_nerd2', walkDir: 'left_right', textOffset: symToOffset(0x2d, 0x4c4b) },
-      { id: 'youngster', direction: 'down', scripted: true }, // gym guide, V2b
-    ],
-  },
+      { id: 'super_nerd2', textOffset: symToOffset(0x2d, 0x4c4b) },
+      { id: 'youngster', scripted: true }, // gym guide, V2b
+    ] },
   PewterPokecenter: {
     signTextOffsets: [],
     hiddenEvents: [
@@ -523,34 +507,30 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 13, y: 3, scriptId: 'POKECENTER_PC', facing: 'up' },
     ],
     npcs: [
-      { id: 'nurse', direction: 'down', textOffset: symToOffset(0x2c, 0x7772) },
-      { id: 'gentleman', direction: 'left' },
-      { id: 'jigglypuff', direction: 'down', scripted: true }, // V2c
-      { id: 'link_receptionist', direction: 'down', textOffset: symToOffset(0x2c, 0x788d) },
-      { id: 'cooltrainer_f', direction: 'up', textOffset: symToOffset(0x2a, 0x6e34) },
-      { id: 'chansey', direction: 'down', textOffset: symToOffset(0x26, 0x431d) },
-    ],
-  },
+      { id: 'nurse', textOffset: symToOffset(0x2c, 0x7772) },
+      { id: 'gentleman' },
+      { id: 'jigglypuff', scripted: true }, // V2c
+      { id: 'link_receptionist', textOffset: symToOffset(0x2c, 0x788d) },
+      { id: 'cooltrainer_f', textOffset: symToOffset(0x2a, 0x6e34) },
+      { id: 'chansey', textOffset: symToOffset(0x26, 0x431d) },
+    ] },
   PewterMart: {
     signTextOffsets: [],
     npcs: [
-      { id: 'clerk', direction: 'right', textOffset: symToOffset(0x2c, 0x74a1) },
-      { id: 'youngster', walkDir: 'up_down' },
+      { id: 'clerk', textOffset: symToOffset(0x2c, 0x74a1) },
+      { id: 'youngster' },
       { id: 'super_nerd' },
-    ],
-  },
+    ] },
   PewterNidoranHouse: {
     signTextOffsets: [],
     npcs: [
-      { id: 'nidoran', direction: 'left' },
-      { id: 'little_boy', direction: 'right' },
+      { id: 'nidoran' },
+      { id: 'little_boy' },
       { id: 'middle_aged_man' },
-    ],
-  },
+    ] },
   PewterSpeechHouse: {
     signTextOffsets: [],
-    npcs: [{ id: 'gambler', direction: 'right' }, { id: 'youngster' }],
-  },
+    npcs: [{ id: 'gambler' }, { id: 'youngster' }] },
 
   // ── V3: Pewter Gym + Museum (notes/88-v3-plan.md) ──
   // Ids: pret's const_export names minus the map prefix, lowercased, in ROM object order.
@@ -562,11 +542,10 @@ const MAP_METADATA: Record<string, MapMeta> = {
       { x: 6, y: 10, scriptId: 'PEWTER_GYM_STATUES', facing: 'up' },
     ],
     npcs: [
-      { id: 'brock', direction: 'down' },          // PewterGymBrockText (story/pewter_gym.ts)
-      { id: 'cooltrainer_m', direction: 'right' }, // PewterGymTrainerHeader0
-      { id: 'gym_guide', direction: 'down' },      // PewterGymGuideText (story/pewter_gym.ts)
-    ],
-  },
+      { id: 'brock' },          // PewterGymBrockText (story/pewter_gym.ts)
+      { id: 'cooltrainer_m' }, // PewterGymTrainerHeader0
+      { id: 'gym_guide' },      // PewterGymGuideText (story/pewter_gym.ts)
+    ] },
   Museum1F: {
     signTextOffsets: [],
     // data/events/hidden_events.asm. The argument SPRITE_FACING_UP isn't read: any facing finds them (V3 checkpoint-02c).
@@ -576,32 +555,28 @@ const MAP_METADATA: Record<string, MapMeta> = {
     ],
     npcs: [
       // Every text farcalls a Museum1F_2.asm body — V3 checkpoint-02
-      { id: 'scientist1', direction: 'left' },
+      { id: 'scientist1' },
       { id: 'gambler' },
-      { id: 'scientist2', direction: 'down' },
+      { id: 'scientist2' },
       { id: 'scientist3' },
       { id: 'old_amber' },
-    ],
-  },
+    ] },
   Museum2F: {
     signTextOffsets: [
       symToOffset(0x2a, 0x650a), // _Museum2FSpaceShuttleSignText
       symToOffset(0x2a, 0x6522), // _Museum2FMoonStoneSignText
     ],
     npcs: [
-      { id: 'youngster', walkDir: 'left_right' },
-      { id: 'gramps', direction: 'down' },
-      { id: 'scientist', direction: 'down' },
+      { id: 'youngster' },
+      { id: 'gramps' },
+      { id: 'scientist' },
       { id: 'brunette_girl' },
-      { id: 'hiker', direction: 'down' },          // Museum2FHikerText (text_asm) — V3 checkpoint-02
-    ],
-  },
+      { id: 'hiker' },          // Museum2FHikerText (text_asm) — V3 checkpoint-02
+    ] },
 
   // ── V1: Route 2 + Viridian Forest (notes/02-v1-plan.md) ──
   // NPC ids are pret's const_export names minus the map prefix, lowercased
-  // (data/maps/objects/<Map>.asm), in ROM object order. direction / walkDir mirror
-  // the object_event bytes: STAY <dir> → direction, WALK UP_DOWN / LEFT_RIGHT →
-  // walkDir, NONE / ANY_DIR → omitted.
+  // (data/maps/objects/<Map>.asm), in ROM object order. Facing comes from the bytes.
   Route2: {
     signTextOffsets: [
       symToOffset(0x28, 0x6d57), // _Route2SignText
@@ -610,32 +585,28 @@ const MAP_METADATA: Record<string, MapMeta> = {
     npcs: [
       { id: 'moon_stone', object: true },
       { id: 'hp_up', object: true },
-    ],
-  },
+    ] },
   Route2Gate: {
     signTextOffsets: [],
     npcs: [
       // Talks through OaksAideScript (engine/events/oaks_aide.asm) — V1b
-      { id: 'oaks_aide', direction: 'left', scripted: true },
-      { id: 'youngster', walkDir: 'left_right' },
-    ],
-  },
+      { id: 'oaks_aide', scripted: true },
+      { id: 'youngster' },
+    ] },
   Route2TradeHouse: {
     signTextOffsets: [],
     npcs: [
-      { id: 'scientist', direction: 'right' },
+      { id: 'scientist' },
       // In-game trade TRADE_FOR_MILES (DoInGameTradeDialogue) — slice A4
-      { id: 'gameboy_kid', direction: 'down', scripted: true },
-    ],
-  },
+      { id: 'gameboy_kid', scripted: true },
+    ] },
   DiglettsCave: { signTextOffsets: [], npcs: [] },
   DiglettsCaveRoute11: { signTextOffsets: [], npcs: [{ id: 'gambler' }] },
   DiglettsCaveRoute2: {
     signTextOffsets: [],
     npcs: [
       { id: 'fishing_guru' },
-    ],
-  },
+    ] },
   ViridianForest: {
     signTextOffsets: [
       symToOffset(0x26, 0x45fa), // _ViridianForestTrainerTips1Text
@@ -655,32 +626,28 @@ const MAP_METADATA: Record<string, MapMeta> = {
     ],
     npcs: [
       { id: 'youngster1' },
-      { id: 'youngster2', direction: 'left' },   // Bug Catcher
-      { id: 'youngster3', direction: 'left' },   // Bug Catcher
-      { id: 'youngster4', direction: 'left' },   // Bug Catcher
+      { id: 'youngster2' },   // Bug Catcher
+      { id: 'youngster3' },   // Bug Catcher
+      { id: 'youngster4' },   // Bug Catcher
       { id: 'cooltrainer_f' },                    // Lass
-      { id: 'youngster5', direction: 'right' },  // Bug Catcher
+      { id: 'youngster5' },  // Bug Catcher
       { id: 'potion1', object: true },
       { id: 'potion2', object: true },
       { id: 'poke_ball', object: true },
       { id: 'youngster6' },
-    ],
-  },
+    ] },
   ViridianForestSouthGate: {
     signTextOffsets: [],
     npcs: [
-      { id: 'girl', direction: 'left' },
-      { id: 'little_girl', walkDir: 'up_down' },
-    ],
-  },
+      { id: 'girl' },
+      { id: 'little_girl' },
+    ] },
   ViridianForestNorthGate: {
     signTextOffsets: [],
     npcs: [
       { id: 'super_nerd' },
       { id: 'gramps' },
-    ],
-  },
-};
+    ] } };
 
 // ── Map names that we extract ──────────────────────────────────
 
@@ -715,29 +682,6 @@ export const EXTRACTABLE_MAPS: Record<string, number> = {
   Route3: 0x0E,
   DiglettsCave: 0xC5,
   DiglettsCaveRoute11: 0x55,
-};
-
-// ── NPC index overrides (when ROM has more NPCs than JSON) ─────
-
-/** For maps where the ROM has more NPCs than the JSON, specify which ROM
- *  NPC indices (0-based) to include. undefined = include all. */
-const NPC_INDEX_FILTER: Record<string, number[]> = {
-  // OaksLab ROM has 9 NPCs; JSON has 8 (skip OAK2 at index 5)
-  // ROM: 0=RIVAL(trainer), 1=EEVEE_BALL, 2=OAK1(DOWN), 3=POKEDEX1, 4=POKEDEX2, 5=OAK2(UP), 6=GIRL, 7=SCI1, 8=SCI2
-  // JSON order: prof(=OAK1@2), rival(=0), item_ball(=1), pokedex1(=3), pokedex2(=4), girl(=6), sci1(=7), sci2(=8)
-  OaksLab: [2, 0, 1, 3, 4, 6, 7, 8],
-
-  // Route22 ROM has 2 NPCs (RIVAL1, RIVAL2), toggle-hidden until I1; JSON has none
-  Route22: [],
-
-  // ViridianCity ROM has 8 NPCs, all in the JSON (OLD_MAN2 since V1e)
-  // ROM: 0=YOUNGSTER1, 1=GAMBLER1, 2=YOUNGSTER2, 3=GIRL, 4=OLD_MAN_SLEEPY, 5=FISHER, 6=OLD_MAN, 7=OLD_MAN2
-  ViridianCity: [0, 1, 2, 3, 5, 6, 4, 7],
-
-  // BluesHouse ROM has 3 NPCs; JSON has 2 (skip DAISY2 walking at index 1)
-  // ROM: 0=DAISY1(sitting), 1=DAISY2(walking), 2=TOWN_MAP
-  BluesHouse: [0, 2],
-
 };
 
 // ── ROM parsing ────────────────────────────────────────────────
@@ -1005,7 +949,46 @@ function readTrainerHeader(rom: BinaryReader, mapName: string, textId: number): 
 
 // ── Public API ─────────────────────────────────────────────────
 
-/** Every object picture in cartridge order, before the demo's NPC_INDEX_FILTER. */
+/** constants/map_object_constants.asm. WALK/STAY, then a range or a facing. */
+const MOVE_WALK = 0xfe;
+const MOVE_STAY = 0xff;
+const RANGE_ANY_DIR = 0x00;
+const RANGE_UP_DOWN = 0x01;
+const RANGE_LEFT_RIGHT = 0x02;
+const FACE_DOWN = 0xd0;
+const FACE_UP = 0xd1;
+const FACE_LEFT = 0xd2;
+const FACE_RIGHT = 0xd3;
+const FACE_NONE = 0xff;
+
+/** Facing and walk range from an object's movement bytes. STAY NONE and WALK ANY_DIR omit
+ *  the field. Any other combination throws; it is not turned into a default. */
+export function objectFacing(
+  mapName: string,
+  objectNumber: number,
+  movement: number,
+  rangeDir: number,
+): { movement: 'stay' | 'walk'; direction?: string; walkDir?: string } {
+  const at = `${mapName} object ${objectNumber}`;
+  if (movement === MOVE_WALK) {
+    if (rangeDir === RANGE_ANY_DIR) return { movement: 'walk' };
+    if (rangeDir === RANGE_UP_DOWN) return { movement: 'walk', walkDir: 'up_down' };
+    if (rangeDir === RANGE_LEFT_RIGHT) return { movement: 'walk', walkDir: 'left_right' };
+    throw new Error(`${at}: WALK range $${rangeDir.toString(16)} is not ANY_DIR, UP_DOWN or LEFT_RIGHT`);
+  }
+  if (movement === MOVE_STAY) {
+    if (rangeDir === FACE_NONE) return { movement: 'stay' };
+    const direction: Record<number, string> = {
+      [FACE_DOWN]: 'down', [FACE_UP]: 'up', [FACE_LEFT]: 'left', [FACE_RIGHT]: 'right',
+    };
+    const facing = direction[rangeDir];
+    if (!facing) throw new Error(`${at}: STAY direction $${rangeDir.toString(16)} is not DOWN, UP, LEFT, RIGHT or NONE`);
+    return { movement: 'stay', direction: facing };
+  }
+  throw new Error(`${at}: movement $${movement.toString(16)} is not WALK or STAY`);
+}
+
+/** Every object picture in cartridge object_event order. */
 export function extractMapObjectPictures(rom: BinaryReader, mapName: string): number[] {
   const mapId = EXTRACTABLE_MAPS[mapName];
   if (mapId === undefined) throw new Error(`unknown map ${mapName}`);
@@ -1099,22 +1082,17 @@ export function extractMap(
     });
   }
 
-  // Build NPCs from ROM binary + metadata
-  const npcFilter = NPC_INDEX_FILTER[mapName];
-  const romNpcIndices = npcFilter || Array.from({ length: objects.npcs.length }, (_, i) => i);
+  // One metadata row per ROM object, in object_event order. objectId is the 1-based place.
+  if (meta.npcs.length !== objects.npcs.length) {
+    throw new Error(`${mapName}: metadata lists ${meta.npcs.length} objects, ROM has ${objects.npcs.length}`);
+  }
 
   const npcs: MapNpc[] = [];
-  for (let metaIdx = 0; metaIdx < meta.npcs.length; metaIdx++) {
-    if (metaIdx >= romNpcIndices.length) break;
-    const romIdx = romNpcIndices[metaIdx];
+  for (let romIdx = 0; romIdx < objects.npcs.length; romIdx++) {
     const romNpc = objects.npcs[romIdx];
-    const npcMeta = meta.npcs[metaIdx];
-
-    // Use metadata overrides when present, otherwise derive from ROM
-    const spriteName = npcMeta.sprite || SPRITE_NAMES[romNpc.sprite] || `sprite_${romNpc.sprite}`;
-    const movementName = npcMeta.movement || MOVEMENT_NAMES[romNpc.movement] || 'stay';
-    const npcX = npcMeta.x !== undefined ? npcMeta.x : romNpc.x;
-    const npcY = npcMeta.y !== undefined ? npcMeta.y : romNpc.y;
+    const npcMeta = meta.npcs[romIdx];
+    const facing = objectFacing(mapName, romIdx + 1, romNpc.movement, romNpc.rangeDir);
+    const spriteName = SPRITE_NAMES[romNpc.sprite] || `sprite_${romNpc.sprite}`;
 
     // Standard map trainer: class and party come from the object, texts from its header
     const trainerClassId = romNpc.trainerClassId ?? 0;
@@ -1146,19 +1124,13 @@ export function extractMap(
       objectId: romIdx + 1,
       id: npcMeta.id,
       sprite: spriteName,
-      x: npcX,
-      y: npcY,
-      movement: movementName,
+      x: romNpc.x,
+      y: romNpc.y,
+      movement: facing.movement,
       dialogue,
     };
-
-    // Add direction/walkDir from metadata (gives exact control over JSON output)
-    if (npcMeta.direction) {
-      npc.direction = npcMeta.direction;
-    }
-    if (npcMeta.walkDir) {
-      npc.walkDir = npcMeta.walkDir;
-    }
+    if (facing.direction) npc.direction = facing.direction;
+    if (facing.walkDir) npc.walkDir = facing.walkDir;
 
     // Add object flag
     if (npcMeta.object) {

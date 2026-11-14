@@ -16,6 +16,7 @@ import { initTextSystem,loadGameText } from '../text';
 import { loadTextPrograms } from '../text/program_data';
 import { setTextSpeed } from '../text/textbox';
 import { loadMapSpriteSets } from '../overworld/sprite_sets';
+import { stageTogglesFromEvents } from './toggle_state';
 import { loadBattleTransitionData } from '../overworld/battle_transition_choice';
 import { createPokemon,loadBattleData } from '../battle/data';
 import { loadTrainerData } from '../battle/trainer_ai';
@@ -81,6 +82,7 @@ export async function loadMainBattleRig(preloadVictories=true){
 export function resetMainBattleRig(){
   vi.spyOn(GBSynthesizer.prototype,'resume').mockResolvedValue();
   host.reset();restoreFlags(['GOT_STARTER','GOT_POKEDEX','FOLLOWED_OAK_INTO_LAB','BATTLED_RIVAL_IN_OAKS_LAB']);restoreMapScripts({});
+  stageTogglesFromEvents(); // the toggle flags those four events stand for (V5c checkpoint-03b)
   restorePokedex([25],[25]);enablePikachuFollowing();setJoyIgnore('none');setPlayerName('ASH');setRivalName('GARY');setSpriteIndex(0);
   host.money=3000;host.boxes.forEach(box=>box.splice(0));resetListStateForEmptySlot();
   setPartyAndBillsSavedMenuItem(0);output.width=160;output.height=144;

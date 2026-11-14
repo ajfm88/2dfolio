@@ -214,5 +214,26 @@
       "text": "POKéMON LEAGUE\nFront Gate"
     }
   ],
-  "npcs": []
+  "npcs": [
+    {
+      "textId": 1,
+      "objectId": 1,
+      "id": "rival1",
+      "sprite": "blue",
+      "x": 25,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": ""
+    },
+    {
+      "textId": 2,
+      "objectId": 2,
+      "id": "rival2",
+      "sprite": "blue",
+      "x": 25,
+      "y": 5,
+      "movement": "stay",
+      "dialogue": ""
+    }
+  ]
 }

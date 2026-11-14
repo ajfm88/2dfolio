@@ -216,7 +216,8 @@
       "x": 5,
       "y": 24,
       "movement": "walk",
-      "dialogue": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!<PROMPT>"
+      "dialogue": "Hi! I work at a\nPOKéMON MART.\fIt's a convenient\nshop, so please\nvisit us in\nVIRIDIAN CITY.\fI know, I'll give\nyou a sample!\nHere you go!<PROMPT>",
+      "walkDir": "up_down"
     },
     {
       "textId": 2,
@@ -226,7 +227,8 @@
       "x": 15,
       "y": 13,
       "movement": "walk",
-      "dialogue": "See those ledges\nalong the road?\fIt's a bit scary,\nbut you can jump\nfrom them.\fYou can get back\nto PALLET TOWN\nquicker that way."
+      "dialogue": "See those ledges\nalong the road?\fIt's a bit scary,\nbut you can jump\nfrom them.\fYou can get back\nto PALLET TOWN\nquicker that way.",
+      "walkDir": "left_right"
     }
   ]
 }

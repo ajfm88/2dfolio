@@ -12,6 +12,7 @@
 import type { ScriptCommand } from '../script';
 import type { Direction } from '../core';
 import { displayTextID } from './text_handlers';
+import { TOGGLE } from '../overworld/toggleable_objects';
 
 export const VIRIDIAN_CITY = 'ViridianCity';
 
@@ -79,20 +80,6 @@ export function initialViridianScript(hasFlag: (flag: string) => boolean): numbe
   return hasFlag('COMPLETED_CATCH_TRAINING') ? ViridianScript.POST_CATCH_TRAINING : ViridianScript.AFTER_POKEDEX;
 }
 
-/** Which old man stands where, from the events that toggle them. The toggles only
- *  change inside input-locked scripts, so the events decide them exactly. */
-export function viridianOldMenVisible(hasFlag: (flag: string) => boolean): Record<'oldman_blocking' | 'oldman2' | 'oldman1', boolean> {
-  return {
-    // TOGGLE_LYING_OLD_MAN: hidden when the Pokédex is given (OaksLab.asm)
-    oldman_blocking: !hasFlag('GOT_POKEDEX'),
-    // TOGGLE_OLD_MAN_2: shown with the Pokédex, hidden when he walks away
-    // (ViridianCityOldManMovingDownScript) or by ViridianMartScript2
-    oldman2: hasFlag('GOT_POKEDEX') && !hasFlag('COMPLETED_CATCH_TRAINING'),
-    // TOGGLE_OLD_MAN_1: shown by ViridianMartScript2
-    oldman1: hasFlag('SPAWNED_OLD_MAN_1'),
-  };
-}
-
 /** ViridianMartScript2: on a Mart visit after the first demo, the walking old man
  *  replaces OLD_MAN2. Runs once the parcel is in hand (SCRIPT_VIRIDIANMART_SCRIPT2). */
 export function martSpawnsOldMan(hasFlag: (flag: string) => boolean): boolean {
@@ -158,7 +145,7 @@ export function buildOldMan2Script(fromTrigger: boolean, player: StepPos): Scrip
     // ViridianCityOldManEndInitialCatchTrainingScript: Delay3, then the same text
     // pointer prints the losing-my-touch branch. EVENT_INITIAL_CATCH_TRAINING stays set.
     { type: 'wait', frames: 3 },
-    { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING' },
+    { type: 'setFlag', flag: 'COMPLETED_CATCH_TRAINING', hide: [TOGGLE.OLD_MAN_2] },
     // (text/ViridianCity.asm _ViridianCityOldManLosingMyTouchText)
     ...displayTextID([{ type: 'printText', program: 'ViridianCityOldMan2Text.LosingMyTouchText' }], { textId: 8 }),
   );

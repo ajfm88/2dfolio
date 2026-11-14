@@ -36,6 +36,7 @@ import { loadPikachuMovementData } from './pikachu';
 import { getScriptNpcs } from './script';
 import { buildOaksLabIntroScript } from './story/oaks_lab';
 import { restoreFlags, restoreMapScripts } from './events';
+import { stageTogglesFromEvents } from './test/toggle_state';
 import { setPlayerName, setRivalName } from './core/player_state';
 import { setJoyIgnore } from './input/joy_ignore';
 import { getSpriteIndex, setSpriteIndex } from './overworld/sprite_index';
@@ -107,7 +108,7 @@ async function step(keys: GameButton[] = []) {
   host.gameTick(); host.checkUiEntry(); await Promise.resolve();
 }
 async function world(name: string, x: number, y: number, flags: string[] = ['GOT_STARTER', 'FOLLOWED_OAK_INTO_LAB', 'BATTLED_RIVAL_IN_OAKS_LAB'], lead = 10) {
-  restoreFlags(flags); host.playerParty.push(createPokemon('PIKACHU', lead)!);
+  restoreFlags(flags); stageTogglesFromEvents(); host.playerParty.push(createPokemon('PIKACHU', lead)!);
   await host.handleWarpLoad(name, 0, { x, y });
   host.state = 'overworld'; host.ow.doorExitStep = false; host.ow.justWarped = false; host.ow.encounterCooldown = 0;
   updateSprites(host.overworldDeps().npcs, host.gameMap, host.player, host.pikachuFollower);
@@ -224,7 +225,7 @@ it.each(cases)('$name: actual entry, E/PM/tick0, capture, survivor, frames and b
   expect(entry.levels.leadLevel).toBe(row.name.includes('custom') ? 0 : row.name.includes('Oak Pikachu') ? 12 : lead);
   if (row.name === 'Forest trainer talk') expect(entry.levels.enemyLevel).toBe(6);
   if (row.name.includes('Lab rival')) expect(entry.levels.enemyLevel).toBe(5);
-  expect(entry.capture!.slots.filter(slot => slot.slot > 0 && slot.slot < 15)).toHaveLength(row.map === 'Route22' ? 2 : host.gameMap.mapData!.npcs.length + (row.map === 'OaksLab' ? 1 : 0));
+  expect(entry.capture!.slots.filter(slot => slot.slot > 0 && slot.slot < 15)).toHaveLength(host.gameMap.mapData!.npcs.length);
   const capture = entry.capture!, frozen = capture.sprites.map(sprite => [...sprite.indices]);
   if (row.map === 'Route22') expect(capture.slots.filter(slot => slot.slot === 1 || slot.slot === 2).every(slot => !slot.visible)).toBe(true);
   if (row.map === 'OaksLab') expect(capture.slots.find(slot => slot.slot === 6)).toEqual({ slot: 6, occupied: true, visible: false });

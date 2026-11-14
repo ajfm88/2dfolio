@@ -49,7 +49,7 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-11 - V5 in progress: V5a, V5b done; V5c checkpoint-03 next
+## State as of 2026-11-13 - V5 in progress: V5a, V5b done; V5c checkpoints 01–04 complete
 
 - **R1, V1, A6, A1, V2, A5, V3 and V4 are done (8/36 milestones).** V4 checkpoints 01–04 passed code review, and the user's Route 3 and cave play-tests passed (note89 §20–§21). Both Diglett's Cave maps are runtime-wired (30 maps), and hop-midpoint trainer interruption is implemented. Brock's badge/TM34 and the ASM-backed battle engine remain in place.
 - **No ROM at runtime.** 207 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (944 generated files total). Vanilla art, local play, no remote and no push.
@@ -57,9 +57,9 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **V5b is complete** (note 92, user-verified 2026-11-11): the battle return blocks as the cartridge's (10 white frames, three 8-frame fade steps, the first pass at D+36).
 - **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **V5c in progress** (note 93, #115): the map-object audit now carries the cartridge's toggleable-object model. Checkpoint-01 (`toggleable_objects.json`, 239 rows) and 02 (each map NPC's `objectId`) are accepted; 03 (the toggle model, save format) is next, then ROM object order and facing (04), walking Daisy (05), small items (06).
-- **Tests:** ROM **6337/6337**; no-ROM **6042 pass / 295 skip**; 257 files (V5c checkpoint-02). Bundle `index-_kTTYOPq.js`, 671,475 bytes.
-- Full handoff: STATUS.md → *In progress* (2026-11-11 end of day). Restart the dev server on 127.0.0.1:5173 when needed.
+- **V5c in progress** (note 93, #115): checkpoints 01–04 are complete. The toggle model and save migration passed the user's CONTINUE check; ROM object order, movement bytes and the four initially hidden objects passed code review and the user's play-test on 2026-11-13. Checkpoint-05 (walking Daisy's script) is next when work resumes, then the small items (06). No checkpoint-05 work has started.
+- **Tests:** ROM **6361/6361**; no-ROM **6066 pass / 295 skip**; 260 files (V5c checkpoint-04). Bundle `index-VLxETiOv.js`, 673,697 bytes.
+- Full handoff: STATUS.md → *In progress* (2026-11-13). The user is stopping here; restart the dev server on 127.0.0.1:5173 when work resumes.
 
 ## Goals
 

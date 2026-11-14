@@ -25,7 +25,10 @@ import { GameMap } from '../overworld/map';
 import { Npc } from '../overworld/npc';
 import { spriteTable } from '../overworld/sprites';
 import { Bag } from '../items';
-import { getAllHiddenObjects, restoreHiddenObjects } from '../events';
+import { initializeToggleableObjectFlags } from '../overworld/toggleable_objects';
+import { clearFlag, hasFlag } from '../events';
+import type { ScriptCommand } from './types';
+import { toggleChanges } from '../test/toggle_state';
 import { UiEntry } from '../overworld/ui_entry';
 import { loadTextPrograms } from '../text/program_data';
 
@@ -43,7 +46,7 @@ beforeEach(() => {
   vi.mocked(isHeld).mockReturnValue(false);
   vi.mocked(isPressed).mockReturnValue(false);
   vi.mocked(isSoundFinished).mockReturnValue(true);
-  restoreHiddenObjects([]);
+  initializeToggleableObjectFlags();
   setTextSpeed('fast');
 });
 
@@ -117,14 +120,33 @@ describe('blocking text script routines', () => {
     for (let frame = 0; frame < 6; frame++) expect(updateScript(deps, false)).toBeNull();
     expect(updateScript(deps, false)).toEqual({ type: 'scriptEnded' }); expect(deps.textBox.active).toBe(false);
   });
-  it('HideObject saves its key, hides the live object and removes its collision availability', () => {
-    const deps = scene(); deps.npcs.push(new Npc({ id: 'potion1', sprite: 'poke_ball', x: 0, y: 1, movement: 'stay', dialogue: '', object: true }));
-    initScript([{ type: 'displayOpen' }, { type: 'hideObject', map: 'ViridianForest', npcId: 'potion1' },
+  it('setFlag hide/show writes the toggle flags with the event, leaves the sprite alone and costs what a plain setFlag costs', () => {
+    const ticksUntilDone = (command: ScriptCommand, open: boolean): number => {
+      const deps = scene(), done = vi.fn();
+      deps.npcs.push(new Npc({ id: 'potion1', sprite: 'poke_ball', x: 0, y: 1, movement: 'stay', dialogue: '', object: true, objectId: 7 }));
+      initializeToggleableObjectFlags(); clearFlag('TOGGLE_CARRIER');
+      initScript([...(open ? [{ type: 'displayOpen' } as ScriptCommand] : []), command, { type: 'callback', fn: done }]);
+      let ticks = 0;
+      while (done.mock.calls.length === 0 && ticks < 60) { updateScript(deps, false); ticks++; }
+      expect(hasFlag('TOGGLE_CARRIER')).toBe(true); expect(deps.npcs[0].hidden).toBeFalsy();
+      return ticks;
+    };
+    for (const open of [false, true]) {
+      const plain = ticksUntilDone({ type: 'setFlag', flag: 'TOGGLE_CARRIER' }, open);
+      expect(toggleChanges()).toEqual({ hidden: [], shown: [] });
+      expect(ticksUntilDone({ type: 'setFlag', flag: 'TOGGLE_CARRIER', hide: [0x64, 0x05], show: [0x2d] }, open)).toBe(plain);
+      expect(toggleChanges()).toEqual({ hidden: [0x05, 0x64], shown: [0x2d] });
+    }
+    clearFlag('TOGGLE_CARRIER');
+  });
+  it('HideObject sets its flag, hides the live object in that place and removes its collision availability', () => {
+    const deps = scene(); deps.npcs.push(new Npc({ id: 'potion1', sprite: 'poke_ball', x: 0, y: 1, movement: 'stay', dialogue: '', object: true, objectId: 7 }));
+    initScript([{ type: 'displayOpen' }, { type: 'hideObject', toggle: 0x64 },
       { type: 'printText', program: 'WhatText' }]);
     updateScript(deps, false);
     for (let frame = 0; frame < 19; frame++) updateScript(deps, false);
     updateScript(deps, true);
-    expect(getAllHiddenObjects()).toEqual(['ViridianForest:potion1']); expect(deps.npcs[0].hidden).toBe(true);
+    expect(toggleChanges()).toEqual({ hidden: [0x64], shown: [] }); expect(deps.npcs[0].hidden).toBe(true);
     expect(spriteTable(deps.player, deps.npcs)[1].available).toBe(false);
     expect(deps.textBox.active).toBe(true);
   });

@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6337** (2026-11-11, V5c checkpoint-02; default workers; no-ROM 6042 pass / 295 skip; 257 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6358** (2026-11-12, V5c checkpoint-03b review; default workers; no-ROM 6063 pass / 295 skip; 260 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,7 +139,7 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (207 files as of 2026-11-11; unused `toggleable_objects.json` since V5c checkpoint-01; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
+- **`data/`** — JSON only, produced by `npm run setup` (207 files as of 2026-11-11; `toggleable_objects.json` read at runtime since V5c checkpoint-03b; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **Extraction-map census (V4 complete, 2026-11-10):** 30 extracted maps, all runtime-wired. DiglettsCave and DiglettsCaveRoute11 passed review and the user's play-test (note89 §21). Route 11 outdoors is not extracted.
@@ -161,8 +161,7 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   than dual-writing every JSON path.
 - **localStorage** — saves (`p151-s` in `src/save.ts`), sim FPS (`p151-f`).
   Origin-scoped: `127.0.0.1` ≠ `localhost`.
-  Since A1b saves include optional `hiddenObjects` (`Map:npcId` keys for collected
-  balls); old saves default to an empty set. Bag/PC stacks are restored verbatim,
+  Since V5c checkpoint-03b saves include 32-byte `toggleableObjectFlags`; older saves migrate from `hiddenObjects` and event flags. Bag/PC stacks are restored verbatim,
   including duplicate ids created by the cartridge's 99-per-slot rule.
   Since A5c3f checkpoint-10b, version2 stores party/box struct and name bytes via
   the existing codec, plus packed options and Pikachu's emotion modifier.
@@ -211,7 +210,7 @@ Summary of path → shape → source:
 | `pokemon.json` | `(PokemonEntry\|null)[152]`, [0]=null (`pokemon.ts`) | ROM via extractor; also available in `refs/pokeyellow/data/pokemon/base_stats/*.asm` |
 | `moves.json` | `Record<moveName, MoveEntry>` (`moves.ts`) | ROM via extractor |
 | `type_chart.json` | `{attacker,defender,multiplier}[]` (`types.ts`) | ROM via extractor |
-| `toggleable_objects.json` | `{states: {map: number, object: number, on: boolean}[], mapFirst: Record<string, number\|null>}` (`toggleable_objects.ts`); ROM order, index = global toggle index; unused at runtime | ROM `ToggleableObjectStates` / `ToggleableObjectMapPointers`, 03:4892 / 03:469b |
+| `toggleable_objects.json` | `{states: {map: number, object: number, on: boolean}[], mapFirst: Record<string, number\|null>}` (`toggleable_objects.ts`); ROM order, index = global toggle index; read by the toggle model since checkpoint-03b | ROM `ToggleableObjectStates` / `ToggleableObjectMapPointers`, 03:4892 / 03:469b |
 | `trainers.json` | `Record<class, TrainerClass>` (`trainers.ts`) | ROM via extractor |
 | `wild/<Map>.json` | `{grassRate,grass[],waterRate,water[]}` (`wild.ts`) | ROM via extractor |
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
@@ -221,7 +220,7 @@ Summary of path → shape → source:
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |
-| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header. Since A5b7g2 a hidden event can carry `program`, its routine's predef text program (`text` stays for compatibility). Since V5c checkpoint-02 each NPC carries `objectId`, its 1-based `object_event` place (sprite slot, toggle object id); not read at runtime yet | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
+| `maps/<Map>.json` | `MapData` (`maps.ts`) — since V1a an NPC can also carry `item` (item balls: item-flagged **and** text `PickUpItemText`) and, for standard map trainers, `trainerClass` / `trainerParty` (0-based) / `endBattleText` / `afterBattleText`, with `dialogue` = the before-battle text, all read from the trainer header. Since A5b7g2 a hidden event can carry `program`, its routine's predef text program (`text` stays for compatibility). Since V5c checkpoint-02 each NPC carries `objectId`, its 1-based `object_event` place (sprite slot and toggle object id), read since checkpoint-03b. Since checkpoint-04 the NPC array is that ROM order (106 objects; `NPC_INDEX_FILTER` is gone) and `direction` / `walkDir` come from the movement bytes: STAY DOWN/UP/LEFT/RIGHT, WALK UP_DOWN/LEFT_RIGHT, and STAY NONE / WALK ANY_DIR omit the field. OAK2, walking Daisy and both Route 22 rivals are present and start hidden | ROM via extractor; map list controlled by `EXTRACTABLE_MAPS` |
 | `blockset_<name>.json` | `number[][]` 16 tile-ids per block (`blocksets.ts`) | ROM via extractor |
 | `collision_tiles.json` | `Record<collGroup, number[]>` (`collision.ts`) | ROM via extractor |
 | `town_map.json` | already static TS (`src/rom/town_map_data.ts`) | nothing to do |
@@ -593,8 +592,7 @@ in `overworld/walk_pace.ts`; details in `src/overworld/ARCHITECTURE.md` → *Pac
   even if a later match has room. Menus use `removeAt` for the selected slot;
   scripts use `remove` for the first match. Saves restore slots verbatim.
 - **Pickup objects (A1b):** an NPC's extracted `item` selects `itemBallScript`.
-  Collected balls persist as `hiddenObjects` keys (`Map:npcId`), separate from
-  hidden-item event flags. Old saves default to no hidden objects; new games clear them.
+  Collected balls persist in the 32-byte `toggleableObjectFlags`, separate from hidden-item event flags. Older saves migrate from `hiddenObjects` and event flags; New Game initializes the cartridge's OFF rows.
 - **Asset paths use real names**: `/gfx/title/pokemon_logo.png`,
   `/gfx/title/pikachu_bg.png`, `/gfx/sprites/pikachu.png` (follower),
   `/gfx/pikachu/` (emotion faces).

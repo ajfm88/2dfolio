@@ -1431,6 +1431,30 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
 116. **Codex implements V5c checkpoint-02** (2026-11-11, note 93 §9). *The user: "pls plan it now, codex will implement".*
      Data only: each map NPC's 1-based `objectId`; unread until checkpoint-03.
 
+117. **V5c checkpoint-03 splits into 03a (the pure model) and 03b (the switch); Sol implements 03a**
+     (2026-11-12, note 93 §12). *The user: "please start the checkpoiunt 3 planning, gpt sol will implement".*
+
+     - **03a** adds `overworld/toggleable_objects.ts`, unused: the constants, the 32 flag bytes, New Game, the map
+       list, `IsObjectHidden`, hide/show, the save bytes and the old-save migration. **03b** makes it live in one
+       commit, because the save format and the story rules must change together.
+     - **Toggles are named by index, not `(map, npcId)`.** Brock's reward hides objects on two other maps, one of
+       which has no NPC yet, so the old call shape can't be resolved. `TOGGLE` is a hand-written copy of pret's
+       constants (they are not in the ROM), checked by test against pret and the extracted rows.
+     - **Old saves:** New Game's flags, then `story_state.ts`'s rules on the saved events, then the saved keys. An
+       unknown key or an unextracted map name throws.
+     - **Not ported until I1:** the Lab's `ShowObject TOGGLE_ROUTE_22_RIVAL_1`. Who implements 03b is the user's
+       call after 03a's review.
+
+118. **Codex implements V5c checkpoint-03b, the switch** (2026-11-12, note 93 §16). *The user: "codex will implement that one too".*
+
+     - The toggle model goes live in one commit: startup load, commands by toggle index, `toggleableObjectFlags` in the
+       save (old saves migrated from `hiddenObjects` and the event flags), New Game's initialisation, the story
+       flows' flag writes, and `story_state.ts` reduced to `IsObjectHidden` plus the rival's one placement rule.
+     - **The five deciding events carry their toggle writes inside `setFlag`** (`hide` / `show` lists), so no frame
+       is added. The cutscenes' transient `hideNpc` / `unhideNpc` stay; moving flag writes to the cartridge's exact
+       `ShowObject` / `HideObject` points is J2's (note 57).
+     - The user's CONTINUE check on their real save follows Claude's review; the save is copied first.
+
 ## Open — not decided, needs the user
 
 

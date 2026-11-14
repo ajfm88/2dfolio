@@ -9,6 +9,7 @@ import { stopMusic, playMusic } from '../audio';
 import { setNoMapMusic } from '../audio/audio_flags';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { displayTextID } from './text_handlers';
+import { TOGGLE } from '../overworld/toggleable_objects';
 import { VIRIDIAN_CITY, ViridianScript } from './viridian_city';
 
 export const LAB_GUARD_PROGRAM = 'OaksLabOakDontGoAwayYetText.Text';
@@ -35,7 +36,7 @@ const rivalMusic: ScriptCommand = { type: 'callback', fn: () => { stopMusic(); p
 export function labChooseSpeech(): ScriptCommand[] {
   return [
     { type: 'setFlag', flag: 'FOLLOWED_OAK_INTO_LAB_2' },
-    { type: 'setFlag', flag: 'OAK_ASKED_TO_CHOOSE_MON' }, mask('dpad'),
+    { type: 'setFlag', flag: 'OAK_ASKED_TO_CHOOSE_MON', show: [TOGGLE.OAKS_LAB_OAK_1] }, mask('dpad'),
     ...labDisplay('OaksLabRivalFedUpWithWaitingText.Text'), { type: 'wait', frames: 3 },
     ...labDisplay('OaksLabOakChooseMonText.Text'), { type: 'wait', frames: 3 },
     { type: 'faceNpc', npcId: 'rival', direction: 'up' },
@@ -54,7 +55,7 @@ export function labGiftDisplay(): ScriptCommand[] {
     { type: 'printText', program: 'OaksLabOakGivesText' },
     { type: 'printText', program: 'OaksLabReceivedText', bindings: { nameBuffer: getSpeciesById(25)?.name.toUpperCase() ?? 'PIKACHU' } },
     { type: 'addPokemon', species: 25, level: 5 }, { type: 'hidePikachu' },
-    { type: 'setFlag', flag: 'GOT_STARTER' },
+    { type: 'setFlag', flag: 'GOT_STARTER', hide: [TOGGLE.STARTER_BALL_1] },
   ], { autoBox: false, outerWait: false, textId: 18 });
 }
 function ballContinuation(oak: string): ScriptCommand[] {
@@ -139,7 +140,7 @@ export function buildOaksLabRivalBattleScript(
     { type: 'startBattle', trainerClass: 'RIVAL1', partyIndex: 0, trainerName: getRivalName(),
       endBattleProgram: 'OaksLabRivalIPickedTheWrongPokemonText', endBattleLabels: {win:'OaksLabRivalIPickedTheWrongPokemonText',lose:'OaksLabRivalAmIGreatOrWhatText'} },
     { type: 'callback', fn: () => { setJoyIgnore('dpad'); setRivalStarter(rivalStarterAfterLabBattle(wasLastBattleWon())); } },
-    { type: 'healParty' }, { type: 'setFlag', flag: 'BATTLED_RIVAL_IN_OAKS_LAB' },
+    { type: 'healParty' }, { type: 'setFlag', flag: 'BATTLED_RIVAL_IN_OAKS_LAB', hide: [TOGGLE.OAKS_LAB_RIVAL] },
     { type: 'wait', frames: 20 }, ...labDisplay('OaksLabRivalSmellYouLaterText.Text'), rivalMusic,
     { type: 'moveNpc', npcId: 'rival', path: exitPath, spriteIndex: 1, modes: exitPath.map((_, i) => i < 2 ? 'normal' : 'fast') },
     { type: 'hideNpc', npcId: 'rival' }, mapMusic,
@@ -196,7 +197,8 @@ export function buildOaksLabPokedexScript(
     ...labDisplay('OaksLabOakThatWasMyDreamText', true, true),
     { type: 'faceNpc', npcId: 'rival', direction: 'right' }, { type: 'wait', frames: 3 },
     ...labDisplay('OaksLabRivalLeaveItAllToMeText', true, true),
-    { type: 'setFlag', flag: 'GOT_POKEDEX' },
+    // OaksLab.asm: HideObject POKEDEX_1, POKEDEX_2 and LYING_OLD_MAN, ShowObject OLD_MAN_2
+    { type: 'setFlag', flag: 'GOT_POKEDEX', hide: [TOGGLE.POKEDEX_1, TOGGLE.POKEDEX_2, TOGGLE.LYING_OLD_MAN], show: [TOGGLE.OLD_MAN_2] },
     { type: 'setMapScript', map: VIRIDIAN_CITY, state: ViridianScript.AFTER_POKEDEX },
     { type: 'setFlag', flag: 'OAK_GOT_PARCEL' }, rivalMusic,
     { type: 'moveNpc', npcId: 'rival', path: rivalExitPath, spriteIndex: 1 }, { type: 'hideNpc', npcId: 'rival' }, mapMusic, mask('none'),

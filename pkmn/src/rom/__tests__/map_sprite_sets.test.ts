@@ -82,7 +82,7 @@ const INDOOR_OBJECTS: Record<string, readonly string[]> = {
   PewterNidoranHouse: ['monster', 'little_boy', 'middle_aged_man'],
   PewterMart: ['clerk', 'youngster', 'super_nerd'],
   PewterSpeechHouse: ['gambler', 'youngster'],
-  // V3: every object_event in source order (toggles and NPC_INDEX_FILTER don't change the allocation).
+  // Indoor pictures follow object_event order, including still objects.
   Museum1F: ['scientist', 'gambler', 'scientist', 'scientist', 'old_amber'],
   Museum2F: ['youngster', 'gramps', 'scientist', 'brunette_girl', 'hiker'],
   PewterGym: ['super_nerd', 'cooltrainer_m', 'gym_guide'],
@@ -603,16 +603,12 @@ describeRom('A5b2 map sprite sets from the ROM', () => {
         .map(line => pictures[line.split(',')[2].trim()]);
       expect(extracted.mapObjects[name], name).toEqual(ids);
     }
-    expect(extracted.mapObjects.Route22).toHaveLength(2); // both hidden rivals, absent from engine NPCs
-    expect(extracted.mapObjects.OaksLab).toHaveLength(9); // dropped second Oak still counts
-    expect(extracted.mapObjects.BluesHouse).toHaveLength(3); // dropped walking Daisy still counts
+    expect(extracted.mapObjects.Route22).toHaveLength(2); // both rivals
+    expect(extracted.mapObjects.OaksLab).toHaveLength(9); // both Oaks
+    expect(extracted.mapObjects.BluesHouse).toHaveLength(3); // both Daisies and the Town Map
   });
 
   it('preserves NPC/sign text IDs from the source object and text-pointer declarations', () => {
-    const filters: Record<string, number[]> = {
-      OaksLab: [2, 0, 1, 3, 4, 6, 7, 8], ViridianCity: [0, 1, 2, 3, 5, 6, 4, 7], BluesHouse: [0, 2],
-      Route22: [],
-    };
     for (const name of CURRENT_MAPS) {
       const textIds: Record<string, number> = {};
       let index = 0;
@@ -629,8 +625,7 @@ describeRom('A5b2 map sprite sets from the ROM', () => {
       const map = JSON.parse(readFileSync(resolve(MAPS_DIR, `${name}.json`), 'utf8')) as {
         npcs: { textId?: number }[]; signs: { textId?: number }[];
       };
-      const selected = filters[name] ?? objects.map((_, i) => i);
-      expect(map.npcs.map(npc => npc.textId), name).toEqual(selected.slice(0, map.npcs.length).map(i => objects[i]));
+      expect(map.npcs.map(npc => npc.textId), name).toEqual(objects);
       expect(map.signs.map(sign => sign.textId), name).toEqual(signs.slice(0, map.signs.length));
       expect([...map.npcs, ...map.signs].every(object => Number.isInteger(object.textId) && object.textId! > 0), name).toBe(true);
     }

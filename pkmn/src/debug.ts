@@ -13,6 +13,7 @@ import { getPlayerName } from './core/player_state';
 import { totalExpForLevel, expToNextLevel, initExperience } from './battle/experience';
 import { markOwned } from './pokedex_state';
 import { hasFlag, setFlag, clearFlag } from './events';
+import { TOGGLE, hideObject, showObject } from './overworld/toggleable_objects';
 import { BADGE_FLAGS } from './menus';
 
 let enabled = false;
@@ -324,6 +325,9 @@ function rebuildPanel(): void {
     setFlag('GOT_STARTER');
     setFlag('BATTLED_RIVAL_IN_OAKS_LAB');
     setFlag('GOT_POKEDEX');
+    showObject(TOGGLE.OAKS_LAB_OAK_1);
+    for (const toggle of [TOGGLE.STARTER_BALL_1, TOGGLE.OAKS_LAB_RIVAL, TOGGLE.POKEDEX_1, TOGGLE.POKEDEX_2, TOGGLE.LYING_OLD_MAN]) hideObject(toggle);
+    showObject(TOGGLE.OLD_MAN_2);
     if (currentParty && currentParty.length < 6) {
       const pikachu = createPokemon(25, 5);
       if (pikachu) {

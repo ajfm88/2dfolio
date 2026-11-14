@@ -15,6 +15,42 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-11 (V5b play-test passed; V5b closed) — Claude
+
+- The user play-tested note 92 §5.6: "just tested, all pass". Recorded as note 92 §9; V5b is done. Next: V5c planning (note 93). No code or tests changed.
+
+### 2026-11-11 (V5b checkpoint-01 reviewed: passed) — Claude
+
+- Reviewed Codex's `275e1ad`: game code identical to the spike, every §5.2 doc edit present. Re-ran the gates: typecheck clean, bundle `index-_kTTYOPq.js` (671,475 bytes, matching SHA256), ROM 6329/6329, no-ROM 6037 / 292 skipped, 255 files. Reviewer mutations R1 (evolution queue skips the return) and R2 (FadePal7 BGP `$80`) each fail with AssertionError; `main.ts` restored. Note 92 §8. Next: the user's play-test (§5.6).
+
+### 2026-11-11 (V5b checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note92's exact six-file spike; verified 10 white frames, three 8-frame palette steps and D+10/34/36 against the cited ASM/frame model. Made §5.2's doc edits and logged both deferred timing/input items. Ordered gates once each: typecheck/build pass; bundle `index-_kTTYOPq.js`, 671,475 bytes, expected SHA256; ROM 6329/6329 and no-ROM 6037/292, 255 files. M1–M8 fail with AssertionError in the expected cases; `main.ts` SHA256 unchanged afterwards. No generated-data changes or setup. Report: note92 §7. Next: Claude reviews, then the user play-tests (§5.6); V5b remains open and V5c is not started.
+
+### 2026-11-11 (V5b traced, spiked and briefed for Codex) — Claude
+
+- Traced `.battleOccurred` → `EnterMap` → `MapEntryAfterBattle` and the port's return. Spiked a blocking `battle_return` state in `main.ts`: 10 white frames from the session's last tick, FadePal7/6/5 for 8 frames each drawn by one BGP pass over the composed scene (exact for these registers), the map song at D+10, `UpdateSprites` at D+34, first pass D+36; scripts resume on that pass. Nine existing cases needed only to wait out the return. With the patch: typecheck clean, ROM 6329/6329, no-ROM 6037 / 292 skipped, 255 files, bundle `index-_kTTYOPq.js`; M1–M8 each fail with AssertionError. Captured as `notes/92-v5b-checkpoint-01/01-spike.diff` (round-tripped) and the source restored, so the tree is still at the 6323 baseline. The user named Codex (#114). Next: Codex implements note 92 §5; Claude reviews; the user play-tests.
+
+### 2026-11-11 (V5a reviewed: passed) — Claude
+
+- Reviewed Codex's `6156b70`: test file identical to the spike, all §4.2 doc edits present and nothing else touched. Re-ran the gates: typecheck clean, bundle `index-BfVzYOru.js` unchanged, ROM 6323/6323, no-ROM 6031 / 292 skipped, 254 files. Reviewer mutations: R1 (no miss on zero damage) caught by the new file; R2 (AI keeps the last row) survives the new file but is caught by the existing `battle_ai_moves.test.ts`. Note 91 §6. V5a is done; next is V5b's trace, spike and brief (note 92).
+
+### 2026-11-11 (V5a checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note91's exact spike (six tests), checked all cases against pret's type constants, matchups and battle routines, and corrected the specified docs. Ordered gates once each: typecheck/build pass; bundle name, 670,982-byte size and SHA256 unchanged; ROM 6323/6323 and no-ROM 6031/292, 254 files. M1–M5 fail with AssertionError in exactly the expected cases, logs saved, source restored byte-for-byte. No production or generated-data changes, setup or play-test. Report: note91 §5. Next: Claude reviews and adds a mutation; V5a is not closed and V5b is not started.
+
+### 2026-11-11 (V5 split approved; V5a checkpoint-01 briefed) — Claude
+
+- The user answered O-54–O-56 ("yes to 0-54 as ordered, yes to 0-55 and all 3 for 0-56"); recorded as DECISIONS #110–#112 and in PLAN's V5 row. Traced and spiked V5a: one new test file through the real wild, trainer and party loaders plus the AI lookup and Ground vs Fire/Rock. With it in place: typecheck clean, ROM 6323/6323, no-ROM 6031 / 292 skipped, 254 files; five mutations each fail with AssertionError. Captured as `notes/91-v5a-checkpoint-01/01-spike.diff` and the source restored, so the committed tree is still at the 6317 baseline. Brief: `notes/91-v5a-plan.md` §4. Next: the user names an implementer; Claude reviews; then V5b's trace and brief.
+
+### 2026-11-11 (V5 planned; questions for the user) — Claude
+
+- Read the context files and note 57, then sized each V5 item against the code. Wrote `notes/90-v5-plan.md`: 20 items, seven sub-slices, a proposed order, three proposed moves out of V5. Main finding: the PSYCHIC bug is not in the live engine (numeric type bytes since A5c3f); checked with a throwaway test of `adjustDamageForMoveType`, deleted afterwards. No game code, data or test changed; the full suite was not run (baseline still ROM 6317/6317, no-ROM 6025/292). Next: the user's answers to O-54–O-57, then V5a checkpoint-01's trace, spike and brief (note 91).
+
+### 2026-11-11 (context and codebase orientation) — Codex
+
+- Read the entry-point rules, live handoff, project/roadmap, architecture and relevant conventions/decisions; sampled subsystem docs and traced startup, overworld passes, battle sessions, saves, extraction and test setup. V4 is closed after both user play-tests; V5 planning from PLAN and note57 is next, with no brief or checkpoint order yet. No game changes, server start or tests; the recorded baseline remains ROM 6317/6317 and no-ROM 6025/292. V5 was not started.
+
 ### 2026-11-10 (V4 closed after cave play-test; end of day) — Codex
 
 - After the seven cave checks, the user reported "ok, tested the cae it all works :)". Route 3 had already passed. Recorded checkpoint-02 acceptance and V4 closure in note89 §21, advancing to 8/36 milestones. Tomorrow's next work is V5 planning from note57; checkpoint order remains undecided. User ended work for today; dev server stopped. Documentation update; no tests run. Baseline remains ROM 6317/6317 and no-ROM 6025/292.

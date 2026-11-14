@@ -18,6 +18,7 @@ import { isPassPressed } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from './sprites';
 import { hasFlag, setFlag, getMapScript } from '../events';
 import { itemBallScript, hiddenItemScript } from './item_pickup';
+import { toggleableObjectIndex } from './toggleable_objects';
 import { tryWildEncounter } from '../battle';
 import { isNoEncounters } from '../debug';
 import { shouldPikachuFollow } from '../pikachu';
@@ -277,7 +278,10 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 
     // Starter/story balls have no item and keep their own handlers.
     if (npcData.item && !interaction.npc.hidden) {
-      return { type: 'script', commands: itemBallScript(currentMapName, npcData.id, npcData.item) };
+      // PickUpItem: the sprite's entry in wToggleableObjectList. Every item ball has one.
+      const toggle = npcData.objectId === undefined ? null : toggleableObjectIndex(currentMapName, npcData.objectId);
+      if (toggle === null) throw new Error(`item ball ${currentMapName}:${npcData.id} has no toggle`);
+      return { type: 'script', commands: itemBallScript(toggle, npcData.item) };
     }
 
     // Trainer not yet beaten: before-battle text, then the battle (home/trainers.asm

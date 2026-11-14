@@ -15,7 +15,9 @@ import { initScript, updateScript, getActiveScript } from '../script/script_cont
 import type { ScriptDeps } from '../script/script_controller';
 import { isHeld, isPressed, isPassPressed, syncJoypadRead } from '../input';
 import { playSFX, isSoundFinished } from '../audio';
-import { restoreFlags, hasFlag, setFlag, getAllFlags, getAllHiddenObjects, restoreHiddenObjects } from '../events';
+import { restoreFlags, hasFlag, setFlag, getAllFlags } from '../events';
+import { initializeToggleableObjectFlags, getToggleableObjectFlags, restoreToggleableObjectFlags } from './toggleable_objects';
+import { toggleChanges } from '../test/toggle_state';
 import { saveGame, loadGame } from '../save';
 import { setPlayerName, substituteNames } from '../core/player_state';
 import type { MapData } from '../core';
@@ -45,7 +47,7 @@ beforeAll(async () => {
   initItemNames(JSON.parse(readFileSync(resolve(DATA, 'item_names.json'), 'utf8')) as Record<string, string>);
 });
 beforeEach(() => {
-  vi.clearAllMocks(); restoreFlags([]); restoreHiddenObjects([]); setPlayerName('YELLOW'); setTextSpeed('fast');
+  vi.clearAllMocks(); restoreFlags([]); initializeToggleableObjectFlags(); setPlayerName('YELLOW'); setTextSpeed('fast');
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPressed).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false);
   audio = rig();
   vi.mocked(playSFX).mockImplementation(async name => { audio.sfx.play(sfxData(name)); });
@@ -111,9 +113,9 @@ function commandText(command: ScriptCommand | undefined): string {
 
 describe('pickup command builders and cartridge strings', () => {
   it('item balls give before hiding, then jingle and automatic close; failures wait silently', () => {
-    const commands = itemBallScript('ViridianForest', 'potion1', 'POTION');
+    const commands = itemBallScript(0x64, 'POTION');
     expect(commands).toEqual([{ type: 'displayOpen' }, { type: 'giveItem', itemId: 'POTION',
-      successCommands: [{ type: 'hideObject', map: 'ViridianForest', npcId: 'potion1' },
+      successCommands: [{ type: 'hideObject', toggle: 0x64 },
         { type: 'printText', program: 'FoundItemText', bindings: { stringBuffer: 'POTION' } }, { type: 'displayClose', outerWait: false }],
       failCommands: [{ type: 'printText', program: 'NoMoreRoomForItemText' }, { type: 'displayClose', outerWait: true }] }]);
   });
@@ -138,7 +140,7 @@ describe('pickup command builders and cartridge strings', () => {
   });
   it.skipIf(!existsSync(ASM))('every new string matches the ASM macros and runtime name', () => {
     setPlayerName('ASH');
-    const ball = itemBallScript('ViridianForest', 'potion1', 'POTION')[1];
+    const ball = itemBallScript(0x64, 'POTION')[1];
     const hidden = hiddenItemScript(flag, 'POTION'); const sample = potionSampleScript(false)[3];
     if (ball.type !== 'giveItem' || hidden[2].type !== 'giveItem' || sample.type !== 'giveItem') throw new Error('Expected GiveItem');
     const checks: [ScriptCommand | undefined, string, string][] = [
@@ -160,7 +162,7 @@ describe('pickup integration with the real jingle interpreter', () => {
   it.each([['ball', false, 23], ['ball', true, 23], ['hidden', false, 20]] as const)(
     '%s (full=%s) first writes/reads at T+%i, with no reads during DisplayTextIDInit', (kind, full, first) => {
       const deps = scene(); if (full) fill(deps.playerBag);
-      initScript(kind === 'ball' ? itemBallScript('ViridianForest', 'potion1', 'POTION') : hiddenItemScript(flag, 'POTION'));
+      initScript(kind === 'ball' ? itemBallScript(0x64, 'POTION') : hiddenItemScript(flag, 'POTION'));
       tick(deps); const start = audio.synth.update;
       for (let frame = 1; frame < first; frame++) { tick(deps); expect(syncJoypadRead).not.toHaveBeenCalled(); }
       tick(deps);
@@ -169,7 +171,7 @@ describe('pickup integration with the real jingle interpreter', () => {
     });
   it.each([['ball', 73], ['hidden', 181]] as const)('%s waits its %i-update jingle plus Forest reload, then one sprite update', (kind, duration) => {
     const deps = scene();
-    const commands = kind === 'ball' ? itemBallScript('ViridianForest', 'potion1', 'POTION') : hiddenItemScript(flag, 'POTION');
+    const commands = kind === 'ball' ? itemBallScript(0x64, 'POTION') : hiddenItemScript(flag, 'POTION');
     const npcUpdates = deps.npcs.map(npc => vi.spyOn(npc, 'update'));
     initScript(commands); until(deps, () => vi.mocked(playSFX).mock.calls.some(([name]) => name === (kind === 'ball' ? 'get_item1' : 'get_item2')));
     const completed = audio.synth.update;
@@ -188,35 +190,36 @@ describe('pickup integration with the real jingle interpreter', () => {
     expect(ball.hidden).toBe(false); expect(deps.playerBag.items).toEqual([]);
     for (let frame = 1; frame < 20; frame++) { tick(deps); expect(ball.hidden).toBe(false); }
     tick(deps);
-    expect(ball.hidden).toBe(true); expect(getAllHiddenObjects()).toEqual(['ViridianForest:potion1']);
+    expect(ball.hidden).toBe(true); expect(toggleChanges()).toEqual({ hidden: [0x64], shown: [] }); // the list's index for object 7
     expect(deps.playerBag.getCount('POTION')).toBe(1);
     until(deps, () => !getActiveScript());
     saveGame('ViridianForest', deps.player.x, deps.player.y, 'up', [], deps.playerBag, 3000, new Set(),
-      getAllFlags(), [], 0, 90, 128, [], 0, [], [], 'YELLOW', 'BLUE', undefined, undefined, {}, getAllHiddenObjects());
-    const saved = loadGame()!; expect(saved.hiddenObjects).toEqual(['ViridianForest:potion1']);
-    restoreHiddenObjects(saved.hiddenObjects ?? []);
+      getAllFlags(), [], 0, 90, 128, [], 0, [], [], 'YELLOW', 'BLUE', undefined, undefined, {}, getToggleableObjectFlags());
+    const saved = loadGame()!; expect(saved.toggleableObjectFlags).toEqual(getToggleableObjectFlags());
+    expect(saved.toggleableObjectFlags).toHaveLength(32); expect('hiddenObjects' in saved).toBe(false);
+    initializeToggleableObjectFlags(); restoreToggleableObjectFlags(saved.toggleableObjectFlags!);
     const reload = scene(); applyStoryNpcState('ViridianForest', reload.npcs);
     expect(reload.npcs.find(npc => npc.data.id === 'potion1')!.hidden).toBe(true);
     expect(interaction(reload)).toBeNull();
     reload.player.update(reload.gameMap, reload.npcs, 'up');
     expect(reload.player.justStartedStep).toBe(true);
-    restoreHiddenObjects([]); const fresh = scene(); applyStoryNpcState('ViridianForest', fresh.npcs);
+    initializeToggleableObjectFlags(); const fresh = scene(); applyStoryNpcState('ViridianForest', fresh.npcs);
     expect(fresh.npcs.find(npc => npc.data.id === 'potion1')!.hidden).toBe(false);
   });
   it('full-bag ball waits silently, keeps the object and records nothing', () => {
     const deps = scene(); fill(deps.playerBag); const before = structuredClone(deps.playerBag.items);
-    initScript(itemBallScript('ViridianForest', 'potion1', 'POTION'));
+    initScript(itemBallScript(0x64, 'POTION'));
     until(deps, () => deps.textBox.isWaitingForInput && !deps.textBox.hasMorePages);
     expect(deps.textBox.active).toBe(true); expect(playSFX).not.toHaveBeenCalled();
     vi.mocked(isHeld).mockImplementation(key => key === 'b'); tick(deps);
     until(deps, () => !deps.textBox.active);
-    expect(deps.textBox.active).toBe(false); expect(getAllHiddenObjects()).toEqual([]);
+    expect(deps.textBox.active).toBe(false); expect(toggleChanges()).toEqual({ hidden: [], shown: [] });
     expect(deps.npcs.find(npc => npc.data.id === 'potion1')!.hidden).toBe(false);
     expect(deps.playerBag.items).toEqual(before);
   });
   it('holding A keeps the successful ball box up beyond the jingle', () => {
     const deps = scene(); vi.mocked(isHeld).mockImplementation(key => key === 'a');
-    initScript(itemBallScript('ViridianForest', 'potion1', 'POTION'));
+    initScript(itemBallScript(0x64, 'POTION'));
     until(deps, () => vi.mocked(playSFX).mock.calls.length > 0);
     for (let i = 0; i < 80; i++) tick(deps);
     expect(deps.textBox.active).toBe(true);

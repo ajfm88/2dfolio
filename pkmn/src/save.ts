@@ -57,8 +57,11 @@ interface SaveFields {
   rivalStarter?: number;
   /** Each map's resting w<Map>CurScript (events.ts), since V1e. */
   mapScripts?: Record<string, number>;
-  /** HideObject keys (Map:npcId), since A1b; missing on old saves. */
+  /** HideObject keys (Map:npcId), A1b to V5c checkpoint-03a. Read for migration only; never written. */
   hiddenObjects?: string[];
+  /** wToggleableObjectFlags, 32 bytes, since V5c checkpoint-03b. A save without it is migrated from
+   *  `hiddenObjects` and `eventFlags` (overworld/toggleable_objects.ts legacyToggleableObjectFlags). */
+  toggleableObjectFlags?: number[];
 }
 
 type LegacyBoxedPokemon = Omit<BoxedPokemon, 'sleepTurns'> & { sleepTurns?: number };
@@ -128,7 +131,7 @@ export function saveGame(
   lastBlackoutWarp?: { destMap: string; destWarpId: number },
   rivalStarter?: number,
   mapScripts?: Record<string, number>,
-  hiddenObjects?: string[],
+  toggleableObjectFlags?: number[],
   options: number = 3,
   pikachuEmotionModifier: number = 0,
 ): void {
@@ -156,7 +159,7 @@ export function saveGame(
     lastBlackoutWarp,
     rivalStarter,
     mapScripts,
-    hiddenObjects,
+    toggleableObjectFlags,
     options,
     pikachuEmotionModifier,
   };

@@ -121,12 +121,7 @@ signs/NPCs. The existing counter check still finds an NPC two steps away.
   give, then show the success/jingle or failure and wait silently before closing.
   A full bag permanently loses the sample, as on the cartridge.
 
-`hideObject` stores `Map:npcId` in `events.ts` and immediately refreshes the player's
-sprite collision mask without advancing NPCs. Hidden sprite slots remain indexed
-but unavailable for collision and drawing. `SaveData.hiddenObjects` is optional for
-old saves; loading restores it before story state, and new games clear it. All current
-pickup objects start ON; a future `ShowObject` caller will extend the toggle model.
-The bag's 99-per-slot and first-overflow rules live in `items.ts`; duplicate ids are valid.
+The cartridge's toggle model is live since V5c checkpoint-03b: `toggleable_objects.ts` owns 32 flag bytes, saved as `toggleableObjectFlags`; older saves migrate from `hiddenObjects` and event flags. `hideObject` / `showObject` take a `TOGGLE` index. Hide refreshes the collision mask; show runs `updateSprites`. The bag's 99-per-slot and first-overflow rules live in `items.ts`; duplicate ids are valid.
 
 ## Tileset Sharing (important for adding new maps)
 
@@ -229,7 +224,9 @@ player. A6c (below) generalized that cycle to every ordinary sprite.
 
 **Live movement bytes.** `NpcWalk` keeps `movement1` (STAY / WALK) and `movement2` (a
 fixed facing, NONE / ANY, UP_DOWN, LEFT_RIGHT) apart from `NpcData`: `direction` → fixed,
-else `walkDir` → the axis, else NONE (STAY) / ANY (WALK). A script's terminator sets
+else `walkDir` → the axis, else NONE (STAY) / ANY (WALK). Since V5c checkpoint-04 those
+two fields are the cartridge movement bytes, and the map's NPC array is `object_event`
+order, so sprite slot n is object n. A script's terminator sets
 `movement1` to STAY without a random byte and leaves the sprite ready; a beaten trainer
 gets STAY/NONE (below). A map load rebuilds both bytes from the data.
 
@@ -367,8 +364,7 @@ two-transition `battle_transitions.ts` is gone.
 ## Story State
 
 `story_state.ts` — stateless functions for NPC state based on story progression:
-- `applyStoryNpcState(mapName, npcs)`: applies saved `hiddenObjects` first, then NPC
-  visibility/dialogue per event flags; collected balls stay hidden across map loads
+- `applyStoryNpcState(mapName, npcs)`: sets each toggled NPC's `hidden` from `IsObjectHidden`; the rival's post-starter place is the one remaining rule
 - `applyDefeatedTrainers(mapName, npcs, defeated)`: marks defeated trainers
 - `recordDefeated(mapName, npcId, defeated)`: records a defeat — called only when a
   battle against that trainer ends without a loss (`EndTrainerBattle`, V1c)

@@ -37,7 +37,8 @@ import { fadeOutAndStopMusic, isAudioFadingOut, preloadMusic } from '../audio';
 import { isPassPressed, readJoypad, syncJoypadRead } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from '../overworld/sprites';
 import { fontLoadedUpdateSprites, setOpeningSpriteUpdates } from '../overworld/ui_entry';
-import { setFlag, hasFlag, clearFlag, setMapScript, hideObject, showObject } from '../events';
+import { setFlag, hasFlag, clearFlag, setMapScript } from '../events';
+import { hideObject, showObject, toggleableObjectList } from '../overworld/toggleable_objects';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { SimulatedJoypad } from '../overworld/simulated_joypad';
 import { playSFX, isSoundFinished } from '../audio';
@@ -213,6 +214,15 @@ export function getScriptFadeAlpha(): number | null {
 }
 
 /** Find an NPC by ID (checks both map NPCs and script-created NPCs). */
+/** The current map's NPC behind a toggle index, as IsObjectHidden pairs them: `undefined` when the toggle is
+ *  another map's row, `null` when it is this map's but no NPC stands in that object's place. */
+function toggledNpc(mapName: string | undefined, toggle: number, mapNpcs: Npc[]): Npc | null | undefined {
+  if (mapName === undefined) return undefined;
+  const entry = toggleableObjectList(mapName).find(row => row.index === toggle);
+  if (!entry) return undefined;
+  return mapNpcs.find(npc => npc.data.objectId === entry.object) ?? null;
+}
+
 export function lookupNpc(id: string, mapNpcs: Npc[]): Npc | undefined {
   return mapNpcs.find(n => n.data.id === id) ?? scriptNpcs.find(n => n.data.id === id);
 }
@@ -689,9 +699,9 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       return null;
 
     case 'hideObject': {
-      hideObject(cmd.map, cmd.npcId);
-      if (deps.gameMap.mapData?.name === cmd.map) {
-        const npc = lookupNpc(cmd.npcId, npcs);
+      hideObject(cmd.toggle);
+      const npc = toggledNpc(deps.gameMap.mapData?.name, cmd.toggle, npcs);
+      if (npc !== undefined) {
         if (npc) npc.hidden = true;
         // Refresh collision availability without advancing a single NPC or world pass.
         player.detectSpriteCollisions(spriteTable(player, [...npcs, ...scriptNpcs], pikachuFollower));
@@ -707,11 +717,9 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
       return runScript(deps, isPass, displayAdvanced);
 
     case 'showObject': {
-      showObject(cmd.map, cmd.npcId);
-      if (deps.gameMap.mapData?.name === cmd.map) {
-        const npc = lookupNpc(cmd.npcId, npcs);
-        if (npc) npc.hidden = false;
-      }
+      showObject(cmd.toggle);
+      const npc = toggledNpc(deps.gameMap.mapData?.name, cmd.toggle, npcs);
+      if (npc) npc.hidden = false;
       updateSprites([...npcs, ...scriptNpcs], deps.gameMap, player, pikachuFollower);
       advanceScript(activeScript);
       return runScript(deps, isPass, displayAdvanced);
@@ -805,6 +813,8 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
 
     case 'setFlag':
       setFlag(cmd.flag);
+      for (const toggle of cmd.hide ?? []) hideObject(toggle);
+      for (const toggle of cmd.show ?? []) showObject(toggle);
       advanceScript(activeScript);
       if (textBox.active && textBox.isComplete) return runScript(deps, isPass, displayAdvanced);
       break;

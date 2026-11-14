@@ -4,6 +4,7 @@ import type { ScriptCommand } from '../script/types';
 import type { TextHandlerContext } from './text_handlers';
 import { registerTextHandler, displayTextID } from './text_handlers';
 import { getMapScript } from '../events';
+import { TOGGLE } from '../overworld/toggleable_objects';
 
 export const MUSEUM_1F = 'Museum1F';
 export const Museum1FScript = { DEFAULT: 0, NOOP: 1 } as const;
@@ -63,7 +64,7 @@ const amber = (label: string): ScriptCommand => ({ type: 'printText', program: A
 export function museum1FScientist2Text(ctx: TextHandlerContext): ScriptCommand[] {
   if (ctx.hasFlag('GOT_OLD_AMBER')) return displayTextID([amber('GetTheOldAmberCheckText')]);
   return displayTextID([amber('TakeThisToAPokemonLabText'), { type: 'giveItem', itemId: 'OLD_AMBER',
-    successCommands: [{ type: 'setFlag', flag: 'GOT_OLD_AMBER' }, { type: 'hideObject', map: MUSEUM_1F, npcId: 'old_amber' },
+    successCommands: [{ type: 'setFlag', flag: 'GOT_OLD_AMBER' }, { type: 'hideObject', toggle: TOGGLE.OLD_AMBER },
       { type: 'updateSprites' }, amber('ReceivedOldAmberText')],
     failCommands: [amber('YouDontHaveSpaceText')] }]);
 }

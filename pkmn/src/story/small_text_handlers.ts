@@ -7,6 +7,7 @@ import { potionSampleScript } from '../overworld/item_pickup';
 import { buildSleepingOldManScript, buildOldMan1Script, buildOldMan2Script } from './viridian_city';
 import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
 import { getPikachuHappiness } from '../pikachu/pikachu_happiness';
+import { TOGGLE } from '../overworld/toggleable_objects';
 
 const print = (program: string): ScriptCommand => ({ type: 'printText', program });
 export function momText(ctx: TextHandlerContext): ScriptCommand[] {
@@ -22,7 +23,7 @@ export function daisyText(ctx: TextHandlerContext): ScriptCommand[] {
   if (ctx.hasFlag('GOT_TOWN_MAP')) return displayTextID([print('BluesHouseDaisyUseMapText')]);
   if (!ctx.hasFlag('GOT_POKEDEX')) return displayTextID([print('BluesHouseDaisyRivalAtLabText')]);
   return displayTextID([print('BluesHouseDaisyOfferMapText'), { type: 'giveItem', itemId: 'TOWN_MAP',
-    successCommands: [{ type: 'hideObject', map: 'BluesHouse', npcId: 'town_map' },
+    successCommands: [{ type: 'hideObject', toggle: TOGGLE.TOWN_MAP },
       { type: 'printText', program: 'GotMapText', bindings: { stringBuffer: getItemName('TOWN_MAP') } },
       { type: 'setFlag', flag: 'GOT_TOWN_MAP' }],
     failCommands: [print('BluesHouseDaisyBagFullText')] }]);

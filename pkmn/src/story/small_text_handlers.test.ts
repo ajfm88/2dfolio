@@ -17,7 +17,9 @@ import { GameMap } from '../overworld/map';
 import { Player } from '../overworld/player';
 import { Npc } from '../overworld/npc';
 import { isHeld, isPassPressed, syncJoypadRead } from '../input';
-import { hasFlag, restoreFlags, restoreHiddenObjects, getAllHiddenObjects } from '../events';
+import { hasFlag, restoreFlags } from '../events';
+import { TOGGLE, initializeToggleableObjectFlags, isToggledOff } from '../overworld/toggleable_objects';
+import { toggleChanges } from '../test/toggle_state';
 import { applyStoryNpcState } from '../overworld/story_state';
 import { mapCloseFrames } from '../overworld/sprite_sets';
 import type { MapData } from '../core/types';
@@ -47,7 +49,7 @@ function all(commands: ScriptCommand[]): ScriptCommand[] {
 const programs = (commands: ScriptCommand[]) => all(commands).filter(c => c.type === 'printText').map(c => c.program);
 const first = (commands: ScriptCommand[]) => programs(commands)[0];
 beforeAll(async () => { await loadTextPrograms(); await initTextSystem(); await loadBattleData(); });
-beforeEach(() => { restoreFlags([]); restoreHiddenObjects([]); vi.clearAllMocks();
+beforeEach(() => { restoreFlags([]); initializeToggleableObjectFlags(); vi.clearAllMocks();
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false); setTextSpeed('fast'); });
 
 describe('small handlers from the cartridge branches', () => {
@@ -84,7 +86,7 @@ describe('small handlers from the cartridge branches', () => {
   it('Daisy gives, hides, prints with the binding/jingle, then flags; full bag only prints the failure', () => {
     const give = daisyText(ctx('GOT_POKEDEX'))[2]; if (give.type !== 'giveItem') throw new Error('Expected give');
     expect(give).toEqual({ type: 'giveItem', itemId: 'TOWN_MAP', successCommands: [
-      { type: 'hideObject', map: 'BluesHouse', npcId: 'town_map' },
+      { type: 'hideObject', toggle: 0x2a },
       { type: 'printText', program: 'GotMapText', bindings: { stringBuffer: 'TOWN MAP' } },
       { type: 'setFlag', flag: 'GOT_TOWN_MAP' }], failCommands: [{ type: 'printText', program: 'BluesHouseDaisyBagFullText' }] });
   });
@@ -134,7 +136,9 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry',
       'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry',
       ...Object.fromEntries(Array.from({ length: 8 }, (_, n) => [`Route3:${n + 2}`, 'A5b4 trainer'])),
-      'PewterGym:2': 'A5b4 trainer' };
+      'PewterGym:2': 'A5b4 trainer',
+      // Checkpoint-04 places the objects. Their scripts are later: the rivals are I1.
+      'Route22:1': 'I1 rival battle', 'Route22:2': 'I1 rival battle' };
     const seen: string[] = [];
     for (const file of readdirSync(resolve(dataDir, 'maps'))) {
       const m = map(file.replace(/\.json$/, '')); const calls = getTextProgramData().textPointers[`${m.name}_TextPointers`];
@@ -146,7 +150,7 @@ describe('small handlers from the cartridge branches', () => {
         expect(!!registered !== !!excluded[key], key).toBe(true);
       }
     }
-    expect(seen).toHaveLength(52); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
+    expect(seen).toHaveLength(54); expect(Object.keys(excluded).every(k => seen.includes(k))).toBe(true);
     expect(getTextHandler('RedsHouse1F', 2)).toBeDefined(); // TV is a hidden event, not a map sign.
   });
   it.each(['branch', 'Mart give order', 'healing jingle'])('detects an in-memory %s mutation', mutation => {
@@ -202,13 +206,13 @@ describe('small handler frame/side-effect contracts', () => {
       vi.mocked(isHeld).mockImplementation(b => b === 'b' && t % 2 === 0 && deps.textBox.isWaitingForInput);
       updateScript(deps, false);
       if (deps.playerBag.getCount('TOWN_MAP') && given < 0) {
-        given = t; expect(getAllHiddenObjects()).toContain('BluesHouse:town_map'); expect(hasFlag('GOT_TOWN_MAP')).toBe(false);
+        given = t; expect(isToggledOff(TOGGLE.TOWN_MAP)).toBe(true); expect(hasFlag('GOT_TOWN_MAP')).toBe(false);
       }
       if (hasFlag('GOT_TOWN_MAP') && flagged < 0) flagged = t;
     }
     expect(deps.playerBag.getCount('TOWN_MAP')).toBe(full ? 0 : 1);
     expect(full ? given === -1 && flagged === -1 : given > 23 && flagged > given).toBe(true);
-    expect(getAllHiddenObjects()).toEqual(full ? [] : ['BluesHouse:town_map']);
+    expect(toggleChanges()).toEqual({ hidden: full ? [] : [TOGGLE.TOWN_MAP], shown: [] });
   });
   it('dispatches Mom from text ID at talk time and leaves her generated dialogue unchanged', () => {
     const deps = scene('RedsHouse1F'); const mom = deps.npcs[0]; const original = mom.data.dialogue;

@@ -496,6 +496,16 @@
       "direction": "right"
     },
     {
+      "textId": 5,
+      "objectId": 5,
+      "id": "oldman_blocking",
+      "sprite": "gambler_asleep",
+      "x": 18,
+      "y": 9,
+      "movement": "stay",
+      "dialogue": "You can't go\nthrough here!\fThis is private\nproperty!"
+    },
+    {
       "textId": 6,
       "objectId": 6,
       "id": "fisher1",
@@ -518,17 +528,6 @@
       "walkDir": "left_right"
     },
     {
-      "textId": 5,
-      "objectId": 5,
-      "id": "oldman_blocking",
-      "sprite": "gambler_asleep",
-      "x": 18,
-      "y": 9,
-      "movement": "stay",
-      "dialogue": "You can't go\nthrough here!\fThis is private\nproperty!",
-      "direction": "down"
-    },
-    {
       "textId": 8,
       "objectId": 8,
       "id": "oldman2",
@@ -536,8 +535,7 @@
       "x": 18,
       "y": 9,
       "movement": "stay",
-      "dialogue": "",
-      "direction": "down"
+      "dialogue": ""
     }
   ],
   "hiddenEvents": [

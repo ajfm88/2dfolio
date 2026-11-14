@@ -70,7 +70,8 @@
       "x": 10,
       "y": 5,
       "movement": "walk",
-      "dialogue": "You can use that\nPC in the corner.\fThe receptionist\ntold me. So kind!"
+      "dialogue": "You can use that\nPC in the corner.\fThe receptionist\ntold me. So kind!",
+      "walkDir": "up_down"
     },
     {
       "textId": 3,

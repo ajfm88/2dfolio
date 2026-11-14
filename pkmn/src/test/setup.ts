@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { afterEach, beforeAll, vi } from 'vitest';
 import { unpinOverworldRandom } from './overworld_random_pin';
+import { loadToggleableObjects } from '../overworld/toggleable_objects';
 
 const DATA_DIR = resolve(__dirname, '../../data');
 
@@ -27,7 +28,7 @@ function readDataFile(filename: string): unknown {
   return dataCache[filename];
 }
 
-beforeAll(() => {
+beforeAll(async () => {
   vi.stubGlobal('fetch', async (url: string) => {
     const cleanUrl = url.replace(/^\//, '');
     try {
@@ -41,6 +42,9 @@ beforeAll(() => {
       return { ok: false, status: 404 };
     }
   });
+  // Map loads and story scripts read the toggle table (V5c checkpoint-03b), as main's init loads it at startup.
+  // The flags start as New Game's. A test that calls vi.resetModules() loads its fresh copy itself.
+  await loadToggleableObjects();
 });
 
 // DECISIONS #91: a pinned overworld Random lasts one test.

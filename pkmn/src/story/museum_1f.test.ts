@@ -4,7 +4,8 @@ import { host, loadMainBattleRig, resetMainBattleRig, tick, until, mon, frameNow
 import * as audio from '../audio';
 import * as menuRender from '../menus/menu_render';
 import { renderScriptMenu, getActiveScript } from '../script/script_controller';
-import { isObjectHidden, restoreHiddenObjects, setFlag } from '../events';
+import { setFlag } from '../events';
+import { TOGGLE, initializeToggleableObjectFlags, isToggledOff } from '../overworld/toggleable_objects';
 import { museum2FHikerText } from './small_text_handlers';
 import { restorePikachuHappiness } from '../pikachu/pikachu_happiness';
 import type { BattlePokemon } from '../battle';
@@ -127,8 +128,8 @@ describe('the Old Amber scientist (Museum1FPrintScientist2Text) and the 2F hiker
   const A = 'Museum1FPrintScientist2Text.';
   const hold = () => (frameNow() % 8 < 4 ? ['a' as const] : []); // the overworld reads the joypad on standing passes, every second frame
   const amberNpc = () => host.overworldDeps().npcs.find(n => n.data.id === 'old_amber')!;
-  beforeEach(() => { resetMainBattleRig(); clearFlag('GOT_OLD_AMBER'); clearFlag('BATTLED_RIVAL_IN_OAKS_LAB'); restoreHiddenObjects([]); });
-  afterEach(() => { host.reset(); restoreHiddenObjects([]); vi.restoreAllMocks(); });
+  beforeEach(() => { resetMainBattleRig(); clearFlag('GOT_OLD_AMBER'); clearFlag('BATTLED_RIVAL_IN_OAKS_LAB'); initializeToggleableObjectFlags(); });
+  afterEach(() => { host.reset(); initializeToggleableObjectFlags(); vi.restoreAllMocks(); });
   async function talkToScientist() {
     host.playerParty.push(mon());
     await host.handleWarpLoad('Museum1F', 0, { x: 15, y: 3 }); await host.finishFade(); host.state = 'overworld';
@@ -141,7 +142,7 @@ describe('the Old Amber scientist (Museum1FPrintScientist2Text) and the 2F hiker
     expect(flow.map(c => c.type)).toEqual(['displayOpen', 'printText', 'giveItem', 'displayClose']);
     expect(flow[1]).toEqual({ type: 'printText', program: A + 'TakeThisToAPokemonLabText' });
     expect(flow[2]).toEqual({ type: 'giveItem', itemId: 'OLD_AMBER',
-      successCommands: [{ type: 'setFlag', flag: 'GOT_OLD_AMBER' }, { type: 'hideObject', map: 'Museum1F', npcId: 'old_amber' },
+      successCommands: [{ type: 'setFlag', flag: 'GOT_OLD_AMBER' }, { type: 'hideObject', toggle: 0x33 },
         { type: 'updateSprites' }, { type: 'printText', program: A + 'ReceivedOldAmberText' }],
       failCommands: [{ type: 'printText', program: A + 'YouDontHaveSpaceText' }] });
     for (const name of ['TakeThisToAPokemonLab', 'ReceivedOldAmber', 'GetTheOldAmberCheck', 'YouDontHaveSpace'])
@@ -156,7 +157,7 @@ describe('the Old Amber scientist (Museum1FPrintScientist2Text) and the 2F hiker
     const prints = vi.spyOn(TextBox.prototype, 'print');
     await talkToScientist();
     until(() => hasFlag('GOT_OLD_AMBER'), pulse('a'), 4000);
-    expect(amberNpc().hidden).toBe(true); expect(isObjectHidden('Museum1F', 'old_amber')).toBe(true);
+    expect(amberNpc().hidden).toBe(true); expect(isToggledOff(TOGGLE.OLD_AMBER)).toBe(true);
     expect(host.bag.getCount('OLD_AMBER')).toBe(1);
     // GiveItem through UpdateSprites cost no frame: the received text has already started in this tick.
     expect(prints.mock.calls[prints.mock.calls.length - 1][0]).toEqual({ program: A + 'ReceivedOldAmberText' });
@@ -170,7 +171,7 @@ describe('the Old Amber scientist (Museum1FPrintScientist2Text) and the 2F hiker
     await talkToScientist();
     until(() => host.state !== 'script', pulse('a'), 6000);
     expect(hasFlag('GOT_OLD_AMBER')).toBe(false); expect(host.bag.getCount('OLD_AMBER')).toBe(0);
-    expect(amberNpc().hidden).toBeFalsy(); expect(isObjectHidden('Museum1F', 'old_amber')).toBe(false);
+    expect(amberNpc().hidden).toBeFalsy(); expect(isToggledOff(TOGGLE.OLD_AMBER)).toBe(false);
   });
 
   const hiker = (party: BattlePokemon[]) => museum2FHikerText({ ...ctx(12, 6), party }).flatMap(c => c.type === 'printText' ? [c.program] : []);

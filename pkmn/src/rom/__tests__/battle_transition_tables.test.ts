@@ -51,11 +51,16 @@ it.skipIf(!ROM_PATH)('every retained NPC textId is its ROM object slot, independ
       const flags = rom[p + 5]; p += flags & 0x40 ? 8 : flags & 0x80 ? 7 : 6;
     }
     const map = json<{ npcs: { id: string; textId: number; sprite: string; x: number; y: number }[] }>(`maps/${name}.json`);
+    // Picture and coordinates identify the object. Route 22's two rivals share both, so the nth
+    // JSON copy is the nth ROM copy. Matching by textId would hide the bug this guards.
+    const cursor = new Map<string, number>();
     for (const npc of map.npcs) {
-      // Match by original picture/coordinates; matching by textId would hide the bug this guards.
-      const matches = objects.filter(object => object.picture === pictures[npc.sprite] && object.x === npc.x && object.y === npc.y);
-      expect(matches, `${name}:${npc.id} must identify one original object`).toHaveLength(1);
-      expect(npc.textId, `${name}:${npc.id} cartridge slot`).toBe(matches[0].slot);
+      const key = `${pictures[npc.sprite]}:${npc.x}:${npc.y}`;
+      const group = objects.filter(object => `${object.picture}:${object.x}:${object.y}` === key);
+      const nth = cursor.get(key) ?? 0;
+      cursor.set(key, nth + 1);
+      expect(group.length, `${name}:${npc.id} must identify an original object`).toBeGreaterThan(nth);
+      expect(npc.textId, `${name}:${npc.id} cartridge slot`).toBe(group[nth].slot);
       checked++;
     }
   }

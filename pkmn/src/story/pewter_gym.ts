@@ -7,6 +7,7 @@ import { shouldPikachuFollow } from '../pikachu/pikachu_follower';
 import { playMusic, stopMusic } from '../audio';
 import { TRAINER_SCRIPT } from '../overworld/map_trainers';
 import { setJoyIgnore } from '../input/joy_ignore';
+import { TOGGLE } from '../overworld/toggleable_objects';
 
 export const PEWTER_GYM = 'PewterGym';
 
@@ -46,9 +47,9 @@ function receiveTM34(nested: boolean): ScriptCommand[] {
       successCommands: [...last('PewterGymReceivedTM34Text', 5), { type: 'setFlag', flag: 'GOT_TM34' }],
       failCommands: last('PewterGymTM34NoRoomText', 6) },
     { type: 'setFlag', flag: 'BADGE_1' }, // wObtainedBadges and wBeatGymFlags are this one flag here
-    { type: 'hideObject', map: 'PewterCity', npcId: 'youngster' }, // TOGGLE_GYM_GUY
+    { type: 'hideObject', toggle: TOGGLE.GYM_GUY },
     { type: 'updateSprites', fontLoaded: false }, // HideObject's UpdateSprites
-    { type: 'hideObject', map: 'Route22', npcId: 'rival1' }, // TOGGLE_ROUTE_22_RIVAL_1; Route 22's objects are I1
+    { type: 'hideObject', toggle: TOGGLE.ROUTE_22_RIVAL_1 }, // Route 22's objects are I1
     { type: 'updateSprites', fontLoaded: false },
     { type: 'clearFlag', flag: '1ST_ROUTE22_RIVAL_BATTLE' },
     { type: 'clearFlag', flag: 'ROUTE22_RIVAL_WANTS_BATTLE' },
