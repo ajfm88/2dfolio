@@ -532,12 +532,12 @@ describe('Game text: trainer battle texts (V1c)', () => {
   });
 });
 
-describe('Game text: catch demo names (V1d)', () => {
-  it('matches DisplayBattleMenu .oldManName / .profOakName', () => {
+describe('Game text: the catch demo keys are gone (V5c checkpoint-06)', () => {
+  it('no longer extracts the three keys the old catch-demo renderer read', () => {
     const text = extractGameText(rom);
-    // engine/battle/core.asm: db "OLD MAN@" / db "PROF.OAK@"
-    expect(text.BATTLE_OLD_MAN_NAME).toBe('OLD MAN');
-    expect(text.BATTLE_PROF_OAK_NAME).toBe('PROF.OAK');
+    // The battle prints the names and "Shoot! It was so close too!" from its own data since A5f checkpoint-05.
+    for (const key of ['BATTLE_OLD_MAN_NAME', 'BATTLE_PROF_OAK_NAME', 'BATTLE_SO_CLOSE']) expect(key in text).toBe(false);
+    expect(text.BATTLE_BROKE_FREE).toBeDefined(); // their former neighbour stays
   });
 });
 

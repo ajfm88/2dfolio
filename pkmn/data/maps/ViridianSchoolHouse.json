@@ -76,14 +76,13 @@
   "hiddenEvents": [
     {
       "x": 3,
-      "y": 0,
-      "scriptId": "VIRIDIAN_SCHOOL_BLACKBOARD",
-      "facing": "up"
+      "y": 4,
+      "scriptId": "VIRIDIAN_SCHOOL_NOTEBOOK"
     },
     {
       "x": 3,
-      "y": 4,
-      "scriptId": "VIRIDIAN_SCHOOL_NOTEBOOK"
+      "y": 0,
+      "scriptId": "VIRIDIAN_SCHOOL_BLACKBOARD"
     }
   ]
 }

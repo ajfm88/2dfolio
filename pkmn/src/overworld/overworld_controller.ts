@@ -36,7 +36,7 @@ import { mapAutoTextBox, applyMapAutoTextBox } from '../text/auto_text_box';
 import type { TextHandlerContext } from '../story/text_handlers';
 import { getOwnedCount } from '../pokedex_state';
 import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
-import { buildOakGrassScript } from '../story/pallet_town';
+import { buildOakGrassScript, palletTownScript } from '../story/pallet_town';
 import { PEWTER_CITY, pewterCityScript } from '../story/pewter_city';
 import { MUSEUM_1F, museum1FScript } from '../story/museum_1f';
 import { PEWTER_GYM, pewterGymBrockPostBattle } from '../story/pewter_gym';
@@ -335,7 +335,16 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 /** RunMapScript, before Joypad, on every standing pass. */
 export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
   const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
-  if (!player.mapScriptBoundary || ow.doorExitStep) return null;
+  if (!player.mapScriptBoundary) return null;
+
+  // BluesHouse_Script and PalletTown_Script's resting bodies have no trigger square: they run on every
+  // zero-counter pass, the arrival pass on a door included (JoypadOverworld precedes PlayerStepOutFromDoor).
+  // BluesHouse_Script dispatches with `xor a`, so its default script runs every pass (note 93 §22.1).
+  if (currentMapName === 'BluesHouse') setFlag('ENTERED_BLUES_HOUSE');
+  if (currentMapName === 'PalletTown') {
+    palletTownScript(() => updateSprites(npcs, deps.gameMap, player, pikachuFollower));
+  }
+  if (ow.doorExitStep) return null;
 
   // PewterGym_ScriptPointers' fourth entry. A loss has already reset the script through the blackout path.
   if (currentMapName === PEWTER_GYM && getMapScript(PEWTER_GYM) === TRAINER_SCRIPT.BROCK_POST_BATTLE) {

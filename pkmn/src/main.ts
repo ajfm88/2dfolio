@@ -563,6 +563,9 @@ async function loadSavedGame(): Promise<void> {
   if (saved.eventFlags) {
     restoreFlags(saved.eventFlags);
   }
+  // A save from before V5c checkpoint-05 never set EVENT_ENTERED_BLUES_HOUSE. Daisy gives the Town Map
+  // inside the house, so the map implies it (BluesHouse_Script sets it on the first pass there).
+  if (hasFlag("GOT_TOWN_MAP")) setFlag("ENTERED_BLUES_HOUSE");
   // Saves made before V1e have no map script states: derive Viridian's from its events
   restoreMapScripts(saved.mapScripts ?? { [VIRIDIAN_CITY]: initialViridianScript(hasFlag) });
   // A save from before V5c checkpoint-03b has no flags: derive them from its keys and events (restored above).
@@ -609,7 +612,7 @@ async function startNewGame(): Promise<void> {
   npcs = await loadNpcs(gameMap.mapData?.npcs ?? []);
 
   player.setTilePosition(6, 4);
-  player.direction = "down";
+  player.direction = "up"; // StartNewGame: wPlayerMovingDirection = PLAYER_DIR_UP (engine/menus/main_menu.asm:155)
 
   // Reset all mutable state for a fresh game
   playerParty.length = 0;

@@ -55,7 +55,11 @@ describe.skipIf(!romPath)('A5a ROM text invariants', () => {
     const text = extractGameText(getRom());
     const body = Object.values(text).map(v => v.replace(/<PROMPT>$/, ''));
     expect(body.filter(v => /<(PROMPT|DONE)>/.test(v))).toEqual([]);
-    const stripped = Object.fromEntries(Object.entries(text).map(([k, v]) => [k, v.replace(/<PROMPT>$/, '')]));
+    // V5c checkpoint-06 dropped three keys that had no reader. Put back in place, the baseline still holds.
+    const dropped = [['BATTLE_SO_CLOSE', 'Shoot! It was so\nclose too!'], ['BATTLE_OLD_MAN_NAME', 'OLD MAN'], ['BATTLE_PROF_OAK_NAME', 'PROF.OAK']];
+    for (const [key] of dropped) expect(key in text).toBe(false);
+    const stripped = Object.fromEntries(Object.entries(text).flatMap(([k, v]) =>
+      [[k, v.replace(/<PROMPT>$/, '')], ...(k === 'BATTLE_BROKE_FREE' ? dropped : [])]));
     const data = JSON.stringify(stripped, null, 2) + '\n';
     expect(createHash('sha256').update(data).digest('hex'))
       .toBe('d3e4aa2ae5e9edfd1e3e1643c30a8b1519f9520606a8d5c467271808443bf643');

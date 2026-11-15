@@ -15,6 +15,62 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-12 (03b play-test passed; checkpoint-04 briefed for Grok) — Codex
+
+- The user reports §16.4 works perfectly: CONTINUE, save/reload and New Game through the Lab. Checkpoint-03 is closed. Traced checkpoint-04's ROM object encoding, the extractor's index filter and metadata overrides, and the live toggle reader. Wrote the implementation and verification brief in note 93 §19. No source or generated data changed. Next: Grok implements checkpoint-04, reports §20 and commits locally; review and visible play-test follow.
+
+### 2026-11-12 (V5c checkpoint-03b reviewed: PASSED WITH ONE TEST ADDED - Grok)
+
+- Reviewed `f440b40` against note 93 §16. The source reverse-applies the spike. Gates match the brief (ROM 6357/6357, no-ROM 6062 / 295, bundle `index-VLxETiOv.js`). S1–S18 each AssertionError. Dropping the rival placement's `!npc.hidden` guard survived the whole no-ROM suite, so `oaks_lab.test.ts` now pins that a hidden rival stays put. New baseline ROM 6358/6358, no-ROM 6063 / 295, 260 files; bundle unchanged. Note 93 §18. Next: the user's CONTINUE check (§16.4: copy `p151-s` first). Checkpoint-04 has not started.
+
+### 2026-11-12 (V5c checkpoint-03b implemented; awaiting review) — Codex / GPT-6 Sol
+
+- Applied note 93 §16.3's spike: the live game now loads and uses toggle flags, saves 32 bytes and migrates older saves, and story commands write global toggle indexes. Typecheck passed; build matched `index-VLxETiOv.js`, 673,697 bytes and expected SHA256. ROM 6357/6357; no-ROM 6062 pass / 295 skip, 260 files. S1–S18 each exited 1 with AssertionError and restored the patched sources. No generated files changed. Report: note 93 §17. Next: Claude reviews 03b, then the user's CONTINUE check (§16.4).
+
+### 2026-11-12 (V5c checkpoint-03b traced, spiked and briefed for Codex) — Claude
+
+- Traced every `hideObject` / `showObject` caller, the save path and the story rules, and wrote the switch as one spike (note 93 §16): startup load, commands by toggle index, `toggleableObjectFlags` in the save with `hiddenObjects` migrated, New Game's initialisation, the five deciding events carrying their toggles inside `setFlag`, `story_state.ts` reduced to `IsObjectHidden` plus the rival's one placement rule. With the patch: typecheck clean, bundle `index-VLxETiOv.js` 673,697 bytes (+2,222), ROM 6357/6357, no-ROM 6062 / 295 skipped, 260 files; S1–S18 each AssertionError. Two new test files drive the real story flows command by command and the real main (init fetch, New Game, CONTINUE, a pre-03b save, bad bytes, ViridianMartScript2). Patch and runner in `notes/93-v5c-checkpoint-03b/`; the source is restored (the tree is still at 6348). The user's CONTINUE check on their real save is §16.4. Next: Codex implements note 93 §16.3.
+
+### 2026-11-12 (V5c checkpoint-03a reviewed: passed) — Claude
+
+- Reviewed Sol's `dba6fdb`: both source files equal the spike, nothing imports the module, no generated change. Gates re-run (typecheck clean, bundle unchanged, ROM 6348/6348, no-ROM 6053 / 295 skipped, 258 files). Reviewer mutations R1 (saved keys applied before the rules) and R2 (Oak 1 ignores `OAK_ASKED_TO_CHOOSE_MON`) each caught with AssertionError. Note 93 §15. Next: 03b's trace, spike and brief when the user asks.
+
+### 2026-11-12 (V5c checkpoint-03a implemented; awaiting review) — Codex / GPT-6 Sol
+
+- Applied note 93 §12.6's exact two-file spike; both hashes match §12.5. The pure toggle model remains unused. Typecheck and build passed; bundle unchanged (671,475 bytes, expected SHA256). ROM 6348/6348; no-ROM 6053 pass / 295 skip, 258 files. P1–P13 each exited 1 with only AssertionError; module hash restored. No generated files changed. Report: note 93 §14. Next: Claude reviews 03a, then briefs 03b.
+
+### 2026-11-12 (V5c checkpoint-03 traced and split; 03a spiked and briefed for Sol) — Claude
+
+- Traced the cartridge's toggle routines, every script site on today's maps and the port's `hiddenObjects` and `story_state.ts` rules. The `(map, npcId)` call shape can't stay (Brock's reward hides objects on two other maps), so toggles are named by index. Split 03 (#117): **03a** a pure unused module, **03b** the switch. Spiked 03a: `overworld/toggleable_objects.ts` and 11 no-ROM cases, including the migration against the live rules for all 128 event combinations. With the patch: typecheck clean, bundle unchanged, ROM 6348/6348, no-ROM 6053 / 295 skipped, 258 files; P1–P13 each AssertionError. Patch and runner in `notes/93-v5c-checkpoint-03a/`; the source is restored (the tree is still at 6337). Two findings logged in note 57 (the Route 22 rival's `ShowObject` → I1; the cutscenes' Show/Hide points → J2). Archived nine older entries to HISTORY. Next: Sol implements note 93 §12.6.
+
+### 2026-11-11 (end of day: context handoff) — Claude
+
+- The user stopped for the day. Rewrote STATUS → *In progress* as the restart list (V5c checkpoint-03 next, untraced), and refreshed CLAUDE.md, PROJECT and PLAN's V5 row. Docs only; baseline unchanged: ROM 6337/6337, no-ROM 6042 / 295 skipped, 257 files; bundle `index-_kTTYOPq.js`.
+
+### 2026-11-11 (V5c checkpoint-02 reviewed: passed) — Claude
+
+- Reviewed Codex's `066f2d7`: source equals the spike, all 54 committed generated files match the manifest, no runtime reader. Setup twice clean; gates re-run (bundle unchanged, ROM 6337/6337, no-ROM 6042 / 295 skipped, 257 files). Reviewer mutation R1 (two Route 3 objectIds swapped in the data) caught with AssertionError. Note 93 §11. Next: checkpoint-03, the toggle model.
+
+### 2026-11-11 (V5c checkpoint-02 implemented; awaiting review) — Codex
+
+- Applied note93 §9's exact four-file spike, checked the original ROM object index and 1-based sprite-slot contract against pret, and made step 3's docs. Setup twice; checker prints `PASS 54 generated files`. All generated changes are only objectId lines for 102 NPCs; prior fields/order unchanged. Ordered gates once each: typecheck/build pass, unchanged bundle, ROM 6337/6337 and no-ROM 6042/295, 257 files. O1–O3 fail with AssertionError as briefed; maps.ts and Oak's Lab JSON hashes unchanged afterwards. No runtime reader or visible change. Report: note93 §10. Next: Claude reviews, then checkpoint-03's trace/brief; no checkpoint-03 work started.
+
+### 2026-11-11 (V5c checkpoint-02 traced, spiked and briefed for Codex) — Claude
+
+- Spiked `objectId` (the 1-based `object_event` place) on every map NPC, plus a type-only `NpcData` field. Setup changes 54 generated files, one line per NPC; nothing reads the field. Three new no-ROM cases check every NPC against pret's lists, pin the reordered maps and show 19 of today's 23 toggle rows finding their NPC (the other 4 are the dropped objects). Gates with the patch: typecheck clean, bundle unchanged, ROM 6337/6337, no-ROM 6042 / 295 skipped, 257 files; O1–O3 each AssertionError. Patch, hash manifest and checker (round-tripped) in `notes/93-v5c-checkpoint-02/`; the source is restored. The user named Codex (#116).
+
+### 2026-11-11 (V5c checkpoint-01 reviewed: accepted, one test added) — Claude
+
+- Reviewed Codex's `7ad7cac`: source equals the spike, both JSON files at the expected hash, no runtime reader. Setup twice clean; gates re-run (bundle unchanged, ROM 6333/6333, no-ROM 6039 / 294). Reviewer mutation R1 (no map-ownership check on a pointer) survived. That was a planning gap, so I added a ROM-only witness case; R1 now fails with AssertionError. New baseline ROM 6334/6334, no-ROM 6039 / 295 skipped, 256 files. Note 93 §8. Next: checkpoint-02's trace and brief.
+
+### 2026-11-11 (V5c checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note93's exact six-file spike and checked the extractor/test against pret's toggle table, constants, object numbers and symbol offsets. Setup twice: only two new JSON files, both expected SHA256; all 942 prior generated hashes unchanged, all 944 identical between runs. Made §6.3's docs. Ordered gates once each: typecheck/build pass, unchanged bundle, ROM 6333/6333 and no-ROM 6039/294, 256 files. N1–N6 fail with AssertionError in the expected cases; extractor SHA256 unchanged afterwards. No runtime reader or visible change. Report: note93 §7. Next: Claude reviews, then checkpoint-02's trace/brief; V5c remains open.
+
+### 2026-11-11 (V5c planned; checkpoint-01 traced, spiked and briefed) — Claude
+
+- Audited every map's NPCs against pret's object events: Route 1's youngsters and the Pokécenter gentleman lack their walk axes, five STAY NONE objects carry a fixed facing, Oak's Lab and Viridian City have the wrong slot order, and OAK2, walking Daisy and the Route 22 rivals are dropped. The root cause is that there are no toggleable objects in the port. Wrote note 93's six-checkpoint plan. Spiked checkpoint-01, extracting `ToggleableObjectStates` (239 rows) and `ToggleableObjectMapPointers`, unused: typecheck clean, ROM 6333/6333, no-ROM 6039 / 294 skipped, 256 files, bundle unchanged, setup idempotent, N1–N6 each AssertionError. Captured as `notes/93-v5c-checkpoint-01/01-spike.diff`; the source is restored (the tree is still at 6329). Next: the user names the implementer for note 93 §6.
+
 ### 2026-11-11 (V5b play-test passed; V5b closed) — Claude
 
 - The user play-tested note 92 §5.6: "just tested, all pass". Recorded as note 92 §9; V5b is done. Next: V5c planning (note 93). No code or tests changed.

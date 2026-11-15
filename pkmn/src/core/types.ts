@@ -51,7 +51,7 @@ export interface HiddenEvent {
   text?: string;       // text to display (omit for item events)
   item?: string;       // hidden item ID (e.g., "POTION") — gives item on interaction
   flag?: string;       // event flag to track collection (item is gone once set)
-  facing?: Direction;  // required player facing direction (omit = any)
+  facing?: Direction;  // the facing the event's own routine requires before it does anything (omit = it has no such test)
   /** Plain predef (`text_far` + `text_end`) printed by this hidden event. */
   program?: string;
   scriptId?: string;   // triggers a named script instead of simple text (e.g., "VIRIDIAN_SCHOOL_NOTEBOOK")

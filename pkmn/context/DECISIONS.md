@@ -1455,6 +1455,36 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
        `ShowObject` / `HideObject` points is J2's (note 57).
      - The user's CONTINUE check on their real save follows Claude's review; the save is copied first.
 
+119. **Grok implements V5c checkpoint-05, walking Daisy; Pallet's resting script state is read from an event**
+     (2026-11-13, note 93 §22). *The user: "pls plan the next checkpoint, grok will implement".* The rulings are
+     Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - **`wPalletTownCurScript` = `SCRIPT_PALLETTOWN_DAISY` is `FOLLOWED_OAK_INTO_LAB`.** The Oak scene is one command
+       list that ends in that flag, and the north-exit trigger already reads its absence as state 0. No `mapScripts`
+       entry is added: #34 saves a script state only where the flags can't reproduce it.
+     - **Blue's House's and Pallet's resting scripts run ahead of the `doorExitStep` guard**, as the cartridge's
+       `RunMapScript` precedes `PlayerStepOutFromDoor`. The guard stays for every trigger script (note 57).
+     - **The swap's two `UpdateSprites` are real.** The script command `hideObject` keeps its collision-only refresh
+       until J2.
+     - **The preamble and `.next` (the two Poké Ball events) are ported with the routine**, unreachable until Oak's
+       gift exists. **`wBluesHouseCurScript` is not modelled**: Yellow dispatches with `xor a` and never reads it.
+     - **Old saves:** at load, `GOT_TOWN_MAP` sets `ENTERED_BLUES_HOUSE`, which the cartridge guarantees.
+
+120. **V5c checkpoint-06: a hidden event's `facing` is its routine's own test, not a lookup filter** (2026-11-13, note 93
+     §26). *The user, after checkpoint-05's play-test: "it passes the review, next checkpoint?". The rulings are
+     Claude's; the implementer is the user's to name.*
+
+     - **`CheckForHiddenEvent` matches coordinates only.** `facing` stays in the data only on rows whose routine tests
+       the facing itself (`OpenPokemonCenterPC`, `GymStatues`, `DisplayOakLabEmailText`, `PrintBenchGuyText`). A
+       mismatch there ends the interaction, as `hItemAlreadyFound` = 0 does: no bookshelf, sign or sprite. This closes
+       note 19 N-2 and #60's deferral. Visible effect today: Blue's House bookcases read from the side.
+     - **Data and engine share the checkpoint** (#35's exception): the lookup alone would break Red's house TV.
+       The TV keeps its two hidden-event rows, without a facing; making it a sign is J2's.
+     - **`PrintBenchGuyText`'s wrong-facing bug is not ported**: it can't be reached, and a test fails if it can.
+     - **New Game faces up** on both of the port's paths (`StartNewGame`'s `PLAYER_DIR_UP`).
+     - **The three catch-demo text keys leave `game_text.json`.** The pre-A5a baseline hash stays pinned, with the
+       three keys put back before hashing.
+
 ## Open — not decided, needs the user
 
 

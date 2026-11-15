@@ -100,7 +100,10 @@ retains UI coverage, and ends with one real UpdateSprites. START uses the
 `getBookshelfPredef(tileX, tileY)` matches `BookshelfTileIDs` (tileset, tile, predef). `PrintBookshelfText` runs only when the player faces up, and only on the one tile directly above the player's step (screen (8,7)). The Town Map shelf uses that same gate.
 
 `Player.checkInteraction` uses `OverworldLoop`'s order (A1b): hidden events →
-bookshelf only when no hidden event matched → signs → NPCs. The caller supplies the
+bookshelf only when no hidden event matched → signs → NPCs. Since V5c checkpoint-06 a
+hidden event matches by coordinates only, the first row on the step in front of the
+player. A routine's own facing test (`HiddenEvent.facing`) that the player does not
+meet ends the interaction: no bookshelf, sign or sprite. The caller supplies the
 hidden-item flag test; a found hidden item skips the bookshelf and falls through to
 signs/NPCs. The existing counter check still finds an NPC two steps away.
 
@@ -198,6 +201,14 @@ pass. Pallet, Viridian, Pewter (V2b CP3) and the lab triggers run there, and sin
 (*Trainer sight* below). `step_end.ts` defines the pure check order: count → Pikachu happiness
 and mood → encounter → warp → connection. Turns roll without counting. Each ledge
 hop half and door exit is simulated and only checks transitions.
+
+Since V5c checkpoint-05, Blue's House's and Pallet Town's resting scripts run on every
+zero-counter pass, ahead of the `doorExitStep` guard. Blue's House sets `ENTERED_BLUES_HOUSE`
+on each of those passes. Pallet runs `palletTownScript`: the Poké Ball preamble in every state,
+then the Daisy body only while `FOLLOWED_OAK_INTO_LAB` stands in for `wPalletTownCurScript`
+= `SCRIPT_PALLETTOWN_DAISY`. The swap hides sitting Daisy and shows walking Daisy, and each
+of those calls `updateSprites` (`HideObject`'s and `ShowObject`'s `jp UpdateSprites`). A save
+that already holds `GOT_TOWN_MAP` sets `ENTERED_BLUES_HOUSE` at load.
 
 The byte step counter and post-battle cooldown live in `OverworldState`. Every
 `EnterMap` (warps, loading a save, battle returns) resets the step counter and rearms
@@ -490,7 +501,7 @@ Beyond `load()`, `render()`, `isWalkable()`, and the getters (`width`, `height`,
 - `getTileAt(tx, ty)` — get tile ID at tile coordinates (checks connected maps for OOB)
 - `getSignAt(stepX, stepY)` — find sign text at step position
 - `getBookshelfPredef(tileX, tileY)` — bookshelf predef label for this tile, or null
-- `getHiddenEventAt(stepX, stepY, facing)` — find hidden event at position, filtered by direction
+- `getHiddenEventAt(stepX, stepY)` — the first hidden event at that step; facing is not a filter
 - `getWarpAt(tileX, tileY)` — find warp at tile position (converts to step coords internally)
 - `getWarpByIndex(index)` — get warp by its array index
 - `isInBounds(tileX, tileY)` — check if tile coords are within map bounds

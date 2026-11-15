@@ -120,7 +120,7 @@ describe('Intro CP4 through the real main dispatch', () => {
     expect(updateMusic6Times).toHaveBeenCalledOnce();
     expect(sync).toHaveBeenCalledTimes(exitReads);
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', false);
-    expect(host.player.direction).toBe('down'); // existing map-entry discrepancy, deliberately unchanged
+    expect(host.player.direction).toBe('up'); // StartNewGame: wPlayerMovingDirection = PLAYER_DIR_UP (V5c checkpoint-06)
   });
 
   it('holds white beyond frame40 if the map loader is late, then makes one music request on a tick', async () => {

@@ -191,8 +191,11 @@ export class Player {
     // items go directly to signs/sprites (hItemAlreadyFound), skipping the bookshelf.
     const stepX = Math.floor(facing.tx / 2);
     const stepY = Math.floor(facing.ty / 2);
-    const hiddenEvent = gameMap.getHiddenEventAt(stepX, stepY, this.direction);
+    const hiddenEvent = gameMap.getHiddenEventAt(stepX, stepY);
     if (hiddenEvent) {
+      // The routine's own `cp SPRITE_FACING_*; ret nz` (OpenPokemonCenterPC, GymStatues, DisplayOakLabEmailText,
+      // PrintBenchGuyText's table). hItemAlreadyFound stays 0, so OverworldLoop restarts: no bookshelf, sign or sprite.
+      if (hiddenEvent.facing && hiddenEvent.facing !== this.direction) return null;
       if (hiddenEvent.scriptId) return { scriptId: hiddenEvent.scriptId };
       if (hiddenEvent.item && hiddenEvent.flag) {
         if (!hiddenItemFound(hiddenEvent.flag)) return { item: hiddenEvent.item, flag: hiddenEvent.flag };

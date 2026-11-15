@@ -154,14 +154,12 @@
     {
       "x": 4,
       "y": 0,
-      "facing": "up",
       "program": "PushStartText",
       "text": "Push START to\nopen the MENU!"
     },
     {
       "x": 5,
       "y": 0,
-      "facing": "up",
       "scriptId": "OAKS_LAB_RIGHT_POSTER"
     },
     {

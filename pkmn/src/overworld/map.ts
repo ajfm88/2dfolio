@@ -363,12 +363,11 @@ export class GameMap {
     return null;
   }
 
-  /** Find a hidden event at the given step position, optionally filtered by facing direction. */
-  getHiddenEventAt(stepX: number, stepY: number, facing: 'up' | 'down' | 'left' | 'right'): HiddenEvent | null {
+  /** CheckForHiddenEvent: the first event whose coordinates are the step in front of the player. The facing
+   *  is not part of the match; a routine that tests it does so itself (HiddenEvent.facing). */
+  getHiddenEventAt(stepX: number, stepY: number): HiddenEvent | null {
     if (!this.mapData?.hiddenEvents) return null;
-    return this.mapData.hiddenEvents.find(e =>
-      e.x === stepX && e.y === stepY && (!e.facing || e.facing === facing)
-    ) ?? null;
+    return this.mapData.hiddenEvents.find(e => e.x === stepX && e.y === stepY) ?? null;
   }
 
   getWarpAt(tileX: number, tileY: number) {

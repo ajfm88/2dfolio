@@ -6,6 +6,8 @@ import { stopMusic, playMusic } from '../audio';
 import { setNoMapMusic } from '../audio/audio_flags';
 import { displayTextID, registerTextHandler } from './text_handlers';
 import { setJoyIgnore } from '../input/joy_ignore';
+import { hasFlag, setFlag } from '../events';
+import { TOGGLE, hideObject, showObject } from '../overworld/toggleable_objects';
 
 let oakWalkedToPlayer: 0 | 1 | 2 = 0;
 /** PalletTownOakText selects its body from wOakWalkedToPlayer. */
@@ -18,6 +20,26 @@ export function palletOakText(stage: 0 | 1 | 2): ScriptCommand[] {
   ] : [])], { outerWait: stage !== 0, textId: 1 });
 }
 registerTextHandler('PalletTown', 1, () => palletOakText(oakWalkedToPlayer));
+
+/**
+ * PalletTown_Script outside the Oak scene: its preamble (scripts/PalletTown.asm:2–4) and
+ * PalletTownDaisyScript (:203–219). wPalletTownCurScript rests at SCRIPT_PALLETTOWN_DAISY once Oak has walked
+ * the player to the Lab; the port's stand-in is FOLLOWED_OAK_INTO_LAB, as the north-exit trigger's is that
+ * flag's absence (note 93 §22.2). `updateSprites` is HideObject's and ShowObject's `jp UpdateSprites`.
+ */
+export function palletTownScript(updateSprites: () => void): void {
+  if (hasFlag('GOT_POKEBALLS_FROM_OAK')) setFlag('PALLET_AFTER_GETTING_POKEBALLS');
+  if (!hasFlag('FOLLOWED_OAK_INTO_LAB')) return;
+  if (!hasFlag('DAISY_WALKING') && hasFlag('GOT_TOWN_MAP') && hasFlag('ENTERED_BLUES_HOUSE')) {
+    setFlag('DAISY_WALKING');
+    hideObject(TOGGLE.DAISY_SITTING);
+    updateSprites();
+    showObject(TOGGLE.DAISY_WALKING);
+    updateSprites();
+    return; // predef_jump ShowObject: .next waits for the following pass
+  }
+  if (hasFlag('GOT_POKEBALLS_FROM_OAK')) setFlag('PALLET_AFTER_GETTING_POKEBALLS_2');
+}
 
 /**
  * Build the Oak grass cutscene script.

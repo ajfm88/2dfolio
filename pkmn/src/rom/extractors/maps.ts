@@ -386,7 +386,7 @@ const MAP_METADATA: Record<string, MapMeta> = {
   RedsHouse1F: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 3, y: 1, facing: 'up', textOffset: symToOffset(0x2a, 0x450a) },  // TV movie text
+      { x: 3, y: 1, textOffset: symToOffset(0x2a, 0x450a) },  // TV movie text; RedsHouse1FTVText reads the facing itself
       { x: 3, y: 1, textOffset: symToOffset(0x2a, 0x455c) },  // wrong side text
     ],
     npcs: [
@@ -395,16 +395,16 @@ const MAP_METADATA: Record<string, MapMeta> = {
   RedsHouse2F: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 0, y: 1, scriptId: 'RED_PC', facing: 'up' },
+      { x: 0, y: 1, scriptId: 'RED_PC' },  // OpenRedsPC: no facing test
       { x: 3, y: 5, program: 'RedBedroomSNESText', textOffset: symToOffset(0x27, 0x6dd8) },  // PrintRedSNESText
     ],
     npcs: [] },
   BluesHouse: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 0, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
-      { x: 1, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
-      { x: 7, y: 1, facing: 'up', program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
+      { x: 0, y: 1, program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
+      { x: 1, y: 1, program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
+      { x: 7, y: 1, program: 'BookcaseText', textOffset: symToOffset(0x27, 0x7499) },  // PrintBookcaseText
     ],
     npcs: [
       { id: 'daisy' },
@@ -415,8 +415,8 @@ const MAP_METADATA: Record<string, MapMeta> = {
   OaksLab: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 4, y: 0, facing: 'up', program: 'PushStartText', textOffset: symToOffset(0x27, 0x64c5) },  // DisplayOakLabLeftPoster
-      { x: 5, y: 0, facing: 'up', scriptId: 'OAKS_LAB_RIGHT_POSTER', textOffset: symToOffset(0x27, 0x64e3) },  // DisplayOakLabRightPoster
+      { x: 4, y: 0, program: 'PushStartText', textOffset: symToOffset(0x27, 0x64c5) },  // DisplayOakLabLeftPoster
+      { x: 5, y: 0, scriptId: 'OAKS_LAB_RIGHT_POSTER', textOffset: symToOffset(0x27, 0x64e3) },  // DisplayOakLabRightPoster
       { x: 0, y: 1, facing: 'up', program: 'OakLabEmailText', textOffset: symToOffset(0x27, 0x6911) },  // DisplayOakLabEmailText
       { x: 1, y: 1, facing: 'up', program: 'OakLabEmailText', textOffset: symToOffset(0x27, 0x6911) },  // DisplayOakLabEmailText
     ],
@@ -455,8 +455,8 @@ const MAP_METADATA: Record<string, MapMeta> = {
   ViridianSchoolHouse: {
     signTextOffsets: [],
     hiddenEvents: [
-      { x: 3, y: 0, scriptId: 'VIRIDIAN_SCHOOL_BLACKBOARD', facing: 'up' },
       { x: 3, y: 4, scriptId: 'VIRIDIAN_SCHOOL_NOTEBOOK' },
+      { x: 3, y: 0, scriptId: 'VIRIDIAN_SCHOOL_BLACKBOARD' },  // PrintBlackboardLinkCableText: no facing test
     ],
     npcs: [
       { id: 'brunette_girl', textOffset: symToOffset(0x2a, 0x5832) },

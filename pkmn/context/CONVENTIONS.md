@@ -249,7 +249,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6361/6361** as of 2026-11-13 (V5c checkpoint-04; default workers). No-ROM **6066 pass / 295 skip**, 260 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6388/6388** as of 2026-11-13 (V5c checkpoint-06 review; default workers). No-ROM **6093 pass / 295 skip**, 263 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -265,6 +265,12 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+`overworld/hidden_event_facing.test.ts` (V5c checkpoint-06, note 93 §26 and §28): 11 no-ROM cases. The review adds a first-row witness for duplicate coordinates (review mutation R1). Three pin every ROM hidden event on today's maps at pret's coordinates and in pret's order, `facing` only on the rows whose routine reads the player's facing, and the TV's two rows with no facing. Seven, on the real maps and collision, pin Red's PC from any facing; Blue's House bookcases from below, from the right and from the left; Oak's e-mail from the side returning nothing even with a sprite on that step, and that sprite answering where no event is in front; the Pokécenter PC and the Gym statues answering facing up only; both bench guys from the right with no other standable side; the TV from every side. `main_intro.test.ts` expects `'up'` on both New Game paths. `extraction.test.ts` expects the three catch-demo keys absent. `text_decoder.test.ts` puts those three keys back before hashing the pre-A5a baseline and asserts they are absent. E1–E8 are the mutation witnesses. Baseline: ROM **6388/6388**; no-ROM **6093 pass / 295 skip**, 263 files.
+
+The checkpoint-05 review (note 93 §24) added an eighth `main_daisy.test.ts` case: passes inside Blue's House and on Route 1 with the Town Map swap nothing (reviewer mutation R1). Baseline ROM **6377/6377**; no-ROM **6082 pass / 295 skip**, 262 files.
+
+`story/pallet_daisy.test.ts` (V5c checkpoint-05, note 93 §22): 8 no-ROM cases pin the swap's order (event, hide, `UpdateSprites`, show, `UpdateSprites`) and that a second pass does nothing; four rows that do nothing (no Town Map, never entered Blue's House, neither, the Oak scene not over); `DAISY_WALKING` already set; the preamble in any state and `.next` only in the Daisy state; the swap pass skipping `.next`. `main_daisy.test.ts`: 7 no-ROM cases through the real main pin the entry event set by the first pass in the house and not by the load or by Pallet; the scripts running with a door step pending and not on a moving pass; leaving with the map swaps on the arrival pass; leaving without the map; the house afterwards; save and CONTINUE; a pre-05 save with and without the map. D1–D16 are the mutation witnesses. Baseline: ROM **6376/6376**; no-ROM **6081 pass / 295 skip**, 262 files.
 
 `overworld/toggleable_objects.test.ts` (V5c checkpoint-03a/03b, note93 §12/§16): 11 no-ROM cases pin pret's toggle constants, New Game's 32 bytes, bit layout, map lists and lookup, save byte validation and round-trip, and migration against a frozen copy of the prior story rules for all 128 event combinations. `story/story_toggles.test.ts` adds two cases checking flags after every real story command; `main_toggles.test.ts` adds six cases for startup, New Game, save, CONTINUE and migration. S1–S18 are mutation witnesses. The 03b review added one `oaks_lab.test.ts` case: a hidden rival is not moved to the post-starter place (R1). Baseline after checkpoint-04: ROM **6361/6361**; no-ROM **6066 pass / 295 skip**, 260 files.
 

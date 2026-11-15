@@ -49,16 +49,16 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-13 - V5 in progress: V5a, V5b done; V5c checkpoints 01–04 complete
+## State as of 2026-11-13 - V5 in progress: V5a, V5b and V5c complete; V5d next for planning
 
 - **R1, V1, A6, A1, V2, A5, V3 and V4 are done (8/36 milestones).** V4 checkpoints 01–04 passed code review, and the user's Route 3 and cave play-tests passed (note89 §20–§21). Both Diglett's Cave maps are runtime-wired (30 maps), and hop-midpoint trainer interruption is implemented. Brock's badge/TM34 and the ASM-backed battle engine remain in place.
 - **No ROM at runtime.** 207 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (944 generated files total). Vanilla art, local play, no remote and no push.
-- **V5a is complete** (note 91 §6, reviewed 2026-11-11). The live type chart already handles Psychic defenders; #111 withdrew #10's post-processing, and the rows are pinned through the real loaders. **Next: V5b**, the battle return (note 90 §5), then V5c–V5g in the order of DECISIONS #110.
+- **V5a is complete** (note 91 §6, reviewed 2026-11-11). The live type chart already handles Psychic defenders; #111 withdrew #10's post-processing, and the rows are pinned through the real loaders.
 - **V5b is complete** (note 92, user-verified 2026-11-11): the battle return blocks as the cartridge's (10 white frames, three 8-frame fade steps, the first pass at D+36).
 - **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **V5c in progress** (note 93, #115): checkpoints 01–04 are complete. The toggle model and save migration passed the user's CONTINUE check; ROM object order, movement bytes and the four initially hidden objects passed code review and the user's play-test on 2026-11-13. Checkpoint-05 (walking Daisy's script) is next when work resumes, then the small items (06). No checkpoint-05 work has started.
-- **Tests:** ROM **6361/6361**; no-ROM **6066 pass / 295 skip**; 260 files (V5c checkpoint-04). Bundle `index-VLxETiOv.js`, 673,697 bytes.
+- **V5c is complete** (note 93, #115): checkpoints 01–06 passed review and the user's play-tests; checkpoint-06 closed 2026-11-13 (§29). Next: plan V5d's FOREST land tile pairs and two `EmotionBubble` "!" cues (note 90 §3 items 10–11).
+- **Tests:** ROM **6388/6388**; no-ROM **6093 pass / 295 skip**; 263 files (V5c checkpoint-06 review; play-test passed). Bundle `index-CdZh1-Oi.js`, 674,183 bytes.
 - Full handoff: STATUS.md → *In progress* (2026-11-13). The user is stopping here; restart the dev server on 127.0.0.1:5173 when work resumes.
 
 ## Goals
