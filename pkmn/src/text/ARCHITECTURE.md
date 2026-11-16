@@ -36,8 +36,8 @@ BillsPc sets it once per visit and clears it on exit. PC PrintText invokes its
 font-loaded sprite callback after the border opens and before Delay3/glyphs.
 Other callers retain their
 explicit `noDelay` options until their migrations; the printer's global defaults
-are unchanged. `pokemon_names.ts:monDisplayName` supplies uppercase medicine names
-without mutating saved nicknames.
+are unchanged. The menus print `mon.nickname` as the record holds it (V5e checkpoint-02);
+`pokemon_names.ts` is gone.
 
 `text_printer.ts` ports PlaceString, PrintLetterDelay and ManualTextScroll as a frame
 generator. Its 20×6 logical buffer represents wTileMap rows 12–17. Text begins at

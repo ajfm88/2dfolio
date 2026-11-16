@@ -38,15 +38,19 @@ function rig(dex = false) {
 
 describe('START source session (home/start_menu.asm)', () => {
   it.each([
-    ['dex', 3, false], ['party', 35, true], ['item', 5, false],
-    ['trainer', 20, true], ['option', 5, false],
+    ['dex', 3, false], ['party', 37, true], ['item', 5, false],
+    ['trainer', 22, true], ['option', 5, false],
   ] as const)('holds input during the %s tail and resumes only after redraw +3', (kind, waits, white) => {
     const r = rig(); r.wait(23); r.frame('a');
     const sound = vi.mocked(playSFX).mock.calls.length;
     r.session.redisplay(kind); expect(r.session.paletteWhite).toBe(white);
     const reads = r.read.mock.calls.length;
+    // V5f (#73): RunDefaultPaletteCommand's two held frames have no VBlank.
+    const held = { dex: [], party: [30, 31], item: [], trainer: [18, 19], option: [] }[kind] as number[];
     for (let i = 1; i <= waits; i++) {
+      const ticks = r.tick.mock.calls.length;
       expect(r.frame('b')).toBeNull(); expect(r.read).toHaveBeenCalledTimes(reads);
+      expect(r.tick.mock.calls.length - ticks, `tail +${i} VBlank`).toBe(held.includes(i) ? 0 : 1);
       if (kind === 'item' || kind === 'option') expect(r.transfer.enabled).toBe(i === waits);
       if (kind === 'trainer') expect(r.transfer.enabled).toBe(i >= 17);
       if (kind === 'party') expect(r.transfer.enabled).toBe(i < 3 || i >= 29);

@@ -1,5 +1,7 @@
 // Main's actual state dispatch; Vitest alone exposes lexical bindings (see config).
 import { pinOverworldRandom } from './test/overworld_random_pin';
+import { currentOverworldRandom } from './overworld/overworld_random';
+import { tickAudio } from './audio';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
@@ -55,6 +57,7 @@ import type { GameButton } from './core';
 import type { StartMenuSession } from './menus/start_menu';
 import { PartyMenu } from "./menus/party_menu";
 import type { BagSession, OptionMenu, PokedexMenu, TrainerCard, SaveSession } from './menus';
+import { SaveSession as SaveSessionClass } from './menus/save_menu';
 import type { BattlePokemon } from './battle';
 import type { Player, GameMap } from './overworld';
 import type { PikachuFollower } from './pikachu';
@@ -84,6 +87,7 @@ const host = (main as unknown as { mainTest: {
   handleWarpLoad(map: string, warp: number): Promise<void>; handleBlackoutWarp(): void;
   connectToMap(map: string, direction: 'north' | 'south', offset: number): Promise<void>;
   finishFade(): Promise<void>; startScript(commands: ScriptCommand[]): void;
+  readonly evolutionText: string[];
   state: string; readonly mapName: string; mainMenu: { update(): unknown }; readonly fade: number; readonly bag: Bag; session: ReturnType<typeof createBattleSession> | null; readonly boxes: import('./pokemon_storage').BoxedPokemon[][]; readonly money: number;
   startMenu: StartMenuSession; partyMenu: PartyMenu; bagMenu: BagSession;
   optionMenu: OptionMenu; pokedexMenu: PokedexMenu; trainerCard: TrainerCard; saveMenu: SaveSession;
@@ -116,7 +120,7 @@ describe('checkpoint-02 main storage callback', () => {
     const a = createPokemon('RATTATA', 10)!, b = createPokemon('PIDGEY', 10)!;
     const first = a.statExp = [1, 2, 3, 4, 5], second = b.statExp = [65535, 256, 63002, 0, 1];
     host.playerParty.push(a, b); setBattleAndStartSavedMenuItem(1);
-    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(23);
+    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(25);
     r.step('a'); r.step(); r.step('a'); r.step();
     r.step('down'); r.step(); r.step('a');
     expect(host.playerParty).toEqual([b, a]);
@@ -221,29 +225,35 @@ describe('V2c CP3 through main load paths and storage callback', () => {
 });
 
 describe('StatusScreen through main party and battle dispatch', () => {
-  it.each([0, 1, 2])('START → POKéMON reveals R+19 and first reads R+22 with one owner, offset %i', offset => {
+  it.each([0, 1, 2])('START → POKéMON reveals R+21 and first reads R+24 with one owner, offset %i', offset => {
     host.playerParty.push(createPokemon('PIKACHU', 5)!);
     setBattleAndStartSavedMenuItem(1);
     const r = driver(); host.openStartMenu(); r.wait(23 + offset); r.step('a');
     const reads = r.read.mock.calls.length, syncs = r.sync.mock.calls.length, ticks = r.transfer.mock.calls.length;
     expect(host.partyMenu.paletteWhite).toBe(true);
-    for (let frame = 1; frame <= 21; frame++) {
-      r.step(...(frame === 21 ? ['b'] as const : [])); expect(host.partyMenu.paletteWhite).toBe(frame < 19);
+    const random = currentOverworldRandom(), draws = vi.spyOn(random, 'random');
+    for (let frame = 1; frame <= 23; frame++) {
+      const beforeDraws = draws.mock.calls.length, audio = vi.mocked(tickAudio).mock.calls.length;
+      const bytes = [random.hRandomAdd, random.hRandomSub], held = frame === 11 || frame === 12;
+      r.step(...(frame === 23 ? ['b'] as const : [])); expect(host.partyMenu.paletteWhite).toBe(frame < 21);
+      expect(draws.mock.calls.length - beforeDraws).toBe(held ? 0 : 1);
+      if (held) expect([random.hRandomAdd, random.hRandomSub]).toEqual(bytes);
+      expect(vi.mocked(tickAudio).mock.calls.length - audio).toBe(1);
       expect(r.read).toHaveBeenCalledTimes(reads); expect(r.sync).toHaveBeenCalledTimes(syncs);
-      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
-      if (frame < 19) {
+      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame - (frame >= 12 ? 2 : frame >= 11 ? 1 : 0));
+      if (frame < 21) {
         vi.mocked(drawFadeOverlay).mockClear(); host.partyMenu.render();
         expect(drawFadeOverlay).toHaveBeenCalledWith(1);
-        expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
+        expect(r.transfer).toHaveBeenCalledTimes(ticks + frame - (frame >= 12 ? 2 : frame >= 11 ? 1 : 0));
       }
     }
-    // B held only since R+21 is accepted on the first actual read, R+22.
+    // B held only since R+23 is accepted on the first actual read, R+24.
     r.step('b'); expect(host.state).toBe('start_menu');
     expect(r.read).toHaveBeenCalledTimes(reads + 1); expect(r.sync).toHaveBeenCalledTimes(syncs);
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 22);
   });
 
-  it('main presents medicine white/reveal on R+19 and P+51, with first reads R+22 and P+54', () => {
+  it('main presents medicine white/reveal on R+21 and P+55, with first reads R+24 and P+58', () => {
     const mon = createPokemon('RATTATA', 5)!;
     host.playerParty.push(mon); host.bag.items = [{ id: 'POTION', count: 2 }];
     setBattleAndStartSavedMenuItem(2);
@@ -251,17 +261,29 @@ describe('StatusScreen through main party and battle dispatch', () => {
     r.wait(16); r.step('a'); r.wait(3); r.step('a'); // USE = R
     expect(host.bagMenu.medicineOpen).toBe(true); expect(host.fade).toBe(1);
     const reads = r.read.mock.calls.length, ticks = r.transfer.mock.calls.length;
-    for (let frame = 1; frame <= 22; frame++) {
-      r.step(); expect(host.fade, `R+${frame}`).toBe(frame < 19 ? 1 : 0);
-      expect(r.read).toHaveBeenCalledTimes(reads + (frame === 22 ? 1 : 0));
-      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame);
+    const openingRandom = currentOverworldRandom(), openingDraws = vi.spyOn(openingRandom, 'random');
+    for (let frame = 1; frame <= 24; frame++) {
+      const beforeDraws = openingDraws.mock.calls.length, audio = vi.mocked(tickAudio).mock.calls.length;
+      const bytes = [openingRandom.hRandomAdd, openingRandom.hRandomSub], held = frame === 11 || frame === 12;
+      r.step(); expect(host.fade, `R+${frame}`).toBe(frame < 21 ? 1 : 0);
+      expect(openingDraws.mock.calls.length - beforeDraws).toBe(held ? 0 : 1);
+      if (held) expect([openingRandom.hRandomAdd, openingRandom.hRandomSub]).toEqual(bytes);
+      expect(vi.mocked(tickAudio).mock.calls.length - audio).toBe(1);
+      expect(r.read).toHaveBeenCalledTimes(reads + (frame === 24 ? 1 : 0));
+      expect(r.transfer).toHaveBeenCalledTimes(ticks + frame - (frame >= 12 ? 2 : frame >= 11 ? 1 : 0));
     }
     r.step('b'); expect(host.fade).toBe(1); // P
     const returningReads = r.read.mock.calls.length, returningTicks = r.transfer.mock.calls.length;
-    for (let frame = 1; frame <= 54; frame++) {
-      r.step(); expect(host.fade, `P+${frame}`).toBe(frame < 51 ? 1 : 0);
-      expect(r.read).toHaveBeenCalledTimes(returningReads + (frame === 54 ? 1 : 0));
-      expect(r.transfer).toHaveBeenCalledTimes(returningTicks + frame);
+    // V5f (#73): two default-palette commands, each with two held frames (P+1..2, P+35..36): no VBlank, no Random.
+    const held = [1, 2, 35, 36];
+    for (let frame = 1; frame <= 58; frame++) {
+      const random = currentOverworldRandom().hRandomAdd, wasHeld = held.includes(frame);
+      const audio = vi.mocked(tickAudio).mock.calls.length;
+      r.step(); expect(host.fade, `P+${frame}`).toBe(frame < 55 ? 1 : 0);
+      expect(vi.mocked(tickAudio).mock.calls.length - audio, `P+${frame} audio`).toBe(1); // held frames too
+      expect(r.read).toHaveBeenCalledTimes(returningReads + (frame === 58 ? 1 : 0));
+      expect(r.transfer).toHaveBeenCalledTimes(returningTicks + frame - held.filter(h => h <= frame).length);
+      if (wasHeld) expect(currentOverworldRandom().hRandomAdd, `P+${frame} Random`).toBe(random);
     }
     expect(host.bag.items).toEqual([{ id: 'POTION', count: 2 }]);
     expect(mon.currentHp).toBe(mon.maxHp);
@@ -271,7 +293,7 @@ describe('StatusScreen through main party and battle dispatch', () => {
     host.playerParty.push(...party); const r = driver();
     let menu = host.partyMenu;
     if (mode === 'overworld') {
-      setBattleAndStartSavedMenuItem(1); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(23);
+      setBattleAndStartSavedMenuItem(1); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(25);
       expect(host.state).toBe('party_menu');
     } else {
       menu = sessionParty(r, false);
@@ -295,10 +317,10 @@ describe('StatusScreen through main party and battle dispatch', () => {
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 35);
     if (mode === 'overworld') {
       const before = r.read.mock.calls.length, synced = r.sync.mock.calls.length;
-      expect(menu.paletteWhite).toBe(true); r.wait(18); expect(menu.paletteWhite).toBe(true);
-      r.step(); expect(menu.paletteWhite).toBe(false); // Q+22 = C+19
+      expect(menu.paletteWhite).toBe(true); r.wait(20); expect(menu.paletteWhite).toBe(true);
+      r.step(); expect(menu.paletteWhite).toBe(false); // Q+24 = C+21
       r.wait(2); expect(r.read).toHaveBeenCalledTimes(before);
-      r.step(); expect(r.read).toHaveBeenCalledTimes(before + 1); // Q+25 = C+22
+      r.step(); expect(r.read).toHaveBeenCalledTimes(before + 1); // Q+27 = C+24
       expect(r.sync).toHaveBeenCalledTimes(synced);
       expect(Reflect.get(menu, 'cursor')).toBe(selected);
       expect(r.transfer).toHaveBeenCalledTimes(ticks + 57);
@@ -400,9 +422,47 @@ function sessionParty(r:ReturnType<typeof driver>,forced:boolean):PartyMenu {
       else r.step('a');
     } else r.step();
   }
-  expect(session.foreground).toBe('party');r.wait(22);
+  expect(session.foreground).toBe('party');r.wait(24);
   return session.party;
 }
+
+
+describe('V5f checkpoint-02 through the real item_menu host', () => {
+  it.each([0, 1, 2])('USE/TOSS B holds only R+1..2 and reads R+21, idle offset %i', offset => {
+    host.bag.items = [{ id: 'POTION', count: 2 }]; setBattleAndStartSavedMenuItem(2);
+    const r = driver(); host.openStartMenu(); r.wait(23 + offset); r.step('a');
+    r.wait(16); r.step('a'); r.wait(2); r.step('b'); // R: ItemMenuLoop
+    expect(host.state).toBe('item_menu');
+    const reads = r.read.mock.calls.length, syncs = r.sync.mock.calls.length;
+    const shown = host.bagMenu.tiles.saveVisibleTiles();
+    const startShown = host.startMenu.tiles.saveVisibleTiles();
+    const random = currentOverworldRandom();
+    const draw = vi.spyOn(random, 'random');
+    for (let frame = 1; frame <= 21; frame++) {
+      const ticks = r.transfer.mock.calls.length;
+      const audio = vi.mocked(tickAudio).mock.calls.length;
+      const draws = draw.mock.calls.length;
+      const held = frame <= 2;
+      const bytes = [random.hRandomAdd, random.hRandomSub];
+      r.step(...(frame === 5 ? ['b'] as const : []));
+      expect(r.transfer.mock.calls.length - ticks, `R+${frame} transfer`).toBe(held ? 0 : 1);
+      expect(draw.mock.calls.length - draws, `R+${frame} Random calls`).toBe(held ? 0 : 1);
+      if (held) expect([random.hRandomAdd, random.hRandomSub]).toEqual(bytes);
+      expect(vi.mocked(tickAudio).mock.calls.length - audio, `R+${frame} audio`).toBe(1);
+      expect(r.read).toHaveBeenCalledTimes(reads + (frame === 21 ? 1 : 0));
+      expect(r.sync).toHaveBeenCalledTimes(syncs);
+      expect(host.state, `R+${frame} state`).toBe('item_menu');
+      if (frame <= 15) {
+        expect(host.bagMenu.tiles.saveVisibleTiles()).toEqual(shown);
+        expect(host.startMenu.tiles.saveVisibleTiles()).toEqual(startShown);
+      }
+    }
+    r.step('b'); expect(host.state).toBe('start_menu'); // R+21 sampled the release; this B is fresh.
+    expect(r.read).toHaveBeenCalledTimes(reads + 2);
+    expect(host.bag.items).toEqual([{ id: 'POTION', count: 2 }]);
+    expect(host.fade).toBe(0);
+  });
+});
 
 describe('V2c CP4 through main', () => {
   async function talk(mapName = 'PewterPokecenter', disabled = true, status: BattlePokemon['status'] = null) {
@@ -522,7 +582,7 @@ describe('V2c CP4 through main', () => {
   }
   function openParty(cursor = 0) {
     setPartyAndBillsSavedMenuItem(cursor); setBattleAndStartSavedMenuItem(1);
-    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(22);
+    const r = driver(); host.openStartMenu(); r.wait(23); r.step('a'); r.wait(24);
     expect(host.state).toBe('party_menu'); return r;
   }
   function finishSleepPrompt(r: ReturnType<typeof driver>, box: TextBox) {
@@ -569,7 +629,7 @@ describe('V2c CP4 through main', () => {
   it('field medicine prints the sleeping prompt once, cancels back to the bag, and consumes no item/HP', () => {
     const { mon } = party(); mon.currentHp = 1; host.bag.items = [{ id: 'POTION', count: 2 }];
     setBattleAndStartSavedMenuItem(2); const r = driver(); host.openStartMenu(); r.wait(23); r.step('a');
-    r.wait(16); r.step('a'); r.wait(3); r.step('a'); r.wait(22);
+    r.wait(16); r.step('a'); r.wait(3); r.step('a'); r.wait(24);
     const print = vi.spyOn(host.textBox, 'printStandalone'); r.step('a');
     expect(print).toHaveBeenCalledExactlyOnceWith({ program: 'SleepingPikachuText1' }, { noDelay: false });
     for (let frame = 0; frame < 250 && !host.textBox.isWaitingForInput; frame++) r.step();
@@ -662,7 +722,7 @@ describe('START through main dispatch', () => {
   });
 
   it.each(([
-    ['dex', 0, 3], ['party', 1, 35], ['item', 2, 5], ['trainer', 3, 20], ['option', 5, 5],
+    ['dex', 0, 3], ['party', 1, 37], ['item', 2, 5], ['trainer', 3, 22], ['option', 5, 5],
   ] as const).flatMap(([kind, row, waits]) => [0, 1, 2].map(offset => [kind, row, waits, offset] as const)))('runs %s return tail, row %i, %i frames and idle offset %i', async (kind, row, waits, offset) => {
     setBattleAndStartSavedMenuItem(row);
     if (kind === 'party') host.playerParty.push(createPokemon('PIKACHU', 5)!);
@@ -672,7 +732,7 @@ describe('START through main dispatch', () => {
     // Each existing submenu's own flow is outside the START-side tail. Trigger its
     // actual return branch without conflating internal timing with this audit.
     if (kind === 'dex') vi.spyOn(host.pokedexMenu, 'update').mockReturnValue('closed');
-    if (kind === 'party') { r.wait(22); vi.spyOn(host.partyMenu, 'update').mockReturnValue('close'); }
+    if (kind === 'party') { r.wait(24); vi.spyOn(host.partyMenu, 'update').mockReturnValue('close'); }
     if (kind === 'trainer') vi.spyOn(host.trainerCard, 'update').mockReturnValue(true);
     if (kind === 'option') vi.spyOn(host.optionMenu, 'update').mockReturnValue(true);
     if (kind === 'item') { r.wait(16); } // actual retained list input, no mocked exit
@@ -686,6 +746,42 @@ describe('START through main dispatch', () => {
     r.wait(2); expect(r.read).toHaveBeenCalledTimes(reads);
     r.wait(offset); r.step('a'); expect(host.state).not.toBe('start_menu');
     expect(getBattleAndStartSavedMenuItem()).toBe(row);
+  });
+
+  it('a palette hold still adds wall-clock play time (V5f ruling 2)', () => {
+    // The port counts milliseconds, not VBlanks. Skipping the add on a held frame is not the same.
+    let t = 8_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => t);
+    const open = vi.spyOn(SaveSessionClass.prototype, 'open');
+    host.playerParty.push(createPokemon('PIKACHU', 5)!);
+    const r = driver();
+    r.step(); // lastPlayTimeUpdate becomes t; this tick's delta is not part of the measurement
+    let steps = 0;
+    const step = (...keys: GameButton[]) => { t += 16; steps += 1; return r.step(...keys); };
+    const wait = (n: number) => { for (let i = 0; i < n; i++) step(); };
+    const leaveSave = () => {
+      wait(45);
+      for (let n = 0; !host.textBox.isComplete && n < 1000; n++) step();
+      wait(3); step('b');
+      for (let n = 0; host.state !== 'overworld' && n < 40; n++) step();
+      expect(host.state).toBe('overworld');
+    };
+    setBattleAndStartSavedMenuItem(4);
+    host.openStartMenu(); wait(23); step('a');
+    expect(host.state).toBe('save_menu');
+    const first = open.mock.calls[open.mock.calls.length - 1][0].playTimeMs;
+    const firstSteps = steps;
+    leaveSave();
+    // Party return: two held frames (ages 30 and 31) sit between the two readings.
+    setBattleAndStartSavedMenuItem(1);
+    host.openStartMenu(); wait(23); step('a');
+    wait(24); vi.spyOn(host.partyMenu, 'update').mockReturnValue('close');
+    step('b'); expect(host.state).toBe('start_menu');
+    wait(36); step(); wait(2);
+    step('down'); wait(3); step('down'); wait(3); step('down'); wait(3); step('a');
+    expect(host.state).toBe('save_menu');
+    const second = open.mock.calls[open.mock.calls.length - 1][0].playTimeMs;
+    expect(second - first).toBe((steps - firstSteps) * 16);
   });
 
   it('empty party redraws in the accepting frame and reads +3; render never advances ownership', () => {
@@ -790,6 +886,39 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     for (let i = 0; i < 10; i++) host.gameTick(); // V5b: the song is requested at D+10
     expect(playDefaultMusicFadeOutCurrent).toHaveBeenCalledExactlyOnceWith('pallettown', true);
     expect(order(updateMusic6Times)).toBeLessThan(order(playDefaultMusicFadeOutCurrent));
+  });
+
+  // V5e checkpoint-02 (note 96). evos_moves.asm:118-151, 296: IsEvolvingText, EvolvedText and StoppedEvolvingText
+  // print wStringBuffer, the nickname as the record holds it; IntoText prints GetName's MonsterNames entry.
+  const evolutionTexts = async (keys: GameButton[]) => {
+    host.session = finishedBattle(); host.gameTick();
+    expect(host.state).toBe('evolution');
+    const seen: string[][] = [[...host.evolutionText]];
+    for (let i = 0; i < 6000 && host.state === 'evolution'; i++) {
+      for (const key of keys) input.setKey(key, i % 2 === 0);
+      input.updateInput(); host.gameTick(); await Promise.resolve();
+      if (host.evolutionText.join('|') !== seen[seen.length - 1].join('|')) seen.push([...host.evolutionText]);
+    }
+    for (const key of keys) input.setKey(key, false);
+    input.updateInput();
+    expect(host.state).toBe('battle_return');
+    return seen;
+  };
+  it.each([
+    [16, 18, 'Birdy', 'PIDGEOTTO', 'Birdy'],
+    [16, 18, undefined, 'PIDGEOTTO', 'PIDGEOTTO'],
+    [29, 16, undefined, 'NIDORINA', 'NIDORINA'],
+    [32, 16, undefined, 'NIDORINO', 'NIDORINO'],
+    [29, 16, 'Nidoran-F', 'NIDORINA', 'Nidoran-F'],
+  ] as const)('the evolution of dex %i at level %i named %s prints its name as stored and into %s', async (dex, level, typed, into, after) => {
+    const mon = createPokemon(dex, level, typed)!, name = mon.nickname; host.playerParty.push(mon);
+    expect(await evolutionTexts(['a'])).toEqual([[`What? ${name}`, 'is evolving!'], [`${name} evolved`, `into ${into}!`]]);
+    expect(mon.nickname).toBe(after);
+  });
+  it.each([[16, 18, 'Birdy'], [29, 16, undefined]] as const)('a cancelled evolution of dex %i at level %i named %s prints its name as stored', async (dex, level, typed) => {
+    const mon = createPokemon(dex, level, typed)!, name = mon.nickname; host.playerParty.push(mon);
+    expect(await evolutionTexts(['a', 'b'])).toEqual([[`What? ${name}`, 'is evolving!'], [`Huh? ${name}`, 'stopped evolving!']]);
+    expect(mon.nickname).toBe(name); expect(mon.species.id).toBe(dex);
   });
 
   it('Mom heal: the jingle is a PN request, and her restoration is the PN entry for the map song', async () => {

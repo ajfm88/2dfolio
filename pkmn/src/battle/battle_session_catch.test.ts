@@ -138,16 +138,16 @@ describe('before the separate stand-in loader',()=>{
   detached(h);
  });
 });
-it('the separate loader fetches exactly three tables once, loads ED/icons and shares one Pokédex',async()=>{
+it('the separate loader fetches exactly two tables once, loads ED/icons and shares one Pokédex',async()=>{
  const at=fetched.length,pending=loadBattleStandInData();expect(loadBattleStandInData()).toBe(pending);await pending;
- expect(fetched.slice(at)).toEqual(['pokedex.json','pokemon.json','town_map.json']);
+ expect(fetched.slice(at)).toEqual(['pokedex.json','town_map.json']);
  expect(output.assets.filter(x=>x.startsWith('font '))).toEqual(['font /gfx/font/ED.png']);
  expect(output.assets.filter(x=>x.startsWith('tiles '))).toEqual([
   'tiles /gfx/town_map/town_map.png','tiles /gfx/pokedex/pokedex.png','tiles /gfx/battle/balls.png',
   'tiles /gfx/pokedex/pokedex.png','tiles /gfx/font/font_battle_extra.png','tiles /gfx/font/font_battle_extra.png']);
  expect(output.assets.filter(x=>x.startsWith('sprite '))).toEqual(['sprite /gfx/town_map/mon_nest_icon.png','sprite /gfx/sprites/red.png']);
  expect(output.assets.filter(x=>x==='icons')).toHaveLength(1);
- const assets=[...output.assets];await loadBattleStandInData();expect(fetched.slice(at)).toHaveLength(3);expect(output.assets).toEqual(assets);
+ const assets=[...output.assets];await loadBattleStandInData();expect(fetched.slice(at)).toHaveLength(2);expect(output.assets).toEqual(assets);
  const a=setup(),b=setup();expect(a.session.pokedex).toBe(b.session.pokedex);a.session.abort();b.session.abort();
 });
 it('new Rattata: dex then YES and Abk, exact eleven bytes, flags, palettes and session-owned presses',()=>{

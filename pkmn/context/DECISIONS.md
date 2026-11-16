@@ -1485,6 +1485,98 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      - **The three catch-demo text keys leave `game_text.json`.** The pre-A5a baseline hash stays pinned, with the
        three keys put back before hashing.
 
+121. **V5d is one checkpoint with nothing visible; the land tile-pair table is ported as a table; Sol implements**
+     (2026-11-13, note 94). *The user: "pls start the V5d trace and plan the next slice. GPT Sol will implement."*
+     The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - **The two "!" bubbles are already done** (A5b5b, 2026-10-11): both run `EmotionBubble`'s 61 frames through
+       the script command. V5d only corrects the lines that still said they wait for V5. This amends #110's V5d row.
+     - **No FOREST land row can fire today:** tile `$2E` is not in Viridian Forest. The seven rows are ported anyway,
+       so the Safari Zone's maps (F2) get them without another engine change.
+     - **`TilePairCollisionsLand` is one TypeScript table read symmetrically**, not a byte-level port of
+       `CheckForTilePairCollisions`. The routine's pointer slip reads on through the water table and code to
+       00:0b84 but never changes the answer; a ROM-gated test runs the routine over the ROM for every tileset and
+       tile pair to pin that. No ROM bytes go into the runtime or `data/`.
+     - **No play-test for V5d.** It closes on Claude's review. The water table and the boulder check stay F2's.
+
+122. **V5e: `species.name` stays the lookup key; printed species names come from `MonsterNames`; two checkpoints**
+     (2026-11-13, note 95). *The user, after V5d closed: "ok pls go ahead :)".* The rulings are Claude's, under
+     CONVENTIONS → *Handling missing requirements*; the implementer is the user's to name.
+
+     - **`pokemon.json` does not change.** Its title-cased `name` is the key for lookups, evolutions, saves, cries
+       and caches. Cartridge spellings as keys would merge the two Nidoran (note 90 §2.2).
+     - **`speciesDisplayName(species)` in `battle/data.ts` is the only way to print a species name.** It reads
+       `MonsterNames`, which `loadBattleData` now loads once and the battle's tables share. Only three species
+       change on screen: `NIDORAN♀`, `NIDORAN♂`, `MR.MIME`.
+     - **Checkpoint-01:** that function, the Pokédex, status page 2 and Oak's gift. The Pokédex stops fetching
+       `pokemon.json`. **Checkpoint-02 (not briefed):** the default nickname becomes `MonsterNames`' entry, nicknames
+       print as stored (today they are capitalised, typed ones included), #86's two boundary mappings are retired,
+       `RenameEvolvedMon` compares exactly, and version-1 saves are migrated. Between the two, a Nidoran's party
+       name still reads `NIDORAN-F`.
+     - **Version-2 saves need no migration:** they already hold `MonsterNames`' bytes for a default nickname.
+       Checkpoint-02's trace re-checks this against the user's save backup.
+     - This amends #110's size for V5e (three or four checkpoints estimated; two).
+
+123. **V5e checkpoint-02: a mon's nickname is its record's name, held and printed exactly; #86 is retired; Sol
+     implements, Grok reviews** (2026-11-14, note 95 §14–§21). *The user: "please plan the next slice. GPT Sol 6.1
+     will implement and Grok will check its work."* The rulings are Claude's, under CONVENTIONS → *Handling missing
+     requirements*.
+
+     - **The default nickname is `MonsterNames`' entry** (`_AddPartyMon` / `AskName`). Nicknames print as stored on
+       every screen; `pokemon_names.ts` (the upper-casing wrapper) and `liveNickname` are deleted, not kept as
+       identity functions. #86's two boundary mappings are gone.
+     - **`RenameEvolvedMon` is exact:** a nickname byte-equal to the old species' entry becomes the new species'
+       entry; any other stays (`evos_moves.asm:264–290`). The three evolution texts print the nickname as stored.
+     - **Version-1 saves:** a nickname exactly equal to the saved species' `pokemon.json` name becomes `MonsterNames`'
+       entry. **Version-2 saves need no migration**, re-checked (§15.4); `pkmn-save.txt` is version 1.
+     - **Not in this checkpoint:** Oak's gift's missing `AskName` (note 57, J2 or the user's placement).
+     - Grok reviews in place of Claude for this checkpoint; the user play-tests after the review.
+
+124. **V5f: the palette-command hold outside battle is a held-frame counter; three checkpoints; Codex implements, Grok
+     reviews** (2026-11-14, note 96). *The user, after V5e's play-test passed: "pls plan the next slice. Codex will
+     implement and Grok will review as usual."* The rulings are Claude's, under CONVENTIONS → *Handling missing
+     requirements*.
+
+     - **`core/vblank_hold.ts`:** the screen running a palette command calls `holdVBlank()`; `main.ts` skips VBlank's
+       `Random` on the two held frames; the frame's one VBlank owner skips its BG transfer. Audio still ticks, as
+       `UpdateAudioDuringLoadBGMapAttributes` does. The battle keeps `BattleScreen`'s own hold.
+     - **Three checkpoints:** 01 the mechanism and the five single-host returns (START's party and trainer tails,
+       field medicine's result and return, Bill's PC's STATS return); 02 the bag's `ItemMenuLoop` command, which the
+       port lacks entirely (5 frames); 03 the shared party opening, redraw and StatusScreen in every host.
+     - **Moved out:** the map connection's and `LoadMapData`'s `SET_PAL_OVERWORLD` (warp-timing slice, with #112,
+       #114); the Pikachu box's closing palette (J2). Main's joypad sync is not skipped in 01; 03 decides it.
+     - This amends #110's estimate for V5f (2 checkpoints; 3).
+
+125. **V5f checkpoint-02: Grok implements, Nemotron reviews; ItemMenuLoop gains its five-frame command**
+     (2026-11-14, note 97). *The user: "please plan the next slice. Grok will implement and Nemotron will review."*
+     Codex traced and spiked the checkpoint, captured the patch and restored source. This changes #124's roles
+     for checkpoint-02 only; checkpoint-01 remains user-verified, checkpoint-03 is not started.
+
+     - Ordinary field-bag returns restore the logical layer with transfer off, run two held frames plus Delay3,
+       then construct DisplayListMenuID. First read is R+21 instead of R+16; shown tiles wait for enabled thirds.
+     - Initial entry and medicine's already-restored return jump directly to StartMenu_Item and gain no command.
+       Medicine's bag callback therefore bypasses the palette prefix; its existing timing is unchanged.
+     - Reuse `core/vblank_hold.ts` and the bag's existing VBlank owner. No new clock, palette renderer, item
+       handler, extraction, battle/shared-screen change or generated data. Play time remains wall-clock based.
+     - Grok applies the exact three-file spike and runs its gates/mutations; Nemotron independently checks source,
+       ASM and gates and adds a mutation; the user's play-test follows. All commits stay local.
+
+126. **V5f checkpoint-03 split into 03a full opening, 03b redraw and 03c StatusScreen; Grok implements,
+     Nemotron reviews** (2026-11-14, note 98). The user reports checkpoint-02's play-test passed and asks for
+     the next plan. Codex verifies the source/review and continues the standing Grok/Nemotron workflow (#125).
+     The split and implementation rulings are Codex's under CONVENTIONS → Scoping/Handling missing requirements.
+
+     - 03a covers full DisplayPartyMenu in START, field medicine, battle PKMN, SHIFT/faint replacement and
+       battle medicine. Shared age counts physical frames: held11/12, reveal21, first read24.
+     - Field uses the existing global hold and owner; battle uses its own setPalPartyMenu generator via one
+       shared frame helper for both entry loops. Battle-owned openings never arm/consume the field hold.
+     - Battle medicine already paid its two held frames; adapt its shared age without changing totals,
+       result/return timing or its existing snapshots. New physical-boundary tests pin prompt15/transfer18.
+     - Nine whole-battle snapshots gain exactly two held frames/timestamps, verified structurally against
+       local base 7b88c1b; event/write payloads, audio and final state are identical. No arbitrary snapshot update.
+     - GoBack/redraw remains 16 pending 03b; StatusScreen remains27 pending 03c. Main's generic sync stays
+       unchanged in 03a: ownsInput already excludes it. No generated data, new clock or item behavior.
+
 ## Open — not decided, needs the user
 
 

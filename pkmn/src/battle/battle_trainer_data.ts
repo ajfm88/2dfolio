@@ -1,5 +1,5 @@
 // Raw trainer/species tables. No battle-state/address-map imports: startup is cycle-safe.
-import { loadBattleData, getAllLoadedMoveIds, getMove, getSpeciesById } from './data';
+import { loadBattleData, getAllLoadedMoveIds, getMonsterNames, getMove, getSpeciesById } from './data';
 
 export interface PartyMember {
   species: string;
@@ -42,13 +42,12 @@ let loading: Promise<void> | undefined;
 /** The same committed files through fetch. Reuse main's pokemon/moves cache. */
 export function loadTrainerSpeciesData(): Promise<void> {
   return loading ??= (async () => {
-    const [, response, names] = await Promise.all([loadBattleData(), fetch('trainers.json'), fetch('monster_names.json')]);
+    const [, response] = await Promise.all([loadBattleData(), fetch('trainers.json')]);
     if (!response.ok) throw new Error(`trainers: HTTP ${response.status}`);
-    if (!names.ok) throw new Error(`monster names: HTTP ${names.status}`);
     tables = { trainers: await response.json() as Record<string, TrainerRow>,
       pokemon: Array.from({length:152}, (_, dex) => getSpeciesById(dex)),
       moves: Object.fromEntries(getAllLoadedMoveIds().map(name => [name, getMove(name)!])),
-      monsterNames: Object.freeze(await names.json() as (string | null)[]) };
+      monsterNames: getMonsterNames() };
   })();
 }
 /** home/names.asm GetMonName's source: MonsterNames by internal id, as the cartridge stores it. */

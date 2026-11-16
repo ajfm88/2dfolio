@@ -4,7 +4,7 @@ import type { Direction } from '../core';
 import { getRivalName, setRivalStarter } from '../core/player_state';
 import { wasLastBattleWon } from '../script/script_controller';
 import { rivalStarterAfterLabBattle } from '../battle/trainer_flow';
-import { getSpeciesById } from '../battle/data';
+import { speciesDisplayName } from '../battle/data';
 import { stopMusic, playMusic } from '../audio';
 import { setNoMapMusic } from '../audio/audio_flags';
 import { setJoyIgnore } from '../input/joy_ignore';
@@ -53,7 +53,7 @@ export function labSnatchDisplay(): ScriptCommand[] {
 export function labGiftDisplay(): ScriptCommand[] {
   return displayTextID([
     { type: 'printText', program: 'OaksLabOakGivesText' },
-    { type: 'printText', program: 'OaksLabReceivedText', bindings: { nameBuffer: getSpeciesById(25)?.name.toUpperCase() ?? 'PIKACHU' } },
+    { type: 'printText', program: 'OaksLabReceivedText', bindings: { nameBuffer: speciesDisplayName({ id: 25 }) } },
     { type: 'addPokemon', species: 25, level: 5 }, { type: 'hidePikachu' },
     { type: 'setFlag', flag: 'GOT_STARTER', hide: [TOGGLE.STARTER_BALL_1] },
   ], { autoBox: false, outerWait: false, textId: 18 });

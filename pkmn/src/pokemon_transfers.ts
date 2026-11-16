@@ -2,7 +2,7 @@
 import { A, BattleState } from './battle/battle_state';
 import { worldPartyRecord, boxedPokemonToRecord, encodeBoxMon, type BoxMonRecord } from './battle/battle_bridge';
 import { partyRecordToPokemon } from './battle/battle_party_codec';
-import { boxRecordToPokemon, liveNickname } from './battle/battle_live';
+import { boxRecordToPokemon } from './battle/battle_live';
 import { installTrainerSpecies } from './battle/battle_trainer_party';
 import { getMonHeader } from './battle/battle_loaders';
 import { calcStats } from './battle/battle_calc_stats';
@@ -26,11 +26,9 @@ function fromBox(r: BoxMonRecord, expLevel: boolean): BattlePokemon {
   getMonHeader(state,r.species); state.wCurEnemyLevel = level;
   // MON_HP_EXP-1=$10, MON_STATS=$22; CalcStats writes five BE words.
   calcStats(state,1,A.wLoadedMon+16,A.wLoadedMon+34);
-  const mon = partyRecordToPokemon({ ...r, level,
+  return partyRecordToPokemon({ ...r, level,
     maxHp:state.readBE(A.wLoadedMon+34),attack:state.readBE(A.wLoadedMon+36),
     defense:state.readBE(A.wLoadedMon+38),speed:state.readBE(A.wLoadedMon+40),special:state.readBE(A.wLoadedMon+42) });
-  mon.nickname = liveNickname(r,mon.species.name);
-  return mon;
 }
 
 /** BOX_TO_PARTY: EXP determines level; the prefix's HP/status/PP/EXP are untouched. */

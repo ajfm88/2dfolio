@@ -20,6 +20,7 @@ import { isPassPressed, isHeld, syncJoypadRead } from '../input';
 import { enablePikachuFollowing, disablePikachuFollowing } from '../pikachu/pikachu_following';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem, setBattleAndStartSavedMenuItem } from '../list_state';
 import { textBgTransfer } from '../text/bg_transfer';
+import { isVBlankHeld } from '../core/vblank_hold';
 import { BattleMenuScreen } from './battle_menu_screen';
 import { bindBattlePartyMenu, clearBattlePartySubmenu, drawBattlePartySubmenu, partyMenuOrRockOrRun } from './battle_party_menu';
 import type { BattlePartyContext, BattlePartyHost } from './battle_party_menu';
@@ -101,25 +102,29 @@ function rig(ctx = context(), portion = 0, routine: (ctx: BattlePartyContext, ho
     step = program.next();
   };
   const advance = (n: number) => { for (let i = 0; i < n; i++) tick(); };
-  const choose = () => { advance(21); tick('a'); };
+  const choose = () => { advance(23); tick('a'); };
   step = program.next();
   return { ctx, host, video, party, calls, reads, frames, tick, advance, choose,
     get time() { return time; }, get done() { return step.done; }, get result() { return step.value; } };
 }
 
 describe('PartyMenu choose-only mode, shared #73 timing', () => {
-  for (const phase of [0, 1, 2]) it(`phase${phase}: C+22 first read (cartridge C+24), one BG tick each frame`, () => {
+  for (const phase of [0, 1, 2]) it(`phase${phase}: C+24 first read, held C+11..12 and one tick otherwise`, () => {
     const r = rig(undefined, phase), tick = vi.spyOn(textBgTransfer, 'tick');
-    for (let f = 1; f <= 22; f++) {
-      const n = tick.mock.calls.length; r.tick(); expect(tick.mock.calls.length - n).toBe(1);
-      expect(r.party.paletteWhite).toBe(f < 19);
-      expect(r.reads).toEqual(f < 22 ? [] : [22]);
+    for (let f = 1; f <= 24; f++) {
+      const n = tick.mock.calls.length; r.tick();
+      const held = f === 11 || f === 12;
+      expect(tick.mock.calls.length - n).toBe(held ? 0 : 1);
+      expect(r.frames[f - 1]).toBe(held ? 'held' : 'session');
+      expect(isVBlankHeld()).toBe(false);
+      expect(r.party.paletteWhite).toBe(f < 21);
+      expect(r.reads).toEqual(f < 24 ? [] : [24]);
     }
     expect(syncJoypadRead).not.toHaveBeenCalled();
   });
 
   it('wraps both ways, A suppresses movement, saves on A and presents no legacy submenu', () => {
-    const r = rig(); r.advance(21); r.tick('up'); r.advance(2); r.tick('a', 'down');
+    const r = rig(); r.advance(23); r.tick('up'); r.advance(2); r.tick('a', 'down');
     expect(r.ctx.whichPokemon).toBe(1); expect(getPartyAndBillsSavedMenuItem()).toBe(1);
     expect(r.party.chosenIndex).toBe(1); expect(r.party.cursorGlyph).toBe('▷');
     expect(r.party.choiceOverlay.at(13, 12)).toBe('S');
@@ -128,10 +133,10 @@ describe('PartyMenu choose-only mode, shared #73 timing', () => {
   it('saves B cursor, and B wins A+B even when forceChoose watches only A', () => {
     const ctx = context(); ctx.forcePlayerToChooseMon = 1; setPartyAndBillsSavedMenuItem(1);
     const r = rig(ctx); expect(ctx.forcePlayerToChooseMon).toBe(0);
-    r.advance(21); r.tick('b'); expect(r.calls.some(c => c.name === 'load2')).toBe(false);
+    r.advance(23); r.tick('b'); expect(r.calls.some(c => c.name === 'load2')).toBe(false);
     expect(r.party.chosenIndex).toBe(-1); r.advance(2); r.tick('a', 'b');
     expect(getPartyAndBillsSavedMenuItem()).toBe(1); expect(r.party.chosenIndex).toBe(-1);
-    r.advance(7); expect(r.calls.find(c => c.name === 'load2')?.at).toBe(27);
+    r.advance(7); expect(r.calls.find(c => c.name === 'load2')?.at).toBe(29);
   });
 
   it('sleeping starter uses the shared refusal and returns cancelled after its PrintText', () => {
@@ -146,7 +151,7 @@ describe('PartyMenu choose-only mode, shared #73 timing', () => {
   });
 
   it('Down wraps from the saved last row and B saves the new row', () => {
-    setPartyAndBillsSavedMenuItem(1); const r = rig(); r.advance(21); r.tick('down');
+    setPartyAndBillsSavedMenuItem(1); const r = rig(); r.advance(23); r.tick('down');
     r.advance(2); r.tick('b'); expect(getPartyAndBillsSavedMenuItem()).toBe(0);
     expect(r.party.chosenIndex).toBe(-1); expect(r.party.cursorGlyph).toBe('▷');
   });
@@ -179,7 +184,7 @@ describe('party submenu cells, deselection, quit and switch', () => {
   });
 
   for (const cancel of ['list B', 'submenu CANCEL'] as const) it(`${cancel} returns null exactly at +7 for the caller to redisplay`, () => {
-    const r = rig(undefined, 0, partyMenuOrRockOrRun); r.advance(21);
+    const r = rig(undefined, 0, partyMenuOrRockOrRun); r.advance(23);
     if (cancel === 'list B') r.tick('b');
     else { r.tick('a'); r.advance(2); r.tick('down'); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); }
     const k = r.time; r.advance(6); expect(r.done).toBe(false); r.tick();
@@ -197,7 +202,7 @@ describe('party submenu cells, deselection, quit and switch', () => {
     };
     r.advance(5);
     for (let visit = 0; visit < 6; visit++) {
-      r.tick('a'); expect(active).toBe(1); r.advance(21);
+      r.tick('a'); expect(active).toBe(1); r.advance(23);
       if (visit % 2 === 0) r.tick('b');
       else { r.tick('a'); r.advance(2); r.tick('down'); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); }
       r.advance(11); expect(active).toBe(0); expect(peak).toBe(1); expect(r.done).toBe(false);
@@ -251,7 +256,7 @@ describe('party submenu cells, deselection, quit and switch', () => {
 
   it('B in the list uses the same quit tail and CP4 host.partyMenu is actually bound', () => {
     setBattleAndStartSavedMenuItem(2); const r = rig(undefined, 0, displayBattleMenu);
-    r.advance(5); r.tick('a'); r.advance(21); r.tick('b'); const k = r.time;
+    r.advance(5); r.tick('a'); r.advance(23); r.tick('b'); const k = r.time;
     r.advance(13); expect(r.reads[r.reads.length - 1]).toBe(k + 13);
     expect(r.calls.some(c => c.name === 'save2')).toBe(true); expect(r.ctx.actionResultOrTookBattleTurn).toBe(0);
   });
@@ -286,7 +291,7 @@ describe('party submenu cells, deselection, quit and switch', () => {
 });
 
 describe('STATS session hand-offs (#73: S+27 and Q+32, ASM S+29 and Q+34)', () => {
-  for (const kind of ['plain', 'substitute', 'minimize'] as const) it(`${kind}: both pages, white Q+3, reload7/10/13, then full opening22; no duplicate BG tick`, () => {
+  for (const kind of ['plain', 'substitute', 'minimize'] as const) it(`${kind}: both pages, white Q+3, reload7/10/13, then full opening24; no duplicate BG tick`, () => {
     const ctx = context(); ctx.enemyHasSubstitute = kind === 'substitute'; ctx.enemyMinimized = kind !== 'plain';
     const r = rig(ctx); const create = vi.fn((mon, options) => new StatusScreenSession(mon, options)); r.host.createStatusScreen = create;
     r.choose(); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); const s = r.time;
@@ -302,8 +307,8 @@ describe('STATS session hand-offs (#73: S+27 and Q+32, ASM S+29 and Q+34)', () =
     r.advance(reload); expect(r.calls[r.calls.length - 1]).toMatchObject({ name: 'load1', at: q + 3 + reload });
     if (kind === 'plain') { expect(ctx.curPartySpecies).toBe(16); expect(r.video.screen.frontSlot(48)?.picture).toBe('enemy'); }
     else expect(r.calls.some(c => c.name === kind && c.at === q + 3)).toBe(true);
-    r.advance(21); expect(r.reads[r.reads.length - 1]).toBe(q); r.tick();
-    expect(r.reads[r.reads.length - 1]).toBe(q + 3 + reload + 22);
+    r.advance(23); expect(r.reads[r.reads.length - 1]).toBe(q); r.tick();
+    expect(r.reads[r.reads.length - 1]).toBe(q + 3 + reload + 24);
     expect(syncJoypadRead).not.toHaveBeenCalled();
   });
 });

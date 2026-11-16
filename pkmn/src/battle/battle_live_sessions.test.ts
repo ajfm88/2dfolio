@@ -98,7 +98,7 @@ it('a full-party catch inserts at the front before the old box objects and write
   const old=pokemonToBoxed(mon(1,10));
   const h=run({party:Array.from({length:6},()=>mon()),pcBoxes:[[old]],bag:[{id:'MASTER_BALL',count:1}]},undefined,true);
   expect(h.live.boxes[0]).toHaveLength(2);expect(h.live.boxes[0][1]).toBe(old);
-  expect(h.live.boxes[0][0].speciesName).toBe('Rattata');expect(h.live.boxes[0][0].nickname).toBe('Rattata');
+  expect(h.live.boxes[0][0].speciesName).toBe('Rattata');expect(h.live.boxes[0][0].nickname).toBe('RATTATA');
   expect(h.live.bag.items).toEqual([]);expect(h.values.owned).toContain(19);expect(h.plan.lost).toBe(false);
 });
 it('wild blackout keeps the byte HP and money; the returned map plan owns the later heal and halving',()=>{

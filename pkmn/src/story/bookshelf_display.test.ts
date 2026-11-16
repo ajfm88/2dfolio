@@ -25,6 +25,7 @@ import { interactionDisplay } from './hidden_events';
 import type { BookshelfContext } from './hidden_events';
 import type { TextHandlerContext } from './text_handlers';
 import { buildOaksLabAwaitBallScript } from './oaks_lab';
+import { loadBattleData } from '../battle/data';
 import type { Direction, MapData } from '../core';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: () => false,
@@ -39,7 +40,7 @@ const DATA = resolve(__dirname, '../../data');
 const shelf: BookshelfContext = { tileset: 'LAB', tileTwoAbove: 0 };
 let audio: Rig;
 
-beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); });
+beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); });
 beforeEach(() => {
   vi.clearAllMocks(); restoreFlags([]); restorePokedex([], []); setTextSpeed('fast');
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false);

@@ -43,6 +43,14 @@ to this repo, and none of it survived — DECISIONS #26.)
 
 ## Approach
 
+**V5f checkpoint-03a assignment (standing workflow, 2026-11-14; decision #126):** Codex plans/spikes and
+restores source; Grok implements note 98 §6; Nemotron independently reviews §7 and adds a mutation; the user
+play-tests afterward. **03a is closed and user-verified** (note 98 §11). Next is 03b planning; redraw and StatusScreen remain 03b/03c.
+
+**V5f checkpoint-02 assignment (user, 2026-11-14; decision #125):** Codex plans/spikes and restores source;
+Grok implements note 97 §6; Nemotron independently reviews §7 and adds a mutation. The user's visible play-test
+follows. Checkpoint-03 is not started. This supersedes earlier role assignments for this checkpoint only.
+
 **Current A5f assignment (user, 2026-11-06; decision #105):** Claude plans, spikes and reviews; the user names the
 implementer per checkpoint (Grok ran 01–02, Codex 03). Visible checkpoints end with the user's play-test.
 
@@ -224,12 +232,11 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
   compares without case or punctuation since V1c. Before that, the Forest Lass's
   Nidoran hung the game and Route 22's wild Nidorans silently never appeared.
   `monster_names.json` adds the cartridge's spelling (`NIDORAN♀`, `MR.MIME`, `PIKACHU`),
-  indexed by internal ID, for the new battle engine only (A5c3f checkpoint-08g).
-  Keep trainer species keys based on `pokemon.json`: stripping punctuation from the
-  cartridge's Nidoran names makes both keys `NIDORAN`. At the battle boundary, a nickname
-  equal to `species.name` becomes the cartridge's default name; other nicknames stay verbatim.
-  The codec stays exact, and the overworld keeps upstream's names until V5. Checkpoint-09
-  maps default name bytes back to `species.name` (O-48 option A, DECISIONS #86).
+  indexed by internal ID. `speciesDisplayName` is the only way to print a species name;
+  a mon's nickname is its record's name, `MonsterNames`' entry by default, held and printed
+  exactly (V5e checkpoint-02, DECISIONS #123; #86 is retired). Trainer species keys stay
+  based on `pokemon.json`, because stripping punctuation from the cartridge's Nidoran names
+  makes both keys `NIDORAN`.
 - **Trainer pics come from `trainers.json`'s `pic`** (extracted `TrainerPicAndMoneyPointers`, CHIEF on `scientist.png`) through `trainerPicName(state)` in `battle/battle_trainer_party.ts`.
   A missing pic still holds the transition black in `battle_transition` — no error on screen, only in the console.
 
@@ -249,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6388/6388** as of 2026-11-13 (V5c checkpoint-06 review; default workers). No-ROM **6093 pass / 295 skip**, 263 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6516/6516** as of 2026-11-14 (V5f checkpoint-03a user-verified; default workers). No-ROM **6218 pass / 298 skip**, 266 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -265,6 +272,30 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+V5f checkpoint-03a (note 98 §4–§5) retimes the full party opening to reveal C+21 and first read C+24 in START, field medicine, battle PKMN, SHIFT/faint and the existing battle-medicine hold. Twelve new no-ROM cases: six battle-owned openings in `party_menu_opening.test.ts`, three medicine phase cases in `battle_item_medicine_env.test.ts`, and three send-out phase cases in `battle_send_out.test.ts`. Nine existing whole-battle snapshots each gain one pair of held frames; payloads, audio and final state are unchanged. L1–L15 each exit 1 with only AssertionError, failing 12, 11, 31, 24, 9, 9, 7, 21, 3, 3, 7, 3, 4, 9 and 4 cases. Baseline ROM 6516/6516; no-ROM 6218 pass / 298 skip, 266 files.
+
+V5f checkpoint-02 (note 97 §4) moves two cases in `menus/bag.test.ts` (the USE/TOSS B list from R+11 to R+16, and the Town Map return's border to R+5) and adds 27 no-ROM cases: 24 in `menus/bag.test.ts` (eight ordinary returns times three starting portions) and 3 in `main.test.ts` (idle offsets through START, ITEM, USE/TOSS, then B). K1–K12 each exit 1 with only AssertionError, failing 27, 28, 29, 25, 4, 30, 29, 27, 4, 4, 15 and 1 cases. Baseline ROM 6504/6504; no-ROM 6206 pass / 298 skip, 266 files.
+
+V5f checkpoint-01 (note 96 §5) adds `core/vblank_hold.test.ts` (3 cases: exactly two held frames,
+non-consuming peeks/restart, and reset). Seventeen existing cases move in six files:
+`menus/start_menu.test.ts` (2), `main.test.ts` (7), `menus/bills_pc.test.ts` (2),
+`story/pc.test.ts` (3), `menus/field_medicine.test.ts` (2), and
+`menus/field_medicine_input.test.ts` (1). J1–J17 witness the hold, VBlank/Random suppression,
+return waits and transfer thresholds (§6). The review adds one `main.test.ts` case: a held frame still adds wall-clock play time (note 96 §11).
+
+V5e checkpoint-02 (note 95 §17) adds 36 cases: `battle/species_display_name.test.ts` (1),
+`battle/evolution.test.ts` (8), `battle/battle_live.test.ts` (2), `menus/field_medicine.test.ts` (1),
+`main.test.ts` (7), `menus/party_menu.test.ts` (4), `menus/status_screen.test.ts` (3),
+`menus/bills_pc.test.ts` (1), `pokemon_transfers.test.ts` (6), and `save_records.test.ts` (3).
+Sixteen existing cases are adjusted in eight files: `main_battle_stats_name.test.ts`,
+`save_records.test.ts`, `battle/{battle_live,battle_live_sessions,battle_monster_names,evolution}.test.ts`,
+and `menus/{field_medicine,list_menu}.test.ts` (§17.1). K1–K23 witness defaults, record boundaries,
+evolution names, menu printing and version-1 migration (§18). The review adds one `save_records.test.ts` case: a version-1 nickname of `''` stays empty in the party and the box (note 95 §23).
+
+`battle/species_display_name.test.ts` (V5e checkpoint-01, note 95 §5) adds five cases for all 151 names, the three differences, invalid dex ids, the shared frozen table and once-only loading. Four added cases cover the Pokédex and field status page 2; six existing files are adjusted as listed in §5.1. H1–H10 are the mutation witnesses.
+
+`overworld/tile_pair_collision.test.ts` (V5d checkpoint-01, note 94 §4): 36 cases, 33 no-ROM and 3 ROM-gated, pin the eleven rows and symmetric collisions, exhaustive ROM routine equivalence and its pointer slip, real-main movement and tile placement, and the absence of `$2E` in Viridian Forest. G1–G11 are the mutation witnesses.
 
 `overworld/hidden_event_facing.test.ts` (V5c checkpoint-06, note 93 §26 and §28): 11 no-ROM cases. The review adds a first-row witness for duplicate coordinates (review mutation R1). Three pin every ROM hidden event on today's maps at pret's coordinates and in pret's order, `facing` only on the rows whose routine reads the player's facing, and the TV's two rows with no facing. Seven, on the real maps and collision, pin Red's PC from any facing; Blue's House bookcases from below, from the right and from the left; Oak's e-mail from the side returning nothing even with a sprite on that step, and that sprite answering where no event is in front; the Pokécenter PC and the Gym statues answering facing up only; both bench guys from the right with no other standable side; the TV from every side. `main_intro.test.ts` expects `'up'` on both New Game paths. `extraction.test.ts` expects the three catch-demo keys absent. `text_decoder.test.ts` puts those three keys back before hashing the pre-A5a baseline and asserts they are absent. E1–E8 are the mutation witnesses. Baseline: ROM **6388/6388**; no-ROM **6093 pass / 295 skip**, 263 files.
 

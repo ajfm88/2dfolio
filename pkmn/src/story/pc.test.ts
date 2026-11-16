@@ -27,6 +27,7 @@ import { loadTrainerSpeciesData } from '../battle/battle_trainer_data';
 import { loadBattleBridgeData } from '../battle/battle_bridge';
 import { pokemonToBoxed } from '../pokemon_storage';
 import { updateSprites } from '../overworld/sprites';
+import { isVBlankHeld } from '../core/vblank_hold';
 
 vi.mock('../audio', () => ({ setMasterVolume: vi.fn(), playSFX: vi.fn(), isSoundFinished: vi.fn(() => true), playMusic: vi.fn(), isMusicChannelActive: () => false }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
@@ -81,11 +82,12 @@ function run(generic = false) {
     frame++; if (soundFrames > 0) soundFrames--;
     for (const key of BUTTONS) input.setKey(key, keys.includes(key)); input.updateInput();
     const ticks = transfer.mock.calls.length; const reads = read.mock.calls.length; const syncs = sync.mock.calls.length;
-    const closing = box.closing;
+    const closing = box.closing, held = isVBlankHeld();
     const result = updateScript(deps, frame % 2 === 0); ended = result?.type === 'scriptEnded';
     const delta = transfer.mock.calls.length - ticks;
     expect(delta, `VBlank ${frame}`).toBeLessThanOrEqual(1);
-    if (frame > 20 && !closing && !ended) expect(delta, `missing VBlank ${frame}`).toBe(1);
+    if (held) expect(delta, `held frame ${frame}`).toBe(0); // V5f: a palette command's held frame (#73)
+    else if (frame > 20 && !closing && !ended) expect(delta, `missing VBlank ${frame}`).toBe(1);
     expect(read.mock.calls.length > reads && sync.mock.calls.length > syncs, `two Joypad owners ${frame}`).toBe(false);
   };
   const frames = (n: number) => { for (let i = 0; i < n; i++) step(); };
@@ -99,7 +101,7 @@ function run(generic = false) {
 }
 
 describe('PC hidden events on the production script dispatch', () => {
-  it.each([0, 1, 2])('StatusScreen on the actual PC host: one BG tick and white until Q+6/read Q+9, offset %i', offset => {
+  it.each([0, 1, 2])('StatusScreen on the actual PC host: one BG tick, held Q+4..5, white until Q+8/read Q+11, offset %i', offset => {
     const r = run(true);
     r.deps.playerParty.push(createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!);
     const tiles = () => getMenuSessionTiles()!;
@@ -119,16 +121,16 @@ describe('PC hidden events on the production script dispatch', () => {
     vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession(); expect(drawFadeOverlay).toHaveBeenCalledWith(1);
     r.frames(3); expect(tiles().save(r.box)).toEqual(before);
     const n = r.read.mock.calls.length;
-    for (let i = 4; i < 6; i++) {
+    for (let i = 4; i < 8; i++) {
       r.step(); vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession();
       expect(drawFadeOverlay).toHaveBeenCalledWith(1); expect(isScriptMenuFullScreen()).toBe(true);
     }
-    r.step(); expect(r.time()).toBe(q + 6); expect(isScriptMenuFullScreen()).toBe(false);
+    r.step(); expect(r.time()).toBe(q + 8); expect(isScriptMenuFullScreen()).toBe(false);
     vi.mocked(drawFadeOverlay).mockClear(); renderMenuSession(); expect(drawFadeOverlay).not.toHaveBeenCalled();
     expect(tiles().at(10, 14)).toBe('▶');
-    r.frames(2); expect(r.read).toHaveBeenCalledTimes(n); r.step(); expect(r.time()).toBe(q + 9);
+    r.frames(2); expect(r.read).toHaveBeenCalledTimes(n); r.step(); expect(r.time()).toBe(q + 11);
     expect(r.read).toHaveBeenCalledTimes(n + 1);
-    expect(r.transfer).toHaveBeenCalledTimes(ticks + r.time() - (q - 32));
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + r.time() - (q - 32) - 2); // Q+4 and Q+5 held
   });
 
   it.each([0, 1, 2])('Bill deposit/withdraw honors one-frame taps at idle offset %i and reconciles before result glyphs', offset => {

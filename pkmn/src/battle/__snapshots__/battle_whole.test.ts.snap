@@ -3431,7 +3431,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "mirror",
     },
     {
-      "at": 383,
+      "at": 385,
       "data": [
         "party",
         [
@@ -3442,7 +3442,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "input",
     },
     {
-      "at": 386,
+      "at": 388,
       "data": [
         "party",
         [
@@ -3453,12 +3453,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "input",
     },
     {
-      "at": 386,
+      "at": 388,
       "data": null,
       "name": "press",
     },
     {
-      "at": 386,
+      "at": 388,
       "data": [
         144,
         8,
@@ -3466,19 +3466,19 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "sfx",
     },
     {
-      "at": 388,
+      "at": 390,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 393,
+      "at": 395,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:GoText",
     },
     {
-      "at": 419,
+      "at": 421,
       "data": [
         "Go! RESERVE!",
         "",
@@ -3486,12 +3486,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "textEnd:GoText",
     },
     {
-      "at": 424,
+      "at": 426,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 446,
+      "at": 448,
       "data": [
         195,
         1,
@@ -3499,7 +3499,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "animationCue",
     },
     {
-      "at": 458,
+      "at": 460,
       "data": [
         1,
         4,
@@ -3508,17 +3508,17 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "sendCue",
     },
     {
-      "at": 458,
+      "at": 460,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 458,
+      "at": 460,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": [
         "",
         "",
@@ -3526,17 +3526,17 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": [
         2,
         "fight",
@@ -3544,17 +3544,17 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "menu",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 461,
+      "at": 463,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 464,
+      "at": 466,
       "data": [
         "",
         "",
@@ -3562,12 +3562,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 464,
+      "at": 466,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 467,
+      "at": 469,
       "data": [
         "battle",
         [
@@ -3578,12 +3578,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "input",
     },
     {
-      "at": 467,
+      "at": 469,
       "data": null,
       "name": "press",
     },
     {
-      "at": 467,
+      "at": 469,
       "data": [
         144,
         8,
@@ -3591,12 +3591,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "sfx",
     },
     {
-      "at": 467,
+      "at": 469,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": [
         "move",
         [
@@ -3607,12 +3607,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "input",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": null,
       "name": "press",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": [
         144,
         8,
@@ -3620,12 +3620,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "sfx",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": [
         "select",
         0,
@@ -3634,12 +3634,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "rng",
     },
     {
-      "at": 473,
+      "at": 475,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 519,
+      "at": 521,
       "data": [
         "RESERVE",
         "used TELEPORT!",
@@ -3647,7 +3647,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 519,
+      "at": 521,
       "data": [
         100,
         0,
@@ -3655,7 +3655,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "animationCue",
     },
     {
-      "at": 519,
+      "at": 521,
       "data": [
         {
           "exp": 8000,
@@ -3711,17 +3711,17 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "mirror",
     },
     {
-      "at": 551,
+      "at": 553,
       "data": null,
       "name": "text:RanFromBattleText",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": [
         144,
         8,
@@ -3729,7 +3729,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "sfx",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": [
         "RESERVE",
         "ran from battle!",
@@ -3737,7 +3737,7 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "textEnd:RanFromBattleText",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": [
         "end",
         1,
@@ -3745,12 +3745,12 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "name": "loopReturned",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": [
         "end",
         1,
@@ -3862,7 +3862,15 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -3922,18 +3930,18 @@ exports[`checkpoint-08b whole-battle ledgers > Pay Day then player faint and res
     "343 cc24:0>a cc25:0>e cc28:0>1 cc29:0>3 cee9:3c>7f ceea:0>7f ceeb:0>7f ceec:0>7f ceed:0>7f ceee:0>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7a cefc:0>7a cefd:0>7a cefe:1>7a ceff:0>7a cf00:0>7a cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8c:0>6",
     "346 d12d:0>1 ff8c:6>0",
     "361 cc24:a>1 cc25:e>0 cc49:4>0 d07c:0>2",
-    "386 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:6>64 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2",
-    "388 d11d:0>10",
-    "393 cce4:0>30 ff98:0>50 ff9a:0>f ff9e:0>50",
-    "419 cf1c:2>0",
-    "438 cc5b:1>0 ccf1:6>0 ccf2:21>0 cfd1:6>0 d05a:8a>0",
-    "443 d07b:21>c3",
-    "464 cc26:1>0",
-    "467 cc26:0>1 cc49:0>4 ccdc:6>64 cd6d:93>23 cd6e:80>84 cd6f:82>8b cd70:8a>84 cd71:8b>8f cd72:84>8e cd73:50>14 cd74:81>93 cd75:8e>50 cd76:83>8d cd77:98>88 cd78:7f>86 cd79:92>87 cd7a:8b>93 cd7b:80>7f cd7c:8c>92 cd7d:50>87 cd7e:96>80 cd7f:91>83 cd80:80>84 d07b:c3>1 d0b4:24>64 d0e0:8f>93 d0e1:80>84 d0e2:98>8b d0e3:7f>84 d0e4:83>8f d0e5:80>8e d0e6:98>91 d0e7:4e>93 d0e8:e3>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>4e d0ed:50>e3 d0ee:0>50 d11d:10>14 fff3:1>0",
-    "473 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:14>91 cf4b:80>84 cf4c:82>8b cf4d:8a>84 cf4e:8b>8f cf4f:84>8e cf50:50>91 cf51:50>93 cf52:0>50 cfd1:0>64 cfd2:10>1c cfd3:28>0 cfd4:0>18 d05a:0>a d11d:14>64 ffd4:fd>fc",
-    "489 ccf1:0>64 d11d:64>2",
-    "519 d02c:23>22 d077:0>1 d07b:1>64 d1b3:23>22",
-    "602 d056:1>0 d058:24>0 d077:1>0 d42e:0>ff d72b:0>1",
+    "388 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:6>64 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2",
+    "390 d11d:0>10",
+    "395 cce4:0>30 ff98:0>50 ff9a:0>f ff9e:0>50",
+    "421 cf1c:2>0",
+    "440 cc5b:1>0 ccf1:6>0 ccf2:21>0 cfd1:6>0 d05a:8a>0",
+    "445 d07b:21>c3",
+    "466 cc26:1>0",
+    "469 cc26:0>1 cc49:0>4 ccdc:6>64 cd6d:93>23 cd6e:80>84 cd6f:82>8b cd70:8a>84 cd71:8b>8f cd72:84>8e cd73:50>14 cd74:81>93 cd75:8e>50 cd76:83>8d cd77:98>88 cd78:7f>86 cd79:92>87 cd7a:8b>93 cd7b:80>7f cd7c:8c>92 cd7d:50>87 cd7e:96>80 cd7f:91>83 cd80:80>84 d07b:c3>1 d0b4:24>64 d0e0:8f>93 d0e1:80>84 d0e2:98>8b d0e3:7f>84 d0e4:83>8f d0e5:80>8e d0e6:98>91 d0e7:4e>93 d0e8:e3>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>4e d0ed:50>e3 d0ee:0>50 d11d:10>14 fff3:1>0",
+    "475 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:14>91 cf4b:80>84 cf4c:82>8b cf4d:8a>84 cf4e:8b>8f cf4f:84>8e cf50:50>91 cf51:50>93 cf52:0>50 cfd1:0>64 cfd2:10>1c cfd3:28>0 cfd4:0>18 d05a:0>a d11d:14>64 ffd4:fd>fc",
+    "491 ccf1:0>64 d11d:64>2",
+    "521 d02c:23>22 d077:0>1 d07b:1>64 d1b3:23>22",
+    "604 d056:1>0 d058:24>0 d077:1>0 d42e:0>ff d72b:0>1",
   ],
 }
 `;
@@ -8337,7 +8345,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "mirror",
     },
     {
-      "at": 250,
+      "at": 252,
       "data": [
         "party",
         [
@@ -8348,7 +8356,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "input",
     },
     {
-      "at": 253,
+      "at": 255,
       "data": [
         "party",
         [
@@ -8359,12 +8367,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "input",
     },
     {
-      "at": 253,
+      "at": 255,
       "data": null,
       "name": "press",
     },
     {
-      "at": 253,
+      "at": 255,
       "data": [
         144,
         8,
@@ -8372,19 +8380,19 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 255,
+      "at": 257,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 260,
+      "at": 262,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:GoText",
     },
     {
-      "at": 287,
+      "at": 289,
       "data": [
         "Go! RESERVE!",
         "",
@@ -8392,12 +8400,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:GoText",
     },
     {
-      "at": 287,
+      "at": 289,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 309,
+      "at": 311,
       "data": [
         195,
         1,
@@ -8405,7 +8413,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "animationCue",
     },
     {
-      "at": 321,
+      "at": 323,
       "data": [
         1,
         4,
@@ -8414,17 +8422,17 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sendCue",
     },
     {
-      "at": 321,
+      "at": 323,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 321,
+      "at": 323,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 324,
+      "at": 326,
       "data": [
         "",
         "",
@@ -8432,17 +8440,17 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 324,
+      "at": 326,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 346,
+      "at": 348,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 349,
+      "at": 351,
       "data": [
         "",
         "",
@@ -8450,12 +8458,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 349,
+      "at": 351,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 349,
+      "at": 351,
       "data": {
         "enemyMonNick": "PIDGEY",
         "trainerName": "ACE",
@@ -8463,12 +8471,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "text:TrainerAboutToUseText",
     },
     {
-      "at": 390,
+      "at": 392,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 390,
+      "at": 392,
       "data": [
         144,
         8,
@@ -8476,12 +8484,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 416,
+      "at": 418,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 416,
+      "at": 418,
       "data": [
         144,
         8,
@@ -8489,7 +8497,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 487,
+      "at": 489,
       "data": [
         "Will YELLOW",
         "change POKéMON?",
@@ -8497,7 +8505,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:TrainerAboutToUseText",
     },
     {
-      "at": 487,
+      "at": 489,
       "data": [
         1,
         1,
@@ -8505,12 +8513,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "yesNo",
     },
     {
-      "at": 487,
+      "at": 489,
       "data": null,
       "name": "sprites",
     },
     {
-      "at": 490,
+      "at": 492,
       "data": [
         "yesNo",
         [
@@ -8521,12 +8529,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "input",
     },
     {
-      "at": 490,
+      "at": 492,
       "data": null,
       "name": "press",
     },
     {
-      "at": 490,
+      "at": 492,
       "data": [
         144,
         8,
@@ -8534,12 +8542,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 505,
+      "at": 507,
       "data": null,
       "name": "sprites",
     },
     {
-      "at": 510,
+      "at": 512,
       "data": {
         "enemyMonNick": "PIDGEY",
         "trainerName": "ACE",
@@ -8547,7 +8555,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "text:TrainerSentOutText",
     },
     {
-      "at": 551,
+      "at": 553,
       "data": [
         "ACE sent",
         "out PIDGEY!",
@@ -8555,12 +8563,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:TrainerSentOutText",
     },
     {
-      "at": 551,
+      "at": 553,
       "data": 36,
       "name": "front",
     },
     {
-      "at": 558,
+      "at": 560,
       "data": [
         1,
         15,
@@ -8569,17 +8577,17 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sendCue",
     },
     {
-      "at": 558,
+      "at": 560,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 563,
+      "at": 565,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 563,
+      "at": 565,
       "data": [
         2,
         "fight",
@@ -8587,17 +8595,17 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "menu",
     },
     {
-      "at": 563,
+      "at": 565,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 563,
+      "at": 565,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 566,
+      "at": 568,
       "data": [
         "",
         "",
@@ -8605,12 +8613,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 566,
+      "at": 568,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 569,
+      "at": 571,
       "data": [
         "battle",
         [
@@ -8621,12 +8629,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "input",
     },
     {
-      "at": 569,
+      "at": 571,
       "data": null,
       "name": "press",
     },
     {
-      "at": 569,
+      "at": 571,
       "data": [
         144,
         8,
@@ -8634,12 +8642,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 569,
+      "at": 571,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": [
         "move",
         [
@@ -8650,12 +8658,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "input",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": null,
       "name": "press",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": [
         144,
         8,
@@ -8663,12 +8671,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": [
         "select",
         0,
@@ -8677,12 +8685,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "rng",
     },
     {
-      "at": 575,
+      "at": 577,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 617,
+      "at": 619,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -8690,7 +8698,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 617,
+      "at": 619,
       "data": [
         "crit",
         0,
@@ -8699,7 +8707,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "rng",
     },
     {
-      "at": 617,
+      "at": 619,
       "data": [
         "range",
         0,
@@ -8708,7 +8716,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "rng",
     },
     {
-      "at": 617,
+      "at": 619,
       "data": [
         "hit",
         0,
@@ -8717,7 +8725,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "rng",
     },
     {
-      "at": 617,
+      "at": 619,
       "data": [
         {
           "exp": 8000,
@@ -8773,7 +8781,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "mirror",
     },
     {
-      "at": 620,
+      "at": 622,
       "data": [
         33,
         0,
@@ -8781,12 +8789,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "animationCue",
     },
     {
-      "at": 671,
+      "at": 673,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 671,
+      "at": 673,
       "data": [
         158,
         8,
@@ -8794,7 +8802,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 680,
+      "at": 682,
       "data": [
         149,
         8,
@@ -8802,24 +8810,24 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 680,
+      "at": 682,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 711,
+      "at": 713,
       "data": {
         "enemyMonNick": "PIDGEY",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 756,
+      "at": 758,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 756,
+      "at": 758,
       "data": [
         144,
         8,
@@ -8827,7 +8835,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 756,
+      "at": 758,
       "data": [
         "Enemy PIDGEY",
         "fainted!",
@@ -8835,12 +8843,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 756,
+      "at": 758,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": [
         "",
         "",
@@ -8848,12 +8856,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": {
         "expAmountGained": 256,
         "nameBuffer": "RESERVE",
@@ -8861,7 +8869,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "text:GainedText",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": [
         {
           "exp": 8000,
@@ -8917,12 +8925,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "mirror",
     },
     {
-      "at": 818,
+      "at": 820,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 818,
+      "at": 820,
       "data": [
         144,
         8,
@@ -8930,7 +8938,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 818,
+      "at": 820,
       "data": [
         "RESERVE gained",
         "256 EXP. Points!",
@@ -8938,12 +8946,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:GainedText",
     },
     {
-      "at": 818,
+      "at": 820,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 818,
+      "at": 820,
       "data": [
         "defeatedtrainer",
         8,
@@ -8951,19 +8959,19 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "music",
     },
     {
-      "at": 821,
+      "at": 823,
       "data": {
         "trainerName": "ACE",
       },
       "name": "text:TrainerDefeatedText",
     },
     {
-      "at": 864,
+      "at": 866,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 864,
+      "at": 866,
       "data": [
         144,
         8,
@@ -8971,7 +8979,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 864,
+      "at": 866,
       "data": [
         "YELLOW defeated",
         "ACE!",
@@ -8979,12 +8987,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:TrainerDefeatedText",
     },
     {
-      "at": 864,
+      "at": 866,
       "data": null,
       "name": "trainerPic",
     },
     {
-      "at": 940,
+      "at": 942,
       "data": [
         false,
         0,
@@ -8992,19 +9000,19 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "endTextHandOff",
     },
     {
-      "at": 940,
+      "at": 942,
       "data": {
         "amountMoneyWon": 0,
       },
       "name": "text:MoneyForWinningText",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": [
         144,
         8,
@@ -9012,7 +9020,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "sfx",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": [
         "YELLOW got ¥0",
         "for winning!",
@@ -9020,7 +9028,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "textEnd:MoneyForWinningText",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": [
         "end",
         0,
@@ -9028,7 +9036,7 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "loopReturned",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": [
         0,
         0,
@@ -9036,12 +9044,12 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "name": "evolutionHandOff",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 996,
+      "at": 998,
       "data": [
         "end",
         0,
@@ -9153,7 +9161,15 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -9223,29 +9239,29 @@ exports[`checkpoint-08b whole-battle ledgers > enemy-first trainer double faint 
     "182 cf0b:0>1 d72f:40>0",
     "225 cc5b:5>0 cf0b:1>0 cf91:0>1 d057:0>1",
     "228 cc24:0>1 cc28:0>1 cc29:0>3 cc49:4>0 d07c:0>2",
-    "253 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:99>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:1>3 fff3:0>1",
-    "255 d11d:0>10",
-    "301 cfd1:99>0 d05a:8a>0",
-    "306 d07b:5>c3",
-    "324 cd6a:0>1 cf1d:2>0",
-    "330 ccdf:0>ff ccf5:3>2 cd3e:0>f8 cd3f:0>73 cd40:0>74 cd41:0>78 cee9:3c>33 ceea:0>31 ceeb:0>34 ceec:0>34 ceed:0>34 ceee:0>34 d057:3>2 d080:0>18 d081:0>20 def4:0>1 ff8b:0>8",
-    "349 cce4:0>1 cd23:0>14 cd25:0>31 cd27:0>1a cd29:0>18 cd2b:0>1e cd2d:0>16 cd6d:84>8f cd6e:97>88 cd6f:8f>83 cd70:8b>86 cd71:8e>84 cd72:92>98 cd73:88>50 cd74:8e>50 cd75:8d>50 cd77:85>50 cfd9:85>8f cfda:8e>88 cfdb:84>83 cfdc:50>86 cfdd:0>84 cfde:0>98 cfdf:0>50 cfe0:0>50 cfe1:0>50 cfe2:0>50 cfe3:0>50 cfe6:0>1 cfe7:0>1 cfeb:0>ff cff0:0>98 cff1:0>88 cff4:3c>31 cff6:14>1a cff8:14>18 cffa:64>1e cffc:14>16 d001:a>28 d002:14>2d d003:1e>28 d004:28>38 d005:32>23 d006:3c>ff d007:46>3c d30a:0>80",
-    "487 cc24:1>8 cc25:0>1 cc26:1>0 cee9:33>7f ceea:31>7f ceeb:34>7f ceec:34>7f ceed:34>7f ceee:34>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7f cefc:0>7f cefd:0>7f cefe:1>7f ceff:0>7f cf00:0>7f cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8b:8>0 ff8c:0>6",
-    "490 cc26:0>1 d12c:0>1 d12d:0>2 ff8b:0>8 ff8c:6>0",
-    "558 cf1d:0>2 ffe1:0>cf",
-    "563 cd6a:1>0",
-    "566 cc26:1>0",
-    "569 cc26:0>1 cc49:0>4 ccdc:99>21 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 cd78:94>7f cd79:91>92 cd7a:98>8b cd7b:7f>80 cd7c:92>8c cd7d:96>50 cd7e:88>96 cd7f:8f>91 cd80:84>80 d07b:c3>1 d0b4:24>21 d0e0:84>93 d0e1:97>80 d0e2:8f>82 d0e3:8b>8a d0e4:8e>8b d0e5:92>84 d0e6:88>4e d0e7:8e>e3 d0e8:8d>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>50 d11d:10>23 fff3:1>0",
-    "575 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:84>93 cf4b:97>80 cf4c:8f>82 cf4d:8b>8a cf4e:8e>8b cf4f:92>84 cf50:88>50 cfd1:0>21 cfd2:7>0 cfd3:aa>23 cfd5:ff>f2 cfd6:5>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
-    "591 ccf1:0>21 d11d:21>4",
-    "617 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
-    "632 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cfe6:1>0 d0d7:b>1",
-    "657 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
-    "671 d72f:40>0",
-    "759 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:0>40 ff9a:0>1",
-    "818 cc49:4>0 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>40 cfa9:0>28 cfab:0>2d cfad:0>28 cfaf:0>38 cfb1:0>23 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 ff96:f>0 ff97:42>24 ff98:40>2d",
-    "864 cfd7:24>0",
-    "996 d056:2>0 d058:c9>0 d42e:0>ff d72b:0>1",
+    "255 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:99>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:1>3 fff3:0>1",
+    "257 d11d:0>10",
+    "303 cfd1:99>0 d05a:8a>0",
+    "308 d07b:5>c3",
+    "326 cd6a:0>1 cf1d:2>0",
+    "332 ccdf:0>ff ccf5:3>2 cd3e:0>f8 cd3f:0>73 cd40:0>74 cd41:0>78 cee9:3c>33 ceea:0>31 ceeb:0>34 ceec:0>34 ceed:0>34 ceee:0>34 d057:3>2 d080:0>18 d081:0>20 def4:0>1 ff8b:0>8",
+    "351 cce4:0>1 cd23:0>14 cd25:0>31 cd27:0>1a cd29:0>18 cd2b:0>1e cd2d:0>16 cd6d:84>8f cd6e:97>88 cd6f:8f>83 cd70:8b>86 cd71:8e>84 cd72:92>98 cd73:88>50 cd74:8e>50 cd75:8d>50 cd77:85>50 cfd9:85>8f cfda:8e>88 cfdb:84>83 cfdc:50>86 cfdd:0>84 cfde:0>98 cfdf:0>50 cfe0:0>50 cfe1:0>50 cfe2:0>50 cfe3:0>50 cfe6:0>1 cfe7:0>1 cfeb:0>ff cff0:0>98 cff1:0>88 cff4:3c>31 cff6:14>1a cff8:14>18 cffa:64>1e cffc:14>16 d001:a>28 d002:14>2d d003:1e>28 d004:28>38 d005:32>23 d006:3c>ff d007:46>3c d30a:0>80",
+    "489 cc24:1>8 cc25:0>1 cc26:1>0 cee9:33>7f ceea:31>7f ceeb:34>7f ceec:34>7f ceed:34>7f ceee:34>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7f cefc:0>7f cefd:0>7f cefe:1>7f ceff:0>7f cf00:0>7f cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8b:8>0 ff8c:0>6",
+    "492 cc26:0>1 d12c:0>1 d12d:0>2 ff8b:0>8 ff8c:6>0",
+    "560 cf1d:0>2 ffe1:0>cf",
+    "565 cd6a:1>0",
+    "568 cc26:1>0",
+    "571 cc26:0>1 cc49:0>4 ccdc:99>21 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 cd78:94>7f cd79:91>92 cd7a:98>8b cd7b:7f>80 cd7c:92>8c cd7d:96>50 cd7e:88>96 cd7f:8f>91 cd80:84>80 d07b:c3>1 d0b4:24>21 d0e0:84>93 d0e1:97>80 d0e2:8f>82 d0e3:8b>8a d0e4:8e>8b d0e5:92>84 d0e6:88>4e d0e7:8e>e3 d0e8:8d>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>50 d11d:10>23 fff3:1>0",
+    "577 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:84>93 cf4b:97>80 cf4c:8f>82 cf4d:8b>8a cf4e:8e>8b cf4f:92>84 cf50:88>50 cfd1:0>21 cfd2:7>0 cfd3:aa>23 cfd5:ff>f2 cfd6:5>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
+    "593 ccf1:0>21 d11d:21>4",
+    "619 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
+    "634 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cfe6:1>0 d0d7:b>1",
+    "659 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
+    "673 d72f:40>0",
+    "761 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:0>40 ff9a:0>1",
+    "820 cc49:4>0 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>40 cfa9:0>28 cfab:0>2d cfad:0>28 cfaf:0>38 cfb1:0>23 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "866 cfd7:24>0",
+    "998 d056:2>0 d058:c9>0 d42e:0>ff d72b:0>1",
   ],
 }
 `;
@@ -10931,7 +10947,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "mirror",
     },
     {
-      "at": 262,
+      "at": 264,
       "data": [
         "party",
         [
@@ -10942,7 +10958,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "input",
     },
     {
-      "at": 265,
+      "at": 267,
       "data": [
         "party",
         [
@@ -10953,12 +10969,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "input",
     },
     {
-      "at": 265,
+      "at": 267,
       "data": null,
       "name": "press",
     },
     {
-      "at": 265,
+      "at": 267,
       "data": [
         144,
         8,
@@ -10966,19 +10982,19 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sfx",
     },
     {
-      "at": 267,
+      "at": 269,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 272,
+      "at": 274,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:EnemysWeakText",
     },
     {
-      "at": 335,
+      "at": 337,
       "data": [
         "The enemy's weak!",
         "Get'm! RESERVE!",
@@ -10986,12 +11002,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:EnemysWeakText",
     },
     {
-      "at": 340,
+      "at": 342,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 362,
+      "at": 364,
       "data": [
         195,
         1,
@@ -10999,7 +11015,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "animationCue",
     },
     {
-      "at": 374,
+      "at": 376,
       "data": [
         1,
         4,
@@ -11008,17 +11024,17 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sendCue",
     },
     {
-      "at": 374,
+      "at": 376,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 374,
+      "at": 376,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": [
         "",
         "",
@@ -11026,17 +11042,17 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": [
         2,
         "fight",
@@ -11044,17 +11060,17 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "menu",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 377,
+      "at": 379,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 380,
+      "at": 382,
       "data": [
         "",
         "",
@@ -11062,12 +11078,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 380,
+      "at": 382,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 383,
+      "at": 385,
       "data": [
         "battle",
         [
@@ -11078,12 +11094,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "input",
     },
     {
-      "at": 383,
+      "at": 385,
       "data": null,
       "name": "press",
     },
     {
-      "at": 383,
+      "at": 385,
       "data": [
         144,
         8,
@@ -11091,12 +11107,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sfx",
     },
     {
-      "at": 383,
+      "at": 385,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": [
         "move",
         [
@@ -11107,12 +11123,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "input",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": null,
       "name": "press",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": [
         144,
         8,
@@ -11120,12 +11136,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sfx",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": [
         "select",
         0,
@@ -11134,17 +11150,17 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 389,
+      "at": 391,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 435,
+      "at": 437,
       "data": [
         "Enemy FOE",
         "used TACKLE!",
@@ -11152,7 +11168,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 435,
+      "at": 437,
       "data": [
         "crit",
         1,
@@ -11161,7 +11177,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 435,
+      "at": 437,
       "data": [
         "range",
         1,
@@ -11170,7 +11186,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 435,
+      "at": 437,
       "data": [
         "hit",
         1,
@@ -11179,7 +11195,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 438,
+      "at": 440,
       "data": [
         33,
         1,
@@ -11187,12 +11203,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "animationCue",
     },
     {
-      "at": 498,
+      "at": 500,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 541,
+      "at": 543,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -11200,7 +11216,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 541,
+      "at": 543,
       "data": [
         "crit",
         0,
@@ -11209,7 +11225,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 541,
+      "at": 543,
       "data": [
         "range",
         0,
@@ -11218,7 +11234,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 541,
+      "at": 543,
       "data": [
         "hit",
         0,
@@ -11227,7 +11243,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "rng",
     },
     {
-      "at": 541,
+      "at": 543,
       "data": [
         {
           "exp": 8000,
@@ -11283,7 +11299,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "mirror",
     },
     {
-      "at": 544,
+      "at": 546,
       "data": [
         33,
         0,
@@ -11291,7 +11307,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "animationCue",
     },
     {
-      "at": 581,
+      "at": 583,
       "data": [
         {
           "exp": 8000,
@@ -11347,12 +11363,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "mirror",
     },
     {
-      "at": 595,
+      "at": 597,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 595,
+      "at": 597,
       "data": [
         "defeatedwildmon",
         8,
@@ -11360,19 +11376,19 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "music",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": {
         "enemyMonNick": "FOE",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": [
         144,
         8,
@@ -11380,7 +11396,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sfx",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": [
         "Enemy FOE",
         "fainted!",
@@ -11388,12 +11404,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 641,
+      "at": 643,
       "data": [
         "",
         "",
@@ -11401,12 +11417,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 641,
+      "at": 643,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 641,
+      "at": 643,
       "data": {
         "expAmountGained": 200,
         "nameBuffer": "RESERVE",
@@ -11414,7 +11430,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "text:GainedText",
     },
     {
-      "at": 641,
+      "at": 643,
       "data": [
         {
           "exp": 8000,
@@ -11470,12 +11486,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "mirror",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": [
         144,
         8,
@@ -11483,7 +11499,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "sfx",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": [
         "RESERVE gained",
         "200 EXP. Points!",
@@ -11491,7 +11507,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "textEnd:GainedText",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": [
         "end",
         0,
@@ -11499,7 +11515,7 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "loopReturned",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": [
         0,
         0,
@@ -11507,12 +11523,12 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "name": "evolutionHandOff",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 700,
+      "at": 702,
       "data": [
         "end",
         0,
@@ -11632,7 +11648,15 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -11679,34 +11703,34 @@ exports[`checkpoint-08b whole-battle ledgers > failed refusal to use a next mon 
     "196 cc26:0>1 d12c:0>1 d12d:0>2 ff8c:6>0",
     "211 cd6a:0>1 d11f:0>1 ffd3:0>ff",
     "240 cc24:a>1 cc25:e>0 cc26:1>0 cc29:3>1 cc49:4>0 d07c:0>2",
-    "265 cc26:0>1 cc2f:0>1 ccf5:1>3 cd6a:1>0 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:0>2",
-    "267 d11d:0>10",
-    "272 cce4:0>1 ff98:0>1 ff99:0>a ff9a:0>f ff9e:0>1",
-    "335 cf1c:2>0",
-    "354 cc5b:1>0 ccf2:21>0 d05a:8a>0",
-    "359 d07b:21>c3",
-    "380 cc26:1>0",
-    "383 cc26:0>1 cc49:0>4 cd6d:93>23 cd73:50>23 d07b:c3>1 d0b4:24>21 d11d:10>23 d11f:1>0 fff3:1>0",
-    "389 cc26:1>0 ccd5:1>2 ccf4:1>0 cd6d:23>93 cd73:23>50 d05a:0>a d11d:23>21 ffd3:ff>0 ffd4:fe>fd fff3:0>1",
-    "409 ccf2:0>21 d11d:21>4",
-    "435 cc5b:0>1 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>8 d11d:4>0 ffd4:fd>fc",
-    "450 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cef0:7f>0 cef1:7f>3c cefd:7a>0 cefe:7a>8 d015:3c>34",
-    "453 ceeb:3c>3b ceed:3b>3a cef1:3c>3b",
-    "456 ceeb:3b>3a ceed:3a>39 cef1:3b>3a",
-    "459 ceeb:3a>39 ceed:39>38 cef1:3a>39",
-    "462 ceeb:39>38 ceed:38>37 cef1:39>38",
-    "463 ceeb:38>37 ceed:37>36 cef1:38>37",
-    "466 ceeb:37>36 ceed:36>35 cef1:37>36",
-    "469 ceeb:36>35 ceed:35>34 cef1:36>35",
-    "472 ceeb:35>34 cef1:35>34",
-    "498 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:8a>a d0b4:24>21 d11d:0>21 fff3:1>0",
-    "515 ccf1:0>21 d11d:21>4",
-    "541 cc5b:1>4 d02c:23>22 d05a:a>8a d0b4:21>24 d0d7:8>d d11d:4>0 d1b3:23>22 ffd4:fc>fb",
-    "556 ceeb:34>0 ceed:34>0 cefe:8>1 cf93:1>0 cfe6:1>0 d0d7:d>1",
-    "581 ccf0:1>0 ccf1:21>0 ccf2:21>0 ccf4:0>1 d198:3c>34 d72f:0>40",
-    "595 d72f:40>0",
-    "641 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:1>40 ff99:a>0 ff9a:f>1 ff9e:1>0",
-    "700 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>34 cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "267 cc26:0>1 cc2f:0>1 ccf5:1>3 cd6a:1>0 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:0>2",
+    "269 d11d:0>10",
+    "274 cce4:0>1 ff98:0>1 ff99:0>a ff9a:0>f ff9e:0>1",
+    "337 cf1c:2>0",
+    "356 cc5b:1>0 ccf2:21>0 d05a:8a>0",
+    "361 d07b:21>c3",
+    "382 cc26:1>0",
+    "385 cc26:0>1 cc49:0>4 cd6d:93>23 cd73:50>23 d07b:c3>1 d0b4:24>21 d11d:10>23 d11f:1>0 fff3:1>0",
+    "391 cc26:1>0 ccd5:1>2 ccf4:1>0 cd6d:23>93 cd73:23>50 d05a:0>a d11d:23>21 ffd3:ff>0 ffd4:fe>fd fff3:0>1",
+    "411 ccf2:0>21 d11d:21>4",
+    "437 cc5b:0>1 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>8 d11d:4>0 ffd4:fd>fc",
+    "452 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cef0:7f>0 cef1:7f>3c cefd:7a>0 cefe:7a>8 d015:3c>34",
+    "455 ceeb:3c>3b ceed:3b>3a cef1:3c>3b",
+    "458 ceeb:3b>3a ceed:3a>39 cef1:3b>3a",
+    "461 ceeb:3a>39 ceed:39>38 cef1:3a>39",
+    "464 ceeb:39>38 ceed:38>37 cef1:39>38",
+    "465 ceeb:38>37 ceed:37>36 cef1:38>37",
+    "468 ceeb:37>36 ceed:36>35 cef1:37>36",
+    "471 ceeb:36>35 ceed:35>34 cef1:36>35",
+    "474 ceeb:35>34 cef1:35>34",
+    "500 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:8a>a d0b4:24>21 d11d:0>21 fff3:1>0",
+    "517 ccf1:0>21 d11d:21>4",
+    "543 cc5b:1>4 d02c:23>22 d05a:a>8a d0b4:21>24 d0d7:8>d d11d:4>0 d1b3:23>22 ffd4:fc>fb",
+    "558 ceeb:34>0 ceed:34>0 cefe:8>1 cf93:1>0 cfe6:1>0 d0d7:d>1",
+    "583 ccf0:1>0 ccf1:21>0 ccf2:21>0 ccf4:0>1 d198:3c>34 d72f:0>40",
+    "597 d72f:40>0",
+    "643 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:1>40 ff99:a>0 ff9a:f>1 ff9e:1>0",
+    "702 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>34 cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
   ],
 }
 `;
@@ -15298,7 +15322,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "mirror",
     },
     {
-      "at": 337,
+      "at": 339,
       "data": [
         "party",
         [
@@ -15309,7 +15333,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 340,
+      "at": 342,
       "data": [
         "party",
         [
@@ -15320,12 +15344,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 340,
+      "at": 342,
       "data": null,
       "name": "press",
     },
     {
-      "at": 340,
+      "at": 342,
       "data": [
         144,
         8,
@@ -15333,19 +15357,19 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 342,
+      "at": 344,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:DoItText",
     },
     {
-      "at": 379,
+      "at": 381,
       "data": [
         "Do it! RESERVE!",
         "",
@@ -15353,12 +15377,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:DoItText",
     },
     {
-      "at": 384,
+      "at": 386,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 406,
+      "at": 408,
       "data": [
         195,
         1,
@@ -15366,7 +15390,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 418,
+      "at": 420,
       "data": [
         1,
         4,
@@ -15375,17 +15399,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sendCue",
     },
     {
-      "at": 418,
+      "at": 420,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 418,
+      "at": 420,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": [
         "",
         "",
@@ -15393,17 +15417,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": [
         2,
         "fight",
@@ -15411,17 +15435,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "menu",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 421,
+      "at": 423,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 424,
+      "at": 426,
       "data": [
         "",
         "",
@@ -15429,12 +15453,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 424,
+      "at": 426,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 427,
+      "at": 429,
       "data": [
         "battle",
         [
@@ -15445,12 +15469,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 427,
+      "at": 429,
       "data": null,
       "name": "press",
     },
     {
-      "at": 427,
+      "at": 429,
       "data": [
         144,
         8,
@@ -15458,12 +15482,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 427,
+      "at": 429,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": [
         "move",
         [
@@ -15474,12 +15498,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": null,
       "name": "press",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": [
         144,
         8,
@@ -15487,12 +15511,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": [
         "select",
         0,
@@ -15501,12 +15525,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 433,
+      "at": 435,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 475,
+      "at": 477,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -15514,7 +15538,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 475,
+      "at": 477,
       "data": [
         "crit",
         0,
@@ -15523,7 +15547,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 475,
+      "at": 477,
       "data": [
         "range",
         0,
@@ -15532,7 +15556,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 475,
+      "at": 477,
       "data": [
         "hit",
         0,
@@ -15541,7 +15565,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 475,
+      "at": 477,
       "data": [
         {
           "exp": 8000,
@@ -15597,7 +15621,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "mirror",
     },
     {
-      "at": 478,
+      "at": 480,
       "data": [
         33,
         0,
@@ -15605,17 +15629,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 542,
+      "at": 544,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 542,
+      "at": 544,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 589,
+      "at": 591,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -15623,7 +15647,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 589,
+      "at": 591,
       "data": [
         150,
         1,
@@ -15631,17 +15655,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 601,
+      "at": 603,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": [
         144,
         8,
@@ -15649,7 +15673,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": [
         "No effect!",
         "",
@@ -15657,12 +15681,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": [
         3,
         "fight",
@@ -15670,17 +15694,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "menu",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 626,
+      "at": 628,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 629,
+      "at": 631,
       "data": [
         "",
         "",
@@ -15688,12 +15712,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 629,
+      "at": 631,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 632,
+      "at": 634,
       "data": [
         "battle",
         [
@@ -15704,12 +15728,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 632,
+      "at": 634,
       "data": null,
       "name": "press",
     },
     {
-      "at": 632,
+      "at": 634,
       "data": [
         144,
         8,
@@ -15717,12 +15741,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 632,
+      "at": 634,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": [
         "move",
         [
@@ -15733,12 +15757,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": null,
       "name": "press",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": [
         144,
         8,
@@ -15746,12 +15770,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": [
         "select",
         0,
@@ -15760,12 +15784,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 638,
+      "at": 640,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 681,
+      "at": 683,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -15773,7 +15797,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 681,
+      "at": 683,
       "data": [
         "crit",
         0,
@@ -15782,7 +15806,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 681,
+      "at": 683,
       "data": [
         "range",
         0,
@@ -15791,7 +15815,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 681,
+      "at": 683,
       "data": [
         "hit",
         0,
@@ -15800,7 +15824,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 681,
+      "at": 683,
       "data": [
         {
           "exp": 8000,
@@ -15856,7 +15880,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "mirror",
     },
     {
-      "at": 684,
+      "at": 686,
       "data": [
         33,
         0,
@@ -15864,17 +15888,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 746,
+      "at": 748,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 746,
+      "at": 748,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 793,
+      "at": 795,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -15882,7 +15906,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 793,
+      "at": 795,
       "data": [
         150,
         1,
@@ -15890,17 +15914,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 805,
+      "at": 807,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": [
         144,
         8,
@@ -15908,7 +15932,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": [
         "No effect!",
         "",
@@ -15916,12 +15940,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": [
         4,
         "fight",
@@ -15929,17 +15953,17 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "menu",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 830,
+      "at": 832,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 833,
+      "at": 835,
       "data": [
         "",
         "",
@@ -15947,12 +15971,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 833,
+      "at": 835,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 836,
+      "at": 838,
       "data": [
         "battle",
         [
@@ -15963,12 +15987,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 836,
+      "at": 838,
       "data": null,
       "name": "press",
     },
     {
-      "at": 836,
+      "at": 838,
       "data": [
         144,
         8,
@@ -15976,12 +16000,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 836,
+      "at": 838,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": [
         "move",
         [
@@ -15992,12 +16016,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "input",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": null,
       "name": "press",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": [
         144,
         8,
@@ -16005,12 +16029,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": [
         "select",
         0,
@@ -16019,12 +16043,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 842,
+      "at": 844,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 885,
+      "at": 887,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -16032,7 +16056,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 885,
+      "at": 887,
       "data": [
         "crit",
         0,
@@ -16041,7 +16065,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 885,
+      "at": 887,
       "data": [
         "range",
         0,
@@ -16050,7 +16074,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 885,
+      "at": 887,
       "data": [
         "hit",
         0,
@@ -16059,7 +16083,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "rng",
     },
     {
-      "at": 885,
+      "at": 887,
       "data": [
         {
           "exp": 8000,
@@ -16115,7 +16139,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "mirror",
     },
     {
-      "at": 888,
+      "at": 890,
       "data": [
         33,
         0,
@@ -16123,12 +16147,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "animationCue",
     },
     {
-      "at": 951,
+      "at": 953,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 951,
+      "at": 953,
       "data": [
         "defeatedwildmon",
         8,
@@ -16136,19 +16160,19 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "music",
     },
     {
-      "at": 954,
+      "at": 956,
       "data": {
         "enemyMonNick": "FOE",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 994,
+      "at": 996,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 994,
+      "at": 996,
       "data": [
         144,
         8,
@@ -16156,7 +16180,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 994,
+      "at": 996,
       "data": [
         "Enemy FOE",
         "fainted!",
@@ -16164,12 +16188,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 994,
+      "at": 996,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 997,
+      "at": 999,
       "data": [
         "",
         "",
@@ -16177,12 +16201,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 997,
+      "at": 999,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 997,
+      "at": 999,
       "data": {
         "expAmountGained": 200,
         "nameBuffer": "RESERVE",
@@ -16190,7 +16214,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "text:GainedText",
     },
     {
-      "at": 997,
+      "at": 999,
       "data": [
         {
           "exp": 8000,
@@ -16246,12 +16270,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "mirror",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": [
         144,
         8,
@@ -16259,7 +16283,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "sfx",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": [
         "RESERVE gained",
         "200 EXP. Points!",
@@ -16267,7 +16291,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "textEnd:GainedText",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": [
         "end",
         0,
@@ -16275,7 +16299,7 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "loopReturned",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": [
         0,
         0,
@@ -16283,12 +16307,12 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "name": "evolutionHandOff",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 1056,
+      "at": 1058,
       "data": [
         "end",
         0,
@@ -16400,7 +16424,15 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -16482,67 +16514,67 @@ exports[`checkpoint-08b whole-battle ledgers > move36 reaches player faint after
     "297 cc24:0>a cc25:0>e cc28:0>1 cc29:0>3 cee9:3c>7f ceea:0>7f ceeb:0>7f ceec:0>7f ceed:0>7f ceee:0>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7a cefc:0>7a cefd:0>7a cefe:1>7a ceff:0>7a cf00:0>7a cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8c:0>6",
     "300 d12d:0>1 ff8c:6>0",
     "315 cc24:a>1 cc25:e>0 cc49:4>0 d07c:0>2",
-    "340 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:24>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 fff3:0>1",
-    "342 d11d:0>10",
-    "347 cce4:0>23 ff98:0>3a ff99:0>5 ff9a:0>f ff9e:0>3a",
-    "379 cf1c:2>0",
-    "398 cc5b:5>0 ccf1:24>0 cfd1:24>0 d05a:8a>0",
-    "403 d07b:24>c3",
-    "424 cc26:1>0",
-    "427 cc26:0>1 cc49:0>4 ccdc:24>21 cd6d:93>23 cd6f:8a>82 cd70:84>8a cd71:7f>8b cd72:83>84 cd73:8e>23 cd74:96>81 cd75:8d>8e cd76:50>83 cd77:93>98 cd78:87>7f cd79:91>92 cd7a:80>8b cd7b:92>80 cd7c:87>8c cd7e:83>96 cd7f:8e>91 cd80:94>80 d07b:c3>1 d0b4:24>21 d0e2:8a>82 d0e3:84>8a d0e4:7f>8b d0e5:83>84 d0e6:8e>4e d0e7:96>e3 d0e8:8d>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>50 d11d:10>23 fff3:1>0",
-    "433 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cf4c:8a>82 cf4d:84>8a cf4e:7f>8b cf4f:83>84 cf50:8e>50 cfd1:0>21 cfd2:30>0 cfd3:5a>23 cfd5:d8>f2 cfd6:14>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
-    "449 ccf1:0>21 d11d:21>4",
-    "475 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:19>d d11d:4>0 d1b3:23>22 ffd4:fd>fc",
-    "490 cee9:7f>3c ceea:7f>0 ceeb:7f>23 ceec:7f>0 ceed:7f>22 ceee:7f>0 ceef:7f>ff cefd:7a>0 cefe:7a>d cf93:1>0 cfe6:23>16",
-    "492 ceeb:23>22 ceed:22>21",
-    "494 ceeb:22>21 ceed:21>20",
-    "496 ceeb:21>20 ceed:20>1f",
-    "498 ceeb:20>1e ceed:1f>1d",
-    "500 ceeb:1e>1d ceed:1d>1c",
-    "502 ceeb:1d>1c ceed:1c>1b",
-    "504 ceeb:1c>1b ceed:1b>1a",
-    "506 ceeb:1b>19 ceed:1a>18",
-    "508 ceeb:19>18 ceed:18>17",
-    "510 ceeb:18>17 ceed:17>16",
-    "512 ceeb:17>16",
-    "517 cf1d:0>1 d11d:0>10",
-    "542 ccd5:0>1 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 cfcb:0>96 cfcc:0>55 cfcf:0>ff cfd0:0>28 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
-    "563 ccf2:0>96 d11d:96>3",
-    "589 cc5b:4>0 d07b:21>96",
-    "632 cc26:0>1 cd6d:92>22 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "638 cc26:1>0 cd6d:22>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fc>fb",
-    "655 d11d:21>4",
-    "681 cc5b:0>4 d02c:22>21 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:22>21 ffd4:fb>fa",
-    "696 ceed:16>15 cfe6:16>9",
-    "698 ceeb:16>14 ceed:15>13",
-    "700 ceeb:14>13 ceed:13>12",
-    "702 ceeb:13>12 ceed:12>11",
-    "704 ceeb:12>11 ceed:11>10",
-    "706 ceeb:11>f ceed:10>e",
-    "708 ceeb:f>e ceed:e>d",
-    "710 ceeb:e>d ceed:d>c",
-    "712 ceeb:d>c ceed:c>b",
-    "714 ceeb:c>a ceed:b>9",
-    "716 ceeb:a>9",
-    "721 cf1d:1>2 d11d:0>10",
-    "746 ccd5:1>2 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
-    "767 d11d:96>3",
-    "793 cc5b:4>0 d07b:21>96",
-    "836 cc26:0>1 cd6d:92>21 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "842 cc26:1>0 cd6d:21>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fa>f9",
-    "859 d11d:21>4",
-    "885 cc5b:0>4 d02c:21>20 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:21>20 ffd4:f9>f8",
-    "900 ceed:9>8 cefe:d>9 cfe6:9>0 d0d7:d>9",
-    "902 ceeb:9>8 ceed:8>7",
-    "904 ceeb:8>7 ceed:7>6",
-    "906 ceeb:7>5 ceed:6>4",
-    "908 ceeb:5>4 ceed:4>3",
-    "910 ceeb:4>3 ceed:3>2",
-    "912 ceeb:3>0 ceed:2>0",
-    "937 ccf0:1>0 ccf1:21>0 ccf2:96>0 ccf4:0>1 d72f:0>40",
-    "951 d72f:40>0",
-    "997 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:3a>40 ff99:5>0 ff9a:f>1 ff9e:3a>0",
-    "1056 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>20 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "342 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:24>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 fff3:0>1",
+    "344 d11d:0>10",
+    "349 cce4:0>23 ff98:0>3a ff99:0>5 ff9a:0>f ff9e:0>3a",
+    "381 cf1c:2>0",
+    "400 cc5b:5>0 ccf1:24>0 cfd1:24>0 d05a:8a>0",
+    "405 d07b:24>c3",
+    "426 cc26:1>0",
+    "429 cc26:0>1 cc49:0>4 ccdc:24>21 cd6d:93>23 cd6f:8a>82 cd70:84>8a cd71:7f>8b cd72:83>84 cd73:8e>23 cd74:96>81 cd75:8d>8e cd76:50>83 cd77:93>98 cd78:87>7f cd79:91>92 cd7a:80>8b cd7b:92>80 cd7c:87>8c cd7e:83>96 cd7f:8e>91 cd80:94>80 d07b:c3>1 d0b4:24>21 d0e2:8a>82 d0e3:84>8a d0e4:7f>8b d0e5:83>84 d0e6:8e>4e d0e7:96>e3 d0e8:8d>4e d0e9:4e>e3 d0ea:e3>4e d0eb:4e>e3 d0ec:e3>50 d11d:10>23 fff3:1>0",
+    "435 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cf4c:8a>82 cf4d:84>8a cf4e:7f>8b cf4f:83>84 cf50:8e>50 cfd1:0>21 cfd2:30>0 cfd3:5a>23 cfd5:d8>f2 cfd6:14>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
+    "451 ccf1:0>21 d11d:21>4",
+    "477 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:19>d d11d:4>0 d1b3:23>22 ffd4:fd>fc",
+    "492 cee9:7f>3c ceea:7f>0 ceeb:7f>23 ceec:7f>0 ceed:7f>22 ceee:7f>0 ceef:7f>ff cefd:7a>0 cefe:7a>d cf93:1>0 cfe6:23>16",
+    "494 ceeb:23>22 ceed:22>21",
+    "496 ceeb:22>21 ceed:21>20",
+    "498 ceeb:21>20 ceed:20>1f",
+    "500 ceeb:20>1e ceed:1f>1d",
+    "502 ceeb:1e>1d ceed:1d>1c",
+    "504 ceeb:1d>1c ceed:1c>1b",
+    "506 ceeb:1c>1b ceed:1b>1a",
+    "508 ceeb:1b>19 ceed:1a>18",
+    "510 ceeb:19>18 ceed:18>17",
+    "512 ceeb:18>17 ceed:17>16",
+    "514 ceeb:17>16",
+    "519 cf1d:0>1 d11d:0>10",
+    "544 ccd5:0>1 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 cfcb:0>96 cfcc:0>55 cfcf:0>ff cfd0:0>28 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
+    "565 ccf2:0>96 d11d:96>3",
+    "591 cc5b:4>0 d07b:21>96",
+    "634 cc26:0>1 cd6d:92>22 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "640 cc26:1>0 cd6d:22>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fc>fb",
+    "657 d11d:21>4",
+    "683 cc5b:0>4 d02c:22>21 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:22>21 ffd4:fb>fa",
+    "698 ceed:16>15 cfe6:16>9",
+    "700 ceeb:16>14 ceed:15>13",
+    "702 ceeb:14>13 ceed:13>12",
+    "704 ceeb:13>12 ceed:12>11",
+    "706 ceeb:12>11 ceed:11>10",
+    "708 ceeb:11>f ceed:10>e",
+    "710 ceeb:f>e ceed:e>d",
+    "712 ceeb:e>d ceed:d>c",
+    "714 ceeb:d>c ceed:c>b",
+    "716 ceeb:c>a ceed:b>9",
+    "718 ceeb:a>9",
+    "723 cf1d:1>2 d11d:0>10",
+    "748 ccd5:1>2 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
+    "769 d11d:96>3",
+    "795 cc5b:4>0 d07b:21>96",
+    "838 cc26:0>1 cd6d:92>21 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "844 cc26:1>0 cd6d:21>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fa>f9",
+    "861 d11d:21>4",
+    "887 cc5b:0>4 d02c:21>20 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:21>20 ffd4:f9>f8",
+    "902 ceed:9>8 cefe:d>9 cfe6:9>0 d0d7:d>9",
+    "904 ceeb:9>8 ceed:8>7",
+    "906 ceeb:8>7 ceed:7>6",
+    "908 ceeb:7>5 ceed:6>4",
+    "910 ceeb:5>4 ceed:4>3",
+    "912 ceeb:4>3 ceed:3>2",
+    "914 ceeb:3>0 ceed:2>0",
+    "939 ccf0:1>0 ccf1:21>0 ccf2:96>0 ccf4:0>1 d72f:0>40",
+    "953 d72f:40>0",
+    "999 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:3a>40 ff99:5>0 ff9a:f>1 ff9e:3a>0",
+    "1058 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>20 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
   ],
 }
 `;
@@ -17612,7 +17644,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 321,
+      "at": 323,
       "data": [
         "party",
         [
@@ -17623,7 +17655,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 324,
+      "at": 326,
       "data": [
         "party",
         [
@@ -17634,12 +17666,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 324,
+      "at": 326,
       "data": null,
       "name": "press",
     },
     {
-      "at": 324,
+      "at": 326,
       "data": [
         144,
         8,
@@ -17647,19 +17679,19 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 326,
+      "at": 328,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 331,
+      "at": 333,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:GoText",
     },
     {
-      "at": 357,
+      "at": 359,
       "data": [
         "Go! RESERVE!",
         "",
@@ -17667,12 +17699,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:GoText",
     },
     {
-      "at": 362,
+      "at": 364,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 384,
+      "at": 386,
       "data": [
         195,
         1,
@@ -17680,7 +17712,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 396,
+      "at": 398,
       "data": [
         1,
         4,
@@ -17689,17 +17721,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sendCue",
     },
     {
-      "at": 396,
+      "at": 398,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 396,
+      "at": 398,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": [
         "",
         "",
@@ -17707,17 +17739,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": [
         2,
         "fight",
@@ -17725,17 +17757,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "menu",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 399,
+      "at": 401,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 402,
+      "at": 404,
       "data": [
         "",
         "",
@@ -17743,12 +17775,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 402,
+      "at": 404,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         "battle",
         [
@@ -17759,12 +17791,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": null,
       "name": "press",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         144,
         8,
@@ -17772,12 +17804,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": [
         "move",
         [
@@ -17788,12 +17820,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": null,
       "name": "press",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": [
         144,
         8,
@@ -17801,12 +17833,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": [
         "select",
         0,
@@ -17815,12 +17847,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 411,
+      "at": 413,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 453,
+      "at": 455,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -17828,7 +17860,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 453,
+      "at": 455,
       "data": [
         "crit",
         0,
@@ -17837,7 +17869,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 453,
+      "at": 455,
       "data": [
         "range",
         0,
@@ -17846,7 +17878,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 453,
+      "at": 455,
       "data": [
         "hit",
         0,
@@ -17855,7 +17887,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 453,
+      "at": 455,
       "data": [
         {
           "exp": 8000,
@@ -17911,7 +17943,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 456,
+      "at": 458,
       "data": [
         33,
         0,
@@ -17919,17 +17951,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 515,
+      "at": 517,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 515,
+      "at": 517,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 561,
+      "at": 563,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -17937,7 +17969,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 561,
+      "at": 563,
       "data": [
         150,
         1,
@@ -17945,17 +17977,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 573,
+      "at": 575,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": [
         144,
         8,
@@ -17963,7 +17995,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": [
         "No effect!",
         "",
@@ -17971,12 +18003,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": [
         3,
         "fight",
@@ -17984,17 +18016,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "menu",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 598,
+      "at": 600,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 601,
+      "at": 603,
       "data": [
         "",
         "",
@@ -18002,12 +18034,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 601,
+      "at": 603,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 604,
+      "at": 606,
       "data": [
         "battle",
         [
@@ -18018,12 +18050,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 604,
+      "at": 606,
       "data": null,
       "name": "press",
     },
     {
-      "at": 604,
+      "at": 606,
       "data": [
         144,
         8,
@@ -18031,12 +18063,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 604,
+      "at": 606,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": [
         "move",
         [
@@ -18047,12 +18079,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": null,
       "name": "press",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": [
         144,
         8,
@@ -18060,12 +18092,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": [
         "select",
         0,
@@ -18074,12 +18106,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 653,
+      "at": 655,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -18087,7 +18119,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 653,
+      "at": 655,
       "data": [
         "crit",
         0,
@@ -18096,7 +18128,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 653,
+      "at": 655,
       "data": [
         "range",
         0,
@@ -18105,7 +18137,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 653,
+      "at": 655,
       "data": [
         "hit",
         0,
@@ -18114,7 +18146,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 653,
+      "at": 655,
       "data": [
         {
           "exp": 8000,
@@ -18170,7 +18202,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 656,
+      "at": 658,
       "data": [
         33,
         0,
@@ -18178,17 +18210,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 713,
+      "at": 715,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 713,
+      "at": 715,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -18196,7 +18228,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 759,
+      "at": 761,
       "data": [
         150,
         1,
@@ -18204,17 +18236,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 771,
+      "at": 773,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": [
         144,
         8,
@@ -18222,7 +18254,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": [
         "No effect!",
         "",
@@ -18230,12 +18262,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": [
         4,
         "fight",
@@ -18243,17 +18275,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "menu",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 796,
+      "at": 798,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 799,
+      "at": 801,
       "data": [
         "",
         "",
@@ -18261,12 +18293,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 799,
+      "at": 801,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 802,
+      "at": 804,
       "data": [
         "battle",
         [
@@ -18277,12 +18309,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 802,
+      "at": 804,
       "data": null,
       "name": "press",
     },
     {
-      "at": 802,
+      "at": 804,
       "data": [
         144,
         8,
@@ -18290,12 +18322,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 802,
+      "at": 804,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": [
         "move",
         [
@@ -18306,12 +18338,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": null,
       "name": "press",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": [
         144,
         8,
@@ -18319,12 +18351,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": [
         "select",
         0,
@@ -18333,12 +18365,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 808,
+      "at": 810,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 851,
+      "at": 853,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -18346,7 +18378,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 851,
+      "at": 853,
       "data": [
         "crit",
         0,
@@ -18355,7 +18387,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 851,
+      "at": 853,
       "data": [
         "range",
         0,
@@ -18364,7 +18396,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 851,
+      "at": 853,
       "data": [
         "hit",
         0,
@@ -18373,7 +18405,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 851,
+      "at": 853,
       "data": [
         {
           "exp": 8000,
@@ -18429,7 +18461,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 854,
+      "at": 856,
       "data": [
         33,
         0,
@@ -18437,17 +18469,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 918,
+      "at": 920,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 918,
+      "at": 920,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 965,
+      "at": 967,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -18455,7 +18487,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 965,
+      "at": 967,
       "data": [
         150,
         1,
@@ -18463,17 +18495,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 977,
+      "at": 979,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": [
         144,
         8,
@@ -18481,7 +18513,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": [
         "No effect!",
         "",
@@ -18489,12 +18521,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": [
         5,
         "fight",
@@ -18502,17 +18534,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "menu",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1002,
+      "at": 1004,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 1005,
+      "at": 1007,
       "data": [
         "",
         "",
@@ -18520,12 +18552,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 1005,
+      "at": 1007,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 1008,
+      "at": 1010,
       "data": [
         "battle",
         [
@@ -18536,12 +18568,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 1008,
+      "at": 1010,
       "data": null,
       "name": "press",
     },
     {
-      "at": 1008,
+      "at": 1010,
       "data": [
         144,
         8,
@@ -18549,12 +18581,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1008,
+      "at": 1010,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": [
         "move",
         [
@@ -18565,12 +18597,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": null,
       "name": "press",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": [
         144,
         8,
@@ -18578,12 +18610,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": [
         "select",
         0,
@@ -18592,12 +18624,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1014,
+      "at": 1016,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 1057,
+      "at": 1059,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -18605,7 +18637,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 1057,
+      "at": 1059,
       "data": [
         "crit",
         0,
@@ -18614,7 +18646,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1057,
+      "at": 1059,
       "data": [
         "range",
         0,
@@ -18623,7 +18655,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1057,
+      "at": 1059,
       "data": [
         "hit",
         0,
@@ -18632,7 +18664,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1057,
+      "at": 1059,
       "data": [
         {
           "exp": 8000,
@@ -18688,7 +18720,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 1060,
+      "at": 1062,
       "data": [
         33,
         0,
@@ -18696,17 +18728,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 1122,
+      "at": 1124,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 1122,
+      "at": 1124,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 1169,
+      "at": 1171,
       "data": [
         "Enemy FOE",
         "used SPLASH!",
@@ -18714,7 +18746,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 1169,
+      "at": 1171,
       "data": [
         150,
         1,
@@ -18722,17 +18754,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 1181,
+      "at": 1183,
       "data": null,
       "name": "text:NoEffectText",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": [
         144,
         8,
@@ -18740,7 +18772,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": [
         "No effect!",
         "",
@@ -18748,12 +18780,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:NoEffectText",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": [
         6,
         "fight",
@@ -18761,17 +18793,17 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "menu",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1206,
+      "at": 1208,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 1209,
+      "at": 1211,
       "data": [
         "",
         "",
@@ -18779,12 +18811,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 1209,
+      "at": 1211,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 1212,
+      "at": 1214,
       "data": [
         "battle",
         [
@@ -18795,12 +18827,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 1212,
+      "at": 1214,
       "data": null,
       "name": "press",
     },
     {
-      "at": 1212,
+      "at": 1214,
       "data": [
         144,
         8,
@@ -18808,12 +18840,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1212,
+      "at": 1214,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": [
         "move",
         [
@@ -18824,12 +18856,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "input",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": null,
       "name": "press",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": [
         144,
         8,
@@ -18837,12 +18869,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": [
         "select",
         0,
@@ -18851,12 +18883,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1218,
+      "at": 1220,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 1261,
+      "at": 1263,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -18864,7 +18896,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 1261,
+      "at": 1263,
       "data": [
         "crit",
         0,
@@ -18873,7 +18905,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1261,
+      "at": 1263,
       "data": [
         "range",
         0,
@@ -18882,7 +18914,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1261,
+      "at": 1263,
       "data": [
         "hit",
         0,
@@ -18891,7 +18923,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "rng",
     },
     {
-      "at": 1261,
+      "at": 1263,
       "data": [
         {
           "exp": 8000,
@@ -18947,7 +18979,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 1264,
+      "at": 1266,
       "data": [
         33,
         0,
@@ -18955,12 +18987,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "animationCue",
     },
     {
-      "at": 1325,
+      "at": 1327,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 1325,
+      "at": 1327,
       "data": [
         "defeatedwildmon",
         8,
@@ -18968,19 +19000,19 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "music",
     },
     {
-      "at": 1328,
+      "at": 1330,
       "data": {
         "enemyMonNick": "FOE",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 1368,
+      "at": 1370,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1368,
+      "at": 1370,
       "data": [
         144,
         8,
@@ -18988,7 +19020,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1368,
+      "at": 1370,
       "data": [
         "Enemy FOE",
         "fainted!",
@@ -18996,12 +19028,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 1368,
+      "at": 1370,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 1371,
+      "at": 1373,
       "data": [
         "",
         "",
@@ -19009,12 +19041,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 1371,
+      "at": 1373,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 1371,
+      "at": 1373,
       "data": {
         "expAmountGained": 200,
         "nameBuffer": "RESERVE",
@@ -19022,7 +19054,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "text:GainedText",
     },
     {
-      "at": 1371,
+      "at": 1373,
       "data": [
         {
           "exp": 8000,
@@ -19078,12 +19110,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "mirror",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": [
         144,
         8,
@@ -19091,7 +19123,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "sfx",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": [
         "RESERVE gained",
         "200 EXP. Points!",
@@ -19099,7 +19131,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "textEnd:GainedText",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": [
         "end",
         0,
@@ -19107,7 +19139,7 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "loopReturned",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": [
         0,
         0,
@@ -19115,12 +19147,12 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "name": "evolutionHandOff",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 1430,
+      "at": 1432,
       "data": [
         "end",
         0,
@@ -19240,7 +19272,15 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -19301,102 +19341,102 @@ exports[`checkpoint-08b whole-battle ledgers > move164 reaches player faint afte
     "281 cc24:0>a cc25:0>e cc28:0>1 cc29:0>3 cee9:0>7f ceea:0>7f ceeb:0>7f ceec:0>7f ceed:0>7f ceee:0>7f ceef:0>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7a cefc:0>7a cefd:0>7a cefe:0>7a ceff:0>7a cf00:0>7a cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8c:0>6",
     "284 d12d:0>1 ff8c:6>0",
     "299 cc24:a>1 cc25:e>0 cc49:4>0 d07c:0>2",
-    "324 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:a4>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 d0b4:a4>24 fff3:0>1",
-    "331 cce4:0>3c ff98:0>64 ff9a:0>f ff9e:0>64",
-    "357 cf1c:2>0",
-    "376 ccf1:a4>0 cfd1:a4>0 d05a:a>0 d062:10>0",
-    "381 d07b:a4>c3",
-    "402 cc26:1>0",
-    "405 cc26:0>1 cc49:0>4 ccdc:a4>21 cd6d:92>23 cd6e:94>80 cd6f:81>82 cd70:92>8a cd71:93>8b cd72:88>84 cd73:93>23 cd74:94>81 cd75:93>8e cd76:84>83 cd77:50>98 cd78:92>7f cd79:93>92 cd7a:91>8b cd7b:94>80 cd7c:86>8c cd7d:86>50 cd7e:8b>96 cd7f:84>91 cd80:50>80 d07b:c3>1 d0b4:24>21 d0e0:92>93 d0e1:94>80 d0e2:81>82 d0e3:92>8a d0e4:93>8b d0e5:88>84 d0e6:93>4e d0e7:94>e3 d0e8:93>4e d0e9:84>e3 d0ec:4e>50 d11d:10>23 fff3:1>0",
-    "411 cc26:1>0 cd6d:23>93 cd73:23>50 cf4a:92>93 cf4b:94>80 cf4c:81>82 cf4d:92>8a cf4e:93>8b cf4f:88>84 cf50:93>50 cfd1:0>21 cfd2:4f>0 cfd3:0>23 cfd5:ff>f2 cfd6:a>23 d05a:0>a d11d:23>21 ffd4:ff>fe",
-    "427 ccf1:0>21 d11d:21>4",
-    "453 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:0>d d11d:4>0 d1b3:23>22 ffd4:fe>fd",
-    "468 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cefd:7a>0 cefe:7a>d cfe6:3c>2f",
-    "470 ceeb:3c>3b ceed:3b>3a",
-    "472 ceeb:3b>3a ceed:3a>39",
-    "474 ceeb:3a>39 ceed:39>38",
-    "476 ceeb:39>37 ceed:38>36",
-    "478 ceeb:37>36 ceed:36>35",
-    "480 ceeb:36>35 ceed:35>34",
-    "482 ceeb:35>34 ceed:34>33",
-    "484 ceeb:34>32 ceed:33>31",
-    "486 ceeb:32>31 ceed:31>30",
-    "488 ceeb:31>30 ceed:30>2f",
-    "490 ceeb:30>2f",
-    "515 ccd5:0>1 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 cfcb:0>96 cfcc:0>55 cfcf:0>ff cfd0:0>28 d05a:8a>a d0b4:24>96 d11d:0>96 fff3:0>1",
-    "535 ccf2:0>96 d11d:96>3",
-    "561 cc5b:4>0 d07b:21>96",
-    "604 cc26:0>1 cd6d:92>22 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "610 cc26:1>0 cd6d:22>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fd>fc",
-    "627 d11d:21>4",
-    "653 cc5b:0>4 d02c:22>21 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:22>21 ffd4:fc>fb",
-    "668 ceed:2f>2e cfe6:2f>22",
-    "670 ceeb:2f>2d ceed:2e>2c",
-    "672 ceeb:2d>2c ceed:2c>2b",
-    "674 ceeb:2c>2b ceed:2b>2a",
-    "676 ceeb:2b>2a ceed:2a>29",
-    "678 ceeb:2a>28 ceed:29>27",
-    "680 ceeb:28>27 ceed:27>26",
-    "682 ceeb:27>26 ceed:26>25",
-    "684 ceeb:26>25 ceed:25>24",
-    "686 ceeb:25>23 ceed:24>22",
-    "688 ceeb:23>22",
-    "713 ccd5:1>2 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:0>96 fff3:0>1",
-    "733 d11d:96>3",
-    "759 cc5b:4>0 d07b:21>96",
-    "802 cc26:0>1 cd6d:92>21 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "808 cc26:1>0 cd6d:21>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fb>fa",
-    "825 d11d:21>4",
-    "851 cc5b:0>4 d02c:21>20 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:21>20 ffd4:fa>f9",
-    "866 ceed:22>21 cfe6:22>15",
-    "868 ceeb:22>21 ceed:21>20",
-    "870 ceeb:21>20 ceed:20>1f",
-    "872 ceeb:20>1e ceed:1f>1d",
-    "874 ceeb:1e>1d ceed:1d>1c",
-    "876 ceeb:1d>1c ceed:1c>1b",
-    "878 ceeb:1c>1b ceed:1b>1a",
-    "880 ceeb:1b>19 ceed:1a>18",
-    "882 ceeb:19>18 ceed:18>17",
-    "884 ceeb:18>17 ceed:17>16",
-    "886 ceeb:17>16 ceed:16>15",
-    "888 ceeb:16>15",
-    "893 cf1d:0>1 d11d:0>10",
-    "918 ccd5:2>3 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
-    "939 d11d:96>3",
-    "965 cc5b:4>0 d07b:21>96",
-    "1008 cc26:0>1 cd6d:92>20 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "1014 cc26:1>0 cd6d:20>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:f9>f8",
-    "1031 d11d:21>4",
-    "1057 cc5b:0>4 d02c:20>1f d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:20>1f ffd4:f8>f7",
-    "1072 ceeb:15>14 ceed:15>13 cfe6:15>8",
-    "1074 ceeb:14>13 ceed:13>12",
-    "1076 ceeb:13>12 ceed:12>11",
-    "1078 ceeb:12>11 ceed:11>10",
-    "1080 ceeb:11>f ceed:10>e",
-    "1082 ceeb:f>e ceed:e>d",
-    "1084 ceeb:e>d ceed:d>c",
-    "1086 ceeb:d>c ceed:c>b",
-    "1088 ceeb:c>a ceed:b>9",
-    "1090 ceeb:a>9 ceed:9>8",
-    "1092 ceeb:9>8",
-    "1097 cf1d:1>2 d11d:0>10",
-    "1122 ccd5:3>4 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
-    "1143 d11d:96>3",
-    "1169 cc5b:4>0 d07b:21>96",
-    "1212 cc26:0>1 cd6d:92>1f cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
-    "1218 cc26:1>0 cd6d:1f>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:f7>f6",
-    "1235 d11d:21>4",
-    "1261 cc5b:0>4 d02c:1f>1e d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:1f>1e ffd4:f6>f5",
-    "1276 ceed:8>7 cefe:d>8 cfe6:8>0 d0d7:d>8",
-    "1278 ceeb:8>7 ceed:7>6",
-    "1280 ceeb:7>5 ceed:6>4",
-    "1282 ceeb:5>4 ceed:4>3",
-    "1284 ceeb:4>3 ceed:3>2",
-    "1286 ceeb:3>0 ceed:2>0",
-    "1311 ccf0:1>0 ccf1:21>0 ccf2:96>0 ccf4:0>1 d72f:0>40",
-    "1325 d72f:40>0",
-    "1371 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:64>40 ff9a:f>1 ff9e:64>0",
-    "1430 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>1e cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "326 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d01b:a4>21 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 d0b4:a4>24 fff3:0>1",
+    "333 cce4:0>3c ff98:0>64 ff9a:0>f ff9e:0>64",
+    "359 cf1c:2>0",
+    "378 ccf1:a4>0 cfd1:a4>0 d05a:a>0 d062:10>0",
+    "383 d07b:a4>c3",
+    "404 cc26:1>0",
+    "407 cc26:0>1 cc49:0>4 ccdc:a4>21 cd6d:92>23 cd6e:94>80 cd6f:81>82 cd70:92>8a cd71:93>8b cd72:88>84 cd73:93>23 cd74:94>81 cd75:93>8e cd76:84>83 cd77:50>98 cd78:92>7f cd79:93>92 cd7a:91>8b cd7b:94>80 cd7c:86>8c cd7d:86>50 cd7e:8b>96 cd7f:84>91 cd80:50>80 d07b:c3>1 d0b4:24>21 d0e0:92>93 d0e1:94>80 d0e2:81>82 d0e3:92>8a d0e4:93>8b d0e5:88>84 d0e6:93>4e d0e7:94>e3 d0e8:93>4e d0e9:84>e3 d0ec:4e>50 d11d:10>23 fff3:1>0",
+    "413 cc26:1>0 cd6d:23>93 cd73:23>50 cf4a:92>93 cf4b:94>80 cf4c:81>82 cf4d:92>8a cf4e:93>8b cf4f:88>84 cf50:93>50 cfd1:0>21 cfd2:4f>0 cfd3:0>23 cfd5:ff>f2 cfd6:a>23 d05a:0>a d11d:23>21 ffd4:ff>fe",
+    "429 ccf1:0>21 d11d:21>4",
+    "455 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:0>d d11d:4>0 d1b3:23>22 ffd4:fe>fd",
+    "470 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cefd:7a>0 cefe:7a>d cfe6:3c>2f",
+    "472 ceeb:3c>3b ceed:3b>3a",
+    "474 ceeb:3b>3a ceed:3a>39",
+    "476 ceeb:3a>39 ceed:39>38",
+    "478 ceeb:39>37 ceed:38>36",
+    "480 ceeb:37>36 ceed:36>35",
+    "482 ceeb:36>35 ceed:35>34",
+    "484 ceeb:35>34 ceed:34>33",
+    "486 ceeb:34>32 ceed:33>31",
+    "488 ceeb:32>31 ceed:31>30",
+    "490 ceeb:31>30 ceed:30>2f",
+    "492 ceeb:30>2f",
+    "517 ccd5:0>1 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 cfcb:0>96 cfcc:0>55 cfcf:0>ff cfd0:0>28 d05a:8a>a d0b4:24>96 d11d:0>96 fff3:0>1",
+    "537 ccf2:0>96 d11d:96>3",
+    "563 cc5b:4>0 d07b:21>96",
+    "606 cc26:0>1 cd6d:92>22 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "612 cc26:1>0 cd6d:22>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fd>fc",
+    "629 d11d:21>4",
+    "655 cc5b:0>4 d02c:22>21 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:22>21 ffd4:fc>fb",
+    "670 ceed:2f>2e cfe6:2f>22",
+    "672 ceeb:2f>2d ceed:2e>2c",
+    "674 ceeb:2d>2c ceed:2c>2b",
+    "676 ceeb:2c>2b ceed:2b>2a",
+    "678 ceeb:2b>2a ceed:2a>29",
+    "680 ceeb:2a>28 ceed:29>27",
+    "682 ceeb:28>27 ceed:27>26",
+    "684 ceeb:27>26 ceed:26>25",
+    "686 ceeb:26>25 ceed:25>24",
+    "688 ceeb:25>23 ceed:24>22",
+    "690 ceeb:23>22",
+    "715 ccd5:1>2 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:0>96 fff3:0>1",
+    "735 d11d:96>3",
+    "761 cc5b:4>0 d07b:21>96",
+    "804 cc26:0>1 cd6d:92>21 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "810 cc26:1>0 cd6d:21>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:fb>fa",
+    "827 d11d:21>4",
+    "853 cc5b:0>4 d02c:21>20 d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:21>20 ffd4:fa>f9",
+    "868 ceed:22>21 cfe6:22>15",
+    "870 ceeb:22>21 ceed:21>20",
+    "872 ceeb:21>20 ceed:20>1f",
+    "874 ceeb:20>1e ceed:1f>1d",
+    "876 ceeb:1e>1d ceed:1d>1c",
+    "878 ceeb:1d>1c ceed:1c>1b",
+    "880 ceeb:1c>1b ceed:1b>1a",
+    "882 ceeb:1b>19 ceed:1a>18",
+    "884 ceeb:19>18 ceed:18>17",
+    "886 ceeb:18>17 ceed:17>16",
+    "888 ceeb:17>16 ceed:16>15",
+    "890 ceeb:16>15",
+    "895 cf1d:0>1 d11d:0>10",
+    "920 ccd5:2>3 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
+    "941 d11d:96>3",
+    "967 cc5b:4>0 d07b:21>96",
+    "1010 cc26:0>1 cd6d:92>20 cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "1016 cc26:1>0 cd6d:20>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:f9>f8",
+    "1033 d11d:21>4",
+    "1059 cc5b:0>4 d02c:20>1f d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:20>1f ffd4:f8>f7",
+    "1074 ceeb:15>14 ceed:15>13 cfe6:15>8",
+    "1076 ceeb:14>13 ceed:13>12",
+    "1078 ceeb:13>12 ceed:12>11",
+    "1080 ceeb:12>11 ceed:11>10",
+    "1082 ceeb:11>f ceed:10>e",
+    "1084 ceeb:f>e ceed:e>d",
+    "1086 ceeb:e>d ceed:d>c",
+    "1088 ceeb:d>c ceed:c>b",
+    "1090 ceeb:c>a ceed:b>9",
+    "1092 ceeb:a>9 ceed:9>8",
+    "1094 ceeb:9>8",
+    "1099 cf1d:1>2 d11d:0>10",
+    "1124 ccd5:3>4 cd6d:93>92 cd6e:80>8f cd6f:82>8b cd70:8a>80 cd71:8b>92 cd72:84>87 cd74:81>80 cd75:8e>82 cd76:83>88 cd77:98>83 cd79:92>80 cd7a:8b>91 cd7b:80>8c cd7c:8c>8e cd7d:50>91 cd7e:96>50 cd7f:91>82 cd80:80>91 cf4a:93>92 cf4b:80>8f cf4c:82>8b cf4d:8a>80 cf4e:8b>92 cf4f:84>87 d05a:8a>a d0b4:24>96 d11d:10>96 fff3:0>1",
+    "1145 d11d:96>3",
+    "1171 cc5b:4>0 d07b:21>96",
+    "1214 cc26:0>1 cd6d:92>1f cd6e:8f>80 cd6f:8b>82 cd70:80>8a cd71:92>8b cd72:87>84 cd73:50>23 cd74:80>81 cd75:82>8e cd76:88>83 cd77:83>98 cd79:80>92 cd7a:91>8b cd7b:8c>80 cd7c:8e>8c cd7d:91>50 cd7e:50>96 cd7f:82>91 cd80:91>80 d07b:96>1 d0b4:96>21 d11d:3>23 fff3:1>0",
+    "1220 cc26:1>0 cd6d:1f>93 cd73:23>50 cf4a:92>93 cf4b:8f>80 cf4c:8b>82 cf4d:80>8a cf4e:92>8b cf4f:87>84 d11d:23>21 ffd4:f7>f6",
+    "1237 d11d:21>4",
+    "1263 cc5b:0>4 d02c:1f>1e d05a:a>8a d07b:1>21 d0b4:21>24 d11d:4>0 d1b3:1f>1e ffd4:f6>f5",
+    "1278 ceed:8>7 cefe:d>8 cfe6:8>0 d0d7:d>8",
+    "1280 ceeb:8>7 ceed:7>6",
+    "1282 ceeb:7>5 ceed:6>4",
+    "1284 ceeb:5>4 ceed:4>3",
+    "1286 ceeb:4>3 ceed:3>2",
+    "1288 ceeb:3>0 ceed:2>0",
+    "1313 ccf0:1>0 ccf1:21>0 ccf2:96>0 ccf4:0>1 d72f:0>40",
+    "1327 d72f:40>0",
+    "1373 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:64>40 ff9a:f>1 ff9e:64>0",
+    "1432 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>1e cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>96 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
   ],
 }
 `;
@@ -20582,7 +20622,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "mirror",
     },
     {
-      "at": 233,
+      "at": 235,
       "data": [
         "party",
         [
@@ -20593,7 +20633,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "input",
     },
     {
-      "at": 236,
+      "at": 238,
       "data": [
         "party",
         [
@@ -20604,12 +20644,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "input",
     },
     {
-      "at": 236,
+      "at": 238,
       "data": null,
       "name": "press",
     },
     {
-      "at": 236,
+      "at": 238,
       "data": [
         144,
         8,
@@ -20617,19 +20657,19 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sfx",
     },
     {
-      "at": 238,
+      "at": 240,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 243,
+      "at": 245,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:EnemysWeakText",
     },
     {
-      "at": 305,
+      "at": 307,
       "data": [
         "The enemy's weak!",
         "Get'm! RESERVE!",
@@ -20637,12 +20677,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:EnemysWeakText",
     },
     {
-      "at": 310,
+      "at": 312,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 332,
+      "at": 334,
       "data": [
         195,
         1,
@@ -20650,7 +20690,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "animationCue",
     },
     {
-      "at": 344,
+      "at": 346,
       "data": [
         1,
         4,
@@ -20659,17 +20699,17 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sendCue",
     },
     {
-      "at": 344,
+      "at": 346,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 344,
+      "at": 346,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": [
         "",
         "",
@@ -20677,17 +20717,17 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": [
         2,
         "fight",
@@ -20695,17 +20735,17 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "menu",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 347,
+      "at": 349,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 350,
+      "at": 352,
       "data": [
         "",
         "",
@@ -20713,12 +20753,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 350,
+      "at": 352,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 353,
+      "at": 355,
       "data": [
         "battle",
         [
@@ -20729,12 +20769,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "input",
     },
     {
-      "at": 353,
+      "at": 355,
       "data": null,
       "name": "press",
     },
     {
-      "at": 353,
+      "at": 355,
       "data": [
         144,
         8,
@@ -20742,12 +20782,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sfx",
     },
     {
-      "at": 353,
+      "at": 355,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": [
         "move",
         [
@@ -20758,12 +20798,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "input",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": null,
       "name": "press",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": [
         144,
         8,
@@ -20771,12 +20811,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sfx",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": [
         "select",
         0,
@@ -20785,17 +20825,17 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": null,
       "name": "trainerAIHandOff",
     },
     {
-      "at": 359,
+      "at": 361,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         "Enemy FOE",
         "used TACKLE!",
@@ -20803,7 +20843,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         "crit",
         1,
@@ -20812,7 +20852,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         "range",
         1,
@@ -20821,7 +20861,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 405,
+      "at": 407,
       "data": [
         "hit",
         1,
@@ -20830,7 +20870,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 408,
+      "at": 410,
       "data": [
         33,
         1,
@@ -20838,12 +20878,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "animationCue",
     },
     {
-      "at": 468,
+      "at": 470,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 511,
+      "at": 513,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -20851,7 +20891,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 511,
+      "at": 513,
       "data": [
         "crit",
         0,
@@ -20860,7 +20900,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 511,
+      "at": 513,
       "data": [
         "range",
         0,
@@ -20869,7 +20909,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 511,
+      "at": 513,
       "data": [
         "hit",
         0,
@@ -20878,7 +20918,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "rng",
     },
     {
-      "at": 511,
+      "at": 513,
       "data": [
         {
           "exp": 8000,
@@ -20934,7 +20974,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "mirror",
     },
     {
-      "at": 514,
+      "at": 516,
       "data": [
         33,
         0,
@@ -20942,7 +20982,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "animationCue",
     },
     {
-      "at": 551,
+      "at": 553,
       "data": [
         {
           "exp": 8000,
@@ -20998,12 +21038,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "mirror",
     },
     {
-      "at": 565,
+      "at": 567,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 565,
+      "at": 567,
       "data": [
         "defeatedwildmon",
         8,
@@ -21011,19 +21051,19 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "music",
     },
     {
-      "at": 568,
+      "at": 570,
       "data": {
         "enemyMonNick": "FOE",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 608,
+      "at": 610,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 608,
+      "at": 610,
       "data": [
         144,
         8,
@@ -21031,7 +21071,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sfx",
     },
     {
-      "at": 608,
+      "at": 610,
       "data": [
         "Enemy FOE",
         "fainted!",
@@ -21039,12 +21079,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 608,
+      "at": 610,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 611,
+      "at": 613,
       "data": [
         "",
         "",
@@ -21052,12 +21092,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 611,
+      "at": 613,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 611,
+      "at": 613,
       "data": {
         "expAmountGained": 200,
         "nameBuffer": "RESERVE",
@@ -21065,7 +21105,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "text:GainedText",
     },
     {
-      "at": 611,
+      "at": 613,
       "data": [
         {
           "exp": 8000,
@@ -21121,12 +21161,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "mirror",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": [
         144,
         8,
@@ -21134,7 +21174,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "sfx",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": [
         "RESERVE gained",
         "200 EXP. Points!",
@@ -21142,7 +21182,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "textEnd:GainedText",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": [
         "end",
         0,
@@ -21150,7 +21190,7 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "loopReturned",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": [
         0,
         0,
@@ -21158,12 +21198,12 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "name": "evolutionHandOff",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 670,
+      "at": 672,
       "data": [
         "end",
         0,
@@ -21283,7 +21323,15 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -21329,34 +21377,34 @@ exports[`checkpoint-08b whole-battle ledgers > player faint chooses a reserve an
     "193 cc24:0>a cc25:0>e cc28:0>1 cc29:0>3 cee9:3c>7f ceea:0>7f ceeb:0>7f ceec:0>7f ceed:0>7f ceee:0>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7a cefc:0>7a cefd:0>7a cefe:1>7a ceff:0>7a cf00:0>7a cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8c:0>6",
     "196 d12d:0>1 ff8c:6>0",
     "211 cc24:a>1 cc25:e>0 cc49:4>0 d07c:0>2",
-    "236 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:0>2",
-    "238 d11d:0>10",
-    "243 cce4:0>1 ff98:0>1 ff99:0>a ff9a:0>f ff9e:0>1",
-    "305 cf1c:2>0",
-    "324 cc5b:1>0 ccf2:21>0 d05a:8a>0",
-    "329 d07b:21>c3",
-    "350 cc26:1>0",
-    "353 cc26:0>1 cc49:0>4 cd6d:93>23 cd73:50>23 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
-    "359 cc26:1>0 ccd5:1>2 ccf4:1>0 cd6d:23>93 cd73:23>50 d05a:0>a d11d:23>21 ffd4:fe>fd fff3:0>1",
-    "379 ccf2:0>21 d11d:21>4",
-    "405 cc5b:0>1 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>8 d11d:4>0 ffd4:fd>fc",
-    "420 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cef0:7f>0 cef1:7f>3c cefd:7a>0 cefe:7a>8 d015:3c>34",
-    "423 ceeb:3c>3b ceed:3b>3a cef1:3c>3b",
-    "426 ceeb:3b>3a ceed:3a>39 cef1:3b>3a",
-    "429 ceeb:3a>39 ceed:39>38 cef1:3a>39",
-    "432 ceeb:39>38 ceed:38>37 cef1:39>38",
-    "433 ceeb:38>37 ceed:37>36 cef1:38>37",
-    "436 ceeb:37>36 ceed:36>35 cef1:37>36",
-    "439 ceeb:36>35 ceed:35>34 cef1:36>35",
-    "442 ceeb:35>34 cef1:35>34",
-    "468 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:8a>a d0b4:24>21 d11d:0>21 fff3:1>0",
-    "485 ccf1:0>21 d11d:21>4",
-    "511 cc5b:1>4 d02c:23>22 d05a:a>8a d0b4:21>24 d0d7:8>d d11d:4>0 d1b3:23>22 ffd4:fc>fb",
-    "526 ceeb:34>0 ceed:34>0 cefe:8>1 cf93:1>0 cfe6:1>0 d0d7:d>1",
-    "551 ccf0:1>0 ccf1:21>0 ccf2:21>0 ccf4:0>1 d198:3c>34 d72f:0>40",
-    "565 d72f:40>0",
-    "611 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:1>40 ff99:a>0 ff9a:f>1 ff9e:1>0",
-    "670 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>34 cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "238 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 cf91:0>1 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:0>2",
+    "240 d11d:0>10",
+    "245 cce4:0>1 ff98:0>1 ff99:0>a ff9a:0>f ff9e:0>1",
+    "307 cf1c:2>0",
+    "326 cc5b:1>0 ccf2:21>0 d05a:8a>0",
+    "331 d07b:21>c3",
+    "352 cc26:1>0",
+    "355 cc26:0>1 cc49:0>4 cd6d:93>23 cd73:50>23 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
+    "361 cc26:1>0 ccd5:1>2 ccf4:1>0 cd6d:23>93 cd73:23>50 d05a:0>a d11d:23>21 ffd4:fe>fd fff3:0>1",
+    "381 ccf2:0>21 d11d:21>4",
+    "407 cc5b:0>1 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>8 d11d:4>0 ffd4:fd>fc",
+    "422 cee9:7f>3c ceea:7f>0 ceeb:7f>3c ceec:7f>0 ceed:7f>3b ceee:7f>0 ceef:7f>ff cef0:7f>0 cef1:7f>3c cefd:7a>0 cefe:7a>8 d015:3c>34",
+    "425 ceeb:3c>3b ceed:3b>3a cef1:3c>3b",
+    "428 ceeb:3b>3a ceed:3a>39 cef1:3b>3a",
+    "431 ceeb:3a>39 ceed:39>38 cef1:3a>39",
+    "434 ceeb:39>38 ceed:38>37 cef1:39>38",
+    "435 ceeb:38>37 ceed:37>36 cef1:38>37",
+    "438 ceeb:37>36 ceed:36>35 cef1:37>36",
+    "441 ceeb:36>35 ceed:35>34 cef1:36>35",
+    "444 ceeb:35>34 cef1:35>34",
+    "470 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:8a>a d0b4:24>21 d11d:0>21 fff3:1>0",
+    "487 ccf1:0>21 d11d:21>4",
+    "513 cc5b:1>4 d02c:23>22 d05a:a>8a d0b4:21>24 d0d7:8>d d11d:4>0 d1b3:23>22 ffd4:fc>fb",
+    "528 ceeb:34>0 ceed:34>0 cefe:8>1 cf93:1>0 cfe6:1>0 d0d7:d>1",
+    "553 ccf0:1>0 ccf1:21>0 ccf2:21>0 ccf4:0>1 d198:3c>34 d72f:0>40",
+    "567 d72f:40>0",
+    "613 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf0b:1>0 cf4a:93>0 cf4b:80>c8 cf4c:82>0 d1a5:1f>20 d1a6:40>8 d1a8:0>a d1aa:0>14 d1ac:0>1e d1ae:0>28 d1b0:0>32 ff96:0>f ff97:0>42 ff98:1>40 ff99:a>0 ff9a:f>1 ff9e:1>0",
+    "672 cc49:4>0 ccf5:3>2 cf97:0>24 cf99:0>34 cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>8 cfa9:0>a cfab:0>14 cfad:0>1e cfaf:0>28 cfb1:0>32 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 d056:1>0 d058:24>0 d42e:0>ff d72b:0>1 ff96:f>0 ff97:42>24 ff98:40>2d",
   ],
 }
 `;
@@ -22823,7 +22871,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "mirror",
     },
     {
-      "at": 294,
+      "at": 296,
       "data": [
         "party",
         [
@@ -22834,7 +22882,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "input",
     },
     {
-      "at": 297,
+      "at": 299,
       "data": [
         "party",
         [
@@ -22845,12 +22893,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "input",
     },
     {
-      "at": 297,
+      "at": 299,
       "data": null,
       "name": "press",
     },
     {
-      "at": 297,
+      "at": 299,
       "data": [
         144,
         8,
@@ -22858,19 +22906,19 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 299,
+      "at": 301,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 304,
+      "at": 306,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:GoText",
     },
     {
-      "at": 331,
+      "at": 333,
       "data": [
         "Go! RESERVE!",
         "",
@@ -22878,12 +22926,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:GoText",
     },
     {
-      "at": 336,
+      "at": 338,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 358,
+      "at": 360,
       "data": [
         195,
         1,
@@ -22891,7 +22939,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "animationCue",
     },
     {
-      "at": 370,
+      "at": 372,
       "data": [
         1,
         4,
@@ -22900,17 +22948,17 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sendCue",
     },
     {
-      "at": 370,
+      "at": 372,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 370,
+      "at": 372,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 373,
+      "at": 375,
       "data": [
         "",
         "",
@@ -22918,17 +22966,17 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 373,
+      "at": 375,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 390,
+      "at": 392,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 393,
+      "at": 395,
       "data": [
         "",
         "",
@@ -22936,12 +22984,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 393,
+      "at": 395,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 393,
+      "at": 395,
       "data": {
         "enemyMonNick": "PIDGEY",
         "trainerName": "ACE",
@@ -22949,12 +22997,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "text:TrainerAboutToUseText",
     },
     {
-      "at": 434,
+      "at": 436,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 434,
+      "at": 436,
       "data": [
         144,
         8,
@@ -22962,12 +23010,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 460,
+      "at": 462,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 460,
+      "at": 462,
       "data": [
         144,
         8,
@@ -22975,7 +23023,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 531,
+      "at": 533,
       "data": [
         "Will YELLOW",
         "change POKéMON?",
@@ -22983,7 +23031,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:TrainerAboutToUseText",
     },
     {
-      "at": 531,
+      "at": 533,
       "data": [
         1,
         1,
@@ -22991,12 +23039,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "yesNo",
     },
     {
-      "at": 531,
+      "at": 533,
       "data": null,
       "name": "sprites",
     },
     {
-      "at": 534,
+      "at": 536,
       "data": [
         "yesNo",
         [
@@ -23007,12 +23055,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "input",
     },
     {
-      "at": 534,
+      "at": 536,
       "data": null,
       "name": "press",
     },
     {
-      "at": 534,
+      "at": 536,
       "data": [
         144,
         8,
@@ -23020,12 +23068,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 549,
+      "at": 551,
       "data": null,
       "name": "sprites",
     },
     {
-      "at": 554,
+      "at": 556,
       "data": {
         "enemyMonNick": "PIDGEY",
         "trainerName": "ACE",
@@ -23033,7 +23081,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "text:TrainerSentOutText",
     },
     {
-      "at": 595,
+      "at": 597,
       "data": [
         "ACE sent",
         "out PIDGEY!",
@@ -23041,12 +23089,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:TrainerSentOutText",
     },
     {
-      "at": 595,
+      "at": 597,
       "data": 36,
       "name": "front",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": [
         1,
         15,
@@ -23055,17 +23103,17 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sendCue",
     },
     {
-      "at": 602,
+      "at": 604,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 607,
+      "at": 609,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 607,
+      "at": 609,
       "data": [
         2,
         "fight",
@@ -23073,17 +23121,17 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "menu",
     },
     {
-      "at": 607,
+      "at": 609,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 607,
+      "at": 609,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": [
         "",
         "",
@@ -23091,12 +23139,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 613,
+      "at": 615,
       "data": [
         "battle",
         [
@@ -23107,12 +23155,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "input",
     },
     {
-      "at": 613,
+      "at": 615,
       "data": null,
       "name": "press",
     },
     {
-      "at": 613,
+      "at": 615,
       "data": [
         144,
         8,
@@ -23120,12 +23168,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 613,
+      "at": 615,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": [
         "move",
         [
@@ -23136,12 +23184,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "input",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": null,
       "name": "press",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": [
         144,
         8,
@@ -23149,12 +23197,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": [
         "select",
         0,
@@ -23163,12 +23211,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "rng",
     },
     {
-      "at": 619,
+      "at": 621,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 661,
+      "at": 663,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -23176,7 +23224,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 661,
+      "at": 663,
       "data": [
         "crit",
         0,
@@ -23185,7 +23233,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "rng",
     },
     {
-      "at": 661,
+      "at": 663,
       "data": [
         "range",
         0,
@@ -23194,7 +23242,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "rng",
     },
     {
-      "at": 661,
+      "at": 663,
       "data": [
         "hit",
         0,
@@ -23203,7 +23251,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "rng",
     },
     {
-      "at": 661,
+      "at": 663,
       "data": [
         {
           "exp": 8000,
@@ -23259,7 +23307,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "mirror",
     },
     {
-      "at": 664,
+      "at": 666,
       "data": [
         33,
         0,
@@ -23267,12 +23315,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "animationCue",
     },
     {
-      "at": 715,
+      "at": 717,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 715,
+      "at": 717,
       "data": [
         158,
         8,
@@ -23280,7 +23328,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 724,
+      "at": 726,
       "data": [
         149,
         8,
@@ -23288,24 +23336,24 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 724,
+      "at": 726,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 755,
+      "at": 757,
       "data": {
         "enemyMonNick": "PIDGEY",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 800,
+      "at": 802,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 800,
+      "at": 802,
       "data": [
         144,
         8,
@@ -23313,7 +23361,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 800,
+      "at": 802,
       "data": [
         "Enemy PIDGEY",
         "fainted!",
@@ -23321,12 +23369,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 800,
+      "at": 802,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 803,
+      "at": 805,
       "data": [
         "",
         "",
@@ -23334,12 +23382,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 803,
+      "at": 805,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 803,
+      "at": 805,
       "data": {
         "expAmountGained": 256,
         "nameBuffer": "RESERVE",
@@ -23347,7 +23395,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "text:GainedText",
     },
     {
-      "at": 803,
+      "at": 805,
       "data": [
         {
           "exp": 8000,
@@ -23403,12 +23451,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "mirror",
     },
     {
-      "at": 862,
+      "at": 864,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 862,
+      "at": 864,
       "data": [
         144,
         8,
@@ -23416,7 +23464,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 862,
+      "at": 864,
       "data": [
         "RESERVE gained",
         "256 EXP. Points!",
@@ -23424,12 +23472,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:GainedText",
     },
     {
-      "at": 862,
+      "at": 864,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 862,
+      "at": 864,
       "data": [
         "defeatedtrainer",
         8,
@@ -23437,19 +23485,19 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "music",
     },
     {
-      "at": 865,
+      "at": 867,
       "data": {
         "trainerName": "ACE",
       },
       "name": "text:TrainerDefeatedText",
     },
     {
-      "at": 908,
+      "at": 910,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 908,
+      "at": 910,
       "data": [
         144,
         8,
@@ -23457,7 +23505,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 908,
+      "at": 910,
       "data": [
         "YELLOW defeated",
         "ACE!",
@@ -23465,12 +23513,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:TrainerDefeatedText",
     },
     {
-      "at": 908,
+      "at": 910,
       "data": null,
       "name": "trainerPic",
     },
     {
-      "at": 984,
+      "at": 986,
       "data": [
         false,
         0,
@@ -23478,19 +23526,19 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "endTextHandOff",
     },
     {
-      "at": 984,
+      "at": 986,
       "data": {
         "amountMoneyWon": 0,
       },
       "name": "text:MoneyForWinningText",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": [
         144,
         8,
@@ -23498,7 +23546,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "sfx",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": [
         "YELLOW got ¥0",
         "for winning!",
@@ -23506,7 +23554,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "textEnd:MoneyForWinningText",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": [
         "end",
         0,
@@ -23514,7 +23562,7 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "loopReturned",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": [
         0,
         0,
@@ -23522,12 +23570,12 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "name": "evolutionHandOff",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 1040,
+      "at": 1042,
       "data": [
         "end",
         0,
@@ -23639,7 +23687,15 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -23710,30 +23766,30 @@ exports[`checkpoint-08b whole-battle ledgers > player-first trainer double faint
     "184 d72f:40>0",
     "269 cc5b:5>0 cf0b:1>0 cf91:0>1 d057:0>1",
     "272 cc24:0>1 cc28:0>1 cc29:0>3 cc49:4>0 d07c:0>2",
-    "297 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:1>3",
-    "299 d11d:0>10",
-    "331 cf1c:2>0",
-    "350 d05a:8a>0",
-    "355 d07b:5>c3",
-    "373 cd6a:0>1",
-    "374 ccdf:0>ff ccf5:3>2 cd3e:0>f8 cd3f:0>73 cd40:0>74 cd41:0>78 cee9:3c>33 ceea:0>31 ceeb:0>34 ceec:0>34 ceed:0>34 ceee:0>34 d057:3>2 d080:0>18 d081:0>20 def4:0>1 ff8b:0>8",
-    "393 cce4:0>1 cd23:0>14 cd25:0>31 cd27:0>1a cd29:0>18 cd2b:0>1e cd2d:0>16 cd6d:84>8f cd6e:97>88 cd6f:8f>83 cd70:8b>86 cd71:8e>84 cd72:92>98 cd73:88>50 cd74:8e>50 cd75:8d>50 cd77:85>50 cfd9:85>8f cfda:8e>88 cfdb:84>83 cfdc:50>86 cfdd:0>84 cfde:0>98 cfdf:0>50 cfe0:0>50 cfe1:0>50 cfe2:0>50 cfe3:0>50 cfe6:0>1 cfe7:0>1 cfeb:0>ff cff0:0>98 cff1:0>88 cff4:3c>31 cff6:14>1a cff8:14>18 cffa:64>1e cffc:14>16 d001:a>28 d002:14>2d d003:1e>28 d004:28>38 d005:32>23 d006:3c>ff d007:46>3c d30a:0>80",
-    "531 cc24:1>8 cc25:0>1 cc26:1>0 cee9:33>7f ceea:31>7f ceeb:34>7f ceec:34>7f ceed:34>7f ceee:34>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7f cefc:0>7f cefd:0>7f cefe:1>7f ceff:0>7f cf00:0>7f cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8b:8>0 ff8c:0>6",
-    "534 cc26:0>1 d12c:0>1 d12d:0>2 ff8b:0>8 ff8c:6>0",
-    "602 cf1d:0>2 ffe1:0>cf",
-    "607 ccd5:1>0 cd6a:1>0 cfcb:99>0",
-    "610 cc26:1>0",
-    "613 cc26:0>1 cc49:0>4 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 cd78:94>7f cd79:91>92 cd7a:98>8b cd7b:7f>80 cd7c:92>8c cd7d:96>50 cd7e:88>96 cd7f:8f>91 cd80:84>80 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
-    "619 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:84>93 cf4b:97>80 cf4c:8f>82 cf4d:8b>8a cf4e:8e>8b cf4f:92>84 cf50:88>50 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
-    "635 ccf1:0>21 d11d:21>4",
-    "661 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
-    "676 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cf93:1>0 cfe6:1>0 d0d7:b>1",
-    "701 ccf0:1>0 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
-    "715 d72f:40>0",
-    "803 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:0>40 ff9a:0>1",
-    "862 cc49:4>0 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>40 cfa9:0>28 cfab:0>2d cfad:0>28 cfaf:0>38 cfb1:0>23 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 ff96:f>0 ff97:42>24 ff98:40>2d",
-    "908 cfd7:24>0",
-    "1040 d056:2>0 d058:c9>0 d42e:0>ff d72b:0>1",
+    "299 cc26:0>1 cc2f:0>1 ccf5:1>3 cf90:0>24 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d015:0>3c d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d057:1>3",
+    "301 d11d:0>10",
+    "333 cf1c:2>0",
+    "352 d05a:8a>0",
+    "357 d07b:5>c3",
+    "375 cd6a:0>1",
+    "376 ccdf:0>ff ccf5:3>2 cd3e:0>f8 cd3f:0>73 cd40:0>74 cd41:0>78 cee9:3c>33 ceea:0>31 ceeb:0>34 ceec:0>34 ceed:0>34 ceee:0>34 d057:3>2 d080:0>18 d081:0>20 def4:0>1 ff8b:0>8",
+    "395 cce4:0>1 cd23:0>14 cd25:0>31 cd27:0>1a cd29:0>18 cd2b:0>1e cd2d:0>16 cd6d:84>8f cd6e:97>88 cd6f:8f>83 cd70:8b>86 cd71:8e>84 cd72:92>98 cd73:88>50 cd74:8e>50 cd75:8d>50 cd77:85>50 cfd9:85>8f cfda:8e>88 cfdb:84>83 cfdc:50>86 cfdd:0>84 cfde:0>98 cfdf:0>50 cfe0:0>50 cfe1:0>50 cfe2:0>50 cfe3:0>50 cfe6:0>1 cfe7:0>1 cfeb:0>ff cff0:0>98 cff1:0>88 cff4:3c>31 cff6:14>1a cff8:14>18 cffa:64>1e cffc:14>16 d001:a>28 d002:14>2d d003:1e>28 d004:28>38 d005:32>23 d006:3c>ff d007:46>3c d30a:0>80",
+    "533 cc24:1>8 cc25:0>1 cc26:1>0 cee9:33>7f ceea:31>7f ceeb:34>7f ceec:34>7f ceed:34>7f ceee:34>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7f cefc:0>7f cefd:0>7f cefe:1>7f ceff:0>7f cf00:0>7f cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8b:8>0 ff8c:0>6",
+    "536 cc26:0>1 d12c:0>1 d12d:0>2 ff8b:0>8 ff8c:6>0",
+    "604 cf1d:0>2 ffe1:0>cf",
+    "609 ccd5:1>0 cd6a:1>0 cfcb:99>0",
+    "612 cc26:1>0",
+    "615 cc26:0>1 cc49:0>4 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 cd78:94>7f cd79:91>92 cd7a:98>8b cd7b:7f>80 cd7c:92>8c cd7d:96>50 cd7e:88>96 cd7f:8f>91 cd80:84>80 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
+    "621 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:84>93 cf4b:97>80 cf4c:8f>82 cf4d:8b>8a cf4e:8e>8b cf4f:92>84 cf50:88>50 cfd1:0>21 cfd3:0>23 cfd5:0>f2 cfd6:0>23 d05a:0>a d11d:23>21 ffd4:fe>fd",
+    "637 ccf1:0>21 d11d:21>4",
+    "663 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
+    "678 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cf93:1>0 cfe6:1>0 d0d7:b>1",
+    "703 ccf0:1>0 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
+    "717 d72f:40>0",
+    "805 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:0>40 ff9a:0>1",
+    "864 cc49:4>0 cf97:0>24 cf99:0>3c cf9a:0>14 cf9d:0>2 cf9e:0>ff cf9f:0>21 cfa3:0>12 cfa4:0>34 cfa6:0>20 cfa7:0>40 cfa9:0>28 cfab:0>2d cfad:0>28 cfaf:0>38 cfb1:0>23 cfb2:0>88 cfb3:0>88 cfb4:0>22 cfb8:0>14 cfba:0>3c cfbc:0>1a cfbe:0>18 cfc0:0>32 cfc2:0>16 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "910 cfd7:24>0",
+    "1042 d056:2>0 d058:c9>0 d42e:0>ff d72b:0>1",
   ],
 }
 `;
@@ -26739,7 +26795,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "mirror",
     },
     {
-      "at": 445,
+      "at": 447,
       "data": [
         "party",
         [
@@ -26750,7 +26806,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "input",
     },
     {
-      "at": 448,
+      "at": 450,
       "data": [
         "party",
         [
@@ -26761,12 +26817,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "input",
     },
     {
-      "at": 448,
+      "at": 450,
       "data": null,
       "name": "press",
     },
     {
-      "at": 448,
+      "at": 450,
       "data": [
         144,
         8,
@@ -26774,12 +26830,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 450,
+      "at": 452,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 455,
+      "at": 457,
       "data": {
         "enemyMonNick": "PIDGEY",
         "trainerName": "ACE",
@@ -26787,7 +26843,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "text:TrainerSentOutText",
     },
     {
-      "at": 495,
+      "at": 497,
       "data": [
         "ACE sent",
         "out PIDGEY!",
@@ -26795,12 +26851,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:TrainerSentOutText",
     },
     {
-      "at": 495,
+      "at": 497,
       "data": 36,
       "name": "front",
     },
     {
-      "at": 502,
+      "at": 504,
       "data": [
         0,
         15,
@@ -26809,24 +26865,24 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sendCue",
     },
     {
-      "at": 502,
+      "at": 504,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 507,
+      "at": 509,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 507,
+      "at": 509,
       "data": {
         "battleMonNick": "LEAD",
       },
       "name": "text:PlayerMon2Text",
     },
     {
-      "at": 553,
+      "at": 555,
       "data": [
         "LEAD enough!",
         "Come back!",
@@ -26834,14 +26890,14 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:PlayerMon2Text",
     },
     {
-      "at": 610,
+      "at": 612,
       "data": {
         "battleMonNick": "RESERVE",
       },
       "name": "text:EnemysWeakText",
     },
     {
-      "at": 673,
+      "at": 675,
       "data": [
         "The enemy's weak!",
         "Get'm! RESERVE!",
@@ -26849,12 +26905,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:EnemysWeakText",
     },
     {
-      "at": 673,
+      "at": 675,
       "data": 36,
       "name": "back",
     },
     {
-      "at": 695,
+      "at": 697,
       "data": [
         195,
         1,
@@ -26862,7 +26918,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "animationCue",
     },
     {
-      "at": 707,
+      "at": 709,
       "data": [
         1,
         4,
@@ -26871,17 +26927,17 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sendCue",
     },
     {
-      "at": 707,
+      "at": 709,
       "data": 36,
       "name": "cryCue",
     },
     {
-      "at": 707,
+      "at": 709,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": [
         "",
         "",
@@ -26889,22 +26945,22 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": [
         2,
         "fight",
@@ -26912,17 +26968,17 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "menu",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 710,
+      "at": 712,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 713,
+      "at": 715,
       "data": [
         "",
         "",
@@ -26930,12 +26986,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 713,
+      "at": 715,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 716,
+      "at": 718,
       "data": [
         "battle",
         [
@@ -26946,12 +27002,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "input",
     },
     {
-      "at": 716,
+      "at": 718,
       "data": null,
       "name": "press",
     },
     {
-      "at": 716,
+      "at": 718,
       "data": [
         144,
         8,
@@ -26959,12 +27015,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 716,
+      "at": 718,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": [
         "move",
         [
@@ -26975,12 +27031,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "input",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": null,
       "name": "press",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": [
         144,
         8,
@@ -26988,12 +27044,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": null,
       "name": "load1",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": [
         "select",
         0,
@@ -27002,12 +27058,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "rng",
     },
     {
-      "at": 722,
+      "at": 724,
       "data": {},
       "name": "text:UsedMoveText",
     },
     {
-      "at": 765,
+      "at": 767,
       "data": [
         "RESERVE",
         "used TACKLE!",
@@ -27015,7 +27071,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:UsedMoveText",
     },
     {
-      "at": 765,
+      "at": 767,
       "data": [
         "crit",
         0,
@@ -27024,7 +27080,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "rng",
     },
     {
-      "at": 765,
+      "at": 767,
       "data": [
         "range",
         0,
@@ -27033,7 +27089,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "rng",
     },
     {
-      "at": 765,
+      "at": 767,
       "data": [
         "hit",
         0,
@@ -27042,7 +27098,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "rng",
     },
     {
-      "at": 765,
+      "at": 767,
       "data": [
         {
           "exp": 8300,
@@ -27098,7 +27154,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "mirror",
     },
     {
-      "at": 768,
+      "at": 770,
       "data": [
         33,
         0,
@@ -27106,12 +27162,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "animationCue",
     },
     {
-      "at": 819,
+      "at": 821,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 819,
+      "at": 821,
       "data": [
         158,
         8,
@@ -27119,7 +27175,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 828,
+      "at": 830,
       "data": [
         149,
         8,
@@ -27127,24 +27183,24 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 828,
+      "at": 830,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 859,
+      "at": 861,
       "data": {
         "enemyMonNick": "PIDGEY",
       },
       "name": "text:EnemyMonFaintedText",
     },
     {
-      "at": 904,
+      "at": 906,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 904,
+      "at": 906,
       "data": [
         144,
         8,
@@ -27152,7 +27208,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 904,
+      "at": 906,
       "data": [
         "Enemy PIDGEY",
         "fainted!",
@@ -27160,12 +27216,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:EnemyMonFaintedText",
     },
     {
-      "at": 904,
+      "at": 906,
       "data": null,
       "name": "text:PrintEmptyString.emptyString",
     },
     {
-      "at": 907,
+      "at": 909,
       "data": [
         "",
         "",
@@ -27173,12 +27229,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:PrintEmptyString.emptyString",
     },
     {
-      "at": 907,
+      "at": 909,
       "data": null,
       "name": "save1",
     },
     {
-      "at": 907,
+      "at": 909,
       "data": {
         "expAmountGained": 256,
         "nameBuffer": "RESERVE",
@@ -27186,7 +27242,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "text:GainedText",
     },
     {
-      "at": 907,
+      "at": 909,
       "data": [
         {
           "exp": 8300,
@@ -27242,12 +27298,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "mirror",
     },
     {
-      "at": 966,
+      "at": 968,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 966,
+      "at": 968,
       "data": [
         144,
         8,
@@ -27255,7 +27311,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 966,
+      "at": 968,
       "data": [
         "RESERVE gained",
         "256 EXP. Points!",
@@ -27263,12 +27319,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:GainedText",
     },
     {
-      "at": 966,
+      "at": 968,
       "data": null,
       "name": "stopMusic",
     },
     {
-      "at": 966,
+      "at": 968,
       "data": [
         "defeatedtrainer",
         8,
@@ -27276,19 +27332,19 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "music",
     },
     {
-      "at": 969,
+      "at": 971,
       "data": {
         "trainerName": "ACE",
       },
       "name": "text:TrainerDefeatedText",
     },
     {
-      "at": 1012,
+      "at": 1014,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1012,
+      "at": 1014,
       "data": [
         144,
         8,
@@ -27296,7 +27352,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 1012,
+      "at": 1014,
       "data": [
         "YELLOW defeated",
         "ACE!",
@@ -27304,12 +27360,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:TrainerDefeatedText",
     },
     {
-      "at": 1012,
+      "at": 1014,
       "data": null,
       "name": "trainerPic",
     },
     {
-      "at": 1088,
+      "at": 1090,
       "data": [
         true,
         0,
@@ -27317,14 +27373,14 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "endTextHandOff",
     },
     {
-      "at": 1088,
+      "at": 1090,
       "data": {
         "nameBuffer": "ACE",
       },
       "name": "text:TrainerEndBattleText",
     },
     {
-      "at": 1101,
+      "at": 1103,
       "data": {
         "column": 6,
         "label": "TrainerEndBattleText",
@@ -27333,7 +27389,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "endTextCursor",
     },
     {
-      "at": 1101,
+      "at": 1103,
       "data": [
         "ACE:",
         "",
@@ -27341,24 +27397,24 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:TrainerEndBattleText",
     },
     {
-      "at": 1101,
+      "at": 1103,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 1101,
+      "at": 1103,
       "data": {
         "amountMoneyWon": 50,
       },
       "name": "text:MoneyForWinningText",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": "press_ab",
       "name": "textSound",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": [
         144,
         8,
@@ -27366,7 +27422,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "sfx",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": [
         "YELLOW got ¥50",
         "for winning!",
@@ -27374,7 +27430,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "textEnd:MoneyForWinningText",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": [
         "end",
         0,
@@ -27382,7 +27438,7 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "loopReturned",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": [
         0,
         0,
@@ -27390,12 +27446,12 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "name": "evolutionHandOff",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": null,
       "name": "wait",
     },
     {
-      "at": 1158,
+      "at": 1160,
       "data": [
         "end",
         0,
@@ -27515,7 +27571,15 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
       "kind": "serviced",
     },
     {
-      "count": 25,
+      "count": 10,
+      "kind": "session",
+    },
+    {
+      "count": 2,
+      "kind": "held",
+    },
+    {
+      "count": 15,
       "kind": "session",
     },
     {
@@ -27571,28 +27635,28 @@ exports[`checkpoint-08b whole-battle ledgers > trainer win accepts SHIFT, sends 
     "405 cc24:0>8 cc25:0>1 cc26:1>0 cc28:0>1 cc29:0>3 cee9:33>7f ceea:31>7f ceeb:34>7f ceec:34>7f ceed:34>7f ceee:34>7f ceef:ff>7f cef0:0>7f cef1:0>7f cef2:0>7f cef3:0>7f cef4:0>7f cef5:0>7f cef6:0>7f cef7:0>7f cef8:0>7f cef9:0>7f cefa:0>7f cefb:0>7f cefc:0>7f cefd:0>7f cefe:1>7f ceff:0>7f cf00:0>7f cf01:0>7f cf02:0>7f cf03:0>7f cf04:0>7f cf05:0>7f cf06:0>7f d124:0>14 ff8b:8>0 ff8c:0>6",
     "408 d12d:0>1 ff8b:0>8 ff8c:6>0",
     "423 cc24:8>1 cc25:1>0 d07c:0>2",
-    "502 cf1d:0>2 ffe1:0>cf",
-    "507 ccf5:1>0 d057:1>0",
-    "519 ff97:24>0 ff98:2d>0 ff9a:1>c",
-    "603 ff8b:8>0",
-    "607 cd6c:0>1",
-    "610 cc2f:0>1 ccf5:0>2 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 ff98:0>2 ff99:0>1 ff9e:0>2 fff3:0>1",
-    "687 cfd1:21>0 d05a:8a>0 ffe1:cf>0",
-    "692 d07b:21>c3",
-    "710 cc26:0>2 cd6a:1>0",
-    "713 cc26:2>0",
-    "716 cc26:0>1 cc49:0>4 cd6c:1>0 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
-    "722 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:1>93 cf4b:2c>80 cf4c:0>82 cfd1:0>21 d05a:0>a d11d:23>21 ffd4:fe>fd",
-    "739 ccf1:0>21 d11d:21>4",
-    "765 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
-    "780 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cfe6:1>0 d0d7:b>1",
-    "805 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
-    "819 d72f:40>0",
-    "907 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:2>40 ff99:1>0 ff9a:c>1 ff9e:2>0",
-    "966 cc49:4>0 cfa7:6c>40 cfa9:a>28 cfab:14>2d cfad:1e>28 cfaf:28>38 cfb1:32>23 ff96:f>0 ff97:42>24 ff98:40>2d",
-    "1012 cfd7:24>0",
-    "1088 d72c:80>0",
-    "1158 d056:2>0 d058:c9>0 d348:0>50 d42e:0>ff d72b:0>1",
+    "504 cf1d:0>2 ffe1:0>cf",
+    "509 ccf5:1>0 d057:1>0",
+    "521 ff97:24>0 ff98:2d>0 ff9a:1>c",
+    "605 ff8b:8>0",
+    "609 cd6c:0>1",
+    "612 cc2f:0>1 ccf5:0>2 d008:8b>91 d00a:80>92 d00b:83>84 d00c:50>91 d00d:0>95 d00e:0>84 d00f:0>50 d019:0>2 d025:14>1a d027:14>18 d02b:14>16 d02c:22>23 d057:0>2 ff98:0>2 ff99:0>1 ff9e:0>2 fff3:0>1",
+    "689 cfd1:21>0 d05a:8a>0 ffe1:cf>0",
+    "694 d07b:21>c3",
+    "712 cc26:0>2 cd6a:1>0",
+    "715 cc26:2>0",
+    "718 cc26:0>1 cc49:0>4 cd6c:1>0 cd6d:8f>23 cd6e:88>80 cd6f:83>82 cd70:86>8a cd71:84>8b cd72:98>84 cd73:50>23 cd74:50>81 cd75:50>8e cd76:50>83 cd77:50>98 d07b:c3>1 d0b4:24>21 d11d:10>23 fff3:1>0",
+    "724 cc26:1>0 ccf4:1>0 cd6d:23>93 cd73:23>50 cee9:7f>a ceea:7f>a ceeb:7f>a ceec:7f>a cf4a:1>93 cf4b:2c>80 cf4c:0>82 cfd1:0>21 d05a:0>a d11d:23>21 ffd4:fe>fd",
+    "741 ccf1:0>21 d11d:21>4",
+    "767 cc5b:0>4 d02c:23>22 d05a:a>8a d07b:1>21 d0b4:21>24 d0d7:1>b d11d:4>0 d1b3:23>22 ffd4:fd>fc",
+    "782 cee9:a>31 ceea:a>0 ceeb:a>0 ceec:a>0 ceed:7f>0 ceee:7f>0 ceef:7f>ff cefd:7f>0 cefe:7f>1 cfe6:1>0 d0d7:b>1",
+    "807 ccf1:21>0 ccf4:0>1 d72f:0>40 d8d1:1>0",
+    "821 d72f:40>0",
+    "909 cc5b:4>0 cd6d:93>91 cd6e:80>84 cd6f:82>92 cd70:8a>84 cd71:8b>91 cd72:84>95 cd73:50>84 cd74:81>50 cd75:8e>0 cd76:83>0 cd77:98>0 cf4a:93>1 cf4b:80>0 cf4c:82>0 d1a5:1f>20 d1a8:0>28 d1aa:0>2d d1ac:0>28 d1ae:0>38 d1b0:0>23 ff96:0>f ff97:0>42 ff98:2>40 ff99:1>0 ff9a:c>1 ff9e:2>0",
+    "968 cc49:4>0 cfa7:6c>40 cfa9:a>28 cfab:14>2d cfad:1e>28 cfaf:28>38 cfb1:32>23 ff96:f>0 ff97:42>24 ff98:40>2d",
+    "1014 cfd7:24>0",
+    "1090 d72c:80>0",
+    "1160 d056:2>0 d058:c9>0 d348:0>50 d42e:0>ff d72b:0>1",
   ],
 }
 `;

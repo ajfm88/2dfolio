@@ -21,6 +21,7 @@ import { setListScrollOffset, getListScrollOffset, setPartyAndBillsSavedMenuItem
 import { getPikachuHappiness, getPikachuMood, restorePikachuHappiness } from '../pikachu/pikachu_happiness';
 import { PartyMenu } from './party_menu';
 import { POKEBALL_GLYPH } from './menu_glyphs';
+import { isVBlankHeld, takeHeldFrame } from '../core/vblank_hold';
 
 vi.mock('../audio', () => ({ playSFX: vi.fn(), setMasterVolume: vi.fn(), isSoundFinished: vi.fn(() => true) }));
 vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), loadBattleSprite: async () => ({ width: 40, height: 40 }), getMonsterPalette: () => 'YELLOWMON', fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({}), loadTileset: async () => ({}) }));
@@ -63,7 +64,8 @@ function rig(party: BattlePokemon[] = [mon('PIKACHU'), mon()], box: BoxedPokemon
     frame++;
     for (const key of KEYS) setKey(key, keys.includes(key)); updateInput();
     const third = textBgTransfer.nextPortion; const enabled = textBgTransfer.enabled;
-    if (!pc.ownsBgTransfer) {
+    // As the script host: a palette command's held frame has no VBlank (V5f, core/vblank_hold.ts).
+    if (!pc.ownsBgTransfer && !takeHeldFrame()) {
       if (pc.advanceText) textBox.update(); else textBox.updateDisplay();
       if (enabled) tiles.copyShownThird(third);
     }
@@ -110,7 +112,7 @@ describe('BillsPC_ on the retained display', () => {
     border.mockRestore();
   });
 
-  it.each([0, 1])('STATS branch %i: Buffer1 Q+3, white until Q+6, first read Q+9; one tick owner', branch => {
+  it.each([0, 1])('STATS branch %i: Buffer1 Q+3, held Q+4..5, white until Q+8, first read Q+11; one tick owner', branch => {
     const r = rig(undefined, [boxed()]); const original = structuredClone(r.box);
     r.branch(branch); r.frames(16); r.tick('a'); r.frames(3); r.tick('down'); r.frames(3);
     const before = r.tiles.save(r.textBox); r.tick('a'); const s = r.time();
@@ -118,8 +120,8 @@ describe('BillsPC_ on the retained display', () => {
     const transfer = vi.spyOn(textBgTransfer, 'tick');
     const display = vi.spyOn(r.textBox, 'updateDisplay');
     const frame = (...keys: GameButton[]) => {
-      const n = transfer.mock.calls.length; r.tick(...keys);
-      expect(transfer.mock.calls.length - n).toBe(1);
+      const held = isVBlankHeld(), n = transfer.mock.calls.length; r.tick(...keys);
+      expect(transfer.mock.calls.length - n).toBe(held ? 0 : 1);
     };
     const reads = r.reads.mock.calls.length;
     for (let i = 1; i <= 26; i++) { frame(); expect(r.reads).toHaveBeenCalledTimes(reads); }
@@ -133,10 +135,12 @@ describe('BillsPC_ on the retained display', () => {
     expect(display).not.toHaveBeenCalled(); // host skipped every session VBlank, including Q+3
     expect(r.tiles.save(r.textBox)).toEqual(before); expect(r.box).toEqual(original);
     const count = r.reads.mock.calls.length;
-    for (let i = 4; i <= 5; i++) { frame(); expect(r.pc.paletteWhite).toBe(true); expect(r.pc.fullScreen).toBe(true); }
-    frame(); expect(r.time()).toBe(q + 6); expect(r.pc.paletteWhite).toBe(false); expect(r.pc.fullScreen).toBe(false);
+    expect(isVBlankHeld()).toBe(true); // RunDefaultPaletteCommand: Q+4 and Q+5 are held (V5f, #73)
+    for (let i = 4; i <= 7; i++) { frame(); expect(r.pc.paletteWhite).toBe(true); expect(r.pc.fullScreen).toBe(true); }
+    expect(isVBlankHeld()).toBe(false);
+    frame(); expect(r.time()).toBe(q + 8); expect(r.pc.paletteWhite).toBe(false); expect(r.pc.fullScreen).toBe(false);
     frame(); frame(); expect(r.reads).toHaveBeenCalledTimes(count);
-    frame(); expect(r.time()).toBe(q + 9); expect(r.reads).toHaveBeenCalledTimes(count + 1);
+    frame(); expect(r.time()).toBe(q + 11); expect(r.reads).toHaveBeenCalledTimes(count + 1);
     expect(r.menu()!.item).toBe(1); expect(playSFX).not.toHaveBeenCalled();
     transfer.mockRestore(); display.mockRestore();
   });
@@ -221,6 +225,16 @@ describe('BillsPC_ on the retained display', () => {
     expect(r.tick('a', 'b')).toBe(true);
     expect(getListScrollOffset()).toBe(4); expect(getNoTextDelay()).toBe(false);
     expect(playSFX).not.toHaveBeenCalled();
+  });
+
+  it('lists party and box mons by their nicknames as the records hold them (V5e checkpoint-02)', () => {
+    const named = (nickname: string) => Object.assign(mon(), { nickname });
+    const r = rig([mon('PIKACHU'), named('Sparky'), mon('NIDORAN_F')], [pokemonToBoxed(named('Boxy')), boxed('MR_MIME')]);
+    const rows = () => [4, 6, 8].map(y => Array.from({ length: 10 }, (_, x) => r.tiles.at(6 + x, y) ?? ' ').join('').trimEnd());
+    r.branch(1); r.frames(16);
+    expect(rows()).toEqual(['PIKACHU', 'Sparky', 'NIDORAN♀']);
+    r.tick('b'); r.branch(0); r.frames(16);
+    expect(rows()).toEqual(['Boxy', 'MR.MIME', 'CANCEL']);
   });
 
   it('types NoMon only after a list has returned, and keeps the parent row during a visit', () => {

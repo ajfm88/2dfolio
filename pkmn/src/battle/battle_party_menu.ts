@@ -1,7 +1,7 @@
 // core.asm PartyMenuOrRockOrRun's party branch.
 import type { BattlePokemon } from './types';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
-import { PartyMenu } from '../menus/party_menu';
+import { PartyMenu, type BattlePartyChoice } from '../menus/party_menu';
 import { StatusScreenSession } from '../menus/status_screen';
 import { MenuInput } from '../menus/menu_input';
 import { loadHudTilePatterns } from './battle_slides';
@@ -64,6 +64,23 @@ function* palette(ctx: BattlePartyContext, host: BattlePartyHost): Program {
     playerBar: ctx.playerHud.barColor as 0 | 1 | 2, enemyBar: ctx.enemyHud.barColor as 0 | 1 | 2 });
 }
 
+/** Full party opening is shared by PKMN, SHIFT and faint replacement. Redraw remains its existing path. */
+export function* advanceBattlePartyFrame(
+  party: Pick<PartyMenu, 'openingPaletteDue' | 'frameBattleChoice'>,
+  host: Pick<BattlePartyHost, 'screen' | 'readJoypad' | 'pressSound'>,
+): Program<BattlePartyChoice | null> {
+  if (party.openingPaletteDue) {
+    let choice: BattlePartyChoice | null = null;
+    for (const frame of host.screen.setPalPartyMenu()) {
+      yield frame === 'held' ? 'held' : 'session';
+      choice = party.frameBattleChoice(() => host.readJoypad(), () => host.pressSound(), frame === 'held');
+    }
+    return choice;
+  }
+  yield 'session';
+  return party.frameBattleChoice(() => host.readJoypad(), () => host.pressSound());
+}
+
 export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattlePartyHost): Program<BattleMenuFlags | null> {
   const party = host.partyView;
   let full = true;
@@ -76,9 +93,7 @@ export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattleParty
     } else party.goBackToChoice();
     let choice;
     do {
-      // Session frames advance their own BG tick after the yield; host skips BattleScreen.vblank.
-      yield 'session';
-      choice = party.frameBattleChoice(() => host.readJoypad(), () => host.pressSound());
+      choice = yield* advanceBattlePartyFrame(party, host);
     } while (!choice);
     if (choice.kind === 'cancelled') {
       clearSprites(host); white(host); yield* hudCopies(host);

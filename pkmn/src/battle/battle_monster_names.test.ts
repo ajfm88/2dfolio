@@ -58,13 +58,15 @@ it('all 151 headers use MonsterNames, while pret Nidoran keys retain distinct id
     .toEqual([0x8c,0x91,0xe8,0x8c,0x88,0x8c,0x84,0x50,0x50,0x50,0x50]);
 });
 
-it('maps default party and box names forward, preserves real nicknames and leaves the world unchanged', () => {
+it('writes default and typed party and box names as they are held and leaves the world unchanged', () => {
   const pikachu = createPokemon(25,20)!;
   const nidoran = createPokemon(29,20)!;
   const sparky = createPokemon(25,20,'Sparky')!;
   const caps = createPokemon(25,20,'PIKACHU')!;
-  expect(pikachu.nickname).toBe('Pikachu');
-  const world = battleWorld({party:[pikachu,nidoran,sparky,caps], pcBoxes:[[pokemonToBoxed(nidoran),pokemonToBoxed(sparky)]]});
+  // V5e checkpoint-02: a nickname typed like pokemon.json's key is a nickname; #86's mapping is retired.
+  const typedKey = createPokemon(25,20,'Pikachu')!;
+  expect(pikachu.nickname).toBe('PIKACHU'); expect(nidoran.nickname).toBe('NIDORAN♀');
+  const world = battleWorld({party:[pikachu,nidoran,sparky,caps,typedKey], pcBoxes:[[pokemonToBoxed(nidoran),pokemonToBoxed(sparky),pokemonToBoxed(typedKey)]]});
   const before = structuredClone(world);
   const state = new BattleState(); writeBattleInputs(state,world);
   expect([...decodePartyMon(state,0).nickname]).toEqual([0x8f,0x88,0x8a,0x80,0x82,0x87,0x94,0x50,0x50,0x50,0x50]);
@@ -74,6 +76,8 @@ it('maps default party and box names forward, preserves real nicknames and leave
   expect(decodePartyMon(state,2).nickname).toEqual(nameBytes('Sparky'));
   expect(decodeBoxMon(state,1).nickname).toEqual(nameBytes('Sparky'));
   expect(decodePartyMon(state,3).nickname).toEqual(decodePartyMon(state,0).nickname);
+  expect([...decodePartyMon(state,4).nickname]).toEqual([0x8f,0xa8,0xaa,0xa0,0xa2,0xa7,0xb4,0x50,0x50,0x50,0x50]);
+  expect(decodeBoxMon(state,2).nickname).toEqual(decodePartyMon(state,4).nickname);
   expect(world).toEqual(before);
 });
 
@@ -114,5 +118,5 @@ it('names an HTTP failure for MonsterNames', async () => {
   vi.spyOn(globalThis,'fetch').mockImplementation((url,init) => String(url) === 'monster_names.json'
     ? Promise.resolve({ok:false,status:404} as Response) : fetchData(url,init));
   const fresh = await import('./battle_trainer_data');
-  await expect(fresh.loadTrainerSpeciesData()).rejects.toThrow('monster names: HTTP 404');
+  await expect(fresh.loadTrainerSpeciesData()).rejects.toThrow('Failed to fetch monster_names.json: 404');
 });

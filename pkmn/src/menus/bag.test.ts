@@ -10,6 +10,7 @@ import {
 } from '../list_state';
 import { isHeld, isPassPressed, syncJoypadRead } from '../input';
 import type { GameButton } from '../core';
+import { isVBlankHeld } from '../core/vblank_hold';
 
 vi.mock('../input', () => ({
   isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false),
@@ -175,7 +176,7 @@ describe('StartMenu_Item', () => {
     expect(menu.transfer.enabled).toBe(false);
   });
 
-  it('A+B on USE/TOSS cancels, and B returns a visible list at R+11', () => {
+  it('A+B on USE/TOSS cancels, and B returns a visible list at R+16', () => {
     const menu = rig([{ id: 'POTION', count: 2 }]);
     menu.session.open(menu.bag);
     menu.frames(15);
@@ -186,9 +187,9 @@ describe('StartMenu_Item', () => {
     menu.frame();
     expect(menu.session.useTossChoice).toBe('b');
     expect(menu.transfer.enabled).toBe(false);
-    // The shown copy keeps ▷ until the new list's first third, at R+11.
+    // The palette adds 5 frames before the list; the first top third is R+16.
     expect(menu.tiles.visibleAt(5, 4)).toBe('▷');
-    menu.frames(10);
+    menu.frames(15);
     expect(menu.transfer.enabled).toBe(true);
     expect(menu.tiles.visibleAt(5, 4)).toBe('▷');
     menu.frame();
@@ -205,7 +206,7 @@ describe('StartMenu_Item', () => {
     again.press('b');
     again.frame();
     expect(again.tiles.visibleAt(5, 4)).toBe('▷');
-    again.frames(10);
+    again.frames(15);
     expect(again.tiles.visibleAt(5, 4)).toBe('▷');
     again.frame();
     expect(again.tiles.visibleAt(5, 4)).toBe(' ');
@@ -455,8 +456,93 @@ describe('StartMenu_Item', () => {
     menu.session.returnFromTownMap();
     textBgTransfer.resetPortion();
     expect(menu.transfer.enabled).toBe(false);
+    expect(menu.tiles.at(4, 2)).toBeNull();
+    menu.frames(5);
     expect(menu.tiles.at(4, 2)).toBe('┌');
     menu.frames(11);
     expect(menu.tiles.visibleAt(6, 4)).toBe('T');
   });
+
+  describe.each([0, 1, 2])('ItemMenuLoop palette, starting portion %i', portion => {
+    it.each(['use-b', 'quantity-b', 'toss-no', 'toss-yes', 'key-item', 'ball-use', 'parcel-use', 'town-map'] as const)(
+      '%s holds R+1..2, starts the list R+5 and first reads R+21', route => {
+        const id = route === 'key-item' || route === 'town-map' ? 'TOWN_MAP'
+          : route === 'ball-use' ? 'POKE_BALL' : route === 'parcel-use' ? 'OAKS_PARCEL' : 'POTION';
+        const menu = rig([{ id, count: 2 }, { id: 'ANTIDOTE', count: 1 }]);
+        for (let i = 0; i < portion; i++) menu.transfer.tick();
+        const finishPrint = () => {
+          for (let frame = 0; frame < 1000; frame++) {
+            vi.mocked(isHeld).mockImplementation(key => menu.textBox.isWaitingForInput && key === 'a');
+            menu.frame();
+            if (menu.textBox.isComplete && !menu.textBox.isWaitingForInput) {
+              vi.mocked(isHeld).mockReturnValue(false);
+              return;
+            }
+          }
+          throw new Error('PrintText did not finish');
+        };
+        if (route === 'use-b') {
+          menu.session.open(menu.bag); menu.frames(15); menu.press('a'); menu.frame();
+          menu.frames(2); menu.press('b'); menu.frame();
+        } else if (route === 'town-map') {
+          menu.session.open(menu.bag); menu.frames(15); menu.press('a'); menu.frame();
+          menu.frames(2); menu.press('a'); expect(menu.frame()).toBe('town_map');
+          menu.session.returnFromTownMap();
+        } else if (route === 'ball-use' || route === 'parcel-use') {
+          chooseUse(menu); finishPrint();
+        } else {
+          chooseToss(menu);
+          if (route === 'quantity-b') { menu.press('b'); menu.frame(); }
+          else if (route === 'key-item') finishPrint();
+          else {
+            menu.press('a'); menu.frame(); finishPrint();
+            menu.frames(2); menu.press(route === 'toss-no' ? 'b' : 'a'); menu.frame();
+            menu.frames(15);
+            if (route === 'toss-yes') finishPrint();
+          }
+        }
+        // R: every path above has just entered ItemMenuLoop, before its first held frame.
+        expect(isVBlankHeld()).toBe(true);
+        expect(menu.tiles.at(4, 2)).toBeNull();
+        expect(menu.transfer.enabled).toBe(false);
+        const shown = menu.tiles.saveVisibleTiles();
+        const third = menu.transfer.nextPortion;
+        const reads = menu.read.mock.calls.length, sounds = menu.sound.mock.calls.length;
+        const hadText = menu.textBox.active;
+        expect(hadText).toBe(['toss-no', 'toss-yes', 'key-item', 'ball-use', 'parcel-use'].includes(route));
+        const update = vi.spyOn(menu.textBox, 'update'), display = vi.spyOn(menu.textBox, 'updateDisplay');
+        for (let frame = 1; frame <= 20; frame++) {
+          const ticks = menu.tick.mock.calls.length;
+          const updates = update.mock.calls.length, displays = display.mock.calls.length;
+          const held = frame <= 2;
+          expect(isVBlankHeld(), `R+${frame} before VBlank`).toBe(held);
+          expect(menu.frame()).toBe('open');
+          expect(menu.tick.mock.calls.length - ticks, `R+${frame} transfer`).toBe(held ? 0 : 1);
+          expect(menu.read, `R+${frame} input`).toHaveBeenCalledTimes(reads);
+          expect(menu.sound).toHaveBeenCalledTimes(sounds);
+          expect(menu.tiles.at(4, 2), `R+${frame} list border`).toBe(frame < 5 ? null : '┌');
+          expect(menu.transfer.enabled, `R+${frame} enabled`).toBe(frame >= 15);
+          if (held) {
+            expect(update).toHaveBeenCalledTimes(updates);
+            expect(display).toHaveBeenCalledTimes(displays);
+          }
+          if (frame <= 15) {
+            expect(menu.transfer.nextPortion).toBe(third);
+            expect(menu.tiles.saveVisibleTiles(), `R+${frame} scanout`).toEqual(shown);
+            expect(menu.textBox.active).toBe(hadText);
+          } else {
+            expect(menu.transfer.nextPortion).toBe((third + frame - 15) % 3);
+            // Only the actual bottom-third copy dismisses the retained PrintText.
+            if (hadText) expect(menu.textBox.active, `R+${frame} text`).toBe(frame < 18 - third);
+          }
+        }
+        expect(menu.tiles.visibleAt(6, 4)).toBe(id[0] === 'O' ? 'O' : id[0]);
+        expect(menu.bag.items[0].count).toBe(route === 'toss-yes' ? 1 : 2);
+        menu.press('b'); expect(menu.frame()).toBe('closed');
+        expect(menu.read).toHaveBeenCalledTimes(reads + 1);
+        expect(menu.textBox.active).toBe(false);
+      },
+    );
+  });
+
 });

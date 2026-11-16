@@ -7,6 +7,8 @@ import { liveBattleWorld, applyBattleOutcome, type LiveBattleEncounter, type Liv
 import { loadBattleBridgeData } from './battle/battle_bridge';
 import { loadTrainerSpeciesData } from './battle/battle_trainer_data';
 import { POKEDEX_ORDER } from './battle/battle_state';
+import { speciesDisplayName } from './battle/data';
+import { isVBlankHeld } from './core/vblank_hold';
 import { presentBattleScreen } from './battle/battle_screen_render';
 import { getSpriteIndex, setSpriteIndex } from './overworld/sprite_index';
 import { loadBattleTransitionData, getBattleTransitionData, chooseBattleTransition, battleTransitionLevels } from './overworld/battle_transition_choice';
@@ -774,7 +776,7 @@ function startNextEvolution(): void {
   evolutionWaitingForInput = false;
   state = 'evolution';
 
-  const pName = candidate.pokemon.nickname.toUpperCase();
+  const pName = candidate.pokemon.nickname;
   // assembly: _IsEvolvingText — "What? {name}\nis evolving!"
   evolutionTextLines = [`What? ${pName}`, `is evolving!`];
 
@@ -842,7 +844,7 @@ function updateEvolution(): void {
       // B button cancels evolution (assembly: Evolution_CheckForCancel)
       if (isPressed('b')) {
         evolutionShowNew = false;
-        const pName = evolutionCurrent.pokemon.nickname.toUpperCase();
+        const pName = evolutionCurrent.pokemon.nickname;
         // assembly: _StoppedEvolvingText — "Huh? {name}\nstopped evolving!"
         evolutionTextLines = [`Huh? ${pName}`, `stopped evolving!`];
         evolutionPhase = 'cancelled';
@@ -861,8 +863,8 @@ function updateEvolution(): void {
           if (evolutionAnimCycle >= EVOLUTION_ANIM_CYCLES) {
             // Animation complete — evolution succeeds
             evolutionShowNew = true; // show new species
-            const pName = evolutionCurrent.pokemon.nickname.toUpperCase();
-            const newName = evolutionCurrent.targetSpecies.name.toUpperCase();
+            const pName = evolutionCurrent.pokemon.nickname;
+            const newName = speciesDisplayName(evolutionCurrent.targetSpecies);
             applyEvolution(evolutionCurrent.pokemon, evolutionCurrent.targetSpecies);
             markOwned(evolutionCurrent.targetSpecies.id);
             markSeen(evolutionCurrent.targetSpecies.id);
@@ -1262,7 +1264,9 @@ function gameTick(): void {
   // home/vblank.asm:43: VBlank calls Random every frame. TrackPlayTime (home/play_time.asm) leaves carry set
   // while the game timer counts (its CP 60 / CP $FF), clear otherwise (CountDownIgnoreInputBitReset's AND A).
   // A battle's frames skip it for now: the battle engine does not model this call (findings backlog).
-  if (!sessionRandom.isAttached) sessionRandom.random(timerCounting ? 1 : 0);
+  // A palette command's held frame has no VBlank (core/vblank_hold.ts): no Random. Audio still updates below.
+  // ReadJoypad is skipped too, but every screen that holds a frame owns its own read, so main's sync isn't reached.
+  if (!sessionRandom.isAttached && !isVBlankHeld()) sessionRandom.random(timerCounting ? 1 : 0);
   if (timerCounting) {
     playTimeMs += now - lastPlayTimeUpdate;
   }

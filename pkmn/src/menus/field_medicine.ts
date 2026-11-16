@@ -6,7 +6,6 @@ import { playSFX, isSoundFinished } from '../audio';
 import type { BattlePokemon } from '../battle';
 import type { StatusCondition } from '../battle/types';
 import type { Bag } from '../items';
-import { monDisplayName } from '../pokemon_names';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { modifyPikachuHappiness } from '../pikachu/pikachu_happiness';
 import { setPikachuSpawnState } from '../pikachu/pikachu_spawn';
@@ -17,6 +16,7 @@ import type { GameButton } from '../core';
 import { HpBarAnimation, staticHpBarPixels } from './hp_bar';
 import { PartyMenu } from './party_menu';
 import { PartyMenuOpening } from './party_menu_opening';
+import { holdVBlank } from '../core/vblank_hold';
 
 /** HandleMenuInput_ watches A and B here; any other new key goes back to .loop1 (Delay3). */
 const UNWATCHED: readonly GameButton[] = ['up', 'down', 'left', 'right', 'start', 'select'];
@@ -188,10 +188,11 @@ export class FieldMedicine {
         return this.noEffect();
       case 'return-delay':
         this.returnAge++;
-        // Two palette/white waits (6), then player/font/text-box copies (26).
-        if (this.returnAge === 6) this.transfer.enabled = false;
-        if (this.returnAge === 32) this.transfer.enabled = true;
-        if (this.returnAge === 39) {
+        // The default palette (2 held + Delay3) and the white Delay3 (8), then player/font/text-box copies (26),
+        // then RestoreScreenTilesAndReloadTilePatterns' default palette (2 held + Delay3) and its Delay3 (#73).
+        if (this.returnAge === 8) this.transfer.enabled = false;
+        if (this.returnAge === 34) { this.transfer.enabled = true; holdVBlank(); }
+        if (this.returnAge === 43) {
           this.phase = 'return-list';
           this.showsParty = false;
           this.listFrames = 1;
@@ -278,7 +279,9 @@ export class FieldMedicine {
     if (this.wait > 0) return 'busy';
     if (this.phase === 'msg-clear') {
       this.phase = 'msg-palette';
-      this.wait = 3; // SET_PAL_PARTY_MENU: CGB Delay3, E+4..E+6, before PrintText.
+      // SET_PAL_PARTY_MENU: 2 held frames E+4..E+5, then CGB Delay3 E+6..E+8, before PrintText (#73).
+      holdVBlank();
+      this.wait = 5;
     } else if (this.phase === 'msg-palette') {
       this.phase = 'msg-text';
       this.wait = 3;
@@ -289,7 +292,7 @@ export class FieldMedicine {
       if (outcome) {
         this.textBox.printStandalone({ program: outcome.program }, {
           noDelay: true,
-          bindings: { nameBuffer: mon ? monDisplayName(mon) : '', hpDifference: outcome.newHp - outcome.oldHp },
+          bindings: { nameBuffer: mon ? mon.nickname : '', hpDifference: outcome.newHp - outcome.oldHp },
         });
       }
     } else if (this.phase === 'msg-text') {
@@ -327,7 +330,8 @@ export class FieldMedicine {
     this.showsParty = true;
     this.partyMenu.promptVisible = false;
     this.phase = 'return-delay';
-    // Conditional default-palette Delay3 + START's 35-frame restore, then list at P+39.
+    // ItemUseMedicine's .done default palette (2 held + Delay3), then START's 37-frame restore; list at P+43.
+    holdVBlank();
     this.returnAge = 0;
     this.listFrames = 0;
     return 'busy';

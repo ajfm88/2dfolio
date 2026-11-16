@@ -15,6 +15,123 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-14 (V5f checkpoint-02 planned, spiked and briefed) — Codex
+
+- Traced ItemMenuLoop against pret: 2 held + Delay3 before list construction; initial entry and medicine bypass it. Three-file spike, two existing cases moved, 27 new. Typecheck/build pass; ROM 6504/6504, no-ROM 6206 pass / 298 skip, 266 files; K1–K12 killed. Patch reapplication byte-identical; source restored exactly, no generated changes. Note 97 carries hashes, logs, scripts, gates, stops and both prompts. Live baseline unchanged. User assignment: Grok implements, Nemotron reviews, then user play-test (#125). Checkpoint-03 untouched.
+
+### 2026-11-14 (codebase and context orientation after V5f checkpoint-01) — Codex
+
+- Read the entry instructions, live handoff, project goals, architecture, conventions, roadmap, latest decisions and note 96; inspected the source structure and principal runtime, battle, menu, text, renderer, save and extraction paths. Orientation only: no slice claimed, no game code or generated data changed, and no tests run. V5f checkpoint-01 remains user-verified; checkpoint-02 planning remains next. Recorded test baseline unchanged.
+
+### 2026-11-14 (V5f checkpoint-01 play-test: passed) — Grok
+
+- The user: "playtest passes". Checkpoint-01 is closed (note 96 §12). No code or data changed. Baseline stays ROM 6477/6477, no-ROM 6179 pass / 298 skip, 266 files. V5f stays open. Next: plan checkpoint-02, the bag's `ItemMenuLoop` palette command. Checkpoint-03 has not started.
+
+### 2026-11-14 (V5f checkpoint-01 reviewed: passed, one witness) — Grok
+
+- Reviewed `6b1259f` per note 96 §8. Source hunks match the spike; 14 of 15 hashes match; no generated change. Gates re-run. R-text was equivalent. R-play (play time pauses on a held frame) survived the no-ROM suite, so `main.test.ts` gained one case; that mutant now fails. J1–J17 counts unchanged. New baseline ROM 6477/6477, no-ROM 6179 / 298 skipped, 266 files; bundle unchanged. Note 96 §11. Next: the user's short play-test (§9).
+
+### 2026-11-14 (V5f checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note 96’s exact spike; diff bytes and all 15 hashes match; cited ASM agrees. Gates each once: typecheck/build pass, expected bundle/size/SHA256, ROM 6476/6476; no-ROM 6178 pass / 298 skip, 266 files. J1–J17 each exit 1 with only AssertionError and expected counts; all hashes restored. No setup/generated changes; documentation limited to §7.3. Report §10. Next: Grok reviews (§8), then the user’s short play-test (§9).
+### 2026-11-14 (V5e closed; V5f traced, split and checkpoint-01 spiked and briefed) — Claude
+
+- The user's V5e checkpoint-02 play-test passed; V5e is closed (note 95 §24). Then V5f: traced every cartridge palette-command caller against the port (note 96 §2). Found that the bag's `ItemMenuLoop` lacks its whole command (5 frames, not only the hold), and filed two out-of-scope sites in note 57 (map connections → warp timing; the Pikachu box's close → J2). Split into three checkpoints (#124). Spiked 01: `core/vblank_hold.ts` and five returns. 15 files; 17 existing cases in 6 files moved (each named in §5.1), 3 new. With it: typecheck clean, ROM 6476/6476, no-ROM 6178 / 298 skipped, 266 files, bundle `index-DU0lyO8m.js` 674,317 bytes; J1–J17 each AssertionError. Patch, hashes, runner and logs in `notes/96-v5f-checkpoint-01/`; source restored (tree at 6473). Next: Codex implements §7, Grok reviews §8.
+
+### 2026-11-14 (CLAUDE.md prompt audit applied, docs only) — Claude
+
+- After Grok's review commit, applied the prompt audit's four edits to root `CLAUDE.md`. Stale facts: browser-decoded sprites, DECISIONS "#1–#43", "295 ROM tests skip", "Phase V rebuilds" the 30 maps. *Where things stand* is now one milestone-level paragraph, with the 6473 / 6175 baseline and a pointer here; slice state lives only in STATUS from now on (its own rule and CONVENTIONS step 5). Later briefs edit only the baseline numbers there. No code or test change. The user's checkpoint-02 play-test (note 95 §21) is still next.
+
+### 2026-11-14 (V5e checkpoint-02 reviewed: passed, one witness) — Grok
+
+- Reviewed `160a0b5` per note 95 §20. Source hunks match the spike; production hashes match; no generated change. Gates re-run. R-lookup died. R-empty (an empty version-1 nickname becomes `MonsterNames`) survived the no-ROM suite, so `save_records.test.ts` gained one case; that mutant now fails. K1–K23 counts unchanged. New baseline ROM 6473/6473, no-ROM 6175 / 298 skipped, 265 files; bundle unchanged. Note 95 §23. Next: the user's play-test (§21).
+
+### 2026-11-14 (V5e checkpoint-02 implemented; awaiting review) — Codex
+
+- Applied note 95’s exact spike, verified diff bytes and all 27 hashes, and checked the cited ASM. Gates each ran once: typecheck/build pass; ROM 6472/6472; no-ROM 6174 pass / 298 skip, 265 files; expected bundle and SHA256. K1–K23 each exit 1, only AssertionError, expected counts; all hashes restored. No setup or generated changes. Only §19.3 documentation updated; report §22. Next: Grok reviews (§20), then the user’s play-test (§21).
+
+### 2026-11-14 (V5e checkpoint-02 traced, spiked and briefed) — Claude
+
+- The user: "please plan the next slice. GPT Sol 6.1 will implement and Grok will check its work." Traced the nickname surface against `add_mon.asm`, `naming_screen.asm` `AskName`, `evos_moves.asm` (`RenameEvolvedMon`, the four evolution texts). Re-checked the version-2 claim: `pkmn-save.txt` is version 1; it loads as `PIKACHU` and re-saves as `MonsterNames`' bytes, so version 2 needs no migration (§15.4). Spike: 11 source files (one deleted), 16 test files and `vitest.config.ts`; 16 existing cases in 8 files adjusted (each named in §17.1), 36 new. With it: typecheck clean, ROM 6472/6472, no-ROM 6174 / 298 skipped, bundle `index-CaBBnox3.js` 674,085 bytes; K1–K23 each AssertionError. Patch, hashes, runner and logs in `notes/95-v5e-checkpoint-02/`; source restored (tree at 6436). Found: Oak's gift skips `AskName` (note 57). DECISIONS #123. Next: Sol implements §19.
+
+### 2026-11-14 (codebase and context orientation) — Codex
+
+- Read the entry instructions, live handoff, project goals, architecture, conventions, roadmap, latest naming decision and note 95; reviewed the source structure and principal runtime, battle, rendering, text and save interfaces. Reading only: no work slice claimed, no game code or generated data changed, and no tests run. V5e checkpoint-02 remains next for planning; the recorded test baseline is unchanged.
+
+
+### 2026-11-13 (V5e checkpoint-01 play-test passed; end of day) — Claude
+
+- The user: "playtest was perfect". V5e checkpoint-01 is closed (note 95 §13). No code or data changed; baseline remains ROM 6436/6436, no-ROM 6138 pass / 298 skip, 265 files. Context files updated for tomorrow: STATUS (restart list, queue, header), CLAUDE.md, PROJECT, PLAN, note 95 §13. The dev server was started for the play-test and is not meant to persist; restart it with `npx vite --host 127.0.0.1 --port 5173 --strictPort` from `game/`. Next: plan V5e checkpoint-02 (nicknames). Nothing of it has started.
+
+### 2026-11-13 (V5e checkpoint-01 reviewed: passed, one test group added) — Claude
+
+- Reviewed Sol's `9686b19`: the source equals the spike (twelve hashes), the documentation edits stay within note 95 §7. Gates re-run: typecheck clean, bundle `index-DiCo7Dyn.js` unchanged, ROM 6433/6433, no-ROM 6135 / 298 skipped; H1–H10 each AssertionError. Reviewer mutations on the Pokédex's name reads: the data page and the AREA title survived the suite (a planning gap: only MEW's data page was checked), so `pokedex.test.ts` gained a 3-case group (29, 32, 122); both mutants now fail. The sprite-cache key is an equivalent mutant. New baseline ROM 6436/6436, no-ROM 6138 / 298 skipped, 265 files; bundle unchanged. Note 95 §12. Next: the user's play-test (§10); checkpoint-02 is not planned yet.
+
+### 2026-11-13 (V5e checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note 95's spike; twelve hashes match and the cited ASM agrees. Typecheck and build pass; bundle `index-DiCo7Dyn.js`, 674,395 bytes, expected SHA256. ROM 6433/6433; no-ROM 6135 pass / 298 skip, 265 files. H1–H10 each exit 1 with only AssertionError; sources restored. No setup or generated-data changes. Report: note 95 §11. Next: Claude reviews, then the user's play-test (§10; back up `p151-s` first).
+
+### 2026-11-13 (V5e traced; checkpoint-01 spiked and briefed) — Claude
+
+- Traced every place a species name or a nickname is printed outside battle (note 95 §2). Only three species differ from the cartridge: `NIDORAN♀`, `NIDORAN♂`, `MR.MIME`. Design (DECISIONS #122): `pokemon.json` and `species.name` stay as the key; `speciesDisplayName` reads `MonsterNames`. Two checkpoints: 01 species names (the Pokédex, status page 2, Oak's gift; one shared copy of the table), 02 nicknames (the default, printing as stored, #86's mappings retired, the evolution rename, version-1 saves). Spiked 01: five source files, one new test file, six existing test files adjusted (16 cases, each named in §5.1), 9 new cases. With the patch: typecheck clean, ROM 6433/6433, no-ROM 6135 / 298 skipped, 265 files, bundle `index-DiCo7Dyn.js` 674,395 bytes (+33); the Pokédex trace hash unchanged; H1–H10 each AssertionError. Patch, runner, logs and an unverified draft of the whole design in `notes/95-v5e-checkpoint-01/`; the source is restored (the tree is at 6424). Next: the user names the implementer for note 95 §6–§9; a short play-test follows the review (§10).
+
+### 2026-11-13 (V5d checkpoint-01 reviewed: passed; V5d closed) — Claude
+
+- Reviewed Sol's `fc338e8`: the source equals the spike (five hashes), the documentation edits stay within note 94 §6, no generated change. Gates re-run: typecheck clean, bundle `index-N69WNBoL.js` unchanged, ROM 6424/6424, no-ROM 6126 / 298 skipped, 264 files; G1–G11 each AssertionError. Reviewer mutations R1 (a row's two tiles swapped) and R2 (the pair check below passability) were both killed, so no test was added. V5d has nothing visible and closes without a play-test (#121). Note 94 §12. Next: plan V5e (species display names with a save migration; note 90 §3 item 12, #86, #44; search note 57 first). V5e has not started.
+
+*Older entries (V5d checkpoint-01's implementation and before) → `HISTORY.md` → *Recent session archive*.*
+### 2026-11-13 (V5d checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note 94's spike; five source hashes match and the cited ASM agrees. Typecheck and build pass; bundle `index-N69WNBoL.js`, 674,362 bytes, expected SHA256. ROM 6424/6424; no-ROM 6126 pass / 298 skip, 264 files. G1–G11 each exit 1 with only AssertionError; source restored. No setup or generated-data changes. Report: note 94 §11. Next: Claude reviews; no play-test.
+
+### 2026-11-13 (V5d traced, spiked and briefed for Sol) — Claude
+
+- Traced both V5d items. The two "!" bubbles are already on `EmotionBubble` since A5b5b (pinned by three test files); only stale lines remain. The seven FOREST land rows all pair with `$2E`, which Viridian Forest doesn't contain, so none can fire today. `CheckForTilePairCollisions` has a pointer slip that scans on to 00:0b84; run over the ROM for 25 tilesets × 65,536 pairs it always answers as the symmetric table. Spiked one checkpoint: `overworld/tile_pair_collision.ts` (eleven rows), one call in `player.ts`, one comment, a new 36-case test file (3 ROM-gated). With the patch: typecheck clean, ROM 6424/6424, no-ROM 6126 / 298 skipped, 264 files, bundle `index-N69WNBoL.js` 674,362 bytes (+179); no existing case changed; G1–G11 each AssertionError (G11 survived the first run and got a placement case). Patch, runner and logs in `notes/94-v5d-checkpoint-01/`; the source is restored (the tree is at 6388). Rulings in DECISIONS #121; two F2 findings in note 57. Five older entries moved to HISTORY. Next: Sol implements note 94 §5–§8; no play-test follows.
+
+### 2026-11-13 (codebase and context orientation) — Codex
+
+- Read the project instructions, live handoff, architecture, conventions and V5 overview; inspected the runtime entry point and repository layout. No slice started and no game code changed. V5d planning remains next, under the workflow above. Tests were not run for this reading-only session.
+
+### 2026-11-13 (V5c checkpoint-06 play-test passed; V5c closed)
+
+- The user reports: "all playtests pass" for note 93 §26.9. Checkpoint-06 and V5c are closed (note 93 §29). No code or generated data changed; review baseline remains ROM 6388/6388, no-ROM 6093 pass / 295 skip, 263 files. Next session: plan V5d from note 90 §3 items 10–11 and the cited ASM/backlog. V5d has not started.
+
+### 2026-11-13 (V5c checkpoint-06 review)
+
+- Diff against `b6c3892` matches the spike; ten hashes and the cited ASM agree. Setup leaves the tree unchanged; generated checker passes for exactly 12 files. Typecheck and build pass; bundle unchanged at `index-CdZh1-Oi.js` (674,183 bytes, SHA256 `104fee86...1ea03`). E1–E8 each exit 1 with only AssertionError and their files are restored. Review mutation R1 (last duplicate row wins) survived the no-ROM suite; one witness now kills it with AssertionError. Final ROM 6388/6388; no-ROM 6093 pass / 295 skip, 263 files. Review: note 93 §28. Next: user play-test (§26.9); back up `p151-s` first. No V5d work.
+
+### 2026-11-13 (V5c checkpoint-06: hidden events, Red's facing, three text keys — Grok)
+
+- Applied note 93 §26 on `b6c3892`. Ten source hashes match §26.4. The cited ASM agrees with §26.1–§26.2; the spike was not adjusted. Setup twice regenerated 12 files; the checker prints `PASS 12`. Typecheck clean. Bundle `index-CdZh1-Oi.js`, 674,183 bytes, SHA256 `104fee8643384fb6e2b8f5d23441d058af9a3db358d849859cf725e6a001ea03`. ROM 6387/6387; no-ROM 6092 passed / 295 skipped, 263 files. E1–E8 each exited 1 with only AssertionError; sources restored. Report: note 93 §27. Next: Claude reviews, then the user's play-test (§26.9; copy `p151-s` first). V5d has not started.
+
+### 2026-11-13 (checkpoint-05 play-test passed; checkpoint-06 traced, spiked and briefed) — Claude
+
+- The user: "it passes". Checkpoint-05 is closed (note 93 §25). Traced checkpoint-06: the cartridge matches a hidden event by coordinates only, and four routines test the facing themselves; `StartNewGame` faces Red up; three text keys have had no reader since A5f. Spiked it in six source files, three moved tests and one new file (10 cases). Setup regenerates 12 files. With the patch: typecheck clean, ROM 6387/6387, no-ROM 6092 / 295 skipped, 263 files, bundle `index-CdZh1-Oi.js` 674,183 bytes (+5); the only existing failures were the four cases the patch updates; E1–E8 each AssertionError; the checker prints `PASS 12`. Patch, manifest, checker, runner and logs in `notes/93-v5c-checkpoint-06/`; the source and data are restored (the tree is still at 6377). Rulings in DECISIONS #120; two findings in note 57. The one visible change besides Red's facing: Blue's House bookcases read from the side. Next: the user names the implementer for note 93 §26.5.
+
+### 2026-11-13 (V5c checkpoint-05 reviewed: passed, one test added) — Claude
+
+- Reviewed Grok's `b19fd8a`: the source equals the spike (five hashes), the documentation edits stay within §22.5, no generated change. Gates re-run: typecheck clean, bundle `index-CMT7vtcZ.js` unchanged, ROM 6376/6376, no-ROM 6081 / 295 skipped. Reviewer mutation R1 (Pallet's script on every map) survived the whole no-ROM suite. That was a planning gap, so `main_daisy.test.ts` gained a case: passes in Blue's House and on Route 1 with the Town Map swap nothing. R1 now fails with AssertionError. New baseline ROM 6377/6377, no-ROM 6082 / 295 skipped, 262 files; bundle unchanged. Note 93 §24. Next: the user's play-test (§22.8). Checkpoint-06 has not started.
+
+### 2026-11-13 (V5c checkpoint-05: walking Daisy — Grok)
+
+- Applied note 93 §22 on `ee1bc8b`. Five source hashes match §22.3. The cited ASM agrees with §22.1; the spike was not adjusted. No `data/` or `static/` change. Typecheck clean. Bundle `index-CMT7vtcZ.js`, 674,178 bytes, SHA256 `d88b21505a8a1953d9fccc083522876993d20bc9e3141aa30aca0eebb0bc9388`. ROM 6376/6376; no-ROM 6081 passed / 295 skipped, 262 files. D1–D16 each exited 1 with only AssertionError; sources restored. Report: note 93 §23. Next: Claude reviews, then the user's play-test (§22.8; copy `p151-s` first). Checkpoint-06 has not started.
+
+### 2026-11-13 (V5c checkpoint-05 traced, spiked and briefed for Grok) — Claude
+
+- Traced `BluesHouse_Script` (it dispatches with `xor a`, so the entry event is set on every pass in the house) and `PalletTownDaisyScript` (the swap happens in Pallet, with two `UpdateSprites`). Spiked it in three source files: `palletTownScript`, the two resting scripts ahead of the door guard in `runMapScript`, and a load rule giving old saves that hold the Town Map `ENTERED_BLUES_HOUSE`. Two new test files, 8 pure cases and 7 through the real main. With the patch: typecheck clean, ROM 6376/6376, no-ROM 6081 / 295 skipped, 262 files, bundle `index-CMT7vtcZ.js` 674,178 bytes (+481); no existing test changed; D1–D16 each AssertionError. Patch, runner and logs in `notes/93-v5c-checkpoint-05/`; the source is restored (the tree is still at 6361). Rulings in DECISIONS #119; two findings logged in note 57 (→ J2). Next: Grok implements note 93 §22.4–§22.7.
+
+### 2026-11-13 (checkpoint-04 play-test passed; stopping for now) — Codex
+
+- The user reports checkpoint-04's §20 play-test "all works perfectly" after the code review (`4c10769`). Pallet, Viridian, Route 1, the Pokécenter, Oak's Lab, Blue's House, Route 22, CONTINUE and debug warps are accepted as the checkpoint checklist. Checkpoint-04 is closed. No code or test change in this handoff; baseline remains ROM 6361/6361, no-ROM 6066 / 295 skipped, 260 files, bundle `index-VLxETiOv.js`. Next when the user resumes: trace and brief checkpoint-05. The user is stopping here.
+
+### 2026-11-13 (V5c checkpoint-04 reviewed: passed with checker repair) — Codex
+
+- Reviewed Grok's `51952c1` against §19 and pret. The generated checker compared against HEAD and failed after commit; changed it to compare with checkpoint base `090fff1`. It now prints `PASS 12`; a one-byte data mutation is caught, then the data was restored. Typecheck clean, bundle unchanged, ROM 6361/6361, no-ROM 6066 / 295 skipped, 260 files. Reviewer movement-byte mutation R1 caught by `map_object_ids.test.ts` with AssertionError; extractor restored. Note 93 §21. Next: the user's visible play-test (§20); checkpoint-05 not started.
+
+### 2026-11-13 (V5c checkpoint-04: ROM order and facing - Grok)
+
+- Implemented note 93 §19 on `090fff1`. Map NPCs follow `object_event` order and take facing from the movement bytes. OAK2, walking Daisy and both Route 22 rivals are present and start hidden. Setup changed 12 generated files; the checker prints `PASS 12`. ROM 6361/6361; no-ROM 6066 / 295; 260 files. Bundle unchanged. Report: note 93 §20. Next: review, then the user's play-test (§20; copy `p151-s` first). Checkpoint-05 has not started.
+
 ### 2026-11-12 (03b play-test passed; checkpoint-04 briefed for Grok) — Codex
 
 - The user reports §16.4 works perfectly: CONTINUE, save/reload and New Game through the Lab. Checkpoint-03 is closed. Traced checkpoint-04's ROM object encoding, the extractor's index filter and metadata overrides, and the live toggle reader. Wrote the implementation and verification brief in note 93 §19. No source or generated data changed. Next: Grok implements checkpoint-04, reports §20 and commits locally; review and visible play-test follow.

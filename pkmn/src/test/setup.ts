@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { afterEach, beforeAll, vi } from 'vitest';
 import { unpinOverworldRandom } from './overworld_random_pin';
+import { resetVBlankHold } from '../core/vblank_hold';
 import { loadToggleableObjects } from '../overworld/toggleable_objects';
 
 const DATA_DIR = resolve(__dirname, '../../data');
@@ -48,4 +49,4 @@ beforeAll(async () => {
 });
 
 // DECISIONS #91: a pinned overworld Random lasts one test.
-afterEach(() => unpinOverworldRandom());
+afterEach(() => { unpinOverworldRandom(); resetVBlankHold(); });

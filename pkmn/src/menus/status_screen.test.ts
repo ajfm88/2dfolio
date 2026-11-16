@@ -91,6 +91,10 @@ describe('StatusScreen page 1 (status_screen.asm, DrawHP, PrintStatsBox)', () =>
     for (let y = 0; y < 18; y++) { expect(expected[y].length, `expected width row ${y}`).toBe(20); expect(r.row(y), `row ${y}`).toBe(expected[y]); }
   });
 
+  it.each(['Sparky', 'NIDORAN♀', 'a-b c.d'])('prints the nickname %s on page 1 as the record holds it (V5e checkpoint-02)', nickname => {
+    const r = rig(Object.assign(fixture(), { nickname })); r.wait(20);
+    expect(r.row(1, 9, 10).trimEnd()).toBe(nickname);
+  });
   it('places then erases TYPE2/ for a single type; keeps both labels for a dual type', () => {
     const single = rig(); single.wait(14); expect(single.row(11, 10, 6)).toBe('TYPE2/');
     single.wait(3); expect(single.row(11, 10, 6)).toBe('      ');

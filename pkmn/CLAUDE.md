@@ -9,8 +9,8 @@ rebalancing, no improvements, no added content; Gen 1 bugs are reproduced
 deliberately. The repos in `refs/` are how we get it right.
 
 **Sprites: vanilla Yellow, extracted from the ROM.** That is the baseline and it
-already works — `/gfx/sprites/front/<dex>.png` (decoded in the browser today,
-committed PNGs after Phase R). Build the whole game on those.
+already works — `/gfx/sprites/front/<dex>.png`, committed PNGs extracted from the
+ROM. Build the whole game on those.
 
 Game data is extracted from the user's own cartridge dump during development,
 then committed to the repo so the final product needs no ROM at all.
@@ -53,9 +53,9 @@ Read in this order. Skim what your slice needs; don't re-explore what
 | **`STATUS.md`** | ⚠ live handoff log: phase, queue, open questions, session log | **always, first** |
 | `PROJECT.md` | what we're building and why; goals, non-goals, success criteria | new to the project |
 | `ARCHITECTURE.md` | data pipeline, the data contract, invariants, verified format findings, Game Boy rendering + asset rules; the **engine reference** (module map, state machine, data conventions, extraction system) | before touching data, assets, rendering or engine code |
-| `PLAN.md` | the phased roadmap — 36 milestones (R1, V1–V5, A1–A6, B1–X2; R1 ran as slices R1a–c, V1 runs as V1a–e) | when picking or sizing work |
+| `PLAN.md` | the phased roadmap — 36 milestones (R1, V1–V5, A1–A6, B1–X2; R1 ran as slices R1a–c, V1 as V1a–e) | when picking or sizing work |
 | `CONVENTIONS.md` | session contract (incl. the per-slice local commit), code standards, naming traps, verification workflow, the test suite | before writing code |
-| `DECISIONS.md` | settled choices and rationale (#1–#43), plus open questions that need the user | before proposing a change to a settled choice |
+| `DECISIONS.md` | settled choices and rationale, numbered, plus open questions that need the user | before proposing a change to a settled choice |
 | `HISTORY.md` | archived session entries, archived STATUS sections, and the table of lost prior work | rarely — background only |
 
 `context/_reference-article.md` is a third-party article (JavaScript Mastery's
@@ -143,10 +143,10 @@ Everything else runs inside `game/`:
 - `npm run setup pokeyellow.gbc` — extract from the ROM (development): JSON →
   `data/`, then rebuild `static/` (527 PNGs + 3 tilemaps + a JSON mirror). ~1.5 s
 - `npm test` — vitest (needs `data/`; the suite exits if it is missing). Without
-  `ROM_PATH` the 295 ROM tests skip
+  `ROM_PATH` the ROM-gated tests skip (count in the baseline below)
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-13 (V5c checkpoint-06 review): 6388/6388.** No-ROM 6093 pass / 295 skip, 263 files.
+  tests. **Baseline 2026-11-14 (V5f checkpoint-03a user-verified): 6516/6516.** No-ROM 6218 pass / 298 skip, 266 files.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -158,27 +158,17 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-**2026-11-10:** milestones **R1, V1, A6, A1, V2, A5, V3 and V4 are done**:
-- **A5a** (the text printer), **A5b** (every script and menu text) and **A5d** (the battle transitions) are
-  user-verified.
-- **A5c** is complete: A5c1, A5c2 and A5c3a–f (notes 66–72). The game runs on a battle engine ported from the ASM
-  (since A5c3f checkpoint-09b; user play-test passed 2026-11-01). The old upstream engine is deleted.
-- Two small slices followed: one 30 s suite timeout (#90, note 73), and the cartridge's `Random` outside battle
-  (#91, note 74).
-- **A5e is complete** (notes 75–85, 2026-11-06): the silhouette intro, the send-out poof, the picture cues and the
-  closeout census, each user-verified. Attack move animations are a separate later slice (#94).
+Milestones **R1, V1, A6, A1, V2, A5, V3 and V4 are done** (8 of 36); **V5**, the recovered fixes, is in
+progress (DECISIONS #110). The game runs with no ROM, from committed `data/` + `static/` (207 JSON, 527 PNGs,
+three tilemaps): 30 runtime-wired maps from Pallet Town through Pewter, Route 3 and Diglett's Cave, Brock and the
+first badge, a battle engine ported from the ASM, and the overworld at the Game Boy's 59.7275 Hz on the ASM's
+2-frame pass (DECISIONS #33, #36). Phase V has rebuilt the 30 maps the lost July–August copy had reached
+(DECISIONS #26); V5 restores the rest of its fixes. Tests (V5f checkpoint-03a user-verified): **6516/6516**; no-ROM 6218 pass,
+298 skip, 266 files.
 
-The game runs with no ROM, from committed `data/` + `static/` (Phase R). It has 30 runtime-wired maps (upstream's 12, Route 2 and
-Viridian Forest from V1, Pewter City and its four buildings from V2a, Museum 1F, Museum 2F and Pewter Gym from V3 checkpoint-01, Route 3 from V3 checkpoint-04, DiglettsCave and DiglettsCaveRoute11 from V4 checkpoint-02). Code review and the user's cave/Route3 play-tests passed. It ticks at the Game Boy's 59.7275 Hz and
-moves on the ASM's 2-frame pass (DECISIONS #33, #36). Tests: **6388/6388**; no-ROM 6093 pass, 295 skip, 263 files. 207 JSON, 527 PNGs, three tilemaps.
+The current slice, its checkpoint and the restart list are in `context/STATUS.md` → *In progress*; the
+milestone-by-milestone detail is in `PROJECT.md` → *State* and `PLAN.md`.
 
-**Refs pulled 2026-11-03 evening** (R-SYNC, note 78, synchronized pret's names). The screen-model merge is done (note 86, #104).
-**A5f is complete** (note 87, #105, 2026-11-07), and with it A5. **V3 is complete** (note 88 §48, 2026-11-08; Route 3 moved in before Brock's win, #106): Pewter Gym, the Museum, Route 3 and the first badge, user-verified. **V4 is complete** (note89 §21, 2026-11-10): all four checkpoints reviewed, Route 3 and cave play-tests passed. **V5 is in progress** (#110): V5a (type-chart pins, #111), V5b (the blocking battle return) and V5c (the map-object audit, #115) are complete and user-verified. Next: plan V5d's overworld leftovers (note 90 §3 items 10–11). STATUS → *In progress* has the restart list.
-
-⚠ The earlier sessions' modified copy (30 maps) was **lost** (DECISIONS #26). Phase V
-rebuilds it.
-
-The slice-by-slice detail is in `context/STATUS.md` (live) and `PROJECT.md` → *State*.
 **Keep this section this short.** A finished milestone changes a line here; a slice
 changes STATUS.md. Claude Code loads this file into every session and warns past 40k
 characters (DECISIONS #42).

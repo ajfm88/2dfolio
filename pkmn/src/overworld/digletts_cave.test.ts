@@ -109,7 +109,7 @@ it.each([0x20, 0x41, 0x2a, 0x21].flatMap(tile => [[tile, 5], [5, tile]]))(
 
 it('does not apply CAVERN land pairs to a different tileset', async () => {
   await world('DiglettsCave', 5, 6); host.player.direction = 'down'; host.pikachuFollower.visible = false;
-  // Retain walkability but isolate the tileset gate; FOREST has its own deferred pair table.
+  // Retain walkability but isolate the tileset gate; FOREST's own rows all pair with $2E.
   host.gameMap.mapData = { ...host.gameMap.mapData!, tileset: 'FOREST' };
   vi.spyOn(host.gameMap, 'getTileAt').mockImplementation((x, y) => x === 10 && y === 13 ? 0x20 : 5);
   for (let n = 0; n < 32; n++) {

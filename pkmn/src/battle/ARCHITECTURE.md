@@ -35,6 +35,8 @@ Older dated checkpoint sections below are historical records: their "unused unti
 the now-live battle engine. Checkpoint-09 removed stale status wording from the source headers. Use this section,
 STATUS and the current code for the restart point.
 
+V5f checkpoint-03a (reviewed and user-verified, note 98 §11, #126) shares one full-opening helper, `advanceBattlePartyFrame`, across PKMN, SHIFT and faint replacement. It runs the existing `BattleScreen.setPalPartyMenu()` once: two held frames, then three session frames. Battle medicine stays at physical read 24 on that same generator and never arms the field hold. GoBack stays 16 frames and StatusScreen's first read stays S+27.
+
 ## A5c3f checkpoint-11f: fixture writers and decoder retirement
 
 `PartySlot`, `partyTypeByte`, `partySlotFromPokemon`, `writePartySlot` and `mirrorPartyProgress`
@@ -586,7 +588,7 @@ When a Pokemon levels up with a full moveset (4 moves), the move waits in `pendi
 
 ## Evolution
 
-Post-battle evolution is handled by `evolution.ts`. `checkEvolutions()` finds level-based candidates (item evolutions are skipped post-battle, naturally excluding Pikachu). `applyEvolution()` changes species, recalculates stats, preserves HP delta, auto-renames if nickname matched old species, and updates the Pokédex. The `'evolution'` game state in `main.ts` handles the animation (the 8-cycle accelerating sprite alternation of `engine/movie/evolution.asm`) and B-button cancel.
+Post-battle evolution is handled by `evolution.ts`. `checkEvolutions()` finds level-based candidates (item evolutions are skipped post-battle, naturally excluding Pikachu). `applyEvolution()` changes species, recalculates stats, preserves HP delta, applies `RenameEvolvedMon`, and updates the Pokédex. The rename changes only a nickname exactly equal to the old species' `MonsterNames` entry to the new species' entry; every other nickname stays. The `'evolution'` game state in `main.ts` handles the animation (the 8-cycle accelerating sprite alternation of `engine/movie/evolution.asm`) and B-button cancel.
 
 ## Whiteout/Blackout
 
@@ -741,6 +743,8 @@ helper/Program remain unused as specified in the current section above. Historic
 
 ## A5c3f checkpoint-08g: cartridge species names
 
+V5e checkpoint-01 moves the single `MonsterNames` copy to `data.ts`; `speciesDisplayName` supplies species names to the Pokédex, field status page 2 and Oak's gift. The Pokédex now fetches two tables of its own (note 95).
+
 `battle_trainer_data.ts` fetches `monster_names.json` in the same once-only promise as
 the trainer/species tables. `monsterName(internal)` returns the cartridge spelling and
 throws for a missing entry. `battle_trainer_party.ts` gives each header that name while
@@ -752,6 +756,8 @@ At the world boundary, `battle_bridge.ts` maps a nickname equal to the object's
 Explicit nicknames stay verbatim; live objects and the exact party codec stay unchanged.
 The new session's texts and HUD therefore use `RATTATA`, `PIKACHU`, `NIDORAN♀` and `MR.MIME`.
 The stand-in Pokédex page still draws upstream's name until J2/V5.
+
+2026-11-14: #86 is retired by V5e checkpoint-02; the nickname is the record's name.
 
 This remains unused by `main.ts` until checkpoint-09. Its write-back will map default
 cartridge name bytes back to `species.name` (O-48 option A, DECISIONS #86). Raw save name
@@ -774,6 +780,8 @@ The box conversion reads the prefix directly, without synthesizing a party stat 
 the live `BoxedPokemon` type requires a `maxHp` cache, computed with the existing
 `CalcStat` from the actual species, box level, DVs and stat EXP. Default cartridge name
 bytes map back to `species.name` per #86; typed `NIDORAN-F` and `MR. MIME` stay verbatim.
+
+2026-11-14: #86 is retired by V5e checkpoint-02; the nickname is the record's name.
 Money, bag, dex, happiness and mood replace live values. The raw emotion modifier is
 written through LiveBattleOwners to pikachu_happiness.ts and persisted by 10b.
 
@@ -879,6 +887,8 @@ exact EXP at `wLoadedMon`, while box STATS uses BoxLevel. Both calculate stored 
 with b=1 and keep prefix HP, status/sleep, packed PP Ups and exact EXP. STATS leaves
 the box entry untouched. Both paths retain the #86 live nickname policy.
 
+2026-11-14: #86 is retired by V5e checkpoint-02; the nickname is the record's name.
+
 BoxedPokemon includes sleepTurns throughout both box-record conversions and
 pokemonToBoxed. Version-1 main restore supplies a missing counter of 1 for SLP and
 0 otherwise; this is an explicit migration value, not a cartridge behaviour. An
@@ -913,6 +923,8 @@ parallel codec or stat formula is used. Loaded party stats, exact EXP, sleep cou
 and PP Ups come from the record; default nicknames follow #86. Box arrays retain
 their front order. Decode errors propagate, and no partial party is returned.
 Main decodes both mon collections before applying the party.
+
+2026-11-14: #86 is retired by V5e checkpoint-02; the nickname is the record's name.
 
 `loadGame` returns the parsed version1/version2 union, rejecting unsupported versions
 and parse failures. Version1 party members use 10a's box-STATS path at the saved

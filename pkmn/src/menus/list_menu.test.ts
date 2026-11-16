@@ -59,11 +59,11 @@ describe('DisplayListMenuID', () => {
     const menu = rig({ kind: 'mons', entries: [{ name: 'Sparky', level }] });
     expect(getNoTextDelay()).toBe(true);
     menu.frames(15);
-    expect(row(menu.tiles, 4, 6, 12)).toBe('SPARKY');
+    expect(row(menu.tiles, 4, 6, 12)).toBe('Sparky');
     expect(row(menu.tiles, 5, 14, 18)).toBe(level < 100 ? `${LEVEL_GLYPH}${level}`.padEnd(4) : '100 ');
     expect(row(menu.tiles, 6, 6, 12)).toBe('CANCEL');
     menu.press('a');
-    expect(menu.frame()).toEqual({ type: 'chosen', index: 0, name: 'SPARKY' });
+    expect(menu.frame()).toEqual({ type: 'chosen', index: 0, name: 'Sparky' });
     expect(getNoTextDelay()).toBe(false);
   });
 
@@ -76,7 +76,7 @@ describe('DisplayListMenuID', () => {
     menu.frames(6); menu.press('down'); menu.frame();
     expect(menu.menu.offset).toBe(1);
     menu.frames(6);
-    expect(row(menu.tiles, 4, 6, 9)).toBe('TWO');
+    expect(row(menu.tiles, 4, 6, 9)).toBe('Two');
     expect(entries).toEqual(original);
     menu.press('b');
     expect(menu.frame()).toEqual({ type: 'cancelled' });

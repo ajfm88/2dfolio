@@ -1,5 +1,26 @@
 # Menus Architecture
 
+V5f checkpoint-02 (2026-11-14, note 97, #125) adds `ItemMenuLoop`'s missing default-palette
+command on every ordinary return to the field bag: two held frames, then three ordinary
+frames, before `DisplayListMenuID`. The list border is logical at R+5, entries print and
+transfer enables at R+15, and the first list read is R+21. Initial entry still builds the
+list at S (first top-third copy S+11 when the portion is 0, first read S+16). Medicine's
+return calls `itemMenuLoop(false)` and keeps its own timing. Checkpoint-01's hold
+(`core/vblank_hold.ts`) still covers START's party/trainer returns, field medicine and
+Bill's PC.
+
+V5f checkpoint-03a (reviewed and user-verified 2026-11-14, note 98 §11, #126) holds the full `DisplayPartyMenu` in every host.
+Field and battle full openings, and field medicine's opening, reveal at C+21 and take
+the first read at C+24. A field-owned opening arms `holdVBlank()` at CPU age 10; its
+standalone `present()` consumes the two held frames, and the bag already consumes them
+during medicine. A battle-owned opening exposes `paletteCommandDue` at age 10 and never
+touches the field counter. `advanceBattlePartyFrame` runs `setPalPartyMenu()` for PKMN,
+SHIFT and faint. Battle medicine keeps its existing `setPalPartyMenu()` timing (reveal 21,
+read 24) and does not arm the field hold. `GoBackToPartyMenu` stays 16 frames (03b).
+StatusScreen's first read stays S+27 (03c).
+
+V5e checkpoint-01 shares the single `MonsterNames` copy in `battle/data.ts` through `speciesDisplayName` for the Pokédex and field status page 2. The Pokédex fetches two tables of its own (note 95).
+
 A5c3f checkpoint-10f adds optional `StatusScreenSession` option `page2Name`. It is called
 at page2's name placement, never during construction/page1. Only the battle session supplies
 it through its existing createStatusScreen seam: internal species → wNamedObjectIndex →
@@ -225,7 +246,9 @@ restores 0.
 box, then `IsItOKToTossItemText` and YES/NO. A key item or HM skips the
 quantity box. Balls print `ItemUseNotTimeText`. OAK'S PARCEL prints
 `ItemUseNotYoursToUseText` ("This isn't yours to use!").
-The Town Map returns through `ItemMenuLoop`. Medicine runs `FieldMedicine`:
+The Town Map returns through `ItemMenuLoop`, which now pays the five-frame palette
+command before the list exists. An ordinary return keeps the old shown tiles through
+R+15 and dismisses retained text on the first real bottom-third copy. Medicine runs `FieldMedicine`:
 a white party menu, then the heal, then a white return to this list.
 Its party menu (`PartyMenu` useItem mode) reads the joypad itself every frame with
 `readJoypad`/`isPassPressed` (HandleMenuInput_ `.loop2`); only a key it does not watch (not
@@ -239,18 +262,21 @@ box for every field-medicine PrintText; nothing else does (F-3).
 `PartyMenuOpening` shares DisplayPartyMenu's white Delay3, four HP/status-copy waits,
 ClearScreen Delay3, CGB palette Delay3, no-delay PrintText and final Delay3. Its
 host advances VBlank once before its CPU-only `frame()`: the bag during medicine,
-`present()` during standalone PartyMenu. START → POKéMON and medicine reveal C+19,
-then read C+22. Overworld STATS returns into it at Q+3, hence reveal Q+22/read Q+25.
-The prompt's standalone TextBox is created C+13, completes C+16, and is dismissed
-C+19 when the legacy party renderer retains those same program-derived lines.
+`present()` during standalone PartyMenu. START → POKéMON and field medicine reveal
+C+21, then read C+24. A field owner arms the hold at age 10; a battle owner only
+reports `paletteCommandDue` and leaves the field counter alone. Overworld STATS
+returns into it at Q+3, hence reveal Q+24/read Q+27. The prompt's standalone TextBox
+is created at PrintText C+15, runs its no-delay Delay3 through C+18, and is dismissed
+at C+21 with GBPalNormal, when the party renderer retains those program-derived lines.
+`GoBackToPartyMenu` stays a 16-frame redraw. StatusScreen's own first read stays S+27.
 Main skips its generic input sync during the opening, and the accepting frame
 uses the real read's edges; later party-list/submenu input remains the J2 adapter.
 
 Medicine's result redraw adds CGB palette E+4..E+6 before PrintText at E+6;
 the complete result/transfer-on is E+9. Its 50-frame hold returns directly into
-the first silent read at E+62. Medicine's conditional default palette adds three
-frames before START's existing 35-frame restore: list entry P+39, bag visible
-P+51, first read P+54. Transfer is disabled for copy waits P+7..P+32, then again
+the first silent read at E+62. Medicine's return calls `itemMenuLoop(false)`, so
+it skips `ItemMenuLoop`'s command and keeps list at P+43, bag visible at P+55 and
+first read at P+58. Transfer is disabled for copy waits P+7..P+32, then again
 for the list's initial wait. Main copies the white flag after the bag update so
 the visible frame agrees with the session. Original medicine assertions remain;
 tests now include exact per-frame ownership/phase checks and a real no-effect return.
@@ -309,9 +335,8 @@ defaults to 2; the box chooser uses 1, with unchanged input timing.
 `menu_glyphs.ts` loads LV from battle_hud_1 tile 1 through the monochrome font
 loader, and the ball from balls tile 0 through the palette-aware 2bpp loader.
 `drawScreenTile` paints them over opaque cells. Text initialization and border
-palette reload refresh these assets. `pokemon_names.ts:monDisplayName` centralizes
-uppercase display names for party, medicine and Bill's lists/bindings;
-saved nicknames retain their original case (full MonsterNames handling is V5).
+palette reload refresh these assets. The menus print `mon.nickname` as the record holds it (V5e checkpoint-02);
+`pokemon_names.ts` is gone.
 
 `pokemon_storage.ts` owns BoxedPokemon, the unchanged serialization helper,
 12/20 capacities and the boxed species-only starter stand-in (OT checks A4).
@@ -357,7 +382,9 @@ Fresh A or B silently advances; page 2 waits three frames before reading again.
 The last press Q restores NR50 (7,7), whites out and clears. Buffer1 restores at
 Q+3 with STATS selected; Bill remains full-screen white until LoadGBPal at Q+6,
 and first submenu input is Q+9. Since CP4, overworld party enters the shared
-opening at Q+3 and reveals Q+22/reads Q+25 on the same mon. Battle still returns
+opening at Q+3 on the same mon. Checkpoint-03a adds that opening's two frames, so
+the return now reveals Q+24 and reads Q+27. The status page's first read stays S+27.
+Battle still returns
 to its existing list at Q+3; its enemy-picture reload belongs to A5c.
 
 Change Box warns, clears text delay at YES/NO, then types ChooseABoxText while

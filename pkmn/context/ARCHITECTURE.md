@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6388/6388** (2026-11-13, V5c checkpoint-06 review; default workers; no-ROM 6093 pass / 295 skip; 263 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6516/6516** (2026-11-14, V5f checkpoint-03a user-verified; default workers; no-ROM 6218 pass / 298 skip; 266 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -166,7 +166,8 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   Since A5c3f checkpoint-10b, version2 stores party/box struct and name bytes via
   the existing codec, plus packed options and Pikachu's emotion modifier.
   Version1 remains readable with exact EXP, CalcStats b=1 at its saved level and
-  migration sleep counters. Main-menu entry restores options/modifier before
+  migration sleep counters. A version-1 default nickname (`pokemon.json`'s name) becomes
+  `MonsterNames`' entry at load (V5e checkpoint-02); version-2 records are read as they are. Main-menu entry restores options/modifier before
   CONTINUE or NEW GAME; NEW GAME retains them. See note72 §10.23.5.
 - **IndexedDB** — upstream's extracted-ROM cache (`src/rom/rom_cache.ts`). Unused
   since R1b; a browser that ran the upstream gate may still hold a stale one
@@ -216,7 +217,7 @@ Summary of path → shape → source:
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
 | `item_names.json` | `Record<CONSTANT, display>` (`text.ts:readItemDisplayNames`) | ROM via extractor |
 | `move_names.json` | `Record<MOVE_CONSTANT, display>` (`text.ts:readMoveDisplayNames`), all 165 moves in ID order, no NO_MOVE entry; shares the constant-name reader's table walk (StatusScreen CP2) | ROM MoveNames, 2F:4000 |
-| `monster_names.json` | `(string\|null)[191]`, [0]=null; internal IDs 1–190, including 39 `MISSINGNO.` slots (`text.ts:readMonsterNames`). Cartridge spellings for the new battle engine only (A5c3f checkpoint-08g) | ROM MonsterNames, 3A:4000; ten bytes per entry |
+| `monster_names.json` | `(string\|null)[191]`, [0]=null; internal IDs 1–190, including 39 `MISSINGNO.` slots (`text.ts:readMonsterNames`). Loaded by `battle/data.ts`, read by battle and through `speciesDisplayName` by the Pokédex, status page 2 and Oak's gift (V5e checkpoint-01) | ROM MonsterNames, 3A:4000; ten bytes per entry |
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |
 | `text_programs.json` | `{programs: Record<label, TextOp[]>, textPointers: Record<table, MapTextCall[]>}` (`text_programs.ts`, A5b1) — TextCommandProcessor programs by pret label, and each map text's `DisplayTextID` call | ROM via extractor; labels/addresses in `rom/text_program_symbols.ts` |
 | `map_sprite_sets.json` | `MapSpriteSetsFile` (`map_sprite_sets.ts`, A5b2): 37 outdoor selectors, 12 linear splits including the unused `$f8` row, sets 1–10 (11 picture ids), pictures 1–82 (`walking`/`still` and 12 or 4 tiles), Route 20's branch, current map ids and canonical sprite names. Not loaded at runtime (A5b4) | ROM via extractor |
@@ -336,8 +337,10 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
   that map (battle: `BGMapAttributes_Battle`, A5c1).
 - **A palette command's cost:** with the LCD on, it is **2 held frames, then `Delay3`.** The held frames have no BG
   transfer, OAM DMA, joypad read or text tick; audio updates once each. `LoadBGMapAttributes` waits twice with
-  interrupts off and discards the VBlanks. With the LCD off it costs 0. Today only the battle screen models the hold;
-  the other screens get it in V5 (DECISIONS #73).
+  interrupts off and discards the VBlanks. With the LCD off it costs 0. Outside battle, `core/vblank_hold.ts` models it on START's returns, field medicine,
+  Bill's PC (V5f checkpoint-01, #124), the bag's `ItemMenuLoop` (checkpoint-02, #125) and the full party opening
+  (checkpoint-03a, #126). Battle-owned openings use the battle palette generator and do not arm that field counter.
+  GoBack/redraw and StatusScreen remain 03b/03c. V5f is not complete.
 
 ## Asset format rules
 

@@ -1,7 +1,8 @@
 // EmotionBubble (engine/overworld/emotion_bubbles.asm): the "!" over a sprite, with sprite
 // updates disabled for DelayFrames 60, then DelayFrame and UpdateSprites. VBlank copies OAM
 // before PrepareOAMData rebuilds it (home/vblank.asm), so the bubble is on screen for 61
-// frames. The trainer path uses it (A1c); the two cutscene bubbles wait for V5.
+// frames. The trainer path uses it (A1c); Pallet's and the Lab's cutscene bubbles run it
+// through the script command `emotionBubble` (A5b5b).
 
 import type { Npc } from './npc';
 

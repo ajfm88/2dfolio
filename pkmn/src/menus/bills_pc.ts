@@ -10,7 +10,6 @@ import { MONS_PER_BOX, isStarterPikachuBoxed } from '../pokemon_storage';
 import { depositMon } from '../pokemon_transfers';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { modifyPikachuHappiness } from '../pikachu/pikachu_happiness';
-import { monDisplayName } from '../pokemon_names';
 import type { PcStorage } from './pc';
 import { PcDisplay } from './pc_display';
 import { MenuInput } from './menu_input';
@@ -21,6 +20,7 @@ import { StatusScreenSession } from './status_screen';
 import { drawFadeOverlay } from '../renderer';
 import { POKEBALL_GLYPH } from './menu_glyphs';
 import { NUM_BOXES } from '../pokemon_storage';
+import { holdVBlank } from '../core/vblank_hold';
 
 const SILENT = () => {};
 /** Playback and its cry-length wait remain J2, including the starter's PCM clips. */
@@ -71,8 +71,9 @@ export class BillsPc extends PcDisplay {
         this.stats = null;
         this.returnWhite = true;
         this.tiles.restore(this.buffer1!, this.textBox, this.transfer);
-        // RunDefaultPaletteCommand (CGB) Delay3, then HandleMenuInput Delay3.
-        this.delayed = { remaining: 3, then: () => { this.returnWhite = false; this.submenuInput(1); } };
+        // RunDefaultPaletteCommand (CGB): 2 held frames and Delay3, then HandleMenuInput Delay3 (#73).
+        holdVBlank();
+        this.delayed = { remaining: 5, then: () => { this.returnWhite = false; this.submenuInput(1); } };
       }
       return false;
     }
@@ -173,7 +174,7 @@ export class BillsPc extends PcDisplay {
 
   private openList(): void {
     const mons = this.parentItem === 1 ? this.storage.party : this.box();
-    this.list = new ListMenu(this.tiles, { kind: 'mons', entries: mons.map(mon => ({ name: monDisplayName(mon), level: mon.level })),
+    this.list = new ListMenu(this.tiles, { kind: 'mons', entries: mons.map(mon => ({ name: mon.nickname, level: mon.level })),
       offset: getListScrollOffset(), item: getPartyAndBillsSavedMenuItem() }, this.transfer);
     // DisplayListMenuID's extra PCPOKEMONLISTMENU UpdateSprites, before its 10 frames.
     this.onSprites(); this.onSprites();

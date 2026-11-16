@@ -79,10 +79,10 @@ function toPartyMenu(party: BattlePokemon[]) {
 }
 
 describe('item-use party menu input (note 46 F-1)', () => {
-  it('no-effect PrintText keeps its own prompt, then the unchanged stack returns through P+51', () => {
+  it('no-effect PrintText keeps its own prompt, then the unchanged stack returns through P+55', () => {
     const mon = hurt(39);
     const { bag, session, tick } = toPartyMenu([mon]);
-    for (let i = 0; i < 22; i++) tick();
+    for (let i = 0; i < 24; i++) tick();
     tick('a'); // no effect: not a successful-use silent wait
     const box = Reflect.get(session, 'textBox') as TextBox;
     for (let i = 0; i < 1000 && !box.isWaitingForInput; i++) tick();
@@ -94,8 +94,8 @@ describe('item-use party menu input (note 46 F-1)', () => {
       if (box.isWaitingForInput && i % 8 === 0) tick('a'); else tick();
     }
     expect(session.paletteWhite).toBe(true); expect(box.active).toBe(false); // P
-    for (let frame = 1; frame <= 51; frame++) {
-      tick(); expect(session.paletteWhite, `P+${frame}`).toBe(frame < 51);
+    for (let frame = 1; frame <= 55; frame++) { // V5f: four held frames in the return (#73)
+      tick(); expect(session.paletteWhite, `P+${frame}`).toBe(frame < 55);
     }
     expect(session.medicineOpen).toBe(false); expect(bag.items[0].count).toBe(3);
     expect(mon.currentHp).toBe(39);
@@ -105,8 +105,8 @@ describe('item-use party menu input (note 46 F-1)', () => {
     for (const offset of [0, 1, 2]) {
       const mon = hurt(13);
       const { bag, tick } = toPartyMenu([mon]);
-      // R+22 is the first read and sees A up; taps at R+23, R+24, R+25.
-      for (let i = 0; i < 22 + offset; i++) tick();
+      // R+24 is the first read and sees A up; taps at R+25, R+26, R+27.
+      for (let i = 0; i < 24 + offset; i++) tick();
       tick('a');
       tick();
       expect(bag.items[0].count, `offset ${offset}`).toBe(2);
@@ -114,11 +114,11 @@ describe('item-use party menu input (note 46 F-1)', () => {
     }
   });
 
-  it('does not read before R+22: a tap released before then is lost', () => {
+  it('does not read before R+24: a tap released before then is lost', () => {
     const mon = hurt(13);
     const { bag, tick } = toPartyMenu([mon]);
-    for (let i = 0; i < 20; i++) tick();
-    tick('a');                                     // R+21, released at R+22
+    for (let i = 0; i < 22; i++) tick();
+    tick('a');                                     // R+23, released at R+24
     for (let i = 0; i < 4; i++) tick();
     expect(bag.items[0].count).toBe(3);
   });
@@ -127,12 +127,12 @@ describe('item-use party menu input (note 46 F-1)', () => {
     const first = hurt(13);
     const second = hurt(13);
     const { bag, tick } = toPartyMenu([first, second]);
-    for (let i = 0; i < 22; i++) tick();           // R+22: the first read
-    tick('down');                                  // R+23: the cursor moves to row 1
-    tick('a');                                     // R+24: inside Delay3, not read
-    tick();                                        // R+25
+    for (let i = 0; i < 24; i++) tick();           // R+24: the first read
+    tick('down');                                  // R+25: the cursor moves to row 1
+    tick('a');                                     // R+26: inside Delay3, not read
+    tick();                                        // R+27
     expect(bag.items[0].count).toBe(3);
-    tick('a');                                     // R+26: read
+    tick('a');                                     // R+28: read
     tick();
     expect(second.currentHp).toBe(33);
     expect(first.currentHp).toBe(13);
@@ -142,11 +142,11 @@ describe('item-use party menu input (note 46 F-1)', () => {
     const a = hurt(13);
     const b = hurt(13);
     const again = toPartyMenu([a, b]);
-    for (let i = 0; i < 22; i++) again.tick();
-    again.tick('down');                            // R+23
-    again.tick('a');                               // R+24, held …
-    again.tick('a');                               // R+25, …
-    again.tick('a');                               // R+26: the read sees A newly down since R+23
+    for (let i = 0; i < 24; i++) again.tick();
+    again.tick('down');                            // R+25
+    again.tick('a');                               // R+26, held …
+    again.tick('a');                               // R+27, …
+    again.tick('a');                               // R+28: the read sees A newly down since R+25
     again.tick();
     expect(b.currentHp).toBe(33);
   });
@@ -154,7 +154,7 @@ describe('item-use party menu input (note 46 F-1)', () => {
   it('A and B together cancel: HandlePartyMenuInput tests B first', () => {
     const mon = hurt(13);
     const { bag, tick } = toPartyMenu([mon]);
-    for (let i = 0; i < 22; i++) tick();
+    for (let i = 0; i < 24; i++) tick();
     tick('a', 'b');
     tick();
     expect(bag.items[0].count).toBe(3);

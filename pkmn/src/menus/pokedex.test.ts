@@ -1,4 +1,4 @@
-import { beforeEach,describe,expect,it,vi } from 'vitest';
+import { beforeAll,beforeEach,describe,expect,it,vi } from 'vitest';
 const output=vi.hoisted(()=>({log:[] as unknown[][]}));
 vi.hoisted(()=>Object.assign(globalThis,{window:{addEventListener(){}}}));
 vi.mock('../renderer',async orig=>({...await orig() as object,
@@ -15,10 +15,12 @@ import { setKey,updateInput } from '../input';
 import type { GameButton } from '../core';
 import { restorePokedex } from '../pokedex_state';
 import { PokedexMenu } from './pokedex';
+import { loadBattleData } from '../battle/data';
 
 const keys:GameButton[]=['a','b','up','down','left','right','start','select'];
 let lastFrame:unknown[][]=[];
 const fetchData=vi.fn(async(url:RequestInfo|URL)=>({json:async()=>JSON.parse(readFileSync('static/'+String(url),'utf8'))} as Response));
+beforeAll(()=>loadBattleData()); // MonsterNames, loaded at startup in the game
 beforeEach(()=>{
  keys.forEach(k=>setKey(k,false));updateInput();restorePokedex([],[]);output.log.length=0;lastFrame=[];
  fetchData.mockClear();vi.stubGlobal('fetch',fetchData);
@@ -42,6 +44,23 @@ describe('pre-edit Pokédex behavior',()=>{
   await press(p,'down');expect(await press(p,'a')).toBe('open');text('▶',0,40);
   expect(await press(p,'b')).toBe('closed');
   expect(output.log.filter(r=>r[0]==='sfx')).toEqual([['sfx','press_ab'],['sfx','press_ab']]);
+ });
+ it('prints MonsterNames in the list and on a data page, through MEW',async()=>{ // V5e checkpoint-01
+  restorePokedex([29,32,122,151],[32]);const p=new PokedexMenu();await p.show('ViridianCity');await frame(p);
+  const labels=()=>output.log.filter(r=>r[0]==='text').map(r=>r[1]);
+  const shown=(label:string)=>lastFrame.some(r=>r[0]==='text'&&r[1]===label);
+  for(let i=0;i<31;i++)await press(p,'down');
+  expect(shown('NIDORAN♀')).toBe(true);expect(shown('NIDORAN♂')).toBe(true);
+  for(let i=0;i<119;i++)await press(p,'down');
+  expect(labels()).toContain('MR.MIME');expect(shown('MEW')).toBe(true);
+  await press(p,'a');output.log.length=0;await press(p,'a');expect(labels()).toContain('MEW');
+  for(const key of ['NIDORAN-F','NIDORAN-M','MR. MIME'])expect(labels()).not.toContain(key);
+ });
+ it.each([[29,'NIDORAN♀'],[32,'NIDORAN♂'],[122,'MR.MIME']] as const)('dex %i prints %s on its data page and its AREA title',async(dex,name)=>{ // V5e review
+  restorePokedex([dex],[]);const p=new PokedexMenu();await p.show('ViridianCity');await frame(p);
+  for(let i=0;i<dex-1;i++)await press(p,'down');
+  await press(p,'a');await press(p,'a');text(name,72,16);
+  expect(await press(p,'b')).toBe('open');await press(p,'down');await press(p,'a');text(name+'’s NEST',8,0);
  });
  it('keeps seen-only DATA, side-menu wrapping, QUIT, AREA and B exits',async()=>{
   restorePokedex([1],[]);const p=new PokedexMenu();await p.show('ViridianCity');
@@ -79,8 +98,8 @@ const dataMenu=()=>new PokedexMenu() as DataPort;
 describe.skipIf(process.env.PKMN_SCREEN_BASELINE==='1')('single-species stand-in entry',()=>{
  it('requires loading; load and show reuse tables and tiles',async()=>{
   const p=dataMenu();expect(()=>p.showData(7,{owned:true})).toThrow(/not loaded/);
-  await p.load();expect(fetchData).toHaveBeenCalledTimes(3);await p.load();expect(fetchData).toHaveBeenCalledTimes(3);
-  restorePokedex([1],[]);await p.show();expect(fetchData).toHaveBeenCalledTimes(3);await frame(p);text('CONTENTS',8,8);text('BULBASAUR',32,24);
+  await p.load();expect(fetchData).toHaveBeenCalledTimes(2);await p.load();expect(fetchData).toHaveBeenCalledTimes(2);
+  restorePokedex([1],[]);await p.show();expect(fetchData).toHaveBeenCalledTimes(2);await frame(p);text('CONTENTS',8,8);text('BULBASAUR',32,24);
  });
  it.each(['a','b'] as const)('uses caller-owned state for a new catch, page two and %s exit, with caller sounds',async exit=>{
   const p=dataMenu(),own=vi.fn();await p.load();p.showData(7,{owned:true,pressSound:own});await frame(p);

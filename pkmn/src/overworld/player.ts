@@ -16,6 +16,7 @@ import {
 } from './sprite_collision';
 import type { CollisionSprite } from './sprite_collision';
 import { setSpriteIndex } from './sprite_index';
+import { landTilePairCollision } from './tile_pair_collision';
 
 // Sprite frame layout in red.png (16x96):
 // y=0:  Standing Down    y=48: Walking Down
@@ -359,14 +360,10 @@ export class Player {
       if (gate.blocked) return 'blocked';
     }
 
-    // TilePairCollisionsLand: CAVERN's elevation boundaries, symmetric in both directions.
-    // Other tilesets and Surf's water table are outside this checkpoint.
-    if (gameMap.mapData?.tileset === 'CAVERN') {
-      const from = gameMap.getTileAt(this.tileX, this.tileY + 1);
-      const to = gameMap.getTileAt(targetTileX, targetTileY + 1);
-      if ((from === 0x05 && [0x20, 0x41, 0x2a, 0x21].includes(to))
-        || (to === 0x05 && [0x20, 0x41, 0x2a, 0x21].includes(from))) return 'blocked';
-    }
+    // CheckForJumpingAndTilePairCollisions with TilePairCollisionsLand: the tile stood on against the tile
+    // ahead, before passability. Surf's water table is F2's.
+    if (landTilePairCollision(gameMap.mapData?.tileset,
+      gameMap.getTileAt(this.tileX, this.tileY + 1), gameMap.getTileAt(targetTileX, targetTileY + 1))) return 'blocked';
 
     // Check walkability (works for both in-bounds and connected map tiles).
     // For out-of-bounds tiles without a connection, getTileAt returns border block

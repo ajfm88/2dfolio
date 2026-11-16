@@ -20,6 +20,7 @@ import { YesNoMenu } from './yes_no_menu';
 import { cannotToss, tossItemPrompt, finishTossItem } from './toss_item';
 import { uiTiles } from '../renderer/ui_tiles';
 import { TILE_SIZE } from '../core';
+import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
 
 export type BagResult = 'open' | 'closed' | 'town_map';
 
@@ -44,6 +45,7 @@ export class BagSession {
   /** GBPalWhiteOut while a field item is opening or returning. */
   get paletteWhite(): boolean { return this.medicine?.paletteWhite ?? false; }
   private bag: Bag | null = null;
+  private paletteWait = 0;
 
   get medicineOpen(): boolean { return this.medicine !== null; }
 
@@ -54,6 +56,7 @@ export class BagSession {
 
   /** StartMenu_Item. The list is written here and first updated on the next frame. */
   open(bag: Bag, party: BattlePokemon[] = []): void {
+    this.paletteWait = 0;
     this.bag = bag;
     this.party = party;
     this.medicine = null;
@@ -75,6 +78,10 @@ export class BagSession {
    */
   frame(readJoypad: () => void, pressSound: () => void): BagResult {
     this.present();
+    if (this.paletteWait > 0) {
+      if (--this.paletteWait === 0) this.openList();
+      return 'open';
+    }
     if (this.printing) {
       if (!this.textBox.isComplete) return 'open';
       this.printing = false;
@@ -83,7 +90,7 @@ export class BagSession {
     }
     if (this.medicine) {
       const step = this.medicine.frame(readJoypad);
-      if (step === 'start-list') this.itemMenuLoop();
+      if (step === 'start-list') this.itemMenuLoop(false); // StartMenu_Item, not ItemMenuLoop
       const runList = step === 'start-list' || step === 'run-list' || step === 'done';
       if (step === 'done') this.medicine = null;
       if (!runList) return 'open';
@@ -128,6 +135,7 @@ export class BagSession {
    * no effect) runs here too, or its program would never advance (note 46 F-3).
    */
   private present(): void {
+    if (takeHeldFrame()) return; // a palette command's held frame: no VBlank (#73)
     const medicineText = this.medicine?.ownsTextBox === true;
     const box = this.textBox.active && (this.printing || this.linger || medicineText);
     const enabled = this.transfer.enabled;
@@ -154,8 +162,10 @@ export class BagSession {
     }, this.transfer);
   }
 
-  /** ItemMenuLoop: logical tiles become the new list, the shown copy stays until it transfers. */
-  private itemMenuLoop(): void {
+  /** Restore Buffer2 with transfer off, then ItemMenuLoop's palette command (2 held + Delay3).
+   * Medicine has already restored the palettes and jumps directly to StartMenu_Item instead. */
+  private itemMenuLoop(paletteCommand = true): void {
+    this.list = null;
     this.menu = null;
     this.useCursor = null;
     this.quantity = null;
@@ -163,7 +173,10 @@ export class BagSession {
     this.tiles.release(0, 0, 18, 20);
     this.transfer.enabled = false;
     this.linger = this.textBox.active;
-    this.openList();
+    if (paletteCommand) {
+      holdVBlank();
+      this.paletteWait = 5;
+    } else this.openList();
   }
 
   /** .exitMenu. LoadScreenTilesFromBuffer2 turns the transfer back on. */

@@ -2,7 +2,7 @@
 // Assembly: engine/pokemon/evos_moves.asm, engine/movie/evolution.asm
 
 import type { BattlePokemon, PokemonSpecies } from './types';
-import { getSpecies } from './data';
+import { getSpecies, speciesDisplayName } from './data';
 import { A, BattleState } from './battle_state';
 import { worldPartyRecord } from './battle_bridge';
 import { encodePartyMon, decodePartyMon } from './battle_party_codec';
@@ -47,7 +47,7 @@ export function checkEvolutions(party: BattlePokemon[]): EvolutionCandidate[] {
  *  HP delta is preserved: new maxHP - old maxHP is added to current HP. */
 export function applyEvolution(pokemon: BattlePokemon, targetSpecies: PokemonSpecies): void {
   const oldMaxHp = pokemon.maxHp;
-  const oldName = pokemon.species.name;
+  const oldName = speciesDisplayName(pokemon.species);
 
   pokemon.species = targetSpecies;
 
@@ -64,9 +64,10 @@ export function applyEvolution(pokemon: BattlePokemon, targetSpecies: PokemonSpe
   const hpGain = pokemon.maxHp - oldMaxHp;
   pokemon.currentHp = (pokemon.currentHp + hpGain) & 0xffff;
 
-  // Auto-rename if nickname matches old species name (assembly: CheckForRenamedMon)
-  if (pokemon.nickname.toUpperCase() === oldName.toUpperCase()) {
-    pokemon.nickname = targetSpecies.name;
+  // RenameEvolvedMon (evos_moves.asm:264-290): a nickname equal to the old species' MonsterNames entry,
+  // byte for byte, becomes the new species' entry; any other nickname stays.
+  if (pokemon.nickname === oldName) {
+    pokemon.nickname = speciesDisplayName(targetSpecies);
   }
 
   // Update originalStats snapshot

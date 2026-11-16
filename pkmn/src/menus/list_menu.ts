@@ -8,7 +8,6 @@ import { MenuInput } from './menu_input';
 import type { TileSurface, MenuCursorState } from './tile_surface';
 import { textBoxBorder, placeString, clearArea, writeBcd, writeNumber, printLevel,
   placeMenuCursor, placeUnfilledArrowMenuCursor } from './tile_surface';
-import { monDisplayName } from '../pokemon_names';
 import { setNoTextDelay } from '../text/text_flags';
 
 const MONEY = { bytes: 3, suppressZero: true, leftAlign: false, moneySign: true } as const;
@@ -148,7 +147,7 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
       }
       const entry = entries[index];
       if ('level' in entry) {
-        placeString(this.tiles, 6, y, monDisplayName({ nickname: entry.name }));
+        placeString(this.tiles, 6, y, entry.name);
         printLevel(this.tiles, 14, y + 1, entry.level);
         continue;
       }
@@ -176,7 +175,7 @@ export class ListMenu<K extends ListKind = 'items' | 'priced'> {
     const index = this.offset + this.menu.item;
     const entry = this.config.entries[index];
     if (!entry) return { type: 'cancelled' };
-    if ('level' in entry) return { type: 'chosen', index, name: monDisplayName({ nickname: entry.name }) };
+    if ('level' in entry) return { type: 'chosen', index, name: entry.name };
     const choice: ListChoice = {
       type: 'chosen', id: entry.id, index, name: getItemName(entry.id), price: getItemPrice(entry.id),
     };

@@ -2,12 +2,12 @@
 import { getPlayerName } from '../core';
 import type { BattlePokemon } from '../battle/types';
 import { expToNextLevel } from '../battle/experience';
+import { speciesDisplayName } from '../battle/data';
 import { setMasterVolume } from '../audio';
 import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { isPassPressed, syncJoypadRead } from '../input';
 import { fillRect, drawFadeOverlay, getCtx, getScale, loadBattleSprite, getMonsterPalette } from '../renderer';
 import { textBgTransfer } from '../text/bg_transfer';
-import { monDisplayName } from '../pokemon_names';
 import { ScreenTiles } from './screen_tiles';
 import { drawScreenTile } from './menu_render';
 import { hpBarColor, hpBarFills, staticHpBarPixels, type HpBarColor } from './hp_bar';
@@ -119,7 +119,7 @@ export class StatusScreenSession {
 
   private drawPage1(): void {
     const t = this.tiles, mon = this.mon;
-    t.placeString(9, 1, monDisplayName(mon)); t.printLevel(14, 2, mon.level);
+    t.placeString(9, 1, mon.nickname); t.printLevel(14, 2, mon.level);
     t.placeString(9, 6, 'STATUS/'); t.placeString(16, 6, mon.currentHp === 0 ? 'FNT' : mon.status ?? 'OK');
     this.number(3, 7, mon.species.id, 3, true);
     t.placeString(11, 10, mon.species.type1);
@@ -147,7 +147,7 @@ export class StatusScreenSession {
     this.number(12, 4, mon.exp, 7);
     this.number(7, 6, expToNextLevel(mon.species.growthRate, mon.level, mon.exp), 7);
     t.put(14, 6, TO_GLYPH); t.printLevel(16, 6, Math.min(mon.level + 1, 100));
-    t.clearArea(9, 0, 2, 10); t.placeString(9, 1, this.options.page2Name?.() ?? mon.species.name.toUpperCase());
+    t.clearArea(9, 0, 2, 10); t.placeString(9, 1, this.options.page2Name?.() ?? speciesDisplayName(mon.species));
   }
 
   render(): void {

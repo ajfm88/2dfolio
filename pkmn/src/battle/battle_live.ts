@@ -2,11 +2,11 @@
 // EndOfBattle / Evolution_PartyMonLoop / SendNewMonToBox (pret e89ead15).
 import { getSpecies, getSpeciesById, getAllLoadedMoveIds, getMove } from './data';
 import { BattleState, POKEDEX_ORDER } from './battle_state';
-import { getTrainerSpeciesData, monsterName } from './battle_trainer_data';
+import { getTrainerSpeciesData } from './battle_trainer_data';
 import { installTrainerSpecies } from './battle_trainer_party';
 import { BattleUnsupportedState } from './battle_move_data';
 import { boxedPokemonToRecord, encodeBoxMon, type BattleWorld, type BattleOutcome } from './battle_bridge';
-import { partyRecordToPokemon, nameBytes, decodeBattleText, partyMaxPP, type BoxMonRecord } from './battle_party_codec';
+import { partyRecordToPokemon, decodeBattleText, partyMaxPP, type BoxMonRecord } from './battle_party_codec';
 import { getMonHeader } from './battle_loaders';
 import { calcStat } from './battle_calc_stats';
 import { D } from './battle_end_state';
@@ -65,9 +65,6 @@ function equal(a: unknown, b: unknown): boolean {
   return Object.keys(x).length === Object.keys(y).length
     && Object.keys(x).every(k => Object.prototype.hasOwnProperty.call(y,k) && equal(x[k],y[k]));
 }
-export function liveNickname(r: BoxMonRecord, speciesName: string): string {
-  return equal(r.nickname,nameBytes(monsterName(r.species))) ? speciesName : decodeBattleText(r.nickname,0);
-}
 
 /** Convert the actual box prefix directly, never synthesize a PartyMonRecord stat tail.
  * BoxedPokemon's required maxHp cache is calculated from these prefix bytes; other
@@ -78,7 +75,7 @@ export function boxRecordToPokemon(r: BoxMonRecord): BoxedPokemon {
   const scratch = new BattleState(); installTrainerSpecies(scratch);
   encodeBoxMon(scratch,0,r); getMonHeader(scratch,r.species); scratch.wCurEnemyLevel = r.boxLevel;
   const maxHp = calcStat(scratch,1,1,D.wBoxMons+16);
-  return { speciesName:species.name, nickname:liveNickname(r,species.name), level:r.boxLevel,
+  return { speciesName:species.name, nickname:decodeBattleText(r.nickname,0), level:r.boxLevel,
     currentHp:r.hp, maxHp, status:r.status&64 ? 'PAR' : r.status&32 ? 'FRZ' : r.status&16 ? 'BRN' : r.status&8 ? 'PSN' : r.status&7 ? 'SLP' : null,
     sleepTurns:r.status&7,
     atkDV:r.dvs[0]>>4, defDV:r.dvs[0]&15, spdDV:r.dvs[1]>>4, spcDV:r.dvs[1]&15,
@@ -103,7 +100,7 @@ export function applyBattleOutcome(outcome: BattleOutcome, live: LiveBattleOwner
   const party = outcome.party.map((r,i) => {
     if (i < original && POKEDEX_ORDER[r.species-1] !== world.party[i].species.id)
       throw new BattleUnsupportedState('live party species changed');
-    const mon = partyRecordToPokemon(r); mon.nickname = liveNickname(r,mon.species.name); return mon;
+    return partyRecordToPokemon(r);
   });
   const oldBox = world.pcBoxes[world.currentPcBox];
   if (!oldBox || outcome.box.length < oldBox.length || outcome.box.length > oldBox.length+1 || outcome.box.length > 20)

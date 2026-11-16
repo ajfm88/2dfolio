@@ -4,10 +4,12 @@ import type {
   PokemonSpecies, MoveData, TypeMatchup, WildEncounterData,
   BattlePokemon, BattleMove,
 } from './types';
+import { POKEDEX_ORDER } from './battle_state';
 
 let pokemonData: (PokemonSpecies | null)[] | null = null;
 let moveData: Record<string, MoveData> | null = null;
 let typeChart: TypeMatchup[] | null = null;
+let monsterNames: readonly (string | null)[] | null = null;
 const wildDataCache = new Map<string, WildEncounterData>();
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -17,15 +19,17 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export async function loadBattleData(): Promise<void> {
-  if (!pokemonData || !moveData || !typeChart) {
-    const [pokemon, moves, types] = await Promise.all([
+  if (!pokemonData || !moveData || !typeChart || !monsterNames) {
+    const [pokemon, moves, types, names] = await Promise.all([
       fetchJson<(PokemonSpecies | null)[]>('pokemon.json'),
       fetchJson<Record<string, MoveData>>('moves.json'),
       fetchJson<TypeMatchup[]>('type_chart.json'),
+      fetchJson<(string | null)[]>('monster_names.json'),
     ]);
     pokemonData = pokemon;
     moveData = moves;
     typeChart = types;
+    monsterNames = Object.freeze(names);
   }
 }
 
@@ -40,6 +44,21 @@ export function getSpecies(name: string): PokemonSpecies | null {
   if (!pokemonData) return null;
   const key = speciesKey(name);
   return pokemonData.find(p => p && speciesKey(p.name) === key) ?? null;
+}
+
+/** GetMonName (home/names.asm): the cartridge's MonsterNames entry, the species name a screen prints.
+ *  `species.name` (pokemon.json) is upstream's title-cased spelling and stays the lookup key. */
+export function speciesDisplayName(species: Pick<PokemonSpecies, 'id'>): string {
+  // POKEDEX_ORDER holds 0 in the MISSINGNO. slots, so dex 0 must not be looked up.
+  const name = species.id >= 1 ? monsterNames?.[POKEDEX_ORDER.indexOf(species.id) + 1] : undefined;
+  if (typeof name !== 'string') throw new Error(`monster name for dex ${species.id}`);
+  return name;
+}
+
+/** MonsterNames by internal id, [0] = null, as loaded; the battle's tables share this one copy. */
+export function getMonsterNames(): readonly (string | null)[] {
+  if (!monsterNames) throw new Error('monster names not loaded');
+  return monsterNames;
 }
 
 export function getSpeciesById(dexId: number): PokemonSpecies | null {
@@ -145,7 +164,7 @@ export function createPokemon(
 
   return {
     species,
-    nickname: nickname ?? species.name,
+    nickname: nickname ?? speciesDisplayName(species),
     level,
     currentHp: maxHp,
     maxHp,

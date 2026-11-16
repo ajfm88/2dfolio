@@ -42,7 +42,7 @@ it('round-trips every world owner and retains party and existing box identities'
   expect(f.snapshot()).toEqual(before);expect(f.live.party[0]).toBe(party[0]);expect(f.live.party[1]).toBe(party[1]);expect(f.live.boxes[0][0]).toBe(box);
   expect(plan).toEqual({lost:false,blackout:false,trainerDefeated:false,evolutions:[],battleResult:0});
 });
-it.each([[29,'NIDORAN-F','Nidoran-F'],[122,'MR. MIME','Mr. Mime']] as const)('preserves typed %s nickname %s verbatim through both boundaries', (id,typed,display) => {
+it.each([[29,'NIDORAN-F','NIDORAN♀'],[122,'MR. MIME','MR.MIME'],[29,'Nidoran-F','NIDORAN♀'],[122,'Mr. Mime','MR.MIME']] as const)('preserves typed %s nickname %s verbatim through both boundaries', (id,typed,display) => {
   const f=liveFixture({party:[mon(id,20,typed),mon(id,20)]});
   expect(decodePartyMon(f.state,0).nickname).toEqual(nameBytes(typed));
   const result=f.outcome();applyBattleOutcome(result,f.live,f.input());
@@ -65,7 +65,7 @@ it('a party catch appends a new object while retaining each old object', () => {
   const original=mon(),f=liveFixture({party:[original]}),out=f.outcome();
   applyBattleOutcome({...out,party:[...out.party,worldPartyRecord(mon(29,7))]},f.live,f.input());
   expect(f.live.party).toHaveLength(2);expect(f.live.party[0]).toBe(original);
-  expect(f.live.party[1].nickname).toBe('Nidoran-F');expect(f.live.party[1].species.id).toBe(29);
+  expect(f.live.party[1].nickname).toBe('NIDORAN♀');expect(f.live.party[1].species.id).toBe(29);
 });
 it('chooses flagged level evolutions in party order, including fainted mons; skips unflagged and item entries', () => {
   const f=liveFixture({party:[mon(1,16),mon(4,16),mon(7,20),mon(25,30)]});

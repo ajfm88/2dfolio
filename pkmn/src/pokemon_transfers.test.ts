@@ -4,6 +4,7 @@ import {createPokemon,loadBattleData,getSpecies} from './battle/data';
 import {loadTrainerSpeciesData} from './battle/battle_trainer_data';
 import {loadBattleBridgeData,worldPartyRecord,boxedPokemonToRecord,encodeBoxMon} from './battle/battle_bridge';
 import {boxRecordToPokemon,applyBattleOutcome} from './battle/battle_live';
+import {decodeBattleText} from './battle/battle_text_codec';
 import {A,BattleState} from './battle/battle_state';
 import {D} from './battle/battle_end_state';
 import {depositMon,withdrawMon,boxStatsMon} from './pokemon_transfers';
@@ -90,3 +91,12 @@ it('boxed sleep5 survives decode and re-encode in the real codec',()=>{
   const s=new BattleState();encodeBoxMon(s,0,r);expect(s.mem[D.wBoxMons+4]).toBe(5);
   expect(s.mem[A.wLoadedMon]).toBe(0);
 });
+// V5e checkpoint-02 (note 96): _MoveMon copies NAME_LENGTH nickname bytes; no spelling is mapped on the way.
+it.each([[19,undefined,'RATTATA'],[29,undefined,'NIDORAN♀'],[122,undefined,'MR.MIME'],[25,'Sparky','Sparky'],[25,'Pikachu','Pikachu'],[29,'Nidoran-F','Nidoran-F']] as const)(
+  'dex %i named %s is %s in the box, on the box STATS page and after withdrawal',(dex,typed,name)=>{
+    const p=createPokemon(dex,10,typed,{atk:9,def:8,spd:7,spc:6})!;expect(p.nickname).toBe(name);
+    const boxed=depositMon(p);
+    expect([boxed.nickname,boxStatsMon(boxed).nickname,withdrawMon(boxed).nickname,depositMon(withdrawMon(boxed)).nickname]).toEqual([name,name,name,name]);
+    expect(decodeBattleText(boxedPokemonToRecord(boxed).nickname,0)).toBe(name);
+    expect(decodeBattleText(worldPartyRecord(p).nickname,0)).toBe(name);
+  });

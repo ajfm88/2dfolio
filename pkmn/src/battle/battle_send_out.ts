@@ -1,5 +1,5 @@
 import { refreshPartyMirror } from './battle_party_codec';
-import { partyMenuOrRockOrRun } from './battle_party_menu';
+import { advanceBattlePartyFrame, partyMenuOrRockOrRun } from './battle_party_menu';
 import { decodeBattleText } from './battle_text_codec';
 // Player-side ports. pret e89ead15 core.asm:1091–1167,1764–1871,2525–2546;
 // common_text.asm:113–259. Enemy send-out/SHIFT remain checkpoint-05b.
@@ -29,7 +29,7 @@ export interface PlayerSendOutHost extends Pick<BattleActionHost, 'screen' | 'ti
   printText(program: string, bindings?: TextBindings, options?: TextRunnerOptions): Program;
   audio: BattleAudio;
   voice: BattleVoiceHost;
-  partyView: Pick<PartyMenu, 'openBattleChoice' | 'goBackToChoice' | 'frameBattleChoice' | 'printBattleChoiceText'>;
+  partyView: Pick<PartyMenu, 'openBattleChoice' | 'goBackToChoice' | 'openingPaletteDue' | 'frameBattleChoice' | 'printBattleChoiceText'>;
   updateSprites(): void;
   /** Preloaded picture selected by the caller. The real 14-frame loader runs below. */
   backPicture(state: BattleState): string;
@@ -209,7 +209,7 @@ function* chooseParty(state: BattleState, host: PlayerSendOutHost, first: boolea
   if (first) host.partyView.openBattleChoice(refreshPartyMirror(state), { forceChoose });
   else host.partyView.goBackToChoice();
   let choice;
-  do { yield 'session'; choice = host.partyView.frameBattleChoice(host.readJoypad, host.pressSound); } while (!choice);
+  do { choice = yield* advanceBattlePartyFrame(host.partyView, host); } while (!choice);
   state.wCurrentMenuItem = getPartyAndBillsSavedMenuItem();
   if (choice.kind === 'cancelled') return { carry: true };
   state.wWhichPokemon = choice.slot;

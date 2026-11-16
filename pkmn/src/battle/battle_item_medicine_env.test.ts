@@ -9,6 +9,7 @@ import { isHeld, isPassPressed } from '../input';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { loadTextPrograms } from '../text/program_data';
 import { textBgTransfer } from '../text/bg_transfer';
+import { isVBlankHeld } from '../core/vblank_hold';
 import { rig as audioRig, sfxData } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
 import { setLowHealthAlarm, setLowHealthChannel5, setLowHealthAlarmDisabled } from '../audio/low_health_alarm';
@@ -156,8 +157,29 @@ const CASES: Scenario[] = [
   { name: 'cancel', id: 0x14, slot: 1, hp: 10, cancel: true },
 ];
 describe('real medicine presentation ledgers', () => {
+  it.each([0, 1, 2])('battle medicine opens PrintText at 15, enables at 18 and reveals at 21, portion %i', portion => {
+    const r = setup(CASES[5]); // Cancel: first read24, unchanged five-frame battle-palette return.
+    for (let i = 0; i < portion; i++) textBgTransfer.tick();
+    const print = vi.spyOn(r.video.textBox, 'printStandalone');
+    r.start();
+    for (let frame = 1; frame <= 24; frame++) {
+      r.step();
+      expect(print).toHaveBeenCalledTimes(frame < 15 ? 0 : 1);
+      expect(textBgTransfer.enabled, `C+${frame} enabled`).toBe(frame < 3 || frame >= 18);
+      expect(isVBlankHeld()).toBe(false);
+      if (frame >= 15 && frame < 21) {
+        expect(r.video.textBox.active).toBe(true);
+        expect(r.video.textBox.isComplete).toBe(frame >= 18);
+      }
+      if (frame >= 21) expect(r.video.textBox.active).toBe(false);
+      expect(r.screen.bgp, `C+${frame} white`).toBe(frame < 21 || frame === 24 ? 0 : 0xe4);
+    }
+    expect(r.events.find(event => event.event === 'read')?.at).toBe(24);
+    r.finish(); expect(r.time()).toBe(29);
+  });
   it.each(CASES)('$name opening, bar, redraw, button wait and battle-palette tail', c => {
     const r = setup(c); r.start(); r.finish();
+    expect(isVBlankHeld()).toBe(false); // Battle owns both held frames; no field hold may leak.
     const firstRead = r.events.find(e => e.event === 'read')!;
     expect(firstRead.at).toBe(24);
     expect(r.frames.slice(0, 24).filter(f => f.kind === 'held').map(f => f.at)).toEqual([11, 12]);

@@ -315,7 +315,7 @@ original bytes, and talking to the beaten trainer only prints its after text.
   last stop direction. The turning pass skips `UpdateSprites`.
 - **Wall bump**: walk-in-place animation every pass; `collision` replays only when it
   isn't already playing (`isSfxPlaying('collision')`).
-- **CAVERN land tile pairs** (V4 checkpoint-02, `TilePairCollisionsLand`): after the sprite gates and before passability, `Player.checkStep` blocks both directions between `$05` and `$20`, `$41`, `$2A`, or `$21`. The water pair `$14`/`$05` and the Forest pairs stay out. Noclip still returns first.
+- **Land tile pairs** (V5d checkpoint-01): `tile_pair_collision.ts` holds all eleven `TilePairCollisionsLand` rows; `Player.checkStep` checks them symmetrically after the sprite gates and before passability. The cartridge's pointer slip scans as far as 00:0b84, but the ROM test proves the symmetric table yields the same answers. No FOREST row fires in Viridian Forest. The water table and boulder check stay with F2; noclip still returns first.
 - **Map connections fire mid-step.** `performMapConnection` must call
   `player.cancelMovement()` after repositioning, or the next `update()`
   interpolates from the old map's target and snaps the player to a wrong spot.
@@ -517,6 +517,7 @@ Beyond `load()`, `render()`, `isWalkable()`, and the getters (`width`, `height`,
 | File | LOC | Purpose |
 |------|-----|---------|
 | `map.ts` | 478 | Map loading, tileset, collision, grass tiles, ledges, bookshelf |
+| `tile_pair_collision.ts` | — | Land tile-pair table and symmetric collision check |
 | `walk_pace.ts` | — | The pass, `PlayerWalk`, `NpcWalk`, `WalkAnim`, the jump table (A6a); the direction byte and displacement rules (A6c). Pure |
 | `simulated_joypad.ts` | — | Raw RLE decoding, PewterGuys prefix overwrite, backwards input and independent NPC encoding (V2b CP2). Pure |
 | `sprite_collision.ts` | — | Screen basis, collision mask, screen edge, sprite in front, the Pikachu counter rule (A6c, pure) |

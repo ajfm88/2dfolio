@@ -12,6 +12,7 @@ import { BgTransfer, textBgTransfer } from '../text/bg_transfer';
 import { setNoTextDelay } from '../text/text_flags';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem, setCurrentMenuItem } from '../list_state';
 import { uiTiles } from '../renderer/ui_tiles';
+import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
 
 export type StartMenuAction = 'dex' | 'party' | 'item' | 'trainer' | 'save' | 'option' | 'exit';
 
@@ -82,8 +83,8 @@ export class StartMenuSession {
 
   frame(readJoypad: () => void): StartMenuAction | null {
     if (this.phase === 'inactive' || this.phase === 'suspended') return null;
-    // VBlank precedes this frame's CPU work; rendering never advances it.
-    this.tiles.present(this.transfer);
+    // VBlank precedes this frame's CPU work; rendering never advances it. A held frame has none.
+    if (!takeHeldFrame()) this.tiles.present(this.transfer);
     if (this.phase === 'opening') {
       this.age++;
       // CopyScreenTileBufferToVRAM is a separate explicit three-third copy,
@@ -104,7 +105,9 @@ export class StartMenuSession {
       // Party restores Buffer2 before its five-frame tile copy, then palette/final Delay3.
       if (kind === 'party' && this.age === 24) this.transfer.enabled = false;
       if (kind === 'party' && this.age === 29) this.transfer.enabled = true;
-      const waits = { dex: 3, party: 35, item: 5, trainer: 20, option: 5 }[kind];
+      // RunDefaultPaletteCommand with the LCD on: 2 held frames, then its Delay3 (#73).
+      if ((kind === 'party' && this.age === 29) || (kind === 'trainer' && this.age === 17)) holdVBlank();
+      const waits = { dex: 3, party: 37, item: 5, trainer: 22, option: 5 }[kind];
       if (this.age === waits) {
         this.transfer.enabled = true;
         if (kind === 'dex' || kind === 'item' || kind === 'option') this.onSprites();

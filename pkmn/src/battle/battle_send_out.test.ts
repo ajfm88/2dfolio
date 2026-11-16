@@ -11,6 +11,7 @@ import { playSFX, isSoundFinished } from '../audio';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { loadTextPrograms } from '../text/program_data';
 import { textBgTransfer } from '../text/bg_transfer';
+import { isVBlankHeld } from '../core/vblank_hold';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
 import { enablePikachuFollowing } from '../pikachu/pikachu_following';
 import { rig as audioRig, sfxData, musicData } from '../test/audio_rig';
@@ -294,6 +295,20 @@ describe('DoUseNextMonDialogue', () => {
 });
 
 describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () => {
+  it.each([0, 1, 2])('faint replacement uses the full opening with held frames 11/12, portion %i', portion => {
+    const r = rig();
+    for (let i = 0; i < portion; i++) textBgTransfer.tick();
+    const reads: number[] = [];
+    r.host.readJoypad = () => {
+      reads.push(r.time());
+      vi.mocked(isPassPressed).mockImplementation(key => r.time() === 24 ? key === 'down' : r.time() === 27 && key === 'a');
+    };
+    r.start(chooseNextMon(r.s, r.host)); r.finish();
+    expect(reads.slice(0, 2)).toEqual([24, 27]);
+    expect(r.frames.slice(0, 24).flatMap((kind, index) => kind === 'held' ? [index + 1] : [])).toEqual([11, 12]);
+    expect(isVBlankHeld()).toBe(false);
+    expect(r.s.wPlayerMonNumber).toBe(1);
+  });
   it('composes refused replacement, failed run, force-one-opening and successful choosing on the same owners', () => {
     const r=rig(); r.s.writeBE(D.wPartyMons+1,0); r.s.partyMons[0]!.currentHp=0;
     r.s.writeBE(D.wPartyMons+40,1); const random=vi.fn(()=>255); r.s.random=random;
@@ -328,7 +343,7 @@ describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () =>
     expect(decodeBattleText(r.s.mem,D.wBattleMonNick)).toBe('NEW'); expect(r.s.wBattleMonSpecies).toBe(0x24);
     expect(r.s.mem.slice(D.wPartyMons,D.wPartyMons+3*44)).toEqual(partyBefore);
     expect(r.s.wActionResultOrTookBattleTurn).toBe(0); expect(r.screen.obp1).toBe(0);
-    expect(r.frames.filter(kind=>kind==='held')).toHaveLength(4); // reload palette + SendOut palette
+    expect(r.frames.filter(kind=>kind==='held')).toHaveLength(6); // party opening + reload palette + SendOut palette
     expect(r.screen.hudSlot(0x62)).toBeNull(); expect(r.screen.hudSlot(0x6d)).not.toBeNull();
   });
   it('consumes failed-run force flag once: B alone cannot cancel, while A+B re-enters the list', () => {

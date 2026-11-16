@@ -2,7 +2,6 @@
 import { A, NAME_LENGTH, type BattleState } from './battle_state';
 import { BattleUnsupportedState } from './battle_move_data';
 import { createPokemon } from './data';
-import { monsterName } from './battle_trainer_data';
 import type { BattlePokemon } from './types';
 import { decodePrefix, encodePrefix, nameBytes, decodePartyMon, encodePartyMon, pokemonToPartyRecord,
   type PartyMonRecord, type BoxMonRecord } from './battle_party_codec';
@@ -125,10 +124,9 @@ function readDex(state: BattleState, base: number): number[] {
     const bit = number - 1; return Boolean(state.mem[base + (bit >> 3)] & (1 << (bit & 7)));
   });
 }
-/** The live objects' default nickname is upstream's species.name; the cartridge's bytes are MonsterNames'. */
+/** The live nickname is the record's name, MonsterNames' entry by default (V5e), so it encodes as it is. */
 export function worldPartyRecord(mon: BattlePokemon): PartyMonRecord {
-  const r = pokemonToPartyRecord(mon);
-  return mon.nickname === mon.species.name ? { ...r, nickname: nameBytes(monsterName(r.species)) } : r;
+  return pokemonToPartyRecord(mon);
 }
 /** Only prefix cells are needed by battle. Missing boxed raw metadata is a checkpoint10 loss (note72). */
 export function boxedPokemonToRecord(boxed: BoxedPokemon): BoxMonRecord {

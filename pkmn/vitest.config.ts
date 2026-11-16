@@ -16,6 +16,7 @@ export const mainTest = {
   get pageTicks() { return pageTicks; }, get random() { return sessionRandom; },
   get boxes() { return pcBoxes; }, get money() { return playerMoney; }, set money(value: number) { playerMoney=value; },
   renderBattleEntry, get battleEntry() { return battleEntry; }, ow,
+  get evolutionText() { return evolutionTextLines; },
   get battleReturnBgp() { return battleReturn ? battleReturn.bgp : undefined; }, renderBattleReturn,
   async finishFade() { const callback = fadeCallback; fadeCallback = null; await callback?.(); },
   startMenu, partyMenu, bagMenu, optionMenu,

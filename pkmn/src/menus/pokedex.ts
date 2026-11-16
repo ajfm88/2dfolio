@@ -7,6 +7,7 @@ import { isPressed } from '../input';
 import { drawText, drawBox } from './menu_render';
 import { isSeen, isOwned, getSeenCount, getOwnedCount, getMaxSeen } from '../pokedex_state';
 import { loadPokemonSprites } from '../battle';
+import { speciesDisplayName } from '../battle/data';
 import { playSFX } from '../audio';
 
 // ---------------------------------------------------------------------------
@@ -45,7 +46,8 @@ const BLINK_PERIOD = 50;
 const BLINK_ON = 25;
 
 // Pokemon names indexed by dex number (loaded from pokemon.json)
-let pokemonNames: string[] = [];
+/** GetMonName: the list and the data pages print MonsterNames' entries (battle/data.ts, loaded at startup). */
+const monName = (dex: number): string => dex >= 1 && dex <= 151 ? speciesDisplayName({ id: dex }) : '';
 
 // ---------------------------------------------------------------------------
 // PokedexMenu class
@@ -107,9 +109,8 @@ export class PokedexMenu {
   /** The tables and tiles. A battle loads them before a catch can reach showData. */
   async load(): Promise<void> {
     if (!this.dataLoaded) {
-      const [pokedexData, pokemonData, townMapData, tileset, nestIcon, playerSpr, pokedexTileset, pokeballTiles, pokedexTilesetBrown, battleExtraTiles] = await Promise.all([
+      const [pokedexData, townMapData, tileset, nestIcon, playerSpr, pokedexTileset, pokeballTiles, pokedexTilesetBrown, battleExtraTiles] = await Promise.all([
         fetch('pokedex.json').then(r => r.json()) as Promise<(PokedexEntry | null)[]>,
-        fetch('pokemon.json').then(r => r.json()) as Promise<({ name: string } | null)[]>,
         fetch('town_map.json').then(r => r.json()) as Promise<TownMapData>,
         loadTileset('/gfx/town_map/town_map.png', 'TOWNMAP'),
         loadSprite('/gfx/town_map/mon_nest_icon.png', 'TOWNMAP'),
@@ -128,12 +129,6 @@ export class PokedexMenu {
       this.pokeballTiles = pokeballTiles;
       this.pokedexTilesetBrown = pokedexTilesetBrown;
       this.battleExtraTiles = battleExtraTiles;
-
-      // Build pokemon names array
-      pokemonNames = [];
-      for (let i = 0; i < pokemonData.length; i++) {
-        pokemonNames[i] = pokemonData[i]?.name?.toUpperCase() ?? '';
-      }
 
       this.dataLoaded = true;
     }
@@ -264,7 +259,7 @@ export class PokedexMenu {
 
       // Pokemon name (or dashes if unseen) — column 4+
       if (isSeen(dexNum)) {
-        const name = pokemonNames[dexNum] || '???';
+        const name = monName(dexNum) || '???';
         drawText(name, 4 * T, y + T);
       } else {
         drawText('----------', 4 * T, y + T);
@@ -378,7 +373,7 @@ export class PokedexMenu {
   // =========================================================================
 
   private loadFrontSprite(): void {
-    const name = pokemonNames[this.selectedDex];
+    const name = monName(this.selectedDex);
     if (!name) return;
     const speciesName = name.charAt(0) + name.slice(1).toLowerCase();
     if (this.spriteLoadingFor === speciesName && this.frontSprite) return;
@@ -443,7 +438,7 @@ export class PokedexMenu {
     this.drawFrontSprite();
 
     // Pokemon name
-    const name = pokemonNames[this.selectedDex] || '???';
+    const name = monName(this.selectedDex) || '???';
     drawText(name, 9 * T, 2 * T);
 
     // Species name (e.g., "MOUSE")
@@ -603,7 +598,7 @@ export class PokedexMenu {
     }
 
     // Pokemon name + "'s NEST" at top
-    const name = pokemonNames[this.selectedDex] || '???';
+    const name = monName(this.selectedDex) || '???';
     const nestTitle = `${name}\u2019s NEST`;
     fillRect(T, 0, nestTitle.length * T, T, 0);
     drawText(nestTitle, T, 0);

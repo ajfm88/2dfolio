@@ -147,7 +147,7 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
   const frozen = mons.map(mon => ({ pixels: staticHpBarPixels(mon!.currentHp, mon!.maxHp),
     shownHp: mon!.currentHp, status: mon!.status }));
   party.promptVisible = false;
-  const opening = new PartyMenuOpening(video.textBox, textBgTransfer, 'PartyMenuItemUseText');
+  const opening = new PartyMenuOpening(video.textBox, textBgTransfer, 'PartyMenuItemUseText', 'battle');
   white();
   state.wMonDataLocation = state.wMenuWatchMovingOutOfBounds = 0;
   state.mem[I.wStatusFlags5] |= 0x40;
@@ -164,13 +164,13 @@ export function* displayUseItemPartyMenu(state: BattleState, host: MedicinePrese
     if (age === 7) blank();
   }
   party.render(); loadDrawnPartyRows(state);
-  // Opening already accounts for the palette's three serviced waits. Advance its
-  // age only on those waits; held frames tick neither the screen nor the TextBox.
+  // The shared opening counts physical frames, including this command's existing two held frames.
+  // Only the three serviced frames tick video/TextBox; do not add the field's global hold.
   for (const frame of screen.setPalPartyMenu()) {
-    if (frame === 'held') yield 'held';
+    if (frame === 'held') { yield 'held'; opening.frame(); }
     else { yield* sessionFrame(); opening.frame(); }
   }
-  for (let age = 14; age <= 19; age++) { yield* sessionFrame(); opening.frame(); }
+  for (let age = 16; age <= 21; age++) { yield* sessionFrame(); opening.frame(); }
   transfer(true); normal(); party.promptVisible = true;
   const input = new MenuInput({ watched: ['a', 'b'], maxItem: mons.length - 1,
     topX: 0, topY: 1, item: party.itemCursor });

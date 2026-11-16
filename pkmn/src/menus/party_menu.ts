@@ -19,7 +19,6 @@ import type { GameButton } from '../core';
 import { getTextPrograms } from '../text/program_data';
 import { formatHpFraction, PARTY_HP_FRACTION_COL } from './hp_bar';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
-import { monDisplayName } from '../pokemon_names';
 import { StatusScreenSession } from './status_screen';
 import { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
@@ -139,10 +138,11 @@ export class PartyMenu {
     this.beginOpening();
   }
 
-  /** Unused battle hand-off. Shared C+22 opening (#73; cartridge C+24). */
+  /** Battle hand-off: the shared C+24 opening, with the battle owning its palette frames. */
   openBattleChoice(party: BattlePokemon[], options: { forceChoose: boolean }): void {
-    this.open(party);
+    this.show(party);
     this.mode = 'battle_choice'; this.choiceForced = options.forceChoose; this.choiceDelay = 3;
+    this.beginOpening();
   }
 
   /** PartyMenuInit + RedrawPartyMenu, not the full white/icon opening.
@@ -153,6 +153,9 @@ export class PartyMenu {
     this.choiceRedrawAge = 0; this.choiceDelay = 3; this.promptVisible = false;
     textBgTransfer.enabled = false;
   }
+
+  /** The battle host must run SET_PAL_PARTY_MENU before the next opening frame. */
+  get openingPaletteDue(): boolean { return this.opening?.paletteCommandDue ?? false; }
 
   /** Own exactly one BG tick, including while a submenu is on this retained layer. */
   presentBattleChoice(): void {
@@ -173,8 +176,8 @@ export class PartyMenu {
       this.choiceOverlay.put(col, 12 + row, snapshot.buffer[row * 20 + col]);
   }
 
-  frameBattleChoice(read: () => void = readJoypad, sound: () => void = () => playSFX('press_ab')): BattlePartyChoice | null {
-    this.presentBattleChoice();
+  frameBattleChoice(read: () => void = readJoypad, sound: () => void = () => playSFX('press_ab'), held = false): BattlePartyChoice | null {
+    if (!held) this.presentBattleChoice();
     if (this.sleepingText) {
       if (!this.sleepingText.isComplete) return null;
       this.sleepingText.dismiss(); this.sleepingText = null;
@@ -222,7 +225,8 @@ export class PartyMenu {
 
   private beginOpening(): void {
     this.promptVisible = false;
-    this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, 'PartyMenuNormalText');
+    this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, 'PartyMenuNormalText',
+      this.mode === 'battle_choice' ? 'battle' : 'field');
   }
 
   /** DisplayPartyMenu for USE_ITEM. A returns the slot; B cancels. */
@@ -438,7 +442,7 @@ export class PartyMenu {
       }
 
       // Name at column 3
-      drawText(monDisplayName(mon), NAME_X, y);
+      drawText(mon.nickname, NAME_X, y);
 
       // Level at column 13 using special :L tile
       drawLevel(mon.level, LEVEL_X, y);

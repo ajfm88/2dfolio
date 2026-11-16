@@ -76,14 +76,30 @@ describe('applyEvolution', () => {
 
   it('auto-renames if nickname matches old species name', () => {
     const pidgey = createPokemon('PIDGEY', 18)!;
-    const oldName = pidgey.species.name;
-    expect(pidgey.nickname).toBe(oldName); // default nickname = species name
+    expect(pidgey.nickname).toBe('PIDGEY'); // the default nickname is MonsterNames' entry
     const targetSpecies = checkEvolutions([pidgey])[0].targetSpecies;
 
     applyEvolution(pidgey, targetSpecies);
 
-    expect(pidgey.nickname).toBe(targetSpecies.name);
+    expect(pidgey.nickname).toBe('PIDGEOTTO');
   });
+
+  // V5e checkpoint-02. RenameEvolvedMon (evos_moves.asm:264-290) compares the nickname with the old
+  // species' MonsterNames entry byte for byte, up to and including '@'.
+  it.each(['Pidgey', 'pidgey', 'PIDGE', 'PIDGEYS', 'PIDGEOTTO'])('keeps the typed nickname %s on evolution', typed => {
+    const pidgey = createPokemon('PIDGEY', 18, typed)!;
+    applyEvolution(pidgey, checkEvolutions([pidgey])[0].targetSpecies);
+    expect(pidgey.nickname).toBe(typed);
+    expect(pidgey.species.id).toBe(17);
+  });
+
+  it.each([[29, 16, 'NIDORAN♀', 'NIDORINA'], [32, 16, 'NIDORAN♂', 'NIDORINO'], [10, 7, 'CATERPIE', 'METAPOD']] as const)(
+    'dex %i at level %i goes from %s to %s', (dex, level, before, after) => {
+      const mon = createPokemon(dex, level)!;
+      expect(mon.nickname).toBe(before);
+      applyEvolution(mon, checkEvolutions([mon])[0].targetSpecies);
+      expect(mon.nickname).toBe(after);
+    });
 
   it('keeps custom nickname on evolution', () => {
     const pidgey = createPokemon('PIDGEY', 18, 'BIRDY')!;

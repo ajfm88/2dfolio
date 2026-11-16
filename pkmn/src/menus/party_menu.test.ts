@@ -53,6 +53,18 @@ beforeAll(async () => {
   await loadTextPrograms();
 });
 
+describe('PartyMenu names (V5e checkpoint-02, note 96)', () => {
+  it.each(['Sparky', 'NIDORAN♀', 'MR.MIME', 'a-b c.d'])('draws the nickname %s at column 3 as the record holds it', nickname => {
+    const menu = new PartyMenu();
+    menu.show([{ ...mon(13, 39), nickname }]);
+    vi.mocked(drawText).mockClear();
+    menu.render();
+    expect(vi.mocked(drawText).mock.calls).toContainEqual([nickname, 3 * TILE_SIZE, 0]);
+    if (nickname !== nickname.toUpperCase())
+      expect(vi.mocked(drawText).mock.calls.some(call => call[0] === nickname.toUpperCase())).toBe(false);
+  });
+});
+
 describe('PartyMenu HP row', () => {
   it('draws the fraction at column 13 from the static HP', () => {
     const menu = new PartyMenu();

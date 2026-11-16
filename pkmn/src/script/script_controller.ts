@@ -56,6 +56,7 @@ import { bookshelfContext, interactionDisplay } from '../story/hidden_events';
 import { getOwnedCount } from '../pokedex_state';
 import { mapTextCall } from '../text/map_text_calls';
 import { moneyBoxLayout } from '../menus/pokemart';
+import { takeHeldFrame } from '../core/vblank_hold';
 
 // ── Dependencies passed by main.ts each frame ──────────────────────────
 
@@ -303,6 +304,9 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
   const menuAdvances = scriptMenuSession?.advanceText === true;
   if (scriptMenuSession?.ownsBgTransfer) {
     // StatusScreen.frame owns the tick, including the frame it returns to Bill's PC.
+    displayAdvanced = true;
+  } else if (scriptMenuSession && takeHeldFrame()) {
+    // A palette command's held frame (core/vblank_hold.ts): no VBlank, no text tick.
     displayAdvanced = true;
   } else if (menuAdvances && scriptMenuSession) {
     const enabled = textBgTransfer.enabled;

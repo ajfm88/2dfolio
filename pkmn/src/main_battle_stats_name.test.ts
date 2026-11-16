@@ -108,16 +108,27 @@ it('a nicknamed battle mon keeps its page1 nickname and shows the species on pag
   page2(view); expect(text(view)).toBe('NIDORAN♀');
 });
 
-it('real main START → POKéMON → STATS keeps the field page2 NIDORAN-F spelling', async () => {
+it('real main START → POKéMON → STATS prints the MonsterNames default on both field pages', async () => {
   await world('Route22', 5, 5, [mon(29, 20)]);
   main.openStartMenu(); wait(35); press('down'); press('a');
   expect(host.state).toBe('party_menu'); wait(35);
   press('a'); press('down'); press('a'); wait(32);
   const view = views[views.length - 1]; expect(view).toBeDefined();
-  expect(text(view)).toBe('NIDORAN-F');
+  expect(text(view)).toBe('NIDORAN♀');
   mainTick(['a']); wait(3); main.partyMenu.render();
-  expect(text(view, true)).toBe('NIDORAN-F');
+  expect(text(view, true)).toBe('NIDORAN♀');
 });
+
+it.each([[32, 'NIDORAN♂'], [122, 'MR.MIME'], [25, 'PIKACHU']] as const)(
+  'the field STATS page2 of dex %i prints %s', async (dex, name) => { // V5e checkpoint-01
+    await world('Route22', 5, 5, [mon(dex, 20)]);
+    main.openStartMenu(); wait(35); press('down'); press('a');
+    expect(host.state).toBe('party_menu'); wait(35);
+    press('a'); press('down'); press('a'); wait(32);
+    const view = views[views.length - 1]; expect(view).toBeDefined();
+    mainTick(['a']); wait(3); main.partyMenu.render();
+    expect(text(view, true)).toBe(name);
+  });
 
 it('a complete battle with STATS preserves all non-name WRAM, frame counts and pending Pay Day money', async () => {
   async function run(disabled: boolean) {

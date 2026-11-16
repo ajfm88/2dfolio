@@ -7,7 +7,8 @@ import { A, BattleState, NAME_LENGTH, PARTYMON_STRUCT_LENGTH } from './battle/ba
 import { worldPartyRecord, boxedPokemonToRecord, encodePartyMon, decodePartyMon,
   encodeBoxMon, decodeBoxMon } from './battle/battle_bridge';
 import { partyRecordToPokemon } from './battle/battle_party_codec';
-import { boxRecordToPokemon, liveNickname } from './battle/battle_live';
+import { boxRecordToPokemon } from './battle/battle_live';
+import { getSpecies, speciesDisplayName } from './battle/data';
 import { BattleUnsupportedState } from './battle/battle_move_data';
 import { D } from './battle/battle_end_state';
 import { I } from './battle/battle_item_state';
@@ -103,9 +104,15 @@ function serializePokemon(mon:BattlePokemon):SavedMonBytes {
 function serializeBoxed(mon:BoxedPokemon):SavedMonBytes {
   const state=new BattleState();encodeBoxMon(state,0,boxedPokemonToRecord(mon));return stored(state,BOX);
 }
+/** Version-1 saves hold upstream's default nickname, pokemon.json's `name`; the record's default is
+ *  MonsterNames' entry (V5e checkpoint-02). Any other nickname stays as saved. */
+function legacyNickname(saved:{speciesName:string;nickname:string}):string {
+  const species=getSpecies(saved.speciesName);
+  return species&&saved.nickname===species.name?speciesDisplayName(species):saved.nickname;
+}
 function restoreLegacyMon(saved:SavedPokemon):BattlePokemon {
   // Version-1 migration value, not cartridge behaviour: old saves omitted sleep turns.
-  return boxStatsMon({...saved,maxHp:0,sleepTurns:saved.status==='SLP'?1:0});
+  return boxStatsMon({...saved,nickname:legacyNickname(saved),maxHp:0,sleepTurns:saved.status==='SLP'?1:0});
 }
 
 export function saveGame(
@@ -180,15 +187,12 @@ export function loadGame(): SaveData | null {
 
 export function restoreParty(saved: SaveData): BattlePokemon[] {
   if(saved.version===1)return saved.party.map(restoreLegacyMon);
-  return saved.party.map(bytes=>{
-    const record=decodePartyMon(readStored(bytes,PARTY),0),mon=partyRecordToPokemon(record);
-    mon.nickname=liveNickname(record,mon.species.name);return mon;
-  });
+  return saved.party.map(bytes=>partyRecordToPokemon(decodePartyMon(readStored(bytes,PARTY),0)));
 }
 
 export function restoreBoxes(saved:SaveData):BoxedPokemon[][] {
   if(saved.version===1)return (saved.pcBoxes??[]).map(box=>box.map(mon=>({
-    ...mon,
+    ...mon,nickname:legacyNickname(mon),
     // Version-1 migration value, not cartridge behaviour: old saves omitted sleep turns.
     sleepTurns:mon.sleepTurns??(mon.status==='SLP'?1:0),
     moves:mon.moves.map(move=>({...move})),statExp:mon.statExp?[...mon.statExp]:undefined,
