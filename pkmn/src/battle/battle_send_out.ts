@@ -19,7 +19,7 @@ import { BattleUnsupportedState } from './battle_move_data';
 import { delayFrames, type BattleActionHost, type Program } from './battle_menu_context';
 import type { BattlePartyHost } from './battle_party_menu';
 import type { BattleAudio } from './battle_audio';
-import type { PartyMenu } from '../menus/party_menu';
+import { BATTLE_PARTY_MENU, NORMAL_PARTY_MENU, type PartyMenu } from '../menus/party_menu';
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import { textBgTransfer } from '../text/bg_transfer';
 import { getPartyAndBillsSavedMenuItem, setBattleAndStartSavedMenuItem } from '../list_state';
@@ -29,7 +29,7 @@ export interface PlayerSendOutHost extends Pick<BattleActionHost, 'screen' | 'ti
   printText(program: string, bindings?: TextBindings, options?: TextRunnerOptions): Program;
   audio: BattleAudio;
   voice: BattleVoiceHost;
-  partyView: Pick<PartyMenu, 'openBattleChoice' | 'goBackToChoice' | 'openingPaletteDue' | 'frameBattleChoice' | 'printBattleChoiceText'>;
+  partyView: Pick<PartyMenu, 'openBattleChoice' | 'goBackToChoice' | 'partyPaletteDue' | 'frameBattleChoice' | 'printBattleChoiceText'>;
   updateSprites(): void;
   /** Preloaded picture selected by the caller. The real 14-frame loader runs below. */
   backPicture(state: BattleState): string;
@@ -206,8 +206,10 @@ function* chooseParty(state: BattleState, host: PlayerSendOutHost, first: boolea
   state.wMaxMenuItem = Math.max(0, state.mem[D.wPartyCount] - 1);
   const forceChoose = state.wForcePlayerToChooseMon !== 0; state.wForcePlayerToChooseMon = 0;
   state.mem[D.wMenuWatchedKeys] = forceChoose ? 1 : 3;
-  if (first) host.partyView.openBattleChoice(refreshPartyMirror(state), { forceChoose });
-  else host.partyView.goBackToChoice();
+  // RedrawPartyMenu_ prints the message wPartyMenuTypeOrMessageID names; both callers wrote BATTLE_PARTY_MENU.
+  const menuType = state.mem[D.wPartyMenuTypeOrMessageID] === BATTLE_PARTY_MENU ? BATTLE_PARTY_MENU : NORMAL_PARTY_MENU;
+  if (first) host.partyView.openBattleChoice(refreshPartyMirror(state), { forceChoose, menuType });
+  else host.partyView.goBackToChoice(menuType);
   let choice;
   do { choice = yield* advanceBattlePartyFrame(host.partyView, host); } while (!choice);
   state.wCurrentMenuItem = getPartyAndBillsSavedMenuItem();
@@ -223,7 +225,7 @@ function flagNewMon(state: BattleState): void {
 }
 /** core.asm:1125–1167. Cancellation/fainted choice re-enters the choose-only list, never its submenu. */
 export function* chooseNextMon(state: BattleState, host: PlayerSendOutHost): Program<{ zero: boolean }> {
-  state.mem[D.wPartyMenuTypeOrMessageID] = 2;
+  state.mem[D.wPartyMenuTypeOrMessageID] = BATTLE_PARTY_MENU;
   let choice = yield* chooseParty(state, host, true);
   for (;;) {
     if (!choice.carry && !(yield* hasMonFainted(state, {

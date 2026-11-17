@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { requestRig } from '../test/audio_request_rig';
 import { rig, musicData, sfxData } from '../test/audio_rig';
 import { MUSIC_IDS as M, SFX_IDS as S } from './sound_ids';
+import { acceptsSfxChannel, NOISE_INSTRUMENTS_END } from './sfx_priority';
 
 describe('cartridge request entries on audio_rig', () => {
   it.each([[false, 88, 11], [true, 72, 9]] as const)('DF afterBattle=%s starts the real new song at update %s', (afterBattle, end, interval) => {
@@ -200,5 +201,27 @@ describe('cartridge request entries on audio_rig', () => {
     expect(r.music.isPlaying()).toBe(true); expect(r.synth.masterVolumeRegister).toBe(0x77); // (3+1)*11
     r.synth.setMasterVolume(3, 3); r.requests.noAudioFadeOut = false; r.update();
     expect(r.synth.masterVolumeRegister).toBe(0x77);
+  });
+});
+
+describe('Audio1_PlaySound channel test (engine_1.asm:1404–1449), shared by field and battle (V5g2)', () => {
+  it('an empty channel accepts; otherwise the lower or equal id wins', () => {
+    expect(acceptsSfxChannel(5, 0xb4, 0)).toBe(true);
+    expect(acceptsSfxChannel(5, 0x90, 0x90)).toBe(true);
+    expect(acceptsSfxChannel(5, 0x90, 0xb4)).toBe(true);
+    expect(acceptsSfxChannel(5, 0xb4, 0x90)).toBe(false);
+    expect(acceptsSfxChannel(6, 0x05, 0x8f)).toBe(true); // the drum rules are CHAN8's only
+  });
+
+  it('CHAN8: a drum never takes a busy channel; a real SFX beats a drum up to NOISE_INSTRUMENTS_END', () => {
+    expect(NOISE_INSTRUMENTS_END).toBe(0x14);
+    expect(acceptsSfxChannel(8, 0x05, 0)).toBe(true);
+    expect(acceptsSfxChannel(8, 0x05, 0x8f)).toBe(false);
+    expect(acceptsSfxChannel(8, 0x13, 0x02)).toBe(false);
+    expect(acceptsSfxChannel(8, 0xb5, 0x05)).toBe(true);
+    expect(acceptsSfxChannel(8, 0xb5, 0x14)).toBe(true);
+    expect(acceptsSfxChannel(8, 0xb5, 0x15)).toBe(false);
+    expect(acceptsSfxChannel(8, 0x14, 0x15)).toBe(true);
+    expect(acceptsSfxChannel(8, 0xad, 0x8f)).toBe(false);
   });
 });

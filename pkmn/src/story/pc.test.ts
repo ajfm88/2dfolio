@@ -101,7 +101,7 @@ function run(generic = false) {
 }
 
 describe('PC hidden events on the production script dispatch', () => {
-  it.each([0, 1, 2])('StatusScreen on the actual PC host: one BG tick, held Q+4..5, white until Q+8/read Q+11, offset %i', offset => {
+  it.each([0, 1, 2])('StatusScreen on the actual PC host: one BG tick, held S+15..16 and Q+4..5, white until Q+8/read Q+11, offset %i', offset => {
     const r = run(true);
     r.deps.playerParty.push(createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!);
     const tiles = () => getMenuSessionTiles()!;
@@ -112,9 +112,11 @@ describe('PC hidden events on the production script dispatch', () => {
     expect(isScriptMenuFullScreen()).toBe(true);
     const reads = r.read.mock.calls.length, syncs = r.sync.mock.calls.length;
     const ticks = r.transfer.mock.calls.length;
-    r.frames(26); expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
+    r.frames(14); expect(r.transfer).toHaveBeenCalledTimes(ticks + 14);
+    r.frames(2); expect(r.transfer).toHaveBeenCalledTimes(ticks + 14); // S+15..16: no VBlank
+    r.frames(12); expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
     expect(r.read).toHaveBeenCalledTimes(reads); expect(r.sync).toHaveBeenCalledTimes(syncs);
-    renderMenuSession(); expect(drawFadeOverlay).not.toHaveBeenCalled(); // S+26 page 1, picture still copying
+    renderMenuSession(); expect(drawFadeOverlay).not.toHaveBeenCalled(); // S+28 page 1, picture still copying
     r.step(); expect(r.read).toHaveBeenCalledTimes(reads + 1);
     r.step('b'); r.frames(3); r.step('b'); const q = r.time();
     expect(isScriptMenuFullScreen()).toBe(true);

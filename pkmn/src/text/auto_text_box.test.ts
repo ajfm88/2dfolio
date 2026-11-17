@@ -70,9 +70,10 @@ describe('Pewter runtime tables (V2a CP3)', () => {
   it('all five maps take the PEWTER palette', () => {
     for (const m of maps) expect(getMapPalette(m)).toBe('PEWTER');
   });
-  it('main.ts: only Pewter City is outdoor; music follows data/maps/songs.asm', () => {
+  it('map.ts: only Pewter City is outdoor; main.ts: music follows data/maps/songs.asm', () => {
     const main = source('src/main.ts');
-    const outdoor = main.match(/const OUTDOOR_MAPS = new Set\(\[([\s\S]*?)\]\)/)![1];
+    // V5g3 checkpoint-01: main's door-sound guess and its set are gone; GameMap.isIndoor's set is the classification.
+    const outdoor = source('src/overworld/map.ts').match(/const OUTDOOR_MAPS: ReadonlySet<string> = new Set\(\[([\s\S]*?)\]\)/)![1];
     expect(outdoor).toContain("'PewterCity'");
     for (const m of maps.slice(1)) expect(outdoor).not.toContain(`'${m}'`);
     const songs = readFileSync(resolve(ASM, 'data/maps/songs.asm'), 'utf8');
@@ -97,9 +98,10 @@ describe('Museum and Gym runtime tables (V3 checkpoint-01)', () => {
   it('all three take the PEWTER palette (indoor maps use wLastMap)', () => {
     for (const m of Object.keys(maps)) expect(getMapPalette(m)).toBe('PEWTER');
   });
-  it('main.ts: none is outdoor; music follows data/maps/songs.asm', () => {
+  it('map.ts: none is outdoor; main.ts: music follows data/maps/songs.asm', () => {
     const main = source('src/main.ts');
-    const outdoor = main.match(/const OUTDOOR_MAPS = new Set\(\[([\s\S]*?)\]\)/)![1];
+    // V5g3 checkpoint-01: main's door-sound guess and its set are gone; GameMap.isIndoor's set is the classification.
+    const outdoor = source('src/overworld/map.ts').match(/const OUTDOOR_MAPS: ReadonlySet<string> = new Set\(\[([\s\S]*?)\]\)/)![1];
     const songs = readFileSync(resolve(ASM, 'data/maps/songs.asm'), 'utf8');
     const expected: Record<string, string> = { MUSIC_CITIES1: 'cities1', MUSIC_GYM: 'gym' };
     for (const [m, constant] of Object.entries(maps)) {

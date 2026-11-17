@@ -8,13 +8,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isHeld, isPassPressed } from '../input';
 import { playSFX, isSoundFinished } from '../audio';
-import { initTextSystem, setTextSpeed } from '../text/textbox';
+import { initTextSystem, setTextSpeed, TextBox } from '../text/textbox';
 import { loadTextPrograms } from '../text/program_data';
 import { textBgTransfer } from '../text/bg_transfer';
 import { isVBlankHeld } from '../core/vblank_hold';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
 import { enablePikachuFollowing } from '../pikachu/pikachu_following';
-import { rig as audioRig, sfxData, musicData } from '../test/audio_rig';
+import { rig as audioRig, sfxData, musicData, textSoundFile } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5, isLowHealthAlarmDisabled } from '../audio/low_health_alarm';
 import { BattleState, battleContext, encodeText } from './battle_state';
@@ -31,7 +31,6 @@ import type { GameButton } from '../core';
 import { animateRetreatingPlayerMon, chooseNextMon, doUseNextMonDialogue, DOWNSCALED_3, DOWNSCALED_5,
   isPlayerPikachuAsleepInParty, printSendOutMonMessage, retreatMon, sendOutMon, switchPlayerMon, bindPlayerSwitch, type PlayerSendOutHost } from './battle_send_out';
 import * as menus from './battle_two_option';
-import type { TextBox } from '../text/textbox';
 import { BattleUnsupportedState } from './battle_move_data';
 import { partyMenuOrRockOrRun, type BattlePartyHost } from './battle_party_menu';
 import { PNG } from 'pngjs';
@@ -309,6 +308,37 @@ describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () =>
     expect(isVBlankHeld()).toBe(false);
     expect(r.s.wPlayerMonNumber).toBe(1);
   });
+  it.each([0, 1, 2])('faint replacement B retries through GoBack: held R+5..6 and read R+18, portion %i', portion => {
+    const r = rig();
+    for (let i = 0; i < portion; i++) textBgTransfer.tick();
+    const reads: number[] = [];
+    r.host.readJoypad = () => {
+      reads.push(r.time());
+      vi.mocked(isPassPressed).mockImplementation(key => r.time() === 24 ? key === 'b' : r.time() === 42 && key === 'a');
+    };
+    const back = vi.spyOn(r.party, 'goBackToChoice');
+    r.start(chooseNextMon(r.s, r.host)); r.finish();
+    expect(back).toHaveBeenCalledOnce(); expect(reads.slice(0, 2)).toEqual([24, 42]);
+    expect(r.frames.slice(0, 42).flatMap((kind, index) => kind === 'held' ? [index + 1] : [])).toEqual([11, 12, 29, 30]);
+    expect(isVBlankHeld()).toBe(false);
+    expect(r.s.wPlayerMonNumber).toBe(0);
+  });
+  it('faint replacement prints PartyMenuBattleText in the opening and the GoBack redraw (core.asm:1126; party_menu.asm:240)', () => {
+    const r = rig(), print = vi.spyOn(TextBox.prototype, 'printStandalone');
+    const open = vi.spyOn(r.party, 'openBattleChoice'), back = vi.spyOn(r.party, 'goBackToChoice');
+    const reads: number[] = [];
+    r.host.readJoypad = () => {
+      reads.push(r.time());
+      vi.mocked(isPassPressed).mockImplementation(key => r.time() === 24 ? key === 'b' : r.time() === 42 && key === 'a');
+    };
+    r.start(chooseNextMon(r.s, r.host)); r.finish();
+    expect(reads.slice(0, 2)).toEqual([24, 42]); expect(r.s.mem[D.wPartyMenuTypeOrMessageID]).toBe(2);
+    expect(open.mock.calls[0][1]).toEqual({ forceChoose: false, menuType: 2 }); expect(back.mock.calls).toEqual([[2]]);
+    const lists = print.mock.calls.map(([source]) => (source as { program?: string }).program).filter(p => p?.startsWith('PartyMenu'));
+    expect(lists).toEqual(['PartyMenuBattleText', 'PartyMenuBattleText']);
+    expect(print.mock.calls.filter(([source]) => (source as { program?: string }).program === 'PartyMenuBattleText')
+      .every(([, options]) => (options as { noDelay?: boolean }).noDelay === true)).toBe(true);
+  });
   it('composes refused replacement, failed run, force-one-opening and successful choosing on the same owners', () => {
     const r=rig(); r.s.writeBE(D.wPartyMons+1,0); r.s.partyMons[0]!.currentHp=0;
     r.s.writeBE(D.wPartyMons+40,1); const random=vi.fn(()=>255); r.s.random=random;
@@ -321,7 +351,7 @@ describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () =>
     };
     r.start(program()); r.finish();
     expect(input).toEqual([]); expect(random).toHaveBeenCalledOnce();
-    expect(force.mock.calls[0][1]).toEqual({forceChoose:true}); expect(r.s.wForcePlayerToChooseMon).toBe(0);
+    expect(force.mock.calls[0][1]).toEqual({forceChoose:true,menuType:2}); expect(r.s.wForcePlayerToChooseMon).toBe(0);
     expect(r.s.wPlayerMonNumber).toBe(1); expect(r.s.wActionResultOrTookBattleTurn).toBe(0);
   });
   it('forced replacement retries B and fainted selection, then loads the living mon with both EXP bits', () => {
@@ -343,7 +373,7 @@ describe('ChooseNextMon and SwitchPlayerMon, real party/list/copy owners', () =>
     expect(decodeBattleText(r.s.mem,D.wBattleMonNick)).toBe('NEW'); expect(r.s.wBattleMonSpecies).toBe(0x24);
     expect(r.s.mem.slice(D.wPartyMons,D.wPartyMons+3*44)).toEqual(partyBefore);
     expect(r.s.wActionResultOrTookBattleTurn).toBe(0); expect(r.screen.obp1).toBe(0);
-    expect(r.frames.filter(kind=>kind==='held')).toHaveLength(6); // party opening + reload palette + SendOut palette
+    expect(r.frames.filter(kind=>kind==='held')).toHaveLength(10); // party opening + two GoBack redraws + reload palette + SendOut palette
     expect(r.screen.hudSlot(0x62)).toBeNull(); expect(r.screen.hudSlot(0x6d)).not.toBeNull();
   });
   it('consumes failed-run force flag once: B alone cannot cancel, while A+B re-enters the list', () => {
@@ -618,6 +648,19 @@ describe('SHIFT prompt on the same party and battle owners',()=>{
     expect(r.events.find(e=>e.name==='front')?.data).toEqual([0x54,0]);
     expect(r.events.some(e=>e.name==='text:PlayerMon2Text')).toBe(false);
   });
+  it('SHIFT prints PartyMenuBattleText in the opening and in the redraw after AlreadyOutText (core.asm:1427, 1440)',()=>{
+    const r=enemyRig(); r.s.wFirstMonsNotOutYet=0;
+    const input:GameButton[][]=[['a'],['a'],['b']];
+    r.host.readJoypad=()=>{const keys=input.shift()??[];vi.mocked(isPassPressed).mockImplementation(key=>keys.includes(key));};
+    const print=vi.spyOn(TextBox.prototype,'printStandalone');
+    const open=vi.spyOn(r.party,'openBattleChoice'),back=vi.spyOn(r.party,'goBackToChoice');
+    r.start(enemySendOut(r.s,r.host)); r.finish();
+    expect(input).toEqual([]); expect(open.mock.calls[0][1]).toEqual({forceChoose:false,menuType:2}); expect(back.mock.calls).toEqual([[2]]);
+    const programs=print.mock.calls.map(([source])=>(source as {program?:string}).program);
+    expect(programs.filter(p=>p?.startsWith('PartyMenu'))).toEqual(['PartyMenuBattleText','PartyMenuBattleText']);
+    expect(programs.indexOf('AlreadyOutText')).toBeGreaterThan(programs.indexOf('PartyMenuBattleText'));
+    expect(programs.lastIndexOf('PartyMenuBattleText')).toBeGreaterThan(programs.indexOf('AlreadyOutText'));
+  });
   it('retries already-out and fainted slots before accepting; enemy arrives before player retreat and flags rebuild',()=>{
     const r=enemyRig(); r.s.wFirstMonsNotOutYet=0;
     r.s.writeBE(D.wPartyMons+44+1,0); r.s.partyMons[1]!.currentHp=0;
@@ -775,7 +818,7 @@ function expRig() {
     cableClubRun(){r.mark('cable');},
     learnMove:function* (state){r.mark('learn',[state.wWhichPokemon,state.wCurEnemyLevel,state.mem[D.wMoveNum]]);return {b:0};}};
   vi.mocked(playSFX).mockImplementation(async name=>{
-    const resolved=r.bridge.resolveTextSound(name); r.mark('textSound',resolved);
+    const resolved=textSoundFile(name,r.bridge.audioBank); r.mark('textSound',resolved);
     r.bridge.play({id:name==='get_item1'?0x86:0x90,data:sfxData(resolved)});
   });
   function finish(keysForFrame:(frame:number)=>GameButton[]=frame=>frame%2?['a']:[]) { return r.finish(keysForFrame); }

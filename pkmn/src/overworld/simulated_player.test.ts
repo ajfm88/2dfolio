@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Player } from './player';
 import { GameMap } from './map';
 import { runStepEnd } from './step_end';
+import { playSFX } from '../audio';
 vi.mock('../input', () => ({ isHeld: () => false, isPassPressed: () => false }));
 vi.mock('../debug', () => ({ isNoClip: () => false }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSfxPlaying: () => false }));
@@ -27,5 +28,26 @@ describe('GetSimulatedInput land-collision gate', () => {
     expect(p.justCollided).toBe(true); expect(p.x).toBe(0); expect(p.justTurned).toBe(false);
     p.simulatedPass(null, true, sprites, map, []);
     expect(sprites).toHaveBeenCalledTimes(2); expect(p.startedFollowStep).toBe(false);
+  });
+});
+
+describe('HandleLedges plays SFX_LEDGE (V5g3 checkpoint-03, ledges.asm:53)', () => {
+  it('the pass that arms the hop plays it once, with no collision sound; the hop and the landing play nothing', () => {
+    const p = new Player(), map = new GameMap();
+    vi.spyOn(map, 'isWalkable').mockReturnValue(false); vi.spyOn(map, 'isLedge').mockReturnValue(true);
+    vi.mocked(playSFX).mockClear();
+    p.update(map, [], 'down');
+    expect(vi.mocked(playSFX).mock.calls).toEqual([['ledge']]);
+    for (let pass = 0; pass < 24; pass++) p.update(map, [], null);
+    expect(p.y).toBe(32); // two steps down: the hop landed
+    expect(vi.mocked(playSFX).mock.calls).toEqual([['ledge']]);
+  });
+
+  it('a wall that is not a ledge plays the collision sound and no ledge sound', () => {
+    const p = new Player(), map = new GameMap();
+    vi.spyOn(map, 'isWalkable').mockReturnValue(false); vi.spyOn(map, 'isLedge').mockReturnValue(false);
+    vi.mocked(playSFX).mockClear();
+    p.update(map, [], 'down');
+    expect(vi.mocked(playSFX).mock.calls).toEqual([['collision']]);
   });
 });

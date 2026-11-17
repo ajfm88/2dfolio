@@ -77,6 +77,9 @@ export const SFX_IDS = {
   enter_pc: 0x9b,
   shrink: 0x9c,
   run: 0x97, // SFX_Run, bank $08 only; the battle's RUN plays it.
+  // V5g3 checkpoint-03 (note 108): the ledge hop (ledges.asm:53) and the Town Map's input (town_map.asm:76).
+  ledge: 0xa2,
+  tink: 0x8c,
 } as const;
 
 export function musicIdentity(name: string): SoundIdentity | undefined {
@@ -87,7 +90,48 @@ export function musicNameForSound(id: number, bank: number): string | undefined 
   return Object.entries(MUSIC_IDS).find(([, sound]) => sound.id === id && sound.bank === bank)?.[0];
 }
 
-export function sfxNameForSound(id: number): string | undefined {
-  return Object.entries(SFX_IDS).find(([, soundId]) => soundId === id)?.[0];
+/**
+ * TextCommandSounds (home/text.asm:552–559): the SFX each text `sound` command requests. The cries and the unused
+ * Pokédex rating are not here. The same id plays a different body per bank: SFX_GET_ITEM_1 is SFX_Level_Up while
+ * the battle engine (bank $08) is loaded. V5g1 checkpoint-03 (note 104).
+ */
+export const TEXT_SOUND_IDS = {
+  get_item1: 0x86, caught_mon: 0x9a, get_item2: 0x89, get_key_item: 0x94, dex_page_added: 0x98,
+} as const satisfies Record<string, number>;
+
+export function textSoundId(name: string): number | undefined {
+  return Object.prototype.hasOwnProperty.call(TEXT_SOUND_IDS, name) ? TEXT_SOUND_IDS[name as keyof typeof TEXT_SOUND_IDS] : undefined;
+}
+
+/**
+ * V5g1 checkpoint-02 (note 103): the file PlaySound plays for an SFX id in each audio bank, for every id in
+ * SFX_IDS or TEXT_SOUND_IDS. Each engine reads its own SFX_Headers_N (home/audio.asm DetermineAudioFunction;
+ * audio/engine_1.asm:1386–1398). A value is the committed file whose body is that bank's entry; an id with no
+ * such file is absent. extraction.test.ts recomputes this table from the ROM.
+ */
+export const SFX_FILES: Readonly<Record<0x02 | 0x08 | 0x1f | 0x20, Readonly<Record<number, string>>>> = {
+  0x02: {
+    0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab',
+    0x94: 'get_key_item', 0x99: 'turn_on_pc', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc', 0x9c: 'shrink',
+    0x9e: 'healing_machine', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
+    0xa2: 'ledge', 0xb2: 'purchase', 0xb4: 'collision', 0xb5: 'go_outside', 0xb6: 'save',
+  },
+  0x08: {
+    0x86: 'level_up', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab',
+    0x97: 'run', 0x98: 'dex_page_added', 0x9a: 'caught_mon', 0x9e: 'faint_fall',
+  },
+  0x1f: {
+    0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab',
+    0x94: 'get_key_item', 0x99: 'turn_on_pc_3', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc_3', 0x9c: 'shrink',
+    0x9e: 'healing_machine', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
+    0xa2: 'ledge', 0xb2: 'purchase', 0xb4: 'collision', 0xb5: 'go_outside', 0xb6: 'save_3',
+  },
+  0x20: { 0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab' },
+};
+
+/** DetermineAudioFunction: banks $02, $08 and $1f pick their engines; any other bank falls to Audio 4. */
+export function sfxNameForSound(id: number, bank: number): string | undefined {
+  const table = bank === 0x02 || bank === 0x08 || bank === 0x1f ? SFX_FILES[bank] : SFX_FILES[0x20];
+  return table[id];
 }
 

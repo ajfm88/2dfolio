@@ -15,7 +15,10 @@ import { setPlayerName } from '../core/player_state';
 import { resetListStateForEmptySlot } from '../list_state';
 import { textBgTransfer } from '../text/bg_transfer';
 import { setKey, updateInput, syncJoypadRead, readJoypad, isPassPressed } from '../input';
-import { loadBattleSessionData, createBattleSession, createSessionRandom, battleTextSoundOwner, BATTLE_TEXT_SOUND_IDS } from './battle_session';
+import { loadBattleSessionData, createBattleSession, createSessionRandom, battleTextSoundOwner } from './battle_session';
+import { TEXT_SOUND_IDS } from '../audio/sound_ids';
+import { TextProgramRunner } from '../text/text_runner';
+import { TextScreen } from '../text/text_printer';
 import { BattleAudio } from './battle_audio';
 import { BattleMenuScreen } from './battle_menu_screen';
 import { BattleHost } from './battle_host';
@@ -316,7 +319,7 @@ it('the bank08 text owner plays ID86 with level-up data, waits on those engines,
  const r=rig(),banks=r.fade.requests;banks.audioBank=8;const audio=new BattleAudio(r.sfx,r.music,banks);
  const sounds=new Map<string,BattleSfx>(['level_up','get_item1','press_ab','caught_mon','dex_page_added'].map(name=>[name,{id:0,data:sfxData(name)}]));
  const owner=battleTextSoundOwner(audio,{sfx:r.sfx,music:r.music,banks},sounds);
- expect(BATTLE_TEXT_SOUND_IDS.caught_mon).toBe(0x9a);expect(BATTLE_TEXT_SOUND_IDS.dex_page_added).toBe(0x98);
+ expect(TEXT_SOUND_IDS.caught_mon).toBe(0x9a);expect(TEXT_SOUND_IDS.dex_page_added).toBe(0x98);
  owner.play('get_item1');expect(audio.channelId(5)).toBe(0x86);expect(owner.finished()).toBe(false);
  r.update();expect(r.synth.log.some(w=>w.m==='freq0')).toBe(true);
  const levelUpControl=rig();new BattleAudio(levelUpControl.sfx,levelUpControl.music).play({id:0x86,data:sfxData('level_up')});levelUpControl.update();
@@ -324,6 +327,24 @@ it('the bank08 text owner plays ID86 with level-up data, waits on those engines,
  for(let n=0;!owner.finished()&&n<500;n++)r.update();expect(owner.finished()).toBe(true);
  owner.beep();expect(audio.channelId(5)).toBe(0x90);expect(owner.finished()).toBe(false);
  expect(()=>owner.play('get_item2')).toThrow(/get_item2/);expect(()=>owner.play('get_key_item')).toThrow(/get_key_item/);audio.dispose();
+});
+it('the text owner plays each command\'s id with the current bank\'s body: level_up in $08, get_item1 in $02 (V5g1 checkpoint-03)',()=>{
+ const r=rig(),banks=r.fade.requests;banks.audioBank=8;const audio=new BattleAudio(r.sfx,r.music,banks);
+ const names=['level_up','get_item1','press_ab','caught_mon','dex_page_added','turn_off_pc'];
+ const sounds=new Map<string,BattleSfx>(names.map(name=>[name,{id:0,data:sfxData(name)}]));
+ const played:{id:number;data:unknown}[]=[];vi.spyOn(audio,'play').mockImplementation(sound=>{played.push(sound);return true;});
+ const owner=battleTextSoundOwner(audio,{sfx:r.sfx,music:r.music,banks},sounds);
+ const ports={buttons:()=>0,speed:()=>1,soundFinished:()=>true,joypadRead:()=>{},beep:()=>{},playSound:owner.play,cry:()=>{}};
+ const runner=new TextProgramRunner(new TextScreen(ports),{P:[{op:'sound',sound:'get_item1'}]},ports);
+ runner.run('P',{},true).next();banks.audioBank=2;runner.run('P',{},true).next();
+ expect(played.map(s=>s.id)).toEqual([0x86,0x86]);
+ expect(played.map(s=>s.data)).toEqual([sfxData('level_up'),sfxData('get_item1')]);
+ banks.audioBank=8;owner.play('caught_mon');owner.play('dex_page_added');owner.beep();
+ banks.audioBank=2;owner.play('caught_mon'); // SFX_CAUGHT_MON's id in Audio 1 is SFX_Turn_Off_PC_1
+ expect(played.slice(2).map(s=>[s.id,s.data])).toEqual([[0x9a,sfxData('caught_mon')],[0x98,sfxData('dex_page_added')],
+  [0x90,sfxData('press_ab')],[0x9a,sfxData('turn_off_pc')]]);
+ expect(()=>owner.play('dex_page_added')).toThrow(/dex_page_added bank 2/);expect(()=>owner.play('toString')).toThrow(/toString/);
+ audio.dispose();
 });
 it('the private BattleHost TextBox uses the owner for sound commands, waits and acknowledgement beep',()=>{
  const r=rig(),audio=new BattleAudio(r.sfx,r.music,r.fade.requests);r.fade.requests.audioBank=8;

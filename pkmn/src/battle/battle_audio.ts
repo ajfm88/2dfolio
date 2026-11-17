@@ -9,9 +9,9 @@ import type { SfxData, SfxEngine } from '../audio/sfx_engine';
 import type { MusicEngine } from '../audio/music_engine';
 import type { PlaySound } from '../audio/play_sound';
 import { soundFinished } from '../audio/sound_wait';
+import { acceptsSfxChannel } from '../audio/sfx_priority';
 import type { Program } from './battle_menu_context';
 
-const NOISE_INSTRUMENTS_END = 0x14;
 const BATTLE_SFX_START = 0x9d;
 const BATTLE_SFX_END = 0xea;
 const CRY_SFX_START = 0x14;
@@ -98,16 +98,6 @@ export class BattleAudio {
     return true;
   }
 
-  /** TextCommandSounds resolves $86 in the active audio bank, not by a global name. */
-  resolveTextSound(name: string): string {
-    return name === 'get_item1' && this.audioBank === 0x08 ? 'level_up' : name;
-  }
-
-  /** `TextProgramRunner` port: retain normal field resolution outside the battle host. */
-  textSoundPort(playSound: (name: string) => void): (name: string) => void {
-    return name => playSound(this.resolveTextSound(name));
-  }
-
   /** learn_move.asm:214–237. The caller services every yielded frame with its audio owner. */
   *playSwap(sound: BattleSfx): Program<boolean> {
     this.muteAudioAndPauseMusic = 1;
@@ -123,10 +113,7 @@ export class BattleAudio {
   }
 
   private accepts(channel: number, incoming: number, old: number): boolean {
-    if (old === 0) return true;
-    if (channel === 8 && incoming < NOISE_INSTRUMENTS_END) return false;
-    if (channel === 8 && old <= NOISE_INSTRUMENTS_END) return true;
-    return incoming <= old;
+    return acceptsSfxChannel(channel, incoming, old);
   }
 
   private modifiers(): { tempo: number; frequency: number } {

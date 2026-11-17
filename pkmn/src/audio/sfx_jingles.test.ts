@@ -2,10 +2,11 @@
 // and the SFX-mode sounds (A1a, notes/16-a1a-plan.md §6 checkpoint 4).
 
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { soundFinished } from './sound_wait';
 import { EXTRACTED_SFX } from './sfx_names';
+import { SFX_HEADERS } from '../rom/extractors/audio';
 import { rig, track, sfxData } from '../test/audio_rig';
 import type { MusicCommand } from './music_engine';
 import type { SfxData } from './sfx_engine';
@@ -163,11 +164,25 @@ describe('the SFX preload list', () => {
     const files = readdirSync(resolve(__dirname, '../../data/audio/sfx')).map(f => f.replace(/\.json$/, '')).sort();
     // A5c3e left six unused. A5c3f checkpoint-02 adds four more, still with no preload. A5e checkpoint-05: ball_poof.
     // A5f checkpoint-01: ball_toss and tink (Audio 2), unused until checkpoint-03.
+    // V5g1 checkpoint-02: Audio 3's enter_pc_3, save_3 and turn_on_pc_3 are preloaded since the bank-aware lookup.
+    // V5g3 checkpoint-03: ledge and tink are preloaded since the hop and the Town Map play them.
     const unused = [
       'ball_poof', 'ball_toss', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'level_up',
-      'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'tink', 'trainer_appeared',
+      'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'trainer_appeared',
     ];
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);
     expect([...EXTRACTED_SFX, ...unused].sort()).toEqual(files);
+  });
+
+  it('both setup name lists carry every SFX header, so setup and the static export write the same files', () => {
+    // V5g1 checkpoint-01: `npm run setup` reads scripts/extract_dev_data.ts, the static export reads rom/index.ts.
+    const listed = (path: string): Set<string> => {
+      const source = readFileSync(resolve(__dirname, path), 'utf8');
+      const body = /const SFX_NAMES = \[([\s\S]*?)\];/.exec(source)![1].replace(/\/\/.*$/gm, '');
+      return new Set(Array.from(body.matchAll(/'([^']+)'/g), match => match[1]));
+    };
+    const live = listed('../rom/index.ts'), script = listed('../../scripts/extract_dev_data.ts');
+    expect(Object.keys(SFX_HEADERS).filter(name => !live.has(name))).toEqual([]);
+    expect(Object.keys(SFX_HEADERS).filter(name => !script.has(name))).toEqual([]);
   });
 });

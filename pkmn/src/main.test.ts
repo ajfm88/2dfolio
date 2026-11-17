@@ -61,7 +61,7 @@ import { SaveSession as SaveSessionClass } from './menus/save_menu';
 import type { BattlePokemon } from './battle';
 import type { Player, GameMap } from './overworld';
 import type { PikachuFollower } from './pikachu';
-import type { OverworldDeps } from './overworld';
+import type { OverworldAction, OverworldDeps } from './overworld';
 import type { TextBox } from './text/textbox';
 import { setTextSpeed } from './text/textbox';
 import { disablePikachuFollowing, enablePikachuFollowing, isPikachuFollowingDisabled } from './pikachu/pikachu_following';
@@ -82,7 +82,7 @@ import { resolve } from 'node:path';
 const host = (main as unknown as { mainTest: {
   gameTick(): void; checkUiEntry(): void; drawUiLayer(): void; openStartMenu(): void;
   renderPikachuEmotionScene(): void;
-  restOfPass(deps: OverworldDeps): void; overworldDeps(): OverworldDeps;
+  restOfPass(deps: OverworldDeps): void; overworldDeps(): OverworldDeps; handleOverworldAction(action: OverworldAction): void;
   reset(): void; startNewGame(): Promise<void>; loadSavedGame(): Promise<void>;
   handleWarpLoad(map: string, warp: number): Promise<void>; handleBlackoutWarp(): void;
   connectToMap(map: string, direction: 'north' | 'south', offset: number): Promise<void>;
@@ -307,7 +307,10 @@ describe('StatusScreen through main party and battle dispatch', () => {
     expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
     const selected = Reflect.get(menu, 'cursor'); expect(selected).toBe(1);
     const read = r.read.mock.calls.length, sync = r.sync.mock.calls.length, ticks = r.transfer.mock.calls.length;
-    r.wait(26); expect(r.read).toHaveBeenCalledTimes(read); expect(r.sync).toHaveBeenCalledTimes(sync);
+    // S+15..16 are SET_PAL_STATUS_SCREEN's held frames: 28 frames, 26 BG ticks, first read S+29.
+    r.wait(14); expect(r.transfer).toHaveBeenCalledTimes(ticks + 14);
+    r.wait(2); expect(r.transfer).toHaveBeenCalledTimes(ticks + 14);
+    r.wait(12); expect(r.read).toHaveBeenCalledTimes(read); expect(r.sync).toHaveBeenCalledTimes(sync);
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
     r.step(); expect(r.read).toHaveBeenCalledTimes(read + 1);
     r.step('b'); r.wait(3); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
@@ -987,5 +990,21 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     expect(playDefaultMusic).toHaveBeenCalledExactlyOnceWith('pallettown');
     expect(playMusicNew).not.toHaveBeenCalled(); expect(restoreNurseMusic).not.toHaveBeenCalled();
     expect(playDefaultMusicFadeOutCurrent).not.toHaveBeenCalled();
+  });
+});
+
+describe('V5g3 checkpoint-01: main\'s warp plays PlayMapChangeSound by the tile under the player', () => {
+  it.each([
+    ['RedsHouse1F', 2, 'go_outside'], // the stairs: the destination is indoors, the tile is not a door
+    ['PalletTown', 0, 'go_inside'],   // Red's front door, tile $0B
+    ['Route2', 3, 'go_outside'],      // Route 2 Gate's entrance
+    ['RedsHouse1F', 0, 'go_outside'], // the mat out to Pallet Town
+  ] as const)('%s warp %i plays %s', async (map, index, sound) => {
+    await host.gameMap.load(map);
+    const warp = host.gameMap.mapData!.warps[index];
+    host.player.setTilePosition(2 * warp.x, 2 * warp.y);
+    vi.mocked(playSFX).mockClear();
+    host.handleOverworldAction({ type: 'warp', destMap: warp.destMap, destWarpId: warp.destWarpId });
+    expect(vi.mocked(playSFX).mock.calls[0]).toEqual([sound]);
   });
 });

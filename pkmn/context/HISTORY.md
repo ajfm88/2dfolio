@@ -15,6 +15,154 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-15 (V5g3 checkpoint-03 closed; checkpoint-04 traced, spiked and briefed) — Claude
+
+- The user's ledge and Town Map play-test passed; note 108 §11. The user's "checkpoint 5" is checkpoint-04, V5g3's last. Spike (2 files): `playSFX` falls back to `textSoundId`; two facade cases (fetch awaited; waits bounded, since battle drums hold CHAN8). Gates on the applied patch: typecheck clean; `index-DsyXtWek.js`, 677,382 bytes; ROM 6590/6590; no-ROM 6274 / 316 skipped, 268 files; S1–S2 killed. Source restored; live baseline unchanged. DECISIONS #138. Next: Codex implements, Grok reviews; then Claude closes V5.
+
+### 2026-11-15 (V5g3 checkpoint-03 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `e3bf2b8b` per note 108 §6. Nine source files match the spike, including the new Town Map test; the game diff excluding the two architecture docs equals `01-spike.diff`. The bank probe matches. `armedHop` is cleared each pass and set only when the step is a hop. Gates re-run: typecheck clean; bundle `index-Cwr5Htww.js`, 677,375 bytes, SHA256 `f2323fd0...`; ROM 6588/6588; no-ROM 6272 pass / 316 skip, 268 files. R1–R9 each exit 1, only AssertionError, exact counts, 199 cases. **Independent mutation** (`tink` id `$8D`) killed by 6 cases; source restored. No witness. Queue advanced to the user's play-test (note 108 §7). Checkpoint-04 not started.
+
+### 2026-11-15 (V5g3 checkpoint-03 implemented; awaiting Grok review) — Codex
+
+- Applied note 108's nine-file patch with `--intent-to-add` on `f1be2a42`; new Town Map test included, hashes/exact diff pass; cited ASM and table probe agree. Typecheck/build pass; `index-Cwr5Htww.js`, 677,375 bytes, SHA256 `f2323fd0...`; ROM 6588/6588 (22.60s), no-ROM 6272 / 316 skipped (21.37s), 268 files. R1–R9 each exit 1 with only AssertionError and exact counts (1/1/1/1/3/6/3/1/2 of 199); restored and re-verified before docs. Four moved, seven new. No timing, data or snapshot changes; no setup. Report: note 108 §9. Next: Grok review, then user's play-test; checkpoint-04 not started.
+
+### 2026-11-15 (V5g3 checkpoint-02 closed; checkpoint-03 traced, spiked and briefed) — Claude
+
+- Checkpoint-02 closed on Grok's review (no play-test). Traced `HandleLedges` inside `CollisionCheckOnLand` and `DisplayTownMap`'s input; probed `$A2`/`$8C` in the four banks. Spike (9 files, `town_map.test.ts` new): ids and rows, preloads, the hop's `SFX_LEDGE` on `walk.armedHop`, the Town Map's `SFX_TINK` and input order. 4 moved, 7 new. Gates on the applied patch: typecheck clean; `index-Cwr5Htww.js`, 677,375 bytes; ROM 6588/6588; no-ROM 6272 / 316 skipped, 268 files; R1–R9 killed with the ROM. Source restored; live baseline unchanged. DECISIONS #137. Next: Codex implements, Grok reviews.
+
+### 2026-11-15 (V5g3 checkpoint-02 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `6040f41f` per note 107 §6. Five source files match the spike; the `game/src` and `game/scripts` diff excluding the audio architecture doc equals `01-spike.diff`. Symbols and both ledge bodies agree. Setup again wrote 211 JSON and changed nothing under `data/` or `static/`. Gates: typecheck clean; bundle unchanged `index-CGp3YZwn.js`, 677,198 bytes; ROM 6581/6581; no-ROM 6265 pass / 316 skip, 267 files. Q1–Q6 each exit 1, only AssertionError, exact counts. **Independent mutation** (`ledge` added to the preload) killed by 2 cases; source restored. No witness. No play-test. Queue is checkpoint-03 planning (note 107 §7). Note 107 §9.
+
+### 2026-11-15 (V5g3 checkpoint-02 implemented; awaiting Grok review) — Codex
+
+- Applied note 107's frozen five-file patch on `6fc2f37a`; hashes and exact diff pass. Setup writes only `ledge.json` and its mirror; `PASS 2 generated files` before and after mutations. Typecheck/build pass; bundle unchanged `index-CGp3YZwn.js`, 677,198 bytes, SHA256 `f9e5447a...`. ROM 6581/6581 (21.49s); no-ROM 6265 / 316 skipped (20.81s), 267 files. Q1–Q6 each exit 1 with only AssertionError, failing exactly 5/5/2/1/4/1; files restored and re-verified before docs. Two moved, six new; prior generated files and snapshots unchanged. Report: note 107 §8. Next: Grok review; no play-test.
+
+### 2026-11-15 (V5g3 checkpoint-01 closed; checkpoint-02 traced, spiked and briefed) — Claude
+
+- The user's door-sound play-test passed; note 106 §11. Traced `SFX_Ledge_1` (header, symbols, `ledge_1.asm` against `ledge_3.asm`); both setup lists already named `ledge`. Spike: one `SFX_HEADERS` row plus tests (5 files); setup writes 2 files (`PASS 2 generated files`). 2 moved, 6 new. Gates on the applied patch: typecheck clean; bundle unchanged `index-CGp3YZwn.js`; ROM 6581/6581; no-ROM 6265 / 316 skipped, 267 files; Q1–Q6 killed with the ROM. Source and data restored; live baseline unchanged. DECISIONS #136. Next: Codex implements, Grok reviews; no play-test.
+
+### 2026-11-15 (V5g3 checkpoint-01 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `5657e8d` per note 106 §7. Six source files match the spike, including both new files; the game diff excluding the overworld architecture doc equals `01-spike.diff`. The warp probe matches `door-sound-probe.txt`. Hand check: Red's house stairs are `$0C` and Diglett's Cave's ladder is `$0A`, both `go_outside`. Gates re-run: typecheck clean; bundle `index-CGp3YZwn.js`, 677,198 bytes, SHA256 `f9e5447a...`; ROM 6575/6575; no-ROM 6263 pass / 312 skip, 267 files. H1–H5 each exit 1, only AssertionError, exact counts, 109 cases. **Independent mutation** (the tile one step to the right) killed by 1 case; source restored. No witness. Queue advanced to the user's play-test (note 106 §8). Checkpoint-02 not started.
+
+### 2026-11-15 (V5g3 checkpoint-01 implemented; awaiting Grok review) — Codex
+
+- Applied note 106's six-file patch with `--intent-to-add` on `90944d40` (source base `a6a2d28e`); both new files/hashes/exact diff pass; ASM agrees. Probe matches before apply and after using baseline main text for the removed historical set: 83 warps, 19 doors, 18 differences (§9). Typecheck/build pass; `index-CGp3YZwn.js`, 677,198 bytes, SHA256 `f9e5447a...`; ROM 6575/6575 (19.05s), no-ROM 6263 / 312 skipped (19.60s), 267 files. H1–H5 each exit 1, only AssertionError, exact counts (109 cases); source restored and re-verified before docs. Two moved, six new; map.ts, data and snapshots unchanged; no setup. Next: Grok review, then user play-test; 02–04 not started.
+
+### 2026-11-15 (V5g2 closed; V5g3 inventoried, split, checkpoint-01 spiked and briefed) — Claude
+
+- The user's V5g2 play-test passed; note 105 §11. Inventoried every field `PlaySound` against the port (note 106 §1): four gaps reachable today, split 01–04; `SFX_SWAP` → J2; caught-mon closed. Probed every warp's tile (83 warps, 19 doors, 18 wrong today). Spike (6 files, 2 new): `mapChangeSound`, main's warp case, `OUTDOOR_MAPS` removed, the `mainTest` seam, two source tests moved to `map.ts`'s set. Gates on the applied patch: typecheck clean; `index-CGp3YZwn.js`, 677,198 bytes; ROM 6575/6575; no-ROM 6263 / 312 skipped, 267 files; H1–H5 killed. Source restored; live baseline unchanged. DECISIONS #135. Next: Codex implements, Grok reviews.
+
+### 2026-11-15 (V5g2 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `42a7750` per note 105 §7. Six source files match the spike, including new `sfx_priority.ts`; the game diff excluding the audio architecture doc equals `01-spike.diff`. Cited ASM agrees. Gates re-run: typecheck clean; bundle `index-BOY400QZ.js`, 677,420 bytes, SHA256 `e2cb3779...`; ROM 6569/6569; no-ROM 6257 pass / 312 skip, 266 files. G1–G9 each exit 1, only AssertionError, exact counts, 74 cases. **Independent mutation** (CHAN8 refuses id `$14`) killed by 1 case; source restored. No witness. Queue advanced to the user's play-test (note 105 §8). V5g3 not started.
+
+### 2026-11-15 (V5g2 implemented; awaiting Grok review) — Codex
+
+- Applied note 105's six-file patch with `--intent-to-add` on `2b78736` (source base `c409623`); new `sfx_priority.ts` and five existing hashes/exact diff pass; cited ASM agrees. Typecheck/build pass; `index-BOY400QZ.js`, 677,420 bytes, SHA256 `e2cb3779...`; ROM 6569/6569 (20.19s), no-ROM 6257 / 312 skipped (20.36s), 266 files. G1–G9 each exit 1, only AssertionError, exact expected counts (74 cases); source restored and re-verified before docs. Three moved, eight new; player, battle owner/alarm, callers, data and snapshots unchanged. No setup. Report: note 105 §9. Next: Grok review, then user play-test; V5g3 not started.
+
+### 2026-11-15 (V5g1 closed; V5g2 traced, spiked and briefed) — Claude
+
+- The user's checkpoint-03 play-test passed; note 104 §11; **V5g1 complete**. Answered the stats-screen cry question (J2, #45; offered earlier, not placed). Traced `Audio1_PlaySound`'s walk, `InitSFXVariables`, `CollisionCheckOnLand`; found the battle's half done in A5c3. Spike (6 files, `sfx_priority.ts` new): the shared rule, the field's activity-gated id record and walk, `installSfx`, `isSfxPlaying(name)` by channel. 3 moved, 8 new. Gates on the applied patch: typecheck clean; `index-BOY400QZ.js`, 677,420 bytes; ROM 6569/6569; no-ROM 6257 / 312 skipped, 266 files; G1–G9 killed. Source restored; `--intent-to-add` re-apply byte-identical; live baseline unchanged. DECISIONS #134. Next: Codex implements, Grok reviews.
+
+### 2026-11-15 (V5g1 checkpoint-03 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `2196e9f` per note 104 §7. Twelve source files match the spike; the game diff excluding the two architecture docs equals `01-spike.diff`. The text-id probe matches `text-ids-probe.txt` and `SFX_FILES`. Gates re-run: typecheck clean; bundle `index-BWjX7qZV.js`, 676,977 bytes, SHA256 `857c5ffd...`; ROM 6561/6561; no-ROM 6249 pass / 312 skip, 266 files. D1–D8 match §5.4, including D2's snapshot Error; no snapshot written. **Independent mutation** (`caught_mon` always reads bank `$08`) killed by 1 case; source restored. No witness. Queue advanced to the user's play-test (note 104 §8). V5g2 not started.
+
+### 2026-11-15 (V5g1 checkpoint-03 implemented; awaiting Grok review) — Codex
+
+- Applied note 104's twelve-file patch on `965f776f` (source base `eaaf534a`); hashes/exact diff pass; ASM/probe agree. Typecheck/build pass; `index-BWjX7qZV.js`, 676,977 bytes, SHA256 `857c5ffd...`; ROM 6561/6561 (20.04s), no-ROM 6249 / 312 skipped (26.87s), 266 files. D1–D8 with ROM fail exactly 1,5,6,1,3,3,1,8 of 176 cases; only D2 has Error beside AssertionError. Source restored and re-verified; no snapshot change. Two retired, three moved, three new; no preload/data/extraction change or setup. Report: note 104 §9. Next: Grok review, then short user play-test; V5g1 remains open.
+
+### 2026-11-15 (V5g1 checkpoint-02 play-tested and closed; checkpoint-03 traced, spiked and briefed) — Claude
+
+- The user's SAVE play-test passed; note 103 §11. Traced `TextCommand_SOUND` / `TextCommandSounds` and probed `$98`, `$9a` in the four banks (note 104 §2): `$98` has a file only in `$08`. Spike (12 files): `TEXT_SOUND_IDS` + `textSoundId`, one `SFX_FILES` row, the battle text owner on the table; `resolveTextSound`, `textSoundPort`, `BATTLE_TEXT_SOUND_IDS` retired; a `textSoundFile` test helper for four mocks. 2 retired, 3 moved, 3 new. Gates on the applied patch: typecheck clean; `index-BWjX7qZV.js`, 676,977 bytes; ROM 6561/6561; no-ROM 6249 / 312 skipped, 266 files; D1–D8 killed with the ROM (D2 also trips the Route 1 snapshot, reported as `Error`; no `.snap` written). Source restored; live baseline unchanged. DECISIONS #133. Next: Codex Sol implements, Grok reviews.
+
+### 2026-11-15 (V5g1 checkpoint-02 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `ccee136` per note 103 §7. Nine source files match the spike; the game diff excluding the audio architecture doc equals `01-spike.diff`. The ROM probe matches `field-table-probe.txt` and `SFX_FILES`. Gates re-run: typecheck clean; bundle `index-CEHrt2N6.js`, 677,054 bytes, SHA256 `50ef1012...`; ROM 6560/6560; no-ROM 6248 pass / 312 skip, 266 files. C1–C11 each exit 1, only AssertionError, exact counts, 198 cases. **Independent mutation** (`save_3` dropped from the preload) killed by 3 cases; source restored. No witness. Queue advanced to the user's SAVE play-test (note 103 §8). Checkpoint-03 not started.
+
+### 2026-11-15 (V5g1 checkpoint-02 implemented; awaiting Grok review) — Codex
+
+- Applied note 103's nine-file patch on `338c80c` (source base `c0235f3`); hashes/exact diff pass; cited ASM and recorded ROM probe agree. Typecheck/build pass; `index-CEHrt2N6.js`, 677,054 bytes, SHA256 `50ef1012...`; ROM 6560/6560 (19.01s), no-ROM 6248 / 312 skipped (19.57s), 266 files. C1–C11 with ROM each exit 1, only AssertionError, exact expected counts (198 cases); source restored and re-verified before docs. Four cases moved, eight new. No battle/data/snapshot change or setup. Report: note 103 §9. Next: Grok review, then user play-test; checkpoint-03 not started.
+
+### 2026-11-15 (battle prompt play-tested and closed; V5g1 checkpoint-02 traced, spiked and briefed) — Claude
+
+- Ran the dev server; the user's play-test passed ("itdoes work", the two-line prompt after "Use next POKéMON?"); note 102 §11. Traced `DetermineAudioFunction` (Audio 4 default) and probed every `SFX_IDS` id in the four banks against the committed files (note 103 §2). Spike (9 files): `SFX_FILES`, `sfxNameForSound(id, bank)`, warn-once for an unmapped pair, the `_3` preloads. 4 cases moved, 8 new. Gates on the patch: typecheck clean; `index-CEHrt2N6.js`, 677,054 bytes; ROM 6560/6560; no-ROM 6248 / 312 skipped, 266 files; C1–C11 killed with the ROM. Source restored, re-applied byte-identical, restored; live baseline unchanged. DECISIONS #132. Next: Codex implements, Grok reviews.
+
+### 2026-11-15 (Battle-prompt checkpoint reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `6f64d23` per note 102 §7. Nine source files match the spike hashes; the game diff excluding the three architecture docs equals `01-spike.diff`. Cited ASM agrees: menu type 0 and 2, no extra frames for the second line. Gates re-run: typecheck clean; bundle `index-ClbqleTz.js`, 675,952 bytes, SHA256 `c4203d8e...`; ROM 6552/6552; no-ROM 6241 pass / 311 skip, 266 files. B1–B13 each exit 1, only AssertionError, exact counts. **Independent mutation** (GoBack prints with letter delay) killed by 4 cases; source restored. No witness. Queue advanced to the user's play-test (note 102 §8). V5g1 checkpoint-02 not started. Two oldest session entries moved verbatim to HISTORY.
+
+### 2026-11-15 (Battle-prompt checkpoint implemented; awaiting Grok review) — Codex
+
+- Applied note 102's nine-file patch on `fbc1abf` (source base `d102526`); hashes/exact diff pass; cited ASM and symbols agree. Typecheck/build pass; `index-ClbqleTz.js`, 675,952 bytes, SHA256 `c4203d8e...`; ROM 6552/6552 (21.39s), no-ROM 6241 / 311 skipped (20.30s), 266 files. B1–B13 each exit 1, only AssertionError, exact expected counts; source restored and re-verified before docs. One case moved, five new; timing/data/audio/snapshots unchanged, no setup. Report: note 102 §9. Next: Grok review, then user play-test. V5g1 checkpoint-02 not started.
+
+### 2026-11-15 (battle chooser's prompt traced, spiked and briefed) — Claude
+
+- Traced `.printMessage`'s `PartyMenuMessagePointers[wPartyMenuTypeOrMessageID]`, the three battle hosts (`core.asm:1126, 1427, 2419, 2438`) and the no-delay second line. Spike (9 files): `PartyMenu` takes the menu type at `openBattleChoice` / `goBackToChoice`; `chooseParty` reads `$D07C`; PKMN writes 0 via a new `A` binding; `show()` resets. 1 case moved, 5 new. Gates on the patch: typecheck clean; `index-ClbqleTz.js`, 675,952 bytes; ROM 6552/6552; no-ROM 6241 / 311 skipped, 266 files; B1–B13 killed, AssertionError only. Source restored, patch re-applied byte-identical and restored again; live baseline unchanged. Note 102, DECISIONS #131. Next: Codex implements, Grok reviews. Two oldest session entries moved verbatim to HISTORY.
+
+### 2026-11-15 (V5g1 checkpoint-01 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `9f02464` per note 101 §6. Seven source files match the spike; the `game/src` and `game/scripts` diff excluding the audio architecture doc equals `01-spike.diff`. Symbols and the three `_3.asm` bodies agree. Setup again wrote 210 JSON and changed nothing under `data/` or `static/`. Gates: typecheck clean; bundle unchanged `index-CG0XzLJc.js`, 675,542 bytes; ROM 6547/6547; no-ROM 6236 pass / 311 skip, 266 files. P1–P9 each exit 1, only AssertionError, exact counts. **Independent mutation** (the two PC header addresses swapped) killed by 9 cases; source restored. No witness. No play-test. Queue is the battle-prompt plan (#130), then checkpoint-02. Note 101 §9.
+
+### 2026-11-15 (V5g1 checkpoint-01 implemented; awaiting review) — Codex
+
+- Applied note 101's seven-file patch on `8fb560e`; hashes/exact diff pass; cited ASM and symbols agree. Setup twice: 210 JSON, six new files matching manifest; prior generated files unchanged. Typecheck/build pass; unchanged `index-CG0XzLJc.js`, 675,542 bytes, SHA256 `bb561cac...`; ROM 6547/6547 (18.49s), no-ROM 6236 / 311 skipped (18.79s), 266 files. P1–P9 with ROM each exit 1, only AssertionError, exact expected counts; all source/data restored and verified before docs. Report: note 101 §8. Next: checkpoint-01 review; no play-test, nothing plays the copies yet. Lookup remains checkpoint-02.
+
+### 2026-11-15 (V5f closed; V5g1 traced, split and checkpoint-01 spiked and briefed) — Claude
+
+- The user reported the play-tests ("Both passed": 03b and 03c); recorded in notes 99 §11 and 100 §11; V5f closed, docs only. Traced the SFX lookup (note 101 §2) and probed the ROM: of the extracted sounds only `save`, `turn_on_pc`, `enter_pc` differ in bank `$1f`. Split V5g1 into 01 data, 02 lookup, 03 battle text sound. Spike 01: 7 files plus setup's 6 generated files; 2 cases moved, 21 new. Gates on the patch: typecheck clean; bundle unchanged; ROM 6547/6547; no-ROM 6236 / 311 skipped, 266 files; P1–P9 killed (P6 survived first: the setup script's name list was unpinned; a witness now kills it). Source and data restored; live baseline 6526 / 6228 + 298. DECISIONS #129. Next: checkpoint-01's implementer. Three oldest session entries moved verbatim to HISTORY.
+
+### 2026-11-15 (V5f checkpoint-03c reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `df7df53` per note 100 §7. Nine source files match the spike hashes; the game diff excluding the two architecture docs equals `01-spike.diff`. Cited ASM agrees for START's party, Bill's PC and battle PKMN. Gates re-run: typecheck clean; bundle `index-CG0XzLJc.js`, 675,542 bytes, SHA256 `bb561cac...`; ROM 6526/6526; no-ROM 6228 pass / 298 skip, 266 files. N1–N14 each exit 1, only AssertionError, exact counts. **Independent mutation** (a second `SET_PAL_STATUS_SCREEN` at setup age 19) killed by 7 cases; source restored. No witness. Queue advanced to the user's play-test (note 100 §8). 03b's play-test is still unrecorded. Note 100 §10. V5g not started.
+
+### 2026-11-15 (V5f checkpoint-03c implemented; awaiting review) — Codex
+
+- Applied note 100's nine-file patch on `15189dc9` (source base `42c45e7`); hashes and exact game diff pass; cited ASM agrees. Typecheck/build pass; `index-CG0XzLJc.js`, 675,542 bytes, SHA256 `bb561cac...`; ROM 6526/6526 (22.38s), no-ROM 6228 / 298 skipped (22.73s), 266 files. N1–N14 each exit 1 with only AssertionError and exact expected counts; source restored and re-verified before docs. 43 cases retimed, four new; snapshots/generated files unchanged, no setup. Report: note 100 §9. Next: checkpoint-03c review (the user names the reviewer), then play-test. Neither 03b nor 03c has a recorded play-test; V5f remains open.
+
+### 2026-11-15 (V5f checkpoint-03c traced, spiked and briefed) — Claude
+
+- The user pasted Grok's 03b PASS and asked for 03c; no 03b play-test was reported, so none is recorded. Traced `StatusScreen` against the port (note 100 §2): only `SET_PAL_STATUS_SCREEN`'s two held frames are missing, in three hosts. Spike: 9 files; owner option on the session, `setPalStatusScreen`, `advanceBattleStatusFrame`; read 27 → 29; 43 cases retimed, 4 new, no snapshot change. Gates on the patch: typecheck clean; `index-CG0XzLJc.js`, 675,542 bytes; ROM 6526/6526; no-ROM 6228 / 298 skipped, 266 files; N1–N14 killed. Source restored; live baseline still 6522 / 6224 + 298. DECISIONS #128. Next: Codex implements §6. Three oldest session entries moved verbatim to HISTORY.
+
+### 2026-11-15 (V5f checkpoint-03b reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `215b638` per note 99 §7. Five source files match the spike hashes; the game diff excluding the two architecture docs equals `01-spike.diff`. Cited ASM agrees for PKMN, faint replacement and SHIFT. Gates re-run: typecheck clean; bundle `index-BSeRWHbH.js`, 675,001 bytes, SHA256 `64a82291...`; ROM 6522/6522; no-ROM 6224 pass / 298 skip, 266 files. M1–M11 each exit 1, only AssertionError, exact counts. **Independent mutation** (a second `SET_PAL_PARTY_MENU` at redraw age 9) killed by 10 cases; source restored. No witness. Queue advanced to the user's play-test (note 99 §8). Note 99 §10. 03c not started.
+
+### 2026-11-15 (V5f checkpoint-03b implemented; awaiting Grok review) — Codex
+
+- Applied note 99's five-file patch on `c22282e`; base/artifact/applied hashes and exact diff passed; cited ASM agrees. Typecheck/build pass; `index-BSeRWHbH.js`, 675,001 bytes, SHA256 `64a82291...`; ROM 6522/6522 (25.80s), no-ROM 6224 / 298 skipped (22.04s), 266 files. M1–M11 each exit 1 with only AssertionError and exact expected counts; source restored and re-verified before docs. Seven cases retimed, six new; no snapshots/generated changes or setup. Report: note 99 §9. Next: Grok reviews §7, then user play-test. 03c untouched; not reviewed or play-tested.
+
+### 2026-11-15 (V5f checkpoint-03b traced, spiked and briefed) — Claude
+
+- Read the context, notes 96–98 and the party/battle hosts. Traced every cartridge caller of GoBack/Redraw (note 99 §1): the port has one un-held redraw path, `PartyMenu.goBackToChoice`, used by PKMN, faint replacement and SHIFT. Spike: 5 files, `partyPaletteDue` at redraw age 4, read 16 → 18; 7 cases retimed, 6 new, no snapshot change. Gates on the patch: typecheck clean; `index-BSeRWHbH.js`, 675,001 bytes; ROM 6522/6522; no-ROM 6224 / 298 skipped, 266 files; M1–M11 killed (one equivalent mutant documented). Source restored; live baseline still 6516 / 6218 + 298. Two findings to note 57: the field party's un-modelled submenu returns (J2), and the battle chooser's wrong prompt program (user to place). DECISIONS #127. Next: Codex implements §6, Grok reviews §7. Three oldest session entries moved verbatim to HISTORY.
+
+### 2026-11-14 (V5f checkpoint-03a play-test passed; closed) — Codex
+
+- User: "i playtested and everything looks good". Verified `5ec2187`/`80e1384`, all 14 spike hashes and the review evidence. Recorded note 98 §11 and refreshed current handoff/baseline labels. ROM 6516/6516, no-ROM 6218 / 298 skipped, 266 files; bundle unchanged. Docs only, no test rerun or code/generated change. Next: plan 03b (GoBack/shared redraw); 03c and V5g remain later. Oldest session entries archived verbatim to HISTORY.
+
+### 2026-11-14 (V5f checkpoint-03a reviewed: passed, one independent witness) — Nemotron
+
+- Reviewed Grok's `5ec2187` per note 98 §7. Fourteen source files match spike hashes; diff matches `01-spike.diff`; cited ASM agrees. Snapshot audit: nine timing-only insertions (2 held frames each, timestamps shift). Gates re-run: typecheck clean; bundle `index-DtHxBGmW.js`, 674,983 bytes, SHA256 `4f892ff6...`; ROM 6516/6516; no-ROM 6218 pass / 298 skip, 266 files. L1–L15 each exit 1, only AssertionError, exact counts per §5; source restored. **Independent mutation** (re-arm holdVBlank after palette) killed by 12 cases (6 main, 1 field medicine, 5 party_menu_opening); not equivalent to L1–L15. Queue advanced to user play-test. Note 98 §10. 03b/03c not started.
+
+### 2026-11-14 (V5f checkpoint-03a implemented; awaiting Nemotron review) — Grok
+
+- Applied note 98's patch on planning commit `e7802dd` (parent `7b88c1b`). Fourteen source hashes match the spike. `git diff -- game` is byte-identical under `core.abbrev=8`; no git config change. Cited ASM agrees. Snapshot audit: nine timing-only insertions. Gates: typecheck clean; bundle `index-DtHxBGmW.js`, 674,983 bytes, SHA256 `4f892ff62f41255905f7ce332e57a016407a3f033107d4198748d2626993b30f`; ROM 6516/6516 in 20.72s; no-ROM 6218 pass / 298 skip, 266 files, in 20.60s. L1–L15 each exit 1, only AssertionError, counts 12, 11, 31, 24, 9, 9, 7, 21, 3, 3, 7, 3, 4, 9, 4; source restored. No setup. Report: note 98 §9. Next: Nemotron reviews §7. 03b/03c have not started. Not play-tested.
+
+### 2026-11-14 (V5f checkpoint-02 closed; checkpoint-03a planned, spiked and briefed) — Codex
+
+- User play-test passed; verified checkpoint-02 source/review and logged note 97 §11 (review arithmetic clarified: 24 bag + 3 main = 27 failures). Split 03 into full opening (03a), redraw (03b), status (03c). Note 98: 14-file spike; 12 new cases; nine audited timing-only snapshots. Final gates: ROM 6516/6516; no-ROM 6218 / 298 skipped, 266 files; typecheck/build pass; L1–L15 killed. Medicine mutation L10 was caught by three existing whole-item snapshots; three direct boundary witnesses now kill it in the target too. All 14 source files restored exactly. Live baseline stays 6504 / 6206 + 298 skip. Grok implements, Nemotron reviews, then user play-test. 03b/03c untouched. Oldest session entries moved verbatim to HISTORY to keep STATUS under 40 KB.
+
+### 2026-11-14 (V5f checkpoint-02 reviewed: passed, one independent witness) — Nemotron
+
+- Reviewed Grok's `956a602` per note 97 §7. Three source files match spike hashes; diff matches `01-spike.diff`; cited ASM agrees. Gates re-run: typecheck clean; bundle `index-bUcug1zc.js`, 674,479 bytes, SHA256 `27cc1947...`; ROM 6504/6504; no-ROM 6206 pass / 298 skip, 266 files. K1–K12 each exit 1, only AssertionError, exact counts per §5; source restored. **Independent mutation** (holdVBlank every frame) killed by 27 new bag cases + 3 main cases; not equivalent to K1–K12. Queue advanced to user play-test. Note 97 §10. Checkpoint-03 not started.
+
+### 2026-11-14 (V5f checkpoint-02 implemented; awaiting Nemotron review) — Grok
+
+- Applied note 97's patch on `f4d77b0` (parent `e7f3ab2`). Three source hashes match the spike. Cited ASM agrees. Gates: typecheck clean; bundle `index-bUcug1zc.js`, 674,479 bytes; ROM 6504/6504; no-ROM 6206 pass / 298 skip, 266 files. K1–K12 each exit 1 with only AssertionError and the expected counts; source restored. No setup. Report: note 97 §9. Next: Nemotron reviews §7. Checkpoint-03 has not started. Not play-tested.
+
 ### 2026-11-14 (V5f checkpoint-02 planned, spiked and briefed) — Codex
 
 - Traced ItemMenuLoop against pret: 2 held + Delay3 before list construction; initial entry and medicine bypass it. Three-file spike, two existing cases moved, 27 new. Typecheck/build pass; ROM 6504/6504, no-ROM 6206 pass / 298 skip, 266 files; K1–K12 killed. Patch reapplication byte-identical; source restored exactly, no generated changes. Note 97 carries hashes, logs, scripts, gates, stops and both prompts. Live baseline unchanged. User assignment: Grok implements, Nemotron reviews, then user play-test (#125). Checkpoint-03 untouched.

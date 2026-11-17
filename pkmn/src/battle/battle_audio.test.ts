@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { musicData, rig, sfxData } from '../test/audio_rig';
 import { BattleAudio } from './battle_audio';
-import { TextProgramRunner } from '../text/text_runner';
-import { TextScreen } from '../text/text_printer';
 import { soundFinished } from '../audio/sound_wait';
 import { playPikachuClipCue } from './battle_voice_cues';
 import type { SfxData } from '../audio/sfx_engine';
@@ -69,21 +67,6 @@ describe('BattleAudio (Audio2_PlaySound)', () => {
     setLowHealthChannel5(0);
     expect(r.sfx.isChannelActive(0)).toBe(false); r.update();
     expect(r.sfx.isChannelActive(0)).toBe(false);
-  });
-
-  it('resolves TextCommandSounds by the active bank', () => {
-    const r = rig(); const audio = new BattleAudio(r.sfx, r.music);
-    expect(audio.resolveTextSound('get_item1')).toBe('level_up');
-    audio.audioBank = 0x02; expect(audio.resolveTextSound('get_item1')).toBe('get_item1');
-  });
-
-  it('provides the bank-relative port to the real text-program runner', () => {
-    const r = rig(); const audio = new BattleAudio(r.sfx, r.music); const played: string[] = [];
-    const ports = { buttons: () => 0, speed: () => 1, soundFinished: () => true, joypadRead: () => {}, beep: () => {},
-      playSound: audio.textSoundPort(name => played.push(name)), cry: () => {} };
-    const runner = new TextProgramRunner(new TextScreen(ports), { P: [{ op: 'sound', sound: 'get_item1' }] }, ports);
-    runner.run('P', {}, true).next(); expect(played).toEqual(['level_up']);
-    audio.audioBank = 2; runner.run('P', {}, true).next(); expect(played).toEqual(['level_up', 'get_item1']);
   });
 
   it('retains the alarm-owned CHAN5 and command pointer when its next-note counter reaches 1', () => {

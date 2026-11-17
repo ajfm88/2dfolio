@@ -12,6 +12,7 @@ import { audioUpdate } from '../audio/sound_wait';
 import { AudioFade } from '../audio/fade_audio';
 import type { MusicData, MusicCommand, NoiseInstrument } from '../audio/music_engine';
 import type { SfxData } from '../audio/sfx_engine';
+import { sfxNameForSound, textSoundId } from '../audio/sound_ids';
 
 const DATA = resolve(__dirname, '../../data/audio');
 
@@ -87,4 +88,12 @@ export const musicData = (name: string): MusicData => audioJson<MusicData>(`musi
 /** A one-channel track. */
 export function track(id: number, commands: MusicCommand[]): MusicData {
   return { channels: [{ id, commands }] };
+}
+/** V5g1 checkpoint-03: a text `sound` command's file in `bank` (TEXT_SOUND_IDS through SFX_FILES); any other
+ * name is its own file. Replaces BattleAudio.resolveTextSound in the battle tests' playSFX mocks. */
+export function textSoundFile(name: string, bank: number): string {
+  const id = textSoundId(name);
+  const file = id === undefined ? name : sfxNameForSound(id, bank);
+  if (file === undefined) throw new Error(`no text sound file for ${name} in bank ${bank}`);
+  return file;
 }

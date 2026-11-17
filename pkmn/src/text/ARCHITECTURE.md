@@ -24,7 +24,10 @@ START → POKéMON draws `PartyMenuNormalText` and, after SWITCH, `PartyMenuSwap
 Field medicine draws `PartyMenuItemUseText`, then the result program (`PotionText`,
 `AntidoteText`, `FullHealText`, `ReviveText`, and the other status lines) with no
 letter delay. `ItemUseNoEffectText` is typed, with a prompt. `ItemUseNotYoursToUseText`
-is OAK'S PARCEL. Battle's "Bring out which POKéMON?" stays A5c.
+is OAK'S PARCEL. Battle prompts follow `wPartyMenuTypeOrMessageID`: PKMN writes NORMAL (0) and prints
+`PartyMenuNormalText`; ChooseNextMon (faint replacement) and SHIFT write BATTLE (2) and print
+`PartyMenuBattleText` ("Bring out which" / "POKéMON?") in the opening, every GoBack redraw
+and the retained prompt (note 102, user-verified). No timing changes.
 
 ## Text data and printer (A5a)
 

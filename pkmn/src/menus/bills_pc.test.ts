@@ -112,7 +112,7 @@ describe('BillsPC_ on the retained display', () => {
     border.mockRestore();
   });
 
-  it.each([0, 1])('STATS branch %i: Buffer1 Q+3, held Q+4..5, white until Q+8, first read Q+11; one tick owner', branch => {
+  it.each([0, 1])('STATS branch %i: held S+15..16, first read S+29; Buffer1 Q+3, held Q+4..5, white until Q+8, first read Q+11; one tick owner', branch => {
     const r = rig(undefined, [boxed()]); const original = structuredClone(r.box);
     r.branch(branch); r.frames(16); r.tick('a'); r.frames(3); r.tick('down'); r.frames(3);
     const before = r.tiles.save(r.textBox); r.tick('a'); const s = r.time();
@@ -124,8 +124,10 @@ describe('BillsPC_ on the retained display', () => {
       expect(transfer.mock.calls.length - n).toBe(held ? 0 : 1);
     };
     const reads = r.reads.mock.calls.length;
-    for (let i = 1; i <= 26; i++) { frame(); expect(r.reads).toHaveBeenCalledTimes(reads); }
-    frame(); expect(r.time()).toBe(s + 27); expect(r.reads).toHaveBeenCalledTimes(reads + 1);
+    for (let i = 1; i <= 28; i++) {
+      expect(isVBlankHeld()).toBe(i === 15 || i === 16); frame(); expect(r.reads).toHaveBeenCalledTimes(reads);
+    }
+    frame(); expect(r.time()).toBe(s + 29); expect(r.reads).toHaveBeenCalledTimes(reads + 1);
     frame('b'); const p = r.time();
     frame(); frame(); expect(r.reads).toHaveBeenCalledTimes(reads + 2);
     frame(); expect(r.time()).toBe(p + 3); expect(r.reads).toHaveBeenCalledTimes(reads + 3);

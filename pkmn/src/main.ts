@@ -1,4 +1,5 @@
 import { getPikachuEmotionModifier, setPikachuEmotionModifier } from './pikachu/pikachu_happiness';
+import { mapChangeSound } from './overworld/map_change_sound';
 import { installOverworldRandom } from './overworld/overworld_random';
 import { packOptions, unpackOptions } from './battle/battle_bridge';
 import { withdrawMon, boxStatsMon } from './pokemon_transfers';
@@ -943,18 +944,6 @@ function renderEvolution(): void {
   }
 }
 
-/** Outdoor maps have map connections; indoor maps are buildings/caves/etc.
- *  Uses explicit set rather than patterns for build-time obfuscation compatibility. */
-const OUTDOOR_MAPS = new Set([
-  'PalletTown', 'ViridianCity', 'PewterCity', 'ViridianForest',
-  'Route1', 'Route2', 'Route3', 'Route4', 'Route5', 'Route6', 'Route7', 'Route8',
-  'Route9', 'Route10', 'Route11', 'Route12', 'Route13', 'Route14', 'Route15',
-  'Route16', 'Route17', 'Route18', 'Route19', 'Route20', 'Route21', 'Route22',
-  'Route23', 'Route24', 'Route25',
-]);
-function isOutdoorMap(name: string): boolean {
-  return OUTDOOR_MAPS.has(name);
-}
 
 /**
  * Map name → music track. Derived from data/maps/songs.asm.
@@ -2022,11 +2011,8 @@ function handleOverworldAction(action: OverworldAction): void {
       engageTrainer(action.npc, false);
       break;
     case 'warp':
-      // Play door sound: indoor maps start with uppercase letter after prefix
-      // Outdoor maps: PalletTown, Route1, ViridianCity, etc.
-      // Indoor maps: RedsHouse1F, OaksLab, ViridianPokecenter, etc.
-      // On real GB: SFX_GO_INSIDE when entering building, SFX_GO_OUTSIDE when exiting
-      playSFX(isOutdoorMap(action.destMap) ? 'go_outside' : 'go_inside');
+      // PlayMapChangeSound: the tile under the player on the warp square picks the sound (V5g3 checkpoint-01).
+      playSFX(mapChangeSound(gameMap.mapData?.tileset ?? '', gameMap.getTileAt(player.tileX, player.tileY)));
       warpToMap(action.destMap, action.destWarpId);
       break;
     case 'connectToMap':

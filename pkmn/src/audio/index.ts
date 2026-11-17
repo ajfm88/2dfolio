@@ -14,11 +14,12 @@ import { GBSynthesizer } from './synthesizer';
 import { MusicEngine } from './music_engine';
 import { SfxEngine } from './sfx_engine';
 import { EXTRACTED_SFX } from './sfx_names';
+import { acceptsSfxChannel } from './sfx_priority';
 import { audioUpdate, soundFinished, updateMusic6Times as sixPasses } from './sound_wait';
 import { PlaySound } from './play_sound';
 import { isNoAudioFadeOut } from './audio_flags';
 import { engineHost } from './request_host';
-import { SFX_IDS, musicIdentity, musicNameForSound, sfxNameForSound } from './sound_ids';
+import { SFX_IDS, musicIdentity, musicNameForSound, sfxNameForSound, textSoundId } from './sound_ids';
 import { rivalAlternateStart } from './rival_start';
 import { AudioFade } from './fade_audio';
 import { battleMusicFor } from './battle_music';
@@ -76,9 +77,12 @@ let waveSamples: number[][] | null = null;
 let noiseInstruments: NoiseInstrument[] | null = null;
 const musicCache: Map<string, MusicData> = new Map();
 const sfxCache: Map<string, SfxData> = new Map();
-// The SFX asked for last: CollisionCheckOnLand replays SFX_COLLISION only when it isn't
-// already the sound playing (wChannelSoundIDs + CHAN5)
+// The SFX asked for last; only a request still loading reads it (isSfxPlaying)
 let currentSfx: string | null = null;
+// wChannelSoundIDs + CHAN5–8 as the field's PlaySound wrote them, with the file each id played (V5g2).
+// A channel counts only while its SFX plays: sound_ret, InitSFXVariables and PlaySound's ID clear all
+// leave it idle, so an idle channel reads 0, as its ID does on the cartridge.
+const fieldSounds = new Map<number, { id: number; file: string }>();
 // SFX requested but still loading: they count as playing (isSoundFinished)
 let pendingSfx = 0;
 
@@ -116,6 +120,9 @@ export async function resumeAudio(): Promise<void> {
   }
 }
 
+// (bank, id) pairs already reported as having no committed file
+const unmappedSfx = new Set<string>();
+
 /** DetermineAudioFunction: the numeric ID and the current audio bank pick music or an SFX. */
 function determineAudioFunction(id: number, bank: number): void {
   const music = musicNameForSound(id, bank);
@@ -125,8 +132,14 @@ function determineAudioFunction(id: number, bank: number): void {
     startPromise = startMusic(music, start);
     return;
   }
-  const sfx = sfxNameForSound(id);
-  if (sfx) startPromise = startSfx(sfx);
+  const sfx = sfxNameForSound(id, bank);
+  if (sfx) { startPromise = startSfx(sfx, id); return; }
+  // No committed file holds this bank's entry: nothing plays, never another bank's body.
+  const key = `${bank}:${id}`;
+  if (!unmappedSfx.has(key)) {
+    unmappedSfx.add(key);
+    console.warn(`No SFX file for id $${id.toString(16)} in audio bank $${bank.toString(16)}`);
+  }
 }
 
 async function startMusic(name: string, start?: 'rivalAlternate'): Promise<void> {
@@ -263,14 +276,23 @@ export function* playBattleMusic(input: BattleMusicInput): Generator<void, void>
  */
 export function playSFX(name: string): Promise<void> {
   if (!sfxEngine || !audioReady || !requests) return Promise.resolve();
-  const id = SFX_IDS[name as keyof typeof SFX_IDS];
+  // A field id, else a text `sound` command's (TextCommandSounds: caught_mon, dex_page_added), so the current
+  // bank's table picks the body as it does for every other request (V5g3 checkpoint-04).
+  const id = SFX_IDS[name as keyof typeof SFX_IDS] ?? textSoundId(name);
   if (id === undefined) return startSfx(name);
   startPromise = Promise.resolve();
   requests.playSound(id);
   return startPromise;
 }
 
-async function startSfx(name: string): Promise<void> {
+/** wChannelSoundIDs + `channel` (5–8) for the field: the playing SFX's id, else 0. A music drum's id on CHAN8
+ * is left out: field requests are never noise instruments, and a real SFX beats a drum (acceptsSfxChannel). */
+function fieldChannelId(channel: number): number {
+  if (!(sfxEngine?.isChannelActive(channel - 5) ?? false)) return 0;
+  return fieldSounds.get(channel)?.id ?? 0;
+}
+
+async function startSfx(name: string, id?: number): Promise<void> {
   if (!sfxEngine) return;
   currentSfx = name;
 
@@ -287,9 +309,24 @@ async function startSfx(name: string): Promise<void> {
     if (!data) return;
   }
 
-  // A real SFX on channel 8 replaces a drum hit there (Audio1_PlaySound 1433–1436)
-  if (data.channels.some(ch => ch.id === 8)) engine?.cancelDrum();
-  sfxEngine.play(data);
+  if (id === undefined) {
+    // A name outside SFX_IDS and TEXT_SOUND_IDS (only the debug _playSFX today): upstream's replace-all, no ids.
+    if (data.channels.some(ch => ch.id === 8)) engine?.cancelDrum();
+    fieldSounds.clear();
+    sfxEngine.play(data);
+    return;
+  }
+  // Audio1_PlaySound (engine_1.asm:1404–1449): the header backwards; InitSFXVariables on each accepted
+  // channel; one refusal returns, leaving the channels already cleared idle (a Gen 1 quirk kept).
+  for (const channel of [...data.channels].reverse()) {
+    if (!acceptsSfxChannel(channel.id, id, fieldChannelId(channel.id))) return;
+    sfxEngine.clearChannelsForPriority([channel.id]);
+    fieldSounds.delete(channel.id);
+    // A real SFX on channel 8 replaces a drum hit there (Audio1_PlaySound 1433–1436)
+    if (channel.id === 8) engine?.cancelDrum();
+  }
+  for (const channel of data.channels) fieldSounds.set(channel.id, { id, file: name });
+  sfxEngine.installSfx(data);
 }
 
 export async function loadSfx(name: string): Promise<SfxData | undefined> {
@@ -362,15 +399,21 @@ export function isMusicChannelActive(id: number): boolean {
 }
 
 /**
- * Check if an SFX is currently playing: any, or the one named. A named SFX still
- * loading counts as playing.
+ * Check if an SFX is currently playing: any, or the one named. The named form is CollisionCheckOnLand's
+ * `wChannelSoundIDs + CHAN5 == SFX_COLLISION`: a channel still holds that sound. A named SFX still loading
+ * counts as playing.
  */
 export function isSfxPlaying(name?: string): boolean {
   if (name !== undefined) {
-    if (currentSfx !== name) return false;
-    return !sfxCache.has(name) || (sfxEngine?.isPlaying() ?? false);
+    if (currentSfx === name && !sfxCache.has(name)) return true;
+    return [5, 6, 7, 8].some(channel => fieldChannelId(channel) !== 0 && fieldSounds.get(channel)?.file === name);
   }
   return sfxEngine?.isPlaying() ?? false;
+}
+
+/** wChannelSoundIDs + `channel` (5–8) as the field sees it; 0 when idle. */
+export function channelSoundId(channel: 5 | 6 | 7 | 8): number {
+  return fieldChannelId(channel);
 }
 
 /**

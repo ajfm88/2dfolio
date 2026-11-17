@@ -1,5 +1,7 @@
 # Menus Architecture
 
+The battle-prompt checkpoint (note 102, user-verified) passes the menu type at `openBattleChoice` / `goBackToChoice` to one `listMessage` for opening, redraw and retained text: NORMAL for PKMN, BATTLE for faint replacement and SHIFT; `show()` resets it to normal, and battle context binds the byte through `A.wPartyMenuTypeOrMessageID` at `$D07C` without moving any timing.
+
 V5f checkpoint-02 (2026-11-14, note 97, #125) adds `ItemMenuLoop`'s missing default-palette
 command on every ordinary return to the field bag: two held frames, then three ordinary
 frames, before `DisplayListMenuID`. The list border is logical at R+5, entries print and
@@ -16,8 +18,18 @@ standalone `present()` consumes the two held frames, and the bag already consume
 during medicine. A battle-owned opening exposes `paletteCommandDue` at age 10 and never
 touches the field counter. `advanceBattlePartyFrame` runs `setPalPartyMenu()` for PKMN,
 SHIFT and faint. Battle medicine keeps its existing `setPalPartyMenu()` timing (reveal 21,
-read 24) and does not arm the field hold. `GoBackToPartyMenu` stays 16 frames (03b).
-StatusScreen's first read stays S+27 (03c).
+read 24) and does not arm the field hold. `GoBackToPartyMenu` now first reads at R+18
+(03b, note 99; user-verified). `partyPaletteDue` exposes redraw
+age 4 as well as the opening boundary; the shared `advanceBattlePartyFrame` runs the palette
+generator for PKMN, faint replacement and SHIFT, with R+5..6 held and no field hold.
+Field submenu returns remain unmodelled (J2).
+StatusScreen now first reads S+29, with S+15..16 held (03c, note 100;
+user-verified). `StatusScreenOptions.paletteOwner` defaults to `field`: the session
+arms the field hold after S+14 and takes those two frames instead of presenting. START's
+party and Bill's PC already leave the BG tick to the session. Battle PKMN passes `battle`:
+`advanceBattleStatusFrame` runs `BattleScreen.setPalStatusScreen` once, installing the HP-bar,
+mon, ROUTE and ROUTE palettes, yielding two held frames and three session frames. Battle
+frames never touch the field counter. Page 2 and all P/Q return timings are unchanged.
 
 V5e checkpoint-01 shares the single `MonsterNames` copy in `battle/data.ts` through `speciesDisplayName` for the Pokédex and field status page 2. The Pokédex fetches two tables of its own (note 95).
 
@@ -47,7 +59,7 @@ subclass, with no other PartyMenu API or renderer change. Note72 §10.15.
 ## Pattern
 
 A5c2 CP5 adds PartyMenu's unused `openBattleChoice` / `goBackToChoice` API and `frameBattleChoice`.
-Opening stays C+22 and redraw16 (ASM24/18; #73). The new mode reuses the common item chooser's wrapping, raw
+The original timing was C+22 and redraw16 (ASM24/18; #73); V5f 03a/03b now provide C+24/R+18 as above. The mode reuses the common item chooser's wrapping, raw
 B-over-A rule, cursor save and sleeping-starter rejection, with a force-A-only watch. `choiceOverlay` retains
 opaque submenu/clear writes over the existing pixel list and copies one third per session frame; its null cells
 show that list. Legacy battle/battle_forced modes remain unchanged. `battle/battle_party_menu.ts` owns the
@@ -268,7 +280,7 @@ reports `paletteCommandDue` and leaves the field counter alone. Overworld STATS
 returns into it at Q+3, hence reveal Q+24/read Q+27. The prompt's standalone TextBox
 is created at PrintText C+15, runs its no-delay Delay3 through C+18, and is dismissed
 at C+21 with GBPalNormal, when the party renderer retains those program-derived lines.
-`GoBackToPartyMenu` stays a 16-frame redraw. StatusScreen's own first read stays S+27.
+`GoBackToPartyMenu` stays a 16-frame redraw. StatusScreen's own first read is S+29 (03c; held S+15..16).
 Main skips its generic input sync during the opening, and the accepting frame
 uses the real read's edges; later party-list/submenu input remains the J2 adapter.
 
@@ -376,14 +388,14 @@ Box STATS deserializes a temporary mon and never changes the box. The session
 owns one ScreenTiles and one BG-transfer tick per active frame. `PcSession`
 forwards `ownsBgTransfer` so the script host skips its text/display tick, including
 the session's last frame. Selection S starts white and reduces NR50 to (3,3).
-Page 1 reveals S+20; the mirrored, padded picture's seven copy waits end at S+27,
+Page 1 reveals S+22 after held S+15..16; the mirrored, padded picture's seven copy waits end at S+29,
 the first read. Its marker cells reveal by transferred thirds, never by rendering.
 Fresh A or B silently advances; page 2 waits three frames before reading again.
 The last press Q restores NR50 (7,7), whites out and clears. Buffer1 restores at
 Q+3 with STATS selected; Bill remains full-screen white until LoadGBPal at Q+6,
 and first submenu input is Q+9. Since CP4, overworld party enters the shared
 opening at Q+3 on the same mon. Checkpoint-03a adds that opening's two frames, so
-the return now reveals Q+24 and reads Q+27. The status page's first read stays S+27.
+the return now reveals Q+24 and reads Q+27. The status page's first read is S+29 (03c).
 Battle still returns
 to its existing list at Q+3; its enemy-picture reload belongs to A5c.
 

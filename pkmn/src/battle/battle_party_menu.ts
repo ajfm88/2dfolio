@@ -1,8 +1,8 @@
 // core.asm PartyMenuOrRockOrRun's party branch.
 import type { BattlePokemon } from './types';
 import type { BattleActionContext, BattleActionHost, BattleMenuFlags, Program } from './battle_menu_context';
-import { PartyMenu, type BattlePartyChoice } from '../menus/party_menu';
-import { StatusScreenSession } from '../menus/status_screen';
+import { PartyMenu, NORMAL_PARTY_MENU, type BattlePartyChoice } from '../menus/party_menu';
+import { StatusScreenSession, type StatusScreenOptions } from '../menus/status_screen';
 import { MenuInput } from '../menus/menu_input';
 import { loadHudTilePatterns } from './battle_slides';
 import { placeMenuCursor, placeUnfilledArrowMenuCursor, textBoxBorder, placeString } from '../menus/tile_surface';
@@ -20,13 +20,16 @@ export interface BattlePartyContext extends BattleActionContext {
   curPartySpecies: number;
   curSpecies: number;
   battleMonSpecies2: number;
+  /** $D07C, shared with wNamingScreenType and wTempTilesetNumTiles. */
+  partyMenuTypeOrMessageID: number;
 }
 
-export type BattleStatusSession = Pick<StatusScreenSession, 'frame' | 'render' | 'paletteWhite' | 'tiles'>;
+export type BattleStatusSession = Pick<StatusScreenSession, 'frame' | 'render' | 'paletteWhite' | 'tiles'>
+  & Partial<Pick<StatusScreenSession, 'paletteCommandDue' | 'barColor'>>;
 export interface BattlePartyHost extends BattleActionHost {
   partyView: PartyMenu;
   statusView: BattleStatusSession | null;
-  createStatusScreen?(mon: BattlePokemon, options: { syncRead: boolean }): BattleStatusSession;
+  createStatusScreen?(mon: BattlePokemon, options: StatusScreenOptions): BattleStatusSession;
   loadEnemyPicVariant(kind: 'substitute' | 'minimize'): Program;
   switchPlayerMon(ctx: BattlePartyContext): Program;
 }
@@ -64,12 +67,13 @@ function* palette(ctx: BattlePartyContext, host: BattlePartyHost): Program {
     playerBar: ctx.playerHud.barColor as 0 | 1 | 2, enemyBar: ctx.enemyHud.barColor as 0 | 1 | 2 });
 }
 
-/** Full party opening is shared by PKMN, SHIFT and faint replacement. Redraw remains its existing path. */
+/** One frame of the party list for PKMN, SHIFT and faint replacement. The full opening and the
+ * GoBack redraw both run SET_PAL_PARTY_MENU here: two held frames, then three session frames. */
 export function* advanceBattlePartyFrame(
-  party: Pick<PartyMenu, 'openingPaletteDue' | 'frameBattleChoice'>,
+  party: Pick<PartyMenu, 'partyPaletteDue' | 'frameBattleChoice'>,
   host: Pick<BattlePartyHost, 'screen' | 'readJoypad' | 'pressSound'>,
 ): Program<BattlePartyChoice | null> {
-  if (party.openingPaletteDue) {
+  if (party.partyPaletteDue) {
     let choice: BattlePartyChoice | null = null;
     for (const frame of host.screen.setPalPartyMenu()) {
       yield frame === 'held' ? 'held' : 'session';
@@ -81,16 +85,34 @@ export function* advanceBattlePartyFrame(
   return party.frameBattleChoice(() => host.readJoypad(), () => host.pressSound());
 }
 
+const BAR_INDEX = { green: 0, yellow: 1, red: 2 } as const;
+/** One StatusScreen frame in battle. SET_PAL_STATUS_SCREEN runs here: two held frames, then three session frames. */
+export function* advanceBattleStatusFrame(
+  status: BattleStatusSession, mon: BattlePokemon, host: Pick<BattlePartyHost, 'screen' | 'readJoypad'>,
+): Program<boolean> {
+  if (status.paletteCommandDue) {
+    let done = false;
+    for (const frame of host.screen.setPalStatusScreen(BAR_INDEX[status.barColor ?? 'green'], mon.species.id)) {
+      yield frame === 'held' ? 'held' : 'session';
+      done = status.frame(() => host.readJoypad(), frame === 'held') === 'done';
+    }
+    return done;
+  }
+  yield 'session';
+  return status.frame(() => host.readJoypad()) === 'done';
+}
+
 export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattlePartyHost): Program<BattleMenuFlags | null> {
   const party = host.partyView;
   let full = true;
   for (;;) {
     ctx.monDataLocation = 0; ctx.menuItemToSwap = 0; ctx.menuWatchMovingOutOfBounds = 0;
+    ctx.partyMenuTypeOrMessageID = NORMAL_PARTY_MENU; // .partyMenuWasSelected and .partyMonDeselected
     if (full) {
       host.loadScreenTilesFromBuffer1();
       const forceChoose = !!ctx.forcePlayerToChooseMon; ctx.forcePlayerToChooseMon = 0;
-      party.openBattleChoice(ctx.partyMons, { forceChoose });
-    } else party.goBackToChoice();
+      party.openBattleChoice(ctx.partyMons, { forceChoose, menuType: NORMAL_PARTY_MENU });
+    } else party.goBackToChoice(NORMAL_PARTY_MENU);
     let choice;
     do {
       choice = yield* advanceBattlePartyFrame(party, host);
@@ -122,12 +144,10 @@ export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattleParty
       if (input.item === 1) {
         ctx.monDataLocation = 0; clearSprites(host);
         const mon = ctx.partyMons[ctx.whichPokemon];
-        const status = host.createStatusScreen?.(mon, { syncRead: false }) ?? new StatusScreenSession(mon, { syncRead: false });
+        const options: StatusScreenOptions = { syncRead: false, paletteOwner: 'battle' };
+        const status = host.createStatusScreen?.(mon, options) ?? new StatusScreenSession(mon, options);
         host.statusView = status;
-        for (;;) {
-          yield 'session';
-          if (status.frame(() => host.readJoypad()) === 'done') break;
-        }
+        while (!(yield* advanceBattleStatusFrame(status, mon, host)));
         // StatusScreen owns Q+3's VBlank. Reload starts as CPU work at that same boundary.
         host.statusView = null; ctx.whoseTurn = 1; white(host);
         if (ctx.enemyHasSubstitute) yield* host.loadEnemyPicVariant('substitute');

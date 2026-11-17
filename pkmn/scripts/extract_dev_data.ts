@@ -69,6 +69,8 @@ const SFX_NAMES = [
   'ball_poof',
   // A5f checkpoint-01 (note 87): Audio 2 only.
   'ball_toss',
+  // V5g1 checkpoint-01 (note 101): Audio 3's differing copies.
+  'turn_on_pc_3', 'enter_pc_3', 'save_3',
 ];
 
 function writeJson(relPath: string, data: unknown): void {

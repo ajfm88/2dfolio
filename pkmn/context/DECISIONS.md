@@ -1577,6 +1577,173 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      - GoBack/redraw remains 16 pending 03b; StatusScreen remains27 pending 03c. Main's generic sync stays
        unchanged in 03a: ownsInput already excludes it. No generated data, new clock or item behavior.
 
+127. **V5f checkpoint-03b is the battle party redraw only; Codex implements, Grok reviews** (2026-11-15, note 99).
+     *The user: "plan the next slice. Codex will implement and Grok will review."* The rulings are Claude's, under
+     CONVENTIONS → *Handling missing requirements*.
+
+     - The port has one redraw path with a frame model and no hold: `PartyMenu.goBackToChoice`, reached by battle
+       PKMN, `ChooseNextMon` and SHIFT through `advanceBattlePartyFrame`. It gains `SET_PAL_PARTY_MENU`'s two held
+       frames at R+5..6; first read R+16 → R+18. `partyPaletteDue` (renamed from `openingPaletteDue`) covers the
+       opening's age 10 and the redraw's age 4. The battle owns the command; the field hold is never armed.
+     - Medicine's result redraw already holds (field: checkpoint-01; battle: A5c3e). No change.
+     - START → POKéMON's submenu, SWITCH and swap returns are upstream's instant state machine with no frame
+       model. They are **not** given two frames: that goes to the J2 party-menu audit (#62, #112), note 57.
+     - No snapshot changes: no whole-battle ledger crosses a GoBack. The redundant `hAutoBGTransferEnabled` write
+       at R+12 stays, as the cartridge's; removing it is an equivalent mutant.
+     - Found, not fixed: the battle chooser prints `PartyMenuNormalText` where faint replacement and SHIFT use
+       `PartyMenuBattleText`. Note 57; the user places it.
+
+128. **V5f checkpoint-03c is StatusScreen's palette hold in its three hosts; Codex implements** (2026-11-15,
+     note 100). *The user: "pls plan Checkpoint 03c. Codex will implement."* The reviewer is not named yet. 03b's
+     play-test was not reported and is not recorded; 03c is planned on 03b's reviewed source. The rulings are
+     Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - `StatusScreenSession` gains `paletteOwner: 'field' | 'battle'` (default field). Held S+15..16; page 1
+       complete after S+19; reveal S+22; first read S+27 → S+29. `StatusScreen2`, Q+3 and the returns do not move.
+     - Field (START's party, Bill's PC): the session arms `core/vblank_hold.ts` and, as the one BG-tick owner,
+       takes the held frames itself. `main.ts`, `party_menu.ts`, `bills_pc.ts` and the script host do not change.
+       Main's joypad sync never needed a skip at any V5f site (closes #124's deferred question).
+     - Battle: `advanceBattleStatusFrame` runs the new `BattleScreen.setPalStatusScreen(bar, species)` once
+       (`[bar, mon, ROUTE, ROUTE]`, `PalPacket_Empty`'s zeroes being `PAL_ROUTE`); the field hold is never armed.
+     - No snapshot changes. With 03c, every row of note 96 §2 that V5f owns is done.
+
+129. **V5f closed; V5g1 is the bank-aware SFX lookup in three checkpoints, data first** (2026-11-15, note 101).
+     *The user: "my playtest passess too, pls plan the next slice"; asked which play-tests: "Both passed".*
+     03b and 03c are user-verified and V5f is complete. The rulings below are Claude's, under CONVENTIONS →
+     *Handling missing requirements*; the user names the implementer and reviewer.
+
+     - An SFX id is an index into the table of the **current music's bank** (`DetermineAudioFunction`). The port
+       ignores the bank. Of the sounds extracted, only `save`, `turn_on_pc` and `enter_pc` differ in bank `$1f`
+       (ROM probe, note 101 §2.1); on today's maps the audible case is SAVE in Viridian Forest, Diglett's Cave
+       and Oak's Lab (37 updates, not 40).
+     - Only a body that differs is extracted again, named after pret's label: `save_3`, `turn_on_pc_3`,
+       `enter_pc_3`. Identical copies stay one file, pinned by a ROM test. Bank `$20` gets nothing until a
+       reachable map plays its music.
+     - **01** data only (the three files; nothing plays them); **02** the `(bank, id) → file` table and the
+       lookup, with the play-test; **03** the battle's text sound through the same table (may fold into 02).
+       Then V5g2 and V5g3, each with its own plan.
+     - The setup script's `SFX_NAMES` and `rom/index.ts`'s are both pinned to `SFX_HEADERS` from 01 on.
+
+130. **The battle chooser's prompt is fixed in its own small checkpoint, right after V5g1 checkpoint-01**
+     (2026-11-15). *The user: "as a small checkpoint right after V5g1 works for me".* It runs once V5g1
+     checkpoint-01 is reviewed and before checkpoint-02 is planned.
+
+     - `ChooseNextMon` and SHIFT set `BATTLE_PARTY_MENU`, so their party list prints `PartyMenuBattleText`
+       ("Bring out which #MON?"); PKMN's list keeps `PartyMenuNormalText` (`core.asm:1126, 1427`,
+       `party_menu.asm:239–256`). The port prints the normal text for all three (note 99 §3 ruling 7).
+     - Text only: the opening, the redraw and the list's own prompt. No timing, data or audio change; the
+       program is already extracted. It gets the usual trace, spike, brief, review and play-test.
+
+131. **The battle chooser prints the message `wPartyMenuTypeOrMessageID` names; Codex implements, Grok reviews**
+     (2026-11-15, note 102). *The user: "Grok is reviewing, Codex is implementing, and you, Claude Opus, are
+     planning."* The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - `PartyMenu.openBattleChoice(party, { forceChoose, menuType })` and `goBackToChoice(menuType)` take the menu
+       type; one private `listMessage` feeds the opening's `PrintText`, the GoBack redraw's and the retained prompt.
+       `show()` resets it to normal, so no field list inherits the battle text.
+     - `chooseParty` reads `$D07C`, which `ChooseNextMon` and SHIFT wrote as `BATTLE_PARTY_MENU`; any other value is
+       the normal text (none can reach it). PKMN now writes `NORMAL_PARTY_MENU` at both cartridge sites
+       (`core.asm:2419, 2438`) through a new `A.wPartyMenuTypeOrMessageID` binding: WRAM fidelity, not observable in
+       play.
+     - No timing change: under `BIT_NO_TEXT_DELAY` the second line costs no frames. No data, audio or snapshot
+       change. One case moved, five new, B1–B13. V5g1 checkpoint-02 is planned after the play-test.
+
+132. **The battle prompt is closed; V5g1 checkpoint-02 plays each field SFX from the current bank's table**
+     (2026-11-15, note 103). *The user: "itdoes work, pls mark approved and plan the next slice".* Note 102 §11
+     records the play-test. The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*; Codex
+     implements and Grok reviews, as for the last two checkpoints.
+
+     - `SFX_FILES` (`audio/sound_ids.ts`) is cartridge data: for each of the four banks, every `SFX_IDS` id whose
+       body a committed file has (20 in `$02` and `$1f`, 9 in `$08`, 6 in `$20`). A ROM test recomputes it.
+       `sfxNameForSound(id, bank)` reads `$02`, `$08`, `$1f` by name and every other bank through `$20`, as
+       `DetermineAudioFunction` defaults.
+     - A pair with no file plays nothing and warns once; never another bank's body. The three `_3` files are
+       preloaded. Audible: SAVE in a bank-`$1f` map plays `save_3` and its wait ends on update 37, not 40.
+     - Checkpoint-03 (the battle's text sound, `resolveTextSound`) stays separate; it is traced after this
+       play-test. Four cases moved, eight new, C1–C11 (with the ROM).
+
+133. **V5g1 checkpoint-02 is closed; checkpoint-03 puts the battle's text sound on `SFX_FILES`** (2026-11-15,
+     note 104). *The user: "ok, that passes my platest check, pls plan the next slice. Codex Sol will imp[lement
+     and Grok will review".* Note 103 §11 records the play-test. The rulings are Claude's, under CONVENTIONS →
+     *Handling missing requirements*.
+
+     - `TEXT_SOUND_IDS` (`audio/sound_ids.ts`) is `TextCommandSounds` without the cries and the two unused rows,
+       pinned to the ASM. The battle's text-sound owner plays the command's id with the current bank's body
+       (`sfxNameForSound`); `resolveTextSound`, `textSoundPort` and `BATTLE_TEXT_SOUND_IDS` are retired.
+       `SFX_FILES` covers both id sets: one new row, `$08`'s `$98` → `dex_page_added`.
+     - No audible change: every battle text sound keeps its id, body and wait; no snapshot moves. The session's
+       preload is unchanged. Two cases retired, three moved, three new; D1–D8 with the ROM (D2 may report the
+       Route 1 snapshot mismatch as `Error`).
+     - Found, not fixed: the field `playSFX` sends a name outside `SFX_IDS` (`caught_mon`, `dex_page_added`)
+       straight to its file, ignoring the bank. Both are battle texts today. → note 57, V5g3.
+
+134. **V5g1 is complete; V5g2 is the field's SFX priority, one checkpoint** (2026-11-15, note 105). *The user:
+     "ok, perfect, playtest showed me evertything works well, pls plan the next slice for Codex to implement and
+     Grok to review".* Note 104 §11 records the play-test. The rulings are Claude's, under CONVENTIONS → *Handling
+     missing requirements*.
+
+     - The battle already has `Audio1_PlaySound`'s priority, two SFX at once and the alarm's CHAN5 (A5c3,
+       `battle_audio.test.ts`). V5g2 is the field: `audio/sfx_priority.ts`'s `acceptsSfxChannel` is the one rule
+       for both; the field walks the header backwards, clears each accepted channel, returns on a refusal, and
+       installs without stopping other channels.
+     - The field's ids are a record gated by engine activity (`fieldChannelId`), so every way the cartridge
+       zeroes an id is reproduced without hooks, and the alarm's shared CHAN5 byte stays the battle's.
+       `isSfxPlaying(name)` becomes `CollisionCheckOnLand`'s channel test; `player.ts` does not change.
+     - The stats screen's missing cry (asked by the user) stays J2 (#45) unless the user moves it.
+     - Three cases moved, eight new; G1–G9 without the ROM. Then V5g3 (call sites), its own plan.
+
+135. **V5g2 is complete; V5g3 is four checkpoints, the door sound first** (2026-11-15, note 106). *The user:
+     "playtest passed, pls plan next slice / codex implements / grok checks".* Note 105 §11 records the play-test.
+     The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - The inventory (note 106 §1) leaves four gaps reachable today: **01** the door sound, **02** `SFX_LEDGE`'s
+       data, **03** the ledge hop's sound and the Town Map's tinks, **04** the field's text sounds through
+       `TEXT_SOUND_IDS`. The field party's `SFX_SWAP` goes to J2 with that menu (#112); the caught-mon jingle (note
+       90 row 17) is closed (V5g1 checkpoint-03).
+     - **01:** `PlayMapChangeSound` is the tile under the player: GO_INSIDE only on `$0B` (not in FACILITY or
+       CEMETERY). 18 of the 83 warps (stairs, gates, the cave's ladders) change to GO_OUTSIDE. `main.ts`'s
+       `OUTDOOR_MAPS` guess goes; `GameMap.isIndoor`'s set stays the classification. `mainTest` gains
+       `handleOverworldAction`. Two cases moved, six new (one new test file, 267); H1–H5.
+
+136. **V5g3 checkpoint-01 is closed; checkpoint-02 extracts `SFX_LEDGE`, data only** (2026-11-15, note 107). *The
+     user: "my playtest checked everything qworked pls plna the next checkpoint".* Note 106 §11 records the
+     play-test. The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*; Codex implements and
+     Grok reviews, as before.
+
+     - One `SFX_HEADERS` row, `ledge` (`SFX_Ledge_1`, bank `$02`, `$A2`, channel 5, 17 updates). Both setup lists
+       already named it. Audio 3's `SFX_Ledge_3` decodes identically, so no copy (#129 ruling 1).
+     - Setup writes `ledge.json` and its mirror (211 JSON, 952 generated files); the bundle does not change. Not
+       preloaded, no id: checkpoint-03 wires the hop and the Town Map's tinks. No play-test. Two cases moved, six new;
+       Q1–Q6 with the ROM.
+
+137. **V5g3 checkpoint-02 is closed on its review; checkpoint-03 plays the ledge hop's sound and the Town Map's
+     tinks** (2026-11-15, note 108). *The user: "pls planm check point 3".* Checkpoint-02 had no play-test. The
+     rulings are Claude's, under CONVENTIONS → *Handling missing requirements*; Codex implements and Grok reviews.
+
+     - `ledge` (`$A2`) and `tink` (`$8C`) become field ids (23), preloaded, with `SFX_FILES` rows from the probe:
+       `tink` in all four banks, `ledge` in `$02` and `$1f`.
+     - The hop: `Player.update` plays `SFX_LEDGE` on the pass `walk.armedHop` marks, as `HandleLedges` does inside
+       that pass's collision check. The Town Map: `SFX_TINK` on A/B/Up/Down, Up and Down tested before the exit;
+       the rest of upstream's Town Map stays for J2.
+     - Four cases moved, seven new (one new test file, 268); R1–R9 with the ROM. Then checkpoint-04, the last.
+
+138. **V5g3 checkpoint-03 is closed; checkpoint-04, the last of V5g3, routes the field's text sounds through the
+     bank table** (2026-11-15, note 109). *The user: "i platested, everytthing looks good, pls plan checkpoint 5 and
+     give me a prompt for codex, we will end today aftyer grok checks checkpoiint 5 since this is this slices' last
+     one".* The user's "checkpoint 5" is checkpoint-04: note 106 §1 split V5g3 into four. Note 108 §11 records the
+     play-test. The rulings are Claude's, under CONVENTIONS → *Handling missing requirements*.
+
+     - `playSFX` uses `SFX_IDS[name] ?? textSoundId(name)`, so `caught_mon` (`$9A`) and `dex_page_added` (`$98`)
+       follow the current bank like every other field sound. Not audible today (battle-only texts); no play-test.
+     - Two new cases; S1–S2. On Grok's PASS, **V5g3, V5g and V5 are complete**; Claude closes V5 (milestone 9 of 36)
+       and plans the next slice.
+
+139. **V5 is complete; Phase V is done (9 of 36 milestones)** (2026-11-15, note 109 §10). Grok's review of V5g3
+     checkpoint-04 passed (`4ef50f3`); the checkpoint had no play-test by design. V5a–V5g are all reviewed, and every
+     one that changed what a player sees or hears was user-verified. Docs only. The next slice is the opening and
+     title screen (#69, note 57's backlog entry), planned in its own note; Pokémon cries stay J2 (#45) unless the
+     user moves them.
+
 ## Open — not decided, needs the user
 
 

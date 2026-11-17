@@ -235,6 +235,13 @@ export class BattleScreen {
     yield* this.paletteFrames();
   }
 
+  /** SET_PAL_STATUS_SCREEN: PalPacket_Empty with the bar colour in palette 0 and the mon's in palette 1
+   * (engine/gfx/palettes.asm:73-94). Same hold and Delay3 as setPalBattle. */
+  *setPalStatusScreen(barColour: 0 | 1 | 2, species: number): Generator<'held' | 'serviced'> {
+    this.installPalettes([BARS[barColour], getMonsterPalette(species), 'ROUTE', 'ROUTE']);
+    yield* this.paletteFrames();
+  }
+
   *setPalBattleBlack(): Generator<'held' | 'serviced'> {
     this.installPalettes(['PAL_BLACK', 'PAL_BLACK', 'PAL_BLACK', 'PAL_BLACK']);
     yield* this.paletteFrames();

@@ -168,6 +168,15 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   // DoBallShakeSpecialEffects play them in battle. SFX_Tink_2 matches SFX_Tink_1 byte for byte (apart from labels).
   ball_toss:           { bank: 0x08, addr: 0x41b3 }, // SFX_Ball_Toss, $91, channels 5 and 6
   tink:                { bank: 0x08, addr: 0x41a4 }, // SFX_Tink_2, $8C, channel 5
+  // V5g1 checkpoint-01 (note 101): the Audio 3 (bank $1f) copies that differ from Audio 1's, at the same
+  // table index. sfxheaders3.asm: SFX_Turn_On_PC_3 ($99), SFX_Enter_PC_3 ($9B), SFX_Save_3 ($B6).
+  // Data only: nothing plays them until the bank-aware lookup (checkpoint-02).
+  turn_on_pc_3:        { bank: 0x1f, addr: 0x41cb },
+  enter_pc_3:          { bank: 0x1f, addr: 0x41d1 },
+  save_3:              { bank: 0x1f, addr: 0x4222 },
+  // V5g3 checkpoint-02 (note 107): SFX_Ledge_1 ($A2, channel 5), the ledge hop (engine/overworld/ledges.asm:53).
+  // SFX_Ledge_3 decodes identically, so Audio 3 needs no copy. Data only until checkpoint-03 plays it.
+  ledge:               { bank: 0x02, addr: 0x41e6 },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

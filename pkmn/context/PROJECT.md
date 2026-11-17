@@ -49,18 +49,26 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-14 - V5 in progress: V5a–V5e complete; V5f checkpoint-01 user-verified; checkpoint-02 user-verified; checkpoint-03a user-verified; checkpoint-03b planning next
+## State as of 2026-11-15 - Phase V complete: V5 done (9/36 milestones)
 
-- **R1, V1, A6, A1, V2, A5, V3 and V4 are done (8/36 milestones).** V4 checkpoints 01–04 passed code review, and the user's Route 3 and cave play-tests passed (note89 §20–§21). Both Diglett's Cave maps are runtime-wired (30 maps), and hop-midpoint trainer interruption is implemented. Brock's badge/TM34 and the ASM-backed battle engine remain in place.
-- **No ROM at runtime.** 207 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (944 generated files total). Vanilla art, local play, no remote and no push.
-- **V5a is complete** (note 91 §6, reviewed 2026-11-11). The live type chart already handles Psychic defenders; #111 withdrew #10's post-processing, and the rows are pinned through the real loaders.
-- **V5b is complete** (note 92, user-verified 2026-11-11): the battle return blocks as the cartridge's (10 white frames, three 8-frame fade steps, the first pass at D+36).
-- **User-confirmed audio gap:** opponent Pokémon cries are silent because the live cry callback is a placeholder. The opponent does not use the player's ball-poof effect in the cartridge. Existing cry backlog remains in note57; no audio fix was implemented today.
-- **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
-- **V5c is complete** (note 93, #115): checkpoints 01–06 passed review and the user's play-tests; checkpoint-06 closed 2026-11-13 (§29). **V5d is complete** (note 94, #121; reviewed 2026-11-13): the land tile-pair table in one module, nothing visible, no play-test. **V5e checkpoint-01 is complete and user-verified** (note 95 §13, #122): the Pokédex, status page 2 and Oak's gift print the cartridge's `MonsterNames` (`NIDORAN♀`, `NIDORAN♂`, `MR.MIME`). **V5e is complete and user-verified** (note 95 §24, #123). **V5f checkpoint-01 is user-verified** (note 96 §12, #124): the palette-command hold outside battle on START's party/trainer returns, field medicine's result redraw and return, and Bill's PC's STATS return.
-- **V5f checkpoint-02 is user-verified** (note 97 §11, #125): every ordinary field-bag `ItemMenuLoop` return now costs the missing default-palette command, two held frames then three ordinary frames, before the list is built. Initial entry and medicine's return do not. Checkpoint-03a is closed and user-verified (note 98 §11, #126): the full party opening is 24 physical frames in every host. Battle medicine keeps its existing timing. Redraw and StatusScreen remain 03b/03c; V5f stays open.
-- **Tests:** ROM **6516/6516**; no-ROM **6218 pass / 298 skip**; 266 files (V5f checkpoint-03a user-verified). Bundle `index-DtHxBGmW.js`, 674,983 bytes.
-- Full handoff: STATUS.md → *In progress* and note 98 §11 (2026-11-14). Next: plan checkpoint-03b (GoBack/shared redraw), then 03c (StatusScreen). 03b/03c have not started.
+- **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
+  109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
+  Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
+- **No ROM at runtime.** 211 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (952 generated
+  files total). Vanilla art, local play, no remote and no push.
+- **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
+  V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
+  (note 93); V5d the land tile pairs (note 94); V5e species names and nicknames (note 95); V5f the CGB
+  palette-command hold in every menu host (notes 96–100); the battle chooser's prompt (note 102); V5g the SFX
+  catch-up: the bank-aware `SFX_FILES` lookup with Audio 3's copies and the battle's text sounds (notes 101,
+  103, 104), the field's priority and two SFX at once (note 105), and the call sites: the door sound by tile, the
+  ledge hop, the Town Map's tinks, the field's text sounds (notes 106–109).
+- **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they are
+  J2 (#45) unless the user moves them. Unscheduled: attack move animations (#94), the evolution screen's port
+  (note 57).
+- **Tests:** ROM **6590/6590**; no-ROM **6274 pass / 316 skip**; 268 files (V5 complete). Bundle `index-DsyXtWek.js`,
+  677,382 bytes.
+- Full handoff: STATUS.md → *In progress* (2026-11-15). Next: Claude plans the opening and title screen (#69).
 
 ## Goals
 

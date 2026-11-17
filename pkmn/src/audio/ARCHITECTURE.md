@@ -1,5 +1,15 @@
 # Audio Architecture
 
+V5g2 (note 105, #134; user-verified) gives field `PlaySound` the cartridge's
+priority walk through `sfx_priority.ts`, shared with `BattleAudio.accepts`: visit the header last to first,
+clear each accepted channel immediately, and return at the first refusal, preserving the partial clear.
+An empty channel accepts; otherwise lower/equal ids win, with CHAN8's drum rules at `$14`. `installSfx`
+installs without stopping other channels, so field SFX on different channels play together. The field's
+channel/file records count only while that channel is active; named `isSfxPlaying` therefore still finds
+collision on CHAN5 after a later CHAN8 request. Pending loads still count. Music requests leave ids idle.
+The battle's existing owner/alarm behavior is unchanged. Direct `SfxEngine.play` callers and the id-less
+debug path retain replace-all behavior; production field requests use the priority walk.
+
 A5d CP2 adds `battle_music.ts`'s numeric song choice and the facade's `playBattleMusic` generator.
 Prime at E: clear fade control / SA, yield one frame; resume at E+1: PM of the chosen song, return.
 Gym-leader precedence, Lance and RIVAL3 are tested against source IDs. CP4 preloads all four battle tracks
@@ -10,6 +20,13 @@ A5c3d checkpoint-03 adds **unused data only** for Audio2 (bank $08) `level_up` (
 `faint_fall` ($41DA, channel5) and `faint_thud` ($41BF, channels5/8). Setup emits the JSON and static mirrors;
 the runtime preload list remains unchanged. Its census test now accounts for exactly these three unused files.
 No playback duration or bank/priority bridge is implemented by this data addition (note70 §9.5).
+
+V5g3 checkpoint-03 (note 108, user-verified) preloads `ledge` and `tink`
+and adds their field ids (`$A2` and `$8C`, 23 ids total). `SFX_FILES` maps `tink` to the same body in
+all four banks, and `ledge` in `$02` and `$1f` only; neither `$08` nor `$20` has a ledge row.
+The hop's arming pass plays `ledge`; the Town Map plays `tink` on A/B/Up/Down, with Up then Down
+checked before closing. `ledge` is CHAN5, returns on update 17, and Audio 3's body is identical.
+No generated files or timing change. Extraction trace: note 107; bank-table probe: note 108.
 
 Layers: extraction (ROM → JSON), request/fade state, music/SFX interpreters, and the synthesizer
 (Web Audio `ScriptProcessorNode`).
@@ -55,18 +72,34 @@ Without the adapter the existing engine behavior is unchanged. The production im
 - **Intro animation CP2** adds preloaded `shrink`: bank `$02`, header `$41d4`, ID `$9c`, CHAN5 body `$44ec`.
   The music table independently uses `$9c` for `meetjessiejames` in bank `$20`; reverse lookup keeps both.
   The speech's SHRINK request is CP4; CP2 changes only extraction, registration and preload (note 64 §10.10).
-- **Audio-bank rule:** the cartridge's PlaySound selects the current music's
-  `wAudioROMBank`. Our 20 SFX use bank `$02`; the ROM guard in
-  `extraction.test.ts` compares every SFX_HEADERS entry with bank `$1f` and
-  pins exactly three differences: save (return 40/37), turn_on_pc (70/81),
-  enter_pc (22/18). Key-item, turn-off, `heal_hp`, `heal_ailment` and `healing_machine` copies
-  are identical. A5b7c2 plays `heal_hp` and `heal_ailment` from field medicine.
-  Bank-aware lookup stays V5; the current PCs use `$02`, while
-  Silph Co. 11F (G1) needs `$1f`.
-  Evidence and scope: `notes/28-a5b3-plan.md` §3.3, §8.
+- **Audio-bank rule:** the cartridge's PlaySound selects the current music's `wAudioROMBank`.
+  V5g1 checkpoint-02 (note 103 §10, #132; reviewed, awaiting the user's SAVE play-test) uses `SFX_FILES` in
+  `sound_ids.ts`: `(bank, id) → committed file`, recomputed from the ROM by `extraction.test.ts`.
+  Banks `$02`, `$08` and `$1f` use their rows; any other bank defaults to Audio 4 (`$20`), as
+  `DetermineAudioFunction` does. An unmapped pair plays nothing and warns once per pair per page.
+  Music identity is checked first. `SFX_IDS` and `isSfxPlaying(name)`'s file-name comparison are unchanged.
+  The three Audio 3 files are preloaded without new ids: `save_3` (37 updates), `turn_on_pc_3` (81)
+  and `enter_pc_3` (18), versus Audio 1's 40/70/22. Thus SAVE in Oak's Lab, Viridian Forest and
+  Diglett's Cave uses Audio 3's body and its wait is three updates shorter. The other 17 field ids
+  in `$1f` keep Audio 1's files; current PCs remain on `$02`. The `$08` table also names `level_up`,
+  `caught_mon` and `faint_fall`, fetched on demand by the field if requested, not field-preloaded.
+  V5g1 checkpoint-03 (note 104, #133; user-verified) puts battle text sounds
+  on the same table: `TEXT_SOUND_IDS` / `textSoundId` supply the command's id (the beep uses `SFX_PRESS_AB`),
+  `sfxNameForSound(id, audio.audioBank)` supplies the file, and the owner plays that id with the loaded body.
+  `TEXT_SOUND_IDS` is pinned to `TextCommandSounds` without cries or unused rows; the table domain is
+  `SFX_IDS` union `TEXT_SOUND_IDS`, adding only `$08:$98` for `dex_page_added`. Missing ids/files still throw.
+  Battle preloads and non-text sounds are unchanged, with no audible or frame change. V5g3 checkpoint-04
+  (note 109 §9, reviewed) makes field `playSFX` fall back to `textSoundId(name)`
+  after `SFX_IDS`, so the field textbox's sounds also use `TEXT_SOUND_IDS` and current-bank `SFX_FILES`.
+  `caught_mon` is `$9A`: its Audio 2 jingle in `$08`, `turn_off_pc` in `$02`/`$1f`; `dex_page_added` is `$98`,
+  with a file only in `$08` (otherwise silence and one warning per pair). Neither is field-preloaded.
+  Only names in neither id table retain the id-less replace-all path (debug `_playSFX` today).
+  Both texts run only in battle today, so there is no audible change or play-test.
+  Earlier data trace: `notes/101-v5g1-plan.md` §2; current table/lookup: note 103 §2–§3.
 - **Map music**: `MAP_MUSIC` in `main.ts` (from `data/maps/songs.asm`);
   `playMapMusic()` routes through DF's song/bank comparison (battle returns force a restart). Every new map needs an
-  entry — and outdoor maps need adding to `OUTDOOR_MAPS` (door SFX choice).
+  entry. The door sound needs no map list: since V5g3 checkpoint-01 it reads the tile under the player
+  (`overworld/map_change_sound.ts`).
   Story `restoreMapMusic` uses the live map callback; the Lab restores `oakslab`
   (A5b5c F-2), and the nurse restores her current map after the existing machine.
   Healing CP3 wires the fade API, preloaded `healing_machine` SFX and actual `pkmnhealed`
@@ -148,12 +181,12 @@ Without the adapter the existing engine behavior is unchanged. The production im
   `press_ab` after their protected wait and current sound completion.
 - Known audio departures, each with a home, are in `notes/16-a1a-plan.md` §8:
   - the pulse envelope runs per frame count, not at 64 Hz, and SFX tails are cut;
-  - SFX priority isn't modelled;
   - the pitch-slide algorithm differs;
   - `.wave5` isn't extracted;
   - noise-channel rests don't silence it.
-  - SFX use the bank-$02 copy; save timing in Oak's Lab, the Forest and
-    DiglettsCaveRoute2 inherits a three-update difference until V5 (A5b7 records
-    this limitation when it wires save). Silph Co. 11F's PC variants remain G1.
+  - The field's bank-$02-only SFX copy and three-update SAVE timing departure are retired by
+    V5g1 checkpoint-02: bank `$1f` now uses its three differing bodies. The battle's separate
+    text-sound path now shares the bank table (V5g1 checkpoint-03); field concurrency/priority is
+    implemented in V5g2 above. Call sites remain V5g3.
 - Upstream's own to-do: remaining music tracks, remaining music fade paths, Pokemon cries,
   Pikachu PCM cries.

@@ -333,6 +333,8 @@ export class Player {
 
     // CollisionCheckOnLand: SFX_COLLISION unless it's already the sound playing
     if (this.justCollided && !isSfxPlaying('collision')) playSFX('collision');
+    // HandleLedges (ledges.asm:53), inside the same collision check: the pass that arms the hop plays SFX_LEDGE
+    if (this.walk.armedHop) playSFX('ledge');
   }
 
   /**
@@ -380,7 +382,7 @@ export class Player {
     const w = this.walk;
     this.justStartedStep = w.startedStep;
     this.justFinishedStep = w.finishedStep;
-    // The hop's first pass collides too, but SFX_LEDGE is the sound heard (V5 extracts it)
+    // The hop's first pass collides too, but SFX_LEDGE is the sound heard (below, V5g3 checkpoint-03)
     this.justCollided = w.collided;
     this.justTurned = w.turned;
     // StepCountCheck: a step is simulated while the ledge's presses run (the hop's two halves);

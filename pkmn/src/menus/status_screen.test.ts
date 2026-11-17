@@ -18,6 +18,7 @@ import type { BattlePokemon } from '../battle/types';
 import { totalExpForLevel } from '../battle/experience';
 import { initTextSystem } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
+import { isVBlankHeld } from '../core/vblank_hold';
 import * as input from '../input';
 import type { GameButton } from '../core';
 import { playSFX, setMasterVolume } from '../audio';
@@ -53,18 +54,20 @@ function fixture(): BattlePokemon {
 function rig(mon = fixture(), syncRead = false) {
   const session = new StatusScreenSession(mon, { syncRead });
   const read = vi.fn(input.readJoypad), transfer = vi.spyOn(textBgTransfer, 'tick');
-  let time = 0;
+  let time = 0; const heldFrames: number[] = [];
   const step = (...held: GameButton[]) => {
     keys(...held); time++;
     const n = transfer.mock.calls.length;
+    // SET_PAL_STATUS_SCREEN's two frames have no VBlank: the field owner takes them and ticks nothing.
+    const noVBlank = isVBlankHeld(); if (noVBlank) heldFrames.push(time);
     const result = session.frame(read);
-    expect(transfer.mock.calls.length - n, `single owner at frame ${time}`).toBe(1);
+    expect(transfer.mock.calls.length - n, `single owner at frame ${time}`).toBe(noVBlank ? 0 : 1);
     return result;
   };
   const wait = (n: number, ...held: GameButton[]) => { for (let i = 0; i < n; i++) step(...held); };
-  const page2 = () => { wait(27); step('a'); wait(3); };
+  const page2 = () => { wait(29); step('a'); wait(3); };
   const row = (y: number, x = 0, length = 20) => Array.from({ length }, (_, i) => session.tiles.at(x + i, y) ?? '?').join('');
-  return { session, step, wait, page2, read, transfer, row, time: () => time };
+  return { session, step, wait, page2, read, transfer, row, time: () => time, held: () => heldFrames };
 }
 
 describe('StatusScreen page 1 (status_screen.asm, DrawHP, PrintStatsBox)', () => {
@@ -76,8 +79,8 @@ describe('StatusScreen page 1 (status_screen.asm, DrawHP, PrintStatsBox)', () =>
     expect(species).toHaveLength(151);
     for (const mon of species) { expect(names.has(mon.type1)).toBe(true); expect(names.has(mon.type2)).toBe(true); }
   });
-  it('matches all 360 cells at S+20, before the seven-frame picture copy', () => {
-    const r = rig(); r.wait(20);
+  it('matches all 360 cells at S+22, before the seven-frame picture copy', () => {
+    const r = rig(); r.wait(22);
     const expected = [
       '                    ', `         ABCDEFGHIJ${V}`, `              ${LV}5   ${V}`,
       `           ${HP}${LEFT}${FILL[8]}${FILL[8]}${FILL[8]}${FILL[3]}${FILL[0]}${FILL[0]}${END}`,
@@ -92,28 +95,29 @@ describe('StatusScreen page 1 (status_screen.asm, DrawHP, PrintStatsBox)', () =>
   });
 
   it.each(['Sparky', 'NIDORAN♀', 'a-b c.d'])('prints the nickname %s on page 1 as the record holds it (V5e checkpoint-02)', nickname => {
-    const r = rig(Object.assign(fixture(), { nickname })); r.wait(20);
+    const r = rig(Object.assign(fixture(), { nickname })); r.wait(22);
     expect(r.row(1, 9, 10).trimEnd()).toBe(nickname);
   });
   it('places then erases TYPE2/ for a single type; keeps both labels for a dual type', () => {
     const single = rig(); single.wait(14); expect(single.row(11, 10, 6)).toBe('TYPE2/');
-    single.wait(3); expect(single.row(11, 10, 6)).toBe('      ');
+    single.wait(4); expect(single.row(11, 10, 6)).toBe('TYPE2/'); // S+15..16 held, Delay3 through S+18
+    single.wait(1); expect(single.row(11, 10, 6)).toBe('      ');
     const mon = fixture(); mon.species = { ...mon.species, type1: 'GRASS', type2: 'POISON' };
-    const dual = rig(mon); dual.wait(20);
+    const dual = rig(mon); dual.wait(22);
     expect(dual.row(10, 11, 5)).toBe('GRASS'); expect(dual.row(11, 10, 6)).toBe('TYPE2/');
     expect(dual.row(12, 11, 6)).toBe('POISON');
   });
 
   it.each([null, 'PSN', 'BRN', 'FRZ', 'PAR', 'SLP'] as const)('prints status %s, but FNT takes priority at zero HP', status => {
     const mon = fixture(); mon.status = status;
-    const r = rig(mon); r.wait(20); expect(r.row(6, 16, 3)).toBe((status ?? 'OK').padEnd(3));
-    mon.currentHp = 0; const fainted = rig(mon); fainted.wait(20); expect(fainted.row(6, 16, 3)).toBe('FNT');
+    const r = rig(mon); r.wait(22); expect(r.row(6, 16, 3)).toBe((status ?? 'OK').padEnd(3));
+    mon.currentHp = 0; const fainted = rig(mon); fainted.wait(22); expect(fainted.row(6, 16, 3)).toBe('FNT');
     for (let i = 0; i < 6; i++) expect(fainted.session.tiles.at(13 + i, 3)).toBe(FILL[0]);
   });
 
   it('prints level 100 over LV and an actual 5-digit OT ID independent of dex number', () => {
     const mon = fixture(); mon.level = 100; mon.otId = 54321;
-    const r = rig(mon); r.wait(20); expect(r.row(2, 14, 4)).toBe('100 '); expect(r.row(14, 12, 5)).toBe('54321');
+    const r = rig(mon); r.wait(22); expect(r.row(2, 14, 4)).toBe('100 '); expect(r.row(14, 12, 5)).toBe('54321');
     expect(r.row(7, 3, 3)).toBe('025');
   });
 });
@@ -124,7 +128,7 @@ describe('StatusScreen2 (FormatMovesString, PrintPP and CalcExpToLevelUp)', () =
       { id: 'SAND_ATTACK', pp: 0xc5, maxPp: 15 }, { id: 'DOUBLE_EDGE', pp: 0x40, maxPp: 24 },
       { id: 'PSYCHIC_M', pp: 10, maxPp: 10 }, { id: 'TACKLE', pp: 35, maxPp: 35 },
     ].slice(0, count);
-    const r = rig(mon); r.wait(27); const before = r.session.tiles.saveTiles();
+    const r = rig(mon); r.wait(29); const before = r.session.tiles.saveTiles();
     r.step('b'); r.wait(3);
     for (let i = 0; i < 4; i++) {
       expect(r.row(9 + i * 2, 2, 12)).toBe((i < count ? ['SAND-ATTACK', 'DOUBLE-EDGE', 'PSYCHIC', 'TACKLE'][i] : '-').padEnd(12));
@@ -155,10 +159,12 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
   it.each([0, 1, 2])('runs S/P/Q anchors with one tick at portion %i, and rendering owns none', portion => {
     for (let i = 0; i < portion; i++) textBgTransfer.tick();
     const r = rig(); expect(setMasterVolume).toHaveBeenCalledExactlyOnceWith(3, 3);
-    for (let f = 1; f <= 26; f++) {
-      r.step(); expect(r.session.paletteWhite).toBe(f < 20); expect(r.read).not.toHaveBeenCalled();
-      if (f >= 20) for (let y = 0; y < 7; y++) expect(r.session.tiles.visibleAt(2, y)).toBe(' ');
+    for (let f = 1; f <= 28; f++) {
+      r.step(); expect(r.session.paletteWhite).toBe(f < 22); expect(r.read).not.toHaveBeenCalled();
+      expect(textBgTransfer.enabled).toBe(f < 6 || (f >= 14 && f < 22));
+      if (f >= 22) for (let y = 0; y < 7; y++) expect(r.session.tiles.visibleAt(2, y)).toBe(' ');
     }
+    expect(r.held()).toEqual([15, 16]); expect(isVBlankHeld()).toBe(false);
     expect(textBgTransfer.enabled).toBe(false); const frozen = textBgTransfer.nextPortion;
     r.step(); expect(r.read).toHaveBeenCalledOnce(); expect(textBgTransfer.nextPortion).toBe(frozen);
     expect(textBgTransfer.enabled).toBe(true); const page1 = r.session.tiles.saveVisibleTiles();
@@ -181,9 +187,36 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
     expect(playSFX).not.toHaveBeenCalled();
   });
 
+  it.each([0, 1, 2])('battle-owned: the host holds S+15..16, the field counter is never armed, read S+29, portion %i', portion => {
+    for (let i = 0; i < portion; i++) textBgTransfer.tick();
+    const session = new StatusScreenSession(fixture(), { syncRead: false, paletteOwner: 'battle' });
+    const read = vi.fn(input.readJoypad), transfer = vi.spyOn(textBgTransfer, 'tick');
+    for (let f = 1; f <= 29; f++) {
+      expect(session.paletteCommandDue).toBe(f === 15); // due after S+14's CPU work, before S+15
+      const held = f === 15 || f === 16, n = transfer.mock.calls.length;
+      expect(session.frame(read, held)).toBe('busy');
+      expect(transfer.mock.calls.length - n).toBe(held ? 0 : 1);
+      expect(isVBlankHeld()).toBe(false);
+      expect(session.paletteWhite).toBe(f < 22);
+      expect(read).toHaveBeenCalledTimes(f < 29 ? 0 : 1);
+    }
+    expect(session.barColor).toBe('green');
+  });
+
+  it('field-owned: the held argument is ignored; only the field counter skips a VBlank', () => {
+    const session = new StatusScreenSession(fixture(), { syncRead: false });
+    const transfer = vi.spyOn(textBgTransfer, 'tick'), ticks: number[] = [];
+    for (let f = 1; f <= 29; f++) {
+      const n = transfer.mock.calls.length; session.frame(input.readJoypad, f === 3);
+      ticks.push(transfer.mock.calls.length - n);
+    }
+    expect(ticks.flatMap((count, index) => count === 0 ? [index + 1] : [])).toEqual([15, 16]);
+    expect(isVBlankHeld()).toBe(false);
+  });
+
   it.each([false, true])('held selection A and a release/repress in unread setup are lost (syncRead=%s)', sync => {
     keys('a'); if (!sync) input.readJoypad(); const r = rig(fixture(), sync);
-    r.wait(8, 'a'); r.wait(4); r.wait(20, 'a');
+    r.wait(8, 'a'); r.wait(4); r.wait(22, 'a');
     expect(r.row(3, 9, 10)).not.toBe('EXP POINTS');
     r.step(); r.step('a'); expect(r.row(3, 9, 10)).toBe('EXP POINTS');
     r.wait(4, 'a'); expect(setMasterVolume).toHaveBeenCalledTimes(1);
@@ -191,7 +224,7 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
   });
 
   it('reads through irrelevant keys every frame without a Delay3 rearm; B advances both pages silently', () => {
-    const r = rig(); r.wait(27);
+    const r = rig(); r.wait(29);
     r.step('down'); r.step('start'); r.step('select'); expect(r.read).toHaveBeenCalledTimes(4);
     r.step('b'); expect(r.row(3, 9, 10)).toBe('EXP POINTS');
     r.wait(3, 'b'); expect(r.session.paletteWhite).toBe(false);
@@ -203,7 +236,7 @@ describe('StatusScreen pictures, source glyph sheets and palettes', () => {
   it.each([[40, 16, 16], [48, 8, 8], [56, 8, 0]])('mirrors %ipx picture at (%i,%i), revealed only by its transferred third', async (size, left, top) => {
     imageSize.value = size; const r = rig(); await Promise.resolve();
     expect(loadBattleSprite).toHaveBeenCalledWith('/gfx/sprites/front/25.png', getMonsterPalette(25));
-    r.wait(27); ctx.drawImage.mockClear(); r.session.render();
+    r.wait(29); ctx.drawImage.mockClear(); r.session.render();
     expect(ctx.drawImage.mock.calls.filter(c => (c[0] as { url: string }).url?.includes('/front/'))).toHaveLength(0);
     const portions = new Set<number>();
     for (let i = 0; i < 3; i++) {
@@ -226,7 +259,7 @@ describe('StatusScreen pictures, source glyph sheets and palettes', () => {
 
   it.each([[27, 'green'], [26, 'yellow'], [10, 'yellow'], [9, 'red']] as const)('sets %i-pixel bar palette to %s', (pixels, color) => {
     const mon = fixture(); mon.maxHp = 48; mon.currentHp = pixels;
-    const r = rig(mon); r.wait(20); r.session.render();
+    const r = rig(mon); r.wait(22); r.session.render();
     expect(drawTile).toHaveBeenCalledWith(expect.objectContaining({ palette: color.toUpperCase() + 'BAR' }), 15, 88, 24);
   });
 
@@ -250,7 +283,7 @@ describe('Map-music CP3: StatusScreen owns BIT_NO_AUDIO_FADE_OUT', () => {
   it('sets the flag with its own NR50 and clears it with the restore to $77', () => {
     setNoAudioFadeOut(false);
     const r = rig(); expect(isNoAudioFadeOut()).toBe(true);
-    for (let f = 1; f <= 26; f++) r.step();
+    for (let f = 1; f <= 28; f++) r.step();
     r.step(); r.step('b'); for (let i = 0; i < 3; i++) r.step();
     expect(isNoAudioFadeOut()).toBe(true); // page 2 still holds it
     r.step('a'); expect(setMasterVolume).toHaveBeenLastCalledWith(7, 7);

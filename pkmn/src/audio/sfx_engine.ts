@@ -139,8 +139,8 @@ export class SfxEngine {
   enableChannelOutput(hwChannel: number): void { this.synth.setChannelOutput(hwChannel, true); }
 
   /**
-   * Play an SFX. Stops any currently playing SFX first (upstream's rule; the cartridge
-   * replaces only the channels the new sound uses, by priority — a logged departure).
+   * Play an SFX, stopping every SFX first (upstream's rule). The field's PlaySound uses installSfx after
+   * Audio1_PlaySound's priority walk (V5g2); this stays for direct callers and the id-less debug path.
    */
   play(data: SfxData): void {
     this.stop();
@@ -157,6 +157,11 @@ export class SfxEngine {
    */
   installBattleSfx(data: SfxData, battleModifiers: () => { tempo: number; frequency: number }): void {
     this.install(data, battleModifiers);
+  }
+
+  /** Audio1_PlaySound's common path for the field: the caller walked the header and cleared each accepted channel. */
+  installSfx(data: SfxData): void {
+    this.install(data);
   }
 
   // A5c3e checkpoint-04b; only battle_flute_audio.ts calls it.

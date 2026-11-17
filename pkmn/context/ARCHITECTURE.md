@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6516/6516** (2026-11-14, V5f checkpoint-03a user-verified; default workers; no-ROM 6218 pass / 298 skip; 266 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6590/6590** (2026-11-15, V5 complete; default workers; no-ROM 6274 pass / 316 skip; 268 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -139,13 +139,13 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
 
 ## Storage model
 
-- **`data/`** — JSON only, produced by `npm run setup` (207 files as of 2026-11-11; `toggleable_objects.json` read at runtime since V5c checkpoint-03b; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
+- **`data/`** — JSON only, produced by `npm run setup` (211 files as of 2026-11-15; V5g3 checkpoint-02 adds `audio/sfx/ledge.json`, played by the ledge hop since checkpoint-03; V5g1 checkpoint-01 adds `audio/sfx/{turn_on_pc_3,enter_pc_3,save_3}.json`, played under bank-`$1f` music since checkpoint-02; `toggleable_objects.json` read at runtime since V5c checkpoint-03b; `maps/DiglettsCave.json` and `maps/DiglettsCaveRoute11.json` since V4 checkpoint-01, runtime-wired in checkpoint-02; `maps/Route3.json` since V3 checkpoint-04; the three V3 maps since V3 checkpoint-01; the five Pewter maps since V2a; `pikachu_movement.json` since A6e, the two item jingles since A1a, `text_programs.json` since A5b1, `map_sprite_sets.json` since A5b2, the four key-item/PC SFX since A5b3, two medicine SFX since A5b7c2, `move_names.json` since StatusScreen CP2, `healing_machine` SFX since healing CP2, `shrink` since intro CP2, `battle_transitions.json` since A5d CP2, the RUN SFX since A5c2 CP2, `ball_toss` and `tink` since A5f checkpoint-01).
   Vitest's mock fetch reads here (`src/test/setup.ts`), and the suite hard-exits
   if it is missing. Committed since R1c.
 - **Extraction-map census (V4 complete, 2026-11-10):** 30 extracted maps, all runtime-wired. DiglettsCave and DiglettsCaveRoute11 passed review and the user's play-test (note89 §21). Route 11 outdoors is not extracted.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-09):527 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 207 JSON files. No extraction was needed for A5e02–03b. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-15):527 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 211 JSON files (952 generated files across `data/` and `static/`). No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -339,8 +339,13 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
   transfer, OAM DMA, joypad read or text tick; audio updates once each. `LoadBGMapAttributes` waits twice with
   interrupts off and discards the VBlanks. With the LCD off it costs 0. Outside battle, `core/vblank_hold.ts` models it on START's returns, field medicine,
   Bill's PC (V5f checkpoint-01, #124), the bag's `ItemMenuLoop` (checkpoint-02, #125) and the full party opening
-  (checkpoint-03a, #126). Battle-owned openings use the battle palette generator and do not arm that field counter.
-  GoBack/redraw and StatusScreen remain 03b/03c. V5f is not complete.
+  (checkpoint-03a, #126). Battle-owned openings and the battle GoBack/redraw
+  (checkpoint-03b, #127) use the battle palette generator and do not arm that field counter. The redraw holds
+  R+5..6 and first reads at R+18. StatusScreen now holds S+15..16 and first reads at S+29 in START's party,
+  Bill's PC and battle PKMN (checkpoint-03c, #128). Its field-owned session takes the field hold; its battle-owned
+  session uses `advanceBattleStatusFrame` and `setPalStatusScreen`. Every row owned by V5f in note 96 §2 is
+  implemented; rows 9–11 stay with their own slices. Field party submenu returns remain unmodelled (J2).
+  Checkpoint-03c awaits review and neither 03b nor 03c has a recorded play-test; V5f is not complete.
 
 ## Asset format rules
 

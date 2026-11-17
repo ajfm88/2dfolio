@@ -10,12 +10,12 @@ vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawFadeOverlay: vi.fn(), dra
 vi.mock('../menus/party_icons', () => ({ loadPartyIcons: vi.fn(), drawPartyIcon: vi.fn() }));
 vi.mock('../menus/menu_render', () => ({ drawText: vi.fn(), drawBox: vi.fn(), drawScreenTile: vi.fn() }));
 
-import { PartyMenu } from '../menus/party_menu';
-import { drawScreenTile } from '../menus/menu_render';
+import { BATTLE_PARTY_MENU, NORMAL_PARTY_MENU, PartyMenu } from '../menus/party_menu';
+import { drawScreenTile, drawText } from '../menus/menu_render';
 import { StatusScreenSession, loadStatusScreenAssets } from '../menus/status_screen';
 import { createPokemon, loadBattleData } from './data';
 import { loadTextPrograms } from '../text/program_data';
-import { initTextSystem } from '../text/textbox';
+import { initTextSystem, TextBox } from '../text/textbox';
 import { isPassPressed, isHeld, syncJoypadRead } from '../input';
 import { enablePikachuFollowing, disablePikachuFollowing } from '../pikachu/pikachu_following';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem, setBattleAndStartSavedMenuItem } from '../list_state';
@@ -46,7 +46,7 @@ function context(): BattlePartyContext {
     enemyHud: { nickname: 'PIDGEY', level: 3, status: 0, hp: 20, maxHp: 20, barColor: 0 },
     partySpecies: 25, enemySpecies2: 16, partySpeciesList: [0x54, 0x24], partyMons, battleMonNick: 'ACTIVE', firstMonsNotOutYet: 0,
     enemyHasSubstitute: false, enemyMinimized: false, enemySpecies: 16, enemyPicture: 'enemy',
-    curPartySpecies: 0, curSpecies: 0, battleMonSpecies2: 0 };
+    curPartySpecies: 0, curSpecies: 0, battleMonSpecies2: 0, partyMenuTypeOrMessageID: 0 };
 }
 
 function keys(...pressed: GameButton[]): void {
@@ -158,7 +158,7 @@ describe('PartyMenu choose-only mode, shared #73 timing', () => {
 });
 
 describe('party submenu cells, deselection, quit and switch', () => {
-  for (const phase of [0, 1, 2]) it(`phase${phase}: completed refusal stays shown through HP-copy4, then releases on the next bottom third`, () => {
+  for (const phase of [0, 1, 2]) it(`phase${phase}: completed refusal stays shown through HP-copy4 and held R+5..6, then releases on the next bottom third`, () => {
     const r = rig(undefined, phase); r.choose(); r.advance(2); r.tick('a');
     for (let n = 0; n < 500 && r.party.choiceOverlay.at(0, 12) !== ' '; n++) {
       if (n % 8 === 0) r.tick('b'); else r.tick();
@@ -178,6 +178,13 @@ describe('party submenu cells, deselection, quit and switch', () => {
       expect(drawScreenTile).toHaveBeenCalledWith('A', 8, 14 * 8);
     }
     expect(textBgTransfer.enabled).toBe(true);
+    // SET_PAL_PARTY_MENU: R+5..6 have no VBlank, so no third transfers and the refusal stays.
+    for (let i = 0; i < 2; i++) {
+      const ticks = transfer.mock.calls.length; r.tick();
+      expect(transfer.mock.calls.length - ticks).toBe(0);
+      expect(r.frames[r.frames.length - 1]).toBe('held');
+      expect(r.party.choiceOverlay.saveVisibleTiles()).toEqual(shown);
+    }
     // Other thirds can release row11 while the refusal's bottom third still retains its picture.
     for (let i = 1; i < bottomWait; i++) { r.tick(); expect(r.party.choiceOverlay.saveVisibleTiles().slice(240)).toEqual(shown.slice(240)); }
     r.tick(); expect(r.party.choiceOverlay.saveVisibleTiles().join('')).not.toContain('ACTIVE');
@@ -225,7 +232,7 @@ describe('party submenu cells, deselection, quit and switch', () => {
     expect(writes.mock.calls.some(([x, y]) => x === 0 && y === 12)).toBe(true);
   });
 
-  for (const phase of [0, 1, 2]) it(`phase${phase}: row11 tears before bottom, B+A deselects and GoBack reads at +16 (#73; ASM18)`, () => {
+  for (const phase of [0, 1, 2]) it(`phase${phase}: row11 tears before bottom, B+A deselects and GoBack reads at +18, held +5..6`, () => {
     const r = rig(undefined, phase); r.choose();
     expect(r.party.choiceOverlay.at(11, 11)).toBe('┌');
     expect(r.party.choiceOverlay.visibleAt(11, 11)).toBe(null);
@@ -237,9 +244,68 @@ describe('party submenu cells, deselection, quit and switch', () => {
     expect(drawScreenTile).toHaveBeenCalledWith(' ', 12 * 8, 13 * 8);
     r.tick('a', 'b'); const b = r.time; expect(r.ctx.actionResultOrTookBattleTurn).toBe(0);
     expect(r.party.choiceOverlay.at(0, 12)).toBe(' ');
-    r.advance(15); expect(r.reads[r.reads.length - 1]).toBe(b); r.tick(); expect(r.reads[r.reads.length - 1]).toBe(b + 16);
+    r.advance(17); expect(r.reads[r.reads.length - 1]).toBe(b); r.tick(); expect(r.reads[r.reads.length - 1]).toBe(b + 18);
+    expect(r.frames.slice(b, b + 18).flatMap((kind, index) => kind === 'held' ? [index + 1] : [])).toEqual([5, 6]);
+    expect(r.frames.slice(b, b + 18).filter(kind => kind === 'session')).toHaveLength(16);
     vi.mocked(drawScreenTile).mockClear(); r.party.render();
     expect(vi.mocked(drawScreenTile).mock.calls.some(([glyph]) => glyph === 'S')).toBe(false);
+  });
+
+  for (const phase of [0, 1, 2]) it(`phase${phase}: GoBack redraw runs one palette command after HP-copy4: held R+5..6, PrintText R+9, prompt R+15, read R+18`, () => {
+    const r = rig(undefined, phase); r.choose(); r.advance(2);
+    const palette = vi.spyOn(r.video.screen, 'setPalPartyMenu'), print = vi.spyOn(TextBox.prototype, 'printStandalone');
+    const transfer = vi.spyOn(textBgTransfer, 'tick');
+    r.tick('b'); const b = r.time, reads = r.reads.length;
+    expect(textBgTransfer.enabled).toBe(false); expect(r.party.promptVisible).toBe(false);
+    for (let f = 1; f <= 18; f++) {
+      const ticks = transfer.mock.calls.length; r.tick();
+      const held = f === 5 || f === 6;
+      expect(transfer.mock.calls.length - ticks).toBe(held ? 0 : 1);
+      expect(r.frames[b + f - 1]).toBe(held ? 'held' : 'session');
+      expect(isVBlankHeld()).toBe(false);
+      expect(textBgTransfer.enabled).toBe(f >= 4);
+      expect(palette).toHaveBeenCalledTimes(f >= 4 ? 1 : 0); // CPU work after R+4's VBlank
+      expect(print).toHaveBeenCalledTimes(f >= 9 ? 1 : 0);
+      expect(r.party.promptVisible).toBe(f >= 15);
+      expect(r.reads.length - reads).toBe(f < 18 ? 0 : 1);
+    }
+    expect(print).toHaveBeenCalledWith({ program: 'PartyMenuNormalText' }, { noDelay: true });
+    expect(r.video.screen.bgp).toBe(0xe4); // GoBack never whites the screen
+    expect(syncJoypadRead).not.toHaveBeenCalled();
+  });
+
+  it('the chooser retains the program its menu type names; show() and open() return to PartyMenuNormalText', () => {
+    const menu = new PartyMenu(), party = context().partyMons;
+    const shown = () => {
+      vi.mocked(drawText).mockClear(); menu.render();
+      return vi.mocked(drawText).mock.calls.filter(([, x, y]) => x === 8 && (y === 112 || y === 128)).map(([text]) => text);
+    };
+    const opened = (menuType: typeof NORMAL_PARTY_MENU | typeof BATTLE_PARTY_MENU) => {
+      menu.openBattleChoice(party, { forceChoose: false, menuType });
+      for (let f = 1; f <= 23; f++) expect(menu.frameBattleChoice(() => {}, () => {})).toBeNull();
+    };
+    opened(BATTLE_PARTY_MENU); expect(shown()).toEqual(['Bring out which', 'POKéMON?']);
+    menu.goBackToChoice(NORMAL_PARTY_MENU); menu.promptVisible = true; expect(shown()).toEqual(['Choose a POKéMON.']);
+    menu.goBackToChoice(BATTLE_PARTY_MENU); menu.promptVisible = true; expect(shown()).toEqual(['Bring out which', 'POKéMON?']);
+    menu.show(party); expect(shown()).toEqual(['Choose a POKéMON.']);
+    opened(BATTLE_PARTY_MENU); menu.open(party); for (let f = 1; f <= 24; f++) menu.update();
+    expect(isVBlankHeld()).toBe(false); expect(shown()).toEqual(['Choose a POKéMON.']);
+    opened(NORMAL_PARTY_MENU); expect(shown()).toEqual(['Choose a POKéMON.']);
+  });
+
+  it('PKMN writes NORMAL_PARTY_MENU over a stale BATTLE byte: opening, GoBack redraw and retained prompt are PartyMenuNormalText', () => {
+    const ctx = context(); ctx.partyMenuTypeOrMessageID = 2;
+    const r = rig(ctx), print = vi.spyOn(TextBox.prototype, 'printStandalone');
+    expect(ctx.partyMenuTypeOrMessageID).toBe(0); r.advance(23);
+    const lines = (lists: string[]) => vi.mocked(drawText).mock.calls.filter(([text]) => lists.includes(text as string));
+    vi.mocked(drawText).mockClear(); r.party.render();
+    expect(lines(['Choose a POKéMON.'])).toEqual([['Choose a POKéMON.', 8, 112]]);
+    expect(lines(['Bring out which', 'POKéMON?'])).toEqual([]);
+    r.tick('a'); r.advance(2); ctx.partyMenuTypeOrMessageID = 2; r.tick('b'); expect(ctx.partyMenuTypeOrMessageID).toBe(0);
+    r.advance(18);
+    expect(print.mock.calls.map(([source]) => (source as { program?: string }).program)).toEqual(['PartyMenuNormalText', 'PartyMenuNormalText']);
+    vi.mocked(drawText).mockClear(); r.party.render();
+    expect(lines(['Choose a POKéMON.'])).toEqual([['Choose a POKéMON.', 8, 112]]);
   });
 
   for (const phase of [0, 1, 2]) it(`phase${phase}: CANCEL restores Buffer2 at+2, normal at+7, then exactly three empty bottom frames`, () => {
@@ -290,15 +356,26 @@ describe('party submenu cells, deselection, quit and switch', () => {
   });
 });
 
-describe('STATS session hand-offs (#73: S+27 and Q+32, ASM S+29 and Q+34)', () => {
+describe('STATS session hand-offs (S+29, held S+15..16)', () => {
   for (const kind of ['plain', 'substitute', 'minimize'] as const) it(`${kind}: both pages, white Q+3, reload7/10/13, then full opening24; no duplicate BG tick`, () => {
     const ctx = context(); ctx.enemyHasSubstitute = kind === 'substitute'; ctx.enemyMinimized = kind !== 'plain';
     const r = rig(ctx); const create = vi.fn((mon, options) => new StatusScreenSession(mon, options)); r.host.createStatusScreen = create;
     r.choose(); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); const s = r.time;
-    expect(create).toHaveBeenCalledWith(ctx.partyMons[0], { syncRead: false });
-    const transfer = vi.spyOn(textBgTransfer, 'tick');
-    for (let i = 0; i < 27; i++) { const n = transfer.mock.calls.length; r.tick(); expect(transfer.mock.calls.length - n).toBe(1); }
-    expect(r.reads[r.reads.length - 1]).toBe(s + 27); expect(r.host.statusView?.paletteWhite).toBe(false);
+    expect(create).toHaveBeenCalledWith(ctx.partyMons[0], { syncRead: false, paletteOwner: 'battle' });
+    const transfer = vi.spyOn(textBgTransfer, 'tick'), palette = vi.spyOn(r.video.screen, 'setPalStatusScreen');
+    for (let f = 1; f <= 29; f++) {
+      const n = transfer.mock.calls.length, reads = r.reads.length; r.tick();
+      const held = f === 15 || f === 16;
+      expect(transfer.mock.calls.length - n).toBe(held ? 0 : 1);
+      expect(r.frames[s + f - 1]).toBe(held ? 'held' : 'session');
+      expect(isVBlankHeld()).toBe(false);
+      expect(palette).toHaveBeenCalledTimes(f >= 14 ? 1 : 0); // CPU work after S+14's VBlank
+      expect(r.host.statusView?.paletteWhite).toBe(f < 22);
+      expect(r.reads.length - reads).toBe(f < 29 ? 0 : 1);
+    }
+    expect(palette).toHaveBeenCalledWith(0, ctx.partyMons[0].species.id);
+    expect([0, 1, 2, 3].map(slot => r.video.screen.paletteName(slot))).toEqual(['GREENBAR', 'YELLOWMON', 'ROUTE', 'ROUTE']);
+    expect(r.reads[r.reads.length - 1]).toBe(s + 29); expect(r.host.statusView?.paletteWhite).toBe(false);
     r.tick('a'); r.advance(2); r.tick('b'); const q = r.time;
     expect(r.host.statusView?.paletteWhite).toBe(true);
     r.advance(2); expect(r.host.statusView).not.toBe(null); const n = transfer.mock.calls.length; r.tick();

@@ -2,7 +2,8 @@
 // Compares ROM-extracted data against existing ground-truth JSON files
 
 import { describe as _describe, it, expect, beforeAll } from 'vitest';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
+import { isDeepStrictEqual } from 'util';
 import { resolve } from 'path';
 import { PNG } from 'pngjs';
 import { BinaryReader } from '../binary_reader';
@@ -25,6 +26,7 @@ import { extractPikachuMovement } from '../extractors/pikachu_movement';
 import { installNodeImageData } from '../node_image_data';
 import { rig } from '../../test/audio_rig';
 import { soundFinished } from '../../audio/sound_wait';
+import { SFX_FILES, SFX_IDS, TEXT_SOUND_IDS, musicNameForSound } from '../../audio/sound_ids';
 
 const ROM_PATH = process.env.ROM_PATH;
 const DATA_DIR = resolve(__dirname, '../../../data');
@@ -701,6 +703,111 @@ describe('Audio: the key-item jingle and the PC sounds (A5b3)', () => {
       }
     });
   }
+});
+
+describe('Audio: the Audio 3 copies that differ from Audio 1 (V5g1 checkpoint-01)', () => {
+  // pret's symbol values: SFX_Turn_On_PC_3 / _Ch5, SFX_Enter_PC_3 / _Ch5, SFX_Save_3 / _Ch5 / _Ch6 (bank $1f).
+  const SOUNDS = {
+    turn_on_pc_3: { header: 0x41cb, channels: [0x4471], twin: 'turn_on_pc', end: 81 },
+    enter_pc_3: { header: 0x41d1, channels: [0x44b3], twin: 'enter_pc', end: 18 },
+    save_3: { header: 0x4222, channels: [0x43f9, 0x4410], twin: 'save', end: 37 },
+  } as const;
+
+  for (const [name, fixture] of Object.entries(SOUNDS)) {
+    it(`${name}: bank $1f, the twin's table index, header bytes and channel pointers match pret's symbols`, () => {
+      expect(SFX_HEADERS[name]).toEqual({ bank: 0x1f, addr: fixture.header });
+      expect(SFX_HEADERS[fixture.twin]).toEqual({ bank: 0x02, addr: fixture.header });
+      const at = 0x1f * 0x4000 + (fixture.header & 0x3fff);
+      for (let i = 0; i < fixture.channels.length; i++) {
+        expect(rom.readByte(at + 3 * i)).toBe((i === 0 ? (fixture.channels.length - 1) << 6 : 0) | (4 + i));
+        expect(rom.readWord(at + 3 * i + 1)).toBe(fixture.channels[i]);
+      }
+    });
+
+    it(`${name}: extraction matches the committed JSON and differs from ${fixture.twin}`, () => {
+      const committed = loadJson(`audio/sfx/${name}.json`);
+      expect(extractSfx(rom, name)).toEqual(committed);
+      expect(extractSfxAt(rom, 0x1f, SFX_HEADERS[fixture.twin].addr)).toEqual(committed);
+      expect(committed).not.toEqual(loadJson(`audio/sfx/${fixture.twin}.json`));
+    });
+
+    it(`${name}: every decoded command matches its disassembly`, () => {
+      const source = readFileSync(resolve(__dirname, `../../../../refs/pokeyellow/audio/sfx/${name}.asm`), 'utf8');
+      const extracted = extractSfx(rom, name)!;
+      expect(extracted.channels.map(c => c.id)).toEqual(fixture.channels.map((_, i) => 5 + i));
+      expect(extracted.channels.map(c => c.commands)).toEqual(parseAsmChannels(source));
+    });
+
+    it(`${name}: returns on update ${fixture.end}`, () => {
+      const r = rig();
+      r.sfx.play(extractSfx(rom, name)!);
+      r.run(fixture.end - 1);
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
+      r.update();
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+    });
+  }
+
+  it('every bank-$02 sound whose Audio 3 body differs has its copy extracted', () => {
+    const different = Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x02).filter(([, header]) =>
+      JSON.stringify(extractSfxAt(rom, 0x02, header.addr)) !== JSON.stringify(extractSfxAt(rom, 0x1f, header.addr)),
+    ).map(([name]) => `${name}_3`).sort();
+    expect(Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x1f).map(([name]) => name).sort()).toEqual(different);
+  });
+});
+
+describe('Audio: the ledge hop sound (V5g3 checkpoint-02)', () => {
+  // pret's symbols: SFX_Ledge_1 02:41e6, SFX_Ledge_1_Ch5 02:4574; SFX_Ledge_3 1f:41e6, SFX_Ledge_3_Ch5 1f:454e.
+  it('ledge: bank $02, id $A2, one channel 5 at pret\'s pointer', () => {
+    expect(SFX_HEADERS.ledge).toEqual({ bank: 0x02, addr: 0x41e6 });
+    expect((SFX_HEADERS.ledge.addr - 0x4000) / 3).toBe(0xa2);
+    const at = 0x02 * 0x4000 + (0x41e6 & 0x3fff);
+    expect(rom.readByte(at)).toBe(4); // channel_count 1, channel 5
+    expect(rom.readWord(at + 1)).toBe(0x4574);
+    expect(rom.readWord(0x1f * 0x4000 + (0x41e6 & 0x3fff) + 1)).toBe(0x454e);
+  });
+
+  it('ledge: extraction matches the committed JSON, and Audio 3\'s SFX_Ledge_3 decodes the same', () => {
+    const committed = loadJson('audio/sfx/ledge.json');
+    expect(extractSfx(rom, 'ledge')).toEqual(committed);
+    expect(extractSfxAt(rom, 0x1f, 0x41e6)).toEqual(committed);
+  });
+
+  it('ledge: every decoded command matches audio/sfx/ledge_1.asm', () => {
+    const source = readFileSync(resolve(__dirname, '../../../../refs/pokeyellow/audio/sfx/ledge_1.asm'), 'utf8');
+    const extracted = extractSfx(rom, 'ledge')!;
+    expect(extracted.channels.map(c => c.id)).toEqual([5]);
+    expect(extracted.channels.map(c => c.commands)).toEqual(parseAsmChannels(source));
+  });
+
+  it('ledge: returns on update 17', () => {
+    const r = rig();
+    r.sfx.play(extractSfx(rom, 'ledge')!);
+    r.run(16);
+    expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
+    r.update();
+    expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+  });
+});
+
+describe('Audio: the SFX each bank plays for the field\'s ids (V5g1 checkpoint-02)', () => {
+  it('SFX_FILES names, for every SFX_IDS and TEXT_SOUND_IDS id in each audio bank, exactly the committed file with that body', () => {
+    const dir = resolve(__dirname, '../../../data/audio/sfx');
+    const files = readdirSync(dir).filter(f => f.endsWith('.json'))
+      .map(f => [f.slice(0, -5), JSON.parse(readFileSync(resolve(dir, f), 'utf8'))] as const);
+    const computed: Record<number, Record<number, string>> = {};
+    for (const bank of [0x02, 0x08, 0x1f, 0x20]) {
+      computed[bank] = {};
+      for (const id of new Set<number>([...Object.values(SFX_IDS), ...Object.values(TEXT_SOUND_IDS)])) {
+        if (musicNameForSound(id, bank)) continue; // DetermineAudioFunction never reaches an SFX there
+        const body = JSON.parse(JSON.stringify(extractSfxAt(rom, bank, 0x4000 + id * 3)));
+        const hits = files.filter(([, data]) => isDeepStrictEqual(data, body)).map(([name]) => name);
+        expect(hits.length, `$${bank.toString(16)}:$${id.toString(16)}`).toBeLessThanOrEqual(1);
+        if (hits.length) computed[bank][id] = hits[0];
+      }
+    }
+    expect(SFX_FILES).toEqual(computed);
+  });
 });
 
 describe('Audio: the heal sounds (A5b7c2)', () => {

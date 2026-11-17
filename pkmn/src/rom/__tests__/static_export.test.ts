@@ -32,8 +32,12 @@ describe('static/ export: asset keys', () => {
   // A5f checkpoint-01: audio/sfx/ball_toss.json and audio/sfx/tink.json. 198 → 200.
   // V3 checkpoint-01: maps/Museum1F.json, maps/Museum2F.json and maps/PewterGym.json. 200 → 203.
   // V5c checkpoint-01: toggleable_objects.json. 206 → 207.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX, the eight Pewter maps and the toggle table in the JSON mirror (207 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(207);
+  // V5g1 checkpoint-01: audio/sfx/turn_on_pc_3.json, enter_pc_3.json and save_3.json (Audio 3). 207 → 210.
+  // V5g3 checkpoint-02: audio/sfx/ledge.json. 210 → 211.
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX, the eight Pewter maps and the toggle table in the JSON mirror (211 JSON total)', () => {
+    expect(Object.keys(extracted.jsonData)).toHaveLength(211);
+    expect(extracted.jsonData).toHaveProperty('audio/sfx/ledge.json');
+    for (const name of ['turn_on_pc_3', 'enter_pc_3', 'save_3']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('toggleable_objects.json');
     for (const name of ['Museum1F', 'Museum2F', 'PewterGym', 'DiglettsCave', 'DiglettsCaveRoute11']) expect(extracted.jsonData).toHaveProperty(`maps/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('battle_transitions.json');

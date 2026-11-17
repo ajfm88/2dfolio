@@ -5,6 +5,8 @@
 import { describe, it, expect } from 'vitest';
 import { rig, sfxData, musicData } from '../test/audio_rig';
 import { soundFinished } from './sound_wait';
+import { EXTRACTED_SFX } from './sfx_names';
+import { SFX_IDS, sfxNameForSound } from './sound_ids';
 
 // Music-mode lengths are note length × speed 5, at SFX tempo $0100.
 // Registers: 2048 + (signed16(notes.asm[pitch]) >> (octave - 1)); ch5 adds 1 to its low byte.
@@ -136,5 +138,68 @@ describe('sound waits and music hand-off (A5b3)', () => {
     r.update(); // update 149: the wave resumes with the music's instrument
     expect(r.synth.values('wave')).toEqual([[149, 3]]);
     expect(r.synth.wave.enabled).toBe(true);
+  });
+});
+
+// V5g1 checkpoint-01 (note 101): the cartridge reads an SFX from the current music's audio bank.
+// Audio 3 (bank $1f) holds different bodies for three of the sounds; they are data only until the lookup.
+describe('Audio 3 copies of save, turn_on_pc and enter_pc (V5g1 checkpoint-01, data only)', () => {
+  const PAIRS = [
+    { name: 'save', end: 40, channels: [5, 6], copy: 'save_3', copyEnd: 37 },
+    { name: 'turn_on_pc', end: 70, channels: [5], copy: 'turn_on_pc_3', copyEnd: 81 },
+    { name: 'enter_pc', end: 22, channels: [5], copy: 'enter_pc_3', copyEnd: 18 },
+  ] as const;
+  const returnsOn = (name: string, end: number) => {
+    const r = rig();
+    r.sfx.play(sfxData(name));
+    r.run(end - 1);
+    expect(r.sfx.isPlaying(), name).toBe(true);
+    expect(soundFinished(r.sfx, r.music, 0), name).toBe(false);
+    r.update();
+    expect(r.sfx.isPlaying(), name).toBe(false);
+    expect(soundFinished(r.sfx, r.music, 0), name).toBe(true);
+  };
+
+  for (const pair of PAIRS) {
+    it(`${pair.name} returns on update ${pair.end}; ${pair.copy} on update ${pair.copyEnd}`, () => {
+      returnsOn(pair.name, pair.end);
+      returnsOn(pair.copy, pair.copyEnd);
+    });
+
+    it(`${pair.copy} uses the same channels as ${pair.name} and a different body`, () => {
+      const base = sfxData(pair.name), copy = sfxData(pair.copy);
+      expect(copy.channels.map(channel => channel.id)).toEqual(pair.channels);
+      expect(base.channels.map(channel => channel.id)).toEqual(pair.channels);
+      expect(copy).not.toEqual(base);
+    });
+  }
+
+  it('each copy is preloaded (V5g1 checkpoint-02) and still has no sound id of its own', () => {
+    for (const { name, copy } of PAIRS) {
+      expect(EXTRACTED_SFX).toContain(name);
+      expect(EXTRACTED_SFX).toContain(copy);
+      expect(Object.keys(SFX_IDS)).not.toContain(copy);
+      expect(sfxNameForSound(SFX_IDS[name], 0x1f)).toBe(copy);
+      expect(sfxNameForSound(SFX_IDS[name], 0x02)).toBe(name);
+    }
+  });
+});
+
+// V5g3 checkpoint-02 (note 107): SFX_Ledge_1, data only until checkpoint-03 plays it at the hop.
+describe('the ledge hop sound (V5g3 checkpoint-02, data only)', () => {
+  it('ledge: one square note on channel 5, sound_ret on update 17', () => {
+    const data = sfxData('ledge');
+    expect(data.channels.map(channel => channel.id)).toEqual([5]);
+    const r = rig();
+    r.sfx.play(data);
+    r.run(16);
+    expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
+    r.update();
+    expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+  });
+
+  it('ledge is preloaded and is SFX $A2 since the hop plays it (V5g3 checkpoint-03)', () => {
+    expect(EXTRACTED_SFX).toContain('ledge');
+    expect(SFX_IDS.ledge).toBe(0xa2);
   });
 });

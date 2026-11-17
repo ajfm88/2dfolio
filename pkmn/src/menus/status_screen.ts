@@ -8,6 +8,7 @@ import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { isPassPressed, syncJoypadRead } from '../input';
 import { fillRect, drawFadeOverlay, getCtx, getScale, loadBattleSprite, getMonsterPalette } from '../renderer';
 import { textBgTransfer } from '../text/bg_transfer';
+import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
 import { ScreenTiles } from './screen_tiles';
 import { drawScreenTile } from './menu_render';
 import { hpBarColor, hpBarFills, staticHpBarPixels, type HpBarColor } from './hp_bar';
@@ -27,6 +28,9 @@ export async function loadStatusScreenAssets(): Promise<void> {
   })()]);
 }
 
+/** Who runs SET_PAL_STATUS_SCREEN's two held frames: the field's counter, or the battle host. */
+export interface StatusScreenOptions { syncRead: boolean; page2Name?: () => string; paletteOwner?: 'field' | 'battle' }
+
 const PIC = '\uE030'; // The padded, flipped 7×7 picture in vChars2.
 type Phase = 'setup' | 'page1' | 'page2Delay' | 'page2' | 'clear' | 'done';
 
@@ -36,9 +40,11 @@ export class StatusScreenSession {
   private phase: Phase = 'setup';
   private age = 0;
   private picture: HTMLCanvasElement | null = null;
-  private readonly barColor: HpBarColor;
+  readonly barColor: HpBarColor;
+  /** CPU boundary before SET_PAL_STATUS_SCREEN; the battle host runs its palette generator here. */
+  get paletteCommandDue(): boolean { return this.phase === 'setup' && this.age === 14; }
 
-  constructor(private readonly mon: BattlePokemon, private readonly options: { syncRead: boolean; page2Name?: () => string }) {
+  constructor(private readonly mon: BattlePokemon, private readonly options: StatusScreenOptions) {
     // Party's legacy input adapter has already read this selection. Bill's MenuInput
     // uses the real Joypad read and must retain its hJoyLast unchanged.
     if (options.syncRead) syncJoypadRead();
@@ -50,18 +56,22 @@ export class StatusScreenSession {
     // Selection S has already had its VBlank. The first frame() is S+1.
   }
 
-  frame(readJoypad: () => void): 'busy' | 'done' {
+  /** `held`: a battle-owned palette frame. A field-owned one is taken from core/vblank_hold.ts. */
+  frame(readJoypad: () => void, held = false): 'busy' | 'done' {
     if (this.phase === 'done') return 'done';
     // The only BG-transfer tick while active, including Q+3. Hosts must skip theirs.
-    this.tiles.present(textBgTransfer);
+    // A palette command's held frame has no VBlank: no tick.
+    const battle = this.options.paletteOwner === 'battle';
+    if (!(battle ? held : takeHeldFrame())) this.tiles.present(textBgTransfer);
     this.age++;
     if (this.phase === 'setup') {
       if (this.age === 3) this.tiles.clearArea(0, 0, 18, 20);
       if (this.age === 6) textBgTransfer.enabled = false; // UpdateSprites, then tile copies
-      if (this.age === 14) { this.drawLabelsAndHp(); textBgTransfer.enabled = true; }
-      if (this.age === 17) this.drawPage1(); // RunPaletteCommand's CGB Delay3 returned
-      if (this.age === 20) { this.paletteWhite = false; textBgTransfer.enabled = false; }
-      if (this.age < 27) return 'busy';
+      // SET_PAL_STATUS_SCREEN: S+15..16 held, S+17..19 Delay3.
+      if (this.age === 14) { this.drawLabelsAndHp(); textBgTransfer.enabled = true; if (!battle) holdVBlank(); }
+      if (this.age === 19) this.drawPage1(); // RunPaletteCommand returned
+      if (this.age === 22) { this.paletteWhite = false; textBgTransfer.enabled = false; }
+      if (this.age < 29) return 'busy';
       this.tiles.clearArea(1, 0, 7, 7);
       for (let y = 0; y < 7; y++) for (let x = 1; x <= 7; x++) this.tiles.put(x, y, PIC);
       textBgTransfer.enabled = true;

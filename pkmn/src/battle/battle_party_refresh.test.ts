@@ -64,6 +64,12 @@ it('voluntary PARTY passes the counted cache objects and renders without null tr
   for(let frame=0;frame<22;frame++)program.next();
   expect(r.party.paletteWhite).toBe(false);expect(()=>r.party.render()).not.toThrow();
 });
+it('state-backed PKMN writes NORMAL_PARTY_MENU to $D07C over a stale BATTLE byte and opens the normal list',()=>{
+  const r=harness(),s=r.s,host=partyHost(r),open=vi.spyOn(r.party,'openBattleChoice');
+  s.mem[0xd07c]=2;expect(D.wPartyMenuTypeOrMessageID).toBe(0xd07c);
+  bindStateBattlePartyMenu(s,host);host.partyMenu(battleContext(s)).next();
+  expect(s.mem[0xd07c]).toBe(0);expect(open.mock.calls[0][1]).toEqual({forceChoose:false,menuType:0});
+});
 it('refresh preserves array and object identity, writes only changed HP, and changes no memory or RNG',()=>{
   const s=seed(),array=s.partyMons,held=s.partyMons[0]!;
   const original=held.originalStats;held.originalStats={special:original.special,speed:original.speed,defense:original.defense,attack:original.attack};
@@ -159,7 +165,7 @@ for(const path of ['SWITCH','STATS','AlreadyOut','NoWill'] as const)it(`Pidgey $
   const switched=vi.spyOn(host,'switchPlayerMon');bindStateBattlePartyMenu(s,host);const p=host.partyMenu(battleContext(s));
   p.next();p.next();p.next();
   expect([s.wCurPartySpecies,s.wBattleMonSpecies2]).toEqual([0x24,0x24]);equal(s,1);
-  if(path==='STATS'){expect(status).toHaveBeenCalledWith(s.partyMons[1],{syncRead:false});expect(status.mock.calls[0][0]!.currentHp).toBe(17);}
+  if(path==='STATS'){expect(status).toHaveBeenCalledWith(s.partyMons[1],{syncRead:false,paletteOwner:'battle'});expect(status.mock.calls[0][0]!.currentHp).toBe(17);}
   if(path==='AlreadyOut')expect(print).toHaveBeenCalledWith('AlreadyOutText',expect.anything());
   if(path==='NoWill')expect(print).toHaveBeenCalledWith('NoWillText');
   if(path==='SWITCH'){for(let i=0;i<20;i++){if(p.next().done)break;}expect(switched).toHaveBeenCalled();}

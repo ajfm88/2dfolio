@@ -162,8 +162,8 @@ Adding new maps (Phases V, B–I) follows this pattern:
    `src/rom/extractors/maps.ts` and `MAP_TEXT_PTRS` in `src/rom/rom_offsets.ts`
    (`MAP_METADATA` holds hand-curated NPC ids and ordering — DECISIONS #13).
 2. Re-run `npm run setup pokeyellow.gbc` (rewrites `data/` and `static/`).
-3. Engine side: `MAP_MUSIC` (from `data/maps/songs.asm`) and, for outdoor maps,
-   `OUTDOOR_MAPS` in `main.ts`; a debug warp in `debug.ts` `WARP_DESTINATIONS`;
+3. Engine side: `MAP_MUSIC` (from `data/maps/songs.asm`); a debug warp in `debug.ts` `WARP_DESTINATIONS`
+   (towns and routes are already outdoor in `overworld/map.ts`'s `OUTDOOR_MAPS`; the door sound reads tiles);
    connections, scripts and events per the ASM.
 4. Verify: typecheck + tests + play-test.
    If the map is OVERWORLD with ledges, check its triggers and trainer lines against a
@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6516/6516** as of 2026-11-14 (V5f checkpoint-03a user-verified; default workers). No-ROM **6218 pass / 298 skip**, 266 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6590/6590** as of 2026-11-15 (V5 complete; default workers). No-ROM **6274 pass / 316 skip**, 268 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,28 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+V5g3 checkpoint-04 (note 109 §8) adds two no-ROM cases in `audio/index_map_music.test.ts`: `caught_mon` resolves to Audio 2's jingle or Audio 1's `turn_off_pc` by the current bank, with CHAN5 holding `$9A`; `dex_page_added` resolves to its Audio 2 file or plays nothing in a town with one unmapped-pair warning. Requests await the first fetch and use bounded activity waits because battle drums keep CHAN8 busy. No existing cases move. S1–S2 each exit 1 with only AssertionError, failing exactly 2 and 1 of 35 cases; source restored. ROM 6590/6590; no-ROM 6274 pass / 316 skip, 268 files. Data and snapshots unchanged. Reviewed (note 109 §9). No play-test.
+
+V5g3 checkpoint-03 (note 108 §9) moves four census/id cases and adds seven: four in new `menus/town_map.test.ts` pin silence, A/B's tink and close, Up/Down's tink and wrapping, and directional priority with A/B; two in `overworld/simulated_player.test.ts` pin one ledge sound on the arming pass, no collision or repeat through landing, and a plain wall's collision sound; one in `audio/sound_ids.test.ts` pins both ids' bank rows. R1–R9 run with the ROM on 199 cases, each exit 1 with only AssertionError, failing exactly 1/1/1/1/3/6/3/1/2. Baseline ROM 6588/6588; no-ROM 6272 pass / 316 skip, 268 files. Data and snapshots unchanged. Reviewed (note 108 §10); the user's play-test is pending.
+
+V5g3 checkpoint-02 (note 107 §8) moves two census cases (211 JSON; `ledge` is unused) and adds six: four ROM cases pin the header/id/pointers, both banks' decode, every ASM command and update-17 return; two no-ROM cases pin channel 5, the return and absence from preload/ids. Q1–Q6 run with the ROM and each exit 1 with only AssertionError, failing exactly 5, 5, 2, 1, 4 and 1 cases. Setup adds only `ledge.json` and its static mirror (211 JSON, 952 generated files); both hashes match the manifest. ROM 6581/6581; no-ROM 6265 pass / 316 skip, 267 files. Bundle and snapshots unchanged. Reviewed (note 107 §9). No play-test.
+
+V5g3 checkpoint-01 (note 106 §5, §9) adds `overworld/map_change_sound.test.ts`: two cases pin tile $0B, FACILITY/CEMETERY exceptions and all 83 committed warps through real `GameMap` tiles (19 doors; the 18 former destination-guess mismatches now GO_OUTSIDE). Four new main cases exercise warp dispatch through the test-only `mainTest.handleOverworldAction` binding. Two existing outdoor-classification cases now read the unchanged `map.ts` set. H1–H5 each exit 1 with only AssertionError, failing 3, 1, 1, 1 and 6 of 109 cases. Baseline ROM 6575/6575; no-ROM 6263 pass / 312 skip, 267 files (one new file). Data/snapshots unchanged. Reviewed (note 106 §10); the user's play-test is pending.
+
+V5g2 (note 105 §5, §9) moves three facade cases to spy on `installSfx` and lets each PC sound finish before the next priority request. Eight new no-ROM cases pin START plus A on separate channels, same-channel lower/equal priority and restart, CHAN8 priority, reverse-walk partial clear, named collision activity and music-request id clearing (six facade cases), plus the shared empty-channel/id and CHAN8 drum-boundary rules (two cases). G1–G9 each exit 1 with only AssertionError, failing 3, 8, 1, 4, 3, 1, 1, 3 and 6 of 74 cases. Baseline ROM 6569/6569; no-ROM 6257 pass / 312 skip, 266 files. Battle ledgers, snapshots and data unchanged. Reviewed (note 105 §10); the user's play-test is pending.
+
+V5g1 checkpoint-03 (note 104 §5, §9) retires two tests of the removed battle text-sound methods, moves three cases to the shared id/table domain, and adds three: a real-runner/owner case for command id versus bank body and missing/inherited inputs; a refs-derived `TextCommandSounds` id table; own-key lookup and the bank-$08-only $98 row. D1–D8 run with the ROM on 176 cases and fail 1, 5, 6, 1, 3, 3, 1 and 8 cases respectively; only D2 allows both AssertionError and Error, because the changed beep also mismatches an existing whole-battle snapshot without writing it. All other errors are AssertionError. Baseline ROM 6561/6561; no-ROM 6249 pass / 312 skip, 266 files. Snapshots/data unchanged. Reviewed (note 104 §10); the user's play-test is pending.
+
+V5g1 checkpoint-02 (note 103 §5, §9) moves four existing cases and adds eight: four no-ROM cases for bank-specific SFX lookup, Audio 4 default and committed table entries; three real-facade cases for preloaded Audio 3 SAVE at update 37 versus Audio 1 at 40, the PC copies/shared sounds and unmapped pairs warning once without playback; one ROM case recomputes the complete `SFX_FILES` table. C1–C11 run with the ROM on 198 cases and each exit 1 with only AssertionError, failing 7, 2, 3, 1, 1, 4, 4, 2, 1, 3 and 4 cases. Baseline ROM 6560/6560; no-ROM 6248 pass / 312 skip, 266 files. No data or snapshot change. Reviewed (note 103 §10); the user's SAVE play-test is pending.
+
+The battle-prompt checkpoint (note 102 §5, §9) moves one existing options assertion and adds five no-ROM cases across `battle_party_menu.test.ts`, `battle_send_out.test.ts` and `battle_party_refresh.test.ts`: the typed menu message in the opening, redraw and retained prompt; reset by `show()`/field `open()`; PKMN overriding a stale BATTLE byte, including the state-backed $D07C binding; faint replacement and SHIFT printing `PartyMenuBattleText` through retries. Full opening remains C+24 and GoBack R+18. B1–B13 each exit 1 with only AssertionError, failing 2, 2, 1, 1, 1, 3, 2, 1, 2, 5, 1, 2 and 1 cases. Baseline ROM 6552/6552; no-ROM 6241 pass / 311 skip, 266 files. No snapshot or data change. Reviewed (note 102 §10); the user's play-test is pending.
+
+V5g1 checkpoint-01 (note 101 §4, §8) moves two existing cases (the unused-SFX census and 210-file static JSON census) and adds 21: thirteen ROM cases pin Audio 3's three differing headers, channel pointers, decoded ASM bodies, committed JSON, return updates and the complete set of differences; seven no-ROM cases pin the three pairs' real-rig timing/channels and their absence from preload/ids; one no-ROM witness pins both extractor name lists. P1–P9 run with the ROM and each exit 1 with only AssertionError, failing 5, 7, 5, 7, 2, 1, 5, 1 and 4 cases. Six generated files match their manifest and reproduce on a second setup. Baseline ROM 6547/6547; no-ROM 6236 pass / 311 skip, 266 files. Bundle unchanged; data only. Reviewed (note 101 §9).
+
+V5f checkpoint-03c (note 100 §5, §9) retimes 43 existing cases across six test files and adds four no-ROM cases in `menus/status_screen.test.ts`: three BG portions pin battle-owned S+15..16 held frames, S+29 read and an unarmed field counter; the fourth pins field ownership ignoring the caller's `held` argument. The host cases cover START's party, Bill's PC under the actual script dispatch and battle PKMN, including one palette command and its installed palette names. No snapshots change. N1–N14 each exit 1 with only AssertionError, failing 10, 20, 1, 9, 46, 6, 7, 4, 4, 4, 7, 3, 10 and 1 cases. Baseline ROM 6526/6526; no-ROM 6228 pass / 298 skip, 266 files. Reviewed (note 100 §10); the user's play-test is pending. 03b's play-test is still unrecorded.
+
+V5f checkpoint-03b (note 99 §5, §9) retimes seven existing cases and adds six no-ROM cases in `battle_party_menu.test.ts` and `battle_send_out.test.ts`: each of the three BG portions pins GoBack's two held frames at R+5..6 and first read at R+18, shared palette ownership, retained refusal text, prompt timing and faint-replacement retries. No snapshots change. M1–M11 each exit 1 with only AssertionError, failing 9, 3, 3, 12, 13, 9, 9, 11, 6, 7 and 19 cases. Baseline ROM 6522/6522; no-ROM 6224 pass / 298 skip, 266 files. Reviewed (note 99 §10); the user's play-test is pending.
 
 V5f checkpoint-03a (note 98 §4–§5) retimes the full party opening to reveal C+21 and first read C+24 in START, field medicine, battle PKMN, SHIFT/faint and the existing battle-medicine hold. Twelve new no-ROM cases: six battle-owned openings in `party_menu_opening.test.ts`, three medicine phase cases in `battle_item_medicine_env.test.ts`, and three send-out phase cases in `battle_send_out.test.ts`. Nine existing whole-battle snapshots each gain one pair of held frames; payloads, audio and final state are unchanged. L1–L15 each exit 1 with only AssertionError, failing 12, 11, 31, 24, 9, 9, 7, 21, 3, 3, 7, 3, 4, 9 and 4 cases. Baseline ROM 6516/6516; no-ROM 6218 pass / 298 skip, 266 files.
 
@@ -1061,6 +1083,8 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   `result.messages[0].join(' ')`.
 
 **By area**
+
+- **Town Map input** — 4 in `menus/town_map.test.ts` (V5g3 checkpoint-03): SFX_TINK, wrapping and direction-before-exit priority.
 
 - **Extraction** — 100 in `src/rom/__tests__/extraction.test.ts`; compares each
   extractor with the JSON in `data/`. Needs `ROM_PATH`, skipped otherwise.

@@ -139,6 +139,7 @@ export const A = {
   wEnemySubstituteHP: 0xccd8,
   wMoveMenuType: 0xccdb,
   wMenuItemToSwap: 0xcc35,
+  wPartyMenuTypeOrMessageID: 0xd07c, // = wNamingScreenType, wTempTilesetNumTiles
   wCurrentMenuItem: 0xcc26,
   wPlayerMoveListIndex: 0xcc2e,
   wEnemyMoveListIndex: 0xcce2,
@@ -520,6 +521,7 @@ export function battleContext(state: BattleState): BattlePartyContext {
   raw('whichPokemon', 'wWhichPokemon');
   raw('playerMoveListIndex', 'wPlayerMoveListIndex');
   raw('menuItemToSwap', 'wMenuItemToSwap');
+  raw('partyMenuTypeOrMessageID', 'wPartyMenuTypeOrMessageID');
   raw('currentMenuItem', 'wCurrentMenuItem');
   raw('numMovesMinusOne', 'wNumMovesMinusOne');
   bind('movesString', () => local.movesString, value => { local.movesString = value as string; });

@@ -75,16 +75,18 @@ export class TownMap {
 
     this.blinkTimer = (this.blinkTimer + 1) % BLINK_PERIOD;
 
-    if (isPressed('a') || isPressed('b')) {
-      playSFX('press_ab');
-      return 'closed';
-    }
-
+    // DisplayTownMap's .inputLoop (town_map.asm:70–90): A, B, Up or Down plays SFX_TINK; Up, then Down,
+    // are tested before the exit, so only A or B alone closes the map.
+    const up = isPressed('up'), down = isPressed('down');
+    if (!up && !down && !isPressed('a') && !isPressed('b')) return 'open';
+    playSFX('tink');
     const len = this.data.order.length;
-    if (isPressed('up')) {
+    if (up) {
       this.cursorIndex = (this.cursorIndex + 1) % len;
-    } else if (isPressed('down')) {
+    } else if (down) {
       this.cursorIndex = (this.cursorIndex - 1 + len) % len;
+    } else {
+      return 'closed';
     }
 
     return 'open';

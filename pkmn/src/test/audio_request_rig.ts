@@ -20,7 +20,7 @@ export function requestRig() {
       if (name) {
         starts.push({ u: synth.update, id, bank, name, kind: 'music' }); music.play(musicData(name));
       } else {
-        const effect = sfxNameForSound(id);
+        const effect = sfxNameForSound(id, bank);
         if (!effect) throw new Error(`Unknown rig sound ${bank}:${id}`);
         starts.push({ u: synth.update, id, bank, name: effect, kind: 'sfx' }); sfx.play(sfxData(effect));
       }

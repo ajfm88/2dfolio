@@ -1,5 +1,7 @@
 # Overworld Architecture
 
+V5g3 checkpoint-01 (note 106; user-verified): the warp's door sound is `PlayMapChangeSound` by the tile under the player (`map_change_sound.ts`), not the destination; `$0B` plays GO_INSIDE except in FACILITY/CEMETERY, otherwise GO_OUTSIDE.
+
 ## Random
 
 `main.ts` installs its page-lifetime `sessionRandom` (`BattleRandomState`) through
@@ -490,8 +492,9 @@ the extracted 8x8 ROM tile (`/gfx/overworld/shadow.png`) with OBP0, mirrors it i
 and draws at player minus camera plus (0, 8). It runs after the player's grass overlay;
 `destination-out` punches the current player frame out of the shadow, preserving OAM
 priority even where grass hides the player's opaque pixels. Pikachu's native command
-buffer waits on takeoff and crosses in one flat two-tile move on the next step. Still
-missing: `SFX_LEDGE` (V5). `RunMapScript` runs at the hop's midpoint (V4 checkpoint-03/04, DECISIONS #43, #108).
+buffer waits on takeoff and crosses in one flat two-tile move on the next step. V5g3
+checkpoint-03 (note 108 §10, reviewed) plays `SFX_LEDGE` through `Player.update` on `walk.armedHop`,
+the arming pass only, with no collision sound or repeat during the hop or landing. Timing is unchanged. `RunMapScript` runs at the hop's midpoint (V4 checkpoint-03/04, DECISIONS #43, #108).
 
 ## GameMap Public API
 

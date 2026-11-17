@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isHeld, isPassPressed } from '../input';
 import { playSFX, isSoundFinished } from '../audio';
-import { rig as audioRig, sfxData, musicData } from './audio_rig';
+import { rig as audioRig, sfxData, musicData, textSoundFile } from './audio_rig';
 import { soundFinished } from '../audio/sound_wait';
 import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
 import { PartyMenu } from '../menus/party_menu';
@@ -335,7 +335,7 @@ export function battleLedger(o: History = {}) {
   };
   bindLearnMove(host,host);
   vi.mocked(playSFX).mockImplementation(async name=>{
-    const resolved=bridge.resolveTextSound(name);mark('textSound',resolved);
+    const resolved=textSoundFile(name,bridge.audioBank);mark('textSound',resolved);
     bridge.play({id:o.real&&name==='caught_mon'?0x9a:o.real&&name==='dex_page_added'?0x98:name==='get_item1'?0x86:0x90,data:sfxData(resolved)});
   });
   vi.mocked(isSoundFinished).mockImplementation(()=>soundFinished(audio.sfx,audio.music,0));

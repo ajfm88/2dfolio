@@ -2,7 +2,7 @@
 import { getBattleAudioEngines, loadSfx, setMasterVolume } from '../audio';
 import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { soundFinished } from '../audio/sound_wait';
-import { musicIdentity, SFX_IDS } from '../audio/sound_ids';
+import { musicIdentity, SFX_IDS, sfxNameForSound, textSoundId } from '../audio/sound_ids';
 import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
 import * as input from '../input';
 import { isPassPressed } from '../input';
@@ -65,14 +65,6 @@ import type { SfxData } from '../audio/sfx_engine';
 import type { BattlePokemon } from './types';
 import type { TextBox } from '../text/textbox';
 
-function itemSoundId(name: 'caught_mon' | 'dex_page_added'): number {
-  return BATTLE_ITEM_SOUND_ASSETS.find(row => row[1] === name)![0];
-}
-/** home/text.asm:552-559; same numeric86 selects Audio2's level-up data. Field table is untouched. */
-export const BATTLE_TEXT_SOUND_IDS: Readonly<Record<string, number>> = Object.freeze({
-  caught_mon: itemSoundId('caught_mon'), dex_page_added: itemSoundId('dex_page_added'),
-  get_item1: SFX_IDS.get_item1, press_ab: SFX_IDS.press_ab,
-});
 const HOST_SOUNDS = { trainer_appeared: 0xe9, faint_fall: 0x9e, faint_thud: 0x95,
   run: SFX_IDS.run, swap: SFX_IDS.swap, press_ab: SFX_IDS.press_ab,
   damage: 0xa6, super_effective: 0xb0, not_very_effective: 0xa7, ball_poof: 0x93,
@@ -133,13 +125,15 @@ export function loadBattleStandInData(): Promise<void> {
 export type SessionAudioOwners = ReturnType<typeof getBattleAudioEngines>;
 export function battleTextSoundOwner(audio: BattleAudio, owners: SessionAudioOwners,
   sounds: ReadonlyMap<string, BattleSfx>): NonNullable<TextDisplayHost['sound']> {
-  const play = audio.textSoundPort(name => {
-    // Only data is remapped; the original command still supplies the sound ID.
-    const original = name === 'level_up' ? 'get_item1' : name;
-    const id = BATTLE_TEXT_SOUND_IDS[original], sound = sounds.get(name);
+  // TextCommand_SOUND's PlaySound: the command's id, and the current bank's table picks the body (SFX_FILES).
+  // The acknowledgement beep is SFX_PRESS_AB through the same path.
+  const play = (name: string): void => {
+    const id = name === 'press_ab' ? SFX_IDS.press_ab : textSoundId(name);
+    const file = id === undefined ? undefined : sfxNameForSound(id, audio.audioBank);
+    const sound = file === undefined ? undefined : sounds.get(file);
     if (id === undefined || !sound) throw new BattleUnsupportedState(`battle text sound ${name} bank ${audio.audioBank}`);
     audio.play({ id, data: sound.data });
-  });
+  };
   return { play, beep: () => play('press_ab'), finished: () => soundFinished(owners.sfx, owners.music, 0) };
 }
 /** FF04 = floor(T/256)&255; T=70224*frames()+random-routine T-cycles.

@@ -68,6 +68,15 @@ export interface PartyRowOverride {
 
 export type BattlePartyChoice = { kind: 'chosen'; slot: number } | { kind: 'cancelled' };
 
+/** wPartyMenuTypeOrMessageID values the battle's chooser uses (constants/menu_constants.asm). */
+export const NORMAL_PARTY_MENU = 0;
+export const BATTLE_PARTY_MENU = 2;
+export type BattleChoiceMenuType = typeof NORMAL_PARTY_MENU | typeof BATTLE_PARTY_MENU;
+/** RedrawPartyMenu_'s .printMessage (party_menu.asm:182–198) indexes PartyMenuMessagePointers (:237–243). */
+function battleChoiceMessage(menuType: BattleChoiceMenuType): 'PartyMenuNormalText' | 'PartyMenuBattleText' {
+  return menuType === BATTLE_PARTY_MENU ? 'PartyMenuBattleText' : 'PartyMenuNormalText';
+}
+
 export class PartyMenu {
   private party: BattlePokemon[] = [];
   private cursor = 0;
@@ -94,6 +103,8 @@ export class PartyMenu {
   private choiceDelay = 3;
   private choiceRedrawAge: number | null = null;
   private choiceTextActive = false;
+  /** PartyMenuMessagePointers[wPartyMenuTypeOrMessageID] (party_menu.asm:237–243) for the list's own prompt. */
+  private listMessage: 'PartyMenuNormalText' | 'PartyMenuBattleText' = 'PartyMenuNormalText';
   /** wCurrentMenuItem's source for the battle's USE_ITEM menu. */
   get itemCursor(): number { return this.cursor; }
   /** useItem: the chosen slot, or -1 when B cancelled. */
@@ -112,6 +123,7 @@ export class PartyMenu {
 
   show(party: BattlePokemon[]): void {
     this.choiceOverlay.reset(); this.choiceRedrawAge = null; this.choiceTextActive = false;
+    this.listMessage = 'PartyMenuNormalText';
     this.party = party;
     this.state = 'list';
     this.stats = null;
@@ -138,24 +150,29 @@ export class PartyMenu {
     this.beginOpening();
   }
 
-  /** Battle hand-off: the shared C+24 opening, with the battle owning its palette frames. */
-  openBattleChoice(party: BattlePokemon[], options: { forceChoose: boolean }): void {
+  /** Battle hand-off: the shared C+24 opening, with the battle owning its palette frames.
+   * menuType is wPartyMenuTypeOrMessageID: PKMN writes NORMAL_PARTY_MENU (core.asm:2419, 2438),
+   * ChooseNextMon and SHIFT write BATTLE_PARTY_MENU (core.asm:1126, 1427). */
+  openBattleChoice(party: BattlePokemon[], options: { forceChoose: boolean; menuType: BattleChoiceMenuType }): void {
     this.show(party);
     this.mode = 'battle_choice'; this.choiceForced = options.forceChoose; this.choiceDelay = 3;
+    this.listMessage = battleChoiceMessage(options.menuType);
     this.beginOpening();
   }
 
   /** PartyMenuInit + RedrawPartyMenu, not the full white/icon opening.
-   * #73: 4 HP-copy + 3 palette + 3 text + 3 reveal + 3 input = 16 (cartridge 18). */
-  goBackToChoice(): void {
+   * 4 HP copies, SET_PAL_PARTY_MENU (R+5..6 held, R+7..9 Delay3), PrintText's Delay3,
+   * the enabled Delay3 and HandleMenuInput_'s: first read R+18. The battle host owns the command. */
+  goBackToChoice(menuType: BattleChoiceMenuType): void {
+    this.listMessage = battleChoiceMessage(menuType);
     this.cursor = this.party.length ? Math.min(getPartyAndBillsSavedMenuItem(), this.party.length - 1) : 0;
     this.cursorGlyph = '▶'; this.chosenIndex = -1; this.choiceForced = false;
     this.choiceRedrawAge = 0; this.choiceDelay = 3; this.promptVisible = false;
     textBgTransfer.enabled = false;
   }
 
-  /** The battle host must run SET_PAL_PARTY_MENU before the next opening frame. */
-  get openingPaletteDue(): boolean { return this.opening?.paletteCommandDue ?? false; }
+  /** The battle host must run SET_PAL_PARTY_MENU before the next opening or redraw frame. */
+  get partyPaletteDue(): boolean { return this.opening?.paletteCommandDue ?? this.choiceRedrawAge === 4; }
 
   /** Own exactly one BG tick, including while a submenu is on this retained layer. */
   presentBattleChoice(): void {
@@ -190,10 +207,10 @@ export class PartyMenu {
     } else if (this.choiceRedrawAge !== null) {
       const age = ++this.choiceRedrawAge;
       if (age === 4) { this.choiceOverlay.release(0, 0, 18, 20); textBgTransfer.enabled = true; }
-      if (age === 7) this.openingTextBox.printStandalone({ program: 'PartyMenuNormalText' }, { noDelay: true });
-      if (age === 10) textBgTransfer.enabled = true;
-      if (age === 13) { this.openingTextBox.dismiss(); this.promptVisible = true; }
-      if (age < 16) return null;
+      if (age === 9) this.openingTextBox.printStandalone({ program: this.listMessage }, { noDelay: true });
+      if (age === 12) textBgTransfer.enabled = true;
+      if (age === 15) { this.openingTextBox.dismiss(); this.promptVisible = true; }
+      if (age < 18) return null;
       this.choiceRedrawAge = null; this.choiceDelay = 0;
     }
     if (this.choiceDelay > 0 && --this.choiceDelay > 0) return null;
@@ -225,7 +242,7 @@ export class PartyMenu {
 
   private beginOpening(): void {
     this.promptVisible = false;
-    this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, 'PartyMenuNormalText',
+    this.opening = new PartyMenuOpening(this.openingTextBox, textBgTransfer, this.listMessage,
       this.mode === 'battle_choice' ? 'battle' : 'field');
   }
 
@@ -472,11 +489,11 @@ export class PartyMenu {
     }
   }
 
-  /** Overworld and item use read the programs. */
+  /** Overworld, item use and the battle chooser read the programs. */
   private promptLines(): string[] {
     const program = this.state === 'switch_target' ? 'PartyMenuSwapMonText'
       : this.mode === 'useItem' ? 'PartyMenuItemUseText'
-      : 'PartyMenuNormalText';
+      : this.listMessage;
     return linesOfProgram(program);
   }
 

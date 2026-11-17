@@ -162,3 +162,142 @@ describe('known departure (note 63 §10.4): the 8-frame warp of the port', () =>
     expect(api.isSfxPlaying()).toBe(false); // the cartridge's loader runs after >= 42 updates, when it has ended
   });
 });
+
+// V5g1 checkpoint-02 (note 103): DetermineAudioFunction reads the SFX from the current music's bank.
+describe('SFX by the current audio bank, through the facade', () => {
+  const sfxStarts = async () => {
+    const { SfxEngine } = await import('./sfx_engine');
+    return vi.spyOn(SfxEngine.prototype, 'installSfx'); // the field's PlaySound since V5g2
+  };
+  const file = async (name: string) => (await (await fetch(`audio/sfx/${name}.json`)).json()) as unknown;
+  const finishesOn = (limit: number): number => {
+    for (let u = 1; u <= limit; u++) { step(); if (api.isSoundFinished()) return u; }
+    return -1;
+  };
+
+  it('SAVE under Oak\'s Lab plays save_3 at once and finishes on update 37; under Pallet\'s song, save on 40', async () => {
+    const play = await sfxStarts();
+    await api.playMusic('oakslab'); step(3);
+    void api.playSFX('save');
+    expect(play).toHaveBeenCalledTimes(1); // preloaded: started in the frame it was asked for
+    expect(play.mock.calls[0][0]).toEqual(await file('save_3'));
+    expect(api.isSfxPlaying('save_3')).toBe(true);
+    expect(finishesOn(60)).toBe(37);
+    await api.playMusic('pallettown'); step(3);
+    void api.playSFX('save');
+    expect(play.mock.calls[1][0]).toEqual(await file('save'));
+    expect(finishesOn(60)).toBe(40);
+  });
+
+  it('the PC pair plays Audio 3\'s copies under dungeon2; the other field sounds keep their files there', async () => {
+    const play = await sfxStarts();
+    await api.playMusic('dungeon2'); step(3);
+    for (const name of ['turn_on_pc', 'enter_pc', 'turn_off_pc', 'collision', 'press_ab']) { void api.playSFX(name); step(); while (!api.isSoundFinished()) step(); }
+    const expected = await Promise.all(['turn_on_pc_3', 'enter_pc_3', 'turn_off_pc', 'collision', 'press_ab'].map(file));
+    expect(play.mock.calls.map(call => call[0])).toEqual(expected);
+  });
+
+  it('an id with no file in the current bank plays nothing and warns once per pair', async () => {
+    const play = await sfxStarts(), warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await api.playMusic('wildbattle'); step(3);
+    void api.playSFX('collision'); step(); void api.playSFX('collision'); step();
+    expect(play).not.toHaveBeenCalled();
+    expect(api.isSoundFinished()).toBe(true);
+    expect(warn.mock.calls.map(call => String(call[0]))).toEqual(['No SFX file for id $b4 in audio bank $8']);
+    void api.playSFX('press_ab');
+    expect(play).toHaveBeenCalledTimes(1);
+    expect(play.mock.calls[0][0]).toEqual(await file('press_ab'));
+  });
+});
+
+// V5g2 (note 105): Audio1_PlaySound's priority per channel, and two SFX at once on different channels.
+describe('two SFX at once and SFX priority, through the facade (V5g2)', () => {
+  const engines = async () => {
+    const { SfxEngine } = await import('./sfx_engine');
+    return { install: vi.spyOn(SfxEngine.prototype, 'installSfx'), stopAll: vi.spyOn(SfxEngine.prototype, 'stop') };
+  };
+  const ids = () => ([5, 6, 7, 8] as const).map(channel => api.channelSoundId(channel));
+  const ready = async () => { await api.playMusic('pallettown'); step(3); };
+
+  it('START then A: start_menu keeps CHAN8 while press_ab takes CHAN5; nothing is stopped', async () => {
+    const { install, stopAll } = await engines(); await ready();
+    void api.playSFX('start_menu'); step(); void api.playSFX('press_ab');
+    expect(install).toHaveBeenCalledTimes(2); expect(stopAll).not.toHaveBeenCalled();
+    expect(ids()).toEqual([0x90, 0, 0, 0x8f]);
+    step(); expect(ids()).toEqual([0x90, 0, 0, 0x8f]);
+  });
+
+  it('on one channel the lower or equal id wins: collision is refused over press_ab, press_ab replaces collision', async () => {
+    const { install } = await engines(); await ready();
+    void api.playSFX('press_ab'); step(); void api.playSFX('collision');
+    expect(install).toHaveBeenCalledTimes(1); expect(ids()[0]).toBe(0x90);
+    while (!api.isSoundFinished()) step();
+    void api.playSFX('collision'); step(); void api.playSFX('press_ab'); void api.playSFX('press_ab');
+    expect(install).toHaveBeenCalledTimes(4); expect(ids()[0]).toBe(0x90);
+  });
+
+  it('CHAN8 compares ids too: go_inside ($ad) is refused over start_menu ($8f); start_menu replaces go_inside', async () => {
+    const { install } = await engines(); await ready();
+    void api.playSFX('start_menu'); step(); void api.playSFX('go_inside');
+    expect(install).toHaveBeenCalledTimes(1); expect(ids()[3]).toBe(0x8f);
+    while (!api.isSoundFinished()) step();
+    void api.playSFX('go_inside'); step(); void api.playSFX('start_menu');
+    expect(install).toHaveBeenCalledTimes(3); expect(ids()[3]).toBe(0x8f);
+  });
+
+  it('a refusal after an accepted channel leaves that channel cleared: swap over purchase\'s CHAN6 and press_ab\'s CHAN5', async () => {
+    const { install } = await engines(); await ready();
+    void api.playSFX('purchase'); step(); void api.playSFX('press_ab'); step();
+    expect(ids()).toEqual([0x90, 0xb2, 0, 0]);
+    void api.playSFX('swap'); // CHAN6 accepted ($ae <= $b2) and cleared, then CHAN5 refuses ($ae > $90)
+    expect(install).toHaveBeenCalledTimes(2); expect(ids()).toEqual([0x90, 0, 0, 0]);
+  });
+
+  it('isSfxPlaying(collision) is CHAN5\'s id: a later sound on CHAN8 does not hide it, press_ab on CHAN5 does', async () => {
+    await engines(); await ready();
+    void api.playSFX('collision'); step(); void api.playSFX('start_menu'); step();
+    expect(api.isSfxPlaying('collision')).toBe(true);
+    void api.playSFX('press_ab'); expect(api.isSfxPlaying('collision')).toBe(false);
+    expect(api.isSfxPlaying('press_ab')).toBe(true);
+  });
+
+  it('PlaySound\'s ID clear for a music request leaves every channel idle', async () => {
+    await engines(); await ready();
+    void api.playSFX('start_menu'); void api.playSFX('press_ab'); step();
+    await api.playMusic('routes1');
+    expect(ids()).toEqual([0, 0, 0, 0]);
+  });
+});
+
+// V5g3 checkpoint-04 (note 109): the field's text sounds go through TEXT_SOUND_IDS and the bank table.
+describe('the field textbox\'s sound commands by the current bank (V5g3 checkpoint-04)', () => {
+  const installs = async () => {
+    const { SfxEngine } = await import('./sfx_engine');
+    return vi.spyOn(SfxEngine.prototype, 'installSfx');
+  };
+  const file = async (name: string) => (await (await fetch(`audio/sfx/${name}.json`)).json()) as unknown;
+
+  it('caught_mon is SFX $9A: Audio 2\'s caught jingle under battle music, Audio 1\'s turn_off_pc under a town\'s', async () => {
+    const install = await installs();
+    await api.playMusic('wildbattle'); step(3);
+    await api.playSFX('caught_mon'); // not preloaded by the field: the first request fetches the file
+    for (let u = 0; u < 600 && api.isSfxPlaying('caught_mon'); u++) step(); // battle drums keep CHAN8 busy
+    expect(api.isSfxPlaying('caught_mon')).toBe(false);
+    await api.playMusic('pallettown'); step(3);
+    await api.playSFX('caught_mon');
+    expect(install.mock.calls.map(call => call[0])).toEqual([await file('caught_mon'), await file('turn_off_pc')]);
+    expect(api.channelSoundId(5)).toBe(0x9a);
+  });
+
+  it('dex_page_added is SFX $98: its file under battle music; no file under a town\'s, so nothing plays', async () => {
+    const install = await installs(), warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await api.playMusic('wildbattle'); step(3);
+    await api.playSFX('dex_page_added'); // not preloaded by the field: the first request fetches the file
+    for (let u = 0; u < 600 && api.isSfxPlaying('dex_page_added'); u++) step(); // battle drums keep CHAN8 busy
+    expect(api.isSfxPlaying('dex_page_added')).toBe(false);
+    await api.playMusic('pallettown'); step(3);
+    await api.playSFX('dex_page_added');
+    expect(install.mock.calls.map(call => call[0])).toEqual([await file('dex_page_added')]);
+    expect(warn.mock.calls.map(call => String(call[0]))).toEqual(['No SFX file for id $98 in audio bank $2']);
+  });
+});

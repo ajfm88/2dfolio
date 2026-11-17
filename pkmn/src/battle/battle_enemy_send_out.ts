@@ -12,6 +12,7 @@ import { BattleUnsupportedState } from './battle_move_data';
 import { choosePartyForSendOut, clearSendOutSprites, setSendOutBattlePalette, switchPlayerMon,
   type PlayerSendOutHost } from './battle_send_out';
 import type { Program } from './battle_menu_context';
+import { BATTLE_PARTY_MENU } from '../menus/party_menu';
 import type { BattleRenderTiles, RawImage } from './battle_screen_render';
 
 // Pinned symbols573535d; OAM and sprite-pattern storage stay with the screen/renderer owners.
@@ -105,7 +106,7 @@ export function* enemySendOutFirstMon(state: BattleState, host: EnemySendOutHost
     state.mem[D.wTextBoxID]=0x14;
     yield* displayTwoOptionMenu(state,host,0,7,8,1);
     if(state.wCurrentMenuItem===0) {
-      state.mem[D.wPartyMenuTypeOrMessageID]=2;
+      state.mem[D.wPartyMenuTypeOrMessageID]=BATTLE_PARTY_MENU;
       let choice=yield* choosePartyForSendOut(state,host,true);
       for(;;) {
         state.wCurrentMenuItem=1;

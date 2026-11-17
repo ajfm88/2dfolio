@@ -22,7 +22,7 @@ import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
 import { soundFinished } from '../audio/sound_wait';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
-import { rig as audioRig, sfxData, musicData } from '../test/audio_rig';
+import { rig as audioRig, sfxData, musicData, textSoundFile } from '../test/audio_rig';
 import { A, BattleState, battleContext, POKEDEX_ORDER } from './battle_state';
 import { D } from './battle_end_state';
 import { I } from './battle_item_state';
@@ -228,7 +228,7 @@ function history(o: Case = {}) {
     substituteBreak: function* () {}, shake: function* () {},
     trainerAI: function* (state) { inAI = true; const result = yield* ai(state); inAI = false; return result; },
     switchEnemyMon: function* () { throw new Error('link unsupported'); } };
-  vi.mocked(playSFX).mockImplementation(async name => { bridge.play({ id: name === 'get_item1' ? 0x86 : 0x90, data: sfxData(bridge.resolveTextSound(name)) }); });
+  vi.mocked(playSFX).mockImplementation(async name => { bridge.play({ id: name === 'get_item1' ? 0x86 : 0x90, data: sfxData(textSoundFile(name, bridge.audioBank)) }); });
   vi.mocked(isSoundFinished).mockImplementation(() => soundFinished(audio.sfx, audio.music, 0));
   const play = bridge.play.bind(bridge);
   vi.spyOn(bridge, 'play').mockImplementation(sound => { mark('sound', { id: sound.id, frequency: bridge.frequencyModifier, tempo: bridge.tempoModifier }); return play(sound); });

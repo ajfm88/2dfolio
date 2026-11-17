@@ -7,4 +7,8 @@ export const EXTRACTED_SFX: readonly string[] = [
   'collision', 'cut', 'enter_pc', 'get_item1', 'get_item2', 'get_key_item',
   'go_inside', 'go_outside', 'heal_ailment', 'heal_hp', 'healing_machine', 'press_ab', 'purchase', 'run', 'save', 'shrink', 'start_menu', 'swap',
   'turn_off_pc', 'turn_on_pc', 'withdraw_deposit',
+  // V5g1 checkpoint-02: Audio 3's own bodies, played while a bank-$1f song is loaded (sound_ids.ts SFX_FILES).
+  'enter_pc_3', 'save_3', 'turn_on_pc_3',
+  // V5g3 checkpoint-03: the ledge hop and the Town Map's input.
+  'ledge', 'tink',
 ];
