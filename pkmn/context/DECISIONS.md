@@ -1744,8 +1744,80 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      title screen (#69, note 57's backlog entry), planned in its own note; Pokémon cries stay J2 (#45) unless the
      user moves them.
 
-## Open — not decided, needs the user
+140. **The opening and title screen is planned in four parts; checkpoint-01 is the three sounds** (2026-11-16,
+     `notes/110-opening-plan.md`). Claude's plan for #69's slice; the choices that are the user's are O-58.
+     - **Scope:** everything between power-on and `MainMenu` per the ASM: the copyright screen, the Game Freak
+       logo and star, Yellow's intro movie, the title's build, loop, idle reset and exit, `MainMenu`'s B back to
+       `DisplayTitleScreen`, and `PlayPikachuSoundClip` as a real PCM player. Out: the "Click to start" splash
+       (stays as the audio unlock), the main menu itself (J2), Pokémon cries (#45), the other screens' clip calls.
+     - **Roadmap (note 110 §4), provisional:** Part 1 the title (01 sounds, 02 graphics, 03 clip data, 04 the PCM
+       player, 05 the build, 06 the loop and exits, 07 clear-save); Part 2 the copyright and the star (08, 09);
+       Part 3 the movie (10 data, 11 the animated-object engine, 12–14 the scenes). A roadmap row is not
+       authorization; each checkpoint gets its own trace, spike and brief.
+     - **Checkpoint-01 rulings (note 110 §8):** `intro_crash`, `intro_whoosh` and `shooting_star` get `SFX_HEADERS`
+       rows in bank `$1f` under pret's names, with no `_3` suffix (that suffix marks a copy, #129; these exist only
+       in Audio 3). Not preloaded, no `SFX_IDS` or `SFX_FILES` rows until their callers land. The four Nidorino
+       intro sounds stay unextracted: Yellow never plays them. 211 → 214 JSON, 952 → 958 generated files.
+     - **CPU time stays 0 frames, with two exceptions the cartridge makes visible:** the LCD-off spans (#97) and
+       the PCM clips, which run with interrupts off and freeze the picture and the music for their length.
 
+141. **O-58 answered: the opening slice's seven choices** (2026-11-16). *The user's answers to note 110 §6.*
+     1. **Order:** "we will go with your order": the title (checkpoints 01–07), then the copyright and the star,
+        then the movie.
+     2. **"Click to start" stays** as the audio unlock; the opening begins at the click.
+     3. **The Up+Select+B clear-save dialogue is in this slice** (checkpoint 07).
+     4. **The battle's three Pikachu clips (4, 11, 37) are in this slice,** as the last checkpoint before the
+        close-out (a fifteenth checkpoint).
+     5. **Pokémon cries get their own slice right after the opening, before the battle-mechanics audit** (#70).
+        This moves them out of J2 and amends #45. The order is now: the opening → cries → the battle-mechanics
+        audit → A2, A3, A4 → Phase B.
+     6. **The clips are one JSON file per clip.** No new binary type in the static export.
+     7. **Codex implements opening checkpoint-01; Grok reviews it.**
+
+142. **Opening checkpoint-02 is the title's and the splash's missing tiles, data only** (2026-11-16, note 111).
+     Checkpoint-01 passed Grok's review (`1b20e48e`). Claude's rulings for 02 (note 111 §3):
+     - Six PNGs under pret's names: `splash/copyright` (19 tiles), `title/nine`, `splash/gamefreak_presents` (13),
+       `splash/gamefreak_logo` (6), `splash/falling_star`, and the whole second animation sheet
+       `battle/move_anim_1` (79 tiles), whose tiles 3 and 19 are the big star. 527 → 533 PNGs, 958 → 964 files.
+     - The sheet's 80th cell stays empty, as `move_anim_0`'s does; pret's PNG pads it white. Tests compare the 79
+       real tiles.
+     - `gamefreak_presents` is extracted although the English game never places it: the cartridge loads it into
+       VRAM with the logo. The copyright screen's 30th tile is the text box's first and needs no file.
+     - No runtime change; the title keeps today's row until checkpoint 05. Codex implements, Grok reviews.
+
+143. **Opening checkpoint-03 is Pikachu's four voice clips as data** (2026-11-16, note 112). Checkpoint-02 passed
+     Grok's review (`a1343b8a`). Claude's rulings for 03 (note 112 §3):
+     - One file per clip under pret's names, `audio/pikachu_cries/pikachu_cry_N.json`:
+       `{ id, length, samples }`. `id` is the pointer table's row index (`PikachuCryN` is N − 1); `samples` is the
+       played bytes as **lowercase hex**. Hex replaces note 110 §3's suggested number array, which the project's
+       indented JSON would spread over about 16,000 lines. The ROM's one trailing byte is not stored.
+     - Only the clips this slice plays: 1 and 11 (the title), 4, 11 and 37 (the battle). One exported list,
+       `PIKACHU_CLIP_NUMBERS`, read by both `rom/index.ts` and the setup script. 214 → 218 JSON, 964 → 972 files.
+     - The files hold only ROM bytes. The sample rate (one sample every 45 machine cycles, about 23,302 Hz, read
+       from `PlayPikachuPCM`; note 112 §2.1) belongs to the player and is re-derived in checkpoint 04.
+     - pret's WAVs, thresholded as `tools/pcm.c` does, reproduce the ROM's bytes exactly; the tests use them as
+       an independent source. Codex implements, Grok reviews.
+
+144. **Opening checkpoint-04 is the PCM player and the frozen-frame hold, reachable only from the console**
+     (2026-11-17, note 113). Checkpoint-03 passed Grok's review (`5806d717`). Claude's rulings (note 113 §3):
+     - **A clip freezes the game.** `PlayPikachuSoundClip` runs between `di` and `ei`; a clip that spans N VBlank
+       boundaries loses N − 1 of them and has the N-th serviced late, at `ei`. The port freezes N − 1 ticks
+       (`core/cpu_freeze.ts`, separate from #73's palette hold: a frozen tick runs no program, no Random, no
+       joypad and no audio update; only `pageTicks`, the DIV stand-in, counts), and the frame program yields
+       once more. Clip 1 freezes 46 frames, 11 freezes 36, 4 freezes 82, 37 freezes 72.
+     - **The rate is 45 machine cycles a sample** (≈ 23,301.7 Hz), now pinned by a test that runs
+       `home/pikachu_cries.asm` from its source. The synthesizer plays the stream in place of the wave channel.
+     - **The clip's side effects:** NR50 = `$77`, the wave channel silent until the music's next wave note, the four
+       SFX ids zero (the port's drum and alarm ids included). The music is not stopped.
+     - **Play time stays wall-clock** (V5f ruling 2); the cartridge loses the frozen frames. J2's play-time audit.
+     - **Open:** the clip's start offset inside its frame (the VBlank handler's cost) is not counted; clip 1's
+       margin is 4,968 cycles, clip 4's 3,384. Checkpoints 05 and 15 settle their own (note 113 §2.4).
+     - Nothing in the game calls the player; `_playPikachuClip(n)` does. The title wires it in checkpoint 05, the
+       battle in 15. Codex implements, Grok reviews; the user listens after the review.
+     - **Closed 2026-11-17:** Codex `3af5eb0d`, Grok's PASS `9a59c1ea` (note 113 §10, agreeing with the frozen-frame
+       rule), the user heard clips 1 and 11 (§11). The user keeps the frozen-patch workflow for the rest of the slice.
+
+## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.
 

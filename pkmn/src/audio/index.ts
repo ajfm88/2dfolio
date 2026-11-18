@@ -23,7 +23,10 @@ import { SFX_IDS, musicIdentity, musicNameForSound, sfxNameForSound, textSoundId
 import { rivalAlternateStart } from './rival_start';
 import { AudioFade } from './fade_audio';
 import { battleMusicFor } from './battle_music';
-import { setLowHealthAlarm } from './low_health_alarm';
+import { setLowHealthAlarm, setLowHealthChannel5 } from './low_health_alarm';
+import { PIKACHU_PCM_HZ, clipFrozenFrames, clipMissedVBlanks, decodePikachuClip } from './pikachu_pcm';
+import type { PikachuClip, PikachuClipFile } from './pikachu_pcm';
+import { freezeFrames } from '../core/cpu_freeze';
 import type { BattleMusicInput } from './battle_music';
 import type { MusicData, NoiseInstrument } from './music_engine';
 import type { SfxData } from './sfx_engine';
@@ -77,6 +80,8 @@ let waveSamples: number[][] | null = null;
 let noiseInstruments: NoiseInstrument[] | null = null;
 const musicCache: Map<string, MusicData> = new Map();
 const sfxCache: Map<string, SfxData> = new Map();
+// Pikachu's voice clips by pret's number (PikachuCryN), decoded
+const clipCache: Map<number, PikachuClip> = new Map();
 // The SFX asked for last; only a request still loading reads it (isSfxPlaying)
 let currentSfx: string | null = null;
 // wChannelSoundIDs + CHAN5–8 as the field's PlaySound wrote them, with the file each id played (V5g2).
@@ -352,6 +357,45 @@ export function isSoundFinished(): boolean {
   return soundFinished(sfxEngine, engine, pendingSfx);
 }
 
+/** Fetch one of Pikachu's voice clips (pret's number, PikachuCryN), so that it can start inside a frame. */
+export async function loadPikachuClip(number: number): Promise<void> {
+  if (clipCache.has(number)) return;
+  const resp = await fetch(`audio/pikachu_cries/pikachu_cry_${number}.json`);
+  if (!resp.ok) throw new Error(`Pikachu clip ${number}: HTTP ${resp.status}`);
+  clipCache.set(number, decodePikachuClip(await resp.json() as PikachuClipFile, number));
+}
+
+/**
+ * PlayPikachuSoundClip from `di` to `ei` (audio/pikachu_pcm.asm:23-92). Nothing else runs in that span, so its
+ * writes are made here at once: rAUDVOL = $77; the clip on the wave channel; that channel left off afterwards
+ * (rAUD3ENA 0 then $80 without a trigger, rAUDTERM's two bits cleared), so the music's wave voice returns with
+ * its next note; wChannelSoundIDs + CHAN5..CHAN8 = 0. The game is frozen for every VBlank the clip misses but
+ * the last. Returns whether a VBlank was missed: the cartridge services that one as soon as `ei` takes effect,
+ * so a frame program yields once and resumes after it (playPikachuSoundClip).
+ */
+export function startPikachuClip(number: number): boolean {
+  const clip = clipCache.get(number);
+  if (!clip) throw new Error(`Pikachu clip ${number} is not loaded`);
+  if (!synth || !engine || !sfxEngine) throw new Error('audio is not initialized');
+  synth.setMasterVolume(7, 7);
+  synth.playPcm(clip.bytes, PIKACHU_PCM_HZ);
+  synth.silenceWave();
+  sfxEngine.clearSoundIds(); engine.cancelDrum(); setLowHealthChannel5(0);
+  freezeFrames(clipFrozenFrames(clip.bytes.length));
+  return clipMissedVBlanks(clip.bytes.length) > 0;
+}
+
+/** PlayPikachuSoundClip as a frame program (a yield is one VBlank): its three DelayFrames, then the clip. */
+export function* playPikachuSoundClip(number: number): Generator<void, void> {
+  for (let frame = 0; frame < 3; frame++) yield;
+  if (startPikachuClip(number)) yield;
+}
+
+/** A frozen frame (core/cpu_freeze.ts) has no audio update, and its time is not owed to the audio clock. */
+export function holdAudioClock(): void {
+  if (lastAudioTime !== 0) lastAudioTime = performance.now();
+}
+
 /**
  * Tick the audio engine. Called from gameTick() but runs at fixed ~59.7 Hz
  * regardless of game FPS, using its own time accumulator.
@@ -438,6 +482,9 @@ _win._sfxEngine = () => sfxEngine;
 // A1a (DECISIONS #40): hear an SFX before anything in the game plays it, e.g.
 // _playSFX('get_item1'). J2 decides this with the rest of the debug tooling.
 _win._playSFX = (name: string) => playSFX(name);
+// Opening checkpoint-04 (note 113): hear one of Pikachu's clips before the title plays it, e.g.
+// _playPikachuClip(1). It runs the clip's body without the three frames a caller waits first.
+_win._playPikachuClip = async (number = 1) => { await loadPikachuClip(number); startPikachuClip(number); };
 
 // ─── Internal ────────────────────────────────────────────────────────────────
 

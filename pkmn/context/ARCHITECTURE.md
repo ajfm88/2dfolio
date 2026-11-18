@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6590/6590** (2026-11-15, V5 complete; default workers; no-ROM 6274 pass / 316 skip; 268 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6669/6669** (2026-11-17, opening checkpoint-04 implemented; default workers; no-ROM 6317 pass / 352 skip; 273 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -144,8 +144,8 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   if it is missing. Committed since R1c.
 - **Extraction-map census (V4 complete, 2026-11-10):** 30 extracted maps, all runtime-wired. DiglettsCave and DiglettsCaveRoute11 passed review and the user's play-test (note89 §21). Route 11 outdoors is not extracted.
 - **`static/`** (DECISIONS #16) — Vite `publicDir`, **100% generated** by setup
-  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-15):527 PNGs +3 title
-  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 211 JSON files (952 generated files across `data/` and `static/`). No extraction was needed for A5e02–03b. That lets
+  (since R1a), which deletes and rebuilds it every run. Current inventory (2026-11-16):533 PNGs +3 title
+  `.tilemap`s under `gfx/`, plus a mirror of `data/`'s 218 JSON files (972 generated files across `data/` and `static/`). No extraction was needed for A5e02–03b. That lets
   the browser `fetch('pokemon.json')` and load `/gfx/...` without ROM injection.
   - **How:** `scripts/extract_dev_data.ts` runs the browser's own `extractRom()`
     in Node (`src/rom/node_image_data.ts` supplies `ImageData`).
@@ -492,7 +492,7 @@ Entry point: `index.html` → `src/main.ts`.
 
 | Module | Purpose | Key exports |
 |---|---|---|
-| `core/` | Shared types, constants, player state | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()` |
+| `core/` | Shared types, constants, player state; frozen-frame counter (`cpu_freeze.ts`) | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()`, `freezeFrames()`, `isCpuFrozen()`, `takeFrozenFrame()`, `resetCpuFreeze()` |
 | `renderer/` | Canvas 2D rendering; OBJ art through any OBP register (`obpMapping`, healing machine) | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()`, `loadSpriteMapped()`, `obpMapping()` |
 | `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
@@ -504,7 +504,7 @@ Entry point: `index.html` → `src/main.ts`.
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |
 | `story/` | Per-map story scripts & hidden events; Viridian City's map script (V1e) | `buildOakGrassScript()`, `buildOaksLabIntroScript()`, `buildOaksLabPokedexScript()`, `buildViridianMartParcelScript()`, `viridianCityStep()`, `buildOldMan2Script()` |
 | `script/` | Cutscene script engine & controller | `initScript()`, `updateScript()`, `ScriptCommand` |
-| `audio/` | GB audio engine (2 pulse, wave, noise) | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `isSoundFinished()` (A1a), `suspendAudio()`, `resumeAudioOutput()`, `preloadMusic()`, `setMasterVolume()`; the `wAudioFadeOutControl` fade-out (`fade_audio.ts`: `fadeOutAndStopMusic()`, `isAudioFadingOut()`, note 59); `SoundChannel` (`sound_channel.ts`, the shared interpreter) |
+| `audio/` | GB audio engine (2 pulse, wave, noise); Pikachu PCM player | `initAudio()`, `resumeAudio()`, `playMusic()`, `playSFX()`, `stopMusic()`, `tickAudio()`, `isMusicPlaying()`, `isSfxPlaying()`, `isSoundFinished()` (A1a), `suspendAudio()`, `resumeAudioOutput()`, `preloadMusic()`, `setMasterVolume()`; the `wAudioFadeOutControl` fade-out (`fade_audio.ts`: `fadeOutAndStopMusic()`, `isAudioFadingOut()`, note 59); `SoundChannel` (`sound_channel.ts`, the shared interpreter); `loadPikachuClip()`, `startPikachuClip()`, `playPikachuSoundClip()`, `holdAudioClock()` (opening checkpoint-04) |
 | `rom/` | Extraction system — see below | `validateRom()`, `extractRom()`, `installRomData()`, `showUploadScreen()` |
 | `items.ts` | Bag & PC item storage | `Bag`, `ItemStack`, `addToInventory()`, `initItemNames()`, `getItemName()` |
 | `save.ts` | Save/load via localStorage | `saveGame()`, `loadGame()` |
@@ -622,6 +622,7 @@ in `overworld/walk_pace.ts`; details in `src/overworld/ARCHITECTURE.md` → *Pac
 | `node_image_data.ts` | *(ours, R1a)* Node stand-in for `ImageData` so `extractRom()` runs in the setup script and tests |
 | `static_export.ts` | *(ours, R1a)* Node-only: `encodePng()` (lossless 8-bit gray / gray+alpha), `writeStatic()` rebuilds `static/`, `staticPathFor()` refuses keys outside `gfx/` |
 | `extractors/*.ts` | One per data type — the **schema authority** (Hard rule #4) |
+| `extractors/pikachu_pcm.ts` | Extracts selected Pikachu voice clips from the ROM pointer table as id, length and played bytes in lowercase hex; not used at runtime |
 
 The three *Dead* files are upstream's in-browser ROM path. Since R1b nothing
 imports them and the production bundle contains none of their code. They stay in

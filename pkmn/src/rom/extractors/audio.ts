@@ -177,6 +177,13 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   // V5g3 checkpoint-02 (note 107): SFX_Ledge_1 ($A2, channel 5), the ledge hop (engine/overworld/ledges.asm:53).
   // SFX_Ledge_3 decodes identically, so Audio 3 needs no copy. Data only until checkpoint-03 plays it.
   ledge:               { bank: 0x02, addr: 0x41e6 },
+  // Opening checkpoint-01 (note 110): Audio 3 only (sfxheaders3.asm:482-488,503-505), one channel each.
+  // SFX_Intro_Crash ($BC, channel 8) and SFX_Intro_Whoosh ($BD, channel 8) are the title's (engine/movie/title.asm);
+  // SFX_Shooting_Star ($C2, channel 5) is the Game Freak star's (engine/movie/splash.asm). Data only until the
+  // title and the star play them.
+  intro_crash:         { bank: 0x1f, addr: 0x4234 },
+  intro_whoosh:        { bank: 0x1f, addr: 0x4237 },
+  shooting_star:       { bank: 0x1f, addr: 0x4246 },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

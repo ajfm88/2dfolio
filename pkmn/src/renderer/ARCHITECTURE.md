@@ -1,5 +1,7 @@
 # Renderer Architecture
 
+Opening checkpoint-02 (note 111 §8) extracts six currently unused images: `splash/copyright` (19 tiles), `title/nine` (1), `splash/gamefreak_presents` (13), `splash/gamefreak_logo` (6), `splash/falling_star` (1), and `battle/move_anim_1` (79). Later opening checkpoints load them; review is pending.
+
 A5d CP3 adds `captureNative(draw)` (native 160×144 target with context/scale restored in finally) and
 `captureSpriteDraws(draw)` (scoped draw descriptors preserving an outer log). They do not capture the main
 surface or clear UI coverage. CP4's `getLoadedRawImageData` reads the raw cache synchronously and throws if

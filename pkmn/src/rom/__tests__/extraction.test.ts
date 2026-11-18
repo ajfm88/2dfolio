@@ -21,9 +21,13 @@ import { extractMap, extractAllMaps } from '../extractors/maps';
 import { readMoveNames, readItemNames, readTrainerClassNames, readPokemonInternalNames } from '../extractors/text';
 import { OLD_MAN_PIC_BACK } from '../rom_offsets';
 import { extractGameText } from '../extractors/game_text';
-import { extractLedgeHoppingShadow, extractPikachuEmotionSprites, extractEmotes } from '../extractors/graphics';
+import {
+  extractLedgeHoppingShadow, extractPikachuEmotionSprites, extractEmotes, extractCopyrightLogo, extractNineTile,
+  extractGamefreakPresents, extractGamefreakIntroLogo, extractFallingStar, extractMoveAnim1, extractGamefreakLogo,
+} from '../extractors/graphics';
 import { extractPikachuMovement } from '../extractors/pikachu_movement';
 import { installNodeImageData } from '../node_image_data';
+import { decode2bpp as decode2bppRun } from '../tile_decoder';
 import { rig } from '../../test/audio_rig';
 import { soundFinished } from '../../audio/sound_wait';
 import { SFX_FILES, SFX_IDS, TEXT_SOUND_IDS, musicNameForSound } from '../../audio/sound_ids';
@@ -57,6 +61,8 @@ function parseAsmChannels(asm: string): Record<string, unknown>[][] {
       case 'volume': cur.push({ cmd: op, left: n(0), right: n(1) }); break;
       case 'vibrato': cur.push({ cmd: op, delay: n(0), depth: n(1), rate: n(2) }); break;
       case 'duty_cycle': cur.push({ cmd: op, value: n(0) }); break;
+      case 'duty_cycle_pattern': cur.push({ cmd: op, d0: n(0), d1: n(1), d2: n(2), d3: n(3) }); break;
+      case 'noise_note': cur.push({ cmd: op, length: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2), param: n(3) }); break;
       // Negative fades set bit 3; keep the raw nibble, including negative zero (8).
       case 'note_type': cur.push({ cmd: op, speed: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2) }); break;
       case 'square_note': cur.push({ cmd: op, length: n(0), volume: n(1), fade: n(2) < 0 ? 8 | -n(2) : n(2), frequency: n(3) }); break;
@@ -752,7 +758,10 @@ describe('Audio: the Audio 3 copies that differ from Audio 1 (V5g1 checkpoint-01
     const different = Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x02).filter(([, header]) =>
       JSON.stringify(extractSfxAt(rom, 0x02, header.addr)) !== JSON.stringify(extractSfxAt(rom, 0x1f, header.addr)),
     ).map(([name]) => `${name}_3`).sort();
-    expect(Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x1f).map(([name]) => name).sort()).toEqual(different);
+    // Opening checkpoint-01: Audio 3 also holds three sounds no other bank has; they keep pret's names.
+    const audio3Only = ['intro_crash', 'intro_whoosh', 'shooting_star'];
+    expect(Object.entries(SFX_HEADERS).filter(([, header]) => header.bank === 0x1f).map(([name]) => name).sort())
+      .toEqual([...different, ...audio3Only].sort());
   });
 });
 
@@ -787,6 +796,57 @@ describe('Audio: the ledge hop sound (V5g3 checkpoint-02)', () => {
     expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
     r.update();
     expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+  });
+});
+
+describe('Audio: the opening\'s three sounds (opening checkpoint-01)', () => {
+  // pret's symbols: SFX_Intro_Crash 1f:4234, _Ch8 1f:4679; SFX_Intro_Whoosh 1f:4237, _Ch8 1f:4680;
+  // SFX_Shooting_Star 1f:4246, _Ch5 1f:46c8. Audio 3 only: no other bank's table reaches these ids.
+  const SOUNDS = {
+    intro_crash: { header: 0x4234, id: 0xbc, channel: 8, pointer: 0x4679, end: 20 },
+    intro_whoosh: { header: 0x4237, id: 0xbd, channel: 8, pointer: 0x4680, end: 34 },
+    shooting_star: { header: 0x4246, id: 0xc2, channel: 5, pointer: 0x46c8, end: 77 },
+  } as const;
+
+  for (const [name, fixture] of Object.entries(SOUNDS)) {
+    it(`${name}: bank $1f, its id, one channel at pret's pointer`, () => {
+      expect(SFX_HEADERS[name]).toEqual({ bank: 0x1f, addr: fixture.header });
+      expect((fixture.header - 0x4000) / 3).toBe(fixture.id);
+      const at = 0x1f * 0x4000 + (fixture.header & 0x3fff);
+      expect(rom.readByte(at)).toBe(fixture.channel - 1); // channel_count 1
+      expect(rom.readWord(at + 1)).toBe(fixture.pointer);
+    });
+
+    it(`${name}: extraction matches the committed JSON`, () => {
+      expect(extractSfx(rom, name)).toEqual(loadJson(`audio/sfx/${name}.json`));
+    });
+
+    it(`${name}: every decoded command matches audio/sfx/${name}.asm`, () => {
+      const source = readFileSync(resolve(__dirname, `../../../../refs/pokeyellow/audio/sfx/${name}.asm`), 'utf8');
+      const extracted = extractSfx(rom, name)!;
+      expect(extracted.channels.map(c => c.id)).toEqual([fixture.channel]);
+      expect(extracted.channels.map(c => c.commands)).toEqual(parseAsmChannels(source));
+    });
+
+    it(`${name}: returns on update ${fixture.end}`, () => {
+      const r = rig();
+      r.sfx.play(extractSfx(rom, name)!);
+      r.run(fixture.end - 1);
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
+      r.update();
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+    });
+  }
+
+  it('only Audio 3 has the three sounds, under pret\'s constants', () => {
+    const read = (path: string): string => readFileSync(resolve(__dirname, '../../../../refs/pokeyellow', path), 'utf8');
+    const constants = read('constants/music_constants.asm');
+    for (const name of Object.keys(SOUNDS)) {
+      const label = `SFX_${name.split('_').map(part => part[0].toUpperCase() + part.slice(1)).join('_')}`;
+      expect(constants).toMatch(new RegExp(`music_const SFX_${name.toUpperCase()},\\s+${label}\\s`));
+      expect(read('audio/headers/sfxheaders3.asm')).toContain(`${label}::`);
+      for (const bank of [1, 2, 4]) expect(read(`audio/headers/sfxheaders${bank}.asm`)).not.toContain(label);
+    }
   });
 });
 
@@ -1307,6 +1367,74 @@ describe('V1e: the Viridian old men and the demo gates', () => {
     const text = extractGameText(rom);
     expect(text['VIRIDIAN_OLDMAN_DEMO']).toBeUndefined();
     expect(Object.values(text).filter(t => /demo/i.test(t))).toEqual([]);
+  });
+});
+
+describe('Opening checkpoint-02: the copyright, splash and star tiles', () => {
+  const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
+  const at = (bank: number, addr: number): number => bank * 0x4000 + (addr & 0x3fff);
+  const tile = (img: ImageData, index: number, tilesWide: number): number[] => {
+    const out: number[] = [];
+    const x0 = (index % tilesWide) * 8, y0 = Math.floor(index / tilesWide) * 8;
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) out.push(img.data[((y0 + y) * img.width + x0 + x) * 4]);
+    return out;
+  };
+  const IMAGES = [
+    ['gfx/splash/copyright.png', extractCopyrightLogo, 152, 8],
+    ['gfx/title/nine.png', extractNineTile, 8, 8],
+    ['gfx/splash/gamefreak_presents.png', extractGamefreakPresents, 104, 8],
+    ['gfx/splash/gamefreak_logo.png', extractGamefreakIntroLogo, 16, 24],
+    ['gfx/splash/falling_star.png', extractFallingStar, 8, 8],
+    ['gfx/battle/move_anim_1.png', extractMoveAnim1, 128, 40],
+  ] as const;
+
+  for (const [path, extract, width, height] of IMAGES) {
+    it(`${path} is ${width}x${height} and matches refs/pokeyellow pixel for pixel`, () => {
+      installNodeImageData();
+      const img = extract(rom);
+      expect([img.width, img.height]).toEqual([width, height]);
+      const png = PNG.sync.read(readFileSync(resolve(REFS, path)));
+      expect([png.width, png.height]).toEqual([width, height]);
+      // move_anim_1 has 79 tiles in the ROM. pret's PNG pads the 80th cell white; the extractor leaves it
+      // empty, as it does for move_anim_0. Compare the 79 real tiles.
+      const tiles = path.endsWith('move_anim_1.png') ? 79 : (width / 8) * (height / 8);
+      const cells = (image: { data: ArrayLike<number> }): number[][] =>
+        Array.from({ length: tiles }, (_, i) => tile(image as ImageData, i, width / 8));
+      expect(cells(img)).toEqual(cells({ data: png.data, width } as unknown as ImageData));
+      if (tiles === (width / 8) * (height / 8)) expect(Array.from(img.data)).toEqual(Array.from(png.data));
+    });
+  }
+
+  it('the copyright screen\'s 30-tile copy is copyright, GAME FREAK inc., the 9 and one text-box tile, in ROM order', () => {
+    // title.asm:246-250: (TextBoxGraphics + $10 - NintendoCopyrightLogoGraphics) / $10 tiles from 04:4c48.
+    // pret's symbols: GameFreakLogoGraphics 04:4d78, NineTile 04:4e08, TextBoxGraphics 04:4e18.
+    installNodeImageData();
+    expect((0x4e18 + 0x10 - 0x4c48) / 0x10).toBe(30);
+    expect(at(0x04, 0x4c48) + 19 * 16).toBe(at(0x04, 0x4d78));
+    expect(at(0x04, 0x4d78) + 9 * 16).toBe(at(0x04, 0x4e08));
+    expect(at(0x04, 0x4e08) + 16).toBe(at(0x04, 0x4e18));
+    const run = decode2bppRun(rom.readBytes(at(0x04, 0x4c48), 29 * 16), 29);
+    const parts = [...Array.from({ length: 19 }, (_, i) => tile(extractCopyrightLogo(rom), i, 19)),
+      ...Array.from({ length: 9 }, (_, i) => tile(extractGamefreakLogo(rom), i, 9)), tile(extractNineTile(rom), 0, 1)];
+    expect(Array.from({ length: 29 }, (_, i) => tile(run, i, 29))).toEqual(parts);
+  });
+
+  it('GameFreakIntro is PRESENTS (13 tiles), the logo (6) and one blank tile: 20 tiles', () => {
+    // pret's symbols: GameFreakIntro 10:5aa6, GameFreakIntroEnd 10:5be6; intro.asm:149-153.
+    expect((0x5be6 - 0x5aa6) / 16).toBe(20);
+    expect(Array.from(rom.readBytes(at(0x10, 0x5aa6) + 19 * 16, 16))).toEqual(new Array(16).fill(0));
+  });
+
+  it('the star\'s two tiles are MoveAnimationTiles1 tiles 3 and 19, and neither is blank', () => {
+    // splash.asm:8-15. pret's symbols: MoveAnimationTiles1 1e:4727, SlotMachineTiles2 1e:4c17 (79 tiles).
+    installNodeImageData();
+    expect((0x4c17 - 0x4727) / 16).toBe(79);
+    const sheet = extractMoveAnim1(rom);
+    for (const index of [3, 19]) {
+      const bytes = rom.readBytes(at(0x1e, 0x4727) + index * 16, 16);
+      expect(tile(sheet, index, 16)).toEqual(tile(decode2bppRun(bytes, 1), 0, 1));
+      expect(new Set(tile(sheet, index, 16)).size).toBeGreaterThan(1);
+    }
   });
 });
 

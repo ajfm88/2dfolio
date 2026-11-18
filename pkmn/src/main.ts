@@ -10,6 +10,7 @@ import { loadTrainerSpeciesData } from './battle/battle_trainer_data';
 import { POKEDEX_ORDER } from './battle/battle_state';
 import { speciesDisplayName } from './battle/data';
 import { isVBlankHeld } from './core/vblank_hold';
+import { isCpuFrozen, takeFrozenFrame } from './core/cpu_freeze';
 import { presentBattleScreen } from './battle/battle_screen_render';
 import { getSpriteIndex, setSpriteIndex } from './overworld/sprite_index';
 import { loadBattleTransitionData, getBattleTransitionData, chooseBattleTransition, battleTransitionLevels } from './overworld/battle_transition_choice';
@@ -39,7 +40,8 @@ import {
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
   playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
-  fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished, preloadMusic, playBattleMusic } from "./audio";
+  fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished, preloadMusic, playBattleMusic,
+  holdAudioClock } from "./audio";
 import { isNoMapMusic, setNoMapMusic } from "./audio/audio_flags";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
 import { MapDialogue } from './text/map_dialogue';
@@ -1247,6 +1249,9 @@ function enterMapAfterBattle(): void {
 /** One game tick — all update logic (no rendering). */
 function gameTick(): void {
   pageTicks++;
+  // PlayPikachuSoundClip between `di` and `ei` (core/cpu_freeze.ts): no VBlank and no program. The hardware clock
+  // above still counts. Play time is wall-clock (V5f ruling 2), so the next serviced tick adds the whole span.
+  if (takeFrozenFrame()) { holdAudioClock(); return; }
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
   const timerCounting = state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit";
@@ -1787,12 +1792,16 @@ function runDueTicks(now: number): boolean {
   const ticks = tickClock.due(now);
   if (ticks === 0) return false;
 
-  for (let tick = 0; tick < ticks; tick++) {
-    updateInput();
-    gameTick();
-    checkUiEntry();
-  }
+  for (let tick = 0; tick < ticks; tick++) runTick();
   return true;
+}
+
+/** One tick of the page. A frozen frame reads no joypad: a key pressed during it is an edge at the next read. */
+function runTick(): void {
+  const frozen = isCpuFrozen();
+  if (!frozen) updateInput();
+  gameTick();
+  if (!frozen) checkUiEntry();
 }
 
 // Browsers stop requestAnimationFrame in background tabs, which froze the whole

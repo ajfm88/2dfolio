@@ -15,6 +15,83 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-17 (opening checkpoint-04 reviewed; listening test next) — Grok
+
+- Independent review of `3af5eb0d` passed (note 113 §10). Spike matches; gates and P1–P22 match §6.2 and §6.3.
+  `samplePcm` reading after it advances failed 8 of 53, AssertionError only, and was restored. No witness.
+  §2.3 agreed. §2.4 stays open: the di-to-ei window is 632 cycles longer than the table, and the handler is
+  uncounted (backlog). Queue is the user's listening test. Checkpoint-05 not started. Nothing pushed.
+
+### 2026-11-17 (opening checkpoint-04 implemented; review next) — Codex
+
+- Applied note 113's frozen twelve-file patch (six new); base/artifact and applied-source hashes passed.
+  Typecheck/build passed; ROM 6669/6669; no-ROM 6317 / 352, 273 files; bundle `index-DLR1tJU_.js`,
+  679,031 bytes, SHA256 matches §6.2. P1–P22 match §6.3 exactly, AssertionError only; source restored.
+  No generated-file/snapshot change, setup run, game caller or preload. Report/logs: note 113 §9.
+  Next: Grok reviews §8, then the user listens. No review/listening test claimed; checkpoint-05 not started.
+
+### 2026-11-17 (opening checkpoint-04 briefed and spiked) — Claude
+
+- Traced `PlayPikachuSoundClip` end to end (note 113 §2): the writes, the 45-cycle rate (now run from pret's source in
+  a test), and the freeze: a clip that spans N VBlanks loses N − 1 and has the N-th serviced at `ei`, so the port
+  freezes N − 1 ticks (46 for clip 1) and yields once. Spiked twelve files (six new, 33 new cases, one moved),
+  froze `notes/113-opening-checkpoint-04/` (patch, hashes, gates, 22 mutations, prompts), restored the source.
+  Gates with the patch: 6669/6669; 6317 / 352, 273 files; bundle `index-DLR1tJU_.js`. Open: the clip's start
+  offset within its frame (§2.4, backlog). #144. Next: Codex implements.
+
+### 2026-11-16 (handoff: checkpoint-03 closed; checkpoint-04 is next) — Claude
+
+- Grok's PASS for opening checkpoint-03 (`5806d717`, on Codex's `11a3e325`) recorded; the tree is clean at that commit. Checkpoints 01–03 (Part 1's three data checkpoints) are done: 3 sounds, 6 images, 4 clips. Baseline ROM 6636/6636; no-ROM 6284 / 352, 269 files; bundle `index-DsyXtWek.js` 677,382 bytes, unchanged since V5. Nothing is in progress. Next is checkpoint-04 (the PCM player): see *In progress* → restart list for the planner's reading list and process. Roadmap: note 110 §4 (fifteen checkpoints; order and scope settled by DECISIONS #141). Then Pokémon cries, the battle-mechanics audit, A2–A4, Phase B.
+
+### 2026-11-16 (opening checkpoint-03 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `11a3e325` per note 112 §6. Six source files match the refrozen spike; the game diff excluding the audio architecture doc equals `01-spike.diff`. Eight new JSON files match the ROM length words and played bytes. Setup left `data/` and `static/` unchanged. Both sample paths in `PlayPikachuPCM` count to 45 machine cycles. Gates re-run: typecheck clean; bundle `index-DsyXtWek.js`, 677,382 bytes, SHA256 `7511905f...`; ROM 6636/6636; no-ROM 6284 pass / 352 skip, 269 files. C1–C8 each exit 1, only AssertionError, at 14, 9, 5, 9, 2, 9, 5, 2. **Independent mutation** (sample bits stored least significant first) killed by 9 of 30; source restored. No witness. No play-test. Queue is Claude's checkpoint-04 plan. Note 112 §9.
+
+### 2026-11-16 (opening checkpoint-03 implemented) — Codex
+
+- Applied the corrected frozen patch and extracted four clips and their mirrors. Gates matched note 112 §4: ROM 6636, no-ROM 6284 / 352, unchanged bundle; C1–C8 failed 14/9/5/9/2/9/5/2 as expected. Grok reviews next; no play-test. Note 112 §8.
+
+### 2026-11-16 (opening checkpoint-03 briefed and spiked) — Claude
+
+- Recorded Grok's PASS for checkpoint-02. Traced and spiked checkpoint-03 (note 112): the four clips this slice plays as hex in one JSON file each, a new extractor and test file, patch `5d4b8227…`. pret's WAVs reproduce the ROM bytes exactly. With the patch ROM 6636/6636, no-ROM 6284 / 352, 269 files, bundle unchanged; C1–C8 fail 14/9/5/9/2/9/5/2, AssertionError only. Source restored; `verify-files.py base` passes. Read the sample rate from `PlayPikachuPCM` (45 machine cycles a sample) for checkpoint-04. DECISIONS #143. Next: Codex, then Grok.
+- **Codex's stop, resolved the same day:** note 112 §2 said `tools/pcm.c` sets a bit at "`$80` or more"; the tool says `> 0x80`. The WAVs hold only `$00` and `$FF`, so no data changes. The test's comparison and comment are corrected and the patch is refrozen (`2e3fabd3…`); gates and C1–C8 re-run with the same results (note 112 §4.4). Codex restarts at §5 step 1.
+
+### 2026-11-16 (opening checkpoint-02 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `1676155c` per note 111 §6. Four source files match the spike; the game diff excluding the renderer architecture doc equals `01-spike.diff`. Six new PNGs match pret on their real tiles. Setup left `data/` and `static/` unchanged. Gates re-run: typecheck clean; bundle `index-DsyXtWek.js`, 677,382 bytes, SHA256 `7511905f...`; ROM 6616/6616; no-ROM 6278 pass / 338 skip, 268 files. P1–P7 each exit 1, only AssertionError, at 3, 3, 2, 2, 3, 1, 1. **Independent mutation** (PRESENTS read as 12 tiles) killed by 2 of 181; source restored. No witness. No play-test. Queue is Claude's checkpoint-03 plan. Note 111 §9.
+
+### 2026-11-16 (opening checkpoint-02 implemented) — Codex
+
+- Applied the frozen patch and extracted six PNGs. Gates matched note 111 §4: ROM 6616, no-ROM 6278 / 338, unchanged bundle; P1–P7 failed 3/3/2/2/3/1/1 as expected. Grok reviews next; no play-test. Note 111 §8.
+
+### 2026-11-16 (O-58 answered; opening checkpoint-02 briefed and spiked) — Claude
+
+- Recorded the user's seven answers (DECISIONS #141) and Grok's PASS for checkpoint-01. Traced and spiked checkpoint-02 (note 111): six PNGs by pret's names, four source and test files, patch `41794cc4…`. With the patch ROM 6616/6616, no-ROM 6278 / 338, bundle unchanged; P1–P7 fail 3/3/2/2/3/1/1, AssertionError only. Source restored; `verify-files.py base` passes. Note 110's roadmap gains checkpoint 15; PLAN moves cries out of J2. DECISIONS #142. Next: Codex, then Grok.
+
+### 2026-11-16 (opening checkpoint-01 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `a7eb4c05` per note 110 §11. Seven source files match the spike; the game diff excluding the audio architecture doc equals `01-spike.diff`. Six new JSON files; setup left `data/` and `static/` unchanged. Gates re-run: typecheck clean; bundle `index-DsyXtWek.js`, 677,382 bytes, SHA256 `7511905f...`; ROM 6607/6607; no-ROM 6278 pass / 329 skip, 268 files. O1–O6 each exit 1, only AssertionError, at 5, 7, 2, 1, 4, 1. **Independent mutation** (`intro_crash` param 50 → 51 in both copies) killed by 2 of 207; files restored. No witness. No play-test. Queue is Claude's checkpoint-02 plan. Note 110 §14.
+
+### 2026-11-16 (opening checkpoint-01 implemented) — Codex
+
+- Applied frozen patch and extracted three Audio 3 sounds and mirrors. Gates matched note 110 §9: ROM 6607, no-ROM 6278 / 329, unchanged bundle; O1–O6 failed 5/7/2/1/4/1 as expected. Review by Grok next; no play-test. Note 110 §13.
+
+### 2026-11-16 (the opening planned; checkpoint-01 briefed and spiked) — Claude
+
+- Read the cartridge's whole opening (`init.asm`, `intro.asm`, `splash.asm`, `intro_yellow.asm`, `animated_objects.asm`, `title.asm`, `title_yellow.asm`, the PCM routines) and today's `title_screen.ts`. Wrote `notes/110-opening-plan.md`: findings, design direction, a fourteen-checkpoint roadmap in four parts, O-58. **Checkpoint-01** (three Audio 3 sounds, data only) is spiked: patch `2885476d…`, six generated files by manifest; with the patch ROM 6607/6607, no-ROM 6278 / 329, bundle unchanged; O1–O6 fail 5/7/2/1/4/1, AssertionError only. Source restored; `verify-files.py base` passes. DECISIONS #140. Docs and the note directory only; no game file changed. Next: an implementer runs note 110 §10; the user answers O-58.
+
+### 2026-11-15 (V5 closed; Phase V done) — Claude
+
+- Grok's V5g3 checkpoint-04 review passed (`4ef50f3`); no play-test by design. Recorded note 109 §10 and DECISIONS #139: V5g3, V5g and **V5 complete, 9 of 36 milestones, Phase V done**. Updated `CLAUDE.md`, `PROJECT.md`, `PLAN.md` and STATUS (header, phase, *Completed*, *In progress*, queue). Docs only. Next: plan the opening and title screen (#69); ask about moving Pokémon cries earlier.
+
+### 2026-11-15 (V5g3 checkpoint-04 reviewed: passed, one independent mutation) — Grok
+
+- Reviewed Codex's `92bba368` per note 109 §6. Two source files match the spike; the game diff excluding the audio architecture doc equals `01-spike.diff`. Field `playSFX` falls back to `textSoundId`. Gates re-run: typecheck clean; bundle `index-DsyXtWek.js`, 677,382 bytes, SHA256 `7511905f...`; ROM 6590/6590; no-ROM 6274 pass / 316 skip, 268 files. S1–S2 each exit 1, only AssertionError, exact counts, 35 cases. **Independent mutation** (the fallback only in bank `$08`) killed by 2 cases; source restored. No witness. No play-test. Queue is Claude's V5 close-out. Note 109 §9.
+
+### 2026-11-15 (V5g3 checkpoint-04 implemented; awaiting Grok review) — Codex
+
+- Applied note 109's frozen two-file patch on `c55eb1aa`; base/artifact/applied hashes and exact diff pass; ASM/textbox trace agrees. Typecheck/build pass; `index-DsyXtWek.js`, 677,382 bytes, SHA256 `7511905f...`; ROM 6590/6590 (21.00s), no-ROM 6274 / 316 skipped (21.71s), 268 files. S1–S2 each exit 1 with only AssertionError, exactly 2 and 1 failures of 35; source restored and re-verified before docs. Two new cases, none moved. No preload/data/snapshot change; no setup or play-test. Report: note 109 §8. Next: Grok review, then Claude's V5 close-out.
+
 ### 2026-11-15 (V5g3 checkpoint-03 closed; checkpoint-04 traced, spiked and briefed) — Claude
 
 - The user's ledge and Town Map play-test passed; note 108 §11. The user's "checkpoint 5" is checkpoint-04, V5g3's last. Spike (2 files): `playSFX` falls back to `textSoundId`; two facade cases (fetch awaited; waits bounded, since battle drums hold CHAN8). Gates on the applied patch: typecheck clean; `index-DsyXtWek.js`, 677,382 bytes; ROM 6590/6590; no-ROM 6274 / 316 skipped, 268 files; S1–S2 killed. Source restored; live baseline unchanged. DECISIONS #138. Next: Codex implements, Grok reviews; then Claude closes V5.
@@ -8466,3 +8543,10 @@ Historical snapshots, superseded by the November3 handoff. Preserved verbatim; n
 - **Unscheduled:** attack move animations (#94), the evolution screen's port (no tests pin its drawing; note 57).
 - **Tests:** ROM **6182/6182**; no-ROM **5896 pass / 286 skip**; 246 files. Bundle `index-BDiKPiKT.js`.
 - Full handoff: STATUS.md; V3's record is note 88 (§15 the 02 split, §16 the last brief, §18 the last review).
+
+## Archived STATUS rows (moved 2026-11-17)
+
+The *Setup* table's two generated-file rows as they stood before the trim:
+
+| Committed generated files | `game/data/` (218 JSON) + `game/static/` (533 PNG, 3 tilemaps, 218 JSON), 972 generated files total. Opening checkpoint-03 adds four clips and their mirrors; prior generated files are unchanged. Opening checkpoint-02 adds six PNGs; prior generated files are unchanged. Opening checkpoint-01 adds three sounds and their mirrors; all prior generated files are unchanged. V5g3 checkpoint-02 adds `ledge.json` and its static mirror; the checker passes and all prior generated files are unchanged. V5g1 checkpoint-01 adds the three Audio 3 SFX bodies and their mirrors (six files); all prior generated files are unchanged. V5c checkpoint-06 regenerated `game_text.json` and BluesHouse, OaksLab, RedsHouse1F, RedsHouse2F, ViridianSchoolHouse, each with its static mirror (12 files). Checkpoint-01 added `toggleable_objects.json` and its mirror; the runtime has used them since checkpoint-03b. Checkpoint-04 regenerated six map JSON files and their six mirrors for ROM object order and facing. V4 checkpoint-01 added the two Diglett's Cave maps; V3 checkpoint-04 added Route3. Regenerate, never hand-edit |
+| `npm run setup` | 218 JSON → `data/`; static 533 PNG + 3 tilemaps + 218 JSON mirror (972 generated files). Opening checkpoint-03 checker: `PASS 8 generated files`; prior generated files unchanged. Opening checkpoint-02 checker: `PASS 6 generated files`; prior generated files unchanged. Opening checkpoint-01 checker: `PASS 6 generated files`; prior generated files unchanged. V5g3 checkpoint-02 setup writes only `ledge.json` and its mirror; checker: `PASS 2 generated files`; prior generated files unchanged. |

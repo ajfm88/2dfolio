@@ -54,7 +54,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
   Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
-- **No ROM at runtime.** 211 committed JSON files and their static mirror, 527 PNGs and 3 tilemaps (952 generated
+- **No ROM at runtime.** 218 committed JSON files and their static mirror, 533 PNGs and 3 tilemaps (972 generated
   files total). Vanilla art, local play, no remote and no push.
 - **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
   V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
@@ -63,12 +63,12 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   catch-up: the bank-aware `SFX_FILES` lookup with Audio 3's copies and the battle's text sounds (notes 101,
   103, 104), the field's priority and two SFX at once (note 105), and the call sites: the door sound by tile, the
   ledge hop, the Town Map's tinks, the field's text sounds (notes 106–109).
-- **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they are
-  J2 (#45) unless the user moves them. Unscheduled: attack move animations (#94), the evolution screen's port
+- **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
+  their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
   (note 57).
-- **Tests:** ROM **6590/6590**; no-ROM **6274 pass / 316 skip**; 268 files (V5 complete). Bundle `index-DsyXtWek.js`,
-  677,382 bytes.
-- Full handoff: STATUS.md → *In progress* (2026-11-15). Next: Claude plans the opening and title screen (#69).
+- **Tests:** ROM **6669/6669**; no-ROM **6317 pass / 352 skip**; 273 files (opening checkpoint-04 reviewed and heard by the user). Bundle `index-DLR1tJU_.js`,
+  679,031 bytes.
+- Full handoff: STATUS.md → *In progress* (2026-11-17). Opening checkpoints 01–04 are closed; next is checkpoint-05, the title's build (note 110 §4).
 
 ## Goals
 

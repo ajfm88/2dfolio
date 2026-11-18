@@ -203,3 +203,33 @@ describe('the ledge hop sound (V5g3 checkpoint-02, data only)', () => {
     expect(SFX_IDS.ledge).toBe(0xa2);
   });
 });
+
+// Opening checkpoint-01 (note 110): Audio 3's SFX_Intro_Crash, SFX_Intro_Whoosh and SFX_Shooting_Star, data only
+// until the title screen and the Game Freak star play them.
+describe('the opening\'s three sounds (opening checkpoint-01, data only)', () => {
+  const SOUNDS = [
+    { name: 'intro_crash', channel: 8, end: 20 },
+    { name: 'intro_whoosh', channel: 8, end: 34 },
+    { name: 'shooting_star', channel: 5, end: 77 },
+  ] as const;
+
+  for (const sound of SOUNDS) {
+    it(`${sound.name}: one channel ${sound.channel}, sound_ret on update ${sound.end}`, () => {
+      const data = sfxData(sound.name);
+      expect(data.channels.map(channel => channel.id)).toEqual([sound.channel]);
+      const r = rig();
+      r.sfx.play(data);
+      r.run(sound.end - 1);
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(false);
+      r.update();
+      expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
+    });
+  }
+
+  it('none of the three is preloaded or has a sound id yet', () => {
+    for (const sound of SOUNDS) {
+      expect(EXTRACTED_SFX).not.toContain(sound.name);
+      expect(Object.keys(SFX_IDS)).not.toContain(sound.name);
+    }
+  });
+});

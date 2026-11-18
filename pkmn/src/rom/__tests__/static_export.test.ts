@@ -34,8 +34,12 @@ describe('static/ export: asset keys', () => {
   // V5c checkpoint-01: toggleable_objects.json. 206 → 207.
   // V5g1 checkpoint-01: audio/sfx/turn_on_pc_3.json, enter_pc_3.json and save_3.json (Audio 3). 207 → 210.
   // V5g3 checkpoint-02: audio/sfx/ledge.json. 210 → 211.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX, the eight Pewter maps and the toggle table in the JSON mirror (211 JSON total)', () => {
-    expect(Object.keys(extracted.jsonData)).toHaveLength(211);
+  // Opening checkpoint-01: audio/sfx/intro_crash.json, intro_whoosh.json and shooting_star.json (Audio 3). 211 → 214.
+  it('includes battle transitions, healing_machine, shrink, run, the battle SFX, the eight Pewter maps and the toggle table in the JSON mirror (218 JSON total)', () => {
+    // Opening checkpoint-03: audio/pikachu_cries/pikachu_cry_{1,4,11,37}.json. 214 → 218.
+    expect(Object.keys(extracted.jsonData)).toHaveLength(218);
+    for (const number of [1, 4, 11, 37]) expect(extracted.jsonData).toHaveProperty(`audio/pikachu_cries/pikachu_cry_${number}.json`);
+    for (const name of ['intro_crash', 'intro_whoosh', 'shooting_star']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('audio/sfx/ledge.json');
     for (const name of ['turn_on_pc_3', 'enter_pc_3', 'save_3']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('toggleable_objects.json');
@@ -53,7 +57,7 @@ describe('static/ export: asset keys', () => {
     expect(extracted.jsonData).toHaveProperty('maps/Route3.json');
   });
 
-  it('extracts 527 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 533 images and the 3 title tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
@@ -63,7 +67,11 @@ describe('static/ export: asset keys', () => {
     // V3 checkpoint-02c adds the two fossil pictures → 527.
     const imageKeys = Object.keys(extracted.imageData);
     const binaryKeys = Object.keys(extracted.binaryData).sort();
-    expect(imageKeys.length).toBe(527);
+    // Opening checkpoint-02 adds splash/copyright.png, gamefreak_presents.png, gamefreak_logo.png,
+    // falling_star.png, title/nine.png and battle/move_anim_1.png → 533.
+    expect(imageKeys.length).toBe(533);
+    for (const key of ['splash/copyright', 'splash/gamefreak_presents', 'splash/gamefreak_logo', 'splash/falling_star',
+      'title/nine', 'battle/move_anim_1']) expect(imageKeys).toContain(`/gfx/${key}.png`);
     expect(imageKeys).toContain('/gfx/sprites/front/fossilkabutops.png');
     expect(imageKeys).toContain('/gfx/sprites/front/fossilaerodactyl.png');
     expect(imageKeys).toContain('/gfx/battle/ghost.png');

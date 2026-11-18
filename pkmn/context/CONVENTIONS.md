@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6590/6590** as of 2026-11-15 (V5 complete; default workers). No-ROM **6274 pass / 316 skip**, 268 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6669/6669** as of 2026-11-17 (opening checkpoint-04 implemented; default workers). No-ROM **6317 pass / 352 skip**, 273 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,14 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+Opening checkpoint-04 (note 113 §9) moves the runtime-reader census and adds 33 cases: 3 in `core/cpu_freeze.test.ts`, 13 in `audio/pikachu_pcm.test.ts`, 11 in `audio/pikachu_clip.test.ts`, and 6 in `main_cpu_freeze.test.ts`. They cover the source-derived 45-cycle bit stream, decoding, synthesizer playback, facade register effects and waits, and real-main frozen ticks/input/play time. P1–P22 with ROM each exit 1 with AssertionError only, failing exactly 17/14/1/7/1/9/9/1/1/1/1/1/1/1/4/4/3/4/1/3/1/1 of 53 cases; source restored byte for byte. ROM 6669/6669; no-ROM 6317 pass / 352 skip, 273 files. Reviewed (note 113 §10; Grok's own mutation, reading the bit after advancing, failed 8 of 53); the user's listening test passed 2026-11-17.
+
+Opening checkpoint-03 (note 112 §8) moves one JSON census case and adds 20 cases: six no-ROM cases check files, mirrors, shape and absence of runtime readers; 14 ROM cases check pointers, lengths, extraction and WAV bits against pret. C1–C8 with ROM fail 14/9/5/9/2/9/5/2 cases respectively, AssertionError only; files restored. ROM 6636/6636; no-ROM 6284 pass / 352 skip, 269 files. Review pending.
+
+Opening checkpoint-02 (note 111 §8) moves one image census case and adds nine ROM cases: six compare the new images with pret, and three pin the copyright run, Game Freak layout and star tiles. P1–P7 with ROM fail 3/3/2/2/3/1/1 cases respectively, AssertionError only; files restored. ROM 6616/6616; no-ROM 6278 pass / 338 skip, 268 files. Review pending.
+
+Opening checkpoint-01 (note 110 §13) moves three census cases and adds 17: 13 ROM cases verify the three Audio 3 headers, IDs, pointers, decoded ASM commands and return updates, and four no-ROM cases verify channel, return and absence from preload and IDs. O1–O6, with ROM, fail 5/7/2/1/4/1 cases respectively, AssertionError only; files restored. ROM 6607/6607; no-ROM 6278 pass / 329 skip, 268 files. Review pending.
 
 V5g3 checkpoint-04 (note 109 §8) adds two no-ROM cases in `audio/index_map_music.test.ts`: `caught_mon` resolves to Audio 2's jingle or Audio 1's `turn_off_pc` by the current bank, with CHAN5 holding `$9A`; `dex_page_added` resolves to its Audio 2 file or plays nothing in a town with one unmapped-pair warning. Requests await the first fetch and use bounded activity waits because battle drums keep CHAN8 busy. No existing cases move. S1–S2 each exit 1 with only AssertionError, failing exactly 2 and 1 of 35 cases; source restored. ROM 6590/6590; no-ROM 6274 pass / 316 skip, 268 files. Data and snapshots unchanged. Reviewed (note 109 §9). No play-test.
 

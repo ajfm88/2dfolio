@@ -21,6 +21,7 @@ import { extractPikachuMovement } from '../src/rom/extractors/pikachu_movement';
 import { extractPokedex } from '../src/rom/extractors/pokedex';
 import { extractAllMaps } from '../src/rom/extractors/maps';
 import { extractMusic, extractSfx, extractSfxChannelsAt, extractWaveSamples, extractNoiseInstruments } from '../src/rom/extractors/audio';
+import { extractPikachuClip, pikachuClipFile, PIKACHU_CLIP_NUMBERS } from '../src/rom/extractors/pikachu_pcm';
 import { readMoveNames, readMoveDisplayNames, readItemNames, readItemDisplayNames, readTrainerClassNames, readPokemonInternalNames, readMonsterNames } from '../src/rom/extractors/text';
 import { extractGameText } from '../src/rom/extractors/game_text';
 import { extractTextPrograms } from '../src/rom/extractors/text_programs';
@@ -71,6 +72,8 @@ const SFX_NAMES = [
   'ball_toss',
   // V5g1 checkpoint-01 (note 101): Audio 3's differing copies.
   'turn_on_pc_3', 'enter_pc_3', 'save_3',
+  // Opening checkpoint-01 (note 110): Audio 3 only. intro_whoosh was already listed above.
+  'intro_crash', 'shooting_star',
 ];
 
 function writeJson(relPath: string, data: unknown): void {
@@ -156,6 +159,8 @@ for (const [mapName, mapData] of Object.entries(maps)) {
 
 writeJson('audio/wave_samples.json', extractWaveSamples(rom)); count++;
 writeJson('audio/noise_instruments.json', extractNoiseInstruments(rom)); count++;
+// Pikachu's voice clips (opening checkpoint-03): one list, shared with src/rom/index.ts.
+for (const number of PIKACHU_CLIP_NUMBERS) { writeJson(pikachuClipFile(number), extractPikachuClip(rom, number)); count++; }
 
 for (const track of MUSIC_TRACKS) {
   const musicData = extractMusic(rom, track);

@@ -129,6 +129,13 @@ export const TITLE_PIKACHU_BG     = symToOffset(0x3d, 0x4e5b);  // TitlePikachuB
 export const TITLE_PIKACHU_OB     = symToOffset(0x3d, 0x525b);  // TitlePikachuOBGraphics — 2bpp, 12 tiles
 export const GAMEFREAK_LOGO_GFX   = symToOffset(0x04, 0x4d78);  // GameFreakLogoGraphics — 2bpp, 9 tiles
 export const GAMEFREAK_INTRO_GFX  = symToOffset(0x10, 0x5aa6);  // GameFreakIntro — 2bpp, 20 tiles
+// Opening checkpoint-02 (note 111): the title's and the splash's remaining tiles, from pret's symbols.
+export const COPYRIGHT_LOGO_GFX   = symToOffset(0x04, 0x4c48);  // NintendoCopyrightLogoGraphics — 2bpp, 19 tiles
+export const NINE_TILE            = symToOffset(0x04, 0x4e08);  // NineTile — 2bpp, 1 tile
+export const FALLING_STAR         = symToOffset(0x1c, 0x41b6);  // FallingStar — 2bpp, 1 tile
+export const MOVE_ANIM_TILES_1    = symToOffset(0x1e, 0x4727);  // MoveAnimationTiles1 — 2bpp, 79 tiles (move_anim_1)
+// Opening checkpoint-03 (note 112): Pikachu's voice clips.
+export const PIKACHU_CRIES_POINTER_TABLE = symToOffset(0x3c, 0x408e);  // PikachuCriesPointerTable — 42 dba rows
 
 // Title screen tilemaps
 export const TITLE_POKEMON_LOGO_TILEMAP = symToOffset(0x3d, 0x45f9);  // 112 bytes

@@ -210,7 +210,7 @@ Each later slice gets a detailed plan before implementation; the milestone remai
 | ID | Slice | Verify |
 |---|---|---|
 | J1 ⬜ | **Legendary caves** — Cerulean Cave (3 floors, unlocked after Champion), Mewtwo; Power Plant (Surf from Route 10), Zapdos | enter caves; battle/catch Mewtwo and Zapdos |
-| J2 ⬜ | **Full audit** — Town Map location tracking, Pokedex area/rating, Options menu, Pokemon cries; decide with the user which of upstream's non-vanilla additions stay (Skip-intro prompt, FPS keys, debug overlay, touch controls — `STATUS.md` → *Notes for later*); full playthrough Pallet → credits → postgame; document any gaps | play start to finish; every gap logged and fixed |
+| J2 ⬜ | **Full audit** — Town Map location tracking, Pokedex area/rating, Options menu (Pokémon cries moved to their own slice right after the opening, DECISIONS #141); decide with the user which of upstream's non-vanilla additions stay (Skip-intro prompt, FPS keys, debug overlay, touch controls — `STATUS.md` → *Notes for later*); full playthrough Pallet → credits → postgame; document any gaps | play start to finish; every gap logged and fixed |
 
 ## Phase X — Extras (2 slices, DEAD LAST — optional, year two)
 
@@ -237,7 +237,7 @@ Do not start either, and do not shape earlier work around them.
   intro). Audit again before claiming: the engine may already do part of a slice.
   **A1 runs right after V1** (DECISIONS #29), so every map from Pewter on is built
   with trainer sight and item balls working. The order is V1 → A6 → A1 (a–c) → A5a–A5b → StatusScreen → healing machine → V2 ✅ → map-music fade-out ✅ (#63, note 63) →
-  intro animation ✅ (#69, note 64) → A5c–A5f (#70, note 65: A5d → A5c1 → A5c2 → A5c3 → A5e → A5f) → V3–V5 → the opening and title screen (#69) → the battle-mechanics audit (#70) → A2–A4 → B (DECISIONS #55 moved V2 up). Done through the intro animation (2026-10-18). A4 (trades) only has to land before B1. A5 (DECISIONS #31) runs early for
+  intro animation ✅ (#69, note 64) → A5c–A5f (#70, note 65: A5d → A5c1 → A5c2 → A5c3 → A5e → A5f) → V3–V5 → the opening and title screen (#69; note 110, fifteen checkpoints, title first, #141) → Pokémon cries (#141) → the battle-mechanics audit (#70) → A2–A4 → B (DECISIONS #55 moved V2 up). Done through the intro animation (2026-10-18). A4 (trades) only has to land before B1. A5 (DECISIONS #31) runs early for
   the same reason as A1: every battle play-tested from V2 on then looks right.
   A6 (DECISIONS #35) runs before all of them: every play-test walks, and A1c's trainer
   sight is timed by the same loop.

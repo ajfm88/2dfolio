@@ -1,0 +1,92 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 2,
+          "d1": 0,
+          "d2": 2,
+          "d3": 0
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 2,
+          "shift": -7
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 4,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 6,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 8,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 10,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 10,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 8,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 6,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 3,
+          "fade": 0,
+          "frequency": 2016
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 1,
+          "fade": 2,
+          "frequency": 2016
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 0,
+          "shift": 8
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

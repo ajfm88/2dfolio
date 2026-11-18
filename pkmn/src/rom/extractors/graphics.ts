@@ -7,7 +7,8 @@ import {
   FONT_GRAPHICS, TILESETS, TILESET_HEADER_SIZE, NUM_TILESETS,
   TEXT_BOX_GRAPHICS,
   HP_BAR_AND_STATUS, BATTLE_HUD_TILES_1, BATTLE_HUD_TILES_2, BATTLE_HUD_TILES_3,
-  ED_TILE, P_TILE, POKEBALL_TILES, MOVE_ANIM_TILES_0,
+  ED_TILE, P_TILE, POKEBALL_TILES, MOVE_ANIM_TILES_0, MOVE_ANIM_TILES_1,
+  COPYRIGHT_LOGO_GFX, NINE_TILE, GAMEFREAK_INTRO_GFX, FALLING_STAR,
   POKEMON_LOGO_GFX, POKEMON_LOGO_CORNER, TITLE_PIKACHU_BG, TITLE_PIKACHU_OB,
   GAMEFREAK_LOGO_GFX,
   TITLE_POKEMON_LOGO_TILEMAP, TITLE_PIKA_BUBBLE_TILEMAP, TITLE_PIKACHU_TILEMAP,
@@ -216,6 +217,52 @@ export function extractMoveAnim0(rom: BinaryReader): ImageData {
   const SIZE = 0x4F0; // 79 tiles × 16 bytes (actually the gap to next label)
   const data = rom.readBytes(MOVE_ANIM_TILES_0, SIZE);
   return decode2bpp(data, 16);
+}
+
+/**
+ * Extract move_anim_1.png (MoveAnimationTiles1).
+ * 2bpp, 79 tiles, 16 tiles wide = 128x40px: MoveAnimationTiles1 (1e:4727) to SlotMachineTiles2 (1e:4c17).
+ * The Game Freak star reads its tiles 3 and 19 (engine/movie/splash.asm:8-15).
+ */
+export function extractMoveAnim1(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(MOVE_ANIM_TILES_1, 79 * 16), 16);
+}
+
+// ── Opening: copyright and splash graphics (opening checkpoint-02, note 111) ──
+
+/**
+ * Extract copyright.png (NintendoCopyrightLogoGraphics).
+ * 2bpp, 19 tiles in one row = 152x8px: 04:4c48 to GameFreakLogoGraphics (04:4d78).
+ * The title uses its first 5 tiles; the copyright screen copies all 19 and runs on into
+ * GameFreakLogoGraphics, NineTile and one text-box tile (engine/movie/title.asm:246-250).
+ */
+export function extractCopyrightLogo(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(COPYRIGHT_LOGO_GFX, 19 * 16), 19);
+}
+
+/** Extract nine.png (NineTile, 04:4e08): 2bpp, 1 tile. Yellow's "9" for "1995-1999". */
+export function extractNineTile(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(NINE_TILE, 16), 1);
+}
+
+/**
+ * Extract gamefreak_presents.png: the first 13 tiles of GameFreakIntro (10:5aa6), one row = 104x8px.
+ */
+export function extractGamefreakPresents(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(GAMEFREAK_INTRO_GFX, 13 * 16), 13);
+}
+
+/**
+ * Extract gamefreak_logo.png: GameFreakIntro's next 6 tiles, 2 tiles wide = 16x24px.
+ * One blank tile follows it in the ROM (engine/movie/intro.asm:149-153); it is not extracted.
+ */
+export function extractGamefreakIntroLogo(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(GAMEFREAK_INTRO_GFX + 13 * 16, 6 * 16), 2);
+}
+
+/** Extract falling_star.png (FallingStar, 1c:41b6): 2bpp, 1 tile. */
+export function extractFallingStar(rom: BinaryReader): ImageData {
+  return decode2bpp(rom.readBytes(FALLING_STAR, 16), 1);
 }
 
 // ── Title Screen Graphics ─────────────────────────────────────────
@@ -706,6 +753,13 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/sprites/front/fossilkabutops.png'] = extractFossilPic(rom, FOSSIL_KABUTOPS_PIC, 48);
   images['/gfx/sprites/front/fossilaerodactyl.png'] = extractFossilPic(rom, FOSSIL_AERODACTYL_PIC, 56);
   images['/gfx/battle/move_anim_0.png'] = extractMoveAnim0(rom);
+  images['/gfx/battle/move_anim_1.png'] = extractMoveAnim1(rom);
+
+  // Copyright screen and Game Freak splash
+  images['/gfx/splash/copyright.png'] = extractCopyrightLogo(rom);
+  images['/gfx/splash/gamefreak_presents.png'] = extractGamefreakPresents(rom);
+  images['/gfx/splash/gamefreak_logo.png'] = extractGamefreakIntroLogo(rom);
+  images['/gfx/splash/falling_star.png'] = extractFallingStar(rom);
 
   // Title screen graphics
   images['/gfx/title/pokemon_logo.png'] = extractPokemonLogo(rom);
@@ -713,6 +767,7 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/title/pikachu_bg.png'] = extractTitlePikachuBG(rom);
   images['/gfx/title/pikachu_ob.png'] = extractTitlePikachuOB(rom);
   images['/gfx/title/gamefreak_inc.png'] = extractGamefreakLogo(rom);
+  images['/gfx/title/nine.png'] = extractNineTile(rom);
 
   // Title screen tilemaps (binary)
   const tilemaps = extractTitleTilemaps(rom);

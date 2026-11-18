@@ -88,6 +88,18 @@ export class GBSynthesizer {
   }
   channelOutputEnabled(channel: number): boolean { return (this.outputMask & (1 << channel)) !== 0; }
 
+  /** PlayPikachuPCM's stream while it plays: the clip's bytes, its sample rate and the next sample's index. */
+  private pcm: { bytes: Uint8Array; hz: number; position: number } | null = null;
+
+  /**
+   * PlayPikachuSoundClip's use of the wave channel (audio/pikachu_pcm.asm:26-64): the pattern is all $F, the
+   * channel goes to both speakers, and each sample writes its output level, $20 or $00. Eight samples a byte,
+   * most significant bit first, `hz` samples a second. The stream replaces the wave channel's output until its
+   * last sample; the pulse and noise channels keep sounding as they are. A new clip replaces one that is playing.
+   */
+  playPcm(bytes: Uint8Array, hz: number): void { this.pcm = { bytes, hz, position: 0 }; }
+  get pcmPlaying(): boolean { return this.pcm !== null; }
+
   /** NR50, including writes from the music interpreter. VIN bits do not set the output level. */
   get masterVolumeRegister(): number { return this.nr50; }
 
@@ -137,8 +149,11 @@ export class GBSynthesizer {
   // ─── Sample Generation (called by ScriptProcessorNode) ──────────────
 
   private generateSamples(e: AudioProcessingEvent): void {
-    const output = e.outputBuffer.getChannelData(0);
-    const sampleRate = e.outputBuffer.sampleRate;
+    this.render(e.outputBuffer.getChannelData(0), e.outputBuffer.sampleRate);
+  }
+
+  /** One block of the mixed output at `sampleRate`. The audio callback's body; tests call it directly. */
+  render(output: Float32Array, sampleRate: number): void {
     const len = output.length;
 
     for (let i = 0; i < len; i++) {
@@ -146,7 +161,7 @@ export class GBSynthesizer {
 
       mix += this.samplePulse(this.pulse[0], sampleRate) * Number(this.channelOutputEnabled(0));
       mix += this.samplePulse(this.pulse[1], sampleRate) * Number(this.channelOutputEnabled(1));
-      mix += this.sampleWave(sampleRate) * Number(this.channelOutputEnabled(2));
+      mix += this.pcm ? this.samplePcm(sampleRate) : this.sampleWave(sampleRate) * Number(this.channelOutputEnabled(2));
       mix += this.sampleNoise(sampleRate) * Number(this.channelOutputEnabled(3));
 
       // GB mixer: sum of channels, scale to prevent clipping
@@ -188,6 +203,16 @@ export class GBSynthesizer {
     const digital = raw >> shifts[w.volumeLevel & 3];
 
     // GB DAC
+    return (digital / 7.5) - 1.0;
+  }
+
+  private samplePcm(sampleRate: number): number {
+    const pcm = this.pcm!;
+    const index = Math.floor(pcm.position);
+    if (index >= pcm.bytes.length * 8) { this.pcm = null; return 0; }
+    pcm.position += pcm.hz / sampleRate;
+    // Level $20 plays the pattern's 15, level $00 plays 0, through the same DAC as sampleWave.
+    const digital = ((pcm.bytes[index >> 3] << (index & 7)) & 0x80) !== 0 ? 15 : 0;
     return (digital / 7.5) - 1.0;
   }
 

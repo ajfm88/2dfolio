@@ -1,5 +1,11 @@
 # Audio Architecture
 
+Opening checkpoint-04 (note 113 §9) implements the PCM player: 45 machine cycles per sample (1,048,576 / 45, about 23,301.7 Hz), MSB first, rendered in the synthesizer callback. The facade loads clips on demand; its frame program waits three frames, sets NR50 to $77, plays on the wave channel, leaves that channel silent until its next note, and clears the four SFX ids, drum occupancy and alarm CHAN5 id without stopping music. A separate CPU-freeze counter suppresses program, input, Random and audio updates for N - 1 ticks (46/82/36/72 for clips 1/4/11/37); the pending N-th VBlank is serviced, while the hardware clock continues. The music holds its register state; play time retains its existing wall-clock behavior. The within-frame start offset is still uncertain (note 113 §2.4); checkpoints 05 and 15 must count the title/battle handler cost. `_playPikachuClip(n = 1)` loads and starts immediately, skipping the three-frame wait. Nothing in the game calls the player or preloads clips. Reviewed (note 113 §10); the user heard clips 1 and 11 (§11).
+
+Opening checkpoint-03 (note 112 §8) extracts clips 1, 4, 11 and 37 as `audio/pikachu_cries/pikachu_cry_N.json`: `id`, `length`, and the played bytes in lowercase hexadecimal, most significant bit first. No game caller plays them yet. Note 112 §2.1 reads the PCM loop as 45 machine cycles per sample (about 23,301.7 Hz); checkpoint-04 re-derives this from the ASM in its timing test.
+
+Opening checkpoint-01 (note 110 §13) extracts Audio 3-only `intro_crash`, `intro_whoosh` and `shooting_star` (IDs $BC, $BD, $C2; channels 8, 8, 5; return updates 20, 34, 77). They remain unused until the title and star checkpoints.
+
 V5g2 (note 105, #134; user-verified) gives field `PlaySound` the cartridge's
 priority walk through `sfx_priority.ts`, shared with `BattleAudio.accepts`: visit the header last to first,
 clear each accepted channel immediately, and return at the first refusal, preserving the partial clear.
@@ -184,6 +190,8 @@ Without the adapter the existing engine behavior is unchanged. The production im
   - the pitch-slide algorithm differs;
   - `.wave5` isn't extracted;
   - noise-channel rests don't silence it.
+  - every channel is sampled nearest-neighbour at the output rate; for the PCM clips (23,302 Hz into 48 kHz) this
+    jitters each edge by up to one output sample, a likely part of the crackle the user heard (note 113 §11; backlog).
   - The field's bank-$02-only SFX copy and three-update SAVE timing departure are retired by
     V5g1 checkpoint-02: bank `$1f` now uses its three differing bodies. The battle's separate
     text-sound path now shares the bank table (V5g1 checkpoint-03); field concurrency/priority is
