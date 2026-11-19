@@ -1817,6 +1817,91 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      - **Closed 2026-11-17:** Codex `3af5eb0d`, Grok's PASS `9a59c1ea` (note 113 §10, agreeing with the frozen-frame
        rule), the user heard clips 1 and 11 (§11). The user keeps the frozen-patch workflow for the rest of the slice.
 
+145. **Opening checkpoint-05 is the title's build as a frame program on a new opening screen model** (2026-11-17,
+     note 114). Checkpoint-04 closed with the user's listening test (note 113 §11). Claude's rulings (note 114 §3):
+     - **`OpeningScreen` and `renderOpeningScreen`**, not the battle's renderer: VRAM with LCDC addressing, both BG
+       maps and their CGB attributes, the window, OAM with DMA, BGP/OBP0/OBP1 through the CGB bases, the LCD state.
+       The copyright, the star and the movie will use it. `wTileMap` and its thirds stay the shared core (#104).
+     - **Copies follow the label spans.** The logo is 115 tiles (`PokemonLogoGraphics`, `$730` bytes; pret trims the
+       white tail); the committed PNG pads to 128 with the bytes that follow. The title's blank tile `$7F` is one the
+       cartridge never writes here; copying 128 striped the whole background in the spike.
+     - **The LCD-off span is `DisableLCD`'s serviced frame plus 4 dark frames** (#97's rounding, note 114 §2.3); a
+       dark frame runs no Random, joypad read or audio update and re-bases the audio clock. The palette command
+       holds two frames (#73). The first coloured frame is 19; the bounce, the crash at 39, the whoosh and bubble at
+       87, clip 1's body at 93.
+     - **Clip 1 freezes 46 frames on the boot path:** the VBlank handler before it is at most about 2,830 cycles,
+       under note 113 §10.4's 4,319. The B-from-the-main-menu path (title music still playing) is counted in 06.
+     - **`DoTitleScreenFunction` moves from 06 into 05**, exactly (`.CheckTimer` reads before it increments). The
+       exits stay upstream's for one checkpoint. 06 is now the exits, clip 11, the white-out, B from the main menu
+       and the idle reset.
+     - `intro_crash` and `intro_whoosh` get `SFX_IDS` and bank-$1f `SFX_FILES` rows and are preloaded; the facade
+       gains `setAudioBank`, `stopAllMusic`, `playNewMusic`; the title music is preloaded at the click.
+     - No generated file changes. Codex implements, Grok reviews, the user play-tests.
+     - **Closed 2026-11-17:** Codex `c8de03ec`, Grok's PASS `96c51ba5` (note 114 §10: 4 dark frames, 115 tiles, 46
+       frozen frames and the hiss under the clip all agree with the ASM), the user's play-test passed (§11).
+
+146. **The PCM clips' crackle fix runs right after the opening slice's checkpoints** (2026-11-17). *The user: "let's
+     schedule right at the end of these lines of checkpoints".* The audio-fidelity checkpoint from the backlog (a box
+     filter on the 1-bit stream, perhaps on the wave and noise channels too; note 113 §11) comes after opening
+     checkpoint 15 and before Pokémon cries (#141). Nothing in checkpoints 06–15 waits for it. Order: the opening →
+     the crackle fix → cries → the battle-mechanics audit (#70) → A2, A3, A4 → Phase B.
+
+147. **Opening checkpoint-06 is the title's exits, B from the main menu and the idle reset** (2026-11-17, note 115).
+     Checkpoint-05 closed with the user's play-test (note 114 §11). Claude's rulings (note 115 §3):
+     - **The loop exactly:** `IncrementResetCounter` before each `DelayFrame` (the reset in the step of the loop's
+       3,071st frame), then `hJoyHeld` through `input`'s new `joyHeld()`: a button **held**, not pressed. Exactly
+       Up+Select+B, or anything with A or START, leaves; the exit's own test masks Up+Select+B on the loop's byte.
+     - **The exit:** clip 11 (36 frozen), `GBPalWhiteOutWithDelay3`, `ClearSprites`, `hWY = 0`, `ClearScreen`, both maps,
+       `Delay3`, `LoadGBPal` (`FadePal4`; the save's `wMapPalOffset` waits for D1): 55 ticks to `MainMenu`. The title
+       returns `'clear_save'` for Up+Select+B; `main.ts` sends it to the main menu until checkpoint 07.
+     - **The reset:** `fadeOutAndStopMusic($0C)`, 104 frames, then `jp Init`. `cartridgeInit()` is `Init` as far as the
+       port goes (`StopAllSounds`, Random's two HRAM bytes, the transfer's third, then `PrepareTitleScreen`); the click
+       and the reset share it, and checkpoints 08–14 grow it.
+     - **B from the main menu:** `DisplayTitleScreen` without `PrepareTitleScreen`, on a fresh screen model (nothing the
+       title shows reads the main menu's VRAM); the title song plays on until clip 1.
+     - **Measured, not estimated:** the VBlank handler before each clip, by running the cartridge's own code in a
+       development-time SM83 interpreter (note 115 §2.5; it reproduces note 113's 632-cycle count exactly). Boot path
+       2,668 cycles: 46 frozen. B path: 46, but 47 at 6.3 % of the song's positions. Exit: 36, but 37 at 0.03 %. The
+       port has no cycle count, so it keeps 46 and 36; the departure is recorded and O-59 asks the user about a cycle
+       model before checkpoint 15, whose clip 4 (limit 2,735) the battle's handler will often exceed.
+     - **The soft reset** (A+B+SELECT+START) is not modelled anywhere; findings backlog.
+     - No generated file changes. Codex implements, Grok reviews, the user play-tests.
+     - **Closed 2026-11-17:** Codex `db49b805`, Grok's PASS `c8bdd325` (note 115 §10), the user's play-test passed
+       (§11). Codex wrote no report and no documentation; Claude recorded §9 from its logs and made the doc edits.
+
+148. **Opening checkpoint-07 is two: 07a the clear-save dialogue's text as data, 07b the dialogue** (2026-11-17,
+     note 116). Checkpoint-06 closed with the user's play-test (note 115 §11). `ClearSaveDataText` and
+     `_ClearSaveDataText` were never extracted, and an extractor change does not share a checkpoint with engine wiring
+     (CONVENTIONS → *Scoping rules*). 07a: two symbol rows (`07:425F` root, `28:40E9` child), `text_programs.json` and
+     its mirror regenerated (1,143 → 1,145 programs), the census fixture lists the two labels, one new case; no runtime
+     change. Note 116 §2 traces all of 07 for 07b: the palette is always `SET_PAL_GENERIC` (the intro's
+     `SetPal_GameFreakIntro` leaves it), the tile loads take 17 and 5 frames, the question prints one frame a letter on
+     the boot path (`PrepareTitleScreen` clears `BIT_FAST_TEXT_DELAY`) and at the options' speed on the B path, B is
+     masked, and YES's `ClearAllSRAMBanks` (197,247 cycles, measured) reaches `Init` 12 or 13 frames after the menu
+     closes, depending on the song's position. Codex implements 07a, Grok reviews; 07b is briefed after 07a closes.
+
+149. **Opening checkpoint-07b is the clear-save dialogue on Oak's speech's screen model** (2026-11-17, note 117).
+     07a closed on its review (Codex `665ec681`, Grok's PASS `039b8947`). Claude's rulings (note 117 §3): the dialogue
+     runs on `IntroScreen` with `TextBox.printStandalone` and `MenuInput`, in MEWMON (`SET_PAL_GENERIC`); a new
+     `BIT_FAST_TEXT_DELAY` in `text_flags.ts` (cleared by `PrepareTitleScreen`, set by the main menu's `InitOptions`)
+     makes the boot path's question print one frame a letter and the B path's at the options' speed; `wJoyIgnore`
+     gains PAD_B alone; NO jumps to `Init` 15 frames after A; YES removes the save's key and waits 13 frames (12 at 45 %
+     of song positions, recorded beside O-59) before `Init`. The title's interim `'clear_save'` line goes. Codex
+     implements, Grok reviews, the user play-tests, YES on a spare port.
+     - **2026-11-17:** Codex `ab2a6fbc`; the user's play-test passed (note 117 §11) before Grok's review, which is
+       still owed and closes the checkpoint.
+
+150. **Opening checkpoint-08 is two: 08a the boot path (`Init`, `PlayIntro`'s tail), 08b the copyright screen**
+     (2026-11-17, note 118). 07b's play-test passed (note 117 §11); its review is still owed. The boot path is real time:
+     measured on the cartridge's code with a PPU clock added to note 115's interpreter, `Init`'s `di` span is 10 dark
+     ticks, `LoadSGB`'s CGB probe 51 serviced frames, then `PlayIntro`'s tail, `DisableLCD`'s frame and 3 dark ticks:
+     the title starts 66 ticks after the click, the idle reset or the clear-save answer. `Boot` (`menus/boot.ts`) owns it;
+     `StopAllSounds` moves into `Init`'s 10th frame; `Init`'s first frame keeps the old picture (the CGB ignores
+     `rBGP`). The copyright, the star and the movie fill the white later (08b–14). Codex implements 08a, Grok reviews,
+     the user play-tests.
+     - **2026-11-18:** Codex `09ef6e8f`; Grok's review passed (`af16806e`, note 118 §10); the user's play-test passed
+       (note 118 §11). **08a is closed.** 08b, the copyright screen, is next.
+
 ## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.

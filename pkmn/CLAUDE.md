@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the ROM-gated tests skip (count in the baseline below)
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-17 (opening checkpoint-04 implemented): 6669/6669.** No-ROM 6317 pass / 352 skip, 273 files.
+  tests. **Baseline 2026-11-18 (opening checkpoint-08a closed): 6731/6731.** No-ROM 6374 pass / 357 skip, 279 files.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -163,8 +163,8 @@ Milestones **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done** (9 of 36); **Phase
 three tilemaps): 30 runtime-wired maps from Pallet Town through Pewter, Route 3 and Diglett's Cave, Brock and the
 first badge, a battle engine ported from the ASM, and the overworld at the Game Boy's 59.7275 Hz on the ASM's
 2-frame pass (DECISIONS #33, #36). Phase V has rebuilt the 30 maps the lost July–August copy had reached
-(DECISIONS #26), and V5 restored the rest of its fixes. Tests (opening checkpoint-04 implemented): **6669/6669**; no-ROM 6317 pass,
-352 skip, 273 files.
+(DECISIONS #26), and V5 restored the rest of its fixes. Tests (opening checkpoint-08a closed): **6731/6731**; no-ROM 6374 pass,
+357 skip, 279 files.
 
 The current slice, its checkpoint and the restart list are in `context/STATUS.md` → *In progress*; the
 milestone-by-milestone detail is in `PROJECT.md` → *State* and `PLAN.md`.

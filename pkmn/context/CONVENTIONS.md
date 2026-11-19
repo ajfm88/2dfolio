@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6669/6669** as of 2026-11-17 (opening checkpoint-04 implemented; default workers). No-ROM **6317 pass / 352 skip**, 273 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6731/6731** as of 2026-11-18 (opening checkpoint-08a implemented; default workers). No-ROM **6374 pass / 357 skip**, 279 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,24 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+Opening checkpoint-08a (note 118 section 9) adds three `menus/boot.test.ts` cases for the 66-tick table, LCD state,
+StopAllSounds at tick 10, transfer phase and prior-picture rendering; moves five existing main cases to the boot
+path and adds one real-tick case in `main_title.test.ts` (10 dark, 53 serviced, 3 dark). U1-U11 with ROM each exit 1
+with AssertionError only, failing exactly 14/14/14/2/4/1/1/2/1/2/1 of 39 cases; files restored byte for byte.
+ROM 6731/6731; no-ROM 6374 pass / 357 skip, 279 files. Review and the user's play-test are pending.
+
+Opening checkpoint-07b (note 117 section 9) adds six `menus/clear_save_dialogue.test.ts` cases for the palette hold,
+LCD-on copies, text speeds and NO/YES flow; replaces main's interim chord case with four real-tick cases for entry,
+both answers through Init and BIT_FAST_TEXT_DELAY; and adds the PAD_B-only mask case. T1-T17 with ROM each exit 1
+with AssertionError only, failing exactly 2/1/2/1/1/5/1/2/3/2/2/1/2/2/2/1/5 of 40 cases; files restored byte for byte.
+ROM 6727/6727; no-ROM 6370 pass / 357 skip, 278 files. Independent review and the user's play-test are pending.
+
+Opening checkpoint-07a (note 116 section 9) adds one committed-data case in `rom/__tests__/title_screen_data.test.ts` for `ClearSaveDataText`, its child, the static mirror and the two symbol rows; the fixture lists both new labels to preserve the frozen census scope, and D1-D3 with ROM each exit 1 with AssertionError only, failing exactly 6/4/6 of 78 cases with files restored byte for byte.
+
+Opening checkpoint-05 (note 114 §9) moves five census/id cases and adds 37 cases: 13 in `menus/opening_screen.test.ts`, 14 in `menus/title_screen.test.ts`, five ROM cases in `rom/__tests__/title_screen_data.test.ts`, and five in `main_title.test.ts`. They pin VRAM addressing/copies, maps and attributes, pure scanout and OAM priority, the build's frame table and pixel hashes, blink/DMA timing, and the real main/audio path through dark, held and 46 frozen ticks. Q1–Q20 with ROM each exit 1 with AssertionError only, failing exactly 12/2/12/4/2/3/2/2/2/2/4/7/1/1/2/2/1/2/2/2 of 48 cases; source restored byte for byte. ROM 6706/6706; no-ROM 6349 pass / 357 skip, 277 files. Reviewed and user-verified (note 114 §10–§11).
+
+Opening checkpoint-06 (note 115 §6.1) removes one interim title case, rewrites two, and adds ten: six in `menus/title_screen.test.ts` (the `hJoyHeld` exits over twelve chords, A held through the build, the exit frame by frame and its pixels, the idle reset's 3,071 frames and spin, `display()` against `start()`), four in `main_title.test.ts` on main's real tick (Up+Select+B, B from the main menu with clip 1's 46 frozen ticks under the playing song, the click as `Init`, the idle reset's 104-frame fade and `Init`), and one `joyHeld` case in `input/joy_ignore_controls.test.ts`. `main_save_records.test.ts`'s `titleMenu()` holds START through the exit. R1–R23 with ROM each exit 1 with AssertionError only, failing exactly 2/2/1/1/1/7/2/1/2/2/1/2/2/2/2/2/2/1/1/3/1/1/4 of 34 cases. ROM 6716/6716; no-ROM 6359 pass / 357 skip, 277 files.
 
 Opening checkpoint-04 (note 113 §9) moves the runtime-reader census and adds 33 cases: 3 in `core/cpu_freeze.test.ts`, 13 in `audio/pikachu_pcm.test.ts`, 11 in `audio/pikachu_clip.test.ts`, and 6 in `main_cpu_freeze.test.ts`. They cover the source-derived 45-cycle bit stream, decoding, synthesizer playback, facade register effects and waits, and real-main frozen ticks/input/play time. P1–P22 with ROM each exit 1 with AssertionError only, failing exactly 17/14/1/7/1/9/9/1/1/1/1/1/1/1/4/4/3/4/1/3/1/1 of 53 cases; source restored byte for byte. ROM 6669/6669; no-ROM 6317 pass / 352 skip, 273 files. Reviewed (note 113 §10; Grok's own mutation, reading the bit after advancing, failed 8 of 53); the user's listening test passed 2026-11-17.
 

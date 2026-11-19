@@ -1,5 +1,7 @@
 import {afterEach,beforeAll,beforeEach,expect,it,vi} from 'vitest';
 import {host,loadMainBattleRig,resetMainBattleRig,world,tick,mon} from './test/main_battle_rig';
+import * as audio from './audio';
+import {TITLE_CLIPS} from './menus/title_screen';
 import {loadGame,type SaveDataV2} from './save';
 import {trainedSaveMon,frontSaveBox,legacySave} from './test/save_fixture';
 import {worldPartyRecord,boxedPokemonToRecord,encodePartyMon,encodeBoxMon} from './battle/battle_bridge';
@@ -13,14 +15,17 @@ const main=host as typeof host&{writeSave():void;startNewGame():Promise<void>};
 const fast={textSpeed:'FAST',animation:'OFF',battleStyle:'SET'} as const;
 const defaults={textSpeed:'MID',animation:'ON',battleStyle:'SHIFT'} as const;
 let store:Map<string,string>;
-beforeAll(()=>loadMainBattleRig());
+beforeAll(async()=>{await loadMainBattleRig();await Promise.all(TITLE_CLIPS.map(audio.loadPikachuClip));}); // as TitleScreen.load does
 beforeEach(()=>{
   resetMainBattleRig();setPikachuEmotionModifier(0);store=new Map();
   vi.stubGlobal('localStorage',{getItem:(key:string)=>store.get(key)??null,setItem:(key:string,value:string)=>store.set(key,value)});
 });
 afterEach(()=>{host.reset();vi.restoreAllMocks();});
 function titleMenu(){
-  host.state='title_screen';tick();tick(['start']);expect(host.state).toBe('main_menu');tick();
+  // START held leaves the title through clip 11 and the white-out (opening checkpoint-06): 56 ticks to MainMenu.
+  host.state='title_screen';tick();
+  for(let n=0;n<56&&host.state==='title_screen';n++)tick(['start']);
+  expect(host.state).toBe('main_menu');tick();
 }
 async function saveThenReload(){
   await world('Route1',5,5,[trainedSaveMon(),mon(122,15)]);host.boxes[0].push(...frontSaveBox());

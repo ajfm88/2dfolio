@@ -239,6 +239,26 @@ export function stopAllSounds(): void {
   requests?.stopAllSounds();
 }
 
+/** PrepareTitleScreen's two writes (title.asm:20–22): wAudioROMBank = wAudioSavedROMBank = bank. */
+export function setAudioBank(bank: number): void {
+  if (!requests) return;
+  requests.audioBank = requests.savedAudioBank = bank;
+}
+
+/** StopAllMusic (home/audio.asm): wNewSoundID = SFX_STOP_ALL_MUSIC, then PlaySound. The fade control is untouched. */
+export function stopAllMusic(): void {
+  requests?.stopAllMusic();
+}
+
+/** `ld [wNewSoundID], a` / `call PlaySound` for a song in the current audio bank (the title's MUSIC_TITLE_SCREEN). */
+export function playNewMusic(name: string): Promise<void> {
+  const id = musicIdentity(name);
+  if (!id || !engine || !audioReady || !requests) return Promise.resolve();
+  startPromise = Promise.resolve();
+  requests.playNewSound(id.id);
+  return startPromise;
+}
+
 /** UpdateMusic6Times: six Audio1_UpdateMusic passes, with no FadeOutAudio tick. */
 export function updateMusic6Times(): void {
   sixPasses(engine, sfxEngine);

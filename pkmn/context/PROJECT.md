@@ -66,9 +66,9 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
   their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
   (note 57).
-- **Tests:** ROM **6669/6669**; no-ROM **6317 pass / 352 skip**; 273 files (opening checkpoint-04 reviewed and heard by the user). Bundle `index-DLR1tJU_.js`,
-  679,031 bytes.
-- Full handoff: STATUS.md → *In progress* (2026-11-17). Opening checkpoints 01–04 are closed; next is checkpoint-05, the title's build (note 110 §4).
+- **Tests:** ROM **6731/6731**; no-ROM **6374 pass / 357 skip**; 279 files (opening checkpoint-08a closed, 2026-11-18). Bundle `index-DDAo88HP.js`,
+  689,952 bytes.
+- Full handoff: STATUS.md → *In progress* (2026-11-18). 07b is implemented and user-play-tested (note 117 section 11), with Grok review still owed. 08a, the boot path, is implemented (note 118 section 9); next is Grok review, then the user's play-test, before 08b planning.
 
 ## Goals
 

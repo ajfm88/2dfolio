@@ -9,7 +9,7 @@ const normalize = (name: string) => name.replace(/_/g, '').toLowerCase();
 
 describe('numeric sound identity from cartridge header layout', () => {
   // A5c2 CP2: RUN adds one ID and has no bank-1-suffixed symbol.
-  it.skipIf(!existsSync(refs))('all 49 music identities and 23 SFX IDs match independent ASM header counts and banks', () => {
+  it.skipIf(!existsSync(refs))('all 49 music identities and 25 SFX IDs match independent ASM header counts and banks', () => {
     const layout = new Map<number, number>(); let bank = 0;
     for (const raw of read('layout.link').split('\n')) {
       const line = raw.split(';')[0].trim();
@@ -39,10 +39,13 @@ describe('numeric sound identity from cartridge header layout', () => {
     expect(constants.map(m => normalize(m[1].slice(6))).sort()).toEqual(Object.keys(expectedMusic).sort());
     expect(read('constants/music_constants.asm')).toContain('((\\2 - SFX_Headers_1) / 3)');
     expect(MUSIC_IDS).toEqual(expectedMusic);
+    // The title's two sounds exist only in Audio 3 (opening checkpoint-05): their labels carry no engine suffix.
+    const audio3Only = ['intro_crash', 'intro_whoosh'];
     for (const [name, id] of Object.entries(SFX_IDS))
-      expect(id, name).toBe(symbols.get(name === 'run' ? 'sfxrun' : `sfx${normalize(name)}1`));
+      expect(id, name).toBe(symbols.get(name === 'run' ? 'sfxrun' : `sfx${normalize(name)}${audio3Only.includes(name) ? '' : '1'}`));
     expect(SFX_IDS.run).toBe(0x97);
-    expect(Object.keys(SFX_IDS)).toHaveLength(23);
+    expect([SFX_IDS.intro_crash, SFX_IDS.intro_whoosh]).toEqual([0xbc, 0xbd]);
+    expect(Object.keys(SFX_IDS)).toHaveLength(25);
   });
 
   it('covers committed header-backed music and keeps the direct Flute routine separate', () => {
@@ -74,11 +77,16 @@ describe('numeric sound identity from cartridge header layout', () => {
 });
 
 describe('the SFX an id plays in each audio bank (V5g1 checkpoint-02, note 103)', () => {
-  it('Audio 3 plays its own save, turn_on_pc and enter_pc; the other 19 field ids share Audio 1\'s files', () => {
+  it('Audio 3 plays its own save, turn_on_pc and enter_pc and the title\'s two; the other 19 field ids share Audio 1\'s files', () => {
     expect(sfxNameForSound(SFX_IDS.save, 0x1f)).toBe('save_3');
     expect(sfxNameForSound(SFX_IDS.turn_on_pc, 0x1f)).toBe('turn_on_pc_3');
     expect(sfxNameForSound(SFX_IDS.enter_pc, 0x1f)).toBe('enter_pc_3');
-    const field = Object.entries(SFX_IDS).filter(([name]) => name !== 'run');
+    // Opening checkpoint-05: SFX_INTRO_CRASH and SFX_INTRO_WHOOSH are Audio 3's alone; no other bank has a file there.
+    for (const name of ['intro_crash', 'intro_whoosh'] as const) {
+      expect(sfxNameForSound(SFX_IDS[name], 0x1f), name).toBe(name);
+      for (const bank of [0x02, 0x08, 0x20]) expect(sfxNameForSound(SFX_IDS[name], bank), `${name} in ${bank}`).toBeUndefined();
+    }
+    const field = Object.entries(SFX_IDS).filter(([name]) => !['run', 'intro_crash', 'intro_whoosh'].includes(name));
     for (const [name, id] of field) expect(sfxNameForSound(id, 0x02), name).toBe(name);
     const shared = field.filter(([name]) => !['save', 'turn_on_pc', 'enter_pc'].includes(name));
     expect(shared).toHaveLength(19);

@@ -210,3 +210,9 @@ export function restoreBag(saved: SaveData): Bag {
 export function hasSavedGame(): boolean {
   return localStorage.getItem(SAVE_KEY) !== null;
 }
+
+/** ClearAllSRAMBanks (engine/menus/save.asm): every SRAM byte $FF, so CheckForPlayerNameInSRAM finds no save. The port's
+ *  SRAM is this one key; the sim-FPS key is the port's own setting (note 116 §2.7). */
+export function clearSave(): void {
+  localStorage.removeItem(SAVE_KEY);
+}

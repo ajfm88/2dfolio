@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **6669/6669** (2026-11-17, opening checkpoint-04 implemented; default workers; no-ROM 6317 pass / 352 skip; 273 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | vitest - baseline **6731/6731** (2026-11-18, opening checkpoint-08a implemented; default workers; no-ROM 6374 pass / 357 skip; 279 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -160,7 +160,8 @@ extraction. Deploy is **local; Netlify maybe, dead last; never GH Pages**
   public root that also holds graphics. One mirrored copy at setup end is simpler
   than dual-writing every JSON path.
 - **localStorage** — saves (`p151-s` in `src/save.ts`), sim FPS (`p151-f`).
-  Origin-scoped: `127.0.0.1` ≠ `localhost`.
+  Origin-scoped: `127.0.0.1` ≠ `localhost`. The title's clear-save dialogue removes only `p151-s` on YES
+  (`clearSave()`, opening checkpoint-07b); NO keeps it, and both answers keep `p151-f`.
   Since V5c checkpoint-03b saves include 32-byte `toggleableObjectFlags`; older saves migrate from `hiddenObjects` and event flags. Bag/PC stacks are restored verbatim,
   including duplicate ids created by the cartridge's 99-per-slot rule.
   Since A5c3f checkpoint-10b, version2 stores party/box struct and name bytes via
@@ -372,7 +373,7 @@ frames a step (DECISIONS #36, `src/overworld/ARCHITECTURE.md` → *Pace*).
   and `move_anim_0` / `pokemon_logo` read up to the next label, so their last tile
   row can hold ROM data past the real tiles (15 images differ from pret there
   only). Partial last rows have alpha-0 slots (`reds_house`, `move_anim_0`).
-  Blocksets never reference those tiles.
+  Blocksets never reference those tiles. The title copies the logo's 115 real tiles, not the PNG's padded 128 (opening checkpoint-05, note 114 §2.1).
 - **Fonts**: 1bpp PNGs, loaded through `loadFont()` (black on transparent).
   `gfx/font/P.png` is the bold P for the status screen, one 8×8 tile from PTile
   (04:5682), extracted since StatusScreen CP2. `loadStatusScreenAssets()` loads it
@@ -494,11 +495,11 @@ Entry point: `index.html` → `src/main.ts`.
 |---|---|---|
 | `core/` | Shared types, constants, player state; frozen-frame counter (`cpu_freeze.ts`) | `Direction`, `MapData`, `NpcData`, `GB_WIDTH`, `TILE_SIZE`, `BLOCK_PX`, `getPlayerName()`, `setPlayerName()`, `substituteNames()`, `freezeFrames()`, `isCpuFrozen()`, `takeFrozenFrame()`, `resetCpuFreeze()` |
 | `renderer/` | Canvas 2D rendering; OBJ art through any OBP register (`obpMapping`, healing machine) | `initRenderer()`, `drawTile()`, `drawSprite()`, `loadTileset()`, `loadSprite()`, `loadSpriteMapped()`, `obpMapping()` |
-| `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c) | `updateInput()`, `isHeld()`, `isPressed()`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
+| `input/` | Keyboard + touch (arrows/WASD, X=A, Z=B since DECISIONS #71, Enter=Start; mobile overlay); the overworld's joypad read per standing pass (A6a); `wJoyIgnore` (`joy_ignore.ts`, A1c); `hJoyHeld` as pret's `PAD_*` byte (opening checkpoint-06) | `updateInput()`, `isHeld()`, `isPressed()`, `joyHeld()`, `PAD`, `readJoypad()`, `syncJoypadRead()`, `isPassPressed()`, `setKey()`, `initTouchControls()`, `setJoyIgnore()` |
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) runs in the battle session since A5f checkpoint-04; old renderer deleted in 05; since A5c1 the unused `BattleScreen`, its renderer and the HUD writers (A5c3 wires them) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
-| `menus/` | All menus, title/intro screens | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `TitleScreen`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
+| `menus/` | All menus, title/intro screens; opening VRAM/OAM model and pure scanout | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `OpeningScreen`, `renderOpeningScreen`, `Boot`, `TitleScreen`, `ClearSaveDialogue`, `MainMenu`, `OakSpeech`, `NamingScreen`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |
@@ -533,8 +534,11 @@ is not an additional BG counter or saved-state owner.
 
 ```
 splash            "Click to start" (unlocks browser audio)
-title_screen      animated title with Pikachu
-main_menu         NEW GAME / CONTINUE / OPTION
+boot              Init and PlayIntro's tail: 66 ticks (10 dark, 53 serviced, 3 dark), then PrepareTitleScreen
+title_screen      title build frame program (logo bounce, bubble, clip 1, then music), then the loop: blink, held A/START
+                  or Up+Select+B exit (clip 11, white-out), idle reset after 3,071 frames (fade, then cartridgeInit())
+clear_save        DoClearSaveDialogue: NO/YES, B masked; NO keeps the save, YES clears it; both return through Init
+main_menu         NEW GAME / CONTINUE / OPTION; B rebuilds the title (TitleScreen.display(), no PrepareTitleScreen)
 intro_entry       Hold main menu 20 frames, then prime OakSpeech
 oak_speech        Frame program on IntroScreen (portraits, text, naming, shrink, fades)
 intro_exit        White40 while loading, then today's room/music entry (wait white if late)

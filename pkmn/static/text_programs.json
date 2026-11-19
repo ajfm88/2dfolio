@@ -247,6 +247,12 @@
         "program": "_ChooseABoxText"
       }
     ],
+    "ClearSaveDataText": [
+      {
+        "op": "far",
+        "program": "_ClearSaveDataText"
+      }
+    ],
     "ClosedOaksPCText": [
       {
         "op": "far",
@@ -3994,6 +4000,12 @@
       {
         "op": "text",
         "text": "Choose a\n BOX."
+      }
+    ],
+    "_ClearSaveDataText": [
+      {
+        "op": "text",
+        "text": "Clear all saved\ndata?<DONE>"
       }
     ],
     "_ClosedOaksPCText": [

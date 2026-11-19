@@ -226,10 +226,11 @@ describe('the opening\'s three sounds (opening checkpoint-01, data only)', () =>
     });
   }
 
-  it('none of the three is preloaded or has a sound id yet', () => {
+  it('the title\'s two are preloaded with their Audio 3 ids (checkpoint-05); the star\'s is not yet', () => {
     for (const sound of SOUNDS) {
-      expect(EXTRACTED_SFX).not.toContain(sound.name);
-      expect(Object.keys(SFX_IDS)).not.toContain(sound.name);
+      const title = sound.name === 'intro_crash' || sound.name === 'intro_whoosh';
+      expect(EXTRACTED_SFX.includes(sound.name), sound.name).toBe(title);
+      expect(Object.keys(SFX_IDS).includes(sound.name), sound.name).toBe(title);
     }
   });
 });

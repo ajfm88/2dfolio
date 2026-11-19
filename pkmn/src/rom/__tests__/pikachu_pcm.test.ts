@@ -44,7 +44,7 @@ describe('Pikachu\'s clips: the committed files (opening checkpoint-03, data onl
     });
   }
 
-  it('only the audio facade reads the clips, and nothing in the game plays one yet', () => {
+  it('only the audio facade reads the clips, and only the title plays one', () => {
     const sources: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -59,8 +59,8 @@ describe('Pikachu\'s clips: the committed files (opening checkpoint-03, data onl
       .map(path => relative(resolve(GAME, 'src'), path).split('\\').join('/')).sort();
     expect(holding(/pikachu_cr(y|ies)/)).toEqual(['audio/index.ts', 'audio/pikachu_pcm.ts']);
     expect(holding(/audio\/pikachu_cries\/pikachu_cry_\$\{/)).toEqual(['audio/index.ts']);
-    // The title (checkpoint 05) and the battle (checkpoint 15) are not wired: the console helper is the only caller.
-    expect(holding(/loadPikachuClip|startPikachuClip|playPikachuSoundClip/)).toEqual(['audio/index.ts']);
+    // The title calls the player since checkpoint 05; the battle (checkpoint 15) is not wired yet.
+    expect(holding(/loadPikachuClip|startPikachuClip|playPikachuSoundClip/)).toEqual(['audio/index.ts', 'menus/title_screen.ts']);
   });
 });
 

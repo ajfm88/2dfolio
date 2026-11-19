@@ -15,6 +15,96 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-18 (opening checkpoint-08a implemented; review next) - Codex
+
+- Applied the frozen patch (six files, two new), verified source/artifact hashes, ran all gates and U1-U11.
+  All match note 118 sections 6.2-6.3 (6731 ROM; 6374 / 357 no-ROM; expected bundle); mutations restored. Required
+  docs and section 9 report complete. No generated-file or snapshot change. Next: Grok review, then user's play-test.
+
+### 2026-11-17 (07b play-tested; opening checkpoint-08a planned and briefed) — Claude
+
+- Recorded 07b's play-test (note 117 §11; review owed). Measured the boot path on the cartridge's code (note 118 §2.2),
+  split 08 (DECISIONS #150), spiked 08a (6 files, two new; U1–U11), froze it, restored the source. Muted browser check
+  passed. Next: Grok reviews 07b; Codex implements 08a.
+
+### 2026-11-17 (opening checkpoint-07b implemented; review next) - Codex
+
+- Applied the frozen patch (11 files, two new), verified source/artifact hashes, ran the four gates and T1-T17.
+  All match note 117 sections 6.2-6.3 (6727 ROM; 6370 / 357 no-ROM; expected bundle); mutations restored. Report in
+  section 9 and required docs updated. No generated-file or snapshot change. Next: Grok review, then user's play-test.
+
+### 2026-11-17 (opening checkpoint-07b planned and briefed) — Claude
+
+- 07a recorded closed. Spiked the dialogue on the real tree (11 files, two new; T1–T17), froze
+  `notes/117-opening-checkpoint-07b/`, restored the source. The Chrome extension was not connected, so no browser
+  check; main's real-tick cases cover NO and YES. DECISIONS #149. Next: Codex implements 07b.
+
+### 2026-11-17 (opening checkpoint-07a reviewed PASS; 07b planning is next) — Grok
+
+- PASS on Codex's `665ec681` (note 116 §10). The three-file source diff matches `01-spike.diff`; the generated diff is
+  the two `text_programs.json` files. Gates and D1-D3 match §6.2 and §6.3. `clear-sram-frames.mjs` matched the frozen
+  JSON. One letter in the child's text failed 6 of 78 and was restored. Finding for 07b: held A or B is one frame a
+  letter. No play-test. 07b was not started.
+
+### 2026-11-17 (opening checkpoint-07a implemented; review next) - Codex
+
+- Applied the frozen patch, ran setup, verified source/artifact hashes and exactly two generated files. Gates match
+  note 116 section 6.2 (6717 ROM; 6360 / 357 no-ROM; unchanged bundle); D1-D3 match 6/4/6 failures of 78 and are restored.
+  Report in note 116 section 9; required docs updated after the user's authorization. Next: Grok review, no play-test.
+
+### 2026-11-17 (opening checkpoint-07a planned and briefed) — Claude
+
+- Traced all of `DoClearSaveDialogue` (note 116 §2); its text was never extracted, so 07 splits (DECISIONS #148). 07a
+  spiked (3 files, D1–D3), frozen, source and data restored. Measured YES's `ClearAllSRAMBanks`: `Init` 12 or 13
+  frames after the menu closes. Next: Codex implements 07a.
+
+### 2026-11-17 (opening checkpoint-06 closed; checkpoint-07 is next) — Claude
+
+- The user's play-test passed (note 115 §11, DECISIONS #147 closed). Codex's §9 recorded from its `impl-` logs; the
+  step-6 docs (CLAUDE.md, ARCHITECTURE, CONVENTIONS, PROJECT, menus ARCHITECTURE) brought to 6716 / 6359. Next: plan 07.
+
+### 2026-11-17 (opening checkpoint-06 reviewed; the user's play-test is next) — Grok
+
+- PASS on Codex's `db49b805` (note 115 §10). The game diff matches `01-spike.diff`; gates and R1–R23 match §6.2 and
+  §6.3. `validate-sm83.mjs` passed all 9 checks and `handler-bound.mjs` matched `handler-bound.json`. Dropping the
+  exit's ClearScreen delay failed 4 of 34 and was restored; no witness. Queue is the user's play-test. Checkpoint-07
+  was not started.
+
+### 2026-11-17 (opening checkpoint-06 planned and briefed) — Claude
+
+- Traced the title's loop, exit, idle reset and the main menu's B; spiked them on the real tree (8 files, R1–R23),
+  froze `notes/115-opening-checkpoint-06/`, restored the source. Measured the VBlank handler before each clip by
+  running the cartridge's own code in a development-time SM83 interpreter (§2.5): exact on the boot path, a
+  one-frame departure at 6.3 % / 0.03 % of song positions elsewhere (O-59). DECISIONS #147. Next: Codex implements.
+
+### 2026-11-17 (opening checkpoint-05 reviewed; the user's play-test is next) — Grok
+
+- PASS on Codex's `c8de03ec` (note 114 §10). The game diff matches `01-spike.diff`; gates and Q1–Q20 match §6.2
+  and §6.3. An independent mutation (copyright row at column 3) failed 2 of 48 and was restored; no witness.
+  §2.3's 4 dark frames and §2.4's 46 frozen frames agree with the ASM. Queue is the user's play-test. Checkpoint-06
+  was not started.
+
+### 2026-11-17 (opening checkpoint-05 implemented; review next) — Codex
+
+- Applied note 114's frozen patch; base/artifact/source hashes pass, including source restoration after Q1-Q20.
+  Typecheck/build pass; ROM 6706/6706; no-ROM 6349 / 357, 277 files. Bundle name/size/hash and every mutation
+  match the plan exactly (`impl-` logs, section 9). No generated or snapshot changes; no browser opened.
+  Next: Grok's review (section 8), then the user's play-test. Checkpoint-06 not started.
+
+### 2026-11-17 (opening checkpoint-05 planned and frozen) — Claude
+
+- Traced `title.asm`/`title_yellow.asm` frame by frame; new opening screen model and scanout; the build, the bounce,
+  the two Audio 3 sounds, clip 1 and the blink. Found: the logo is 115 tiles (the PNG's padded 128 striped the
+  background); the LCD-off span is 4 dark frames; clip 1's handler bound ≈ 2,830 cycles, so 46 frozen frames.
+  Spike frozen in note 114 (gates, Q1–Q20 twice, browser check on port 5181); source restored. Next: Codex (§7).
+
+### 2026-11-17 (opening checkpoint-04 closed; checkpoint-05 is next) — Claude
+
+- Grok's PASS (`9a59c1ea`, on Codex's `3af5eb0d`) recorded; the user heard `_playPikachuClip(1)` and `(11)` on
+  127.0.0.1:5173 (note 113 §11). The user hears a little crackle; part is the 1-bit format, part is likely the
+  synthesizer's nearest-sample resampling (backlog, audio fidelity). `refs/` refreshed (gen1recomp +39, engine +6,
+  pret unchanged). The user keeps the frozen-patch workflow. Next: plan checkpoint-05 (*In progress*).
+
 ### 2026-11-17 (opening checkpoint-04 reviewed; listening test next) — Grok
 
 - Independent review of `3af5eb0d` passed (note 113 §10). Spike matches; gates and P1–P22 match §6.2 and §6.3.
@@ -8526,6 +8616,11 @@ Historical snapshots, superseded by the November3 handoff. Preserved verbatim; n
   them on the OFF path and plays only the traced presentation IDs (poof).
 - The user ended the day. Keep all commits local and the existing data/art protected. After A5e: A5f's catch/demo
   integration, then V3 Gym/Museum, V4 and V5. Full detail: [STATUS](STATUS.md), notes75–77 and battle architecture.
+
+### 2026-11-17 (opening checkpoint-05 closed; checkpoint-06 is next) — Claude
+
+- Grok's PASS (`96c51ba5`, on Codex's `c8de03ec`) recorded; the user's play-test of the title's build passed
+  (note 114 §11, DECISIONS #145 closed). Context files updated for handoff. Next: plan checkpoint-06 (*In progress*).
 
 ## Archived PROJECT state (moved 2026-11-08 when V3 closed)
 

@@ -10,6 +10,7 @@ import { getTextPrograms } from './program_data';
 import { CloseSequence } from './close_sequence';
 import { setOpeningSpriteUpdates } from '../overworld/ui_entry';
 import { textBgTransfer } from './bg_transfer';
+import { getFastTextDelay } from './text_flags';
 import { loadMenuGlyphs } from '../menus/menu_glyphs';
 import { playSFX, isSoundFinished } from '../audio';
 import { uiTiles } from '../renderer/ui_tiles';
@@ -213,7 +214,8 @@ export class TextBox {
     this.screen = new TextScreen(this.ports(), this.buttons());
   }
   private ports() {
-    return { buttons: () => this.buttons(), speed: () => textSpeed,
+    // PrintLetterDelay: wOptions & $F with BIT_FAST_TEXT_DELAY set, else one frame (text_flags.ts).
+    return { buttons: () => this.buttons(), speed: () => (getFastTextDelay() ? textSpeed : 1),
       soundFinished: () => this.host.sound ? this.host.sound.finished() : isSoundFinished(),
       beep: () => { if (this.host.sound) this.host.sound.beep(); else playSFX('press_ab'); }, joypadRead: syncJoypadRead,
       playSound: (name: string) => { if (this.host.sound) this.host.sound.play(name); else playSFX(name); },

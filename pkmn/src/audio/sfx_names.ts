@@ -11,4 +11,6 @@ export const EXTRACTED_SFX: readonly string[] = [
   'enter_pc_3', 'save_3', 'turn_on_pc_3',
   // V5g3 checkpoint-03: the ledge hop and the Town Map's input.
   'ledge', 'tink',
+  // Opening checkpoint-05: the title's two sounds (Audio 3 only). shooting_star waits for the star (checkpoint 09).
+  'intro_crash', 'intro_whoosh',
 ];

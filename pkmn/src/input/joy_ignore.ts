@@ -4,8 +4,8 @@
 
 import type { GameButton } from '../core';
 
-/** wJoyIgnore: none, D-pad, SELECT|START|D-pad (controls), or $ff (all). */
-export type JoyIgnore = 'none' | 'dpad' | 'controls' | 'all';
+/** wJoyIgnore: none, D-pad, SELECT|START|D-pad (controls), $ff (all), or PAD_B alone (DoClearSaveDialogue). */
+export type JoyIgnore = 'none' | 'dpad' | 'controls' | 'all' | 'b';
 
 const DPAD: ReadonlySet<GameButton> = new Set<GameButton>(['up', 'down', 'left', 'right']);
 
@@ -21,6 +21,6 @@ export function joyIgnore(): JoyIgnore {
 
 /** Is this button masked out of the joypad reads? */
 export function joyIgnored(button: GameButton): boolean {
-  return mask === 'all' || ((mask === 'dpad' || mask === 'controls') && DPAD.has(button))
+  return mask === 'all' || (mask === 'b' && button === 'b') || ((mask === 'dpad' || mask === 'controls') && DPAD.has(button))
     || (mask === 'controls' && (button === 'start' || button === 'select'));
 }

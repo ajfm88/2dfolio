@@ -31,6 +31,10 @@ and the retained prompt (note 102, user-verified). No timing changes.
 
 ## Text data and printer (A5a)
 
+Opening checkpoint-07b adds `BIT_FAST_TEXT_DELAY` in `text_flags.ts` (default set): TextBox uses the options' speed
+when set and one frame per letter when clear; PrepareTitleScreen clears it, main-menu entry sets it, and B's title
+rebuild preserves it (held A/B still gives one frame per letter).
+
 `text_flags.ts` holds the shared BIT_NO_TEXT_DELAY stand-in (A5b7e CP2).
 ListMenu sets it on entry and clears it on all exits; YesNoMenu clears it before
 HandleMenuInput. The shared `PcDisplay` reads it when starting each PrintText;

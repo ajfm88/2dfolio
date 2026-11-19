@@ -120,6 +120,9 @@ import {
   loadEdTile,
 } from "./menus";
 import { NUM_BOXES, type BoxedPokemon } from "./pokemon_storage";
+import { ClearSaveDialogue } from "./menus/clear_save_dialogue";
+import { Boot } from "./menus/boot";
+import { setFastTextDelay } from "./text/text_flags";
 import { setBattleAndStartSavedMenuItem } from './list_state';
 import type { StartReturn } from './menus/start_menu';
 import { saveGame, loadGame, restoreParty, restoreBoxes, restoreBag, hasSavedGame, type SaveData } from "./save";
@@ -159,7 +162,9 @@ let npcs: Npc[] = [];
 
 type GameState =
   | "splash"
+  | "boot"
   | "title_screen"
+  | "clear_save"
   | "main_menu"
   | "oak_speech"
   | "intro_entry"
@@ -203,6 +208,8 @@ const mainMenu = new MainMenu();
 
 // Oak speech intro & naming screen
 const oakSpeech = new OakSpeech();
+const clearSaveDialogue = new ClearSaveDialogue();
+const boot = new Boot();
 const namingScreen = new NamingScreen();
 let introFrames = 0;
 let introMapReady = false;
@@ -452,6 +459,7 @@ async function init(): Promise<void> {
     loadBattleBridgeData(),
     loadTrainerSpeciesData(),
     oakSpeech.load(),
+    clearSaveDialogue.load(),
     loadEdTile(),
   ]);
 
@@ -465,15 +473,30 @@ async function init(): Promise<void> {
     document.removeEventListener('click', onSplashClick);
     await resumeAudio();
     await preloadMusic('routes2'); // Audio cache is available after unlock; E2 must not wait for a fetch.
+    await preloadMusic('titlescreen'); // the title's MUSIC_TITLE_SCREEN starts in the frame it is requested
     await Promise.all([...['wildbattle', 'trainerbattle', 'gymleaderbattle', 'finalbattle'],
       'defeatedwildmon', 'defeatedtrainer', 'defeatedgymleader'].map(track => preloadMusic(track)));
-    state = "title_screen";
-    playMusic("titlescreen");
+    // The opening begins at the click (DECISIONS #141): Init, then the title.
+    cartridgeInit(renderSplash);
   };
   document.addEventListener('click', onSplashClick);
 
   requestAnimationFrame(gameLoop);
   startBackgroundTicker();
+}
+
+/**
+ * `jp Init` (home/init.asm), from the splash click, the title's idle reset and the clear-save dialogue (opening
+ * checkpoints 06 and 08a, notes 115 §2.4 and 118): Init clears all HRAM before any VBlank, including what the port keeps
+ * outside the screen model (Random's two bytes, AutoBgMapTransfer's third and its enable byte); the boot program
+ * (menus/boot.ts) runs the rest, StopAllSounds included, and hands over to PrepareTitleScreen. `previous` draws the
+ * picture on screen when Init begins.
+ */
+function cartridgeInit(previous: (() => void) | null): void {
+  sessionRandom.hRandomAdd = 0; sessionRandom.hRandomSub = 0;
+  textBgTransfer.resetPortion(); textBgTransfer.enabled = false;
+  boot.start(previous);
+  state = "boot";
 }
 
 /** The single save write shared by START and the upcoming Change Box flow. */
@@ -1255,19 +1278,25 @@ function gameTick(): void {
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
   const timerCounting = state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit";
+  // The title's LCD-off span (note 114 §2.3): no VBlank, so no Random, no joypad read and no audio update; the
+  // audio clock is re-based so the next serviced frame runs one update, not the span's catch-up.
+  // Boot's `di` and LCD-off spans (opening checkpoint-08a) are dark the same way.
+  const titleDark = (state === "title_screen" && titleScreen.darkFrame) || (state === "boot" && boot.darkFrame);
+  const titleNoVBlank = (state === "title_screen" || state === "boot") && (titleDark || isVBlankHeld());
   // home/vblank.asm:43: VBlank calls Random every frame. TrackPlayTime (home/play_time.asm) leaves carry set
   // while the game timer counts (its CP 60 / CP $FF), clear otherwise (CountDownIgnoreInputBitReset's AND A).
   // A battle's frames skip it for now: the battle engine does not model this call (findings backlog).
   // A palette command's held frame has no VBlank (core/vblank_hold.ts): no Random. Audio still updates below.
   // ReadJoypad is skipped too, but every screen that holds a frame owns its own read, so main's sync isn't reached.
-  if (!sessionRandom.isAttached && !isVBlankHeld()) sessionRandom.random(timerCounting ? 1 : 0);
+  if (!sessionRandom.isAttached && !isVBlankHeld() && !titleDark) sessionRandom.random(timerCounting ? 1 : 0);
   if (timerCounting) {
     playTimeMs += now - lastPlayTimeUpdate;
   }
   lastPlayTimeUpdate = now;
 
   // Tick the audio engine every frame. No VBlank while the LCD is off (note 79 §8.2).
-  if (!(state === "battle" && currentSession?.pendingFrame === 'dark')) tickAudio();
+  if (titleDark) holdAudioClock();
+  else if (!(state === "battle" && currentSession?.pendingFrame === 'dark')) tickAudio();
   tickPendingMapMusic();
 
   // Is this frame an overworld pass? Entering the overworld from a menu, a text box or a
@@ -1282,20 +1311,34 @@ function gameTick(): void {
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
   const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
     || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
-  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && !sessionOwnInput && !textBox.active) syncJoypadRead();
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'clear_save' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && !sessionOwnInput && !textBox.active && !titleNoVBlank) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
     return;
+  } else if (state === "boot") {
+    // Init's tail: `jp PrepareTitleScreen`, in the step that jumps.
+    if (boot.update() === 'title') { titleScreen.start(); state = "title_screen"; }
   } else if (state === "title_screen") {
-    const action = titleScreen.update();
-    if (action === 'start') {
+    const exit = titleScreen.update();
+    if (exit === 'reset') {
+      cartridgeInit(() => titleScreen.render()); // jp Init
+    } else if (exit === 'clear_save') {
+      // farjp DoClearSaveDialogue, in the step that jumps (opening checkpoint-07b).
+      clearSaveDialogue.start();
+      state = "clear_save";
+    } else if (exit === 'main_menu') {
       // Title music keeps playing through main menu (matches original game)
+      // MainMenu's InitOptions sets BIT_FAST_TEXT_DELAY (PrepareTitleScreen had cleared the byte).
+      setFastTextDelay(true);
       optionMenu.restore();
       restoreSavedSettings(loadGame());
       mainMenu.show(hasSavedGame());
       state = "main_menu";
     }
+  } else if (state === "clear_save") {
+    // Both answers end in `jp Init`.
+    if (clearSaveDialogue.update()) cartridgeInit(() => clearSaveDialogue.render());
   } else if (state === "main_menu") {
     const action = mainMenu.update();
     if (action === 'continue') {
@@ -1335,6 +1378,8 @@ function gameTick(): void {
       stateBeforeMenu = "main_menu";
       state = "option_menu";
     } else if (action === 'back') {
+      // HandleMenuInput's B: `jp nz, DisplayTitleScreen`, with the title song still playing.
+      titleScreen.display();
       state = "title_screen";
     }
   } else if (state === 'intro_entry') {
@@ -1862,8 +1907,12 @@ function gameLoop(now = 0): void {
   // Render
   if (state === "splash") {
     renderSplash();
+  } else if (state === "boot") {
+    boot.render();
   } else if (state === "title_screen") {
     titleScreen.render();
+  } else if (state === "clear_save") {
+    clearSaveDialogue.render();
   } else if (state === "main_menu" || state === "intro_entry") {
     clear();
     mainMenu.render();

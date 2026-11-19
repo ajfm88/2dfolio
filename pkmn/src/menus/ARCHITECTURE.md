@@ -448,3 +448,54 @@ For pixel-precise layout specs from assembly source, see `pokeyellow/ARCHITECTUR
 - Title screen: `engine/movie/title.asm` + `engine/movie/title_yellow.asm`
 - Oak speech: `engine/movie/oak_speech/oak_speech.asm` + `oak_speech2.asm`
 - Bill's PC: `engine/pokemon/bills_pc.asm`
+
+## Title screen
+
+Opening checkpoint-08a (note 118; implemented 2026-11-18, review pending) inserts `Boot` between `jp Init` and
+PrepareTitleScreen. The click, idle reset and both clear-save answers call `cartridgeInit(previous)`: Random's bytes,
+the BG transfer's third and its enable byte clear at once, while `previous` draws the picture in tick T. T+1 through
+T+10 are dark (no Random, joypad read or audio update; audio clock re-based); the LCD goes off in T+1's step and
+comes back with StopAllSounds in T+10's. LoadSGB runs 51 serviced frames (T+11 through T+61). PlayIntro's tail takes
+T+62, DisableLCD's serviced frame is T+63, and Init's tail takes three dark ticks T+64 through T+66. The last step
+starts the title, whose first frame is T+67: 66 ticks (about 1.1 s) of boot time before it. The clear-save song's
+notes hold through the first ten ticks, then stop. The copyright (08b), star (09) and movie (10-14) will run between
+LoadSGB and these tails; they are absent here. The main menu's B still rebuilds the title directly through display().
+
+Opening checkpoint-07b (note 117; implemented, review pending) connects the title's Up+Select+B exit to
+`ClearSaveDialogue` on `IntroScreen`. ClearScreen waits frames 1-3; MEWMON is selected in 3's step, frames 4-5 are
+palette-held, and 6-8 wait. LCD-on font and text-box copies take frames 9-25 and 26-30 with BG transfer disabled;
+PrintText draws the box at 30 and its first glyph at 33. PrepareTitleScreen clears BIT_FAST_TEXT_DELAY, so the boot
+path types one frame a letter and opens the menu at 53; main-menu entry sets the bit, and B's `display()` preserves
+it, so that path uses the options' speed (menu at 93 medium, 133 slow). Held A or B gives one frame per letter.
+The NO/YES box at (14,7) starts on NO; PAD_B is masked until the menu closes. A plays press_ab and waits 15 frames,
+then restores the menu's tiles and clears the mask. NO keeps the save and returns through cartridgeInit in that
+step; YES removes only `p151-s`, waits 13 more frames, then returns through cartridgeInit. The fixed 13-frame wait
+represents the measured 12-or-13 split. Since 08a, the title song holds until Init's tenth tick stops it; the boot
+path above then reaches the title. 07b's user play-test passed (note 117 section 11); its review is still owed.
+
+Opening checkpoint-05 (note 114; reviewed and user-verified 2026-11-17) rewrites `TitleScreen` as a frame program
+over `OpeningScreen`: 384 VRAM tiles, two BG maps and CGB attribute maps, latched scroll/window registers, shadow
+and DMA'd OAM, palette registers and LCD state. `renderOpeningScreen` is a pure scanout; the model uses the shared
+`TileMap` thirds. The LCD-off copies load only 115 logo tiles, leaving the PNG's padded tail untouched.
+
+From `start()`, frames 1-3 clear the screen, frame 4 services DisableLCD's VBlank, and 5-8 are four dark frames
+with no Random, joypad or audio update (the audio clock is re-based). EnableLCD's first frame stays white.
+Frames 9-14 transfer the Pikachu and logo maps; 15-16 are the palette command's two held frames; 17-19 wait,
+with colour first appearing at 19. The 32-frame bounce runs at 20-51 (crash at 39), then waits 36 frames; at 87
+the whoosh and bubble start. Delay3 and the clip's three waits lead to clip 1 at 93, 46 frozen ticks, then the
+next serviced update (94) stops all music and starts the preloaded title song: 140 physical ticks from start.
+
+The loop ports `DoTitleScreenFunction`: read the timer before incrementing, trigger at 0/$80/$90, update the
+eight eye entries, and show them after the next DMA.
+
+Opening checkpoint-06 (note 115; reviewed and user-verified 2026-11-17) ports the rest of the loop and its exits.
+`IncrementResetCounter` counts before each `DelayFrame`; then `joyHeld()` (`hJoyHeld`, a held button, not a press)
+leaves on exactly Up+Select+B (`$46`) or anything with A or START (`$09`), else the title function runs. The exit
+plays clip 11 (36 frozen ticks), whites out (`e+4`), clears OAM and sets `hWY = 0` (`e+7`), blanks the screen into
+`$9800` and then `$9C00`, waits, and runs `LoadGBPal` (`FadePal4`) at `e+19`: 55 ticks. The jump tests Up+Select+B
+masked on the loop's byte: `'clear_save'` (the dialogue, since checkpoint-07b) or `'main_menu'`.
+The 3,071st loop frame starts the idle reset: `fadeOutAndStopMusic($0C)`, a spin until the fade ends (104 frames),
+then `'reset'`, which main answers with `cartridgeInit(previous)` (Random's bytes and the transfer clear, then
+the boot path above, including StopAllSounds at tick 10, then `start()`). The main menu's B calls `display()`: the build without `PrepareTitleScreen`, on a fresh model, with
+the song still playing. `update()` returns the exit in the step that jumps and drops the program. Still to come:
+the copyright, star and movie (08b–14); the clips' frozen counts are fixed (O-59).

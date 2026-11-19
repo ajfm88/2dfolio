@@ -47,6 +47,19 @@ export function isPressed(button: GameButton): boolean {
   return justPressed[button] && !joyIgnored(button);
 }
 
+/** pret's PAD_* bits (constants/hardware.inc): the layout of hJoyInput, hJoyHeld and hJoyPressed. */
+export const PAD: Readonly<Record<GameButton, number>> = {
+  a: 0x01, b: 0x02, select: 0x04, start: 0x08, right: 0x10, left: 0x20, up: 0x40, down: 0x80,
+};
+
+/** hJoyHeld as _Joypad leaves it (engine/joypad.asm): every button down at this frame's read, wJoyIgnore masked out.
+ *  _Joypad's soft reset (A, B, SELECT and START without UP) is not modelled anywhere yet (findings backlog). */
+export function joyHeld(): number {
+  let held = 0;
+  for (const button of Object.keys(PAD) as GameButton[]) if (isHeld(button)) held |= PAD[button];
+  return held;
+}
+
 // The overworld reads the joypad once per standing pass (JoypadOverworld → Joypad, every
 // two frames, and not mid-step): a button counts as pressed when it is down at a read and
 // wasn't at the one before. Menus and text boxes read it every frame.

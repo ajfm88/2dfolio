@@ -5,6 +5,9 @@
 
 /** V3 checkpoint-01 (notes/88-v3-plan.md §7): Museum 1F, Museum 2F and Pewter Gym. */
 export const LATER_MAP_PROGRAMS: readonly string[] = [
+  // Opening checkpoint-07a (notes/116-opening-checkpoint-07-plan.md): DoClearSaveDialogue's text. Not map text, but
+  // added after the same frozen baselines, so it is listed here for the same reason.
+  'ClearSaveDataText', '_ClearSaveDataText',
   // V4 checkpoint-01: Diglett's Cave Route 11 entrance.
   'DiglettsCaveRoute11GamblerText', '_DiglettsCaveRoute11GamblerText',
   // V3 checkpoint-04: Route 3.

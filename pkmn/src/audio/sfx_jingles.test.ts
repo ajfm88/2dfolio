@@ -167,9 +167,10 @@ describe('the SFX preload list', () => {
     // V5g1 checkpoint-02: Audio 3's enter_pc_3, save_3 and turn_on_pc_3 are preloaded since the bank-aware lookup.
     // V5g3 checkpoint-03: ledge and tink are preloaded since the hop and the Town Map play them.
     // Opening checkpoint-01: intro_crash, intro_whoosh and shooting_star, unused until the title and the star.
+    // Opening checkpoint-05: the title plays intro_crash and intro_whoosh, so both are preloaded.
     const unused = [
-      'ball_poof', 'ball_toss', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud', 'intro_crash',
-      'intro_whoosh', 'level_up', 'not_very_effective', 'pokeflute_in_battle', 'shooting_star', 'super_effective',
+      'ball_poof', 'ball_toss', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud',
+      'level_up', 'not_very_effective', 'pokeflute_in_battle', 'shooting_star', 'super_effective',
       'trainer_appeared',
     ];
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);

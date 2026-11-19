@@ -76,6 +76,8 @@ export const CGB_PALETTES: Record<string, Palette> = {
   // Title screen palettes (from CGBBasePalettes — PAL_LOGO2)
   // Used for Pokemon logo: yellow letters, deep blue shadows
   LOGO2:     pal(31,31,31, 31,31, 0,  7, 7,25,  0, 0,17),
+  // PAL_LOGO1: PalPacket_Titlescreen's second slot (opening checkpoint-05, note 114)
+  LOGO1:     pal(31,31,31, 31,31, 0, 31, 0, 0, 31, 0, 0),
 };
 
 // Map name → palette name

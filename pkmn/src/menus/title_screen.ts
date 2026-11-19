@@ -1,283 +1,355 @@
-// Title screen — Pokemon Yellow logo + Pikachu display with eye blink animation
-// Assembly ref: engine/movie/title.asm, engine/movie/title_yellow.asm
-// Blink logic: DoTitleScreenFunction in title.asm (lines 272-346)
+// The title screen: engine/movie/title.asm (PrepareTitleScreen, DisplayTitleScreen, .loop, .go_to_main_menu,
+// .doTitlescreenReset, DoTitleScreenFunction, IncrementResetCounter) and engine/movie/title_yellow.asm (the graphics,
+// the three placements, the eyes' OAM). Opening checkpoints 05 and 06 (notes 114, 115): a frame program on the
+// opening's screen model (a yield is one DelayFrame; VBlank's half runs first in each update). The program ends where
+// the title's code jumps away: MainMenu, DoClearSaveDialogue or Init.
+import { joyHeld } from '../input';
+import { getRawImageData } from '../renderer';
+import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
+import {
+  fadeOutAndStopMusic, isAudioFadingOut, isSoundFinished, loadPikachuClip, playNewMusic, playPikachuSoundClip, playSFX,
+  setAudioBank, stopAllMusic,
+} from '../audio';
+import { textBgTransfer } from '../text/bg_transfer';
+import { setFastTextDelay } from '../text/text_flags';
+import { BG_MAP0, BG_MAP1, OpeningScreen, SPACE_TILE, type OpeningImage } from './opening_screen';
+import { presentOpeningScreen } from './opening_screen_render';
+import { TITLE_BG0_ATTRIBUTES, TITLE_BG1_ATTRIBUTES } from './title_attributes';
 
-import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
-import { isPressed } from '../input';
-import { loadTileset, setActivePalette, getCtx, getScale, getPaletteColors } from '../renderer';
-
-// Title screen uses two CGB palettes (from PalPacket_Titlescreen):
-// BGP0 = PAL_LOGO2 — Pokemon logo area (yellow + deep blue)
-// BGP2 = PAL_MEWMON — Pikachu area (yellow + red cheeks)
-const PAL_LOGO = 'LOGO2';
-const PAL_PIKACHU = 'MEWMON';
-
-// Screen positions from assembly (tile coordinates)
-const LOGO_X = 2, LOGO_Y = 1, LOGO_W = 16, LOGO_H = 7;
-const BUBBLE_X = 6, BUBBLE_Y = 4, BUBBLE_W = 7, BUBBLE_H = 4;
-const PIKA_X = 4, PIKA_Y = 8, PIKA_W = 12, PIKA_H = 9;
-
-// Extra individual tiles from assembly (TitleScreen_PlacePikaSpeechBubble / PlacePikachu)
-const BUBBLE_EXTRAS: [number, number, number][] = [
-  [9, 8, 0x64],  // hlcoord 9, 8 → $64
-  [10, 8, 0x65], // next byte → $65
+/** BANK(Music_TitleScreen): PrepareTitleScreen's audio bank (Audio 3). */
+export const TITLE_AUDIO_BANK = 0x1f;
+/** The LCD-off span, in frames with no VBlank (note 114 §2.3): ≈ 64,100 machine cycles of copies plus the deferred
+ *  VBlank's handler, then 144 lines to the first VBlank after EnableLCD, ≈ 4.7 frames from the deferred VBlank. */
+export const TITLE_LCD_OFF_FRAMES = 4;
+/** .TitleScreenPokemonLogoYScrolls: a step for hSCY and how many frames it runs. */
+export const LOGO_BOUNCE: readonly (readonly [number, number])[] = [[-4, 16], [3, 4], [-3, 4], [2, 2], [-2, 2], [1, 2], [-1, 2]];
+/** .tileScreenCopyrightTiles: ©1995-1999 GAME FREAK inc. */
+export const COPYRIGHT_TILES: readonly number[] = [0xe0, 0xe1, 0xe2, 0xe3, 0xe1, 0xe2, 0xee, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed];
+/** TitleScreenPikachuEyesOAMData: Y, X, tile, attributes (X flip, CGB OBJ palette 2). */
+export const PIKACHU_EYES_OAM: readonly number[] = [
+  0x60, 0x40, 0xf1, 0x22, 0x60, 0x48, 0xf0, 0x22, 0x68, 0x40, 0xf3, 0x22, 0x68, 0x48, 0xf2, 0x22,
+  0x60, 0x60, 0xf0, 0x02, 0x60, 0x68, 0xf1, 0x02, 0x68, 0x60, 0xf2, 0x02, 0x68, 0x68, 0xf3, 0x02,
 ];
-const PIKA_EXTRAS: [number, number, number][] = [
-  [16, 10, 0x96], // hlcoord 16, 10
-  [16, 11, 0x9D], // hlcoord 16, 11
-  [16, 12, 0xA7], // hlcoord 16, 12
-  [16, 13, 0xB1], // hlcoord 16, 13
-];
+/** PalPacket_Titlescreen: PAL_LOGO2, PAL_LOGO1, PAL_MEWMON, PAL_PURPLEMON. */
+export const TITLE_PALETTES: readonly string[] = ['LOGO2', 'LOGO1', 'MEWMON', 'PURPLEMON'];
+/** PokemonLogoGraphicsEnd - PokemonLogoGraphics = $730 bytes (3d:46fb–3d:4e2b): pret trims the sheet's white tail
+ *  (Makefile --trim-whitespace). The committed PNG pads to 128 tiles with the bytes that follow, so only 115 are
+ *  copied; tiles $73–$7F keep what VRAM held, and ' ' ($7F) is one of them. */
+export const POKEMON_LOGO_TILES = 115;
+/** Pikachu's voice on the title (ldpikacry e, PikachuCry1) and on leaving it (PikachuCry11). */
+export const TITLE_CLIPS: readonly number[] = [1, 11];
+/** IncrementResetCounter: the loop's pass that finds wTitleScreenResetCounter at $0C00 resets the game. It counts
+ *  before each pass's DelayFrame, so the reset comes in the step of the loop's 3,071st frame (note 115 §2.1). */
+export const TITLE_RESET_PASSES = 0x0c00;
+/** .doTitlescreenReset: wAudioFadeOutControl = the `ld a, d` IncrementResetCounter left in A. */
+export const TITLE_RESET_FADE = 0x0c;
+/** PAD_UP | PAD_SELECT | PAD_B: the loop's exact match, and the exit's masked test for DoClearSaveDialogue. */
+export const CLEAR_SAVE_BUTTONS = 0x46;
+/** PAD_A | PAD_START: the release build's other exit (the debug build adds PAD_SELECT). */
+export const TITLE_EXIT_BUTTONS = 0x09;
+/** LoadGBPal with wMapPalOffset 0 (home/fade.asm): FadePal4's rBGP, rOBP0 and rOBP1. */
+export const FADE_PAL4: readonly [number, number, number] = [0xe4, 0xd0, 0xe0];
 
-// Pikachu eye OAM sprite data from TitleScreenPikachuEyesOAMData
-// Format: [screenY, screenX, baseTileIndex, xFlip]
-// OAM Y/X have +16/+8 offsets; base tile indices 0-3 = open eyes
-const EYE_SPRITES: [number, number, number, boolean][] = [
-  [0x60 - 16, 0x40 - 8, 1, true],   // left eye top-left (tile 1 flipped)
-  [0x60 - 16, 0x48 - 8, 0, true],   // left eye top-right (tile 0 flipped)
-  [0x68 - 16, 0x40 - 8, 3, true],   // left eye bottom-left (tile 3 flipped)
-  [0x68 - 16, 0x48 - 8, 2, true],   // left eye bottom-right (tile 2 flipped)
-  [0x60 - 16, 0x60 - 8, 0, false],  // right eye top-left
-  [0x60 - 16, 0x68 - 8, 1, false],  // right eye top-right
-  [0x68 - 16, 0x60 - 8, 2, false],  // right eye bottom-left
-  [0x68 - 16, 0x68 - 8, 3, false],  // right eye bottom-right
-];
+/** Where the title's code jumps: `jp MainMenu`, `farjp DoClearSaveDialogue` (checkpoint 07) or `jp Init`. */
+export type TitleExit = 'main_menu' | 'clear_save' | 'reset';
 
-// Eye tile offset for each blink state (pikachu_ob.png has 12 tiles: 4 open + 4 half + 4 closed)
-// Assembly uses: tileId AND $F3 OR e, where e = 0 (open), 4 (half), 8 (closed)
-const EYE_OPEN = 0;
-const EYE_HALF = 4;
-const EYE_CLOSED = 8;
+export interface TitleImages {
+  font: OpeningImage; copyright: OpeningImage; nine: OpeningImage; gamefreak: OpeningImage;
+  logo: OpeningImage; corner: OpeningImage; pikachuBg: OpeningImage; pikachuOb: OpeningImage;
+}
+export interface TitleAssets extends TitleImages {
+  logoMap: Uint8Array; bubbleMap: Uint8Array; pikachuMap: Uint8Array;
+}
+const IMAGE_URLS: Readonly<Record<keyof TitleImages, string>> = {
+  font: '/gfx/font/font.png', copyright: '/gfx/splash/copyright.png', nine: '/gfx/title/nine.png',
+  gamefreak: '/gfx/title/gamefreak_inc.png', logo: '/gfx/title/pokemon_logo.png',
+  corner: '/gfx/title/pokemon_logo_corner.png', pikachuBg: '/gfx/title/pikachu_bg.png', pikachuOb: '/gfx/title/pikachu_ob.png',
+};
+const TILEMAP_URLS = {
+  logoMap: '/gfx/title/pokemon_logo.tilemap', bubbleMap: '/gfx/title/pika_bubble.tilemap', pikachuMap: '/gfx/title/pikachu.tilemap',
+} as const;
 
-// Eye overlay bounding box (precomputed from EYE_SPRITES screen positions)
-const EYE_REGION_X = 56;  // min sprite X: 0x40 - 8
-const EYE_REGION_Y = 80;  // min sprite Y: 0x60 - 16
-const EYE_REGION_W = 48;  // (0x68 - 8 + 8) - 56
-const EYE_REGION_H = 16;  // (0x68 - 16 + 8) - 80
+export type TitleAudioRequest = {
+  readonly frame: number; readonly kind: 'bank' | 'sfx' | 'clip' | 'stop' | 'music' | 'fade'; readonly value: string | number;
+};
+type TitleStep = 'dark' | void;
+type TitleProgram = Generator<TitleStep, TitleExit>;
 
-// Copyright text position (bottom of screen)
-const COPYRIGHT_Y = 17; // last tile row
+function tiles(image: OpeningImage): number { return (image.width >> 3) * (image.height >> 3); }
 
 export class TitleScreen {
-  private background: HTMLCanvasElement | null = null;
-  private eyeFrames = new Map<number, HTMLCanvasElement>();
+  private screen = new OpeningScreen();
+  private assets: TitleAssets | null = null;
+  private program: TitleProgram | null = null;
+  private dark = false;
+  private frame = 0;
+  private stage = 'idle';
+  private scene = 0;
+  private timer = 0;
+  private resetCounter = 0;
+  private requests: TitleAudioRequest[] = [];
 
-  // Blink animation state (from DoTitleScreenFunction in title.asm)
-  // Timer is a byte (0-255) that increments each frame; triggers blink at 0x80, 0x90, 0x00
-  // Scene tracks blink animation progress: 0 = idle, 1-11 = animating
-  private blinkTimer = 0;
-  private blinkScene = 0;
+  async load(
+    image: (url: string) => Promise<OpeningImage> = getRawImageData,
+    bytes: (url: string) => Promise<Uint8Array> = fetchTilemap,
+  ): Promise<void> {
+    const names = Object.keys(IMAGE_URLS) as (keyof TitleImages)[];
+    const loaded = await Promise.all(names.map(name => image(IMAGE_URLS[name])));
+    const [logoMap, bubbleMap, pikachuMap] = await Promise.all(
+      [TILEMAP_URLS.logoMap, TILEMAP_URLS.bubbleMap, TILEMAP_URLS.pikachuMap].map(bytes));
+    // Rule 3 of note 113 §3: the clips a frame program plays are loaded before it can start.
+    await Promise.all(TITLE_CLIPS.map(loadPikachuClip));
+    this.assets = { ...Object.fromEntries(names.map((name, i) => [name, loaded[i]])) as unknown as TitleImages,
+      logoMap, bubbleMap, pikachuMap };
+  }
 
-  async load(): Promise<void> {
-    setActivePalette(PAL_LOGO);
+  /** Inspection for tests: the model, the program's stage, the frame count since start and the audio requests. */
+  get inspection() {
+    return { screen: this.screen, stage: this.stage, frame: this.frame, scene: this.scene, timer: this.timer,
+      resetCounter: this.resetCounter, dark: this.dark, audioRequests: this.requests.map(request => ({ ...request })) } as const;
+  }
 
-    // Load tilesets with their respective palettes, and tilemaps in parallel
-    const [logoTiles, pikaBgTiles, cornerTiles, eyeTiles, gfTiles, logoMap, bubbleMap, pikaMap] =
-      await Promise.all([
-        loadTileset('/gfx/title/pokemon_logo.png', PAL_LOGO),              // logo: yellow + blue
-        loadTileset('/gfx/title/pikachu_bg.png', PAL_PIKACHU),           // pikachu: yellow + red
-        loadTileset('/gfx/title/pokemon_logo_corner.png', PAL_LOGO),
-        loadTileset('/gfx/title/pikachu_ob.png', PAL_PIKACHU),           // eyes use pikachu palette
-        loadTileset('/gfx/title/gamefreak_inc.png', PAL_PIKACHU),        // copyright in pikachu area
-        fetchTilemap('/gfx/title/pokemon_logo.tilemap'),
-        fetchTilemap('/gfx/title/pika_bubble.tilemap'),
-        fetchTilemap('/gfx/title/pikachu.tilemap'),
-      ]);
+  /** main, before VBlank's work: the coming frame has no VBlank (the LCD is off). */
+  get darkFrame(): boolean { return this.dark; }
 
-    // Pre-compose background (everything except eyes) into an offscreen canvas
-    const offscreen = document.createElement('canvas');
-    offscreen.width = GB_WIDTH;
-    offscreen.height = GB_HEIGHT;
-    const oc = offscreen.getContext('2d')!;
-    oc.imageSmoothingEnabled = false;
+  /** PrepareTitleScreen, then DisplayTitleScreen up to its first DelayFrame (Init's `jp PrepareTitleScreen`). */
+  start(): void { this.begin(true); }
 
-    // Fill with white (palette color 0 — same for both palettes)
-    const colors = getPaletteColors(PAL_LOGO);
-    oc.fillStyle = `rgb(${colors[0][0]},${colors[0][1]},${colors[0][2]})`;
-    oc.fillRect(0, 0, GB_WIDTH, GB_HEIGHT);
+  /** DisplayTitleScreen up to its first DelayFrame, without PrepareTitleScreen: MainMenu's B (main_menu.asm:66–68,
+   *  `jp nz, DisplayTitleScreen`). The audio bank and the playing title song are left as they are. */
+  display(): void { this.begin(false); }
 
-    const logoTileCount = (logoTiles.width / TILE_SIZE) * (logoTiles.height / TILE_SIZE);
-    const pikaBgTileCount = (pikaBgTiles.width / TILE_SIZE) * (pikaBgTiles.height / TILE_SIZE);
+  private begin(prepare: boolean): void {
+    if (!this.assets) throw new Error('TitleScreen.start before load');
+    // A fresh model each time: on the B path the cartridge's VRAM still holds the main menu's tiles, but nothing the
+    // title shows reads them (note 115 §2.6).
+    this.screen = new OpeningScreen();
+    this.frame = 0; this.dark = false; this.requests = []; this.scene = 0; this.timer = 0; this.resetCounter = 0;
+    this.program = this.titleScreen(this.assets, prepare);
+    this.program.next();
+  }
 
-    // Helper: draw a single tile from the appropriate tileset
-    const drawTileAt = (tileId: number, destCol: number, destRow: number) => {
-      let tileset: HTMLCanvasElement;
-      let index: number;
+  /** One frame: VBlank's half (none while the LCD is off or a palette command holds the frame), then the CPU until
+   *  its next DelayFrame. Where the title's code jumps, in the step that jumps; null while it stays. */
+  update(): TitleExit | null {
+    // Only main's tests enter the state without start(): they get the loop at once, on an empty screen.
+    if (!this.program) { this.program = this.titleLoop(); this.program.next(); }
+    if (this.dark) this.dark = false;
+    else if (!takeHeldFrame()) this.screen.vblank();
+    this.frame++;
+    const step = this.program.next();
+    if (!step.done) {
+      if (step.value === 'dark') this.dark = true;
+      return null;
+    }
+    this.program = null;
+    return step.value;
+  }
 
-      if (tileId < 0x80) {
-        // vChars2 ($9000) — pokemon_logo tiles
-        tileset = logoTiles;
-        index = tileId;
-        if (index >= logoTileCount) return; // out of bounds → blank
-      } else if (tileId >= 0xFD) {
-        // Corner tiles (loaded at vChars1 tiles $7D-$7F)
-        tileset = cornerTiles;
-        index = tileId - 0xFD;
-      } else {
-        // vChars1 ($8800) — pikachu_bg tiles
-        tileset = pikaBgTiles;
-        index = tileId - 0x80;
-        if (index >= pikaBgTileCount) return; // out of bounds → blank
-      }
+  render(): void { presentOpeningScreen(this.screen); }
 
-      const tilesPerRow = tileset.width / TILE_SIZE;
-      const srcX = (index % tilesPerRow) * TILE_SIZE;
-      const srcY = Math.floor(index / tilesPerRow) * TILE_SIZE;
-      oc.drawImage(
-        tileset,
-        srcX, srcY, TILE_SIZE, TILE_SIZE,
-        destCol * TILE_SIZE, destRow * TILE_SIZE, TILE_SIZE, TILE_SIZE,
-      );
-    };
+  private request(kind: TitleAudioRequest['kind'], value: string | number): void {
+    this.requests.push({ frame: this.frame, kind, value });
+  }
 
-    // 1. Render Pokemon logo tilemap at (2,1) — 16x7
-    for (let row = 0; row < LOGO_H; row++) {
-      for (let col = 0; col < LOGO_W; col++) {
-        drawTileAt(logoMap[row * LOGO_W + col], LOGO_X + col, LOGO_Y + row);
+  private *titleScreen(assets: TitleAssets, prepare: boolean): TitleProgram {
+    const s = this.screen;
+    if (prepare) {
+      // PrepareTitleScreen: hWY = 0 (DisplayTitleScreen overwrites it before any frame), wLetterPrintingDelayFlags = 0
+      // (BIT_FAST_TEXT_DELAY clear: the clear-save dialogue prints one frame a letter), the audio bank.
+      s.hWy = 0;
+      setFastTextDelay(false);
+      setAudioBank(TITLE_AUDIO_BANK); this.request('bank', TITLE_AUDIO_BANK);
+    }
+    // DisplayTitleScreen: GBPalWhiteOut; hAutoBGTransferEnabled = 1; hTileAnimations = 0 (the port's title has none).
+    this.stage = 'build';
+    s.bgp = 0; s.obp0 = 0; s.obp1 = 0;
+    textBgTransfer.enabled = true;
+    s.hScx = 0; s.hScy = 0x40; s.hWy = 0x90;
+    // ClearScreen: wTileMap, then Delay3.
+    s.tileMap.fill(SPACE_TILE);
+    yield* frames(3);
+    // DisableLCD: the LY 145 wait crosses one VBlank, serviced when IE is restored with the LCD already off.
+    yield;
+    s.disableLcd();
+    this.stage = 'lcd-off';
+    this.loadTitleTiles(assets);
+    // FillMemory: vBGMap0 and vBGMap1's first $40 bytes with ' '.
+    s.fillBg(BG_MAP0, 0x440, SPACE_TILE);
+    // TitleScreen_PlacePokemonLogo, FillSpriteBuffer0WithAA (SRAM, not modelled), .WriteCopyrightTiles.
+    this.copyBox(assets.logoMap, 2, 1, 16, 7);
+    COPYRIGHT_TILES.forEach((tile, i) => s.tileMap.put(2 + i, 17, tile));
+    // SaveScreenTilesToBuffer2, then LoadScreenTilesFromBuffer2 (the same cells; the transfer ends enabled).
+    const buffer2 = s.tileMap.cells;
+    for (let frame = 0; frame < TITLE_LCD_OFF_FRAMES; frame++) yield 'dark';
+    s.enableLcd();
+    this.stage = 'build';
+    // TitleScreen_PlacePikachu: the tilemap, four extra tiles, the eyes into wShadowOAM.
+    this.copyBox(assets.pikachuMap, 4, 8, 12, 9);
+    [[10, 0x96], [11, 0x9d], [12, 0xa7], [13, 0xb1]].forEach(([row, tile]) => s.tileMap.put(16, row, tile));
+    s.oam.set(PIKACHU_EYES_OAM);
+    // TitleScreenCopyTileMapToVRAM $9B: rows 0–7 to vBGMap0's rows 24–31, rows 8–17 to the window's rows 0–9.
+    s.bgTransferDest = BG_MAP0 + 0x300;
+    yield* frames(3);
+    const buffer1 = s.tileMap.cells;
+    s.hWy = 0x40;
+    this.loadCells(buffer2);
+    s.bgTransferDest = BG_MAP0;
+    yield* frames(3);
+    // SET_PAL_TITLE_SCREEN on CGB: InitCGBPalettes for both register sets, then LoadBGMapAttributes' two held
+    // frames and SendSGBPackets' Delay3 (DECISIONS #73).
+    s.bgPalettes = [...TITLE_PALETTES];
+    s.objPalettes = [...TITLE_PALETTES, ...TITLE_PALETTES];
+    s.setAttributes(0, TITLE_BG0_ATTRIBUTES);
+    s.setAttributes(1, TITLE_BG1_ATTRIBUTES);
+    holdVBlank();
+    yield; yield;
+    yield* frames(3);
+    // GBPalNormal; rOBP0 = %11100000.
+    s.bgp = 0xe4; s.obp0 = 0xd0;
+    s.obp0 = 0xe0;
+    this.stage = 'bounce';
+    for (const [step, count] of LOGO_BOUNCE) {
+      if (step === -3) { playSFX('intro_crash'); this.request('sfx', 'intro_crash'); }
+      for (let i = 0; i < count; i++) {
+        yield;
+        s.hScy = (s.hScy + step) & 0xff;
       }
     }
+    // .finishedBouncingPokemonLogo
+    this.loadCells(buffer1);
+    this.stage = 'wait';
+    yield* frames(36);
+    playSFX('intro_whoosh'); this.request('sfx', 'intro_whoosh');
+    // TitleScreen_PlacePikaSpeechBubble; the window off-screen (SCREEN_HEIGHT_PX).
+    this.copyBox(assets.bubbleMap, 6, 4, 7, 4);
+    s.tileMap.put(9, 8, 0x64); s.tileMap.put(10, 8, 0x65);
+    s.hWy = 144;
+    this.stage = 'bubble';
+    yield* frames(3);
+    this.stage = 'clip';
+    this.request('clip', 1);
+    yield* playPikachuSoundClip(1);
+    // WaitForSoundToFinish: the clip has cleared the four SFX ids, so this returns at once.
+    while (!isSoundFinished()) yield;
+    stopAllMusic(); this.request('stop', 0xff);
+    playNewMusic('titlescreen'); this.request('music', 'titlescreen');
+    return yield* this.titleLoop();
+  }
 
-    // 2. Render Pikachu tilemap at (4,8) — 12x9
-    for (let row = 0; row < PIKA_H; row++) {
-      for (let col = 0; col < PIKA_W; col++) {
-        drawTileAt(pikaMap[row * PIKA_W + col], PIKA_X + col, PIKA_Y + row);
-      }
-    }
-
-    // 3. Pikachu extra column tiles
-    for (const [col, row, tileId] of PIKA_EXTRAS) {
-      drawTileAt(tileId, col, row);
-    }
-
-    // 4. Render Pika speech bubble tilemap at (6,4) — 7x4
-    for (let row = 0; row < BUBBLE_H; row++) {
-      for (let col = 0; col < BUBBLE_W; col++) {
-        drawTileAt(bubbleMap[row * BUBBLE_W + col], BUBBLE_X + col, BUBBLE_Y + row);
-      }
-    }
-
-    // 5. Bubble extra tiles (tail connecting to Pikachu)
-    for (const [col, row, tileId] of BUBBLE_EXTRAS) {
-      drawTileAt(tileId, col, row);
-    }
-
-    // 6. Copyright text at bottom
-    const gfX = Math.floor((GB_WIDTH - gfTiles.width) / 2);
-    oc.drawImage(gfTiles, 0, 0, gfTiles.width, gfTiles.height, gfX, COPYRIGHT_Y * TILE_SIZE, gfTiles.width, gfTiles.height);
-
-    this.background = offscreen;
-
-    // 7. Pre-render eye overlays for each blink state (open, half-closed, closed)
-    const eyeTilesPerRow = eyeTiles.width / TILE_SIZE;
-    const c0 = colors[0]; // lightest color = transparent for sprites
-
-    for (const offset of [EYE_OPEN, EYE_HALF, EYE_CLOSED]) {
-      const eyeCanvas = document.createElement('canvas');
-      eyeCanvas.width = EYE_REGION_W;
-      eyeCanvas.height = EYE_REGION_H;
-      const ec = eyeCanvas.getContext('2d')!;
-      ec.imageSmoothingEnabled = false;
-
-      for (const [sy, sx, baseTileIdx, xFlip] of EYE_SPRITES) {
-        const tileIdx = baseTileIdx + offset;
-        const srcX = (tileIdx % eyeTilesPerRow) * TILE_SIZE;
-        const srcY = Math.floor(tileIdx / eyeTilesPerRow) * TILE_SIZE;
-
-        const tmp = document.createElement('canvas');
-        tmp.width = TILE_SIZE;
-        tmp.height = TILE_SIZE;
-        const tc = tmp.getContext('2d')!;
-        tc.imageSmoothingEnabled = false;
-
-        if (xFlip) {
-          tc.save();
-          tc.translate(TILE_SIZE, 0);
-          tc.scale(-1, 1);
-        }
-        tc.drawImage(eyeTiles, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
-        if (xFlip) tc.restore();
-
-        // Make lightest color transparent (sprite color 0)
-        const imgData = tc.getImageData(0, 0, TILE_SIZE, TILE_SIZE);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          if (
-            imgData.data[i] === c0[0] &&
-            imgData.data[i + 1] === c0[1] &&
-            imgData.data[i + 2] === c0[2]
-          ) {
-            imgData.data[i + 3] = 0;
-          }
-        }
-        tc.putImageData(imgData, 0, 0);
-
-        // Draw onto eye overlay at relative position
-        ec.drawImage(tmp, sx - EYE_REGION_X, sy - EYE_REGION_Y);
-      }
-
-      this.eyeFrames.set(offset, eyeCanvas);
+  /** .loop and .titleScreenLoop (the release build: PAD_A | PAD_START, no debug menu). */
+  private *titleLoop(): TitleProgram {
+    this.stage = 'loop';
+    // .loop: wTitleScreenScene, wTitleScreenTimer and wTitleScreenResetCounter = 0. wUnusedFlag and
+    // wTitleScreenPikachuCry (read only by the unreferenced .incrementPikachuCry) have no reader.
+    this.scene = 0; this.timer = 0; this.resetCounter = 0;
+    for (;;) {
+      // IncrementResetCounter, before the pass's DelayFrame: `inc de`, then the reset when D reaches $0C.
+      this.resetCounter = (this.resetCounter + 1) & 0xffff;
+      if (this.resetCounter === TITLE_RESET_PASSES) return yield* this.titleScreenReset();
+      yield;
+      // JoypadLowSensitivity → Joypad: hJoyHeld. Its hJoy5 and hFrameCounter writes have no reader before
+      // hFrameCounter (at most 30) runs out (note 115 §2.3).
+      const held = joyHeld();
+      if (held === CLEAR_SAVE_BUTTONS || (held & TITLE_EXIT_BUTTONS) !== 0) return yield* this.goToMainMenu(held);
+      this.titleScreenFunction();
     }
   }
 
-  update(): 'start' | null {
-    this.advanceBlink();
-    if (isPressed('a') || isPressed('start')) {
-      return 'start';
+  /** .go_to_main_menu: clip 11, the white-out, both BG maps blanked, LoadGBPal, then the jump `held` chooses. */
+  private *goToMainMenu(held: number): TitleProgram {
+    const s = this.screen;
+    this.stage = 'exit';
+    this.request('clip', 11);
+    yield* playPikachuSoundClip(11);
+    // GBPalWhiteOutWithDelay3 (home/palettes.asm).
+    this.stage = 'white-out';
+    s.bgp = 0; s.obp0 = 0; s.obp1 = 0;
+    yield* frames(3);
+    // ClearSprites; hWY = 0; hAutoBGTransferEnabled = 1 (already set); ClearScreen.
+    s.oam.fill(0);
+    s.hWy = 0;
+    textBgTransfer.enabled = true;
+    s.tileMap.fill(SPACE_TILE);
+    yield* frames(3);
+    // TitleScreenCopyTileMapToVRAM for vBGMap0, then vBGMap1 (each sets the destination, then Delay3); Delay3.
+    s.bgTransferDest = BG_MAP0;
+    yield* frames(3);
+    s.bgTransferDest = BG_MAP1;
+    yield* frames(3);
+    yield* frames(3);
+    // LoadGBPal. wMapPalOffset is 0: no map the port has is dark (note 115 §2.3), so FadePal4.
+    [s.bgp, s.obp0, s.obp1] = FADE_PAL4;
+    // hJoyHeld is still the loop's value: nothing since has called Joypad.
+    return (held & CLEAR_SAVE_BUTTONS) === CLEAR_SAVE_BUTTONS ? 'clear_save' : 'main_menu';
+  }
+
+  /** .doTitlescreenReset: the song fades out, then `jp Init`. */
+  private *titleScreenReset(): TitleProgram {
+    this.stage = 'reset';
+    // wAudioFadeOutControl = $0C; StopAllMusic queues the stop behind the fade (wLastMusicSoundID is not $FF).
+    fadeOutAndStopMusic(TITLE_RESET_FADE); this.request('fade', TITLE_RESET_FADE);
+    // .audioFadeLoop spins with no DelayFrame; FadeOutAudio clears the control in a VBlank and the spin sees it at once.
+    while (isAudioFadingOut()) yield;
+    return 'reset';
+  }
+
+  /** DoTitleScreenFunction: .CheckTimer reads the timer before incrementing it, then the scene's routine. */
+  private titleScreenFunction(): void {
+    const timer = this.timer;
+    this.timer = (this.timer + 1) & 0xff;
+    if (timer === 0 || timer === 0x80 || timer === 0x90) this.scene = 1;
+    switch (this.scene) {
+      case 0: return;
+      case 1: case 7: this.loadBlinkFrame(4); break;
+      case 4: this.loadBlinkFrame(8); break;
+      case 10: this.loadBlinkFrame(0); break;
+      case 11: this.scene = 0; return;
     }
-    return null;
+    this.scene++;
   }
 
-  render(): void {
-    if (!this.background) return;
-    const ctx = getCtx();
-    const s = getScale();
-
-    // Draw background (logo, pikachu body, bubble, copyright)
-    ctx.drawImage(this.background, 0, 0, GB_WIDTH, GB_HEIGHT, 0, 0, GB_WIDTH * s, GB_HEIGHT * s);
-
-    // Draw eye overlay for current blink state
-    const eyeCanvas = this.eyeFrames.get(this.getEyeState());
-    if (eyeCanvas) {
-      ctx.drawImage(
-        eyeCanvas, 0, 0, EYE_REGION_W, EYE_REGION_H,
-        EYE_REGION_X * s, EYE_REGION_Y * s, EYE_REGION_W * s, EYE_REGION_H * s,
-      );
-    }
+  /** .LoadBlinkFrame: the eight eye entries' tile ids, `and $f3` then `or e`. */
+  private loadBlinkFrame(e: number): void {
+    for (let entry = 0; entry < 8; entry++) this.screen.oam[entry * 4 + 2] = (this.screen.oam[entry * 4 + 2] & 0xf3) | e;
   }
 
-  // Blink timer + scene state machine (matches assembly DoTitleScreenFunction)
-  // Timer increments every frame (wraps as byte). Blink triggers at 0x80, 0x90, 0x00.
-  // Scene 1-3: half-closed, 4-6: closed, 7-9: half-closed, 10: open, 11: reset
-  private advanceBlink(): void {
-    this.blinkTimer = (this.blinkTimer + 1) & 0xFF;
-
-    if (this.blinkScene > 0) {
-      // Animation in progress — advance to next frame
-      this.blinkScene++;
-      if (this.blinkScene > 11) {
-        this.blinkScene = 0;
-      }
-    } else {
-      // Idle — check timer for blink triggers
-      if (
-        this.blinkTimer === 0x80 ||
-        this.blinkTimer === 0x90 ||
-        this.blinkTimer === 0x00
-      ) {
-        this.blinkScene = 1;
-      }
-    }
+  /** The LCD-off copies, in DisplayTitleScreen's order (later copies overwrite earlier ones). */
+  private loadTitleTiles(a: TitleAssets): void {
+    const s = this.screen;
+    // LoadFontTilePatterns (LCD off: FarCopyDataDouble, 1bpp to 2bpp) to vFont = vChars1.
+    s.loadTiles(0x80, a.font, tiles(a.font));
+    // vTitleLogo = vChars1: the copyright logo's five tiles at $60, the 9 at $6E, Game Freak's nine at $65.
+    s.loadTiles(0x80 + 0x60, a.copyright, 5);
+    s.loadTiles(0x80 + 0x6e, a.nine, 1);
+    s.loadTiles(0x80 + 0x65, a.gamefreak, 9);
+    // LoadYellowTitleScreenGFX: the logo to vChars2, its corner to vChars1 $7D, Pikachu's BG to vChars1, the eyes
+    // to vChars1 $70 (objects read them as tiles $F0–$FB).
+    s.loadTiles(0x100, a.logo, POKEMON_LOGO_TILES);
+    s.loadTiles(0x80 + 0x7d, a.corner, tiles(a.corner));
+    s.loadTiles(0x80, a.pikachuBg, tiles(a.pikachuBg));
+    s.loadTiles(0x80 + 0x70, a.pikachuOb, tiles(a.pikachuOb));
   }
 
-  private getEyeState(): number {
-    if (this.blinkScene >= 1 && this.blinkScene <= 3) return EYE_HALF;
-    if (this.blinkScene >= 4 && this.blinkScene <= 6) return EYE_CLOSED;
-    if (this.blinkScene >= 7 && this.blinkScene <= 9) return EYE_HALF;
-    return EYE_OPEN;
+  /** Bank3D_CopyBox: a width × height block of tile ids into wTileMap. */
+  private copyBox(map: Uint8Array, x: number, y: number, width: number, height: number): void {
+    if (map.length !== width * height) throw new Error(`title tilemap is ${map.length} bytes, not ${width} × ${height}`);
+    for (let row = 0; row < height; row++) for (let col = 0; col < width; col++)
+      this.screen.tileMap.put(x + col, y + row, map[row * width + col]);
   }
+
+  /** LoadScreenTilesFromBuffer1/2: a saved wTileMap copied back. */
+  private loadCells(cells: readonly number[]): void {
+    cells.forEach((cell, index) => this.screen.tileMap.set(index, cell));
+  }
+}
+
+function* frames(count: number): Generator<TitleStep, void> {
+  for (let frame = 0; frame < count; frame++) yield;
 }
 
 async function fetchTilemap(url: string): Promise<Uint8Array> {
   const response = await fetch(url);
-  const buffer = await response.arrayBuffer();
-  return new Uint8Array(buffer);
+  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+  return new Uint8Array(await response.arrayBuffer());
 }

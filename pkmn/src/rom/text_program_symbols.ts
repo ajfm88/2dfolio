@@ -13,6 +13,9 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  // Opening checkpoint-07a; engine/movie/oak_speech/clear_save.asm (DoClearSaveDialogue) and data/text/text_3.asm.
+  ["ClearSaveDataText", 0x07, 0x425F, true],
+  ["_ClearSaveDataText", 0x28, 0x40E9, false],
   // V4 checkpoint-01; scripts/DiglettsCaveRoute11.asm and text/DiglettsCaveRoute11.asm.
   ["DiglettsCaveRoute11GamblerText", 0x07, 0x5ECF, true],
   ["_DiglettsCaveRoute11GamblerText", 0x28, 0x5AFE, false],
