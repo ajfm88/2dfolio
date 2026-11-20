@@ -447,6 +447,7 @@ async function init(): Promise<void> {
     pikachuFollower.loadSprite(),
     loadPikachuMovementData(),
     titleScreen.load(),
+    boot.load(),
     fetch('item_names.json').then(r => r.ok ? r.json() : {}).then(names => initItemNames(names)),
     loadGameText(),
     loadTextPrograms(),

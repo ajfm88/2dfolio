@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6731/6731** as of 2026-11-18 (opening checkpoint-08a implemented; default workers). No-ROM **6374 pass / 357 skip**, 279 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6965/6965** as of 2026-11-18 (opening checkpoint-12b2a reviewed; default workers). No-ROM **6597 pass / 368 skip**, 286 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,32 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+Opening checkpoint-12b2a (note 125 §8–§9) adds 45 no-ROM cases in `menus/intro_object_timing.test.ts` and updates the object-engine ownership census. They compare `introObjectWriteTimes` with a native timing fixture: 37 streams, 433,080 stores and 2,719 returns. The old traces and the 111-store kick prefix stay unchanged. D1–D10 each exit 1 with only AssertionError, failing 43, 2, 8, 4, 36, 10, 14, 2, 2 and 4 of 45. Files are restored. Gates: ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files. The bundle is unchanged. Nemotron passed review in `63e85c8e`; independent REVIEW-XFLIP detected two AssertionError failures and was restored. The checkpoint is closed. There is no play-test.
+
+Opening checkpoint-12b1 (note 124) is independently reviewed: 44 new resumable-write cases, 37 native streams / 433080 stores, unchanged complete-update witnesses. Reviewed baseline 6920; no-ROM 6552/368, 285 files. Timing lookahead is checkpoint-12b2a (note 125).
+
+Opening checkpoint-12a (note 123 §8) adds 19 no-ROM cases: 11 in `audio/counted_music.test.ts` and eight in `menus/intro_movie_assets.test.ts`. One existing object-engine census case now names the unused loader. B1–B10 each exit 1 with only AssertionError, failing 1, 10, 7, 7, 3, 1, 3, 1, 1 and 1 of 19. Files are restored. Gates: ROM 6876/6876; no-ROM 6508 pass / 368 skip, 284 files. Bundle `index-DSqCF7ZE.js`, 694,404 bytes. Generated files and snapshots are unchanged. Nemotron passed review in `c8170b3a` (note 123 §9). There is no play-test.
+
+Opening checkpoint-11 (note 122 §8) adds 53 no-ROM cases in `menus/intro_objects.test.ts`: 36 native traces, five sine sweeps and twelve named ownership tests. They compare the pure engine with a frozen cartridge oracle (36 traces, 1,280 sine calls) and do not change generated files or snapshots. A1–A12 each exit 1 with only AssertionError, failing 38, 3, 2, 3, 5, 9, 8, 2, 39, 6, 1 and 5 of 53. Files are restored. Gates: ROM 6857/6857; no-ROM 6489 pass / 368 skip, 282 files. The bundle is unchanged. Nemotron passed review in `4236ac00` (note 122 §9). There is no play-test.
+
+Opening checkpoint-10 (note 121 §8) adds 48 cases in `rom/__tests__/yellow_intro.test.ts` (43 no-ROM, five ROM-gated) and updates two static-export inventory cases. They pin every spawn row, frameset, OAM body, auxiliary table, source PNG and cloud tilemap, both extraction paths, and three rejected pointer or count inputs. D1–D7 on the 58-case ROM target exit 1 with only AssertionError, failing 1, 3, 2, 2, 2, 3 and 2. D8's setup exits 0 after writing 218 files while the stale mirror still has 219 JSON, and the runner detects that count. Files are restored. Gates: ROM 6804/6804; no-ROM 6436 pass / 368 skip, 281 files. The bundle is unchanged. Nemotron passed review in `eef4d92c` (note 121 §9). There is no play-test.
+
+Opening checkpoint-09 (note 120 section 9) adds 18 cases: 13 in `shooting_star.test.ts` for the cartridge's frame
+digest, bars/tiles, OAM/palette waypoints, eight skip cases, hJoyLast reset and LCDC restoration; two in main for the
+channel-5 SFX and a skip; three ROM cases for the OAM tables, waves and tiles. The copyright now lasts 180 frames;
+Boot/main counts become 593 ticks and third 2, and audio lists include shooting_star. W1-W18 with ROM each exit 1
+with AssertionError only, failing exactly 11/29/8/7/6/6/1/1/2/2/3/2/1/1/10/14/6/2 of 116 cases; files restored
+byte for byte. Gates: ROM 6756/6756; no-ROM 6393 pass / 363 skip, 280 files. Grok review and the user's play-test
+are pending.
+
+Opening checkpoint-08b (note 119 §9) adds four `menus/shooting_star.test.ts` cases for the copyright's timing,
+palettes/attributes, Init's cleared tilemap, the 30-tile copy span and every scanout pixel; three ROM-gated cases
+pin the attribute table, palette packet/colours and string/span. Boot and main tests move to the 264-tick table,
+including the two held frames and title's third-1 start; main's battle-boot comment moves too. V1–V14 with ROM
+all exit 1, failing exactly 7/17/16/2/2/3/3/16/5/3/2/1/16/14 of 52 cases: AssertionError only except V14's own
+`Boot.start before load` Error. Files restored byte for byte. ROM 6738/6738; no-ROM 6378 pass / 360 skip,
+280 files. Grok review and the user's play-test are pending.
 
 Opening checkpoint-08a (note 118 section 9) adds three `menus/boot.test.ts` cases for the 66-tick table, LCD state,
 StopAllSounds at tick 10, transfer phase and prior-picture rendering; moves five existing main cases to the boot

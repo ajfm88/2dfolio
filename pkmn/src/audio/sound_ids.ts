@@ -84,6 +84,8 @@ export const SFX_IDS = {
   // only (sfxheaders3.asm); the title selects bank $1f first (PrepareTitleScreen).
   intro_crash: 0xbc,
   intro_whoosh: 0xbd,
+  // Opening checkpoint-09 (note 120): AnimateShootingStar's sound (splash.asm:31), Audio 3 only; Init selects bank $1f.
+  shooting_star: 0xc2,
 } as const;
 
 export function musicIdentity(name: string): SoundIdentity | undefined {
@@ -129,7 +131,7 @@ export const SFX_FILES: Readonly<Record<0x02 | 0x08 | 0x1f | 0x20, Readonly<Reco
     0x94: 'get_key_item', 0x99: 'turn_on_pc_3', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc_3', 0x9c: 'shrink',
     0x9e: 'healing_machine', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
     0xa2: 'ledge', 0xb2: 'purchase', 0xb4: 'collision', 0xb5: 'go_outside', 0xb6: 'save_3',
-    0xbc: 'intro_crash', 0xbd: 'intro_whoosh',
+    0xbc: 'intro_crash', 0xbd: 'intro_whoosh', 0xc2: 'shooting_star',
   },
   0x20: { 0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab' },
 };

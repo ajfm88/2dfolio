@@ -54,8 +54,8 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
   Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
-- **No ROM at runtime.** 218 committed JSON files and their static mirror, 533 PNGs and 3 tilemaps (972 generated
-  files total). Vanilla art, local play, no remote and no push.
+- **No ROM at runtime.** 219 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (980 generated
+  files total). Vanilla art, local play, no remote and no push. The intro movie's JSON, PNGs and tilemaps are extracted and unused until checkpoints 11–14.
 - **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
   V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
   (note 93); V5d the land tile pairs (note 94); V5e species names and nicknames (note 95); V5f the CGB
@@ -66,9 +66,9 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
   their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
   (note 57).
-- **Tests:** ROM **6731/6731**; no-ROM **6374 pass / 357 skip**; 279 files (opening checkpoint-08a closed, 2026-11-18). Bundle `index-DDAo88HP.js`,
-  689,952 bytes.
-- Full handoff: STATUS.md → *In progress* (2026-11-18). 07b is implemented and user-play-tested (note 117 section 11), with Grok review still owed. 08a, the boot path, is implemented (note 118 section 9); next is Grok review, then the user's play-test, before 08b planning.
+- **Tests:** ROM **6965/6965**; no-ROM **6597 pass / 368 skip**; 286 files (opening checkpoint-12b2a reviewed, 2026-11-18). Bundle `index-DSqCF7ZE.js`,
+  694,404 bytes.
+- Full handoff: STATUS.md. **Stopped for the day after checkpoint-12b2a PASS**: Grok `f7bd3f4c`, Nemotron `63e85c8e` (note 125 §8–§9). Unused object-store timing is complete; no play-test is needed. **Next session: 12b2b planning**, not yet started or briefed. The visible movie still has no Boot caller. O-59 stays open; 07b/08b reviews remain owed.
 
 ## Goals
 

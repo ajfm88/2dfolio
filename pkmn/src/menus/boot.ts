@@ -1,12 +1,16 @@
 // Init (home/init.asm) and PlayIntro (engine/movie/intro.asm) as a frame program: the boot path from the splash click,
 // the title's idle reset and the clear-save dialogue to PrepareTitleScreen. Opening checkpoint-08a (note 118). The frame
 // counts are the cartridge's, measured by running its own code (note 118 §2.2, boot-frames.mjs). A yield is one frame:
-// 'dark' when no VBlank is serviced (Init's `di` span, the LCD-off span of Init's tail), plain when one is.
-// PlayShootingStar (the copyright screen and the Game Freak star) and PlayIntroScene (the movie) are checkpoints 08b–14.
-import { stopAllSounds } from '../audio';
+// 'dark' when no VBlank is serviced (Init's `di` span, the LCD-off span of Init's tail), plain when one is; a palette
+// command's two held frames are plain yields that core/vblank_hold.ts holds. PlayShootingStar runs whole: the copyright
+// screen (checkpoint 08b, note 119), the Game Freak logo and the shooting star with the skip (09, note 120);
+// PlayIntroScene (the movie, 10–14) is absent.
+import { setAudioBank, stopAllSounds } from '../audio';
+import { takeHeldFrame } from '../core/vblank_hold';
 import { textBgTransfer } from '../text/bg_transfer';
-import { OpeningScreen } from './opening_screen';
+import { HIDDEN_Y, LCDC_DEFAULT, OAM_BYTES, OpeningScreen, type OpeningImage } from './opening_screen';
 import { presentOpeningScreen } from './opening_screen_render';
+import { loadShootingStarImages, playShootingStar, type ShootingStarImages, type StarJoypad } from './shooting_star';
 
 /** From `jp Init` to the first VBlank after `ei`: DisableLCD's wait, the WRAM, VRAM, HRAM and OAM clears with the LCD
  *  off, the LCD back on, StopAllSounds. 11.16 frames from the frame Init starts in: 10 dark ticks. */
@@ -16,20 +20,31 @@ export const LOAD_SGB_FRAMES = 51;
 /** Init's tail after PlayIntro: DisableLCD's serviced frame, then ClearVram, GBPalNormal, ClearSprites and LCDC_DEFAULT
  *  with the LCD off: 4.02 frames from that VBlank to the first one after EnableLCD, so 3 dark ticks. */
 export const INIT_TAIL_DARK_TICKS = 3;
+/** Init after LoadSGB: wAudioROMBank and wAudioSavedROMBank = BANK(SFX_Shooting_Star), Audio 3. */
+export const STAR_AUDIO_BANK = 0x1f;
 
 type BootStep = 'dark' | void;
 export type BootExit = 'title';
 
 export class Boot {
   private screen = new OpeningScreen();
+  private images: ShootingStarImages | null = null;
   private previous: (() => void) | null = null;
   private program: Generator<BootStep, BootExit> | null = null;
   private dark = false;
+  /** hJoyLast: Init clears it with the rest of HRAM; only the star's CheckForUserInterruption calls Joypad here. */
+  private joy: StarJoypad = { last: 0 };
   private frame = 0;
   private stage = 'idle';
 
+  async load(image?: (url: string) => Promise<OpeningImage>): Promise<void> {
+    this.images = await loadShootingStarImages(image);
+  }
+
   /** Inspection for tests. */
-  get inspection() { return { frame: this.frame, stage: this.stage, dark: this.dark, lcd: this.screen.lcdOn } as const; }
+  get inspection() {
+    return { frame: this.frame, stage: this.stage, dark: this.dark, lcd: this.screen.lcdOn, screen: this.screen } as const;
+  }
 
   /** main, before VBlank's work: the coming frame has no VBlank. */
   get darkFrame(): boolean { return this.dark; }
@@ -38,8 +53,11 @@ export class Boot {
    *  the picture on screen when Init begins: on the CGB, Init's rBGP = 0 changes no colour, so it stays until the LCD
    *  goes off in the next frame's step. */
   start(previous: (() => void) | null = null): void {
-    this.screen = new OpeningScreen(); this.frame = 0; this.previous = previous;
-    this.program = this.run();
+    if (!this.images) throw new Error('Boot.start before load');
+    this.screen = new OpeningScreen(); this.frame = 0; this.previous = previous; this.joy = { last: 0 };
+    // Init's WRAM clear: wTileMap is all $00 until ClearScreen (the BG maps are ' ', ClearBgMap's).
+    this.screen.tileMap.fill(0);
+    this.program = this.run(this.images);
     this.dark = this.program.next().value === 'dark';
   }
 
@@ -47,7 +65,7 @@ export class Boot {
   update(): BootExit | null {
     if (!this.program) return null;
     if (this.dark) this.dark = false;
-    else this.screen.vblank();
+    else if (!takeHeldFrame()) this.screen.vblank();
     this.frame++;
     const step = this.program.next();
     if (!step.done) { if (step.value === 'dark') this.dark = true; return null; }
@@ -61,7 +79,7 @@ export class Boot {
     else presentOpeningScreen(this.screen);
   }
 
-  private *run(): Generator<BootStep, BootExit> {
+  private *run(images: ShootingStarImages): Generator<BootStep, BootExit> {
     // Init: di; rBGP/rOBP0/rOBP1 = 0; DisableLCD; WRAM, VRAM, HRAM, OAM; LCDC_DEFAULT; StopAllSounds; ei.
     // DisableLCD's LY 145 wait crosses the next frame's VBlank with IE masked; the LCD goes off in that frame's step.
     this.stage = 'init';
@@ -72,12 +90,23 @@ export class Boot {
     this.screen.enableLcd(); stopAllSounds();
     // predef LoadSGB.
     this.stage = 'load-sgb';
-    for (let frame = 0; frame < LOAD_SGB_FRAMES; frame++) yield;
-    // PlayIntro: hJoyHeld = 0, hAutoBGTransferEnabled = 1; PlayShootingStar and PlayIntroScene (08b–14); hSCX = 0,
-    // hAutoBGTransferEnabled = 0, ClearSprites, DelayFrame.
-    this.stage = 'play-intro';
+    yield;
+    // The first serviced VBlank's PrepareOAMData, after its OAM DMA: wUpdateSpritesEnabled is 0 (Init's WRAM clear), so
+    // it stores $FF and jumps to HideSprites: every Y at SCREEN_HEIGHT_PX + OAM_Y_OFS. Nothing shows either way.
+    for (let at = 0; at < OAM_BYTES; at += 4) this.screen.oam[at] = HIDDEN_Y;
+    for (let frame = 1; frame < LOAD_SGB_FRAMES; frame++) yield;
+    // The audio bank for SFX_SHOOTING_STAR. hAutoBGTransferDest is vBGMap1 (OpeningScreen's default) and
+    // wUpdateSpritesEnabled $FF (PrepareOAMData returns at once: shadow OAM is the program's).
+    setAudioBank(STAR_AUDIO_BANK);
+    // PlayIntro: hJoyHeld = 0, hAutoBGTransferEnabled = 1; PlayShootingStar.
+    this.stage = 'shooting-star';
     textBgTransfer.enabled = true;
+    yield* playShootingStar(this.screen, images, this.joy);
+    // PlayIntroScene (10–14) is absent; PlayIntro's tail: hSCX = 0, hAutoBGTransferEnabled = 0, ClearSprites, DelayFrame.
+    this.stage = 'play-intro';
     textBgTransfer.enabled = false;
+    this.screen.hScx = 0;
+    this.screen.oam.fill(0);
     yield;
     // Init's tail: DisableLCD (its LY 145 wait crosses one VBlank, serviced with the LCD off), ClearVram, GBPalNormal,
     // ClearSprites, LCDC_DEFAULT.
@@ -87,6 +116,7 @@ export class Boot {
     for (let tick = 1; tick <= INIT_TAIL_DARK_TICKS; tick++) yield 'dark';
     // In the last dark frame's step: LCDC_DEFAULT, then `jp PrepareTitleScreen`.
     this.screen.enableLcd();
+    this.screen.lcdc = LCDC_DEFAULT;
     return 'title';
   }
 }

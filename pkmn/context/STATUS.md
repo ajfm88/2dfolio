@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-18 · **Phase:** the opening and title screen (#69), Part 2 · **Milestones done:** 9 / 36 (R1, V1, A6, A1, V2, A5, V3, V4, V5). **Opening checkpoints 01–06 are closed; 06 (the title's exits, B from the main menu, the idle reset) is reviewed and user-verified (note 115 §10–§11). Checkpoint-07 (the clear-save dialogue) is split in two (DECISIONS #148): 07a, its text as data, is closed (note 116 §10); 07b, the dialogue, is implemented and play-tested by the user (note 117 §9, §11; Grok's review still owed). Checkpoint-08 is split (DECISIONS #150): 08a, the boot path, is closed: reviewed and play-tested (note 118 §10–§11). Next: Claude plans 08b, the copyright screen. Roadmap: note 110 §4, fifteen checkpoints.**
+**Last updated:** 2026-11-18 · **Phase:** opening/title (#69), Part 3 · **Milestones done:** 9/36. 12a closed (Nemotron `c8170b3a`, note 123 §9). **12b1 closed** (Nemotron `e14c82d1`). **12b2a closed** (Grok `f7bd3f4c`; Nemotron `63e85c8e`). **Stopped for today**; next session: 12b2b planning, not started. No play-test for 12b2a. 07b/08b reviews owed.
 
 ---
 
@@ -39,7 +39,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 
 ## Current phase
 
-**Phase R is done** (2026-09-22). **Phase V is done** (2026-11-15): V1–V5 rebuilt the lost 30-map state and restored its fixes, with Phase A slices in between (DECISIONS #29, #35, #55). V5 closed with V5g3 checkpoint-04 (note 109 §10, #139). The opening and title screen (#69) is under way (note 110, #140, #141: checkpoints 01–06 closed; 06, the title's exits, user-verified 2026-11-17, note 115 §11, #147; 07a closed, note 116 §10, #148; 07b play-tested, review owed, note 117 §11, #149; 08a closed, note 118 §10–§11, #150; 08b planning is next); then Pokémon cries, the battle-mechanics audit (#70), A2, A3, A4, then Phase B. Earlier detail is in `HISTORY.md`. **A5 closed** 2026-11-07 (note 87 §27). **V3 closed** 2026-11-08 (note 88 §48). **V4 closed** 2026-11-10 (note89 §21), after all four code reviews and the user's Route 3 and cave play-tests. V5a–V5e are complete and user-verified (note 95 §24). V5f checkpoint-01 is user-verified (note 96 §12, #124). Checkpoint-02 is user-verified (note 97 §11). Checkpoint-03a is closed and user-verified (note 98 §11, #126). Checkpoints 03b and 03c are user-verified (notes 99 §11, 100 §11); **V5f closed 2026-11-15**. V5g1 checkpoint-01 is reviewed (note 101 §9). The battle-prompt checkpoint is user-verified (note 102 §11). V5g1 checkpoint-02 is user-verified (note 103 §11). Checkpoint-03 is user-verified (note 104 §11); V5g1 is complete. V5g2 is user-verified (note 105 §11). V5g3 checkpoint-01 is user-verified (note 106 §11). Checkpoint-02 is reviewed and closed (note 107 §9). Checkpoint-03 is user-verified (note 108 §11). Checkpoint-04, the last, is planned (note 109). Earlier detail is in `HISTORY.md`.
+**Phase R and Phase V are done** (#139). Opening/title (#69, note 110) is in Part 3: 01–06, 07a, 08a, 09–11 and 12a closed; 07b/08b user-checked with reviews owed. **12b1 review passed 2026-11-18 (Nemotron)**: resumable OAM writes via generator (`runWrites`), 37 write streams / 433080 stores match native observer; **12b2a review passed 2026-11-18 (Nemotron)**: CPU store timing lookahead, 37 streams / 433080 stores / 2719 returns match native oracle; 12b2b plans the visible movie. Then 13–15, PCM crackle (#146), cries (#141), battle audit (#70), A2–A4 and Phase B. Earlier detail is in HISTORY.
 
 ## 📍 Where things stand — updated 2026-11-15 (V5 complete, Phase V done)
 
@@ -48,15 +48,15 @@ co-author line. **Never push** — there is no remote and there must never be on
 | Item | State |
 |---|---|
 | Git | Root repo, branch `master`, **no remote**. Baseline commit `9bf2d7d` = docs + vanilla upstream. `.gitattributes`: text LF, `*.png`/`*.tilemap`/`*.gbc` binary. `game/.gitattributes` (the user's, tracked since 2026-10-14, DECISIONS #53) repeats those rules for `game/` and adds linguist hints |
-| Committed generated files | `game/data/` (218 JSON) + `game/static/` (533 PNG, 3 tilemaps, 218 JSON), 972 generated files total. Each slice's additions are in its note and in `HISTORY.md` (the full row, archived 2026-11-17). Regenerate, never hand-edit |
+| Committed generated files | `game/data/` (219 JSON) + `game/static/` (536 PNG, 6 tilemaps, 219 JSON), 980 generated files total. Checkpoint-10 adds unused `yellow_intro.json`, three intro PNGs and three cloud tilemaps. Each slice's additions are in its note and in `HISTORY.md` (the full row, archived 2026-11-17). Regenerate, never hand-edit |
 | Ignored | `*.gbc`/`*.gb` (the ROM), `refs/`, `pkmn-sprites/`, `node_modules/`, `dist/` |
 | `game/LICENSE` | **Removed by the user (2026-09-22): "i want it gone".** Deletion committed with R1c. Don't restore it (DECISIONS #28) |
 | ROM | `game/pokeyellow.gbc`, SHA1 `cc7d0326…4a38e1` (DECISIONS #14) — re-verified 2026-09-22 |
 | `refs/` | All 5 on pinned branches, refreshed **2026-11-17** with `./pull-refs.sh`: `pokeyellow` master `b452f2ab` (unchanged since 2026-11-03; pret's names, R-SYNC note 78), `gen1recomp` dev `53ad85ca` (was `d85a6176`, +39: Android storage, launcher config, CI), `oldamber` main `268d571f` (unchanged), `engine` main `248eaad2` (was `1986dd93`, +6: Zig compatibility, lint), `dmg` main `5e3b785a` (unchanged). No test reads `gen1recomp` or `engine`. `file:line` citations written before note 78 refer to pret `e89ead15` |
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
-| `npm run setup` | 218 JSON → `data/`; static 533 PNG + 3 tilemaps + 218 JSON mirror (972 generated files). A generated-data checkpoint ships a hash manifest and `check-generated.py` (e.g. note 112) |
+| `npm run setup` | 219 JSON → `data/`; static 536 PNG + 6 tilemaps + 219 JSON mirror (980 generated files). A generated-data checkpoint ships a hash manifest and `check-generated.py` (note 121) |
 | Typecheck | Clean |
-| Tests | **Opening checkpoint-08a closed, 2026-11-18 (note 118 §10–§11).** ROM 6731/6731; no-ROM 6374 pass / 357 skip, 279 files (266 passed / 13 skipped), default workers. Bundle `index-DDAo88HP.js`, 689,952 bytes; SHA256 `b5a639271de7a04c5304e524c304647c1955f16b74cf463b26fd65c05c9363c3`. Review gates and U1-U11 match note 118 sections 6.2-6.3; moving `StopAllSounds` to Init's first step failed 3 of 39 and was restored. No generated-file or snapshot change |
+| Tests | **Opening checkpoint-12b2a review passed, 2026-11-18 (Nemotron).** ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files (273 passed / 13 skipped), default workers. Bundle `index-DSqCF7ZE.js`, 694,404 bytes; SHA256 `8aacb584e3d541c75f291b9f6af1ababd2155fb4e36fa308b0b9e0bbb025e5e1`. Native timing oracle: 37 streams / 433080 stores / 2719 returns; 36 old traces + 111-store kick prefix match. D1–D10 at frozen counts (43/2/8/4/36/10/14/2/2/4). Independent mutation REVIEW-XFLIP (omit X-flip branch cost) detected 2 failures, restored. No generated/snapshot/bundle changes. 12b2a closes; queue → 12b2b planning |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -72,7 +72,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 | Route 22 | no NPCs (the rivals are I1). Its gate door leads to the unextracted `Route22Gate` and fails gracefully |
 | Wild data | 57 `wild/*.json` |
 | Music | **46** tracks extract; A5c3e checkpoint-02 removes the invalid `pokefluteinbattle` music entry (the real streams are unused SFX data) |
-| SFX | **41** SFX JSON files; **28** preloaded by the field, with battle sounds loaded by the battle session. The title now plays `intro_crash` and `intro_whoosh`; `shooting_star` waits for checkpoint-09. Every field request is `Audio1_PlaySound`: the current music's bank picks the file through `SFX_FILES` (V5g1; Audio 3's `save_3`, `turn_on_pc_3`, `enter_pc_3`), the header walk sets priority and two SFX play at once on different channels (V5g2), and the call sites match the cartridge on today's maps: door sound by tile, `SFX_LEDGE`, the Town Map's `SFX_TINK`, text sounds through `TEXT_SOUND_IDS` (V5g3). The battle's sounds and text sounds use the same table. Pikachu's PCM player has its first game caller in the title (clip 1, 46 frozen ticks; clips 1 and 11 preloaded); the battle waits for 15. Not yet: Pokémon cries (their own slice after the opening, #141), the field party's `SFX_SWAP` (J2) |
+| SFX | **41** SFX JSON files; **28** preloaded by the field, with battle sounds loaded by the battle session. The title now plays `intro_crash` and `intro_whoosh`; the star plays `shooting_star` (checkpoint-09, reviewed and user-verified, note 120 §11). Every field request is `Audio1_PlaySound`: the current music's bank picks the file through `SFX_FILES` (V5g1; Audio 3's `save_3`, `turn_on_pc_3`, `enter_pc_3`), the header walk sets priority and two SFX play at once on different channels (V5g2), and the call sites match the cartridge on today's maps: door sound by tile, `SFX_LEDGE`, the Town Map's `SFX_TINK`, text sounds through `TEXT_SOUND_IDS` (V5g3). The battle's sounds and text sounds use the same table. Pikachu's PCM player has its first game caller in the title (clip 1, 46 frozen ticks; clips 1 and 11 preloaded); the battle waits for 15. Not yet: Pokémon cries (their own slice after the opening, #141), the field party's `SFX_SWAP` (J2) |
 | Type chart | ✅ **The old PSYCHIC string-key bug is absent.** The live engine compares byte 24 on both sides; Bug 2×, Fighting ½×, Psychic ½× and Ghost 0× are pinned through wild, trainer and party loaders plus the AI by `battle_type_chart_live.test.ts` (V5a checkpoint-01). The ROM chart stays unmodified; #10's fix is withdrawn (#111). |
 | Hidden items | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** DisplayTextID opens, found program begins at T+20 before give, flag on success, longer jingle and full map close; cartridge full-bag waits. Forest Potion/Antidote and Viridian City Potion |
 | Item balls | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** extracted `item` selects `PickUpItem`; box opens at T, give/hide T+20, found program T+23, `get_item1`, full map close after sound and A's release. Saved `hiddenObjects` keeps balls gone and tiles free. Full-bag failure keeps the ball. Route 1's sample preserves the flag-first quirk. Trade kid (A4) and Oak's Aide (A2) still await their handlers |
@@ -159,26 +159,24 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **V5f** (01, 02, 03a–c) ✅ | The CGB palette command's two held frames outside battle and in the shared party screens: START's returns, field medicine, Bill's PC (01); the bag's `ItemMenuLoop` (02); the full party opening (03a), the battle redraw (03b) and StatusScreen (03c) in every host. Codex and Grok implemented, Grok and Nemotron reviewed, **user-verified 2026-11-15**; notes 96–100, DECISIONS #124–#128. ROM 6526/6526; no-ROM 6228 pass / 298 skip, 266 files |
 | **V5g** (g1 01–03, g2, g3 01–04) ✅ | The SFX catch-up: Audio 3's copies and the bank-aware `SFX_FILES` lookup, the battle's text sound on the same table (g1); the field's `Audio1_PlaySound` priority, two SFX at once (g2); the door sound by tile, `SFX_LEDGE`, the Town Map's tinks, the field's text sounds (g3). Codex implemented, Grok reviewed, **user-verified 2026-11-15**; notes 101–109, DECISIONS #129–#139. ROM 6590/6590; no-ROM 6274 pass / 316 skip, 268 files |
 | **V5** ✅ | **Milestone complete 2026-11-15** (#139): V5a–V5g. **Phase V is done** |
-| **Opening 01–05** ✅ | The opening slice's foundations (#140–#144): the title's and the star's three sounds (01), six images (02), Pikachu's four voice clips as data (03), the PCM player and the frozen-frame hold (04, heard by the user 2026-11-17), the title's build as a frame program on the new opening screen model (05, play-tested 2026-11-17). Codex implemented, Grok reviewed; notes 110–114. 06 is closed (note 115 §11); 07a is closed (note 116 §10); 07b is play-tested, review still owed (note 117 §11); 08a is reviewed, play-test next (note 118 §10) |
+| **Opening 01–05** ✅ | The opening slice's foundations (#140–#144): the title's and the star's three sounds (01), six images (02), Pikachu's four voice clips as data (03), the PCM player and the frozen-frame hold (04, heard by the user 2026-11-17), the title's build as a frame program on the new opening screen model (05, play-tested 2026-11-17). Codex implemented, Grok reviewed; notes 110–114. 06–11 are closed (notes 115–122). **12a review passed 2026-11-18 (Nemotron)**: counted audio + unused assets; no play-test. **12b1 review passed 2026-11-18 (Nemotron)**: resumable OAM writes; no play-test. **12b2a review passed 2026-11-18 (Nemotron)**: CPU store timing lookahead; no play-test |
 
 ## In progress
 
-**2026-11-18: opening checkpoint-08a is closed** (note 118, DECISIONS #150). Codex `09ef6e8f` implemented the boot
-path (`menus/boot.ts`: Init's 10 dark ticks, LoadSGB's 51 frames, PlayIntro's and Init's tails; the title 66 ticks
-after the click, the idle reset or the clear-save answer); Grok's review passed (`af16806e`, §10); the user's
-play-test passed (§11). Nothing is in progress: the next slice is **08b planning** (Claude).
-**07b** (`ab2a6fbc`) passed the user's play-test (note 117 §11); Grok's review of it is still owed.
+**2026-11-18 end of day: stopped after opening checkpoint-12b2a PASS** (implementation `f7bd3f4c`; review `63e85c8e`, note 125 §9). Unused `introObjectWriteTimes`
+lookahead. Native oracle: 37 streams / 433080 stores / 2719 returns; 36 old traces + 111-store kick prefix match.
+All gates match note 125 §4: ROM 6965/6965; no-ROM 6597/368; bundle unchanged. D1–D10 at frozen counts
+(43/2/8/4/36/10/14/2/2/4). Independent mutation REVIEW-XFLIP (omit X-flip branch cost) detected 2 AssertionError
+failures, restored. No runtime caller, no generated/snapshot/bundle changes. 12b2a is closed. The user confirms PASS and ends today here. **12b2b planning is queued for next session; no plan, frozen patch or implementation exists yet.**
 
-Baseline: ROM 6731/6731; no-ROM 6374 pass / 357 skip, 279 files; bundle `index-DDAo88HP.js`, 689,952 bytes.
+Baseline: ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files; bundle `index-DSqCF7ZE.js`, 694,404 bytes.
 
 **Restart list:**
 
-1. **Claude: plan 08b**, the copyright screen, from note 118 §2.5 (trace already written; spike, freeze, brief as
-   note 119 under the frozen-patch workflow). It fills the ~1.1 s of white before the title.
-2. **Grok: review 07b** per note 117 §8 (`notes/117-opening-checkpoint-07b/reviewer-prompt.md`). Play-test already done.
-3. **The user: O-59** (a cycle model of the VBlank handler, before checkpoint 15).
-4. Then the star (09) and the movie (10–14) per note 110 §4; after the opening: the PCM crackle fix (#146), Pokémon
-   cries (#141), the battle-mechanics audit (#70), A2, A3, A4, Phase B.
+1. **Checkpoint-12b2b planning** (Codex), per note 110 §4 row 12 — movie clock, skip/exit, scenes 0–5. Do not start until assigned.
+2. **Grok: review 08b** per note 119 §8 and **07b** per note 117 §8 (separate commits; play-tests passed).
+3. **The user: O-59**, audio/VBlank cycle model before checkpoint-15. Placement and open state unchanged.
+4. After visible 12b2b: 13–15; PCM crackle (#146), cries (#141), battle audit (#70), A2–A4, B.
 
 **Workflow (V5):** The assigned planner traces, spikes, captures the spike as `notes/NN-.../NN-spike.diff`, restores the source and
 briefs exact gates, mutations and stops; the implementer applies, verifies, writes the report section and commits;
@@ -186,7 +184,7 @@ The named reviewer reviews (re-runs gates, adds a mutation; a surviving mutation
 the review commit); visible checkpoints end with the user's play-test. Generated-data checkpoints carry a hash
 manifest and checker (note 93 checkpoint-02).
 
-**Tooling notes:** many `game/src` files are CRLF on disk; edit with line-ending-aware scripts or the Edit tool.
+**Tooling notes:** `game/src` files are LF in this checkout (checked 2026-11-18); edit with the Edit tool or byte-exact scripts.
 Long bash heredocs containing quotes can break the shell; write scripts to files instead. Pret's symbol file:
 `git -C refs/pokeyellow show origin/symbols:pokeyellow.sym` into the scratchpad, from bash. PowerShell `>` logs are
 UTF-16 (git shows them as binary; harmless). One 30 s suite timeout; a timeout in a full run is a real failure (#90).
@@ -197,10 +195,11 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **Opening checkpoint-08b planning** (Claude) | — | The copyright screen, from note 118 §2.5; 08a is closed (§11) |
-| 2 | **Opening checkpoint-07b review** (Grok) | — | Note 117 §8; the user's play-test already passed (§11). Still owed |
-| 3 | **PCM crackle fix** (audio fidelity) | — | #146: right after opening checkpoint 15, before cries |
-| 4 | **Battle-mechanics audit — plan** | A | #70, after the opening and cries |
+| 1 | **Opening checkpoint-12b2b planning** (Codex) | — | Note 110 §4 row 12 — movie clock, skip/exit, scenes 0–5. 12b2a closed (`63e85c8e`); next session, not started |
+| 2 | **Opening checkpoint-08b review** (Grok) | — | Note 119 §8; the user checked it on the dev server (§11). Still owed |
+| 3 | **Opening checkpoint-07b review** (Grok) | — | Note 117 §8; the user's play-test already passed (§11). Still owed |
+| 4 | **PCM crackle fix** (audio fidelity) | — | #146: right after opening checkpoint 15, before cries |
+| 5 | **Battle-mechanics audit — plan** | A | #70, after the opening and cries |
 | — | **Attack move animations** (unscheduled) | A | Separate slice (#94), after A5e/A5f; the user places it. A **full pret `move_anim` interpreter** (#94 amended): every attack animation from the cartridge's data/routines. Needs its own plan |
 
 After that: **the opening and title screen** (DECISIONS #69: copyright, Game Freak star, Yellow's intro movie, the title
@@ -283,15 +282,9 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-11-18 (opening checkpoint-08a closed; 08b planning is next) — Claude
+### 2026-11-18 (end-of-day context handoff) — Codex
 
-- Recorded the user's 08a play-test (note 118 §11, DECISIONS #150) after Grok's PASS (`af16806e`). Context files
-  set for handoff: the queue's top is 08b planning (Claude); 07b's review (Grok) is still owed. No code changed.
-
-### 2026-11-18 (opening checkpoint-08a reviewed PASS; the user's play-test is next) — Grok
-
-- PASS on Codex's `09ef6e8f` (note 118 §10). The six-file diff matches `01-spike.diff`. Gates and U1-U11 match §6.2
-  and §6.3. `boot-frames.mjs` matches both JSON records, including `--tail`; two other start offsets keep 51 frames
-  and PlayIntro 3,002 cycles after the last. `StopAllSounds` at Init's first step failed 3 of 39 and was restored.
-  No play-test was run. 08b was not started. 07b's review is still owed.
-
+- User confirms Nemotron's 12b2a PASS (`63e85c8e`, implementation `f7bd3f4c`) and stops for today. All context
+  summaries reconciled; previous logs archived verbatim. Baseline 6965; no-ROM 6597/368, 286 files; bundle unchanged.
+  Next session: plan 12b2b; no brief/code exists yet. No play-test for 12b2a. O-59 and 07b/08b reviews stay open.
+  Documentation-only closeout: no new implementation, test run or independent review claimed.

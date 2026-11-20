@@ -129,6 +129,20 @@ export const TITLE_PIKACHU_BG     = symToOffset(0x3d, 0x4e5b);  // TitlePikachuB
 export const TITLE_PIKACHU_OB     = symToOffset(0x3d, 0x525b);  // TitlePikachuOBGraphics — 2bpp, 12 tiles
 export const GAMEFREAK_LOGO_GFX   = symToOffset(0x04, 0x4d78);  // GameFreakLogoGraphics — 2bpp, 9 tiles
 export const GAMEFREAK_INTRO_GFX  = symToOffset(0x10, 0x5aa6);  // GameFreakIntro — 2bpp, 20 tiles
+
+// Opening checkpoint-10: pret b452f2ab, symbols branch, bank $3e.
+export const YELLOW_INTRO_GRAPHICS_1 = symToOffset(0x3e, 0x635a); // 128 tiles
+export const YELLOW_INTRO_GRAPHICS_2 = symToOffset(0x3e, 0x6b5a); // 256 tiles; Init copies only 255
+export const YELLOW_INTRO_CLOUD_GFX = symToOffset(0x3e, 0x5c2c); // two four-tile frames
+export const YELLOW_INTRO_CLOUD_MAPS = [0x5b6e, 0x5be6, 0x5bf2].map(addr => symToOffset(0x3e, addr));
+export const YELLOW_INTRO_SPAWN_STATES = symToOffset(0x3e, 0x5fda);
+export const YELLOW_INTRO_FRAMESETS = symToOffset(0x3e, 0x60ea);
+export const YELLOW_INTRO_OAM_SETS = symToOffset(0x3e, 0x613d);
+export const YELLOW_INTRO_SPEED_BARS = symToOffset(0x3e, 0x59f0);
+export const YELLOW_INTRO_SEA_WAVE = symToOffset(0x3e, 0x5ed8);
+export const YELLOW_INTRO_SINE_WAVE = symToOffset(0x3e, 0x60aa);
+export const YELLOW_INTRO_THUNDER_PALS = symToOffset(0x3e, 0x5dd6);
+export const YELLOW_INTRO_FADE_PALS = symToOffset(0x3e, 0x5e0a);
 // Opening checkpoint-02 (note 111): the title's and the splash's remaining tiles, from pret's symbols.
 export const COPYRIGHT_LOGO_GFX   = symToOffset(0x04, 0x4c48);  // NintendoCopyrightLogoGraphics — 2bpp, 19 tiles
 export const NINE_TILE            = symToOffset(0x04, 0x4e08);  // NineTile — 2bpp, 1 tile

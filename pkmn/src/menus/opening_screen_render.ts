@@ -1,11 +1,12 @@
-// Pure scanout of the opening's screen model (note 114 §3). LCDC_DEFAULT: BG on $9800, window on $9C00 at WX - 7,
-// BG and window tiles through LCDC_BLOCK21, 8 × 8 objects from $8000. CGB colours: a pixel's index goes through its
+// Pure scanout of the opening's screen model (note 114 §3). rLCDC picks the BG's map ($9800 or $9C00), whether the
+// window shows and its map (LCDC_DEFAULT: BG on $9800, window on $9C00 at WX - 7; the star, note 120: window off, BG on
+// $9C00); BG and window tiles through LCDC_BLOCK21, 8 × 8 objects from $8000. CGB colours: a pixel's index goes through its
 // DMG register (BGP; OBP0 for OBJ palettes 0–3, OBP1 for 4–7, as InitCGBPalettes converts them), then picks a colour
 // of the slot's CGB base palette. The browser wrapper only scales the result.
 import { getCtx, getScale } from '../renderer';
 import { getPaletteColors } from '../renderer/palettes';
 import { dmgShadeMapping } from '../renderer/palette_shades';
-import { bgTileIndex, type OpeningScreen } from './opening_screen';
+import { LCDC_BG_MAP, LCDC_WINDOW, LCDC_WINDOW_MAP, bgTileIndex, type OpeningScreen } from './opening_screen';
 
 const WIDTH = 160;
 const HEIGHT = 144;
@@ -29,11 +30,12 @@ export function renderOpeningScreen(screen: OpeningScreen): Uint8ClampedArray<Ar
   const bgRaw = new Uint8Array(WIDTH);
   const bgOver = new Uint8Array(WIDTH);
   const oam = screen.shownOam;
+  const bgMap = screen.lcdc & LCDC_BG_MAP ? 1 : 0, windowMap = screen.lcdc & LCDC_WINDOW_MAP ? 1 : 0;
   for (let y = 0; y < HEIGHT; y++) {
-    const window = screen.wy <= y && screen.wy < HEIGHT;
+    const window = (screen.lcdc & LCDC_WINDOW) !== 0 && screen.wy <= y && screen.wy < HEIGHT;
     for (let x = 0; x < WIDTH; x++) {
       const inWindow = window && x >= screen.wx - 7;
-      const map = inWindow ? 1 : 0;
+      const map = inWindow ? windowMap : bgMap;
       const tx = inWindow ? x - (screen.wx - 7) : (x + screen.scx) & 0xff;
       const ty = inWindow ? y - screen.wy : (y + screen.scy) & 0xff;
       const cell = (ty >> 3) * 32 + (tx >> 3);

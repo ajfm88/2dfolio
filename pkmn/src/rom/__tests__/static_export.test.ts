@@ -35,9 +35,10 @@ describe('static/ export: asset keys', () => {
   // V5g1 checkpoint-01: audio/sfx/turn_on_pc_3.json, enter_pc_3.json and save_3.json (Audio 3). 207 → 210.
   // V5g3 checkpoint-02: audio/sfx/ledge.json. 210 → 211.
   // Opening checkpoint-01: audio/sfx/intro_crash.json, intro_whoosh.json and shooting_star.json (Audio 3). 211 → 214.
-  it('includes battle transitions, healing_machine, shrink, run, the battle SFX, the eight Pewter maps and the toggle table in the JSON mirror (218 JSON total)', () => {
+  it('includes the movie tables and prior data in the JSON mirror (219 JSON total)', () => {
     // Opening checkpoint-03: audio/pikachu_cries/pikachu_cry_{1,4,11,37}.json. 214 → 218.
-    expect(Object.keys(extracted.jsonData)).toHaveLength(218);
+    expect(Object.keys(extracted.jsonData)).toHaveLength(219);
+    expect(extracted.jsonData).toHaveProperty('yellow_intro.json');
     for (const number of [1, 4, 11, 37]) expect(extracted.jsonData).toHaveProperty(`audio/pikachu_cries/pikachu_cry_${number}.json`);
     for (const name of ['intro_crash', 'intro_whoosh', 'shooting_star']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('audio/sfx/ledge.json');
@@ -57,7 +58,7 @@ describe('static/ export: asset keys', () => {
     expect(extracted.jsonData).toHaveProperty('maps/Route3.json');
   });
 
-  it('extracts 533 images and the 3 title tilemaps, all under gfx/', () => {
+  it('extracts 536 images and the 6 title/movie tilemaps, all under gfx/', () => {
     // Exact counts are a regression guard — update them deliberately when an
     // extractor starts producing more (or fewer) graphics.
     // (518 → 519 in V1a: oldmanb.png; → 520 in A6d: overworld/shadow.png.)
@@ -69,7 +70,8 @@ describe('static/ export: asset keys', () => {
     const binaryKeys = Object.keys(extracted.binaryData).sort();
     // Opening checkpoint-02 adds splash/copyright.png, gamefreak_presents.png, gamefreak_logo.png,
     // falling_star.png, title/nine.png and battle/move_anim_1.png → 533.
-    expect(imageKeys.length).toBe(533);
+    expect(imageKeys.length).toBe(536);
+    for (const name of ['yellow_intro_1', 'yellow_intro_2', 'clouds']) expect(imageKeys).toContain(`/gfx/intro/${name}.png`);
     for (const key of ['splash/copyright', 'splash/gamefreak_presents', 'splash/gamefreak_logo', 'splash/falling_star',
       'title/nine', 'battle/move_anim_1']) expect(imageKeys).toContain(`/gfx/${key}.png`);
     expect(imageKeys).toContain('/gfx/sprites/front/fossilkabutops.png');
@@ -77,6 +79,9 @@ describe('static/ export: asset keys', () => {
     expect(imageKeys).toContain('/gfx/battle/ghost.png');
     expect(imageKeys).toContain('/gfx/font/P.png');
     expect(binaryKeys).toEqual([
+      'gfx/intro/cloud_pair.tilemap',
+      'gfx/intro/clouds.tilemap',
+      'gfx/intro/small_cloud.tilemap',
       'gfx/title/pika_bubble.tilemap',
       'gfx/title/pikachu.tilemap',
       'gfx/title/pokemon_logo.tilemap',

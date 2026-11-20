@@ -1,7 +1,8 @@
 // Opening checkpoints 05 and 06 (notes 114, 115): the title through main's real tick, boot and click, on the REAL
 // audio facade and engines: the LCD-off and held frames, the two Audio 3 sounds, clip 1's frozen span and the music;
 // the exits, B from the main menu, the idle reset and Init; the clear-save dialogue (checkpoint 07b, note 117); the
-// boot path from `jp Init` to PrepareTitleScreen (checkpoint 08a, note 118).
+// boot path from `jp Init` to PrepareTitleScreen (checkpoint 08a, note 118), with the copyright screen (08b, note 119)
+// and the Game Freak logo and shooting star (09, note 120).
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { host, loadMainBattleRig, resetMainBattleRig, documentCalls, tick } from './test/main_battle_rig';
 import * as audio from './audio';
@@ -15,10 +16,11 @@ import type { ClearSaveDialogue } from './menus/clear_save_dialogue';
 import type { Boot } from './menus/boot';
 
 const main = host as typeof host & { titleScreen: TitleScreen; clearSaveDialogue: ClearSaveDialogue; boot: Boot };
-/** Ticks from `jp Init` to the tick whose step runs PrepareTitleScreen (note 118 §2.2). */
-function bootToTitle(): number {
+/** Ticks from `jp Init` to the tick whose step runs PrepareTitleScreen (notes 118, 119 and 120 §2.2), holding
+ *  `pressed` from tick `from` on. */
+function bootToTitle(pressed: ('a' | 'start')[] = [], from = Infinity): number {
   let ticks = 0;
-  while (host.state === 'boot' && ticks < 100) { tick(); ticks++; }
+  while (host.state === 'boot' && ticks < 700) { tick(ticks + 1 >= from ? pressed : []); ticks++; }
   return ticks;
 }
 
@@ -38,7 +40,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   resetMainBattleRig(); audio.stopMusic();
   await documentCalls.click!();
-  expect(bootToTitle()).toBe(66);
+  expect(bootToTitle()).toBe(593);
 });
 afterEach(() => { host.reset(); vi.restoreAllMocks(); });
 
@@ -172,7 +174,7 @@ it('NO: A, 15 frames, then Init in that step: the song stops, the title builds a
   // `jp Init`: the song plays on, frozen with the CPU's `di`, until StopAllSounds in Init's 10th frame.
   expect([host.state, main.boot.inspection.stage]).toEqual(['boot', 'init']);
   expect(engines().music.isPlaying()).toBe(true);
-  expect(bootToTitle()).toBe(66);
+  expect(bootToTitle()).toBe(593);
   expect([host.state, main.titleScreen.inspection.stage, main.titleScreen.inspection.frame]).toEqual(['title_screen', 'build', 0]);
   expect(engines().music.isPlaying()).toBe(false);
   expect([...store.keys()]).toEqual(['p151-s', 'p151-f']);
@@ -188,7 +190,7 @@ it('YES: Down, A, 15 frames, ClearAllSRAMBanks\' 13, then Init; only the save\'s
   while (host.state === 'clear_save' && frames < 60) { tick(); frames++; }
   expect(frames).toBe(15 + 13);
   expect(host.state).toBe('boot');
-  expect(bootToTitle()).toBe(66);
+  expect(bootToTitle()).toBe(593);
   expect([host.state, main.titleScreen.inspection.stage]).toEqual(['title_screen', 'build']);
   expect([...store.keys()]).toEqual(['p151-f']);
 });
@@ -225,6 +227,7 @@ it('B from the main menu rebuilds the title under the playing song; clip 1 freez
 });
 
 it('the click is Init: Random\'s two bytes and the transfer\'s third at once, StopAllSounds in its 10th frame', async () => {
+  // The title starts on third 2; its first transfer moves it to 0, its second to 1.
   tick(); tick();
   host.random.hRandomAdd = 0x5a; host.random.hRandomSub = 0xa5;
   engines().banks.lastMusicSoundId = 0xff;
@@ -236,8 +239,10 @@ it('the click is Init: Random\'s two bytes and the transfer\'s third at once, St
   expect(engines().banks.lastMusicSoundId).toBe(0xff);
   tick();
   expect(engines().banks.lastMusicSoundId).toBe(0);
-  expect(bootToTitle()).toBe(56);
-  expect([engines().banks.audioBank, main.titleScreen.inspection.frame, textBgTransfer.nextPortion]).toEqual([0x1f, 0, 0]);
+  expect(bootToTitle()).toBe(583);
+  // The copyright's and the star's 512 transfers leave the third at 2, as the cartridge's hAutoBGTransferPortion is at
+  // PrepareTitleScreen (star-frames.mjs); the movie (10–14) will move it again.
+  expect([engines().banks.audioBank, main.titleScreen.inspection.frame, textBgTransfer.nextPortion]).toEqual([0x1f, 0, 2]);
 });
 
 it('the idle reset: 3,071 loop frames, the song fades for 104 frames ($0C), then Init and the build again', () => {
@@ -254,23 +259,41 @@ it('the idle reset: 3,071 loop frames, the song fades for 104 frames ($0C), then
   // FadeOutAudio's last VBlank stops the song; the spin sees the control clear and Init runs in the same step.
   expect([host.state, host.random.hRandomAdd, host.random.hRandomSub, textBgTransfer.nextPortion]).toEqual(['boot', 0, 0, 0]);
   expect(engines().music.isPlaying()).toBe(false);
-  expect(bootToTitle()).toBe(66);
+  expect(bootToTitle()).toBe(593);
   expect([host.state, main.titleScreen.inspection.stage, main.titleScreen.inspection.frame]).toEqual(['title_screen', 'build', 0]);
   expect([engines().banks.lastMusicSoundId, engines().banks.fadeControl, engines().banks.audioBank]).toEqual([0, 0, 0x1f]);
 });
 
-it('the boot path, tick by tick: 10 dark, 51 + 2 serviced, 3 dark, then PrepareTitleScreen; white after Init\'s first frame', async () => {
+it('the boot path, tick by tick: 10 dark, 51 serviced, 2 held, 200 serviced, the star\'s dark one, 326 serviced, 3 dark, then PrepareTitleScreen', async () => {
   await documentCalls.click!();
   const random = vi.spyOn(host.random, 'random');
   const update = vi.spyOn(audio, 'tickAudio');
   const read = vi.spyOn(input, 'syncJoypadRead');
   const rows: string[] = [];
-  for (let n = 1; n <= 66; n++) {
+  for (let n = 1; n <= 593; n++) {
     const before = [random.mock.calls.length, update.mock.calls.length, read.mock.calls.length];
     tick();
     const ran = [random.mock.calls.length, update.mock.calls.length, read.mock.calls.length].map((value, i) => value - before[i]);
-    rows.push(ran.every(Boolean) ? 'v' : ran.some(Boolean) ? '?' : 'd');
+    // A held frame (LoadBGMapAttributes) updates the audio only (core/vblank_hold.ts).
+    rows.push(ran.every(Boolean) ? 'v' : ran.join() === '0,1,0' ? 'h' : ran.some(Boolean) ? '?' : 'd');
   }
-  expect(rows.join('')).toBe('d'.repeat(10) + 'v'.repeat(53) + 'd'.repeat(3));
+  expect(rows.join('')).toBe('d'.repeat(10) + 'v'.repeat(51) + 'h'.repeat(2) + 'v'.repeat(200) + 'd' + 'v'.repeat(326) + 'd'.repeat(3));
   expect([host.state, main.titleScreen.inspection.stage, main.titleScreen.inspection.frame]).toEqual(['title_screen', 'build', 0]);
+});
+
+it('SFX_SHOOTING_STAR plays Audio 3\'s body on channel 5 from the star\'s first step (tick 331); Init chose bank $1f after LoadSGB', async () => {
+  await documentCalls.click!();
+  for (let n = 1; n <= 61; n++) tick();
+  expect([engines().banks.audioBank, engines().banks.savedAudioBank]).toEqual([0x1f, 0x1f]);
+  for (let n = 62; n <= 330; n++) tick();
+  expect(audio.channelSoundId(5)).toBe(0);
+  tick();
+  expect(audio.channelSoundId(5)).toBe(0xc2);
+  expect(audio.isSfxPlaying('shooting_star')).toBe(true);
+});
+
+it('A in the star skips it through main\'s real tick: held from tick 343, PrepareTitleScreen in 351, as on the cartridge', async () => {
+  await documentCalls.click!();
+  expect(bootToTitle(['a'], 343)).toBe(351);
+  expect([host.state, main.titleScreen.inspection.stage]).toEqual(['title_screen', 'build']);
 });

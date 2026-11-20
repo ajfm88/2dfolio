@@ -40,7 +40,7 @@ it.each([0,1,2,3])('boot awaits loader %s independently; unlock caches victory t
   expect(preload).not.toHaveBeenCalled();
   if(blocked!==3)return;
   await documentCalls.click!();
-  expect(host.state).toBe('boot'); // `jp Init` (opening checkpoint-08a); the title follows 66 ticks later
+  expect(host.state).toBe('boot'); // `jp Init` (opening checkpoint-08a); the title follows 593 ticks later (09)
   const tracks=['defeatedwildmon','defeatedtrainer','defeatedgymleader'];
   for(const name of tracks){
     expect(preload.mock.calls.map(call=>call[0])).toContain(name);

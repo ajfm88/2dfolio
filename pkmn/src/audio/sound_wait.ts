@@ -13,7 +13,12 @@ export function audioUpdate(music: MusicEngine | null, sfx: SfxEngine | null, fa
 
 /** UpdateMusic6Times calls Audio1_UpdateMusic directly: no FadeOutAudio, alarm, or wall-clock tick. */
 export function updateMusic6Times(music: MusicEngine | null, sfx: SfxEngine | null): void {
-  for (let i = 0; i < 6; i++) {
+  updateMusicCTimes(music, sfx, 6);
+}
+
+/** UpdateMusicCTimes: C is a byte; zero executes 256 passes through the decrement loop. */
+export function updateMusicCTimes(music: MusicEngine | null, sfx: SfxEngine | null, count: number): void {
+  for (let i = 0; i < ((count & 0xff) || 256); i++) {
     music?.tick(sfx ?? undefined);
     sfx?.tick();
   }

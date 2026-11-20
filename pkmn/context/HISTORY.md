@@ -15,6 +15,149 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-18 (opening checkpoint-12b2a implemented) — Grok
+
+- Applied note 125's frozen patch on `42b2d337`. The native timing oracle matched §4. Gates match §4
+  (ROM 6965/6965, no-ROM 6597 / 368, unchanged `index-DSqCF7ZE.js`). D1–D10 match the frozen counts. No generated
+  file or snapshot changed. Nemotron reviews. 12b2b was not started. O-59 stays open. No play-test.
+
+### 2026-11-18 (opening checkpoint-12b2a review passed) — Nemotron
+
+- Re-ran verify-files.py spike (PASS), native timing oracle (PASS 37 streams / 433080 stores / 2719 returns;
+  36 old traces + 111-store kick prefix match), run-gates.py --prefix review- (all gates match §4:
+  typecheck/build exit 0, ROM 6965/6965, no-ROM 6597/368, bundle name/size/hash exact), run-mutations.py
+  --prefix review- (D1–D10 at frozen counts 43/2/8/4/36/10/14/2/2/4). Added independent mutation REVIEW-XFLIP
+  (omit X-flip branch cost in frame store loop): detected 2 AssertionError failures in
+  intro_object_timing.test.ts, restored. Non-equivalent to D2 (Y-flip) — targets X-flip specifically.
+  No runtime caller, no generated/snapshot/bundle changes, bundle identical to 12b1. PASS. 12b2a closes;
+  queue → 12b2b planning.
+
+### 2026-11-18 (opening checkpoint-12b2a planned) — Codex
+
+- Note 125, #157 splits timing lookahead from visible composition. Native 37 streams / 433080 stores / 2719
+  returns match, retaining old traces and movie-prefix check. Spike gates 6965; no-ROM 6597/368; D1–D10 detected.
+  Source restored, patch round-trip verified, assets/snapshots/bundle unchanged. Grok implements; Nemotron reviews.
+  No game caller or play-test; queue after review is 12b2b planning. O-59 and 07b/08b obligations unchanged.
+
+
+### 2026-11-18 (opening checkpoint-12a review passed) — Nemotron
+
+- Re-ran verify-files.py spike (PASS), native counted-audio oracle (PASS 1/5/8/255/256/5 calls for
+  1/5/8/255/0/261; BC/HL preserved, six-wrapper=6), run-gates.py --prefix review- (all gates match §4:
+  typecheck/build exit 0, ROM 6876/6876, no-ROM 6508/368, bundle name/size/hash exact), run-mutations.py
+  --prefix review- (B1–B10 at frozen counts 1/10/7/7/3/1/3/1/1/1). Added independent mutation REVIEW-CMASK
+  (omit byte mask on count, so 261 executes 261 passes): detected 1 AssertionError in counted_music.test.ts,
+  restored. Non-equivalent to B2 (extra pass) — this targets the zero-byte decrement behavior. No runtime
+  imports, no generated/snapshot changes, bundle identical to 12a implementation. PASS. 12a closes; queue →
+  12b planning.
+
+### 2026-11-18 (opening checkpoint-12a planned) — Codex
+
+- Split 12 (#155, note 123): 12a counted audio and unused assets; 12b visible movie with interrupted OAM writes.
+  Native trace and reversed X/Y comment preserved. Spike gates passed (6876; 6508 / 368), B1–B10 detected;
+  patch round-trip verified, source restored. Grok implements §5, Nemotron reviews §6; no 12a play-test.
+  Live baseline stays at 11. Oldest session entries archived verbatim to HISTORY to keep STATUS below 40 KB.
+
+### 2026-11-18 (opening checkpoint-11 implemented) — Grok
+
+- Applied note 122's frozen patch on `eabe989e`. The native oracle matched the fixture. Gates match §4
+  (ROM 6857/6857, no-ROM 6489 / 368, unchanged `index-CF9sQgdB.js`). A1–A12 match the frozen counts. No generated
+  file or snapshot changed. Review is unassigned. 07b and 08b reviews remain owed. No play-test.
+
+### 2026-11-18 (opening checkpoint-11 review passed) — Nemotron
+
+- Re-ran verify-files.py spike (PASS), native oracle (PASS 36 traces, 1280 sine calls),
+  run-gates.py --prefix review- (all gates match §4: typecheck/build exit 0, ROM 6857/6857, no-ROM 6489/368,
+  bundle name/size/hash exact), run-mutations.py --prefix review- (A1–A12 at frozen counts 38/3/2/3/5/9/8/2/39/6/1/5).
+  Added independent mutation REVIEW-YFLIP (omit Y-flip +8 correction in frame decode): detected 2 AssertionError
+  failures, restored. Non-equivalent to A1–A12 (A8 tests X-flip +8; this targets Y-flip). No witness test needed.
+  No runtime imports, no generated/snapshot changes, bundle identical to checkpoint-10. PASS.
+  Checkpoint-11 closes; queue → checkpoint-12 planning.
+
+### 2026-11-18 (opening checkpoint-11 planned) — Codex
+
+- Note 122: pure object engine, native-cartridge oracle, frozen three-file patch and Grok's brief. Spike gates
+  passed (6857; 6489 / 368), A1–A12 detected; all 980 generated files and 24 snapshots unchanged. Patch round-trip,
+  oracle replay and 53 cases passed; source restored. Live baseline stays at 10. Grok implements next; 07b/08b owed.
+  Archived the oldest checkpoint-09 and checkpoint-10 planning entries verbatim to HISTORY (STATUS <40 KB).
+
+### 2026-11-18 (opening checkpoint-10 implemented) — Grok
+
+- Applied note 121's frozen patch on `e5370ac9`. Setup wrote 219 JSON, 536 PNGs and 6 tilemaps. Gates match §4
+  (ROM 6804/6804, no-ROM 6436 / 368, unchanged `index-CF9sQgdB.js`). D1–D8 match the frozen counts. Eight new
+  generated files; 972 prior files unchanged. Review is unassigned. 07b and 08b reviews remain owed. No play-test.
+
+### 2026-11-18 (opening checkpoint-10 review passed) — Nemotron
+
+- Re-ran verify-files.py spike (PASS), check-generated.py (PASS 8 new, 972 unchanged), setup (no generated diff),
+  run-gates.py --prefix review- (all gates match §4: typecheck/build exit 0, ROM 6804/6804, no-ROM 6436/368,
+  bundle name/size/hash exact), run-mutations.py --prefix review- (D1–D8 at frozen counts). Added independent
+  mutation REVIEW-CLOUD-SWAP (swap two cloud frames in graphics extractor): detected 1 AssertionError, restored.
+  No snapshot changes, no runtime imports/preloads, no generated-file drift. Implementation matches frozen patch
+  and ASM; data only, no play-test. PASS. Checkpoint-10 closes; queue → checkpoint-11 planning.
+
+### 2026-11-18 (opening checkpoint-10 planned) — Codex
+
+- Note 121: movie data, frozen patch, exact gates and D1–D8; eight generated additions, all 972 old files unchanged.
+  Sequential spike gates passed (6804; 6436 / 368); patch re-application/setup matched hashes; source restored.
+  Grok implements §5 next; live baseline unchanged; 07b/08b reviews owed. Planning commit contains docs/artifacts only.
+
+### 2026-11-18 (opening checkpoint-09 closed) — Claude
+
+- Recorded the user's play-test pass after Grok's PASS (`043314e5`): note 120 §11, DECISIONS #152 dated, CLAUDE.md,
+  PROJECT.md and the queue. Part 2 is complete; Claude plans 10 (the movie's data) next. 08b and 07b reviews owed.
+
+### 2026-11-18 (opening checkpoint-09 review passed) — Grok
+
+- PASS on `4a316c7a` (note 120 §10). The fourteen-file diff matches `01-spike.diff`. Review gates match §6.2
+  (ROM 6756/6756, no-ROM 6393 / 363, `index-CF9sQgdB.js`). W1–W18 match §6.3. `star-frames.mjs` at 1,200, 15,000,
+  and presses 330/365/400 matches `star-ticks.txt`. The second flash at 9 frames failed 23 of 116 and was
+  restored. Queue: the user's play-test. The 09 planning session entry moved verbatim to HISTORY (STATUS was 40,040 bytes). 08b and 07b reviews still owed. Checkpoint 10 was not started.
+
+
+### 2026-11-18 (opening checkpoint-09 implemented; review next) - Codex
+
+- Applied note 120's frozen fourteen-file patch after base/artifact hashes and ASM checks. Gates match section 6.2
+  (ROM 6756/6756, no-ROM 6393 / 363, exact bundle); W1-W18 match section 6.3. Source reverified byte for byte.
+  Section 9 and impl- logs record the results. Next: Grok reviews 09, then the user's play-test. 08b/07b reviews owed.
+
+### Archived from STATUS's *Current phase* (2026-11-18, Claude)
+
+**A5 closed** 2026-11-07 (note 87 §27). **V3 closed** 2026-11-08 (note 88 §48). **V4 closed** 2026-11-10 (note89 §21), after all four code reviews and the user's Route 3 and cave play-tests. V5a–V5e are complete and user-verified (note 95 §24). V5f checkpoint-01 is user-verified (note 96 §12, #124). Checkpoint-02 is user-verified (note 97 §11). Checkpoint-03a is closed and user-verified (note 98 §11, #126). Checkpoints 03b and 03c are user-verified (notes 99 §11, 100 §11); **V5f closed 2026-11-15**. V5g1 checkpoint-01 is reviewed (note 101 §9). The battle-prompt checkpoint is user-verified (note 102 §11). V5g1 checkpoint-02 is user-verified (note 103 §11). Checkpoint-03 is user-verified (note 104 §11); V5g1 is complete. V5g2 is user-verified (note 105 §11). V5g3 checkpoint-01 is user-verified (note 106 §11). Checkpoint-02 is reviewed and closed (note 107 §9). Checkpoint-03 is user-verified (note 108 §11). Checkpoint-04, the last, is planned (note 109). Earlier detail is in `HISTORY.md`.
+
+### 2026-11-18 (opening checkpoint-09 planned and briefed) — Claude
+
+- Note 120 (DECISIONS #152): traced the rest of `PlayShootingStar` and `AnimateShootingStar`; measured them on the
+  cartridge's code (`star-frames.mjs`: rJOYP, per-frame OAM and palettes, twelve runs); spiked, froze `01-spike.diff`
+  (14 files), re-applied and re-ran: ROM 6756/6756, no-ROM 6393 / 363, 280 files, W1–W18 all killed; the port's frames
+  digest equals the cartridge's in all seven runs. Browser check muted on 5187. Patch reversed; the tree is at base.
+  The user checked 08b on the dev server (note 119 §11). Codex implements 09 next.
+
+### 2026-11-18 (opening checkpoint-08b implemented; review next) — Codex
+
+- Applied note 119's frozen patch after base/artifact hashes and ASM checks. Gates match §6.2 (ROM 6738/6738,
+  no-ROM 6378 / 360, 280 files, exact bundle); V1–V14 match §6.3. Source reverified; §9 and impl- logs record it.
+  No generated-file or snapshot changes. Next: Grok reviews 08b; the user's play-test follows. 07b review still owed.
+
+### 2026-11-18 (opening checkpoint-08b planned and briefed) — Claude
+
+- Note 119 (DECISIONS #151): traced `PlayShootingStar` to its second `ClearScreen`; measured it on the cartridge's code
+  (`copyright-frames.mjs`: STAT and VDMA added to 08a's clock); spiked, froze `01-spike.diff` (10 files, 2 new),
+  re-applied and re-ran: ROM 6738/6738, no-ROM 6378 / 360, 280 files, V1–V14 all killed. Browser check muted on 5186.
+  Patch reversed; the tree is at base. Codex implements next.
+
+### 2026-11-18 (opening checkpoint-08a closed; 08b planning is next) — Claude
+
+- Recorded the user's 08a play-test (note 118 §11, DECISIONS #150) after Grok's PASS (`af16806e`). Context files
+  set for handoff: the queue's top is 08b planning (Claude); 07b's review (Grok) is still owed. No code changed.
+
+### 2026-11-18 (opening checkpoint-08a reviewed PASS; the user's play-test is next) — Grok
+
+- PASS on Codex's `09ef6e8f` (note 118 §10). The six-file diff matches `01-spike.diff`. Gates and U1-U11 match §6.2
+  and §6.3. `boot-frames.mjs` matches both JSON records, including `--tail`; two other start offsets keep 51 frames
+  and PlayIntro 3,002 cycles after the last. `StopAllSounds` at Init's first step failed 3 of 39 and was restored.
+  No play-test was run. 08b was not started. 07b's review is still owed.
+
 ### 2026-11-18 (opening checkpoint-08a implemented; review next) - Codex
 
 - Applied the frozen patch (six files, two new), verified source/artifact hashes, ran all gates and U1-U11.
@@ -8645,3 +8788,27 @@ The *Setup* table's two generated-file rows as they stood before the trim:
 
 | Committed generated files | `game/data/` (218 JSON) + `game/static/` (533 PNG, 3 tilemaps, 218 JSON), 972 generated files total. Opening checkpoint-03 adds four clips and their mirrors; prior generated files are unchanged. Opening checkpoint-02 adds six PNGs; prior generated files are unchanged. Opening checkpoint-01 adds three sounds and their mirrors; all prior generated files are unchanged. V5g3 checkpoint-02 adds `ledge.json` and its static mirror; the checker passes and all prior generated files are unchanged. V5g1 checkpoint-01 adds the three Audio 3 SFX bodies and their mirrors (six files); all prior generated files are unchanged. V5c checkpoint-06 regenerated `game_text.json` and BluesHouse, OaksLab, RedsHouse1F, RedsHouse2F, ViridianSchoolHouse, each with its static mirror (12 files). Checkpoint-01 added `toggleable_objects.json` and its mirror; the runtime has used them since checkpoint-03b. Checkpoint-04 regenerated six map JSON files and their six mirrors for ROM object order and facing. V4 checkpoint-01 added the two Diglett's Cave maps; V3 checkpoint-04 added Route3. Regenerate, never hand-edit |
 | `npm run setup` | 218 JSON → `data/`; static 533 PNG + 3 tilemaps + 218 JSON mirror (972 generated files). Opening checkpoint-03 checker: `PASS 8 generated files`; prior generated files unchanged. Opening checkpoint-02 checker: `PASS 6 generated files`; prior generated files unchanged. Opening checkpoint-01 checker: `PASS 6 generated files`; prior generated files unchanged. V5g3 checkpoint-02 setup writes only `ledge.json` and its mirror; checker: `PASS 2 generated files`; prior generated files unchanged. |
+
+### 2026-11-18 (opening checkpoint-12b1 planned) — Codex
+
+- Note 124, #156: resumable OAM writes before visible 12b2. Native observer matches 37 streams / 433080 stores
+  and the kick's 111-store pause; old complete-update traces unchanged. Spike gates passed (6920; 6552 / 368),
+  C1–C10 detected; 97-case round-trip passed, source restored, bundle/assets/snapshots unchanged. Grok implements,
+  Nemotron reviews; no play-test for this unit. Live baseline stays 12a. Oldest log entries archived verbatim.
+
+### 2026-11-18 (opening checkpoint-12b1 review passed) — Nemotron
+
+- Re-ran verify-files.py spike (PASS), native write oracle (PASS 37 streams / 433080 stores; 36 old traces
+  unchanged; kick 111-store prefix matches movie OAM), run-gates.py --prefix review- (all gates match §4:
+  typecheck/build exit 0, ROM 6920/6920, no-ROM 6552/368, bundle name/size/hash exact), run-mutations.py
+  --prefix review- (C1–C10 at frozen counts 39/40/35/8/5/12/5/1/38/38). Added independent mutation
+  REVIEW-TAIL-SKIP (skip tail zero yields when already zero): detected 37 AssertionError failures in
+  intro_object_writes.test.ts, restored. Non-equivalent to C4 (whole tail cleared early) — targets already-zero
+  bytes specifically. No runtime imports, no generated/snapshot/bundle changes, bundle identical to 12a.
+  PASS. 12b1 closes; queue → 12b2 planning.
+
+### 2026-11-18 (opening checkpoint-12a implemented) — Grok
+
+- Applied note 123's frozen patch on `5881b295`. The native counted-audio probe matched §2.1. Gates match §4
+  (ROM 6876/6876, no-ROM 6508 / 368, `index-DSqCF7ZE.js`). B1–B10 match the frozen counts. No generated file or
+  snapshot changed. Nemotron reviews. 12b was not started. 07b and 08b reviews remain owed. No play-test.

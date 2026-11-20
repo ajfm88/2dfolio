@@ -78,6 +78,8 @@ export const CGB_PALETTES: Record<string, Palette> = {
   LOGO2:     pal(31,31,31, 31,31, 0,  7, 7,25,  0, 0,17),
   // PAL_LOGO1: PalPacket_Titlescreen's second slot (opening checkpoint-05, note 114)
   LOGO1:     pal(31,31,31, 31,31, 0, 31, 0, 0, 31, 0, 0),
+  // PAL_GAMEFREAK: PalPacket_GameFreakIntro's first slot, the copyright screen (opening checkpoint-08b, note 119)
+  GAMEFREAK: pal(31,31,31, 31,19, 0, 19,19, 0,  3, 3, 3),
 };
 
 // Map name → palette name

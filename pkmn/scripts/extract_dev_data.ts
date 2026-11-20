@@ -30,6 +30,7 @@ import { extractBattleTransitions } from '../src/rom/extractors/battle_transitio
 import { extractToggleableObjects } from '../src/rom/extractors/toggleable_objects';
 import { extractBattleAnimations } from '../src/rom/extractors/battle_animations';
 import { extractStatModText } from '../src/rom/extractors/stat_mod_text';
+import { extractYellowIntro } from '../src/rom/extractors/yellow_intro';
 import townMapData from '../src/rom/town_map_data';
 import { extractRom } from '../src/rom/index';
 import { installNodeImageData } from '../src/rom/node_image_data';
@@ -132,6 +133,7 @@ writeJson('toggleable_objects.json', extractToggleableObjects(rom)); count++;
 writeJson('battle_animations.json', extractBattleAnimations(rom)); count++;
 // extractRom() emits the same table. This write is what data/ holds; writeStatic mirrors it.
 writeJson('stat_mod_text.json', extractStatModText(rom)); count++;
+writeJson('yellow_intro.json', extractYellowIntro(rom)); count++;
 writeJson('pokemon.json', extractPokemon(rom, moveNames, itemNames)); count++;
 writeJson('moves.json', extractMoves(rom, moveNames)); count++;
 writeJson('type_chart.json', extractTypeChart(rom)); count++;

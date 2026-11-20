@@ -15,7 +15,7 @@ import { MusicEngine } from './music_engine';
 import { SfxEngine } from './sfx_engine';
 import { EXTRACTED_SFX } from './sfx_names';
 import { acceptsSfxChannel } from './sfx_priority';
-import { audioUpdate, soundFinished, updateMusic6Times as sixPasses } from './sound_wait';
+import { audioUpdate, soundFinished, updateMusic6Times as sixPasses, updateMusicCTimes as countPasses } from './sound_wait';
 import { PlaySound } from './play_sound';
 import { isNoAudioFadeOut } from './audio_flags';
 import { engineHost } from './request_host';
@@ -263,6 +263,9 @@ export function playNewMusic(name: string): Promise<void> {
 export function updateMusic6Times(): void {
   sixPasses(engine, sfxEngine);
 }
+
+/** The movie's LCD-off UpdateMusicCTimes; no VBlank, fade, alarm or wall-clock update. */
+export function updateMusicCTimes(count: number): void { countPasses(engine, sfxEngine, count); }
 
 /** Warm a track without starting playback; a cached playMusic starts before its first await. */
 export async function preloadMusic(name: string): Promise<void> {

@@ -3,7 +3,7 @@
 // scroll and window registers with the copies VBlank latches (home/vblank.asm), shadow OAM and the OAM VBlank's DMA
 // shows, BGP/OBP0/OBP1 and the CGB base palettes the last palette command chose, and the LCD's state. wTileMap and
 // AutoBgMapTransfer's thirds are the shared core (renderer/screen_model.ts). No clock and no browser here.
-import { TileMap } from '../renderer/screen_model';
+import { TileMap, VideoCopyQueue } from '../renderer/screen_model';
 import { textBgTransfer } from '../text/bg_transfer';
 import { SCREEN_WIDTH } from './screen_tiles';
 
@@ -11,6 +11,14 @@ export const VRAM_TILES = 384;
 export const BG_MAP0 = 0x9800;
 export const BG_MAP1 = 0x9c00;
 export const OAM_BYTES = 160;
+/** HideSprites' Y: SCREEN_HEIGHT_PX + OAM_Y_OFS, below the screen. */
+export const HIDDEN_Y = 144 + 16;
+/** LCDC_DEFAULT (constants/hardware.inc): the LCD, the window on $9C00, BLOCK21 tiles, the BG on $9800, objects, BG on. */
+export const LCDC_DEFAULT = 0xe3;
+/** rLCDC's window enable and BG map select bits (B_LCDC_WINDOW 5, B_LCDC_BG_MAP 3), and the window map's (6). */
+export const LCDC_WINDOW = 0x20;
+export const LCDC_BG_MAP = 0x08;
+export const LCDC_WINDOW_MAP = 0x40;
 /** ' ' in the charmap. */
 export const SPACE_TILE = 0x7f;
 
@@ -42,6 +50,8 @@ export class OpeningScreen {
   /** VRAM bank 1: the palette number in bits 0–2, X and Y flip in bits 5–6, BG priority in bit 7. */
   readonly attributes: [Uint8Array, Uint8Array] = [new Uint8Array(1024), new Uint8Array(1024)];
   readonly tileMap = new TileMap<number>(() => SPACE_TILE);
+  /** CopyVideoData's job: hVBlankCopySource, Dest and Size, which VBlankCopy serves 8 tiles at a time. */
+  readonly videoCopy = new VideoCopyQueue('opening CopyVideoData while another copy runs');
   /** hAutoBGTransferDest. Init points it at vBGMap1. */
   bgTransferDest = BG_MAP1;
   /** hSCX, hSCY, hWY: the CPU's copies. VBlank writes them to the registers below. */
@@ -53,6 +63,9 @@ export class OpeningScreen {
   wy = 144;
   /** Init writes rWX = 7 once. */
   wx = 7;
+  /** rLCDC's other bits (the LCD's own bit is `lcdOn`). Init writes LCDC_DEFAULT; PlayShootingStar turns the window off
+   *  and points the BG at vBGMap1. */
+  lcdc = LCDC_DEFAULT;
   bgp = 0;
   obp0 = 0;
   obp1 = 0;
@@ -88,6 +101,11 @@ export class OpeningScreen {
     }
   }
 
+  /** FillMemory over one VRAM tile's 16 bytes: $00 is colour 0 in every pixel, $FF colour 3. */
+  fillTile(vramTile: number, value: 0x00 | 0xff): void {
+    this.vram[vramTile].fill(value === 0xff ? 3 : 0);
+  }
+
   /** A CPU write to $9800–$9FFF. */
   writeBg(address: number, value: number): void {
     if (address < BG_MAP0 || address >= BG_MAP1 + 0x400) throw new Error(`BG map write outside VRAM: $${address.toString(16)}`);
@@ -105,7 +123,7 @@ export class OpeningScreen {
     this.attributes[map].set(rows);
   }
 
-  /** The VBlank half, in home/vblank.asm's order: the scroll and window registers, AutoBgMapTransfer, OAM DMA.
+  /** The VBlank half, in home/vblank.asm's order: the scroll and window registers, AutoBgMapTransfer, VBlankCopy, OAM DMA.
    *  Returns the third transferred, or null while the transfer is disabled. */
   vblank(): number | null {
     this.skipped = false;
@@ -116,6 +134,7 @@ export class OpeningScreen {
     const third = this.tileMap.transferThird((index, cell) =>
       this.writeBg(dest + Math.floor(index / SCREEN_WIDTH) * 32 + index % SCREEN_WIDTH, cell));
     textBgTransfer.tick();
+    this.videoCopy.service();
     this.dmaOam.set(this.oam);
     return third;
   }

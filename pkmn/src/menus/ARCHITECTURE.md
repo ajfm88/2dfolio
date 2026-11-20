@@ -451,15 +451,70 @@ For pixel-precise layout specs from assembly source, see `pokeyellow/ARCHITECTUR
 
 ## Title screen
 
-Opening checkpoint-08a (note 118; implemented 2026-11-18, review pending) inserts `Boot` between `jp Init` and
+Opening checkpoint-08a (note 118; reviewed and user-verified) inserts `Boot` between `jp Init` and
 PrepareTitleScreen. The click, idle reset and both clear-save answers call `cartridgeInit(previous)`: Random's bytes,
 the BG transfer's third and its enable byte clear at once, while `previous` draws the picture in tick T. T+1 through
 T+10 are dark (no Random, joypad read or audio update; audio clock re-based); the LCD goes off in T+1's step and
-comes back with StopAllSounds in T+10's. LoadSGB runs 51 serviced frames (T+11 through T+61). PlayIntro's tail takes
-T+62, DisableLCD's serviced frame is T+63, and Init's tail takes three dark ticks T+64 through T+66. The last step
-starts the title, whose first frame is T+67: 66 ticks (about 1.1 s) of boot time before it. The clear-save song's
-notes hold through the first ten ticks, then stop. The copyright (08b), star (09) and movie (10-14) will run between
-LoadSGB and these tails; they are absent here. The main menu's B still rebuilds the title directly through display().
+comes back with StopAllSounds in T+10's. LoadSGB runs 51 serviced frames (T+11 through T+61). The clear-save song's
+notes hold through the first ten ticks, then stop. The main menu's B rebuilds the title directly through display().
+
+Opening checkpoint-08b (note 119 §9; implemented, review pending) delegates to `menus/shooting_star.ts` for
+PlayShootingStar's copyright screen, between LoadSGB and the star. In T+61's step the transfer
+turns on and SET_PAL_GAME_FREAK_INTRO selects GAMEFREAK/REDMON/VIRIDIAN/BLUEMON, with the same 18×32 attribute block
+on both BG maps. T+62–63 are held; T+64–66 service SendSGBPackets' Delay3, transferring Init's $00 tilemap. In
+T+66's step hWY becomes 0 and ClearScreen fills spaces; T+67–69 service its Delay3. LoadTextBoxTilePatterns copies
+32 tiles to vChars2 tile $60 in T+70–74 (8,8,8,8,0); LoadCopyrightTiles copies 30 in T+75–78 (8,8,8,6).
+OpeningScreen's VideoCopyQueue runs after AutoBgMapTransfer in VBlank, with BG transfer off during these copies.
+The 30-tile span includes the copyright's 19 tiles, GameFreakLogoGraphics' 9, NineTile and TextBoxGraphics' first
+tile: the cartridge's overflow bug leaves $7D as font_extra tile 0, and $7E/$7F as text-box tiles 30/31.
+PlaceString writes rows 7/9/11 from column 2 in T+78's step, followed by BGP $E4. UpdateCGBPal_BGP's late VBlank
+is serviced at T+79 (third 0); the copyright appears with third 1 at T+80. DelayFrames 180 runs T+80–259, with
+no button read. Checkpoint-09 now supplies the second ClearScreen in T+259's step, ending the copyright at
+T+259 (180 visible frames); 08b's extra visible frame and third-1 title start have ended.
+
+Opening checkpoint-09 (note 120 §10–§11; reviewed and user-verified) extends `menus/shooting_star.ts` to the whole
+PlayShootingStar. T+260 through T+262 service ClearScreen's Delay3; T+260's third 1 erases the copyright. T+263
+services DisableLCD's deferred VBlank; its step draws the bars in wTileMap and vBGMap1, fills BG tiles 0/1 white/black,
+and copies GameFreakIntro's 20 tiles (13 presents, 6 logo, 1 blank) to BG $60 and objects $80 with the LCD off.
+T+264 is dark; its step enables the LCD with $CB (window off, BG map 1). T+265 through T+328 show the bars alone for
+64 frames. T+328's step sets OBP0 $F9 and OBP1 $A4; T+329 through T+331 copy the three one-tile star images, then
+T+331's step loads the logo and big-star OAM tables, plays shooting_star ($C2, Audio 3) and makes the first move.
+The logo and big star appear at T+332, Y 4/X 156. The big star moves Y+4/X-4 for 40 frames, through T+371; steps
+T+371, T+381 and T+391 rotate OBP0 right twice ($7E/$9F/$E7) for three ten-frame flashes. T+401's step initializes
+24 small-star sprites and the first wave. T+402 through T+545 run four real waves and two empty waves, each eight
+one-pixel moves with three-frame waits and OBP1 toggles. The +6 count bug and OAM shift are preserved. T+546 through
+T+585 hold for 40 frames unless skipped. T+585's step clears the middle and sprites; T+586 through T+588 service
+Delay3 (no logo from T+586). PlayIntro's tail runs in T+588's step with its DelayFrame at T+589; T+590 services
+Init's deferred VBlank; T+591 through T+593 are dark, then PrepareTitleScreen runs in T+593's step. The title's
+first frame is T+594. There are 577 serviced VBlanks and 512 BG transfers; the title starts on third 2. The movie
+(10-14) will move that phase again.
+
+Opening checkpoint-10 (note 121 §9; data only, independently reviewed) extracts PlayIntroScene's assets and does not load them. `yellow_intro.json` holds 11 spawn rows, 11 framesets (one `$fe` or `$ff` terminator), 20 OAM sets of raw unsigned coordinates and attributes, eight speed-bar triples, the 32-byte sea wave, 32 fixed-point sine words, and the thunderbolt and fade sequences including `$ff`. Graphics are `yellow_intro_1.png` (128 tiles), `yellow_intro_2.png` (256 tiles) and `clouds.png` (two four-tile frames), plus the three raw cloud tilemaps. `InitYellowIntroGFXAndMusic` copies 255 of Graphics2's 256 tiles; the extractor keeps the whole sheet. Checkpoints 12–14 own the scenes.
+
+Opening checkpoint-11 (note 122 §8; unused until checkpoint-12) ports `animated_objects.asm` and Yellow's six callbacks into `menus/intro_objects.ts`. `IntroObjectEngine` keeps ten 16-byte structs and ten scratch bytes. `clear` zeroes engine state and keeps the caller's tables and shadow OAM. `spawn` uses the first index-zero slot, increments the byte counter (a wrap to zero leaves the new slot inactive), copies spawn bytes 0 and 1, skips byte 2, and returns null when the pool is full. `mask` clears only the index. `setFrameset` writes byte 1 and resets duration, duration offset and frame index; the ASM name says callback. `run(oam, scene)` runs the callback before the frame. The caller owns the 160-byte shadow buffer and the OAM cursor. A duration of 4 lasts five updates. `$fe` restarts immediately; `$ff` subtracts two from the frame index and replays the last pair. A flip uses `-(relative + 8)`. Attributes keep flip, priority and palette, then OR 4 when palette bit `$10` is set. Scene 7 skips the attribute store. A full buffer returns at once, before later entries and later callbacks. A normal finish zeroes the unused OAM tail. Callback 3 stores Y as the updated X plus 1, so at X `$f8` the pairs are `$fc/$fd` then `$00/$01`, and Y stays `$55` once X is `$58`. Flying bob uses the old field C, then increments it. `introSine` is the fixed-point half-wave: high byte of amplitude times the 8.8 word, negated on phases 32–63. Nothing in the game calls this module yet.
+
+Opening checkpoint-12a (note 123 §8; unused until checkpoint-12b) adds `loadIntroMovieAssets`. One call fetches `/gfx/intro/yellow_intro_2.png` (objects, all 256 tiles), `/gfx/intro/yellow_intro_1.png` (background, 128 tiles) and `yellow_intro.json`, and awaits `preloadMusic('yellowintro')`. The returned sheets keep their stored sizes; the later copy still uses 255 object tiles. Clouds stay unloaded. There is no cache and no Boot or main caller.
+
+Opening checkpoint-12b1 (note 124, reviewed in `e14c82d1`) adds `runWrites(oam, scene)`. It yields
+after every actual committed store, including individual tail zeroes; scene 7 skips attribute yields. Callback
+and frame state advance once per object update. Resume the same iterator through its final full-buffer carry
+return; the last store precedes cursor update/return. `run()` drains it synchronously. Yields have no time cost
+of their own. Neither writer nor timing iterator has a game caller; Boot still skips PlayIntroScene.
+
+Opening checkpoint-12b2a (note 125 §9; reviewed in `63e85c8e`, no play-test; unused until checkpoint-12b2b) adds `introObjectWriteTimes`. The first `.next()` snapshots the ten structs and never writes objects, scratch, OAM or tables. Each yielded number is the machine cycles from `RunObjectAnimations` entry through the end of that store, including already-zero tail stores. Scene 7 yields no attribute-store time. The generator's return is total cycles and OAM-full carry, including `RET` and excluding the caller's `CALL`. Interrupt, DMA, PPU and audio cost stay outside this module. Prime it before the first `runWrites` resume. Nothing in the game calls it yet.
+
+The skip follows the release build's CheckForUserInterruption: after each DelayFrame in the fall, flashes and
+small stars, A or START newly pressed, or Up+Select+B held exactly, returns carry. SELECT alone and that chord with
+an extra direction do nothing. Boot clears hJoyLast at Init, so a button already held before T+332 skips at that
+first check. A skip seen in tick k reaches PrepareTitleScreen in k+8, omitting the 40-frame hold. Boot also models
+the first serviced VBlank's HideSprites after the OAM DMA, selects Audio 3 after LoadSGB and restores LCDC_DEFAULT
+in Init's tail. The soft reset remains outside this slice.
+
+The oracle is the cartridge's recorded frames digest (note 120 section 2.2): every serviced VBlank's 160 OAM bytes,
+BGP, OBP0, OBP1 and LCDC & $7F. The full run matches SHA256
+`c16f211addf5efaf5cc1682ecb147d1c7ea36681df070aca9dbd82af7094b592`; six skip runs also match their recorded tick,
+serviced count and digest. OBJ palette transfers are modelled for the whole frame; their hardware H-blank changes
+finish above the objects they affect (note 120 section 2.4).
 
 Opening checkpoint-07b (note 117; implemented, review pending) connects the title's Up+Select+B exit to
 `ClearSaveDialogue` on `IntroScreen`. ClearScreen waits frames 1-3; MEWMON is selected in 3's step, frames 4-5 are
@@ -498,4 +553,4 @@ The 3,071st loop frame starts the idle reset: `fadeOutAndStopMusic($0C)`, a spin
 then `'reset'`, which main answers with `cartridgeInit(previous)` (Random's bytes and the transfer clear, then
 the boot path above, including StopAllSounds at tick 10, then `start()`). The main menu's B calls `display()`: the build without `PrepareTitleScreen`, on a fresh model, with
 the song still playing. `update()` returns the exit in the step that jumps and drops the program. Still to come:
-the copyright, star and movie (08b–14); the clips' frozen counts are fixed (O-59).
+the movie (10–14); the clips' frozen counts are fixed (O-59).

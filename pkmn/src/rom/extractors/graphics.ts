@@ -28,6 +28,8 @@ import {
 import { decode1bpp, decode2bpp } from '../tile_decoder';
 import { decompressSprite } from '../sprite_decompress';
 import { readSpritePictureMetadata } from './map_sprite_sets';
+import { YELLOW_INTRO_GRAPHICS_1, YELLOW_INTRO_GRAPHICS_2, YELLOW_INTRO_CLOUD_GFX,
+  YELLOW_INTRO_CLOUD_MAPS } from '../rom_offsets';
 
 /** Tileset info extracted from tileset headers */
 interface TilesetGfxInfo {
@@ -760,6 +762,15 @@ export function extractAllAdditionalGraphics(rom: BinaryReader): {
   images['/gfx/splash/gamefreak_presents.png'] = extractGamefreakPresents(rom);
   images['/gfx/splash/gamefreak_logo.png'] = extractGamefreakIntroLogo(rom);
   images['/gfx/splash/falling_star.png'] = extractFallingStar(rom);
+
+  // Title screen graphics
+  // Movie sheets retain the entire INCBIN; the later caller owns the 255-tile copy limit.
+  images['/gfx/intro/yellow_intro_1.png'] = decode2bpp(rom.readBytes(YELLOW_INTRO_GRAPHICS_1, 128 * 16), 16);
+  images['/gfx/intro/yellow_intro_2.png'] = decode2bpp(rom.readBytes(YELLOW_INTRO_GRAPHICS_2, 256 * 16), 16);
+  images['/gfx/intro/clouds.png'] = decode2bpp(rom.readBytes(YELLOW_INTRO_CLOUD_GFX, 8 * 16), 2);
+  for (const [i, name] of ['clouds', 'cloud_pair', 'small_cloud'].entries()) {
+    binaries[`gfx/intro/${name}.tilemap`] = rom.readBytes(YELLOW_INTRO_CLOUD_MAPS[i], [120, 12, 4][i]);
+  }
 
   // Title screen graphics
   images['/gfx/title/pokemon_logo.png'] = extractPokemonLogo(rom);

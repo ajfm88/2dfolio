@@ -1,0 +1,389 @@
+{
+  "source": "native RunObjectAnimations byte stores; no TypeScript implementation imported",
+  "cases": [
+    {
+      "name": "frameset-0-160-updates",
+      "events": 25600,
+      "writes": "5effaca06b70749f46fec1a784c2edbbcbaca4139de36c9d0bca01b502866880",
+      "completion": "6c7cb3a36388811a5e1ab79986062640492a06d1ec3c3d3ee1f140c8849e041a"
+    },
+    {
+      "name": "frameset-1-160-updates",
+      "events": 25600,
+      "writes": "b8c37f9c908b5f5cf7575f0e8ddaad31be4d2883feba635a5ee526d731ec0639",
+      "completion": "09f2f1b2a6e2f29afc566ccec246df36a262b76562cc29aada7351d0879e9499"
+    },
+    {
+      "name": "frameset-2-160-updates",
+      "events": 25600,
+      "writes": "e5b0993c98348ebb9cf976dda7dfdafce8f81b6c4cae05dd249a5bbf98ffe379",
+      "completion": "289396b896347e6106a8bddb8c98dfbcb6fd1d7a1661abdb6da4457b419661aa"
+    },
+    {
+      "name": "frameset-3-160-updates",
+      "events": 25600,
+      "writes": "071225757ef4a4605ea12cc711458a93212bc56a42729891b9120cae34aa003f",
+      "completion": "a9185006f7f38a00eb7aa22ca8a277dd1cc69d4c15053289a83639da4e3a9c4f"
+    },
+    {
+      "name": "frameset-4-160-updates",
+      "events": 25600,
+      "writes": "8e0de7a27a1ea976f32a93f18e05e15aea76e3092c78bbc5fbe13fa88513e0ca",
+      "completion": "3bbc934d65e117021f4082c0a65cf5a43cc4e9a1d54e6a0638b8384118183221"
+    },
+    {
+      "name": "frameset-5-160-updates",
+      "events": 25600,
+      "writes": "db326a33f87677ad02ead5d938c83417530d88ab6faabc8df378db5f66c6a1d1",
+      "completion": "e681f60d52e20a1c1ba999217ce6ab99118de4bd2cf6086589e57a7fcba2214d"
+    },
+    {
+      "name": "frameset-6-160-updates",
+      "events": 25600,
+      "writes": "f832543dd21f7e5a16c7517fb8f7b5f40d61f8ef41f3c2a372db5d13b34a139f",
+      "completion": "7ad13fc572a0f54b4bf875aa28d9e0288e5814b8e00ce7c8b94cfef20e1b6f1a"
+    },
+    {
+      "name": "frameset-7-160-updates",
+      "events": 25600,
+      "writes": "ad9779c7e1f89ca29277de6b0890d6a71c71f738fb09c079358cd9776ca13509",
+      "completion": "fccc5e4c1d4a1f818fd88ea81c52e15f84bc8a9844517242ce40c465b84105b8"
+    },
+    {
+      "name": "frameset-8-160-updates",
+      "events": 25600,
+      "writes": "65d5b9413d6f551e15a6fca37260c6c2d3d07c03e436d17ad6c1c2ebca3ce1ff",
+      "completion": "4a661c847c9a47e1290589e3013269646f475f8a7ba55dd60d5b6038e917a056"
+    },
+    {
+      "name": "frameset-9-160-updates",
+      "events": 25600,
+      "writes": "56fdb2cc154a2063fe9cf2d40392402cc22c8aa82a71305e66b80e4bd3068a85",
+      "completion": "d8b8c7f24e888f2c7434a200cbee8fe0661330925db615742a79c7d46595707c"
+    },
+    {
+      "name": "frameset-10-160-updates",
+      "events": 25600,
+      "writes": "4577751ab9a40e81d1ba87bbaedd70f584f56e052837a395fea9d300c3cadc6a",
+      "completion": "5db4d891b2ac15ddaf92e51406c507b95115a49bb36f313efe1d726f7d8c86d7"
+    },
+    {
+      "name": "allocation-full-reuse-reset-helper",
+      "events": 1600,
+      "writes": "f1f27c59f2b9275522d7acd10a4b609b97f7f929c1d695ac0f177da56055ada2",
+      "completion": "1ac18ee1fb8f061a915fbda7d8d50e6280cb1a1cc419febb4a513103ff6903da"
+    },
+    {
+      "name": "loaded-index-wrap-makes-slot-inactive",
+      "events": 800,
+      "writes": "f5eac4ee0dba5f02eda20407bf9b10bd924a81a1ea7d86cee27b7a8eac6ab74f",
+      "completion": "b397befb38de48d83a1d9db4ab59d44d9e431eeee8474c7e392f478e1d167504"
+    },
+    {
+      "name": "mask-preserves-record-and-count",
+      "events": 480,
+      "writes": "3857158ccfff936a59dfd967280731ec5d38ae3ad217ba88e96203a611cefef2",
+      "completion": "b97e765843bf64ec7cd3cceec4a0adb7398bde77ee4ed48b13fba10e351450f1"
+    },
+    {
+      "name": "move-left-byte-wrap-and-stop",
+      "events": 11200,
+      "writes": "08b08f2ab3f425df8838f6e6f7fd7f3d294076d52bad61bf289580c6185bf9f7",
+      "completion": "32a0cbf6742d35c327004ee05712f869fa87bca4dd2619633e480b3ba0144335"
+    },
+    {
+      "name": "surf-x-to-y-wrap-and-stop",
+      "events": 4960,
+      "writes": "5a93b6ac710a3aa80a2e11f4d1085d80e57ae61f926df7f9e0fda4cf83b22f52",
+      "completion": "0bf022d958afc3f9a30790b818b54a1f3b36a6fc4809093ec0b22e37b25ad5f6"
+    },
+    {
+      "name": "surf-at-stop-keeps-y",
+      "events": 372,
+      "writes": "3130b7835d1eb537cef006b5adde8b89996fb2fc9ec40ffcb19422bdd56277f2",
+      "completion": "9b7838d42a8fcee5d0352d1830b01f23765ccad938daa6ab330d12e8b2796325"
+    },
+    {
+      "name": "flying-rise-bob-and-phase-wrap",
+      "events": 51200,
+      "writes": "ed77669f018d89dfb089d49e03335098b67402813f78799896a96bc8f74fc2ec",
+      "completion": "e4af8f3b7f9bf9de2e0003e6445a881246e86ffe69686c1390bbe880dae44f6b"
+    },
+    {
+      "name": "flying-y-wrap",
+      "events": 16000,
+      "writes": "f6da20e5d858d39c3fdf2b2baf04d3de9bd1f4b61a99989fc5869d009baf40fd",
+      "completion": "64972d9b069e1f7491847ccb174f6ffd4c12b92bb061a53f508b8373fe8ce93e"
+    },
+    {
+      "name": "speed-eight-bars-and-addition-wrap",
+      "events": 22400,
+      "writes": "8a9a37c5fca5ba3e3614007b329182b21034227e905fc001c498cab7f151b026",
+      "completion": "9f41a28ef44301be4eb8255ae726af81eb34f36556cff9b58cfaf38cf614bffd"
+    },
+    {
+      "name": "oam-full-exactly-forty-stops-later-callbacks",
+      "events": 640,
+      "writes": "5de92587019130dce9f7b0ee7aad32112d81e48cfbae66d5e660670df689d7e2",
+      "completion": "7ee165ce2042318d3da105bdb594b2f76d9e8c607211d8c98ac08847e9e51735"
+    },
+    {
+      "name": "oam-full-truncates-middle-object",
+      "events": 640,
+      "writes": "e57186e8ea277ea1e7a47f6dd1618d46efe76fddbe74e894c81187352f698550",
+      "completion": "058bea6044c474f26f1af3a0fef5420c60c47c52d9629329012757ea12097837"
+    },
+    {
+      "name": "nonzero-oam-offset-prefix-and-tail",
+      "events": 280,
+      "writes": "0deba2d360d168784d83d8eaa06febb7dd5be0203ffedd316c57adcec6ef8585",
+      "completion": "66a0ef3011fb42b2efea6a34db6ec2fa5d23f329364dc1967595ce561eabe63b"
+    },
+    {
+      "name": "last-oam-entry-cutoff",
+      "events": 4,
+      "writes": "07e390b58fb00c55ab5f71a8ac555394fe34c67df9cdc8053fc7559861d9d04a",
+      "completion": "58c710da7a8f18b7650c34644654fb0263ddf022d546e558413ba95ab137a139"
+    },
+    {
+      "name": "scene-seven-retains-prior-attribute-bytes",
+      "events": 496,
+      "writes": "b980bf4489be318a34799ffe9752205c7a28084b96547fc3b8126a66a73c1277",
+      "completion": "8da96700af475d4428fdfe63408c1c1f9dc9ac16e1cd06cc0a45d7e317aafa49"
+    },
+    {
+      "name": "scene-switch-writes-attributes-again",
+      "events": 568,
+      "writes": "731822feac2967fb0b988b381355455ed169d9acc1cf699ea17332a04526af44",
+      "completion": "db3678bb3a845329d9a6eb67a0ade5fe441c1124e26b1c4418eea0ad02144aaf"
+    },
+    {
+      "name": "coordinate-and-tile-offset-wrap",
+      "events": 22400,
+      "writes": "5434c07b1842963349594a3caaf8f65b164a8d6a4bdda50c8b34d38c7b2e99c0",
+      "completion": "a745872b39a336d74424903d1daac94e1d2738badda17f9934371b469d03f33e"
+    },
+    {
+      "name": "duration-offset-overflow",
+      "events": 6400,
+      "writes": "d95fc953c76639ca737eb4fd4a988ebcbb7a6eded9ec57a622c3c5500c719fec",
+      "completion": "da18e3223110e9b9012edaa34f115acb97992f88985ee7936b5de570be58c03b"
+    },
+    {
+      "name": "unused-spawn-byte-is-ignored",
+      "events": 960,
+      "writes": "ce30ede69d1bb7562b89acccb6cc392e44d5a6332d27ca87d21c1209bfa0b55d",
+      "completion": "87e1f67baff149542d6e57b22fac3e14bc04eaaf84f137cb03a1f071a4463f75"
+    },
+    {
+      "name": "frameset-flip-flags-0",
+      "events": 1280,
+      "writes": "d1d8291ebdf7784c7c0ecc4dd205c9fce6dab77d3f94e301ab1a393cd200df2a",
+      "completion": "a4dc870d11e989455222070c599d6e56808271e9a7f960734af92e07fd81901e"
+    },
+    {
+      "name": "frameset-flip-flags-64",
+      "events": 1280,
+      "writes": "6aca12197e2406ab45a9a94cd4a03c7fbf223468c15c9eb2afb897e158ff594a",
+      "completion": "7137a22e7d7a0ea59a6f5d6f430a6ca45d67d7334aff278cafd43493835ab58f"
+    },
+    {
+      "name": "frameset-flip-flags-128",
+      "events": 1280,
+      "writes": "5ff190e4d92efe1866e6e5bc9a44f673e8da89f09d29d4d26409329b587f0bbc",
+      "completion": "197427e6cc17071f7aafad3fc515f44430a42f1d408953c73c0b42b66a8ca9b3"
+    },
+    {
+      "name": "frameset-flip-flags-192",
+      "events": 1280,
+      "writes": "103ccb7dc7eed61f89ce18eb0c12037f324b960d6b4d30aa17fc5729915ee44c",
+      "completion": "cf745fa221d26476021c2688fa1b1e25210ff2d29ba66cac87c700cd7851f167"
+    },
+    {
+      "name": "zero-duration-with-end-holds",
+      "events": 1600,
+      "writes": "68c8cb71f10dd4f7bb1c68bef49a619ae2a3cad8e0adfe58178fba64ad59549e",
+      "completion": "8db4b85d64e2e2175b18acb34cc228c7c58a472e107190b44dac1e8dcd31b22f"
+    },
+    {
+      "name": "delete-command-masks-only-index",
+      "events": 1280,
+      "writes": "ee14ae933979721d5d50b178bb52098386c94f4a7f045813917f8454315f80fc",
+      "completion": "29bf9965328008286873c28f06e7cb6029788d1a38940964fdc6f2db2b80a26a"
+    },
+    {
+      "name": "repeat-command-produces-no-oam",
+      "events": 1920,
+      "writes": "a0e284dfbd6e4c702b06df4fc9b18db73e75b172ffab97c215fd676238a0f03d",
+      "completion": "39beee079837bf03bc1f7a113e1199a024233ca0faea556f0bc59b339db6bd51"
+    },
+    {
+      "name": "actual-kick-eight-bars",
+      "events": 160,
+      "writes": "56f139c18022183074f7e598d90d9ed3181c14096dc7193923ba4890c879b3d9",
+      "completion": "3e9b7f4f7c9987028d2d27abc46cee35c056e4e573d07c84b80d1a135429753c",
+      "partial": [
+        null,
+        "02080500d2200000200000020000000003080500f4300000200000040000000004080500d6400000200000060000000005080500c8500000200000080000000006080500e8600000200000080000000007080500c6700000200000060000000008080500e4800000200000040000000009080500f09000000000ff02000000000000000000000000000000000000000000000000000000000000000000000000",
+        "096c006de48000000000",
+        "1cc26d001cca6e001cd26e201cda6d202ce46d002cec6e002cf46e202cfc6d203cc66d003cce6e003cd66e203cde6d204cb86d004cc06e004cc86e204cd06d205cd86d005ce06e005ce86e205cf06d206cb66d006cbe6e006cc66e206cce6d207cd46d007cdc6e007ce46e207cec6d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "finished": [
+        false,
+        "02080500d2200000200000020000000003080500f4300000200000040000000004080500d6400000200000060000000005080500c8500000200000080000000006080500e8600000200000080000000007080500c6700000200000060000000008080500e4800000200000040000000009080500f290000020000002000000000000000000000000000000000000000000000000000000000000000000000000",
+        "0980006df29000000000",
+        "1cc26d001cca6e001cd26e201cda6d202ce46d002cec6e002cf46e202cfc6d203cc66d003cce6e003cd66e203cde6d204cb86d004cc06e004cc86e204cd06d205cd86d005ce06e005ce86e205cf06d206cb66d006cbe6e006cc66e206cce6d207cd46d007cdc6e007ce46e207cec6d208ce26d008cea6e008cf26e208cfa6d200000000000000000000000000000000000000000000000000000000000000000"
+      ]
+    }
+  ],
+  "kick": {
+    "name": "actual-kick-eight-bars",
+    "ops": [
+      {
+        "op": "registers",
+        "bytes": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 208,
+        "y": 32
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 240,
+        "y": 48
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 208,
+        "y": 64
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 192,
+        "y": 80
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 224,
+        "y": 96
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 192,
+        "y": 112
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 224,
+        "y": 128
+      },
+      {
+        "op": "spawn",
+        "id": 8,
+        "x": 240,
+        "y": 144
+      },
+      {
+        "op": "object",
+        "slot": 0,
+        "bytes": [
+          [
+            11,
+            2
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 1,
+        "bytes": [
+          [
+            11,
+            4
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 2,
+        "bytes": [
+          [
+            11,
+            6
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 3,
+        "bytes": [
+          [
+            11,
+            8
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 4,
+        "bytes": [
+          [
+            11,
+            8
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 5,
+        "bytes": [
+          [
+            11,
+            6
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 6,
+        "bytes": [
+          [
+            11,
+            4
+          ]
+        ]
+      },
+      {
+        "op": "object",
+        "slot": 7,
+        "bytes": [
+          [
+            11,
+            2
+          ]
+        ]
+      },
+      {
+        "op": "run",
+        "repeat": 1,
+        "scene": 3,
+        "reset": true
+      }
+    ],
+    "cut": 111,
+    "movieOam": "1cc26d001cca6e001cd26e201cda6d202ce46d002cec6e002cf46e202cfc6d203cc66d003cce6e003cd66e203cde6d204cb86d004cc06e004cc86e204cd06d205cd86d005ce06e005ce86e205cf06d206cb66d006cbe6e006cc66e206cce6d207cd46d007cdc6e007ce46e207cec6d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

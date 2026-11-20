@@ -5,6 +5,11 @@ Status legend: ✅ done · 🔨 in progress · ⬜ pending
 **Live status is not here.** This file is the map. What is actually done, in
 progress, and next lives in `STATUS.md` — read that first.
 
+**Opening handoff, 2026-11-18 (end of day):** checkpoint-12b2a is closed: implementation `f7bd3f4c`,
+independent review `63e85c8e` (note 125). Stop here. Next session plans **12b2b**, the visible movie clock,
+setup/loop/skip/exit and scenes 0–5; it has no implementation brief yet. This leaves 13–15 and the existing
+post-opening sequence in place. O-59 stays open; separate 07b/08b reviews remain owed. STATUS is authoritative.
+
 ## ⚠ These are milestones, not sessions (2026-09-05)
 
 The user's stated expectation is **one to two years, on the order of 700–800
