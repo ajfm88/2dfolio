@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 6965/6965** as of 2026-11-18 (opening checkpoint-12b2a reviewed; default workers). No-ROM **6597 pass / 368 skip**, 286 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7414/7414** as of 2026-11-19 (opening checkpoint-12b2c2-1 review PASS, Grok `64afc3ce`; default workers). No-ROM **7046 pass / 368 skip**, 290 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,23 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+Opening checkpoint-12b2c2-1 (Sonnet `d09c218f`, Grok PASS `64afc3ce`, note129 review) adds **344 no-ROM cases**
+in `menus/intro_display_clock.test.ts`, backed by a byte-copied independent CPU/LCD capture. Full baseline:
+ROM7414/7414; no-ROM7046 pass/368 skip; 290 files; unchanged bundle. Fresh reviewer execution killed all48
+faults at the implementation's exact assertion counts; independent acknowledge-both-bits failed1 and was
+restored. The clock is unused and has no play-test; CPU control/dispatch remain future work.
+
+**Mutation-run handoff:** bound synchronous test loops; vitest's per-test timeout cannot interrupt an infinite
+synchronous loop. Keep the runner's90-second child bound and process-tree cleanup; timeout/crash is not a kill.
+Review independently with a byte-copied runner in a sibling review directory/fresh cache and separate logs;
+the committed implementation caches are not fresh execution. Preserve source/test/fault hashes and restore
+bytes before clean/full gates. Do not overlap mutation runs with other verification. Unit1's corrected runner
+and raw68-second fresh census are in `notes/129-opening-checkpoint-12b2c2-1-review/`.
+
+Opening checkpoint-12b2c1 (note 127 §9) adds 45 no-ROM cases: 28 in `audio/intro_music_timing.test.ts` and 17 in `menus/intro_movie_clock.test.ts`. The music helper forecasts `Audio1_UpdateMusic` for the movie's three-channel song and advances the real engine once. The clock takes an explicit 144-line edge profile and charges no handler time. Native evidence is 1309 song/idle updates, 16 vibrato branches, and six histories / 1748 object calls / 475 slices. A1–A7 fail 25, 25, 3, 2, 2, 12 and 6 of 45. C1–C9 fail 2, 10, 1, 2, 1, 1, 1, 7 and 1 of 45. Each exits 1 with only AssertionError. Files are restored. Gates: ROM 7070/7070; no-ROM 6702 pass / 368 skip, 289 files. The bundle is unchanged. Nemotron review PASS 961e1dec closes c1. There is no play-test. Parent 12b2c stays open.
+
+Opening checkpoint-12b2b (note 126 §8) adds 60 no-ROM cases in `menus/intro_object_cpu_timing.test.ts` and names the unused instruction-cost module in the object-engine ownership census. Each step is one native instruction: its machine-cycle cost, and a store mark only on a real shadow-OAM byte store. The native fixture checks 37 streams, 5,946,600 instructions, 433,080 stores and 2,719 returns, and the same replay matches `introObjectWriteTimes`. I1–I9 each exit 1 with only AssertionError, failing 41, 37, 57, 4, 1, 34, 34, 4 and 3 of 60. Files are restored. Gates: ROM 7025/7025; no-ROM 6657 pass / 368 skip, 287 files. The bundle is unchanged. Nemotron PASS 43b56cb6 closes this checkpoint (note 126 §9). There is no play-test.
 
 Opening checkpoint-12b2a (note 125 §8–§9) adds 45 no-ROM cases in `menus/intro_object_timing.test.ts` and updates the object-engine ownership census. They compare `introObjectWriteTimes` with a native timing fixture: 37 streams, 433,080 stores and 2,719 returns. The old traces and the 111-store kick prefix stay unchanged. D1–D10 each exit 1 with only AssertionError, failing 43, 2, 8, 4, 36, 10, 14, 2, 2 and 4 of 45. Files are restored. Gates: ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files. The bundle is unchanged. Nemotron passed review in `63e85c8e`; independent REVIEW-XFLIP detected two AssertionError failures and was restored. The checkpoint is closed. There is no play-test.
 
@@ -1181,6 +1198,8 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+**Opening checkpoint-12b2c2-1 (note 129)** adds `menus/intro_display_clock.test.ts` (344 cases, no-ROM): the unused display clock against a byte-copied SameBoy capture (`__fixtures__/intro_display_clock_reference.json`; 7 dot-by-dot timelines, off/on rows, 1354 CPU STAT stores, exact-dot STAT edges, 180 fuzz profile/acceptance cases, register and DMA changes, interface behaviour). The tests read `notes/128-.../dot-calibration.json` too. Totals: ROM 7414/7414; no-ROM 7046 pass / 368 skip; 290 files. Bundle unchanged. 48 mutations: `notes/129-opening-checkpoint-12b2c2-1/run-mutations.py` (bounded, resumable). Review PASS re-ran them from a byte copy with a fresh cache; counts matched. Its source SHA256 `4139968e…7c27`.
 
 **Overworld RNG slice (#91)** adds nine: encounter Add/Sub boundary; four owner/census
 cases; main VBlank carry/battle exclusion; gift DV order/inherited borrow; NPC carries;

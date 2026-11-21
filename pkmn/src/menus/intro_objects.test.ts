@@ -145,7 +145,7 @@ describe('Intro object engine: ownership and named cartridge quirks', () => {
           /IntroObjectEngine|intro_objects|yellow_intro\.json/.test(readFileSync(path, 'utf8'))) holding.push(relative(SRC, path).replace(/\\/g, '/'));
       }
     };
-    // 12a owns the unused JSON loader; 12b2a's unused timing model imports the field layout and table type.
-    walk(SRC); expect(holding.sort()).toEqual(['menus/intro_movie_assets.ts', 'menus/intro_object_timing.ts', 'menus/intro_objects.ts']);
+    // 12a owns the unused JSON loader; both unused timing helpers import the field layout and table type.
+    walk(SRC); expect(holding.sort()).toEqual(['menus/intro_movie_assets.ts', 'menus/intro_object_cpu_timing.ts', 'menus/intro_object_timing.ts', 'menus/intro_objects.ts']);
   });
 });

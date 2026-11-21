@@ -66,9 +66,14 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
   their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
   (note 57).
-- **Tests:** ROM **6965/6965**; no-ROM **6597 pass / 368 skip**; 286 files (opening checkpoint-12b2a reviewed, 2026-11-18). Bundle `index-DSqCF7ZE.js`,
+- **Tests:** ROM **7414/7414**; no-ROM **7046 pass / 368 skip**; 290 files (opening checkpoint-12b2c2-1 review PASS, 2026-11-19). Bundle `index-DSqCF7ZE.js`,
   694,404 bytes.
-- Full handoff: STATUS.md. **Stopped for the day after checkpoint-12b2a PASS**: Grok `f7bd3f4c`, Nemotron `63e85c8e` (note 125 §8–§9). Unused object-store timing is complete; no play-test is needed. **Next session: 12b2b planning**, not yet started or briefed. The visible movie still has no Boot caller. O-59 stays open; 07b/08b reviews remain owed.
+- Full handoff: STATUS.md. **12b2c1 closed** (Nemotron `961e1dec`): unused movie audio timing and explicit-profile
+  clock. **12b2c2-1 closed**: Sonnet implementation `d09c218f`, Grok independent PASS `64afc3ce`, note129 review.
+  Its dot-based display clock remains unused. Today ends with context closeout; tomorrow's fresh agent starts
+  **12b2c2-2 planning only** (source-branch budgets, SFX194 setup, CPU control and dispatch). Units3/4 retain
+  visible scenes/Boot and the combined audit/play-test. Parents12b2c2/12b2c stay open; broader O-59 before15
+  and the separate 07b/08b reviews remain owed. Review corrections and limits are in STATUS and menus ARCHITECTURE.
 
 ## Goals
 

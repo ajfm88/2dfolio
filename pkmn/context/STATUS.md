@@ -12,7 +12,11 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-18 · **Phase:** opening/title (#69), Part 3 · **Milestones done:** 9/36. 12a closed (Nemotron `c8170b3a`, note 123 §9). **12b1 closed** (Nemotron `e14c82d1`). **12b2a closed** (Grok `f7bd3f4c`; Nemotron `63e85c8e`). **Stopped for today**; next session: 12b2b planning, not started. No play-test for 12b2a. 07b/08b reviews owed.
+**Last updated:** 2026-11-19 · **Phase:** opening/title (#69), Part 3 · **Milestones done:** 9/36.
+**12b2b closed** (`43b56cb6`). **12b2c1 review PASS 2026-11-19 (Nemotron)**: movie audio 1309 updates and clock 6 histories match native oracles; no production caller. Parent 12b2c stays open. O-59 coverage and 07b/08b reviews remain owed.
+**12b2c2-1 closed:** Sonnet `d09c218f`, Grok PASS `64afc3ce`; unused `IntroDisplayClock`. ROM7414/7414,
+no-ROM7046/368, 290 files; bundle unchanged. **Today ends with context closeout. Tomorrow: fresh-agent
+12b2c2-2 planning only.** Parents12b2c2/12b2c remain open; review corrections below are binding dependencies.
 
 ---
 
@@ -39,7 +43,13 @@ co-author line. **Never push** — there is no remote and there must never be on
 
 ## Current phase
 
-**Phase R and Phase V are done** (#139). Opening/title (#69, note 110) is in Part 3: 01–06, 07a, 08a, 09–11 and 12a closed; 07b/08b user-checked with reviews owed. **12b1 review passed 2026-11-18 (Nemotron)**: resumable OAM writes via generator (`runWrites`), 37 write streams / 433080 stores match native observer; **12b2a review passed 2026-11-18 (Nemotron)**: CPU store timing lookahead, 37 streams / 433080 stores / 2719 returns match native oracle; 12b2b plans the visible movie. Then 13–15, PCM crackle (#146), cries (#141), battle audit (#70), A2–A4 and Phase B. Earlier detail is in HISTORY.
+**Phase R and Phase V are done** (#139). Opening/title (#69, note 110), Part 3: 12b2b closed by Nemotron
+`43b56cb6` (note 126). The user chooses option 1: include audio timing now and use it in the clock (#159).
+**12b2c1 closed** (`961e1dec`), and **12b2c2-1 closed** (Grok `64afc3ce`): movie music cost, explicit-profile
+clock and dot display-policy helpers remain unused. Approved split: **unit2 planning next session** (native
+handler/foreground budgets, SFX194 setup, CPU control/dispatch); unit3 visible setup/loop/skip/exit/scenes0–5/
+Boot/main; unit4 expanded combined audit. No unit2 work today. Then13–15; broader O-59/clip timing before15,
+PCM crackle afterward, cries, battle audit, A2–A4 and Phase B. Parents12b2c2/12b2c and07b/08b reviews stay open.
 
 ## 📍 Where things stand — updated 2026-11-15 (V5 complete, Phase V done)
 
@@ -56,7 +66,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → *Engine reference*, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
 | `npm run setup` | 219 JSON → `data/`; static 536 PNG + 6 tilemaps + 219 JSON mirror (980 generated files). A generated-data checkpoint ships a hash manifest and `check-generated.py` (note 121) |
 | Typecheck | Clean |
-| Tests | **Opening checkpoint-12b2a review passed, 2026-11-18 (Nemotron).** ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files (273 passed / 13 skipped), default workers. Bundle `index-DSqCF7ZE.js`, 694,404 bytes; SHA256 `8aacb584e3d541c75f291b9f6af1ababd2155fb4e36fa308b0b9e0bbb025e5e1`. Native timing oracle: 37 streams / 433080 stores / 2719 returns; 36 old traces + 111-store kick prefix match. D1–D10 at frozen counts (43/2/8/4/36/10/14/2/2/4). Independent mutation REVIEW-XFLIP (omit X-flip branch cost) detected 2 failures, restored. No generated/snapshot/bundle changes. 12b2a closes; queue → 12b2b planning |
+| Tests | **Opening checkpoint-12b2c2-1 review PASS 2026-11-19 (Grok).** ROM 7414/7414; no-ROM 7046 pass / 368 skip, 290 files (277 passed / 13 skipped), default workers (+344 tests, +1 file over 7070 / 6702 / 289). Bundle `index-DSqCF7ZE.js`, 694,404 bytes, unchanged; SHA256 `8aacb584e3d541c75f291b9f6af1ababd2155fb4e36fa308b0b9e0bbb025e5e1`. `intro_display_clock.ts` SHA256 `4139968e14da66100427fdc2481abf9bd4d9648a2cdbf2e14e4f42cc1fb37c27`. Fresh review census 48/48 assertion kills; independent both-bits clear killed 1. c1 oracles unchanged (1309 updates; 6 histories / 1748 calls / 475 slices). No generated/snapshot/bundle changes |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -159,24 +169,44 @@ to `HISTORY.md` → *Archived STATUS sections* on 2026-10-16. Plans and reviews 
 | **V5f** (01, 02, 03a–c) ✅ | The CGB palette command's two held frames outside battle and in the shared party screens: START's returns, field medicine, Bill's PC (01); the bag's `ItemMenuLoop` (02); the full party opening (03a), the battle redraw (03b) and StatusScreen (03c) in every host. Codex and Grok implemented, Grok and Nemotron reviewed, **user-verified 2026-11-15**; notes 96–100, DECISIONS #124–#128. ROM 6526/6526; no-ROM 6228 pass / 298 skip, 266 files |
 | **V5g** (g1 01–03, g2, g3 01–04) ✅ | The SFX catch-up: Audio 3's copies and the bank-aware `SFX_FILES` lookup, the battle's text sound on the same table (g1); the field's `Audio1_PlaySound` priority, two SFX at once (g2); the door sound by tile, `SFX_LEDGE`, the Town Map's tinks, the field's text sounds (g3). Codex implemented, Grok reviewed, **user-verified 2026-11-15**; notes 101–109, DECISIONS #129–#139. ROM 6590/6590; no-ROM 6274 pass / 316 skip, 268 files |
 | **V5** ✅ | **Milestone complete 2026-11-15** (#139): V5a–V5g. **Phase V is done** |
-| **Opening 01–05** ✅ | The opening slice's foundations (#140–#144): the title's and the star's three sounds (01), six images (02), Pikachu's four voice clips as data (03), the PCM player and the frozen-frame hold (04, heard by the user 2026-11-17), the title's build as a frame program on the new opening screen model (05, play-tested 2026-11-17). Codex implemented, Grok reviewed; notes 110–114. 06–11 are closed (notes 115–122). **12a review passed 2026-11-18 (Nemotron)**: counted audio + unused assets; no play-test. **12b1 review passed 2026-11-18 (Nemotron)**: resumable OAM writes; no play-test. **12b2a review passed 2026-11-18 (Nemotron)**: CPU store timing lookahead; no play-test |
+| **Opening 01–05** ✅ | The opening slice's foundations (#140–#144): the title's and the star's three sounds (01), six images (02), Pikachu's four voice clips as data (03), the PCM player and the frozen-frame hold (04, heard by the user 2026-11-17), the title's build as a frame program on the new opening screen model (05, play-tested 2026-11-17). Codex implemented, Grok reviewed; notes 110–114. 06–11 are closed (notes 115–122). **12a review passed 2026-11-18 (Nemotron)**: counted audio + unused assets; no play-test. **12b1 review passed 2026-11-18 (Nemotron)**: resumable OAM writes; no play-test. **12b2a review passed 2026-11-18 (Nemotron)**: CPU store timing lookahead; no play-test. **12b2b review passed 2026-11-19 (Nemotron)**: instruction-boundary timing; no play-test. **12b2c1 review PASS 2026-11-19 (Nemotron)**: movie audio timing (1309 updates) and clock (6 histories); no play-test. Parent 12b2c stays open |
 
 ## In progress
 
-**2026-11-18 end of day: stopped after opening checkpoint-12b2a PASS** (implementation `f7bd3f4c`; review `63e85c8e`, note 125 §9). Unused `introObjectWriteTimes`
-lookahead. Native oracle: 37 streams / 433080 stores / 2719 returns; 36 old traces + 111-store kick prefix match.
-All gates match note 125 §4: ROM 6965/6965; no-ROM 6597/368; bundle unchanged. D1–D10 at frozen counts
-(43/2/8/4/36/10/14/2/2/4). Independent mutation REVIEW-XFLIP (omit X-flip branch cost) detected 2 AssertionError
-failures, restored. No runtime caller, no generated/snapshot/bundle changes. 12b2a is closed. The user confirms PASS and ends today here. **12b2b planning is queued for next session; no plan, frozen patch or implementation exists yet.**
+**2026-11-19: session finished after review/context reconciliation; no active implementation.** Unit1 review
+PASS `64afc3ce` (Grok), implementation `d09c218f` (Sonnet), review handoff `217eba2a`, split `d8b6a4d4`.
+Authoritative report: `notes/129-opening-checkpoint-12b2c2-1-review/report.md`; raw fresh gates/mutations beside it.
+Unused clock, 344 new tests; fresh48/48 assertion kills and independent acknowledge-both-IF-bits fault failed1,
+all restored. Parents and user play-test remain open; no play-test needed for this unused unit.
 
-Baseline: ROM 6965/6965; no-ROM 6597 pass / 368 skip, 286 files; bundle `index-DSqCF7ZE.js`, 694,404 bytes.
+**Carry forward these review corrections:**
+
+- Scene0 does not write LCDC=$E3. `YellowIntro_PrepareNextScenePalette` does, after hWY=$90. Hardware rWY is
+  latched later, so stale-WY/window plus selected objects reachability is still open for units2/3.
+- A natural line143 gap is204−extra dots; a STAT-select write can request one dot before VBlank. No universal
+  200-dot separation. `takeInterrupt` samples once; HALT/EI/RETI, dispatch duration and vector re-evaluation
+  are unimplemented. Boundary observations do not certify dispatch length; unit2 must model/prove it.
+- Four trailing dots applies to the measured single-write LCDC paths, not arbitrary I/O/tile-select glitches.
+  STAT's first effect and the probe's second write callback are distinct. Respect the report's precise scope.
+- Unsupported window+objects, BG/OBJ disabled, guarded register changes and near-scan DMA remain refused;
+  future live callers must prove reachability or extend with native evidence. No fixed profile/remainder shortcut.
+
+**Baseline:** ROM 7414/7414; no-ROM 7046 pass / 368 skip, 290 files; bundle `index-DSqCF7ZE.js`, 694404 bytes,
+SHA256 `8aacb584e3d541c75f291b9f6af1ababd2155fb4e36fa308b0b9e0bbb025e5e1`.
 
 **Restart list:**
 
-1. **Checkpoint-12b2b planning** (Codex), per note 110 §4 row 12 — movie clock, skip/exit, scenes 0–5. Do not start until assigned.
-2. **Grok: review 08b** per note 119 §8 and **07b** per note 117 §8 (separate commits; play-tests passed).
-3. **The user: O-59**, audio/VBlank cycle model before checkpoint-15. Placement and open state unchanged.
-4. After visible 12b2b: 13–15; PCM crackle (#146), cries (#141), battle audit (#70), A2–A4, B.
+1. **Tomorrow's fresh agent: plan checkpoint-12b2c2-2 only.** Read this handoff, note129 split §§1/3, unit1
+   implementation/review reports and `game/src/menus/ARCHITECTURE.md`; then inspect the reviewed API and relevant
+   native ASM. Scope: source-branch VBlank/foreground budgets, live SFX194 setup timing, HALT/EI/RETI and dispatch/
+   vector re-evaluation. Respect the corrections above. Unit2 is not started; do not treat the old all-in-one
+   note128 prompt or unit1 review prompt as a new implementation instruction.
+2. **Pre-edit checks for that session:** `python notes/129-opening-checkpoint-12b2c2-1/verify-unit1.py` without
+   `--write`; keep note128's protected/artifact checks and existing fixtures. Old note128 full-base checks refer
+   to a pre-unit1 checkout. Preserve review/implementation logs and use new paths for new-unit evidence.
+3. **Grok: review 08b** per note119 §8 and **07b** per note117 §8 (separate commits; play-tests passed).
+4. **O-59:** direction approved; general audio-domain/clip corrections remain required before checkpoint15.
+5. After visible c2: 13–15; PCM crackle (#146), cries (#141), battle audit (#70), A2–A4, B.
 
 **Workflow (V5):** The assigned planner traces, spikes, captures the spike as `notes/NN-.../NN-spike.diff`, restores the source and
 briefs exact gates, mutations and stops; the implementer applies, verifies, writes the report section and commits;
@@ -195,7 +225,7 @@ Claim the top one, finish it, verify, **commit locally**, log it, stop. Full roa
 
 | # | Slice | Phase | Notes |
 |---|---|---|---|
-| 1 | **Opening checkpoint-12b2b planning** (Codex) | — | Note 110 §4 row 12 — movie clock, skip/exit, scenes 0–5. 12b2a closed (`63e85c8e`); next session, not started |
+| 1 | **Opening checkpoint-12b2c2-2 planning** (Codex) | — | Reviewed unit-1 API. Handler/foreground budgets, SFX 194, CPU control, dispatch. Do not implement in that session. Units 3-4 and the parent stay open |
 | 2 | **Opening checkpoint-08b review** (Grok) | — | Note 119 §8; the user checked it on the dev server (§11). Still owed |
 | 3 | **Opening checkpoint-07b review** (Grok) | — | Note 117 §8; the user's play-test already passed (§11). Still owed |
 | 4 | **PCM crackle fix** (audio fidelity) | — | #146: right after opening checkpoint 15, before cries |
@@ -245,13 +275,13 @@ Before planning any of these, search `notes/57-findings-backlog.md` for the slic
 
 ## Open questions
 
-- **O-59 (new 2026-11-17, note 115 §2.5): a cycle model of the VBlank handler?** A Pikachu clip freezes one frame more
-  when the VBlank handler before it runs long. Measured on the cartridge's own code: after B from the main menu clip 1
-  freezes 47 frames instead of 46 at 6.3 % of the title song's positions; on the exit clip 11 freezes 37 instead of 36
-  at 0.03 %. The port has no cycle count, so checkpoint-06 keeps 46 and 36. Checkpoint 15's clip 4 (limit 2,735 cycles)
-  will be off far more often in battle. **(a)** keep fixed counts and record the departure; **(b)** a checkpoint before 15
-  that gives the audio engine a cycle cost per update, checked against the interpreter at every song position, and
-  fixes 06's two clips too. Claude recommends (b). Not blocking 06 or 07.
+- **O-59 direction answered 2026-11-19 → #159; implementation incomplete.** The user chooses the audio
+  timing model together with clock composition now. Note 127's c1 is the first verified domain: the movie song,
+  1309 updates plus idle/branch witnesses. General title/menu/battle/SFX/drum/pitch-slide coverage and corrections
+  to clip holds remain before checkpoint-15. The old measurements remain relevant: clip 1 sometimes needs 47
+  rather than 46 frames (6.3% of title positions), clip 11 sometimes 37 rather than 36 (0.03%); battle clip 4's
+  2735-cycle limit is tighter. Current fixed 46/36 holds are unchanged by this unused component. Do not ask the
+  user to choose the direction again or mark all of O-59 complete from movie-only coverage.
 - **O-58 ✅ answered 2026-11-16 → DECISIONS #141:** the title first; "Click to start" stays; the clear-save dialogue and the battle's three clips are in this slice; cries get their own slice right after it; one JSON file per clip; Codex implements, Grok reviews.
 - **O-54, O-55, O-56 ✅ answered 2026-11-11 → DECISIONS #110, #111, #112:** V5's seven sub-slices in note 90's order; #10's PSYCHIC post-processing withdrawn; the `DisableLCD` audit, the party list on tiles and the tileset trim leave V5.
 - **O-57 ✅ answered 2026-11-11:** Codex implements V5a checkpoint-01 ("let me have codex implement"); Claude reviews.
@@ -282,9 +312,10 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-11-18 (end-of-day context handoff) — Codex
+### 2026-11-19 (end-of-day context closeout) — Codex
 
-- User confirms Nemotron's 12b2a PASS (`63e85c8e`, implementation `f7bd3f4c`) and stops for today. All context
-  summaries reconciled; previous logs archived verbatim. Baseline 6965; no-ROM 6597/368, 286 files; bundle unchanged.
-  Next session: plan 12b2b; no brief/code exists yet. No play-test for 12b2a. O-59 and 07b/08b reviews stay open.
-  Documentation-only closeout: no new implementation, test run or independent review claimed.
+- User returns Grok PASS `64afc3ce` on Sonnet `d09c218f`; unit1 is closed. Reconciled all seven context files
+  and relevant subsystem contracts with reviewed baseline, actual roles/commits, source/dispatch corrections
+  and restart steps. No production edits, new tests or repeated full gates; checked saved evidence/hashes.
+  Tomorrow starts fresh-agent unit2 planning only. Units2–4, parent12b2c2/12b2c, O-59 and07b/08b remain open.
+  No push/remote. User ends today's work here; no unit2 research/planning/implementation was started.

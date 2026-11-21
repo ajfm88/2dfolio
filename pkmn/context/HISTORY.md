@@ -15,6 +15,153 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-19 (checkpoint-12b2c2-1 review PASS) — Grok
+
+- Reviewed `d09c218f` against note 129 §2 and note 128. No production caller; c1 clock and bundle unchanged.
+  Rebuilt SameBoy research matches the fixture. Gates ROM 7414/7414, no-ROM 7046/368, 290 files. Fresh 48/48
+  assertion kills (byte-copied runner, new cache); independent both-bits clear failed 1 test and was restored.
+- Corrections for unit 2: Scene 0 does not write LCDC `$E3`; the ≥200-dot STAT/VBlank claim is not true for
+  supported states. `takeInterrupt` does not model dispatch. Report: `notes/129-opening-checkpoint-12b2c2-1-review/report.md`.
+  Unit 1 closed. No play-test. Next is unit 2 planning only. Parent, O-59, and 07b/08b stay open. Not pushed.
+
+### 2026-11-19 (checkpoint-12b2c2-1 review handoff) — Codex
+
+- Returned implementation `d09c218f` is present and clean. Rebuilt/reproduced `verify-unit1.py`: native capture,
+  copied fixture, nine-file manifest, 1080 protected inputs and original23 artifacts PASS. Saved Nemotron prompt
+  with fresh-cache mutations/separate logs, source/reference/spec audit, independent fault and explicit limited
+  coverage. Flagged the scene0/LCDC attribution for source audit; window/OAM reachability and CPU-control/
+  dispatch are still future dependencies. No full gate/mutation rerun or independent review claimed here.
+  Queue stays Nemotron review, then unit2 planning. No game edits or push; stop for today's handoff.
+
+### 2026-11-19 (checkpoint-12b2c2-1 implementation) — Claude (Sonnet 5.5)
+
+- Built `lcd-cpu-probe.c` on the pinned SameBoy core (real HRAM stores via `GB_run`, one-dot observation) and derived the CPU-store/LCD-start/STAT/LY
+  policy (report §2). New unused `menus/intro_display_clock.ts` + 344 tests + byte-copy fixture; c1 clock and every protected input untouched.
+  A repeated-`$08` model error and window+object interaction were found by the reference and fixed/refused, not papered over.
+- A mutation census hung on an unbounded test loop; found, fixed, runner made bounded/resumable (TIMEOUT is not a kill). Final census 48/48 killed.
+- Gates: typecheck, build, ROM 7414/7414, no-ROM 7046/368, 290 files, bundle unchanged. One c1 census test (comment text) caught and fixed.
+  Nemotron review queued; unit 2 not started. No play-test (unused seam). Not pushed.
+
+### 2026-11-19 (checkpoint-12b2c2 approved split) — Codex
+
+- The implementer reports no code changes and PASS pre-edit research checks; the user approves four units.
+  Note129/#161 supersedes note128's all-in-one scheduling/prompt: unit1 alignment/seam, unit2 branch budgets,
+  unit3 visible integration, unit4 expanded trace/mutation audit. Tests/gates/review accompany every code unit;
+  unit4 is not the first validation. Next is unit1 only. Game baseline and original 23 artifacts unchanged;
+  parent closure, user play-test, O-59 and 07b/08b remain outstanding. Docs only, local commit, no push.
+
+### 2026-11-19 (checkpoint-12b2c2 plan) — Codex
+
+- Note 128/#160: source-driven specification and Grok prompt for full visible scenes 0–5/real-exit integration.
+  Explicitly no production spike/frozen patch or new game-test totals. Existing c1 native checks reproduce;
+  1634 game inputs unchanged. Independent pinned SameBoy: 320 exact static display matches; four cartridge
+  histories with objects392/392/18/162 and audio482/482/84/242 reproduce. Early star skip retains SFX194 until
+  PlayMusic clears it; specification requires setup coverage and CPU-write/startup/ownership proof. Queue:
+  Grok implementation, then Nemotron spec/code review, then user's play-test. O-59/07b/08b persist. No push.
+
+### 2026-11-19 (checkpoint-12b2c1 review PASS) — Nemotron
+
+- Verified Grok's implementation `417da8d7` against frozen spec `notes/127-opening-checkpoint-12b2c-plan.md`
+  and `engine_1.asm` / `yellowintro.asm` / `home/audio.asm` / `home/vblank.asm` / `home/lcdc.asm`.
+  Spike verification passes; native music oracle reproduces 1309 updates (165–6627) and 16 vibrato branches;
+  clock oracle reproduces 6 histories / 1748 calls / 475 slices with canonical trace unchanged.
+  Full gates pass (typecheck/build/ROM 7070/7070 / no-ROM 6702/368 / bundle SHA256 `8aacb584...`).
+  Frozen A1–A7/C1–C9 detected at exact counts (25/25/3/2/2/12/6 and 2/10/1/2/1/1/1/7/1).
+  Independent mutation: removed downward vibrato clipping cost in waiting path (preserving upward) —
+  detected 9 failures in new tests (8 direct branch witnesses + 1 aggregate), distinct from A3 (upward),
+  restores source. No production caller, no generated/snapshot/bundle change.
+  **PASS** — 12b2c1 closed; queues 12b2c2 planning. Parent 12b2c stays open. O-59 general coverage and
+  07b/08b reviews remain open.
+
+### 2026-11-19 (checkpoint-12b2c1 review handoff) — Codex
+
+- User returns Grok's report for `417da8d7`. Frozen spike hashes pass; game diff contains exactly six new
+  patch paths plus the two permitted subsystem architecture docs. Saved note 127's `reviewer-prompt.md` for
+  Nemotron to audit specification/ASM/code, reproduce native/full gates/faults, and preserve raw independent
+  mutation evidence in §10. No tests rerun or independent review claimed here. Queue stays Nemotron review,
+  then c2 planning; parent checkpoint remains open. Older planning log archived verbatim.
+
+### 2026-11-19 (opening checkpoint-12b2c1 implemented) — Grok
+
+- Applied note 127's frozen six-path patch on `4da47f73`. Native music oracle: 1309 updates, cost 165–6627.
+  Clock oracle: 6 histories / 1748 calls / 475 slices. Gates: ROM 7070/7070; no-ROM 6702/368, 289 files; bundle
+  unchanged. A1–A7 25/25/3/2/2/12/6 and C1–C9 2/10/1/2/1/1/1/7/1, restored. No caller, no generated or snapshot
+  change, no play-test. Nemotron reviews (note 127 §7). 12b2c2 stays unplanned. Parent 12b2c stays open.
+  Broader O-59 coverage and the 07b/08b reviews stay open.
+
+### 2026-11-19 (opening checkpoint-12b2c1 planning) — Codex
+
+- User chooses option 1: include audio timing now and use it in the movie clock; Grok implements, Nemotron
+  reviews. #159/note 127 split c1 verified components and c2 visible wiring. Native 1309 updates + 16 branches;
+  six histories / 1748 object calls / 475 slices. Spike 7070, no-ROM 6702/368, 289 files; 16 faults detected;
+  247 focused cases pass after patch round-trip. All game source restored; live baseline stays 7025.
+  Next: Grok applies note 127 §6; return his report for Nemotron's prompt. No caller/play-test/review claimed.
+  Broader O-59 coverage remains before 15; 07b/08b reviews remain owed. Older session entries archived verbatim.
+
+### 2026-11-19 (checkpoint-12b2c clock research; scope choice pending) — Codex
+
+- User assigns Codex planning, Grok implementation, Nemotron review. Note 127 records native clock research:
+  movie VBlank costs vary 966–7428 machine cycles, audio 165–6627, disabled-effect STAT consistently 27.
+  Asked whether O-59's audio cost model enters now or the next unit is a clock component with caller-supplied
+  handler work. User asked about the keyboard shortcut; explained they can type either answer. Choice still
+  pending. No runtime source changes, spike, frozen brief, tests or completed checkpoint. Baseline unchanged.
+
+### 2026-11-19 (checkpoint-12b2b closure handoff) — Codex
+
+- User returns Nemotron PASS 43b56cb6. Confirmed frozen spike hashes and logged gate totals; reconciled
+  stale review-pending context, corrected restart references, and recorded the returned report in note 126 §9.
+  Independent mutation detection (56 failures) is reported by Nemotron; no separate raw mutation log was
+  committed. No tests rerun or new independent review claimed. 12b2b closed; next 12b2c planning, not started.
+  O-59 and separate 07b/08b reviews remain open. Archived older session entries verbatim.
+
+### 2026-11-19 (opening checkpoint-12b2b review PASS) — Nemotron
+
+- Verified Grok's implementation `5e820579` against frozen spec `notes/126-opening-checkpoint-12b2b-plan.md`
+  and `animated_objects.asm` / `intro_yellow.asm`. Spike verification passes; native oracle reproduces 37
+  streams / 5946600 instructions / 433080 stores / 2719 returns; seven boundary histories match; full gates
+  pass (typecheck/build/ROM 7025/7025 / no-ROM 6657/368 / bundle SHA256 `8aacb584...`). Frozen I1–I9 detected
+  at exact counts (41/37/57/4/1/34/34/4/3). Independent mutation: removed Y store marker in OAM entry loop
+  (preserving instruction cost) — detected 56 failures in new tests, distinct from I3 (all stores), restores
+  source. No production caller, no generated/snapshot/bundle change. **PASS** — 12b2b closed; queues 12b2c
+  planning. O-59 and 07b/08b reviews remain open.
+
+### 2026-11-19 (checkpoint-12b2b review handoff) — Codex
+
+- User returns Grok's implementation report for `5e820579`. Read the commit/report; frozen spike verification
+  passes and the old test diff is census/comment only. Saved `notes/126-opening-checkpoint-12b2b/reviewer-prompt.md`
+  for Nemotron to independently check specification, ASM, code, native oracles, full gates and a new mutation.
+  No independent review or test rerun claimed here. Queue remains Nemotron's review, then 12b2c planning.
+
+### 2026-11-19 (opening checkpoint-12b2b planning) — Codex
+
+- User assigns planning to Codex, Grok implementation, then Nemotron review after Grok reports. Note 126 freezes
+  instruction-boundary timing (#158); the visible movie remains 12b2c. Native 5946600 instructions/433080 stores;
+  seven entry/input histories. Spike 7025; no-ROM 6657/368, 287 files; nine faults detected. Patch round-trip and
+  202 focused cases passed; source restored, live baseline remains 6965. No play-test or independent review claimed.
+  Next: Grok applies note 126 §5; return his report for Nemotron's prompt. O-59 and 07b/08b reviews stay open.
+
+### 2026-11-19 (opening checkpoint-12b2b implemented) — Grok
+
+- Applied note 126's frozen four-path patch on `a79cb7dd`. Native instruction oracle: 37 streams / 5946600
+  instructions / 433080 stores / 2719 returns. Seven boundary histories match. Gates: ROM 7025/7025; no-ROM
+  6657/368, 287 files; bundle unchanged. I1–I9 match 41/37/57/4/1/34/34/4/3 and were restored. No caller, no
+  generated or snapshot change, no play-test. Nemotron reviews (note 126 §6). 12b2c stays unplanned. O-59 and
+  the 07b/08b reviews stay open.
+
+### 2026-11-19 (context and codebase orientation) — Codex
+
+- Read the entry point, live handoff, project/architecture/workflow context, roadmap and latest decisions;
+  inspected engine dispatch, runtime data/configuration, and opening-movie foundations. User requested reading only:
+  no checkpoint claimed, implementation changed or tests run. 12b2b planning remains unstarted; O-59 and the
+  separate 07b/08b reviews remain open. Recorded test counts remain the prior reviewed baseline.
+
+### 2026-11-18 (end-of-day context handoff) — Codex
+
+- User confirms Nemotron's 12b2a PASS (`63e85c8e`, implementation `f7bd3f4c`) and stops for today. All context
+  summaries reconciled; previous logs archived verbatim. Baseline 6965; no-ROM 6597/368, 286 files; bundle unchanged.
+  Next session: plan 12b2b; no brief/code exists yet. No play-test for 12b2a. O-59 and 07b/08b reviews stay open.
+  Documentation-only closeout: no new implementation, test run or independent review claimed.
+
 ### 2026-11-18 (opening checkpoint-12b2a implemented) — Grok
 
 - Applied note 125's frozen patch on `42b2d337`. The native timing oracle matched §4. Gates match §4

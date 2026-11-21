@@ -2006,6 +2006,101 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
        REVIEW-XFLIP detected two assertion failures and was restored. No play-test for this unused component.
        The user ends today's work here. 12b2b remains unplanned; next session starts with its planning, not code.
 
+158. **Opening checkpoint-12b2b is instruction-boundary timing; visible clock composition becomes 12b2c**
+     (2026-11-19, Codex's scoping ruling, note 126). The user assigns Codex planning, Grok implementation,
+     then Nemotron specification/code review after Grok reports back. 12b2a remains closed (`63e85c8e`).
+     - Native research shows STAT services between OAM stores. The old timing iterator gives correct store
+       timestamps but not every interrupt-acceptance boundary. A request at work 7195 completes the current
+       store at 7196 before interrupt entry (111 stores); a raw deadline threshold would leave only 110.
+     - One unused pure helper yields each native instruction's machine-cycle cost and actual OAM-store marker,
+       and returns full carry. No ROM/opcode execution, wall/PPU clock, interrupt/audio policy or game caller.
+       The old engine/writer/timing module/fixtures remain byte-identical; the ownership census admits the helper.
+     - Native fixture: 37 streams / 5946600 instructions / 433080 stores / 2719 returns; 19 request-boundary
+       examples. Seven full-Boot entry/input histories reproduce; canonical old research is unchanged.
+       Spike gates 7025, no-ROM 6657/368, 287 files; unchanged bundle, generated files and snapshots.
+       Source restored for Grok's four-path frozen patch. Live baseline remains 6965 until implementation.
+     - Nemotron reviews after Grok implements; no play-test for the unused helper. After PASS plan 12b2c's
+       clock/setup/loop/skip/exit/scenes 0–5 and Boot integration, with user play-test. O-59 keeps its home
+       before checkpoint-15. Old 07b/08b reviews remain separately owed. No visible-movie completion is claimed.
+
+     - **Closure, 2026-11-19:** Grok `5e820579`; Nemotron PASS `43b56cb6` closes 12b2b. Counts stay
+       7025 / 6657+368, 287 files. Note 126 §9 records the returned review, including the evidence limit:
+       independent Y-marker mutation detection (56 failures) is reported in STATUS/user handoff, without
+       a separately committed raw mutation log. Next is 12b2c planning; no visible movie work started.
+
+159. **Include the audio timing model now, together with movie clock composition; stage 12b2c as c1/c2**
+     (2026-11-19, user chooses option 1; Codex scoping, note 127). Grok implements; Nemotron independently
+     reviews. The full movie/Boot target remains; native handler costs must not be replaced with a fixed budget.
+     - **12b2c1:** pure cost prediction over the current real MusicEngine plus exactly-one paired real update
+       and clock charge; a separate clock schedules VBlank/STAT request edges and priority from explicit input.
+       No second audio state owner, opcode/ROM execution, prerecorded timing or runtime caller.
+     - Movie domain only: three linear music channels, no SFX/drums/pitch slides. Native full-song/idle proof:
+       1309 updates and all post-update semantic states, plus 16 direct vibrato boundary cases. Reject unsupported
+       profiles/states. Six clock histories reproduce 1748 object calls / 475 distinct slices, using the new real
+       music helper. Non-audio handler remainders are explicit test inputs only, never runtime data.
+     - Clock requires a copied caller-supplied 144-line mode-0 edge profile; no default 63-cycle assumption is
+       installed. Native-probe matching does not independently verify hardware mode-3 lengths or STAT glitches.
+       Dispatch, handlers, DMA, EI/HALT details and the page owner remain external until traced for live wiring.
+     - Six new source/test/fixture paths, 45 cases; verified spike 7070 / no-ROM 6702+368, 289 files; unchanged
+       bundle, generated files, snapshots and old sources. All sixteen faults detected; 247 focused cases pass
+       after patch round-trip. Source restored for Grok; live baseline remains reviewed 7025 until implementation.
+     - **12b2c2**, planned after c1 review: complete handler budgets/display-edge policy, setup/loop/skip/exit,
+       scenes 0–5 and Boot/main wiring, with user play-test. Parent 12b2c is not closed by c1.
+     - O-59's direction is answered in favor of timing models. General audio-domain coverage and title/battle
+       clip-count corrections remain unfinished, at their existing before-15 home. PCM crackle remains separate;
+       the two older 07b/08b reviews remain owed. Do not ask the user to choose the model direction again.
+
+160. **Opening checkpoint-12b2c2 uses a source-driven implementation handoff**
+     (2026-11-19, Codex handoff-format ruling after the user asks to finish planning; note 128).
+     Grok implements, then Nemotron independently reviews specification and code; the user play-tests.
+     - This differs from earlier apply-only helper briefs. No production timing/scene spike or frozen patch
+       was completed by the planner. Do not invent exact new game-test/fault totals or a bundle hash, or
+       describe accepted helper gates as proof of visible integration. Grok writes the implementation and
+       preserves its measured patch/gates/native/mutation evidence for review.
+     - Scope stays full handlers/display policy/setup/loop/skip/exit/scenes 0–5/Boot/main, with one scene 6 cutoff
+       into the real exit. No extra helper checkpoint. Independent evidence: 320 static one-dot PPU matches;
+       four actual-cartridge histories with object calls 392/392/18/162, audio 482/482/84/242.
+     - Early-star-skip SFX194 survives setup until PlayMusic clears it. The c1 SFX-free predictor cannot cover
+       that setup alone. Require narrow support or a proved existing-owner phase seam. Native CPU LCDC-write/
+       startup/STAT/LY alignment and single audio/input/Random/VBlank ownership are implementation acceptance
+       requirements, not claims already proved by this design.
+     - Accepted c1 and old native fixtures stay intact. General O-59/clip corrections remain before 15;
+       07b/08b reviews and the visible play-test remain owed. Planning closes; implementation and parent 12b2c
+       stay open. No push, remote or generated-data change is authorized.
+
+161. **User approves splitting opening checkpoint-12b2c2 before implementation**
+     (2026-11-19, the user accepts the implementer's proposed split; note129). The implementer reports no
+     source changes and passing pre-edit research verification. This amends #160's all-in-one scheduling.
+     - **12b2c2-1:** prove CPU LCDC-write/startup/STAT/LY alignment against the pinned reference and add the
+       minimal independently tested unused clock/display seam. **12b2c2-2:** source-branch VBlank/foreground
+       budgets, including reachable setup audio. **12b2c2-3:** semantic movie0–5/skip/exit and Boot/main ownership.
+       **12b2c2-4:** expanded complete trace/mutation matrix and final combined review handoff.
+     - Each code unit gets tests/native proof, full gates, STATUS evidence and a local commit. Nemotron reviews
+       a code-bearing prerequisite before dependent work; unit4 does not defer the first validation of units1–3.
+       Existing roles are not reassigned by this scheduling change. No production patch or new totals claimed.
+     - Note128 remains the parent fidelity contract; its old prompt and no-extra-helper scheduling are
+       superseded. Preserve its 23 captured artifacts unchanged; use note129 §2/§4 for unit1 only. Later detailed
+       briefs consume the reviewed predecessor's actual policy/API/results. Parent12b2c2/12b2c stay open until
+       final review and user play-test. O-59 general coverage and separate 07b/08b reviews remain owed.
+
+162. **Opening checkpoint-12b2c2-1 closed; preserve review corrections and end today's work**
+     (2026-11-19, returned review and user instruction to reconcile context then stop). Actual implementer:
+     Claude Sonnet `d09c218f`; actual independent reviewer: Grok PASS `64afc3ce` (note129 review report),
+     superseding the planned reviewer attribution for this completed unit. Codex's handoff was `217eba2a`.
+     - Unused dot display clock only, no live caller. Reviewed gates7414/7414; no-ROM7046/368; 290 files;
+       unchanged694404-byte bundle. Fresh48/48 assertion kills at exact counts, independent both-IF-bits clear
+       failed1; restored hashes. Mutation12's unbounded test loop was bounded and freshly killed, not waived.
+     - Scene0 does not write LCDC=$E3. PrepareNextScenePalette does, after hWY=$90; stale hardware WY/window
+       and selected-objects reachability remains open. Natural line143 gap is204−extra; STAT-select writes
+       can request one dot before VBlank. No universal200-dot separation assumption is accepted.
+     - Store trailing4 applies only to measured CPU paths, not arbitrary CGB I/O/tile-select glitches; STAT
+       first effect and second callback differ. takeInterrupt is one atomic sample, not HALT/EI/RETI/dispatch
+       or vector re-evaluation. Do not use the probe's boundary samples as proof of dispatch duration.
+     - Next session: fresh agent plans12b2c2-2 only, from the reviewed API and these limits (budgets, SFX194,
+       CPU control, dispatch). No unit2 planning/implementation today. Units3/4, parents12b2c2/12b2c, O-59
+       general coverage/clip corrections and07b/08b reviews stay open. No play-test for the unused seam.
+       All work/commits remain local; no push or remote. Context closeout is the final action for today.
+
 ## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.
