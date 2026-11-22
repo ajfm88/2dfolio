@@ -58,6 +58,20 @@ export interface SfxData {
   channels: SfxChannel[];
 }
 
+/** SfxEngine.observeChannel's copy: the command stream is the installed one, not a clone. */
+export interface SfxChannelObservation {
+  readonly id: number;
+  readonly active: boolean;
+  /** The authoritative sound ID still names this channel (channelEnabled), as Audio1_UpdateMusic checks. */
+  readonly enabled: boolean;
+  readonly commands: readonly SfxCommand[];
+  /** Index of the next command the SFX-mode interpreter reads. */
+  readonly pc: number;
+  readonly noteDelayCounter: number;
+  readonly musicMode: boolean;
+  readonly battle: boolean;
+}
+
 // ─── Channel State ───────────────────────────────────────────────────────────
 
 interface SfxChannelState {
@@ -245,6 +259,19 @@ export class SfxEngine {
    */
   isChannelActive(hwChannel: number): boolean {
     return this.channels.some(ch => ch.active && ch.hwChannel === hwChannel && (this.channelEnabled?.(ch.id) ?? true));
+  }
+
+  /**
+   * A read-only copy of software channel `id` (5–8) as the next update will find it, for timing owners;
+   * undefined when no SFX channel with that id is installed. Reading it changes nothing.
+   */
+  observeChannel(id: number): SfxChannelObservation | undefined {
+    const ch = this.channels.find(row => row.id === id);
+    if (!ch) return undefined;
+    return {
+      id: ch.id, active: ch.active, enabled: this.channelEnabled?.(ch.id) ?? true, commands: ch.commands,
+      pc: ch.pc, noteDelayCounter: ch.noteDelayCounter, musicMode: ch.music !== null, battle: ch.battleModifiers !== null,
+    };
   }
 
   /**

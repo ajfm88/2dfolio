@@ -10,9 +10,9 @@ export default defineConfig({
       // only in Vitest; the production entry point exposes no testing controls.
       return code.slice(0, code.lastIndexOf('\ninit().catch')) + `
 export const mainTest = {
-  gameTick, checkUiEntry, drawUiLayer, renderPikachuEmotionScene, openStartMenu, restOfPass, overworldDeps, startScript,
+  gameTick, runTick, checkUiEntry, drawUiLayer, renderPikachuEmotionScene, openStartMenu, restOfPass, overworldDeps, startScript,
   writeSave, startNewGame, loadSavedGame, handleWarpLoad, handleBlackoutWarp, connectToMap,
-  init, gameLoop, renderLiveBattle, startBattle, startTrainerBattle, engageTrainer,
+  init, gameLoop, renderLiveBattle, startBattle, startTrainerBattle, engageTrainer, handleOverworldAction,
   get pageTicks() { return pageTicks; }, get random() { return sessionRandom; },
   get boxes() { return pcBoxes; }, get money() { return playerMoney; }, set money(value: number) { playerMoney=value; },
   renderBattleEntry, get battleEntry() { return battleEntry; }, ow,
@@ -20,7 +20,7 @@ export const mainTest = {
   get battleReturnBgp() { return battleReturn ? battleReturn.bgp : undefined; }, renderBattleReturn,
   async finishFade() { const callback = fadeCallback; fadeCallback = null; await callback?.(); },
   startMenu, partyMenu, bagMenu, optionMenu,
-  oakSpeech, namingScreen, get introMapReady() { return introMapReady; },
+  oakSpeech, namingScreen, titleScreen, clearSaveDialogue, boot, get introMapReady() { return introMapReady; },
   pokedexMenu, trainerCard, saveMenu, textBox, playerParty, player, gameMap, pikachuFollower,
   set session(value: LiveSession | null) {
     currentSession = value; state = 'battle';

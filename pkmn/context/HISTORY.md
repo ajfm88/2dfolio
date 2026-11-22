@@ -15,6 +15,82 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-20 — Sol: checkpoint-12b2c2-2c1 implementation
+
+- Applied the frozen patch and verified the hashes. ROM 7634/7634 and no-ROM 7266 pass / 368 skip across 293 files.
+- The new bundle matched the planned hash. All 43 mutations were killed at the planned counts, and the restored sources passed 85/85.
+- Saved the report and raw logs. Next is Grok’s independent review under note 132 §5.
+
+### 2026-11-20 — Claude (Opus 5.5): checkpoint-12b2c2-2c1 planning
+
+- After Grok's 2b PASS (`48e4904f`). Read PlayIntroScene's setup: it also reaches LoadBGMapAttributes (DI, LY/STAT
+  waits, two manual audio updates), so 2c splits into 2c1/2c2/2c3 (#165). Planned 2c1 only.
+- New cartridge observer (note132 dir): every Audio1_UpdateMusic instruction from Init to PlayMusic, no input plus an
+  A press at every serviced frame 316–392. Six exact callee traces; sound 194 reaches setup at indices 4–76; PlayMusic
+  clears it mid-note. Found that c1's predictor does not see SFX (its guard reads music CHAN4).
+- Spiked `audio/intro_setup_audio_timing.ts` + `SfxEngine.observeChannel` + 85 tests: all 78 histories reproduce
+  instruction by instruction. First census had five survivors, all census/test flaws (two half-cut comment targets,
+  two guards masked by later ones, one exception-not-assertion); fixed and rerun from an empty cache: 43/43. Gates ROM
+  7634/7634, no-ROM 7266/368, 293 files; bundle changes to `index-11CGaehg.js` (694660). Froze `132-spike.diff` +
+  manifest, restored the source (bundle back to `index-DSqCF7ZE.js`).
+- Committed plan/tools/research/DECISIONS (#165)/STATUS only. Next: Sol applies 2c1. No push.
+
+### 2026-11-20 — Grok: checkpoint-12b2c2-2b review PASS
+
+- Reviewed Sol `ff3ae327` against note 131 and the cartridge. No production edits.
+- `verify-2b.py applied`, typecheck, build, ROM 7549/7549, and no-ROM 7181/368 all matched. Bundle unchanged.
+- Fresh 35/35 mutation kills at the planned counts. An independent row-carry mutation (`inc h` omitted) failed 9 and was restored.
+- Report: `notes/131-opening-checkpoint-12b2c2-2b-review/report.md`. Next is Claude planning 12b2c2-2c only. No push.
+
+### 2026-11-20 — Sol: checkpoint-12b2c2-2b implementation
+
+- Applied the frozen patch and verified all hashes. ROM 7549/7549 and no-ROM 7181 pass / 368 skip across 292 files.
+- The bundle matched byte for byte. All 35 mutations were killed at the planned counts, and the restored source passed 22/22.
+- Saved the report and raw logs. Next is Grok’s independent review under note 131 §5.
+
+### 2026-11-20 — Claude (Opus 5.5): checkpoint-12b2c2-2b planning
+
+- After Grok's 2a PASS (`2b968cf4`). Traced home/vblank.asm, vcopy, play_time, random, joypad, fade_audio,
+  bankswitch, sprite_oam, oam_dma, low_health_alarm, printer and lcdc. New cartridge observer (note131 dir): seven
+  input histories, 2279 VBlank + 313,250 LCDC services in the movie window; branch domain recorded (§2.3).
+- Spiked `menus/intro_handler_timing.ts` + 22 tests: every routine-entry and store dot of every service reproduced.
+  Caught my own `ld l,a` omission in TransferBgRows (ROM bytes) and an observer artefact inside the audio callee;
+  the first header named the 2a CPU class and tripped 2a's guard (reworded). Gates ROM 7549/7549, no-ROM 7181/368,
+  292 files, bundle unchanged; 35/35 mutations killed. Froze `131-spike.diff` + manifest, restored source.
+- Committed plan/tools/research/DECISIONS (#164)/STATUS only. Next: Sol applies 2b. No push.
+
+### 2026-11-20 — Grok: checkpoint-12b2c2-2a review PASS
+
+- Reviewed Sol `7bc680b3` against note 130 and the pinned SameBoy/pret sources. No production edits.
+- `verify-2a.py applied`, typecheck, build, ROM 7527/7527, and no-ROM 7159/368 all matched. Bundle unchanged.
+- Fresh 29/29 mutation kills at the planned counts. An independent 8-dot HALT retry failed 6 and was restored.
+- Report: `notes/130-opening-checkpoint-12b2c2-2a-review/report.md`. Next is Claude planning 12b2c2-2b only. No push.
+
+### 2026-11-20 — Sol: checkpoint-12b2c2-2a implementation
+
+- Applied the frozen patch and verified all three hashes. ROM 7527/7527, no-ROM 7159 pass / 368 skip, 291 files.
+- Bundle hash matched and 29/29 mutants were killed at the planned counts. Restored tests passed 113/113.
+- Saved the report and raw logs. Next is Grok's independent review under note 130 §5.
+
+### 2026-11-20 — Claude (Opus 5.5): checkpoint-12b2c2-2a planning
+
+- User assigns Sol (implements) and Grok (reviews). Split unit2 into 2a/2b/2c (#163). Traced PlayIntroScene's IE/IF/
+  STAT, DelayFrame, the vectors and handlers, DI/EI sites, and the Timer/Serial/Joypad inactivity proof.
+- New pinned-SameBoy probe (note130 dir): 98 rows / 615 dispatches; measured dispatch 20 (24 leaving HALT), vector at
+  +14, HALT retry `(h,h+4]` and wake grid, EI/RETI/DI, IF store `end−3`. Spiked `menus/intro_cpu.ts` + 113 tests;
+  gates ROM 7527/7527, no-ROM 7159/368, 291 files, bundle unchanged; 29/29 mutations killed (3 first-pass survivors
+  fixed: two witness tests, one equivalent guard removed). Froze `130-spike.diff` + manifest, restored source
+  (`verify-2a.py` PASS both ways). Rebuilt `game/dist` after removing it by mistake (ignored; bundle hash unchanged).
+- Committed plan/tools/research/DECISIONS/STATUS only; no game source in this commit. Next: Sol applies 2a. No push.
+
+### 2026-11-19 (end-of-day context closeout) — Codex
+
+- User returns Grok PASS `64afc3ce` on Sonnet `d09c218f`; unit1 is closed. Reconciled all seven context files
+  and relevant subsystem contracts with reviewed baseline, actual roles/commits, source/dispatch corrections
+  and restart steps. No production edits, new tests or repeated full gates; checked saved evidence/hashes.
+  Tomorrow starts fresh-agent unit2 planning only. Units2–4, parent12b2c2/12b2c, O-59 and07b/08b remain open.
+  No push/remote. User ends today's work here; no unit2 research/planning/implementation was started.
+
 ### 2026-11-19 (checkpoint-12b2c2-1 review PASS) — Grok
 
 - Reviewed `d09c218f` against note 129 §2 and note 128. No production caller; c1 clock and bundle unchanged.

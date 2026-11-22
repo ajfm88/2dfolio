@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7414/7414** as of 2026-11-19 (opening checkpoint-12b2c2-1 review PASS, Grok `64afc3ce`; default workers). No-ROM **7046 pass / 368 skip**, 290 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7634/7634** as of 2026-11-20 (opening checkpoint-12b2c2-2c1, reviewed PASS `5d6919c0`). No-ROM **7266 pass / 368 skip**, 293 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -273,11 +273,17 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
+Opening checkpoint-12b2c2-2c1 (note 132) adds 85 no-ROM setup audio cases. ROM 7634/7634 and no-ROM 7266 pass / 368 skip across 293 files. The bundle changed to `index-11CGaehg.js` (694660 bytes) as expected. All 43 mutations were killed at the planned assertion counts. Grok's review PASS (`5d6919c0`).
+
+Opening checkpoint-12b2c2-2b (note 131) adds 22 no-ROM handler timing cases. ROM 7549/7549 and no-ROM 7181 pass / 368 skip across 292 files. The bundle matched byte for byte. All 35 mutations were killed at the planned assertion counts. Grok passed the independent review in `48e4904f`.
+
+Opening checkpoint-12b2c2-2a (note 130) adds 113 no-ROM CPU-control cases. ROM 7527/7527 and no-ROM 7159 pass / 368 skip across 291 files. The bundle hash matches the baseline, and all 29 mutations were killed at the planned assertion counts. Grok passed the independent review in `2b968cf4`.
+
 Opening checkpoint-12b2c2-1 (Sonnet `d09c218f`, Grok PASS `64afc3ce`, note129 review) adds **344 no-ROM cases**
 in `menus/intro_display_clock.test.ts`, backed by a byte-copied independent CPU/LCD capture. Full baseline:
 ROM7414/7414; no-ROM7046 pass/368 skip; 290 files; unchanged bundle. Fresh reviewer execution killed all48
 faults at the implementation's exact assertion counts; independent acknowledge-both-bits failed1 and was
-restored. The clock is unused and has no play-test; CPU control/dispatch remain future work.
+restored. The clock has no runtime caller or play-test.
 
 **Mutation-run handoff:** bound synchronous test loops; vitest's per-test timeout cannot interrupt an infinite
 synchronous loop. Keep the runner's90-second child bound and process-tree cleanup; timeout/crash is not a kill.
@@ -1198,6 +1204,12 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+**Opening checkpoint-12b2c2-2c1 (note 132)** adds `audio/intro_setup_audio_timing.test.ts` (85 no-ROM cases). It replays 78 native histories with 57 updates each against the real SFX engine, covering both setup call sites, all six timing classes, purity, domain checks, PlayMusic clearing SFX 194, the channel observation and module ownership. The report records the 43 mutation results.
+
+**Opening checkpoint-12b2c2-2b (note 131)** adds `menus/intro_handler_timing.test.ts` (22 no-ROM cases). It checks instruction costs and store marks against seven captured histories with 2,279 VBlank and 313,250 LCDC services, covers branch validation and generator independence, and runs six sample services through the CPU and display clock. The report records the 35 mutation results.
+
+**Opening checkpoint-12b2c2-2a (note 130)** adds `menus/intro_cpu.test.ts` (113 no-ROM cases) for dispatch and vector selection, HALT retry and wake, EI/DI/RETI, IF stores, validation, and module ownership. The SameBoy fixture covers 98 probe rows and 615 dispatches. The report records the exact counts for all 29 killed mutations.
 
 **Opening checkpoint-12b2c2-1 (note 129)** adds `menus/intro_display_clock.test.ts` (344 cases, no-ROM): the unused display clock against a byte-copied SameBoy capture (`__fixtures__/intro_display_clock_reference.json`; 7 dot-by-dot timelines, off/on rows, 1354 CPU STAT stores, exact-dot STAT edges, 180 fuzz profile/acceptance cases, register and DMA changes, interface behaviour). The tests read `notes/128-.../dot-calibration.json` too. Totals: ROM 7414/7414; no-ROM 7046 pass / 368 skip; 290 files. Bundle unchanged. 48 mutations: `notes/129-opening-checkpoint-12b2c2-1/run-mutations.py` (bounded, resumable). Review PASS re-ran them from a byte copy with a fresh cache; counts matched. Its source SHA256 `4139968e…7c27`.
 

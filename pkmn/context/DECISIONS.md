@@ -2101,6 +2101,62 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
        general coverage/clip corrections and07b/08b reviews stay open. No play-test for the unused seam.
        All work/commits remain local; no push or remote. Context closeout is the final action for today.
 
+163. **Unit 2 of opening checkpoint-12b2c2 splits into 2a/2b/2c; 2a is a frozen patch; Sol implements, Grok reviews**
+     (2026-11-20, user assigns roles; Claude plans, note 130). Unit 2's three subjects need three kinds of native
+     evidence and are several checkpoint-05s in size, so they split at their natural seams, as #161 split the parent.
+     - **2a:** unused `menus/intro_cpu.ts` over the reviewed display clock: dispatch 20 dots (24 leaving HALT), the
+       vector re-checked 14 dots in, HALT's retry window `(h, h+4]` and 4-dot wake grid, EI/DI/RETI, IF stores three
+       dots before the end. Measured by a new pinned-SameBoy probe (98 rows, 615 dispatches); frozen spike 113 tests,
+       29/29 mutations killed, bundle unchanged. Timer/Serial/Joypad never request on the opening path (Init's TAC/SC,
+       `-d` WRAM0 clear of `wPrinterConnectionOpen`, IE never has bit 4).
+     - **2b:** LCDC and VBlank handler cost streams. **2c:** foreground setup/scene helper budgets, DI/EI sites, LY/STAT
+       read points, SFX194 setup audio. Each is planned from the previous reviewed result; units 3/4 unchanged.
+     - Returns to the user's standing frozen-patch workflow (planner spikes and freezes, implementer applies and
+       verifies, reviewer re-checks spec and code), which #160's source-driven handoff had departed from for the
+       all-in-one parent. **Roles for 2a:** GPT Sol 6.2 implements; Grok 4.7 reviews against note 130's specification.
+       Parents 12b2c2/12b2c stay open; no play-test for unused code; O-59 coverage and 07b/08b reviews remain owed.
+
+164. **Opening checkpoint-12b2c2-2b: the handler cost streams, frozen; same roles as 2a**
+     (2026-11-20, Claude plans after 2a's review PASS `2b968cf4`; note 131). Unused
+     `menus/intro_handler_timing.ts`: one native instruction per step for `VBlank` (home/vblank.asm and every routine
+     it calls) and the zero-pointer `LCDC` handler, from the vector's `jp` through RETI, with routine-entry marks and
+     the SCX/SCY/WY/DMA/NR50 store points. Audio1_UpdateMusic is one owner-supplied step costed by the reviewed c1
+     predictor; native total-minus-audio is never production time.
+     - Witness: the user's cartridge on pinned SameBoy over seven input histories of the movie window — 2279 VBlank
+       and 313,250 LCDC services, every routine-entry and store dot reproduced. Branches the cartridge never takes
+       there (copy-double, row redraw, tile animation, sprite work, play-time counting, joypad re-enable, fade,
+       low-health alarm, printer, non-zero hLCDCPointer) are refused, not guessed.
+     - Spike: 22 tests; ROM 7549/7549, no-ROM 7181/368, 292 files; bundle unchanged; 35/35 mutations killed.
+       Sol implements and Grok reviews unless the user reassigns. 2c (foreground helpers, DI/EI, LY/STAT reads,
+       SFX194 setup) follows a PASS. Parents 12b2c2/12b2c, O-59 coverage and the 07b/08b reviews stay open.
+
+165. **2c splits into 2c1/2c2/2c3; 2c1 is the setup audio cost with the star's sound, frozen; same roles**
+     (2026-11-20, Claude plans after 2b's review PASS `48e4904f`; note 132). #163's 2c held four subjects that need
+     different native evidence and are several checkpoint-05s together, so it splits at those seams as #161/#163 did:
+     **2c1** setup audio (this ruling), **2c2** the shared home/engine helpers the movie calls (DelayFrame, palette
+     waits, DisableLCD, CopyVideoData, LoadBGMapAttributes with its DI/LY/STAT waits and manual audio, PlayMusic,
+     JoypadLowSensitivity …), **2c3** the movie's own foreground (setup, loop, scenes 0–5, exit). Units 3/4 unchanged.
+     - 2c1: unused `audio/intro_setup_audio_timing.ts` gives Audio1_UpdateMusic's callee from PlayIntroScene to
+       PlayMusic as pret-labelled segments of instruction cycles, with CHAN5 idle or playing sound 194 at any reachable
+       position; `SfxEngine.observeChannel` is its read-only view (note 128 allowed one), so the bundle changes.
+     - Witness: the user's cartridge on pinned SameBoy, no input plus an A press at every serviced frame 316–392
+       (78 histories × 57 setup updates, 55 at VBlank and 2 in LoadBGMapAttributes); six exact traces (165, 296,
+       1357, 1372, 1386, 730 cycles), indices 4–76 of the sound; its first update (1958) is star-only and refused.
+       PlayMusic clears the sound mid-note on the cartridge and in the game. c1's predictor does not see SFX (its
+       guard reads music CHAN4): unit 3 uses 2c1 until PlayMusic.
+     - Spike: 85 tests; ROM 7634/7634, no-ROM 7266/368, 293 files; bundle `index-11CGaehg.js` 694660; 43/43 mutations
+       killed. Sol implements and Grok reviews unless the user reassigns. 2c2, then 2c3, follow a PASS. Parents
+       12b2c2/12b2c, O-59 coverage and the 07b/08b reviews stay open.
+
+166. **12b2c2-2c1 closed; the day ends; 2c2 is planned next by a fresh session**
+     (2026-11-20, Grok's review PASS `5d6919c0` of Sol `0c09aa0f`; the user stops for the day). Frozen bytes, bundle
+     `index-11CGaehg.js`, ROM 7634/7634, no-ROM 7266/368 and the 43 mutation counts matched; an independent
+     MultiplyAdd-exit fault failed 61. Review correction: length-4 and length-8 note classes were observed at VBlank
+     only; idle, waiting, length-15 and end occur at both setup call sites (the callee does not read its caller).
+     - Next session: plan **2c2 only** (frozen patch, Sol implements, Grok reviews unless the user reassigns), from the
+       reviewed 2a/2b/2c1 APIs and STATUS's 2c2 handoff. 2c3, units 3/4, parents 12b2c2/12b2c, O-59 coverage and the
+       07b/08b reviews stay open. No push or remote.
+
 ## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.
