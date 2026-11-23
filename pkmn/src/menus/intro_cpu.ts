@@ -66,14 +66,19 @@ export class IntroCpu {
 
   /** One instruction of `cycles` machine cycles. `effect`, if given, runs `trailingDots` before the instruction ends
    *  (a store's measured effect point). Interrupts are considered only afterwards, at the boundary: call interrupt(). */
-  exec(cycles: number, effect?: () => void, trailingDots = CPU_STORE_TRAILING_DOTS): void {
+  exec(cycles: number, effect?: () => void, trailingDots = CPU_STORE_TRAILING_DOTS, readBeforeStore?: () => void): void {
     if (!Number.isInteger(cycles) || cycles < 1 || cycles > MAX_INSTRUCTION_CYCLES) throw new RangeError('Invalid intro CPU instruction length');
     if (!Number.isInteger(trailingDots) || trailingDots < 1 || trailingDots > INTRO_DOTS_PER_CYCLE) throw new RangeError('Invalid intro CPU store point');
+    if (readBeforeStore && (cycles !== 3 || trailingDots !== 4 || !effect)) throw new RangeError('Unmeasured intro read/modify/write');
     this.requireRunning();
     const arm = this.takeEi();
     const dots = cycles * INTRO_DOTS_PER_CYCLE;
     if (effect) {
-      this.display.advance(dots - trailingDots);
+      if (readBeforeStore) {
+        this.display.advance(4);
+        readBeforeStore();
+      }
+      this.display.advance(dots - trailingDots - (readBeforeStore ? 4 : 0));
       effect();
       this.display.advance(trailingDots);
     } else {

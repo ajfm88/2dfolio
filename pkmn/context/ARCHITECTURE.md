@@ -17,7 +17,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | vitest - baseline **7414/7414** (2026-11-19, opening checkpoint-12b2c2-1 review PASS, Grok `64afc3ce`; default workers; no-ROM 7046 pass / 368 skip; 290 files). Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | Vitest, **7799/7799** with ROM at note 137 closeout. No-ROM 7431 pass / 368 skip across 299 files. Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -494,9 +494,22 @@ Entry point: `index.html` → `src/main.ts`.
 **Opening timing seam.** `IntroDisplayClock` (note 129, Grok PASS `64afc3ce`) models display requests and reads in dots.
 `IntroCpu` (note 130, Grok PASS `2b968cf4`) handles instruction boundaries, interrupts, HALT, EI/DI/RETI, and IF stores.
 `intro_handler_timing.ts` (note 131, Grok PASS `48e4904f`) adds VBlank and LCDC instruction costs with marked store points
-and an opaque audio callee step. These helpers and the explicit-profile `intro_movie_clock.ts` have no runtime callers.
+and an opaque audio callee step. The game entry point has no callers of these timing helpers or the explicit-profile
+`intro_movie_clock.ts`.
 `intro_setup_audio_timing.ts` (note 132, reviewed PASS `5d6919c0`) forecasts the setup audio callee from read-only SFX channel
-state until PlayMusic. The forecast has no runtime caller. Foreground timing is scheduled for 2c2 and 2c3.
+state until PlayMusic. `intro_helper_timing.ts` (note 133) yields the shared foreground helpers from each routine's
+first instruction through its returning instruction, with owner-supplied reads between steps. Audio callee costs and
+the two 2,052-dot GDMA stalls are aggregates, not instructions. The reusable `IntroForegroundRunner` (note 134)
+composes instruction streams, interrupts and shared state. The display clock owns the OAM DMA snapshot and latches
+it at the true completion dot (note 135). The `introForegroundProgram` coordinator controls stages, timed input,
+and shared cleanup. At each VBlank service the runner captures the selected predictor, its cost and audio version
+(note 136).
+
+**Development preview (note 137).** `game/dev/foreground-preview.html` mounts the separate host in
+`game/scripts/foreground_preview.ts`. It runs an original geometric sequence and renders the display's visible OAM.
+Each Start/Replay creates a fresh clock, CPU and runner. `TickClock.reset(now)` anchors wall time before the first
+callback. Absolute deadlines retain instruction overshoot. The preview HTML and scripts are absent from the normal
+Vite output. The live game startup remains owned by `Boot` and `main`.
 
 | Module | Purpose | Key exports |
 |---|---|---|
@@ -506,7 +519,7 @@ state until PlayMusic. The forecast has no runtime caller. Foreground timing is 
 | `text/` | Dialogue box + game text lookup | `TextBox`, `initTextSystem()`, `charToTile()`, `loadGameText()`, `getText()`, `getFontCanvas()` |
 | `overworld/` | Maps, player, NPCs, story state, transitions; the overworld's pace (`walk_pace.ts`, A6a); sprite collisions (`sprite_collision.ts`, A6c); trainer sight (`trainer_sight.ts`, `map_trainers.ts`, `emotion_bubble.ts`, A1c); the Pokécenter's `AnimateHealingMachine` (`healing_machine.ts`, note 59) | `GameMap`, `Player`, `Npc`, `applyStoryNpcState()`, `performWarpLoad()`, `PassClock`, `PlayerWalk`, `NpcWalk`, `updateSprites()`, `spriteTable()`, `collisionMask()`, `trainerEngages()`, `trainerMapScript()`, `EmotionBubble`, `HealingMachineSession` |
 | `battle/` | Wild/trainer battles, evolution; the catch demo (old man + Oak's Pikachu, V1d) runs in the battle session since A5f checkpoint-04; old renderer deleted in 05; since A5c1 the unused `BattleScreen`, its renderer and the HUD writers (A5c3 wires them) | `Battle`, `loadBattleData()`, `createPokemon()`, `tryWildEncounter()`, `checkEvolutions()`, `applyEvolution()` |
-| `menus/` | All menus, title/intro screens; opening VRAM/OAM model and pure scanout; the whole PlayShootingStar frame program, copyright and star with the skip (`shooting_star.ts`); unused intro object engine (`intro_objects.ts`, checkpoint-11); unused movie asset loader (`intro_movie_assets.ts`, checkpoint-12a); unused object-store timing (`intro_object_timing.ts`, checkpoint-12b2a); unused object instruction-cost stream (`intro_object_cpu_timing.ts`, checkpoint-12b2b); unused movie clock (`intro_movie_clock.ts`, checkpoint-12b2c1); unused SM83 interrupt control (`intro_cpu.ts`, checkpoint-12b2c2-2a); unused VBlank/LCDC timing (`intro_handler_timing.ts`, checkpoint-12b2c2-2b) | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `OpeningScreen`, `renderOpeningScreen`, `Boot`, `playShootingStar`, `loadShootingStarImages`, `TitleScreen`, `ClearSaveDialogue`, `MainMenu`, `OakSpeech`, `NamingScreen`, `IntroObjectEngine`, `introSine()`, `loadIntroMovieAssets()`, `introObjectWriteTimes()`, `introObjectCpuSteps()`, `IntroMovieClock`, `IntroCpu`, `introVBlankSteps()`, `introLcdcSteps()`, `drawBox()`, `loadEdTile()` |
+| `menus/` | All menus, title/intro screens; opening VRAM/OAM model and pure scanout; the whole PlayShootingStar frame program, copyright and star with the skip (`shooting_star.ts`); unused intro object engine (`intro_objects.ts`, checkpoint-11); unused movie asset loader (`intro_movie_assets.ts`, checkpoint-12a); unused object-store timing (`intro_object_timing.ts`, checkpoint-12b2a); unused object instruction-cost stream (`intro_object_cpu_timing.ts`, checkpoint-12b2b); unused movie clock (`intro_movie_clock.ts`, checkpoint-12b2c1); unused SM83 interrupt control (`intro_cpu.ts`, checkpoint-12b2c2-2a); unused VBlank/LCDC timing (`intro_handler_timing.ts`, checkpoint-12b2c2-2b); unused shared foreground helper streams (`intro_helper_timing.ts`, checkpoint-12b2c2-2c2) | `StartMenuSession`, `PartyMenu`, `BagSession`, `YesNoMenu`, `TownMap`, `MenuInput`, `PcSession`, `BillsPc`, `StatusScreenSession`, `TrainerCard`, `OptionMenu`, `SaveSession`, `PokedexMenu`, `OpeningScreen`, `renderOpeningScreen`, `Boot`, `playShootingStar`, `loadShootingStarImages`, `TitleScreen`, `ClearSaveDialogue`, `MainMenu`, `OakSpeech`, `NamingScreen`, `IntroObjectEngine`, `introSine()`, `loadIntroMovieAssets()`, `introObjectWriteTimes()`, `introObjectCpuSteps()`, `IntroMovieClock`, `IntroCpu`, `introVBlankSteps()`, `introLcdcSteps()`, `introDelayFrameSteps()`, `introPlayMusicSteps()`, `introLoadBgMapAttributesSteps()`, `drawBox()`, `loadEdTile()` |
 | `pikachu/` | Follower, happiness & emotion; spawn states after a warp (`pikachu_spawn.ts`, V1b). Oak's catch moved to `battle/` in V1d; idle glances and antics (`pikachu_idle.ts`, A6c) | `PikachuFollower`, `PikachuIdle`, `modifyPikachuHappiness()`, `warpSpawnState()` |
 | `pikachu/follow_buffer.ts` | Native retained follow-command queue (A6d), hop commands and catch-up threshold | `PikachuFollowBuffer` |
 | `pikachu/pikachu_movement.ts` | `ApplyPikachuMovementData` (A6e): decoder, both function tables, timers, sine jump, shadow, 2-frame holds; `pikachu_movement_data.ts` loads its JSON | `PikachuMovementRun`, `pikachuSide()`, `loadPikachuMovementData()` |

@@ -148,6 +148,10 @@ export class IntroDisplayClock {
   private level = false;
   private actions: Action[] = [];
   private current: LineRecord | null = null;
+  /** The one running OAM DMA (note 135): the bytes it copied at its start and the absolute dots it started and completes. */
+  private dma: { oam: Uint8Array; start: number; completion: number } | null = null;
+  /** Completed scheduled DMAs not yet taken by the owner (pure clock state; a fork starts with none). */
+  private latched: { completion: number }[] = [];
 
   constructor(regs: IntroDisplayRegisters) {
     this.ifBits = regs.pending & 3;
@@ -170,20 +174,43 @@ export class IntroDisplayClock {
   get mode0Enabled(): boolean { return this.mode0; }
   get lcdc(): number { return this.lcdcValue | (this.epoch === null ? 0 : LCDC_ENABLE); }
 
-  /** Pure time: every request whose dot is at or before the new time becomes pending. */
+  /** Pure time: every request whose dot is at or before the new time becomes pending. A running OAM DMA completes at its
+   *  absolute dot in chronological order with the display actions: a completion due at or before an action's dot (including a
+   *  scan at the same dot) is processed first, through the same overlap guard as latchOam, with the clock at that dot. */
   advance(dots: number): void {
     if (!Number.isSafeInteger(dots) || dots < 0 || !Number.isSafeInteger(this.time + dots)) throw new RangeError('Invalid intro display dot duration');
     const target = this.time + dots;
-    if (this.epoch === null) { this.time = target; return; }
-    const limit = target - this.epoch;
     for (;;) {
-      const next = this.actions[0];
-      if (!next || next.at > limit) break;
-      this.actions.shift();
-      this.run(next);
+      const dma = this.dma;
+      const next = this.epoch === null ? undefined : this.actions[0];
+      const nextAt = next ? this.epoch! + next.at : Infinity;
+      if (dma && dma.completion <= target && dma.completion <= nextAt) {
+        this.time = Math.max(this.time, dma.completion);
+        this.applyLatch(dma.oam, dma.completion - dma.start);
+        this.dma = null;
+        this.latched.push({ completion: dma.completion });
+        continue;
+      }
+      if (next && nextAt <= target) { this.actions.shift(); this.run(next); continue; }
+      break;
     }
     this.time = target;
   }
+
+  /** Begin an OAM DMA now: the bytes are copied at this dot, the latch is scheduled DISPLAY_OAM_DMA_DOTS later on this clock. */
+  startOamDma(oam: ArrayLike<number>): void {
+    if (oam.length !== INTRO_OAM_BYTES) throw new RangeError('Invalid intro display OAM');
+    if (this.dma) throw new RangeError('Intro OAM DMA started while another is running');
+    this.dma = { oam: Uint8Array.from(oam), start: this.time, completion: this.time + DISPLAY_OAM_DMA_DOTS };
+  }
+  /** The running DMA (a copy), or null. */
+  get oamDma(): { oam: Uint8Array; start: number; completion: number } | null {
+    return this.dma ? { oam: Uint8Array.from(this.dma.oam), start: this.dma.start, completion: this.dma.completion } : null;
+  }
+  /** The OAM the LCD scans (a copy). */
+  get oam(): Uint8Array { return Uint8Array.from(this.oamValue); }
+  /** Scheduled DMAs completed since the last call, oldest first. */
+  takeOamCompletions(): { completion: number }[] { const out = this.latched; this.latched = []; return out; }
 
   /** IF write by the CPU (bits 0-1). Pending requests are not cleared by anything else but acknowledgement. */
   writePending(value: number): void { this.ifBits = value & 3; }
@@ -223,7 +250,9 @@ export class IntroDisplayClock {
    *  (measured: a DMA finishing 2 dots before the scan already does, one finishing 10 dots before does not, one started 4
    *  dots before it does, one started 8 dots after it does not); the exact per-entry rule is not modelled, so any DMA whose
    *  span comes within 12 dots of a scan window is refused. */
-  latchOam(oam: ArrayLike<number>, dmaDots = DISPLAY_OAM_DMA_DOTS): void {
+  latchOam(oam: ArrayLike<number>, dmaDots = DISPLAY_OAM_DMA_DOTS): void { this.applyLatch(oam, dmaDots); }
+
+  private applyLatch(oam: ArrayLike<number>, dmaDots: number): void {
     if (oam.length !== INTRO_OAM_BYTES) throw new RangeError('Invalid intro display OAM');
     if (!Number.isSafeInteger(dmaDots) || dmaDots < 0) throw new RangeError('Invalid intro display DMA duration');
     if (this.epoch !== null) {
@@ -287,6 +316,7 @@ export class IntroDisplayClock {
     copy.time = this.time; copy.epoch = this.epoch; copy.level = this.level;
     copy.actions = this.actions.map(a => ({ ...a }));
     copy.current = this.current ? { ...this.current } : null;
+    copy.dma = this.dma ? { oam: Uint8Array.from(this.dma.oam), start: this.dma.start, completion: this.dma.completion } : null;
     return copy;
   }
 

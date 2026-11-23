@@ -241,6 +241,7 @@ it('keeps the CPU model unused by the game; the display clock is imported only b
     }
   }}
   walk(root);
-  expect(cpu.sort()).toEqual(['menus/intro_cpu.ts']);
-  expect(display.sort()).toEqual(['menus/intro_cpu.ts','menus/intro_display_clock.ts']);
+  // the foreground runner (note 134, checkpoint 1) is itself unused and the only other importer of the CPU model
+  expect(cpu.sort()).toEqual(['menus/intro_cpu.ts','menus/intro_foreground_runner.ts']);
+  expect(display.sort()).toEqual(['menus/intro_cpu.ts','menus/intro_display_clock.ts','menus/intro_foreground_runner.ts']);
 });

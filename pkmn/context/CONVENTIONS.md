@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7634/7634** as of 2026-11-20 (opening checkpoint-12b2c2-2c1, reviewed PASS `5d6919c0`). No-ROM **7266 pass / 368 skip**, 293 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7657/7657** as of 2026-11-21 (opening checkpoint-12b2c2-2c2, awaiting review). No-ROM **7289 pass / 368 skip**, 294 files. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,19 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+Note 137 adds 12 host tests in `menus/foreground_preview.test.ts`. They cover pacing, visible OAM after DMA,
+input, replay, stale callbacks and production isolation. Nemotron passed review with the pacing fix in `c018e7ce`.
+Verified committed baseline: ROM 7799/7799 and no-ROM 7431 pass / 368 skip across 299 files. Build
+`index-CkYsZcLD.js`, 694,681 bytes. The standalone preview is absent from the build. The reported extra pacing
+case is not committed. Tomorrow's first task is to pin the nonzero Start/Replay witness in the test suite.
+
+Notes 134–136 cover the foreground runner and synthetic fixture, exact-dot OAM DMA, and the reusable program
+with VBlank predictor selection. The note 136 closeout regression verifies that an already-sampled read stays
+in the trace when a later dot in the same instruction faults. Keep elapsed dots and observable event order in
+these tests.
+
+Opening checkpoint-12b2c2-2c2 (note 133) adds 23 no-ROM helper-stream cases. ROM 7657/7657 and no-ROM 7289 pass / 368 skip across 294 files. The bundle stayed `index-11CGaehg.js` (694660 bytes). Ten mutations were killed by assertions. Nemotron's review passed in `b32bc2df`.
 
 Opening checkpoint-12b2c2-2c1 (note 132) adds 85 no-ROM setup audio cases. ROM 7634/7634 and no-ROM 7266 pass / 368 skip across 293 files. The bundle changed to `index-11CGaehg.js` (694660 bytes) as expected. All 43 mutations were killed at the planned assertion counts. Grok's review PASS (`5d6919c0`).
 
@@ -1204,6 +1217,8 @@ browser verification remain CP3. ROM **1516/1516**, no-ROM **1386/130**.
   spawn states per warp, and placement + facing per state.
 
 **Added per slice (newest first)**
+
+**Opening checkpoint-12b2c2-2c2 (note 133)** adds `menus/intro_helper_timing.test.ts` (23 no-ROM cases). It checks DelayFrame's exit, STAT wake and HALT retry, DisableLCD's IE mask and LY poll, ClearObjectAnimationBuffers' 614 instructions, PlayMusic's 641-cycle song start and SFX-clear order, the three observed joypad paths, both copy sizes, two GDMA stalls, distinct audio costs, the BGP short and long paths, the first STAT wait, and SET_PAL_GENERIC through Delay3. The report records the 10 mutation results.
 
 **Opening checkpoint-12b2c2-2c1 (note 132)** adds `audio/intro_setup_audio_timing.test.ts` (85 no-ROM cases). It replays 78 native histories with 57 updates each against the real SFX engine, covering both setup call sites, all six timing classes, purity, domain checks, PlayMusic clearing SFX 194, the channel observation and module ownership. The report records the 43 mutation results.
 

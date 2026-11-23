@@ -24,9 +24,14 @@ export interface IntroHandlerStep {
   readonly cycles: number;
   readonly routine?: IntroHandlerRoutine;
   readonly store?: IntroHandlerStore;
+  /** A shared-state write the composed runner performs at the same store point (four dots before the step ends). */
+  readonly effect?: IntroHandlerEffect;
   readonly reti?: true;
 }
 export type IntroHandlerStore = 'scx' | 'scy' | 'wy' | 'dma' | 'nr50';
+/** Semantic writes of the handler's own shared fields (checkpoint 134-1): `ldh [hVBlankOccurred],a` after `xor a`,
+ *  `ldh [hFrameCounter],a` after `dec a`, `ldh [hVBlankCopySize],a` after `xor a`, `ldh [hJoyInput],a`. */
+export type IntroHandlerEffect = 'advance-bg-transfer-portion' | 'clear-vblank-occurred' | 'decrement-frame-counter' | 'consume-copy' | 'sample-joypad';
 export type IntroHandlerRoutine =
   | 'VBlank' | 'AutoBgMapTransfer' | 'VBlankCopyBgMap' | 'RedrawRowOrColumn' | 'VBlankCopy' | 'VBlankCopyDouble'
   | 'UpdateMovingBgTiles' | 'hDMARoutine' | 'PrepareOAMData' | 'TrackPlayTime' | 'CountDownIgnoreInputBitReset'
@@ -69,6 +74,10 @@ const ROW_PAIRS = 10;                 // SCREEN_WIDTH / 2
 interface Enter { readonly enter: IntroHandlerRoutine }
 type Item = IntroHandlerStep | Enter;
 function* s(...cycles: number[]): Generator<Item> { for (const c of cycles) yield { cycles: c }; }
+/** Like s(), but the last cycle count carries `effect`. */
+function* se(effect: IntroHandlerEffect, ...cycles: number[]): Generator<Item> {
+  for (const [n, c] of cycles.entries()) yield n === cycles.length - 1 ? { cycles: c, effect } : { cycles: c };
+}
 function* enter(routine: IntroHandlerRoutine): Generator<Item> { yield { enter: routine }; }
 function* call(routine: IntroHandlerRoutine): Generator<Item> { yield { cycles: 6 }; yield { enter: routine }; }
 /** Attach each marker to the step that follows it. */
@@ -146,9 +155,9 @@ function* vblank(i: IntroVBlankInputs, audioCycles: number): Generator<Item> {
   yield* call('Random'); yield* random();
   yield* call('ReadJoypad'); yield* readJoypad();
   // hVBlankOccurred: clear it if set
-  yield* s(3, 1); if (i.hVBlankOccurred) yield* s(2, 1, 3); else yield* s(3);
+  yield* s(3, 1); if (i.hVBlankOccurred) yield* se('clear-vblank-occurred', 2, 1, 3); else yield* s(3);
   // hFrameCounter: decrement it if non-zero
-  yield* s(3, 1); if (i.hFrameCounter) yield* s(2, 1, 3); else yield* s(3);
+  yield* s(3, 1); if (i.hFrameCounter) yield* se('decrement-frame-counter', 2, 1, 3); else yield* s(3);
   yield* call('FadeOutAudio');
   yield* s(4, 1, 2, 4, 2, 2, 2); yield { cycles: 3, store: 'nr50' }; yield* s(4); // control 0, NR50 = $77
   yield* s(2); yield* call('BankswitchCommon'); yield* bankswitchCommon();
@@ -174,7 +183,8 @@ function* autoBgMapTransfer(i: IntroVBlankInputs): Generator<Item> {
     if (portion === 1) yield* s(3, 3, 2, 3, 1, 3, 1, 3, 2, 2);            // jr z (taken); middle: ...; add hl,de; ld a,BOTTOM
     else yield* s(2, 3, 2, 3, 1, 3, 1, 3, 2, 1, 3);                       // jr z (not); bottom: ...; xor a; jr
   }
-  yield* s(3, 2);                                   // ldh [hAutoBGTransferPortion],a; ld b,6
+  yield* se('advance-bg-transfer-portion', 3);      // ldh [hAutoBGTransferPortion],a
+  yield* s(2);                                     // ld b,6
   for (let row = 0; row < THIRD_ROWS; row++) {
     for (let pair = 0; pair < ROW_PAIRS - 1; pair++) yield* s(3, 2, 1, 2, 1);
     yield* s(3, 2, 1, 2);                           // last pair: no inc l
@@ -188,7 +198,7 @@ function* autoBgMapTransfer(i: IntroVBlankInputs): Generator<Item> {
 function* vblankCopy(size: number): Generator<Item> {
   yield* s(3, 1);                                   // ldh a,[hVBlankCopySize]; and a
   if (!size) { yield* s(5); return; }
-  yield* s(2, 5, 3, 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 1, 3);   // ret z (not) .. ldh [hVBlankCopySize],a
+  yield* se('consume-copy', 2, 5, 3, 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 1, 3);   // ret z (not) .. xor a; ldh [hVBlankCopySize],a
   for (let tile = 0; tile < size; tile++) {
     for (let pair = 0; pair < TILE_PAIRS - 1; pair++) yield* s(3, 2, 1, 2, 1);
     yield* s(3, 2, 1, 2, 2);                        // last pair: inc hl
@@ -227,7 +237,7 @@ function* readJoypad(): Generator<Item> {
   yield* call('ReadJoypad_');
   yield* s(3, 1, 2);                                // polling enabled
   yield* s(2, 3, 3, 3, 1, 2, 2, 1);                 // directions
-  yield* s(2, 3, 3, 3, 3, 3, 3, 3, 1, 2, 1, 3);     // buttons, hJoyInput
+  yield* se('sample-joypad', 2, 3, 3, 3, 3, 3, 3, 3, 1, 2, 1, 3);     // buttons, ldh [hJoyInput],a
   yield* s(2, 3, 4);                                // deselect; ret
   yield* s(3, 4);                                   // pop af; jp BankswitchCommon
   yield* enter('BankswitchCommon'); yield* bankswitchCommon();

@@ -43,13 +43,13 @@ During development the ROM (`pokeyellow.gbc`, from the user's own cartridge) is
 used to extract game data via `npm run setup pokeyellow.gbc`. The extracted JSON +
 PNG output is committed to the repo so the final product needs no ROM at all.
 
-**Current priority (user):** rebuild the lost work (Phase V), then expand
-**vanilla Yellow** (more maps/story/gyms). ROM-free play is done (Phase R).
+**Current priority:** Phase V rebuilt the lost work. The opening/title work is active ahead of expanding
+the playable maps, story and gyms. ROM-free play is done (Phase R).
 **Deferred:** sprite randomizer (X1), Netlify (X2). **Dead last:** deploy.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-15 - Phase V complete: V5 done (9/36 milestones)
+## State as of 2026-11-21 — Phase V complete (9/36 milestones)
 
 - **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
@@ -66,14 +66,11 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 - **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
   their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
   (note 57).
-- **Tests:** ROM **7414/7414**; no-ROM **7046 pass / 368 skip**; 290 files (opening checkpoint-12b2c2-1 review PASS, 2026-11-19). Bundle `index-DSqCF7ZE.js`,
-  694,404 bytes.
-- Full handoff: STATUS.md. **12b2c1 closed** (Nemotron `961e1dec`): unused movie audio timing and explicit-profile
-  clock. **12b2c2-1 closed**: Sonnet implementation `d09c218f`, Grok independent PASS `64afc3ce`, note129 review.
-  Its dot-based display clock remains unused. Today ends with context closeout; tomorrow's fresh agent starts
-  **12b2c2-2 planning only** (source-branch budgets, SFX194 setup, CPU control and dispatch). Units3/4 retain
-  visible scenes/Boot and the combined audit/play-test. Parents12b2c2/12b2c stay open; broader O-59 before15
-  and the separate 07b/08b reviews remain owed. Review corrections and limits are in STATUS and menus ARCHITECTURE.
+- **Tests:** ROM **7799/7799**, no-ROM **7431 pass / 368 skip**, 299 files. Bundle `index-CkYsZcLD.js`, 694,681 bytes.
+- **Opening:** 07b/08b reviews and notes 134–137 are closed. The development preview exercises the reusable
+  foreground program with an original geometric cutscene. The game still reaches the title after the shooting star.
+  The original 2c3 timing, live unit 3 integration, combined unit 4 audit, and O-59 remain open.
+  `STATUS.md` holds the next task and the verified build hash.
 
 ## Goals
 

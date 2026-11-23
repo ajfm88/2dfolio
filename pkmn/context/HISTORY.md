@@ -15,6 +15,130 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-22 - Claude: Sol's pacing brief; note 138 started
+
+- Briefed the permanent Start/Replay pacing regression for Sol at the end of note 137 (`129cad3c`). Test-only.
+- Started note 138 (2c3). No 2c3 spec existed: #165 and note 132 define its scope in one line each. Built
+  `movie-call-sameboy.c` from note 133's observer (same pinned core) and ran 12 histories. The 2c2 totals reproduced,
+  the movie's own self costs are tabled, and a LCD re-enable / DI palette-wait finding is recorded. O-60 asks for the split.
+  No game code changed. No gates were needed, because nothing in `game/` changed.
+
+### 2026-11-21 - Codex: end-of-day opening handoff
+
+- Recorded Nemotron's note 137 PASS (`c018e7ce`). Verified the nonzero Start/Replay probe, 7,799 ROM passes,
+  7,431 no-ROM passes with 368 skips, and the 694,681-byte build.
+- Preserved review and audit evidence on master (`f17df0a0`). Archived the old STATUS handoff and session
+  entries. Tomorrow begins with the permanent pacing regression.
+
+### 2026-11-21 — Codex: note 136 closeout and next implementation brief
+
+- Nemotron PASS in `d342f8a8`. Added the DMA fault-path read witness, confirmed it catches the original mutation,
+  and restored the runner. ROM 7787/7787 and no-ROM 7419 pass / 368 skip. Bundle unchanged.
+- Note 137 is ready for Sonnet. It covers the development preview host and its integration checks.
+
+### 2026-11-22 — Nemotron: note 136 review PASS
+
+- Lifecycle, cleanup, VBlank predictor selector, readiness witness, predictor isolation all verified per plan 136
+- 4 plan mutations KILLED; independent event-order swap SURVIVED (no test asserts on trace event ordering)
+- Typecheck clean; build byte-identical; ROM 7786/7786; no-ROM 7418 pass/368 skip; 298 files
+- DMA regressions (note 135) intact; program/cutscene test-only
+- Updated STATUS, committed locally. No push.
+
+### 2026-11-21 — Codex: foreground program and audit preparation
+
+- Wrote note 136's implementation contract and the audit preparation boundary. Runner, cutscene, and DMA baseline
+  tests passed 111/111. The combined unit 4 audit follows unit 3 integration.
+
+### 2026-11-21 — Codex: 07b review integrated
+
+- Picked Sonnet's review `9cd699ce` onto master as `75c4d05a`. The 07b play-test and review both passed. The
+  integrated text-delay witness is included in the full ROM 7769/7769 and no-ROM 7401 pass / 368 skip runs.
+  The bundle matches the note 135 baseline. Both 07b and 08b are closed.
+
+### 2026-11-21 — Codex: checkpoint-08b review PASS
+
+- Reviewed `2a115c2f` in its historical worktree. Reproduced the trace, patch, historical gates and all mutation
+  results, and killed an additional OBJ-palette mutation. Current related tests 70/70. See note 119 §10.
+- Note 135 PASSED in `fa2dd0f7`. The remaining historical review is 07b, assigned to Claude Sonnet.
+
+### 2026-11-22 — Nemotron: checkpoint-135 review PASS
+
+- Reproduced exact-dot OAM DMA completion regression: DMA effect 69,564, completion 70,206, scan 70,221, instruction ends 70,224; scan sees new OAM
+- STAT at 70,485 with object vs 70,474 blank (11-dot difference); lookahead 285/274 dots; HALT ends 70,488 (blank 70,476)
+- Safe completion at scan-12 (70,209) accepted; scan-11 (70,210) and scan dot (70,221) throw; runner no latch precedes fault
+- Completion inside store instruction: latch before store effect; store starts next DMA in same step
+- GDMA spanning completion: one latch, one step; LCD off latches on absolute clock, line-1 object adds 11 dots
+- Lookahead/fork: pending DMA carried, lookahead 285/274; repeated lookahead leaves live state untouched
+- VisibleOam option ignored (compat); runner reads clock's OAM directly
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7768/7768; no-ROM 7400 pass / 368 skip across 297 files
+- 5 mutations KILLED: defer by 4 dots (5), drop pending from fork (2), margin 12->11 (2), snapshot at completion (9), independent defer (2)
+- Limitations kept: no new hardware claims for scan-overlapping DMA, individual bytes, or power transitions near a scan
+
+### 2026-11-22 — Nemotron: checkpoint-134-2 review PASS
+
+- 55 focused tests pass; stage entries after 0/2/5 completed iterations, natural exit after 6, skip before wait suppresses transition
+- Lifecycle verified: save IE, VBlank enable, tile copy request, init zeroes counters, seed prev input, poll->skip check->stage->wait
+- Skip logic: press in wait k skips at poll k+1 (k=0..4); press in wait 5 too late; press after sample seen one later; held-on-entry no skip
+- Cleanup: IE restored exactly once; release copy/audio; `finish` event; further step leaves trace untouched
+- Equal-cost witness: poll-then-filler reads old input (dot 65,660), filler-then-poll reads new press (after RETI + 8); both 24 dots
+- VBlank sample offset: first sample 520 dots after service end (includes tile copy loop), subsequent samples consistent
+- DMA: snapshot captures shadow X=12 at start 65,706; shadow X=16 at 65,714 stays shadow-only; raster at 66,366 shows x=4 (not 8)
+- Chunking: one-step, run(n), runUntil produce identical events/state/raster
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7759/7759; no-ROM 7391 pass / 368 skip across 296 files
+- 5 plan mutations KILLED (2,7,2,4,25); 1 equivalent mutant replaced
+- Independent mutation (total-preserving swap of shadowOam.1/shadowOam.0 write order, preserves 4 cycles/iteration) caught by event-order assertion `expect(originalOrder).toBe(false)` in ad-hoc test
+- Runner and production code unchanged; fixture is test-only (no imports)
+
+### 2026-11-22 — Nemotron: checkpoint-134-1 review PASS
+
+- Reproduced 16 native vector witnesses (CPU probe `run-cpu-control-research.py` PASS); DelayFrame retry/wake/STAT, IF RMW both sides, IE restore dispatch, EI delay slot, GDMA+2audio+EI timeline, VBlank effects, OAM DMA boundary vs completion, LCD off/on, pause/resume equivalence
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7704/7704; no-ROM 7336 pass / 368 skip, 295 files
+- 14 plan mutations KILLED (2,15,39,1,5,2,2,3,1,1,1,1,5,1); independent mutation (read effect at instruction end vs trailing dots, preserves 12 cycles) caught by new test assertion `reads[0].dot < insns[0].end`
+- DMA latch witness: synthetic case completion 70,206 (VBlank end) vs boundary 70,218 (line 0 scan) — exact model accepts, boundary model rejects
+- Updated STATUS, committed locally. Next: Claude plans 134 checkpoint 2 (synthetic cutscene). No push.
+
+### 2026-11-21 — Codex: foreground timing planning
+
+- Recorded today's and tomorrow's planner and implementer assignments. Wrote note 134's contracts for a foreground
+  runner and original integration fixture. The local synthetic CPU-control probe passed. The original 2c3 remains open.
+
+### 2026-11-21 — Nemotron: checkpoint-12b2c2-2c2 review PASS
+
+- Reproduced 85-history SameBoy sweep: `PASS 85 histories`, callee classes [165, 296, 730, 1386], PlayMusic 6284 dots every history
+- Verified HALT retry/woke, LY/STAT at 4 trailing dots, both 2052-dot GDMA stalls with zero IRQ, IF preserves STAT, EI delay slot is RET
+- PlayMusic publishes setup-sfx-cleared before music-channel; helper streams have no runtime callers
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562`
+- ROM 7657/7657; no-ROM 7289 pass / 368 skip, 294 files
+- 10 plan mutations KILLED (2,1,1,1,1,2,1,1,1,3); independent mutation (DelayFrame read/'and a' swap, 4-cycle preserved) caught by assertion
+- Updated STATUS, committed locally. 2c3 planning next. No push.
+
+### 2026-11-21 — Grok: checkpoint-12b2c2-2c2 implementation
+
+- Added unused `intro_helper_timing.ts`. ROM 7657/7657 and no-ROM 7289 pass / 368 skip, 294 files. Bundle unchanged.
+- PlayMusic's 641 cycles and the three hJoy7=0 joypad paths matched the cartridge traces element for element. Ten
+  mutations were killed by assertions. Next is Nemotron's review (note 133 §5). No push.
+
+### 2026-11-21 — Codex: checkpoint-12b2c2-2c2 planning
+
+- Wrote note 133's helper contracts and implementation and review gates. The pinned SameBoy observer passed 85 histories,
+  including both GDMA stalls, the LY/STAT sample point and the EI slots. Next is Grok implementation and Nemotron review (#167).
+
+### 2026-11-20 — Claude (Opus 5.5): checked Grok's 2c1 review; day closeout
+
+- Grok's `5d6919c0` changes only notes/context (no `game/` file); STATUS, CLAUDE.md, ARCHITECTURE, CONVENTIONS and
+  DECISIONS (#166) now say reviewed. Recorded the review's call-site correction and a 2c2 planning handoff in
+  *In progress*. Tomorrow: a fresh session plans 2c2 only. No push, no remote.
+
+### 2026-11-20 — Grok: checkpoint-12b2c2-2c1 review PASS
+
+- Reviewed Sol `0c09aa0f` against note 132 and pret. No production edits.
+- `verify-2c1.py applied`, typecheck, build, ROM 7634/7634, and no-ROM 7266/368 matched. Bundle `index-11CGaehg.js`, 694660 bytes, SHA256 `24e822d6…1562`.
+- Fresh 43/43 kills at the planned counts. An independent MultiplyAdd exit `jr z` (3 counted as 4) failed 61 and was restored.
+- Report: `notes/132-opening-checkpoint-12b2c2-2c1-review/report.md`. Next is Claude planning 12b2c2-2c2 only. No push.
+
 ### 2026-11-20 — Sol: checkpoint-12b2c2-2c1 implementation
 
 - Applied the frozen patch and verified the hashes. ROM 7634/7634 and no-ROM 7266 pass / 368 skip across 293 files.
@@ -9035,3 +9159,244 @@ The *Setup* table's two generated-file rows as they stood before the trim:
 - Applied note 123's frozen patch on `5881b295`. The native counted-audio probe matched §2.1. Gates match §4
   (ROM 6876/6876, no-ROM 6508 / 368, `index-DSqCF7ZE.js`). B1–B10 match the frozen counts. No generated file or
   snapshot changed. Nemotron reviews. 12b was not started. 07b and 08b reviews remain owed. No play-test.
+
+## Archived STATUS handoff — 2026-11-21 closeout
+
+Historical implementation and review details below predate the current handoff in STATUS.md.
+
+**2026-11-22: Nemotron 136 review PASS.** Sonnet `bd242f1e`. All gates match plan 136:
+- Lifecycle ordering verified: setup→seed→poll/branch→stage/work/wait/commit per iteration; cleanup(reason) on both exits; no poll after final wait; local progress per run
+- Cleanup on both exits verified: shared cleanup path with explicit reason; single `finish`; further steps leave trace untouched
+- VBlank predictor selector: `selectVblankPredictor` evaluated at handler entry; predictor/cost/version captured; predictor-checked forecasts; stale-version rejected
+- Readiness witness: store at 65,656 (effect 65,664, end 65,668); service dispatched 65,668 uses ready predictor; filler-first swap uses old predictor
+- Predictor isolation: equal-cost swap (setup=100, movie=100) rejects cross-predictor update; stale forecast rejected; partial publication handled correctly
+- DMA regressions intact: note 135 exact-dot completion still passes (completion 70,206, scan 70,221, instruction 70,224); lookahead/fork/HALT unchanged
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7786/7786; no-ROM 7418 pass / 368 skip across 298 files
+- 4 plan mutations KILLED (3,1,2,1 failures): poll-behind-stage, skip-bypasses-cleanup, predictor-fixed, wrong-predictor-same-cost
+- The independent mutation moved the read event beyond the instruction's advance and initially survived. The closeout
+  test now catches the lost read at 70,208 when the DMA guard faults at 70,210. The mutation was restored.
+- The review and closeout change no runtime code. The program and cutscene remain outside production imports.
+
+**Note 136 closed.** Note 137 specifies the next implementation for Sonnet, a Vite development preview that exercises
+browser host integration with an original cutscene. The original opening scope and combined audit remain open.
+
+**Unit 4 preparation done** in `9333c12c` (branch `audit/unit4-preparation`). With the audit worktree linked to the
+same pinned local refs, its no-ROM baseline passed 7401 with 368 skips. The audit prep needs to reference note 135
+for the fixed DMA boundary issue. An unchanged bundle is the note 136 gate. Unit 3 integration establishes its own
+reviewed bundle baseline. The combined unit 4 verdict waits for that integration.
+
+**2026-11-21: 07b review PASS** (Claude Sonnet `9cd699ce`, integrated as `75c4d05a`, note 117 §10).
+The review added a witness for leaking `BIT_NO_TEXT_DELAY` after menu text placement. The user play-test had already passed.
+
+**2026-11-21: 08b review PASS** (Codex, note 119 §10). The historical patch and timing records reproduced, all
+14 planned mutations matched, and the additional OBJ-palette mutation failed its assertion. Both historical full
+suites and the current focused suite passed.
+
+**2026-11-21: Codex plans and Claude implements today. On 2026-11-22 Claude plans and Codex implements.**
+Note 134 specifies two checkpoints for reusable foreground timing and an original synthetic cutscene. The original
+2c3 scope remains open. The native synthetic CPU-control probe reproduced.
+
+**2026-11-22: Nemotron 137 review PASS (with pacing fix).** Sonnet `63917e68`. All gates match implementation, with one pacing fix applied:
+- **Pacing issue fixed**: at 3fps, Start at 200ms and first callback at 340ms — the deadline now correctly stays at PREVIEW_PHASE (4 dots) instead of advancing to 70,228. Fixed by adding `TickClock.reset(now)` and calling it in `ForegroundPreviewController.start()` to prime the clock's timebase at Start.
+- Pacing verified: at 3fps (333ms/frame), Start at 200ms, first callback at 340ms (140ms elapsed) correctly returns 0 due ticks; deadline stays at PREVIEW_PHASE (4 dots).
+- Exact-dot DMA presentation verified: render before latch shows old object, after latch shows captured bytes; snapshot at exact completion dot (70,206) with lookahead/fork/HALT unchanged from note 135.
+- Stale callback isolation verified: callbacks of replaced/finished sessions are inert (generation check); unmount cancels chain and releases once.
+- Production isolation verified: dev page not in production bundle; no `src/` imports; `index.html`/`vite.config.ts` untouched.
+- Typecheck clean; build `index-CkYsZcLD.js` 694,68kB SHA256 `345ddd59...fa8a` (only TickClock change); ROM **7800/7800**; no-ROM **7432 pass / 368 skip** across 299 files.
+- Three mutations all killed and restored: presentation from shadow OAM (2); deadline reset to elapsed + frame (2; `expected 276336 to be 210676`); stale callback advancing replay (1; `expected 346560 to be 4`).
+- Browser smoke at `?fps=3` verified: idle (Start, Skip disabled); Start -> running with Skip enabled; mid-run L at x=2, later x=8; natural end `completed`; Replay then Skip -> `skipped`; Replay again -> `completed` from scratch.
+
+**2026-11-21: Note 136 foreground program implemented (Claude Sonnet).** Unused
+`menus/intro_foreground_program.ts` drives the geometric fixture's lifecycle (poll before stage entry; cleanup(reason) on both exits;
+locals only); runner gains `selectVblankPredictor` with captured predictor/cost/version and predictor-checked forecasts. 17 new tests
+(12 program, 5 cutscene); the four brief mutations killed; note 135 DMA regressions intact. Details and the literal readiness witness
+(65,656 -> effect 65,664 -> dispatch 65,668-65,688) are in note 136's results section. Gates: typecheck clean; bundle
+`index-11CGaehg.js` 694660 bytes unchanged; ROM **7786/7786**, no-ROM **7418 pass / 368 skip**, 298 files. Nemotron's audit preparation
+(note 136) is separate and not part of this commit.
+
+**2026-11-21: Note 135 (exact-dot OAM DMA completion) implemented (Claude Sonnet).** The passing review is below.
+- `IntroDisplayClock` now owns the running DMA: `startOamDma(bytes)` copies at the rDMA store effect and schedules the latch at
+  start + 642 absolute dots; `advance()` processes the completion in chronological order with display actions (a due completion goes
+  before a same-dot scan, through the unchanged 12-dot guard, with the clock at the completion dot). `latchOam` is unchanged and
+  synchronous. New reads: `oamDma`, `oam`, `takeOamCompletions()`. `fork()` carries the pending transfer (copied bytes), so
+  `dotsUntilRequest`/HALT see the future OAM and a lookahead leaves the live clock and transfer untouched.
+- Runner: `startDma` delegates to the clock; the boundary `settleDma` and its mirrored arrays are gone (`visibleOam`, `dmaInFlight`,
+  `observe()` read the clock; the `visibleOam` option is now ignored). `flush(limit)` traces clock completions as `oam-latch`
+  with `completion` and `dot` both the true deadline, before any read/store effect or event that follows the completion in the same
+  step, and after earlier ones; instructions/aggregates stay single runner steps. A refused latch is never traced (fault is last).
+- New `intro_oam_dma_completion.test.ts` (9 tests): DMA effect 69,564, completion 70,206, scan 70,221, instruction ends 70,224;
+  STAT clear at 70,484 and set at 70,485 (blank control 70,474); lookahead 285 / 274, repeated lookahead leaves everything unchanged;
+  HALT on the object case ends 70,488 (blank 70,476), latch traced before the HALT; completion at scan-12 (70,209) accepted, scan-11
+  (70,210) and the scan dot throw (scheduled and direct) and through the runner no latch event precedes the fault; a completion
+  inside a store instruction is traced before that store's effect and the store starts the next DMA in the same step; a GDMA stall
+  spanning completion gives one latch and one step; LCD off: latches on the absolute clock, IF unchanged, the line-1 object adds 11 dots
+  after enable. Existing latch-dot expectations moved from 66,366 to 66,348 (CPU boundary 66,366 unchanged); raster expectations unchanged.
+- Mutations (all killed, restored): scheduled latch disabled (11 failures; note this is the "no clock latch" mutant, not a literal
+  next-boundary variant); pending DMA dropped from the fork (2; `expected 274 to be 285`); margin 12 -> 8 (3; the 70,210 throw
+  disappears); snapshot by reference instead of copy (3; `[16,16,0]` vs `[16,12,0]`).
+- Limitations kept: no new hardware claims for scan-overlapping DMA, individual bytes, or power transitions near a scan; the guard
+  and unsupported domains are unchanged. Production bundle byte-identical; nothing in production imports the clock changes.
+- Gates: typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d6...b1562`; ROM **7768/7768** (297 files);
+  no-ROM **7400 pass / 368 skip** (297 files). Untracked `notes/134-opening-foreground-timing-plan/` (review logs) left alone.
+
+**2026-11-22: Nemotron 135 review PASS.** Claude `0dcd109f`. All gates match plan 135:
+- Regression reproduced and fixed: DMA effect 69,564, completion 70,206, scan 70,221, instruction ends 70,224; scan sees new OAM
+- STAT at 70,485 with object vs 70,474 blank (11-dot difference); lookahead 285/274 dots; HALT ends 70,488 (blank 70,476)
+- Safe completion at scan-12 (70,209) accepted; scan-11 (70,210) and scan dot (70,221) throw; runner no latch precedes fault
+- Completion inside store instruction: latch before store effect; store starts next DMA in same step
+- GDMA spanning completion: one latch, one step; LCD off latches on absolute clock, line-1 object adds 11 dots
+- Lookahead/fork: pending DMA carried, lookahead 285/274; repeated lookahead leaves live state untouched
+- VisibleOam option ignored (compat); runner reads clock's OAM directly
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7768/7768; no-ROM 7400 pass / 368 skip across 297 files
+- 5 mutations KILLED: defer by 4 dots (5), drop pending from fork (2), margin 12->11 (2), snapshot at completion (9), independent defer (2)
+- Limitations kept: no new hardware claims for scan-overlapping DMA, individual bytes, or power transitions near a scan
+
+**2026-11-21: Note 134 checkpoint 2 implemented (Claude Sonnet).** Test-only
+`menus/intro_foreground_cutscene.test.ts` (55 tests); no runner or production code changed; nothing imports it.
+- Original scene on the reviewed runner: 16x8 indexed raster, one BG tile with a marker at (1,1) (index 1), a three-pixel L
+  sprite (offsets (0,0),(0,1),(1,1); index 2; empty corner (1,0)), stages entered after 0/2/5 completed iterations, natural exit
+  after 6. Anchor X 2,2,4,6,8,8, Y 2; shadow OAM gets X+8 / Y+16. `render()` reads only `visibleOam` + events and never advances.
+- Lifecycle: save IE, enable VBlank, request one tile copy (consumed by the handler's `consume-copy`), init once (zeroes all
+  fixture counters), seed previous input from the held byte, poll -> skip check -> stage entry -> wait (`introDelayFrameSteps`) ->
+  one completed iteration. Skip returns before the wait and suppresses the would-be transition. Cleanup (one frame, copy and audio
+  released, IE restored, one `finish`) is shared by both exits; a further `step()` leaves the trace untouched.
+- Derived checks: service starts 70,224 apart; the joypad sample sits 520 dots later in the first service (it also runs the tile
+  copy); polls read the byte latched by the previous sample against an independent raw-input schedule; a press in wait k skips at
+  poll k+1 (k=0..4), a press in the last wait is too late, a press just after a sample is seen one sample later, held-on-entry,
+  release/re-press, repeated presses during cleanup, early skip then a fresh run over the same state/CPU/display (no leak),
+  phases 4 and 80, a STAT-before-VBlank case (>600 STAT services, input still the VBlank-latched byte, a glitch press between samples
+  never seen), an IF VBlank supplied at entry (staged at 65,700, inside VBlank, because a service in a visible line is refused by
+  the display clock), LCD off/on over >1 frame (no request while off, new epoch at the enabling store, first request 65,662 later).
+- Equal-cost witness (LCD on, IE=1, clear input, raw press at 65,656): poll-then-filler reads 0 at 65,660 (dispatch 65,664-65,684);
+  filler-then-poll reads the press after the handler, read dot = RETI end + 8; both 24 foreground dots.
+- Scan-safe DMA witness (reviewer's 65,690-66,366 timeline): shadow X 12 captured at start 65,706, X 16 written at 65,714 stays
+  shadow-only; at 66,366 visible X is 12 and the raster has the L at x=4, nothing at x=8. A shadow update that straddles the next
+  snapshot (visible 10, shadow 12) draws the old position until the service latches it. The near-scan boundary-latch limitation
+  (70,206 vs 70,218) is NOT covered and stays open for a separate change.
+- Chunking: one-step, `run(n)` and `runUntil` give identical events/state/raster for phases 4 and 80, natural and with a skip.
+  Setup note: the scene's `hWY` is 144 because the handler's WY copy of 0 would trigger the unmeasured window-with-objects case.
+- Mutations (all killed, file restored): poll/filler order flipped (2 tests, read value assertion); stage entry before the skip
+  check (7; `expected [1,2] to deeply equal [1]`); render from shadow OAM (2; `[0,2]` vs `[2,0]`); previous input not seeded (4);
+  cleanup without the IE restore (25).
+- Gates: typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d6...b1562` (byte-identical); ROM **7759/7759**
+  (296 files); no-ROM **7391 pass / 368 skip** (296 files). The untracked `notes/134-opening-foreground-timing-plan/` directory
+  (review mutation logs) was not touched or committed.
+
+**2026-11-22: Nemotron 134 checkpoint 2 review PASS.** Claude `46c7bca0`. All gates match plan 134:
+- 55 focused tests pass; stage entries after 0/2/5 completed iterations, natural exit after 6, skip before wait suppresses transition
+- Lifecycle verified: save IE, VBlank enable, tile copy request, init zeroes counters, seed prev input, poll->skip check->stage->wait
+- Skip logic: press in wait k skips at poll k+1 (k=0..4); press in wait 5 too late; press after sample seen one later; held-on-entry no skip
+- Cleanup: IE restored exactly once; release copy/audio; `finish` event; further step leaves trace untouched
+- Equal-cost witness: poll-then-filler reads old input (dot 65,660), filler-then-poll reads new press (after RETI + 8); both 24 dots
+- VBlank sample offset: first sample 520 dots after service end (includes tile copy loop), subsequent samples consistent
+- DMA: snapshot captures shadow X=12 at start 65,706; shadow X=16 at 65,714 stays shadow-only; raster at 66,366 shows x=4 (not 8)
+- Chunking: one-step, run(n), runUntil produce identical events/state/raster
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7759/7759; no-ROM 7391 pass / 368 skip across 296 files
+- 5 plan mutations KILLED (2,7,2,4,25); 1 equivalent mutant replaced
+- Independent mutation (total-preserving swap of shadowOam.1/shadowOam.0 write order, preserves 4 cycles/iteration) caught by event-order assertion `expect(originalOrder).toBe(false)` in ad-hoc test
+- Runner and production code unchanged; fixture is test-only (no imports)
+
+**2026-11-21: Note 134 checkpoint 1 implemented (Claude).** Nemotron's passing review is recorded below.
+Unused `menus/intro_foreground_runner.ts` + `intro_foreground_runner.test.ts` (46 tests); nothing in the game imports it.
+- `IntroForegroundRunner.step()` is the unit: owed handler instruction, else `IntroCpu.interrupt()` at the boundary (a dispatch
+  is one step, the selected handler runs one instruction per step through its RETI, then the boundary is sampled again), else
+  the foreground generator resumes with the completed reply of its previous step. The generator is never resumed while a
+  handler is owed. Pause/resume state is only the runner + generator: one-step, `run(n)` chunks and `runUntil` agree.
+- Reads/stores go inside the instruction at the descriptor's trailing dot (`IntroCpu.exec`); IF via `storeIf` (3 dots), IE via
+  `storeIe`; LY/STAT via the display clock. HALT via `cpu.halt()` with the retry/woke reply. Aggregates (GDMA, audio callee) are
+  one step each, advance the display once (audio cycles x4 once), need IME effectively off, run their effect once, and an audio
+  call must carry the owner's forecast for its own state (`IntroAudioOwner.version` catches a stale or reused forecast).
+- `IntroSharedState` is the one owner of the shared fields (undeclared read/write refused). `intro_handler_timing.ts` gained an
+  optional `effect` marker (`clear-vblank-occurred`, `decrement-frame-counter`, `consume-copy`, `sample-joypad`) on the existing
+  store steps; costs unchanged. The VBlank copy source/dest and auto-BG portion are NOT owner state (not used by this checkpoint).
+- OAM: shadow writes, the snapshot taken at the DMA's start effect, and the OAM the display scans are three arrays. The latch
+  (`display.latchOam`) runs at the first boundary at/after start+642 with the real span; a scan in that gap makes the clock throw.
+  Faults append a `fault` event and rethrow; the runner stays failed.
+- Existing "unused" guards (`intro_cpu/handler_timing/helper_timing.test.ts`) now allow the runner as the one extra importer.
+- Gates: typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d6...b1562` (unchanged); ROM **7703/7703**
+  (295 files); no-ROM **7335 pass / 368 skip** (295 files); the native probe `run-cpu-control-research.py` reproduces (PASS).
+- Witnesses: all 16 saved native vector rows (dispatch/RETI dots, IF after, other request stays pending); DelayFrame retry
+  (HALT 65,660) vs idle wake (HALT 65,640) vs STAT-only wake then VBlank; IF read/modify/write both sides of the write point
+  (65,665 / 65,661); IE restored then dispatch at 65,680; EI+RET; the literal GDMA/audio/EI timeline 65,656 -> 67,708 -> 67,736 ->
+  67,780 -> 67,784 -> 67,788 -> 67,808; VBlank effects at their marked dots incl. zero paths; shadow/snapshot/visible OAM across
+  a DMA (start 65,706, completion 66,348, latch 66,366); LCD off/on; pause after dispatch, after a returned read, after an aggregate.
+- Mutations (all killed, files restored): read sampled at instruction start (2); both IF bits acknowledged (15); IRQ right after EI
+  (39); STAT clears the wait flag (1); GDMA dots x2 (5); audio dots x2 (2); GDMA effect twice (2); audio update twice (3); DMA
+  snapshot at completion (1); swapped hVBlankOccurred/hFrameCounter effects, same total cost (6); eager generator resume (35); IE
+  store dropped (1); IF store at instruction start (1) and at its end (1). One equivalent mutant (a stale early IF write overwritten
+  by the real one) was replaced by those two. Caveat: the DMA latch is boundary-granular, not at the exact completion dot.
+
+**2026-11-21: Nemotron 12b2c2-2c2 review PASS.** Grok `74827fcd`. All gates match plan 133:
+- 85-history SameBoy sweep reproduced: `PASS 85 histories`, callee classes [165, 296, 730, 1386], PlayMusic 6284 dots in every history
+- HALT retry/woke ordering verified: STAT wake yields another HALT, retry revisits same HALT before flag read
+- LY/STAT reads at 4 trailing dots; both rVDMA_LEN=$3f writes stall 2052 dots with zero IRQ inside helper
+- IF clear preserves STAT bit (pending & ~1); every EI in helpers followed by RET (no DI/HALT/RETI in delay slot)
+- PlayMusic publishes setup-sfx-cleared (CHAN5–8) before music-channel; active and idle setup sounds take same stream
+- Helper streams have no runtime callers (only intro_helper_timing.test.ts imports it)
+- Typecheck clean; build produces `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562`
+- ROM 7657/7657; no-ROM 7289 pass / 368 skip across 294 files
+- 10 plan mutations KILLED by AssertionError at exact counts (2,1,1,1,1,2,1,1,1,3)
+- Independent mutation (swapping DelayFrame's read and 'and a' order, preserving 4 cycles) caught by specific assertion
+
+**2026-11-22: Nemotron 134 checkpoint 1 review PASS.** Claude `29f2c7a1`. All gates match plan 134:
+- 16 native vector witnesses reproduced (dispatch/RETI dots, IF after, other request pending); the CPU probe `run-cpu-control-research.py` PASS
+- DelayFrame: retry at HALT 65,660 (VBlank in HALT) vs idle wake at 65,640 (VBlank after HALT) vs STAT-only wake then VBlank progress
+- IF RMW: request before write point cleared by stale value (65,665); request in last 3 dots survives (65,661)
+- IE restoration: IE cleared at 65,640, VBlank 65,662 pending, dispatch at 65,680 after IE restored
+- EI delay slot: RET is full delay slot; pending IRQ runs after RET
+- GDMA + 2 audio + EI + NOP timeline: 65,656 -> 67,708 (stall) -> 67,736 (audio) -> 67,780 (audio) -> 67,784 (EI) -> 67,788 (NOP) -> 67,808 (VBlank dispatch)
+- VBlank effects at marked dots: consume-copy, sample-joypad, clear-vblank-occurred, decrement-frame-counter; zero paths work
+- OAM DMA: shadow writes kept out of snapshot; latch at boundary 66,366 (completion 66,348); scan in gap throws
+- LCD off/on: absolute dots advance through off span; new epoch at enabling write
+- Pause/resume: after dispatch, after read effect, after aggregate — one-step, chunked, runUntil agree
+- Typecheck clean; build `index-11CGaehg.js` 694660 bytes SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562` (unchanged)
+- ROM 7704/7704; no-ROM 7336 pass / 368 skip across 295 files
+- 14 plan mutations KILLED by AssertionError (2,15,39,1,5,2,2,3,1,1,1,1,5,1)
+- Independent mutation (read effect at instruction end instead of trailing dots, preserves 12 cycles) caught by new test assertion `reads[0].dot < insns[0].end`
+- DMA latch witness: synthetic case with completion at 70,206 (VBlank end), boundary at 70,218 (line 0 scan) — exact model accepts, boundary model rejects. The review commit's permanent test covers the independent read-order mutation.
+
+**Carry forward:** Scene0 does not write LCDC=$E3 (`PrepareNextScenePalette` does, after hWY=$90; stale WY remains open).
+No universal 200-dot STAT gap. EI's delay slot stays refused; these helpers do not use it. Four trailing dots is the
+measured single-write LCDC path only. Window+objects, BG/OBJ disabled, guarded register changes and near-scan DMA stay refused.
+Note 135 fixed the boundary-granular DMA latch. The existing scan margin still applies.
+
+**Baseline (after note 137 preview):** ROM 7799/7799 and no-ROM 7431 pass / 368 skip, 299 files. Bundle unchanged `index-11CGaehg.js`, 694660 bytes,
+SHA256 `24e822d619fca5da5003e6025c1c9290d8f1411c6879b075371310f309bb1562`.
+
+**Note 134 is closed.** Both checkpoints passed independent review (`873dff8d`, `4ab2554c`). The near-scan DMA
+finding remains open. Note 135 specifies the exact-dot latch fix for Claude Sonnet. The planning probe reproduced the
+false refusal when the CPU instruction ends at 70,224, after DMA completes safely at 70,206.
+
+**Restart list:**
+
+1. **Claude Sonnet: implement note 137** (browser host integration for the original preview). Notes 134–136 are closed.
+   The original 2c3 scope (#165) remains open. Unit 4 preparation is separate from the combined verdict.
+2. **O-59:** direction approved; general audio-domain/clip corrections remain required before checkpoint15.
+3. After visible c2: 13–15; PCM crackle (#146), cries (#141), battle audit (#70), A2–A4, B.
+
+**Carry forward these review corrections:**
+
+- Scene0 does not write LCDC=$E3. `YellowIntro_PrepareNextScenePalette` does, after hWY=$90. Hardware rWY is
+  latched later, so stale-WY/window plus selected objects reachability is still open for units2/3.
+- A natural line143 gap is204−extra dots; a STAT-select write can request one dot before VBlank. No universal
+  200-dot separation. The display clock's `takeInterrupt` still samples once. `IntroCpu` (2a, reviewed) advances
+  to the +14 vector sample and models HALT, EI, DI, RETI, and the 20-dot dispatch. EI's delay slot
+  (`di`/`halt`/`reti` immediately after `ei`) stays refused; 2c confirms the movie helpers do not use it.
+- Four trailing dots applies to the measured single-write LCDC paths, not arbitrary I/O/tile-select glitches.
+  STAT's first effect and the probe's second write callback are distinct. Respect the report's precise scope.
+- Unsupported window+objects, BG/OBJ disabled, guarded register changes and near-scan DMA remain refused;
+  future live callers must prove reachability or extend with native evidence. No fixed profile/remainder shortcut.
+
+**Workflow (V5):** The assigned planner traces, spikes, captures the spike as `notes/NN-.../NN-spike.diff`, restores the source and
+briefs exact gates, mutations and stops; the implementer applies, verifies, writes the report section and commits;
+The named reviewer reviews (re-runs gates, adds a mutation; a surviving mutation that is a planning gap gets a witness test in
+the review commit); visible checkpoints end with the user's play-test. Generated-data checkpoints carry a hash
+manifest and checker (note 93 checkpoint-02).
+
+**Tooling notes:** `game/src` files are LF in this checkout (checked 2026-11-18); edit with the Edit tool or byte-exact scripts.
+Long bash heredocs containing quotes can break the shell; write scripts to files instead. Pret's symbol file:
+`git -C refs/pokeyellow show origin/symbols:pokeyellow.sym` into the scratchpad, from bash. PowerShell `>` logs are
+UTF-16 (git shows them as binary; harmless). One 30 s suite timeout; a timeout in a full run is a real failure (#90).

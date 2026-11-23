@@ -150,5 +150,5 @@ it('keeps the handler streams unused by the game',()=>{
     else if(e.name.endsWith('.ts')&&!e.name.endsWith('.test.ts')&&/intro_handler_timing|introVBlankSteps|introLcdcSteps/.test(readFileSync(p,'utf8')))
       owners.push(relative(root,p).replace(/\\/g,'/'));
   }}
-  walkDir(root);expect(owners).toEqual(['menus/intro_handler_timing.ts']);
+  walkDir(root);expect(owners).toEqual(['menus/intro_foreground_runner.ts','menus/intro_handler_timing.ts']); // the runner (note 134) is itself unused
 });

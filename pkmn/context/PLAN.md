@@ -5,14 +5,10 @@ Status legend: ✅ done · 🔨 in progress · ⬜ pending
 **Live status is not here.** This file is the map. What is actually done, in
 progress, and next lives in `STATUS.md` — read that first.
 
-**Opening handoff, 2026-11-19:** 12b2b and **12b2c1 are closed** (Nemotron `43b56cb6` / `961e1dec`).
-The user-approved four-unit split is note129/#161: **12b2c2-1 closed** (Sonnet `d09c218f`, Grok PASS `64afc3ce`),
-an unused dot-based display clock. Next session is **12b2c2-2 planning only**: source-branch VBlank/foreground
-budgets, reachable SFX194 setup timing, CPU control and interrupt dispatch. **12b2c2-3** retains visible
-setup/loop/skip/exit/scenes0–5 and Boot/main ownership; **12b2c2-4** expands the trace/mutation audit and combined
-review. Tests accompany each unit; final visible play-test is still owed. Parents12b2c2/12b2c remain open.
-Then13–15. General O-59/clip corrections remain before15; separate07b/08b reviews remain owed. Today's work
-ends with context closeout; no unit2 work started. STATUS is authoritative for the reviewed API's limits.
+**Opening handoff, 2026-11-21:** 07b, 08b, 12b2c2-2c2, and notes 134–137 are reviewed. Note 137 delivered the
+development preview and its Start/Replay pacing fix. The next small follow-up is the permanent pacing regression
+in `STATUS.md`. The original 2c3 foreground timing, unit 3 live integration, and unit 4 combined audit remain open.
+Audit preparation is in `notes/136-unit4-audit-prep/`. Broader O-59 audio and clip work remains before checkpoint 15.
 
 ## ⚠ These are milestones, not sessions (2026-09-05)
 

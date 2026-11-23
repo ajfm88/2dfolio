@@ -19,7 +19,7 @@ vi.mock('../save', () => ({ clearSave: () => { record.calls.push([record.frame, 
 import { ClearSaveDialogue, CLEAR_SRAM_FRAMES, NO_YES_BOX, NO_YES_CURSOR, TWO_OPTION_TAIL, type ClearSaveAnswer } from './clear_save_dialogue';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { loadTextPrograms } from '../text/program_data';
-import { setFastTextDelay } from '../text/text_flags';
+import { getNoTextDelay, setFastTextDelay } from '../text/text_flags';
 import { textBgTransfer } from '../text/bg_transfer';
 import { isVBlankHeld, resetVBlankHold } from '../core/vblank_hold';
 import * as input from '../input';
@@ -142,5 +142,17 @@ describe('the NO/YES menu (DisplayTwoOptionMenu, NO_YES_MENU)', () => {
     expect(record.calls.filter(call => call[1] === 'clearSave')).toEqual([[clearFrame, 'clearSave', null]]);
     expect(CLEAR_SRAM_FRAMES).toBe(13);
     expect(run(CLEAR_SRAM_FRAMES).map(f => f.answer)).toEqual([...Array<null>(12).fill(null), 'yes']);
+  });
+});
+
+// Review witness (R2): DisplayTwoOptionMenu sets BIT_NO_TEXT_DELAY for PlaceString and `res`es it before HandleMenuInput, so
+// the bit must not outlive the menu text (nothing else clears it until Init; the port's other readers would inherit it).
+describe('BIT_NO_TEXT_DELAY does not leak out of the menu', () => {
+  it('is clear once the NO/YES text is placed and stays clear through the choice', () => {
+    expect(getNoTextDelay()).toBe(false);
+    toMenu(); run(2);
+    expect(getNoTextDelay()).toBe(false);
+    run(1, ['a']); run(TWO_OPTION_TAIL + 2);
+    expect(getNoTextDelay()).toBe(false);
   });
 });

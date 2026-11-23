@@ -146,6 +146,6 @@ describe('Intro object engine: ownership and named cartridge quirks', () => {
       }
     };
     // 12a owns the unused JSON loader; both unused timing helpers import the field layout and table type.
-    walk(SRC); expect(holding.sort()).toEqual(['menus/intro_movie_assets.ts', 'menus/intro_object_cpu_timing.ts', 'menus/intro_object_timing.ts', 'menus/intro_objects.ts']);
+    walk(SRC); expect(holding.sort()).toEqual(['menus/intro_movie_assets.ts', 'menus/intro_movie_timing.ts', 'menus/intro_object_cpu_timing.ts', 'menus/intro_object_timing.ts', 'menus/intro_objects.ts']);
   });
 });

@@ -25,6 +25,9 @@ export const STAR_AUDIO_BANK = 0x1f;
 
 type BootStep = 'dark' | void;
 export type BootExit = 'title';
+/** An optional frame segment between the shooting star and PlayIntro's tail. Each yield is one frame, as in the other
+ *  Boot steps; returning (or being skipped by the program itself) falls through to the same tail. */
+export type OpeningSegment = (screen: OpeningScreen) => Generator<BootStep, void>;
 
 export class Boot {
   private screen = new OpeningScreen();
@@ -36,6 +39,9 @@ export class Boot {
   private joy: StarJoypad = { last: 0 };
   private frame = 0;
   private stage = 'idle';
+
+  /** `segment`: absent by default, which adds zero frames; main.ts keeps `new Boot()`. */
+  constructor(private readonly segment?: OpeningSegment) {}
 
   async load(image?: (url: string) => Promise<OpeningImage>): Promise<void> {
     this.images = await loadShootingStarImages(image);
@@ -102,6 +108,11 @@ export class Boot {
     this.stage = 'shooting-star';
     textBgTransfer.enabled = true;
     yield* playShootingStar(this.screen, images, this.joy);
+    // The optional segment: a fresh generator per run, so every start() begins it afresh.
+    if (this.segment) {
+      this.stage = 'opening-segment';
+      yield* this.segment(this.screen);
+    }
     // PlayIntroScene (10–14) is absent; PlayIntro's tail: hSCX = 0, hAutoBGTransferEnabled = 0, ClearSprites, DelayFrame.
     this.stage = 'play-intro';
     textBgTransfer.enabled = false;

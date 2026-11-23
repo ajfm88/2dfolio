@@ -2157,6 +2157,80 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
        reviewed 2a/2b/2c1 APIs and STATUS's 2c2 handoff. 2c3, units 3/4, parents 12b2c2/12b2c, O-59 coverage and the
        07b/08b reviews stay open. No push or remote.
 
+167. **12b2c2-2c2 roles and shared helper spec** (2026-11-21, user assigns). Codex plans, Grok implements, and
+     Nemotron reviews the spec against Grok's code. Note 133 defines the unused foreground helper streams and the
+     verification gates. The local 85-history observer established the LY/STAT sample point at four trailing dots,
+     two 2,052-dot GDMA stalls, and ordinary RET in the observed EI slots. Grok verifies the implementation's
+     instruction streams against the native observations. This assignment supersedes #166's roles for 2c2.
+
+168. **Reusable timing and development preview closeout** (2026-11-21 local). Notes 134–137 are reviewed.
+     The runner composes timed foreground and interrupt steps. The display owns exact-dot OAM DMA completion
+     within its existing scan domain (note 135). Note 136 pins per-service audio predictor ownership.
+     The standalone note 137 preview uses original geometric content and anchors Start/Replay with
+     `TickClock.reset(now)` (`c018e7ce`). The game's boot has no preview caller. The original 2c3, unit 3,
+     and combined unit 4 verdict remain open. Audit preparation is preserved in the main repository, and the
+     separate 07b/08b reviews are closed. Claude plans and Codex implements on 2026-11-22 per the user's rotation.
+
+169. **2c3 splits into 2c3a/2c3b; GPT Sol implements; 2c3a frozen with five 2c2 cost fixes** (2026-11-22, user
+     answers O-60: "let's split 2c3 that way"; note 138). **2c3a** is the movie's own instruction streams
+     (`menus/intro_movie_timing.ts`, unused), replayed against 15 native windows of the cartridge, character for
+     character. **2c3b** is the whole timed foreground through the runner against native per-iteration dots. Both are
+     unused; unit 3 then wires it. Sol implements. Sol is the OpenAI model the user runs in the Codex terminal app, so
+     #168's Codex is the same agent. **Grok reviews 2c3a** (user, 2026-11-22). Sol applied it as `eec4aaf6`.
+     - The replays found five wrong costs in reviewed 2c2 (`intro_helper_timing.ts`). `add n` in
+       `_UpdateCGBPal_OBP`, `inc hl` ×3 in InitCGBPalettes/TranslatePalPacketToBGMapAttributes, and `and %10` in
+       LoadBGMapAttributes' STAT wait are each two machine cycles, not one. 2c2 is unused, so no shipped behavior
+       changed. The fixes ride in 2c3a's frozen patch with a regression test and three census mutations. Lesson:
+       totals-only tests cannot catch per-instruction cost errors. Element-by-element native replay can.
+     - `rBGP`/`rOBP0`/`rOBP1` stores take effect six dots before the instruction ends. That's SameBoy's modeled
+       CGB-D/E palette write conflict, not a callback artifact. The STAT double write is equivalent to one store here.
+     - Spike: no-ROM 7,452/368, ROM 7,820, 300 files; bundle `index-CkYsZcLD.js` unchanged; 17/17 mutations killed.
+       It lands after Sol's note 137 pacing test (expect 7,453/368 and 7,821). Parents 12b2c2/12b2c, unit 3, unit 4
+       and O-59 stay open.
+
+170. **The user approved 2c3b1, 2c3b2 and 2c3b3** (2026-11-22, note 139). They cover entry and audio handoff,
+     object loop and early skip, then LCD transitions and full replay. The user also approved narrowing 2c3b1
+     into **2c3b1a** (12-history dispatch ledger and entry capture, native-checked pointer bytes, `cp $90`) and
+     **2c3b1b** (timed VBlank transfer-portion update, audio-owner handoff and composed replay). 2c3b1a is frozen
+     in note 139 §4–§6. Claude checks the freeze before application. 2c3b2 and 2c3b3 retain their scope.
+     - After Claude checked 2c3b1a (`3d4aaf62`), 2c3b1b-i hit the user's correctness stop. The reviewed `PlayMusic`
+       helper's six channel-command pointer stores omit values. The runner refused the first store before the
+       music-channel publication. The guard stays in place. Note 139 §7 records the native bytes and source lines.
+     - The user approved repairing all five store groups in 2c3b1b-i on 2026-11-22. The freeze includes those repairs,
+       the VBlank portion effect, the audio owner and a compact ledger projection. Claude checks `02-spike.diff`
+       first. The exact 12-history entry replay belongs to 2c3b1b-ii. See note 139 §7.1–§7.4.
+     - 2c3b1b-i applied as `dfdd3e2e`. 2c3b1b-ii is frozen in note 139 §8 after all 12 entry histories matched.
+       It uses the CPU read dot, requires the source word at the palette call and pins the first movie forecast
+       at 6,627 cycles. Claude checks `03-spike.diff` before application.
+     - 2c3b1b-ii applied as `8f7cc147`. Used the user's approved 2c3b2 split and froze **2c3b2a** in note 139 §9.
+       It verifies native shadow-OAM bytes and work offsets, preserves the in-call DMA observation, and includes the
+       two test cleanups. Claude checks `04-spike.diff` before application. The full early-loop/skip replay is 2c3b2b.
+     - 2c3b2a applied as `f707af7d` (Claude-verified). Sol stopped before 2c3b2b at the user's request (#171).
+171. **The opening's remaining timing work is parked; the queue moves to the core game** (user, 2026-11-22).
+     After about three days on 12b2c2 the user said they would rather have done this slice to a lower bar and kept
+     building maps and core systems. Claude recommended parking, and the user agreed. **The live opening is unchanged**
+     (`boot.ts` → `OpeningScreen`). Everything 12b2c2 built stays committed, tested and **unused**: units 1–2, 2c3a,
+     2c3b1 (Grok PASS) and 2c3b2a (applied `f707af7d`). That includes the per-instruction timing streams, the runner,
+     the 12-history native ledger and the entry replay to the first `.loop`. **Parked until the end of the game (Phase J, user):** 2c3b2b, 2c3b3,
+     unit 3 (wiring the timed movie into the live game), unit 4, and the opening-specific O-59 items. The finding is
+     in `notes/57-findings-backlog.md`. If it is resumed, the user's lowered bar applies: frame-exact against the native
+     captures, not cycle-exact. **Next: A2**, then A3, A4 (before B1), B1 and B2 (PLAN.md). Lesson for planning: settle
+     a slice's fidelity bar and rough size with the user before deep research. Presentation polish can consume days.
+172. **A simple opening now; accuracy goes to maps and gameplay** (user, 2026-11-22). *"let's wire up a simple opening now
+     and instead focus on this accuracy being in the maps and the actual gameplay."* The Pikachu movie (all 18 scenes) is
+     ported frame by frame into `Boot`'s empty `PlayIntroScene` slot. **The user: don't lose the work already done.** A
+     frame driver runs 12b2c2's reviewed `intro_movie_timing.ts` streams semantically, ignoring cycle counts; scenes 6–17
+     are added to the same module (note 140 §2.1). The bar is frame-level and visually faithful, with
+     scanline-level mid-frame effects and no cycle timing, native observer, mutation census or frozen patch (note 140). Sol
+     implements, Claude reviews, and the user play-tests. After it lands, the queue goes to the core game. The #146 order
+     (crackle → cries → battle audit → A2–A4) is to be confirmed with the user, who wants maps and core systems first.
+173. **Queue after the simple opening: cries → battle audit → Mt. Moon and A2; the crackle fix is parked** (user,
+     2026-11-22). Supersedes #146's order. *"crackle fix can be parked till the end of the game; cries and battle audit
+     is part of the gameplay, … we can do that next, and then mt moon and A2."* The PCM crackle fix moves to J2. Next
+     come Pokémon cries (#141), then the battle-mechanics audit (#70), then B1 (Mt. Moon) and A2. PLAN.md requires A4
+     (in-game trades) before B1, because Mt. Moon is the first place to get a Clefairy. A3 (field effects) is still open.
+     Claude raises both when planning B1.
+
 ## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.

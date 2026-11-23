@@ -116,5 +116,5 @@ it('keeps the setup audio stream unused by the game',()=>{
     else if(e.name.endsWith('.ts')&&!e.name.endsWith('.test.ts')&&/intro_setup_audio_timing|introSetupAudio/.test(readFileSync(p,'utf8')))
       owners.push(relative(root,p).replace(/\\/g,'/'));
   }}
-  walkDir(root);expect(owners).toEqual(['audio/intro_setup_audio_timing.ts']);
+  walkDir(root);expect(owners).toEqual(['audio/intro_entry_audio.ts','audio/intro_setup_audio_timing.ts']);
 });

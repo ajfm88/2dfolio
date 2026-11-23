@@ -26,6 +26,9 @@ export class TickClock {
     this.frameMs = 1000 / fps;
   }
 
+  /** Reset the clock's timebase to `now` (ms). The next due() will measure elapsed from this moment. */
+  reset(now: number): void { this.last = now; }
+
   /** How many ticks to run at `now` (ms, performance.now() timebase). */
   due(now: number): number {
     const elapsed = now - this.last;

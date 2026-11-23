@@ -513,6 +513,16 @@ Opening checkpoint-12b2c2-2a (note 130) adds `IntroCpu` over `IntroDisplayClock`
 
 Opening checkpoint-12b2c2-2b (note 131) adds `introVBlankSteps` and `introLcdcSteps`. They yield instruction costs from the vector jump through RETI, with one opaque audio callee step in VBlank. The SCX, SCY, WY, DMA, and NR50 markers identify stores that take effect four dots before the instruction ends. Unsupported handler branches and nonzero LCDC pointers raise `RangeError` before the first step. Nothing in the game calls these generators yet.
 
+Opening checkpoint-12b2c2-2c2 (note 133) adds `intro_helper_timing.ts`. Each helper starts at its first instruction and includes its returning instruction. The owner supplies LY, STAT, joypad and flag reads between steps, and HALT's retry or woke reply. A GDMA stall is 2,052 dots with no opcode, emitted after `rVDMA_LEN` and not passed to `IntroCpu.exec()`. An audio step is the callee from its first instruction through RET; manual calls use the setup predictor and `UpdateMusicCTimes` uses the movie predictor after PlayMusic publishes a music channel. PlayMusic's CHAN5–8 clears are visible before those music-channel stores. EI in these helpers is followed by RET. Nothing in the game calls these generators yet.
+
+Notes 134–137 exercise the foreground runner in tests and a standalone Vite development preview. The runner resumes
+the program after servicing pending interrupts. The display clock copies shadow OAM at DMA start and makes the
+snapshot visible at the exact completion dot. The program polls input before stage entry and runs one cleanup path
+on either exit. At VBlank entry the runner captures the predictor, cost and audio version for that service.
+The preview in `game/scripts/foreground_preview.ts` anchors each Start/Replay with `TickClock.reset(now)`, advances
+absolute dot deadlines, and presents visible OAM. Its original geometric scene and synthetic audio stay outside
+the game's boot and production import graph.
+
 Review `64afc3ce` (Grok), implementation `d09c218f` (Sonnet), is the authoritative correction to the original
 report/source comments. Four trailing dots applies to the measured single-write LCDC paths; tile-select-off
 glitch paths/arbitrary I/O stores need separate timing, and STAT's two writes must distinguish first effect

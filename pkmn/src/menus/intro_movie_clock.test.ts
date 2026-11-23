@@ -130,8 +130,8 @@ it('keeps the clock and movie-audio composition unused by the game',()=>{
   const root=resolve(__dirname,'..'),owners:string[]=[];
   function walk(folder:string):void{for(const e of readdirSync(folder,{withFileTypes:true})){
     const p=resolve(folder,e.name);if(e.isDirectory())walk(p);
-    else if(e.name.endsWith('.ts')&&!e.name.endsWith('.test.ts')&&/intro_movie_clock|IntroMovieClock|intro_music_timing|timedIntroMusicUpdate/.test(readFileSync(p,'utf8')))
+    else if(e.name.endsWith('.ts')&&!e.name.endsWith('.test.ts')&&/intro_movie_clock|IntroMovieClock|intro_music_timing|timedIntroMusicUpdate|intro_entry_audio|IntroEntryAudio/.test(readFileSync(p,'utf8')))
       owners.push(relative(root,p).replace(/\\/g,'/'));
   }}
-  walk(root);expect(owners.sort()).toEqual(['audio/intro_music_timing.ts','menus/intro_movie_clock.ts']);
+  walk(root);expect(owners.sort()).toEqual(['audio/intro_entry_audio.ts','audio/intro_music_timing.ts','menus/intro_movie_clock.ts']);
 });
