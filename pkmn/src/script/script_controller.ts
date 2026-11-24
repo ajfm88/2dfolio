@@ -41,7 +41,7 @@ import { setFlag, hasFlag, clearFlag, setMapScript } from '../events';
 import { hideObject, showObject, toggleableObjectList } from '../overworld/toggleable_objects';
 import { setJoyIgnore } from '../input/joy_ignore';
 import { SimulatedJoypad } from '../overworld/simulated_joypad';
-import { playSFX, isSoundFinished } from '../audio';
+import { playCry, playSFX, isSoundFinished } from '../audio';
 import type { Direction } from '../core';
 import { getPlayerName } from '../core/player_state';
 import { markOwned } from '../pokedex_state';
@@ -97,6 +97,7 @@ export type ScriptAction =
 
 let activeScript: ScriptRunner | null = null;
 let scriptSound: { name: string; played: boolean; waitForCurrent: boolean } | null = null;
+let scriptCry: ReturnType<typeof playCry> | null = null;
 let scriptDisplayWaiting = false;
 let scriptDisplayStarted = false;
 let scriptClosingText = false;
@@ -240,6 +241,8 @@ export function initScript(commands: ScriptCommand[]): void {
   npcCloseFacings.clear();
   activeScript = createScript(commands);
   scriptSound = null;
+  scriptCry?.return();
+  scriptCry = null;
   scriptDisplayWaiting = false;
   scriptDisplayStarted = false;
   scriptClosingText = false;
@@ -378,6 +381,12 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
     return runScript(deps, isPass, displayAdvanced);
   }
 
+  if (scriptCry) {
+    if (!scriptCry.next().done || !isSoundFinished()) return null;
+    scriptCry = null;
+    advanceScript(activeScript);
+    return runScript(deps, isPass, displayAdvanced);
+  }
   // Only the button wait and Hold read Joypad. Sound/copy waits freeze the world without reads.
   if (scriptSound || scriptClosingText) {
     if (scriptSound) {
@@ -693,6 +702,10 @@ function runScript(deps: ScriptDeps, isPass: boolean, displayAdvanced = false): 
 
     case 'sound':
       scriptSound = { name: cmd.name, played: false, waitForCurrent: cmd.waitForCurrent ?? false };
+      return runScript(deps, isPass, displayAdvanced);
+
+    case 'playCry':
+      scriptCry = playCry(cmd.species);
       return runScript(deps, isPass, displayAdvanced);
 
     case 'textButtonWait':

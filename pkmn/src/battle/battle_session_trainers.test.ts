@@ -111,6 +111,7 @@ it('Forest SHIFT win with two player mons answers NO and sends the second Caterp
 });
 it('Oak lab rival loss returns without end text, carry or money loss, retaining the unconsumed bit', () => {
   const mon = pikachu(5); mon.currentHp = 1;
+  mon.moves = [{id:'GROWL',pp:40,maxPp:40}]; // A non-damaging move keeps the loss fixture independent of the first attack roll.
   const h = setup({opponent:225,mapName:'OaksLab',party:[mon],endBattleText:rivalText}), result = h.drive();
   expect(result.exit).toBe('end'); expect(result.blackoutCarry).toBe(false);
   expect(result.outcome.battleResult).toBe(1); expect(result.outcome.money).toBe(3000);

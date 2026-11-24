@@ -85,6 +85,8 @@ export const LATER_MAP_PROGRAMS: readonly string[] = [
   ...['GymStatueText1', '_GymStatueText1', 'GymStatueText2', '_GymStatueText2'],
   // V3 checkpoint-02c: the fossils.
   ...['Aerodactyl', 'Kabutops'].flatMap(name => [`${name}FossilText`, `_${name}FossilText`]),
+  // Cries checkpoint-04: both Pokecenter Chansey handlers share this text.
+  'NurseChanseyText', '_NurseChanseyText',
   // V3 checkpoint-02b (§24): the Old Amber scientist and the 2F hiker.
   ...['TakeThisToAPokemonLab', 'ReceivedOldAmber', 'GetTheOldAmberCheck', 'YouDontHaveSpace'].flatMap(name =>
     [`Museum1FPrintScientist2Text.${name}Text`, `_Museum1FScientist2${name}Text`]),

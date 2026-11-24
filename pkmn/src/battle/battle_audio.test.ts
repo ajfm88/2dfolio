@@ -7,6 +7,7 @@ import { playPikachuClipCue } from './battle_voice_cues';
 import type { SfxData } from '../audio/sfx_engine';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sfxModifierState } from '../audio/sfx_modifiers';
 
 const pulse = (length: number, frequencies = [512]): SfxData => ({ channels: [{ id: 5, commands: [
   ...frequencies.map(frequency => ({ cmd: 'square_note', length, frequency, volume: 13, fade: 0 })),
@@ -14,7 +15,11 @@ const pulse = (length: number, frequencies = [512]): SfxData => ({ channels: [{ 
 ] }] });
 
 describe('BattleAudio (Audio2_PlaySound)', () => {
-  beforeEach(() => { setLowHealthChannel5(0); setLowHealthAlarm(0); });
+  beforeEach(() => {
+    setLowHealthChannel5(0);
+    setLowHealthAlarm(0);
+    Object.assign(sfxModifierState, { frequency: 0, tempo: 0, savedVolume: 0 });
+  });
   it('walks a multi-channel header backwards and keeps the partial InitSFXVariables clear on rejection', () => {
     const r = rig(); const audio = new BattleAudio(r.sfx, r.music);
     setLowHealthChannel5(0x86); // active low-health alarm owns CHAN5
@@ -32,7 +37,7 @@ describe('BattleAudio (Audio2_PlaySound)', () => {
     expect(audio.play({ id: 0x95, data: sfxData('faint_thud') })).toBe(true);
     expect(audio.channelId(5)).toBe(0x95); expect(audio.channelId(8)).toBe(0x95);
     r.update();
-    audio.clearClipIds();
+    r.sfx.clearSoundIds();
     expect(audio.channelId(5)).toBe(0); expect(audio.channelId(8)).toBe(0);
     expect(r.sfx.isChannelActive(0)).toBe(false); // IDs stop software updates/suppression
     expect(r.synth.pulse[0].enabled).toBe(true); // but this is not sound_ret/hardware mute
@@ -93,20 +98,20 @@ describe('BattleAudio (Audio2_PlaySound)', () => {
     expect(r.sfx.isChannelActive(0)).toBe(false); expect(soundFinished(r.sfx, r.music, 0)).toBe(true);
   });
 
-  it('clears an occupied real Routes3 drum after the actual clip cue, on its third frame', () => {
+  it('clears an occupied Routes3 drum inside the clip callback on its third frame', () => {
     const r = rig(musicData('routes3')); const audio = new BattleAudio(r.sfx, r.music);
     for (let i = 0; !r.music.channel8DrumBusy && i < 1000; i++) r.update();
     expect(r.music.channel8DrumBusy).toBe(true);
     expect(audio.channelId(8)).toBeGreaterThan(0); expect(audio.channelId(8)).toBeLessThan(0x14);
     const events: unknown[] = []; const start = r.synth.update;
     const noiseMute = vi.spyOn(r.synth, 'silenceNoise');
-    const clip = playPikachuClipCue({ getAlarm: lowHealthAlarm, setAlarm: value => { events.push(['alarm', value]); },
-      cry: () => {}, clip: id => { events.push([r.synth.update - start, 'clip', id]); },
-      clearSfxIds: () => {
+    const clip = playPikachuClipCue({ *cry() {}, clip: id => {
+        events.push([r.synth.update - start, 'clip', id]);
         expect(r.music.channel8DrumBusy).toBe(true);
         const muteCount = noiseMute.mock.calls.length;
-        events.push([r.synth.update - start, 'clear']); audio.clearClipIds();
+        events.push([r.synth.update - start, 'clear']); r.sfx.clearSoundIds();
         expect(noiseMute).toHaveBeenCalledTimes(muteCount);
+        return false;
       } }, 37);
     let step = clip.next();
     while (!step.done) { expect(step.value).toBe('serviced'); r.update(); step = clip.next(); }

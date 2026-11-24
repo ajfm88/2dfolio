@@ -31,6 +31,7 @@ import { extractToggleableObjects } from '../src/rom/extractors/toggleable_objec
 import { extractBattleAnimations } from '../src/rom/extractors/battle_animations';
 import { extractStatModText } from '../src/rom/extractors/stat_mod_text';
 import { extractYellowIntro } from '../src/rom/extractors/yellow_intro';
+import { extractCries } from '../src/rom/extractors/cries';
 import townMapData from '../src/rom/town_map_data';
 import { extractRom } from '../src/rom/index';
 import { installNodeImageData } from '../src/rom/node_image_data';
@@ -75,6 +76,12 @@ const SFX_NAMES = [
   'turn_on_pc_3', 'enter_pc_3', 'save_3',
   // Opening checkpoint-01 (note 110): Audio 3 only. intro_whoosh was already listed above.
   'intro_crash', 'shooting_star',
+  // Cries checkpoint-01 (note 140): bank $02. Unused until checkpoint-02.
+  'cry00', 'cry01', 'cry02', 'cry03', 'cry04', 'cry05', 'cry06', 'cry07',
+  'cry08', 'cry09', 'cry0a', 'cry0b', 'cry0c', 'cry0d', 'cry0e', 'cry0f',
+  'cry10', 'cry11', 'cry12', 'cry13', 'cry14', 'cry15', 'cry16', 'cry17',
+  'cry18', 'cry19', 'cry1a', 'cry1b', 'cry1c', 'cry1d', 'cry1e', 'cry1f',
+  'cry20', 'cry21', 'cry22', 'cry23', 'cry24', 'cry25',
 ];
 
 function writeJson(relPath: string, data: unknown): void {
@@ -135,6 +142,8 @@ writeJson('battle_animations.json', extractBattleAnimations(rom)); count++;
 writeJson('stat_mod_text.json', extractStatModText(rom)); count++;
 writeJson('yellow_intro.json', extractYellowIntro(rom)); count++;
 writeJson('pokemon.json', extractPokemon(rom, moveNames, itemNames)); count++;
+// Cries checkpoint-01 (note 140): CryData. pokemon.json stays as it is.
+writeJson('cries.json', extractCries(rom)); count++;
 writeJson('moves.json', extractMoves(rom, moveNames)); count++;
 writeJson('type_chart.json', extractTypeChart(rom)); count++;
 writeJson('trainers.json', extractTrainers(rom, pokemonInternalNames, moveNames, trainerClassNames)); count++;

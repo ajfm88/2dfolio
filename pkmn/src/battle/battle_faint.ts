@@ -103,8 +103,8 @@ export function* removeFaintedPlayerMon(state: BattleState, host: FaintHost): Pr
   yield* slideDownFaintedMonPic(state, host.screen, 1, 10); state.wBattleResult = 1;
   if (state.mem[D.wInHandlePlayerMonFainted] === 0) return;
   state.wWhichPokemon = state.wPlayerMonNumber;
-  if (isThisPartyMonStarterPikachu(state)) yield* playPikachuClipCue({ ...host.voice, clearSfxIds: () => host.audio.clearClipIds() }, 4);
-  else playCryCue(host.voice, state.wBattleMonSpecies);
+  if (isThisPartyMonStarterPikachu(state)) yield* playPikachuClipCue(host.voice, 4);
+  else yield* playCryCue(host.voice, state.wBattleMonSpecies);
   yield* host.printText('PlayerMonFaintedText', { battleMonNick: decodeBattleText(state.mem, D.wBattleMonNick) });
   state.wWhichPokemon = state.wPlayerMonNumber;
   const difference = state.wEnemyMonLevel - state.wBattleMonLevel;

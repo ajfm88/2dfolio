@@ -26,6 +26,7 @@ import { extractToggleableObjects } from './extractors/toggleable_objects';
 import { extractBattleAnimations } from './extractors/battle_animations';
 import { extractStatModText } from './extractors/stat_mod_text';
 import { extractYellowIntro } from './extractors/yellow_intro';
+import { extractCries } from './extractors/cries';
 import type { ExtractedData } from './data_provider';
 
 export { installRomData } from './data_provider';
@@ -89,6 +90,12 @@ const SFX_NAMES = [
   'turn_on_pc_3', 'enter_pc_3', 'save_3',
   // Opening checkpoint-01 (note 110): Audio 3 only. intro_whoosh was already listed above.
   'intro_crash', 'shooting_star',
+  // Cries checkpoint-01 (note 140): bank $02. Unused until checkpoint-02.
+  'cry00', 'cry01', 'cry02', 'cry03', 'cry04', 'cry05', 'cry06', 'cry07',
+  'cry08', 'cry09', 'cry0a', 'cry0b', 'cry0c', 'cry0d', 'cry0e', 'cry0f',
+  'cry10', 'cry11', 'cry12', 'cry13', 'cry14', 'cry15', 'cry16', 'cry17',
+  'cry18', 'cry19', 'cry1a', 'cry1b', 'cry1c', 'cry1d', 'cry1e', 'cry1f',
+  'cry20', 'cry21', 'cry22', 'cry23', 'cry24', 'cry25',
 ];
 
 /**
@@ -143,6 +150,8 @@ export async function extractRom(
 
   progress('Extracting Pokemon data...');
   data.jsonData['pokemon.json'] = extractPokemon(rom, moveNames, itemNames);
+  // Cries checkpoint-01 (note 140): CryData. pokemon.json stays as it is.
+  data.jsonData['cries.json'] = extractCries(rom);
 
   progress('Extracting move data...');
   data.jsonData['moves.json'] = extractMoves(rom, moveNames);

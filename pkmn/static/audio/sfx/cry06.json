@@ -1,0 +1,119 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 3,
+          "d1": 3,
+          "d2": 2,
+          "d3": 2
+        },
+        {
+          "cmd": "square_note",
+          "length": 6,
+          "volume": 8,
+          "fade": 3,
+          "frequency": 583
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 6,
+          "fade": 2,
+          "frequency": 550
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 5,
+          "fade": 2,
+          "frequency": 581
+        },
+        {
+          "cmd": "square_note",
+          "length": 9,
+          "volume": 6,
+          "fade": 3,
+          "frequency": 518
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 8,
+          "fade": 2,
+          "frequency": 549
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 4,
+          "fade": 2,
+          "frequency": 519
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 13,
+          "fade": 4,
+          "param": 140
+        },
+        {
+          "cmd": "noise_note",
+          "length": 4,
+          "volume": 14,
+          "fade": 2,
+          "param": 156
+        },
+        {
+          "cmd": "noise_note",
+          "length": 15,
+          "volume": 12,
+          "fade": 6,
+          "param": 140
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 14,
+          "fade": 4,
+          "param": 172
+        },
+        {
+          "cmd": "noise_note",
+          "length": 15,
+          "volume": 13,
+          "fade": 7,
+          "param": 156
+        },
+        {
+          "cmd": "noise_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 2,
+          "param": 172
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,9 @@ vi.hoisted(() => {
 vi.mock('./audio', () => ({ loadSfx: async (name:string) => sfxData(name), setMasterVolume: vi.fn(), tickAudio: vi.fn(() => menuAudio.update()), getBattleAudioEngines: () => ({sfx:menuAudio.sfx,music:menuAudio.music,banks:menuAudio.fade.requests}), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: vi.fn(() => true), isSfxPlaying: () => false,
   playMusicNew: vi.fn(), playDefaultMusic: vi.fn(), playDefaultMusicFadeOutCurrent: vi.fn(), restoreNurseMusic: vi.fn(), updateMusic6Times: vi.fn(),
   fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false), stopAllSounds: vi.fn(),
-  isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(async () => {}) }));
+  isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(async () => {}),
+  loadPikachuClip: vi.fn(async () => {}), startPikachuClip: vi.fn(() => false),
+  playCry: function* () {}, requestCry: vi.fn() }));
 vi.mock('./debug', () => ({ isNoClip: () => false, isNoEncounters: () => true, consumeDebugWarp: () => null }));
 vi.mock('./renderer', () => ({
   getMonsterPalette: () => 'YELLOWMON', drawFadeOverlay: vi.fn(), fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1,
@@ -54,6 +56,7 @@ import { drawTile, fillRect, drawFadeOverlay, drawSprite } from './renderer';
 import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem } from './list_state';
 import * as saves from './save';
 import type { GameButton } from './core';
+import { getPlayerName } from './core/player_state';
 import type { StartMenuSession } from './menus/start_menu';
 import { PartyMenu } from "./menus/party_menu";
 import type { BagSession, OptionMenu, PokedexMenu, TrainerCard, SaveSession } from './menus';
@@ -200,7 +203,9 @@ describe('V2c CP3 through main load paths and storage callback', () => {
     expect(host.gameMap.mapData?.name).toBe('PewterPokecenter');
     // Complete the entry transition, then enter the real script/PC host.
     await host.finishFade();
-    host.playerParty.push(createPokemon('PIKACHU', 5)!, createPokemon('RATTATA', 5)!);
+    const starter = createPokemon('PIKACHU', 5)!;
+    starter.otName = getPlayerName();
+    host.playerParty.push(starter, createPokemon('RATTATA', 5)!);
     const printed: string[] = []; const print = host.textBox.print.bind(host.textBox);
     vi.spyOn(host.textBox, 'print').mockImplementation((source, opts) => {
       if ('program' in source) printed.push(source.program); print(source, opts);
@@ -312,12 +317,18 @@ describe('StatusScreen through main party and battle dispatch', () => {
     r.wait(2); expect(r.transfer).toHaveBeenCalledTimes(ticks + 14);
     r.wait(12); expect(r.read).toHaveBeenCalledTimes(read); expect(r.sync).toHaveBeenCalledTimes(sync);
     expect(r.transfer).toHaveBeenCalledTimes(ticks + 26);
-    r.step(); expect(r.read).toHaveBeenCalledTimes(read + 1);
+    let cryFrames = 0;
+    if (mode === 'battle') {
+      r.step(); // S+29: the ordinary Rattata cry starts.
+      while (r.read.mock.calls.length === read && cryFrames < 120) { r.step(); cryFrames++; }
+      expect(cryFrames).toBe(23);
+    } else r.step();
+    expect(r.read).toHaveBeenCalledTimes(read + 1);
     r.step('b'); r.wait(3); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
     r.step('b'); r.wait(2); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(true);
     r.step(); expect(mode === 'overworld' ? menu.statusScreenActive : host.session!.foreground === 'status').toBe(false);
     expect(Reflect.get(menu, 'state')).toBe('list'); expect(Reflect.get(menu, 'cursor')).toBe(selected);
-    expect(r.transfer).toHaveBeenCalledTimes(ticks + 35);
+    expect(r.transfer).toHaveBeenCalledTimes(ticks + 35 + cryFrames);
     if (mode === 'overworld') {
       const before = r.read.mock.calls.length, synced = r.sync.mock.calls.length;
       expect(menu.paletteWhite).toBe(true); r.wait(20); expect(menu.paletteWhite).toBe(true);
@@ -734,7 +745,7 @@ describe('START through main dispatch', () => {
     expect(host.state).toBe({ dex: 'dex', party: 'party_menu', item: 'item_menu', trainer: 'trainer_card', option: 'option_menu' }[kind]);
     // Each existing submenu's own flow is outside the START-side tail. Trigger its
     // actual return branch without conflating internal timing with this audit.
-    if (kind === 'dex') vi.spyOn(host.pokedexMenu, 'update').mockReturnValue('closed');
+    if (kind === 'dex') vi.spyOn(host.pokedexMenu, 'update').mockImplementation(() => { input.readJoypad(); return 'closed'; });
     if (kind === 'party') { r.wait(24); vi.spyOn(host.partyMenu, 'update').mockReturnValue('close'); }
     if (kind === 'trainer') vi.spyOn(host.trainerCard, 'update').mockReturnValue(true);
     if (kind === 'option') vi.spyOn(host.optionMenu, 'update').mockReturnValue(true);

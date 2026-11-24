@@ -16,19 +16,23 @@ import type { BattlePokemon } from '../battle';
 import { pokemonToBoxed, type BoxedPokemon } from '../pokemon_storage';
 import { readJoypad, setKey, updateInput } from '../input';
 import type { GameButton } from '../core';
-import { playSFX, isSoundFinished } from '../audio';
+import { playCry, playSFX, isSoundFinished, startPikachuClip } from '../audio';
+import { GBSynthesizer } from '../audio/synthesizer';
+import { sfxModifierState } from '../audio/sfx_modifiers';
+import { getPlayerName } from '../core/player_state';
 import { setListScrollOffset, getListScrollOffset, setPartyAndBillsSavedMenuItem, getPartyAndBillsSavedMenuItem } from '../list_state';
 import { getPikachuHappiness, getPikachuMood, restorePikachuHappiness } from '../pikachu/pikachu_happiness';
 import { PartyMenu } from './party_menu';
 import { POKEBALL_GLYPH } from './menu_glyphs';
 import { isVBlankHeld, takeHeldFrame } from '../core/vblank_hold';
 
-vi.mock('../audio', () => ({ playSFX: vi.fn(), setMasterVolume: vi.fn(), isSoundFinished: vi.fn(() => true) }));
+vi.mock('../audio', () => ({ playCry: vi.fn(function* () {}), startPikachuClip: vi.fn(() => false), playSFX: vi.fn(), setMasterVolume: vi.fn(), isSoundFinished: vi.fn(() => true) }));
 vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), loadBattleSprite: async () => ({ width: 40, height: 40 }), getMonsterPalette: () => 'YELLOWMON', fillRect: vi.fn(), drawTile: vi.fn(), loadFont: async () => ({}), loadTileset: async () => ({}) }));
 const KEYS: GameButton[] = ['a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'];
 beforeAll(async () => { await initTextSystem(); await loadTextPrograms(); await loadBattleData(); await loadTrainerSpeciesData(); await loadBattleBridgeData(); await loadStatusScreenAssets(); });
 beforeEach(() => {
   vi.clearAllMocks(); vi.mocked(isSoundFinished).mockReturnValue(true);
+  vi.mocked(playCry).mockImplementation(function* () {});
   vi.mocked(playSFX).mockImplementation(() => Promise.resolve());
   setTextSpeed('fast'); textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   setListScrollOffset(0); setPartyAndBillsSavedMenuItem(0); setNoTextDelay(false);
@@ -36,7 +40,10 @@ beforeEach(() => {
   for (const key of KEYS) setKey(key, false); updateInput(); readJoypad();
 });
 function mon(species = 'RATTATA', hp?: number) {
-  const p = createPokemon(species, 5)!; if (hp !== undefined) p.currentHp = hp; return p;
+  const p = createPokemon(species, 5)!;
+  p.otName = getPlayerName();
+  if (hp !== undefined) p.currentHp = hp;
+  return p;
 }
 function boxed(species = 'RATTATA', hp?: number) { return pokemonToBoxed(mon(species, hp)); }
 
@@ -47,7 +54,9 @@ function rig(party: BattlePokemon[] = [mon('PIKACHU'), mon()], box: BoxedPokemon
   const sprites = vi.fn();
   const deserialize = (b: BoxedPokemon) => {
       const p = createPokemon(b.speciesName, b.level, b.nickname, { atk: b.atkDV, def: b.defDV, spd: b.spdDV, spc: b.spcDV })!;
-      p.currentHp = b.currentHp; p.status = b.status; p.moves = structuredClone(b.moves); return p;
+      p.currentHp = b.currentHp; p.status = b.status; p.moves = structuredClone(b.moves);
+      p.otId = b.otId ?? 0; p.otName = b.otName ?? '';
+      return p;
   };
   const storage: PcStorage = { party, boxes, getCurrentBox: () => currentBox, setCurrentBox: value => { currentBox = value; },
     withdraw: deserialize, boxStats: deserialize, hasFlag: () => true, saveGame: vi.fn(), isPikachuFollowingDisabled: () => disabled };
@@ -113,7 +122,7 @@ describe('BillsPC_ on the retained display', () => {
   });
 
   it.each([0, 1])('STATS branch %i: held S+15..16, first read S+29; Buffer1 Q+3, held Q+4..5, white until Q+8, first read Q+11; one tick owner', branch => {
-    const r = rig(undefined, [boxed()]); const original = structuredClone(r.box);
+    const r = rig([mon(), mon('PIKACHU')], [boxed()]); const original = structuredClone(r.box);
     r.branch(branch); r.frames(16); r.tick('a'); r.frames(3); r.tick('down'); r.frames(3);
     const before = r.tiles.save(r.textBox); r.tick('a'); const s = r.time();
     expect(r.pc.fullScreen).toBe(true); expect(r.pc.paletteWhite).toBe(true);
@@ -275,12 +284,13 @@ describe('BillsPC_ on the retained display', () => {
   });
 
   it('deposits the starter with happiness/mood, but refuses it when following is disabled', () => {
-    const r = rig(); r.branch(1); r.choose();
+    const r = rig(); r.branch(1); r.choose(); r.frames(3);
     expect(getPikachuHappiness()).toBe(87); expect(getPikachuMood()).toBe(0x62);
     expect(r.box[0].speciesName).toBe('Pikachu');
     const refused = rig(undefined, [], 0, true); refused.branch(1); refused.frames(16); refused.tick('a');
     expect(refused.printed[refused.printed.length - 1]?.program).toBe('SleepingPikachuText2');
     expect(refused.party).toHaveLength(2); expect(refused.box).toHaveLength(0);
+    expect(playCry).not.toHaveBeenCalled();
   });
 
   it.each([0, 1])('withdraw appends before removing the boxed mon and preserves HP=%i/status/PP', hp => {
@@ -289,14 +299,14 @@ describe('BillsPC_ on the retained display', () => {
     vi.spyOn(r.box, 'splice').mockImplementation((start, count) => {
       expect(r.party).toHaveLength(2); return Array.prototype.splice.call(r.box, start, count ?? 0);
     });
-    r.branch(0); r.choose();
+    r.branch(0); r.choose(); r.frames(3);
     expect(r.party[1]).toMatchObject({ currentHp: hp, status: 'PSN', moves: b.moves }); expect(r.box).toHaveLength(0);
     expect(r.printed[r.printed.length - 1]).toMatchObject({ program: 'MonIsTakenOutText', noDelay: false });
   });
 
   it('waits on real sound completion before the result and never plays transfer SFX', () => {
     const r = rig(); r.branch(1); r.frames(16); r.tick('a'); r.frames(3);
-    vi.mocked(isSoundFinished).mockReturnValue(false); r.tick('a');
+    vi.mocked(isSoundFinished).mockReturnValue(false); r.tick('a'); r.frames(3);
     expect(r.party).toHaveLength(1); const reads = r.reads.mock.calls.length; r.frames(8);
     expect(r.printed).toHaveLength(0); expect(r.reads.mock.calls.length).toBe(reads);
     vi.mocked(isSoundFinished).mockReturnValue(true); r.tick();
@@ -304,9 +314,41 @@ describe('BillsPC_ on the retained display', () => {
   });
 
   it('refuses to release the starter without a confirmation or mutation', () => {
-    const r = rig(undefined, [boxed('PIKACHU')]); r.branch(2); r.frames(16); r.tick('a');
+    const r = rig(undefined, [boxed('PIKACHU')]); r.branch(2); r.frames(16); r.tick('a'); r.frames(3);
     expect(r.printed[r.printed.length - 1]).toMatchObject({ program: 'PikachuUnhappyText', noDelay: false });
     expect(r.box).toHaveLength(1);
+    expect(playCry).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { branch: 1, clip: 28, text: 'MonWasStoredText' },
+    { branch: 0, clip: 35, text: 'MonIsTakenOutText' },
+    { branch: 2, clip: 40, text: 'PikachuUnhappyText' },
+  ])('starter branch $branch plays clip $clip before $text', ({ branch, clip, text }) => {
+    vi.mocked(startPikachuClip).mockReturnValue(true);
+    const r = rig(undefined, branch === 1 ? [] : [boxed('PIKACHU')]);
+    r.branch(branch);
+    if (branch === 2) { r.frames(16); r.tick('a'); }
+    else r.choose();
+    const start = r.time();
+    const reads = r.reads.mock.calls.length;
+    expect(startPikachuClip).not.toHaveBeenCalled();
+    r.frames(2);
+    expect(startPikachuClip).not.toHaveBeenCalled();
+    expect(r.reads).toHaveBeenCalledTimes(reads);
+    expect(r.printed).toHaveLength(0);
+    r.tick();
+    expect(startPikachuClip).toHaveBeenCalledExactlyOnceWith(clip);
+    expect(r.time()).toBe(start + 3);
+    expect(r.printed).toHaveLength(0);
+    if (branch === 1) { expect(r.party).toHaveLength(2); expect(r.box).toHaveLength(0); expect(getPikachuHappiness()).toBe(90); }
+    if (branch === 0) { expect(r.party).toHaveLength(2); expect(r.box).toHaveLength(1); }
+    r.tick();
+    expect(r.printed[r.printed.length - 1]?.program).toBe(text);
+    expect(r.reads).toHaveBeenCalledTimes(reads);
+    if (branch === 1) { expect(r.party).toHaveLength(1); expect(r.box).toHaveLength(1); expect(getPikachuHappiness()).toBe(87); }
+    if (branch === 0) { expect(r.party).toHaveLength(3); expect(r.box).toHaveLength(0); }
+    if (branch === 2) expect(r.box).toHaveLength(1);
   });
 
   it('release NO preserves selected row/offset and the old question; YES removes after its 15-frame tail', () => {
@@ -320,6 +362,107 @@ describe('BillsPC_ on the retained display', () => {
     r.frames(14); expect(r.box).toHaveLength(5); r.tick(); expect(r.box).toHaveLength(4);
     expect(r.printed[r.printed.length - 1]?.program).toBe('MonWasReleasedText');
   });
+
+  it('release YES stays silent and waits for an already-active sound after removing the mon', () => {
+    const r = rig(undefined, [boxed()]);
+    r.branch(2); r.frames(16); r.tick('a'); r.until(() => !r.pc.advanceText); r.frames(3);
+    vi.mocked(playSFX).mockClear();
+    vi.mocked(isSoundFinished).mockClear();
+    vi.mocked(isSoundFinished).mockReturnValue(false);
+    vi.mocked(playCry).mockImplementation(function* () { yield 'serviced'; yield 'serviced'; });
+    r.tick('a');
+    const yes = r.time();
+    const reads = r.reads.mock.calls.length;
+    r.frames(14);
+    expect(r.box).toHaveLength(1);
+    expect(isSoundFinished).not.toHaveBeenCalled();
+    r.tick();
+    expect(r.time()).toBe(yes + 15);
+    expect(r.box).toHaveLength(0);
+    expect(isSoundFinished).toHaveBeenCalledOnce();
+    r.tick('b');
+    expect(r.printed[r.printed.length - 1]?.program).toBe('OnceReleasedText');
+    expect(r.reads).toHaveBeenCalledTimes(reads);
+    expect(playSFX).not.toHaveBeenCalled();
+    expect(playCry).not.toHaveBeenCalled();
+    vi.mocked(isSoundFinished).mockReturnValue(true);
+    r.tick();
+    expect(playCry).toHaveBeenCalledExactlyOnceWith(0xa5);
+    r.tick('b');
+    expect(r.printed[r.printed.length - 1]?.program).toBe('OnceReleasedText');
+    r.tick();
+    expect(r.printed[r.printed.length - 1]).toMatchObject({ program: 'MonWasReleasedText', frame: yes + 19 });
+    expect(r.reads).toHaveBeenCalledTimes(reads);
+  });
+
+  it.each([
+    ['OT name', { otName: 'YELLXW' }],
+    ['OT ID', { otId: 0x0100 }],
+  ] as const)('uses the regular cry for deposit, withdraw and release with a different %s', async (_field, owner) => {
+    const audio = await vi.importActual<typeof import('../audio')>('../audio');
+    const resume = vi.spyOn(GBSynthesizer.prototype, 'resume').mockResolvedValue();
+    try {
+      await audio.resumeAudio();
+      audio.stopMusic();
+      audio.setAudioBank(2);
+      await audio.preloadCry(0x54);
+      vi.mocked(playCry).mockImplementation(audio.playCry);
+
+      const pikachu = Object.assign(mon('PIKACHU'), owner);
+      const r = rig([pikachu, mon()], [], 0, true);
+      const wait = (beforeCompletion: () => void) => {
+        const reads = r.reads.mock.calls.length;
+        expect(playCry).toHaveBeenLastCalledWith(0x54);
+        expect(audio.channelSoundId(5)).toBe(0x41);
+        expect(sfxModifierState).toMatchObject({ frequency: 0xee, tempo: 1 });
+        // cry0f's noise has 42 length ticks and five note starts. Update 48 returns.
+        for (let update = 1; update <= 48; update++) {
+          beforeCompletion();
+          audio.updateMusicCTimes(1);
+          r.tick(...(update === 1 ? ['b'] as const : []));
+          expect(r.reads).toHaveBeenCalledTimes(reads);
+          expect(audio.isSoundFinished()).toBe(update === 48);
+        }
+      };
+
+      r.branch(1); r.choose();
+      wait(() => {
+        expect(r.party).toHaveLength(2);
+        expect(r.box).toHaveLength(0);
+        expect(r.printed).toHaveLength(0);
+      });
+      expect(r.party).toHaveLength(1);
+      expect(r.box[0]).toMatchObject(owner);
+      expect(r.printed[0]?.program).toBe('MonWasStoredText');
+
+      r.branch(0); r.choose();
+      wait(() => {
+        expect(r.party).toHaveLength(1);
+        expect(r.box).toHaveLength(1);
+        expect(r.printed).toHaveLength(1);
+      });
+      expect(r.party[1]).toMatchObject(owner);
+      expect(r.box).toHaveLength(0);
+      expect(r.printed[1]?.program).toBe('MonIsTakenOutText');
+
+      r.box.push(pokemonToBoxed(r.party.pop()!));
+      r.branch(2); r.frames(16); r.tick('a'); r.until(() => !r.pc.advanceText); r.frames(3); r.tick('a');
+      r.frames(14);
+      expect(playCry).toHaveBeenCalledTimes(2);
+      expect(r.box).toHaveLength(1);
+      r.tick();
+      expect(r.box).toHaveLength(0);
+      wait(() => expect(r.printed).toHaveLength(3));
+      expect(r.printed[3]?.program).toBe('MonWasReleasedText');
+      expect(playCry).toHaveBeenCalledTimes(3);
+      expect(getPikachuHappiness()).toBe(90);
+      expect(getPikachuMood()).toBe(0x80);
+    } finally {
+      audio.stopMusic();
+      resume.mockRestore();
+    }
+  });
+
   it('10a: deposit appends after existing box objects and preserves the sleeping mon counter',()=>{
     const sleeping=mon('RATTATA');sleeping.status='SLP';sleeping.sleepTurns=5;
     const old=boxed(),r=rig([sleeping,mon('PIKACHU')],[old]);

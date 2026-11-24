@@ -1,3 +1,4 @@
+import type { Program } from '../battle/battle_menu_context';
 // engine/movie/oak_speech/{oak_speech,oak_speech2}.asm. Resume CPU work after each VBlank.
 import { setPlayerName, setRivalName } from '../core/player_state';
 import { loadTileset, loadSpriteMapped, obpMapping, drawSprite, setActivePalette } from '../renderer';
@@ -36,9 +37,9 @@ export class OakSpeech {
   private spriteVisible = false;
   private requests: AudioRequest[] = [];
 
-  constructor(private readonly cryCue: (species: string) => void = () => {}) {}
+  constructor(private readonly cryCue?: (species: string) => Program) {}
   private createTextBox(): TextBox {
-    return new TextBox({ closeFrames: () => 0, updateSprites: () => {}, cry: species => this.cryCue(species) });
+    return new TextBox({ closeFrames: () => 0, updateSprites: () => {}, cry: this.cryCue });
   }
   /** CPU writes, transferred tiles, VRAM and DMA-visible OBJ are separate snapshots. No clocks here. */
   get inspection() {

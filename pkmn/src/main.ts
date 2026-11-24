@@ -41,7 +41,7 @@ import {
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
   playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
   fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished, preloadMusic, playBattleMusic,
-  holdAudioClock } from "./audio";
+  holdAudioClock, playCry, requestCry, startPikachuClip } from "./audio";
 import { isNoMapMusic, setNoMapMusic } from "./audio/audio_flags";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
 import { MapDialogue } from './text/map_dialogue';
@@ -207,7 +207,8 @@ const titleScreen = new TitleScreen();
 const mainMenu = new MainMenu();
 
 // Oak speech intro & naming screen
-const oakSpeech = new OakSpeech();
+// constants/pokemon_constants.asm: STARTER EQU PIKACHU ($54).
+const oakSpeech = new OakSpeech(() => playCry(0x54));
 const clearSaveDialogue = new ClearSaveDialogue();
 const boot = new Boot();
 const namingScreen = new NamingScreen();
@@ -215,7 +216,7 @@ let introFrames = 0;
 let introMapReady = false;
 
 // Pokedex
-const pokedexMenu = new PokedexMenu();
+const pokedexMenu = new PokedexMenu({ cry: playCry, requestCry });
 
 
 // Overworld state (mutable, passed to overworld controller)
@@ -271,7 +272,7 @@ const startMenu = new StartMenuSession(() => {
   captureUi(() => startMenu.paint());
   fontLoadedUpdateSprites(player, gameMap, uiTiles.tileAt, pikachuFollower);
 });
-const partyMenu = new PartyMenu();
+const partyMenu = new PartyMenu(undefined, { cry: playCry, clip: startPikachuClip });
 const bagMenu = new BagSession(textBox, textBgTransfer);
 const trainerCard = new TrainerCard();
 const townMap = new TownMap();
@@ -1310,7 +1311,7 @@ function gameTick(): void {
   prevTickInPassState = inPassState;
   const isPass = inPassState && !movementBlocking && passClock.tick();
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
-  const sessionOwnInput = (state === 'party_menu' && partyMenu.ownsInput)
+  const sessionOwnInput = state === 'dex' || (state === 'party_menu' && partyMenu.ownsInput)
     || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
   if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'clear_save' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && !sessionOwnInput && !textBox.active && !titleNoVBlank) syncJoypadRead();
 

@@ -4,7 +4,7 @@ vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
 });
 // Observe audio requests while running the real speech, dispatch and map loader.
-vi.mock('./audio', () => ({ setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: vi.fn(() => true), isSfxPlaying: () => false,
+vi.mock('./audio', () => ({ playCry: function* () {}, requestCry: vi.fn(), startPikachuClip: vi.fn(() => false), setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(), stopMusic: vi.fn(), isSoundFinished: vi.fn(() => true), isSfxPlaying: () => false,
   playMusicNew: vi.fn(), playDefaultMusic: vi.fn(), playDefaultMusicFadeOutCurrent: vi.fn(), restoreNurseMusic: vi.fn(), updateMusic6Times: vi.fn(),
   fadeOutAndStopMusic: vi.fn(), isAudioFadingOut: vi.fn(() => false), stopAllSounds: vi.fn(),
   isMusicChannelActive: vi.fn(() => false), preloadMusic: vi.fn(async () => {}) }));

@@ -12,6 +12,7 @@ import { anyPartyAlive, anyEnemyPokemonAliveCheck, hasMonFainted, flagAction } f
 import { HAPPINESS_CHANGES, PIKACHU_MOODS, isThisPartyMonStarterPikachu, isThisBoxMonStarterPikachu,
   isStarterPikachuAliveInOurParty, modifyPikachuHappiness, updatePikachuMoodAfterBattle } from './battle_pikachu';
 import { playCryCue, playPikachuClipCue } from './battle_voice_cues';
+import { playCryProgram } from '../audio/cries';
 import { finish } from '../test/battle_hp_rig';
 import { BattleMenuScreen } from './battle_menu_screen';
 import { loadTextPrograms } from '../text/program_data';
@@ -160,14 +161,15 @@ describe('source-shaped Pikachu gates and happiness', () => {
   });
 });
 
-it('voice cue ledger: cry brackets the owner alarm at0 frames; clip waits3 then clears SFX IDs without touching alarm', () => {
+it('waits with the alarm clear and services the pending VBlank after the clip', () => {
   let frame = 0; setLowHealthAlarm(0x9e); const log: unknown[] = [];
-  const host = { getAlarm: lowHealthAlarm, setAlarm: (v: number) => { setLowHealthAlarm(v); log.push([frame, 'alarm', v]); },
-    cry: (id: number) => { log.push([frame, 'cry', id, lowHealthAlarm()]); }, clip: (id: number) => { log.push([frame, 'clip', id, lowHealthAlarm()]); },
-    clearSfxIds: () => { log.push([frame, 'clearSfxIds', lowHealthAlarm()]); } };
-  playCryCue(host, 84);
-  const result = finish(playPikachuClipCue(host, 37), kind => { frame++; log.push([frame, kind]); });
-  expect(result.frames).toEqual(['serviced', 'serviced', 'serviced']);
-  expect(log).toEqual([[0,'alarm',0],[0,'cry',84,0],[0,'alarm',158],[1,'serviced'],[2,'serviced'],[3,'serviced'],[3,'clip',37,158],[3,'clearSfxIds',158]]);
+  const host = {
+    cry: (species: number) => playCryProgram(species, id => { log.push([frame, 'cry', id, lowHealthAlarm()]); }, () => frame === 2),
+    clip: (id: number) => { log.push([frame, 'clip', id, lowHealthAlarm()]); return true; },
+  };
+  const tick = () => { frame++; log.push([frame, lowHealthAlarm()]); };
+  expect(finish(playCryCue(host, 2), tick).frames).toEqual(['serviced', 'serviced']);
+  expect(finish(playPikachuClipCue(host, 37), tick).frames).toEqual(Array(4).fill('serviced'));
+  expect(log).toEqual([[0,'cry',29,0],[1,0],[2,0],[3,158],[4,158],[5,158],[5,'clip',37,158],[6,158]]);
   expect(lowHealthAlarm()).toBe(158); setLowHealthAlarm(0);
 });

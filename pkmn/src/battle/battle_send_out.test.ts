@@ -16,6 +16,9 @@ import { getBattleAndStartSavedMenuItem, setBattleAndStartSavedMenuItem, setPart
 import { enablePikachuFollowing } from '../pikachu/pikachu_following';
 import { rig as audioRig, sfxData, musicData, textSoundFile } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
+import { getCryData, playCryProgram } from '../audio/cries';
+import { sfxModifierState } from '../audio/sfx_modifiers';
+import * as hudState from './battle_hud_state';
 import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5, isLowHealthAlarmDisabled } from '../audio/low_health_alarm';
 import { BattleState, battleContext, encodeText } from './battle_state';
 import { decodeBattleText } from './battle_text_codec';
@@ -58,6 +61,7 @@ beforeEach(() => {
   vi.clearAllMocks(); setTextSpeed('fast'); textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   setPartyAndBillsSavedMenuItem(0); setBattleAndStartSavedMenuItem(0); enablePikachuFollowing();
   setLowHealthAlarm(0); setLowHealthAlarmDisabled(false); setLowHealthChannel5(0);
+  Object.assign(sfxModifierState, { frequency: 0, tempo: 0, savedVolume: 0 });
   vi.mocked(isHeld).mockReturnValue(false); vi.mocked(isPassPressed).mockReturnValue(false);
 });
 afterEach(() => vi.restoreAllMocks());
@@ -110,8 +114,8 @@ function rig() {
     *sendingOutMon(state, x, y) { mark('sendCue', [state.hWhoseTurn, x, y]); },
     *pikachuEntrance(state) { mark('pikaEntrance', [state.hWhoseTurn, textBgTransfer.enabled]); },
     *slidePlayerOff(state) { mark('pikaRetreat', [state.hWhoseTurn, state.wWhichPokemon]); },
-    voice: { getAlarm: lowHealthAlarm, setAlarm(value) { mark('alarm', value); setLowHealthAlarm(value); },
-      cry(id) { mark('cry', [id, lowHealthAlarm()]); }, clip(id) { mark('clip', id); } },
+    voice: {
+      *cry(id) { mark('cry', [id, 0]); }, clip(id) { mark('clip', id); return false; } },
   };
   vi.mocked(playSFX).mockImplementation(async name => {
     bridge.play({ id: name === 'get_item1' ? 0x86 : 0x90, data: sfxData(name) });
@@ -142,6 +146,30 @@ function rig() {
   return { s, audio, bridge, driver, video, screen, host, party, events, frames, ledger, start, step, finish,
     time: () => time, mark };
 }
+
+function bindRealCry(r: ReturnType<typeof rig>, name: string): void {
+  const data = sfxData(name);
+  r.host.voice.cry = species => playCryProgram(species, id => {
+    r.mark('cryRequest', [id, r.bridge.frequencyModifier, r.bridge.tempoModifier, lowHealthAlarm()]);
+    expect(r.bridge.play({ id, data })).toBe(true);
+  }, () => soundFinished(r.audio.sfx, r.audio.music, 0));
+}
+
+it('ordinary player send-out waits 48 updates for Pikachu between animation and empty text', () => {
+  const r = rig();
+  bindRealCry(r, 'cry0f');
+  r.start(playerSendOut.sendOutMon(r.s, r.host));
+  r.finish();
+  const cry = r.events.find(e => e.name === 'cryRequest')!;
+  expect(cry.data).toEqual([0x41, 0xee, 1, 0]);
+  expect(cry.at).toBe(r.events.find(e => e.name === 'sendCue')!.at);
+  expect(r.events.find(e => e.name === 'text:PrintEmptyString.emptyString')!.at - cry.at).toBe(48);
+  expect([r.bridge.frequencyModifier, r.bridge.tempoModifier]).toEqual([0xee, 1]);
+  expect(r.bridge.play({ id: 0x9e, data: sfxData('faint_fall') })).toBe(true);
+  r.audio.update();
+  expect(r.audio.synth.values('freq0').slice(-1)[0]?.[1]).toBe((1920 + 0xee) & 0x7ff);
+  expect(r.audio.sfx.observeChannel(5)?.noteDelayCounter).toBe(8); // 16 * $0081, rounded down.
+});
 
 describe('send-out and retreat messages on one retained PrintText', () => {
   it.each([[0,'GoText'],[9,'EnemysWeakText'],[10,'GetmText'],[39,'GetmText'],[40,'DoItText'],[69,'DoItText'],[70,'GoText'],[100,'GoText']] as const)
@@ -243,12 +271,11 @@ describe('SendOutMon owner composition', () => {
   it.each([0,1])('starter clip asleep=%i retains its three prefix frames and the asleep scan slot', asleep => {
     const r=rig(); r.s.writeBE(D.wPlayerID,0x1234); r.s.mem[D.wPartyMons+4]=asleep;
     r.s.wWhichPokemon=2; r.s.wPlayerMonNumber=2; r.s.wBattleMonSpecies2=0x54;
-    const clear=vi.spyOn(r.bridge,'clearClipIds');
     r.start(sendOutMon(r.s,r.host)); r.finish();
     expect(r.s.wWhichPokemon).toBe(0); expect(r.s.hWhoseTurn).toBe(0);
     expect(r.events.find(e=>e.name==='clip')?.data).toBe(asleep?37:11);
     expect(r.events.find(e=>e.name==='clip')!.at-r.events.find(e=>e.name==='pikaEntrance')!.at).toBe(3);
-    expect(clear).toHaveBeenCalledOnce(); expect(r.events.some(e=>e.name==='cry'||e.name==='animation')).toBe(false);
+    expect(r.events.some(e=>e.name==='cry'||e.name==='animation')).toBe(false);
   });
   it('skips the enemy HUD and last-switch write when enemy HP is zero', () => {
     const r=rig(); r.s.wEnemyMonHP=0; r.s.writeBE(D.wLastSwitchInEnemyMonHP,1234);
@@ -493,6 +520,23 @@ function enemyRig() {
     frontPicture(state){r.mark('front',[state.wEnemyMonSpecies2,state.wWhichPokemon]);return `front-${state.wEnemyMonSpecies2}`;}};
   return {...r,host,atlas};
 }
+
+it('trainer send-out waits 54 updates for Kangaskhan, including its CHAN8 tail, before drawing the HUD', () => {
+  const r = enemyRig();
+  r.s.mem[ENEMY_SEND_CELLS.wEnemyPartySpecies + 2] = 2;
+  bindRealCry(r, 'cry03');
+  const draw = hudState.drawEnemyHud;
+  vi.spyOn(hudState, 'drawEnemyHud').mockImplementation(function* (state, screen) {
+    r.mark('enemyHud');
+    yield* draw(state, screen);
+  });
+  r.start(enemySendOutFirstMon(r.s, r.host));
+  r.finish();
+  const cry = r.events.find(e => e.name === 'cryRequest')!;
+  expect(cry.data).toEqual([0x1d, 0, 0x80, 0]);
+  expect(cry.at).toBe(r.events.find(e => e.name === 'sendCue')!.at);
+  expect(r.events.find(e => e.name === 'enemyHud')!.at - cry.at).toBe(54);
+});
 
 describe('DrawEnemyPokeballs uses the existing copy queue, sprite atlas and OAM',()=>{
   it('pins new scratch addresses to the symbols revision already used by note70',()=>{
@@ -1515,7 +1559,7 @@ describe('checkpoint-07 FaintEnemyPokemon',()=>{
     expect(r.s.mem.slice(D.wPartyMons+1,D.wPartyMons+5)).toEqual(r.s.mem.slice(D.wBattleMonHP,D.wBattleMonHP+4));r.finish();
   });
   it('slides14 frames, then traces Audio1 byte counters for zero-modifier fall9 and thud31',()=>{
-    const r=faintRig();r.bridge.frequencyModifier=0x79;r.bridge.tempoModifier=0x81;
+    const r=faintRig();getCryData(21); // Mew leaves $EE/$FF until the enemy-faint reset.
     const trace:{at:number;ids:number[];counters:number[];fractions:number[]}[]=[];const tick=r.audio.sfx.tick.bind(r.audio.sfx);
     vi.spyOn(r.audio.sfx,'tick').mockImplementation(()=>{
       tick();const channels=(r.audio.sfx as unknown as {channels:{id:number;noteDelayCounter:number;noteDelayFractional:number}[]}).channels;
@@ -1624,6 +1668,18 @@ describe('checkpoint-07 RemoveFaintedPlayerMon',()=>{
     r.s.mem[D.wPikachuHappiness]=100;r.start(removeFaintedPlayerMon(r.s,r.host));r.finish();
     expect(r.events.find(e=>e.name==='cry')).toMatchObject({at:14,data:[0x24,0]});
     expect(r.events.filter(e=>e.name==='text:PlayerMonFaintedText')).toHaveLength(1);expect(r.s.mem[D.wPikachuHappiness]).toBe(100);
+  });
+  it('ordinary faint waits 21 updates for Clefairy before printing the faint text', () => {
+    const r = faintRig();
+    r.s.wBattleMonHP = 0;
+    r.s.mem[D.wInHandlePlayerMonFainted] = 1;
+    r.s.wBattleMonSpecies = 4;
+    bindRealCry(r, 'cry19');
+    r.start(removeFaintedPlayerMon(r.s, r.host));
+    r.finish();
+    const cry = r.events.find(e => e.name === 'cryRequest')!;
+    expect(cry).toEqual({ at: 14, name: 'cryRequest', data: [0x5f, 0xcc, 1, 0] });
+    expect(r.events.find(e => e.name === 'text:PlayerMonFaintedText')!.at - cry.at).toBe(21);
   });
   it.each([{enemy:19,loss:1},{enemy:49,loss:1},{enemy:50,loss:5},{enemy:255,loss:5}])
   ('starter faint at enemy level$enemy chooses FAINTED or CARELESSTRAINER',({enemy,loss})=>{

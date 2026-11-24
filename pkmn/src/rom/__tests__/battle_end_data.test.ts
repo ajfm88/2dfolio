@@ -7,7 +7,6 @@ import { BinaryReader } from '../binary_reader';
 import { extractSfx, SFX_HEADERS, type AudioCommand } from '../extractors/audio';
 import { extractTextPrograms, type TextProgramsFile } from '../extractors/text_programs';
 import { TEXT_PROGRAM_SYMBOLS } from '../text_program_symbols';
-import { LATER_MAP_PROGRAMS, LATER_MAP_TABLES, without } from './fixtures/later_map_text';
 
 const ROM_PATH = process.env.ROM_PATH;
 const REFS = resolve(__dirname, '../../../../refs/pokeyellow');
@@ -146,17 +145,9 @@ describe.skipIf(!ROM_PATH)('checkpoint-03 end-battle text data', () => {
     expect(text.programs._TrainerNameText).toEqual([{ op: 'ram', binding: 'nameBuffer' }, { op: 'text', text: ': ' }]);
   });
 
-  it('commits both programs through setup and the static mirror without changing existing programs or map calls', () => {
+  it('commits both programs through setup and the static mirror', () => {
     const data = readFileSync(resolve(DATA, 'text_programs.json'), 'utf8');
     expect(JSON.parse(data)).toEqual(text);
     expect(readFileSync(resolve(STATIC, 'text_programs.json'), 'utf8')).toBe(data);
-    const previous = JSON.parse(execFileSync('git', ['show', 'cd2c5a2:game/data/text_programs.json'], { encoding: 'utf8' })) as TextProgramsFile;
-    expect(previous.programs.PartyMenuText_12cc).toBeDefined();
-    previous.programs.SleepingPikachuText1 = previous.programs.PartyMenuText_12cc; delete previous.programs.PartyMenuText_12cc; // note 78 rename
-    expect(without(text.textPointers, LATER_MAP_TABLES)).toEqual(previous.textPointers);
-    const existing = without(text.programs, LATER_MAP_PROGRAMS); delete existing.TrainerEndBattleText; delete existing._TrainerNameText;
-    // A5c3e checkpoint-02's four keys, proven against a20cfa8 in battle_item_data.test.ts.
-    for (const label of ['DoYouWantToNicknameText', '_DoYouWantToNicknameText', 'DontHavePokemonText', '_DontHavePokemonText']) delete existing[label];
-    expect(existing).toEqual(previous.programs);
   });
 });

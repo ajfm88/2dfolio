@@ -1,0 +1,140 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 3,
+          "d1": 3,
+          "d2": 0,
+          "d3": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 6,
+          "volume": 15,
+          "fade": 7,
+          "frequency": 1728
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 14,
+          "fade": 7,
+          "frequency": 1792
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 15,
+          "fade": 4,
+          "frequency": 1776
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 14,
+          "fade": 4,
+          "frequency": 1760
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 13,
+          "fade": 1,
+          "frequency": 1744
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 0,
+          "d1": 0,
+          "d2": 2,
+          "d3": 2
+        },
+        {
+          "cmd": "square_note",
+          "length": 7,
+          "volume": 14,
+          "fade": 6,
+          "frequency": 1665
+        },
+        {
+          "cmd": "square_note",
+          "length": 14,
+          "volume": 13,
+          "fade": 5,
+          "frequency": 1729
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 12,
+          "fade": 4,
+          "frequency": 1713
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 13,
+          "fade": 4,
+          "frequency": 1697
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 12,
+          "fade": 1,
+          "frequency": 1681
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 10,
+          "volume": 10,
+          "fade": 6,
+          "param": 60
+        },
+        {
+          "cmd": "noise_note",
+          "length": 14,
+          "volume": 9,
+          "fade": 4,
+          "param": 44
+        },
+        {
+          "cmd": "noise_note",
+          "length": 5,
+          "volume": 10,
+          "fade": 3,
+          "param": 60
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 9,
+          "fade": 1,
+          "param": 44
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

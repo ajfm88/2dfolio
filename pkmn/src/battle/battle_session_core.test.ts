@@ -22,7 +22,7 @@ beforeAll(async()=>{
 });
 
 it('cold session startup fetches main and session tables once even without main preloading them',()=>{
- expect(coldFetches.size).toBe(59); // checkpoint-07: battle_animations.json and audio/sfx/ball_poof.json; A5f 03: ball_toss, tink; V3 01: three maps
+ expect(coldFetches.size).toBe(104); // 59 previous assets, 38 cries and seven PCM clips
  expect(coldFetches.has('battle_animations.json')&&coldFetches.has('audio/sfx/ball_poof.json')).toBe(true);
  for(const [name,count] of coldFetches)expect(count,name).toBe(1);
 });

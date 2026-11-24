@@ -101,7 +101,7 @@ function clearSprites(host: PlayerSendOutHost): void {
   for (let i = 0; i < 40; i++) host.screen.setOam(i, { x: 0, y: 0, tile: 0, attributes: 0 });
 }
 
-/** core.asm:1764–1825. HUD/copy/palette and the poof are real; cries remain J2 cues. */
+/** core.asm:1764–1825. Draw the HUD, run the send-out animation, and wait for the cry or voice clip. */
 export function* sendOutMon(state: BattleState, host: PlayerSendOutHost): Program {
   yield* printSendOutMonMessage(state, host);
   if (state.wEnemyMonHP !== 0) yield* drawEnemyHud(state, host.screen);
@@ -120,13 +120,12 @@ export function* sendOutMon(state: BattleState, host: PlayerSendOutHost): Progra
     state.hWhoseTurn = 0; textBgTransfer.enabled = true;
     yield* host.pikachuEntrance(state);
     const clip = isPlayerPikachuAsleepInParty(state) ? 37 : 11;
-    yield* playPikachuClipCue({ getAlarm: () => host.voice.getAlarm(), setAlarm: value => host.voice.setAlarm(value),
-      cry: id => host.voice.cry(id), clip: id => host.voice.clip(id), clearSfxIds: () => host.audio.clearClipIds() }, clip);
+    yield* playPikachuClipCue(host.voice, clip);
   } else {
     state.hWhoseTurn = 1;
     yield* playMoveAnimation(state, host, 0xc3); // POOF_ANIM, constants/move_constants.asm.
     yield* host.sendingOutMon(state, 4, 11);
-    playCryCue(host.voice, state.wCurPartySpecies);
+    yield* playCryCue(host.voice, state.wCurPartySpecies);
   }
   yield* host.printText('PrintEmptyString.emptyString'); host.saveScreenTilesToBuffer1();
 }

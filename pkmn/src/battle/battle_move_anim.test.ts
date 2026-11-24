@@ -9,6 +9,7 @@ import { BattleAudio } from './battle_audio';
 import { MOVE_ANIM as M, moveAnimation, type MoveAnimationHost } from './battle_move_anim';
 import { rig, sfxData } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
+import { sfxModifierState } from '../audio/sfx_modifiers';
 import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { textBgTransfer } from '../text/bg_transfer';
 import { BALL } from './battle_item_ball';
@@ -48,6 +49,7 @@ beforeAll(async () => { await loadBattleData(); await loadBattleMoveData(); awai
 beforeEach(() => {
   vi.clearAllMocks(); resetListStateForEmptySlot(); setTextSpeed('fast'); textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   setLowHealthAlarm(0); setLowHealthAlarmDisabled(false); setLowHealthChannel5(0);
+  Object.assign(sfxModifierState, { frequency: 0, tempo: 0, savedVolume: 0 });
 });
 afterEach(() => vi.restoreAllMocks());
 

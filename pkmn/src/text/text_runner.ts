@@ -1,3 +1,4 @@
+import type { Program } from '../battle/battle_menu_context';
 import { substituteNames } from '../core/player_state';
 import { TEXT_A, TEXT_B, TextScreen } from './text_printer';
 import type { PlaceActors, PrinterPorts } from './text_printer';
@@ -9,8 +10,7 @@ export type TextBindings = Partial<Record<Exclude<TextBinding, NumericTextBindin
   & Record<NumericTextBinding, number>>;
 export interface RunnerPorts extends PrinterPorts {
   playSound(name: string): void;
-  /** Declared cue only; cry playback and its wait remain J2 (DECISIONS #45). */
-  cry(species: string): void;
+  cry?(species: string): Program;
 }
 export type TextReturn = 'returned' | 'asm';
 
@@ -147,7 +147,11 @@ export class TextProgramRunner {
           this.screen.read();
           if (!(this.screen.held & (TEXT_A | TEXT_B))) yield* this.screen.delay(30);
           break;
-        case 'cry': this.ports.cry(op.species); break;
+        case 'cry': {
+          const wait = this.ports.cry?.(op.species);
+          if (wait) for (const _ of wait) yield;
+          break;
+        }
         case 'low':
           // TextCommand_LOW: bccoord 1, 16, then the next command. No print and no box.
           this.screen.setBc(1, 16);

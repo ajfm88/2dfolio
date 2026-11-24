@@ -24,6 +24,7 @@ export interface MonPopupPicture { url: string; dimensions: number }
 export type ScriptCommand = (
   | { type: 'displayOpen'; autoBox?: boolean; spriteUpdate?: boolean; windowUp?: boolean }
   | { type: 'printText'; program: string; bindings?: TextBindings; box?: 'new' | 'keep'; noDelay?: boolean }
+  | { type: 'playCry'; species: number }
   // DisplayPokemartDialogue_ (engine/events/pokemart.asm), after the greeting PrintText.
   | { type: 'pokemart'; items: string[] }
   | { type: 'pc'; mode: 'direct' | 'generic' }

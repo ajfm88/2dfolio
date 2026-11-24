@@ -21,7 +21,7 @@ import { loadTextPrograms } from '../text/program_data';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
 import { soundFinished } from '../audio/sound_wait';
-import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
+import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { rig as audioRig, sfxData, musicData, textSoundFile } from '../test/audio_rig';
 import { A, BattleState, battleContext, POKEDEX_ORDER } from './battle_state';
 import { D } from './battle_end_state';
@@ -194,7 +194,7 @@ function history(o: Case = {}) {
     frontPicture: state => `front/${POKEDEX_ORDER[state.wCurPartySpecies - 1]}`,
     backPicture: state => `back/${POKEDEX_ORDER[state.wBattleMonSpecies2 - 1]}`,
     trainerPicture: state => trainerPicName(state)!,
-    voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm, cry: id => mark('cry', id), clip: id => mark('clip', id) },
+    voice: { *cry(id) { mark('cry', id); }, clip(id) { mark('clip', id); return false; } },
     updateSprites() {}, sendingOutMon: function* (state, x, y) { mark('sendCue', [state.hWhoseTurn, x, y]); },
     pikachuEntrance: function* () { mark('pikachuCue'); }, *slidePlayerOff() {}, enemySlideOff: function* () { mark('enemySlideCue'); },
     marowakAnimation: function* () { throw new Error('unexpected Marowak'); },

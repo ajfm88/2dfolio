@@ -72,6 +72,12 @@ it.each(['pokedex','naming'] as const)('held exit key from %s is consumed before
       tick(press);
     }
     expect(session.foreground).toBe(page);
+    if (page === 'pokedex') {
+      const before = spy.mock.calls.length;
+      let wait = 0;
+      while (spy.mock.calls.length === before && wait < 120) { tick([]); wait++; }
+      expect(wait).toBe(23); // The catch's ordinary Rattata cry.
+    }
     tick([]); // Release before pressing the page's exit key.
     tick([key]);
     expect(session.foreground).toBe('battle');

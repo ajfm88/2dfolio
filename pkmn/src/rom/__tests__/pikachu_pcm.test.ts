@@ -8,6 +8,7 @@ import {
   extractPikachuClip, pikachuClipFile, NUM_PIKACHU_CRIES, PIKACHU_CLIP_NUMBERS, type PikachuClip,
 } from '../extractors/pikachu_pcm';
 import { PIKACHU_CRIES_POINTER_TABLE } from '../rom_offsets';
+import { clipFrozenFrames } from '../../audio/pikachu_pcm';
 
 const GAME = resolve(__dirname, '../../..');
 const REFS = resolve(GAME, '../refs/pokeyellow');
@@ -20,12 +21,16 @@ const CLIPS = [
   { number: 1, bank: 0x21, addr: 0x4000, length: 2327, next: 0x491a },
   { number: 4, bank: 0x21, addr: 0x59ee, length: 4087, next: null },
   { number: 11, bank: 0x24, addr: 0x4000, length: 1823, next: 0x4722 },
+  { number: 17, bank: 0x34, addr: 0x4000, length: 2143, next: null },
+  { number: 28, bank: 0x35, addr: 0x4b5a, length: 4679, next: null },
+  { number: 35, bank: 0x37, addr: 0x4000, length: 4647, next: null },
   { number: 37, bank: 0x38, addr: 0x4000, length: 3575, next: 0x4dfa },
+  { number: 40, bank: 0x38, addr: 0x5a64, length: 3855, next: null },
 ] as const;
 
 describe('Pikachu\'s clips: the committed files (opening checkpoint-03, data only)', () => {
-  it('setup writes exactly the four clips the opening slice plays, with identical static mirrors', () => {
-    expect([...PIKACHU_CLIP_NUMBERS]).toEqual([1, 4, 11, 37]);
+  it('setup writes exactly the eight clips used by the title, battle, status screen and Bill\'s PC, with identical static mirrors', () => {
+    expect([...PIKACHU_CLIP_NUMBERS]).toEqual([1, 4, 11, 17, 28, 35, 37, 40]);
     const names = PIKACHU_CLIP_NUMBERS.map(number => `pikachu_cry_${number}.json`).sort();
     for (const root of ['data', 'static'] as const) {
       expect(readdirSync(resolve(GAME, root, 'audio/pikachu_cries')).sort()).toEqual(names);
@@ -41,10 +46,12 @@ describe('Pikachu\'s clips: the committed files (opening checkpoint-03, data onl
       expect(file.length).toBe(clip.length);
       expect(file.samples).toMatch(/^[0-9a-f]+$/);
       expect(file.samples.length).toBe(2 * clip.length);
+      if ([28, 35, 40].includes(clip.number))
+        expect(clipFrozenFrames(file.length)).toBe(clip.number === 40 ? 78 : 94);
     });
   }
 
-  it('only the audio facade reads the clips, and only the title plays one', () => {
+  it('only the audio facade reads the clips, with title and battle callers', () => {
     const sources: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -59,8 +66,8 @@ describe('Pikachu\'s clips: the committed files (opening checkpoint-03, data onl
       .map(path => relative(resolve(GAME, 'src'), path).split('\\').join('/')).sort();
     expect(holding(/pikachu_cr(y|ies)/)).toEqual(['audio/index.ts', 'audio/pikachu_pcm.ts']);
     expect(holding(/audio\/pikachu_cries\/pikachu_cry_\$\{/)).toEqual(['audio/index.ts']);
-    // The title calls the player since checkpoint 05; the battle (checkpoint 15) is not wired yet.
-    expect(holding(/loadPikachuClip|startPikachuClip|playPikachuSoundClip/)).toEqual(['audio/index.ts', 'menus/title_screen.ts']);
+    expect(holding(/loadPikachuClip|startPikachuClip|playPikachuSoundClip/))
+      .toEqual(['audio/index.ts', 'battle/battle_session.ts', 'main.ts', 'menus/bills_pc.ts', 'menus/title_screen.ts']);
   });
 });
 

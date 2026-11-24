@@ -554,6 +554,8 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_ViridianNicknameHouseBaldingGuyText", 0x2A, 0x58C8, false], // text/ViridianNicknameHouse.asm
   ["_ViridianNicknameHouseLittleGirlText", 0x2A, 0x591E, false], // text/ViridianNicknameHouse.asm
   ["_ViridianNicknameHouseSpearowText", 0x2A, 0x5938, false], // text/ViridianNicknameHouse.asm
+  ["NurseChanseyText", 0x3C, 0x4F21, true], // engine/events/pokecenter_chansey.asm
+  ["_NurseChanseyText", 0x26, 0x431D, false], // data/text/text_1.asm
   ["_ViridianNicknameHouseSpearySignText", 0x2A, 0x594A, false], // text/ViridianNicknameHouse.asm
   ["_ViridianPokecenterCooltrainerMText", 0x2A, 0x56F0, false], // text/ViridianPokecenter.asm
   ["_ViridianPokecenterGentlemanText", 0x2A, 0x56A9, false], // text/ViridianPokecenter.asm

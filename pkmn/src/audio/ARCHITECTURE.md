@@ -209,5 +209,36 @@ Without the adapter the existing engine behavior is unchanged. The production im
     V5g1 checkpoint-02: bank `$1f` now uses its three differing bodies. The battle's separate
     text-sound path now shares the bank table (V5g1 checkpoint-03); field concurrency/priority is
     implemented in V5g2 above. Call sites remain V5g3.
-- Upstream's own to-do: remaining music tracks, remaining music fade paths, Pokemon cries,
-  Pikachu PCM cries.
+- Upstream's remaining audio work includes music tracks and fade paths.
+
+## Cries
+
+`data/cries.json` maps the 190 internal species indexes to a base cry, pitch, and length.
+The 38 shared sequence files are `audio/sfx/cry00.json` through `cry25.json` under both
+`data/` and `static/`. `audio/cries.ts` bundles the index and computes the sound ID from
+the selected base. `getCryData` writes pitch and length into `sfxModifierState`.
+
+`playCryProgram` saves and clears the low-health alarm, requests the sound, yields serviced
+frames while the host's completion check is busy, and restores the alarm. The field facade
+supplies the current-bank `PlaySound` request and `isSoundFinished`. The battle session supplies
+the Audio 2 owner and polls its sound state. The Pokédex side-menu CRY uses `requestCry` to return
+directly to menu input. The data page uses the waiting program supplied by its host.
+
+The shared modifiers persist after each cry. Audio 2 battle effects can inherit them when
+the caller leaves them set. Cry pitch reaches the pulse and noise channels. Cry tempo affects
+pulse timing, with noise retaining `$0100`. Music resumes on each released channel's next note
+or rest. See note 140 §2.2–§2.4 and §8.7.
+
+The committed PCM list is 1, 4, 11, 17, 28, 35, 37 and 40 under `audio/pikachu_cries/`. The title loads
+1 and 11. The startup battle asset loader loads 4, 11, 17, 28, 35, 37 and 40 into the shared cache,
+so the field and battle status screens both have clip 17 available. The battle and status
+voice ports use the same three-prefix-frame cue and yield for the pending VBlank after the
+PCM body clears the SFX IDs. Note 140 §8.13 describes the ownership of that clear.
+Bill's PC uses the field cry program for ordinary deposits, withdrawals and releases. The menu
+advances the program without reading the joypad. Deposits and withdrawals move the Pokémon after
+the cry and check the current sound before printing the result. Release accepts a silent YES,
+removes the Pokémon after the confirmation delay, waits for the current sound, and runs the cry
+before printing. The party and box starter checks share the five-byte OT-name and player-ID
+comparison. The starter uses clip 28 before deposit happiness and transfer, clip 35 before withdrawal,
+and clip 40 before the unhappy text while remaining boxed. Each uses the same three-frame cue and
+pending-VBlank yield as battle, without a joypad read during the wait.

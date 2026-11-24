@@ -144,7 +144,7 @@ export function* partyMenuOrRockOrRun(ctx: BattlePartyContext, host: BattleParty
       if (input.item === 1) {
         ctx.monDataLocation = 0; clearSprites(host);
         const mon = ctx.partyMons[ctx.whichPokemon];
-        const options: StatusScreenOptions = { syncRead: false, paletteOwner: 'battle' };
+        const options: StatusScreenOptions = { paletteOwner: 'battle' };
         const status = host.createStatusScreen?.(mon, options) ?? new StatusScreenSession(mon, options);
         host.statusView = status;
         while (!(yield* advanceBattleStatusFrame(status, mon, host)));

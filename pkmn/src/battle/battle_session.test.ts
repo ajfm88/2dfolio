@@ -8,9 +8,10 @@ import { loadTextPrograms } from '../text/program_data';
 import { battleWorld } from '../test/battle_world_fixture';
 import { rig, musicData, sfxData } from '../test/audio_rig';
 import { PlaySound } from '../audio/play_sound';
+import { isCry, sfxModifierState } from '../audio/sfx_modifiers';
 import { engineHost } from '../audio/request_host';
 import { musicIdentity, musicNameForSound } from '../audio/sound_ids';
-import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5, lowHealthChannel5 } from '../audio/low_health_alarm';
+import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5, lowHealthAlarm, lowHealthChannel5 } from '../audio/low_health_alarm';
 import { setPlayerName } from '../core/player_state';
 import { resetListStateForEmptySlot } from '../list_state';
 import { textBgTransfer } from '../text/bg_transfer';
@@ -49,10 +50,11 @@ beforeAll(async()=>{
  } finally { count.mockRestore(); }
 });
 beforeEach(()=>{keys.forEach(k=>setKey(k,false));updateInput();syncJoypadRead();resetListStateForEmptySlot();setPlayerName('ASH');
-  textBgTransfer.enabled=true;textBgTransfer.resetPortion();setLowHealthAlarm(0);setLowHealthAlarmDisabled(false);setLowHealthChannel5(0);});
+  textBgTransfer.enabled=true;textBgTransfer.resetPortion();setLowHealthAlarm(0);setLowHealthAlarmDisabled(false);setLowHealthChannel5(0);
+  Object.assign(sfxModifierState, { frequency: 0, tempo: 0, savedVolume: 0 });});
 afterEach(()=>vi.restoreAllMocks());
 function hash(data:ArrayLike<unknown>){return createHash('sha256').update(JSON.stringify(Array.from(data))).digest('hex').slice(0,12);}
-function setup(options:{world?:Partial<BattleWorld>;frames?:()=>number;random?:ReturnType<typeof createSessionRandom>;scrollB?:boolean}={}){
+function setup(options:{world?:Partial<BattleWorld>;frames?:(time:number)=>number;random?:ReturnType<typeof createSessionRandom>;scrollB?:boolean}={}){
  const r=rig();let time=0;
  const musicRequests:string[]=[];
  const banks=new PlaySound(engineHost(r.synth,r.music,r.sfx,(id,bank)=>{
@@ -60,7 +62,7 @@ function setup(options:{world?:Partial<BattleWorld>;frames?:()=>number;random?:R
    musicRequests.push(name);if(name==='defeatedwildmon')expect(r.music.isPlaying(),'victory must stop the previous music first').toBe(false);
    r.music.play(musicData(name));
  },undefined,()=>musicRequests.push('stop')));
- const framesNow=options.frames??(()=>time);
+ const framesNow=()=>options.frames?.(time)??time;
  const random=options.random??createSessionRandom(framesNow);
  const mon=createPokemon(25,20,'PIKACHU',{atk:9,def:8,spd:8,spc:8})!;mon.moves=[{id:'TACKLE',pp:35,maxPp:35}];
  const world=battleWorld({party:[mon],...options.world});
@@ -106,8 +108,40 @@ function setup(options:{world?:Partial<BattleWorld>;frames?:()=>number;random?:R
  return {r,banks,random,session,world,initial,prior,start,tick,drive,frames,deltas,states,observations,musicRequests,get time(){return time;}};
 }
 function snapshotRam(mem:Uint8Array){return Array.from(mem.entries()).filter(([,v])=>v).map(([a,v])=>`${a.toString(16)}:${v.toString(16)}`);}
+it.each([[4, 0x5f, 0xcc, 1, 21], [2, 0x1d, 0, 0x80, 54]])(
+ 'plays the wild species %i on the battle owner before starting the appearance text', (species, id, frequency, tempo, duration) => {
+  const h = setup({world:{opponent:species}});
+  const play = BattleAudio.prototype.play;
+  let requestedAt: number | undefined;
+  vi.spyOn(BattleAudio.prototype, 'play').mockImplementation(function (this: BattleAudio, sound) {
+    if (isCry(sound.id)) {
+      requestedAt = h.time;
+      expect([sound.id, this.frequencyModifier, this.tempoModifier, lowHealthAlarm()]).toEqual([id, frequency, tempo, 0]);
+    }
+    return play.call(this, sound);
+  });
+  h.start();
+  // A paused alarm timer still occupies CHAN5 before the request, but a cry can replace it.
+  setLowHealthAlarm(0x9e);
+  for (let i = 0; requestedAt === undefined && i < 300; i++) h.tick();
+  expect(requestedAt).toBeDefined();
+  for (let i = 0; i < duration; i++) {
+    expect(h.session.pendingFrame).toBe('serviced');
+    expect(lowHealthAlarm()).toBe(0);
+    expect(h.session.textLog.some(row => row.label === 'WildMonAppearedText')).toBe(false);
+    h.tick();
+  }
+  expect(h.time - requestedAt!).toBe(duration);
+  expect(h.r.sfx.isPlaying()).toBe(false);
+  expect(lowHealthAlarm() & 0x80).toBe(0x80);
+  for (let i = 0; !h.session.textLog.some(row => row.label === 'WildMonAppearedText') && i < 10; i++) h.tick();
+  expect(h.session.textLog.some(row => row.label === 'WildMonAppearedText')).toBe(true);
+  h.session.abort();
+ });
 it('Route1 wild win uses the production session, real input, 123-frame first Tackle and final absolute values',()=>{
- const h=setup();expect(h.session.state.partyMons[0]).toEqual(partyRecordToPokemon(decodePartyMon(h.session.state,0)));
+ // Keep the original DIV witness once input reaches the battle menu. The ledger still counts every audio and video frame.
+ const h=setup({frames:time=>time>=416?time-(23+1+48):time});
+ expect(h.session.state.partyMons[0]).toEqual(partyRecordToPokemon(decodePartyMon(h.session.state,0)));
  expect([...h.session.state.mem.slice(A.wEnemyMonPP,A.wEnemyMonPP+4)]).toEqual([35,30,0,0]);
  expect([h.session.state.mem[INIT.wMapPalOffset],h.session.state.mem[INIT.wLetterPrintingDelayFlags],h.session.state.mem[INIT.wSavedTileAnimations]]).toEqual([0,1,2]);
  const result=h.drive();expect(result.exit).toBe('end');expect(result.outcome.party[0].exp).toBe(8024);
@@ -228,8 +262,8 @@ it('the bound trainer port runs Misty X Defend through the real session and live
  const mon=createPokemon(25,45,'PIKACHU',{atk:9,def:8,spd:8,spc:8})!;
  mon.moves=[{id:'TACKLE',pp:35,maxPp:35}];
  let time=0;
- // 78 = the 04b intro's added frames (note 79 §8.3); the case pins the pre-04b roll.
- const h=setup({frames:()=>time>78?time-78:time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
+ // Keep the pinned roll despite the 78 intro frames and 59+48 Staryu/Pikachu cry updates.
+ const h=setup({frames:()=>time>186?time-186:time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
    partyIndex:0,party:[mon],options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}}),s=h.session.state;
  h.start();let returned=0;const counts:number[]=[],stages:number[]=[];
  for(let n=0;!h.session.done&&n<10000;n++){
@@ -286,7 +320,9 @@ it('the previous sound-done owner chains during battle, and all five hooks are r
  const control={getMute:()=>0,setMute:()=>{}};r.music.audioControl=control;
  const prior=[r.sfx.onSfxChannelDone,r.sfx.channelEnabled,r.sfx.beforeNextNote,r.sfx.onSoundIdsCleared,r.music.audioControl];
  const banks=new PlaySound(engineHost(r.synth,r.music,r.sfx,(id,bank)=>r.music.play(musicData(musicNameForSound(id,bank)!))));
- const session=createBattleSession(battleWorld(),{random:createSessionRandom(()=>1),audio:()=>({sfx:r.sfx,music:r.music,banks})});
+ const world=battleWorld();
+ world.party[0].otName='TRADE'; // This fixture exercises sound-ret hook chaining on the regular cry path.
+ const session=createBattleSession(world,{random:createSessionRandom(()=>1),audio:()=>({sfx:r.sfx,music:r.music,banks})});
  banks.playMusic(musicIdentity('wildbattle')!);session.start();
  for(let n=0;!session.done&&n<6000;n++){keys.forEach(k=>setKey(k,k==='a'&&n%2===0||k==='b'&&n%2===0&&session.video.textBox.isWaitingForInput));updateInput();r.update();session.tick();}
  expect(session.done).toBe(true);session.finish();expect(count).toBeGreaterThan(0);
@@ -305,6 +341,8 @@ it('the session loader is once-only and the second call decodes and fetches noth
   ...['trainer_appeared','faint_fall','faint_thud','run','swap','press_ab','damage','super_effective','not_very_effective',
   'level_up','get_item1','caught_mon','dex_page_added','heal_hp','heal_ailment','pokeflute_in_battle','ball_poof',
   'ball_toss','tink'].map(name=>`audio/sfx/${name}.json`), // A5f checkpoint-03
+  ...Array.from({length:38},(_,base)=>`audio/sfx/cry${base.toString(16).padStart(2,'0')}.json`),
+  ...[4,11,17,28,35,37,40].map(id=>`audio/pikachu_cries/pikachu_cry_${id}.json`),
   'battle_animations.json'];
  expect([...firstFetches.keys()].sort()).toEqual(expected.sort());
  expect([...firstFetches.values()]).toEqual(expected.map(()=>1));
@@ -334,7 +372,7 @@ it('the text owner plays each command\'s id with the current bank\'s body: level
  const sounds=new Map<string,BattleSfx>(names.map(name=>[name,{id:0,data:sfxData(name)}]));
  const played:{id:number;data:unknown}[]=[];vi.spyOn(audio,'play').mockImplementation(sound=>{played.push(sound);return true;});
  const owner=battleTextSoundOwner(audio,{sfx:r.sfx,music:r.music,banks},sounds);
- const ports={buttons:()=>0,speed:()=>1,soundFinished:()=>true,joypadRead:()=>{},beep:()=>{},playSound:owner.play,cry:()=>{}};
+ const ports={buttons:()=>0,speed:()=>1,soundFinished:()=>true,joypadRead:()=>{},beep:()=>{},playSound:owner.play};
  const runner=new TextProgramRunner(new TextScreen(ports),{P:[{op:'sound',sound:'get_item1'}]},ports);
  runner.run('P',{},true).next();banks.audioBank=2;runner.run('P',{},true).next();
  expect(played.map(s=>s.id)).toEqual([0x86,0x86]);
@@ -381,7 +419,7 @@ function poofRun(animation:'ON'|'OFF'){
 }
 it('ON Route1 send-out: the live poof copies 79 tiles, draws six blocks, plays SFX_BALL_POOF and costs 10 frames over OFF',()=>{
  const on=poofRun('ON'),off=poofRun('OFF'),t=on.t,at=on.rows[t].at;
- expect([t,off.t]).toEqual([280,280]);
+ expect([t,off.t]).toEqual([304,304]);
  // Delay3, one frame, then CopyVideoData: a new atlas on each of 10 VBlanks (8 tiles each), none afterwards.
  expect(on.rows.map((row,i)=>i>t-5&&row.atlas!==on.rows[i-1].atlas?i-t:null).filter(v=>v!==null)).toEqual([4,5,6,7,8,9,10,11,12,13]);
  const atlas=on.rows[t+13].atlas as {data:ArrayLike<number>};
@@ -397,5 +435,5 @@ it('ON Route1 send-out: the live poof copies 79 tiles, draws six blocks, plays S
  expect(on.plays.filter(p=>p.id===0x93).map(p=>p.at-at)).toEqual([23]);
  expect([off.rows.slice(t,t+50).every(row=>row.oam.length===0),off.rows.every((row,i)=>i<t||row.atlas===off.rows[t].atlas),
   off.plays.some(p=>p.id===0x93)]).toEqual([true,true,false]);
- expect([on.menu,off.menu]).toEqual([353,343]);
+ expect([on.menu,off.menu]).toEqual([425,415]);
 });

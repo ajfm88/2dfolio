@@ -115,7 +115,7 @@ function rig() {
     frontPicture(state: State) { mark('front', state.wEnemyMonSpecies2); return `front-${state.wEnemyMonSpecies2}`; },
     renderTiles: { sprites: atlas }, pokeballTiles: balls,
     sounds: new Map([[0x8e, { id: 0x8e, data: sfxData('heal_ailment') }]]),
-    voice: { getAlarm: () => 0, setAlarm(value: number) { mark('alarm', value); }, cry(id: number) { mark('cry', id); }, clip() {} },
+    voice: { *cry(id: number) { mark('cry', id); }, clip() { return false; } },
   };
   const env: TrainerAIEnvironment = {
     screen, items: host, text: host, sendOut: host,

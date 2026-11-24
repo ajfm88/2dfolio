@@ -18,6 +18,9 @@
 import { GBSynthesizer } from './synthesizer';
 import { SoundChannel } from './sound_channel';
 import type { ChannelHost } from './sound_channel';
+import { sfxModifierState } from './sfx_modifiers';
+
+type ReadModifiers = () => { tempo: number; frequency: number };
 
 /** wSfxTempo as Audio1_SetSfxTempo leaves it for every non-cry SFX. */
 export const SFX_TEMPO = 0x100;
@@ -85,6 +88,7 @@ interface SfxChannelState {
   noteDelayCounter: number;
   noteDelayFractional: number;
   dutyCycle: number;
+  dutyPattern: number | null;
 
   // square_note state
   volume: number;
@@ -103,9 +107,9 @@ interface SfxChannelState {
 
   // sound_loop
   loopCounter: number;
-  /** Audio2 battle SFX use wTempoModifier on pulse channels; normal callers stay at $0100. */
-  /** Present only for the opt-in Audio2 bridge; evaluated at each raw pulse note. */
-  battleModifiers: (() => { tempo: number; frequency: number }) | null;
+  modifiers: ReadModifiers | null;
+  cryActive: (() => boolean) | null;
+  battle: boolean;
 }
 
 // ─── SFX Engine ──────────────────────────────────────────────────────────────
@@ -169,8 +173,19 @@ export class SfxEngine {
    * its reverse-header priority walk and cleared the accepted channels. This deliberately
    * does not implement priority for ordinary SFX callers.
    */
-  installBattleSfx(data: SfxData, battleModifiers: () => { tempo: number; frequency: number }): void {
-    this.install(data, battleModifiers);
+  installBattleSfx(data: SfxData, modifiers: ReadModifiers): void {
+    this.install(data, modifiers, null, true);
+  }
+
+  /** The common cry start in Audio1–4_PlaySound, after the real header was accepted. */
+  installCry(data: SfxData, modifiers: ReadModifiers, cryActive: () => boolean, battle = false): void {
+    this.clearChannelsForPriority([7]);
+    this.install({ channels: [...data.channels, { id: 7, commands: [{ cmd: 'sound_ret' }] }] },
+      modifiers, cryActive, battle);
+    if (sfxModifierState.savedVolume === 0) {
+      sfxModifierState.savedVolume = this.synth.masterVolumeRegister;
+      this.synth.setMasterVolume(7, 7);
+    }
   }
 
   /** Audio1_PlaySound's common path for the field: the caller walked the header and cleared each accepted channel. */
@@ -196,7 +211,8 @@ export class SfxEngine {
     this._playing = this.channels.some(ch => ch.active);
   }
 
-  private install(data: SfxData, battleModifiers: (() => { tempo: number; frequency: number }) | null = null): void {
+  private install(data: SfxData, modifiers: ReadModifiers | null = null, cryActive: (() => boolean) | null = null,
+    battle = false): void {
     // Audio1_UpdateMusic runs CHAN5 → CHAN8 in order, whatever the header's order
     for (const ch of [...data.channels].sort((a, b) => a.id - b.id)) {
       const hwCh = ch.id <= 4 ? ch.id - 1 : ch.id - 5; // ch5->0, ch6->1, ch7->2, ch8->3
@@ -208,9 +224,10 @@ export class SfxEngine {
         music: musicMode ? new SoundChannel(ch.id, ch.commands, this.host) : null,
         commands: ch.commands,
         pc: 0,
-        noteDelayCounter: battleModifiers ? 1 : 0,
+        noteDelayCounter: modifiers ? 1 : 0,
         noteDelayFractional: 0,
-        dutyCycle: 2,
+        dutyCycle: cryActive ? 0 : 2,
+        dutyPattern: null,
         volume: 15,
         fade: 0,
         fadeCounter: 0,
@@ -221,7 +238,9 @@ export class SfxEngine {
         sweepCounter: 0,
         isNoiseChannel: hwCh === 3,
         loopCounter: 0,
-        battleModifiers,
+        modifiers,
+        cryActive,
+        battle,
       };
       this.channels.push(state);
     }
@@ -270,7 +289,7 @@ export class SfxEngine {
     if (!ch) return undefined;
     return {
       id: ch.id, active: ch.active, enabled: this.channelEnabled?.(ch.id) ?? true, commands: ch.commands,
-      pc: ch.pc, noteDelayCounter: ch.noteDelayCounter, musicMode: ch.music !== null, battle: ch.battleModifiers !== null,
+      pc: ch.pc, noteDelayCounter: ch.noteDelayCounter, musicMode: ch.music !== null, battle: ch.battle,
     };
   }
 
@@ -296,10 +315,10 @@ export class SfxEngine {
   // ─── Tick Logic ────────────────────────────────────────────────────────
 
   private tickChannel(ch: SfxChannelState): void {
-    if (ch.battleModifiers && (ch.music?.noteDelayCounter ?? ch.noteDelayCounter) === 1
+    if (ch.modifiers && (ch.music?.noteDelayCounter ?? ch.noteDelayCounter) === 1
       && this.beforeNextNote?.(ch.id)) return;
     if (ch.music) {
-      if (ch.battleModifiers && ch.music.noteDelayCounter === 1) this.enableChannelOutput(ch.hwChannel);
+      if (ch.battle && ch.music.noteDelayCounter === 1) this.enableChannelOutput(ch.hwChannel);
       ch.music.tick(false);
       if (!ch.music.active) {
         // Its final sound_ret: the sound ID is cleared and the channel handed back
@@ -310,7 +329,7 @@ export class SfxEngine {
     }
 
     // Audio1_ApplyMusicAffects: byte 0 decrements to $FF; only 1 reads commands.
-    if (ch.battleModifiers && ch.noteDelayCounter !== 1) {
+    if (ch.modifiers && ch.noteDelayCounter !== 1) {
       ch.noteDelayCounter = (ch.noteDelayCounter - 1) & 0xff;
       this.applyTickEffects(ch);
       return;
@@ -331,6 +350,10 @@ export class SfxEngine {
   }
 
   private applyTickEffects(ch: SfxChannelState): void {
+    if (ch.dutyPattern !== null && ch.hwChannel <= 1) {
+      ch.dutyPattern = ((ch.dutyPattern << 2) | (ch.dutyPattern >>> 6)) & 0xff;
+      this.synth.setPulseDuty(ch.hwChannel as 0 | 1, ch.dutyPattern >>> 6);
+    }
     // Volume fade
     this.applyVolumeFade(ch);
 
@@ -410,6 +433,13 @@ export class SfxEngine {
           }
           break;
 
+        case 'duty_cycle_pattern':
+          if (ch.cryActive) {
+            ch.dutyPattern = (cmd.d0! << 6) | (cmd.d1! << 4) | (cmd.d2! << 2) | cmd.d3!;
+            ch.dutyCycle = cmd.d0!;
+          }
+          break;
+
         case 'pitch_sweep': {
           // pitch_sweep length, shift
           // length = sweep time (0-7), shift = pitch change (-7 to 7)
@@ -432,13 +462,13 @@ export class SfxEngine {
         }
 
         case 'square_note': {
-          if (ch.battleModifiers) this.enableChannelOutput(ch.hwChannel);
+          if (ch.modifiers) this.enableChannelOutput(ch.hwChannel);
           // square_note length, volume, fade, frequency
           // Length is in frames (length + 1)
-          if (ch.battleModifiers) {
+          const modifier = ch.modifiers?.();
+          if (modifier) {
             // Audio1_note_length: (length + 1) * tempo plus this channel's retained
             // fractional byte. Noise bypasses Audio1_SetSfxTempo entirely.
-            const modifier = ch.battleModifiers();
             const total = (cmd.length! + 1) * modifier.tempo + ch.noteDelayFractional;
             ch.noteDelayCounter = (total >>> 8) & 0xff;
             ch.noteDelayFractional = total & 0xff;
@@ -454,7 +484,7 @@ export class SfxEngine {
           ch.fadeCounter = 0;
 
           // Direct frequency register value
-          ch.currentFreqReg = (cmd.frequency! + (ch.battleModifiers?.().frequency ?? 0)) & 0x7FF;
+          ch.currentFreqReg = (cmd.frequency! + (modifier?.frequency ?? 0)) & 0x7FF;
           const hz = 131072 / (2048 - ch.currentFreqReg);
 
           if (ch.hwChannel <= 1) {
@@ -466,7 +496,7 @@ export class SfxEngine {
         }
 
         case 'noise_note': {
-          if (ch.battleModifiers) this.enableChannelOutput(ch.hwChannel);
+          if (ch.modifiers) this.enableChannelOutput(ch.hwChannel);
           // noise_note length, volume, fade, param
           ch.noteDelayCounter = cmd.length! + 1;
           ch.volume = cmd.volume!;
@@ -480,7 +510,8 @@ export class SfxEngine {
             encodedFade = fade;
           }
 
-          this.synth.triggerNoise(cmd.param!, cmd.volume!, encodedFade);
+          const param = (cmd.param! + (ch.modifiers?.().frequency ?? 0)) & 0xff;
+          this.synth.triggerNoise(param, cmd.volume!, encodedFade);
           return; // Wait for delay
         }
 
@@ -492,6 +523,17 @@ export class SfxEngine {
           return;
 
         case 'sound_ret':
+          if (ch.cryActive?.()) {
+            if (ch.id !== 5) {
+              ch.pc--;
+              ch.noteDelayCounter = 1;
+              this.silenceHwChannel(ch.hwChannel);
+              return;
+            }
+            const volume = sfxModifierState.savedVolume;
+            this.synth.setMasterVolume(volume >>> 4, volume & 0xf);
+            sfxModifierState.savedVolume = 0;
+          }
           ch.active = false;
           this.finishChannel(ch);
           return;

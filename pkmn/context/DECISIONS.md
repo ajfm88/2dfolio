@@ -2220,8 +2220,8 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      and instead focus on this accuracy being in the maps and the actual gameplay."* The Pikachu movie (all 18 scenes) is
      ported frame by frame into `Boot`'s empty `PlayIntroScene` slot. **The user: don't lose the work already done.** A
      frame driver runs 12b2c2's reviewed `intro_movie_timing.ts` streams semantically, ignoring cycle counts; scenes 6–17
-     are added to the same module (note 140 §2.1). The bar is frame-level and visually faithful, with
-     scanline-level mid-frame effects and no cycle timing, native observer, mutation census or frozen patch (note 140). Sol
+     are added to the same module. The bar is frame-level and visually faithful, with
+     scanline-level mid-frame effects and no cycle timing, native observer, mutation census or frozen patch. Sol
      implements, Claude reviews, and the user play-tests. After it lands, the queue goes to the core game. The #146 order
      (crackle → cries → battle audit → A2–A4) is to be confirmed with the user, who wants maps and core systems first.
 173. **Queue after the simple opening: cries → battle audit → Mt. Moon and A2; the crackle fix is parked** (user,
@@ -2230,6 +2230,23 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      come Pokémon cries (#141), then the battle-mechanics audit (#70), then B1 (Mt. Moon) and A2. PLAN.md requires A4
      (in-game trades) before B1, because Mt. Moon is the first place to get a Clefairy. A3 (field effects) is still open.
      Claude raises both when planning B1.
+
+174. **Cries go first; the plan's four answers; the simple opening waits for the main game** (user, 2026-11-23,
+     note 140 §7). *"cries go ahead of it, we will finish the main game first"*; *"1 throu 3 yes"*.
+     - **Bar and size (§7.1):** byte-exact data, frame-exact audio and waits; no cycle timing, frozen patch or mutation
+       census. Five checkpoints. Roles changed the same day (user): **Grok implements; Nemotron or Luna reviews.**
+     - **Starter Pikachu's clips are in (§7.2):** 4, 11 and 37 wired in battle; 17, 28 and 35 extracted with their
+       callers. This amends #141(4).
+     - **The Pokédex side menu's CRY item is in (§7.3),** in checkpoint-04; PRNT stays out (J2).
+     - **Order (§7.4):** cries now, then the core game (#173's battle audit, B1 and A2). The simple opening (#172)
+       moves to after the main game. Supersedes #173's "after the simple opening".
+     - The two tests that read lost commits (`battle_end_data`, `battle_item_data`) drop their old-commit comparisons
+       and keep their current-data and static-mirror checks (user: "yes").
+
+175. **The cry table stays compiled into the bundle** (user, 2026-11-23: *"we will go with your recommendation"*;
+     note 140 §8.9–§8.10). `audio/cries.ts` imports `data/cries.json` (190 rows, about 11 KB), as
+     `battle_pictures.ts` already imports `trainers.json`. The cry sound bodies still load from `static/` at runtime.
+     No ROM is involved, so Invariant 1 holds. Small lookup tables needed synchronously may be bundled this way.
 
 ## Open — not decided, needs the user
 

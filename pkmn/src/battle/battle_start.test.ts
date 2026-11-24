@@ -19,7 +19,8 @@ import { loadTextPrograms } from '../text/program_data';
 import { initTextSystem, setTextSpeed } from '../text/textbox';
 import { textBgTransfer } from '../text/bg_transfer';
 import { soundFinished } from '../audio/sound_wait';
-import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
+import { sfxModifierState } from '../audio/sfx_modifiers';
+import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { rig as audioRig, sfxData, musicData, textSoundFile } from '../test/audio_rig';
 import { A, BattleState, battleContext, encodeText, POKEDEX_ORDER } from './battle_state';
 import { D } from './battle_end_state';
@@ -72,6 +73,7 @@ beforeEach(() => {
   vi.clearAllMocks(); resetListStateForEmptySlot(); setPlayerName('ASH'); setTextSpeed('fast');
   textBgTransfer.enabled = true; textBgTransfer.resetPortion();
   setLowHealthAlarm(0); setLowHealthAlarmDisabled(false); setLowHealthChannel5(0);
+  Object.assign(sfxModifierState, { frequency: 0, tempo: 0, savedVolume: 0 });
 });
 afterEach(() => { dispose.splice(0).reverse().forEach(f => f()); vi.restoreAllMocks(); });
 
@@ -205,7 +207,7 @@ function history(o: Case = {}) {
     frontPicture: state => `front/${POKEDEX_ORDER[state.wCurPartySpecies - 1]}`,
     backPicture: state => `back/${POKEDEX_ORDER[state.wBattleMonSpecies2 - 1]}`,
     trainerPicture: state => trainerPicName(state)!,
-    voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm, cry: id => mark('cry', id), clip: id => mark('clip', id) },
+    voice: { *cry(id) { mark('cry', id); }, clip(id) { mark('clip', id); return false; } },
     updateSprites() {}, sendingOutMon: function* (state, x, y) { mark('sendCue', [state.hWhoseTurn, x, y]); },
     pikachuEntrance: function* () { mark('pikachuCue'); }, *slidePlayerOff() {}, enemySlideOff: function* () { mark('enemySlideCue'); },
     marowakAnimation: function* () { throw new Error('unexpected Marowak'); },

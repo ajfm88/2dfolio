@@ -1,0 +1,105 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 3,
+          "d1": 3,
+          "d2": 1,
+          "d3": 1
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 15,
+          "fade": 3,
+          "frequency": 1816
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 14,
+          "fade": 5,
+          "frequency": 1944
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 9,
+          "fade": 1,
+          "frequency": 1880
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 2,
+          "d1": 2,
+          "d2": 0,
+          "d3": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 5,
+          "volume": 11,
+          "fade": 3,
+          "frequency": 1800
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 12,
+          "fade": 5,
+          "frequency": 1928
+        },
+        {
+          "cmd": "square_note",
+          "length": 8,
+          "volume": 7,
+          "fade": 1,
+          "frequency": 1864
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 3,
+          "volume": 10,
+          "fade": 1,
+          "param": 28
+        },
+        {
+          "cmd": "noise_note",
+          "length": 14,
+          "volume": 9,
+          "fade": 4,
+          "param": 44
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 8,
+          "fade": 1,
+          "param": 28
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

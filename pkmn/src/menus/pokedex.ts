@@ -3,12 +3,15 @@
 
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { getCtx, getScale, fillRect, loadTileset, loadSprite } from '../renderer';
-import { isPressed } from '../input';
+import { isPressed, isPassPressed, readJoypad } from '../input';
 import { drawText, drawBox } from './menu_render';
 import { isSeen, isOwned, getSeenCount, getOwnedCount, getMaxSeen } from '../pokedex_state';
 import { loadPokemonSprites } from '../battle';
 import { speciesDisplayName } from '../battle/data';
 import { playSFX } from '../audio';
+import { POKEDEX_ORDER } from '../battle/battle_state';
+import type { Program } from '../battle/battle_menu_context';
+import { MenuInput } from './menu_input';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,6 +47,9 @@ const MAX_VISIBLE = 7;
 const TILESET_COLS = 4; // town map tileset is 4 tiles wide
 const BLINK_PERIOD = 50;
 const BLINK_ON = 25;
+const SIDE_ITEMS = ['DATA', 'CRY', 'AREA', 'PRNT', 'QUIT'] as const;
+
+interface PokedexVoice { cry(index: number): Program; requestCry(index: number): void }
 
 // Pokemon names indexed by dex number (loaded from pokemon.json)
 /** GetMonName: the list and the data pages print MonsterNames' entries (battle/data.ts, loaded at startup). */
@@ -58,12 +64,17 @@ export class PokedexMenu {
   private cursor = 0;          // 0-6 visible slot index
   private scrollOffset = 0;    // first visible dex number - 1
   private maxDex = 0;          // highest dex number seen
-  private sideMenuCursor = 0;  // 0=DATA, 1=AREA, 2=QUIT
+  private sideMenu = new MenuInput({ watched: ['a', 'b'], maxItem: 4, topX: 15, topY: 8 });
   private selectedDex = 0;     // dex number of currently selected Pokemon
 
   // Data screen
   private frontSprite: HTMLCanvasElement | null = null;
   private spriteLoadingFor = '';
+  private dataEntryDelay = 0;
+  private dataCry: Program | undefined;
+  private dataIntro = false;
+
+  constructor(private readonly voice?: PokedexVoice) {}
 
   // Pokedex data
   private pokedexData: (PokedexEntry | null)[] = [];
@@ -90,14 +101,16 @@ export class PokedexMenu {
   private blinkTimer = 0;
 
   // ShowPokedexData's stand-in: one species, opened from outside the Pokédex
-  private single: { owned: boolean; pressSound?: () => void } | null = null;
+  private single: { owned: boolean; pressSound?: () => void; cry?: PokedexVoice['cry'] } | null = null;
 
   async show(currentMapName?: string): Promise<void> {
     this.single = null;
     this.state = 'list';
     this.cursor = 0;
     this.scrollOffset = 0;
-    this.sideMenuCursor = 0;
+    this.sideMenu.item = 0;
+    this.dataIntro = false;
+    this.dataCry = undefined;
     this.maxDex = getMaxSeen();
     this.frontSprite = null;
     this.spriteLoadingFor = '';
@@ -144,7 +157,7 @@ export class PokedexMenu {
 
   /** ShowPokedexData's stand-in (O-45.2): the data page for one species, closing back to the caller.
    * The caller supplies owned: a battle's dex flags reach pokedex_state only after it ends. */
-  showData(dexNum: number, options: { owned: boolean; pressSound?: () => void }): void {
+  showData(dexNum: number, options: NonNullable<PokedexMenu['single']>): void {
     if (!this.dataLoaded) throw new Error('Pokédex data not loaded');
     this.single = { ...options };
     this.state = 'data';
@@ -153,6 +166,18 @@ export class PokedexMenu {
     this.frontSprite = null;
     this.spriteLoadingFor = '';
     this.loadFrontSprite();
+    // The catch host owns the three palette frames and starts the cry after them.
+    this.dataIntro = Boolean(options.cry);
+    this.dataEntryDelay = 0;
+    this.dataCry = undefined;
+  }
+
+  startDataCry(): void {
+    const cry = this.single?.cry ?? this.voice?.cry;
+    if (!cry) { this.dataIntro = false; return; }
+    const wait = cry(POKEDEX_ORDER.indexOf(this.selectedDex) + 1);
+    if (wait.next().done) this.dataIntro = false;
+    else this.dataCry = wait;
   }
 
   update(): PokedexResult {
@@ -181,6 +206,7 @@ export class PokedexMenu {
   // =========================================================================
 
   private updateList(): PokedexResult {
+    readJoypad();
     if (this.maxDex === 0) {
       // Empty pokedex, only B to exit
       if (isPressed('b')) {
@@ -222,7 +248,8 @@ export class PokedexMenu {
       const dexNum = this.scrollOffset + this.cursor + 1;
       if (dexNum >= 1 && dexNum <= 151 && isSeen(dexNum)) {
         this.selectedDex = dexNum;
-        this.sideMenuCursor = 0;
+        this.sideMenu.item = 0;
+        this.sideMenu.restart();
         this.state = 'side_menu';
       }
     } else if (isPressed('b')) {
@@ -296,15 +323,11 @@ export class PokedexMenu {
     ctx.fillRect(15 * T * s, (6 * T + 3) * s, 5 * T * s, 1 * s);
     ctx.fillRect(15 * T * s, (6 * T + 5) * s, 5 * T * s, 2 * s);
 
-    // Side menu items — ALWAYS visible, spaced with 2-row gaps
-    // Original has 5 items (DATA/CRY/AREA/PRNT/QUIT) on consecutive rows 8-12.
-    // We skip CRY/PRNT, so space the remaining 3 items with 2-row gaps.
-    const sideItems = ['DATA', 'AREA', 'QUIT'];
-    for (let i = 0; i < sideItems.length; i++) {
+    for (let i = 0; i < SIDE_ITEMS.length; i++) {
       const row = 8 + i * 2;
-      drawText(sideItems[i], 16 * T, row * T);
+      drawText(SIDE_ITEMS[i], 16 * T, row * T);
       // Show filled cursor when side menu is active
-      if (this.state === 'side_menu' && i === this.sideMenuCursor) {
+      if (this.state === 'side_menu' && i === this.sideMenu.item) {
         drawText('\u25B6', 15 * T, row * T);
       }
     }
@@ -335,33 +358,36 @@ export class PokedexMenu {
   }
 
   // =========================================================================
-  // Side menu (DATA / AREA / QUIT)
+  // Side menu
   // =========================================================================
 
   private updateSideMenu(): PokedexResult {
-    if (isPressed('up')) {
-      this.sideMenuCursor = (this.sideMenuCursor - 1 + 3) % 3;
-    } else if (isPressed('down')) {
-      this.sideMenuCursor = (this.sideMenuCursor + 1) % 3;
-    } else if (isPressed('a')) {
-      playSFX('press_ab');
-      if (this.sideMenuCursor === 0) {
-        // DATA — show for any seen Pokemon (owned shows full info, seen shows ?)
-        if (isSeen(this.selectedDex)) {
-          this.state = 'data';
-          this.loadFrontSprite();
-        }
-      } else if (this.sideMenuCursor === 1) {
-        // AREA
+    const keys = this.sideMenu.update(readJoypad, () => { void playSFX('press_ab'); });
+    if (!keys) return 'open';
+    if (keys.includes('b')) {
+      this.state = 'list';
+      return 'open';
+    }
+    switch (SIDE_ITEMS[this.sideMenu.item]) {
+      case 'DATA':
+        this.state = 'data';
+        this.loadFrontSprite();
+        this.dataIntro = Boolean(this.voice);
+        this.dataEntryDelay = this.voice ? 3 : 0;
+        break;
+      case 'CRY':
+        this.voice?.requestCry(POKEDEX_ORDER.indexOf(this.selectedDex) + 1);
+        this.sideMenu.restart();
+        break;
+      case 'AREA':
         this.state = 'area';
         this.blinkTimer = 0;
-      } else {
-        // QUIT — back to list
-        this.state = 'list';
-      }
-    } else if (isPressed('b')) {
-      playSFX('press_ab');
-      this.state = 'list';
+        break;
+      case 'PRNT':
+        this.sideMenu.restart();
+        break;
+      case 'QUIT':
+        return 'closed';
     }
     return 'open';
   }
@@ -387,9 +413,19 @@ export class PokedexMenu {
   }
 
   private updateData(): PokedexResult {
-    if (isPressed('a') || isPressed('b')) {
+    if (this.dataEntryDelay > 0) {
+      if (--this.dataEntryDelay === 0) this.startDataCry();
+      return 'open';
+    }
+    if (this.dataCry) {
+      if (!this.dataCry.next().done) return 'open';
+      this.dataCry = undefined;
+      this.dataIntro = false;
+    }
+    readJoypad();
+    if (isPassPressed('a') || isPassPressed('b')) {
       this.dataPressSound();
-      if (isPressed('a') && this.ownedSelected()) {
+      if (isPassPressed('a') && this.ownedSelected()) {
         const entry = this.pokedexData[this.selectedDex];
         if (entry && entry.description.length > 1) {
           this.state = 'data_page2';
@@ -402,7 +438,8 @@ export class PokedexMenu {
   }
 
   private updateDataPage2(): PokedexResult {
-    if (isPressed('a') || isPressed('b')) {
+    readJoypad();
+    if (isPassPressed('a') || isPassPressed('b')) {
       this.dataPressSound();
       return this.leaveData();
     }
@@ -420,6 +457,7 @@ export class PokedexMenu {
   private leaveData(): PokedexResult {
     if (this.single) { this.single = null; return 'closed'; }
     this.state = 'side_menu';
+    this.sideMenu.restart();
     return 'open';
   }
 
@@ -427,7 +465,7 @@ export class PokedexMenu {
     const entry = this.pokedexData[this.selectedDex];
     if (!entry) return;
 
-    const owned = this.ownedSelected();
+    const owned = !this.dataIntro && this.ownedSelected();
 
     fillRect(0, 0, GB_WIDTH, GB_HEIGHT, 0); // white background
 
@@ -435,7 +473,7 @@ export class PokedexMenu {
     this.drawPokedexBorder();
 
     // Front sprite (7x7 tile area at tile position 1,1)
-    this.drawFrontSprite();
+    if (this.dataEntryDelay === 0) this.drawFrontSprite();
 
     // Pokemon name
     const name = monName(this.selectedDex) || '???';
@@ -569,9 +607,11 @@ export class PokedexMenu {
   // =========================================================================
 
   private updateArea(): PokedexResult {
+    readJoypad();
     if (isPressed('b') || isPressed('a')) {
       playSFX('press_ab');
       this.state = 'side_menu';
+      this.sideMenu.restart();
     }
     return 'open';
   }

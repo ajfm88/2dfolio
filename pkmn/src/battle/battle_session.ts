@@ -1,9 +1,11 @@
 // Production session: shared menus, scoped item bodies and catch homes. Live since A5c3f checkpoint-09b.
-import { getBattleAudioEngines, loadSfx, setMasterVolume } from '../audio';
+import { getBattleAudioEngines, loadPikachuClip, loadSfx, setMasterVolume, startPikachuClip } from '../audio';
 import { setNoAudioFadeOut } from '../audio/audio_flags';
 import { soundFinished } from '../audio/sound_wait';
 import { musicIdentity, SFX_IDS, sfxNameForSound, textSoundId } from '../audio/sound_ids';
-import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
+import { CRY_SFX_END } from '../audio/low_health_alarm';
+import { playCryProgram } from '../audio/cries';
+import { CRY_SFX_START } from '../audio/sfx_modifiers';
 import * as input from '../input';
 import { isPassPressed } from '../input';
 import type { TextDisplayHost } from '../text/textbox';
@@ -53,6 +55,7 @@ import { loadHudTilePatterns, animationSlideMonOff, animationSlideEnemyMonOff } 
 import type { TextBindings, TextRunnerOptions } from '../text/text_runner';
 import { PartyMenu } from '../menus/party_menu';
 import { StatusScreenSession } from '../menus/status_screen';
+import { isThisPartyMonStarterPikachu } from './battle_pikachu';
 import type { BattlePartyHost } from './battle_party_menu';
 import { bindPlayerSwitch, bindStateBattlePartyMenu, sendingOutMon, pikachuEntrance } from './battle_send_out';
 import { registerShortBattleItemBodies } from './battle_item_bodies';
@@ -71,7 +74,8 @@ const HOST_SOUNDS = { trainer_appeared: 0xe9, faint_fall: 0x9e, faint_thud: 0x95
   ball_toss: 0x91, tink: 0x8c } as const; // A5f checkpoint-03: SFX_BALL_TOSS, SFX_TINK (Audio 2)
 interface SessionData { renderTiles: BattleRenderTiles; pokeballTiles: RawImage; mapTilesets: ReadonlyMap<string, string>;
   moveAnimationTiles: RawImage; monsterSprite: RawImage; animations: BattleAnimationData;
-  sounds: ReadonlyMap<string, BattleSfx>; itemSounds: ReadonlyMap<number, BattleSfx>; flute: SfxData }
+  sounds: ReadonlyMap<string, BattleSfx>; cries: ReadonlyMap<number, BattleSfx>;
+  itemSounds: ReadonlyMap<number, BattleSfx>; flute: SfxData }
 let data: SessionData | undefined;
 let loading: Promise<void> | undefined;
 /** Browser image -> RawImage only; all picture construction remains in the checked picture owner. */
@@ -93,7 +97,7 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
       if (!response.ok) throw new Error(`battle_animations.json: HTTP ${response.status}`);
       return await response.json() as BattleAnimationData;
     });
-    const [renderTiles, itemSounds, sounds, mapTilesets, , , , moveAnimationTiles, animationData, monsterSprite] = await Promise.all([
+    const [renderTiles, itemSounds, sounds, mapTilesets, , , , moveAnimationTiles, animationData, monsterSprite, cries] = await Promise.all([
       pictures, loadBattleItemSounds(), Promise.all(names.map(async name => {
         const value = await loadSfx(name); if (!value) throw new Error(`session sound ${name}`);
         const id = HOST_SOUNDS[name as keyof typeof HOST_SOUNDS] ?? SFX_IDS.get_item1;
@@ -103,6 +107,8 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
       // This checked loader also calls loadBattleMoveData; invoking it separately would load twice.
       loadStatEffectData(), loadTrainerAIItemNames(),
       decode('gfx/battle/move_anim_0.png'), animations, decode('gfx/sprites/monster.png'),
+      loadBattleCries(),
+      Promise.all([4, 11, 17, 28, 35, 37, 40].map(loadPikachuClip)),
     ]);
     const flute = await loadSfx('pokeflute_in_battle');
     if (!flute) throw new Error('session flute stream missing');
@@ -110,9 +116,22 @@ export function loadBattleSessionData(decode: PictureDecoder = decodeBattleSessi
     for (const [id, name] of BATTLE_ITEM_SOUND_ASSETS) {
       if (name === 'caught_mon' || name === 'dex_page_added') soundsByName.set(name, itemSounds.get(id)!);
     }
-    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, itemSounds, mapTilesets: new Map(mapTilesets), flute,
+    data = { renderTiles, pokeballTiles: balls!, sounds: soundsByName, cries, itemSounds, mapTilesets: new Map(mapTilesets), flute,
       moveAnimationTiles, monsterSprite, animations: animationData };
   })();
+}
+
+async function loadBattleCries(): Promise<ReadonlyMap<number, BattleSfx>> {
+  const bodies: Promise<readonly [number, BattleSfx]>[] = [];
+  for (let id = CRY_SFX_START; id < CRY_SFX_END; id += 3) {
+    const cryId = id;
+    const name = sfxNameForSound(cryId, 0x08)!;
+    bodies.push(loadSfx(name).then(data => {
+      if (!data) throw new Error(`session sound ${name}`);
+      return [cryId, { id: cryId, data }] as const;
+    }));
+  }
+  return new Map(await Promise.all(bodies));
 }
 /** O-45.2's stand-in screens, loaded once beside the session data. PokedexMenu.load fetches per instance,
  * so every session shares this one page. Only a catch's homes read it. */
@@ -281,7 +300,7 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     bindRaster(timing) { driver.bindRaster(timing); introRaster = timing ? introCapture : null; },
     partyView: party, statusView: null,
     createStatusScreen(mon, options) {
-      return new StatusScreenSession(mon, { ...options, page2Name: () => {
+      return new StatusScreenSession(mon, { ...options, voice: host.voice, starter: isThisPartyMonStarterPikachu(state), page2Name: () => {
         const id = POKEDEX_ORDER.indexOf(mon.species.id) + 1;
         state.wNamedObjectIndex = id; getMonName(state, state.species(id));
         return decodeBattleText(state.mem, A.wNameBuffer);
@@ -312,8 +331,14 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     frontPicture: s => `front/${POKEDEX_ORDER[s.wCurPartySpecies - 1]}`,
     backPicture: s => `back/${POKEDEX_ORDER[s.wBattleMonSpecies2 - 1]}`,
     trainerPicture: s => trainerPicName(s)!,
-    voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm,
-      cry() { /* J2 silent cry cue. */ }, clip() { /* J2 PCM cue; caller retains its three frames. */ } },
+    voice: {
+      cry: species => playCryProgram(species, id => {
+        const cry = assets.cries.get(id);
+        if (!cry) throw new BattleUnsupportedState(`session cry ${id}`);
+        audio.play(cry);
+      }, () => soundFinished(owners.sfx, owners.music, 0)),
+      clip: startPikachuClip,
+    },
     updateSprites() { /* UpdateSprites returns: init sets wUpdateSpritesEnabled=$FF (home/update_sprites.asm:1-4). */ },
     sendingOutMon: (s, x, y) => sendingOutMon(s, host, x, y), pikachuEntrance: s => pikachuEntrance(s, host),
     slidePlayerOff: s => animationSlideMonOff(s, screen), enemySlideOff: s => animationSlideEnemyMonOff(s, screen),
@@ -388,7 +413,7 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     state.mem[D.wAnimCounter] = 0; state.mem[D.wStatusFlags5] &= ~(1 << 6);
     yield* loadHudTilePatterns(screen);
   };
-  /** pokedex.asm:438-480, ShowPokedexData from the battle. The page itself is O-45.2's stand-in; cries are J2's. */
+  /** pokedex.asm:438-480, ShowPokedexData from the battle. The page itself is O-45.2's stand-in. */
   const showPokedexData = function* (): Program {
     requireStandIns();
     white(); yield* delayFrames(3); yield* clearScreen();
@@ -401,9 +426,10 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
     indexToPokedex(state); const dex = state.wPokedexNum;
     const owned = flagAction(state, I.wPokedexOwned, 2, (dex - 1) & 255) !== 0;
     state.wPokedexNum = species; state.wCurSpecies = species; getMonHeader(state, species);
-    pokedex.showData(dex, { owned, pressSound: host.pressSound });
+    pokedex.showData(dex, { owned, pressSound: host.pressSound, cry: host.voice.cry });
     yield* delayFrames(3); normal(); standIn = 'pokedex';
-    for (;;) { yield 'session'; host.readJoypad(); if (pokedex.update() === 'closed') break; }
+    pokedex.startDataCry();
+    for (;;) { yield 'session'; if (pokedex.update() === 'closed') break; }
     standIn = null;
     state.mem[INIT.hTileAnimations] = animations;
     white(); yield* clearScreen(); normal();

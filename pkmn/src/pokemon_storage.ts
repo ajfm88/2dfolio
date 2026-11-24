@@ -1,6 +1,9 @@
 // Shared storage data. The serialization contract is unchanged from BillsPcMenu.
 import type { BattlePokemon } from './battle';
 import type { StatExperience } from './battle/types';
+import { getSpecies } from './battle/data';
+import { encodeText } from './battle/battle_state';
+import { getPlayerName } from './core/player_state';
 
 export const NUM_BOXES = 12;
 export const MONS_PER_BOX = 20;
@@ -45,7 +48,15 @@ export function pokemonToBoxed(mon: BattlePokemon): BoxedPokemon {
   };
 }
 
-/** Species-only starter stand-in until A4 implements the OT-name/ID checks. */
+/** The field player ID is zero, as in writeBattleInputs. The cartridge compares five OT bytes. */
+export function isFieldStatusStarter(mon: Pick<BattlePokemon, 'species' | 'otId' | 'otName'>): boolean {
+  if (mon.species.id !== 25 || mon.otId !== 0) return false;
+  const player = encodeText(getPlayerName().padEnd(5, '@').slice(0, 5));
+  const ot = encodeText(mon.otName.padEnd(5, '@').slice(0, 5));
+  return player.every((byte, i) => byte === ot[i]);
+}
+
 export function isStarterPikachuBoxed(mon: BoxedPokemon): boolean {
-  return mon.speciesName.replace(/[^a-z]/gi, '').toUpperCase() === 'PIKACHU';
+  const species = getSpecies(mon.speciesName);
+  return species !== null && isFieldStatusStarter({ species, otName: mon.otName ?? '', otId: mon.otId ?? 0 });
 }

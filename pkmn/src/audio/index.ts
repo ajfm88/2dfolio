@@ -24,6 +24,9 @@ import { rivalAlternateStart } from './rival_start';
 import { AudioFade } from './fade_audio';
 import { battleMusicFor } from './battle_music';
 import { setLowHealthAlarm, setLowHealthChannel5 } from './low_health_alarm';
+import { cryEntry, getCryData, playCryProgram } from './cries';
+import { isCry, sfxModifiers } from './sfx_modifiers';
+import type { Program } from '../battle/battle_menu_context';
 import { PIKACHU_PCM_HZ, clipFrozenFrames, clipMissedVBlanks, decodePikachuClip } from './pikachu_pcm';
 import type { PikachuClip, PikachuClipFile } from './pikachu_pcm';
 import { freezeFrames } from '../core/cpu_freeze';
@@ -47,6 +50,7 @@ let pendingDefault: ReturnType<typeof musicIdentity> = undefined;
 let inTick = false;
 let initialized = false;
 let audioReady = false;
+let consoleCry: Program | undefined;
 
 /** Unused battle-session seam; the page retains ownership of these engines and their clock. */
 export function getBattleAudioEngines(): { sfx: SfxEngine; music: MusicEngine; banks: PlaySound } {
@@ -353,8 +357,14 @@ async function startSfx(name: string, id?: number): Promise<void> {
     // A real SFX on channel 8 replaces a drum hit there (Audio1_PlaySound 1433–1436)
     if (channel.id === 8) engine?.cancelDrum();
   }
-  for (const channel of data.channels) fieldSounds.set(channel.id, { id, file: name });
-  sfxEngine.installSfx(data);
+  if (isCry(id)) {
+    for (const channel of [5, 6, 7, 8]) fieldSounds.set(channel, { id, file: name });
+    sfxEngine.installCry(data, () => sfxModifiers(fieldChannelId(5), fieldChannelId(8), requests!.audioBank),
+      () => isCry(fieldChannelId(5)));
+  } else {
+    for (const channel of data.channels) fieldSounds.set(channel.id, { id, file: name });
+    sfxEngine.installSfx(data);
+  }
 }
 
 export async function loadSfx(name: string): Promise<SfxData | undefined> {
@@ -378,6 +388,23 @@ export async function loadSfx(name: string): Promise<SfxData | undefined> {
  */
 export function isSoundFinished(): boolean {
   return soundFinished(sfxEngine, engine, pendingSfx);
+}
+
+/** PlayCry takes the cartridge's internal species index. Each yield waits for one audio update. */
+export function playCry(index: number): Program {
+  return playCryProgram(index, id => { requests?.playSound(id); }, isSoundFinished);
+}
+
+/** The Pokédex side menu's GetCryData + PlaySound. */
+export function requestCry(index: number): void {
+  requests?.playSound(getCryData(index));
+}
+
+/** Warm the body before priming the frame program, so a fetch costs no serviced frames. */
+export async function preloadCry(index: number): Promise<void> {
+  // The body is shared by all banks.
+  const name = sfxNameForSound(cryEntry(index).id, 0x02)!;
+  if (!sfxCache.has(name) && !(await loadSfx(name))) throw new Error(`Could not load ${name}`);
 }
 
 /** Fetch one of Pikachu's voice clips (pret's number, PikachuCryN), so that it can start inside a frame. */
@@ -449,6 +476,7 @@ export function tickAudio(): void {
     audioAccumulatorMs -= TICK_INTERVAL_MS;
     if (pendingDefault && requests?.playDefaultMusic(pendingDefault)) pendingDefault = undefined;
     audioUpdate(engine, sfxEngine, fade);
+    if (consoleCry?.next().done) consoleCry = undefined;
   }
   inTick = false;
 }
@@ -508,6 +536,23 @@ _win._playSFX = (name: string) => playSFX(name);
 // Opening checkpoint-04 (note 113): hear one of Pikachu's clips before the title plays it, e.g.
 // _playPikachuClip(1). It runs the clip's body without the three frames a caller waits first.
 _win._playPikachuClip = async (number = 1) => { await loadPikachuClip(number); startPikachuClip(number); };
+_win._playCry = async (species: string | number) => {
+  await resumeAudio();
+  let index: number;
+  if (typeof species === 'number') {
+    index = species;
+  } else {
+    const [{ speciesInternalId }, { loadTrainerSpeciesData }] = await Promise.all([
+      import('../battle/battle_trainer_party'), import('../battle/battle_trainer_data'),
+    ]);
+    await loadTrainerSpeciesData();
+    index = speciesInternalId(species);
+  }
+  await preloadCry(index);
+  if (consoleCry) throw new Error('A console cry is already waiting for sound to finish');
+  const program = playCry(index);
+  if (!program.next().done) consoleCry = program;
+};
 
 // ─── Internal ────────────────────────────────────────────────────────────────
 

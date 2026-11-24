@@ -12,6 +12,9 @@ import { rig, musicData, sfxData } from '../test/audio_rig';
 import { stopMusic, playMusic, fadeOutAndStopMusic } from '../audio';
 import { setPlayerName, setRivalName } from '../core/player_state';
 import type { GameButton } from '../core';
+import { GBSynthesizer } from '../audio/synthesizer';
+import { sfxModifierState } from '../audio/sfx_modifiers';
+import type { Program } from '../battle/battle_menu_context';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(), isPassPressed: vi.fn(), readJoypad: vi.fn(), syncJoypadRead: vi.fn(), isPressed: () => false }));
 vi.mock('../audio', () => ({ playSFX: vi.fn(), isSoundFinished: () => true, stopMusic: vi.fn(), playMusic: vi.fn(), fadeOutAndStopMusic: vi.fn() }));
@@ -32,14 +35,17 @@ const stageOf = (speech: OakSpeech) => speech.inspection.stage;
 const menuOf = (speech: OakSpeech) => speech.inspection.menu!;
 
 /** Drive the public sequence with button levels; each real read computes its own edge. */
-async function scene() {
+async function scene(cry?: () => Program, audioFrame: () => void = () => {}) {
   let held: GameButton[] = [], last: GameButton[] = [], pressed: GameButton[] = [], frame = 0;
   vi.mocked(isHeld).mockImplementation(k => held.includes(k));
   vi.mocked(isPassPressed).mockImplementation(k => pressed.includes(k));
   vi.mocked(readJoypad).mockImplementation(() => { pressed = held.filter(k => !last.includes(k)); last = [...held]; });
   vi.mocked(syncJoypadRead).mockImplementation(() => { last = [...held]; pressed = []; });
   const cues: { species: string; text: string }[] = [];
-  const speech = new OakSpeech(species => cues.push({ species, text: screenOf(boxOf(speech))!.buffer.join('') }));
+  const speech = new OakSpeech(function* (species) {
+    cues.push({ species, text: screenOf(boxOf(speech))!.buffer.join('') });
+    if (cry) yield* cry();
+  });
   await speech.load(); speech.start();
   const box = boxOf(speech);
   const prints: { program: string; frame: number; firstGlyph: number; firstRead: number; readBase: number }[] = [];
@@ -51,6 +57,7 @@ async function scene() {
   const seen = new Set<string>();
   function step(keys: GameButton[] = []) {
     frame++; held = keys;
+    audioFrame();
     const action = speech.update();
     const entry = prints[prints.length - 1], screen = screenOf(box);
     if (screen) seen.add(screen.buffer.join(''));
@@ -73,6 +80,31 @@ async function scene() {
 }
 
 describe('Oak speech on standalone PrintText (A5b6 CP4)', () => {
+  it('holds the two text halves apart for all 48 cry frames without reading A or B', async () => {
+    vi.stubGlobal('window', { addEventListener() {} });
+    const audio = await vi.importActual<typeof import('../audio')>('../audio');
+    const resume = vi.spyOn(GBSynthesizer.prototype, 'resume').mockResolvedValue();
+    await audio.resumeAudio();
+    await audio.preloadCry(0x54);
+    audio.stopMusic();
+    const request = vi.spyOn(audio.getBattleAudioEngines().banks, 'playSound');
+    const r = await scene(() => audio.playCry(0x54), () => audio.updateMusicCTimes(1));
+    r.until(() => r.cues.length > 0);
+    expect(request).toHaveBeenCalledExactlyOnceWith(0x41);
+    expect([sfxModifierState.frequency, sfxModifierState.tempo]).toEqual([0xee, 1]);
+    const reads = vi.mocked(readJoypad).mock.calls.length + vi.mocked(syncJoypadRead).mock.calls.length;
+    const firstHalf = screenOf(r.box)!.buffer.join('');
+    for (let i = 1; i < 48; i++) {
+      r.step(i % 2 ? ['a'] : ['b']);
+      expect(screenOf(r.box)!.buffer.join('')).toBe(firstHalf);
+    }
+    expect(vi.mocked(readJoypad).mock.calls.length + vi.mocked(syncJoypadRead).mock.calls.length).toBe(reads);
+    r.step();
+    expect(r.box.isWaitingForInput).toBe(true); // the second half starts with a paragraph wait
+    request.mockRestore();
+    resume.mockRestore();
+    vi.unstubAllGlobals();
+  });
   it.each(['OakSpeechText1', 'OakSpeechText2', 'IntroducePlayerText', 'YourNameIsText',
     'IntroduceRivalText', 'HisNameIsText', 'OakSpeechText3'])('%s: border at T, first glyph and first read at +3', async program => {
     const r = await scene(); r.until(() => r.prints.some(p => p.program === program));

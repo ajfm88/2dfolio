@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the ROM-gated tests skip (count in the baseline below)
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Baseline 2026-11-21 (note 137 closeout): 7799/7799.** No-ROM 7431 pass / 368 skip, 299 files.
+  tests. **Baseline 2026-11-23 (cries checkpoint-05, `aba9216`): 7929/7929.** No-ROM 7544 pass / 385 skip, 304 files.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s

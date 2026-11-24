@@ -10,6 +10,12 @@ import { getPikachuHappiness } from '../pikachu/pikachu_happiness';
 import { TOGGLE } from '../overworld/toggleable_objects';
 
 const print = (program: string): ScriptCommand => ({ type: 'printText', program });
+const monText = (program: string, species: number, box: 'new' | 'keep' = 'new') => () =>
+  displayTextID([{ type: 'printText', program, box }, { type: 'playCry', species }]);
+registerTextHandler('PewterNidoranHouse', 1, monText('_PewterNidoranHouseNidoranText', 0x03, 'keep'));
+registerTextHandler('ViridianNicknameHouse', 3, monText('ViridianNicknameHouseSpearowText.Text', 0x05));
+registerTextHandler('ViridianPokecenter', 5, monText('NurseChanseyText', 0x28));
+registerTextHandler('PewterPokecenter', 6, monText('NurseChanseyText', 0x28));
 export function momText(ctx: TextHandlerContext): ScriptCommand[] {
   if (!ctx.hasFlag('GOT_STARTER')) return displayTextID([print('RedsHouse1FPrintMomText.WakeUpText')]);
   return displayTextID([print('RedsHouse1FMomYouShouldRestText'), { type: 'fadeOut' },

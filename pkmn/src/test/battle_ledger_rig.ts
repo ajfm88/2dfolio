@@ -8,7 +8,7 @@ import { isHeld, isPassPressed } from '../input';
 import { playSFX, isSoundFinished } from '../audio';
 import { rig as audioRig, sfxData, musicData, textSoundFile } from './audio_rig';
 import { soundFinished } from '../audio/sound_wait';
-import { lowHealthAlarm, setLowHealthAlarm } from '../audio/low_health_alarm';
+import { lowHealthAlarm } from '../audio/low_health_alarm';
 import { PartyMenu } from '../menus/party_menu';
 import { getPartyAndBillsSavedMenuItem, getListScrollOffset } from '../list_state';
 import type { GameButton } from '../core';
@@ -312,7 +312,7 @@ export function battleLedger(o: History = {}) {
     *pikachuEntrance(){mark('pikaEntrance');},*slidePlayerOff(){mark('pikaRetreat');},
     animation:function* (state){mark('animationCue',[state.wAnimationID,state.hWhoseTurn]);
       if(o.real&&state.wAnimationID===0xc1)mark('ballAnimData',state.mem[I.wPokeBallAnimData]);},
-    voice:{getAlarm:lowHealthAlarm,setAlarm:setLowHealthAlarm,cry(id){mark('cryCue',id);},clip(id){mark('pcmCue',id);}},
+    voice:{*cry(id){mark('cryCue',id);},clip(id){mark('pcmCue',id);return false;}},
     stopAllMusic(){mark('stopMusic');audio.fade.requests.stopAllMusic();},
     playVictoryMusic(name,bank){mark('music',[name,bank]);bridge.audioBank=bridge.savedAudioBank=bank;audio.music.play(musicData(name));},
     printEndBattleText:function* (state){

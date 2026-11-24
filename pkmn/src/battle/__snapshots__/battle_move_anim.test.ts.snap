@@ -895,8 +895,8 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > multi
 exports[`checkpoint-05 OFF animation through real host, screen and audio > multiplier20 masks STAB and chooses the sound band 1`] = `
 {
   "audio": [
-    "31:noise(52,15,1)",
-    "36:noise(100,15,2)",
+    "31:noise(20,15,1)",
+    "36:noise(68,15,2)",
   ],
   "final": {
     "back": [
@@ -1167,10 +1167,10 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > multi
 exports[`checkpoint-05 OFF animation through real host, screen and audio > multiplier133 masks STAB and chooses the sound band 1`] = `
 {
   "audio": [
-    "31:noise(85,8,15)",
-    "36:noise(68,15,4)",
-    "39:noise(34,15,4)",
-    "48:noise(33,15,2)",
+    "31:noise(165,8,15)",
+    "36:noise(148,15,4)",
+    "39:noise(114,15,4)",
+    "48:noise(113,15,2)",
   ],
   "final": {
     "back": [
@@ -1441,9 +1441,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > multi
 exports[`checkpoint-05 OFF animation through real host, screen and audio > multiplier138 masks STAB and chooses the sound band 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [
@@ -1754,9 +1754,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > real 
       "25:vol0(1)",
       "26:vol0(0)",
       "29:silence0()",
-      "83:noise(68,15,4)",
-      "86:noise(20,15,4)",
-      "89:noise(50,15,1)",
+      "83:noise(100,15,4)",
+      "86:noise(52,15,4)",
+      "89:noise(82,15,1)",
       "308:silence0()",
       "308:silence1()",
       "308:silence2()",
@@ -2869,9 +2869,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > real 
 exports[`checkpoint-05 OFF animation through real host, screen and audio > synthetic enemy type4 flips to the player picture and CopyTileIDs re-enables BG transfer 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [
@@ -3514,9 +3514,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > type0
 exports[`checkpoint-05 OFF animation through real host, screen and audio > type1: exact applying frames and cleanup (total78) 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [
@@ -3757,9 +3757,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > type1
 exports[`checkpoint-05 OFF animation through real host, screen and audio > type2: exact applying frames and cleanup (total102) 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [
@@ -4252,9 +4252,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > type3
 exports[`checkpoint-05 OFF animation through real host, screen and audio > type4: exact applying frames and cleanup (total108) 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [
@@ -4525,9 +4525,9 @@ exports[`checkpoint-05 OFF animation through real host, screen and audio > type4
 exports[`checkpoint-05 OFF animation through real host, screen and audio > type5: exact applying frames and cleanup (total53) 1`] = `
 {
   "audio": [
-    "31:noise(68,15,4)",
-    "34:noise(20,15,4)",
-    "37:noise(50,15,1)",
+    "31:noise(100,15,4)",
+    "34:noise(52,15,4)",
+    "37:noise(82,15,1)",
   ],
   "final": {
     "back": [

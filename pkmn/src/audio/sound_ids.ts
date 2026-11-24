@@ -1,6 +1,7 @@
 // constants/music_constants.asm: (header address - SFX_Headers_1) / 3.
 // All 49 music headers; PokeFluteInBattle is a direct channel-pointer routine, not a sound ID.
 import type { SoundIdentity } from './play_sound';
+import { CRY_SFX_START, isCry } from './sfx_modifiers';
 
 export const MUSIC_IDS = {
   pallettown: { id: 0xba, bank: 0x02 },
@@ -138,6 +139,10 @@ export const SFX_FILES: Readonly<Record<0x02 | 0x08 | 0x1f | 0x20, Readonly<Reco
 
 /** DetermineAudioFunction: banks $02, $08 and $1f pick their engines; any other bank falls to Audio 4. */
 export function sfxNameForSound(id: number, bank: number): string | undefined {
+  if (isCry(id) && (id - CRY_SFX_START) % 3 === 0) {
+    const base = (id - CRY_SFX_START) / 3;
+    return `cry${base.toString(16).padStart(2, '0')}`;
+  }
   const table = bank === 0x02 || bank === 0x08 || bank === 0x1f ? SFX_FILES[bank] : SFX_FILES[0x20];
   return table[id];
 }

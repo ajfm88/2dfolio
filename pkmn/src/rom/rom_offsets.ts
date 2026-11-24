@@ -46,6 +46,8 @@ export const BASE_DATA_SIZE = 0x1C;  // 28 bytes per base stats entry
 export const NAME_LENGTH    = 10;    // bytes per Pokemon/move/trainer name
 export const NUM_POKEMON    = 190;   // internal ID slots (not all valid)
 export const NUM_DEX        = 151;   // Pokedex entries
+// CryData (data/pokemon/cries.asm). pokeyellow.sym 573535d: CryData 0e:5462. 190 × 3 bytes.
+export const CRY_DATA       = symToOffset(0x0e, 0x5462);
 
 // ── Move Data ─────────────────────────────────────────────────
 export const MOVES              = symToOffset(0x0e, 0x4000);  // 165 entries × 6 bytes

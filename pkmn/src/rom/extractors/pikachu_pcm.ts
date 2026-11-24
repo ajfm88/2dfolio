@@ -6,8 +6,8 @@ import { PIKACHU_CRIES_POINTER_TABLE } from '../rom_offsets';
 /** The table has 42 `dba` rows (PikachuCry1 … PikachuCry42). */
 export const NUM_PIKACHU_CRIES = 42;
 
-/** pret's PikachuCryN numbers that setup writes: the title's (1, 11) and the battle's (4, 11, 37). */
-export const PIKACHU_CLIP_NUMBERS: readonly number[] = [1, 4, 11, 37];
+/** pret's PikachuCryN numbers used by the title, battle, status screen and Bill's PC. */
+export const PIKACHU_CLIP_NUMBERS: readonly number[] = [1, 4, 11, 17, 28, 35, 37, 40];
 
 export interface PikachuClip {
   /** The table index `ldpikacry` loads into e: pret's PikachuCryN is id N - 1. */

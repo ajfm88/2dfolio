@@ -29,7 +29,15 @@ beforeEach(() => {
   const branch = partyBranch.partyMenuOrRockOrRun;
   vi.spyOn(partyBranch, 'partyMenuOrRockOrRun').mockImplementation(function* (ctx, host) {
     // The control follows the same real menu/session/input route, omitting only the new source.
-    if (sourceDisabled) host.createStatusScreen = (mon, options) => new StatusScreenSession(mon, options);
+    if (sourceDisabled) {
+      const createStatus = host.createStatusScreen;
+      if (!createStatus) throw new Error('Expected the battle status screen host');
+      host.createStatusScreen = (mon, options) => {
+        const view = createStatus(mon, options);
+        Reflect.deleteProperty(Reflect.get(view, 'options'), 'page2Name');
+        return view;
+      };
+    }
     return yield* branch(ctx, host);
   });
 });
@@ -51,7 +59,7 @@ function stats(slot = 0) {
   press('a'); press('down');
   press('a');
   expect(host.session!.foreground).toBe('status');
-  wait(32);
+  until(() => views[views.length - 1]?.waitingForPage1Input, () => []);
   return views[views.length - 1];
 }
 function page2(view: StatusScreenSession) {
@@ -79,7 +87,7 @@ it('the source writes only GetMonName cells on the page2 draw frame, leaving pag
   session.state.wNamedObjectIndex = 0xab;
   const before = session.state.mem.slice();
   press('a'); expect(session.foreground).toBe('status');
-  wait(40);
+  until(() => views[views.length - 1]?.waitingForPage1Input, () => []);
   const view = views[views.length - 1];
   expect(text(view)).toBe('NIDORAN♀');
   expect([...session.state.mem.slice(A.wNameBuffer, A.wNameBuffer + 20)])

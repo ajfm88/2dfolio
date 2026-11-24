@@ -201,7 +201,7 @@ export function* printBeginningBattleText(state: BattleState, host: BattleInitHo
 /** pret common_text.asm:11-35,43-52. Existing cry/PCM cue ports; committed text programs only. */
 function* ordinaryWildBeginning(state: BattleState, host: BattleInitHost): Program {
   if (state.wBattleType === 4) yield* playPikachuClipCue(host.voice, isPlayerPikachuAsleepInParty(state) ? 37 : 11);
-  else playCryCue(host.voice, state.wEnemyMonSpecies2);
+  else yield* playCryCue(host.voice, state.wEnemyMonSpecies2);
   if (state.wBattleType === 0) yield* drawAllPokeballs(state, host);
   yield* host.printText(state.wMoveMissed ? 'HookedMonAttackedText' : 'WildMonAppearedText',
     { enemyMonNick: decodeBattleText(state.mem, D.wEnemyMonNick) });

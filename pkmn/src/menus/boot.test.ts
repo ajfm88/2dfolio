@@ -99,10 +99,10 @@ describe('Init, PlayIntro and the tails (home/init.asm, engine/movie/intro.asm),
   });
 });
 
-// Note 141: an optional frame segment between the star and PlayIntro's tail. The fixture is original and geometric: one
+// An optional frame segment between the star and PlayIntro's tail. The fixture is original and geometric: one
 // sprite (tile 1) that sits at x = 16, 40, 64 over three frames. Each yield is one frame; the segment seeds a local joypad
 // baseline at entry and ends on a newly pressed A, B or START.
-describe('the optional opening segment (note 141)', () => {
+describe('the optional opening segment', () => {
   const POSITIONS = [16, 40, 64];
   const SKIP = PAD.a | PAD.b | PAD.start;
   /** The button bits the test holds at each tick (record.frame is the tick in progress). */

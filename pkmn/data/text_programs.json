@@ -1396,6 +1396,12 @@
         "program": "_NothingToDepositText"
       }
     ],
+    "NurseChanseyText": [
+      {
+        "op": "far",
+        "program": "_NurseChanseyText"
+      }
+    ],
     "OHKOText": [
       {
         "op": "far",
@@ -5411,6 +5417,12 @@
       {
         "op": "text",
         "text": "You have nothing\nto deposit.<PROMPT>"
+      }
+    ],
+    "_NurseChanseyText": [
+      {
+        "op": "text",
+        "text": "CHANSEY: Chaaan\nsey!<DONE>"
       }
     ],
     "_OHKOText": [

@@ -35,11 +35,16 @@ describe('static/ export: asset keys', () => {
   // V5g1 checkpoint-01: audio/sfx/turn_on_pc_3.json, enter_pc_3.json and save_3.json (Audio 3). 207 → 210.
   // V5g3 checkpoint-02: audio/sfx/ledge.json. 210 → 211.
   // Opening checkpoint-01: audio/sfx/intro_crash.json, intro_whoosh.json and shooting_star.json (Audio 3). 211 → 214.
-  it('includes the movie tables and prior data in the JSON mirror (219 JSON total)', () => {
+  // Cries checkpoint-01: cries.json and audio/sfx/cry00.json … cry25.json. 219 → 258.
+  it('includes the movie tables, the cries and prior data in the JSON mirror (262 JSON total)', () => {
     // Opening checkpoint-03: audio/pikachu_cries/pikachu_cry_{1,4,11,37}.json. 214 → 218.
-    expect(Object.keys(extracted.jsonData)).toHaveLength(219);
+    expect(Object.keys(extracted.jsonData)).toHaveLength(262);
+    expect(extracted.jsonData).toHaveProperty('cries.json');
+    for (let base = 0; base < 38; base++) {
+      expect(extracted.jsonData).toHaveProperty(`audio/sfx/cry${base.toString(16).padStart(2, '0')}.json`);
+    }
     expect(extracted.jsonData).toHaveProperty('yellow_intro.json');
-    for (const number of [1, 4, 11, 37]) expect(extracted.jsonData).toHaveProperty(`audio/pikachu_cries/pikachu_cry_${number}.json`);
+    for (const number of [1, 4, 11, 17, 28, 35, 37, 40]) expect(extracted.jsonData).toHaveProperty(`audio/pikachu_cries/pikachu_cry_${number}.json`);
     for (const name of ['intro_crash', 'intro_whoosh', 'shooting_star']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);
     expect(extracted.jsonData).toHaveProperty('audio/sfx/ledge.json');
     for (const name of ['turn_on_pc_3', 'enter_pc_3', 'save_3']) expect(extracted.jsonData).toHaveProperty(`audio/sfx/${name}.json`);

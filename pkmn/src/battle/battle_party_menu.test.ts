@@ -361,7 +361,7 @@ describe('STATS session hand-offs (S+29, held S+15..16)', () => {
     const ctx = context(); ctx.enemyHasSubstitute = kind === 'substitute'; ctx.enemyMinimized = kind !== 'plain';
     const r = rig(ctx); const create = vi.fn((mon, options) => new StatusScreenSession(mon, options)); r.host.createStatusScreen = create;
     r.choose(); r.advance(2); r.tick('down'); r.advance(2); r.tick('a'); const s = r.time;
-    expect(create).toHaveBeenCalledWith(ctx.partyMons[0], { syncRead: false, paletteOwner: 'battle' });
+    expect(create).toHaveBeenCalledWith(ctx.partyMons[0], { paletteOwner: 'battle' });
     const transfer = vi.spyOn(textBgTransfer, 'tick'), palette = vi.spyOn(r.video.screen, 'setPalStatusScreen');
     for (let f = 1; f <= 29; f++) {
       const n = transfer.mock.calls.length, reads = r.reads.length; r.tick();

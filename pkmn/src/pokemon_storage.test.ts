@@ -23,11 +23,12 @@ describe('shared boxed Pokemon data', () => {
     expect(boxed.nickname).toBe('Sparky');
   });
 
-  it('uses species for the temporary starter test, independently of nickname or OT', () => {
+  it('checks species, OT ID and the first five OT-name bytes independently of nickname', () => {
     const pikachu = pokemonToBoxed(createPokemon('PIKACHU', 5, 'RATTATA')!);
     const rattata = pokemonToBoxed(createPokemon('RATTATA', 5, 'PIKACHU')!);
-    expect(isStarterPikachuBoxed(pikachu)).toBe(true);
-    expect(isStarterPikachuBoxed({ ...pikachu, otName: 'OTHER', otId: 54321 })).toBe(true);
-    expect(isStarterPikachuBoxed(rattata)).toBe(false);
+    expect(isStarterPikachuBoxed({ ...pikachu, otName: 'YELLOX', otId: 0 })).toBe(true);
+    expect(isStarterPikachuBoxed({ ...pikachu, otName: 'YELLXW', otId: 0 })).toBe(false);
+    expect(isStarterPikachuBoxed({ ...pikachu, otName: 'YELLOW', otId: 0x0100 })).toBe(false);
+    expect(isStarterPikachuBoxed({ ...rattata, otName: 'YELLOW', otId: 0 })).toBe(false);
   });
 });

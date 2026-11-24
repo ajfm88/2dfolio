@@ -27,11 +27,14 @@ import type { MapSpriteSetsFile } from '../rom/extractors/map_sprite_sets';
 import { loadBattleData, createPokemon } from '../battle';
 import { updateOverworld, createOverworldState } from '../overworld/overworld_controller';
 import { PikachuFollower } from '../pikachu/pikachu_follower';
+import { playCry, isSoundFinished } from '../audio';
+import { GBSynthesizer } from '../audio/synthesizer';
+import { readJoypad } from '../input';
 
 vi.mock('../input', () => ({ isHeld: vi.fn(() => false), isPressed: () => false,
   isPassPressed: vi.fn(() => false), syncJoypadRead: vi.fn(), readJoypad: vi.fn() }));
 // Map-music CP3: playMusicNew (PN) is the entry for the PkmnHealed jingle; the same mock keeps every playMusic assertion intact.
-vi.mock('../audio', () => { const playMusic = async () => {}; return { playSFX: vi.fn(), isSoundFinished: () => true,
+vi.mock('../audio', () => { const playMusic = async () => {}; return { playCry: vi.fn(), playSFX: vi.fn(), isSoundFinished: vi.fn(() => true),
   playMusic, playMusicNew: playMusic, isMusicChannelActive: () => false }; });
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
 vi.mock('../renderer', () => ({ fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(),
@@ -133,8 +136,8 @@ describe('small handlers from the cartridge branches', () => {
       'ViridianCity:6': 'A2 TM42', 'ViridianForest:2': 'A5b4 trainer', 'ViridianForest:3': 'A5b4 trainer',
       'ViridianForest:4': 'A5b4 trainer', 'ViridianForest:5': 'A5b4 trainer', 'ViridianForest:6': 'A5b4 trainer',
       'ViridianForest:7': 'A5b4 pickup', 'ViridianForest:8': 'A5b4 pickup', 'ViridianForest:9': 'A5b4 pickup',
-      'ViridianNicknameHouse:3': 'J2 cry', 'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision', 'ViridianPokecenter:5': 'J2 cry',
-      'PewterPokecenter:4': 'Cable club: user decision', 'PewterPokecenter:6': 'J2 cry',
+      'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision',
+      'PewterPokecenter:4': 'Cable club: user decision',
       ...Object.fromEntries(Array.from({ length: 8 }, (_, n) => [`Route3:${n + 2}`, 'A5b4 trainer'])),
       'PewterGym:2': 'A5b4 trainer',
       // Checkpoint-04 places the objects. Their scripts are later: the rivals are I1.
@@ -175,6 +178,41 @@ function scene(name: string): ScriptDeps {
   return { gameMap, player, npcs, textBox, playerBag: new Bag(), playerParty: [], restoreMapMusic: vi.fn() };
 }
 describe('small handler frame/side-effect contracts', () => {
+  it.each([
+    ['PewterNidoranHouse', 1, 3, 32],
+    ['ViridianNicknameHouse', 3, 5, 59],
+    ['ViridianPokecenter', 5, 0x28, 46],
+    ['PewterPokecenter', 6, 0x28, 46],
+  ] as const)('%s text %i waits for a field cry after printing', async (map, textId, species, duration) => {
+    vi.stubGlobal('window', { addEventListener() {} });
+    const audio = await vi.importActual<typeof import('../audio')>('../audio');
+    const resume = vi.spyOn(GBSynthesizer.prototype, 'resume').mockResolvedValue();
+    await audio.resumeAudio();
+    await audio.preloadCry(species);
+    audio.stopMusic();
+    vi.mocked(isSoundFinished).mockImplementation(audio.isSoundFinished);
+    vi.mocked(playCry).mockImplementation(audio.playCry);
+    const deps = scene(map);
+    try {
+      initScript(getTextHandler(map, textId)!(ctx()));
+      for (let i = 0; i < 400 && !vi.mocked(playCry).mock.calls.length; i++) updateScript(deps, false);
+      expect(playCry).toHaveBeenCalledExactlyOnceWith(species);
+      expect(deps.textBox.isTextComplete).toBe(true);
+      expect(deps.textBox.isWaitingForInput).toBe(false);
+      const before = vi.mocked(readJoypad).mock.calls.length;
+      for (let i = 0; i < duration; i++) {
+        expect(deps.textBox.isWaitingForInput).toBe(false);
+        expect(vi.mocked(readJoypad).mock.calls.length).toBe(before);
+        audio.updateMusicCTimes(1);
+        updateScript(deps, false);
+      }
+      expect(deps.textBox.isWaitingForInput).toBe(true);
+    } finally {
+      initScript([]);
+      vi.mocked(isSoundFinished).mockImplementation(() => true);
+      resume.mockRestore();
+    }
+  });
   it.each([
     ['Mom', 'RedsHouse1F', () => momText(ctx()), 23, 9],
     ['TV', 'RedsHouse1F', () => tvText({ ...ctx(), facing: 'down' }), 23, 9],

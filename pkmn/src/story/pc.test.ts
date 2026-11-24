@@ -29,7 +29,7 @@ import { pokemonToBoxed } from '../pokemon_storage';
 import { updateSprites } from '../overworld/sprites';
 import { isVBlankHeld } from '../core/vblank_hold';
 
-vi.mock('../audio', () => ({ setMasterVolume: vi.fn(), playSFX: vi.fn(), isSoundFinished: vi.fn(() => true), playMusic: vi.fn(), isMusicChannelActive: () => false }));
+vi.mock('../audio', () => ({ playCry: function* () {}, startPikachuClip: vi.fn(() => false), setMasterVolume: vi.fn(), playSFX: vi.fn(), isSoundFinished: vi.fn(() => true), playMusic: vi.fn(), isMusicChannelActive: () => false }));
 vi.mock('../debug', () => ({ isNoClip: () => false, isNoEncounters: () => true }));
 vi.mock('../renderer', () => ({ drawFadeOverlay: vi.fn(), getMonsterPalette: () => 'YELLOWMON', loadBattleSprite: async () => ({ width: 40, height: 40 }), fillRect: vi.fn(), drawTile: vi.fn(), drawSprite: vi.fn(), getScale: () => 1, getCtx: () => ({ drawImage() {} }),
   loadFont: async () => ({ width: 128 }), loadTileset: async () => ({ width: 128 }), loadSprite: async () => ({ width: 16, height: 96 }) }));

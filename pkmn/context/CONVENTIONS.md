@@ -273,6 +273,29 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 
 ## The test suite
 
+Pokémon cries (note 140) added or changed the following test files under `game/src/`.
+
+- **Checkpoint-01 and bank-comparison repair:** `audio/sfx_jingles.test.ts` and
+  `rom/__tests__/{cries_data,static_export}.test.ts`.
+- **Checkpoint-02:** `audio/{cries,low_health_alarm}.test.ts`,
+  `battle/{battle_audio,battle_move_anim,battle_session,battle_start}.test.ts`, and
+  `rom/__tests__/cries_data.test.ts`.
+- **Checkpoint-03:** `audio/pikachu_clip.test.ts`,
+  `battle/{battle_audio,battle_end_helpers,battle_init,battle_intro_live,battle_intro_program,battle_pictures,battle_send_out,battle_session,battle_session_core,battle_session_trainers,battle_start,battle_trainer_ai,battle_world_composed}.test.ts`,
+  `main.test.ts`, and `rom/__tests__/pikachu_pcm.test.ts`.
+- **Checkpoint-04:** `audio/pikachu_clip.test.ts`,
+  `battle/{battle_party_menu,battle_party_refresh,battle_session,battle_session_core,battle_session_joypad}.test.ts`,
+  `{main,main_battle_stats_name,main_intro,native_dispatch}.test.ts`,
+  `menus/{bills_pc,oak_speech,pokedex,status_screen}.test.ts`,
+  `rom/__tests__/{pikachu_pcm,static_export}.test.ts`, and `story/{pc,small_text_handlers}.test.ts`.
+  The ROM suite also updated `rom/__tests__/fixtures/later_map_text.ts`.
+- **Checkpoint-05, tests recorded in §8.30 and §8.32:** `menus/bills_pc.test.ts` covers silent YES,
+  the pre-cry wait, and the ordinary deposit, withdraw and release waits for two OT mismatch cases.
+  `pokemon_storage.test.ts` pins the boxed species, OT ID and five-byte OT-name checks. The
+  sleeping-starter check in `main.test.ts` supplies the current player's OT name.
+  `menus/pokedex.test.ts` restores the side-menu hollow cursor, the seen-only data page's unknown
+  measurements and hidden description, and AREA UNKNOWN.
+
 Note 137 adds 12 host tests in `menus/foreground_preview.test.ts`. They cover pacing, visible OAM after DMA,
 input, replay, stale callbacks and production isolation. Nemotron passed review with the pacing fix in `c018e7ce`.
 Verified committed baseline: ROM 7799/7799 and no-ROM 7431 pass / 368 skip across 299 files. Build

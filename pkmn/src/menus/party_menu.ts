@@ -19,7 +19,7 @@ import type { GameButton } from '../core';
 import { getTextPrograms } from '../text/program_data';
 import { formatHpFraction, PARTY_HP_FRACTION_COL } from './hp_bar';
 import { getPartyAndBillsSavedMenuItem, setPartyAndBillsSavedMenuItem } from '../list_state';
-import { StatusScreenSession } from './status_screen';
+import { StatusScreenSession, isFieldStatusStarter, type StatusScreenOptions } from './status_screen';
 import { loadPartyTiles, drawTileHpBar, drawLevel } from './party_tiles';
 import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { isPikachuFollowingDisabled } from '../pikachu/pikachu_following';
@@ -87,7 +87,9 @@ export class PartyMenu {
   private stats: StatusScreenSession | null = null;
   private opening: PartyMenuOpening | null = null;
   private readonly openingTextBox: TextBox;
-  constructor(textHost?: TextDisplayHost) { this.openingTextBox = new TextBox(textHost); }
+  constructor(textHost?: TextDisplayHost, private readonly statusVoice?: StatusScreenOptions['voice']) {
+    this.openingTextBox = new TextBox(textHost);
+  }
   private sleepingText: TextBox | null = null;
   private itemTextBox: TextBox | null = null;
   /** The stats session owns actual reads and its one BG-transfer tick. */
@@ -348,7 +350,8 @@ export class PartyMenu {
       playSFX('press_ab');
       const action = items[this.subCursor];
       if (action === 'STATS') {
-        this.stats = new StatusScreenSession(this.party[this.cursor], { syncRead: true });
+        const mon = this.party[this.cursor];
+        this.stats = new StatusScreenSession(mon, { voice: this.statusVoice, starter: isFieldStatusStarter(mon) });
         this.state = 'stats';
       } else if (action === 'SWITCH') {
         // Overworld: swap party positions

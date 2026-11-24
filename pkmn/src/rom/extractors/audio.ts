@@ -186,6 +186,13 @@ export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
   shooting_star:       { bank: 0x1f, addr: 0x4246 },
 };
 
+// Cries checkpoint-01 (note 140): SFX_Cry00_1 … SFX_Cry25_1, bank $02.
+// pokeyellow.sym 573535d: SFX_Cry00_1 is 02:403c and SFX_Cry25_1 is 02:4189.
+// Each header is 9 bytes (three channels). Nothing plays these until checkpoint-02.
+for (let base = 0; base < 38; base++) {
+  SFX_HEADERS[`cry${base.toString(16).padStart(2, '0')}`] = { bank: 0x02, addr: 0x403c + base * 9 };
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function bankOffset(bank: number, addr: number): number {

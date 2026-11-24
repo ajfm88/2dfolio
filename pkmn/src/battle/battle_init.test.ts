@@ -17,7 +17,8 @@ import { textBgTransfer } from '../text/bg_transfer';
 import { uiTiles } from '../renderer/ui_tiles';
 import { rig as audioRig, sfxData } from '../test/audio_rig';
 import { soundFinished } from '../audio/sound_wait';
-import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled } from '../audio/low_health_alarm';
+import { setLowHealthAlarm, setLowHealthAlarmDisabled } from '../audio/low_health_alarm';
+import { getCryData } from '../audio/cries';
 import { A, BattleState, encodeText, POKEDEX_ORDER, W_SPRITE_FLIPPED } from './battle_state';
 import { decodeBattleText } from './battle_text_codec';
 import { D } from './battle_end_state';
@@ -127,8 +128,8 @@ function harness(options: Options = {}) {
       record.rows = Array.from({ length: 4 }, (_, row) => Array.from({ length: 18 }, (_, col) => screen.at(col + 1, row + 13)).join(''));
       mark('text.end', { program, rows: record.rows });
     },
-    voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm,
-      cry: species => mark('cry', species), clip: id => mark('clip', id), clearSfxIds: () => bridge.clearClipIds() },
+    voice: {
+      *cry(species) { mark('cry', species); }, clip(id) { mark('clip', id); return false; } },
     marowakAnimation: function* () { mark('MarowakAnim.cue'); },
     waitForSound: function* () {
       mark('sound.wait');
@@ -242,6 +243,7 @@ describe('checkpoint-04 battle start, through the instruction before StartBattle
 
   it('Forest bug catcher: FF AI count, trainer pic, waited sound, exactly20 frames and both party HUDs', () => {
     const h = harness({ trainer: 2, map: 0x33 });
+    getCryData(21); // The trainer's request must replace the preceding Mew cry's modifiers.
     expect(h.draws).toEqual([]);
     expect(h.state.mem[D.wEnemyPartyCount]).toBe(2);
     const trace = h.drive(); assertCommon(h); assertOwnPokeballs(h);

@@ -154,7 +154,7 @@ describe('Music_DoLowHealthAlarm', () => {
     expect(lowHealthAlarm()).toBe(0);
   });
 
-  it('exposes the A5c3 facade and leaves bit 7 unset outside it', () => {
+  it('limits direct alarm writes to the audio facade and the PlayCry bracket', () => {
     setLowHealthChannel5(CRY_SFX_END);
     applyHudAlarm(0x85, true);
     expect(lowHealthAlarm()).toBe(0x85);
@@ -180,10 +180,12 @@ describe('Music_DoLowHealthAlarm', () => {
     const root = resolve(__dirname, '..');
     const files = walk(root).filter(path => !path.endsWith(`${sep}low_health_alarm.ts`));
     const callers = files.filter(path => readFileSync(path, 'utf8').includes('setLowHealthAlarm('));
-    expect(callers.map(path => path.slice(root.length + 1))).toEqual([`audio${sep}index.ts`]);
+    expect(callers.map(path => path.slice(root.length + 1))).toEqual([`audio${sep}cries.ts`, `audio${sep}index.ts`]);
     const index = readFileSync(resolve(root, 'audio/index.ts'), 'utf8');
     expect(index).toContain('setLowHealthAlarm(0)');
     expect(index).not.toMatch(/setLowHealthAlarm\((?!0\))/);
+    const cries = readFileSync(resolve(root, 'audio/cries.ts'), 'utf8');
+    expect(cries.match(/setLowHealthAlarm\([^)]*\)/g)).toEqual(['setLowHealthAlarm(0)', 'setLowHealthAlarm(alarm)']);
   });
 });
 

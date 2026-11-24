@@ -40,6 +40,33 @@ beforeEach(async () => {
 afterEach(() => { freeze.resetCpuFreeze(); alarm.setLowHealthChannel5(0); vi.restoreAllMocks(); delete (globalThis as { window?: unknown }).window; });
 
 describe('PlayPikachuSoundClip on the facade (opening checkpoint-04)', () => {
+  it.each([[4, 82], [11, 36], [37, 72]])('battle clip %i clears once and preserves the resumed VBlank alarm id', async (id, frames) => {
+    const { BattleAudio } = await import('../battle/battle_audio');
+    const { playPikachuClipCue } = await import('../battle/battle_voice_cues');
+    const { sfx, music, banks } = api.getBattleAudioEngines();
+    const battle = new BattleAudio(sfx, music, banks);
+    const clear = vi.spyOn(battle, 'clearIds');
+    await api.loadPikachuClip(id);
+    const program = playPikachuClipCue({ *cry() {}, clip: api.startPikachuClip }, id);
+    expect(program.next()).toEqual({ done: false, value: 'serviced' });
+    for (let i = 0; i < 2; i++) {
+      step();
+      expect(program.next()).toEqual({ done: false, value: 'serviced' });
+    }
+    alarm.setLowHealthAlarm(0x9e);
+    step();
+    expect(battle.channelId(5)).toBe(alarm.CRY_SFX_END);
+    expect(program.next()).toEqual({ done: false, value: 'serviced' });
+    expect(clear).toHaveBeenCalledOnce();
+    expect([5, 6, 7, 8].map(ch => battle.channelId(ch))).toEqual([0, 0, 0, 0]);
+    expect(frozenFrames()).toBe(frames);
+    step();
+    expect(battle.channelId(5)).toBe(alarm.CRY_SFX_END);
+    expect(program.next().done).toBe(true);
+    expect(clear).toHaveBeenCalledOnce();
+    expect(battle.channelId(5)).toBe(alarm.CRY_SFX_END);
+    battle.dispose();
+  });
   it('a clip must be loaded before it starts, and only an extracted clip loads', async () => {
     expect(() => api.startPikachuClip(1)).toThrow('Pikachu clip 1 is not loaded');
     expect(page()._audioSynth().pcmPlaying).toBe(false); expect(freeze.isCpuFrozen()).toBe(false);
@@ -55,7 +82,7 @@ describe('PlayPikachuSoundClip on the facade (opening checkpoint-04)', () => {
       ['audio/pikachu_cries/pikachu_cry_37.json', 'audio/pikachu_cries/pikachu_cry_4.json']);
   });
 
-  it.each([[1, 46], [4, 82], [11, 36], [37, 72]])('PikachuCry%i plays its own bytes at 45 cycles a sample and freezes %i frames', async (number, frames) => {
+  it.each([[1, 46], [4, 82], [11, 36], [17, 42], [37, 72]])('PikachuCry%i plays its own bytes at 45 cycles a sample and freezes %i frames', async (number, frames) => {
     const synth = page()._audioSynth();
     await api.loadPikachuClip(number);
     expect(api.startPikachuClip(number)).toBe(true);

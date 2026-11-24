@@ -1,3 +1,4 @@
+import type { Program } from '../battle/battle_menu_context';
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from '../core';
 import { substituteNames } from '../core/player_state';
 import { fillRect, drawTile, loadFont, loadTileset } from '../renderer';
@@ -122,7 +123,7 @@ export interface TextDisplayHost {
   updateSprites(): void;
   /** Hook only: PrintText's own font-loaded UpdateSprites remains J2. */
   printTextSprites?(): void;
-  cry?(species: string): void;
+  cry?(species: string): Program;
 }
 export type DisplayPhase = 'opening' | 'printing' | 'waiting' | 'holding' | 'closing' | 'closed';
 /** Retained message-box tiles (wTileMap rows 12–17) and whether the border is up. */
@@ -219,7 +220,7 @@ export class TextBox {
       soundFinished: () => this.host.sound ? this.host.sound.finished() : isSoundFinished(),
       beep: () => { if (this.host.sound) this.host.sound.beep(); else playSFX('press_ab'); }, joypadRead: syncJoypadRead,
       playSound: (name: string) => { if (this.host.sound) this.host.sound.play(name); else playSFX(name); },
-      cry: (species: string) => { this.host.cry?.(species); } };
+      cry: this.host.cry };
   }
   private start(run: Generator<void>): void {
     this.complete = false; this.run = run; this.advance();

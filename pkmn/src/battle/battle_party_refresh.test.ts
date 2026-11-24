@@ -160,12 +160,12 @@ for(const path of ['SWITCH','STATS','AlreadyOut','NoWill'] as const)it(`Pidgey $
   s.writeBE(A.wPartyMons+44+1,path==='NoWill'?0:17);
   vi.spyOn(r.party,'frameBattleChoice').mockReturnValue({kind:'chosen',slot:1});
   vi.spyOn(MenuInput.prototype,'update').mockImplementation(function(this:MenuInput){this.item=path==='STATS'?1:0;return ['a'];});
-  const status=vi.fn((mon:BattlePokemon,options:{syncRead:boolean})=>{void mon;void options;return {frame:()=> 'done' as const,render(){},paletteWhite:false,tiles:new ScreenTiles()};});host.createStatusScreen=status;
+  const status=vi.fn((mon:BattlePokemon,options:{paletteOwner?:'field'|'battle'})=>{void mon;void options;return {frame:()=> 'done' as const,render(){},paletteWhite:false,tiles:new ScreenTiles()};});host.createStatusScreen=status;
   const print=vi.spyOn(r.party,'printBattleChoiceText').mockImplementation(function*(){});
   const switched=vi.spyOn(host,'switchPlayerMon');bindStateBattlePartyMenu(s,host);const p=host.partyMenu(battleContext(s));
   p.next();p.next();p.next();
   expect([s.wCurPartySpecies,s.wBattleMonSpecies2]).toEqual([0x24,0x24]);equal(s,1);
-  if(path==='STATS'){expect(status).toHaveBeenCalledWith(s.partyMons[1],{syncRead:false,paletteOwner:'battle'});expect(status.mock.calls[0][0]!.currentHp).toBe(17);}
+  if(path==='STATS'){expect(status).toHaveBeenCalledWith(s.partyMons[1],{paletteOwner:'battle'});expect(status.mock.calls[0][0]!.currentHp).toBe(17);}
   if(path==='AlreadyOut')expect(print).toHaveBeenCalledWith('AlreadyOutText',expect.anything());
   if(path==='NoWill')expect(print).toHaveBeenCalledWith('NoWillText');
   if(path==='SWITCH'){for(let i=0;i<20;i++){if(p.next().done)break;}expect(switched).toHaveBeenCalled();}

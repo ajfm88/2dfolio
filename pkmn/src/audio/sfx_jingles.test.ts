@@ -168,8 +168,10 @@ describe('the SFX preload list', () => {
     // V5g3 checkpoint-03: ledge and tink are preloaded since the hop and the Town Map play them.
     // Opening checkpoint-01: intro_crash, intro_whoosh and shooting_star, unused until the title and the star.
     // Opening checkpoint-05: the title plays intro_crash and intro_whoosh, so both are preloaded; 09: shooting_star.
+    // Cries checkpoint-01: cry00–cry25 are extracted and unused until checkpoint-02.
+    const cries = Array.from({ length: 38 }, (_, base) => `cry${base.toString(16).padStart(2, '0')}`);
     const unused = [
-      'ball_poof', 'ball_toss', 'caught_mon', 'damage', 'dex_page_added', 'faint_fall', 'faint_thud',
+      'ball_poof', 'ball_toss', 'caught_mon', ...cries, 'damage', 'dex_page_added', 'faint_fall', 'faint_thud',
       'level_up', 'not_very_effective', 'pokeflute_in_battle', 'super_effective', 'trainer_appeared',
     ];
     expect(files.filter(name => !EXTRACTED_SFX.includes(name))).toEqual(unused);

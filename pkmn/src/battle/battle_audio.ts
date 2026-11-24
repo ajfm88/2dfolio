@@ -10,12 +10,8 @@ import type { MusicEngine } from '../audio/music_engine';
 import type { PlaySound } from '../audio/play_sound';
 import { soundFinished } from '../audio/sound_wait';
 import { acceptsSfxChannel } from '../audio/sfx_priority';
+import { isCry, sfxModifiers, sfxModifierState } from '../audio/sfx_modifiers';
 import type { Program } from './battle_menu_context';
-
-const BATTLE_SFX_START = 0x9d;
-const BATTLE_SFX_END = 0xea;
-const CRY_SFX_START = 0x14;
-const CRY_SFX_END = 0x86;
 
 export interface BattleSfx {
   id: number;
@@ -29,8 +25,10 @@ export class BattleAudio {
   get savedAudioBank(): number { return this.banks.savedAudioBank; }
   set savedAudioBank(value: number) { this.banks.savedAudioBank = value & 0xff; }
   muteAudioAndPauseMusic = 0;
-  frequencyModifier = 0;
-  tempoModifier = 0;
+  get frequencyModifier(): number { return sfxModifierState.frequency; }
+  set frequencyModifier(value: number) { sfxModifierState.frequency = value & 0xff; }
+  get tempoModifier(): number { return sfxModifierState.tempo; }
+  set tempoModifier(value: number) { sfxModifierState.tempo = value & 0xff; }
   private readonly ids = new Map<number, number>([[6, 0], [7, 0], [8, 0]]);
   private restoreHooks: (() => void) | null = null;
 
@@ -77,9 +75,6 @@ export class BattleAudio {
     this.music.cancelDrum();
   }
 
-  /** The four clears after PlayPikachuSoundClip's deferred PCM body. */
-  clearClipIds(): void { this.clearIds(); }
-
   /**
    * The header is visited backwards. InitSFXVariables happens immediately for every
    * accepted entry; a later rejection returns before the common path writes new IDs.
@@ -93,8 +88,14 @@ export class BattleAudio {
       this.setId(channel.id, 0);
     }
     // This point is Audio2_PlaySound.playSoundCommon: all headers were accepted.
+    const modifiers = () => sfxModifiers(this.channelId(5), this.channelId(8), this.audioBank);
+    if (isCry(sound.id)) {
+      for (const channel of [5, 6, 7, 8]) this.setId(channel, sound.id);
+      this.sfx.installCry(sound.data, modifiers, () => isCry(this.channelId(5)), true);
+      return true;
+    }
     for (const channel of sound.data.channels) this.setId(channel.id, sound.id);
-    this.sfx.installBattleSfx(sound.data, () => this.modifiers());
+    this.sfx.installBattleSfx(sound.data, modifiers);
     return true;
   }
 
@@ -115,18 +116,6 @@ export class BattleAudio {
   private accepts(channel: number, incoming: number, old: number): boolean {
     return acceptsSfxChannel(channel, incoming, old);
   }
-
-  private modifiers(): { tempo: number; frequency: number } {
-    // Audio1_IsBattleSFX reads current CHAN5/8 IDs at each use; alarm and a later
-    // ID clear can change the result while a raw note is still in flight.
-    const battle = this.audioBank === 0x08 && this.inBattleRange(this.channelId(5) | this.channelId(8));
-    const id5 = this.channelId(5);
-    const cry = id5 >= CRY_SFX_START && id5 < CRY_SFX_END;
-    return cry || battle ? { tempo: 0x80 + (this.tempoModifier & 0xff), frequency: this.frequencyModifier & 0xff } :
-      { tempo: 0x100, frequency: 0 };
-  }
-
-  private inBattleRange(id: number): boolean { return id >= BATTLE_SFX_START && id <= BATTLE_SFX_END; }
 
   private setId(channel: number, id: number): void {
     if (channel === 5) setLowHealthChannel5(id); else this.ids.set(channel, id & 0xff);

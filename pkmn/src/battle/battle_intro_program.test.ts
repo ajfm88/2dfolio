@@ -151,7 +151,7 @@ function harness(type = 0, capture = false, flipped = false, trainer = false) {
     printText:function*(label){opening.push({label,at:frames.length,head:Array.from({length:40},(_,i)=>screen.shadowOam(i).y),palette:screen.paletteName(3)});},
     introScanout: noScan, bindRaster() {},
     waitForSound:function*(){while(!soundFinished(audio.sfx,audio.music,0))yield 'serviced';},
-    voice:{getAlarm:()=>0,setAlarm(){},cry(){},clip(){}},
+    voice:{*cry(){},clip(){return false;}},
   };
   const run = battleSilhouetteIntro(state,host,timing);
   function drive() {

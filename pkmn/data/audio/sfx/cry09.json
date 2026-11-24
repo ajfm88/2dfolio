@@ -1,0 +1,203 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 3,
+          "d1": 3,
+          "d2": 0,
+          "d3": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 7,
+          "frequency": 1952
+        },
+        {
+          "cmd": "square_note",
+          "length": 6,
+          "volume": 14,
+          "fade": 6,
+          "frequency": 1955
+        },
+        {
+          "cmd": "square_note",
+          "length": 10,
+          "volume": 15,
+          "fade": 4,
+          "frequency": 1952
+        },
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 2,
+          "d1": 2,
+          "d2": 1,
+          "d3": 1
+        },
+        {
+          "cmd": "square_note",
+          "length": 10,
+          "volume": 15,
+          "fade": 6,
+          "frequency": 2008
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 14,
+          "fade": 3,
+          "frequency": 2007
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 2,
+          "frequency": 2008
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 0,
+          "d1": 0,
+          "d2": 1,
+          "d3": 1
+        },
+        {
+          "cmd": "square_note",
+          "length": 2,
+          "volume": 0,
+          "fade": 8,
+          "frequency": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 10,
+          "fade": 7,
+          "frequency": 1697
+        },
+        {
+          "cmd": "square_note",
+          "length": 6,
+          "volume": 8,
+          "fade": 6,
+          "frequency": 1698
+        },
+        {
+          "cmd": "square_note",
+          "length": 10,
+          "volume": 7,
+          "fade": 4,
+          "frequency": 1697
+        },
+        {
+          "cmd": "duty_cycle_pattern",
+          "d0": 1,
+          "d1": 1,
+          "d2": 3,
+          "d3": 3
+        },
+        {
+          "cmd": "square_note",
+          "length": 10,
+          "volume": 7,
+          "fade": 6,
+          "frequency": 1750
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 8,
+          "fade": 3,
+          "frequency": 1753
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 10,
+          "fade": 2,
+          "frequency": 1751
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 15,
+          "fade": 2,
+          "param": 60
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 14,
+          "fade": 4,
+          "param": 62
+        },
+        {
+          "cmd": "noise_note",
+          "length": 15,
+          "volume": 13,
+          "fade": 7,
+          "param": 60
+        },
+        {
+          "cmd": "noise_note",
+          "length": 6,
+          "volume": 12,
+          "fade": 5,
+          "param": 59
+        },
+        {
+          "cmd": "noise_note",
+          "length": 6,
+          "volume": 14,
+          "fade": 4,
+          "param": 61
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 11,
+          "fade": 6,
+          "param": 60
+        },
+        {
+          "cmd": "noise_note",
+          "length": 6,
+          "volume": 13,
+          "fade": 4,
+          "param": 61
+        },
+        {
+          "cmd": "noise_note",
+          "length": 8,
+          "volume": 12,
+          "fade": 1,
+          "param": 59
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

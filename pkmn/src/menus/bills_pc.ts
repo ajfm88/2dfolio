@@ -6,9 +6,8 @@ import {
   getListScrollOffset, setListScrollOffset, getPartyAndBillsSavedMenuItem,
   setPartyAndBillsSavedMenuItem, setCurrentMenuItem,
 } from '../list_state';
-import { MONS_PER_BOX, isStarterPikachuBoxed } from '../pokemon_storage';
+import { MONS_PER_BOX, NUM_BOXES, isFieldStatusStarter, isStarterPikachuBoxed } from '../pokemon_storage';
 import { depositMon } from '../pokemon_transfers';
-import { isStarterPikachu } from '../pikachu/pikachu_follower';
 import { modifyPikachuHappiness } from '../pikachu/pikachu_happiness';
 import type { PcStorage } from './pc';
 import { PcDisplay } from './pc_display';
@@ -17,14 +16,16 @@ import { ListMenu, type MonListChoice } from './list_menu';
 import { YesNoMenu } from './yes_no_menu';
 import type { ScreenSnapshot, ScreenTiles } from './screen_tiles';
 import { StatusScreenSession } from './status_screen';
+import { playCry, startPikachuClip } from '../audio';
+import { getSpecies } from '../battle/data';
+import type { Program } from '../battle/battle_menu_context';
+import { playPikachuClipCue } from '../battle/battle_voice_cues';
+import { POKEDEX_ORDER } from '../battle/battle_state';
 import { drawFadeOverlay } from '../renderer';
 import { POKEBALL_GLYPH } from './menu_glyphs';
-import { NUM_BOXES } from '../pokemon_storage';
 import { holdVBlank } from '../core/vblank_hold';
 
 const SILENT = () => {};
-/** Playback and its cry-length wait remain J2, including the starter's PCM clips. */
-function playCry(_species: string): void {}
 
 export class BillsPc extends PcDisplay {
   private parentItem = 0;
@@ -39,6 +40,7 @@ export class BillsPc extends PcDisplay {
   private buffer1: ScreenSnapshot | null = null;
   private changingBox = false;
   private boxChooser = false;
+  private cryWait: { program: Program; after: () => void } | null = null;
 
   constructor(
     tiles: ScreenTiles, textBox: TextBox, transfer: BgTransfer, onSprites: () => void,
@@ -77,6 +79,10 @@ export class BillsPc extends PcDisplay {
       }
       return false;
     }
+    if (this.cryWait) {
+      this.advanceCry();
+      return this.finished;
+    }
     if (this.advancePending()) return this.finished;
     if (this.yesNo) {
       const answer = this.yesNo.update(readJoypad);
@@ -97,7 +103,7 @@ export class BillsPc extends PcDisplay {
         else {
           this.selected = answer;
           if (this.parentItem === 2) this.confirmRelease();
-          else if (this.parentItem === 1 && isStarterPikachu(this.storage.party[answer.index]) && this.storage.isPikachuFollowingDisabled())
+          else if (this.parentItem === 1 && isFieldStatusStarter(this.storage.party[answer.index]) && this.storage.isPikachuFollowingDisabled())
             this.print('SleepingPikachuText2', () => this.mainMenu());
           else this.depositWithdrawMenu();
         }
@@ -199,7 +205,9 @@ export class BillsPc extends PcDisplay {
     const mon = this.parentItem === 1 ? this.storage.party[this.selected!.index]
       : this.storage.boxStats(this.box()[this.selected!.index]);
     if (!mon) throw new Error('Cannot display stored Pokemon stats');
-    this.stats = new StatusScreenSession(mon, { syncRead: false });
+    this.stats = new StatusScreenSession(mon, {
+      voice: { cry: playCry, clip: startPikachuClip }, starter: isFieldStatusStarter(mon),
+    });
   }
 
   private chooseBox(): void {
@@ -223,40 +231,72 @@ export class BillsPc extends PcDisplay {
   }
 
   private moveMon(): void {
-    const index = this.selected!.index;
+    const { index, name } = this.selected!;
     const box = this.box();
-    if (this.parentItem === 1) {
+    const depositing = this.parentItem === 1;
+    const finish = () => this.waitCurrentSound(() => this.print(depositing ? 'MonWasStoredText' : 'MonIsTakenOutText',
+      () => this.mainMenu(), { stringBuffer: name, boxNumString: String(this.storage.getCurrentBox() + 1) }));
+    if (depositing) {
       const mon = this.storage.party[index];
-      playCry(mon.species.name);
-      if (isStarterPikachu(mon)) modifyPikachuHappiness('DEPOSITED');
-      box.push(depositMon(mon));
-      this.storage.party.splice(index, 1);
+      const starter = isFieldStatusStarter(mon);
+      const deposit = () => {
+        if (starter) modifyPikachuHappiness('DEPOSITED');
+        box.push(depositMon(mon));
+        this.storage.party.splice(index, 1);
+        finish();
+      };
+      if (starter) this.waitForClip(28, deposit);
+      else this.waitForCry(mon.species.id, deposit);
     } else {
-      const mon = this.storage.withdraw(box[index]);
-      if (!mon) throw new Error('Cannot deserialize stored Pokemon');
-      playCry(box[index].speciesName);
-      this.storage.party.push(mon);
-      box.splice(index, 1);
+      const stored = box[index];
+      const species = getSpecies(stored.speciesName);
+      if (!species) throw new Error('Cannot identify stored Pokemon');
+      const withdraw = () => {
+        const mon = this.storage.withdraw(stored);
+        if (!mon) throw new Error('Cannot deserialize stored Pokemon');
+        this.storage.party.push(mon);
+        box.splice(index, 1);
+        finish();
+      };
+      if (isStarterPikachuBoxed(stored)) this.waitForClip(35, withdraw);
+      else this.waitForCry(species.id, withdraw);
     }
-    this.waitCurrentSound(() => this.print(this.parentItem === 1 ? 'MonWasStoredText' : 'MonIsTakenOutText',
-      () => this.mainMenu(), { stringBuffer: this.selected!.name, boxNumString: String(this.storage.getCurrentBox() + 1) }));
   }
 
   private confirmRelease(): void {
     if (isStarterPikachuBoxed(this.box()[this.selected!.index])) {
-      playCry(this.box()[this.selected!.index].speciesName);
-      this.print('PikachuUnhappyText', () => this.mainMenu(), { nameBuffer: this.selected!.name });
+      this.waitForClip(40, () => this.print('PikachuUnhappyText', () => this.mainMenu(),
+        { nameBuffer: this.selected!.name }));
     } else this.print('OnceReleasedText', () => {
       this.yesNo = new YesNoMenu(); this.yesNo.show({ actualRead: true, silent: true });
     }, { stringBuffer: this.selected!.name });
   }
 
   private release(): void {
-    const [mon] = this.box().splice(this.selected!.index, 1);
-    this.waitCurrentSound(() => {
-      playCry(mon.speciesName);
-      this.print('MonWasReleasedText', () => this.mainMenu(), { stringBuffer: this.selected!.name });
-    });
+    const { index, name } = this.selected!;
+    const box = this.box();
+    const species = getSpecies(box[index].speciesName);
+    if (!species) throw new Error('Cannot identify stored Pokemon');
+    box.splice(index, 1);
+    this.waitCurrentSound(() => this.waitForCry(species.id, () =>
+      this.print('MonWasReleasedText', () => this.mainMenu(), { stringBuffer: name })));
+  }
+
+  private waitForCry(dex: number, after: () => void): void {
+    this.cryWait = { program: playCry(POKEDEX_ORDER.indexOf(dex) + 1), after };
+    this.advanceCry();
+  }
+
+  private waitForClip(number: number, after: () => void): void {
+    this.cryWait = { program: playPikachuClipCue({ cry: playCry, clip: startPikachuClip }, number), after };
+    this.advanceCry();
+  }
+
+  private advanceCry(): void {
+    const wait = this.cryWait!;
+    if (!wait.program.next().done) return;
+    this.cryWait = null;
+    wait.after();
   }
 
   private exit(): void {

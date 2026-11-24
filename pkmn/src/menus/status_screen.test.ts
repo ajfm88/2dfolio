@@ -12,7 +12,14 @@ vi.mock('../renderer', async importOriginal => ({
   loadTileset: async (url: string, palette: string) => ({ width: 120, url, palette }),
   loadBattleSprite: vi.fn(async (url: string, palette: string) => ({ width: imageSize.value, height: imageSize.value, url, palette })),
 }));
-import { StatusScreenSession, loadStatusScreenAssets } from './status_screen';
+import { StatusScreenSession, isFieldStatusStarter, loadStatusScreenAssets } from './status_screen';
+import { GBSynthesizer } from '../audio/synthesizer';
+import { takeFrozenFrame } from '../core/cpu_freeze';
+import { boxStatsMon } from '../pokemon_transfers';
+import { pokemonToBoxed } from '../pokemon_storage';
+import { setPlayerName } from '../core/player_state';
+import { loadTrainerSpeciesData } from '../battle/battle_trainer_data';
+import { loadBattleBridgeData } from '../battle/battle_bridge';
 import { createPokemon, loadBattleData, getAllSpeciesNames, getSpecies } from '../battle/data';
 import type { BattlePokemon } from '../battle/types';
 import { totalExpForLevel } from '../battle/experience';
@@ -51,8 +58,77 @@ function fixture(): BattlePokemon {
     moves: [{ id: 'SAND_ATTACK', pp: 0xc5, maxPp: 15 }],
   });
 }
-function rig(mon = fixture(), syncRead = false) {
-  const session = new StatusScreenSession(mon, { syncRead });
+
+it.each([false, true])('status voice retains the last foreground sample (clip=%s)', async clip => {
+  const audio = await vi.importActual<typeof import('../audio')>('../audio');
+  vi.spyOn(GBSynthesizer.prototype, 'resume').mockResolvedValue();
+  await audio.resumeAudio();
+  await audio.preloadCry(4);
+  await audio.loadPikachuClip(17);
+  const mon = clip ? fixture() : createPokemon('CLEFAIRY', 5)!;
+  for (const scenario of ['during-held', 'during-tap', 'already-sampled', 'during-setup'] as const) {
+    audio.stopMusic();
+    keys(scenario === 'already-sampled' ? 'b' : 'a');
+    input.readJoypad(); // last foreground poll from STATS
+    const starter = vi.fn(audio.startPikachuClip);
+    const cry = vi.fn(audio.playCry);
+    const screen = new StatusScreenSession(mon, { paletteOwner: 'battle', voice: { cry, clip: starter }, starter: clip });
+    const read = vi.fn(input.readJoypad);
+    for (let i = 1; i <= 29; i++) {
+      keys(...(scenario === 'already-sampled' || scenario === 'during-setup' && i >= 5 ? ['b'] as const : []));
+      screen.frame(read, i === 15 || i === 16);
+    }
+    if (clip) {
+      for (let i = 0; i < 3; i++) screen.frame(read);
+      expect(starter).toHaveBeenCalledExactlyOnceWith(17);
+      expect(cry).not.toHaveBeenCalled();
+      // The raw pre-DI levels stay unsampled by the foreground while the audio body runs.
+      keys('b');
+      let frozen = 0;
+      while (takeFrozenFrame()) frozen++;
+      expect(frozen).toBe(42);
+    } else {
+      expect(cry).toHaveBeenCalledExactlyOnceWith(4);
+      for (let i = 1; i < 21; i++) {
+        keys('b');
+        audio.updateMusicCTimes(1);
+        screen.frame(read);
+      }
+    }
+    expect(read).not.toHaveBeenCalled();
+    // Today's hardware level on the resumed VBlank, not the pre-DI level.
+    keys(...(scenario === 'during-tap' ? [] : ['b'] as const));
+    audio.updateMusicCTimes(1);
+    screen.frame(read);
+    expect(read).toHaveBeenCalledOnce();
+    expect(screen.waitingForPage1Input, scenario).toBe(scenario === 'during-tap' || scenario === 'already-sampled');
+  }
+});
+
+it('selects clip 17 for the matching party and box OT, and rejects a traded Pikachu', async () => {
+  await Promise.all([loadTrainerSpeciesData(), loadBattleBridgeData()]);
+  setPlayerName('ASH');
+  const mon = fixture();
+  const boxed = boxStatsMon(pokemonToBoxed(mon));
+  for (const [candidate, starter] of [
+    [mon, true], [boxed, true], [{ ...mon, otId: 1 }, false], [{ ...mon, otName: 'GARY' }, false],
+  ] as const) {
+    const clip = vi.fn(() => false), cry = vi.fn(function* (_index: number) {});
+    const screen = new StatusScreenSession(candidate, {
+      paletteOwner: 'battle', voice: { clip, cry }, starter: isFieldStatusStarter(candidate),
+    });
+    for (let i = 0; i < 32; i++) screen.frame(input.readJoypad);
+    if (starter) {
+      expect(clip).toHaveBeenCalledExactlyOnceWith(17);
+      expect(cry).not.toHaveBeenCalled();
+    } else {
+      expect(cry).toHaveBeenCalledExactlyOnceWith(0x54);
+      expect(clip).not.toHaveBeenCalled();
+    }
+  }
+});
+function rig(mon = fixture()) {
+  const session = new StatusScreenSession(mon, {});
   const read = vi.fn(input.readJoypad), transfer = vi.spyOn(textBgTransfer, 'tick');
   let time = 0; const heldFrames: number[] = [];
   const step = (...held: GameButton[]) => {
@@ -189,7 +265,7 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
 
   it.each([0, 1, 2])('battle-owned: the host holds S+15..16, the field counter is never armed, read S+29, portion %i', portion => {
     for (let i = 0; i < portion; i++) textBgTransfer.tick();
-    const session = new StatusScreenSession(fixture(), { syncRead: false, paletteOwner: 'battle' });
+    const session = new StatusScreenSession(fixture(), { paletteOwner: 'battle' });
     const read = vi.fn(input.readJoypad), transfer = vi.spyOn(textBgTransfer, 'tick');
     for (let f = 1; f <= 29; f++) {
       expect(session.paletteCommandDue).toBe(f === 15); // due after S+14's CPU work, before S+15
@@ -204,7 +280,7 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
   });
 
   it('field-owned: the held argument is ignored; only the field counter skips a VBlank', () => {
-    const session = new StatusScreenSession(fixture(), { syncRead: false });
+    const session = new StatusScreenSession(fixture(), {});
     const transfer = vi.spyOn(textBgTransfer, 'tick'), ticks: number[] = [];
     for (let f = 1; f <= 29; f++) {
       const n = transfer.mock.calls.length; session.frame(input.readJoypad, f === 3);
@@ -214,8 +290,8 @@ describe('actual Joypad waits, white palette, volume and retained thirds (§12.2
     expect(isVBlankHeld()).toBe(false);
   });
 
-  it.each([false, true])('held selection A and a release/repress in unread setup are lost (syncRead=%s)', sync => {
-    keys('a'); if (!sync) input.readJoypad(); const r = rig(fixture(), sync);
+  it('held selection A and a release/repress in unread setup are lost', () => {
+    keys('a'); input.readJoypad(); const r = rig();
     r.wait(8, 'a'); r.wait(4); r.wait(22, 'a');
     expect(r.row(3, 9, 10)).not.toBe('EXP POINTS');
     r.step(); r.step('a'); expect(r.row(3, 9, 10)).toBe('EXP POINTS');

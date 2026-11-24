@@ -22,7 +22,7 @@ import { rig, sfxData } from '../test/audio_rig';
 import { isHeld, isPassPressed } from '../input';
 import { playSFX, isSoundFinished } from '../audio';
 import { textBgTransfer } from '../text/bg_transfer';
-import { lowHealthAlarm, setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
+import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { soundFinished } from '../audio/sound_wait';
 import { installTrainerSpecies } from './battle_trainer_party';
 import { createPokemon, loadBattleData } from './data';
@@ -195,7 +195,7 @@ async function route1Frame(flipped = false) {
     saveScreenTilesToBuffer1: () => driver.video.saveScreenTilesToBuffer1(), loadScreenTilesFromBuffer1: () => driver.video.loadScreenTilesFromBuffer1(),
     printText: function* (program, bindings) { yield* driver.printText(program, bindings); if (program === 'WildMonAppearedText') opening = renderBattleScreen(screen, { ...tiles, sprites: host.renderTiles.sprites }); },
     waitForSound: function* () { while (!soundFinished(audio.sfx, audio.music, 0)) yield 'serviced'; },
-    voice: { getAlarm: lowHealthAlarm, setAlarm: setLowHealthAlarm, cry() {}, clip() {} }, marowakAnimation: function* () { throw new Error('unexpected Marowak'); },
+    voice: { *cry() {}, clip() { return false; } }, marowakAnimation: function* () { throw new Error('unexpected Marowak'); },
   };
   vi.mocked(playSFX).mockImplementation(async name => { audio.sfx.play(sfxData(name)); }); vi.mocked(isSoundFinished).mockImplementation(() => soundFinished(audio.sfx, audio.music, 0));
   driver.start(initBattleAfterTransition(s, host));

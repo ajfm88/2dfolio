@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.hoisted(() => {
   Object.assign(globalThis, { window: { addEventListener() {} }, localStorage: { getItem: () => null } });
 });
-vi.mock('./audio', () => ({ setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(),
+vi.mock('./audio', () => ({ playCry: function* () {}, requestCry: vi.fn(), startPikachuClip: vi.fn(() => false), setMasterVolume: vi.fn(), tickAudio: vi.fn(), playSFX: vi.fn(), playMusic: vi.fn(),
   stopMusic: vi.fn(), isSoundFinished: () => true }));
 vi.mock('./debug', () => ({ isNoClip: () => false, isNoEncounters: () => true, consumeDebugWarp: () => null }));
 vi.mock('./renderer', () => ({ getMonsterPalette: () => 'YELLOWMON', drawFadeOverlay: vi.fn(), fillRect: vi.fn(),

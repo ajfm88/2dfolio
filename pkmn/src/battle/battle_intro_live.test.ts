@@ -409,7 +409,7 @@ describe('A5e checkpoint-04a presented intro', () => {
         yield* driver.printText(program, bindings);
       },
       waitForSound: function* () { yield 'serviced'; },
-      voice: { getAlarm: () => 0, setAlarm() {}, cry() {}, clip() {} },
+      voice: { *cry() {}, clip() { return false; } },
       introScanout: scanout, bindRaster(timing) { driver.bindRaster(timing); },
     };
     driver.bindRaster(timing);

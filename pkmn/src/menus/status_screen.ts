@@ -5,7 +5,10 @@ import { expToNextLevel } from '../battle/experience';
 import { speciesDisplayName } from '../battle/data';
 import { setMasterVolume } from '../audio';
 import { setNoAudioFadeOut } from '../audio/audio_flags';
-import { isPassPressed, syncJoypadRead } from '../input';
+import { isPassPressed } from '../input';
+import { POKEDEX_ORDER } from '../battle/battle_state';
+import { playPikachuClipCue, type BattleVoiceHost } from '../battle/battle_voice_cues';
+import type { Program } from '../battle/battle_menu_context';
 import { fillRect, drawFadeOverlay, getCtx, getScale, loadBattleSprite, getMonsterPalette } from '../renderer';
 import { textBgTransfer } from '../text/bg_transfer';
 import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
@@ -29,10 +32,17 @@ export async function loadStatusScreenAssets(): Promise<void> {
 }
 
 /** Who runs SET_PAL_STATUS_SCREEN's two held frames: the field's counter, or the battle host. */
-export interface StatusScreenOptions { syncRead: boolean; page2Name?: () => string; paletteOwner?: 'field' | 'battle' }
+export interface StatusScreenOptions {
+  page2Name?: () => string;
+  paletteOwner?: 'field' | 'battle';
+  voice?: BattleVoiceHost;
+  starter?: boolean;
+}
+
+export { isFieldStatusStarter } from '../pokemon_storage';
 
 const PIC = '\uE030'; // The padded, flipped 7×7 picture in vChars2.
-type Phase = 'setup' | 'page1' | 'page2Delay' | 'page2' | 'clear' | 'done';
+type Phase = 'setup' | 'cry' | 'page1' | 'page2Delay' | 'page2' | 'clear' | 'done';
 
 export class StatusScreenSession {
   readonly tiles = new ScreenTiles();
@@ -40,14 +50,13 @@ export class StatusScreenSession {
   private phase: Phase = 'setup';
   private age = 0;
   private picture: HTMLCanvasElement | null = null;
+  private voiceWait: Program | undefined;
+  get waitingForPage1Input(): boolean { return this.phase === 'page1'; }
   readonly barColor: HpBarColor;
   /** CPU boundary before SET_PAL_STATUS_SCREEN; the battle host runs its palette generator here. */
   get paletteCommandDue(): boolean { return this.phase === 'setup' && this.age === 14; }
 
   constructor(private readonly mon: BattlePokemon, private readonly options: StatusScreenOptions) {
-    // Party's legacy input adapter has already read this selection. Bill's MenuInput
-    // uses the real Joypad read and must retain its hJoyLast unchanged.
-    if (options.syncRead) syncJoypadRead();
     setNoAudioFadeOut(true); // set BIT_NO_AUDIO_FADE_OUT with its own volume
     setMasterVolume(3, 3);
     this.barColor = hpBarColor(staticHpBarPixels(mon.currentHp, mon.maxHp));
@@ -75,8 +84,11 @@ export class StatusScreenSession {
       this.tiles.clearArea(1, 0, 7, 7);
       for (let y = 0; y < 7; y++) for (let x = 1; x <= 7; x++) this.tiles.put(x, y, PIC);
       textBgTransfer.enabled = true;
-      // Cry is the existing J2 stub: no wait before WaitForTextScrollButtonPress.
-      this.phase = 'page1';
+      const voice = this.options.voice;
+      if (voice) this.voiceWait = this.options.starter
+        ? playPikachuClipCue(voice, 17)
+        : voice.cry(POKEDEX_ORDER.indexOf(this.mon.species.id) + 1);
+      this.phase = 'cry';
     } else if (this.phase === 'page2Delay') {
       if (this.age < 3) return 'busy';
       this.phase = 'page2';
@@ -84,6 +96,11 @@ export class StatusScreenSession {
       if (this.age < 3) return 'busy';
       this.phase = 'done';
       return 'done';
+    }
+    if (this.phase === 'cry') {
+      if (this.voiceWait && !this.voiceWait.next().done) return 'busy';
+      this.voiceWait = undefined;
+      this.phase = 'page1';
     }
     // Both pages accept fresh A OR B, with no sound, repeat mode or irrelevant-key delay.
     readJoypad();
