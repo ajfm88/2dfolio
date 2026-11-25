@@ -14778,28 +14778,246 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
   ],
   "writes": [
     {
+      "at": 1,
+      "cells": [
+        "ffd3:18",
+        "ffd4:ea",
+      ],
+    },
+    {
+      "at": 2,
+      "cells": [
+        "ffd3:3e",
+        "ffd4:c5",
+      ],
+    },
+    {
+      "at": 3,
+      "cells": [
+        "ffd3:76",
+        "ffd4:8e",
+      ],
+    },
+    {
+      "at": 4,
+      "cells": [
+        "ffd3:c0",
+        "ffd4:44",
+      ],
+    },
+    {
+      "at": 5,
+      "cells": [
+        "ffd3:1d",
+        "ffd4:e7",
+      ],
+    },
+    {
       "at": 6,
       "cells": [
         "cfca:ff",
+        "ffd3:8c",
+        "ffd4:79",
+      ],
+    },
+    {
+      "at": 7,
+      "cells": [
+        "ffd3:d",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 8,
+      "cells": [
+        "ffd3:a1",
+        "ffd4:64",
       ],
     },
     {
       "at": 9,
       "cells": [
+        "ffd3:47",
+        "ffd4:be",
         "ffd7:0",
+      ],
+    },
+    {
+      "at": 10,
+      "cells": [
+        "ffd3:ff",
+        "ffd4:6",
+      ],
+    },
+    {
+      "at": 11,
+      "cells": [
+        "ffd3:ca",
+        "ffd4:3b",
+      ],
+    },
+    {
+      "at": 12,
+      "cells": [
+        "ffd3:a7",
+        "ffd4:5e",
+      ],
+    },
+    {
+      "at": 13,
+      "cells": [
+        "ffd3:96",
+        "ffd4:6f",
+      ],
+    },
+    {
+      "at": 14,
+      "cells": [
+        "ffd3:98",
+        "ffd4:6e",
+      ],
+    },
+    {
+      "at": 15,
+      "cells": [
+        "ffd3:ac",
+        "ffd4:5b",
+      ],
+    },
+    {
+      "at": 16,
+      "cells": [
+        "ffd3:d2",
+        "ffd4:36",
+      ],
+    },
+    {
+      "at": 19,
+      "cells": [
+        "ffd3:2f",
+        "ffd4:d9",
+      ],
+    },
+    {
+      "at": 20,
+      "cells": [
+        "ffd3:9e",
+        "ffd4:6a",
       ],
     },
     {
       "at": 21,
       "cells": [
         "ff8b:31",
+        "ffd3:20",
+        "ffd4:e8",
+      ],
+    },
+    {
+      "at": 22,
+      "cells": [
+        "ffd3:b4",
+        "ffd4:55",
+      ],
+    },
+    {
+      "at": 23,
+      "cells": [
+        "ffd3:5a",
+        "ffd4:ae",
+      ],
+    },
+    {
+      "at": 24,
+      "cells": [
+        "ffd3:13",
+        "ffd4:f5",
+      ],
+    },
+    {
+      "at": 25,
+      "cells": [
+        "ffd3:de",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 26,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:4d",
+      ],
+    },
+    {
+      "at": 27,
+      "cells": [
+        "ffd3:ab",
+        "ffd4:5d",
+      ],
+    },
+    {
+      "at": 28,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:5c",
+      ],
+    },
+    {
+      "at": 29,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:49",
+      ],
+    },
+    {
+      "at": 30,
+      "cells": [
+        "ffd3:e8",
+        "ffd4:23",
+      ],
+    },
+    {
+      "at": 31,
+      "cells": [
+        "ffd3:21",
+        "ffd4:ea",
+      ],
+    },
+    {
+      "at": 32,
+      "cells": [
+        "ffd3:6c",
+        "ffd4:a0",
+      ],
+    },
+    {
+      "at": 33,
+      "cells": [
+        "ffd3:ca",
+        "ffd4:43",
+      ],
+    },
+    {
+      "at": 34,
+      "cells": [
+        "ffd3:3a",
+        "ffd4:d3",
       ],
     },
     {
       "at": 35,
       "cells": [
         "d124:1",
+        "ffd3:bc",
+        "ffd4:52",
         "ffe1:31",
+      ],
+    },
+    {
+      "at": 36,
+      "cells": [
+        "ffd3:50",
+        "ffd4:bd",
       ],
     },
     {
@@ -14809,429 +15027,592 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       ],
     },
     {
+      "at": 39,
+      "cells": [
+        "ffd3:1b",
+        "ffd4:f1",
+      ],
+    },
+    {
+      "at": 40,
+      "cells": [
+        "ffd3:f9",
+        "ffd4:14",
+      ],
+    },
+    {
       "at": 41,
       "cells": [
         "ffae:90",
+        "ffd3:e9",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 42,
+      "cells": [
+        "ffd3:eb",
+        "ffd4:22",
       ],
     },
     {
       "at": 43,
       "cells": [
         "ffae:8e",
+        "ffd3:0",
+        "ffd4:d",
       ],
     },
     {
       "at": 44,
       "cells": [
         "ffae:8c",
+        "ffd3:27",
+        "ffd4:e7",
       ],
     },
     {
       "at": 45,
       "cells": [
         "ffae:8a",
+        "ffd3:60",
+        "ffd4:af",
       ],
     },
     {
       "at": 46,
       "cells": [
         "ffae:88",
+        "ffd3:ac",
+        "ffd4:64",
       ],
     },
     {
       "at": 47,
       "cells": [
         "ffae:86",
+        "ffd3:a",
+        "ffd4:6",
       ],
     },
     {
       "at": 48,
       "cells": [
         "ffae:84",
+        "ffd3:7a",
+        "ffd4:97",
       ],
     },
     {
       "at": 49,
       "cells": [
         "ffae:82",
+        "ffd3:fd",
+        "ffd4:15",
       ],
     },
     {
       "at": 50,
       "cells": [
         "ffae:80",
+        "ffd3:92",
+        "ffd4:80",
       ],
     },
     {
       "at": 51,
       "cells": [
         "ffae:7e",
+        "ffd3:39",
+        "ffd4:d9",
       ],
     },
     {
       "at": 52,
       "cells": [
         "ffae:7c",
+        "ffd3:f2",
+        "ffd4:20",
       ],
     },
     {
       "at": 53,
       "cells": [
         "ffae:7a",
+        "ffd3:be",
+        "ffd4:54",
       ],
     },
     {
       "at": 54,
       "cells": [
         "ffae:78",
+        "ffd3:9c",
+        "ffd4:76",
       ],
     },
     {
       "at": 55,
       "cells": [
         "ffae:76",
+        "ffd3:8c",
+        "ffd4:85",
       ],
     },
     {
       "at": 56,
       "cells": [
         "ffae:74",
+        "ffd3:8f",
+        "ffd4:83",
       ],
     },
     {
       "at": 57,
       "cells": [
         "ffae:72",
+        "ffd3:a4",
+        "ffd4:6f",
       ],
     },
     {
       "at": 58,
       "cells": [
         "ffae:70",
+        "ffd3:cb",
+        "ffd4:48",
       ],
     },
     {
       "at": 59,
       "cells": [
         "ffae:6e",
+        "ffd3:5",
+        "ffd4:e",
       ],
     },
     {
       "at": 60,
       "cells": [
         "ffae:6c",
+        "ffd3:51",
+        "ffd4:c3",
       ],
     },
     {
       "at": 61,
       "cells": [
         "ffae:6a",
+        "ffd3:af",
+        "ffd4:66",
       ],
     },
     {
       "at": 62,
       "cells": [
         "ffae:68",
+        "ffd3:20",
+        "ffd4:f5",
       ],
     },
     {
       "at": 63,
       "cells": [
         "ffae:66",
+        "ffd3:a3",
+        "ffd4:73",
       ],
     },
     {
       "at": 64,
       "cells": [
         "ffae:64",
+        "ffd3:38",
+        "ffd4:de",
       ],
     },
     {
       "at": 65,
       "cells": [
         "ffae:62",
+        "ffd3:e0",
+        "ffd4:37",
       ],
     },
     {
       "at": 66,
       "cells": [
         "ffae:60",
+        "ffd3:9a",
+        "ffd4:7d",
       ],
     },
     {
       "at": 67,
       "cells": [
         "ffae:5e",
+        "ffd3:66",
+        "ffd4:b1",
       ],
     },
     {
       "at": 68,
       "cells": [
         "ffae:5c",
+        "ffd3:44",
+        "ffd4:d2",
       ],
     },
     {
       "at": 69,
       "cells": [
         "ffae:5a",
+        "ffd3:35",
+        "ffd4:e1",
       ],
     },
     {
       "at": 70,
       "cells": [
         "ffae:58",
+        "ffd3:38",
+        "ffd4:df",
       ],
     },
     {
       "at": 71,
       "cells": [
         "ffae:56",
+        "ffd3:4d",
+        "ffd4:ca",
       ],
     },
     {
       "at": 72,
       "cells": [
         "ffae:54",
+        "ffd3:75",
+        "ffd4:a3",
       ],
     },
     {
       "at": 73,
       "cells": [
         "ffae:52",
+        "ffd3:af",
+        "ffd4:6a",
       ],
     },
     {
       "at": 74,
       "cells": [
         "ffae:50",
+        "ffd3:fb",
+        "ffd4:1e",
       ],
     },
     {
       "at": 75,
       "cells": [
         "ffae:4e",
+        "ffd3:5a",
+        "ffd4:bf",
       ],
     },
     {
       "at": 76,
       "cells": [
         "ffae:4c",
+        "ffd3:cb",
+        "ffd4:4f",
       ],
     },
     {
       "at": 77,
       "cells": [
         "ffae:4a",
+        "ffd3:4e",
+        "ffd4:cc",
       ],
     },
     {
       "at": 78,
       "cells": [
         "ffae:48",
+        "ffd3:e4",
+        "ffd4:37",
       ],
     },
     {
       "at": 79,
       "cells": [
         "ffae:46",
+        "ffd3:8c",
+        "ffd4:8f",
       ],
     },
     {
       "at": 80,
       "cells": [
         "ffae:44",
+        "ffd3:46",
+        "ffd4:d5",
       ],
     },
     {
       "at": 81,
       "cells": [
         "ffae:42",
+        "ffd3:13",
+        "ffd4:8",
       ],
     },
     {
       "at": 82,
       "cells": [
         "ffae:40",
+        "ffd3:f2",
+        "ffd4:2a",
       ],
     },
     {
       "at": 83,
       "cells": [
         "ffae:3e",
+        "ffd3:e3",
+        "ffd4:39",
       ],
     },
     {
       "at": 84,
       "cells": [
         "ffae:3c",
+        "ffd3:e6",
+        "ffd4:36",
       ],
     },
     {
       "at": 85,
       "cells": [
         "ffae:3a",
+        "ffd3:fc",
+        "ffd4:21",
       ],
     },
     {
       "at": 86,
       "cells": [
         "ffae:38",
+        "ffd3:24",
+        "ffd4:f9",
       ],
     },
     {
       "at": 87,
       "cells": [
         "ffae:36",
+        "ffd3:5e",
+        "ffd4:bf",
       ],
     },
     {
       "at": 88,
       "cells": [
         "ffae:34",
+        "ffd3:ab",
+        "ffd4:73",
       ],
     },
     {
       "at": 89,
       "cells": [
         "ffae:32",
+        "ffd3:a",
+        "ffd4:14",
       ],
     },
     {
       "at": 90,
       "cells": [
         "ffae:30",
+        "ffd3:7b",
+        "ffd4:a3",
       ],
     },
     {
       "at": 91,
       "cells": [
         "ffae:2e",
+        "ffd3:ff",
+        "ffd4:20",
       ],
     },
     {
       "at": 92,
       "cells": [
         "ffae:2c",
+        "ffd3:95",
+        "ffd4:8a",
       ],
     },
     {
       "at": 93,
       "cells": [
         "ffae:2a",
+        "ffd3:3d",
+        "ffd4:e2",
       ],
     },
     {
       "at": 94,
       "cells": [
         "ffae:28",
+        "ffd3:f8",
+        "ffd4:28",
       ],
     },
     {
       "at": 95,
       "cells": [
         "ffae:26",
+        "ffd3:c5",
+        "ffd4:5b",
       ],
     },
     {
       "at": 96,
       "cells": [
         "ffae:24",
+        "ffd3:a4",
+        "ffd4:7c",
       ],
     },
     {
       "at": 97,
       "cells": [
         "ffae:22",
+        "ffd3:96",
+        "ffd4:8a",
       ],
     },
     {
       "at": 98,
       "cells": [
         "ffae:20",
+        "ffd3:9a",
+        "ffd4:87",
       ],
     },
     {
       "at": 99,
       "cells": [
         "ffae:1e",
+        "ffd3:b0",
+        "ffd4:72",
       ],
     },
     {
       "at": 100,
       "cells": [
         "ffae:1c",
+        "ffd3:d8",
+        "ffd4:4a",
       ],
     },
     {
       "at": 101,
       "cells": [
         "ffae:1a",
+        "ffd3:13",
+        "ffd4:f",
       ],
     },
     {
       "at": 102,
       "cells": [
         "ffae:18",
+        "ffd3:60",
+        "ffd4:c3",
       ],
     },
     {
       "at": 103,
       "cells": [
         "ffae:16",
+        "ffd3:bf",
+        "ffd4:64",
       ],
     },
     {
       "at": 104,
       "cells": [
         "ffae:14",
+        "ffd3:31",
+        "ffd4:f2",
       ],
     },
     {
       "at": 105,
       "cells": [
         "ffae:12",
+        "ffd3:b5",
+        "ffd4:6f",
       ],
     },
     {
       "at": 106,
       "cells": [
         "ffae:10",
+        "ffd3:4b",
+        "ffd4:d8",
       ],
     },
     {
       "at": 107,
       "cells": [
         "ffae:e",
+        "ffd3:f4",
+        "ffd4:30",
       ],
     },
     {
       "at": 108,
       "cells": [
         "ffae:c",
+        "ffd3:af",
+        "ffd4:75",
       ],
     },
     {
       "at": 109,
       "cells": [
         "ffae:a",
+        "ffd3:7c",
+        "ffd4:a8",
       ],
     },
     {
       "at": 110,
       "cells": [
         "ffae:8",
+        "ffd3:5c",
+        "ffd4:c8",
       ],
     },
     {
       "at": 111,
       "cells": [
         "ffae:6",
+        "ffd3:4e",
+        "ffd4:d6",
       ],
     },
     {
       "at": 112,
       "cells": [
         "ffae:4",
+        "ffd3:52",
+        "ffd4:d3",
       ],
     },
     {
@@ -15239,6 +15620,211 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ffae:2",
         "ffb0:0",
+        "ffd3:69",
+        "ffd4:bd",
+      ],
+    },
+    {
+      "at": 114,
+      "cells": [
+        "ffd3:92",
+        "ffd4:95",
+      ],
+    },
+    {
+      "at": 115,
+      "cells": [
+        "ffd3:cd",
+        "ffd4:5b",
+      ],
+    },
+    {
+      "at": 116,
+      "cells": [
+        "ffd3:1a",
+        "ffd4:d",
+      ],
+    },
+    {
+      "at": 119,
+      "cells": [
+        "ffd3:9e",
+        "ffd4:89",
+      ],
+    },
+    {
+      "at": 120,
+      "cells": [
+        "ffd3:35",
+        "ffd4:f2",
+      ],
+    },
+    {
+      "at": 121,
+      "cells": [
+        "ffd3:de",
+        "ffd4:4a",
+      ],
+    },
+    {
+      "at": 122,
+      "cells": [
+        "ffd3:99",
+        "ffd4:8e",
+      ],
+    },
+    {
+      "at": 123,
+      "cells": [
+        "ffd3:67",
+        "ffd4:c0",
+      ],
+    },
+    {
+      "at": 124,
+      "cells": [
+        "ffd3:47",
+        "ffd4:e0",
+      ],
+    },
+    {
+      "at": 125,
+      "cells": [
+        "ffd3:39",
+        "ffd4:ee",
+      ],
+    },
+    {
+      "at": 126,
+      "cells": [
+        "ffd3:3e",
+        "ffd4:ea",
+      ],
+    },
+    {
+      "at": 127,
+      "cells": [
+        "ffd3:55",
+        "ffd4:d4",
+      ],
+    },
+    {
+      "at": 128,
+      "cells": [
+        "ffd3:7e",
+        "ffd4:ac",
+      ],
+    },
+    {
+      "at": 129,
+      "cells": [
+        "ffd3:ba",
+        "ffd4:71",
+      ],
+    },
+    {
+      "at": 130,
+      "cells": [
+        "ffd3:8",
+        "ffd4:23",
+      ],
+    },
+    {
+      "at": 131,
+      "cells": [
+        "ffd3:68",
+        "ffd4:c4",
+      ],
+    },
+    {
+      "at": 132,
+      "cells": [
+        "ffd3:da",
+        "ffd4:52",
+      ],
+    },
+    {
+      "at": 133,
+      "cells": [
+        "ffd3:5f",
+        "ffd4:cd",
+      ],
+    },
+    {
+      "at": 134,
+      "cells": [
+        "ffd3:f6",
+        "ffd4:37",
+      ],
+    },
+    {
+      "at": 135,
+      "cells": [
+        "ffd3:9f",
+        "ffd4:8d",
+      ],
+    },
+    {
+      "at": 136,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 137,
+      "cells": [
+        "ffd3:29",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 138,
+      "cells": [
+        "ffd3:9",
+        "ffd4:22",
+      ],
+    },
+    {
+      "at": 139,
+      "cells": [
+        "ffd3:fc",
+        "ffd4:30",
+      ],
+    },
+    {
+      "at": 140,
+      "cells": [
+        "ffd3:1",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 141,
+      "cells": [
+        "ffd3:18",
+        "ffd4:15",
+      ],
+    },
+    {
+      "at": 142,
+      "cells": [
+        "ffd3:42",
+        "ffd4:ec",
+      ],
+    },
+    {
+      "at": 143,
+      "cells": [
+        "ffd3:7e",
+        "ffd4:b1",
+      ],
+    },
+    {
+      "at": 144,
+      "cells": [
+        "ffd3:cc",
+        "ffd4:64",
       ],
     },
     {
@@ -15256,6 +15842,400 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "ceee:34",
         "d080:90",
         "d081:60",
+        "ffd3:2d",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 146,
+      "cells": [
+        "ffd3:a0",
+        "ffd4:91",
+      ],
+    },
+    {
+      "at": 147,
+      "cells": [
+        "ffd3:25",
+        "ffd4:c",
+      ],
+    },
+    {
+      "at": 148,
+      "cells": [
+        "ffd3:bc",
+        "ffd4:75",
+      ],
+    },
+    {
+      "at": 149,
+      "cells": [
+        "ffd3:66",
+        "ffd4:cb",
+      ],
+    },
+    {
+      "at": 150,
+      "cells": [
+        "ffd3:22",
+        "ffd4:f",
+      ],
+    },
+    {
+      "at": 151,
+      "cells": [
+        "ffd3:f0",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 152,
+      "cells": [
+        "ffd3:d1",
+        "ffd4:60",
+      ],
+    },
+    {
+      "at": 153,
+      "cells": [
+        "ffd3:c4",
+        "ffd4:6d",
+      ],
+    },
+    {
+      "at": 154,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:68",
+      ],
+    },
+    {
+      "at": 155,
+      "cells": [
+        "ffd3:e1",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 156,
+      "cells": [
+        "ffd3:b",
+        "ffd4:27",
+      ],
+    },
+    {
+      "at": 157,
+      "cells": [
+        "ffd3:47",
+        "ffd4:ec",
+      ],
+    },
+    {
+      "at": 158,
+      "cells": [
+        "ffd3:96",
+        "ffd4:9e",
+      ],
+    },
+    {
+      "at": 159,
+      "cells": [
+        "ffd3:f7",
+        "ffd4:3e",
+      ],
+    },
+    {
+      "at": 160,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:cb",
+      ],
+    },
+    {
+      "at": 161,
+      "cells": [
+        "ffd3:f0",
+        "ffd4:46",
+      ],
+    },
+    {
+      "at": 162,
+      "cells": [
+        "ffd3:88",
+        "ffd4:ae",
+      ],
+    },
+    {
+      "at": 163,
+      "cells": [
+        "ffd3:32",
+        "ffd4:4",
+      ],
+    },
+    {
+      "at": 164,
+      "cells": [
+        "ffd3:ee",
+        "ffd4:48",
+      ],
+    },
+    {
+      "at": 165,
+      "cells": [
+        "ffd3:bd",
+        "ffd4:79",
+      ],
+    },
+    {
+      "at": 166,
+      "cells": [
+        "ffd3:9e",
+        "ffd4:98",
+      ],
+    },
+    {
+      "at": 167,
+      "cells": [
+        "ffd3:91",
+        "ffd4:a4",
+      ],
+    },
+    {
+      "at": 168,
+      "cells": [
+        "ffd3:97",
+        "ffd4:9f",
+      ],
+    },
+    {
+      "at": 169,
+      "cells": [
+        "ffd3:af",
+        "ffd4:88",
+      ],
+    },
+    {
+      "at": 170,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:5e",
+      ],
+    },
+    {
+      "at": 171,
+      "cells": [
+        "ffd3:16",
+        "ffd4:21",
+      ],
+    },
+    {
+      "at": 172,
+      "cells": [
+        "ffd3:65",
+        "ffd4:d3",
+      ],
+    },
+    {
+      "at": 173,
+      "cells": [
+        "ffd3:c6",
+        "ffd4:73",
+      ],
+    },
+    {
+      "at": 174,
+      "cells": [
+        "ffd3:3a",
+        "ffd4:ff",
+      ],
+    },
+    {
+      "at": 175,
+      "cells": [
+        "ffd3:c0",
+        "ffd4:7a",
+      ],
+    },
+    {
+      "at": 176,
+      "cells": [
+        "ffd3:58",
+        "ffd4:e2",
+      ],
+    },
+    {
+      "at": 177,
+      "cells": [
+        "ffd3:3",
+        "ffd4:37",
+      ],
+    },
+    {
+      "at": 178,
+      "cells": [
+        "ffd3:c0",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 179,
+      "cells": [
+        "ffd3:8f",
+        "ffd4:ac",
+      ],
+    },
+    {
+      "at": 180,
+      "cells": [
+        "ffd3:70",
+        "ffd4:ca",
+      ],
+    },
+    {
+      "at": 181,
+      "cells": [
+        "ffd3:64",
+        "ffd4:d6",
+      ],
+    },
+    {
+      "at": 182,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 183,
+      "cells": [
+        "ffd3:82",
+        "ffd4:b9",
+      ],
+    },
+    {
+      "at": 184,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 185,
+      "cells": [
+        "ffd3:ea",
+        "ffd4:53",
+      ],
+    },
+    {
+      "at": 186,
+      "cells": [
+        "ffd3:39",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 187,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:a2",
+      ],
+    },
+    {
+      "at": 188,
+      "cells": [
+        "ffd3:f",
+        "ffd4:2e",
+      ],
+    },
+    {
+      "at": 189,
+      "cells": [
+        "ffd3:95",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 190,
+      "cells": [
+        "ffd3:2e",
+        "ffd4:10",
+      ],
+    },
+    {
+      "at": 191,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:66",
+      ],
+    },
+    {
+      "at": 192,
+      "cells": [
+        "ffd3:96",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 193,
+      "cells": [
+        "ffd3:66",
+        "ffd4:d9",
+      ],
+    },
+    {
+      "at": 194,
+      "cells": [
+        "ffd3:48",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 195,
+      "cells": [
+        "ffd3:3c",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 196,
+      "cells": [
+        "ffd3:42",
+        "ffd4:fd",
+      ],
+    },
+    {
+      "at": 197,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:e5",
+      ],
+    },
+    {
+      "at": 198,
+      "cells": [
+        "ffd3:86",
+        "ffd4:bb",
+      ],
+    },
+    {
+      "at": 199,
+      "cells": [
+        "ffd3:c3",
+        "ffd4:7e",
+      ],
+    },
+    {
+      "at": 200,
+      "cells": [
+        "ffd3:13",
+        "ffd4:2e",
+      ],
+    },
+    {
+      "at": 201,
+      "cells": [
+        "ffd3:75",
+        "ffd4:cd",
       ],
     },
     {
@@ -15263,6 +16243,281 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "cc3e:2f",
         "d11c:1",
+        "ffd3:e9",
+        "ffd4:59",
+      ],
+    },
+    {
+      "at": 203,
+      "cells": [
+        "ffd3:70",
+        "ffd4:d2",
+      ],
+    },
+    {
+      "at": 204,
+      "cells": [
+        "ffd3:9",
+        "ffd4:39",
+      ],
+    },
+    {
+      "at": 205,
+      "cells": [
+        "ffd3:b4",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 206,
+      "cells": [
+        "ffd3:72",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 207,
+      "cells": [
+        "ffd3:42",
+        "ffd4:1",
+      ],
+    },
+    {
+      "at": 208,
+      "cells": [
+        "ffd3:24",
+        "ffd4:1f",
+      ],
+    },
+    {
+      "at": 209,
+      "cells": [
+        "ffd3:19",
+        "ffd4:2a",
+      ],
+    },
+    {
+      "at": 210,
+      "cells": [
+        "ffd3:20",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 211,
+      "cells": [
+        "ffd3:39",
+        "ffd4:c",
+      ],
+    },
+    {
+      "at": 212,
+      "cells": [
+        "ffd3:64",
+        "ffd4:e1",
+      ],
+    },
+    {
+      "at": 213,
+      "cells": [
+        "ffd3:a2",
+        "ffd4:a4",
+      ],
+    },
+    {
+      "at": 214,
+      "cells": [
+        "ffd3:f2",
+        "ffd4:55",
+      ],
+    },
+    {
+      "at": 215,
+      "cells": [
+        "ffd3:54",
+        "ffd4:f2",
+      ],
+    },
+    {
+      "at": 216,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:7e",
+      ],
+    },
+    {
+      "at": 217,
+      "cells": [
+        "ffd3:50",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 218,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:5e",
+      ],
+    },
+    {
+      "at": 219,
+      "cells": [
+        "ffd3:95",
+        "ffd4:b2",
+      ],
+    },
+    {
+      "at": 220,
+      "cells": [
+        "ffd3:53",
+        "ffd4:f4",
+      ],
+    },
+    {
+      "at": 221,
+      "cells": [
+        "ffd3:23",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 222,
+      "cells": [
+        "ffd3:6",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 223,
+      "cells": [
+        "ffd3:fb",
+        "ffd4:4d",
+      ],
+    },
+    {
+      "at": 224,
+      "cells": [
+        "ffd3:2",
+        "ffd4:46",
+      ],
+    },
+    {
+      "at": 225,
+      "cells": [
+        "ffd3:1c",
+        "ffd4:2d",
+      ],
+    },
+    {
+      "at": 226,
+      "cells": [
+        "ffd3:48",
+        "ffd4:2",
+      ],
+    },
+    {
+      "at": 227,
+      "cells": [
+        "ffd3:86",
+        "ffd4:c5",
+      ],
+    },
+    {
+      "at": 228,
+      "cells": [
+        "ffd3:d6",
+        "ffd4:75",
+      ],
+    },
+    {
+      "at": 229,
+      "cells": [
+        "ffd3:39",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 230,
+      "cells": [
+        "ffd3:ae",
+        "ffd4:9e",
+      ],
+    },
+    {
+      "at": 231,
+      "cells": [
+        "ffd3:35",
+        "ffd4:16",
+      ],
+    },
+    {
+      "at": 232,
+      "cells": [
+        "ffd3:cf",
+        "ffd4:7d",
+      ],
+    },
+    {
+      "at": 233,
+      "cells": [
+        "ffd3:7b",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 234,
+      "cells": [
+        "ffd3:39",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 235,
+      "cells": [
+        "ffd3:a",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 236,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:5f",
+      ],
+    },
+    {
+      "at": 237,
+      "cells": [
+        "ffd3:e2",
+        "ffd4:6a",
+      ],
+    },
+    {
+      "at": 238,
+      "cells": [
+        "ffd3:ea",
+        "ffd4:63",
+      ],
+    },
+    {
+      "at": 239,
+      "cells": [
+        "ffd3:4",
+        "ffd4:49",
+      ],
+    },
+    {
+      "at": 240,
+      "cells": [
+        "ffd3:30",
+        "ffd4:1e",
+      ],
+    },
+    {
+      "at": 241,
+      "cells": [
+        "ffd3:6f",
+        "ffd4:e0",
       ],
     },
     {
@@ -15271,6 +16526,127 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "cf90:54",
         "cfd8:54",
         "ff8b:9",
+        "ffd3:c0",
+        "ffd4:90",
+      ],
+    },
+    {
+      "at": 243,
+      "cells": [
+        "ffd3:23",
+        "ffd4:2d",
+      ],
+    },
+    {
+      "at": 244,
+      "cells": [
+        "ffd3:98",
+        "ffd4:b8",
+      ],
+    },
+    {
+      "at": 245,
+      "cells": [
+        "ffd3:20",
+        "ffd4:30",
+      ],
+    },
+    {
+      "at": 246,
+      "cells": [
+        "ffd3:ba",
+        "ffd4:97",
+      ],
+    },
+    {
+      "at": 247,
+      "cells": [
+        "ffd3:66",
+        "ffd4:ea",
+      ],
+    },
+    {
+      "at": 248,
+      "cells": [
+        "ffd3:25",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 249,
+      "cells": [
+        "ffd3:f6",
+        "ffd4:5b",
+      ],
+    },
+    {
+      "at": 250,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:77",
+      ],
+    },
+    {
+      "at": 251,
+      "cells": [
+        "ffd3:cf",
+        "ffd4:81",
+      ],
+    },
+    {
+      "at": 252,
+      "cells": [
+        "ffd3:d7",
+        "ffd4:7a",
+      ],
+    },
+    {
+      "at": 253,
+      "cells": [
+        "ffd3:f1",
+        "ffd4:61",
+      ],
+    },
+    {
+      "at": 254,
+      "cells": [
+        "ffd3:1e",
+        "ffd4:34",
+      ],
+    },
+    {
+      "at": 255,
+      "cells": [
+        "ffd3:5d",
+        "ffd4:f6",
+      ],
+    },
+    {
+      "at": 256,
+      "cells": [
+        "ffd3:ae",
+        "ffd4:a6",
+      ],
+    },
+    {
+      "at": 257,
+      "cells": [
+        "ffd3:12",
+        "ffd4:42",
+      ],
+    },
+    {
+      "at": 258,
+      "cells": [
+        "ffd3:88",
+        "ffd4:cd",
+      ],
+    },
+    {
+      "at": 259,
+      "cells": [
+        "ffd3:10",
+        "ffd4:45",
       ],
     },
     {
@@ -15337,55 +16713,1123 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "ff99:2",
         "ff9a:3",
         "ff9e:74",
+        "ffd3:aa",
+        "ffd4:ab",
         "fff3:1",
+      ],
+    },
+    {
+      "at": 261,
+      "cells": [
+        "ffd3:57",
+        "ffd4:fe",
+      ],
+    },
+    {
+      "at": 262,
+      "cells": [
+        "ffd3:16",
+        "ffd4:3f",
+      ],
+    },
+    {
+      "at": 263,
+      "cells": [
+        "ffd3:e7",
+        "ffd4:6e",
+      ],
+    },
+    {
+      "at": 264,
+      "cells": [
+        "ffd3:cb",
+        "ffd4:8a",
+      ],
+    },
+    {
+      "at": 265,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:94",
+      ],
+    },
+    {
+      "at": 266,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:8c",
+      ],
+    },
+    {
+      "at": 267,
+      "cells": [
+        "ffd3:e4",
+        "ffd4:72",
+      ],
+    },
+    {
+      "at": 268,
+      "cells": [
+        "ffd3:11",
+        "ffd4:45",
+      ],
+    },
+    {
+      "at": 269,
+      "cells": [
+        "ffd3:50",
+        "ffd4:7",
+      ],
+    },
+    {
+      "at": 270,
+      "cells": [
+        "ffd3:a2",
+        "ffd4:b6",
+      ],
+    },
+    {
+      "at": 271,
+      "cells": [
+        "ffd3:6",
+        "ffd4:52",
+      ],
+    },
+    {
+      "at": 272,
+      "cells": [
+        "ffd3:7c",
+        "ffd4:dd",
+      ],
+    },
+    {
+      "at": 273,
+      "cells": [
+        "ffd3:5",
+        "ffd4:54",
+      ],
+    },
+    {
+      "at": 274,
+      "cells": [
+        "ffd3:a0",
+        "ffd4:ba",
+      ],
+    },
+    {
+      "at": 275,
+      "cells": [
+        "ffd3:4d",
+        "ffd4:d",
+      ],
+    },
+    {
+      "at": 276,
+      "cells": [
+        "ffd3:c",
+        "ffd4:4d",
+      ],
+    },
+    {
+      "at": 277,
+      "cells": [
+        "ffd3:de",
+        "ffd4:7c",
+      ],
+    },
+    {
+      "at": 278,
+      "cells": [
+        "ffd3:c2",
+        "ffd4:98",
+      ],
+    },
+    {
+      "at": 279,
+      "cells": [
+        "ffd3:b8",
+        "ffd4:a1",
+      ],
+    },
+    {
+      "at": 280,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:99",
+      ],
+    },
+    {
+      "at": 281,
+      "cells": [
+        "ffd3:dc",
+        "ffd4:7f",
+      ],
+    },
+    {
+      "at": 282,
+      "cells": [
+        "ffd3:9",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 283,
+      "cells": [
+        "ffd3:49",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 284,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:c1",
+      ],
+    },
+    {
+      "at": 285,
+      "cells": [
+        "ffd3:ff",
+        "ffd4:5e",
+      ],
+    },
+    {
+      "at": 286,
+      "cells": [
+        "ffd3:76",
+        "ffd4:e7",
+      ],
+    },
+    {
+      "at": 287,
+      "cells": [
+        "ffd3:ff",
+        "ffd4:5f",
+      ],
+    },
+    {
+      "at": 288,
+      "cells": [
+        "ffd3:9a",
+        "ffd4:c4",
+      ],
+    },
+    {
+      "at": 289,
+      "cells": [
+        "ffd3:48",
+        "ffd4:16",
+      ],
+    },
+    {
+      "at": 290,
+      "cells": [
+        "ffd3:8",
+        "ffd4:56",
+      ],
+    },
+    {
+      "at": 291,
+      "cells": [
+        "ffd3:da",
+        "ffd4:85",
+      ],
+    },
+    {
+      "at": 292,
+      "cells": [
+        "ffd3:be",
+        "ffd4:a0",
+      ],
+    },
+    {
+      "at": 293,
+      "cells": [
+        "ffd3:b5",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 294,
+      "cells": [
+        "ffd3:be",
+        "ffd4:a1",
+      ],
+    },
+    {
+      "at": 295,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:86",
+      ],
+    },
+    {
+      "at": 296,
+      "cells": [
+        "ffd3:7",
+        "ffd4:58",
+      ],
+    },
+    {
+      "at": 297,
+      "cells": [
+        "ffd3:47",
+        "ffd4:19",
+      ],
+    },
+    {
+      "at": 298,
+      "cells": [
+        "ffd3:99",
+        "ffd4:c7",
+      ],
+    },
+    {
+      "at": 299,
+      "cells": [
+        "ffd3:fe",
+        "ffd4:63",
       ],
     },
     {
       "at": 300,
       "cells": [
+        "ffd3:75",
+        "ffd4:ec",
         "ffe1:0",
+      ],
+    },
+    {
+      "at": 303,
+      "cells": [
+        "ffd3:23",
+        "ffd4:3e",
+      ],
+    },
+    {
+      "at": 304,
+      "cells": [
+        "ffd3:e3",
+        "ffd4:7f",
       ],
     },
     {
       "at": 305,
       "cells": [
         "d07b:c3",
+        "ffd3:b6",
+        "ffd4:ac",
+      ],
+    },
+    {
+      "at": 306,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:c7",
+      ],
+    },
+    {
+      "at": 307,
+      "cells": [
+        "ffd3:92",
+        "ffd4:d0",
       ],
     },
     {
       "at": 308,
       "cells": [
         "cc79:e4",
+        "ffd3:9b",
+        "ffd4:c7",
+      ],
+    },
+    {
+      "at": 309,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:ac",
+      ],
+    },
+    {
+      "at": 310,
+      "cells": [
+        "ffd3:e5",
+        "ffd4:7f",
+      ],
+    },
+    {
+      "at": 311,
+      "cells": [
+        "ffd3:25",
+        "ffd4:3e",
+      ],
+    },
+    {
+      "at": 312,
+      "cells": [
+        "ffd3:78",
+        "ffd4:ec",
+      ],
+    },
+    {
+      "at": 313,
+      "cells": [
+        "ffd3:dd",
+        "ffd4:88",
+      ],
+    },
+    {
+      "at": 314,
+      "cells": [
+        "ffd3:54",
+        "ffd4:10",
+      ],
+    },
+    {
+      "at": 315,
+      "cells": [
+        "ffd3:de",
+        "ffd4:87",
+      ],
+    },
+    {
+      "at": 316,
+      "cells": [
+        "ffd3:7a",
+        "ffd4:eb",
+      ],
+    },
+    {
+      "at": 317,
+      "cells": [
+        "ffd3:28",
+        "ffd4:3d",
+      ],
+    },
+    {
+      "at": 318,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:7d",
+      ],
+    },
+    {
+      "at": 319,
+      "cells": [
+        "ffd3:bc",
+        "ffd4:aa",
+      ],
+    },
+    {
+      "at": 320,
+      "cells": [
+        "ffd3:a1",
+        "ffd4:c5",
+      ],
+    },
+    {
+      "at": 321,
+      "cells": [
+        "ffd3:99",
+        "ffd4:cd",
+      ],
+    },
+    {
+      "at": 322,
+      "cells": [
+        "ffd3:a3",
+        "ffd4:c4",
+      ],
+    },
+    {
+      "at": 323,
+      "cells": [
+        "ffd3:bf",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 324,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 325,
+      "cells": [
+        "ffd3:2e",
+        "ffd4:3a",
+      ],
+    },
+    {
+      "at": 326,
+      "cells": [
+        "ffd3:81",
+        "ffd4:e8",
+      ],
+    },
+    {
+      "at": 327,
+      "cells": [
+        "ffd3:e6",
+        "ffd4:83",
+      ],
+    },
+    {
+      "at": 328,
+      "cells": [
+        "ffd3:5e",
+        "ffd4:b",
+      ],
+    },
+    {
+      "at": 329,
+      "cells": [
+        "ffd3:e8",
+        "ffd4:82",
+      ],
+    },
+    {
+      "at": 330,
+      "cells": [
+        "ffd3:84",
+        "ffd4:e5",
+      ],
+    },
+    {
+      "at": 331,
+      "cells": [
+        "ffd3:33",
+        "ffd4:36",
+      ],
+    },
+    {
+      "at": 332,
+      "cells": [
+        "ffd3:f4",
+        "ffd4:76",
+      ],
+    },
+    {
+      "at": 333,
+      "cells": [
+        "ffd3:c7",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 334,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:bd",
+      ],
+    },
+    {
+      "at": 335,
+      "cells": [
+        "ffd3:a5",
+        "ffd4:c5",
+      ],
+    },
+    {
+      "at": 336,
+      "cells": [
+        "ffd3:af",
+        "ffd4:bc",
+      ],
+    },
+    {
+      "at": 337,
+      "cells": [
+        "ffd3:cc",
+        "ffd4:a0",
       ],
     },
     {
       "at": 338,
       "cells": [
         "cf07:ff",
+        "ffd3:fb",
+        "ffd4:72",
+      ],
+    },
+    {
+      "at": 339,
+      "cells": [
+        "ffd3:3c",
+        "ffd4:31",
+      ],
+    },
+    {
+      "at": 340,
+      "cells": [
+        "ffd3:8f",
+        "ffd4:de",
+      ],
+    },
+    {
+      "at": 341,
+      "cells": [
+        "ffd3:f5",
+        "ffd4:79",
+      ],
+    },
+    {
+      "at": 342,
+      "cells": [
+        "ffd3:6d",
+        "ffd4:1",
+      ],
+    },
+    {
+      "at": 343,
+      "cells": [
+        "ffd3:f7",
+        "ffd4:77",
+      ],
+    },
+    {
+      "at": 344,
+      "cells": [
+        "ffd3:94",
+        "ffd4:da",
+      ],
+    },
+    {
+      "at": 345,
+      "cells": [
+        "ffd3:43",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 346,
+      "cells": [
+        "ffd3:4",
+        "ffd4:69",
+      ],
+    },
+    {
+      "at": 347,
+      "cells": [
+        "ffd3:d8",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 348,
+      "cells": [
+        "ffd3:be",
+        "ffd4:b0",
+      ],
+    },
+    {
+      "at": 349,
+      "cells": [
+        "ffd3:b6",
+        "ffd4:b8",
       ],
     },
     {
       "at": 350,
       "cells": [
         "ff8b:0",
+        "ffd3:c1",
+        "ffd4:ae",
+      ],
+    },
+    {
+      "at": 351,
+      "cells": [
+        "ffd3:de",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 352,
+      "cells": [
+        "ffd3:d",
+        "ffd4:63",
       ],
     },
     {
       "at": 353,
       "cells": [
         "cd6c:1",
+        "ffd3:4f",
+        "ffd4:22",
+      ],
+    },
+    {
+      "at": 354,
+      "cells": [
+        "ffd3:a3",
+        "ffd4:cf",
+      ],
+    },
+    {
+      "at": 355,
+      "cells": [
+        "ffd3:9",
+        "ffd4:69",
+      ],
+    },
+    {
+      "at": 356,
+      "cells": [
+        "ffd3:81",
+        "ffd4:f1",
       ],
     },
     {
       "at": 357,
       "cells": [
         "cd6c:0",
+        "ffd3:c",
+        "ffd4:66",
+      ],
+    },
+    {
+      "at": 358,
+      "cells": [
+        "ffd3:a9",
+        "ffd4:ca",
+      ],
+    },
+    {
+      "at": 359,
+      "cells": [
+        "ffd3:58",
+        "ffd4:1a",
+      ],
+    },
+    {
+      "at": 360,
+      "cells": [
+        "ffd3:1a",
+        "ffd4:58",
+      ],
+    },
+    {
+      "at": 361,
+      "cells": [
+        "ffd3:ee",
+        "ffd4:85",
+      ],
+    },
+    {
+      "at": 362,
+      "cells": [
+        "ffd3:d4",
+        "ffd4:9e",
+      ],
+    },
+    {
+      "at": 363,
+      "cells": [
+        "ffd3:cd",
+        "ffd4:a5",
+      ],
+    },
+    {
+      "at": 364,
+      "cells": [
+        "ffd3:d8",
+        "ffd4:9b",
+      ],
+    },
+    {
+      "at": 365,
+      "cells": [
+        "ffd3:f5",
+        "ffd4:7f",
+      ],
+    },
+    {
+      "at": 366,
+      "cells": [
+        "ffd3:25",
+        "ffd4:4f",
+      ],
+    },
+    {
+      "at": 367,
+      "cells": [
+        "ffd3:67",
+        "ffd4:e",
+      ],
+    },
+    {
+      "at": 368,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:bb",
+      ],
+    },
+    {
+      "at": 369,
+      "cells": [
+        "ffd3:22",
+        "ffd4:54",
+      ],
+    },
+    {
+      "at": 370,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:dc",
+      ],
+    },
+    {
+      "at": 371,
+      "cells": [
+        "ffd3:26",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 372,
+      "cells": [
+        "ffd3:c3",
+        "ffd4:b4",
+      ],
+    },
+    {
+      "at": 373,
+      "cells": [
+        "ffd3:73",
+        "ffd4:4",
+      ],
+    },
+    {
+      "at": 374,
+      "cells": [
+        "ffd3:35",
+        "ffd4:42",
+      ],
+    },
+    {
+      "at": 375,
+      "cells": [
+        "ffd3:9",
+        "ffd4:6d",
+      ],
+    },
+    {
+      "at": 376,
+      "cells": [
+        "ffd3:f0",
+        "ffd4:87",
+      ],
+    },
+    {
+      "at": 377,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:8e",
+      ],
+    },
+    {
+      "at": 378,
+      "cells": [
+        "ffd3:f4",
+        "ffd4:83",
+      ],
+    },
+    {
+      "at": 379,
+      "cells": [
+        "ffd3:12",
+        "ffd4:65",
+      ],
+    },
+    {
+      "at": 380,
+      "cells": [
+        "ffd3:42",
+        "ffd4:36",
+      ],
+    },
+    {
+      "at": 381,
+      "cells": [
+        "ffd3:84",
+        "ffd4:f5",
+      ],
+    },
+    {
+      "at": 382,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:a1",
+      ],
+    },
+    {
+      "at": 383,
+      "cells": [
+        "ffd3:40",
+        "ffd4:3a",
+      ],
+    },
+    {
+      "at": 384,
+      "cells": [
+        "ffd3:b9",
+        "ffd4:c2",
+      ],
+    },
+    {
+      "at": 385,
+      "cells": [
+        "ffd3:45",
+        "ffd4:36",
+      ],
+    },
+    {
+      "at": 386,
+      "cells": [
+        "ffd3:e3",
+        "ffd4:99",
+      ],
+    },
+    {
+      "at": 387,
+      "cells": [
+        "ffd3:93",
+        "ffd4:e9",
+      ],
+    },
+    {
+      "at": 388,
+      "cells": [
+        "ffd3:55",
+        "ffd4:26",
+      ],
+    },
+    {
+      "at": 389,
+      "cells": [
+        "ffd3:2a",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 390,
+      "cells": [
+        "ffd3:11",
+        "ffd4:6a",
+      ],
+    },
+    {
+      "at": 391,
+      "cells": [
+        "ffd3:a",
+        "ffd4:70",
+      ],
+    },
+    {
+      "at": 392,
+      "cells": [
+        "ffd3:16",
+        "ffd4:65",
+      ],
+    },
+    {
+      "at": 393,
+      "cells": [
+        "ffd3:34",
+        "ffd4:48",
+      ],
+    },
+    {
+      "at": 394,
+      "cells": [
+        "ffd3:64",
+        "ffd4:18",
+      ],
+    },
+    {
+      "at": 395,
+      "cells": [
+        "ffd3:a7",
+        "ffd4:d6",
+      ],
+    },
+    {
+      "at": 396,
+      "cells": [
+        "ffd3:fc",
+        "ffd4:82",
+      ],
+    },
+    {
+      "at": 397,
+      "cells": [
+        "ffd3:63",
+        "ffd4:1b",
+      ],
+    },
+    {
+      "at": 398,
+      "cells": [
+        "ffd3:dd",
+        "ffd4:a2",
+      ],
+    },
+    {
+      "at": 399,
+      "cells": [
+        "ffd3:69",
+        "ffd4:16",
+      ],
+    },
+    {
+      "at": 400,
+      "cells": [
+        "ffd3:7",
+        "ffd4:78",
+      ],
+    },
+    {
+      "at": 401,
+      "cells": [
+        "ffd3:b8",
+        "ffd4:c8",
+      ],
+    },
+    {
+      "at": 402,
+      "cells": [
+        "ffd3:7b",
+        "ffd4:5",
+      ],
+    },
+    {
+      "at": 403,
+      "cells": [
+        "ffd3:50",
+        "ffd4:30",
+      ],
+    },
+    {
+      "at": 404,
+      "cells": [
+        "ffd3:37",
+        "ffd4:48",
+      ],
+    },
+    {
+      "at": 405,
+      "cells": [
+        "ffd3:31",
+        "ffd4:4e",
+      ],
+    },
+    {
+      "at": 406,
+      "cells": [
+        "ffd3:3d",
+        "ffd4:43",
+      ],
+    },
+    {
+      "at": 407,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:25",
+      ],
+    },
+    {
+      "at": 408,
+      "cells": [
+        "ffd3:8c",
+        "ffd4:f5",
+      ],
+    },
+    {
+      "at": 409,
+      "cells": [
+        "ffd3:cf",
+        "ffd4:b3",
+      ],
+    },
+    {
+      "at": 410,
+      "cells": [
+        "ffd3:24",
+        "ffd4:5d",
+      ],
+    },
+    {
+      "at": 411,
+      "cells": [
+        "ffd3:8c",
+        "ffd4:f6",
+      ],
+    },
+    {
+      "at": 412,
+      "cells": [
+        "ffd3:6",
+        "ffd4:7c",
       ],
     },
     {
       "at": 413,
       "cells": [
         "d11c:0",
+        "ffd3:92",
+        "ffd4:f1",
+      ],
+    },
+    {
+      "at": 414,
+      "cells": [
+        "ffd3:31",
+        "ffd4:52",
+      ],
+    },
+    {
+      "at": 415,
+      "cells": [
+        "ffd3:e2",
+        "ffd4:a2",
+      ],
+    },
+    {
+      "at": 416,
+      "cells": [
+        "ffd3:7f",
+        "ffd4:5",
+      ],
+    },
+    {
+      "at": 417,
+      "cells": [
+        "ffd3:2e",
+        "ffd4:56",
+      ],
+    },
+    {
+      "at": 418,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:95",
+      ],
+    },
+    {
+      "at": 419,
+      "cells": [
+        "ffd3:c3",
+        "ffd4:c1",
+      ],
+    },
+    {
+      "at": 420,
+      "cells": [
+        "ffd3:a9",
+        "ffd4:db",
       ],
     },
     {
@@ -15431,7 +17875,58 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "d0eb:e3",
         "d0ec:50",
         "d11d:23",
+        "ffd3:a1",
+        "ffd4:e3",
         "fff3:0",
+      ],
+    },
+    {
+      "at": 422,
+      "cells": [
+        "ffd3:ac",
+        "ffd4:d9",
+      ],
+    },
+    {
+      "at": 423,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:bd",
+      ],
+    },
+    {
+      "at": 424,
+      "cells": [
+        "ffd3:f8",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 425,
+      "cells": [
+        "ffd3:3a",
+        "ffd4:4d",
+      ],
+    },
+    {
+      "at": 426,
+      "cells": [
+        "ffd3:8e",
+        "ffd4:fa",
+      ],
+    },
+    {
+      "at": 427,
+      "cells": [
+        "ffd3:f4",
+        "ffd4:95",
+      ],
+    },
+    {
+      "at": 428,
+      "cells": [
+        "ffd3:6c",
+        "ffd4:1c",
       ],
     },
     {
@@ -15454,8 +17949,120 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "cfd6:23",
         "d05a:a",
         "d11d:21",
-        "ffd3:1c",
-        "ffd4:e6",
+        "ffd3:12",
+        "ffd4:77",
+      ],
+    },
+    {
+      "at": 430,
+      "cells": [
+        "ffd3:af",
+        "ffd4:db",
+      ],
+    },
+    {
+      "at": 431,
+      "cells": [
+        "ffd3:5e",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 432,
+      "cells": [
+        "ffd3:20",
+        "ffd4:69",
+      ],
+    },
+    {
+      "at": 433,
+      "cells": [
+        "ffd3:f4",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 434,
+      "cells": [
+        "ffd3:da",
+        "ffd4:af",
+      ],
+    },
+    {
+      "at": 435,
+      "cells": [
+        "ffd3:d3",
+        "ffd4:b6",
+      ],
+    },
+    {
+      "at": 436,
+      "cells": [
+        "ffd3:de",
+        "ffd4:ac",
+      ],
+    },
+    {
+      "at": 437,
+      "cells": [
+        "ffd3:fb",
+        "ffd4:90",
+      ],
+    },
+    {
+      "at": 438,
+      "cells": [
+        "ffd3:2b",
+        "ffd4:60",
+      ],
+    },
+    {
+      "at": 439,
+      "cells": [
+        "ffd3:6d",
+        "ffd4:1f",
+      ],
+    },
+    {
+      "at": 440,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:cc",
+      ],
+    },
+    {
+      "at": 441,
+      "cells": [
+        "ffd3:28",
+        "ffd4:65",
+      ],
+    },
+    {
+      "at": 442,
+      "cells": [
+        "ffd3:a1",
+        "ffd4:ed",
+      ],
+    },
+    {
+      "at": 443,
+      "cells": [
+        "ffd3:2c",
+        "ffd4:62",
+      ],
+    },
+    {
+      "at": 444,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:c5",
+      ],
+    },
+    {
+      "at": 445,
+      "cells": [
+        "ffd3:79",
+        "ffd4:15",
       ],
     },
     {
@@ -15463,6 +18070,183 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ccf1:21",
         "d11d:4",
+        "ffd3:3b",
+        "ffd4:53",
+      ],
+    },
+    {
+      "at": 447,
+      "cells": [
+        "ffd3:f",
+        "ffd4:7e",
+      ],
+    },
+    {
+      "at": 448,
+      "cells": [
+        "ffd3:f6",
+        "ffd4:98",
+      ],
+    },
+    {
+      "at": 449,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:9f",
+      ],
+    },
+    {
+      "at": 450,
+      "cells": [
+        "ffd3:fa",
+        "ffd4:94",
+      ],
+    },
+    {
+      "at": 451,
+      "cells": [
+        "ffd3:18",
+        "ffd4:76",
+      ],
+    },
+    {
+      "at": 452,
+      "cells": [
+        "ffd3:48",
+        "ffd4:47",
+      ],
+    },
+    {
+      "at": 453,
+      "cells": [
+        "ffd3:8a",
+        "ffd4:6",
+      ],
+    },
+    {
+      "at": 454,
+      "cells": [
+        "ffd3:df",
+        "ffd4:b2",
+      ],
+    },
+    {
+      "at": 455,
+      "cells": [
+        "ffd3:46",
+        "ffd4:4b",
+      ],
+    },
+    {
+      "at": 456,
+      "cells": [
+        "ffd3:bf",
+        "ffd4:d3",
+      ],
+    },
+    {
+      "at": 457,
+      "cells": [
+        "ffd3:4b",
+        "ffd4:47",
+      ],
+    },
+    {
+      "at": 458,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:aa",
+      ],
+    },
+    {
+      "at": 459,
+      "cells": [
+        "ffd3:99",
+        "ffd4:fa",
+      ],
+    },
+    {
+      "at": 460,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:37",
+      ],
+    },
+    {
+      "at": 461,
+      "cells": [
+        "ffd3:30",
+        "ffd4:62",
+      ],
+    },
+    {
+      "at": 462,
+      "cells": [
+        "ffd3:17",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 463,
+      "cells": [
+        "ffd3:10",
+        "ffd4:81",
+      ],
+    },
+    {
+      "at": 464,
+      "cells": [
+        "ffd3:1c",
+        "ffd4:76",
+      ],
+    },
+    {
+      "at": 465,
+      "cells": [
+        "ffd3:3a",
+        "ffd4:59",
+      ],
+    },
+    {
+      "at": 466,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:29",
+      ],
+    },
+    {
+      "at": 467,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:e7",
+      ],
+    },
+    {
+      "at": 468,
+      "cells": [
+        "ffd3:2",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 469,
+      "cells": [
+        "ffd3:69",
+        "ffd4:2c",
+      ],
+    },
+    {
+      "at": 470,
+      "cells": [
+        "ffd3:e3",
+        "ffd4:b3",
+      ],
+    },
+    {
+      "at": 471,
+      "cells": [
+        "ffd3:6f",
+        "ffd4:27",
       ],
     },
     {
@@ -15472,23 +18256,867 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "d02c:22",
         "d07b:21",
         "d0b4:54",
-        "d0d7:1d",
+        "d0d7:1e",
         "d11d:0",
         "d187:22",
-        "ffd3:a4",
-        "ffd4:5f",
+        "ffd3:91",
+        "ffd4:6",
+      ],
+    },
+    {
+      "at": 473,
+      "cells": [
+        "ffd3:42",
+        "ffd4:55",
+      ],
+    },
+    {
+      "at": 474,
+      "cells": [
+        "ffd3:5",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 475,
+      "cells": [
+        "ffd3:da",
+        "ffd4:be",
+      ],
+    },
+    {
+      "at": 476,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:d6",
+      ],
+    },
+    {
+      "at": 477,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:dc",
+      ],
+    },
+    {
+      "at": 478,
+      "cells": [
+        "ffd3:c7",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 479,
+      "cells": [
+        "ffd3:e5",
+        "ffd4:b3",
+      ],
+    },
+    {
+      "at": 480,
+      "cells": [
+        "ffd3:16",
+        "ffd4:82",
+      ],
+    },
+    {
+      "at": 481,
+      "cells": [
+        "ffd3:59",
+        "ffd4:40",
+      ],
+    },
+    {
+      "at": 482,
+      "cells": [
+        "ffd3:ae",
+        "ffd4:eb",
+      ],
+    },
+    {
+      "at": 483,
+      "cells": [
+        "ffd3:16",
+        "ffd4:83",
+      ],
+    },
+    {
+      "at": 484,
+      "cells": [
+        "ffd3:90",
+        "ffd4:a",
+      ],
+    },
+    {
+      "at": 485,
+      "cells": [
+        "ffd3:1c",
+        "ffd4:7e",
+      ],
+    },
+    {
+      "at": 486,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:e0",
+      ],
+    },
+    {
+      "at": 487,
+      "cells": [
+        "ffd3:6c",
+        "ffd4:2f",
+      ],
+    },
+    {
+      "at": 488,
+      "cells": [
+        "ffd3:2f",
+        "ffd4:6c",
+      ],
+    },
+    {
+      "at": 489,
+      "cells": [
+        "ffd3:5",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 490,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:af",
+      ],
+    },
+    {
+      "at": 491,
+      "cells": [
+        "ffd3:e7",
+        "ffd4:b5",
+      ],
+    },
+    {
+      "at": 492,
+      "cells": [
+        "ffd3:f3",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 493,
+      "cells": [
+        "ffd3:12",
+        "ffd4:8a",
+      ],
+    },
+    {
+      "at": 494,
+      "cells": [
+        "ffd3:43",
+        "ffd4:5a",
+      ],
+    },
+    {
+      "at": 495,
+      "cells": [
+        "ffd3:86",
+        "ffd4:17",
+      ],
+    },
+    {
+      "at": 496,
+      "cells": [
+        "ffd3:dc",
+        "ffd4:c2",
+      ],
+    },
+    {
+      "at": 497,
+      "cells": [
+        "ffd3:44",
+        "ffd4:5a",
+      ],
+    },
+    {
+      "at": 498,
+      "cells": [
+        "ffd3:be",
+        "ffd4:e0",
+      ],
+    },
+    {
+      "at": 499,
+      "cells": [
+        "ffd3:4b",
+        "ffd4:53",
+      ],
+    },
+    {
+      "at": 500,
+      "cells": [
+        "ffd3:ea",
+        "ffd4:b5",
+      ],
+    },
+    {
+      "at": 501,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:4",
+      ],
+    },
+    {
+      "at": 502,
+      "cells": [
+        "ffd3:5f",
+        "ffd4:40",
+      ],
+    },
+    {
+      "at": 503,
+      "cells": [
+        "ffd3:35",
+        "ffd4:6a",
+      ],
+    },
+    {
+      "at": 504,
+      "cells": [
+        "ffd3:1d",
+        "ffd4:82",
       ],
     },
     {
       "at": 505,
       "cells": [
+        "ffd3:18",
+        "ffd4:87",
         "fff3:1",
+      ],
+    },
+    {
+      "at": 506,
+      "cells": [
+        "ffd3:25",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 507,
+      "cells": [
+        "ffd3:44",
+        "ffd4:5d",
+      ],
+    },
+    {
+      "at": 508,
+      "cells": [
+        "ffd3:75",
+        "ffd4:2c",
+      ],
+    },
+    {
+      "at": 509,
+      "cells": [
+        "ffd3:b9",
+        "ffd4:e9",
+      ],
+    },
+    {
+      "at": 510,
+      "cells": [
+        "ffd3:f",
+        "ffd4:93",
+      ],
+    },
+    {
+      "at": 511,
+      "cells": [
+        "ffd3:77",
+        "ffd4:2b",
+      ],
+    },
+    {
+      "at": 512,
+      "cells": [
+        "ffd3:f2",
+        "ffd4:b1",
+      ],
+    },
+    {
+      "at": 513,
+      "cells": [
+        "ffd3:7f",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 514,
+      "cells": [
+        "ffd3:1e",
+        "ffd4:84",
+      ],
+    },
+    {
+      "at": 515,
+      "cells": [
+        "ffd3:d0",
+        "ffd4:d3",
+      ],
+    },
+    {
+      "at": 516,
+      "cells": [
+        "ffd3:94",
+        "ffd4:f",
+      ],
+    },
+    {
+      "at": 517,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:39",
+      ],
+    },
+    {
+      "at": 518,
+      "cells": [
+        "ffd3:53",
+        "ffd4:50",
+      ],
+    },
+    {
+      "at": 519,
+      "cells": [
+        "ffd3:4e",
+        "ffd4:55",
+      ],
+    },
+    {
+      "at": 520,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:49",
+      ],
+    },
+    {
+      "at": 521,
+      "cells": [
+        "ffd3:7b",
+        "ffd4:2a",
+      ],
+    },
+    {
+      "at": 522,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:f9",
+      ],
+    },
+    {
+      "at": 523,
+      "cells": [
+        "ffd3:f1",
+        "ffd4:b6",
+      ],
+    },
+    {
+      "at": 524,
+      "cells": [
+        "ffd3:47",
+        "ffd4:5f",
+      ],
+    },
+    {
+      "at": 525,
+      "cells": [
+        "ffd3:b0",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 526,
+      "cells": [
+        "ffd3:2b",
+        "ffd4:7c",
+      ],
+    },
+    {
+      "at": 527,
+      "cells": [
+        "ffd3:b8",
+        "ffd4:ef",
+      ],
+    },
+    {
+      "at": 528,
+      "cells": [
+        "ffd3:58",
+        "ffd4:4f",
+      ],
+    },
+    {
+      "at": 529,
+      "cells": [
+        "ffd3:a",
+        "ffd4:9d",
+      ],
+    },
+    {
+      "at": 530,
+      "cells": [
+        "ffd3:ce",
+        "ffd4:d9",
+      ],
+    },
+    {
+      "at": 531,
+      "cells": [
+        "ffd3:a5",
+        "ffd4:2",
+      ],
+    },
+    {
+      "at": 532,
+      "cells": [
+        "ffd3:8e",
+        "ffd4:19",
+      ],
+    },
+    {
+      "at": 533,
+      "cells": [
+        "ffd3:89",
+        "ffd4:1e",
+      ],
+    },
+    {
+      "at": 534,
+      "cells": [
+        "ffd3:97",
+        "ffd4:11",
+      ],
+    },
+    {
+      "at": 535,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:f2",
+      ],
+    },
+    {
+      "at": 536,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:c1",
+      ],
+    },
+    {
+      "at": 537,
+      "cells": [
+        "ffd3:2e",
+        "ffd4:7c",
+      ],
+    },
+    {
+      "at": 538,
+      "cells": [
+        "ffd3:85",
+        "ffd4:26",
+      ],
+    },
+    {
+      "at": 539,
+      "cells": [
+        "ffd3:ee",
+        "ffd4:be",
+      ],
+    },
+    {
+      "at": 540,
+      "cells": [
+        "ffd3:69",
+        "ffd4:42",
+      ],
+    },
+    {
+      "at": 541,
+      "cells": [
+        "ffd3:f7",
+        "ffd4:b5",
+      ],
+    },
+    {
+      "at": 542,
+      "cells": [
+        "ffd3:97",
+        "ffd4:15",
+      ],
+    },
+    {
+      "at": 543,
+      "cells": [
+        "ffd3:49",
+        "ffd4:62",
+      ],
+    },
+    {
+      "at": 544,
+      "cells": [
+        "ffd3:e",
+        "ffd4:9d",
+      ],
+    },
+    {
+      "at": 545,
+      "cells": [
+        "ffd3:e5",
+        "ffd4:c7",
+      ],
+    },
+    {
+      "at": 546,
+      "cells": [
+        "ffd3:ce",
+        "ffd4:dd",
+      ],
+    },
+    {
+      "at": 547,
+      "cells": [
+        "ffd3:ca",
+        "ffd4:e1",
+      ],
+    },
+    {
+      "at": 548,
+      "cells": [
+        "ffd3:d8",
+        "ffd4:d4",
+      ],
+    },
+    {
+      "at": 549,
+      "cells": [
+        "ffd3:f8",
+        "ffd4:b5",
+      ],
+    },
+    {
+      "at": 550,
+      "cells": [
+        "ffd3:2b",
+        "ffd4:82",
+      ],
+    },
+    {
+      "at": 551,
+      "cells": [
+        "ffd3:70",
+        "ffd4:3e",
+      ],
+    },
+    {
+      "at": 552,
+      "cells": [
+        "ffd3:c7",
+        "ffd4:e8",
+      ],
+    },
+    {
+      "at": 553,
+      "cells": [
+        "ffd3:31",
+        "ffd4:7e",
+      ],
+    },
+    {
+      "at": 554,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 555,
+      "cells": [
+        "ffd3:3b",
+        "ffd4:75",
+      ],
+    },
+    {
+      "at": 556,
+      "cells": [
+        "ffd3:db",
+        "ffd4:d5",
+      ],
+    },
+    {
+      "at": 557,
+      "cells": [
+        "ffd3:8e",
+        "ffd4:22",
+      ],
+    },
+    {
+      "at": 558,
+      "cells": [
+        "ffd3:53",
+        "ffd4:5d",
+      ],
+    },
+    {
+      "at": 559,
+      "cells": [
+        "ffd3:2a",
+        "ffd4:85",
+      ],
+    },
+    {
+      "at": 560,
+      "cells": [
+        "ffd3:14",
+        "ffd4:9b",
+      ],
+    },
+    {
+      "at": 561,
+      "cells": [
+        "ffd3:10",
+        "ffd4:9f",
+      ],
+    },
+    {
+      "at": 562,
+      "cells": [
+        "ffd3:1e",
+        "ffd4:91",
+      ],
+    },
+    {
+      "at": 563,
+      "cells": [
+        "ffd3:3f",
+        "ffd4:71",
+      ],
+    },
+    {
+      "at": 564,
+      "cells": [
+        "ffd3:72",
+        "ffd4:3f",
+      ],
+    },
+    {
+      "at": 565,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:fb",
+      ],
+    },
+    {
+      "at": 566,
+      "cells": [
+        "ffd3:f",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 567,
+      "cells": [
+        "ffd3:79",
+        "ffd4:3a",
+      ],
+    },
+    {
+      "at": 568,
+      "cells": [
+        "ffd3:f5",
+        "ffd4:bf",
+      ],
+    },
+    {
+      "at": 569,
+      "cells": [
+        "ffd3:84",
+        "ffd4:30",
+      ],
+    },
+    {
+      "at": 570,
+      "cells": [
+        "ffd3:25",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 571,
+      "cells": [
+        "ffd3:d8",
+        "ffd4:dd",
+      ],
+    },
+    {
+      "at": 572,
+      "cells": [
+        "ffd3:9d",
+        "ffd4:17",
+      ],
+    },
+    {
+      "at": 573,
+      "cells": [
+        "ffd3:75",
+        "ffd4:3f",
+      ],
+    },
+    {
+      "at": 574,
+      "cells": [
+        "ffd3:5f",
+        "ffd4:55",
+      ],
+    },
+    {
+      "at": 575,
+      "cells": [
+        "ffd3:5b",
+        "ffd4:58",
+      ],
+    },
+    {
+      "at": 576,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:4a",
+      ],
+    },
+    {
+      "at": 577,
+      "cells": [
+        "ffd3:8b",
+        "ffd4:2a",
+      ],
+    },
+    {
+      "at": 578,
+      "cells": [
+        "ffd3:be",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 579,
+      "cells": [
+        "ffd3:4",
+        "ffd4:b1",
+      ],
+    },
+    {
+      "at": 580,
+      "cells": [
+        "ffd3:5c",
+        "ffd4:5a",
+      ],
+    },
+    {
+      "at": 581,
+      "cells": [
+        "ffd3:c6",
+        "ffd4:f1",
+      ],
+    },
+    {
+      "at": 582,
+      "cells": [
+        "ffd3:43",
+        "ffd4:74",
       ],
     },
     {
       "at": 583,
       "cells": [
+        "ffd3:d2",
+        "ffd4:e6",
         "fff3:0",
+      ],
+    },
+    {
+      "at": 584,
+      "cells": [
+        "ffd3:73",
+        "ffd4:45",
+      ],
+    },
+    {
+      "at": 585,
+      "cells": [
+        "ffd3:27",
+        "ffd4:91",
+      ],
+    },
+    {
+      "at": 586,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:cc",
+      ],
+    },
+    {
+      "at": 587,
+      "cells": [
+        "ffd3:c5",
+        "ffd4:f4",
+      ],
+    },
+    {
+      "at": 588,
+      "cells": [
+        "ffd3:af",
+        "ffd4:9",
+      ],
+    },
+    {
+      "at": 589,
+      "cells": [
+        "ffd3:ac",
+        "ffd4:c",
+      ],
+    },
+    {
+      "at": 590,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:fe",
+      ],
+    },
+    {
+      "at": 591,
+      "cells": [
+        "ffd3:dc",
+        "ffd4:dd",
+      ],
+    },
+    {
+      "at": 592,
+      "cells": [
+        "ffd3:10",
+        "ffd4:a9",
+      ],
+    },
+    {
+      "at": 593,
+      "cells": [
+        "ffd3:56",
+        "ffd4:64",
+      ],
+    },
+    {
+      "at": 594,
+      "cells": [
+        "ffd3:ae",
+        "ffd4:c",
       ],
     },
     {
@@ -15504,6 +19132,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "cefe:e",
         "cfe6:0",
         "d0d7:e",
+        "ffd3:19",
+        "ffd4:a1",
+      ],
+    },
+    {
+      "at": 596,
+      "cells": [
+        "ffd3:96",
+        "ffd4:25",
+      ],
+    },
+    {
+      "at": 597,
+      "cells": [
+        "ffd3:25",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 598,
+      "cells": [
+        "ffd3:c7",
+        "ffd4:f5",
+      ],
+    },
+    {
+      "at": 599,
+      "cells": [
+        "ffd3:7b",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 600,
+      "cells": [
+        "ffd3:41",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 601,
+      "cells": [
+        "ffd3:1a",
+        "ffd4:a2",
+      ],
+    },
+    {
+      "at": 602,
+      "cells": [
+        "ffd3:5",
+        "ffd4:b7",
       ],
     },
     {
@@ -15511,6 +19190,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:d",
         "ceed:c",
+        "ffd3:2",
+        "ffd4:ba",
+      ],
+    },
+    {
+      "at": 604,
+      "cells": [
+        "ffd3:11",
+        "ffd4:ab",
+      ],
+    },
+    {
+      "at": 605,
+      "cells": [
+        "ffd3:33",
+        "ffd4:8a",
+      ],
+    },
+    {
+      "at": 606,
+      "cells": [
+        "ffd3:67",
+        "ffd4:57",
+      ],
+    },
+    {
+      "at": 607,
+      "cells": [
+        "ffd3:ad",
+        "ffd4:11",
+      ],
+    },
+    {
+      "at": 608,
+      "cells": [
+        "ffd3:6",
+        "ffd4:b8",
       ],
     },
     {
@@ -15518,6 +19234,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:c",
         "ceed:b",
+        "ffd3:71",
+        "ffd4:4e",
+      ],
+    },
+    {
+      "at": 610,
+      "cells": [
+        "ffd3:ee",
+        "ffd4:d1",
+      ],
+    },
+    {
+      "at": 611,
+      "cells": [
+        "ffd3:7e",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 612,
+      "cells": [
+        "ffd3:20",
+        "ffd4:9f",
+      ],
+    },
+    {
+      "at": 613,
+      "cells": [
+        "ffd3:d4",
+        "ffd4:ec",
+      ],
+    },
+    {
+      "at": 614,
+      "cells": [
+        "ffd3:9b",
+        "ffd4:25",
+      ],
+    },
+    {
+      "at": 615,
+      "cells": [
+        "ffd3:74",
+        "ffd4:4c",
+      ],
+    },
+    {
+      "at": 616,
+      "cells": [
+        "ffd3:5f",
+        "ffd4:61",
       ],
     },
     {
@@ -15525,6 +19292,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:b",
         "ceed:a",
+        "ffd3:5d",
+        "ffd4:63",
+      ],
+    },
+    {
+      "at": 618,
+      "cells": [
+        "ffd3:6d",
+        "ffd4:54",
+      ],
+    },
+    {
+      "at": 619,
+      "cells": [
+        "ffd3:8f",
+        "ffd4:33",
+      ],
+    },
+    {
+      "at": 620,
+      "cells": [
+        "ffd3:c3",
+        "ffd4:ff",
+      ],
+    },
+    {
+      "at": 621,
+      "cells": [
+        "ffd3:a",
+        "ffd4:b8",
+      ],
+    },
+    {
+      "at": 622,
+      "cells": [
+        "ffd3:63",
+        "ffd4:60",
       ],
     },
     {
@@ -15532,6 +19336,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:a",
         "ceed:9",
+        "ffd3:ce",
+        "ffd4:f5",
+      ],
+    },
+    {
+      "at": 624,
+      "cells": [
+        "ffd3:4c",
+        "ffd4:77",
+      ],
+    },
+    {
+      "at": 625,
+      "cells": [
+        "ffd3:dc",
+        "ffd4:e8",
+      ],
+    },
+    {
+      "at": 626,
+      "cells": [
+        "ffd3:7e",
+        "ffd4:45",
+      ],
+    },
+    {
+      "at": 627,
+      "cells": [
+        "ffd3:33",
+        "ffd4:90",
+      ],
+    },
+    {
+      "at": 628,
+      "cells": [
+        "ffd3:fa",
+        "ffd4:ca",
+      ],
+    },
+    {
+      "at": 629,
+      "cells": [
+        "ffd3:d3",
+        "ffd4:f1",
+      ],
+    },
+    {
+      "at": 630,
+      "cells": [
+        "ffd3:bf",
+        "ffd4:5",
       ],
     },
     {
@@ -15539,6 +19394,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:9",
         "ceed:8",
+        "ffd3:bd",
+        "ffd4:7",
+      ],
+    },
+    {
+      "at": 632,
+      "cells": [
+        "ffd3:cd",
+        "ffd4:f8",
+      ],
+    },
+    {
+      "at": 633,
+      "cells": [
+        "ffd3:f0",
+        "ffd4:d6",
+      ],
+    },
+    {
+      "at": 634,
+      "cells": [
+        "ffd3:25",
+        "ffd4:a1",
+      ],
+    },
+    {
+      "at": 635,
+      "cells": [
+        "ffd3:6c",
+        "ffd4:5b",
+      ],
+    },
+    {
+      "at": 636,
+      "cells": [
+        "ffd3:c5",
+        "ffd4:2",
       ],
     },
     {
@@ -15546,6 +19438,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:8",
         "ceed:7",
+        "ffd3:31",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 638,
+      "cells": [
+        "ffd3:af",
+        "ffd4:19",
+      ],
+    },
+    {
+      "at": 639,
+      "cells": [
+        "ffd3:3f",
+        "ffd4:88",
+      ],
+    },
+    {
+      "at": 640,
+      "cells": [
+        "ffd3:e2",
+        "ffd4:e6",
+      ],
+    },
+    {
+      "at": 641,
+      "cells": [
+        "ffd3:97",
+        "ffd4:31",
+      ],
+    },
+    {
+      "at": 642,
+      "cells": [
+        "ffd3:5e",
+        "ffd4:69",
       ],
     },
     {
@@ -15553,6 +19482,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:7",
         "ceed:6",
+        "ffd3:38",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 644,
+      "cells": [
+        "ffd3:24",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 645,
+      "cells": [
+        "ffd3:22",
+        "ffd4:a5",
+      ],
+    },
+    {
+      "at": 646,
+      "cells": [
+        "ffd3:33",
+        "ffd4:95",
+      ],
+    },
+    {
+      "at": 647,
+      "cells": [
+        "ffd3:56",
+        "ffd4:73",
+      ],
+    },
+    {
+      "at": 648,
+      "cells": [
+        "ffd3:8b",
+        "ffd4:3f",
+      ],
+    },
+    {
+      "at": 649,
+      "cells": [
+        "ffd3:d3",
+        "ffd4:f8",
+      ],
+    },
+    {
+      "at": 650,
+      "cells": [
+        "ffd3:2d",
+        "ffd4:9e",
       ],
     },
     {
@@ -15560,6 +19540,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:6",
         "ceed:5",
+        "ffd3:99",
+        "ffd4:33",
+      ],
+    },
+    {
+      "at": 652,
+      "cells": [
+        "ffd3:17",
+        "ffd4:b4",
+      ],
+    },
+    {
+      "at": 653,
+      "cells": [
+        "ffd3:a8",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 654,
+      "cells": [
+        "ffd3:4b",
+        "ffd4:81",
+      ],
+    },
+    {
+      "at": 655,
+      "cells": [
+        "ffd3:0",
+        "ffd4:cb",
+      ],
+    },
+    {
+      "at": 656,
+      "cells": [
+        "ffd3:c8",
+        "ffd4:4",
       ],
     },
     {
@@ -15567,6 +19584,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:5",
         "ceed:4",
+        "ffd3:a2",
+        "ffd4:2a",
+      ],
+    },
+    {
+      "at": 658,
+      "cells": [
+        "ffd3:8e",
+        "ffd4:3d",
+      ],
+    },
+    {
+      "at": 659,
+      "cells": [
+        "ffd3:8d",
+        "ffd4:3e",
+      ],
+    },
+    {
+      "at": 660,
+      "cells": [
+        "ffd3:9e",
+        "ffd4:2e",
+      ],
+    },
+    {
+      "at": 661,
+      "cells": [
+        "ffd3:c1",
+        "ffd4:c",
+      ],
+    },
+    {
+      "at": 662,
+      "cells": [
+        "ffd3:f7",
+        "ffd4:d7",
+      ],
+    },
+    {
+      "at": 663,
+      "cells": [
+        "ffd3:3f",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 664,
+      "cells": [
+        "ffd3:99",
+        "ffd4:36",
       ],
     },
     {
@@ -15574,6 +19642,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:4",
         "ceed:3",
+        "ffd3:6",
+        "ffd4:c9",
+      ],
+    },
+    {
+      "at": 666,
+      "cells": [
+        "ffd3:85",
+        "ffd4:4b",
+      ],
+    },
+    {
+      "at": 667,
+      "cells": [
+        "ffd3:16",
+        "ffd4:ba",
+      ],
+    },
+    {
+      "at": 668,
+      "cells": [
+        "ffd3:b9",
+        "ffd4:17",
+      ],
+    },
+    {
+      "at": 669,
+      "cells": [
+        "ffd3:6f",
+        "ffd4:61",
+      ],
+    },
+    {
+      "at": 670,
+      "cells": [
+        "ffd3:37",
+        "ffd4:99",
       ],
     },
     {
@@ -15581,6 +19686,57 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:3",
         "ceed:2",
+        "ffd3:11",
+        "ffd4:be",
+      ],
+    },
+    {
+      "at": 672,
+      "cells": [
+        "ffd3:fe",
+        "ffd4:d2",
+      ],
+    },
+    {
+      "at": 673,
+      "cells": [
+        "ffd3:fd",
+        "ffd4:d3",
+      ],
+    },
+    {
+      "at": 674,
+      "cells": [
+        "ffd3:e",
+        "ffd4:c1",
+      ],
+    },
+    {
+      "at": 675,
+      "cells": [
+        "ffd3:32",
+        "ffd4:9e",
+      ],
+    },
+    {
+      "at": 676,
+      "cells": [
+        "ffd3:68",
+        "ffd4:69",
+      ],
+    },
+    {
+      "at": 677,
+      "cells": [
+        "ffd3:b0",
+        "ffd4:22",
+      ],
+    },
+    {
+      "at": 678,
+      "cells": [
+        "ffd3:b",
+        "ffd4:c7",
       ],
     },
     {
@@ -15588,6 +19744,43 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:2",
         "ceed:1",
+        "ffd3:78",
+        "ffd4:5b",
+      ],
+    },
+    {
+      "at": 680,
+      "cells": [
+        "ffd3:f7",
+        "ffd4:dd",
+      ],
+    },
+    {
+      "at": 681,
+      "cells": [
+        "ffd3:89",
+        "ffd4:4b",
+      ],
+    },
+    {
+      "at": 682,
+      "cells": [
+        "ffd3:2d",
+        "ffd4:a7",
+      ],
+    },
+    {
+      "at": 683,
+      "cells": [
+        "ffd3:e3",
+        "ffd4:f2",
+      ],
+    },
+    {
+      "at": 684,
+      "cells": [
+        "ffd3:ab",
+        "ffd4:29",
       ],
     },
     {
@@ -15595,12 +19788,64 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "ceeb:1",
         "ceed:0",
+        "ffd3:86",
+        "ffd4:4e",
+      ],
+    },
+    {
+      "at": 686,
+      "cells": [
+        "ffd3:73",
+        "ffd4:61",
+      ],
+    },
+    {
+      "at": 687,
+      "cells": [
+        "ffd3:72",
+      ],
+    },
+    {
+      "at": 688,
+      "cells": [
+        "ffd3:84",
+        "ffd4:50",
       ],
     },
     {
       "at": 689,
       "cells": [
         "ceeb:0",
+        "ffd3:a8",
+        "ffd4:2d",
+      ],
+    },
+    {
+      "at": 690,
+      "cells": [
+        "ffd3:de",
+        "ffd4:f7",
+      ],
+    },
+    {
+      "at": 691,
+      "cells": [
+        "ffd3:27",
+        "ffd4:ae",
+      ],
+    },
+    {
+      "at": 692,
+      "cells": [
+        "ffd3:82",
+        "ffd4:54",
+      ],
+    },
+    {
+      "at": 693,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:e8",
       ],
     },
     {
@@ -15608,6 +19853,148 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
       "cells": [
         "cf1d:2",
         "d11d:13",
+        "ffd3:6f",
+        "ffd4:68",
+      ],
+    },
+    {
+      "at": 697,
+      "cells": [
+        "ffd3:26",
+        "ffd4:b1",
+      ],
+    },
+    {
+      "at": 698,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:e9",
+      ],
+    },
+    {
+      "at": 699,
+      "cells": [
+        "ffd3:ca",
+        "ffd4:e",
+      ],
+    },
+    {
+      "at": 700,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:20",
+      ],
+    },
+    {
+      "at": 702,
+      "cells": [
+        "ffd3:c9",
+        "ffd4:f",
+      ],
+    },
+    {
+      "at": 703,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:eb",
+      ],
+    },
+    {
+      "at": 704,
+      "cells": [
+        "ffd3:24",
+        "ffd4:b4",
+      ],
+    },
+    {
+      "at": 705,
+      "cells": [
+        "ffd3:6d",
+        "ffd4:6c",
+      ],
+    },
+    {
+      "at": 706,
+      "cells": [
+        "ffd3:c8",
+        "ffd4:11",
+      ],
+    },
+    {
+      "at": 707,
+      "cells": [
+        "ffd3:36",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 708,
+      "cells": [
+        "ffd3:b6",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 709,
+      "cells": [
+        "ffd3:48",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 710,
+      "cells": [
+        "ffd3:ed",
+        "ffd4:ee",
+      ],
+    },
+    {
+      "at": 711,
+      "cells": [
+        "ffd3:a4",
+        "ffd4:37",
+      ],
+    },
+    {
+      "at": 712,
+      "cells": [
+        "ffd3:6d",
+        "ffd4:6e",
+      ],
+    },
+    {
+      "at": 713,
+      "cells": [
+        "ffd3:49",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 714,
+      "cells": [
+        "ffd3:37",
+        "ffd4:a4",
+      ],
+    },
+    {
+      "at": 716,
+      "cells": [
+        "ffd3:49",
+        "ffd4:92",
+      ],
+    },
+    {
+      "at": 717,
+      "cells": [
+        "ffd3:6e",
+        "ffd4:6e",
+      ],
+    },
+    {
+      "at": 718,
+      "cells": [
+        "ffd3:a5",
+        "ffd4:38",
       ],
     },
     {
@@ -15616,12 +20003,468 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "ccf1:0",
         "ccf4:1",
         "d72f:40",
+        "ffd3:ee",
+        "ffd4:ef",
+      ],
+    },
+    {
+      "at": 720,
+      "cells": [
+        "ffd3:4a",
+        "ffd4:93",
+      ],
+    },
+    {
+      "at": 721,
+      "cells": [
+        "ffd3:b8",
+        "ffd4:26",
+      ],
+    },
+    {
+      "at": 722,
+      "cells": [
+        "ffd3:38",
+        "ffd4:a5",
+      ],
+    },
+    {
+      "at": 723,
+      "cells": [
+        "ffd3:cb",
+        "ffd4:13",
+      ],
+    },
+    {
+      "at": 724,
+      "cells": [
+        "ffd3:70",
+        "ffd4:6e",
+      ],
+    },
+    {
+      "at": 725,
+      "cells": [
+        "ffd3:27",
+        "ffd4:b7",
+      ],
+    },
+    {
+      "at": 726,
+      "cells": [
+        "ffd3:f1",
+        "ffd4:ee",
+      ],
+    },
+    {
+      "at": 727,
+      "cells": [
+        "ffd3:cd",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 728,
+      "cells": [
+        "ffd3:bb",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 729,
+      "cells": [
+        "ffd3:bc",
+      ],
+    },
+    {
+      "at": 730,
+      "cells": [
+        "ffd3:cf",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 731,
+      "cells": [
+        "ffd3:f4",
+        "ffd4:ee",
+      ],
+    },
+    {
+      "at": 732,
+      "cells": [
+        "ffd3:2b",
+        "ffd4:b6",
       ],
     },
     {
       "at": 733,
       "cells": [
         "d72f:0",
+        "ffd3:75",
+        "ffd4:6d",
+      ],
+    },
+    {
+      "at": 734,
+      "cells": [
+        "ffd3:d1",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 735,
+      "cells": [
+        "ffd3:3f",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 736,
+      "cells": [
+        "ffd3:c0",
+        "ffd4:23",
+      ],
+    },
+    {
+      "at": 737,
+      "cells": [
+        "ffd3:53",
+        "ffd4:90",
+      ],
+    },
+    {
+      "at": 738,
+      "cells": [
+        "ffd3:f8",
+        "ffd4:eb",
+      ],
+    },
+    {
+      "at": 739,
+      "cells": [
+        "ffd3:b0",
+        "ffd4:33",
+      ],
+    },
+    {
+      "at": 740,
+      "cells": [
+        "ffd3:7a",
+        "ffd4:69",
+      ],
+    },
+    {
+      "at": 741,
+      "cells": [
+        "ffd3:56",
+        "ffd4:8d",
+      ],
+    },
+    {
+      "at": 742,
+      "cells": [
+        "ffd3:45",
+        "ffd4:9e",
+      ],
+    },
+    {
+      "at": 743,
+      "cells": [
+        "ffd3:46",
+      ],
+    },
+    {
+      "at": 744,
+      "cells": [
+        "ffd3:59",
+        "ffd4:8c",
+      ],
+    },
+    {
+      "at": 745,
+      "cells": [
+        "ffd3:7f",
+        "ffd4:67",
+      ],
+    },
+    {
+      "at": 746,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:30",
+      ],
+    },
+    {
+      "at": 747,
+      "cells": [
+        "ffd3:1",
+        "ffd4:e6",
+      ],
+    },
+    {
+      "at": 748,
+      "cells": [
+        "ffd3:5d",
+        "ffd4:8a",
+      ],
+    },
+    {
+      "at": 749,
+      "cells": [
+        "ffd3:cc",
+        "ffd4:1c",
+      ],
+    },
+    {
+      "at": 750,
+      "cells": [
+        "ffd3:4d",
+        "ffd4:9b",
+      ],
+    },
+    {
+      "at": 751,
+      "cells": [
+        "ffd3:e0",
+        "ffd4:8",
+      ],
+    },
+    {
+      "at": 752,
+      "cells": [
+        "ffd3:86",
+        "ffd4:62",
+      ],
+    },
+    {
+      "at": 753,
+      "cells": [
+        "ffd3:3e",
+        "ffd4:aa",
+      ],
+    },
+    {
+      "at": 754,
+      "cells": [
+        "ffd3:8",
+        "ffd4:df",
+      ],
+    },
+    {
+      "at": 755,
+      "cells": [
+        "ffd3:e5",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 756,
+      "cells": [
+        "ffd3:d4",
+        "ffd4:14",
+      ],
+    },
+    {
+      "at": 757,
+      "cells": [
+        "ffd3:d5",
+      ],
+    },
+    {
+      "at": 758,
+      "cells": [
+        "ffd3:e9",
+        "ffd4:1",
+      ],
+    },
+    {
+      "at": 759,
+      "cells": [
+        "ffd3:f",
+        "ffd4:db",
+      ],
+    },
+    {
+      "at": 760,
+      "cells": [
+        "ffd3:47",
+        "ffd4:a4",
+      ],
+    },
+    {
+      "at": 761,
+      "cells": [
+        "ffd3:92",
+        "ffd4:5a",
+      ],
+    },
+    {
+      "at": 762,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:fe",
+      ],
+    },
+    {
+      "at": 763,
+      "cells": [
+        "ffd3:5e",
+        "ffd4:8f",
+      ],
+    },
+    {
+      "at": 764,
+      "cells": [
+        "ffd3:df",
+        "ffd4:e",
+      ],
+    },
+    {
+      "at": 765,
+      "cells": [
+        "ffd3:73",
+        "ffd4:7a",
+      ],
+    },
+    {
+      "at": 766,
+      "cells": [
+        "ffd3:19",
+        "ffd4:d4",
+      ],
+    },
+    {
+      "at": 767,
+      "cells": [
+        "ffd3:d1",
+        "ffd4:1c",
+      ],
+    },
+    {
+      "at": 768,
+      "cells": [
+        "ffd3:9c",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 769,
+      "cells": [
+        "ffd3:79",
+        "ffd4:74",
+      ],
+    },
+    {
+      "at": 770,
+      "cells": [
+        "ffd3:68",
+        "ffd4:84",
+      ],
+    },
+    {
+      "at": 771,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:83",
+      ],
+    },
+    {
+      "at": 772,
+      "cells": [
+        "ffd3:7e",
+        "ffd4:70",
+      ],
+    },
+    {
+      "at": 773,
+      "cells": [
+        "ffd3:a4",
+        "ffd4:4b",
+      ],
+    },
+    {
+      "at": 774,
+      "cells": [
+        "ffd3:dd",
+        "ffd4:13",
+      ],
+    },
+    {
+      "at": 775,
+      "cells": [
+        "ffd3:28",
+        "ffd4:c8",
+      ],
+    },
+    {
+      "at": 776,
+      "cells": [
+        "ffd3:85",
+        "ffd4:6c",
+      ],
+    },
+    {
+      "at": 777,
+      "cells": [
+        "ffd3:f5",
+        "ffd4:fd",
+      ],
+    },
+    {
+      "at": 778,
+      "cells": [
+        "ffd3:77",
+        "ffd4:7b",
+      ],
+    },
+    {
+      "at": 779,
+      "cells": [
+        "ffd3:b",
+        "ffd4:e7",
+      ],
+    },
+    {
+      "at": 780,
+      "cells": [
+        "ffd3:b1",
+        "ffd4:41",
+      ],
+    },
+    {
+      "at": 781,
+      "cells": [
+        "ffd3:6a",
+        "ffd4:88",
+      ],
+    },
+    {
+      "at": 782,
+      "cells": [
+        "ffd3:35",
+        "ffd4:bd",
+      ],
+    },
+    {
+      "at": 783,
+      "cells": [
+        "ffd3:12",
+        "ffd4:df",
+      ],
+    },
+    {
+      "at": 784,
+      "cells": [
+        "ffd3:2",
+        "ffd4:ef",
+      ],
+    },
+    {
+      "at": 785,
+      "cells": [
+        "ffd3:4",
+        "ffd4:ee",
       ],
     },
     {
@@ -15654,6 +20497,414 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "ff99:0",
         "ff9a:1",
         "ff9e:0",
+        "ffd3:18",
+        "ffd4:da",
+      ],
+    },
+    {
+      "at": 787,
+      "cells": [
+        "ffd3:3f",
+        "ffd4:b4",
+      ],
+    },
+    {
+      "at": 788,
+      "cells": [
+        "ffd3:78",
+        "ffd4:7c",
+      ],
+    },
+    {
+      "at": 789,
+      "cells": [
+        "ffd3:c3",
+        "ffd4:32",
+      ],
+    },
+    {
+      "at": 790,
+      "cells": [
+        "ffd3:21",
+        "ffd4:d4",
+      ],
+    },
+    {
+      "at": 791,
+      "cells": [
+        "ffd3:91",
+        "ffd4:65",
+      ],
+    },
+    {
+      "at": 792,
+      "cells": [
+        "ffd3:13",
+        "ffd4:e3",
+      ],
+    },
+    {
+      "at": 793,
+      "cells": [
+        "ffd3:a8",
+        "ffd4:4f",
+      ],
+    },
+    {
+      "at": 794,
+      "cells": [
+        "ffd3:4f",
+        "ffd4:a8",
+      ],
+    },
+    {
+      "at": 795,
+      "cells": [
+        "ffd3:8",
+        "ffd4:ef",
+      ],
+    },
+    {
+      "at": 796,
+      "cells": [
+        "ffd3:d3",
+        "ffd4:24",
+      ],
+    },
+    {
+      "at": 797,
+      "cells": [
+        "ffd3:b1",
+        "ffd4:46",
+      ],
+    },
+    {
+      "at": 798,
+      "cells": [
+        "ffd3:a1",
+        "ffd4:56",
+      ],
+    },
+    {
+      "at": 799,
+      "cells": [
+        "ffd3:a3",
+        "ffd4:54",
+      ],
+    },
+    {
+      "at": 800,
+      "cells": [
+        "ffd3:b8",
+        "ffd4:40",
+      ],
+    },
+    {
+      "at": 801,
+      "cells": [
+        "ffd3:df",
+        "ffd4:1a",
+      ],
+    },
+    {
+      "at": 802,
+      "cells": [
+        "ffd3:18",
+        "ffd4:e0",
+      ],
+    },
+    {
+      "at": 803,
+      "cells": [
+        "ffd3:64",
+        "ffd4:95",
+      ],
+    },
+    {
+      "at": 804,
+      "cells": [
+        "ffd3:c2",
+        "ffd4:38",
+      ],
+    },
+    {
+      "at": 805,
+      "cells": [
+        "ffd3:32",
+        "ffd4:c8",
+      ],
+    },
+    {
+      "at": 806,
+      "cells": [
+        "ffd3:b5",
+        "ffd4:46",
+      ],
+    },
+    {
+      "at": 807,
+      "cells": [
+        "ffd3:4a",
+        "ffd4:b1",
+      ],
+    },
+    {
+      "at": 808,
+      "cells": [
+        "ffd3:f1",
+        "ffd4:b",
+      ],
+    },
+    {
+      "at": 809,
+      "cells": [
+        "ffd3:ab",
+        "ffd4:51",
+      ],
+    },
+    {
+      "at": 810,
+      "cells": [
+        "ffd3:77",
+        "ffd4:85",
+      ],
+    },
+    {
+      "at": 811,
+      "cells": [
+        "ffd3:55",
+        "ffd4:a7",
+      ],
+    },
+    {
+      "at": 812,
+      "cells": [
+        "ffd3:45",
+        "ffd4:b6",
+      ],
+    },
+    {
+      "at": 813,
+      "cells": [
+        "ffd3:48",
+        "ffd4:b4",
+      ],
+    },
+    {
+      "at": 814,
+      "cells": [
+        "ffd3:5d",
+        "ffd4:a0",
+      ],
+    },
+    {
+      "at": 815,
+      "cells": [
+        "ffd3:84",
+        "ffd4:79",
+      ],
+    },
+    {
+      "at": 816,
+      "cells": [
+        "ffd3:be",
+        "ffd4:40",
+      ],
+    },
+    {
+      "at": 817,
+      "cells": [
+        "ffd3:a",
+        "ffd4:f4",
+      ],
+    },
+    {
+      "at": 818,
+      "cells": [
+        "ffd3:68",
+        "ffd4:96",
+      ],
+    },
+    {
+      "at": 819,
+      "cells": [
+        "ffd3:d9",
+        "ffd4:26",
+      ],
+    },
+    {
+      "at": 820,
+      "cells": [
+        "ffd3:5c",
+        "ffd4:a3",
+      ],
+    },
+    {
+      "at": 821,
+      "cells": [
+        "ffd3:f1",
+        "ffd4:f",
+      ],
+    },
+    {
+      "at": 822,
+      "cells": [
+        "ffd3:99",
+        "ffd4:67",
+      ],
+    },
+    {
+      "at": 823,
+      "cells": [
+        "ffd3:53",
+        "ffd4:ad",
+      ],
+    },
+    {
+      "at": 824,
+      "cells": [
+        "ffd3:1f",
+        "ffd4:e1",
+      ],
+    },
+    {
+      "at": 825,
+      "cells": [
+        "ffd3:fe",
+        "ffd4:3",
+      ],
+    },
+    {
+      "at": 826,
+      "cells": [
+        "ffd3:ef",
+        "ffd4:12",
+      ],
+    },
+    {
+      "at": 827,
+      "cells": [
+        "ffd3:f2",
+        "ffd4:10",
+      ],
+    },
+    {
+      "at": 828,
+      "cells": [
+        "ffd3:7",
+        "ffd4:fa",
+      ],
+    },
+    {
+      "at": 829,
+      "cells": [
+        "ffd3:2f",
+        "ffd4:d3",
+      ],
+    },
+    {
+      "at": 830,
+      "cells": [
+        "ffd3:69",
+        "ffd4:9a",
+      ],
+    },
+    {
+      "at": 831,
+      "cells": [
+        "ffd3:b5",
+        "ffd4:4e",
+      ],
+    },
+    {
+      "at": 832,
+      "cells": [
+        "ffd3:14",
+        "ffd4:ef",
+      ],
+    },
+    {
+      "at": 833,
+      "cells": [
+        "ffd3:85",
+        "ffd4:7f",
+      ],
+    },
+    {
+      "at": 834,
+      "cells": [
+        "ffd3:8",
+        "ffd4:fb",
+      ],
+    },
+    {
+      "at": 835,
+      "cells": [
+        "ffd3:9e",
+        "ffd4:66",
+      ],
+    },
+    {
+      "at": 836,
+      "cells": [
+        "ffd3:46",
+        "ffd4:be",
+      ],
+    },
+    {
+      "at": 837,
+      "cells": [
+        "ffd3:0",
+        "ffd4:4",
+      ],
+    },
+    {
+      "at": 838,
+      "cells": [
+        "ffd3:cd",
+        "ffd4:38",
+      ],
+    },
+    {
+      "at": 839,
+      "cells": [
+        "ffd3:ac",
+        "ffd4:59",
+      ],
+    },
+    {
+      "at": 840,
+      "cells": [
+        "ffd3:9d",
+        "ffd4:68",
+      ],
+    },
+    {
+      "at": 841,
+      "cells": [
+        "ffd3:a1",
+        "ffd4:65",
+      ],
+    },
+    {
+      "at": 842,
+      "cells": [
+        "ffd3:b7",
+        "ffd4:50",
+      ],
+    },
+    {
+      "at": 843,
+      "cells": [
+        "ffd3:df",
+        "ffd4:29",
+      ],
+    },
+    {
+      "at": 844,
+      "cells": [
+        "ffd3:19",
+        "ffd4:ee",
       ],
     },
     {
@@ -15690,6 +20941,8 @@ exports[`Route1 wild win uses the production session, real input, 123-frame firs
         "ff96:0",
         "ff97:24",
         "ff98:2d",
+        "ffd3:66",
+        "ffd4:a2",
         "ffd7:2",
       ],
     },

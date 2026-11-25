@@ -2,6 +2,7 @@
 // Outside a battle it runs Random itself (VBlank and the overworld, DECISIONS #91); a battle attaches the bytes.
 import type { BattleState } from './battle_state';
 import { RANDOM_CYCLES } from './battle_random_cycles';
+import { random as battleRandom } from './battle_random';
 
 export class BattleRandomState {
   hRandomAdd = 0;
@@ -30,6 +31,11 @@ export class BattleRandomState {
     this.carry = difference < 0 ? 1 : 0;
     this.advanceCycles?.(RANDOM_CYCLES.afterSecond);
     return this.hRandomAdd;
+  }
+
+  /** VBlank uses the currently attached HRAM bytes, including during the transition. */
+  vblank(carryIn: 0 | 1): number {
+    return this.attached ? battleRandom(this.attached, carryIn) : this.random(carryIn);
   }
 
   /** pret engine/math/random.asm:1-14. Install the retained HRAM bytes before LoadEnemyMonData. */

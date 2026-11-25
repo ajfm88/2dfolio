@@ -22,7 +22,8 @@ import { BattleAudio } from './battle_audio';
 import { PartyMenu } from '../menus/party_menu';
 import { partySlotFromPokemon, writePartySlot } from '../test/party_slot_fixture';
 import { loadStatEffectData } from './battle_effects_stats';
-import { BattleUnsupportedState } from './battle_move_data';
+import { BattleUnsupportedState, loadBattleMoveData } from './battle_move_data';
+import { selectEnemyMove } from './battle_math';
 import { ENEMY_SEND_CELLS } from './battle_enemy_send_out';
 import * as rng from './battle_random';
 import * as hp from './battle_hp';
@@ -40,7 +41,7 @@ const realBar = hp.updateHPBar2;
 const holder: { mark?: (event: string, data?: unknown) => void } = {};
 
 beforeAll(async () => {
-  await loadBattleData(); await loadTextPrograms(); await loadStatEffectData();
+  await loadBattleData(); await loadBattleMoveData(); await loadTextPrograms(); await loadStatEffectData();
   await loadTrainerAIItemNames(); await initTextSystem();
 });
 beforeEach(() => {
@@ -174,6 +175,36 @@ function enemy(s: State, slot: number, hp: number, status = 0, boxLevel = 7) {
   s.mem[ENEMY_SEND_CELLS.wEnemyPartySpecies + slot] = slot === 0 ? 0x24 : 0x54;
   s.mem[ENEMY_SEND_CELLS.wEnemyPartySpecies + slot + 1] = 0xff;
 }
+
+it('selects Lorelei’s encouraged move before her low-HP item action', () => {
+  const r = rig();
+  cls(r.s, 44, 0xff);
+  r.s.wEnemyMonSpecies = 0x78; // Dewgong: matching type rows consume an extra BattleRandom
+  r.s.wBattleMonType1 = r.s.wBattleMonType2 = 21; // Water
+  r.s.setBytes(A.wEnemyMonMoves, [85, 33, 0, 0], 4); // Thunderbolt, Tackle
+  setHp(r.s, 39, 200);
+  const battleDraws: number[] = [];
+  const values = [0x66, 127, 0];
+  r.s.random = () => {
+    const value = values[battleDraws.length];
+    if (value === undefined) throw new Error('unexpected BattleRandom');
+    battleDraws.push(value);
+    return value;
+  };
+
+  selectEnemyMove(r.s);
+  expect(battleDraws).toEqual([0x66, 127, 0]); // type row, rejected slot 3, slot 1
+  expect(r.s.bytes(A.wBuffer, 4).slice()).toEqual([85, 0, 0, 0]);
+  expect([r.s.wEnemySelectedMove, r.s.wEnemyMoveListIndex]).toEqual([85, 0]);
+
+  r.arm([127]); // TrainerAI uses Random, not BattleRandom
+  r.start(trainerAIBuilder(r.env)(r.s));
+  expect(r.finish()).toEqual({ carry: true });
+  expect(draws(r.events)).toEqual([127]);
+  expect([r.s.wEnemyMonHP, r.s.mem[D.wAICount], r.s.mem[I.wAIItem]]).toEqual([89, 1, 0x13]);
+  expect(r.s.wEnemySelectedMove).toBe(85);
+  expect(texts(r.events)).toContain('AIBattleUseItemText');
+});
 
 describe('thresholds and the pointer table', () => {
   it('evaluates percent the way rgbds does', () => {

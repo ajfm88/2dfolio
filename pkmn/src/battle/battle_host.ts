@@ -23,7 +23,7 @@ export class BattleHost<T = void> {
   /** pret home/tilemap.asm:9-28; animations.asm:599-617: bind the host's screen and Buffer 2.
    * Production leaves audio a no-op: main.tickAudio already owns its clock.
    * Tests inject their engines' audioUpdate, on serviced frames only. */
-  constructor(state: BattleState, readonly video = new BattleMenuScreen(battleScreenFor(state)), private readonly audio: () => void = () => {}) {
+  constructor(state: BattleState, readonly video = new BattleMenuScreen(battleScreenFor(state)), private readonly audio: () => void = () => {}, private readonly random: () => void = () => {}) {
     bindBattleScreen(state, video.screen);
     this.actors = {
       get whoseTurn() { return state.hWhoseTurn; },
@@ -67,6 +67,7 @@ export class BattleHost<T = void> {
     }
     if (frame === 'serviced') {
       this.video.vblank();
+      this.random();
       this.audio();
     }
     // Held frames tick nothing; session frames were ticked by their owner.

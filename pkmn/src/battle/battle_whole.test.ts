@@ -124,6 +124,29 @@ describe('checkpoint-08b whole-battle ledgers',()=>{
       {nameBuffer:'LEAD',expAmountGained:100},{nameBuffer:'LEAD',expAmountGained:48},{nameBuffer:'RESERVE',expAmountGained:48}]);
     expect(r.ledger()).toMatchSnapshot();
   });
+  it('trainer faint awards EXP.ALL before prize and Pay Day settlement, retaining the level-up flag',()=>{
+    // core.asm halves the seven enemy bytes, then GainExperience divides the already
+    // halved data again for the whole party. EndOfBattle collects Pay Day afterward.
+    const r=battleLedger({trainer:true,reserves:1});r.s.setBag([{id:0x4b,quantity:1}]);
+    r.s.mem[D.wPartyMons+33]=19;r.s.writeBE(D.wPartyMons+15,7999);r.s.wBattleMonLevel=19;
+    r.s.mem[D.wAmountMoneyWon+2]=0x50;r.s.mem[D.wTotalPayDayMoney+2]=0x40;
+    let beforeEnd=false;
+    expect(r.runBattle(undefined,()=>{
+      beforeEnd=true;
+      expect(r.s.partyMons[0]!.level).toBe(20);
+      expect(r.s.mem[D.wCanEvolveFlags]&1).toBe(1);
+      expect(readBattleBcd(r.s,D.wPlayerMoney)).toBe(50);
+    })).toBe('end');
+    expect(beforeEnd).toBe(true);
+    expect(r.s.partyMons.slice(0,2).map(m=>m!.exp)).toEqual([8221,8072]);
+    expect(r.s.partyMons[0]!.statExp).toEqual([7,15,22,30,37]);
+    expect(r.s.partyMons[1]!.statExp).toEqual([2,5,7,10,12]);
+    expect(readBattleBcd(r.s,D.wPlayerMoney)).toBe(90);
+    expect(r.events.findIndex(e=>e.name==='text:GainedText')).toBeLessThan(r.events.findIndex(e=>e.name==='text:MoneyForWinningText'));
+    expect(r.events.findIndex(e=>e.name==='text:MoneyForWinningText')).toBeLessThan(r.events.findIndex(e=>e.name==='text:PickUpPayDayMoneyText'));
+    expect(r.events.find(e=>e.name==='evolutionHandOff')?.data).toEqual([1,0]);
+    expect(r.s.wIsInBattle).toBe(0);
+  });
   it.each(['enemy','player'] as const)('%s-first wild double faint with a reserve awards only the living participant',first=>{
     const r=battleLedger(first==='enemy'?{reserves:1,playerMove:153,enemyHp:1}:{reserves:1,enemyMove:153,hp:1,enemyHp:60,playerFirst:false});
     r.s.mem[D.wPartyGainExpFlags]=3;

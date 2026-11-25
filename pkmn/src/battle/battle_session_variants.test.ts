@@ -47,6 +47,7 @@ import { resetListStateForEmptySlot } from '../list_state';
 import { textBgTransfer } from '../text/bg_transfer';
 import { setLowHealthAlarm, setLowHealthAlarmDisabled, setLowHealthChannel5 } from '../audio/low_health_alarm';
 import { A, battleContext } from './battle_state';
+import { I } from './battle_item_state';
 import { INIT } from './battle_init';
 import { PIC_VARIANT } from './battle_pic_variants';
 import { MOVE_ANIM } from './battle_move_anim';
@@ -70,13 +71,13 @@ beforeEach(() => {
   setLowHealthAlarm(0); setLowHealthAlarmDisabled(false); setLowHealthChannel5(0);
 });
 afterEach(() => { sessions.splice(0).forEach(session => session.abort()); });
-function setup(animation: 'ON' | 'OFF' = 'OFF', move = 'SUBSTITUTE') {
+function setup(animation: 'ON' | 'OFF' = 'OFF', move = 'SUBSTITUTE', ball = false) {
   const mon = createPokemon(151,40,'MEW',{atk:9,def:8,spd:8,spc:8})!;
   mon.otName='ASH';mon.otId=0;mon.moves=[{id:move,pp:getMove(move)!.pp,maxPp:getMove(move)!.pp}];
   const r = rig(); let time = 0;
   const banks = new PlaySound(engineHost(r.synth,r.music,r.sfx,(id,bank) => r.music.play(musicData(musicNameForSound(id,bank)!))));
   const session = createBattleSession(battleWorld({party:[mon],options:{textSpeed:'FAST',animation,battleStyle:'SET'},
-    bag:[{id:'X_ATTACK',count:2}]}), {random:createSessionRandom(() => time),audio:() => ({sfx:r.sfx,music:r.music,banks})});
+    bag:[{id:ball?'POKE_BALL':'X_ATTACK',count:2}]}), {random:createSessionRandom(() => time),audio:() => ({sfx:r.sfx,music:r.music,banks})});
   sessions.push(session); banks.playMusic(musicIdentity('wildbattle')!); session.start();
   const bound = { ...boundary };
   const input = (pressed: GameButton[] = []) => { time++;keys.forEach(key => setKey(key,pressed.includes(key)));updateInput(); };
@@ -207,4 +208,22 @@ it('composed pictures and sprite atlases stay session-local while published imag
   second.s.hWhoseTurn=1;second.run(second.bound.host.loadEnemyPicVariant('minimize'));
   expect(first.session.renderTiles.pictures.get(key)).toBe(image);
   expect(picture(first)).toBe(key);expect(renderBattleScreen(first.screen,first.session.renderTiles).length).toBe(92160);
+});
+
+// item_effects.asm:2569-2579 and animations.asm:TossBallAnimation.BlockBall.
+// Exercise the session's real dispatcher, animation player, text and inventory together.
+it('trainer ball throw keeps the ball through the block and both messages, then spends it', () => {
+  const h=setup('ON','SUBSTITUTE',true),s=h.s; s.wIsInBattle=2;
+  const ctx=battleContext(s); ctx.curItem='POKE_BALL';ctx.itemIndex=0;ctx.itemName='POK? BALL';
+  const seen:number[]=[];
+  h.run(h.bound.host.useItem(ctx),()=>{
+    seen.push(s.wAnimationID);
+    expect(s.mem[I.wNumBagItems+2]).toBe(2);
+  });
+  expect(seen.indexOf(0xc1)).toBeGreaterThanOrEqual(0);
+  expect(seen.indexOf(0xc4)).toBeGreaterThan(seen.indexOf(0xc1));
+  expect(h.session.textLog.filter(row=>row.complete && row.label.startsWith('ThrowBallAtTrainerMonText'))
+    .map(row=>row.label)).toEqual(['ThrowBallAtTrainerMonText1','ThrowBallAtTrainerMonText2']);
+  expect(s.mem[I.wNumBagItems+2]).toBe(1);expect(s.wActionResultOrTookBattleTurn).toBe(1);
+  expect(s.wCapturedMonSpecies).toBe(0);
 });

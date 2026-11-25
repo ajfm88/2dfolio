@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-23 (local) · **Phase:** Pokémon cries closed (note 140 §8.35); next is the battle-mechanics audit (#70), not yet planned · **Milestones done:** 9/36.
+**Last updated:** 2026-11-24 (local) · **Phase:** A2, checkpoint-01 reviewed; checkpoint-02 next · **Milestones done:** 9/36.
 **Notes 134-137 and reviews 07b/08b are closed.** The permanent note 137 pacing regression passed all gates.
 **Opening timing work parked until the end of the game (DECISIONS #171).** The live opening is unchanged. 12b2c2's reviewed timing code stays
 committed and unused. The queue moves to the core game.
@@ -42,7 +42,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 
 ## Current phase
 
-**Phase R and Phase V are done** (#139). The **Pokémon cries** slice closed on 2026-11-23 (note 140). Next: the **battle-mechanics audit** (#70).
+**Phase R and Phase V are done** (#139). The **Pokémon cries** slice closed on 2026-11-23 (note 140). The **battle-mechanics audit** closed through checkpoint-11 on 2026-11-24; its evidence is `notes/141-battle-mechanics-audit-plan.md`. **A2 is active:** checkpoint-01's machine data is reviewed (note 142); checkpoint-02 is next.
 The opening's timing work (12b2c2 remainder, units 3–4) is parked to J2 (#171); the simple opening comes after the
 main game (#172, #174).
 
@@ -53,15 +53,15 @@ main game (#172, #174).
 | Item | State |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Git | Root repo, branch `master`, **no remote**. **Re-initialised 2026-11-23** (the old `.git` was found missing): baseline `16b9ae4` snapshots the tree as of the Boot handoff; every older hash in `context/` and `notes/` refers to the lost history. `.gitattributes`: text LF, `*.png`/`*.tilemap`/`*.gbc` binary. `game/.gitattributes` (the user's, tracked since 2026-10-14, DECISIONS #53) repeats those rules for `game/` and adds linguist hints |
-| Committed generated files | `game/data/` (262 JSON) + `game/static/` (536 PNG, 6 tilemaps, 262 JSON), 1066 generated files total. Checkpoint-10 adds unused `yellow_intro.json`, three intro PNGs and three cloud tilemaps. Each slice's additions are in its note and in `HISTORY.md` (the full row, archived 2026-11-17). Regenerate, never hand-edit |
+| Committed generated files | `game/data/` (263 JSON) + `game/static/` (536 PNG, 6 tilemaps, 263 JSON), 1068 generated files total. A2 checkpoint-01 adds `machine_data.json` and its mirror; note 142 verifies all 1,066 prior generated files unchanged. Regenerate, never hand-edit |
 | Ignored | `*.gbc`/`*.gb` (the ROM), `refs/`, `pkmn-sprites/`, `node_modules/`, `dist/` |
 | `game/LICENSE` | **Removed by the user (2026-09-22): "i want it gone".** Deletion committed with R1c. Don't restore it (DECISIONS #28) |
 | ROM | `game/pokeyellow.gbc`, SHA1 `cc7d0326…4a38e1` (DECISIONS #14) — re-verified 2026-09-22 |
 | `refs/` | All 5 on pinned branches, refreshed **2026-11-17** with `./pull-refs.sh`: `pokeyellow` master `b452f2ab` (unchanged since 2026-11-03; pret's names, R-SYNC note 78), `gen1recomp` dev `53ad85ca` (was `d85a6176`, +39: Android storage, launcher config, CI), `oldamber` main `268d571f` (unchanged), `engine` main `248eaad2` (was `1986dd93`, +6: Zig compatibility, lint), `dmg` main `5e3b785a` (unchanged). No test reads `gen1recomp` or `engine`. `file:line` citations written before note 78 refer to pret `e89ead15` |
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → _Engine reference_, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
-| `npm run setup` | 262 JSON → `data/`; static 536 PNG + 6 tilemaps + 262 JSON mirror (1066 generated files). Clip 17 landed with cries checkpoint-04, clips 28/35/40 with checkpoint-05. A generated-data checkpoint ships a hash manifest and `check-generated.py` (note 121) |
+| `npm run setup` | 263 JSON → `data/`; static 536 PNG + 6 tilemaps + 263 JSON mirror (1068 generated files). Clip 17 landed with cries checkpoint-04, clips 28/35/40 with checkpoint-05. A generated-data checkpoint ships a hash manifest and `check-generated.py` (notes 121, 142) |
 | Typecheck | Clean |
-| Tests | **Cries checkpoint-05 (2026-11-23).** ROM 7,929/7,929 and no-ROM 7,544 pass / 385 skip across 304 files (290 passed / 14 skipped without ROM). Build `index-Bh1w6Q55.js`, 708,471 bytes. Was ROM 7,911/7,911 and no-ROM 7,535 pass / 376 skip, 304 files. |
+| Tests | **A2 checkpoint-01 (2026-11-24).** ROM 7,959/7,959; no-ROM 7,573 pass / 386 skip across 308 files. Typecheck clean. Both suites passed with `--maxWorkers=2`. No production source changed; the last measured bundle remains the cries baseline `index-Bh1w6Q55.js`, 708,471 bytes. |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -128,22 +128,40 @@ main game (#172, #174).
 Milestones R1, V1–V5, A1, A5 and A6 are done (9/36; CLAUDE.md, PROJECT.md *State*). The one-line-per-slice table moved
 to `HISTORY.md` → *Archived STATUS sections (moved 2026-11-23)* to keep this file under 40 KB; the full per-slice
 table (results, commits, counts) is further down in HISTORY. Plans and reviews are in `notes/`.
+Battle audit checkpoint-10b closed 2026-11-24: the 10a RNG stream's affected ledgers were re-recorded,
+the nine-failure census reconciled, both full suites passed and Luna independently reviewed the changes (note 141).
+Battle audit checkpoint-11 closed 2026-11-24: the move/effect census and note 57 reconciliation found no ordinary path to the two glitch tails. Terra added one loaded-record regression; Luna independently reviewed it and passed. The bounded audit is complete; unreachable glitches stay at J2 (note 141, DECISIONS #176).
+A2 checkpoint-01 closed 2026-11-24 (`6e8780d`): the machine move and price tables are extracted into committed JSON with a static mirror; Terra's implementation and Luna's post-completion review passed. A2 remains open (note 142).
 
 ## In progress
 
-**Nothing in progress.** The Pokémon cries slice (note 140, #174) closed on 2026-11-23: five checkpoints, each
-reviewed PASS and play-tested by the user (§8.35). The next slice, the battle-mechanics audit (#70, queue row 0),
-has no plan yet. Its first step is a planning pass:
-- inventory every battle routine (ported from the ASM in A5c3, or still upstream's body);
-- attach the backlog entries routed to #70 (note 57: damage flooring per type row, set-damage moves and Counter,
-  the AI modification gates, glitch move ids, `GetMonName`, stat text past EVADE, stats past 255);
-- include VBlank's per-frame `Random` in battle, which re-records the battle ledgers;
-- split the work into checkpoints with a size estimate for the user.
-- **Baseline at `e4e7821`:** ROM 7,929/7,929; no-ROM 7,544 pass / 385 skip, 304 files; bundle
-  `index-Bh1w6Q55.js`, 708,471 bytes.
+**A2 in progress:** checkpoint-01 is reviewed and closed. The machine tables
+are committed data and unused by runtime code. Next is a separate checkpoint-02
+brief for machine item names, prices and HM behavior across bag/Mart/PC. A2,
+A3, A4 and B1 remain separate milestones (note 142, DECISIONS #177).
+
+**Battle-mechanics audit (#70) complete.** Plan, routine inventory and bounded evidence:
+`notes/141-battle-mechanics-audit-plan.md` (DECISIONS #176). Checkpoints 01–09 are reviewed:
+checkpoint-01 damage/hit/Counter (`17651c7`), checkpoint-02 turn/status/residual (`08b014d`),
+checkpoint-03 effect dispatch/status family (`3a2d4ae`), checkpoint-04 stat effect
+handlers (`e39878f`), checkpoint-05 turn effect handlers (`2734993`), checkpoint-06
+HP/copy handlers (`8f8461a`), checkpoint-07 stat arithmetic/names/loaders
+(`238272a`), checkpoint-08 trainer AI (`2be1c48`), checkpoint-09a items/catch
+(`36b2efe`), and checkpoint-09b faint/EXP/end (`5baa462`). Their checked paths matched the ASM;
+each added cross-module regression coverage and no production behavior changed.
+**Checkpoint-10 is closed.** Checkpoint-10a (`1d27f50`) added battle VBlank
+`Random` with a single frame owner, attached HRAM transfer and shared modeled
+carry. Checkpoint-10b reconciled the nine deterministic suite failures from
+that stream; Luna independently reviewed its ledger and test changes and passed
+them. Note 141 records the ASM checks, carry approximation, session-frame order
+limit, census and ledger comparison. Checkpoint-11's source-derived move census
+and Luna's independent review close the audit; unreachable glitch behavior
+remains parked at J2 under #176.
+- **Full green baseline after 11:** ROM 7,957/7,957; no-ROM 7,572 pass / 385 skip,
+  307 files; both full suites used `--maxWorkers=2`. Production code and bundle are unchanged
+  since the cries baseline `index-Bh1w6Q55.js`, 708,471 bytes; build was not rerun here.
 - **Untracked on purpose:** the root `*.py` files and `pkmn-save.txt` (the user's). `*.sav` is gitignored
   (`da83ab1`).
-- After the play-test, the cries slice is closed and the queue moves to row 1.
 
 The opening's timing work is parked until after the main game (DECISIONS #171). Its handoff (notes 134–139, the
 preview page, timing limits) moved to `HISTORY.md` → *Archived STATUS sections (moved 2026-11-23)*.
@@ -154,8 +172,8 @@ Claim one planned checkpoint at a time. The roadmap is in `PLAN.md`.
 
 | # | Work | Scope |
 | --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 0 | **Battle-mechanics audit (#70)** | Plan it first (see *In progress*): inventory, backlog entries, VBlank `Random`, checkpoints and size. |
-| 1 | **B1 Mt. Moon, A2** | Then Mt. Moon and gym rewards/TMs. PLAN wants A4 (trades) before B1; settle that with A3 when planning B1. |
+| 0 | **A2 checkpoint-02** | Brief machine item names, prices and HM behavior across bag/Mart/PC against the ASM (note 142). |
+| 1 | **A2 remainder** | Compatibility, teaching and Oak's Aide; brief each checkpoint before implementation. Then A3 → A4 → B1 (#177). |
 | — | **After the main game** | Simple opening (#172, #174). Live boot still uses the default path. |
 | — | **Parked to J2** | PCM crackle fix (#173); opening 12b2c2 timing remainder (#171). |
 
@@ -238,146 +256,59 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 
 ## Session log
 
-### 2026-11-23 - Claude: Pokémon cries closed (note 140 §8.35)
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-01 reviewed
 
-- The user play-tested checkpoint-05 in Bill's PC and reported that it all works. The cries slice is closed after
-  five checkpoints. §8.34's stale-row finding was fixed in `e4e7821`.
-- The queue moves to the battle-mechanics audit (#70). Its planning pass comes first.
+- Codex resolved the order A2 → A3 → A4 → B1 (#177) and briefed one data-only checkpoint in note 142. Terra extracted the 55 TM/HM move IDs and 50 packed TM prices into `machine_data.json` and its mirror (`6e8780d`). A manifest checker verified two new generated files and all 1,066 prior files unchanged, including after repeat setup. No runtime item or teaching code changed.
+- Terra formally finished before Luna began. Luna checked the source and owned ROM, independently challenged the table boundary and nybble order, and passed the review. Typecheck, focused ROM 12/12 and both full suites passed: ROM 7,959/7,959; no-ROM 7,573 pass / 386 skip across 308 files, two workers. Next: brief A2 checkpoint-02. The user's `context/PLAN.md` edit and root files remain untouched.
 
-### 2026-11-23 - Grok: cries checkpoint-05 review (note 140 §8.34)
+### 2026-11-24 - Codex/Terra/Luna: battle-mechanics audit checkpoint-11 reviewed
 
-- PASS. Deposit, withdraw and release match the ASM order, including the silent YES and the starter's clip 40 refusal. The five Bill's PC starter sites compare species, OT id 0 and five name bytes. Clips 28/35/40 are in the boot preload. Six spot mutations each failed a test and were restored.
-- Gates match §8.33: typecheck passed; `index-Bh1w6Q55.js`, 708,471 bytes; no-ROM 7,544 passed / 385 skipped; ROM 7,929/7,929. Both suites covered 304 files.
-- The setup rows and the SFX row still say 259 JSON and that clips 28/35/40 remain open. Next is the user's play-test.
+- Codex briefed the closure in note 141; Terra reconciled note 57 and added a live loaded-record census. The 165 shipped moves have no `$48-$4B` effect; ordinary selection has no proven path to move ID 0 or 166+. The two glitch tails stay at J2 under #176. No production or generated data changed. Luna challenged the Mirror Move zero-ID path, independently checked the census and reviewed PASS.
+- Typecheck and focused tests passed. Full ROM 7,957/7,957; no-ROM 7,572 pass / 385 skip across 307 files, both with `--maxWorkers=2`. Next: plan the A2/A3/A4/B1 sequence. The pre-existing `context/PLAN.md` edit and user's root files remain untouched.
+- At the user's direction, Luna reviewed committed checkpoint `23814b1` again after Terra formally finished. She passed the source/diff review and independently reran typecheck and both full suites at the same counts (note 141, post-completion review).
 
-### 2026-11-23 - Codex: cries checkpoint-05 starter PCM complete (note 140 §8.33)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-10b reviewed
 
-- Extracted clips 28/35/40 to `data/` and `static/` (259 to 262 JSON in each), preloaded them with
-  clip 17 and wired Bill's PC deposit, withdraw and release through the shared cue. Frozen frames:
-  94/94/78. No stored snapshot moved. Review is §8.34; then user play-test.
-- Typecheck and build passed (`index-Bh1w6Q55.js`, 708,471 bytes). No ROM: 7,544 passed,
-  385 skipped; ROM: 7,929/7,929. Both suites covered 304 files.
+- Sol wrote the implementation brief in note 141. Terra ran a nine-failure no-ROM census, re-recorded Route 1's per-frame RNG snapshot and repaired six affected test files without changing production code. The new ledger leaves frame hashes, text, audio and outcome unchanged; aside from RNG bytes, one damage byte changes at frame 472. Luna independently checked the ASM, snapshot and diff, reran 170/170 affected tests, and passed the review.
+- Typecheck and focused tests passed. Full ROM 7,956/7,956; no-ROM 7,571 pass / 385 skip across 307 files, both with `--maxWorkers=2`. Next: checkpoint-11 closure and glitch triage. The pre-existing `context/PLAN.md` edit and user's root files remain untouched.
 
-### 2026-11-23 - Codex: Bill's PC regular cries and starter ownership (note 140 §8.32)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-10a reviewed
 
-- Wired the three ordinary cries and their waits, removed the stub, and applied the full starter check at the
-  Bill's PC branches. Two traded-Pikachu cases exercise the real audio engine and preserve happiness.
-- Typecheck and build passed (`index-RPQ4pVo7.js`, 708,310 bytes). No ROM: 7,538 passed, 376 skipped.
-  ROM: 7,914/7,914. Both suites covered 304 files.
-- Starter PCM extraction and playback remain open. No generated data or snapshots changed.
+- Sol scoped 10a frame/RNG ownership and 10b ledger/full-suite closure. Terra wired attached battle VBlank `Random` through the page-lifetime owner (`1d27f50`) and added focused timing/carry tests. Luna caught a constant-carry host callback; Terra corrected it and Luna re-reviewed PASS. Source and focused evidence are in note 141.
+- Typecheck, host/RNG 31/31 and session variants 16/16 passed. Existing `battle_session.test.ts` has two known failures (Route 1 wild-win snapshot; Misty X Defend item count) from the changed RNG stream. Full suites were intentionally deferred to 10b. Last green counts remain checkpoint-09b's 7,952 ROM / 7,567 pass + 385 skip no-ROM, 306 files. Next agent: run a full failure census, update each affected RNG ledger from the new source-derived stream, review, run both full suites and replace the baseline. Preserve the pre-existing `context/PLAN.md` edit and user-owned untracked root files.
 
-### 2026-11-23 - Claude: checked `82ebd9f`; ruled on the Bill's PC starter check (note 140 §8.31)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-09 reviewed
 
-- `82ebd9f` lands tests and docs only. Playback, clip extraction and stub removal are still open. No review until
-  they're in.
-- §8.28's starter-predicate finding is a real bug: Bill's PC uses species-only checks. The five Bill's PC sites
-  get the full species + OT id + OT name check. Other callers are backlogged for the Pikachu audit.
+- Sol split the broad row into 09a items/catch and 09b faint/EXP/end. Terra checked each against pret and added a trainer ball item-flow witness (`36b2efe`) and a trainer knockout → EXP.ALL → end witness (`5baa462`). Luna independently reviewed both and passed them. No production discrepancy was proved on the checked paths; note 141 records the coverage and limits.
+- Typecheck and focused tests passed. Full ROM 7,952/7,952; no-ROM 7,567 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-10 battle VBlank `Random` and ledger re-recording. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
 
-### 2026-11-23 - Codex: cries checkpoint-05 release ruling and independent checks (note 140 §8.29–§8.30)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-08 reviewed
 
-- Recorded Claude's ruling verbatim, restored the three Pokédex assertions, and added a Bill's PC test for
-  silent YES and the existing sound-completion check. Updated the cries architecture, test list and backlog.
-- Typecheck and build passed (`index-C6Qzfxzr.js`, 707,847 bytes). No ROM: 7,536 passed, 376 skipped.
-  ROM: 7,912/7,912. Both runs covered 304 files.
-- Next is §8.31 review of these changes. Bill's PC playback and clip extraction remain open.
+- Sol briefed trainer AI; Terra checked move scoring and class actions against pret and added a Lorelei selection-to-item witness (`2be1c48`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths, retired backlog claim and limits.
+- Typecheck and focused tests passed. Full ROM 7,950/7,950; no-ROM 7,565 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-09 items, catch, faint, EXP and end; split its broad scope before implementation if needed. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
 
-### 2026-11-23 - Codex: paused cries checkpoint-05 on the Bill's PC release sound (note 140 §8.28)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-07 reviewed
 
-- The generic PC leaves menu-button silence set through Release → YES. The post-removal wait checks the current
-  sound before the cry. §8.28 records the ASM trace, the species-only starter stand-ins, and clip timing.
-- Typecheck, build and both suites confirmed the baseline. Bill's PC implementation and setup remain pending.
-  Next is review of the trace in §8.29.
+- Sol briefed stat arithmetic, names and loaders; Terra audited them against pret and added a trained Rhydon >255 Attack witness (`238272a`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths, stale backlog claims and limits.
+- Typecheck and focused tests passed. Full ROM 7,949/7,949; no-ROM 7,564 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-08 trainer AI. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
 
-### 2026-11-23 - Claude: cries checkpoint-04 closed; checkpoint-05 briefed; context handoff (note 140 §8.26–§8.27)
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-06 reviewed
 
-- Grok's review of checkpoint-04 (`bc2cd27`) is PASS (§8.25). The user play-tested it and reported no problems.
-- §8.26: the starter checks use OT id 0 until A4 adds the player ID (added to the backlog's A4 line); three
-  Pokédex assertions go back in with checkpoint-05.
-- §8.27 briefs checkpoint-05. It corrects §2.5: releasing the starter plays clip 40, so the checkpoint adds
-  clips 28, 35 and 40.
-- STATUS moved its pre-11-23 session log and the parked opening handoff to `HISTORY.md` (113 KB → under 40 KB).
-- CLAUDE.md's test baseline is now `6c1d414`'s.
+- Sol briefed all nine HP/copy effect handlers; Terra checked them against pret and added a two-sided Disable dispatch-to-status witness (`8f8461a`). Luna independently reviewed and passed it after the exact RNG draw assertion was added. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,948/7,948; no-ROM 7,563 pass / 385 skip across 305 files, both with two workers. Next: checkpoint-07 stat arithmetic, names and loaders. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
 
-- 2026-11-23 — Grok reviewed cries checkpoint-04. PASS. Note 140 §8.25. Gates match §8.24. Six spot mutations each failed a test and were restored. The field starter test compares the OT id with 0. Next is the §8.17 play-test. Checkpoint-05 stays unstarted.
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-05 reviewed
 
-- 2026-11-23 — Codex implemented cries checkpoint-04. Oak, the four map mons, status and the Pokédex use the shared cry path; starter status uses clip 17, which freezes 42 frames. Both suites pass. Note 140 §8.24 records timing and gates. Checkpoint-04 awaits review (§8.25).
+- Sol briefed all eleven turn effect handlers; Terra checked them against pret and added a two-sided Bide initializer-to-release witness (`2734993`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,946/7,946; no-ROM 7,561 pass / 385 skip across 305 files, both with two workers. Next: checkpoint-06 HP and copy effects. The user-owned untracked root files remain untouched.
 
-- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The first status-screen poll uses the last foreground sample as its edge baseline, so B pressed during setup and held through playback can turn the page. Note 140 §8.22 records the clip sample and edge trace.
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-04 reviewed
 
-- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The status screen can accept a button first pressed during the cry and still held at the first poll. Note 140 §8.20 records the ASM trace for review.
+- Sol briefed stat effects; Terra compared the live handlers with pret and added a both-side Haze execution witness (`e39878f`). Luna independently reviewed and passed it after a pointer-table wording correction. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,944/7,944; no-ROM 7,559 pass / 385 skip, 304 files, both with two workers. Next: checkpoint-05 turn effect handlers. The user-owned untracked root files remain untouched.
 
-### 2026-11-23 - Claude: ruled on cries §8.22 (note 140 §8.23)
+### 2026-11-24 - Codex: battle-mechanics audit checkpoints 01-03 reviewed; handoff updated
 
-- §8.22 is right: the status screen's edge baseline is the last foreground joypad read, which can come before the whole setup, and the text runner's `cry` op still needs §8.17 ruling 2's wait. Both are fixes to the brief's wording; the rule (no joypad read until the first page-1 poll) is unchanged. Implementers now stop only for behaviour the brief got wrong. Checkpoint-04 may resume; implementation §8.24, review §8.25.
-
-### 2026-11-23 - Claude: ruled on cries §8.20 (note 140 §8.21)
-
-- §8.20 is right: a button pressed during the status screen's cry and still held at the first poll turns the page; a tap released during the cry is lost. §8.17 ruling 4 is amended. Checkpoint-04 may resume; implementation §8.22, review §8.23.
-
-### 2026-11-23 - Claude: ruled on cries §8.18 (note 140 §8.19)
-
-- §8.18 is right: the Pokédex side menu's five items sit on rows 8, 10, 12, 14 and 16, and the cursor clamps at DATA and QUIT with no wrap. §8.17 ruling 6 and its tests are amended. Checkpoint-04 may resume; implementation §8.20, review §8.21.
-
-- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The Pokédex side-menu labels and cursor use tile rows 8, 10, 12, 14 and 16, and the cursor stops at either end. Note 140 §8.18 records the ASM trace for review.
-
-### 2026-11-23 - Claude: cries checkpoint-03 closed; checkpoint-04 briefed (note 140 §8.16–§8.17)
-
-- The user play-tested checkpoint-03 on the dev server: all four battle sites PASS (§8.16).
-- Checkpoint-04's brief (§8.17) covers the field sites: the text `cry` op, Nidoran/Spearow/Chansey, the status screen with clip 17, the Pokédex data page, and the side menu on the ASM's five rows. PRNT does nothing until J2, as in the VC build. Battle-hosted screens use the session's voice port.
-- `*.sav` was added to `.gitignore` (`da83ab1`); `game/pokeyellow.sav` is an emulator save from tracing.
-
-- 2026-11-23 — Grok reviewed cries checkpoint-03 (`254f12e`). PASS. Note 140 §8.15. Four gates match: typecheck passed; build `index-Cp3Lg0Ba.js` 705,829 bytes; no-ROM 7,525 passed / 373 skipped, 304 files; ROM 7,898/7,898. Six spot mutations each failed a test and were restored. Next is the user's battle play-test. Checkpoint-04 stays unstarted.
-
-- 2026-11-23 — Codex implemented cries checkpoint-03. The battle waits at all four voice sites, with one in-call PCM ID clear before the resumed VBlank. All four gates passed, with ROM 7,898/7,898 and no-ROM 7,525 passed / 373 skipped across 304 files. Checkpoint-03 awaits review (note 140 §8.14).
-
-### 2026-11-23 - Claude: ruled on cries §8.12 (note 140 §8.13)
-
-- The implementer's stop was right: one ID clear, inside `startPikachuClip`, before the extra yield. Amended §8.11
-  ruling 3 and its test. Docs only.
-
-- 2026-11-23 — Codex paused cries checkpoint-03 before implementation. The PCM facade already clears the battle ids through the shared SFX engine. A second clear after the pending VBlank would erase a possible alarm write. The trace in note 140 §8.12 awaits review.
-
-### 2026-11-23 - Claude: cries checkpoint-02 closed; checkpoint-03 briefed (note 140 §8.10–§8.11)
-
-- The user's listening test passed. Checkpoint-03 (the four battle sites, the starter's clips 4/11/37, the alarm
-  restored after the wait) is briefed in §8.11. Docs only.
-
-- 2026-11-23 — Grok reviewed cries checkpoint-02 (`62deec3`). PASS. Note 140 §8.9. Four gates match: typecheck passed; build `index-Cy5imu0j.js` 705,731 bytes; no-ROM 7,517 passed / 373 skipped, 304 files; ROM 7,890/7,890. Six spot mutations each failed `cries.test.ts` and were restored. CryData compiled into the bundle is recorded for the user. Next is the listening test. Checkpoint-03 stays unstarted.
-
-- 2026-11-23 — Codex implemented cries checkpoint-02. The console wait follows the last of CHAN5, 6 and 8. All four gates passed, with ROM 7,890/7,890 and no-ROM 7,517 passed / 373 skipped across 304 files. Checkpoint-02 awaits review (note 140 §8.8).
-
-### 2026-11-23 - Claude: ruled on cries §8.6 (note 140 §8.7)
-
-- The implementer's stop was right; the plan was wrong about the cry's length. Corrected §2.3 and checkpoint-02's
-  tests; checkpoint-02 resumes and records as §8.8. Docs only.
-
-- 2026-11-23 — Codex traced checkpoint-02 and paused before implementation. Kangaskhan's CHAN8 return follows CHAN5 by seven updates, which extends `WaitForSoundToFinish`. Note 140 §8.6 records the wait, noise pitch and bank traces for review.
-
-- 2026-11-23 — Grok re-reviewed the cries checkpoint-01 test repair (`7a70d9b`). PASS. Note 140 §8.5. The game change is the bank-comparison test. Four gates match. Dropping one expected index, plus §8.4's three mutations, each failed that assertion for bank $08 and the test file was restored. Checkpoint-02 is next.
-
-- 2026-11-23 — Codex repaired the cries checkpoint-01 bank comparison. All three mutations failed at the exact byte-index assertion and were restored. Note 140 §8.4 records verification. Re-review is next.
-
-- 2026-11-23: Codex reviewed cries checkpoint-01; note 140 ?8.2 records FAIL because a widened bank-comparison mask survived the requested mutation. All four gates passed; implementation was not changed.
-
-### 2026-11-23 - Grok: cries checkpoint-01, the data (note 140)
-
-- Extracted `cries.json` (190 rows) and `audio/sfx/cry00.json`–`cry25.json` from bank $02. Nothing plays them.
-- Banks $08, $1f and $20 match. Only cry0d channel 5's `sound_loop` address differs. Six channels fall through into the next label's `sound_ret`.
-- ROM 7,882/7,882. No-ROM 7,509 pass / 373 skip, 303 files. Bundle unchanged. Data JSON 219 → 258 in `data/` and in `static/`.
-- Commit `a66dd93`. Stopped for review. Next is Nemotron or Luna on note 140 §6, then checkpoint-02. Do not start it here.
-
-### 2026-11-23 - Claude: the user answered note 140 §7 (#174)
-
-- Yes to the bar, Pikachu's clips and the Pokédex CRY item. Cries go first; the simple opening waits for the main game.
-- Dropped the old-commit comparisons from `battle_end_data` and `battle_item_data`. Typecheck clean; ROM 7,877/7,877,
-  no-ROM 7,509/368. Next: Grok implements cries checkpoint-01; Nemotron or Luna reviews (user changed roles).
-
-### 2026-11-23 - Claude: fresh git baseline; Pokémon cries planned (note 140)
-
-- The root `.git` was missing. `git init` + baseline `16b9ae4` from the current tree (8,924 files; ROM, `refs/`,
-  `pkmn-sprites/`, `dist/` excluded; the three root `*.py` scratch scripts and `pkmn-save.txt` left untracked). The
-  working copy had 2,219 CRLF files; rewritten to LF from the index. The lost notes' references were removed at the user's request.
-- Gates on the baseline: typecheck clean; ROM 7,875/7,877. Two tests `git show` lost commits (see *Setup → Tests*).
-- Planned cries in `notes/140-pokemon-cries-plan.md`: data, engine + `PlayCry`, battle, field, Bill's PC. Sol
-  starts checkpoint-01 once the user answers §7 (bar/size, Pikachu clips, Pokédex CRY item, order vs simple opening).
-
+- Sol implemented checkpoint-01 damage/hit/Counter immunity witnesses (`17651c7`), checkpoint-02 the live sleep/Leech Seed/enemy/poison turn (`08b014d`), and checkpoint-03 live Leech Seed dispatcher/status gates (`3a2d4ae`). Separate agents independently reviewed each and passed. No production code changed.
+- Note 141 is the routine inventory, scope and next checkpoints. Next: checkpoint-04 stat effect handlers. Battle VBlank `Random` and ledger re-recording remain checkpoint-10. The unreachable glitch tails remain a checkpoint-11/J2 triage.
+- Typecheck passed. Full ROM suite 7,942/7,942; no-ROM 7,557 pass / 385 skip across 304 files, both with two workers. The test-only audit did not rebuild the cries bundle. The user requested the context update after checkpoint-03.

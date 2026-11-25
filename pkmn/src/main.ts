@@ -4,6 +4,7 @@ import { installOverworldRandom } from './overworld/overworld_random';
 import { packOptions, unpackOptions } from './battle/battle_bridge';
 import { withdrawMon, boxStatsMon } from './pokemon_transfers';
 import { createBattleSession, createSessionRandom, loadBattleSessionData, loadBattleStandInData } from './battle/battle_session';
+import { mainOwnsRandom } from './battle/battle_vblank_owner';
 import { liveBattleWorld, applyBattleOutcome, type LiveBattleEncounter, type LiveBattleInput } from './battle/battle_live';
 import { loadBattleBridgeData } from './battle/battle_bridge';
 import { loadTrainerSpeciesData } from './battle/battle_trainer_data';
@@ -293,6 +294,7 @@ type LiveSession = ReturnType<typeof createBattleSession>;
 let currentSession: LiveSession | null = null;
 let battleInput: LiveBattleInput | null = null;
 let pageTicks = 0;
+let vblankRandomCarry: 0 | 1 = 0;
 const sessionRandom = createSessionRandom(() => pageTicks);
 installOverworldRandom(sessionRandom);
 
@@ -343,7 +345,7 @@ function beginBattleEntry(
   if (encounter) {
     const world = snapshotBattleWorld(encounter);
     battleInput = {world,encounter,blackoutCarry:false};
-    currentSession = createBattleSession(world,{random:sessionRandom});
+    currentSession = createBattleSession(world,{random:sessionRandom, vblankCarry: () => vblankRandomCarry, vblankAudio: tickAudio});
   }
   battleEntry = { music, musicResumed: false, screen: null, capture: null, program: null, choice: null,
     levels: battleTransitionLevels(playerParty, enemy, { player: getPlayerName(), rival: getRivalName() }),
@@ -1280,17 +1282,19 @@ function gameTick(): void {
   // Accumulate play time (only during gameplay, not title/menu screens)
   const now = Date.now();
   const timerCounting = state !== "title_screen" && state !== "main_menu" && state !== "oak_speech" && state !== "naming_screen" && state !== "intro_entry" && state !== "intro_exit";
+  vblankRandomCarry = timerCounting ? 1 : 0;
   // The title's LCD-off span (note 114 §2.3): no VBlank, so no Random, no joypad read and no audio update; the
   // audio clock is re-based so the next serviced frame runs one update, not the span's catch-up.
   // Boot's `di` and LCD-off spans (opening checkpoint-08a) are dark the same way.
   const titleDark = (state === "title_screen" && titleScreen.darkFrame) || (state === "boot" && boot.darkFrame);
   const titleNoVBlank = (state === "title_screen" || state === "boot") && (titleDark || isVBlankHeld());
-  // home/vblank.asm:43: VBlank calls Random every frame. TrackPlayTime (home/play_time.asm) leaves carry set
-  // while the game timer counts (its CP 60 / CP $FF), clear otherwise (CountDownIgnoreInputBitReset's AND A).
-  // A battle's frames skip it for now: the battle engine does not model this call (findings backlog).
+  // TrackPlayTime normally returns carry from CP 60 while counting, otherwise from AND A.
+  // The wall-clock play-time model lacks its frame/max counters, so rollover/max cases remain approximate.
   // A palette command's held frame has no VBlank (core/vblank_hold.ts): no Random. Audio still updates below.
   // ReadJoypad is skipped too, but every screen that holds a frame owns its own read, so main's sync isn't reached.
-  if (!sessionRandom.isAttached && !isVBlankHeld() && !titleDark) sessionRandom.random(timerCounting ? 1 : 0);
+  const battleFrame = state === 'battle' ? currentSession?.pendingFrame : null;
+  if (mainOwnsRandom(battleFrame, isVBlankHeld(), titleDark))
+    sessionRandom.vblank(vblankRandomCarry);
   if (timerCounting) {
     playTimeMs += now - lastPlayTimeUpdate;
   }
@@ -1298,7 +1302,7 @@ function gameTick(): void {
 
   // Tick the audio engine every frame. No VBlank while the LCD is off (note 79 §8.2).
   if (titleDark) holdAudioClock();
-  else if (!(state === "battle" && currentSession?.pendingFrame === 'dark')) tickAudio();
+  else if (battleFrame !== 'dark' && battleFrame !== 'serviced') tickAudio();
   tickPendingMapMusic();
 
   // Is this frame an overworld pass? Entering the overworld from a menu, a text box or a

@@ -166,7 +166,10 @@ export function createSessionRandom(frames: () => number): BattleRandomState {
     cycles += RANDOM_CYCLES.read; return value;
   }, elapsed => { sync(); cycles += elapsed; });
 }
-export interface BattleSessionDeps { random: BattleRandomState; audio?: () => SessionAudioOwners }
+export interface BattleSessionDeps {
+  random: BattleRandomState; audio?: () => SessionAudioOwners;
+  vblankCarry?: () => 0 | 1; vblankAudio?: () => void;
+}
 export type BattleForeground = 'battle' | 'party' | 'partyItem' | 'status' | 'naming' | 'pokedex';
 /** DisplayListMenuID reads cartridge bag bytes; every other context cell retains its existing owner. */
 export function bagBackedContext(context: ReturnType<typeof battleContext>, state: BattleState): ReturnType<typeof battleContext> {
@@ -247,7 +250,8 @@ export function createBattleSession(world: BattleWorld, deps: BattleSessionDeps)
   // BattleTransition_BlackScreen; init_battle.asm:39/64. The transition runs on the overworld renderer,
   // so the battle screen receives its final registers here.
   video.screen.bgp = video.screen.obp0 = video.screen.obp1 = 0xff;
-  const driver = new BattleHost<BattleCommonExit>(state, video);
+  const driver = new BattleHost<BattleCommonExit>(state, video, deps.vblankAudio,
+    () => deps.random.vblank(deps.vblankCarry?.() ?? 1));
   const introCapture = new IntroRasterCapture(() => renderBattleScreen(video.screen, renderTiles));
   let introRaster: IntroRasterCapture | null = null;
   const screen = video.screen, rawContext = battleContext(state);

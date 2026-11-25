@@ -22,6 +22,8 @@ import type { GameButton } from '../core';
 import { finish } from '../test/battle_hp_rig';
 import type { Program } from './battle_menu_context';
 import { getMoveName, loadBattleMoveData } from './battle_move_data';
+import { checkEnemyStatusConditions, checkPlayerStatusConditions } from './battle_turn_status';
+import { collect, statusRig } from '../test/battle_status_rig';
 const realMoveHitTest = hit.moveHitTest;
 
 beforeAll(async () => { await loadTextPrograms(); await initTextSystem(); });
@@ -661,6 +663,30 @@ describe('checkpoint-06b effects', () => {
     expect(drawsOf(r.events)).toEqual(['R0', 'R0', 'R1', 'R2', 'R0']);
     expect(r.s.wAnimationType).toBe(6); expect(serviced(r.events)).toBe(12); expect(r.events).toContain('refresh');
     expect(r.events[r.events.length - 1]).toBe('text:MoveWasDisabledText');
+  });
+  it.each([0, 1] as const)('Disable dispatch feeds the opposing side turn checks (actor %i)', side => {
+    const r = rig(side, 0x56); stageDisable(r, [33, 0, 0, 0], [5, 0, 0, 0]);
+    scriptDraws(r, [0, 0, 1]); // hit, slot 0, duration 2
+    r.run();
+    expect(drawsOf(r.events)).toEqual(['R0', 'R0', 'R1']);
+    const target = side === 0 ? 1 : 0, status = statusRig(target);
+    const s = r.s;
+    s.hWhoseTurn = target;
+    s.wBattleMonStatus = s.wEnemyMonStatus = 0;
+    s.wPlayerBattleStatus1 = s.wEnemyBattleStatus1 = 0;
+    s.wPlayerBattleStatus2 = s.wEnemyBattleStatus2 = 0;
+    s.wPlayerSelectedMove = s.wEnemySelectedMove = 33;
+    const check = () => target === 0 ? checkPlayerStatusConditions(s, status.host, status.ports)
+      : checkEnemyStatusConditions(s, status.host, status.ports);
+    const disabled = target === 0 ? A.wPlayerDisabledMove : A.wEnemyDisabledMove;
+    const disabledId = target === 0 ? A.wPlayerDisabledMoveNumber : A.wEnemyDisabledMoveNumber;
+    expect([s.mem[disabled], s.mem[disabledId]]).toEqual([0x12, 33]);
+    expect(collect(check()).result).toBe(target === 0 ? 'ExecutePlayerMoveDone' : 'ExecuteEnemyMoveDone');
+    expect([s.mem[disabled], s.mem[disabledId]]).toEqual([0x11, 33]);
+    expect(status.texts).toEqual(['MoveIsDisabledText']);
+    expect(collect(check()).result).toBe('normal');
+    expect([s.mem[disabled], s.mem[disabledId]]).toEqual([0, 0]);
+    expect(status.texts).toEqual(['MoveIsDisabledText', 'DisabledNoMoreText']);
   });
   it('link Disable accepts a PP-Up raw byte of 0x80 and reads the enemy PP', () => {
     const r = rig(0, 0x56); stageDisable(r, [1, 2, 0, 0], [0x80, 0x05, 0, 0], LINK_STATE_BATTLING);

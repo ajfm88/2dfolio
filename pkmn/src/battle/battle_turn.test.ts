@@ -41,6 +41,7 @@ afterEach(() => vi.restoreAllMocks());
 interface Options {
   player?: number; enemy?: number; first?: 0 | 1; tie?: number; clock?: number;
   cancel?: boolean; ai?: boolean; aiTurn?: 0 | 1; effect?: (s: BattleState) => number;
+  afterResidual?: (s: BattleState) => void;
 }
 function rig(o: Options = {}) {
   const s = new BattleState(), audio = audioRig(), events: string[] = [], frames: Frame[] = [];
@@ -110,7 +111,11 @@ function rig(o: Options = {}) {
   vi.spyOn(execute, 'executePlayerMove').mockImplementation(function* (...args) { mark('executeP'); const result = yield* p(...args); mark(`returnP:${result.b}/${result.exit}`); return result; });
   vi.spyOn(execute, 'executeEnemyMove').mockImplementation(function* (...args) { mark('executeE'); const result = yield* e(...args); mark(`returnE:${result.b}/${result.exit}`); return result; });
   const poison = residual.handlePoisonBurnLeechSeed;
-  vi.spyOn(residual, 'handlePoisonBurnLeechSeed').mockImplementation(function* (...args) { mark('residual'); const result = yield* poison(...args); mark(`residualZ:${result.zero}`); return result; });
+  vi.spyOn(residual, 'handlePoisonBurnLeechSeed').mockImplementation(function* (...args) {
+    mark('residual'); const result = yield* poison(...args); mark(`residualZ:${result.zero}`);
+    o.afterResidual?.(s);
+    return result;
+  });
   const huds = hud.drawHuds;
   vi.spyOn(hud, 'drawHuds').mockImplementation(function* (...args) { mark('huds'); yield* huds(...args); });
   const crit = damage.criticalHitTest, range = damage.randomizeDamage, accuracy = hit.moveHitTest;
@@ -147,7 +152,7 @@ function rig(o: Options = {}) {
     waitForSound: function* () { mark('waitSound'); while (!soundFinished(audio.sfx, audio.music, 0)) yield 'serviced'; },
     runOdds: () => true,
   };
-  const run = () => {
+  const run = (snapshot = true) => {
     let down = false;
     host.start((function* (): Program<TurnExit> {
       const program = mainInBattleLoop(s, ctx, action, ports);
@@ -168,7 +173,10 @@ function rig(o: Options = {}) {
         const count = Number(last.match(/ \*(\d+)$/)?.[1] ?? 1); ledger[ledger.length - 1] = `${event} *${count + 1}`;
       } else ledger.push(event);
     }
-    expect({ exit: host.result, ledger, audioUpdates: audio.synth.update, audio: audio.synth.log.map(({ u, m, a }) => `${u}:${m}(${a.join(',')})`) }).toMatchSnapshot();
+    if (snapshot) {
+      expect({ exit: host.result, ledger, audioUpdates: audio.synth.update,
+        audio: audio.synth.log.map(({ u, m, a }) => `${u}:${m}(${a.join(',')})`) }).toMatchSnapshot();
+    }
     return host.result;
   };
   const names = () => events.filter(e => !e.startsWith('frame:'));
@@ -357,6 +365,40 @@ for (const first of [0, 1] as const) describe(`action order ${first}`, () => {
     expect(r.names().some(n => n.startsWith('executeE'))).toBe(false);
     expect(r.names().filter(n => n.startsWith('residual @'))).toHaveLength(first === 0 ? 2 : 1);
   });
+});
+
+it('sleep skips the player attack but Leech Seed still drains before the enemy move and its poison', () => {
+  // core.asm:3499-3530 returns ExecutePlayerMoveDone; the enclosing loop still calls
+  // HandlePoisonBurnLeechSeed before ExecuteEnemyMove, then calls it for the enemy.
+  const residualHP: Array<[number, number]> = [];
+  const r = rig({ player: 1, enemy: 1, first: 0,
+    afterResidual: s => residualHP.push([s.wBattleMonHP, s.wEnemyMonHP]) });
+  r.s.mem[A.wPartyMons + 4] = 2;
+  r.s.wBattleMonStatus = 2;
+  r.s.wPlayerUsedMove = 17;
+  r.s.wPlayerBattleStatus2 = 0x80;
+  r.s.wEnemyMonStatus = 8;
+  expect(r.run(false)).toBe('ran');
+  const names = r.names().map(name => name.split(' @')[0]);
+  const asleep = names.indexOf('text:FastAsleepText');
+  const firstResidual = names.indexOf('residual');
+  const seedText = names.indexOf('text:HurtByLeechSeedText');
+  const enemyAttack = names.indexOf('executeE');
+  const secondResidual = names.indexOf('residual', firstResidual + 1);
+  const poisonText = names.indexOf('text:HurtByPoisonText');
+  expect([asleep, firstResidual, seedText, enemyAttack, secondResidual, poisonText].every(index => index >= 0)).toBe(true);
+  expect(asleep).toBeLessThan(firstResidual);
+  expect(firstResidual).toBeLessThan(seedText);
+  expect(seedText).toBeLessThan(enemyAttack);
+  expect(enemyAttack).toBeLessThan(secondResidual);
+  expect(secondResidual).toBeLessThan(poisonText);
+  expect(r.names().filter(name => name.startsWith('rng:crit:'))).toEqual(['rng:crit:8 @1 L20/10']);
+  expect(r.s.wPlayerUsedMove).toBe(0);
+  expect(residualHP[0]).toEqual([90, 110]); // The drain uses 1/16 of 160 HP and heals the opponent.
+  expect(r.s.wBattleMonHP).toBeLessThan(90); // Seed took 10 before the enemy attack.
+  expect(r.s.wEnemyMonHP).toBe(100); // Leech Seed healed 10, poison then dealt 10.
+  expect(residualHP).toHaveLength(2);
+  expect(r.s.wPlayerBattleStatus2 & 0x80).toBe(0x80);
 });
 
 it('ordinary damaging moves log exact selection, crit, range and hit draws for both actors', () => {

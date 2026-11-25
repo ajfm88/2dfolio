@@ -1,5 +1,22 @@
 # Battle System Architecture
 
+## Battle-mechanics audit — current handoff (2026-11-24)
+
+The live engine is being audited in `notes/141-battle-mechanics-audit-plan.md`.
+Checkpoints 01–09 are independently reviewed and committed: damage/hit/Counter
+`17651c7`, turn/status/residual `08b014d`, and effect dispatch/status handlers
+`3a2d4ae`, stat effect handlers `e39878f`, turn effect handlers `2734993`,
+HP/copy effect handlers `8f8461a`, stat arithmetic/names/loaders `238272a`,
+trainer AI `2be1c48`, items/catch `36b2efe`, and faint/EXP/end `5baa462`.
+The checked paths matched the ASM; these commits add tests only. The current
+full baseline is ROM 7,956/7,956 and no-ROM 7,571 pass / 385 skip across 307
+files after checkpoint-10b. **Checkpoint-10a (`1d27f50`) added battle VBlank
+`Random`; checkpoint-10b re-recorded the affected ledger and passed both full
+suites and independent review.** See note 141 for the failure census and
+carry/order limits. Older dated sections below
+describe their historical checkpoint state; use note 141 and `context/STATUS.md`
+for the current audit state.
+
 V5g1 checkpoint-03 (note 104, #133; user-verified) gives `battleTextSoundOwner` the shared cartridge path: command id from `TEXT_SOUND_IDS` through own-key `textSoundId` (or `SFX_PRESS_AB` for the beep), file from `sfxNameForSound(id, audio.audioBank)`, then the session's loaded body played with the command id. The `$08:$98` row supplies `dex_page_added`; missing ids/files still throw `BattleUnsupportedState`. The old battle-only methods and id table are removed. Preloads, non-text sounds, timing, audible behavior and snapshots are unchanged.
 
 The battle-prompt checkpoint (note 102, user-verified) binds `partyMenuTypeOrMessageID` through `A.wPartyMenuTypeOrMessageID` at `$D07C`: PKMN writes/passes NORMAL (0) on both entries; faint replacement and SHIFT write BATTLE (2), and `chooseParty` reads the byte for `openBattleChoice` / `goBackToChoice`, selecting `PartyMenuBattleText` in the opening, redraw and retained prompt with C+24/R+18 unchanged.

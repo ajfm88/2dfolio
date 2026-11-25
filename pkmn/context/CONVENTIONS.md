@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **baseline 7657/7657** as of 2026-11-21 (opening checkpoint-12b2c2-2c2, awaiting review). No-ROM **7289 pass / 368 skip**, 294 files. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **last full green baseline 7959/7959** as of 2026-11-24 (A2 checkpoint-01). No-ROM **7573 pass / 386 skip**, 308 files. Machine-table extraction passed independent review. Both full suites used `--maxWorkers=2`; the unrestricted checkpoint-02 run had unrelated hook/test timeouts that passed alone and on the two-worker rerun. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save
@@ -272,6 +272,57 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 7. Committed locally; `git status` clean apart from ignored files; nothing pushed.
 
 ## The test suite
+
+**Current battle audit (note 141, 2026-11-24).** Checkpoint-01 added ten
+both-actor fixed-damage and Counter immunity cases in
+`battle/battle_execute.test.ts` (`17651c7`). Checkpoint-02 added a live
+sleep → Leech Seed → enemy attack → poison turn with intermediate HP and
+used-move assertions in `battle/battle_turn.test.ts` (`08b014d`). Checkpoint-03
+added two live Leech Seed Grass/Substitute failure cases in
+`battle/battle_effects_composed.test.ts` (`3a2d4ae`). Each had an independent
+review PASS. These were test-only checkpoints: no runtime behavior or data changed.
+
+Checkpoint-04 added two live Haze dispatch cases in `battle/battle_execute.test.ts`
+(`e39878f`), independently reviewed. They pin both acting sides' target-only
+freeze cure, selected-move cancellation, stage resets, no RNG, text/animation
+order and yielded frames. No production behavior or data changed.
+
+Checkpoint-05 added `battle/battle_effects_turn_continuation.test.ts` with two
+Bide initializer-to-release cases (`2734993`), independently reviewed. They pin
+both acting sides' duration draw, effect-byte clear, big-endian carry, release
+damage/move and enemy level swap. No production behavior or data changed.
+
+Checkpoint-06 added two Disable producer/consumer cases in
+`battle/battle_effects_hp.test.ts` (`8f8461a`), independently reviewed. They pin
+both acting sides' pointer dispatch, exact hit/slot/duration draws, opposing
+selected-move block and expiry. No production behavior or data changed.
+
+Checkpoint-07 added `battle/battle_checkpoint_07.test.ts` (`238272a`),
+independently reviewed. It pins a trained Rhydon's >255 Attack across CalcStats,
+party loading, burn, badge boosts and stage recalculation while preserving the
+stored party word. No production behavior or data changed.
+
+Checkpoint-08 added one Lorelei selection/action case in
+`battle/battle_trainer_ai.test.ts` (`2be1c48`), independently reviewed. It pins
+the type-row BattleRandom draw, rejected slot and chosen Thunderbolt, then a
+separate Random draw and Super Potion HP/item/count result. No production
+behavior or data changed.
+
+Checkpoint-10a added `battle/battle_vblank_random.test.ts` to pin the battle
+VBlank RNG owner, carry and frame kinds. Checkpoint-10b re-recorded the Route 1
+ledger in `battle_session.test.ts.snap` and updated six affected test files after
+the full failure census. Luna independently reviewed the ledger and reran the
+affected files, 170/170. **Verified current baseline:** ROM 7,956/7,956;
+no-ROM 7,571 pass / 385 skip across 307 files. Checkpoint-11 adds a loaded
+move-record census in `battle/battle_move_data.test.ts`; its full baseline is
+ROM 7,957/7,957 and no-ROM 7,572 pass / 385 skip across 307 files (note 141).
+
+**A2 checkpoint-01** adds `rom/__tests__/machines.test.ts`: the committed
+`machine_data.json` and static mirror, 55 TM/HM move IDs, 50 source price
+nybbles, and ROM table addresses/terminator. `static_export.test.ts` now expects
+263 JSON files. Terra and Luna independently passed typecheck, focused ROM
+12/12 and both full suites: ROM 7,959/7,959; no-ROM 7,573 pass / 386 skip
+across 308 files. The generated manifest/checker is in note 142.
 
 Pokémon cries (note 140) added or changed the following test files under `game/src/`.
 
@@ -298,9 +349,9 @@ Pokémon cries (note 140) added or changed the following test files under `game/
 
 Note 137 adds 12 host tests in `menus/foreground_preview.test.ts`. They cover pacing, visible OAM after DMA,
 input, replay, stale callbacks and production isolation. Nemotron passed review with the pacing fix in `c018e7ce`.
-Verified committed baseline: ROM 7799/7799 and no-ROM 7431 pass / 368 skip across 299 files. Build
-`index-CkYsZcLD.js`, 694,681 bytes. The standalone preview is absent from the build. The reported extra pacing
-case is not committed. Tomorrow's first task is to pin the nonzero Start/Replay witness in the test suite.
+Historical note 137 baseline: ROM 7799/7799 and no-ROM 7431 pass / 368 skip across 299 files. Build
+`index-CkYsZcLD.js`, 694,681 bytes. The standalone preview is absent from that build. Use the
+current battle-audit baseline above for new work.
 
 Notes 134–136 cover the foreground runner and synthetic fixture, exact-dot OAM DMA, and the reusable program
 with VBlank predictor selection. The note 136 closeout regression verifies that an already-sampled read stays

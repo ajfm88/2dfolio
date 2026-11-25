@@ -2248,6 +2248,31 @@ in checkpoint 11, not at the switch. (4) Grok implements; Claude checks each che
      `battle_pictures.ts` already imports `trainers.json`. The cry sound bodies still load from `static/` at runtime.
      No ROM is involved, so Invariant 1 holds. Small lookup tables needed synchronously may be bundled this way.
 
+176. **The battle-mechanics audit runs as bounded, independently reviewed checkpoints**
+     (user, 2026-11-24). The user asked Codex to plan the audit, Sol to implement,
+     and a second agent to review the implementation against the spec; after
+     checkpoint-03 the user asked for all context files to be updated. The
+     rough 15–25 estimate is **sessions**, not checkpoints. Note 141 contains
+     the current eleven-checkpoint plan and routine inventory; broad later
+     checkpoints may split. The first three checkpoints are reviewed and
+     committed (`17651c7`, `08b014d`, `3a2d4ae`). They found no production
+     discrepancy on their checked paths and added integration regressions.
+     Checkpoint-04 is stat effect handlers. Battle VBlank `Random` is placed
+     after the other mechanics checks to re-record ledgers once. Unreachable
+     glitch behavior keeps its J2 parking unless new evidence changes it.
+     The user's earlier request not to modify Markdown applied to checkpoints
+     01–02; the later explicit context-update request superseded it for this
+     handoff. No reference clone or curated sprite data is edited.
+
+177. **After the battle audit, sequence A2 → A3 → A4 → B1** (Codex planning,
+     2026-11-24, user requested planner/Terra/Luna workflow). A2 makes the
+     already-awarded TM34 usable and adds Oak's Aide; A3's field effects precede
+     cave expansion; A4's Route 2 Clefairy trade must be ready when B1 first
+     makes Clefairy obtainable (DECISIONS #29, PLAN A4). The old STATUS B1/A2
+     shorthand is superseded. Note 142 scopes A2 checkpoint-01 as machine-table
+     extraction only. Terra implements, and Luna reviews only after Terra has
+     formally finished.
+
 ## Open — not decided, needs the user
 
 **O-2. Does the randomizer pool include Crystal's animated GIFs?** (2026-09-05) The user said "one of the 6 (or 7?) sprites". The 6 are settled (#23). A 7th would be `pokemonGen2/Gen2/crystal/animated/` — 252 GIFs, dex 0001–0251. It is a real option but a different feature: frame playback, not a static swap, and #6's scope freeze rejected it on the grounds that "Yellow never had that". Not blocking — X1 is dead last. Decide when X1 starts.

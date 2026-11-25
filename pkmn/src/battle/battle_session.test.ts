@@ -265,21 +265,21 @@ it('the bound trainer port runs Misty X Defend through the real session and live
  // Keep the pinned roll despite the 78 intro frames and 59+48 Staryu/Pikachu cry updates.
  const h=setup({frames:()=>time>186?time-186:time,world:{opponent:200+TRAINER_AI_POINTERS.findIndex(row=>row.className==='MISTY')+1,
    partyIndex:0,party:[mon],options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}}),s=h.session.state;
- h.start();let returned=0;const counts:number[]=[],stages:number[]=[];
+ h.start();let returned=0;const counts:number[]=[],usedCounts:number[]=[],stages:number[]=[];
  for(let n=0;!h.session.done&&n<10000;n++){
   if(s.mem[D.wAICount]===1)counts.push(1);
   const pressed:GameButton[]=time%2?[]:h.session.video.textBox.isWaitingForInput?['b']:['a'];
   time++;keys.forEach(k=>setKey(k,pressed.includes(k)));updateInput();
   if(h.session.pendingFrame!=='dark')h.r.update();expect(()=>h.session.tick()).not.toThrow();
   const completed=h.session.trainerAILog.filter(call=>call.carry===true);
-  if(completed.length>returned){returned=completed.length;counts.push(s.mem[D.wAICount]);stages.push(s.mem[A.wEnemyMonStatMods+1]);}
+  if(completed.length>returned){returned=completed.length;usedCounts.push(s.mem[D.wAICount]);stages.push(s.mem[A.wEnemyMonStatMods+1]);}
  }
  expect(h.session.done).toBe(true);
  const used=h.session.trainerAILog.filter(call=>call.carry===true);
  expect(used).toHaveLength(1);expect(used[0].frames).toBeGreaterThan(0);
  const texts=h.session.textLog.map(row=>row.label),item=texts.indexOf('AIBattleUseItemText');
  expect(item).toBeGreaterThan(-1);expect(texts.indexOf('MonsStatsRoseText')).toBeGreaterThan(item);
- expect(counts).toContain(1);expect(counts[counts.length-1]).toBe(0);expect(stages).toEqual([8]);
+ expect(counts).toContain(1);expect(usedCounts).toEqual([0]);expect(stages).toEqual([8]);
  expect(h.session.handoffs.trainerEnvironment).toBeGreaterThan(0);expect(h.session.handoffs.other).toBe(0);
  expect(h.r.synth.log.some(write=>write.m==='freq0')).toBe(true);
  const result=h.session.finish();expect(result.exit).toBe('end');expect(result.outcome.battleResult).toBe(0);

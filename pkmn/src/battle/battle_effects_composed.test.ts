@@ -248,7 +248,8 @@ function composedRig(side: 0 | 1, id = 1, draws: readonly number[] = HIT) {
     if (!thrown) expect([s.wBattleMonLevel, s.wEnemyMonLevel]).toEqual(levels);
     const diff: string[] = [];
     for (let i = 0; i < s.mem.length; i++) if (s.mem[i] !== before[i]) diff.push(`${i.toString(16)}:${before[i]!.toString(16)}>${s.mem[i]!.toString(16)}`);
-    return { result, thrown, index, names: names(), texts: texts(), ledger: ledger(), diff, effect: s.mem[move + 1]! };
+    return { result, thrown, index, names: names(), texts: texts(), ledger: ledger(), diff, effect: s.mem[move + 1]!,
+      servicedFrames: events.filter(event => event.routine === 'frame:serviced').length };
   };
   return { ...r, events, mark, s, move, drive, override: (v: typeof override) => { override = v; } };
 }
@@ -567,6 +568,23 @@ describe('§4 bug 3: confusion side effect is 25/256 without +1', () => {
     expect(played.s.wEnemyBattleStatus1 & 0x80).toBe(0);
     expect(played.texts).not.toContain('BecameConfusedText');
   });
+});
+
+it.each([0, 1] as const)('Leech Seed effect through execute tests accuracy before Grass despite Substitute, side%i', side => {
+  // move_effects/leech_seed.asm: HIT, then Grass/SEEDED; it does not inspect Substitute.
+  const played = play(side, 1, 0x54, [0], r => {
+    r.s.mem[foe(side).flags2] = 0x10;
+    r.s.mem[foe(side).status + 1] = 22; // Grass in the first type slot.
+  });
+  if (played.thrown) throw played.thrown;
+  expect(played.result).toEqual({ b: 1, exit: 'effect' });
+  expect(played.index).toBe(1);
+  expect(played.names.filter(n => n.startsWith('effect:') || n === 'hit' || n.startsWith('rng:')))
+    .toEqual(['effect:tail:84', 'hit', 'rng:hit:0']);
+  expect(played.texts).toContain('EvadedAttackText');
+  expect(played.texts).not.toContain('WasSeededText');
+  expect(played.s.mem[foe(side).flags2]).toBe(0x10);
+  expect(played.servicedFrames).toBe(50);
 });
 
 describe('§4 bug 4: enemy stat-down misses 25% off-link before substitute', () => {

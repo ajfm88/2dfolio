@@ -1,5 +1,13 @@
 # ARCHITECTURE — how the pieces fit
 
+**Battle audit handoff (2026-11-24).** The live A5c3 byte-backed battle engine
+completed bounded source checks through checkpoint-11. Checkpoints 01–09 found
+no production discrepancy on their checked paths; checkpoint-10 added battle
+VBlank `Random` and reconciled the affected ledgers. Checkpoint-11's loaded
+move census and backlog reconciliation found no ordinary path to the two
+glitch tails. Those remain at J2 under DECISIONS #176. The routine inventory,
+evidence and limits are in `notes/141-battle-mechanics-audit-plan.md`.
+
 This file has three parts: the data pipeline and boundaries, the rendering rules, and
 the **engine reference** at the end. The engine reference holds the module map, the state
 machine, the data conventions and the extraction system. It came from upstream's
@@ -17,7 +25,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | Vitest, **7799/7799** with ROM at note 137 closeout. No-ROM 7431 pass / 368 skip across 299 files. Current handoff in STATUS.md | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | Last full green: Vitest, **7959/7959** with ROM; no-ROM 7573 pass / 386 skip across 308 files (2026-11-24, A2 checkpoint-01) | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 

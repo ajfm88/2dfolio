@@ -31,6 +31,9 @@ it('grass encounter crosses the checked transition boundary, ticks once after au
   for(let y=4;y<map.mapData!.height*4-4&&!point;y+=2)for(let x=4;x<map.mapData!.width*4-4;x+=2)
     if(map.isGrassTile(x,y)&&map.isWalkable(x,y)&&map.isWalkable(x,y-2)){point={x,y};break;}
   expect(point).toBeDefined();host.player.setTilePosition(point!.x,point!.y-2);host.player.direction='down';
+  // The session captures its serviced-frame audio callback when the encounter is created.
+  const audioPages:number[]=[];
+  const realAudio=audio.tickAudio;vi.spyOn(audio,'tickAudio').mockImplementation(()=>{audioPages.push(host.pageTicks);realAudio();});
   pinOverworldRandom(0);
   until(()=>host.state==='battle_transition',()=>['down']);
   const session=host.session!,created=frameNow();expect(getSeenList()).toEqual([25]);
@@ -41,8 +44,7 @@ it('grass encounter crosses the checked transition boundary, ticks once after au
   const vblank=vi.spyOn(BattleHost.prototype,'step');
   until(()=>host.state==='battle');const boundary=frameNow();
   expect(boundary-created).toBe(121);expect(start).toHaveBeenCalledOnce();expect(step).not.toHaveBeenCalled();
-  const sync=vi.spyOn(input,'syncJoypadRead'),audioPages:number[]=[];
-  const realAudio=audio.tickAudio;vi.spyOn(audio,'tickAudio').mockImplementation(()=>{audioPages.push(host.pageTicks);realAudio();});
+  const sync=vi.spyOn(input,'syncJoypadRead');audioPages.length=0;
   const page=host.pageTicks;
   tick();tick();tick();
   expect(service).toEqual([{frame:boundary+1,kind:'serviced'},{frame:boundary+2,kind:'serviced'},{frame:boundary+3,kind:'serviced'}]);

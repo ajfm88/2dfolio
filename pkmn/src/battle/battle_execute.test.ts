@@ -16,12 +16,34 @@ import * as random from './battle_random';
 import * as helpers from './battle_execute_helpers';
 import * as math from './battle_math';
 import { executePlayerMove, executeEnemyMove, type ExecutePorts } from './battle_execute';
+import { statEffectHandlers, loadStatEffectData } from './battle_effects_stats';
+import { bindMoveEffects } from './battle_effects';
 import { finish, hpRig } from '../test/battle_hp_rig';
 import { loadTextPrograms, getTextPrograms } from '../text/program_data';
 import type { BattleTurnTextHost } from './battle_turn_text';
 
-beforeAll(async () => { await moves.loadBattleMoveData(); await loadTextPrograms(); });
+beforeAll(async () => { await moves.loadBattleMoveData(); await loadStatEffectData(); await loadTextPrograms(); });
 afterEach(() => vi.restoreAllMocks());
+
+// Haze is a real zero-power move dispatched directly from the execute path.
+it.each([0, 1] as const)('Haze executes through the live stat registry on side %i', side => {
+  const r = rig(side, 114, []), s = r.s;
+  s.wBattleMonStatus = side === 1 ? 0x20 : 0x10;
+  s.wEnemyMonStatus = side === 0 ? 0x20 : 0x10;
+  s.mem.fill(3, A.wPlayerMonStatMods, A.wPlayerMonStatMods + 8);
+  s.mem.fill(11, A.wEnemyMonStatMods, A.wEnemyMonStatMods + 8);
+  r.ports.jumpMoveEffect = bindMoveEffects(statEffectHandlers({ ...r.ports, host: r.host }));
+  const out = finish(r.program(), frame => r.mark(`frame:${frame}`));
+  expect(out.result).toEqual({ b: 1, exit: 'effect' });
+  expect([...s.mem.slice(A.wPlayerMonStatMods, A.wPlayerMonStatMods + 8)]).toEqual(Array(8).fill(7));
+  expect([...s.mem.slice(A.wEnemyMonStatMods, A.wEnemyMonStatMods + 8)]).toEqual(Array(8).fill(7));
+  expect(side === 0 ? s.wEnemyMonStatus : s.wBattleMonStatus).toBe(0);
+  expect(side === 0 ? s.wEnemySelectedMove : s.wPlayerSelectedMove).toBe(255);
+  expect(side === 0 ? s.wBattleMonStatus : s.wEnemyMonStatus).toBe(0x10);
+  expect(r.names()).toEqual(['ghost', 'status', 'getMove', ...(side === 0 ? ['obedience'] : []),
+    'usedMove', 'text:UsedMoveText', 'animation:114:0', 'text:StatusChangesEliminatedText']);
+  expect(out.frames).toEqual(['session', 'held', ...Array(12).fill('serviced'), 'session']);
+});
 
 interface Event { routine: string; turn: number; levels: number[] }
 function rig(side: 0 | 1, id = 1, draws: readonly number[] = [8, 179, 0]) {
@@ -270,6 +292,22 @@ for (const side of [0, 1] as const) describe(`Execute actor ${side}`, () => {
     expect(r.events.find(e => e.routine === 'hit')!.levels).toEqual(side ? [20, 10] : [10, 20]);
     expect(r.s.wDamage).toBe(side ? 20 : 10);
   });
+  it.each([
+    [49, 8, 20],   // SonicBoom (Normal) against Ghost
+    [69, 8, side ? 20 : 10], // Seismic Toss (Fighting) against Ghost
+    [101, 0, side ? 20 : 10], // Night Shade (Ghost) against Normal
+    [162, 8, 50],  // Super Fang (Normal) against Ghost at 100 HP
+  ])('set-damage move %i reaches immune type %i for %i HP', (move, targetType, damage) => {
+    const r = rig(side, move, [0]);
+    r.s.mem[side ? A.wBattleMonType1 : A.wEnemyMonType1] = targetType;
+    r.s.mem[side ? A.wBattleMonType2 : A.wEnemyMonType2] = targetType;
+    const out = finish(r.program());
+    expect(out.result).toEqual({ b: 1, exit: 'done' });
+    expect(r.s.readBE(r.c.opposite)).toBe(100 - damage);
+    expect([r.s.wDamage, r.s.wMoveMissed, r.s.wDamageMultipliers]).toEqual([damage, 0, 0x0a]);
+    expect(r.names().filter(n => n.startsWith('rng:'))).toEqual(['rng:hit:0']);
+    for (const skipped of ['crit', 'Counter', 'vars', 'type', 'range']) expect(r.names()).not.toContain(skipped);
+  });
   it.each([false, true])('Counter %s restores levels after its one hit draw, no range/vars', missed => {
     const r = rig(side, 68, [8, missed ? 255 : 0]); r.s.wDamage = 10;
     r.s.mem[side ? A.wPlayerSelectedMove : A.wEnemySelectedMove] = 1;
@@ -278,6 +316,20 @@ for (const side of [0, 1] as const) describe(`Execute actor ${side}`, () => {
     expect(r.names()).not.toContain('vars'); expect(r.names()).not.toContain('range');
     expect(r.s.wDamage).toBe(missed ? 0 : 20);
     expect(r.events.find(e => e.routine === 'Counter')!.levels).toEqual(side ? [20, 10] : [10, 20]);
+  });
+  it('Counter doubles shared damage against Ghost without type adjustment', () => {
+    const r = rig(side, 68, [8, 0]);
+    r.s.mem[side ? A.wBattleMonType1 : A.wEnemyMonType1] = 8;
+    r.s.mem[side ? A.wBattleMonType2 : A.wEnemyMonType2] = 8;
+    r.s.mem[side ? A.wPlayerSelectedMove : A.wEnemySelectedMove] = 1;
+    r.s.mem[side ? A.wPlayerMovePower : A.wEnemyMovePower] = 40;
+    r.s.wDamage = 12;
+    const out = finish(r.program());
+    expect(out.result).toEqual({ b: 1, exit: 'done' });
+    expect(r.s.readBE(r.c.opposite)).toBe(76);
+    expect([r.s.wDamage, r.s.wMoveMissed, r.s.wDamageMultipliers]).toEqual([24, 0, 0x0a]);
+    expect(r.names().filter(n => n.startsWith('rng:'))).toEqual(['rng:crit:8', 'rng:Counter:0']);
+    for (const skipped of ['vars', 'type', 'range']) expect(r.names()).not.toContain(skipped);
   });
   it.each([false, true])('Explosion missed%s plays type0 on miss and always-effect precedes faint exit', missed => {
     const r = rig(side, 153, [8, 179, missed ? 255 : 0]);

@@ -119,9 +119,9 @@ it('item0: the end-text binding helper retains the full COOLTRAINER male name be
   const s=new BattleState();s.mem[D.wTrainerClass]=31;saveTrainerName(s);
   expect(trainerEndNameBuffer(s)).toBe('COOLTRAINER♂');
 });
-it('item0: Misty uses X DEFEND once per mon (pinned DIV 40) with two hand-offs each',()=>{
-  // Pin presentation-independent DIV40: trainer_ai.asm:373–376; +41 draws choice41, crit82,
-  // damage123/164/205, hit246, then Random30<65. core.asm:1331+ resets wAICount per mon.
+it('item0: Misty uses X DEFEND once, decrements its count, and resets AI for each mon',()=>{
+  // VBlank Random now advances the same HRAM bytes between CPU decisions, even at fixed DIV40.
+  // core.asm:1331+ resets wAICount per mon; trainer_ai.asm:734 decrements it after the item.
   const h=setup({opponent:235,party:[pikachu(45)]},new BattleRandomState(()=>40));
   const memory=h.session.state.mem,resets:{value:number;stack:string;uses:number}[]=[];
   // Observe the exact byte writes while forwarding all TypedArray operations to the same memory.
@@ -138,15 +138,15 @@ it('item0: Misty uses X DEFEND once per mon (pinned DIV 40) with two hand-offs e
   expect(result.exit).toBe('end');expect(result.outcome.battleResult).toBe(0);
   const labels=h.session.textLog.map(row=>row.label);
   expect(labels).toContain('AIBattleUseItemText');expect(labels).toContain('MonsStatsRoseText');
-  expect(h.session.handoffs).toEqual({trainerEnvironment:4,other:0});
-  expect(h.session.trainerAILog.filter(row=>row.carry)).toHaveLength(2);
-  expect(h.session.trainerAILog.flatMap((row,i)=>row.carry?[h.aiPositions[i]]:[])).toEqual([0,1]);
-  // Init seeds FF once; both subsequent resets are the actual FirstMon write, before uses 1 and 2.
+  expect(h.session.handoffs).toEqual({trainerEnvironment:2,other:0});
+  expect(h.session.trainerAILog.filter(row=>row.carry)).toHaveLength(1);
+  expect(h.session.trainerAILog.flatMap((row,i)=>row.carry?[h.aiPositions[i]]:[])).toEqual([0]);
+  // Init seeds FF once; both subsequent resets are the actual FirstMon write.
   expect(resets.map(row=>row.value)).toEqual([255,255,255]);
   expect(resets[0].stack).toContain('initBattleAfterTransition');
   for(const reset of resets.slice(1))expect(reset.stack).toContain('enemySendOutFirstMon');
   expect(resets.map(row=>row.uses)).toEqual([0,0,1]);
-  expect(labels.filter(label=>label==='AIBattleUseItemText')).toHaveLength(2);
+  expect(labels.filter(label=>label==='AIBattleUseItemText')).toHaveLength(1);
   for(const index of labels.flatMap((label,i)=>label==='AIBattleUseItemText'?[i]:[])){
     expect(labels[index+1]).toBe('MonsStatsRoseText');
   }

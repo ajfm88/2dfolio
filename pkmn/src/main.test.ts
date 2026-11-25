@@ -427,7 +427,7 @@ function sessionParty(r:ReturnType<typeof driver>,forced:boolean):PartyMenu {
   if(forced) host.playerParty[0].currentHp=1;
   const session=createBattleSession(battleWorld({party:host.playerParty,enemyLevel:forced?20:3,
     options:{textSpeed:'FAST',animation:'OFF',battleStyle:'SET'}}),{random:createSessionRandom(()=>menuAudio.synth.update),
-    audio:()=>({sfx:menuAudio.sfx,music:menuAudio.music,banks:menuAudio.fade.requests})});
+    audio:()=>({sfx:menuAudio.sfx,music:menuAudio.music,banks:menuAudio.fade.requests}),vblankAudio:tickAudio});
   host.session=session;session.start();
   for(let frame=0;session.foreground!=='party'&&frame<6000;frame++){
     const menu=!session.video.textBox.active&&session.screen.at(10,14)==='F';

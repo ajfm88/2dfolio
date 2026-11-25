@@ -15,6 +15,153 @@ Newest first.
 
 ## Recent session archive
 
+### Archived STATUS session entries from 2026-11-23 (moved 2026-11-24)
+
+### 2026-11-23 - Claude: Pokémon cries closed (note 140 §8.35)
+
+- The user play-tested checkpoint-05 in Bill's PC and reported that it all works. The cries slice is closed after
+  five checkpoints. §8.34's stale-row finding was fixed in `e4e7821`.
+- The queue moves to the battle-mechanics audit (#70). Its planning pass comes first.
+
+### 2026-11-23 - Grok: cries checkpoint-05 review (note 140 §8.34)
+
+- PASS. Deposit, withdraw and release match the ASM order, including the silent YES and the starter's clip 40 refusal. The five Bill's PC starter sites compare species, OT id 0 and five name bytes. Clips 28/35/40 are in the boot preload. Six spot mutations each failed a test and were restored.
+- Gates match §8.33: typecheck passed; `index-Bh1w6Q55.js`, 708,471 bytes; no-ROM 7,544 passed / 385 skipped; ROM 7,929/7,929. Both suites covered 304 files.
+- The setup rows and the SFX row still say 259 JSON and that clips 28/35/40 remain open. Next is the user's play-test.
+
+### 2026-11-23 - Codex: cries checkpoint-05 starter PCM complete (note 140 §8.33)
+
+- Extracted clips 28/35/40 to `data/` and `static/` (259 to 262 JSON in each), preloaded them with
+  clip 17 and wired Bill's PC deposit, withdraw and release through the shared cue. Frozen frames:
+  94/94/78. No stored snapshot moved. Review is §8.34; then user play-test.
+- Typecheck and build passed (`index-Bh1w6Q55.js`, 708,471 bytes). No ROM: 7,544 passed,
+  385 skipped; ROM: 7,929/7,929. Both suites covered 304 files.
+
+### 2026-11-23 - Codex: Bill's PC regular cries and starter ownership (note 140 §8.32)
+
+- Wired the three ordinary cries and their waits, removed the stub, and applied the full starter check at the
+  Bill's PC branches. Two traded-Pikachu cases exercise the real audio engine and preserve happiness.
+- Typecheck and build passed (`index-RPQ4pVo7.js`, 708,310 bytes). No ROM: 7,538 passed, 376 skipped.
+  ROM: 7,914/7,914. Both suites covered 304 files.
+- Starter PCM extraction and playback remain open. No generated data or snapshots changed.
+
+### 2026-11-23 - Claude: checked `82ebd9f`; ruled on the Bill's PC starter check (note 140 §8.31)
+
+- `82ebd9f` lands tests and docs only. Playback, clip extraction and stub removal are still open. No review until
+  they're in.
+- §8.28's starter-predicate finding is a real bug: Bill's PC uses species-only checks. The five Bill's PC sites
+  get the full species + OT id + OT name check. Other callers are backlogged for the Pikachu audit.
+
+### 2026-11-23 - Codex: cries checkpoint-05 release ruling and independent checks (note 140 §8.29–§8.30)
+
+- Recorded Claude's ruling verbatim, restored the three Pokédex assertions, and added a Bill's PC test for
+  silent YES and the existing sound-completion check. Updated the cries architecture, test list and backlog.
+- Typecheck and build passed (`index-C6Qzfxzr.js`, 707,847 bytes). No ROM: 7,536 passed, 376 skipped.
+  ROM: 7,912/7,912. Both runs covered 304 files.
+- Next is §8.31 review of these changes. Bill's PC playback and clip extraction remain open.
+
+### 2026-11-23 - Codex: paused cries checkpoint-05 on the Bill's PC release sound (note 140 §8.28)
+
+- The generic PC leaves menu-button silence set through Release → YES. The post-removal wait checks the current
+  sound before the cry. §8.28 records the ASM trace, the species-only starter stand-ins, and clip timing.
+- Typecheck, build and both suites confirmed the baseline. Bill's PC implementation and setup remain pending.
+  Next is review of the trace in §8.29.
+
+### 2026-11-23 - Claude: cries checkpoint-04 closed; checkpoint-05 briefed; context handoff (note 140 §8.26–§8.27)
+
+- Grok's review of checkpoint-04 (`bc2cd27`) is PASS (§8.25). The user play-tested it and reported no problems.
+- §8.26: the starter checks use OT id 0 until A4 adds the player ID (added to the backlog's A4 line); three
+  Pokédex assertions go back in with checkpoint-05.
+- §8.27 briefs checkpoint-05. It corrects §2.5: releasing the starter plays clip 40, so the checkpoint adds
+  clips 28, 35 and 40.
+- STATUS moved its pre-11-23 session log and the parked opening handoff to `HISTORY.md` (113 KB → under 40 KB).
+- CLAUDE.md's test baseline is now `6c1d414`'s.
+
+- 2026-11-23 — Grok reviewed cries checkpoint-04. PASS. Note 140 §8.25. Gates match §8.24. Six spot mutations each failed a test and were restored. The field starter test compares the OT id with 0. Next is the §8.17 play-test. Checkpoint-05 stays unstarted.
+
+- 2026-11-23 — Codex implemented cries checkpoint-04. Oak, the four map mons, status and the Pokédex use the shared cry path; starter status uses clip 17, which freezes 42 frames. Both suites pass. Note 140 §8.24 records timing and gates. Checkpoint-04 awaits review (§8.25).
+
+- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The first status-screen poll uses the last foreground sample as its edge baseline, so B pressed during setup and held through playback can turn the page. Note 140 §8.22 records the clip sample and edge trace.
+
+- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The status screen can accept a button first pressed during the cry and still held at the first poll. Note 140 §8.20 records the ASM trace for review.
+
+### 2026-11-23 - Claude: ruled on cries §8.22 (note 140 §8.23)
+
+- §8.22 is right: the status screen's edge baseline is the last foreground joypad read, which can come before the whole setup, and the text runner's `cry` op still needs §8.17 ruling 2's wait. Both are fixes to the brief's wording; the rule (no joypad read until the first page-1 poll) is unchanged. Implementers now stop only for behaviour the brief got wrong. Checkpoint-04 may resume; implementation §8.24, review §8.25.
+
+### 2026-11-23 - Claude: ruled on cries §8.20 (note 140 §8.21)
+
+- §8.20 is right: a button pressed during the status screen's cry and still held at the first poll turns the page; a tap released during the cry is lost. §8.17 ruling 4 is amended. Checkpoint-04 may resume; implementation §8.22, review §8.23.
+
+### 2026-11-23 - Claude: ruled on cries §8.18 (note 140 §8.19)
+
+- §8.18 is right: the Pokédex side menu's five items sit on rows 8, 10, 12, 14 and 16, and the cursor clamps at DATA and QUIT with no wrap. §8.17 ruling 6 and its tests are amended. Checkpoint-04 may resume; implementation §8.20, review §8.21.
+
+- 2026-11-23 — Codex paused cries checkpoint-04 before implementation. The Pokédex side-menu labels and cursor use tile rows 8, 10, 12, 14 and 16, and the cursor stops at either end. Note 140 §8.18 records the ASM trace for review.
+
+### 2026-11-23 - Claude: cries checkpoint-03 closed; checkpoint-04 briefed (note 140 §8.16–§8.17)
+
+- The user play-tested checkpoint-03 on the dev server: all four battle sites PASS (§8.16).
+- Checkpoint-04's brief (§8.17) covers the field sites: the text `cry` op, Nidoran/Spearow/Chansey, the status screen with clip 17, the Pokédex data page, and the side menu on the ASM's five rows. PRNT does nothing until J2, as in the VC build. Battle-hosted screens use the session's voice port.
+- `*.sav` was added to `.gitignore` (`da83ab1`); `game/pokeyellow.sav` is an emulator save from tracing.
+
+- 2026-11-23 — Grok reviewed cries checkpoint-03 (`254f12e`). PASS. Note 140 §8.15. Four gates match: typecheck passed; build `index-Cp3Lg0Ba.js` 705,829 bytes; no-ROM 7,525 passed / 373 skipped, 304 files; ROM 7,898/7,898. Six spot mutations each failed a test and were restored. Next is the user's battle play-test. Checkpoint-04 stays unstarted.
+
+- 2026-11-23 — Codex implemented cries checkpoint-03. The battle waits at all four voice sites, with one in-call PCM ID clear before the resumed VBlank. All four gates passed, with ROM 7,898/7,898 and no-ROM 7,525 passed / 373 skipped across 304 files. Checkpoint-03 awaits review (note 140 §8.14).
+
+### 2026-11-23 - Claude: ruled on cries §8.12 (note 140 §8.13)
+
+- The implementer's stop was right: one ID clear, inside `startPikachuClip`, before the extra yield. Amended §8.11
+  ruling 3 and its test. Docs only.
+
+- 2026-11-23 — Codex paused cries checkpoint-03 before implementation. The PCM facade already clears the battle ids through the shared SFX engine. A second clear after the pending VBlank would erase a possible alarm write. The trace in note 140 §8.12 awaits review.
+
+### 2026-11-23 - Claude: cries checkpoint-02 closed; checkpoint-03 briefed (note 140 §8.10–§8.11)
+
+- The user's listening test passed. Checkpoint-03 (the four battle sites, the starter's clips 4/11/37, the alarm
+  restored after the wait) is briefed in §8.11. Docs only.
+
+- 2026-11-23 — Grok reviewed cries checkpoint-02 (`62deec3`). PASS. Note 140 §8.9. Four gates match: typecheck passed; build `index-Cy5imu0j.js` 705,731 bytes; no-ROM 7,517 passed / 373 skipped, 304 files; ROM 7,890/7,890. Six spot mutations each failed `cries.test.ts` and were restored. CryData compiled into the bundle is recorded for the user. Next is the listening test. Checkpoint-03 stays unstarted.
+
+- 2026-11-23 — Codex implemented cries checkpoint-02. The console wait follows the last of CHAN5, 6 and 8. All four gates passed, with ROM 7,890/7,890 and no-ROM 7,517 passed / 373 skipped across 304 files. Checkpoint-02 awaits review (note 140 §8.8).
+
+### 2026-11-23 - Claude: ruled on cries §8.6 (note 140 §8.7)
+
+- The implementer's stop was right; the plan was wrong about the cry's length. Corrected §2.3 and checkpoint-02's
+  tests; checkpoint-02 resumes and records as §8.8. Docs only.
+
+- 2026-11-23 — Codex traced checkpoint-02 and paused before implementation. Kangaskhan's CHAN8 return follows CHAN5 by seven updates, which extends `WaitForSoundToFinish`. Note 140 §8.6 records the wait, noise pitch and bank traces for review.
+
+- 2026-11-23 — Grok re-reviewed the cries checkpoint-01 test repair (`7a70d9b`). PASS. Note 140 §8.5. The game change is the bank-comparison test. Four gates match. Dropping one expected index, plus §8.4's three mutations, each failed that assertion for bank $08 and the test file was restored. Checkpoint-02 is next.
+
+- 2026-11-23 — Codex repaired the cries checkpoint-01 bank comparison. All three mutations failed at the exact byte-index assertion and were restored. Note 140 §8.4 records verification. Re-review is next.
+
+- 2026-11-23: Codex reviewed cries checkpoint-01; note 140 ?8.2 records FAIL because a widened bank-comparison mask survived the requested mutation. All four gates passed; implementation was not changed.
+
+### 2026-11-23 - Grok: cries checkpoint-01, the data (note 140)
+
+- Extracted `cries.json` (190 rows) and `audio/sfx/cry00.json`–`cry25.json` from bank $02. Nothing plays them.
+- Banks $08, $1f and $20 match. Only cry0d channel 5's `sound_loop` address differs. Six channels fall through into the next label's `sound_ret`.
+- ROM 7,882/7,882. No-ROM 7,509 pass / 373 skip, 303 files. Bundle unchanged. Data JSON 219 → 258 in `data/` and in `static/`.
+- Commit `a66dd93`. Stopped for review. Next is Nemotron or Luna on note 140 §6, then checkpoint-02. Do not start it here.
+
+### 2026-11-23 - Claude: the user answered note 140 §7 (#174)
+
+- Yes to the bar, Pikachu's clips and the Pokédex CRY item. Cries go first; the simple opening waits for the main game.
+- Dropped the old-commit comparisons from `battle_end_data` and `battle_item_data`. Typecheck clean; ROM 7,877/7,877,
+  no-ROM 7,509/368. Next: Grok implements cries checkpoint-01; Nemotron or Luna reviews (user changed roles).
+
+### 2026-11-23 - Claude: fresh git baseline; Pokémon cries planned (note 140)
+
+- The root `.git` was missing. `git init` + baseline `16b9ae4` from the current tree (8,924 files; ROM, `refs/`,
+  `pkmn-sprites/`, `dist/` excluded; the three root `*.py` scratch scripts and `pkmn-save.txt` left untracked). The
+  working copy had 2,219 CRLF files; rewritten to LF from the index. The lost notes' references were removed at the user's request.
+- Gates on the baseline: typecheck clean; ROM 7,875/7,877. Two tests `git show` lost commits (see *Setup → Tests*).
+- Planned cries in `notes/140-pokemon-cries-plan.md`: data, engine + `PlayCry`, battle, field, Bill's PC. Sol
+  starts checkpoint-01 once the user answers §7 (bar/size, Pikachu clips, Pokédex CRY item, order vs simple opening).
+
+
+
 ### 2026-11-22 - Codex: 2c3b1b-ii frozen (note 139)
 
 - Matched the 12 ledger entry histories through the first loop and pinned Claude's three carry-forwards. All

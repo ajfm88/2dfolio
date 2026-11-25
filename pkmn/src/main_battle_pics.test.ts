@@ -154,7 +154,8 @@ it('a wild Safari mon running uses the enemy slide at three frames per step',asy
   vi.spyOn(slides,'animationSlideEnemyMonOff').mockImplementation(function* (state,screen){
     yield* observe(original(state,screen),screen,frames,()=>{ended=frameNow();});
   });
-  tick(['right']);for(let i=0;i<3;i++)tick();tick(['a']);
+  until(()=>s.screen.at(13,14)==='▶',()=>frameNow()%4===0?['right']:[]);
+  // BAIT consumes a Safari turn without the changed RNG stream catching this Rattata.
   until(()=>ended!==0,()=>[...pulse()]);expect(frames).toHaveLength(24);
   frames.forEach((f,i)=>expect(sampleCells(f,12,0,7,7)).toEqual(Array.from({length:49},(_,j)=>{
     const tile=(j%7)*7+Math.floor(j/7)-7*(Math.floor(i/3)+1);return tile>=0&&tile<48?tile:' ';

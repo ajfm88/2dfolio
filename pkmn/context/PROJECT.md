@@ -43,18 +43,20 @@ During development the ROM (`pokeyellow.gbc`, from the user's own cartridge) is
 used to extract game data via `npm run setup pokeyellow.gbc`. The extracted JSON +
 PNG output is committed to the repo so the final product needs no ROM at all.
 
-**Current priority:** Phase V rebuilt the lost work. The opening/title work is active ahead of expanding
-the playable maps, story and gyms. ROM-free play is done (Phase R).
+**Current priority:** A2 checkpoint-02 after the machine-data extraction in
+checkpoint-01 passed review. The battle-mechanics audit closed through
+checkpoint-11; Phase R and Phase V are complete. The remaining
+opening timing work is parked until after the main game (DECISIONS #171/#174).
 **Deferred:** sprite randomizer (X1), Netlify (X2). **Dead last:** deploy.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-21 — Phase V complete (9/36 milestones)
+## State as of 2026-11-24 — Phase V complete (9/36 milestones)
 
 - **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
   Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
-- **No ROM at runtime.** 219 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (980 generated
+- **No ROM at runtime.** 263 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (1068 generated
   files total). Vanilla art, local play, no remote and no push. The intro movie's JSON, PNGs and tilemaps are extracted and unused until checkpoints 11–14.
 - **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
   V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
@@ -63,10 +65,24 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   catch-up: the bank-aware `SFX_FILES` lookup with Audio 3's copies and the battle's text sounds (notes 101,
   103, 104), the field's priority and two SFX at once (note 105), and the call sites: the door sound by tile, the
   ledge hop, the Town Map's tinks, the field's text sounds (notes 106–109).
-- **Known gaps:** Pokémon cries are silent everywhere (stats screen, wild and trainer send-outs, Pokédex); they get
-  their own slice right after the opening (#141). Unscheduled: attack move animations (#94), the evolution screen's port
-  (note 57).
-- **Tests:** ROM **7799/7799**, no-ROM **7431 pass / 368 skip**, 299 files. Bundle `index-CkYsZcLD.js`, 694,681 bytes.
+- **Pokémon cries are live** in battle, Oak's speech, named field scenes, status,
+  Pokédex and Bill's PC; the five-checkpoint slice closed 2026-11-23 (note 140).
+  The battle-mechanics audit now has nine reviewed checkpoints: damage/hit/Counter
+  (`17651c7`), turn/status/residual (`08b014d`), effect dispatch/status handlers
+  (`3a2d4ae`), stat effects (`e39878f`), turn effects (`2734993`), HP/copy
+  effects (`8f8461a`), stat arithmetic/names/loaders (`238272a`), and trainer AI
+  (`2be1c48`), and items/catch plus faint/EXP/end (`36b2efe`, `5baa462`). See
+  `notes/141-battle-mechanics-audit-plan.md`. Checkpoint-10a (`1d27f50`) adds
+  battle VBlank `Random`; checkpoint-10b re-recorded its RNG ledger, reconciled
+  the full failure census, and passed independent review. Checkpoint-11 closed
+  the bounded audit after a move census and glitch triage; unreachable glitch
+  paths remain at J2. Attack
+  move animations (#94) and the evolution screen port (note 57)
+  are separate work.
+- **Tests:** last full green ROM **7959/7959**, no-ROM **7573 pass / 386 skip**, 308 files
+  (2026-11-24, `--maxWorkers=2`, A2 checkpoint-01). Typecheck and focused tests pass;
+  the changed RNG ledger and test expectations are reviewed. Production bundle
+  last measured at the cries baseline `index-Bh1w6Q55.js`, 708,471 bytes; no new build was run.
 - **Opening:** 07b/08b reviews and notes 134–137 are closed. The development preview exercises the reusable
   foreground program with an original geometric cutscene. The game still reaches the title after the shooting star.
   The original 2c3 timing, live unit 3 integration, combined unit 4 audit, and O-59 remain open.
@@ -77,7 +93,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 1. Run the dev server (`npx vite --host 127.0.0.1 --port 5173 --strictPort`), click, play — no ROM, no emulator, no upload screen. ✅ (R1b)
 2. All game data committed to the repo — no ROM in the final product. ✅ (R1c)
 3. Preserve the authoritative extractor data contract (same JSON shapes) while porting game behavior faithfully. ✅
-4. Full test suite green against generated data. ✅ (**6131**, 2026-11-05; no-ROM 5854 pass / 277 skip; live count in `STATUS.md`)
+4. Full test suite green against generated data. ✅ (live counts in `STATUS.md`)
 5. Get back to the lost 30-map state (Phase V), then expand to **all of Kanto,
    1:1 with vanilla Yellow** (B–I phases, then J).
 6. Any agent can pick this up mid-stream and make progress in one sitting.
@@ -117,7 +133,7 @@ Diglett's Cave → Route 3, the point the lost copy had reached.
 
 ## Success criteria
 
-1. `npm run typecheck` + full `npm test` green. ✅ (6131 ROM / 5854 no-ROM + 277 skip, 2026-11-05)
+1. `npm run typecheck` + full `npm test` green. ✅ (7,959 ROM; 7,573 no-ROM pass / 386 skip, 2026-11-24)
 2. Fresh browser: play without a ROM upload. ✅ (R1b, user-verified)
 3. Save/load works on the same origin (`127.0.0.1`). ✅ (save → reload → CONTINUE
    re-tested in R1c from a fresh clone)

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { A, BattleState, encodeText, PARTYMON_STRUCT_LENGTH } from './battle_state';
-import { BattleUnsupportedState, getCurrentMove, loadBattleMoveData, moveNameBinding, reloadMoveData } from './battle_move_data';
+import { BattleUnsupportedState, getCurrentMove, getMoveRecord, loadBattleMoveData, moveNameBinding, reloadMoveData } from './battle_move_data';
 import { announceMove, type BattleTurnTextHost } from './battle_turn_text';
 
 beforeAll(loadBattleMoveData);
@@ -62,6 +62,23 @@ describe('move records and cartridge names', () => {
       s.wPlayerSelectedMove = id; getCurrentMove(s);
       expect(s.wPlayerMoveNum).toBe(id); expect(moveNameBinding(s).length).toBeGreaterThan(0);
     }
+  });
+  it('committed move records cannot dispatch the unused post-EVADE stat effects', () => {
+    // moves.asm has 165 records; effects_pointers.asm:71-78 puts unused stat
+    // effects at $48-$4B. This checks the live loaded records, not a synthetic
+    // effect byte passed directly to jumpMoveEffect.
+    const secondaryStatMoves: [number, number][] = [];
+    for (let id = 1; id <= 165; id++) {
+      const record = getMoveRecord(id);
+      expect(record[0]).toBe(id);
+      const effect = record[1];
+      expect(effect).not.toBeUndefined();
+      expect(effect! >= 0x48 && effect! <= 0x4b).toBe(false);
+      if (effect! >= 0x44 && effect! <= 0x47) secondaryStatMoves.push([id, effect!]);
+    }
+    expect(secondaryStatMoves).toEqual([
+      [51, 0x45], [61, 0x46], [62, 0x44], [94, 0x47], [132, 0x46], [145, 0x46],
+    ]);
   });
   it.each([0, 166])('rejects unsupported ID %i in either entry without mutating state', id => {
     for (const turn of [0, 1]) {

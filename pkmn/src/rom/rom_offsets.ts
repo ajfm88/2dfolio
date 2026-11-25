@@ -59,6 +59,9 @@ export const NUM_MOVES          = 165;
 export const ITEM_NAMES_OFFSET  = symToOffset(0x01, 0x45b7);  // ItemNames table
 export const ITEM_NAME_LENGTH   = 13;    // bytes per item name entry (fixed, 0x50-padded)
 export const NUM_ITEM_NAMES     = 97;    // total entries in ItemNames table
+// A2 checkpoint-01: engine/items/tms.asm and engine/items/tm_prices.asm.
+export const TECHNICAL_MACHINES = symToOffset(0x04, 0x632d); // 50 TM + 5 HM move IDs, then $ff
+export const TECHNICAL_MACHINE_PRICES = symToOffset(0x3d, 0x65f5); // 50 price nybbles, 25 bytes
 
 // ── Type Data ─────────────────────────────────────────────────
 export const TYPE_EFFECTS       = symToOffset(0x0f, 0x65fa);  // 3 bytes each, terminated by 0xFF
