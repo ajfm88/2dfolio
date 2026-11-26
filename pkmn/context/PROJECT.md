@@ -43,20 +43,22 @@ During development the ROM (`pokeyellow.gbc`, from the user's own cartridge) is
 used to extract game data via `npm run setup pokeyellow.gbc`. The extracted JSON +
 PNG output is committed to the repo so the final product needs no ROM at all.
 
-**Current priority:** A2 checkpoint-02 after the machine-data extraction in
-checkpoint-01 passed review. The battle-mechanics audit closed through
-checkpoint-11; Phase R and Phase V are complete. The remaining
-opening timing work is parked until after the main game (DECISIONS #171/#174).
+**Current priority:** A2 is complete after five checkpoints and browser tests
+of teaching, Oak's Aide's HM05, and the Viridian City fisherman's TM42.
+The battle-mechanics audit closed through checkpoint-11; Phase R and Phase V
+are complete. A3 is next in the roadmap but has not started, as requested.
+The remaining opening timing work is parked until after the main game
+(DECISIONS #171/#174).
 **Deferred:** sprite randomizer (X1), Netlify (X2). **Dead last:** deploy.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-24 — Phase V complete (9/36 milestones)
+## State as of 2026-11-25 — A2 complete (10/36 milestones)
 
-- **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done (9/36 milestones); Phase V is complete** (DECISIONS #139, note
+- **R1, V1, A6, A1, A2, V2, A5, V3, V4 and V5 are done (10/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
   Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
-- **No ROM at runtime.** 263 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (1068 generated
+- **No ROM at runtime.** 265 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (1,072 generated
   files total). Vanilla art, local play, no remote and no push. The intro movie's JSON, PNGs and tilemaps are extracted and unused until checkpoints 11–14.
 - **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
   V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
@@ -67,7 +69,7 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   ledge hop, the Town Map's tinks, the field's text sounds (notes 106–109).
 - **Pokémon cries are live** in battle, Oak's speech, named field scenes, status,
   Pokédex and Bill's PC; the five-checkpoint slice closed 2026-11-23 (note 140).
-  The battle-mechanics audit now has nine reviewed checkpoints: damage/hit/Counter
+  The battle-mechanics audit closed through checkpoint-11: damage/hit/Counter
   (`17651c7`), turn/status/residual (`08b014d`), effect dispatch/status handlers
   (`3a2d4ae`), stat effects (`e39878f`), turn effects (`2734993`), HP/copy
   effects (`8f8461a`), stat arithmetic/names/loaders (`238272a`), and trainer AI
@@ -79,10 +81,12 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   paths remain at J2. Attack
   move animations (#94) and the evolution screen port (note 57)
   are separate work.
-- **Tests:** last full green ROM **7959/7959**, no-ROM **7573 pass / 386 skip**, 308 files
-  (2026-11-24, `--maxWorkers=2`, A2 checkpoint-01). Typecheck and focused tests pass;
-  the changed RNG ledger and test expectations are reviewed. Production bundle
-  last measured at the cries baseline `index-Bh1w6Q55.js`, 708,471 bytes; no new build was run.
+- **A2:** TM/HM items, compatibility, teaching, HM05 from Oak's Aide and TM42
+  from the Viridian City fisherman are complete. The visible teaching and both
+  gifts passed player tests (note 142). A3 has not started.
+- **Tests:** last full green ROM **8,004/8,004**, no-ROM **7,615 pass / 389 skip**, 315 files
+  (2026-11-25, `--maxWorkers=2`, A2 checkpoint-05). Typecheck and build pass;
+  production bundle `index-hquEmCcJ.js`, 721.39 kB.
 - **Opening:** 07b/08b reviews and notes 134–137 are closed. The development preview exercises the reusable
   foreground program with an original geometric cutscene. The game still reaches the title after the shooting star.
   The original 2c3 timing, live unit 3 integration, combined unit 4 audit, and O-59 remain open.

@@ -92,6 +92,7 @@ export class PartyMenu {
   }
   private sleepingText: TextBox | null = null;
   private itemTextBox: TextBox | null = null;
+  private machineAble: ((mon: BattlePokemon) => boolean) | null = null;
   /** The stats session owns actual reads and its one BG-transfer tick. */
   get statusScreenActive(): boolean { return this.stats !== null; }
   get ownsInput(): boolean { return this.statusScreenActive || this.opening !== null || this.sleepingText !== null; }
@@ -132,6 +133,7 @@ export class PartyMenu {
     this.opening = null;
     this.sleepingText = null;
     this.itemTextBox = null;
+    this.machineAble = null;
     this.promptVisible = true;
     this.subCursor = 0;
     this.switchFrom = -1;
@@ -253,6 +255,11 @@ export class PartyMenu {
     this.show(party);
     this.mode = 'useItem';
     this.itemTextBox = textBox ?? null;
+  }
+
+  showForMachine(party: BattlePokemon[], textBox: TextBox, able: (mon: BattlePokemon) => boolean): void {
+    this.showForItem(party, textBox);
+    this.machineAble = able;
   }
 
   /** One row's frozen picture (see hpOverride); null returns it to the party data. */
@@ -470,12 +477,16 @@ export class PartyMenu {
       // Status condition at column 17 (assembly: name start + 14)
       const override = this.hpOverride[i] ?? null;
       const status = override && override.status !== undefined ? override.status : mon.status;
-      if (status) {
+      if (status && !this.machineAble) {
         drawText(status, 17 * TILE_SIZE, y);
       }
 
       // Tile-based HP bar on second line (row N+1, column 4)
       const hpY = y + TILE_SIZE;
+      if (this.machineAble) {
+        drawText(this.machineAble(mon) ? 'ABLE' : 'NOT ABLE', 12 * TILE_SIZE, hpY);
+        continue;
+      }
       const shownHp = override?.shownHp ?? mon.currentHp;
       drawTileHpBar(HP_X, hpY, shownHp, mon.maxHp, override?.pixels, override?.colorPixels ?? override?.pixels);
       // Fraction at column 13: 3-digit current, '/', 3-digit max (DrawHP2).
@@ -495,6 +506,7 @@ export class PartyMenu {
   /** Overworld, item use and the battle chooser read the programs. */
   private promptLines(): string[] {
     const program = this.state === 'switch_target' ? 'PartyMenuSwapMonText'
+      : this.machineAble ? 'PartyMenuUseTMText'
       : this.mode === 'useItem' ? 'PartyMenuItemUseText'
       : this.listMessage;
     return linesOfProgram(program);

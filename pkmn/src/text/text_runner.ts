@@ -5,7 +5,8 @@ import type { PlaceActors, PrinterPorts } from './text_printer';
 import type { TextBinding, TextPrograms } from '../rom/extractors/text_programs';
 
 type NumericTextBinding = Extract<TextBinding, 'money' | 'coins' | 'hpDifference'
-  | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'curEnemyLevel' | 'amountMoneyWon' | 'totalPayDayMoney'>;
+  | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'curEnemyLevel' | 'amountMoneyWon' | 'totalPayDayMoney'
+  | 'oaksAideRequirement' | 'oaksAideOwnedCount'>;
 export type TextBindings = Partial<Record<Exclude<TextBinding, NumericTextBinding>, string>
   & Record<NumericTextBinding, number>>;
 export interface RunnerPorts extends PrinterPorts {

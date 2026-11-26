@@ -274,7 +274,7 @@ export function updatePikachuWalking(stepCounter: number, random: (carryIn: 0 | 
 }
 
 // --- Happiness modifiers ---
-type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'CARELESSTRAINER' | 'DEPOSITED';
+type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'USEDTMHM' | 'CARELESSTRAINER' | 'DEPOSITED';
 
 interface HappinessMod {
   tiers: [number, number, number];
@@ -288,6 +288,7 @@ const HAPPINESS_MODS: Record<HappinessEvent, HappinessMod> = {
   GYMLEADER:       { tiers: [3, 2, 1],       moodTarget: 0x80 },
   USEDITEM:        { tiers: [5, 3, 2],       moodTarget: 0x83 },
   USEDXITEM:       { tiers: [1, 1, 0],       moodTarget: 0x80 },
+  USEDTMHM:        { tiers: [1, 1, 0],       moodTarget: 0x94 },
   CARELESSTRAINER: { tiers: [-5, -5, -10],   moodTarget: 0x6C },
   DEPOSITED:       { tiers: [-3, -3, -5],    moodTarget: 0x62 },
 };
@@ -300,6 +301,12 @@ export function modifyPikachuHappiness(event: HappinessEvent): void {
   const delta = mod.tiers[tier];
 
   pikachuHappiness = Math.max(0, Math.min(255, pikachuHappiness + delta));
+
+  // ModifyPikachuHappiness sets the positive target directly, subject to the emotion guard.
+  if (event === 'USEDTMHM') {
+    if (pikachuMood < mod.moodTarget && pikachuEmotionModifier === 0) pikachuMood = mod.moodTarget;
+    return;
+  }
 
   // PikachuMoods[$06]=$80: ModifyPikachuHappiness returns without changing mood.
   // The walking path's one-unit drift happens in UpdatePikachuHappinessAndMood.

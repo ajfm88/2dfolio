@@ -5,7 +5,7 @@ import type { TextBindings } from '../text/text_runner';
 export interface TossText { program: string; bindings?: TextBindings }
 
 export function cannotToss(id: string): boolean {
-  return isKeyItem(id) || /^HM0[1-5]$/.test(id);
+  return isKeyItem(id);
 }
 
 export function tossItemPrompt(id: string, name: string): TossText {

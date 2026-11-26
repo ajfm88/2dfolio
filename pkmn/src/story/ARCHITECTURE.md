@@ -249,6 +249,7 @@ Exported builder functions (from `story/index.ts`):
 - **Oak visibility**: Always hidden in PalletTown via `applyStoryNpcState()`
 - **Script NPCs**: Dynamic NPCs in `scriptNpcs[]`, separate from map NPCs, cleared on map change
 - **New game start**: RedsHouse2F at tile (6,4), no Pokemon, no items
+- **Machine gifts**: `machine_gifts.ts` registers Route2Gate text 1 and ViridianCity text 6. The Aide checks the saved distinct-owned count against 10 after YES, gives HM05 only when the bag has room, and sets `GOT_HM05` before Flash explanation. The fisherman gives TM42 and sets `GOT_TM42` only on success. Both retry after a full bag; repeat talks use the saved event. Their received-text programs own the item sounds.
 
 ## Key Files
 
@@ -258,6 +259,7 @@ Exported builder functions (from `story/index.ts`):
 | `lab_text_handlers.ts` | 32 | Live rival, ball and Oak branches |
 | `pallet_town.ts` | 128 | Oak's grass encounter and phase-selected handler |
 | `viridian_mart.ts` | 45 | Parcel delivery event |
+| `machine_gifts.ts` | — | Oak's Aide HM05 and Viridian City fisherman TM42 gifts (A2 checkpoint-05) |
 | `viridian_city.ts` | 230 | Viridian City's map script: the three old men, the catch demos, the Gym door (V1e) |
 | `pewter_city.ts` | — | Pewter's default/east check, both guides and six transient native escort states (V2b CP3) |
 | `pewter_gym.ts` | — | Pewter Gym's guide (V3 checkpoint-03a, text 3): the badge line, or YES/NO with the Pikachu branch on YES only; NO is the free-service line. Brock (checkpoint-03b, text 1): pre-battle speech, male-trainer meet music, state 3, then BROCK party 0 as gym leader 1; both end labels use the Boulder Badge text. Checkpoint-05: a win runs `PewterGymBrockPostBattle` (TM34, BEAT_BROCK, BADGE_1, hide the gym guy and Route 22's first rival, clear both Route 22 events, `setTrainerBeaten` on the Jr. Trainer). A full bag skips GOT_TM34; talking later gives the TM or his advice |

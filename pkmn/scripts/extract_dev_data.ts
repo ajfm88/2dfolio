@@ -33,6 +33,7 @@ import { extractStatModText } from '../src/rom/extractors/stat_mod_text';
 import { extractYellowIntro } from '../src/rom/extractors/yellow_intro';
 import { extractCries } from '../src/rom/extractors/cries';
 import { extractMachines } from '../src/rom/extractors/machines';
+import { extractMachineCompatibility } from '../src/rom/extractors/machine_compatibility';
 import townMapData from '../src/rom/town_map_data';
 import { extractRom } from '../src/rom/index';
 import { installNodeImageData } from '../src/rom/node_image_data';
@@ -132,6 +133,7 @@ let count = 0;
 
 writeJson('item_names.json', readItemDisplayNames(rom)); count++;
 writeJson('machine_data.json', extractMachines(rom)); count++;
+writeJson('machine_compatibility.json', extractMachineCompatibility(rom)); count++;
 writeJson('move_names.json', readMoveDisplayNames(rom)); count++;
 writeJson('monster_names.json', readMonsterNames(rom)); count++;
 writeJson('game_text.json', extractGameText(rom)); count++;

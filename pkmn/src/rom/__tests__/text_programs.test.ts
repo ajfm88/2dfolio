@@ -97,6 +97,8 @@ const BINDINGS: Record<string, string> = {
   wLearnMoveMonName: 'learnMoveMonName', wBoxMonNicks: 'caughtMonNick', wCurEnemyLevel: 'curEnemyLevel',
   wPlayerNumHits: 'playerNumHits', wEnemyNumHits: 'enemyNumHits', wExpAmountGained: 'expAmountGained',
   wAmountMoneyWon: 'amountMoneyWon', wTotalPayDayMoney: 'totalPayDayMoney',
+  hOaksAideRequirement: 'oaksAideRequirement', hOaksAideNumMonsOwned: 'oaksAideOwnedCount',
+  wOaksAideRewardItemName: 'oaksAideRewardItemName',
 };
 const SOUNDS: Record<string, TextOp> = {
   sound_get_item_1: { op: 'sound', sound: 'get_item1' }, sound_get_item_1_duplicate: { op: 'sound', sound: 'get_item1' },

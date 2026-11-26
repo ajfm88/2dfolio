@@ -20,7 +20,8 @@ import { TEXT_POINTER_TABLES, TEXT_PROGRAM_SYMBOLS } from '../text_program_symbo
 /** What a RAM operand holds when the program runs (the caller supplies it). */
 export type TextBinding = 'gymCityName' | 'gymLeaderName' | 'stringBuffer' | 'nameBuffer' | 'boxNumString' | 'money' | 'coins' | 'hpDifference'
   | 'battleMonNick' | 'enemyMonNick' | 'trainerName' | 'learnMoveMonName' | 'caughtMonNick'
-  | 'curEnemyLevel' | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'amountMoneyWon' | 'totalPayDayMoney';
+  | 'curEnemyLevel' | 'playerNumHits' | 'enemyNumHits' | 'expAmountGained' | 'amountMoneyWon' | 'totalPayDayMoney'
+  | 'oaksAideRequirement' | 'oaksAideOwnedCount' | 'oaksAideRewardItemName';
 
 /** A sound command's effect (TextCommandSounds, home/text.asm). */
 export type TextSound = 'get_item1' | 'caught_mon' | 'pokedex_rating' | 'get_item2' | 'get_key_item' | 'dex_page_added';
@@ -123,6 +124,9 @@ const BINDINGS = createTextOperandBindings([
   ['decimal', 0xCF4A, 'expAmountGained'], // wExpAmountGained
   ['bcd', 0xD078, 'amountMoneyWon'],   // wAmountMoneyWon
   ['bcd', 0xCCE5, 'totalPayDayMoney'], // wTotalPayDayMoney
+  ['decimal', 0xFFDB, 'oaksAideRequirement'], // hOaksAideRequirement
+  ['decimal', 0xFFDD, 'oaksAideOwnedCount'], // hOaksAideNumMonsOwned
+  ['ram', 0xCC5B, 'oaksAideRewardItemName'], // wOaksAideRewardItemName
 ]);
 
 const SOUNDS: Record<number, TextSound> = {

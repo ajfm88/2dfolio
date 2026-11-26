@@ -275,7 +275,7 @@ describe('pickup integration with the real jingle interpreter', () => {
 });
 
 describe('plain NPC/sign call contracts through the controller (A5b4)', () => {
-  it.each([['PalletTown', 3, 'text'], ['Route1', 2, 'printText'], ['ViridianCity', 6, undefined]] as const)(
+  it.each([['PalletTown', 3, 'text'], ['Route1', 2, 'printText']] as const)(
     '%s text ID %i carries only its supported call kind %s', (mapName, id, call) => {
       const deps = scene(mapName);
       deps.npcs = deps.npcs.filter(npc => npc.data.textId === id);
@@ -286,7 +286,6 @@ describe('plain NPC/sign call contracts through the controller (A5b4)', () => {
       expect(action?.type).toBe('textbox');
       if (action?.type !== 'textbox') throw new Error('Expected plain dialogue');
       expect(action.call).toBe(call);
-      if (call === undefined) expect('call' in action).toBe(false); // handler stays on its old string path
     });
 
   it.each([[9, 'printText'], [12, 'text']] as const)('Viridian sign ID %i keeps its %s call', (textId, call) => {

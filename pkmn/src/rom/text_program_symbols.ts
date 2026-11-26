@@ -196,6 +196,12 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["Route22RivalBeforeBattleText2", 0x3C, 0x5B5D, true], // scripts/Route22_2.asm
   ["Route2DiglettsCaveSignText", 0x15, 0x5507, true], // scripts/Route2.asm
   ["Route2GateOaksAideText.FlashExplanationText", 0x17, 0x5520, true], // scripts/Route2Gate.asm
+  ["OaksAideHiText", 0x16, 0x4F28, true], // engine/events/oaks_aide.asm
+  ["OaksAideUhOhText", 0x16, 0x4F2D, true],
+  ["OaksAideComeBackText", 0x16, 0x4F32, true],
+  ["OaksAideHereYouGoText", 0x16, 0x4F37, true],
+  ["OaksAideGotItemText", 0x16, 0x4F3C, true],
+  ["OaksAideNoRoomText", 0x16, 0x4F42, true],
   ["Route2GateYoungsterText", 0x17, 0x5525, true], // scripts/Route2Gate.asm
   ["Route2SignText", 0x15, 0x5502, true], // scripts/Route2.asm
   ["Route2TradeHouseScientistText", 0x07, 0x57FE, true], // scripts/Route2TradeHouse.asm
@@ -478,6 +484,12 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["_Route22RivalBeforeBattleText2", 0x29, 0x6B0D, false], // text/Route22.asm
   ["_Route2DiglettsCaveSignText", 0x28, 0x6D7C, false], // text/Route2.asm
   ["_Route2GateOaksAideFlashExplanationText", 0x28, 0x4DE5, false], // text/Route2Gate.asm
+  ["_OaksAideHiText", 0x26, 0x4143, false], // data/text/text_1.asm
+  ["_OaksAideUhOhText", 0x26, 0x41E4, false],
+  ["_OaksAideComeBackText", 0x26, 0x4250, false],
+  ["_OaksAideHereYouGoText", 0x26, 0x428C, false],
+  ["_OaksAideGotItemText", 0x26, 0x42D9, false],
+  ["_OaksAideNoRoomText", 0x26, 0x42EC, false],
   ["_Route2GateYoungsterText", 0x28, 0x4E15, false], // text/Route2Gate.asm
   ["_Route2SignText", 0x28, 0x6D57, false], // text/Route2.asm
   ["_Route2TradeHouseScientistText", 0x28, 0x4DA1, false], // text/Route2TradeHouse.asm
@@ -1178,6 +1190,19 @@ export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, b
   ["PoofText", 0x01, 0x6D88, true], // engine/pokemon/learn_move.asm
   ["ForgotAndText", 0x01, 0x6D8D, true], // engine/pokemon/learn_move.asm
   ["HMCantDeleteText", 0x01, 0x6D92, true], // engine/pokemon/learn_move.asm
+  // A2 checkpoint-04a: machine teaching roots and far targets (pret symbols).
+  ["BootedUpTMText", 0x03, 0x6483, true],
+  ["BootedUpHMText", 0x03, 0x6488, true],
+  ["TeachMachineMoveText", 0x03, 0x648d, true],
+  ["MonCannotLearnMachineMoveText", 0x03, 0x6492, true],
+  ["AlreadyKnowsText", 0x0b, 0x7d65, true],
+  ["_BootedUpTMText", 0x2d, 0x6ce1, false],
+  ["_BootedUpHMText", 0x2d, 0x6cf2, false],
+  ["_TeachMachineMoveText", 0x2d, 0x6d04, false],
+  ["_MonCannotLearnMachineMoveText", 0x2d, 0x6d30, false],
+  ["_AlreadyKnowsText", 0x2d, 0x6ef6, false],
+  ["PartyMenuUseTMText", 0x04, 0x5a47, true],
+  ["_PartyMenuUseTMText", 0x28, 0x4177, false],
 ];
 
 // Every TextPointers table of the in-scope maps: [label, bank, address, entries], the count

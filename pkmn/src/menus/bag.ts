@@ -2,7 +2,7 @@
 // One frame per update. The message box and the list share one BG transfer tick,
 // and at most one of them reads the joypad.
 
-import { isBall, PARTY_MENU_ITEMS, type Bag } from '../items';
+import { isBall, parseMachineId, PARTY_MENU_ITEMS, type Bag } from '../items';
 import type { BattlePokemon } from '../battle';
 import {
   getBagSavedMenuItem, getListScrollOffset, setBagSavedMenuItem, setCurrentMenuItem, setListScrollOffset,
@@ -12,6 +12,7 @@ import type { TextBindings } from '../text/text_runner';
 import type { TextBox } from '../text/textbox';
 import { drawScreenTile } from './menu_render';
 import { FieldMedicine } from './field_medicine';
+import { FieldMachine } from './field_machine';
 import { ListMenu, type ListChoice } from './list_menu';
 import { MenuInput } from './menu_input';
 import { QuantityMenu } from './quantity_menu';
@@ -41,9 +42,10 @@ export class BagSession {
   private tossQty = 1;
   private party: BattlePokemon[] = [];
   private medicine: FieldMedicine | null = null;
+  private machine: FieldMachine | null = null;
   useTossChoice: UseTossChoice | null = null;
   /** GBPalWhiteOut while a field item is opening or returning. */
-  get paletteWhite(): boolean { return this.medicine?.paletteWhite ?? false; }
+  get paletteWhite(): boolean { return this.machine?.paletteWhite ?? this.medicine?.paletteWhite ?? false; }
   private bag: Bag | null = null;
   private paletteWait = 0;
 
@@ -60,6 +62,7 @@ export class BagSession {
     this.bag = bag;
     this.party = party;
     this.medicine = null;
+    this.machine = null;
     this.menu = null;
     this.useCursor = null;
     this.useTossChoice = null;
@@ -77,6 +80,10 @@ export class BagSession {
    * The caller is main's item_menu state, which must not also sync the joypad.
    */
   frame(readJoypad: () => void, pressSound: () => void): BagResult {
+    if (this.machine) {
+      if (this.machine.frame(readJoypad, pressSound)) { this.machine = null; this.itemMenuLoop(); }
+      return 'open';
+    }
     this.present();
     if (this.paletteWait > 0) {
       if (--this.paletteWait === 0) this.openList();
@@ -122,10 +129,13 @@ export class BagSession {
       }
     }
     this.yesNo?.render();
+    this.machine?.renderChoice();
   }
 
   renderMedicine(): void { this.medicine?.render(); }
   get medicineShowsParty(): boolean { return this.medicine?.showsParty ?? false; }
+  get machineShowsParty(): boolean { return this.machine?.showsParty ?? false; }
+  renderMachine(): void { this.machine?.renderParty(); }
 
   /** ItemUseTownMap returns here. ExitTownMap already cleared the screen. */
   returnFromTownMap(): void { this.itemMenuLoop(); }
@@ -230,6 +240,10 @@ export class BagSession {
     const id = selected && this.bag ? this.bag.items[selected.index]?.id : undefined;
     if (!selected || !id || !this.bag) { this.itemMenuLoop(); return 'open'; }
     if (id === 'TOWN_MAP') return 'town_map';
+    if (parseMachineId(id)) {
+      this.machine = new FieldMachine(this.textBox, this.transfer, this.tiles, this.bag, this.party, selected.index);
+      return 'open';
+    }
     if (isBall(id)) {
       this.print('ItemUseNotTimeText', 'loop');
       return 'open';

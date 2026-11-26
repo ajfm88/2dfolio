@@ -95,6 +95,14 @@ function spyPrinter(r: ReturnType<typeof rig>) {
 }
 
 describe('UseItem_ pointer census and refusal entry ordering', () => {
+  it.each([0xea, 0xc8])('machine $%s refuses use in battle without consuming it', id => {
+    const r=rig(); r.state.mem[I.wCurItem]=id; r.state.setBag([{id,quantity:2}]);
+    const before=r.state.mem.slice(I.wNumBagItems,I.wNumBagItems+4);
+    r.start(useItem(r.state,r.host)); r.finish();
+    expect(r.events.some(e=>e.event==='print:ItemUseNotTimeText')).toBe(true);
+    expect(r.state.wActionResultOrTookBattleTurn).toBe(0);
+    expect(r.state.mem.slice(I.wNumBagItems,I.wNumBagItems+4)).toEqual(before);
+  });
   const bodies = new Set([1, 2, 3, 4, 8, ...Array.from({ length: 18 }, (_, i) => 11 + i).filter(id => id <= 22),
     46, 51, 52, 53, 54, 55, 58, 60, 61, 62, 65, 66, 67, 68, 73, 80, 81, 82, 83]);
   it.each(Array.from({ length: 83 }, (_, i) => i + 1))('dispatches cartridge item %i without inventing a body', id => {

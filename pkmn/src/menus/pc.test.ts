@@ -222,6 +222,14 @@ describe('PlayerPC on the retained display', () => {
     expect(r.printed.some(p => p.program === 'DepositHowManyText')).toBe(false);
   });
 
+  it('HM05 deposits one item without opening the quantity menu', () => {
+    const r = rig([{ id: 'HM05', count: 1 }], []);
+    r.branch(1); r.tick('a');
+    expect(r.pc).toEqual([{ id: 'HM05', count: 1 }]);
+    expect(r.bag.items).toEqual([]);
+    expect(r.printed.some(p => p.program === 'DepositHowManyText')).toBe(false);
+  });
+
   it('failed withdrawal can retry the selected duplicate after space is freed', () => {
     const r = rig(Array.from({ length: 20 }, () => ({ id: 'POTION', count: 99 })), [{ id: 'POTION', count: 99 }, { id: 'POTION', count: 1 }]);
     r.branch(0); r.tick('down'); r.frames(3); r.choose(); r.tick(); r.tick('a');

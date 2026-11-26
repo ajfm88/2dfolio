@@ -54,6 +54,12 @@
         "program": "_AlreadyAsleepText"
       }
     ],
+    "AlreadyKnowsText": [
+      {
+        "op": "far",
+        "program": "_AlreadyKnowsText"
+      }
+    ],
     "AlreadyOutText": [
       {
         "op": "far",
@@ -152,6 +158,18 @@
       {
         "op": "far",
         "program": "_ExpPointsText"
+      }
+    ],
+    "BootedUpHMText": [
+      {
+        "op": "far",
+        "program": "_BootedUpHMText"
+      }
+    ],
+    "BootedUpTMText": [
+      {
+        "op": "far",
+        "program": "_BootedUpTMText"
       }
     ],
     "BoxFullCannotThrowBallText": [
@@ -1077,6 +1095,12 @@
         "program": "_MirrorMoveFailedText"
       }
     ],
+    "MonCannotLearnMachineMoveText": [
+      {
+        "op": "far",
+        "program": "_MonCannotLearnMachineMoveText"
+      }
+    ],
     "MonIsTakenOutText": [
       {
         "op": "far",
@@ -1447,6 +1471,46 @@
       {
         "op": "far",
         "program": "_OakSpeechText3"
+      }
+    ],
+    "OaksAideComeBackText": [
+      {
+        "op": "far",
+        "program": "_OaksAideComeBackText"
+      }
+    ],
+    "OaksAideGotItemText": [
+      {
+        "op": "far",
+        "program": "_OaksAideGotItemText"
+      },
+      {
+        "op": "sound",
+        "sound": "get_item1"
+      }
+    ],
+    "OaksAideHereYouGoText": [
+      {
+        "op": "far",
+        "program": "_OaksAideHereYouGoText"
+      }
+    ],
+    "OaksAideHiText": [
+      {
+        "op": "far",
+        "program": "_OaksAideHiText"
+      }
+    ],
+    "OaksAideNoRoomText": [
+      {
+        "op": "far",
+        "program": "_OaksAideNoRoomText"
+      }
+    ],
+    "OaksAideUhOhText": [
+      {
+        "op": "far",
+        "program": "_OaksAideUhOhText"
       }
     ],
     "OaksLabEeveePokeBallText.Text": [
@@ -1850,6 +1914,12 @@
       {
         "op": "far",
         "program": "_PartyMenuSwapMonText"
+      }
+    ],
+    "PartyMenuUseTMText": [
+      {
+        "op": "far",
+        "program": "_PartyMenuUseTMText"
       }
     ],
     "PewterCityCooltrainerFText": [
@@ -2873,6 +2943,12 @@
         "text": "It's a pamphlet\non TMs.\f...\fThere are 50 TMs\nin all.\fThere are also 5\nHMs that can be\nused repeatedly.\fSILPH CO."
       }
     ],
+    "TeachMachineMoveText": [
+      {
+        "op": "far",
+        "program": "_TeachMachineMoveText"
+      }
+    ],
     "ThrashingAboutText": [
       {
         "op": "far",
@@ -3782,6 +3858,24 @@
         "text": "<TARGET>'s\nalready asleep!<PROMPT>"
       }
     ],
+    "_AlreadyKnowsText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " knows\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!<PROMPT>"
+      }
+    ],
     "_AlreadyOutText": [
       {
         "op": "ram",
@@ -3892,6 +3986,18 @@
       {
         "op": "text",
         "text": "a boosted<CONT>"
+      }
+    ],
+    "_BootedUpHMText": [
+      {
+        "op": "text",
+        "text": "Booted up an HM!<PROMPT>"
+      }
+    ],
+    "_BootedUpTMText": [
+      {
+        "op": "text",
+        "text": "Booted up a TM!<PROMPT>"
       }
     ],
     "_BoxFullCannotThrowBallText": [
@@ -4999,6 +5105,32 @@
         "text": "The MIRROR MOVE\nfailed!<PROMPT>"
       }
     ],
+    "_MonCannotLearnMachineMoveText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": " is not\ncompatible with\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ".\fIt can't learn\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": ".<PROMPT>"
+      }
+    ],
     "_MonIsTakenOutText": [
       {
         "op": "ram",
@@ -5467,6 +5599,142 @@
         "text": "<PLAYER>!\fYour very own\nPOKéMON legend is\nabout to unfold!\fA world of dreams\nand adventures\nwith POKéMON\nawaits! Let's go!<DONE>"
       }
     ],
+    "_OaksAideComeBackText": [
+      {
+        "op": "text",
+        "text": "Oh. I see.\fWhen you get "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideRequirement",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": "\nkinds, come back\nfor "
+      },
+      {
+        "op": "ram",
+        "binding": "oaksAideRewardItemName"
+      },
+      {
+        "op": "text",
+        "text": ".<DONE>"
+      }
+    ],
+    "_OaksAideGotItemText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> got the\n"
+      },
+      {
+        "op": "ram",
+        "binding": "oaksAideRewardItemName"
+      },
+      {
+        "op": "text",
+        "text": "!"
+      }
+    ],
+    "_OaksAideHereYouGoText": [
+      {
+        "op": "text",
+        "text": "Great! You have\ncaught "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideOwnedCount",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": " kinds \nof POKéMON!\nCongratulations!\fHere you go!<PROMPT>"
+      }
+    ],
+    "_OaksAideHiText": [
+      {
+        "op": "text",
+        "text": "Hi! Remember me?\nI'm PROF.OAK's\nAIDE!\fIf you caught "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideRequirement",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": "\nkinds of POKéMON,\nI'm supposed to\ngive you an\n"
+      },
+      {
+        "op": "ram",
+        "binding": "oaksAideRewardItemName"
+      },
+      {
+        "op": "text",
+        "text": "!\fSo, <PLAYER>! Have\nyou caught at\nleast "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideRequirement",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": " kinds of\nPOKéMON?<DONE>"
+      }
+    ],
+    "_OaksAideNoRoomText": [
+      {
+        "op": "text",
+        "text": "Oh! I see you\ndon't have any\nroom for the\n"
+      },
+      {
+        "op": "ram",
+        "binding": "oaksAideRewardItemName"
+      },
+      {
+        "op": "text",
+        "text": ".<DONE>"
+      }
+    ],
+    "_OaksAideUhOhText": [
+      {
+        "op": "text",
+        "text": "Let's see...\nUh-oh! You have\ncaught only "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideOwnedCount",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": "\nkinds of POKéMON!\fYou need "
+      },
+      {
+        "op": "decimal",
+        "binding": "oaksAideRequirement",
+        "bytes": 1,
+        "digits": 3
+      },
+      {
+        "op": "text",
+        "text": " kinds\nif you want the\n"
+      },
+      {
+        "op": "ram",
+        "binding": "oaksAideRewardItemName"
+      },
+      {
+        "op": "text",
+        "text": ".<DONE>"
+      }
+    ],
     "_OaksLabGirlText": [
       {
         "op": "text",
@@ -5869,6 +6137,12 @@
       {
         "op": "text",
         "text": "Move POKéMON\nwhere?<DONE>"
+      }
+    ],
+    "_PartyMenuUseTMText": [
+      {
+        "op": "text",
+        "text": "Teach to which\nPOKéMON?<DONE>"
       }
     ],
     "_PewterCityCooltrainerFText": [
@@ -6907,6 +7181,28 @@
       {
         "op": "text",
         "text": "\fA TM contains a\ntechnique that\ncan be taught to\nPOKéMON!\fA TM is good only\nonce! So when you\nuse one to teach\na new technique,\npick the POKéMON\ncarefully!\fTM34 contains\nBIDE!\fYour POKéMON will\nabsorb damage in\nbattle then pay\nit back double!<DONE>"
+      }
+    ],
+    "_TeachMachineMoveText": [
+      {
+        "op": "text",
+        "text": "It contained\n"
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "!\fTeach "
+      },
+      {
+        "op": "ram",
+        "binding": "stringBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\nto a POKéMON?<DONE>"
       }
     ],
     "_ThrashingAboutText": [

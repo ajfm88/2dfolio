@@ -134,13 +134,41 @@ describe('inventory callers through menu input', () => {
 });
 
 describe('item display names come from the extracted ROM names', () => {
-  it('TM34 sells at its machine price and OLD AMBER is a key item (data/items/tm_prices.asm, key_items.asm)', async () => {
-    const { getItemPrice, isKeyItem } = await import('./items');
+  it('all machine names, prices, and item rules match the extracted tables and pret ranges', async () => {
+    const { getAllItemIds, getItemCategory, getItemName, getItemPrice, isKeyItem, isTossable } = await import('./items');
+    const machineData = (await import('../data/machine_data.json')).default;
+    const ids = getAllItemIds();
+    const machines = ids.filter(id => /^(?:HM|TM)\d{2}$/.test(id));
+    expect(machines).toEqual([
+      ...Array.from({ length: 5 }, (_, i) => `HM${String(i + 1).padStart(2, '0')}`),
+      ...Array.from({ length: 50 }, (_, i) => `TM${String(i + 1).padStart(2, '0')}`),
+    ]);
+    for (const id of machines) {
+      expect(getItemName(id)).toBe(id);
+      if (id.startsWith('HM')) {
+        expect(getItemPrice(id), id).toBe(0);
+        expect(getItemCategory(id), id).toBe('key');
+        expect(isKeyItem(id), id).toBe(true);
+        expect(isTossable(id), id).toBe(false);
+      } else {
+        const number = Number(id.slice(2));
+        expect(getItemPrice(id), id).toBe(machineData.prices[number - 1] * 1000);
+        expect(getItemCategory(id), id).toBe('other');
+        expect(isKeyItem(id), id).toBe(false);
+        expect(isTossable(id), id).toBe(true);
+      }
+    }
+    expect(getItemPrice('TM01')).toBe(machineData.prices[0] * 1000);
     expect(getItemPrice('TM34')).toBe(2000);
-    expect(isKeyItem('TM34')).toBe(false);
+    expect(getItemPrice('TM50')).toBe(machineData.prices[49] * 1000);
+    for (const id of ['HM00', 'HM06', 'TM00', 'TM51', 'TM1', 'tm01', 'TM01_EXTRA']) {
+      expect(getItemPrice(id), id).toBe(0);
+      expect(getItemCategory(id), id).toBe('other');
+      expect(getItemName(id), id).toBe(id.replace(/_/g, ' '));
+    }
     expect(isKeyItem('OLD_AMBER')).toBe(true);
   });
-  it('every runtime item id has a ROM name, including the two renamed constants', async () => {
+  it('every ordinary runtime item id has a ROM name, including the two renamed constants', async () => {
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
     const { initItemNames, getItemName, getAllItemIds } = await import('./items');
@@ -149,6 +177,8 @@ describe('item display names come from the extracted ROM names', () => {
     expect(getItemName('PARALYZE_HEAL')).toBe('PARLYZ HEAL'); // 11 chars: fits the Mart list
     expect(getItemName('OAKS_PARCEL')).toBe("OAK's PARCEL");
     const rom = new Set(Object.values(names));
-    for (const id of getAllItemIds()) expect(rom.has(getItemName(id)), id).toBe(true);
+    for (const id of getAllItemIds().filter(id => !/^(?:HM|TM)\d{2}$/.test(id))) {
+      expect(rom.has(getItemName(id)), id).toBe(true);
+    }
   });
 });

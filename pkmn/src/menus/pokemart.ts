@@ -26,8 +26,6 @@ export function moneyBoxLayout(money: number): MenuBoxLayout {
     12, 1, money, MONEY);
   return { x: 11, y: 0, width: 9, height: 3, labels };
 }
-/** IsItemHM: HM01–HM05. None of them are in the item table yet. */
-const HM_ITEMS = new Set(['HM01', 'HM02', 'HM03', 'HM04', 'HM05']);
 
 type AfterPrint = 'thankYou' | 'saveAndReturn' | 'back' | 'loop' | 'buyList' | 'sellList' | 'yesno' | 'buyLoop';
 
@@ -216,7 +214,7 @@ export class PokemartSession implements MenuSession {
       this.returnToMain();
       return;
     }
-    if (this.trading === 'sell' && (isKeyItem(choice.id) || HM_ITEMS.has(choice.id))) {
+    if (this.trading === 'sell' && isKeyItem(choice.id)) {
       this.print('PokemartUnsellableItemText', 'back');
       return;
     }

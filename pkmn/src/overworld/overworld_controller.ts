@@ -26,6 +26,7 @@ import { updatePikachuWalking } from '../pikachu/pikachu_happiness';
 import { countStep, runStepEnd } from './step_end';
 import type { StepCounters } from './step_end';
 import '../story/small_text_handlers';
+import '../story/machine_gifts';
 import '../story/pewter_gym';
 import '../story/lab_text_handlers';
 import '../story/pokecenter';

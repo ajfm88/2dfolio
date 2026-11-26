@@ -132,8 +132,8 @@ describe('small handlers from the cartridge branches', () => {
   });
   it('censuses every current handler/script NPC and sign as migrated or explicitly deferred', () => {
     const excluded: Record<string, string> = {
-      'Route2:1': 'A5b4 pickup', 'Route2:2': 'A5b4 pickup', 'Route2Gate:1': 'A2 Aide', 'Route2TradeHouse:2': 'A4 trade',
-      'ViridianCity:6': 'A2 TM42', 'ViridianForest:2': 'A5b4 trainer', 'ViridianForest:3': 'A5b4 trainer',
+      'Route2:1': 'A5b4 pickup', 'Route2:2': 'A5b4 pickup', 'Route2TradeHouse:2': 'A4 trade',
+      'ViridianForest:2': 'A5b4 trainer', 'ViridianForest:3': 'A5b4 trainer',
       'ViridianForest:4': 'A5b4 trainer', 'ViridianForest:5': 'A5b4 trainer', 'ViridianForest:6': 'A5b4 trainer',
       'ViridianForest:7': 'A5b4 pickup', 'ViridianForest:8': 'A5b4 pickup', 'ViridianForest:9': 'A5b4 pickup',
       'ViridianPokecenter:4': 'Cable club receptionist: link features need a user decision',

@@ -1,6 +1,7 @@
 // Simple item inventory system
 
 import { resetListStateForEmptySlot } from './list_state';
+import machineData from '../data/machine_data.json';
 
 export interface ItemStack {
   id: string;
@@ -40,8 +41,31 @@ const ITEM_DEFS: Record<string, ItemDef> = {
   OLD_AMBER: { category: "key", price: 0 },
 };
 
-// data/items/tm_prices.asm: GetMachinePrice's nybble (TM34: 2, in thousands). The other TMs arrive with A2.
-const TM_PRICES: Record<string, number> = { TM34: 2000 };
+// constants/item_constants.asm: HM01–HM05 precede TM01–TM50.
+// GetMachinePrice reads each TM's price in thousands (engine/items/tm_prices.asm).
+const HM_COUNT = machineData.moves.length - machineData.prices.length;
+const TM_COUNT = machineData.prices.length;
+
+export function parseMachineId(id: string): { kind: 'HM' | 'TM'; number: number } | null {
+  const match = /^(HM|TM)(\d{2})$/.exec(id);
+  if (!match) return null;
+  const kind = match[1] as 'HM' | 'TM';
+  const number = Number(match[2]);
+  return number >= 1 && number <= (kind === 'HM' ? HM_COUNT : TM_COUNT)
+    ? { kind, number }
+    : null;
+}
+
+/** TMToMove indexes TechnicalMachines with TMs first, then HMs. */
+export function machineMove(id: string): number | null {
+  const machine = parseMachineId(id);
+  return machine ? machineData.moves[(machine.kind === 'TM' ? 0 : TM_COUNT) + machine.number - 1] : null;
+}
+
+const MACHINE_IDS = [
+  ...Array.from({ length: HM_COUNT }, (_, i) => `HM${String(i + 1).padStart(2, '0')}`),
+  ...Array.from({ length: TM_COUNT }, (_, i) => `TM${String(i + 1).padStart(2, '0')}`),
+];
 
 // Dynamic item display names — loaded from ROM or static data at startup
 let itemDisplayNames: Record<string, string> = {};
@@ -52,7 +76,7 @@ export function initItemNames(names: Record<string, string>): void {
 }
 
 export function getAllItemIds(): string[] {
-  return Object.keys(ITEM_DEFS);
+  return [...Object.keys(ITEM_DEFS), ...MACHINE_IDS];
 }
 
 // Runtime ids that differ from pret's constants, which key the extracted names
@@ -60,15 +84,19 @@ export function getAllItemIds(): string[] {
 const PRET_ITEM_KEYS: Record<string, string> = { PARALYZE_HEAL: 'PARLYZ_HEAL', OAKS_PARCEL: 'OAKs_PARCEL' };
 
 export function getItemName(id: string): string {
+  if (parseMachineId(id)) return id; // GetMachineName prints the prefix and two digits.
   return itemDisplayNames[PRET_ITEM_KEYS[id] ?? id] ?? id.replace(/_/g, " ");
 }
 
 export function getItemCategory(id: string): ItemCategory {
+  if (parseMachineId(id)?.kind === 'HM') return 'key';
   return ITEM_DEFS[id]?.category ?? "other";
 }
 
 export function getItemPrice(id: string): number {
-  return ITEM_DEFS[id]?.price ?? TM_PRICES[id] ?? 0;
+  const machine = parseMachineId(id);
+  if (machine) return machine.kind === 'TM' ? machineData.prices[machine.number - 1] * 1000 : 0;
+  return ITEM_DEFS[id]?.price ?? 0;
 }
 
 export function isBall(id: string): boolean {

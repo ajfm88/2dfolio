@@ -599,6 +599,38 @@ describe('DisplayPokemartDialogue on one retained display', () => {
     refuse('TOWN_MAP', true);
     refuse('OAKS_PARCEL', true);
     refuse('HM01', false);
+    refuse('HM05', true);
+  });
+
+  it('sells two TM34 through the Mart list and quantity menu for half the machine price', () => {
+    const bag = new Bag();
+    bag.items = [{ id: 'TM34', count: 3 }];
+    const { deps, money } = world(3000, bag);
+    const run = openSell(deps);
+    let decided = -1;
+    let sold = -1;
+    let shownPrice = false;
+    for (let frame = run.list + 1; sold < 0 && frame < run.list + 800; frame++) {
+      let button: 'a' | 'up' | undefined;
+      if (frame === run.list + 16) button = 'a';
+      else if (frame === run.list + 17) button = 'up';
+      else if (frame === run.list + 18) button = 'a';
+      else if (decided >= 0 && frame === decided + 3) button = 'a';
+      else if (run.printed.includes('PokemartTellSellPriceText') && deps.textBox.isWaitingForInput
+          && money() === 3000) button = 'a';
+      run.step(frame, button);
+      if (decided < 0 && run.printed.includes('PokemartTellSellPriceText') && deps.textBox.isComplete) {
+        decided = frame;
+        shownPrice = deps.textBox.saveScreen().buffer.join('').includes('2000');
+      }
+      if (bag.items[0]?.count === 1) sold = frame;
+    }
+    expect(decided).toBeGreaterThan(run.list);
+    expect(shownPrice).toBe(true);
+    expect(sold).toBeGreaterThan(decided);
+    expect(money()).toBe(5000);
+    expect(bag.items).toEqual([{ id: 'TM34', count: 1 }]);
+    expect(run.printed).not.toContain('PokemartUnsellableItemText');
   });
 
   it('sells two POTION at half the total, redraws MONEY before the sound, and removes the count after it', () => {
@@ -919,12 +951,14 @@ describe('DisplayPokemartDialogue on one retained display', () => {
     }
     const alias: Record<string, string> = { PARALYZE_HEAL: 'PARLYZ_HEAL' };
     const definedTrue: string[] = [];
-    for (const id of getAllItemIds()) {
+    for (const id of getAllItemIds().filter(id => !/^(?:HM|TM)\d{2}$/.test(id))) {
       const name = alias[id] ?? id;
       expect(flags.has(name), name).toBe(true);
       expect(isKeyItem(id), id).toBe(flags.get(name));
       if (flags.get(name)) definedTrue.push(id);
     }
     expect(definedTrue).toEqual(['OAKS_PARCEL', 'TOWN_MAP', 'OLD_AMBER']);
+    for (let i = 1; i <= 5; i++) expect(isKeyItem(`HM0${i}`)).toBe(true);
+    for (let i = 1; i <= 50; i++) expect(isKeyItem(`TM${String(i).padStart(2, '0')}`)).toBe(false);
   });
 });

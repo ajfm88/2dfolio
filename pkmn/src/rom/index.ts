@@ -28,6 +28,7 @@ import { extractStatModText } from './extractors/stat_mod_text';
 import { extractYellowIntro } from './extractors/yellow_intro';
 import { extractCries } from './extractors/cries';
 import { extractMachines } from './extractors/machines';
+import { extractMachineCompatibility } from './extractors/machine_compatibility';
 import type { ExtractedData } from './data_provider';
 
 export { installRomData } from './data_provider';
@@ -131,6 +132,7 @@ export async function extractRom(
   // ── Item and move display names (for runtime use) ──
   data.jsonData['item_names.json'] = readItemDisplayNames(rom);
   data.jsonData['machine_data.json'] = extractMachines(rom);
+  data.jsonData['machine_compatibility.json'] = extractMachineCompatibility(rom);
   data.jsonData['move_names.json'] = readMoveDisplayNames(rom);
   data.jsonData['monster_names.json'] = readMonsterNames(rom);
 

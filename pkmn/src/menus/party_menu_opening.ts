@@ -14,7 +14,7 @@ export class PartyMenuOpening {
   constructor(
     private readonly textBox: TextBox,
     private readonly transfer: BgTransfer,
-    private readonly program: 'PartyMenuNormalText' | 'PartyMenuItemUseText' | 'PartyMenuBattleText',
+    private readonly program: 'PartyMenuNormalText' | 'PartyMenuItemUseText' | 'PartyMenuBattleText' | 'PartyMenuUseTMText',
     private readonly paletteOwner: 'field' | 'battle' = 'field',
   ) {
     if (textBox.active) textBox.dismiss();

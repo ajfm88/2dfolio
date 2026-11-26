@@ -1,0 +1,94 @@
+{
+  "channels": [
+    {
+      "id": 5,
+      "commands": [
+        {
+          "cmd": "duty_cycle",
+          "value": 3
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 5,
+          "shift": -2
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 15,
+          "fade": 0,
+          "frequency": 1280
+        },
+        {
+          "cmd": "pitch_sweep",
+          "length": 0,
+          "shift": 8
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 0,
+          "fade": 0,
+          "frequency": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 0,
+          "frequency": 1280
+        },
+        {
+          "cmd": "square_note",
+          "length": 1,
+          "volume": 0,
+          "fade": 0,
+          "frequency": 0
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "commands": [
+        {
+          "cmd": "duty_cycle",
+          "value": 3
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 15,
+          "fade": 0,
+          "frequency": 1025
+        },
+        {
+          "cmd": "square_note",
+          "length": 4,
+          "volume": 0,
+          "fade": 0,
+          "frequency": 0
+        },
+        {
+          "cmd": "square_note",
+          "length": 15,
+          "volume": 15,
+          "fade": 0,
+          "frequency": 1025
+        },
+        {
+          "cmd": "square_note",
+          "length": 1,
+          "volume": 0,
+          "fade": 0,
+          "frequency": 0
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

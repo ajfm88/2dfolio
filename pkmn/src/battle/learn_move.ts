@@ -16,7 +16,7 @@ import type { TextAsmContinuation, TextBindings } from '../text/text_runner';
 export interface LearnMoveHost extends TwoOptionHost, Pick<ExperienceHost,
   'printText' | 'saveScreenTilesToBuffer1' | 'loadScreenTilesFromBuffer1'> {
   /** Same authoritative bank/ID/wait/music owner in battle and field (field starts in bank02). */
-  audio: BattleAudio;
+  audio: Pick<BattleAudio, 'playSwap'>;
   swapSound: BattleSfx;
 }
 

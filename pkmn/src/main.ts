@@ -1796,7 +1796,10 @@ function drawUiLayer(): void {
   if (state === 'script' && isScriptMenuFullScreen()) { renderMenuSession(); return; }
   switch (state) {
     case 'item_menu':
-      if (bagMenu.medicineOpen && bagMenu.medicineShowsParty) {
+      if (bagMenu.machineShowsParty) {
+        bagMenu.renderMachine();
+        textBox.render();
+      } else if (bagMenu.medicineOpen && bagMenu.medicineShowsParty) {
         bagMenu.renderMedicine();
         textBox.render();
       } else { startMenu.paint(); textBox.render(); bagMenu.paint(); }

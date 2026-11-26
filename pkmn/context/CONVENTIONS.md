@@ -256,7 +256,7 @@ Two things learned planning V1 (`notes/02-v1-plan.md`):
 ## Verification (before you call a slice done)
 
 1. `npm run typecheck` — must be clean.
-2. `ROM_PATH=pokeyellow.gbc npm test` - **last full green baseline 7959/7959** as of 2026-11-24 (A2 checkpoint-01). No-ROM **7573 pass / 386 skip**, 308 files. Machine-table extraction passed independent review. Both full suites used `--maxWorkers=2`; the unrestricted checkpoint-02 run had unrelated hook/test timeouts that passed alone and on the two-worker rerun. Anything less is a regression; new tests raise the
+2. `ROM_PATH=pokeyellow.gbc npm test` - **last full green baseline 8,004/8,004** as of 2026-11-25 (A2 checkpoint-05). No-ROM **7,615 pass / 389 skip**, 315 files. A2 teaching and gifts passed independent review and player tests. Both full suites used `--maxWorkers=2`; the unrestricted checkpoint-02 run had unrelated hook/test timeouts that passed alone and on the two-worker rerun. Anything less is a regression; new tests raise the
    baseline — record the new number in `STATUS.md`. If the *whole* suite dies at
    once, `data/` is missing: run `npm run setup pokeyellow.gbc`.
 3. For anything visible: `npx vite --host 127.0.0.1 --port 5173 --strictPort` at **`http://127.0.0.1:5173/`** (the save

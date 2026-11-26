@@ -27,8 +27,9 @@ function titleMenu(){
   for(let n=0;n<56&&host.state==='title_screen';n++)tick(['start']);
   expect(host.state).toBe('main_menu');tick();
 }
-async function saveThenReload(){
+async function saveThenReload(withMachines=false){
   await world('Route1',5,5,[trainedSaveMon(),mon(122,15)]);host.boxes[0].push(...frontSaveBox());
+  if(withMachines) host.bag.items.push({id:'TM34',count:2},{id:'HM05',count:1});
   host.optionMenu.restore(fast);setPikachuEmotionModifier(5);restorePikachuHappiness(150,210);
   main.writeSave();const saved=loadGame() as SaveDataV2;
   expect(saved.version).toBe(2);expect(saved.options).toBe(0xc1);expect(saved.pikachuEmotionModifier).toBe(5);
@@ -38,9 +39,11 @@ async function saveThenReload(){
   expect(getPikachuEmotionModifier()).toBe(5);return saved;
 }
 it('real main saves, reloads settings before CONTINUE and supplies identical next-battle record bytes',async()=>{
-  const saved=await saveThenReload();tick(['a']);expect(host.state).toBe('transition');await host.finishFade();
+  const saved=await saveThenReload(true);tick(['a']);expect(host.state).toBe('transition');await host.finishFade();
   for(let n=0;n<30&&host.state!=='overworld';n++)await new Promise<void>(resolve=>setImmediate(resolve));
   expect(host.state).toBe('overworld');expect(host.optionMenu.options).toEqual(fast);expect(getTextSpeed()).toBe('fast');
+  expect(saved.bag).toEqual([{id:'TM34',count:2},{id:'HM05',count:1}]);
+  expect(host.bag.items).toEqual(saved.bag);
   expect(getPikachuEmotionModifier()).toBe(5);
   host.playerParty.forEach((p,index)=>{
     const s=new BattleState();encodePartyMon(s,0,worldPartyRecord(p));

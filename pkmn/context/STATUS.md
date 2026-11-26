@@ -12,7 +12,7 @@
 **Project:** pkmn — Pokemon Yellow playable in the browser, zero ROM dependency.
 **Working dir for all commands:** `game/`
 
-**Last updated:** 2026-11-24 (local) · **Phase:** A2, checkpoint-01 reviewed; checkpoint-02 next · **Milestones done:** 9/36.
+**Last updated:** 2026-11-25 (local) · **Phase:** A2 complete; A3 awaits a separate start · **Milestones done:** 10/36.
 **Notes 134-137 and reviews 07b/08b are closed.** The permanent note 137 pacing regression passed all gates.
 **Opening timing work parked until the end of the game (DECISIONS #171).** The live opening is unchanged. 12b2c2's reviewed timing code stays
 committed and unused. The queue moves to the core game.
@@ -42,7 +42,7 @@ co-author line. **Never push** — there is no remote and there must never be on
 
 ## Current phase
 
-**Phase R and Phase V are done** (#139). The **Pokémon cries** slice closed on 2026-11-23 (note 140). The **battle-mechanics audit** closed through checkpoint-11 on 2026-11-24; its evidence is `notes/141-battle-mechanics-audit-plan.md`. **A2 is active:** checkpoint-01's machine data is reviewed (note 142); checkpoint-02 is next.
+**Phase R and Phase V are done** (#139). The **Pokémon cries** slice closed on 2026-11-23 (note 140). The **battle-mechanics audit** closed through checkpoint-11 on 2026-11-24; its evidence is `notes/141-battle-mechanics-audit-plan.md`. **A2 is complete:** all five checkpoints are implemented and reviewed; the player verified Oak's Aide's HM05 and the Viridian City fisherman's TM42 in the browser (note 142). A3 has not started.
 The opening's timing work (12b2c2 remainder, units 3–4) is parked to J2 (#171); the simple opening comes after the
 main game (#172, #174).
 
@@ -53,15 +53,15 @@ main game (#172, #174).
 | Item | State |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Git | Root repo, branch `master`, **no remote**. **Re-initialised 2026-11-23** (the old `.git` was found missing): baseline `16b9ae4` snapshots the tree as of the Boot handoff; every older hash in `context/` and `notes/` refers to the lost history. `.gitattributes`: text LF, `*.png`/`*.tilemap`/`*.gbc` binary. `game/.gitattributes` (the user's, tracked since 2026-10-14, DECISIONS #53) repeats those rules for `game/` and adds linguist hints |
-| Committed generated files | `game/data/` (263 JSON) + `game/static/` (536 PNG, 6 tilemaps, 263 JSON), 1068 generated files total. A2 checkpoint-01 adds `machine_data.json` and its mirror; note 142 verifies all 1,066 prior generated files unchanged. Regenerate, never hand-edit |
+| Committed generated files | `game/data/` (265 JSON) + `game/static/` (536 PNG, 6 tilemaps, 265 JSON), 1,072 generated files total. A2 checkpoint-05 changed only the two text-program mirrors and verified the other 1,070 files unchanged (note 142). Regenerate, never hand-edit |
 | Ignored | `*.gbc`/`*.gb` (the ROM), `refs/`, `pkmn-sprites/`, `node_modules/`, `dist/` |
 | `game/LICENSE` | **Removed by the user (2026-09-22): "i want it gone".** Deletion committed with R1c. Don't restore it (DECISIONS #28) |
 | ROM | `game/pokeyellow.gbc`, SHA1 `cc7d0326…4a38e1` (DECISIONS #14) — re-verified 2026-09-22 |
 | `refs/` | All 5 on pinned branches, refreshed **2026-11-17** with `./pull-refs.sh`: `pokeyellow` master `b452f2ab` (unchanged since 2026-11-03; pret's names, R-SYNC note 78), `gen1recomp` dev `53ad85ca` (was `d85a6176`, +39: Android storage, launcher config, CI), `oldamber` main `268d571f` (unchanged), `engine` main `248eaad2` (was `1986dd93`, +6: Zig compatibility, lint), `dmg` main `5e3b785a` (unchanged). No test reads `gen1recomp` or `engine`. `file:line` citations written before note 78 refer to pret `e89ead15` |
 | `game/` | `gididaf/pokemon-yellow-typescript` `main` @ `05faa114` (2026-03-27), no `.git/`. Upstream `game/CLAUDE.md` folded into root `CLAUDE.md` → _Engine reference_, then deleted; moved on to `context/ARCHITECTURE.md` and the subsystem docs 2026-10-06 (DECISIONS #42) |
-| `npm run setup` | 263 JSON → `data/`; static 536 PNG + 6 tilemaps + 263 JSON mirror (1068 generated files). Clip 17 landed with cries checkpoint-04, clips 28/35/40 with checkpoint-05. A generated-data checkpoint ships a hash manifest and `check-generated.py` (notes 121, 142) |
+| `npm run setup` | 265 JSON → `data/`; static 536 PNG + 6 tilemaps + 265 JSON mirror (1,072 generated files). Clip 17 landed with cries checkpoint-04, clips 28/35/40 with checkpoint-05. A generated-data checkpoint ships a hash manifest and `check-generated.py` (notes 121, 142) |
 | Typecheck | Clean |
-| Tests | **A2 checkpoint-01 (2026-11-24).** ROM 7,959/7,959; no-ROM 7,573 pass / 386 skip across 308 files. Typecheck clean. Both suites passed with `--maxWorkers=2`. No production source changed; the last measured bundle remains the cries baseline `index-Bh1w6Q55.js`, 708,471 bytes. |
+| Tests | **A2 checkpoint-05 (2026-11-25).** ROM 8,004/8,004; no-ROM 7,615 pass / 389 skip across 315 files. Typecheck and build clean. Both suites passed with `--maxWorkers=2`; bundle `index-hquEmCcJ.js`, 721.39 kB. |
 
 ### What the game has today (upstream audited 2026-09-22, plus every slice since)
 
@@ -80,7 +80,7 @@ main game (#172, #174).
 | SFX | **79** SFX JSON files (38 are cry00–cry25); **28** preloaded by the field, with battle sounds loaded by the battle session. The title now plays `intro_crash` and `intro_whoosh`; the star plays `shooting_star` (checkpoint-09, reviewed and user-verified, note 120 §11). Every field request is `Audio1_PlaySound`: the current music's bank picks the file through `SFX_FILES` (V5g1; Audio 3's `save_3`, `turn_on_pc_3`, `enter_pc_3`), the header walk sets priority and two SFX play at once on different channels (V5g2), and the call sites match the cartridge on today's maps: door sound by tile, `SFX_LEDGE`, the Town Map's `SFX_TINK`, text sounds through `TEXT_SOUND_IDS` (V5g3). The battle's sounds and text sounds use the same table. The title preloads clips 1 and 11. Startup preloads clips 4, 11, 17, 28, 35, 37 and 40 (battle, status screen, Bill's PC). Pokémon cries play with their waits in battle (checkpoint-03), in Oak's speech, the Nidoran/Spearow houses, the Pokécenter Chansey, the status screen (starter: clip 17) and the Pokédex data page and side-menu CRY (checkpoint-04); all reviewed and user-verified (note 140 §8.15–§8.16, §8.25–§8.26). Bill's PC plays regular cries for deposit, withdraw and release, with their waits, and the starter's clips 28/35/40 (checkpoint-05, reviewed PASS, note 140 §8.34). Still not in: the field party's `SFX_SWAP` (J2) |
 | Type chart | ✅ **The old PSYCHIC string-key bug is absent.** The live engine compares byte 24 on both sides; Bug 2×, Fighting ½×, Psychic ½× and Ghost 0× are pinned through wild, trainer and party loaders plus the AI by `battle_type_chart_live.test.ts` (V5a checkpoint-01). The ROM chart stays unmodified; #10's fix is withdrawn (#111). |
 | Hidden items | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** DisplayTextID opens, found program begins at T+20 before give, flag on success, longer jingle and full map close; cartridge full-bag waits. Forest Potion/Antidote and Viridian City Potion |
-| Item balls | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** extracted `item` selects `PickUpItem`; box opens at T, give/hide T+20, found program T+23, `get_item1`, full map close after sound and A's release. Saved `hiddenObjects` keeps balls gone and tiles free. Full-bag failure keeps the ball. Route 1's sample preserves the flag-first quirk. Trade kid (A4) and Oak's Aide (A2) still await their handlers |
+| Item balls | ✅ **A1b, user-verified; A5b4 timing reviewed and user-verified:** extracted `item` selects `PickUpItem`; box opens at T, give/hide T+20, found program T+23, `get_item1`, full map close after sound and A's release. Saved `hiddenObjects` keeps balls gone and tiles free. Full-bag failure keeps the ball. Route 1's sample preserves the flag-first quirk. Oak's Aide's A2 handler is complete; the trade kid remains A4 |
 | Trainers | ✅ **since V1c, as `home/trainers.asm` runs them**: before-battle text → meet music (male / female / evil) → battle; on a win the fanfare after the last Pokémon, "defeated", the pic scrolling back in, "CLASS: " + end text, money; beaten only after a win (saved); after-battle text when talked to again. Oak's Lab rival: his texts, no blackout on a loss, `rivalStarter` saved. Since A5d every entry runs the shared transitions (user-verified 2026-10-18) |
 | Trainer sight | ✅ **A1c, user-verified 2026-10-06** (`notes/20-a1c-plan.md`, DECISIONS #43): the Forest's map script runs `TrainerEngage` on standing passes ($fc quirk, pop-in), the meet music at spotting, EmotionBubble (61 frames), the `MoveSprite` walk-up, `wJoyIgnore`/`BIT_SEEN_BY_TRAINER`, `EndTrainerBattle`'s pass. Forest sight ranges 4, 4, 1, 0, 4. V4 checkpoint-04's midpoint trainer interruption passed review after repair (note89 §19); the busy-trainer guard and outdoor-sight tripwire are retired. |
 | Catch demo | ✅ **since V1d**: Oak's Pikachu catch runs the ASM's simulated FIGHT → ITEM → POKé BALL input, with both outcomes (caught, or 3 shakes and "Shoot! It was so close too!"). Since V1e the Viridian old man uses it too |
@@ -88,7 +88,7 @@ main game (#172, #174).
 | Badge stat boosts | ✅ `battle_loaders.ts` `applyBadgeStatBoosts` (the cartridge's, on the battle copy). Brock awards the first (V3); the repeated-application bug is pinned |
 | Battles | ✅ **The new engine since A5c3f 09b** (notes66–72): byte-backed turn/effects/items/AI/end; old engine deleted.10c already wired growth, starter Pikachu entrance, retreat and slide-offs. Remaining presentation: poof/OAM after the live silhouette intro (live since 04b; user play-test passed 2026-11-04), substitute/minimize/transform and other named cues; move animations stay OFF (#83; their own later slice, #94); catch screens/demo retirement stay A5f. Last user battle play-test2026-11-01; 04a changes nothing visible |
 | Random numbers | ✅ **The cartridge's `Random` / `BattleRandom` everywhere** (note 74): one page-lifetime owner of `hRandomAdd` / `hRandomSub`, VBlank's per-frame call outside battle, each site's carry. No production `Math.random` (a census pins it). Battle frames skip the VBlank call (backlogged) |
-| TM/HM teaching | ❌ → A2 |
+| TM/HM teaching | ✅ A2 complete: machine items, compatibility, teaching, Oak's Aide HM05 and Viridian City TM42; player-verified (note 142) |
 | Poison walking, Repel, Escape Rope | ❌ (items exist in the price table only) → A3 |
 | Text and menus | ✅ **A5a/A5b**: every overworld text, sign, hidden event, bookshelf, story scene and menu text runs the cartridge's text programs with its timing (printer, DisplayTextID open/close, PrintText); the Mart, bag, field medicine, HP bar, item/Pokécenter/Bill's PCs, START and SAVE are the cartridge's. Battle text runs on the cartridge's programs too, since A5c3f. The StatusScreen port (stats pages, shared party opening, corrected medicine timing) is user-verified |
 | Evolution, move learning, Pokédex, PC, shops, save | ✅ (see `ARCHITECTURE.md` → _Engine reference_ and `game/src/battle/ARCHITECTURE.md`) |
@@ -125,20 +125,25 @@ main game (#172, #174).
 
 ## Completed
 
-Milestones R1, V1–V5, A1, A5 and A6 are done (9/36; CLAUDE.md, PROJECT.md *State*). The one-line-per-slice table moved
+Milestones R1, V1–V5, A1, A2, A5 and A6 are done (10/36; CLAUDE.md, PROJECT.md *State*). The one-line-per-slice table moved
 to `HISTORY.md` → *Archived STATUS sections (moved 2026-11-23)* to keep this file under 40 KB; the full per-slice
 table (results, commits, counts) is further down in HISTORY. Plans and reviews are in `notes/`.
 Battle audit checkpoint-10b closed 2026-11-24: the 10a RNG stream's affected ledgers were re-recorded,
 the nine-failure census reconciled, both full suites passed and Luna independently reviewed the changes (note 141).
 Battle audit checkpoint-11 closed 2026-11-24: the move/effect census and note 57 reconciliation found no ordinary path to the two glitch tails. Terra added one loaded-record regression; Luna independently reviewed it and passed. The bounded audit is complete; unreachable glitches stay at J2 (note 141, DECISIONS #176).
 A2 checkpoint-01 closed 2026-11-24 (`6e8780d`): the machine move and price tables are extracted into committed JSON with a static mirror; Terra's implementation and Luna's post-completion review passed. A2 remains open (note 142).
+A2 checkpoint-02 closed 2026-11-24: all 55 machine IDs now have names, table prices and HM key-item behavior in the bag, Mart and PC. Full ROM 7,962/7,962; no-ROM 7,576 pass / 386 skip; typecheck and build pass. The user reported all browser play-test checks passed (note 142).
+A2 checkpoint-03 reviewed 2026-11-24: seven TM/HM compatibility bytes for each of 151 species are committed separately from `pokemon.json`, with a pure `CanLearnTM` lookup. Terra finished before Luna's independent PASS. Full ROM 7,964/7,964; no-ROM 7,577 pass / 387 skip; typecheck, generated manifest and build pass. No visible behavior changed (note 142).
+A2 checkpoint-04 closed 2026-11-25: the bag teaches TM/HM moves through shared LearnMove, with retry/cancel, TM consumption, HM retention and Pikachu happiness. Full ROM 7,998/7,998; no-ROM 7,609 pass / 389 skip; typecheck, build and generated manifest pass. The user reported the browser teaching flow works (note 142).
+A2 checkpoint-05 closed 2026-11-25: Oak's Aide gives HM05 at 10 distinct owned species, and the Viridian City fisherman gives TM42. Both gifts retry after a full bag and have saved events. Luna independently passed the source and diff review. Full ROM 8,004/8,004; no-ROM 7,615 pass / 389 skip; typecheck, build and generated manifest pass. The user confirmed both gifts in the browser. A2 is complete (note 142).
 
 ## In progress
 
-**A2 in progress:** checkpoint-01 is reviewed and closed. The machine tables
-are committed data and unused by runtime code. Next is a separate checkpoint-02
-brief for machine item names, prices and HM behavior across bag/Mart/PC. A2,
-A3, A4 and B1 remain separate milestones (note 142, DECISIONS #177).
+**A2 complete 2026-11-25:** The Route 2 Aide's HM05 and Viridian City
+fisherman's TM42 are wired with full-bag retries and source text. Luna's
+post-completion independent review passed, and the player confirmed both
+gifts. No A3 work has begun. A3, A4 and B1 remain separate milestones
+(note 142, DECISIONS #177).
 
 **Battle-mechanics audit (#70) complete.** Plan, routine inventory and bounded evidence:
 `notes/141-battle-mechanics-audit-plan.md` (DECISIONS #176). Checkpoints 01–09 are reviewed:
@@ -172,8 +177,7 @@ Claim one planned checkpoint at a time. The roadmap is in `PLAN.md`.
 
 | # | Work | Scope |
 | --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 0 | **A2 checkpoint-02** | Brief machine item names, prices and HM behavior across bag/Mart/PC against the ASM (note 142). |
-| 1 | **A2 remainder** | Compatibility, teaching and Oak's Aide; brief each checkpoint before implementation. Then A3 → A4 → B1 (#177). |
+| 0 | **A3 — next, not started** | Plan A3 field effects as a separate milestone when the user requests it; A4 → B1 follow (#177). |
 | — | **After the main game** | Simple opening (#172, #174). Live boot still uses the default path. |
 | — | **Parked to J2** | PCM crackle fix (#173); opening 12b2c2 timing remainder (#171). |
 
@@ -255,6 +259,53 @@ entries point at V5 or J2; a few at A5c–A5f, V3, V4, I1 and E1. New findings g
 - Cable club receptionist (`ViridianPokecenter:4`): link features need a user decision; no slice is invented for it.
 
 ## Session log
+
+### 2026-11-25 - User/Codex: A2 complete after TM42 browser test
+
+- The user tested the Viridian City fisherman's TM42 gift and reported that it works. Oak's Aide's HM05 and the checkpoint-04 teaching flow were already player-verified. All five A2 checkpoints are implemented, independently reviewed where required, and visibly verified; A2 is complete (10/36 milestones). The user explicitly requested that A3 not start. The pre-existing `context/PLAN.md` edit and untracked root files remain preserved.
+
+### 2026-11-25 - User/Codex: A2 Oak's Aide browser test passed
+
+- The user tested Oak's Aide's HM05 gift in the browser and reported that it works. All five A2 implementation checkpoints are done. The Viridian City fisherman's TM42 gift remains the final visible check before closing A2 (note 142). The pre-existing `context/PLAN.md` edit and untracked root files remain untouched.
+
+### 2026-11-25 - Codex/Luna: A2 checkpoint-05 reviewed; player gift test pending
+
+- Codex planned and implemented Route2Gate Oak's Aide HM05 and Viridian City fisherman TM42 with the cartridge's text, count/event branches, item sounds and full-bag retries. A separate Sol implementer stopped without edits; Codex completed the work before Luna began. Luna independently checked the 9/10 boundary, text operand addresses, gift flags, generated data and tests, and reported PASS with no blockers (note 142).
+- Typecheck, build, focused tests, full no-ROM 7,615 pass / 389 skip and ROM 8,004/8,004 passed across 315 files. Repeat setup and the generated manifest confirm only the two text-program mirrors changed; 1,070 other generated assets are unchanged. The user's visible gift play-test is next. The pre-existing `context/PLAN.md` edit and untracked root files remain untouched.
+
+### 2026-11-25 - User/Codex: A2 checkpoint-04 browser test passed
+
+- The user tested the machine teaching flow in the browser and reported that it works. Checkpoint-04 is closed after Terra's implementation and Luna's independent PASS (`c397d2e`, note 142). A2 remains open; next, brief Oak's Aide and remaining machine gifts. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-25 - Codex/Terra/Luna: A2 checkpoint-04c reviewed; play-test pending
+
+- Integrated the real bag/party/shared LearnMove action, success-only TM consumption and starter happiness, and source-backed denied audio. The new sound has two generated mirrors; the manifest confirms all 1,070 prior generated files unchanged. Typecheck, focused 149/149, no-ROM 7,609 pass / 389 skip, ROM 7,998/7,998, build, repeat setup and diff check passed. Details and a TM34/HM05 player path are in note 142.
+- Terra formally completed before Luna began. Luna independently checked the source and real bag paths, reran typecheck, focused (148 pass / 1 skip), both full suites, build and generated manifest, and passed with no blockers. The visible player play-test remains pending before checkpoint-04 closes. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04b field adapter reviewed
+
+- Terra built an unwired field frame adapter for the existing shared `learnMove` program, using a temporary encoded party record and success-only live move/PP writeback. Luna started after Terra's final completion, independently challenged empty slot, full set, HM deletion, abandon/retry and retained frame ownership, and passed with no blockers (note 142).
+- Typecheck, focused 278/278, no-ROM 7,595 pass / 388 skip, ROM 7,983/7,983 across 312 files, build and diff check passed. No generated files changed. The adapter remains unwired. Next: final bag integration and user-visible teaching flow, briefed in note 142. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04b party text reviewed
+
+- The `TMHM_PARTY_MENU` field path needs a separate party prompt omitted from 04a. Terra extracted `PartyMenuUseTMText` and its far target from source-backed ROM addresses, then finished. Luna independently checked pret, ROM bytes and the extracted prompt and passed. Only `text_programs.json` and its static mirror changed; the other 1,068 generated files remain identical.
+- Typecheck, focused ROM 23/23, full ROM 7,977/7,977 and no-ROM 7,589 pass / 388 skip, build and repeat extraction passed. The bag action remains unwired. Codex briefed a smaller field LearnMove adapter step in note 142; full teaching integration follows. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04a reviewed
+
+- Codex split the broad machine teaching checkpoint after Terra's source analysis identified the missing field LearnMove host. Terra then extracted five machine text roots and five far targets, and added the cartridge's USEDTMHM happiness event. Luna began only after Terra's final completion, independently checked the ROM symbols/text operands and ASM happiness behavior, and passed (note 142). No partial bag teaching flow is exposed.
+- Typecheck, focused tests, no-ROM 7,589 pass / 388 skip, ROM 7,977/7,977 across 311 files, build and repeat extraction passed. Exactly two generated text mirrors changed; 1,068 prior files remained unchanged. Bundle 709,529 bytes. Next: 04b complete bag/party/LearnMove action, then player play-test. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-03 reviewed
+
+- Codex specified a separate 152-entry compatibility table from each species' seven base-stat bytes and a pure move-ID lookup matching `CanLearnTM` (note 142). Terra implemented both extraction paths and the lookup, then formally finished before Luna began. Luna checked pret and the owned ROM, independently challenged Bulbasaur's TM50/HM01/HM05 bits through the helper and passed with no blockers.
+- Typecheck, focused tests, full ROM 7,964/7,964 and no-ROM 7,577 pass / 387 skip across 309 files, build, repeat extraction and manifest passed. The manifest shows two new generated files and 1,068 prior files unchanged, including `pokemon.json`; main bundle stays 709,420 bytes. This data-only checkpoint needs no play-test. Checkpoint-02's visible menu play-test remains pending; next session can brief checkpoint-04. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-02 reviewed, play-test pending
+
+- Codex briefed the runtime machine item/menu slice in note 142. Terra used the committed machine table for 55 canonical names, 50 TM prices and HM key-item behavior; bag, Mart and PC paths now share the classification. No machine teaching was added. Terra finished before Luna started. Luna challenged HM05 PC deposit and TM34 Mart sale against pret and passed with no blockers.
+- Typecheck, focused 93/93, full ROM 7,962/7,962 and no-ROM 7,576 pass / 386 skip across 308 files, build and diff check passed. Main bundle 709,420 bytes (+949). No generated-data churn. The user's `context/PLAN.md` edit and root files remain untouched. Visible TM34/HM05 menu play-test is still needed before checkpoint closure; note 142 gives the reproduction path. Next after that: brief checkpoint-03 compatibility data.
 
 ### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-01 reviewed
 

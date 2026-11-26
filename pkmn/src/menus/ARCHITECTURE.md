@@ -1,5 +1,14 @@
 # Menus Architecture
 
+A2 checkpoint-04c adds a field machine-use session owned by BagSession. It
+drives the boot and teach text, YES/NO and the TM/HM party chooser, including
+per-species ABLE labels and retry messages, before delegating successful
+choices to the shared FieldLearnMove frame adapter. The machine session owns
+the single BG/input tick while active; the bag resumes after it finishes. A
+successful TM use removes one item, while HMs and unsuccessful attempts are
+retained. Starter Pikachu's USEDTMHM event and Thunderbolt/Thunder mood are
+applied only after success. Field audio now preloads SFX_DENIED in banks 02/1f.
+
 The battle-prompt checkpoint (note 102, user-verified) passes the menu type at `openBattleChoice` / `goBackToChoice` to one `listMessage` for opening, redraw and retained text: NORMAL for PKMN, BATTLE for faint replacement and SHIFT; `show()` resets it to normal, and battle context binds the byte through `A.wPartyMenuTypeOrMessageID` at `$D07C` without moving any timing.
 
 V5f checkpoint-02 (2026-11-14, note 97, #125) adds `ItemMenuLoop`'s missing default-palette

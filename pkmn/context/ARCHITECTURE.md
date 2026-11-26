@@ -25,7 +25,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | Last full green: Vitest, **7959/7959** with ROM; no-ROM 7573 pass / 386 skip across 308 files (2026-11-24, A2 checkpoint-01) | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | Last full green: Vitest, **8,004/8,004** with ROM; no-ROM 7,615 pass / 389 skip across 315 files (2026-11-25, A2 checkpoint-05) | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -225,6 +225,8 @@ Summary of path → shape → source:
 | `wild/<Map>.json` | `{grassRate,grass[],waterRate,water[]}` (`wild.ts`) | ROM via extractor |
 | `pokedex.json` | `(PokedexEntry\|null)[152]` (`pokedex.ts`) | ROM via extractor |
 | `item_names.json` | `Record<CONSTANT, display>` (`text.ts:readItemDisplayNames`) | ROM via extractor |
+| `machine_data.json` | `{moves: number[55], prices: number[50]}` (`machines.ts`), TM01–TM50 then HM01–HM05; prices are thousands | ROM `TechnicalMachines` and `TechnicalMachinePrices` (A2 checkpoint-01) |
+| `machine_compatibility.json` | `(number[7] \| null)[152]`, seven raw compatibility bytes per species, internal slot zero empty | ROM base-stat records (`machine_compatibility.ts`, A2 checkpoint-03) |
 | `move_names.json` | `Record<MOVE_CONSTANT, display>` (`text.ts:readMoveDisplayNames`), all 165 moves in ID order, no NO_MOVE entry; shares the constant-name reader's table walk (StatusScreen CP2) | ROM MoveNames, 2F:4000 |
 | `monster_names.json` | `(string\|null)[191]`, [0]=null; internal IDs 1–190, including 39 `MISSINGNO.` slots (`text.ts:readMonsterNames`). Loaded by `battle/data.ts`, read by battle and through `speciesDisplayName` by the Pokédex, status page 2 and Oak's gift (V5e checkpoint-01) | ROM MonsterNames, 3A:4000; ten bytes per entry |
 | `game_text.json` | flat `Record<key, string>` (`game_text.ts`); a `prompt` text keeps its trailing `<PROMPT>` (A5b1) | ROM via extractor |

@@ -124,6 +124,15 @@ describe('DisplayListMenuID', () => {
     expect(row(bag.tiles, 9, 14, 17)).toBe('×12');
   });
 
+  it('renders machine names and omits the HM quantity marker', () => {
+    const machine = rig({ kind: 'items', entries: [{ id: 'HM05', count: 1 }, { id: 'TM34', count: 2 }] });
+    machine.frames(10);
+    expect(row(machine.tiles, 4, 6, 12).trimEnd()).toBe('HM05');
+    expect(machine.tiles.at(14, 5)).toBe(' ');
+    expect(row(machine.tiles, 6, 6, 12).trimEnd()).toBe('TM34');
+    expect(machine.tiles.at(14, 7)).not.toBe(' ');
+  });
+
   it('the cursor reaches only the third row, and the first read is 16 frames in', () => {
     const menu = rig({ kind: 'priced', entries: potions(10) });
     menu.frames(12);
