@@ -13,6 +13,13 @@
 // (party_menu.asm; RareCandyText waits for its item, A5b1 review R-1).
 
 export const TEXT_PROGRAM_SYMBOLS: readonly (readonly [string, number, number, boolean])[] = [
+  ["RepelWoreOffText", 0x00, 0x29C1, true],
+  ["_RepelWoreOffText", 0x2C, 0x74F4, false],
+  // A3 checkpoint-02: home/text_script.asm and data/text/text_7.asm.
+  ["PokemonFaintedText", 0x00, 0x2983, true],
+  ["_PokemonFaintedText", 0x2C, 0x74BC, false],
+  ["PlayerBlackedOutText", 0x00, 0x29B3, true],
+  ["_PlayerBlackedOutText", 0x2C, 0x74CA, false],
   // Opening checkpoint-07a; engine/movie/oak_speech/clear_save.asm (DoClearSaveDialogue) and data/text/text_3.asm.
   ["ClearSaveDataText", 0x07, 0x425F, true],
   ["_ClearSaveDataText", 0x28, 0x40E9, false],

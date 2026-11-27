@@ -197,6 +197,12 @@ export class StartMenuSession {
     return this.closeRead(readJoypad); // CloseStartMenu's own Joypad call, same CPU frame
   }
 
+  /** A successful UsableItems_CloseMenu item returns here from the suspended ITEM screen. */
+  closeAfterItemUse(): void {
+    if (this.phase !== 'suspended') throw new Error('START is not suspended for item use');
+    this.phase = 'closeRead';
+  }
+
   private closeRead(readJoypad: () => void): null {
     readJoypad();
     if (isPassPressed('a')) return null; // newly pressed, not held A

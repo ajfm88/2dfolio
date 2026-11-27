@@ -46,19 +46,21 @@ PNG output is committed to the repo so the final product needs no ROM at all.
 **Current priority:** A2 is complete after five checkpoints and browser tests
 of teaching, Oak's Aide's HM05, and the Viridian City fisherman's TM42.
 The battle-mechanics audit closed through checkpoint-11; Phase R and Phase V
-are complete. A3 is next in the roadmap but has not started, as requested.
+are complete. A3 checkpoints 01-05 made walking poison, Repel and Escape Rope
+live and player-verified. A3 remains open for whiteout reconciliation; no
+checkpoint is currently claimed.
 The remaining opening timing work is parked until after the main game
 (DECISIONS #171/#174).
 **Deferred:** sprite randomizer (X1), Netlify (X2). **Dead last:** deploy.
 
 Live status: `STATUS.md`. Roadmap: `PLAN.md`.
 
-## State as of 2026-11-25 — A2 complete (10/36 milestones)
+## State as of 2026-11-25 — A3 checkpoint-05 complete (10/36 milestones)
 
 - **R1, V1, A6, A1, A2, V2, A5, V3, V4 and V5 are done (10/36 milestones); Phase V is complete** (DECISIONS #139, note
   109 §10). The game runs with no ROM from 30 runtime-wired maps, Pallet Town through Pewter, Route 3 and Diglett's
   Cave, with Brock's badge and TM34 and the ASM-ported battle engine.
-- **No ROM at runtime.** 265 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (1,072 generated
+- **No ROM at runtime.** 270 committed JSON files and their static mirror, 536 PNGs and 6 tilemaps (1,082 generated
   files total). Vanilla art, local play, no remote and no push. The intro movie's JSON, PNGs and tilemaps are extracted and unused until checkpoints 11–14.
 - **V5, the recovered fixes, all reviewed and, where a player sees or hears the change, user-verified:**
   V5a the type chart's Psychic rows pinned (note 91); V5b the battle return (note 92); V5c the map-object audit
@@ -83,10 +85,11 @@ Live status: `STATUS.md`. Roadmap: `PLAN.md`.
   are separate work.
 - **A2:** TM/HM items, compatibility, teaching, HM05 from Oak's Aide and TM42
   from the Viridian City fisherman are complete. The visible teaching and both
-  gifts passed player tests (note 142). A3 has not started.
-- **Tests:** last full green ROM **8,004/8,004**, no-ROM **7,615 pass / 389 skip**, 315 files
-  (2026-11-25, `--maxWorkers=2`, A2 checkpoint-05). Typecheck and build pass;
-  production bundle `index-hquEmCcJ.js`, 721.39 kB.
+  gifts passed player tests (note 142). A3 checkpoints 01-05 made poison,
+  Repel and Escape Rope live and player-verified (note 143).
+- **Tests:** last full green ROM **8,088/8,088**, no-ROM **7,696 pass / 392 skip**, 321 files
+  (2026-11-25, `--maxWorkers=2`, A3 checkpoint-05). Typecheck and build pass;
+  the Escape Rope sound-tail follow-up passed 26 focused tests, typecheck and build.
 - **Opening:** 07b/08b reviews and notes 134–137 are closed. The development preview exercises the reusable
   foreground program with an original geometric cutscene. The game still reaches the title after the shooting star.
   The original 2c3 timing, live unit 3 integration, combined unit 4 audit, and O-59 remain open.

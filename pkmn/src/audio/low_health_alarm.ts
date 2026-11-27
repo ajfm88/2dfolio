@@ -95,6 +95,7 @@ export function resetLowHealthAlarm(): void {
 }
 
 function play(regs: readonly number[]): void {
+  synth?.writeSweep(regs[0]); // .copyLoop starts at rAUD1SWEEP with zero
   synth?.writePulse(0, regs[1], regs[2], regs[3], regs[4]);
 }
 

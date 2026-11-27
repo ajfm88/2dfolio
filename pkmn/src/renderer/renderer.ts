@@ -4,7 +4,7 @@
 import { GB_WIDTH, GB_HEIGHT, TILE_SIZE } from "../core";
 import { getPaletteColors, paletteToHex } from "./palettes";
 import { uiTiles } from './ui_tiles';
-import { dmgShadeMapping } from './palette_shades';
+import { dmgShadeMapping, type ShadePalette } from './palette_shades';
 
 type Rgb = [number, number, number];
 
@@ -341,6 +341,45 @@ export function drawTile(
     TILE_SIZE * scale,
     TILE_SIZE * scale
   );
+}
+
+/** A BG tile drawn after OBJ, remapped by rBGP. Transparent pixels stay transparent. */
+export function drawTileRemapped(
+  tileset: HTMLCanvasElement,
+  tileId: number,
+  destX: number,
+  destY: number,
+  register: number,
+  palette: ShadePalette,
+): void {
+  if (register === 0xe4) {
+    drawTile(tileset, tileId, destX, destY);
+    return;
+  }
+  const off = document.createElement('canvas');
+  off.width = TILE_SIZE;
+  off.height = TILE_SIZE;
+  const offCtx = off.getContext('2d')!;
+  const tilesPerRow = Math.floor(tileset.width / TILE_SIZE);
+  const srcX = (tileId % tilesPerRow) * TILE_SIZE;
+  const srcY = Math.floor(tileId / tilesPerRow) * TILE_SIZE;
+  offCtx.drawImage(tileset, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+  const image = offCtx.getImageData(0, 0, TILE_SIZE, TILE_SIZE);
+  const key = (r: number, g: number, b: number): number => (r << 16) | (g << 8) | b;
+  const indices = new Map(palette.map(([r, g, b], index) => [key(r, g, b), index]));
+  const mapping = dmgShadeMapping(register);
+  const data = image.data;
+  for (let offset = 0; offset < data.length; offset += 4) {
+    if (data[offset + 3] === 0) continue;
+    const index = indices.get(key(data[offset], data[offset + 1], data[offset + 2]));
+    if (index === undefined) throw new Error('remapped tile colour is outside the BG palette');
+    const colour = palette[mapping[index]];
+    data[offset] = colour[0];
+    data[offset + 1] = colour[1];
+    data[offset + 2] = colour[2];
+  }
+  offCtx.putImageData(image, 0, 0);
+  ctx.drawImage(off, destX * scale, destY * scale, TILE_SIZE * scale, TILE_SIZE * scale);
 }
 
 /** Fill a rectangle with a palette color (0=lightest, 3=darkest). */

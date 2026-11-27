@@ -100,7 +100,8 @@ function objectCanvas(sprite: FrozenTransitionSprite, register: number): HTMLCan
 }
 
 /** Window cells -> BGP shades -> frozen OBJ through their own registers. No CPU/VBlank work. */
-export function renderTransitionScreen(screen: TransitionScreen, capture: TransitionCapture): void {
+export function renderTransitionScreen(screen: TransitionScreen, capture: TransitionCapture,
+  afterSprite?: (sprite: FrozenTransitionSprite) => void): void {
   const ctx = getCtx(), scale = getScale();
   const fill = (colour: readonly number[], x: number, y: number, w: number, h: number): void => {
     ctx.fillStyle = `rgb(${colour.join(',')})`; ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
@@ -116,6 +117,9 @@ export function renderTransitionScreen(screen: TransitionScreen, capture: Transi
   // GB OAM priority: lower block wins, so paint higher blocks first.
   for (const slot of [...screen.visibleSprites].reverse()) {
     const sprite = capture.sprites.find(candidate => candidate.slot === slot);
-    if (sprite) ctx.drawImage(objectCanvas(sprite, screen[sprite.objectPalette]), sprite.x * scale, sprite.y * scale, 16 * scale, 16 * scale);
+    if (sprite) {
+      ctx.drawImage(objectCanvas(sprite, screen[sprite.objectPalette]), sprite.x * scale, sprite.y * scale, 16 * scale, 16 * scale);
+      afterSprite?.(sprite);
+    }
   }
 }

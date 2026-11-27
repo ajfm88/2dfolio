@@ -8,7 +8,7 @@ describe('step-end checks (home/overworld.asm)', () => {
   it('counts, updates Pikachu, rolls, then checks warps and connections', () => {
     const calls: StepEndCheck[] = [];
     runStepEnd(false, stage => { calls.push(stage); return null; });
-    expect(calls).toEqual(['count', 'pikachu', 'encounter', 'warp', 'connection']);
+    expect(calls).toEqual(['count', 'pikachu', 'poison', 'encounter', 'warp', 'connection']);
   });
 
   it('a battle precedes transitions, and a warp precedes a connection', () => {

@@ -1,5 +1,15 @@
 # Overworld Architecture
 
+## Repel
+
+`repel.ts` owns the transient step counter, reset on New Game and Continue and retained across maps and battles. The encounter stage applies NewBattle and TryDoWildEncounter guards before decrementing; expiry displays the extracted text and resumes at warp, while a positive counter filters the selected encounter against party slot 1's level. The counter is outside the save schema.
+
+## Walking poison (A3 checkpoint-03, live)
+
+`walking_poison.ts` is `ApplyOutOfBattlePoisonDamage`'s HP rule (`engine/events/poison.asm`). `walkingPoisonSteps` damages one living PSN member per resume and yields before the next member, so a later slot is unchanged during the earlier faint text. `applyWalkingPoison` still drains that iterator. On a normal step, `step_end.ts` runs `count → pikachu → poison → encounter → warp → connection`. Walking happiness stays in the Pikachu stage, before poison. Simulated steps, including scripted movement and each ledge-hop half, stay `warp → connection`.
+
+`main.ts` state `walking_poison` is the frame program. Each faint opens `PokemonFaintedText` (`nameBuffer` = nickname, `wJoyIgnore` cleared) and waits for the full close. `isFieldStatusStarter` then plays clip 4 and `PSNFNT` (tiers -5/-5/-10, mood `min(mood, $62)`). Any remaining PSN inverts BG and window-priority grass for five frames (`rBGP` `$e4` → `$1b`) and then plays `poisoned`. Sprites stay on their OBJ palettes. All-party blackout shows `PlayerBlackedOutText` and then the shared money/heal reset plus `handleBlackoutWarp`, without `endTrainerBattle`. Otherwise the pass continues at encounter in that same tick. A Pikachu map script cannot reach this stage: `movementActive` blocks the pass. The link guard cannot occur. Safari, the bike flag and daycare EXP are absent. Detail is in `notes/143-a3-plan.md`.
+
 V5g3 checkpoint-01 (note 106; user-verified): the warp's door sound is `PlayMapChangeSound` by the tile under the player (`map_change_sound.ts`), not the destination; `$0B` plays GO_INSIDE except in FACILITY/CEMETERY, otherwise GO_OUTSIDE.
 
 ## Random
@@ -359,12 +369,14 @@ original bytes, and talking to the beaten trainer only prints its after text.
 
 ## Screen Fade Transitions
 
-Warp transitions use a white fade overlay (matching original Game Boy behavior):
+Ordinary warp transitions use a white fade overlay:
 - `warpToMap()` in main.ts sets `state = 'transition'`, starts fade-out (alpha 0->1 over `FADE_FRAMES=8`)
 - When fully faded, `fadeCallback` fires -> `performWarpLoad()` in `map_transitions.ts` loads map async
 - After load, fade-in starts (alpha 1->0), then state returns to `'overworld'`
 - `drawFadeOverlay(alpha)` renders at end of every frame
 - Battle end: instant white-out (`fadeAlpha=1`) -> fade-in from white (assembly: `GBPalWhiteOut` -> `GBFadeInFromWhite`)
+
+Blackout has its own program in `main.ts`: the four `FadePal4` through `FadePal1` BG/OBJ triples, eight frames each; audio fade and stop; the money/heal reset; then SpecialEnterMap's twenty-frame wait and the town's `FlyWarpData` coordinate. It does not run an entry animation or generic fade-in. An eligible starter is placed on the player's landing tile, and the next step can immediately check a warp. A battle loss invokes the current map script first; a wild loss may trigger trainer sight and its emotion bubble before blackout. Field poison does not run the map script. See note 143 checkpoint-06.
 
 ## Battle Transitions
 
@@ -393,6 +405,13 @@ two-transition `battle_transitions.ts` is gone.
   door tile) then walks the player down, as `PlayerStepOutFromDoor` does.
 - **Pikachu** is placed by Yellow's spawn states (`src/pikachu/pikachu_spawn.ts`), chosen
   from the source and destination maps and the facing the warp fired with.
+- **Escape Rope (A3 checkpoint-05)** uses `escape_rope.ts` for the item location
+  gate and the last center's outdoor `FlyWarpData` position. `main.ts` loads that map
+  through `performWarpLoad` without blackout healing or money loss. The
+  `EscapeRopeAnimation` frame program runs the ordinary-tile exit and entry spins,
+  vertical movement, teleport sounds and white fades. On entry, Pikachu takes
+  Yellow's right-side spawn state. The bag owns the 30-frame consumption wait;
+  START closes before the animation begins. The last center is retained.
 - **A warp to a map that isn't extracted** fails gracefully: the player stays put (see
   the Diglett's Cave entrance before V4). Before the catch, `performWarpLoad` selects the destination palette and reloads the text border; on failure it restores the captured active palette and awaits `reloadBorderTiles` before returning null (V4 checkpoint-02). That is the port's missing-map support, used by DiglettsCaveRoute11's two Route11 exits. **A connection to one would hang**, because
   `performMapConnection` doesn't catch the load error — so the extractor never emits one.
@@ -467,7 +486,7 @@ every standing pass, before the joypad read:
   the mask and returns `trainerText` → `engageTrainer(npc, true)`. The script is set to 2, as
   `StartTrainerBattle` does. Talking to an unbeaten trainer also sets 2 (`trainerTalkedTo`).
 - **2 `EndTrainerBattle`:** the first pass after the battle clears the seen state and returns
-  to 0, with no sight check that pass. A blackout resets it first (`AllPokemonFainted`).
+  to 0, with no sight check that pass. A battle blackout runs the current map script (`AllPokemonFainted`); on a wild loss that may be the default sight check rather than `EndTrainerBattle`.
 - **Every battle return that isn't a blackout** runs `EnterMap`'s `UpdateSprites`
   (`enterMapAfterBattle`). A trainer that came into view on the battle step can spot you on
   the first pass back.

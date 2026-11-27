@@ -146,7 +146,7 @@ Everything else runs inside `game/`:
   `ROM_PATH` the ROM-gated tests skip (count in the baseline below)
 - `npm run test:watch` — vitest in watch mode
 - `ROM_PATH=pokeyellow.gbc npm test` — full suite incl. extraction + static-export
-  tests. **Last full green baseline 2026-11-24 (A2 checkpoint-01): 7959/7959.** No-ROM 7573 pass / 386 skip, 308 files; both suites passed with `--maxWorkers=2`. Machine data extraction passed independent review.
+  tests. **Last full green baseline 2026-11-25 (A3 checkpoint-04): 8,049/8,049.** No-ROM 7,658 pass / 391 skip, 319 files; both suites passed with `--maxWorkers=2`. The checkpoint-04 player check passed.
 - `npx vite --host 127.0.0.1 --port 5173 --strictPort` — dev server serving `static/`
   (no ROM involved). Plain `npx vite` binds IPv6 `::1` on this machine, so
   `127.0.0.1` won't connect; saves live on `http://127.0.0.1:5173/` (origin-scoped). Missing files are real 404s
@@ -158,15 +158,15 @@ Lost with the old copy (rebuild only if needed): `scripts/_extract_maps_only.ts`
 
 ## Where things stand
 
-Milestones **R1, V1, A6, A1, V2, A5, V3, V4 and V5 are done** (9 of 36); **Phase V is complete** (DECISIONS
-#139). The game runs with no ROM, from committed `data/` + `static/` (263 JSON, 536 PNGs,
+Milestones **R1, V1, A6, A1, A2, V2, A5, V3, V4 and V5 are done** (10 of 36); **Phase V is complete** (DECISIONS
+#139). The game runs with no ROM, from committed `data/` + `static/` (266 JSON, 536 PNGs,
 six tilemaps): 30 runtime-wired maps from Pallet Town through Pewter, Route 3 and Diglett's Cave, Brock and the
 first badge, a battle engine ported from the ASM, and the overworld at the Game Boy's 59.7275 Hz on the ASM's
 2-frame pass (DECISIONS #33, #36). Phase V has rebuilt the 30 maps the lost July–August copy had reached
 (DECISIONS #26), and V5 restored the rest of its fixes. Notes 134–137 and the 07b/08b reviews are closed.
 Note 137 adds a standalone development preview. The game's original opening integration remains open.
 
-The battle-mechanics audit is complete through checkpoint-11 (`notes/141-battle-mechanics-audit-plan.md`). A2 checkpoint-01 is reviewed, and checkpoint-02 is next (`notes/142-a2-plan.md`). The restart list is in `context/STATUS.md` → *Next up*; the
+The battle-mechanics audit is complete through checkpoint-11 (`notes/141-battle-mechanics-audit-plan.md`). A2 is complete after five checkpoints and browser tests (`notes/142-a2-plan.md`). A3 has started: walking poison and Repel are live and player-verified after checkpoints 01–04, including channel 1's hardware sweep (`notes/143-a3-plan.md`). The restart list is in `context/STATUS.md` → *Next up*; the
 milestone-by-milestone detail is in `PROJECT.md` → *State* and `PLAN.md`.
 
 **Keep this section this short.** A finished milestone changes a line here; a slice

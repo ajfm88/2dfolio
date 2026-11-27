@@ -79,6 +79,8 @@ export const SFX_IDS = {
   enter_pc: 0x9b,
   shrink: 0x9c,
   run: 0x97, // SFX_Run, bank $08 only; the battle's RUN plays it.
+  poisoned: 0x97, // SFX_Poisoned, banks $02 and $1f (poison.asm). Bank $08's $97 stays run.
+  teleport_exit1: 0x9f, teleport_enter1: 0xa0, teleport_exit2: 0xa1, teleport_enter2: 0xa3,
   // V5g3 checkpoint-03 (note 108): the ledge hop (ledges.asm:53) and the Town Map's input (town_map.asm:76).
   ledge: 0xa2,
   tink: 0x8c,
@@ -120,8 +122,8 @@ export function textSoundId(name: string): number | undefined {
 export const SFX_FILES: Readonly<Record<0x02 | 0x08 | 0x1f | 0x20, Readonly<Record<number, string>>>> = {
   0x02: {
     0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab',
-    0x94: 'get_key_item', 0x99: 'turn_on_pc', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc', 0x9c: 'shrink',
-    0x9e: 'healing_machine', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
+    0x94: 'get_key_item', 0x97: 'poisoned', 0x99: 'turn_on_pc', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc', 0x9c: 'shrink',
+    0x9e: 'healing_machine', 0x9f: 'teleport_exit1', 0xa0: 'teleport_enter1', 0xa1: 'teleport_exit2', 0xa3: 'teleport_enter2', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
     0xa2: 'ledge', 0xa5: 'denied', 0xb2: 'purchase', 0xb4: 'collision', 0xb5: 'go_outside', 0xb6: 'save',
   },
   0x08: {
@@ -130,8 +132,8 @@ export const SFX_FILES: Readonly<Record<0x02 | 0x08 | 0x1f | 0x20, Readonly<Reco
   },
   0x1f: {
     0x86: 'get_item1', 0x89: 'get_item2', 0x8c: 'tink', 0x8d: 'heal_hp', 0x8e: 'heal_ailment', 0x8f: 'start_menu', 0x90: 'press_ab',
-    0x94: 'get_key_item', 0x99: 'turn_on_pc_3', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc_3', 0x9c: 'shrink',
-    0x9e: 'healing_machine', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
+    0x94: 'get_key_item', 0x97: 'poisoned', 0x99: 'turn_on_pc_3', 0x9a: 'turn_off_pc', 0x9b: 'enter_pc_3', 0x9c: 'shrink',
+    0x9e: 'healing_machine', 0x9f: 'teleport_exit1', 0xa0: 'teleport_enter1', 0xa1: 'teleport_exit2', 0xa3: 'teleport_enter2', 0xab: 'withdraw_deposit', 0xac: 'cut', 0xad: 'go_inside', 0xae: 'swap',
     0xa2: 'ledge', 0xa5: 'denied', 0xb2: 'purchase', 0xb4: 'collision', 0xb5: 'go_outside', 0xb6: 'save_3',
     0xbc: 'intro_crash', 0xbd: 'intro_whoosh', 0xc2: 'shooting_star',
   },

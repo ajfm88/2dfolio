@@ -86,10 +86,12 @@ const host = (main as unknown as { mainTest: {
   gameTick(): void; checkUiEntry(): void; drawUiLayer(): void; openStartMenu(): void;
   renderPikachuEmotionScene(): void;
   restOfPass(deps: OverworldDeps): void; overworldDeps(): OverworldDeps; handleOverworldAction(action: OverworldAction): void;
-  reset(): void; startNewGame(): Promise<void>; loadSavedGame(): Promise<void>;
+  reset(): void; startNewGame(): Promise<void>; loadSavedGame(): Promise<void>; writeSave(): void;
   handleWarpLoad(map: string, warp: number): Promise<void>; handleBlackoutWarp(): void;
+  lastBlackoutWarp: { destMap: string; destWarpId: number };
   connectToMap(map: string, direction: 'north' | 'south', offset: number): Promise<void>;
   finishFade(): Promise<void>; startScript(commands: ScriptCommand[]): void;
+  readonly blackout: { phase: string; frame: number; pending: Promise<void> | null } | null;
   readonly evolutionText: string[];
   state: string; readonly mapName: string; mainMenu: { update(): unknown }; readonly fade: number; readonly bag: Bag; session: ReturnType<typeof createBattleSession> | null; readonly boxes: import('./pokemon_storage').BoxedPokemon[][]; readonly money: number;
   startMenu: StartMenuSession; partyMenu: PartyMenu; bagMenu: BagSession;
@@ -186,6 +188,65 @@ describe('V2c CP3 through main load paths and storage callback', () => {
     expect(isPikachuFollowingDisabled()).toBe(true);
     await host.finishFade(); expect(host.state).toBe('overworld');
     expect(isPikachuFollowingDisabled()).toBe(true);
+  });
+
+  it('holds four palette triples for eight frames, then waits twenty frames before loading', async () => {
+    await host.gameMap.load('PewterPokecenter');
+    const vblank = vi.spyOn(textBgTransfer, 'tick');
+    const joypad = vi.spyOn(input, 'syncJoypadRead');
+    host.handleBlackoutWarp();
+    for (let frame = 0; frame < 32; frame++) {
+      expect(host.blackout).toMatchObject({ phase: 'fade', frame });
+      expect(fadeOutAndStopMusic).not.toHaveBeenCalled();
+      host.gameTick();
+    }
+    await host.blackout!.pending;
+    expect(fadeOutAndStopMusic).toHaveBeenCalledExactlyOnceWith(8);
+    expect(vblank).toHaveBeenCalledTimes(32);
+    expect(joypad).not.toHaveBeenCalled();
+    for (let frame = 0; frame < 20; frame++) {
+      expect(host.blackout).toMatchObject({ phase: 'entry', frame });
+      expect(host.mapName).not.toBe('PalletTown');
+      host.gameTick();
+    }
+    await host.blackout!.pending;
+    expect([host.player.mapStepX, host.player.mapStepY]).toEqual([5, 6]);
+    expect(host.player.direction).toBe('down');
+    expect(host.pikachuFollower.visible).toBe(false);
+    expect(host.state).toBe('overworld');
+  });
+
+  it.each([['PalletTown', 0, 5, 6], ['ViridianCity', 0, 23, 26], ['PewterCity', 0, 13, 26]] as const)(
+    'blackout uses the %s special position even with stored warp %i', async (destMap, destWarpId, x, y) => {
+      await host.gameMap.load('PewterPokecenter');
+      host.lastBlackoutWarp = { destMap, destWarpId };
+      host.handleBlackoutWarp();
+      await host.finishFade();
+      expect([host.mapName, host.player.mapStepX, host.player.mapStepY]).toEqual([destMap, x, y]);
+      expect(host.player.direction).toBe('down');
+    });
+
+  it('a new game and a legacy save without a center reset the previous center to Pallet', async () => {
+    host.lastBlackoutWarp = { destMap: 'PewterCity', destWarpId: 6 };
+    await host.startNewGame();
+    host.handleBlackoutWarp(); await host.finishFade();
+    expect(host.mapName).toBe('PalletTown');
+    host.lastBlackoutWarp = { destMap: 'PewterCity', destWarpId: 6 };
+    vi.spyOn(saves, 'loadGame').mockReturnValue({ version: 1, mapName: 'PewterPokecenter',
+      playerX: 80, playerY: 48, playerDirection: 'down', party: [], bag: [], money: 3000,
+      defeatedTrainers: [], eventFlags: [] });
+    await host.loadSavedGame(); host.handleBlackoutWarp(); await host.finishFade();
+    expect(host.mapName).toBe('PalletTown');
+  });
+
+  it('restores the last center from a save before a blackout', async () => {
+    await host.startNewGame();
+    host.lastBlackoutWarp = { destMap: 'PewterCity', destWarpId: 6 };
+    host.writeSave();
+    host.lastBlackoutWarp = { destMap: 'PalletTown', destWarpId: 0 };
+    await host.loadSavedGame();
+    host.handleBlackoutWarp(); await host.finishFade();
+    expect([host.mapName, host.player.mapStepX, host.player.mapStepY]).toEqual(['PewterCity', 13, 26]);
   });
 
   it('a real Route2 → Pewter connection retains following-disabled', async () => {
@@ -967,10 +1028,11 @@ describe('Map-music CP3 through the real main paths (note 63 §10)', () => {
     host.gameTick(); // the warp's own request (after its door sound) is made before the blackout begins
     vi.mocked(playDefaultMusicFadeOutCurrent).mockClear(); vi.mocked(updateMusic6Times).mockClear();
     host.session = finishedBattle({ isBlackout: true, playerLost: true }); host.gameTick();
-    expect(fadeOutAndStopMusic).toHaveBeenCalledExactlyOnceWith(8);
+    expect(fadeOutAndStopMusic).not.toHaveBeenCalled(); // visual fade precedes StopMusic
     let waits = 0;
     vi.mocked(isAudioFadingOut).mockImplementation(() => waits++ < 2);
     await host.finishFade();
+    expect(fadeOutAndStopMusic).toHaveBeenCalledExactlyOnceWith(8);
     expect(waits).toBe(3); // polled until StopMusic's fade finished
     expect(stopAllSounds).toHaveBeenCalledOnce();
     const requests = vi.mocked(playDefaultMusicFadeOutCurrent).mock.calls;

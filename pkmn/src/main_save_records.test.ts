@@ -11,7 +11,8 @@ import {I} from './battle/battle_item_state';
 import {getTextSpeed} from './text/textbox';
 import {getPikachuEmotionModifier,setPikachuEmotionModifier,restorePikachuHappiness,
   getPikachuHappiness,getPikachuMood} from './pikachu/pikachu_happiness';
-const main=host as typeof host&{writeSave():void;startNewGame():Promise<void>};
+import { getRepelSteps, setRepelSteps } from './overworld/repel';
+const main=host as typeof host&{writeSave():void;startNewGame():Promise<void>;loadSavedGame():Promise<void>};
 const fast={textSpeed:'FAST',animation:'OFF',battleStyle:'SET'} as const;
 const defaults={textSpeed:'MID',animation:'ON',battleStyle:'SHIFT'} as const;
 let store:Map<string,string>;
@@ -68,6 +69,16 @@ it('NEW GAME from the same restored main menu retains settings/modifier while ha
   await saveThenReload();expect(host.state).toBe('main_menu');await main.startNewGame();
   expect(host.optionMenu.options).toEqual(fast);expect(getTextSpeed()).toBe('fast');expect(getPikachuEmotionModifier()).toBe(5);
   expect([getPikachuHappiness(),getPikachuMood()]).toEqual([90,128]);
+});
+it('Repel survives map and battle entry but is not saved and resets on Continue and New Game',async()=>{
+  await world('Route1',5,5,[mon()]);
+  setRepelSteps(88); main.writeSave();
+  expect(loadGame()).not.toHaveProperty('repelSteps');
+  await host.handleWarpLoad('RedsHouse2F',0,{x:3,y:3});
+  expect(getRepelSteps()).toBe(88);
+  host.startBattle(mon(19,3)); expect(getRepelSteps()).toBe(88);
+  host.reset(); await main.loadSavedGame(); expect(getRepelSteps()).toBe(0);
+  setRepelSteps(45); await main.startNewGame(); expect(getRepelSteps()).toBe(0);
 });
 it('version1 main-menu entry uses defaults and modifier0 before CONTINUE',()=>{
   store.set('p151-s',JSON.stringify(legacySave()));host.optionMenu.restore(fast);setPikachuEmotionModifier(5);titleMenu();

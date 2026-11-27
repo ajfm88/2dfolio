@@ -1,0 +1,40 @@
+{
+  "channels": [
+    {
+      "id": 8,
+      "commands": [
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 15,
+          "fade": 1,
+          "param": 50
+        },
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 0,
+          "fade": 0,
+          "param": 0
+        },
+        {
+          "cmd": "noise_note",
+          "length": 2,
+          "volume": 15,
+          "fade": 1,
+          "param": 34
+        },
+        {
+          "cmd": "noise_note",
+          "length": 1,
+          "volume": 0,
+          "fade": 0,
+          "param": 0
+        },
+        {
+          "cmd": "sound_ret"
+        }
+      ]
+    }
+  ]
+}

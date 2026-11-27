@@ -274,7 +274,7 @@ export function updatePikachuWalking(stepCounter: number, random: (carryIn: 0 | 
 }
 
 // --- Happiness modifiers ---
-type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'USEDTMHM' | 'CARELESSTRAINER' | 'DEPOSITED';
+type HappinessEvent = 'LEVELUP' | 'FAINTED' | 'WALKING' | 'GYMLEADER' | 'USEDITEM' | 'USEDXITEM' | 'USEDTMHM' | 'CARELESSTRAINER' | 'DEPOSITED' | 'PSNFNT';
 
 interface HappinessMod {
   tiers: [number, number, number];
@@ -291,6 +291,8 @@ const HAPPINESS_MODS: Record<HappinessEvent, HappinessMod> = {
   USEDTMHM:        { tiers: [1, 1, 0],       moodTarget: 0x94 },
   CARELESSTRAINER: { tiers: [-5, -5, -10],   moodTarget: 0x6C },
   DEPOSITED:       { tiers: [-3, -3, -5],    moodTarget: 0x62 },
+  // HappinessChangeTable row 9 and PikachuMoods[8] ($62). Pret's row comments are one place off.
+  PSNFNT:          { tiers: [-5, -5, -10],   moodTarget: 0x62 },
 };
 
 export function modifyPikachuHappiness(event: HappinessEvent): void {
@@ -314,7 +316,8 @@ export function modifyPikachuHappiness(event: HappinessEvent): void {
   // ModifyPikachuHappiness .decreased writes the table target directly, but
   // never raises a mood already below it. Preserve other events' existing
   // behavior for their later Pikachu audit. CP3 owns the selected-starter gate.
-  if (event === 'DEPOSITED') {
+  // .decreased: mood becomes b only when it is not already below b. The emotion guard is increases only.
+  if (event === 'DEPOSITED' || event === 'PSNFNT') {
     pikachuMood = Math.min(pikachuMood, mod.moodTarget);
     return;
   }

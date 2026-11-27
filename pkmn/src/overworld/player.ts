@@ -147,6 +147,7 @@ export class Player {
 
   /** wPikachuCollisionCounter (walk_pace.ts PlayerWalk). */
   get pikachuCollisionCounter(): number { return this.walk.pikachuCollisionCounter; }
+  resetPikachuCollisionCounter(): void { this.walk.pikachuCollisionCounter = 0; }
 
   /** Slot 0 of the sprite table: at screen ($40, $3c), except that _HandleMidJump writes the
    *  jump table into wSpritePlayerStateData1YPixels, which DetectCollisionBetweenSprites reads. */

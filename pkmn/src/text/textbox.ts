@@ -113,6 +113,9 @@ export interface TextBoxOptions {
   printText?: boolean;
   autoBox?: boolean;
   program?: string;
+  bindings?: TextBindings;
+  /** DisplayPokemonFaintedText uses AfterDisplayingTextID. Blackout jumps to HoldTextDisplayOpen. */
+  outerWait?: boolean;
 }
 
 export interface TextDisplayHost {
@@ -271,6 +274,8 @@ export class TextBox {
     this.textComplete = true;
   }
   waitSilent(): void { this.start(this.silentWait()); }
+  /** WaitForTextScrollButtonPress, with its blinking arrow and no scroll sound. */
+  waitScrollButton(): void { this.start(this.screen!.waitButton(true)); }
   private *silentWait(): Generator<void> {
     this._phase = 'waiting'; this.finalWait = true;
     yield* this.screen!.waitButton(false);
@@ -321,9 +326,11 @@ export class TextBox {
   private buttons(): number { return (isHeld('a') ? TEXT_A : 0) | (isHeld('b') ? TEXT_B : 0); }
   private *display(text: string, opts: TextBoxOptions): Generator<void> {
     yield* this.opening({ autoBox: opts.autoBox });
-    yield* this.printing(opts.program ? { program: opts.program } : { text }, { box: opts.printText ? 'new' : 'keep' });
+    yield* this.printing(opts.program ? { program: opts.program } : { text }, {
+      box: opts.printText ? 'new' : 'keep', bindings: opts.bindings,
+    });
     this.finalWait = true;
-    yield* this.finishing(true);
+    yield* this.finishing(opts.outerWait !== false);
   }
   /** One VBlank. Also called during retained script text's sound/button waits. */
   updateDisplay(): void {

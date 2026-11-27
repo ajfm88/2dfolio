@@ -99,10 +99,12 @@ it('blackout applies byte HP before the existing map heal, halving and warp',asy
   const weak=mon(19,2);weak.currentHp=1;await world('Route1',5,5,[weak]);
   host.startBattle(mon(19,20));until(()=>host.state==='battle');const s=host.session!,finish=vi.spyOn(s,'finish');
   until(()=>host.state!=='battle',()=>[...pulse()]);
-  expect(finish.mock.results[0].value!.outcome.party[0].hp).toBe(0);expect(host.playerParty[0].currentHp).toBe(host.playerParty[0].maxHp);
-  expect(host.money).toBe(1500);expect(host.state).toBe('transition');
-  for(let n=0;n<120&&audio.isAudioFadingOut();n++)tick();
-  await vi.waitFor(()=>expect(host.gameMap.mapData!.name).toBe('PalletTown'));
+  expect(finish.mock.results[0].value!.outcome.party[0].hp).toBe(0);expect(host.playerParty[0].currentHp).toBe(0);
+  expect(host.money).toBe(3000);expect(host.state).toBe('transition');
+  vi.spyOn(audio,'isAudioFadingOut').mockReturnValue(false);
+  await host.finishFade();
+  expect(host.gameMap.mapData!.name).toBe('PalletTown');
+  expect(host.playerParty[0].currentHp).toBe(host.playerParty[0].maxHp);expect(host.money).toBe(1500);
 });
 
 it.each([false,true])('full-party catch inserts at the box front; YES=%s presents naming and NO skips it',async yes=>{

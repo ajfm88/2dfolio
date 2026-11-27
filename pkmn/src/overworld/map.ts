@@ -407,7 +407,10 @@ export class GameMap {
   /** Redraw grass tiles on top of a sprite's bottom half (original GB: OAM priority bit).
    *  Uses a transparent version of the tileset (color 0 = transparent) so the sprite
    *  shows through the gaps in the grass pattern, matching the original hardware behavior. */
-  renderGrassOverlay(spriteX: number, spriteY: number, cameraX: number, cameraY: number): void {
+  renderGrassOverlay(
+    spriteX: number, spriteY: number, cameraX: number, cameraY: number,
+    draw: (tileset: HTMLCanvasElement, tileId: number, x: number, y: number) => void = drawTile,
+  ): void {
     if (!this.tilesetTransparent || !this.mapData) return;
     const grassTile = GRASS_TILES[this.mapData.tileset];
     if (grassTile === undefined) return;
@@ -424,7 +427,7 @@ export class GameMap {
         if (this.getTileAt(tx, ty) === grassTile) {
           const screenX = tx * TILE_SIZE - cameraX;
           const screenY = ty * TILE_SIZE - cameraY;
-          drawTile(this.tilesetTransparent, grassTile, screenX, screenY);
+          draw(this.tilesetTransparent, grassTile, screenX, screenY);
         }
       }
     }

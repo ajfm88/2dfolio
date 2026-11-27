@@ -96,11 +96,6 @@ interface SfxChannelState {
   fadeCounter: number;
   currentFreqReg: number; // raw GB frequency register (11-bit)
 
-  // pitch_sweep state (NR10 hardware sweep)
-  sweepTime: number;      // sweep pace (0 = disabled)
-  sweepShift: number;     // sweep shift amount
-  sweepNegate: boolean;    // true = decrease frequency
-  sweepCounter: number;
 
   // For noise channel
   isNoiseChannel: boolean;
@@ -232,10 +227,6 @@ export class SfxEngine {
         fade: 0,
         fadeCounter: 0,
         currentFreqReg: 0,
-        sweepTime: 0,
-        sweepShift: 0,
-        sweepNegate: false,
-        sweepCounter: 0,
         isNoiseChannel: hwCh === 3,
         loopCounter: 0,
         modifiers,
@@ -356,9 +347,6 @@ export class SfxEngine {
     }
     // Volume fade
     this.applyVolumeFade(ch);
-
-    // Pitch sweep (NR10 hardware sweep simulation)
-    this.applyPitchSweep(ch);
   }
 
   private applyVolumeFade(ch: SfxChannelState): void {
@@ -383,32 +371,6 @@ export class SfxEngine {
         this.updateVolume(ch);
       }
     }
-  }
-
-  private applyPitchSweep(ch: SfxChannelState): void {
-    if (ch.sweepTime === 0 || ch.sweepShift === 0) return;
-
-    ch.sweepCounter++;
-    if (ch.sweepCounter < ch.sweepTime) return;
-    ch.sweepCounter = 0;
-
-    // NR10 sweep: freq ± freq >> shift
-    const delta = ch.currentFreqReg >> Math.abs(ch.sweepShift);
-    if (ch.sweepNegate) {
-      ch.currentFreqReg = Math.max(0, ch.currentFreqReg - delta);
-    } else {
-      ch.currentFreqReg = Math.min(2047, ch.currentFreqReg + delta);
-    }
-
-    // Overflow check — if freq > 2047, channel is disabled (like real hardware)
-    if (ch.currentFreqReg > 2047) {
-      ch.active = false;
-      this.finishChannel(ch);
-      return;
-    }
-
-    const hz = 131072 / (2048 - ch.currentFreqReg);
-    this.synth.setPulseFrequency(ch.hwChannel as 0 | 1, hz);
   }
 
   // ─── Command Processing ───────────────────────────────────────────────
@@ -440,26 +402,11 @@ export class SfxEngine {
           }
           break;
 
-        case 'pitch_sweep': {
-          // pitch_sweep length, shift
-          // length = sweep time (0-7), shift = pitch change (-7 to 7)
-          // Positive shift = increase frequency, negative = decrease
-          ch.sweepTime = cmd.length!;
-          const shift = cmd.shift!;
-          // A shift of 8 means "negative 0" in signed magnitude — effectively disabled
-          if (shift === 8 || shift === -8) {
-            ch.sweepShift = 0;
-            ch.sweepNegate = false;
-          } else if (shift < 0) {
-            ch.sweepShift = -shift;
-            ch.sweepNegate = true;
-          } else {
-            ch.sweepShift = shift;
-            ch.sweepNegate = false;
-          }
-          ch.sweepCounter = 0;
+        case 'pitch_sweep':
+          // Audio1_pitch_sweep: the byte goes straight to rAUD1SWEEP, whichever SFX channel reads it.
+          // The synthesizer runs channel 1's sweep on the hardware's 128 Hz clock.
+          this.synth.writeSweep((cmd.length! << 4) | (cmd.shift! < 0 ? 0x8 | -cmd.shift! : cmd.shift!));
           break;
-        }
 
         case 'square_note': {
           if (ch.modifiers) this.enableChannelOutput(ch.hwChannel);
@@ -491,6 +438,8 @@ export class SfxEngine {
             this.synth.setPulseFrequency(ch.hwChannel as 0 | 1, hz);
             this.synth.setPulseDuty(ch.hwChannel as 0 | 1, ch.dutyCycle);
             this.synth.setPulseVolume(ch.hwChannel as 0 | 1, ch.volume);
+            // Audio1_ApplyWavePatternAndFrequency sets NR14 bit 7: a CH1 trigger reloads the sweep.
+            if (ch.hwChannel === 0) this.synth.triggerSweep(ch.currentFreqReg);
           }
           return; // Wait for delay
         }

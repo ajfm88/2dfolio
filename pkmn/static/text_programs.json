@@ -2223,6 +2223,12 @@
         "program": "_PlayedFluteNoEffectText"
       }
     ],
+    "PlayerBlackedOutText": [
+      {
+        "op": "far",
+        "program": "_PlayerBlackedOutText"
+      }
+    ],
     "PlayerBlackedOutText2": [
       {
         "op": "far",
@@ -2349,6 +2355,12 @@
         "program": "_PokemonCenterWelcomeText"
       }
     ],
+    "PokemonFaintedText": [
+      {
+        "op": "far",
+        "program": "_PokemonFaintedText"
+      }
+    ],
     "PokemonFightingFitText": [
       {
         "op": "far",
@@ -2457,6 +2469,12 @@
       {
         "op": "far",
         "program": "_ReleaseWhichMonText"
+      }
+    ],
+    "RepelWoreOffText": [
+      {
+        "op": "far",
+        "program": "_RepelWoreOffText"
       }
     ],
     "RestorePPWhichTechniqueText": [
@@ -6443,6 +6461,12 @@
         "text": "Played the POKé\nFLUTE.\fNow, that's a\ncatchy tune!<PROMPT>"
       }
     ],
+    "_PlayerBlackedOutText": [
+      {
+        "op": "text",
+        "text": "<PLAYER> is out of\nuseable POKéMON!\f<PLAYER> blacked\nout!<PROMPT>"
+      }
+    ],
     "_PlayerBlackedOutText2": [
       {
         "op": "text",
@@ -6603,6 +6627,16 @@
         "text": "Welcome to our\nPOKéMON CENTER!\fWe heal your\nPOKéMON back to\nperfect health!<PROMPT>"
       }
     ],
+    "_PokemonFaintedText": [
+      {
+        "op": "ram",
+        "binding": "nameBuffer"
+      },
+      {
+        "op": "text",
+        "text": "\nfainted!<DONE>"
+      }
+    ],
     "_PokemonFightingFitText": [
       {
         "op": "text",
@@ -6717,6 +6751,12 @@
       {
         "op": "text",
         "text": "Release which\nPOKéMON?<DONE>"
+      }
+    ],
+    "_RepelWoreOffText": [
+      {
+        "op": "text",
+        "text": "REPEL's effect\nwore off.<DONE>"
       }
     ],
     "_RestorePPWhichTechniqueText": [

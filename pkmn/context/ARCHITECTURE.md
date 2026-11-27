@@ -25,7 +25,7 @@ The research below is **already paid for**. Reuse it; don't re-explore it.
 | Game engine | TypeScript (strict) + HTML5 Canvas 2D | Complete Gen-1 reimplementation, not emulation |
 | Build/dev | Vite 7 | Dev server, static asset serving, bundling |
 | Extraction | Node + `tsx`, `pngjs` | ROM → `data/` JSON + `static/` PNG/tilemaps/JSON (`npm run setup pokeyellow.gbc`) |
-| Tests | Last full green: Vitest, **8,004/8,004** with ROM; no-ROM 7,615 pass / 389 skip across 315 files (2026-11-25, A2 checkpoint-05) | Battle logic + cartridge behavior + extractor ground truth + static export |
+| Tests | Last full green: Vitest, **8,088/8,088** with ROM; no-ROM 7,696 pass / 392 skip across 321 files (2026-11-25, A3 checkpoint-05) | Battle logic + cartridge behavior + extractor ground truth + static export |
 | Data source | User's own cartridge dump | `pokeyellow.gbc`, gitignored, dev-time only |
 | Reference | 5 pinned clones in `refs/` | Disassembly + 4 independent Gen 1 implementations — see *Reference repos* below |
 
@@ -574,8 +574,10 @@ oak_speech        Frame program on IntroScreen (portraits, text, naming, shrink,
 intro_exit        White40 while loading, then today's room/music entry (wait white if late)
 naming_screen     keyboard for player/rival names
 overworld         walk, NPCs move, warps/connections/encounters
+walking_poison    field poison after a step: faint text, clip 4, BG inversion, blackout (A3 checkpoint-03)
+escape_rope       source-timed teleport exit/entry to the last center's outdoor map; wait for SFX before map music (A3 checkpoint-05)
 textbox           dialogue box active
-transition        fade out → async map load → fade in
+transition        ordinary warp fade/load/fade, or blackout's palette fade, audio wait and special entry
 battle_transition visual effect before a battle
 battle            battle controller owns update+render
 battle_return     .battleOccurred → EnterMap → MapEntryAfterBattle: 10 white frames, FadePal7/6/5 × 8, blocking; V5b

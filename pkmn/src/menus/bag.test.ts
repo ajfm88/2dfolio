@@ -11,6 +11,8 @@ import {
 import { isHeld, isPassPressed, syncJoypadRead } from '../input';
 import type { GameButton } from '../core';
 import { isVBlankHeld } from '../core/vblank_hold';
+import { getRepelSteps, setRepelSteps } from '../overworld/repel';
+import { playSFX } from '../audio';
 
 vi.mock('../input', () => ({
   isHeld: vi.fn(() => false), isPassPressed: vi.fn(() => false), isPressed: vi.fn(() => false),
@@ -62,6 +64,49 @@ beforeEach(() => {
 });
 
 describe('StartMenu_Item', () => {
+  it('rejects Escape Rope with the source text and retains its stack', () => {
+    const menu = rig([{ id: 'ESCAPE_ROPE', count: 2 }]);
+    const start = vi.fn();
+    menu.session.open(menu.bag, [], { mapName: 'PalletTown', tileset: 'OVERWORLD', onEscapeRopeStart: start });
+    menu.frames(15); menu.press('a'); menu.frame(); menu.frames(2); menu.press('a'); menu.frame();
+    menu.frames(200);
+    expect(menu.textBox.saveScreen().buffer.join('')).toContain("This isn't the");
+    expect(menu.bag.items[0].count).toBe(2);
+    expect(start).not.toHaveBeenCalled();
+  });
+  it('waits 30 frames after Escape Rope starts, consumes one, and signals START close', () => {
+    const menu = rig([{ id: 'ESCAPE_ROPE', count: 2 }]);
+    const start = vi.fn();
+    menu.session.open(menu.bag, [], { mapName: 'ViridianForest', tileset: 'FOREST', onEscapeRopeStart: start });
+    menu.frames(15); menu.press('a'); menu.frame(); menu.frames(2); menu.press('a');
+    expect(menu.frame()).toBe('open');
+    expect(start).toHaveBeenCalledTimes(1);
+    for (let frame = 0; frame < 29; frame++) expect(menu.frame()).toBe('open');
+    expect(menu.bag.items[0].count).toBe(2);
+    expect(menu.frame()).toBe('escape_rope');
+    expect(menu.bag.items[0].count).toBe(1);
+    expect(menu.textBox.active).toBe(false);
+  });
+  it.each([['REPEL', 100], ['SUPER_REPEL', 200], ['MAX_REPEL', 250]] as const)(
+    'uses %s, replacing the counter and consuming one after the button', (id, duration) => {
+      setRepelSteps(7);
+      const menu = rig([{ id, count: 2 }]);
+      menu.session.open(menu.bag);
+      menu.frames(15); menu.press('a'); menu.frame(); menu.frames(2); menu.press('a'); menu.frame();
+      expect(getRepelSteps()).toBe(duration);
+      expect(menu.bag.items[0].count).toBe(2);
+      vi.mocked(isHeld).mockReturnValue(false);
+      menu.frames(200);
+      expect(playSFX).toHaveBeenCalledWith('heal_ailment');
+      const message = menu.textBox.saveScreen().buffer.join('');
+      expect(message).toContain('used');
+      expect(message).toContain(id.replace(/_/g, ' '));
+      expect(menu.bag.items[0].count).toBe(2);
+      vi.mocked(isHeld).mockImplementation(key => key === 'a');
+      menu.frames(3);
+      expect(menu.bag.items[0].count).toBe(1);
+      setRepelSteps(0);
+    });
   const potions = (): ItemStack[] => [
     { id: 'POTION', count: 2 }, { id: 'ANTIDOTE', count: 1 }, { id: 'POKE_BALL', count: 4 },
     { id: 'BURN_HEAL', count: 1 }, { id: 'AWAKENING', count: 1 },

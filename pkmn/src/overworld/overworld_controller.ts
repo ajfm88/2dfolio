@@ -16,15 +16,18 @@ import type { Bag } from '../items';
 import type { ScriptCommand } from '../script';
 import { isPassPressed } from '../input';
 import { updateSprites, recordStepForPikachu, spriteTable } from './sprites';
-import { hasFlag, setFlag, getMapScript } from '../events';
+import { hasFlag, setFlag, getMapScript, setMapScript } from '../events';
+import { setJoyIgnore } from '../input/joy_ignore';
 import { itemBallScript, hiddenItemScript } from './item_pickup';
 import { toggleableObjectIndex } from './toggleable_objects';
-import { tryWildEncounter } from '../battle';
+import { encounterStep } from '../battle/encounter';
 import { isNoEncounters } from '../debug';
 import { shouldPikachuFollow } from '../pikachu';
 import { updatePikachuWalking } from '../pikachu/pikachu_happiness';
 import { countStep, runStepEnd } from './step_end';
-import type { StepCounters } from './step_end';
+import type { StepCounters, StepEndCheck } from './step_end';
+import { beginWalkingPoison } from './walking_poison';
+import type { WalkingPoisonPending } from './walking_poison';
 import '../story/small_text_handlers';
 import '../story/machine_gifts';
 import '../story/pewter_gym';
@@ -79,6 +82,7 @@ export interface OverworldDeps {
 
 /** Actions returned to main.ts for state transitions. */
 export type OverworldAction =
+  | { type: 'repelExpired' }
   | { type: 'pikachuEmotion' }
   | { type: 'textbox'; text: string; call?: 'text' | 'printText'; autoBox?: boolean; program?: string }
   | { type: 'script'; commands: ScriptCommand[] }
@@ -87,6 +91,7 @@ export type OverworldAction =
   | { type: 'talkToTrainer'; npc: Npc }
   | { type: 'warp'; destMap: string; destWarpId: number }
   | { type: 'connectToMap'; destMap: string; dir: 'north' | 'south' | 'east' | 'west'; offset: number }
+  | ({ type: 'walkingPoison' } & WalkingPoisonPending)
   | TrainerScriptAction
   ;
 
@@ -334,9 +339,9 @@ function handleInteraction(interaction: Interaction, deps: OverworldDeps, ow: Ov
 // ── Step-complete checks ──────────────────────────────────────────────
 
 /** RunMapScript, before Joypad, on every standing pass. */
-export function runMapScript(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+export function runMapScript(deps: OverworldDeps, ow: OverworldState, force = false, battleLost = false): OverworldAction | null {
   const { player, npcs, pikachuFollower, playerParty, currentMapName } = deps;
-  if (!player.mapScriptBoundary) return null;
+  if (!force && !player.mapScriptBoundary) return null;
 
   // BluesHouse_Script and PalletTown_Script's resting bodies have no trigger square: they run on every
   // zero-counter pass, the arrival pass on a door included (JoypadOverworld precedes PlayerStepOutFromDoor).
@@ -347,8 +352,13 @@ export function runMapScript(deps: OverworldDeps, ow: OverworldState): Overworld
   }
   if (ow.doorExitStep) return null;
 
-  // PewterGym_ScriptPointers' fourth entry. A loss has already reset the script through the blackout path.
+  // PewterGymBrockPostBattle branches on LOST_BATTLE before its reward script.
   if (currentMapName === PEWTER_GYM && getMapScript(PEWTER_GYM) === TRAINER_SCRIPT.BROCK_POST_BATTLE) {
+    if (battleLost) {
+      setJoyIgnore('none');
+      setMapScript(PEWTER_GYM, TRAINER_SCRIPT.DEFAULT);
+      return null;
+    }
     return { type: 'script', commands: pewterGymBrockPostBattle() };
   }
 
@@ -435,7 +445,7 @@ function checkEncounter(deps: OverworldDeps, ow: OverworldState): OverworldActio
   const { player, gameMap } = deps;
   const x = player.mapStepX * 2;
   const y = player.mapStepY * 2;
-  const wild = tryWildEncounter({
+  const wild = encounterStep({
     inGrass: gameMap.isGrassTile(x, y),
     inWater: gameMap.getTileAt(x, y + 1) === 0x14,
     indoor: gameMap.isIndoor,
@@ -446,8 +456,27 @@ function checkEncounter(deps: OverworldDeps, ow: OverworldState): OverworldActio
     outsideMap: !gameMap.isInBounds(x, y),
     cooldown: ow.encounterCooldown,
     disabled: isNoEncounters(),
-  });
+  }, deps.playerParty[0]?.level ?? 0);
+  if (wild === 'repelExpired') return { type: 'repelExpired' };
   return wild ? { type: 'startBattle', pokemon: wild } : null;
+}
+
+/** NewBattle → CheckWarpsNoCollision → CheckMapConnections, after a poison suspension returns. */
+export function continueAfterWalkingPoison(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  return runStepEnd(false, stage => stepTransition(stage, deps, ow), 'encounter');
+}
+
+export function continueAfterRepel(deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  return runStepEnd(false, stage => stepTransition(stage, deps, ow), 'warp');
+}
+
+function stepTransition(stage: StepEndCheck, deps: OverworldDeps, ow: OverworldState): OverworldAction | null {
+  switch (stage) {
+    case 'encounter': return checkEncounter(deps, ow);
+    case 'warp': return checkWarp(deps, ow);
+    case 'connection': return checkConnection(deps);
+    default: return null;
+  }
 }
 
 /** The pure step-end sequence is shared by ordinary and simulated steps. */
@@ -458,15 +487,25 @@ export function handleStepComplete(deps: OverworldDeps, ow: OverworldState, simu
         Object.assign(ow, countStep(ow));
         return null;
       case 'pikachu':
-        // ApplyOutOfBattlePoisonDamage skips this when the party is empty.
+        // ApplyOutOfBattlePoisonDamage skips happiness when the party is empty.
+        // starterAlive is species-only; the cartridge's OT check stays logged for A3/J2.
         if (deps.playerParty.length > 0) {
           const starterAlive = deps.playerParty.some(mon => mon.species.id === 25 && mon.currentHp > 0);
           updatePikachuWalking(ow.stepCounter, overworldRandom, starterAlive);
         }
         return null;
-      case 'encounter': return checkEncounter(deps, ow);
-      case 'warp': return checkWarp(deps, ow);
-      case 'connection': return checkConnection(deps);
+      case 'poison': {
+        // A normal completed step cannot coincide with an active Pikachu map script:
+        // movementActive blocks the pass (main.ts). Simulated steps never reach this stage,
+        // and the port has no link connection. Both are the cartridge's early returns.
+        if (deps.playerParty.length === 0) return null;
+        const pending = beginWalkingPoison(ow.stepCounter, deps.playerParty);
+        return pending ? { type: 'walkingPoison', ...pending } : null;
+      }
+      case 'encounter':
+      case 'warp':
+      case 'connection':
+        return stepTransition(stage, deps, ow);
     }
   });
 }

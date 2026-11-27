@@ -78,6 +78,72 @@ export class GBSynthesizer {
     envFade: 0, envIncreasing: false, envCounter: 0, envPhase: 0,
   };
 
+  /**
+   * Channel 1's frequency sweep (rAUD1SWEEP, NR10). Only pulse 0 has it. NR10 keeps its value until the next
+   * write, so a sound cut off before its closing `pitch_sweep 0, 8` leaves the sweep armed for the next CH1
+   * trigger, as on the cartridge. The sweep clocks at 128 Hz from the free-running frame sequencer; each clock
+   * counts the timer down, and at zero it reloads with the pace (0 counts as 8). With a nonzero pace it computes
+   * shadow ± shadow >> shift: above 2047 turns the channel off; otherwise, with a nonzero shift, the new value
+   * becomes the shadow and the frequency, and a second calculation runs the overflow check again. A trigger
+   * copies the frequency to the shadow, reloads the timer, and with a nonzero shift checks overflow at once.
+   */
+  private nr10 = 0;
+  private sweep = { shadow: 0, timer: 8, enabled: false, off: false, phase: 0 };
+  get sweepRegister(): number { return this.nr10; }
+  /** Whether channel 1 has been turned off by a sweep overflow since its last trigger. */
+  get sweepSilenced(): boolean { return this.sweep.off; }
+  get sweepShadow(): number { return this.sweep.shadow; }
+
+  writeSweep(value: number): void { this.nr10 = value & 0x7f; }
+
+  /** The sweep side of a CH1 trigger (NR14 bit 7), with the 11-bit frequency just written. */
+  triggerSweep(freqReg: number): void {
+    const s = this.sweep;
+    const pace = (this.nr10 >> 4) & 7, shift = this.nr10 & 7;
+    s.shadow = freqReg & 0x7ff;
+    s.timer = pace || 8;
+    s.enabled = pace !== 0 || shift !== 0;
+    s.off = false;
+    if (shift !== 0 && this.sweepNext() > 2047) s.off = true;
+  }
+
+  private sweepNext(): number {
+    const shift = this.nr10 & 7;
+    const delta = this.sweep.shadow >> shift;
+    return (this.nr10 & 0x08) !== 0 ? this.sweep.shadow - delta : this.sweep.shadow + delta;
+  }
+
+  private clockSweep(): void {
+    const s = this.sweep;
+    if (--s.timer > 0) return;
+    const pace = (this.nr10 >> 4) & 7;
+    s.timer = pace || 8;
+    if (!s.enabled || pace === 0 || s.off) return;
+    const next = this.sweepNext();
+    if (next > 2047) { s.off = true; return; }
+    if ((this.nr10 & 7) === 0) return;
+    s.shadow = next;
+    this.pulse[0].frequency = registerToHz(next);
+    if (this.sweepNext() > 2047) s.off = true;
+  }
+
+  /** The frame sequencer's 128 Hz sweep clock, advanced per output sample. */
+  private advanceSweep(sampleRate: number): void {
+    this.sweep.phase += 128 / sampleRate;
+    while (this.sweep.phase >= 1) {
+      this.sweep.phase -= 1;
+      this.clockSweep();
+    }
+  }
+
+  /** Sample-clock advance of channel 1 with its sweep, for tests. One sweep clock is `sampleRate / 128` samples. */
+  runSweep(samples: number, sampleRate: number): void {
+    for (let i = 0; i < samples; i++) {
+      this.advanceSweep(sampleRate);
+      this.samplePulse(this.pulse[0], sampleRate);
+    }
+  }
+
   private masterVolume = 0.5; // Overall output scaling
   private nr50 = 0x77;
   /** NR51 routing, separate from DAC/volume state (battle mute/EnableChannelOutput). */
@@ -159,7 +225,8 @@ export class GBSynthesizer {
     for (let i = 0; i < len; i++) {
       let mix = 0;
 
-      mix += this.samplePulse(this.pulse[0], sampleRate) * Number(this.channelOutputEnabled(0));
+      this.advanceSweep(sampleRate);
+      mix += (this.sweep.off ? 0 : this.samplePulse(this.pulse[0], sampleRate)) * Number(this.channelOutputEnabled(0));
       mix += this.samplePulse(this.pulse[1], sampleRate) * Number(this.channelOutputEnabled(1));
       mix += this.pcm ? this.samplePcm(sampleRate) : this.sampleWave(sampleRate) * Number(this.channelOutputEnabled(2));
       mix += this.sampleNoise(sampleRate) * Number(this.channelOutputEnabled(3));
@@ -294,6 +361,7 @@ export class GBSynthesizer {
     const freqReg = ((nr14 & 0x07) << 8) | (nr13 & 0xff);
     ch.frequency = registerToHz(freqReg);
     if ((nr14 & 0x80) !== 0) {
+      if (channel === 0) this.triggerSweep(freqReg);
       ch.volume = (nr12 >> 4) & 0x0f;
       ch.envFade = nr12 & 0x07;
       ch.envIncreasing = (nr12 & 0x08) !== 0;

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { loadWildEncounters, tryWildEncounter, encounterTerrain } from './encounter';
+import { loadWildEncounters, tryWildEncounter, encounterTerrain, encounterStep } from './encounter';
+import { getRepelSteps, setRepelSteps } from '../overworld/repel';
 import type { EncounterContext } from './encounter';
 import { loadBattleData } from './data';
 import { installOverworldRandom } from '../overworld/overworld_random';
@@ -47,6 +48,32 @@ describe('tryWildEncounter', () => {
     bytes(0, 253); // rate pass; hRandomSub 253 → slot 8 or 9
     const result = tryWildEncounter(grass);
     expect(result).not.toBeNull();
+  });
+});
+
+describe('Repel in TryDoWildEncounter', () => {
+  it('does not decrement on the early guards and does decrement on safe ground', () => {
+    setRepelSteps(2);
+    for (const gate of ['controlled', 'movementBlocked', 'onDoorOrWarp', 'outsideMap', 'disabled'] as const) {
+      expect(encounterStep({ ...grass, [gate]: true }, 1)).toBeNull();
+    }
+    expect(encounterStep({ ...grass, cooldown: 1 }, 1)).toBeNull();
+    expect(getRepelSteps()).toBe(2);
+    expect(encounterStep({ ...grass, inGrass: false }, 1)).toBeNull();
+    expect(getRepelSteps()).toBe(1);
+    bytes(0, 0);
+    expect(encounterStep(grass, 1)).toBe('repelExpired');
+    expect(getRepelSteps()).toBe(0);
+    expect(encounterStep(grass, 1)).not.toBeNull();
+  });
+  it('compares the selected level strictly, including a zero lead level', () => {
+    bytes(0, 0);
+    setRepelSteps(10);
+    const selected = tryWildEncounter(grass, 0)!;
+    expect(encounterStep(grass, selected.level + 1)).toBeNull();
+    const equal = encounterStep(grass, selected.level);
+    expect(equal && equal !== 'repelExpired' && equal.level).toBe(selected.level);
+    setRepelSteps(0);
   });
 });
 

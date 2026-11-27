@@ -22,8 +22,12 @@ import { cannotToss, tossItemPrompt, finishTossItem } from './toss_item';
 import { uiTiles } from '../renderer/ui_tiles';
 import { TILE_SIZE } from '../core';
 import { holdVBlank, takeHeldFrame } from '../core/vblank_hold';
+import { playSFX } from '../audio';
+import { setRepelSteps } from '../overworld/repel';
+import { canUseEscapeRope, type EscapeRopeLocation } from '../overworld/escape_rope';
 
-export type BagResult = 'open' | 'closed' | 'town_map';
+export type BagResult = 'open' | 'closed' | 'town_map' | 'escape_rope';
+export interface BagFieldContext extends EscapeRopeLocation { onEscapeRopeStart: () => void }
 
 /** How HandleMenuInput left the USE/TOSS menu. B is tested before A. */
 export type UseTossChoice = 'b' | 'use' | 'toss';
@@ -35,7 +39,7 @@ export class BagSession {
   private useCursor: { x: number; y: number } | null = null;
   private printing = false;
   private linger = false;
-  private after: 'yesno' | 'loop' | null = null;
+  private after: 'yesno' | 'loop' | 'repel-sound' | 'repel-consume' | null = null;
   private quantity: QuantityMenu | null = null;
   private yesNo: YesNoMenu | null = null;
   private selected: { index: number; name: string; count: number } | null = null;
@@ -48,6 +52,8 @@ export class BagSession {
   get paletteWhite(): boolean { return this.machine?.paletteWhite ?? this.medicine?.paletteWhite ?? false; }
   private bag: Bag | null = null;
   private paletteWait = 0;
+  private fieldContext: BagFieldContext | null = null;
+  private escapeRopeWait = 0;
 
   get medicineOpen(): boolean { return this.medicine !== null; }
 
@@ -57,8 +63,10 @@ export class BagSession {
   ) {}
 
   /** StartMenu_Item. The list is written here and first updated on the next frame. */
-  open(bag: Bag, party: BattlePokemon[] = []): void {
+  open(bag: Bag, party: BattlePokemon[] = [], fieldContext: BagFieldContext | null = null): void {
     this.paletteWait = 0;
+    this.fieldContext = fieldContext;
+    this.escapeRopeWait = 0;
     this.bag = bag;
     this.party = party;
     this.medicine = null;
@@ -85,6 +93,14 @@ export class BagSession {
       return 'open';
     }
     this.present();
+    if (this.escapeRopeWait > 0) {
+      if (--this.escapeRopeWait === 0 && this.bag && this.selected) {
+        this.bag.removeAt(this.selected.index, 1);
+        this.exitMenu();
+        return 'escape_rope';
+      }
+      return 'open';
+    }
     if (this.paletteWait > 0) {
       if (--this.paletteWait === 0) this.openList();
       return 'open';
@@ -240,6 +256,21 @@ export class BagSession {
     const id = selected && this.bag ? this.bag.items[selected.index]?.id : undefined;
     if (!selected || !id || !this.bag) { this.itemMenuLoop(); return 'open'; }
     if (id === 'TOWN_MAP') return 'town_map';
+    if (id === 'ESCAPE_ROPE') {
+      if (!this.fieldContext || !canUseEscapeRope(this.fieldContext)) {
+        this.print('ItemUseNotTimeText', 'loop');
+      } else {
+        this.fieldContext.onEscapeRopeStart();
+        this.escapeRopeWait = 30;
+      }
+      return 'open';
+    }
+    const repelSteps: Record<string, number> = { REPEL: 100, SUPER_REPEL: 200, MAX_REPEL: 250 };
+    if (repelSteps[id] !== undefined) {
+      setRepelSteps(repelSteps[id]);
+      this.print('ItemUseText00', 'repel-sound', { stringBuffer: selected.name });
+      return 'open';
+    }
     if (parseMachineId(id)) {
       this.machine = new FieldMachine(this.textBox, this.transfer, this.tiles, this.bag, this.party, selected.index);
       return 'open';
@@ -256,7 +287,7 @@ export class BagSession {
       this.medicine = new FieldMedicine(this.textBox, this.transfer, this.bag, this.party, selected.index);
       return 'open';
     }
-    // Escape Rope (UsableItems_CloseMenu) and every other routine are gaps.
+    // Other item routines remain gaps.
     this.itemMenuLoop();
     return 'open';
   }
@@ -307,6 +338,14 @@ export class BagSession {
   private afterPrint(): void {
     const next = this.after;
     this.after = null;
+    if (next === 'repel-sound') {
+      playSFX('heal_ailment');
+      this.textBox.waitScrollButton();
+      this.printing = true;
+      this.after = 'repel-consume';
+      return;
+    }
+    if (next === 'repel-consume' && this.bag && this.selected) this.bag.removeAt(this.selected.index, 1);
     if (next === 'yesno') {
       this.yesNo = new YesNoMenu();
       this.yesNo.show({ actualRead: true });
@@ -315,7 +354,7 @@ export class BagSession {
     this.itemMenuLoop();
   }
 
-  private print(program: string, after: 'yesno' | 'loop', bindings?: TextBindings): void {
+  private print(program: string, after: 'yesno' | 'loop' | 'repel-sound', bindings?: TextBindings): void {
     this.tiles.release(0, 12, 6, 20);
     this.textBox.printStandalone({ program }, { bindings });
     this.printing = true;

@@ -84,6 +84,13 @@ Without the adapter the existing engine behavior is unchanged. The production im
   `pitch_sweep`, `duty_cycle`, `sound_loop`, `sound_ret`; a music-mode channel starts with
   `execute_music` and then uses the music commands (the item jingles `get_item1` /
   `get_item2`, A1a).
+- **Channel 1's sweep (A3 checkpoint-03, 2026-11-25).** `pitch_sweep` is only an NR10 write
+  (`Audio1_pitch_sweep`); `GBSynthesizer` runs the sweep on the frame sequencer's free-running 128 Hz
+  sample clock, with a shadow register, a pace-0-as-8 timer, and overflow past 2047 turning channel 1 off
+  until the next trigger. Every CH1 note is a trigger (NR14 bit 7), from SFX, music or the low-health alarm, and
+  NR10 persists between sounds. Before this, `SfxEngine` stepped the sweep once per frame (half the rate) and
+  clamped at 2047 instead of cutting off. That made SFX_POISONED and the other 15 sweep SFX sound wrong. The
+  per-frame `freq0` writes it logged were dropped from the battle ledgers (`pulse_sweep.test.ts`).
 - **A5b3** adds `get_key_item` (music mode, channels 5–7, return on update 121)
   and `turn_on_pc` / `turn_off_pc` / `enter_pc` (SFX mode, channel 5, return on
   70 / 18 / 22). They are extracted and preloaded; their game call sites await

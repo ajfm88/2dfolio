@@ -1,5 +1,7 @@
 # Menus Architecture
 
+Repel, Super Repel and Max Repel use their 100/200/250-step field effects in BagSession. The item-use program binds the selected item name; the heal-ailment sound and scroll-button wait precede removal of one item from the selected stack and the ordinary ItemMenuLoop return.
+
 A2 checkpoint-04c adds a field machine-use session owned by BagSession. It
 drives the boot and teach text, YES/NO and the TM/HM party chooser, including
 per-species ABLE labels and retry messages, before delegating successful

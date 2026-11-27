@@ -122,6 +122,11 @@ const MUSIC_HEADERS: Record<string, { bank: number; addr: number }> = {
 // music's audio bank; save, turn_on_pc and enter_pc differ in bank $1f.
 // Bank-aware lookup remains V5; A5b3 pins those differences (notes/28-a5b3-plan.md).
 export const SFX_HEADERS: Record<string, { bank: number; addr: number }> = {
+  teleport_exit1:   { bank: 0x02, addr: 0x41dd },
+  teleport_enter1:  { bank: 0x02, addr: 0x41e0 },
+  teleport_exit2:   { bank: 0x02, addr: 0x41e3 },
+  teleport_enter2:  { bank: 0x02, addr: 0x41e9 },
+  poisoned:         { bank: 0x02, addr: 0x41c5 }, // SFX_Poisoned_1
   denied:           { bank: 0x02, addr: 0x41ef }, // SFX_Denied_1
   press_ab:         { bank: 0x02, addr: 0x41b0 },
   start_menu:       { bank: 0x02, addr: 0x41ad },

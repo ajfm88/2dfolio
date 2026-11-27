@@ -1,13 +1,14 @@
 import { TextBox } from './textbox';
+import type { TextBoxOptions } from './textbox';
 
 /** DisplayTextID wrapper shared by the map dialogue and TalkToTrainer paths. */
 export class MapDialogue {
   private onTextComplete: (() => void) | undefined;
   constructor(private readonly box: TextBox) {}
-  show(text: string, opts: { trainer?: boolean; kind?: 'text' | 'printText'; autoBox?: boolean; program?: string; onTextComplete?: () => void } = {}): void {
+  show(text: string, opts: { trainer?: boolean; kind?: 'text' | 'printText'; autoBox?: boolean; program?: string; onTextComplete?: () => void } & Pick<TextBoxOptions, 'bindings' | 'outerWait'> = {}): void {
     this.onTextComplete = opts.onTextComplete;
     this.box.show(text, { printText: opts.kind === 'printText' || opts.trainer,
-      autoBox: opts.autoBox, program: opts.program });
+      autoBox: opts.autoBox, program: opts.program, bindings: opts.bindings, outerWait: opts.outerWait });
   }
   /** True after Hold, the full CloseTextDisplay reload and its trailing UpdateSprites. */
   update(): boolean {

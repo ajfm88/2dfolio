@@ -493,6 +493,8 @@ export class SoundChannel {
       this.synth.setPulseFrequency(ch, registerToHz(this.freqReg));
       this.synth.setPulseDuty(ch, this.dutyCycle);
       this.synth.setPulseVolume(ch, this.envVolume);
+      // Audio1_ApplyWavePatternAndFrequency sets NR14 bit 7 for every note: CH1's sweep reloads from NR10.
+      if (ch === 0) this.synth.triggerSweep(this.freqReg);
     } else if (this.hw === 2) {
       const samples = this.host.waveSamples()[this.waveInstrument];
       if (samples) this.synth.setWaveInstrument(samples as number[]);

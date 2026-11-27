@@ -1,5 +1,7 @@
 import { getPikachuEmotionModifier, setPikachuEmotionModifier } from './pikachu/pikachu_happiness';
 import { mapChangeSound } from './overworld/map_change_sound';
+import { escapeRopeDestination } from './overworld/escape_rope';
+import { EscapeRopeAnimation } from './overworld/escape_rope_animation';
 import { installOverworldRandom } from './overworld/overworld_random';
 import { packOptions, unpackOptions } from './battle/battle_bridge';
 import { withdrawMon, boxStatsMon } from './pokemon_transfers';
@@ -36,13 +38,14 @@ import {
   getLoadedRawImageData,
   overworldObjectPalettes,
   applyBgShades,
+  drawTileRemapped,
   getActivePalette,
   getPaletteColors,
 } from "./renderer";
 import { initAudio, resumeAudio, playMusic, stopMusic, tickAudio, playSFX, suspendAudio, resumeAudioOutput,
   playMusicNew, playDefaultMusic, playDefaultMusicFadeOutCurrent, restoreNurseMusic, updateMusic6Times,
   fadeOutAndStopMusic, isAudioFadingOut, stopAllSounds, isSoundFinished, preloadMusic, playBattleMusic,
-  holdAudioClock, playCry, requestCry, startPikachuClip } from "./audio";
+  holdAudioClock, playCry, requestCry, startPikachuClip, playPikachuSoundClip } from "./audio";
 import { isNoMapMusic, setNoMapMusic } from "./audio/audio_flags";
 import { updateInput, isPressed, isPassPressed, readJoypad, syncJoypadRead, initTouchControls } from "./input";
 import { MapDialogue } from './text/map_dialogue';
@@ -64,13 +67,14 @@ import {
   updateOverworld as runOverworld, createOverworldState,
   runMapScript, handleStepComplete,
 } from "./overworld";
-import { finishTrainerEngage, seenStartPressed } from "./overworld/overworld_controller";
-import { endTrainerBattle } from "./overworld/map_trainers";
+import { finishTrainerEngage, seenStartPressed, continueAfterWalkingPoison, continueAfterRepel } from "./overworld/overworld_controller";
+import { setRepelSteps } from './overworld/repel';
+import type { WalkingPoisonEvent } from "./overworld/walking_poison";
 import { EmotionBubble } from "./overworld/emotion_bubble";
 import { updateSprites } from "./overworld/sprites";
 import { setJoyIgnore } from "./input/joy_ignore";
 import type { OverworldAction, OverworldDeps } from "./overworld";
-import { PikachuFollower, shouldPikachuFollow, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData } from "./pikachu";
+import { PikachuFollower, shouldPikachuFollow, resetPikachuHappiness, restorePikachuHappiness, getPikachuHappiness, getPikachuMood, loadPikachuMovementData, modifyPikachuHappiness } from "./pikachu";
 import { enablePikachuFollowing, isPikachuFollowingDisabled } from "./pikachu/pikachu_following";
 import {
   startPikachuEmotion, updatePikachuEmotionAnim, renderPikachuEmotionBox,
@@ -120,7 +124,7 @@ import {
   NamingScreen,
   loadEdTile,
 } from "./menus";
-import { NUM_BOXES, type BoxedPokemon } from "./pokemon_storage";
+import { NUM_BOXES, isFieldStatusStarter, type BoxedPokemon } from "./pokemon_storage";
 import { ClearSaveDialogue } from "./menus/clear_save_dialogue";
 import { Boot } from "./menus/boot";
 import { setFastTextDelay } from "./text/text_flags";
@@ -189,12 +193,17 @@ type GameState =
   | "pikachu_emotion"
   | "dex"
   | "evolution"
-  | "battle_return";
+  | "battle_return"
+  | "walking_poison"
+  | "escape_rope";
 let state: GameState = "title_screen";
 let stateBeforeMenu: GameState = "overworld"; // where to return after start_menu/textbox
 let paused = false;
 let menuClose: CloseSequence | null = null;
 let closingSave = false;
+let closeForEscapeRope = false;
+let escapeRope: EscapeRopeAnimation | null = null;
+let escapeRopeLoading = false;
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "p") {
@@ -333,6 +342,18 @@ function snapshotBattleWorld(encounter: LiveBattleEncounter) {
       pcBoxes:pcBoxes.map((box,index)=>index===currentPcBox?[...box]:box),currentPcBox},encounter);
 }
 
+function captureOverworldTransition(): TransitionCapture {
+  const data = getBattleTransitionData(), name = getMapName();
+  const actor = (source: { render(x: number, y: number): void }, sprite: string) => ({
+    render: source.render.bind(source), rawSheet: getLoadedRawImageData(`/gfx/sprites/${sprite}.png`),
+  });
+  return captureTransitionScene(gameMap, player.getCameraX(), player.getCameraY(), {
+    player: actor(player, 'red'),
+    npcs: [...npcs, ...getScriptNpcs()].map(npc => ({ ...actor(npc, npc.data.sprite), data: npc.data })),
+    pikachu: actor(pikachuFollower, 'pikachu'),
+  }, data.mapObjectCounts[name]);
+}
+
 /** InitBattleCommon: E stops, E+1 requests music, E+2 enters BattleTransition. */
 function beginBattleEntry(
   opponentIsTrainer: boolean, enemy: number | readonly TrainerPartyMember[],
@@ -364,14 +385,7 @@ function tickBattleEntry(): void {
     textBgTransfer.tick(); // tick 0's VBlank precedes the prologue's CPU writes
     const data = getBattleTransitionData(), name = getMapName();
     entry.choice = chooseBattleTransition({ ...entry.levels, opponentIsTrainer: entry.opponentIsTrainer, mapId: data.mapIds[name] });
-    const actor = (source: { render(x: number, y: number): void }, sprite: string) => ({
-      render: source.render.bind(source), rawSheet: getLoadedRawImageData(`/gfx/sprites/${sprite}.png`),
-    });
-    entry.capture = captureTransitionScene(gameMap, player.getCameraX(), player.getCameraY(), {
-      player: actor(player, 'red'),
-      npcs: [...npcs, ...getScriptNpcs()].map(npc => ({ ...actor(npc, npc.data.sprite), data: npc.data })),
-      pikachu: actor(pikachuFollower, 'pikachu'),
-    }, data.mapObjectCounts[name]);
+    entry.capture = captureOverworldTransition();
     entry.screen = new TransitionScreen(entry.capture.slots, getSpriteIndex());
     entry.screen.obp0 = overworldObjectPalettes.obp0;
     entry.screen.obp1 = overworldObjectPalettes.obp1;
@@ -544,6 +558,7 @@ function restoreSavedSettings(saved:SaveData|null):void {
 async function loadSavedGame(): Promise<void> {
   const saved = loadGame();
   if (!saved) return;
+  setRepelSteps(0);
   optionMenu.restore();
   restoreSavedSettings(saved);
   setNoMapMusic(false); // transient WRAM bit, never saved
@@ -614,6 +629,8 @@ async function loadSavedGame(): Promise<void> {
   } else if ((saved as any).lastBlackoutMap) {
     // Backwards compat: old saves stored just the map name. Convert to warp 0.
     lastBlackoutWarp = { destMap: (saved as any).lastBlackoutMap, destWarpId: 0 };
+  } else {
+    lastBlackoutWarp = { destMap: 'PalletTown', destWarpId: 0 };
   }
 
   applyDefeated();
@@ -630,6 +647,8 @@ async function loadSavedGame(): Promise<void> {
 
 /** Start a new game — place player in Red's bedroom. */
 async function startNewGame(): Promise<void> {
+  lastBlackoutWarp = { destMap: 'PalletTown', destWarpId: 0 };
+  setRepelSteps(0);
   setNoMapMusic(false);
   enablePikachuFollowing();
   setBattleAndStartSavedMenuItem(0);
@@ -786,6 +805,95 @@ function renderBattleReturn(): void {
   // With OBP0 $d0 / OBP1 $e0 sprites already composed, BGP's mapping of the composed shades equals each
   // OBJ register of FadePal7 and FadePal6 (note 92 §2.4), so one pass over the frame is exact.
   applyBgShades(getCtx(), bgp, getPaletteColors(getActivePalette()));
+}
+
+/**
+ * ChangeBGPalColor0_4Frames on CGB (screen_effects.asm, palettes.asm TransferBGPPals).
+ * The call starts after the pass, so this frame stays $e4. The palette write waits for VBlank.
+ * DelayFrames(4) then a VBlank handler that runs past line 153 makes the write-back the following
+ * VBlank: five inverted frames ($e4 xor $ff = $1b), then the sound, still in that pass.
+ * OBJ palettes are not written. Only BG, and the grass tiles drawn over sprites, use $1b.
+ */
+const POISON_INVERT_FRAMES = 5;
+const POISON_BGP_INVERTED = 0x1b;
+let walkingPoison: { program: Generator<void, void, void>; bgp: number } | null = null;
+/** DisplayTextIDInit's UpdateSprites for the faint text that just opened. */
+let reconcilePoisonFaint = false;
+
+function* showWalkingPoisonText(program: string, bindings?: { nameBuffer: string }, outerWait = true): Generator<void> {
+  // PrintText: DisplayTextBoxID, UpdateSprites, Delay3 (home/window.asm:281-292).
+  mapDialogue.show('', { autoBox: true, kind: 'printText', program, bindings, outerWait });
+  if (program === 'PokemonFaintedText') reconcilePoisonFaint = true;
+  while (textBox.active) {
+    yield;
+    mapDialogue.update();
+  }
+}
+
+function* walkingPoisonProgram(first: WalkingPoisonEvent, steps: Generator<WalkingPoisonEvent, void, void>): Generator<void> {
+  let event = first;
+  while (event.kind === 'fainted') {
+    const mon = playerParty[event.index];
+    setJoyIgnore('none'); // poison.asm: xor a / ld [wJoyIgnore], a, before the faint text
+    yield* showWalkingPoisonText('PokemonFaintedText', { nameBuffer: mon.nickname });
+    if (isFieldStatusStarter(mon)) {
+      yield* playPikachuSoundClip(4);
+      modifyPikachuHappiness('PSNFNT');
+    }
+    const next = steps.next();
+    if (next.done || next.value === undefined) throw new Error('walking poison ended before its result');
+    event = next.value;
+  }
+  if (event.poisonEffect) {
+    yield; // the frame the call starts on stays normal; UpdateCGBPal_BGP waits for VBlank
+    walkingPoison!.bgp = POISON_BGP_INVERTED;
+    for (let frame = 0; frame < POISON_INVERT_FRAMES; frame++) yield;
+    walkingPoison!.bgp = 0xe4;
+    playSFX('poisoned');
+  }
+  if (event.blackout) {
+    // DisplayPlayerBlackedOutText returns into HoldTextDisplayOpen, not AfterDisplayingTextID.
+    // Safari balls and BIT_ALWAYS_ON_BIKE are absent (no Safari, no bike).
+    yield* showWalkingPoisonText('PlayerBlackedOutText', undefined, false);
+    walkingPoison = null;
+    handleBlackoutWarp();
+    return;
+  }
+  walkingPoison = null;
+  state = 'overworld';
+  const action = continueAfterWalkingPoison(overworldDeps(), ow);
+  if (action) handleOverworldAction(action);
+}
+
+function startWalkingPoison(first: WalkingPoisonEvent, steps: Generator<WalkingPoisonEvent, void, void>): void {
+  walkingPoison = { program: walkingPoisonProgram(first, steps), bgp: 0xe4 };
+  state = 'walking_poison';
+  walkingPoison.program.next();
+}
+
+function* repelExpiredProgram(): Generator<void> {
+  yield* showWalkingPoisonText('RepelWoreOffText');
+  walkingPoison = null;
+  state = 'overworld';
+  const action = continueAfterRepel(overworldDeps(), ow);
+  if (action) handleOverworldAction(action);
+}
+
+/** ResetStatusAndHalveMoneyOnBlackout's money, HealParty, script-pending clear and hidden follower.
+ *  Shared by the battle loss and walking-poison whiteout. endTrainerBattle stays battle-only. */
+function resetOnBlackout(): void {
+  player.resetPikachuCollisionCounter();
+  playerMoney = Math.floor(playerMoney / 2);
+  for (const mon of playerParty) {
+    mon.currentHp = mon.maxHp;
+    mon.status = null;
+    for (const move of mon.moves) move.pp = move.maxPp;
+  }
+  clearScriptBattlePending();
+  ow.seenByTrainer = false;
+  ow.engagedNpc = null;
+  setJoyIgnore('all');
+  pikachuFollower.visible = false;
 }
 
 /** Start the next evolution in the queue. */
@@ -1060,55 +1168,147 @@ function warpToMap(destMapName: string, destWarpId: number, forceStepDown = fals
   };
 }
 
-/** Blackout warp: load the destination map, place the player one step BELOW the
- *  pokecenter door (not on it), facing down. Pikachu hidden until first move.
- *  Assembly: HandleBlackout → SpecialWarpIn places player at door, then
- *  PlayerStepOutFromDoor auto-steps down. We do it in one go. */
-function handleBlackoutWarp(): void {
-  state = "transition";
-  fadeDir = "out";
-  fadeAlpha = 0;
-  fadeCallback = async () => {
-    const { destMap, destWarpId } = lastBlackoutWarp;
-    // HandleBlackOut: StopMusic(8) waits out its fade, StopAllSounds, then the first
-    // PlayDefaultMusicFadeOutCurrent still reads the departed map's song (note 63 §10.5)
-    while (isAudioFadingOut()) await new Promise(resolve => setTimeout(resolve, 16));
-    stopAllSounds();
-    playMapMusic(currentMapName);
+/** HandleFlyWarpOrDungeonWarp after a successful Escape Rope closes START. */
+function beginEscapeRope(): void {
+  closeForEscapeRope = false;
+  cancelPendingMapMusic();
+  updateSprites([...npcs, ...getScriptNpcs()], gameMap, player, pikachuFollower);
+  escapeRope = new EscapeRopeAnimation(player.direction);
+  escapeRopeLoading = false;
+  state = 'escape_rope';
+}
+
+/** LoadSpecialWarpData: BIT_ESCAPE_WARP chooses the last blackout town's FlyWarpData row. */
+async function loadEscapeRopeDestination(): Promise<void> {
+  escapeRopeLoading = true;
+  try {
+    const destination = escapeRopeDestination(lastBlackoutWarp);
+    if (!destination) throw new Error('Escape Rope destination warp is missing');
     const result = await performWarpLoad(
-      destMap, destWarpId,
+      destination.destMap, lastBlackoutWarp.destWarpId,
       gameMap, player, pikachuFollower, playerParty, defeatedTrainers,
+      destination.stepPos,
     );
-    if (!result) {
-      fadeDir = null;
-      fadeAlpha = 0;
-      state = "overworld";
-      return;
-    }
-    currentMapName = destMap;
+    if (!result) throw new Error('Escape Rope destination map could not be loaded');
+    currentMapName = destination.destMap;
     npcs = result.npcs;
     Object.assign(ow, enterMapCounters(ow));
-
-    // Move player one step (16px = 2 tiles) below the door tile
-    player.setTilePosition(player.tileX, player.tileY + 2);
-    player.direction = 'down';
-
-    // Don't set doorExitStep — player is already below the door
-    ow.justWarped = true;
+    ow.justWarped = false;
     ow.doorExitStep = false;
     ow.standingOnWarp = false;
-
-    // Hide Pikachu until player moves
-    pikachuFollower.visible = false;
-    ow.pikachuDeferredSpawn = shouldPikachuFollow(playerParty);
-
-    fadeDir = "in";
+    ow.pikachuDeferredSpawn = false;
+    pikachuFollower.visible = false; // EnterMapAnim re-enables it after the spin
+    escapeRope?.loaded();
+    escapeRopeLoading = false;
+  } catch (error) {
+    console.error('Escape Rope warp failed', error);
+    escapeRope = null;
+    escapeRopeLoading = false;
+    fadeAlpha = 0;
+    pikachuFollower.visible = shouldPikachuFollow(playerParty);
+    state = 'overworld';
     loadMapMusic(currentMapName);
-    fadeCallback = () => {
-      state = "overworld";
-      checkMapEntryScripts();
-    };
-  };
+  }
+}
+
+/** FadePal4 → FadePal1, home/fade.asm:49-74; each triple is held for eight frames. */
+const BLACKOUT_FADE = [[0xe4, 0xd0, 0xe0], [0xf9, 0xe4, 0xe4],
+  [0xfe, 0xfe, 0xf8], [0xff, 0xff, 0xff]] as const;
+let blackout: {
+  phase: 'fade' | 'audio' | 'entry' | 'loading'; frame: number; battle: boolean;
+  capture: TransitionCapture | null; screen: TransitionScreen | null; pending: Promise<void> | null;
+} | null = null;
+
+/** Blackout uses the destination town's FlyWarpData position (not a door warp). */
+function handleBlackoutWarp(battle = false): void {
+  state = 'transition'; fadeDir = null; fadeAlpha = 0;
+  blackout = { phase: 'fade', frame: 0, battle, capture: null, screen: null, pending: null };
+}
+
+async function blackoutAfterFade(): Promise<void> {
+  // HandleBlackOut: StopMusic(8) waits out its fade, StopAllSounds, then the first
+  // PlayDefaultMusicFadeOutCurrent still reads the departed map's song (note 63 §10.5)
+  fadeOutAndStopMusic(8);
+  while (isAudioFadingOut()) await new Promise(resolve => setTimeout(resolve, 16));
+  if (!blackout) return;
+  stopAllSounds();
+  resetOnBlackout();
+  playMapMusic(currentMapName);
+  blackout.phase = 'entry';
+  blackout.frame = 0; // SpecialEnterMap's DelayFrames(20)
+}
+
+async function blackoutEnterMap(): Promise<void> {
+  const destination = escapeRopeDestination(lastBlackoutWarp);
+  if (!destination) throw new Error(`No blackout FlyWarpData for ${lastBlackoutWarp.destMap}`);
+  const { destMap, stepPos } = destination;
+  const result = await performWarpLoad(
+    destMap, 0,
+    gameMap, player, pikachuFollower, playerParty, defeatedTrainers, stepPos,
+  );
+  if (!result) {
+    blackout = null;
+    setJoyIgnore('none');
+    state = "overworld";
+    return;
+  }
+  currentMapName = destMap;
+  npcs = result.npcs;
+  Object.assign(ow, enterMapCounters(ow));
+
+  player.direction = 'down';
+
+  // The special position is below the door and is not itself a warp tile.
+  ow.justWarped = false;
+  ow.doorExitStep = false;
+  ow.standingOnWarp = false;
+
+  pikachuFollower.visible = followerCanDraw();
+  if (pikachuFollower.visible) pikachuFollower.spawnAtState(player.x, player.y, player.direction, 0);
+  ow.pikachuDeferredSpawn = false;
+
+  loadMapMusic(currentMapName);
+  setJoyIgnore('none'); // EnterMap clears wJoyIgnore after UpdateSprites.
+  blackout = null;
+  state = 'overworld';
+  checkMapEntryScripts();
+}
+
+function tickBlackout(): void {
+  const current = blackout;
+  if (!current) return;
+  textBgTransfer.tick(); // DelayFrames and StopMusic's wait continue to service VBlank.
+  if (current.phase === 'fade' && ++current.frame === 32) {
+    current.phase = 'audio';
+    current.pending = blackoutAfterFade();
+  } else if (current.phase === 'entry' && ++current.frame === 20) {
+    current.phase = 'loading';
+    current.pending = blackoutEnterMap();
+  }
+}
+
+function renderBlackout(): void {
+  const current = blackout!;
+  const index = current.phase === 'fade' ? Math.min(3, Math.floor(current.frame / 8)) : 3;
+  const [bgp, obp0, obp1] = BLACKOUT_FADE[index];
+  if (current.battle) {
+    const colour = getPaletteColors('PAL_BLACK')[(bgp & 3)];
+    const ctx = getCtx(), scale = getScale();
+    ctx.fillStyle = `rgb(${colour.join(',')})`;
+    ctx.fillRect(0, 0, 160 * scale, 144 * scale);
+    return;
+  }
+  if (!current.capture) {
+    current.capture = captureOverworldTransition();
+    current.screen = new TransitionScreen(current.capture.slots, getSpriteIndex());
+  }
+  const screen = current.screen!;
+  screen.bgp = bgp; screen.obp0 = obp0; screen.obp1 = obp1;
+  const cameraX = player.getCameraX(), cameraY = player.getCameraY(), palette = current.capture.palette;
+  renderTransitionScreen(screen, current.capture, sprite => {
+    gameMap.renderGrassOverlay(sprite.x + cameraX, sprite.y + cameraY, cameraX, cameraY,
+      (tileset, tileId, x, y) => drawTileRemapped(tileset, tileId, x, y, bgp, palette));
+  });
 }
 
 /** Warp to a specific step position on a map (no warp ID needed). */
@@ -1229,6 +1429,7 @@ function overworldDeps(): OverworldDeps {
 // it ends (CheckFightingMapTrainers after EmotionBubble).
 const emotionBubble = new EmotionBubble();
 let pendingEngage: { npc: Npc; steps: number; facing: Direction } | null = null;
+let blackoutAfterTrainerEngage = false;
 
 /** DisplayTextID(0), shared by the overworld and script free-movement dispatch. */
 function openStartMenu(): void {
@@ -1317,7 +1518,8 @@ function gameTick(): void {
   // EmotionBubble's DelayFrames read nothing. item_menu owns its own joypad read.
   const sessionOwnInput = state === 'dex' || (state === 'party_menu' && partyMenu.ownsInput)
     || (state === 'pikachu_emotion' && pikachuEmotionPhase() !== 'portrait');
-  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'clear_save' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && !sessionOwnInput && !textBox.active && !titleNoVBlank) syncJoypadRead();
+  // ChangeBGPalColor0_4Frames does not read the joypad. The faint text's own PrintLetterDelay still does.
+  if (!inPassState && state !== "emotion_bubble" && state !== 'menu_closing' && state !== 'oak_speech' && state !== 'clear_save' && state !== 'intro_entry' && state !== 'intro_exit' && state !== 'item_menu' && state !== 'start_menu' && state !== 'save_menu' && state !== 'battle' && state !== 'walking_poison' && !blackout && !sessionOwnInput && !textBox.active && !titleNoVBlank) syncJoypadRead();
 
   if (state === "splash") {
     // Waiting for mouse click — no game logic
@@ -1453,6 +1655,11 @@ function gameTick(): void {
       pendingEngage = null;
       const deps = overworldDeps();
       finishTrainerEngage(deps, engage);
+      if (blackoutAfterTrainerEngage) {
+        blackoutAfterTrainerEngage = false;
+        handleBlackoutWarp(true);
+        return;
+      }
       state = "overworld";
       readJoypad(player.simulating);
       restOfPass(deps);
@@ -1472,7 +1679,11 @@ function gameTick(): void {
       saveMenu.open({ player: getPlayerName(), badges: badgeCount, owned: getOwnedCount(), playTimeMs });
       state = "save_menu";
     } else if (action === "item") {
-      bagMenu.open(playerBag, playerParty);
+      bagMenu.open(playerBag, playerParty, {
+        mapName: currentMapName,
+        tileset: gameMap.mapData?.tileset ?? '',
+        onEscapeRopeStart: () => { pikachuFollower.visible = false; },
+      });
       state = "item_menu";
     } else if (action === "trainer") {
       const badges = BADGE_FLAGS.map(f => hasFlag(f));
@@ -1492,7 +1703,11 @@ function gameTick(): void {
   } else if (state === 'menu_closing') {
     if (menuClose!.firstFrame) textBgTransfer.tick();
     menuClose!.advance();
-    if (menuClose!.complete) { menuClose = null; textBox.dismiss(); state = 'overworld'; }
+    if (menuClose!.complete) {
+      menuClose = null; textBox.dismiss();
+      if (closeForEscapeRope) beginEscapeRope();
+      else state = 'overworld';
+    }
   } else if (state === "party_menu") {
     if (partyMenu.update() === "close") {
       returnToStart('party');
@@ -1511,6 +1726,36 @@ function gameTick(): void {
       townMapFromBag = true;
       state = "town_map";
       townMap.show(currentMapName);
+    } else if (itemResult === 'escape_rope') {
+      startMenu.tiles.restoreVisibleTiles(bagShown);
+      startMenu.closeAfterItemUse();
+      closeForEscapeRope = true;
+      state = 'start_menu';
+    }
+  } else if (state === 'escape_rope') {
+    const animation = escapeRope;
+    if (!animation) throw new Error('Escape Rope animation state is missing');
+    animation.tick(isAudioFadingOut());
+    if (animation.takeStartMusic()) fadeOutAndStopMusic(4); // after UpdateSprites + Delay3
+    player.direction = animation.direction;
+    fadeAlpha = animation.white;
+    const sound = animation.takeSound();
+    if (sound) void playSFX(sound);
+    if (animation.loading && !escapeRopeLoading) void loadEscapeRopeDestination();
+    // EnterMapAnim's PlayDefaultMusic waits for CHAN5/6/8 to finish after the
+    // visible spin; keep controls locked while TELEPORT_ENTER_1 rings out.
+    if (animation.complete && isSoundFinished()) {
+      escapeRope = null;
+      fadeAlpha = 0;
+      pikachuFollower.visible = shouldPikachuFollow(playerParty);
+      // EnterMapAnim chooses PIKACHU_SPAWN_RIGHT after the ordinary-tile spin.
+      if (pikachuFollower.visible) pikachuFollower.spawnAtState(player.x, player.y, player.direction, 1);
+      enablePikachuFollowing();
+      setJoyIgnore('none');
+      state = 'overworld';
+      const track = getMapMusic(currentMapName);
+      if (track) playDefaultMusic(track);
+      checkMapEntryScripts();
     }
   } else if (state === "trainer_card") {
     if (trainerCard.update()) {
@@ -1696,8 +1941,12 @@ function gameTick(): void {
     }
   } else if (state === "evolution") {
     updateEvolution();
+  } else if (state === 'transition' && blackout) {
+    tickBlackout();
   } else if (state === "battle_return") {
     battleReturn!.program.next();
+  } else if (state === "walking_poison") {
+    walkingPoison?.program.next();
   } else if (state === "battle_transition") {
     tickBattleEntry();
   } else if (state === "battle") {
@@ -1724,19 +1973,17 @@ function gameTick(): void {
         battleInput = null;
 
         if (plan.blackout) {
-          cancelPendingMapMusic(); fadeOutAndStopMusic(8); // StopMusic(8): the fade is waited out in the blackout loader
-          // Blackout sequence: halve money, heal party, warp to last pokecenter town
-          playerMoney = Math.floor(playerMoney / 2);
-          for (const mon of playerParty) {
-            mon.currentHp = mon.maxHp;
-            mon.status = null;
-            for (const move of mon.moves) move.pp = move.maxPp;
+          cancelPendingMapMusic();
+          // AllPokemonFainted invokes the current map script, which may be the trainer
+          // sight check after a wild battle, rather than always EndTrainerBattle.
+          const action = runMapScript(overworldDeps(), ow, true, true);
+          if (action?.type === 'trainerEngage') {
+            blackoutAfterTrainerEngage = true;
+            handleOverworldAction(action);
+          } else {
+            if (action) throw new Error(`Unsupported blackout map-script action: ${action.type}`);
+            handleBlackoutWarp(true);
           }
-          clearScriptBattlePending();
-          pikachuFollower.visible = false;
-          // AllPokemonFainted runs RunMapScript once: EndTrainerBattle resets a trainer map
-          endTrainerBattle(currentMapName, ow);
-          handleBlackoutWarp();
         } else {
           // Victory fanfare is already playing (owned by the session)
           // Re-evaluate Pikachu visibility (Pikachu may have fainted)
@@ -1819,6 +2066,7 @@ function drawUiLayer(): void {
     case 'overworld':
     case 'script':
     case 'emotion_bubble':
+    case 'walking_poison':
     case 'textbox': renderScriptMenu(); textBox.render(); renderMenuSession(); renderScriptYesNo(); break;
   }
 }
@@ -1838,6 +2086,11 @@ function checkUiEntry(): void {
   // Still latch the opening so submenu transitions cannot add a second rising edge.
   if (state === 'start_menu' || state === 'save_menu' || state === 'menu_closing') return;
   if (!rising && !newDisplay) return;
+  // The faint text's DisplayTextIDInit UpdateSprites: ShouldPikachuSpawn's .dont_spawn.
+  if (reconcilePoisonFaint) {
+    reconcilePoisonFaint = false;
+    pikachuFollower.reconcileStorageParty(playerParty);
+  }
   openOverworldUi(state, player, gameMap, pikachuFollower, () => { captureUi(drawUiLayer); });
 }
 
@@ -1940,6 +2193,14 @@ function gameLoop(now = 0): void {
     renderEvolution();
   } else if (state === "battle_return") {
     renderBattleReturn();
+  } else if (state === 'emotion_bubble' && blackoutAfterTrainerEngage) {
+    // EndOfBattle's GBPalWhiteOut still owns BG and OBJ while RunMapScript runs.
+    clear(); drawFadeOverlay(1, '#ffffff');
+  } else if (state === "walking_poison") {
+    renderWalkingPoison();
+  } else if (state === 'escape_rope') {
+    clear();
+    renderOverworldScene(player.getCameraX(), player.getCameraY(), false, escapeRope?.offsetY ?? 0);
   } else if (state === "party_menu") {
     partyMenu.render();
   } else if (state === "item_menu") {
@@ -1973,6 +2234,8 @@ function gameLoop(now = 0): void {
   } else if (state === "pikachu_emotion") {
     clear();
     renderPikachuEmotionScene();
+  } else if (state === 'transition' && blackout) {
+    renderBlackout();
   } else if (state === "transition" && fadeAlpha >= 1) {
     // Fully faded out — draw white screen while loading
     clear();
@@ -2020,25 +2283,32 @@ function gameLoop(now = 0): void {
  * the player (slot 15) goes first and Pikachu last; its grass priority is the one latched
  * at the call (zero under the shadow). Draws latched state only — it advances nothing.
  */
-function renderOverworldScene(camX: number, camY: number): void {
+function renderOverworldScene(camX: number, camY: number, invertBg = false, playerOffsetY = 0): void {
   gameMap.render(camX, camY);
+  const bgp = invertBg ? (walkingPoison?.bgp ?? 0xe4) : 0xe4;
+  const palette = invertBg && bgp !== 0xe4 ? getPaletteColors(getActivePalette()) : null;
+  if (palette) applyBgShades(getCtx(), bgp, palette);
   beginSpriteLog();
   const pikachuOnTop = pikachuFollower.movementSwapped;
+  const grass = palette === null ? undefined
+    : (tileset: HTMLCanvasElement, tileId: number, x: number, y: number): void => {
+      drawTileRemapped(tileset, tileId, x, y, bgp, palette);
+    };
   const drawPlayer = (): void => {
-    player.render(camX, camY);
-    gameMap.renderGrassOverlay(player.x, player.y, camX, camY);
+    player.render(camX, camY - playerOffsetY);
+    if (playerOffsetY === 0) gameMap.renderGrassOverlay(player.x, player.y, camX, camY, grass);
   };
   const drawPikachu = (): void => {
     if (!pikachuFollower.visible) return;
     pikachuFollower.render(camX, camY);
     if (pikachuFollower.movementGrassPriority !== false) {
-      gameMap.renderGrassOverlay(pikachuFollower.x, pikachuFollower.y, camX, camY);
+      gameMap.renderGrassOverlay(pikachuFollower.x, pikachuFollower.y, camX, camY, grass);
     }
   };
   const drawNpcs = (): void => {
     for (const npc of [...npcs, ...getScriptNpcs()]) {
       npc.render(camX, camY);
-      gameMap.renderGrassOverlay(npc.x, npc.y, camX, camY);
+      gameMap.renderGrassOverlay(npc.x, npc.y, camX, camY, grass);
     }
   };
   const draw = { player: drawPlayer, npcs: drawNpcs, pikachu: drawPikachu };
@@ -2046,6 +2316,11 @@ function renderOverworldScene(camX: number, camY: number): void {
   const sprites = endSpriteLog();
   player.renderLedgeShadow(camX, camY);
   pikachuFollower.renderMovementShadow(camX, camY, sprites);
+}
+
+function renderWalkingPoison(): void {
+  clear();
+  renderOverworldScene(player.getCameraX(), player.getCameraY(), true);
 }
 
 /** The bubble has OAM priority over the map sprites; the portrait UI follows it. */
@@ -2100,6 +2375,14 @@ function handleOverworldAction(action: OverworldAction): void {
     case 'trainerText':
       // DisplayEnemyTrainerTextAndStartBattle: the text (no music), then StartTrainerBattle
       engageTrainer(action.npc, true);
+      break;
+    case 'walkingPoison':
+      startWalkingPoison(action.first, action.steps);
+      break;
+    case 'repelExpired':
+      walkingPoison = { program: repelExpiredProgram(), bgp: 0xe4 };
+      state = 'walking_poison';
+      walkingPoison.program.next();
       break;
   }
 }

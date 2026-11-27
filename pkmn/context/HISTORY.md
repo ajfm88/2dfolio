@@ -15,6 +15,95 @@ Newest first.
 
 ## Recent session archive
 
+### 2026-11-25 - User/Sol/Terra/Luna: A3 checkpoint-05 Escape Rope closed
+
+- Terra completed teleport SFX extraction, item eligibility and bag use, and the last-center destination helper. Sol integrated the source-timed warp and animation. Luna independently reviewed the completed diff, caught frame-timing errors, and passed the corrections. Full ROM 8,088/8,088; no-ROM 7,696 pass / 392 skip across 321 files; typecheck and build passed. Only four new SFX JSON files and their static mirrors were generated. Implementation commit `c7254c0`.
+- The player heard the teleport tail after visible landing and confirmed it stopped. Sol then matched the cartridge's `PlayDefaultMusic` sound wait before returning control and map music; focused 26/26, typecheck and build passed (`9d1059d`). The player retested and said it works perfectly. Checkpoint-05 is complete; checkpoint-06 was not planned. Note 143 is the detailed record.
+
+### Archived STATUS session entries through A2 checkpoint-04b (moved 2026-11-25)
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04b field adapter reviewed
+
+- Terra built an unwired field frame adapter for the existing shared `learnMove` program, using a temporary encoded party record and success-only live move/PP writeback. Luna started after Terra's final completion, independently challenged empty slot, full set, HM deletion, abandon/retry and retained frame ownership, and passed with no blockers (note 142).
+- Typecheck, focused 278/278, no-ROM 7,595 pass / 388 skip, ROM 7,983/7,983 across 312 files, build and diff check passed. No generated files changed. The adapter remains unwired. Next: final bag integration and user-visible teaching flow, briefed in note 142. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04b party text reviewed
+
+- The `TMHM_PARTY_MENU` field path needs a separate party prompt omitted from 04a. Terra extracted `PartyMenuUseTMText` and its far target from source-backed ROM addresses, then finished. Luna independently checked pret, ROM bytes and the extracted prompt and passed. Only `text_programs.json` and its static mirror changed; the other 1,068 generated files remain identical.
+- Typecheck, focused ROM 23/23, full ROM 7,977/7,977 and no-ROM 7,589 pass / 388 skip, build and repeat extraction passed. The bag action remains unwired. Codex briefed a smaller field LearnMove adapter step in note 142; full teaching integration follows. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-04a reviewed
+
+- Codex split the broad machine teaching checkpoint after Terra's source analysis identified the missing field LearnMove host. Terra then extracted five machine text roots and five far targets, and added the cartridge's USEDTMHM happiness event. Luna began only after Terra's final completion, independently checked the ROM symbols/text operands and ASM happiness behavior, and passed (note 142). No partial bag teaching flow is exposed.
+- Typecheck, focused tests, no-ROM 7,589 pass / 388 skip, ROM 7,977/7,977 across 311 files, build and repeat extraction passed. Exactly two generated text mirrors changed; 1,068 prior files remained unchanged. Bundle 709,529 bytes. Next: 04b complete bag/party/LearnMove action, then player play-test. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-03 reviewed
+
+- Codex specified a separate 152-entry compatibility table from each species' seven base-stat bytes and a pure move-ID lookup matching `CanLearnTM` (note 142). Terra implemented both extraction paths and the lookup, then formally finished before Luna began. Luna checked pret and the owned ROM, independently challenged Bulbasaur's TM50/HM01/HM05 bits through the helper and passed with no blockers.
+- Typecheck, focused tests, full ROM 7,964/7,964 and no-ROM 7,577 pass / 387 skip across 309 files, build, repeat extraction and manifest passed. The manifest shows two new generated files and 1,068 prior files unchanged, including `pokemon.json`; main bundle stays 709,420 bytes. This data-only checkpoint needs no play-test. Checkpoint-02's visible menu play-test remains pending; next session can brief checkpoint-04. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-02 reviewed, play-test pending
+
+- Codex briefed the runtime machine item/menu slice in note 142. Terra used the committed machine table for 55 canonical names, 50 TM prices and HM key-item behavior; bag, Mart and PC paths now share the classification. No machine teaching was added. Terra finished before Luna started. Luna challenged HM05 PC deposit and TM34 Mart sale against pret and passed with no blockers.
+- Typecheck, focused 93/93, full ROM 7,962/7,962 and no-ROM 7,576 pass / 386 skip across 308 files, build and diff check passed. Main bundle 709,420 bytes (+949). No generated-data churn. The user's `context/PLAN.md` edit and root files remain untouched. Visible TM34/HM05 menu play-test is still needed before checkpoint closure; note 142 gives the reproduction path. Next after that: brief checkpoint-03 compatibility data.
+
+### 2026-11-24 - Codex/Terra/Luna: A2 checkpoint-01 reviewed
+
+- Codex resolved the order A2 → A3 → A4 → B1 (#177) and briefed one data-only checkpoint in note 142. Terra extracted the 55 TM/HM move IDs and 50 packed TM prices into `machine_data.json` and its mirror (`6e8780d`). A manifest checker verified two new generated files and all 1,066 prior files unchanged, including after repeat setup. No runtime item or teaching code changed.
+- Terra formally finished before Luna began. Luna checked the source and owned ROM, independently challenged the table boundary and nybble order, and passed the review. Typecheck, focused ROM 12/12 and both full suites passed: ROM 7,959/7,959; no-ROM 7,573 pass / 386 skip across 308 files, two workers. Next: brief A2 checkpoint-02. The user's `context/PLAN.md` edit and root files remain untouched.
+
+### 2026-11-24 - Codex/Terra/Luna: battle-mechanics audit checkpoint-11 reviewed
+
+- Codex briefed the closure in note 141; Terra reconciled note 57 and added a live loaded-record census. The 165 shipped moves have no `$48-$4B` effect; ordinary selection has no proven path to move ID 0 or 166+. The two glitch tails stay at J2 under #176. No production or generated data changed. Luna challenged the Mirror Move zero-ID path, independently checked the census and reviewed PASS.
+- Typecheck and focused tests passed. Full ROM 7,957/7,957; no-ROM 7,572 pass / 385 skip across 307 files, both with `--maxWorkers=2`. Next: plan the A2/A3/A4/B1 sequence. The pre-existing `context/PLAN.md` edit and user's root files remain untouched.
+- At the user's direction, Luna reviewed committed checkpoint `23814b1` again after Terra formally finished. She passed the source/diff review and independently reran typecheck and both full suites at the same counts (note 141, post-completion review).
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-10b reviewed
+
+- Sol wrote the implementation brief in note 141. Terra ran a nine-failure no-ROM census, re-recorded Route 1's per-frame RNG snapshot and repaired six affected test files without changing production code. The new ledger leaves frame hashes, text, audio and outcome unchanged; aside from RNG bytes, one damage byte changes at frame 472. Luna independently checked the ASM, snapshot and diff, reran 170/170 affected tests, and passed the review.
+- Typecheck and focused tests passed. Full ROM 7,956/7,956; no-ROM 7,571 pass / 385 skip across 307 files, both with `--maxWorkers=2`. Next: checkpoint-11 closure and glitch triage. The pre-existing `context/PLAN.md` edit and user's root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-10a reviewed
+
+- Sol scoped 10a frame/RNG ownership and 10b ledger/full-suite closure. Terra wired attached battle VBlank `Random` through the page-lifetime owner (`1d27f50`) and added focused timing/carry tests. Luna caught a constant-carry host callback; Terra corrected it and Luna re-reviewed PASS. Source and focused evidence are in note 141.
+- Typecheck, host/RNG 31/31 and session variants 16/16 passed. Existing `battle_session.test.ts` has two known failures (Route 1 wild-win snapshot; Misty X Defend item count) from the changed RNG stream. Full suites were intentionally deferred to 10b. Last green counts remain checkpoint-09b's 7,952 ROM / 7,567 pass + 385 skip no-ROM, 306 files. Next agent: run a full failure census, update each affected RNG ledger from the new source-derived stream, review, run both full suites and replace the baseline. Preserve the pre-existing `context/PLAN.md` edit and user-owned untracked root files.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-09 reviewed
+
+- Sol split the broad row into 09a items/catch and 09b faint/EXP/end. Terra checked each against pret and added a trainer ball item-flow witness (`36b2efe`) and a trainer knockout → EXP.ALL → end witness (`5baa462`). Luna independently reviewed both and passed them. No production discrepancy was proved on the checked paths; note 141 records the coverage and limits.
+- Typecheck and focused tests passed. Full ROM 7,952/7,952; no-ROM 7,567 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-10 battle VBlank `Random` and ledger re-recording. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-08 reviewed
+
+- Sol briefed trainer AI; Terra checked move scoring and class actions against pret and added a Lorelei selection-to-item witness (`2be1c48`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths, retired backlog claim and limits.
+- Typecheck and focused tests passed. Full ROM 7,950/7,950; no-ROM 7,565 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-09 items, catch, faint, EXP and end; split its broad scope before implementation if needed. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-07 reviewed
+
+- Sol briefed stat arithmetic, names and loaders; Terra audited them against pret and added a trained Rhydon >255 Attack witness (`238272a`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths, stale backlog claims and limits.
+- Typecheck and focused tests passed. Full ROM 7,949/7,949; no-ROM 7,564 pass / 385 skip across 306 files, both with two workers. Next: checkpoint-08 trainer AI. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-06 reviewed
+
+- Sol briefed all nine HP/copy effect handlers; Terra checked them against pret and added a two-sided Disable dispatch-to-status witness (`8f8461a`). Luna independently reviewed and passed it after the exact RNG draw assertion was added. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,948/7,948; no-ROM 7,563 pass / 385 skip across 305 files, both with two workers. Next: checkpoint-07 stat arithmetic, names and loaders. The pre-existing `context/PLAN.md` edit and user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-05 reviewed
+
+- Sol briefed all eleven turn effect handlers; Terra checked them against pret and added a two-sided Bide initializer-to-release witness (`2734993`). Luna independently reviewed and passed it. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,946/7,946; no-ROM 7,561 pass / 385 skip across 305 files, both with two workers. Next: checkpoint-06 HP and copy effects. The user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Sol/Terra/Luna: battle-mechanics audit checkpoint-04 reviewed
+
+- Sol briefed stat effects; Terra compared the live handlers with pret and added a both-side Haze execution witness (`e39878f`). Luna independently reviewed and passed it after a pointer-table wording correction. No production discrepancy was proved; note 141 records the checked paths and limits.
+- Typecheck and focused tests passed. Full ROM 7,944/7,944; no-ROM 7,559 pass / 385 skip, 304 files, both with two workers. Next: checkpoint-05 turn effect handlers. The user-owned untracked root files remain untouched.
+
+### 2026-11-24 - Codex: battle-mechanics audit checkpoints 01-03 reviewed; handoff updated
+
+- Sol implemented checkpoint-01 damage/hit/Counter immunity witnesses (`17651c7`), checkpoint-02 the live sleep/Leech Seed/enemy/poison turn (`08b014d`), and checkpoint-03 live Leech Seed dispatcher/status gates (`3a2d4ae`). Separate agents independently reviewed each and passed. No production code changed.
+- Note 141 is the routine inventory, scope and next checkpoints. Next: checkpoint-04 stat effect handlers. Battle VBlank `Random` and ledger re-recording remain checkpoint-10. The unreachable glitch tails remain a checkpoint-11/J2 triage.
+- Typecheck passed. Full ROM suite 7,942/7,942; no-ROM 7,557 pass / 385 skip across 304 files, both with two workers. The test-only audit did not rebuild the cries bundle. The user requested the context update after checkpoint-03.
+
 ### Archived STATUS session entries from 2026-11-23 (moved 2026-11-24)
 
 ### 2026-11-23 - Claude: Pokémon cries closed (note 140 §8.35)
